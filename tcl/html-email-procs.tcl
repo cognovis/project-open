@@ -8,10 +8,13 @@ ad_library {
     @cvs-id $Id$
 }
 
+# switched to using tcllib, its required for openacs >= 5.3
+package require mime
+
 ad_proc build_mime_message {
     text_body
     html_body
-    {charset "iso-8859-1"}
+    {charset "UTF-8"}
 } {
     Composes multipart/alternative email containing plain text
     and html versions of the message, parses out the headers we need,
@@ -20,31 +23,14 @@ ad_proc build_mime_message {
     This proc is based on ad_html_sendmail, written by Doug Harris at
     the World Bank.
 
-    Comment from the original code:  The message
-    is encoded with iso-8859-x charset (all mail readers I've tested seem
-    to be unable to handle utf-8 encoding). A future version of this proc
-    should probably support an alternative charset argument or switch.
 } {
-    ## JCD: we moved these into -procs.tcl files so they get 
-    ## sourced when we bootstrap.
-    # this is always called from a scheduled proc
-    #    set r_dir [acs_root_dir]/packages/acs-tcl/tcl
-    #source $r_dir/base64.tcl
-    #source $r_dir/md5.tcl
-    #source $r_dir/mime.tcl
-
-    # Files are included, therefore there is no need for the mime
-    # package anymore.
-
-    # package require mime
-
     # convert text to charset
     set encoding [ns_encodingforcharset $charset]
     if {[lsearch [encoding names] $encoding] != -1} {
-	set html_body [encoding convertto $encoding $html_body]
-	set text_body [encoding convertto $encoding $text_body]
+        set html_body [encoding convertto $encoding $html_body]
+        set text_body [encoding convertto $encoding $text_body]
     } else {
-	ns_log error "ad_html_sendmail: unknown charset passed in ($charset)"
+        ns_log error "ad_html_sendmail: unknown charset passed in ($charset)"
     }
 
     # build body
@@ -70,7 +56,10 @@ ad_proc build_mime_message {
     # message out through an SMTP socket, but we're not doing that so we
     # have to hijack the process a bit.
     set mime_body [mime::buildmessage $multi_part]
-
+    # mime-encode the periods at the beginning of a line in the
+    # message text or they are lost. Most noticable when the line
+    # is broken within a URL
+    regsub {^\.} $mime_body {=2E} mime_body
     # the first three lines of the message are special; we need to grab
     # the info, add it to the message headers, and discard the lines
     set lines [split $mime_body \n]
@@ -88,7 +77,7 @@ ad_proc build_mime_message {
     ns_set put $message_data Content-Type $content_type
 
     # the rest of the lines form the message body.  We strip off the last
-    # line, which is the last boundary, because ns_sendmail seems to be
+    # line, which is the last boundary, because acs_mail_lite::send seems to be
     # adding another one on for us.
 
     ## JCD: not anymore.  maybe an aolserver 3.3 bug?  removing the clipping.
@@ -120,21 +109,39 @@ ad_proc parse_incoming_email {
         set parts [list $mime]
     }
 
+    # Expand any first-level multipart/alternative children.
+    set expanded_parts [list]
     foreach part $parts {
-        switch [mime::getproperty $part content] {
+        catch {mime::getproperty $part content} this_content 
+        if { $this_content eq "multipart/alternative"} {
+            foreach child_part [mime::getproperty $part parts] {
+                lappend expanded_parts $child_part
+            }
+        } else {
+            lappend expanded_parts $part
+        }
+    }
+
+    foreach part $expanded_parts {
+        catch {mime::getproperty $part content} this_content 
+        switch $this_content {
             "text/plain" {
-                set plain [mime::getbody $part]
+                if { ![info exists plain] } {
+                    set plain [mime::getbody $part]
+                }
             }
             "text/html" {
-                set html [mime::getbody $part]
+                if { ![info exists html] } {
+                    set html [mime::getbody $part]
+                }
             }
         }
     }
 
-    if { [info exists html] } {
-        set body [ad_html_to_text -- $html]
-    } elseif { [info exists plain] } {
+    if { [info exists plain] } {
         set body $plain
+    } elseif { [info exists html] } {
+        set body [ad_html_to_text -- $html]
     } else {
         set body $message
     }
@@ -142,3 +149,4 @@ ad_proc parse_incoming_email {
     mime::finalize $mime -subordinates all
     return $body
 }
+

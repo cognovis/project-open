@@ -16,6 +16,12 @@ ad_proc apm_test_callback_proc {
     {-arg1:required}
     {-arg2:required}
 } {
+    Writes the arbitrary values of arg1 and arg2 to a file so that we can
+    check that the proc was executed.
+
+    @param arg1 Arbitrary value.
+    @param arg2 Arbitrary value.
+} {
     # Write something to a file so that can check that the proc executed
     set file_path [apm_test_callback_file_path]
     set file_id [open $file_path w]
@@ -65,7 +71,7 @@ aa_register_case -cats {api db smoke} apm__test_info_file {
                                              from apm_package_versions
                                              where version_id = :version_id}]
     set auto_mount $auto_mount_orig
-    if { [empty_string_p $auto_mount] } {
+    if { $auto_mount eq "" } {
         set auto_mount "test_auto_mount_dir"
         db_dml set_test_mount {update apm_package_versions
                                set auto_mount = :auto_mount
@@ -279,7 +285,7 @@ aa_register_case -cats {api} -on_error {
         [site_node::get_children -all -element node_id -node_id $node_id -package_type "apm_service"] \
         $nodes
     
-    aa_true "Found at least one apm_service node" [expr [llength $nodes] > 0]
+    aa_true "Found at least one apm_service node" [expr {[llength $nodes] > 0}]
 
     # nonexistent package_type
     aa_true "No nodes with package type 'foo'" \
@@ -689,61 +695,6 @@ aa_register_case -cats {api smoke} util__subset_p {
     aa_equals "List is not a subset" [util_get_subset_missing [list a b c d] [list a b c]] [list d]
 }
 
-aa_register_case -cats {smoke} acs_tcl__tcl_file_syntax_errors {
-    Test all known tcl files for successful parsing "(in the [info complete] sense at least)" and other common errors.
-
-    @author Jeff Davis davis@xarg.net
-} {
-    # couple of local helper procs 
-    proc ::tcl_p {file} { 
-        return [expr [string match {*.tcl} $file] || [file isdirectory $file]]
-    }
-    
-    # if startdir is not [acs_root_dir]/packages, then somebody checked in the wrong thing by accident
-    set startdir [acs_root_dir]/packages
-    
-    aa_log "Checks starting from $startdir<br />"
-
-    #inspect every tcl file in the directory tree starting with $startdir
-    foreach file [ad_find_all_files -check_file_func ::tcl_p $startdir] { 
-
-        set fp [open $file "r"]
-        set data [read $fp]
-        close $fp
-
-        # Check that the file parses        
-        aa_true "$file parses successfully" [info complete $data]
-    }
-}
-
-aa_register_case -cats {} -error_level notice acs_tcl__tcl_file_common_errors {
-    Test all known tcl files for successful parsing "(in the [info complete] sense at least)" and other common errors.
-
-    @author Jeff Davis davis@xarg.net
-} {
-    # couple of local helper procs 
-    proc ::tcl_p {file} { 
-        return [expr [string match {*.tcl} $file] || [file isdirectory $file]]
-    }
-    
-    # if startdir is not [acs_root_dir]/packages, then somebody checked in the wrong thing by accident
-    set startdir [acs_root_dir]/packages
-    
-    aa_log "Checks starting from $startdir<br />"
-
-    #inspect every tcl file in the directory tree starting with $startdir
-    foreach file [ad_find_all_files -check_file_func ::tcl_p $startdir] { 
-
-        set fp [open $file "r"]
-        set data [read $fp]
-        close $fp
-
-	if {![regexp {/packages/acs-tcl/tcl/test/acs-tcl-test-procs\.tcl$} $file match]} {
-	    aa_true "$file should not contain '@returns'.  @returns is probably a typo of @return" [expr [string first @returns $data] == -1]
-	}
-    }
-}
-
 aa_register_case -cats {api smoke} util__randomize_list {
     Test util::randomize_list
 } {
@@ -768,7 +719,7 @@ aa_register_case -cats {api smoke} util__randomize_list {
 
 aa_register_case -cats {api} acs_tcl__util_url_valid_p {
     A very rudimentary test of util_url_valid_p
-                                                                                                                             
+
     @creation-date 2004-01-10
     @author Branimir Dolicki (bdolicki@branimir.com)
 } {
@@ -801,7 +752,7 @@ aa_register_case -cats {web smoke} -libraries tclwebtest front_page_1 {
 } {
     #set ::auto_path "/usr/local/tclwebtest/lib"
     #aa_log "auto_path: $auto_path"
-    ::tclwebtest::do_request "[ad_url]/"
+    ::twt::do_request "[ad_url]/"
     ::tclwebtest::assert text "Main Site"
 
 }
@@ -874,25 +825,34 @@ aa_register_case \
         
         @author Peter Marklund
 } {
-    set sql {to_char(fm.posting_date, 'YYYY-MM-DD HH24:MI:SS')}
-    aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] $sql
 
-    set sql {to_char(fm.posting_date, :SS)}
-    aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] {to_char(fm.posting_date, '3')}
+    # DRB: Not all of these test cases work for Oracle (select can't be used in
+    # db_exec_plsql) and bindvar substituion is done by Oracle, not the driver,
+    # anyway so there's not much point in testing.   These tests really test
+    # Oracle bindvar emulation, in other words...
 
-    set sql {to_char(fm.posting_date, don''t subst ':SS', do subst :SS )}
-    aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] {to_char(fm.posting_date, don''t subst ':SS', do subst '3' )}
+    if { [db_type] ne "oracle" } {
+        set sql {to_char(fm.posting_date, 'YYYY-MM-DD HH24:MI:SS')}
+        aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] $sql
+    
+        set sql {to_char(fm.posting_date, :SS)}
+        aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] {to_char(fm.posting_date, '3')}
+    
+        set sql {to_char(fm.posting_date, don''t subst ':SS', do subst :SS )}
+        aa_equals "don't subst bind vars in quoted date" [db_bind_var_substitution $sql {SS 3 MI 4}] {to_char(fm.posting_date, don''t subst ':SS', do subst '3' )}
 
-    set SS 3
-    set db_value [db_exec_plsql test_bind {
-        select ':SS'
-    }]
-    aa_equals "db_exec_plsql should not bind quoted var" $db_value ":SS"
 
-    set db_value [db_exec_plsql test_bind {
-        select :SS
-    }]
-    aa_equals "db_exec_plsql bind not quoted var" $db_value "3"
+        set SS 3
+        set db_value [db_exec_plsql test_bind {
+            select ':SS'
+        }]
+        aa_equals "db_exec_plsql should not bind quoted var" $db_value ":SS"
+    
+        set db_value [db_exec_plsql test_bind {
+            select :SS
+        }]
+        aa_equals "db_exec_plsql bind not quoted var" $db_value "3"
+    }
 }
 
 aa_register_case -cats {api} \
@@ -908,3 +868,259 @@ aa_register_case -cats {api} \
 	set html_version [ad_enhanced_text_to_html $string_with_img]
 	aa_true "new: $html_version should be the same" [string equal $html_version $string_with_img] 
 }
+
+aa_register_case -cats {api db} db__caching { 
+    test db_* API caching
+} {
+
+    # Check db_string caching
+
+    # Check that cached and non-cached calls return the same value.  We need to
+    # check the caching API call twice, once to fill the cache and return the
+    # value, and again to see that the call returns the proper value from the
+    # cache.  This series ends by testing the flushing of db_cache_pool with an
+    # exact pattern.
+
+    set not_cached \
+        [db_string test1 {select first_names from persons where person_id = 0}]
+    aa_equals "Test that caching and non-caching db_string call return same result" \
+        [db_string -cache_key test1 test1 {select first_names from persons where person_id = 0}] \
+        $not_cached
+    aa_true "Test1 cached value found." \
+        ![catch {ns_cache get db_cache_pool test1} errmsg]
+    aa_equals "Test that cached db_string returns the right value from the cache" \
+        [db_string -cache_key test1 test1 {select first_names from persons where person_id = 0}] \
+        $not_cached
+    db_flush_cache -cache_key_pattern test1
+    aa_true "Flush of test1 from cache using the exact key" \
+        [catch {ns_cache get db_cache_pool test1} errmsg]
+
+    # Check that cached and non-cached calls return the same default if no value
+    # is returned by the query.  This series ends by testing the flushing of the
+    # entire db_cache_pool cache.
+
+    set not_cached \
+        [db_string test2 {select first_names from persons where person_id=1 and person_id=2} \
+            -default foo]
+    aa_equals "Test that caching and non-caching db_string call return same default value" \
+        [db_string -cache_key test2 test2 {select first_names from persons where person_id=1 and person_id=2} \
+            -default foo] \
+        $not_cached
+    aa_true "Test2 cached value found." \
+        ![catch {ns_cache get db_cache_pool test2} errmsg]
+    aa_equals "Test that caching and non-caching db_string call return same default value" \
+        [db_string -cache_key test2 test2 {select first_names from persons where person_id=1 and person_id=2} \
+            -default foo] \
+        $not_cached
+    db_flush_cache
+    aa_true "Flush of test2 by flushing entire pool" \
+        [catch {ns_cache get db_cache_pool test2} errmsg]
+
+    # Check that cached and non-cached calls return an error if the query returns
+    # no data and no default is supplied.  This series ends by testing cache flushing
+    # by "string match" pattern.
+
+    aa_true "Uncached db_string call returns error if query returns no data" \
+        [catch {db_string test3 "select first_names from persons where person_id=1 and person_id=2"}]
+    aa_true "Cached db_string call returns error if query returns no data" \
+        [catch {db_string -cache_key test3 test3 "select first_names from persons where person_id=1 and person_id=2"}]
+    aa_true "db_string call returns error if caching call returned error" \
+        [catch {db_string -cache_key test3 test3 "select first_names from persons where person_id=1 and person_id=2"}]
+    db_flush_cache -cache_key_pattern tes*3
+    aa_true "Flush of test3 from cache using pattern" \
+        [catch {ns_cache get db_cache_pool test3} errmsg]
+
+    # Check db_list caching
+
+    set not_cached \
+        [db_list test4 {select first_names from persons where person_id = 0}]
+    aa_equals "Test that caching and non-caching db_list call return same result" \
+        [db_list -cache_key test4 test4 {select first_names from persons where person_id = 0}] \
+        $not_cached
+    aa_true "Test4 cached value found." \
+        ![catch {ns_cache get db_cache_pool test4} errmsg]
+    aa_equals "Test that cached db_list returns the right value from the cache" \
+        [db_list -cache_key test4 test4 {select first_names from persons where person_id = 0}] \
+        $not_cached
+    db_flush_cache
+
+    # Check db_list_of_list caching
+
+    set not_cached \
+        [db_list_of_lists test5 {select * from persons where person_id = 0}]
+    aa_equals "Test that caching and non-caching db_list_of_lists call return same result" \
+        [db_list_of_lists -cache_key test5 test5 {select * from persons where person_id = 0}] \
+        $not_cached
+    aa_true "Test5 cached value found." \
+        ![catch {ns_cache get db_cache_pool test5} errmsg]
+    aa_equals "Test that cached db_list_of_lists returns the right value from the cache" \
+        [db_list_of_lists -cache_key test5 test5 {select * from persons where person_id = 0}] \
+        $not_cached
+    db_flush_cache
+
+    # Check db_multirow caching
+
+    db_multirow test6 test6 {select * from persons where person_id = 0}
+    set not_cached \
+        [list test6:rowcount test6:columns [array get test6:1]]
+    db_multirow -cache_key test6 test6 test6 {select * from persons where person_id = 0}
+    set cached \
+        [list test6:rowcount test6:columns [array get test6:1]]
+    aa_equals "Test that caching and non-caching db_multirow call return same result" \
+        $cached $not_cached
+    aa_true "Test6 cached value found." \
+        ![catch {ns_cache get db_cache_pool test6} errmsg]
+    db_multirow -cache_key test6 test6 test6 {select * from persons where person_id = 0}
+    set cached \
+        [list test6:rowcount test6:columns [array get test6:1]]
+    aa_equals "Test that cached db_multirow returns the right value from the cache" \
+        $cached $not_cached
+    db_flush_cache
+
+    # Check db_0or1row caching
+
+    set not_cached \
+       [db_0or1row test7 {select * from persons where person_id = 0} -column_array test7]
+    lappend not_cached [array get test7]
+    set cached \
+        [db_0or1row -cache_key test7 test7 {select * from persons where person_id = 0} -column_array test7]
+    lappend cached [array get test7]
+    aa_equals "Test that caching and non-caching db_0or1row call return same result for 1 row" \
+        $cached $not_cached
+    aa_true "Test7 cached value found." \
+        ![catch {ns_cache get db_cache_pool test7} errmsg]
+    set cached \
+        [db_0or1row -cache_key test7 test7 {select * from persons where person_id = 0} -column_array test7]
+    lappend cached [array get test7]
+    aa_equals "Test that cached db_0or1row returns the right value from the cache for 1 row" \
+        $cached $not_cached
+    db_flush_cache
+
+    # Check db_0or1row caching returns 0 if query returns no values
+
+    set not_cached \
+       [db_0or1row test8 {select * from persons where person_id=1 and person_id=2} -column_array test8]
+    set cached \
+        [db_0or1row -cache_key test8 test8 {select * from persons where person_id=1 and person_id=2} -column_array test8]
+    aa_equals "Test that caching and non-caching db_0or1row call return same result for 0 rows" \
+        $cached $not_cached
+    aa_true "Test8 cached value found." \
+        ![catch {ns_cache get db_cache_pool test8} errmsg]
+    set cached \
+        [db_0or1row -cache_key test8 test8 {select * from persons where person_id=1 and person_id=2} -column_array test8]
+    aa_equals "Test that cached db_0or1row returns the right value from the cache for 0 rows" \
+        $cached $not_cached
+    db_flush_cache
+
+    # Won't check db_1row because it just calls db_0or1row
+
+}
+
+
+aa_register_case \
+    -cats {api smoke} \
+    -procs {parameter::get parameter::get_from_package_key parameter::set_default parameter::set_default parameter::set_value parameter::set_from_package_key parameter::set_global_value parameter::get_global_value} \
+    parameter__check_procs {
+    Test the parameter::* procs
+
+    @author Rocael Hernandez (roc@viaro.net)
+} {
+
+
+    aa_run_with_teardown \
+	-rollback \
+	-test_code {
+
+            aa_log "Test global parameter functionality"
+            set parameter_id [db_nextval "acs_object_id_seq"]
+            apm_parameter_register -parameter_id $parameter_id -scope global x_test_x "" acs-tcl 0 number
+            parameter::set_global_value -package_key acs-tcl -parameter x_test_x -value 3
+            aa_true "check global parameter value set/get" [string equal [parameter::get_global_value -package_key acs-tcl -parameter x_test_x] 3]
+            apm_parameter_unregister $parameter_id
+
+	    db_foreach get_param {
+		select ap.parameter_name, ap.package_key, ap.default_value, ap.parameter_id
+		from apm_parameters ap, apm_package_types apt
+		where
+		ap.package_key = apt.package_key
+		and apt.singleton_p ='t'
+		and ap.package_key <> 'acs-kernel'
+	    } {
+
+		set value [random]
+		if {$parameter_name ne "PasswordExpirationDays" && $value > 0.7} {
+
+		    set package_id [apm_package_id_from_key $package_key]	    
+		    set actual_value [db_string real_value {
+			select apm_parameter_values.attr_value
+			from 
+			apm_parameter_values
+			where apm_parameter_values.package_id = :package_id
+			and apm_parameter_values.parameter_id = :parameter_id
+		    }]
+
+		    aa_log "$package_key $parameter_name $actual_value"
+		    aa_true "check parameter::get" [string equal [parameter::get -package_id $package_id -parameter $parameter_name] $actual_value]
+		    aa_true "check parameter::get_from_package_key" \
+			[string equal [parameter::get_from_package_key -package_key $package_key -parameter $parameter_name] $actual_value]
+
+		    parameter::set_default -package_key $package_key -parameter $parameter_name -value $value
+		    set value_db [db_string get_values {
+			select default_value from apm_parameters
+			where package_key = :package_key and parameter_name = :parameter_name
+		    }]
+		    aa_true "check parameter::set_default" \
+			[string equal $value $value_db]
+
+		    set value [expr {$value + 10}]
+		    parameter::set_from_package_key -package_key $package_key -parameter $parameter_name -value $value
+		    aa_true "check parameter::set_from_package_key" \
+			[string equal $value [parameter::get -package_id $package_id -parameter $parameter_name]]
+
+		    set value [expr {$value + 10}]
+		    parameter::set_value -package_id $package_id -parameter $parameter_name -value $value
+		    aa_true "check parameter::set_value" \
+			[string equal $value [parameter::get -package_id $package_id -parameter $parameter_name]]
+
+		    break;
+		}
+	    }
+	}
+}
+
+aa_register_case -cats {api smoke} acs_object__package_id {
+    Tests the acs_object__package_id procedure
+
+    @author Malte Sussdorff
+} {
+    # Retrieve an objects_package_id
+    set object_id [db_string get_object_id "select max(object_id) from acs_objects where package_id >0"]
+    set package_id [db_string get_package_id "select package_id from acs_objects where object_id = :object_id"]
+    aa_true "package_id returned is correct" [string equal $package_id [acs_object::package_id -object_id $object_id]]
+}
+
+aa_register_case -cats {api smoke} acs_user__registered_user_p {
+    Tests the acs_user::registered_user_p procedure
+
+    @author Malte Sussdorff
+} {
+    # Retrieve a registered user
+    set user_id [db_string get_registered_id "select max(user_id) from registered_users"]
+
+    # Check if the registered_user_p procedure finds him
+    set is_registered_p [acs_user::registered_user_p -user_id $user_id]
+    
+    # Ban the user and check if he is not a registered_user anymore
+    acs_user::ban -user_id $user_id
+    set is_not_registered_p [acs_user::registered_user_p -user_id $user_id]
+
+    if {$is_registered_p eq 1 && $is_not_registered_p eq 0} {
+	set works_p 1
+    } else {
+	set works_p 0
+    }
+
+    acs_user::approve -user_id $user_id
+    aa_true "registered_user_p works correct" $works_p
+}
+

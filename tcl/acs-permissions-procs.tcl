@@ -10,16 +10,20 @@ ad_library {
 
 namespace eval permission {}
 
-# define cache_p to be 0 here.  Note that it is redefined on init to be 
-# the value of the PermissionCacheP kernel parameter.
-# see request-processor-init.tcl
-ad_proc permission::cache_p {} {
+# define cache_p to be 0 here.  Note that it is redefined
+# to return the value of the PermissionCacheP kernel parameter
+# on the first call.  also the namespace eval is needed to 
+# make the redefinition work for ttrace.
+
+ad_proc -private permission::cache_p {} {
     returns 0 or 1 depending if permission_p caching is enabled or disabled.
     by default caching is disabled.
-} { 
-    return 0
+} {
+    set cache_p [parameter::get -package_id [ad_acs_kernel_id] -parameter PermissionCacheP -default 0]
+    namespace eval ::permission [list proc cache_p {} "return $cache_p"]
+    return $cache_p
 }
-    
+
 ad_proc -public permission::grant {
     {-party_id:required}
     {-object_id:required}
@@ -66,7 +70,7 @@ ad_proc -public permission::permission_p {
     
     @param privilege The privilege you want to check for.
 } {
-    if { [empty_string_p $party_id] } {
+    if { $party_id eq "" } {
         set party_id [ad_conn user_id]
     }    
 
@@ -120,7 +124,7 @@ ad_proc -private permission::permission_p_not_cached {
 
     @see permission::permission_p
 } {
-    if { [empty_string_p $party_id] } {
+    if { $party_id eq "" } {
         set party_id [ad_conn user_id]
     }
 
@@ -147,20 +151,18 @@ ad_proc -public permission::require_permission {
 } {
     require that party X have privilege Y on object Z
 } {
-    if {[empty_string_p $party_id]} {
+    if {$party_id eq ""} {
         set party_id [ad_conn user_id]
     }
 
     if {![permission_p -party_id $party_id -object_id $object_id -privilege $privilege]} {
         if {!${party_id}} {
-            ad_maybe_redirect_for_registration
+            auth::require_login
         } else {
             ns_log notice "permission::require_permission: $party_id doesn't have $privilege on object $object_id"
             ad_return_forbidden \
                 "Permission Denied" \
-                "<blockquote>
-  You don't have permission to $privilege [db_string name {}].
-</blockquote>"
+                "You don't have permission to $privilege [db_string name {}]."
         }
 
         ad_script_abort
@@ -225,7 +227,7 @@ ad_proc -public permission::write_permission_p {
     if { [permission::permission_p -privilege write -object_id $object_id -party_id $party_id] } {
         return 1
     }
-    if { [empty_string_p $creation_user] } {
+    if { $creation_user eq "" } {
         set creation_user [acs_object::get_element -object_id $object_id -element creation_user]
     }
     if { [ad_conn user_id] == $creation_user } {
@@ -250,9 +252,7 @@ ad_proc -public permission::require_write_permission {
     @see permission::write_permission_p
 } {
     if { ![permission::write_permission_p -object_id $object_id -party_id $party_id] } {
-        ad_return_forbidden  "Permission Denied"  "<blockquote>
-    You don't have permission to $action this object.
-    </blockquote>"
+        ad_return_forbidden  "Permission Denied"  "You don't have permission to $action this object."
         ad_script_abort
     } 
 }

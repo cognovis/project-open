@@ -23,7 +23,7 @@ ad_proc -private doc_parse_property_string { properties } {
     set lines [split $properties \n]
     foreach line_raw $lines {
 	set line [string trim $line_raw]
-	if { [empty_string_p $line] } {
+	if { $line eq "" } {
 	    continue
 	}
 	
@@ -40,7 +40,7 @@ ad_proc -private doc_parse_property_string { properties } {
                      are not Unicode word characters, but we don't allow that."
 	}
 
-	if { [info exists type_raw] && ![empty_string_p $type_raw] } { 
+	if { [info exists type_raw] && $type_raw ne "" } { 
 	    set type [string trim $type_raw]
 	} else {
 	    set type onevalue
@@ -62,7 +62,7 @@ ad_proc -private doc_parse_property_string { properties } {
 		set column_list [list]
 		foreach column_raw $column_split {
 		    set column [string trim $column_raw]
-		    if { [empty_string_p $column] } {
+		    if { $column eq "" } {
 			return -code error "You have an empty column name in\
 				the definition of the $property property in the\
 				type $type"
@@ -85,7 +85,7 @@ ad_proc -private doc_parse_property_string { properties } {
 
 
 
-proc_doc doc_init {} { Initializes the global environment for document handling. } {
+ad_proc doc_init {} { Initializes the global environment for document handling. } {
     global doc_properties
     if { [info exists doc_properties] } {
 	unset doc_properties
@@ -93,17 +93,17 @@ proc_doc doc_init {} { Initializes the global environment for document handling.
     array set doc_properties {}
 }
 
-proc_doc doc_set_property { name value } { Sets a document property. } {
+ad_proc doc_set_property { name value } { Sets a document property. } {
     global doc_properties
     set doc_properties($name) $value
 }
 
-proc_doc doc_property_exists_p { name } { Return 1 if a property exists, or 0 if not. } {
+ad_proc doc_property_exists_p { name } { Return 1 if a property exists, or 0 if not. } {
     global doc_properties
     return [info exists doc_properties($name)]
 }
 
-proc_doc doc_get_property { name } { Returns a property (or an empty string if no such property exists). } {
+ad_proc doc_get_property { name } { Returns a property (or an empty string if no such property exists). } {
     global doc_properties
     if { [info exists doc_properties($name)] } {
 	return $doc_properties($name)
@@ -111,16 +111,16 @@ proc_doc doc_get_property { name } { Returns a property (or an empty string if n
     return ""
 }
 
-proc_doc doc_body_append { str } { Appends $str to the body property. } {
+ad_proc doc_body_append { str } { Appends $str to the body property. } {
     global doc_properties
     append doc_properties(body) $str
 }
 
-proc_doc doc_set_mime_type { mime_type } { Sets the mime-type property. } {
+ad_proc doc_set_mime_type { mime_type } { Sets the mime-type property. } {
     doc_set_property mime_type $mime_type
 }
 
-proc_doc doc_exists_p {} { Returns 1 if there is a document in the global environment. } {
+ad_proc doc_exists_p {} { Returns 1 if there is a document in the global environment. } {
     global doc_properties
     if { [array size doc_properties] > 0 } {
 	return 1
@@ -128,11 +128,11 @@ proc_doc doc_exists_p {} { Returns 1 if there is a document in the global enviro
     return 0
 }
 
-proc_doc doc_body_flush {} { Flushes the body (if possible). } {
+ad_proc doc_body_flush {} { Flushes the body (if possible). } {
     # Currently a no-op.
 }
 
-proc_doc doc_find_template { filename } { Finds a master.adp file which can be used as a master template, looking in the directory containing $filename and working our way down the directory tree. } {
+ad_proc doc_find_template { filename } { Finds a master.adp file which can be used as a master template, looking in the directory containing $filename and working our way down the directory tree. } {
     set path_root [acs_root_dir]
 
     set start [clock clicks -milliseconds]
@@ -154,7 +154,7 @@ proc_doc doc_find_template { filename } { Finds a master.adp file which can be u
     return ""
 }
 
-proc_doc doc_serve_template { __template_path } { Serves the document in the environment using a particular template. } {
+ad_proc doc_serve_template { __template_path } { Serves the document in the environment using a particular template. } {
     upvar #0 doc_properties __doc_properties
     foreach __name [array names __doc_properties] {
 	set $__name $__doc_properties($__name)
@@ -162,19 +162,19 @@ proc_doc doc_serve_template { __template_path } { Serves the document in the env
 
     set adp [ns_adp_parse -file $__template_path]
     set content_type [ns_set iget [ad_conn outputheaders] "content-type"]
-    if { [empty_string_p $content_type] } {
+    if { $content_type eq "" } {
 	set content_type "text/html"
     }
     doc_return 200 $content_type $adp
 }
 
-proc_doc doc_serve_document {} { Serves the document currently in the environment. } {
+ad_proc doc_serve_document {} { Serves the document currently in the environment. } {
     if { ![doc_exists_p] } {
 	error "No document has been built."
     }
 
     set mime_type [doc_get_property mime_type]
-    if { [empty_string_p $mime_type] } {
+    if { $mime_type eq "" } {
 	if { [doc_property_exists_p title] } {
 	    set mime_type "text/html;content-pane"
 	} else {
@@ -186,7 +186,7 @@ proc_doc doc_serve_document {} { Serves the document currently in the environmen
 	text/html;content-pane - text/x-html-content-pane {
 	    # It's a content pane. Find the appropriate template.
 	    set template_path [doc_find_template [ad_conn file]]
-	    if { [empty_string_p $template_path] } {
+	    if { $template_path eq "" } {
 		ns_returnerror 500 "Unable to find master template"
 	        ns_log error \
 		    "Unable to find master template for file '[ad_conn file]'"
@@ -211,7 +211,7 @@ proc doc_tag_ad_document { contents params } {
 
 proc doc_tag_ad_property { contents params } {
     set name [ns_set iget $params name]
-    if { [empty_string_p $name] } {
+    if { $name eq "" } {
 	return "<em>No <tt>name</tt> property in <tt>AD-PROPERTY</tt> tag</em>"
     }
     doc_set_property $name $contents

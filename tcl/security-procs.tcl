@@ -7,7 +7,7 @@ ad_library {
     @author Jon Salz (jsalz@arsdigita.com)
     @author Richard Li (richardl@arsdigita.com)
     @author Archit Shah (ashah@arsdigita.com)
-    @cvs-id security-procs.tcl,v 1.13.2.5 2003/06/06 08:48:50 lars Exp
+    @cvs-id $Id$
 }
 
 namespace eval security {}
@@ -17,10 +17,11 @@ namespace eval security {}
 #   ad_session_id         session_id,user_id,login_level SessionTimeout  no
 #   ad_user_login         user_id,issue_time,auth_token  never expires   no
 #   ad_user_login_secure  user_id,random                 never expires   yes
-#   ad_secure_token       session_id,user_id,random      SessionLifetime yes
+#   ad_secure_token       session_id,random,peeraddr     SessionLifetime yes
 #
 #   the random data is used to hinder attack the secure hash. 
 #   currently the random data is ns_time
+#   peeraddr is used to avoid session hijacking
 #
 #   ad_user_login issue_time: [ns_time] at the time the user last authenticated
 #
@@ -42,7 +43,7 @@ ad_proc -private sec_random_token {} {
 	set start_clicks [ad_conn start_clicks]
     } else {
 	set request "yoursponsoredadvertisementhere"
-	set start_clicks "developer.arsdigita.com"
+	set start_clicks "cvs.openacs.org"
     }
     
     if { ![info exists tcl_sec_seed] } {
@@ -59,7 +60,7 @@ ad_proc -private sec_session_lifetime {} {
     Returns the maximum lifetime, in seconds, for sessions.
 } {
     # default value is 7 days ( 7 * 24 * 60 * 60 )
-    return [ad_parameter -package_id [ad_acs_kernel_id] SessionLifetime security 604800]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter SessionLifetime -default 604800]
 }
 
 ad_proc -private sec_sweep_sessions {} {
@@ -75,6 +76,12 @@ ad_proc -private sec_handler {} {
 
 } {
     ns_log debug "OACS= sec_handler: enter"
+
+    #foreach c [list ad_session_id ad_secure_token ad_user_login ad_user_login_secure] {
+    #    lappend msg "$c [ad_get_cookie $c]"
+    #}
+    #ns_log notice "OACS cookies: $msg"
+
     if { [catch { 
 	set cookie_list [ad_get_signed_cookie_with_expr "ad_session_id"]
     } errmsg ] } {
@@ -84,7 +91,8 @@ ad_proc -private sec_handler {} {
 	# -> it expired.
 
         # Now check for login cookie
-        ns_log Debug "OACS: Not a valid session cookie, looking for login cookie"
+        ns_log Debug "OACS: Not a valid session cookie, looking for login cookie '$errmsg'"
+        ad_user_logout
         sec_login_handler
     } else {
 	# The session cookie already exists and is valid.
@@ -118,10 +126,12 @@ ad_proc -private sec_handler {} {
         ns_log Debug "Security: Insecure session OK: session_id = $session_id, untrusted_user_id = $untrusted_user_id, auth_level = $auth_level, user_id = $user_id"
 
         # We're okay, insofar as the insecure session, check if it's also secure
-        if { [string equal $auth_level "ok"] && [security::secure_conn_p] } {
+        if { $auth_level eq "ok" && [security::secure_conn_p] } {
             catch { 
                 set sec_token [split [ad_get_signed_cookie "ad_secure_token"] {,}] 
-                if { [string equal [lindex $sec_token 0] $session_id] } {
+                if {[lindex $sec_token 0] eq $session_id 
+                    && [lindex $sec_token 2] eq [ad_conn peeraddr]
+                  } {
                     set auth_level secure
                 }
             }
@@ -173,7 +183,7 @@ ad_proc -private sec_login_handler {} {
                 set login_list [split [ad_get_signed_cookie "ad_user_login_secure"] ","]
             }
         } 
-        if { [empty_string_p $login_list] } {
+        if { $login_list eq "" } {
             set login_list [split [ad_get_signed_cookie "ad_user_login"] ","]
         }
         
@@ -187,7 +197,7 @@ ad_proc -private sec_login_handler {} {
         # First, check expiration 
         if { [sec_login_timeout] == 0 || [ns_time] - $login_expr < [sec_login_timeout] } {
             # Then check auth_token
-            if { [string equal $auth_token [sec_get_user_auth_token $untrusted_user_id]] } {
+            if {$auth_token eq [sec_get_user_auth_token $untrusted_user_id]} {
                 # Are we secure?
                 if { [security::secure_conn_p] } {
                     # We retrieved the secure login cookie over HTTPS, we're secure
@@ -201,7 +211,7 @@ ad_proc -private sec_login_handler {} {
         # Check account status
         set account_status [auth::get_local_account_status -user_id $untrusted_user_id]
 
-        if { [string equal $account_status "no_account"] } {
+        if {$account_status eq "no_account"} {
             set untrusted_user_id 0
             set auth_level none
             set account_status "closed"
@@ -233,11 +243,14 @@ ad_proc -public ad_user_login {
 
     set auth_level "ok"
 
+    set domain [parameter::get -parameter CookieDomain -package_id [ad_acs_kernel_id]]
+
     # If you're logged in over a secure connection, you're secure
     if { [security::secure_conn_p] } {
         ad_set_signed_cookie \
             -max_age $max_age \
             -secure t \
+	    -domain $domain \
             ad_user_login_secure \
             "$user_id,[ns_time],[sec_get_user_auth_token $user_id],[ns_time]"
 
@@ -252,6 +265,7 @@ ad_proc -public ad_user_login {
     ns_log Debug "ad_user_login: Setting new ad_user_login cookie with max_age $max_age"
     ad_set_signed_cookie \
         -max_age $max_age \
+	-domain $domain \
         -secure f \
         ad_user_login \
         "$user_id,[ns_time],[sec_get_user_auth_token $user_id]"
@@ -270,7 +284,7 @@ ad_proc -public sec_get_user_auth_token {
     } -default {}]
     db_release_unused_handles
 
-    if { [empty_string_p $auth_token] } {
+    if { $auth_token eq "" } {
         ns_log Debug "Security: User $user_id does not have any auth_token, creating a new one."
         set auth_token [sec_change_user_auth_token $user_id]
     }
@@ -281,7 +295,7 @@ ad_proc -public sec_get_user_auth_token {
 ad_proc -public sec_change_user_auth_token {
     user_id
 } {
-    Change the user's auth_token, which invalidates all existing login cookies.
+    Change the user's auth_token, which invalidates all existing login cookies, ie. forces user logout at the server.
 } {
     set auth_token [ad_generate_random_string]
 
@@ -298,10 +312,12 @@ ad_proc -public sec_change_user_auth_token {
 ad_proc -public ad_user_logout {} { 
     Logs the user out. 
 } {
-    ad_set_cookie -replace t -max_age 0 ad_session_id ""
-    ad_set_cookie -replace t -max_age 0 ad_secure_token ""
-    ad_set_cookie -replace t -max_age 0 ad_user_login ""
-    ad_set_cookie -replace t -max_age 0 ad_user_login_secure ""
+    set domain [parameter::get -parameter CookieDomain -package_id [ad_acs_kernel_id]]
+
+    ad_set_cookie -replace t -max_age 0 -domain $domain ad_session_id ""
+    ad_set_cookie -replace t -max_age 0 -domain $domain ad_secure_token ""
+    ad_set_cookie -replace t -max_age 0 -domain $domain ad_user_login ""
+    ad_set_cookie -replace t -max_age 0 -domain $domain ad_user_login_secure ""
 }
 
 ad_proc -public ad_check_password { 
@@ -319,7 +335,7 @@ ad_proc -public ad_check_password {
 
     set salt [string trim $salt]
 
-    if { [string compare $password [ns_sha1 "$password_from_form$salt"]] } {
+    if {$password ne [ns_sha1 "$password_from_form$salt"]  } {
 	return 0
     }
 
@@ -335,14 +351,10 @@ ad_proc -public ad_change_password {
     # In case someone wants to change the salt from now on, you can do
     # this and still support old users by changing the salt below.
 
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         error "No user_id supplied"
     } 
     
-    if {[util_memoize "db_column_exists users cleartext_password"]} {
-	db_dml cleartext_pwd "update users set cleartext_password = :new_password where user_id = :user_id"
-    }
-
     set salt [sec_random_token]
     set new_password [ns_sha1 "$new_password$salt"]
     db_dml password_update {}
@@ -364,7 +376,7 @@ ad_proc -private sec_setup_session {
     set session_id [ad_conn session_id]
 
     # figure out the session id, if we don't already have it
-    if { [empty_string_p $session_id]} {
+    if { $session_id eq ""} {
 
 	ns_log debug "OACS= empty session_id"
 
@@ -405,7 +417,7 @@ ad_proc -private sec_setup_session {
     set user_id 0
 
     # If both auth_level and account_status are 'ok' or better, we have a solid user_id
-    if { ([string equal $auth_level "ok"] || [string equal $auth_level "secure"]) && [string equal $account_status "ok"] } {
+    if { ($auth_level eq "ok" || $auth_level eq "secure") && $account_status eq "ok" } {
         set user_id $new_user_id
     }
 
@@ -422,7 +434,7 @@ ad_proc -private sec_setup_session {
 
     ns_log debug "OACS= done generating session id cookie"
 
-    if { [string equal $auth_level "secure"] && [security::secure_conn_p] && $new_user_id != 0 } {
+    if { $auth_level eq "secure" && [security::secure_conn_p] && $new_user_id != 0 } {
         # this is a secure session, so the browser needs
         # a cookie marking it as such
 	sec_generate_secure_token_cookie
@@ -455,8 +467,8 @@ ad_proc -private sec_generate_session_id_cookie {} {
     set account_status [ad_conn account_status]
     
     set login_level 0
-    if { [string equal $auth_level "ok"] || [string equal $auth_level "secure"] } {
-        if { [string equal $account_status "ok"] } {
+    if { $auth_level eq "ok" || $auth_level eq "secure" } {
+        if {$account_status eq "ok"} {
             set login_level 1 
         } else {
             set login_level 2
@@ -464,24 +476,26 @@ ad_proc -private sec_generate_session_id_cookie {} {
     }
 
     ns_log Debug "Security: [ns_time] sec_generate_session_id_cookie setting session_id=$session_id, user_id=$user_id, login_level=$login_level"
-    ad_set_signed_cookie -replace t -max_age [sec_session_timeout] \
+
+    set domain [parameter::get -parameter CookieDomain -package_id [ad_acs_kernel_id]]
+
+    ad_set_signed_cookie -discard t -replace t -max_age [sec_session_timeout] -domain $domain \
 	    "ad_session_id" "$session_id,$user_id,$login_level"
 }
 
 ad_proc -private sec_generate_secure_token_cookie { } { 
     Sets the ad_secure_token cookie.
 } {
-    ad_set_signed_cookie -secure t "ad_secure_token" "[ad_conn session_id],[ad_conn user_id],[ns_time]"
+    ad_set_signed_cookie -secure t "ad_secure_token" "[ad_conn session_id],[ns_time],[ad_conn peeraddr]"
 }
 
-ad_proc -public -deprecated ad_secure_conn_p {} { 
+ad_proc -public -deprecated -warn ad_secure_conn_p {} { 
     Use security::secure_conn_p instead.
     
     @see security::secure_conn_p
 } {
     return [security::secure_conn_p]
 }
-
 
 ad_proc -private sec_allocate_session {} {
 
@@ -496,7 +510,7 @@ ad_proc -private sec_allocate_session {} {
 	# Thread just spawned or we exceeded preallocated count.
 	set tcl_current_sequence_id [db_nextval sec_id_seq]
 	db_release_unused_handles
-	set tcl_max_value [expr $tcl_current_sequence_id + 100]
+	set tcl_max_value [expr {$tcl_current_sequence_id + 100}]
     } 
 
     set session_id $tcl_current_sequence_id
@@ -514,7 +528,7 @@ ad_proc -private ad_login_page {} {
     set url [ad_conn url]
     if { [string match "*register/*" $url] || [string match "/index*" $url] || \
             [string match "/index*" $url] || \
-            [string match "/" $url] || \
+            "/" eq $url || \
             [string match "*password-update*" $url] } {
 	return 1
     }
@@ -577,6 +591,52 @@ ad_proc -public ad_get_login_url {
         set url /
     }
 
+    set UseHostnameDomainforReg [parameter::get -package_id [apm_package_id_from_key acs-tcl] -parameter UseHostnameDomainforReg -default 0]
+    if { $UseHostnameDomainforReg } {
+
+        # get config.tcl's hostname
+        set nssock [ns_config ns/server/[ns_info server]/modules nssock]
+        set nsunix [ns_config ns/server/[ns_info server]/modules nsunix]
+        if {$nsunix ne ""} {
+            set driver nsunix
+        } else {
+            set driver nssock
+        }
+        set config_hostname [ns_config ns/server/[ns_info server]/module/$driver Hostname]
+        set current_location [util_current_location]
+        # if current domain and hostdomain are different (and UseHostnameDomain), revise url
+        if { ![string match -nocase "*${config_hostname}*" $current_location] } {
+
+            if { [string range $url 0 0] eq "/" } {
+                # Make the url fully qualified
+                if { [security::secure_conn_p] } {
+                    set url_decoded [security::get_secure_qualified_url $url]
+                } else {
+                    set url_decoded [security::get_insecure_qualified_url $url]
+                }
+            } else {
+                set url_decoded $url
+            }
+
+            # revise url to use hostname's domain
+            # if url points to a non / host_node, redirect to main hostname
+            set host_node_map_hosts_list [db_list -cache_key security-locations-host-names get_node_host_names "select host from host_node_map"]
+            if { [llength $host_node_map_hosts_list] > 0 } {
+                foreach hostname $host_node_map_hosts_list {
+                    if { [string match -nocase "http://${hostname}*" $url_decoded] || [string match -nocase "https://${hostname}*" $url_decoded] } {
+                        db_1row get_node_id_from_host_name "select node_id as host_node_id from host_node_map where host = :hostname"
+                        # site node already in url, so just switching domain.
+                        if { ![regsub -- "${hostname}" $url_decoded "${config_hostname}" url_decoded] } {
+                            ns_log Warning "ad_get_login_url(ref619): regsub was unable to modify url to hostname's domain. User may not appear to be logged-in after login. url_decoded: ${url_decoded} url: ${url}"
+                        } 
+                    }
+                }
+            }
+            set url $url_decoded
+        }
+    }
+
+
     append url "register/"
 
     set export_vars [list]
@@ -597,6 +657,39 @@ ad_proc -public ad_get_login_url {
         } else {
             set return_url [ad_return_url -qualified]
         }
+
+        if { $UseHostnameDomainforReg } {
+            # if current domain and hostdomain are different (and UseHostnameDomainforReg), revise return_url
+            if { ![string match -nocase "*${config_hostname}*" $current_location] } {
+                
+                if { [string range $return_url 0 0] eq "/" } {
+                    # Make the return_url fully qualified
+                    if { [security::secure_conn_p] } {
+                        set return_url_decoded [security::get_secure_qualified_url $return_url]
+                    } else {
+                        set return_url_decoded [security::get_insecure_qualified_url $return_url]
+                    }
+                } else {
+                    set return_url_decoded $return_url
+                }
+                # revise return_url to use hostname's domain
+                # if return_url points to a non / host_node, redirect to main hostname
+                set host_node_map_hosts_list [db_list -cache_key security-locations-host-names get_node_host_names "select host from host_node_map"]
+                if { [llength $host_node_map_hosts_list] > 0 } {
+                    foreach hostname $host_node_map_hosts_list {
+                        if { [string match -nocase "http://${hostname}*" $return_url_decoded] || [string match -nocase "https://${hostname}*" $return_url_decoded] } {
+                            db_1row get_node_id_from_host_name "select node_id as host_node_id from host_node_map where host = :hostname"
+                            if { ![regsub -- "${hostname}" $return_url_decoded "${config_hostname}[site_node::get_url -node_id ${host_node_id} -notrailing]" return_url_decoded] } {
+                                ns_log Warning "ad_get_login_url(ref672): regsub was unable to modify return_url to hostname's domain. User may not appear to be logged-in after login. return_url_decoded: ${return_url_decoded} return_url: ${return_url}"
+                            } 
+                        }
+                    }
+                }
+                set return_url $return_url_decoded
+            }
+        }
+
+
         lappend export_vars { return_url }
     }
 
@@ -628,10 +721,10 @@ ad_proc -public ad_get_logout_url {
 
     append url "register/logout"
 
-    if { $return_p && [empty_string_p $return_url] } {
+    if { $return_p && $return_url eq "" } {
         set return_url [ad_return_url]
     } 
-    if { ![empty_string_p $return_url] } {
+    if { $return_url ne "" } {
         set url [export_vars -base $url { return_url }]
     } 
 
@@ -650,7 +743,7 @@ ad_proc -public ad_restrict_entire_server_to_registered_users {
     unregistered, except the site index page and stuff underneath
     [subsite]/register. Use permissions on the site node map to control access.
 } {
-    if {![string match "/index.tcl" [ad_conn url]] && ![string match "/" [ad_conn url]] && ![string match "*/register/*" [ad_conn url]] && ![string match "*/SYSTEM/*" [ad_conn url]] && ![string match "*/user_please_login.tcl" [ad_conn url]]} {
+    if {"/favicon.ico" ne [ad_conn url] && "/index.tcl" ne [ad_conn url] && "/" ne [ad_conn url] && ![string match "/global/*" [ad_conn url]] && ![string match "*/register/*" [ad_conn url]] && ![string match "*/SYSTEM/*" [ad_conn url]] && ![string match "*/user_please_login.tcl" [ad_conn url]]} {
 	# not one of the magic acceptable URLs
 	set user_id [ad_conn user_id]
 	if {$user_id == 0} {
@@ -700,8 +793,8 @@ ad_proc -public ad_sign {
     @param value the value to be signed.
 } {
 
-    if { [empty_string_p $secret] } {
-        if {[empty_string_p $token_id]} { 
+    if { $secret eq "" } {
+        if {$token_id eq ""} { 
             # pick a random token_id
             set token_id [sec_get_random_cached_token_id]
         }
@@ -713,10 +806,10 @@ ad_proc -public ad_sign {
 
     ns_log Debug "Security: Getting token_id $token_id, value $secret_token"
 
-    if { $max_age == "" } {
+    if { $max_age eq "" } {
 	set expire_time 0
     } else {
-	set expire_time [expr $max_age + [ns_time]]
+	set expire_time [expr {$max_age + [ns_time]}]
     }
 
     set hash [ns_sha1 "$value$token_id$expire_time$secret_token"]
@@ -781,8 +874,8 @@ ad_proc -private __ad_verify_signature {
 
 } {
 
-    if { [empty_string_p $secret] } {
-	if { [empty_string_p $token_id] } {
+    if { $secret eq "" } {
+	if { $token_id eq "" } {
 	    ns_log Debug "__ad_verify_signature: Neither secret, nor token_id supplied"
 	    return 0
 	}
@@ -802,17 +895,17 @@ ad_proc -private __ad_verify_signature {
     set hash_ok_p 0
     set expiration_ok_p 0
     
-    if { [string equal $computed_hash $hash] } {
+    if {$computed_hash eq $hash} {
 	ns_log Debug "__ad_verify_signature: Hash matches - Hash check OK"
 	set hash_ok_p 1
     } else {
 	# check to see if IE is lame (and buggy!) and is expanding \n to \r\n
-	# See: http://www.arsdigita.com/bboard/q-and-a-fetch-msg?msg_id=000bfF
+	# See: http://rhea.redhat.com/bboard-archive/webdb/000bfF.html
 	set value [string map [list \r ""] $value]
 	set org_computed_hash $computed_hash
 	set computed_hash [ns_sha1 "$value$token_id$expire_time$secret_token"]
 
-	if { [string equal $computed_hash $hash] } {
+	if {$computed_hash eq $hash} {
 	    ns_log Debug "__ad_verify_signature: Hash matches after correcting for IE bug - Hash check OK"
 	    set hash_ok_p 1
 	} else {
@@ -831,7 +924,7 @@ ad_proc -private __ad_verify_signature {
     }
 
     # Return validation result
-    return [expr $hash_ok_p && $expiration_ok_p]
+    return [expr {$hash_ok_p && $expiration_ok_p}]
 
 }
 
@@ -847,13 +940,13 @@ ad_proc -public ad_get_signed_cookie {
 
 } {
 
-    if { $include_set_cookies == "t" } {
+    if { $include_set_cookies eq "t" } {
 	set cookie_value [ns_urldecode [ad_get_cookie $name]]
     } else {
 	set cookie_value [ns_urldecode [ad_get_cookie -include_set_cookies f $name]]
     }
 
-    if { [empty_string_p $cookie_value] } {
+    if { $cookie_value eq "" } {
 	error "Cookie does not exist."
     }
 
@@ -885,13 +978,13 @@ ad_proc -public ad_get_signed_cookie_with_expr {
 
 } {
 
-    if { $include_set_cookies == "t" } {
+    if { $include_set_cookies eq "t" } {
 	set cookie_value [ns_urldecode [ad_get_cookie $name]]
     } else {
 	set cookie_value [ns_urldecode [ad_get_cookie -include_set_cookies f $name]]
     }
 
-    if { [empty_string_p $cookie_value] } {
+    if { $cookie_value eq "" } {
 	error "Cookie does not exist."
     }
 
@@ -912,6 +1005,7 @@ ad_proc -public ad_get_signed_cookie_with_expr {
 ad_proc -public ad_set_signed_cookie {
     {-replace f}
     {-secure f}
+    {-discard f}
     {-max_age ""}
     {-signature_max_age ""}
     {-domain ""}
@@ -943,10 +1037,10 @@ ad_proc -public ad_set_signed_cookie {
     url-encoded.
 
 } {
-    if { [empty_string_p $signature_max_age] } {
-        if { $max_age == "inf" } {
+    if { $signature_max_age eq "" } {
+        if { $max_age eq "inf" } {
             set signature_max_age ""
-        } elseif { $max_age != "" } {
+        } elseif { $max_age ne "" } {
             set signature_max_age $max_age
         } else {
             # this means we want a session level cookie,
@@ -962,7 +1056,7 @@ ad_proc -public ad_set_signed_cookie {
 
     set data [ns_urlencode [list $value $cookie_value]]
 
-    ad_set_cookie -replace $replace -secure $secure -max_age $max_age -domain $domain -path $path $name $data
+    ad_set_cookie -replace $replace -secure $secure -discard $discard -max_age $max_age -domain $domain -path $path $name $data
 }
 
 
@@ -1000,9 +1094,8 @@ ad_proc -private sec_get_token {
 	    set token [db_string get_token {select token from secret_tokens
                        	                 where token_id = :token_id} -default 0]
 	    db_release_unused_handles
-	    
+
 	    # Very important to throw the error here if $token == 0
-	    # see: http://www.arsdigita.com/sdm/one-ticket?ticket_id=10760
 
             if { $token == 0 } {
 	        error "Invalid token ID"
@@ -1037,7 +1130,7 @@ ad_proc -private populate_secret_tokens_cache {} {
 
 } {
 
-    set num_tokens [ad_parameter -package_id [ad_acs_kernel_id] NumberOfCachedSecretTokens security 100]
+    set num_tokens [parameter::get -package_id [ad_acs_kernel_id] -parameter NumberOfCachedSecretTokens -default 100]
 
     # this is called directly from security-init.tcl,
     # so it runs during the install before the data model has been loaded
@@ -1062,7 +1155,7 @@ ad_proc -private populate_secret_tokens_db {} {
 
 } {
 
-    set num_tokens [ad_parameter -package_id [ad_acs_kernel_id] NumberOfCachedSecretTokens security 100]
+    set num_tokens [parameter::get -package_id [ad_acs_kernel_id] -parameter NumberOfCachedSecretTokens -default 100]
     # we assume sample size of 10%.
     set num_tokens [expr {$num_tokens * 10}]
     set counter 0
@@ -1144,30 +1237,36 @@ ad_proc -public ad_get_client_property {
     @param session_id controls which session is used
 
 } {
-    if { [empty_string_p $session_id] } {
+    if { $session_id eq "" } {
         set id [ad_conn session_id]
+        
+        # if session_id is still undefined in the connection then we 
+        # should just return the default
+        if { $id eq "" } {
+            return $default
+        }
     } else {
         set id $session_id
     }
 
     set cmd [list sec_lookup_property $id $module $name]
 
-    if { $cache_only == "t" && ![util_memoize_cached_p $cmd] } {
+    if { $cache_only eq "t" && ![util_memoize_cached_p $cmd] } {
 	return ""
     }
 
-    if { $cache != "t" } {
+    if { $cache ne "t" } {
 	util_memoize_flush $cmd
     }
 
     set property [util_memoize $cmd [sec_session_timeout]]
-    if { $property == "" } {
+    if { $property eq "" } {
 	return $default
     }
     set value [lindex $property 0]
     set secure_p [lindex $property 1]
     
-    if { $secure_p != "f" && ![security::secure_conn_p] } {
+    if { $secure_p ne "f" && ![security::secure_conn_p] } {
 	return ""
     }
 
@@ -1196,15 +1295,15 @@ ad_proc -public ad_set_client_property {
 
 } {
 
-    if { $secure != "f" && ![security::secure_conn_p] } {
+    if { $secure ne "f" && ![security::secure_conn_p] } {
 	error "Unable to set secure property in insecure or invalid session"
     }
 
-    if { [empty_string_p $session_id] } {
+    if { $session_id eq "" } {
         set session_id [ad_conn session_id]
     }
 
-    if { $persistent == "t" } {
+    if { $persistent eq "t" } {
         # Write to database - either defer, or write immediately. First delete the old
         # value if any; then insert the new one.
 	
@@ -1229,7 +1328,7 @@ ad_proc -public ad_set_client_property {
 
             db_dml prop_insert_dml ""
 
-            if { $clob == "t" && ![empty_string_p $clob_update_dml] } {
+            if { $clob eq "t" && $clob_update_dml ne "" } {
                 db_dml prop_update_dml_clob "" -clobs [list $value]
             } else {
                 db_dml prop_update_dml ""
@@ -1264,7 +1363,7 @@ ad_proc -public -deprecated ad_get_user_id {} {
     return [ad_conn user_id]
 }
 
-ad_proc -public -deprecated ad_verify_and_get_user_id { 
+ad_proc -public -deprecated -warn ad_verify_and_get_user_id { 
     {-secure f}
 } {
     Returns the current user's ID. 0 indicates user is not logged in
@@ -1276,20 +1375,6 @@ ad_proc -public -deprecated ad_verify_and_get_user_id {
     return [ad_conn user_id]
 }
 
-ad_proc -public -deprecated ad_verify_and_get_session_id { 
-    {-secure f} 
-} {
-    Returns the current session's ID.
-
-    Deprecated since session_id now provided via ad_conn session_id
-
-    @param secure is ignored
-
-    @see ad_conn
-} {
-    return [ad_conn session_id]
-}
-
 # handling privacy
 
 ad_proc -public -deprecated ad_privacy_threshold {} {
@@ -1298,6 +1383,8 @@ ad_proc -public -deprecated ad_privacy_threshold {} {
     database is less than or equal to what ad_privacy_threshold returns.
     
     Now deprecated.
+
+    @see  ad_conn
 } {
     set session_user_id [ad_get_user_id]
     if {$session_user_id == 0} {
@@ -1423,16 +1510,34 @@ ad_proc -private security::get_https_port {} {
 
     @author Peter Marklund
 } {
-    set ssl_port ""
-    if { [ns_config ns/server/[ns_info server]/modules nsssl] != "" } {
-        set ssl_port [ns_config -int "ns/server/[ns_info server]/module/nsssl" Port 443]
-    } elseif { [ns_config ns/server/[ns_info server]/modules nsopenssl] != "" } {
-	set ssl_port [ns_config -int "ns/server/[ns_info server]/module/nsopenssl" ServerPort 443]
-    } elseif { [ns_config ns/server/[ns_info server]/modules nsssle] != "" } {
-        set ssl_port [ns_config -int "ns/server/[ns_info server]/module/nsssle" Port 443]
+    set secure_port ""
+
+   # decide if we are using nsssl or nsopenssl or nsssle, favor nsopenssl
+    set nsssl [ns_config ns/server/[ns_info server]/modules nsssl]
+    set nsopenssl [ns_config ns/server/[ns_info server]/modules nsopenssl]
+    set nsssle [ns_config ns/server/[ns_info server]/modules nsssle]
+    if { $nsopenssl ne "" } {
+        set sdriver nsopenssl
+    } elseif { $nsssl ne "" } {
+        set sdriver nsssl
+    } elseif { $nsssle ne "" } {
+        set sdriver nsssle
+    } else {
+        return ""
+    }
+     # ec_secure_location
+    # nsopenssl 3 has variable locations for the secure port, openacs standardized at:
+    set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver/ssldriver/users" port 443]
+    # nsssl, nsssle etc
+    if {$secure_port eq ""} {
+        set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver" port]
+    }
+    # checking nsopenssl 2.0 which has different names for the secure port etc, and is not supported with this version of OpenACS
+    if {$secure_port eq "" || $secure_port eq "443"} {
+        set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver" ServerPort 443]
     }
 
-    return $ssl_port
+    return $secure_port
 }
 
 ad_proc -private security::get_secure_qualified_url { url } {
@@ -1503,8 +1608,8 @@ ad_proc -private security::get_secure_location {} {
         set secure_location $current_location
     } else {
         # Current location is insecure - get location from config file
-        set secure_location [ad_conn location]
-        # Prefix with https
+	set secure_location [ad_conn location]
+	# Prefix with https
         regsub {^(?:http://)?} $secure_location {https://} secure_location
 
 	# remove port number if using nonstandard port
@@ -1512,7 +1617,7 @@ ad_proc -private security::get_secure_location {} {
 
         # Add port number if non-standard
         set https_port [get_https_port]
-        if { ![string equal $https_port 443] } {
+        if { $https_port ne "443" } {
             set secure_location ${secure_location}:$https_port
         }
 
@@ -1545,3 +1650,132 @@ ad_proc -private security::get_insecure_location {} {
     return $insecure_location
 }
 
+ad_proc -public security::locations {} {
+    @return insecure location and secure location followed possibly by alternate insecure location(s)  as a list.
+
+    The location consists of protocol://domain:port for website. This proc is ported from ec_insecure_location and ec_secure_location for reliably getting locations.  If acs-tcl's SuppressHttpPort parameter is true, then the alternate ec_insecure_location without port is appended to the list, since it is a valid alternate.  This proc also assumes hostnames from host_node_map table are accurate and legit.
+} {
+    set locations [list]
+    # following from ec_preferred_drivers
+    set driver ""
+    set sdriver ""
+    if {[ns_conn isconnected]} {
+        set hdrs [ns_conn headers]
+        set host [ns_set iget $hdrs host]
+        if {$host eq ""} {
+            set driver nssock
+        } 
+    }
+    #   Determine nssock or nsunix
+    if {$driver eq ""} {
+        # decide if we're using nssock or nsunix
+        set nssock [ns_config ns/server/[ns_info server]/modules nssock]
+        set nsunix [ns_config ns/server/[ns_info server]/modules nsunix]
+        if {$nsunix ne ""} {
+            set driver nsunix
+        } else {
+            set driver nssock
+        }
+    }
+    
+    # decide if we are using nsssl or nsopenssl, favor nsopenssl
+    set nsssl [ns_config ns/server/[ns_info server]/modules nsssl]
+    set nsopenssl [ns_config ns/server/[ns_info server]/modules nsopenssl]
+    set nsssle [ns_config ns/server/[ns_info server]/modules nsssle]
+    if { $nsopenssl ne ""} {
+        set sdriver nsopenssl
+    } elseif { $nsssl ne ""} {
+        set sdriver nsssl
+    } elseif { $nsssle ne "" } {
+        set sdriver nsssle
+    } else {
+        set sdriver ""
+    }
+
+    # set the driver results
+    array set drivers [list driver $driver sdriver $sdriver]
+    set driver $drivers(driver)
+
+    # check if port number is included here, we'll reattach it after
+    # the request if its a non-standard port. Since we build the
+    # secure url from this host name we need to replace the port with
+    # the secure port
+    set host_post ""
+
+    # set host_name
+    if {![regexp {(http://|https://)(.*?):(.*?)/?} [util_current_location] discard host_protocol host_name host_port]} {
+        regexp {(http://|https://)(.*?)/?} [util_current_location] discard host_protocol host_name
+    }
+    # let's give a warning if util_current_location returns host_name
+    # not same as from config.tcl, may help with proxy issues etc
+    set config_hostname [ns_config ns/server/[ns_info server]/module/$driver Hostname]
+    if { $config_hostname ne $host_name } {
+        ns_log Warning "security::locations hostname '[ns_config ns/server/[ns_info server]/module/$driver Hostname]' from config.tcl does not match from util_current_location: $host_name"
+    }
+
+    # insecure locations
+    set insecure_port [ns_config -int "ns/server/[ns_info server]/module/$driver" port 80]
+
+    set insecure_location "http://${host_name}"
+    set host_map_http_port ""
+    if { $insecure_port ne "" && $insecure_port ne 80 } {
+        set alt_insecure_location $insecure_location
+        append insecure_location ":$insecure_port"
+        set host_map_http_port ":$insecure_port"
+    }
+
+    # secure location, favoring nsopenssl
+    # nsopenssl 3 has variable locations for the secure port, openacs standardized at:
+    if { $sdriver eq "nsopenssl" } {
+        set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver/ssldriver/users" port 443]
+    } elseif { $sdriver ne "" } {
+        # get secure port for all other cases of nsssl, nsssle etc
+        set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver" port]
+        # checking nsopenssl 2.0 which has different names for the secure port etc, and deprecated with this version of OpenACS
+        if {$secure_port eq "" || $secure_port eq "443" } {
+            set secure_port [ns_config -int "ns/server/[ns_info server]/module/$sdriver" ServerPort 443]
+        }
+    } else {
+        set secure_port ""
+    }
+
+    lappend locations $insecure_location
+    # if we have a secure location, add it
+    set host_map_https_port ""
+
+    if { $sdriver ne "" } {
+        set secure_location "https://${host_name}"
+        if {$secure_port ne "" && $secure_port ne "443"}  {
+            append secure_location ":$secure_port"
+            set host_map_https_port ":$secure_port"
+        }
+        lappend locations $secure_location
+    }
+    # consider if we are behind a proxy and don't want to publish the proxy's backend port
+    set suppress_http_port [parameter::get -parameter SuppressHttpPort -package_id [apm_package_id_from_key acs-tcl] -default 0]
+    if { [info exists alt_insecure_location] && $suppress_http_port } {
+        lappend locations $alt_insecure_location
+    }
+
+    # add locations from host_node_map 
+    set host_node_map_hosts_list [db_list -cache_key security-locations-host-names get_node_host_names "select host from host_node_map"]
+    # fastest place for handling this special case:
+    if { $config_hostname ne $host_name } {
+        ns_log Notice "security::locations adding $config_hostname since utl_current_location different than config.tcl."
+        lappend host_node_map_hosts_list $config_hostname
+    }
+    if { [llength $host_node_map_hosts_list] > 0 } {
+        if { $suppress_http_port } {
+            foreach hostname $host_node_map_hosts_list {
+                lappend locations "http://${hostname}"
+                lappend locations "https://${hostname}${host_map_https_port}"
+            }
+        } else {
+            foreach hostname $host_node_map_hosts_list {
+                lappend locations "http://${hostname}${host_map_http_port}"
+                lappend locations "https://${hostname}${host_map_https_port}"
+            }
+        }
+    }
+    return  $locations
+}

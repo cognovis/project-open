@@ -77,6 +77,8 @@
 			:package_uri,
 			:initial_install_p,
 			:singleton_p,
+                        :implements_subsite_p,
+                        :inherit_templates_p,
 			:spec_file_path,
 			:spec_file_mtime
           		);
@@ -95,6 +97,8 @@
 			:package_uri,
 			:initial_install_p,
 			:singleton_p,
+                        :implements_subsite_p,
+                        :inherit_templates_p,
 			:spec_file_path,
 			:spec_file_mtime
 			);
@@ -147,21 +151,21 @@
       </querytext>
 </fullquery>
 
- 
-<fullquery name="apm_upgrade_script_compare.test_f1">      
+
+<fullquery name="apm_upgrade_script_compare.test_f1">
       <querytext>
 
-	    select apm_package_version__sortable_version_name('$f1_version_from');
-	
+	    select apm_package_version__sortable_version_name(:f1_version_from);
+
       </querytext>
 </fullquery>
 
- 
-<fullquery name="apm_upgrade_script_compare.test_f2">      
+
+<fullquery name="apm_upgrade_script_compare.test_f2">
       <querytext>
 
-	    select apm_package_version__sortable_version_name('$f2_version_from');
-	
+	    select apm_package_version__sortable_version_name(:f2_version_from);
+
       </querytext>
 </fullquery>
 
@@ -194,6 +198,34 @@
 	    and version_id = apm_package__highest_version(:package_key)
 	
       </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_param_to_descendents.param_exists">      
+  <querytext>
+    select apm__parameter_p(:descendent_package_key, :parameter_name);
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_param_to_descendents.copy_descendent_param">      
+  <querytext>
+    select apm__register_parameter(null, :descendent_package_key, :parameter_name,
+                                   :description, :scope, :datatype, :default_value,
+                                   :section_name, :min_n_values, :max_n_values)
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_inherited_params.param_exists">      
+  <querytext>
+    select apm__parameter_p(:new_package_key, :parameter_name);
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_inherited_params.copy_inherited_param">      
+  <querytext>
+    select apm__register_parameter(null, :new_package_key, :parameter_name, :description,
+                                   :scope, :datatype, :default_value, :section_name,
+                                   :min_n_values, :max_n_values)
+  </querytext>
 </fullquery>
 
 <fullquery name="apm_package_upgrade_p.apm_package_upgrade_p">      
@@ -234,6 +266,12 @@
                    apm_package_version__sortable_version_name(:version_name_2) as sortable_version_2
             from   dual
 
+      </querytext>
+</fullquery>
+
+<fullquery name="apm_version_sortable.sortable_version">
+      <querytext>
+	    select apm_package_version__sortable_version_name(:version)
       </querytext>
 </fullquery>
 

@@ -11,25 +11,6 @@ ad_library {
 
 namespace eval site_node_apm_integration {
 
-    ad_proc -public -deprecated -warn new_site_node_and_package {
-        {-name:required}
-        {-parent_id:required}
-        {-package_key:required}
-        {-instance_name:required}
-        {-context_id:required}
-    } {
-        Create site node, instantiate package, mount package at new site node. Deprecated - 
-        please use site_node::instantiate_and_mount instead.
-
-        @see site_node::instantiate_and_mount
-    } {
-        return [site_node::instantiate_and_mount -parent_node_id $parent_id \
-                                                 -node_name $name \
-                                                 -package_name $instance_name \
-                                                 -context_id $context_id \
-                                                 -package_key $package_key]
-    }
-
     ad_proc -public delete_site_nodes_and_package {
         {-package_id:required}
     } {
@@ -48,7 +29,7 @@ namespace eval site_node_apm_integration {
                 site_node::delete -node_id $site_node(node_id)
                 site_node::update_cache -node_id $site_node(node_id)
             }
-            
+
             apm_package_instance_delete $package_id
         }
     }
@@ -60,8 +41,12 @@ namespace eval site_node_apm_integration {
         get the package_id of package_key that is mounted directly under
         package_id. returns empty string if not found.
     } {
-        if {[empty_string_p $package_id]} {
-            set package_id [ad_conn package_id]
+        if {$package_id eq ""} {
+            if {[ad_conn isconnected]} { 
+                set package_id [ad_conn package_id]
+            } else { 
+                error "Not in a connection and no package_id provided"
+            } 
         }
 
         return [db_string select_child_package_id {} -default ""]
@@ -79,7 +64,7 @@ namespace eval site_node_apm_integration {
             -package_key $package_key
         ]
 
-        if {[empty_string_p $child_package_id]} {
+        if {$child_package_id eq ""} {
             return 0
         } else {
             return 1 

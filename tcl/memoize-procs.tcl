@@ -5,16 +5,8 @@ ad_library {
     @author Various [acs@arsdigita.com]
     @author Rob Mayoff <mayoff@arsdigita.com>
     @creation-date 2000-10-19
-    @cvs-id memoize-procs.tcl,v 1.4.2.1 2003/03/05 14:40:42 lars Exp
+    @cvs-id $Id$
 }
-
-ad_proc -public util_no_memoize {script {max_age ""}} {
-    Helper to un-cache certain calls for dev/debugging reasons
-} {
-    set result [eval $script]
-    return $result
-}
-
 
 # Use shiny new ns_cache-based util_memoize.
 
@@ -37,7 +29,7 @@ ad_proc -public util_memoize {script {max_age ""}} {
     @return The possibly-cached value returned by <i>script</i>.
 } {
 
-    if {![string equal $max_age ""] && $max_age < 0} {
+    if {$max_age ne "" && $max_age < 0} {
         error "max_age must not be negative"
     }
 
@@ -45,7 +37,7 @@ ad_proc -public util_memoize {script {max_age ""}} {
 
     set cached_p [ns_cache get util_memoize $script pair]
 
-    if {$cached_p && [string compare $max_age ""] != 0} {
+    if {$cached_p && $max_age ne "" } {
         set cache_time [lindex $pair 0]
         if {$current_time - $cache_time > $max_age} {
 	    ns_cache flush util_memoize $script
@@ -93,35 +85,6 @@ ad_proc -private util_memoize_flush_local {script} {
     ns_cache flush util_memoize $script
 }
 
-# We construct the body of util_memoize_flush differently depending
-# on whether clustering is enabled and what command is available for
-# cluster-wide flushing.
-
-if {[llength [info commands ncf.send]] > 0} {
-    set flush_body {
-        ncf.send util_memoize $script
-    }
-} elseif {[llength [info commands server_cluster_httpget_from_peers]] > 0} {
-    set flush_body {
-        server_cluster_httpget_from_peers "/SYSTEM/flush-memoized-statement.tcl?statement=[ns_urlencode $script]"
-    }
-} else {
-    set flush_body {}
-}
-
-append flush_body {
-    ns_cache flush util_memoize $script
-}
-
-ad_proc -public util_memoize_flush {script} {
-    Forget any cached value for <i>script</i>.  If clustering is
-    enabled, flush the caches on all servers in the cluster.
-
-    @param script The Tcl script whose cached value should be flushed.
-} $flush_body
-
-unset flush_body
-
 ad_proc -public util_memoize_cached_p {script {max_age ""}} {
     Check whether <i>script</i>'s value has been cached, and whether it
     was cached no more than <i>max_age</i> seconds ago.
@@ -136,7 +99,7 @@ ad_proc -public util_memoize_cached_p {script {max_age ""}} {
         return 0
     }
 
-    if {[string equal $max_age ""]} {
+    if {$max_age eq ""} {
         return 1
     } else {
         set cache_time [lindex $pair 0]
@@ -166,14 +129,35 @@ ad_proc -public util_memoize_flush_regexp {
 
 } {
     foreach name [ns_cache names util_memoize] {
-       if $log_p {
-           ns_log notice "util_memoize_flush_regexp: checking $name for $expr"
+       if {$log_p} {
+           ns_log Debug "util_memoize_flush_regexp: checking $name for $expr"
        }
        if { [regexp $expr $name] } {
-           if $log_p {
-               ns_log notice "util_memoize_flush_regexp: flushing $name"
+           if {$log_p} {
+               ns_log Debug "util_memoize_flush_regexp: flushing $name"
            }
            util_memoize_flush $name
        }
     }
 }
+
+ad_proc -public util_memoize_flush_pattern {
+    -log:boolean
+    pattern
+} {
+
+    Loop through all cached scripts, flushing all that match the
+    pattern that was passed in.
+
+    @param pattern Match pattern (glob pattern like in 'string match $pattern').
+    @param log Whether to log keys checked and flushed (useful for debugging).
+
+} {
+    foreach name [ns_cache names util_memoize $pattern] {
+       if {$log_p} {
+           ns_log Debug "util_memoize_flush_regexp: flushing $name"
+       }
+       util_memoize_flush $name
+    }
+}
+

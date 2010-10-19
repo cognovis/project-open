@@ -25,6 +25,9 @@ ad_proc -private ad_try {code args} {
   any matching exception handlers.
 
   If you use this I will kill you.
+
+  @see with_finally 
+  @see with_catch
 } {
   global errorInfo errorCode
 
@@ -41,10 +44,10 @@ ad_proc -private ad_try {code args} {
 	}
       }
 
-      if $matched {
-	upvar [lindex $args [expr $i + 1]] var
+      if {$matched} {
+	upvar [lindex $args [expr {$i + 1}]] var
 	set var $result
-	set errno [catch {uplevel [lindex $args [expr $i + 2]]} result]
+	set errno [catch {uplevel [lindex $args [expr {$i + 2}]]} result]
       }
     }
 

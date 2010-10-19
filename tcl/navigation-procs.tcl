@@ -11,7 +11,7 @@ ad_library {
 #    hierarchy)
 
 ad_proc -public ad_context_bar_html {
-    {-separator " : "}
+    -separator
     context
 } { 
     Generate the an html fragement for a context bar.
@@ -31,9 +31,16 @@ ad_proc -public ad_context_bar_html {
 
     @see ad_context_bar
 } { 
+    
+    # Get the separator from subsite parameter
+    if { ![info exists separator] } {
+        set subsite_id [ad_conn subsite_id]
+        set separator [parameter::get -package_id $subsite_id -parameter ContextBarSeparator -default ":"]
+    }
+
     set out {}
-    foreach element [lrange $context 0 [expr [llength $context] - 2]] { 
-        append out "<a href=\"[lindex $element 0]\">[lindex $element 1]</a>$separator"
+    foreach element [lrange $context 0 [expr {[llength $context] - 2}]] { 
+        append out "<a href=\"[lindex $element 0]\">[lindex $element 1]</a> $separator "
     }
     append out [lindex $context end]
 
@@ -54,13 +61,13 @@ ad_proc ad_context_node_list {
 } {
     set context [list]
 
-    while { ![empty_string_p $node_id] } {
+    while { $node_id ne "" } {
         array set node [site_node::get -node_id $node_id]
         
         # JCD: Provide something for the name if the instance name is
         # absent.  name is the tail bit of the url which seems like a
         # reasonable thing to display.
-        if {[empty_string_p $node(instance_name)]
+        if {$node(instance_name) eq ""
             && [info exists node(name)]} { 
             set node(instance_name) $node(name)
         }
@@ -68,7 +75,7 @@ ad_proc ad_context_node_list {
         set context [concat [list [list $node(url) [ad_quotehtml $node(instance_name)]]] $context]
 
         # We have the break here, so that 'from_node' itself is included
-        if { [string equal $node_id $from_node] } {
+        if {$node_id eq $from_node} {
             break
         }
         
@@ -95,33 +102,49 @@ ad_proc -public ad_context_bar_multirow {
     
     @see ad_context_bar_html
 } {
-    if {![parameter::get -package_id [site_node_closest_ancestor_package "acs-subsite"] -parameter ShowContextBarP -default 1]} {
+    if {![parameter::get -package_id [ad_conn subsite_id] -parameter ShowContextBarP -default 1]} {
 	return ""
     }
     
     if { ![exists_and_not_null node_id] } {
         set node_id [ad_conn node_id]
     }
-    
+
+    set temp_node_id [util_current_location_node_id]
+    if { $temp_node_id eq "" } {
+        # not a site host_node 
+        set node_id_url ""
+        set node_id_url_end 0
+    } else {
+        set from_node $temp_node_id
+        set node_id_url [site_node::get_url -node_id ${temp_node_id} -notrailing]    
+        set node_id_url_end [string length $node_id_url]
+    }
+
     template::multirow create $multirow url label
-    
+
     foreach elm [ad_context_node_list -from_node $from_node $node_id] {
-        template::multirow append $multirow [lindex $elm 0] [lindex $elm 1]
+        set elm_0 [lindex $elm 0]
+        set elm_1 [lindex $elm 1]
+        if { $node_id_url_end > 0 && [string match -nocase $node_id_url [string range $elm_0 0 ${node_id_url_end}-1] ] } {
+            set elm_0 [string range $elm_0 $node_id_url_end end]
+        }
+        template::multirow append $multirow $elm_0 $elm_1
     }
     
     if { [string match "admin/*" [ad_conn extra_url]] } {
-        template::multirow append $multirow "[ad_conn package_url]admin/" "Administration"
+        template::multirow append $multirow "[ad_conn package_url]admin/" "[_ acs-tcl.Administration]"
     }
     
     if { [llength $context] == 0 } { 
         # fix last element to just be literal string
         template::multirow set $multirow [template::multirow size $multirow] url {}
+    } else {
+        foreach elm [lrange $context 0 end-1] {
+            template::multirow append $multirow [lindex $elm 0] [lindex $elm 1]
+        }
+        template::multirow append $multirow {} [lindex $context end]
     }
-    
-    foreach elm [lrange $context 0 end-1] {
-        template::multirow append $multirow [lindex $elm 0] [lindex $elm 1]
-    }
-    template::multirow append $multirow {} [lindex $context end]
 }
 
 ad_proc -public ad_context_bar { 
@@ -141,7 +164,7 @@ ad_proc -public ad_context_bar {
     
     @see ad_context_bar_html
 } {
-    if {![parameter::get -package_id [site_node_closest_ancestor_package "acs-subsite"] -parameter ShowContextBarP -default 1]} {
+    if {![parameter::get -package_id [ad_conn subsite_id] -parameter ShowContextBarP -default 1]} {
 	return ""
     }
 
@@ -151,16 +174,16 @@ ad_proc -public ad_context_bar {
 
     set context [ad_context_node_list -from_node $from_node $node_id]
 
-    if { [string match admin/* [ad_conn extra_url]] } {
+    if { [string match "admin/*" [ad_conn extra_url]] } {
         lappend context [list "[ad_conn package_url]admin/" \
-                             "Administration"]
+                             "[_ acs-tcl.Administration]"]
     }
 
     if {[llength $args] == 0} { 
         # fix last element to just be literal string
         set context [lreplace $context end end [lindex [lindex $context end] 1]]
     } else {
-	if ![string match "\{*" $args] {
+	if {![string match "\{*" $args]} {
 	    # args is not a list, transform it into one.
 	    set args [list $args]
 	}	
@@ -220,7 +243,6 @@ ad_proc -public ad_navbar args {
 
     @return html fragment
 
-    @see ad_choice_bar
     @see ad_context_bar_html
 } {
     set counter 0
@@ -245,7 +267,7 @@ ad_proc -public ad_choice_bar { items links values {default ""} } {
     set return_list [list]
 
     foreach value $values {
-	if { [string compare $default $value] == 0 } {
+	if { $default eq $value  } {
 	        lappend return_list "<strong>[lindex $items $count]</strong>"
 	} else {
 	        lappend return_list "<a href=\"[lindex $links $count]\">[lindex $items $count]</a>"
@@ -262,6 +284,19 @@ ad_proc -public ad_choice_bar { items links values {default ""} } {
     
 }
 
+ad_proc -public util_current_location_node_id { } {
+    returns node_id of util_current_location. Useful for hostnode mapped sites using ad_context_bar
+} {
+    regexp {^([a-z]+://)?([^:]+)(:[0-9]*)?$} [util_current_location] match location_proto location_hostname location_port
+    if { [string match -nocase "www.*" $location_hostname] } {
+        set location_hostname [string range $location_hostname 4 end]
+    } 
+    db_0or1row -cache_key util-${location_hostname}-node-id get_node_id_from_hostname "select node_id from host_node_map where host = :location_hostname"
+    if { ![info exists node_id ] } {
+        set node_id ""
+    }
+    return $node_id
+}
 
 # directories that should not receive links to move up one level
 
@@ -350,9 +385,9 @@ proc menu_submenu_select_list {items urls {highlight_url "" }} {
 	# if the url matches the url you would redirect to, as determined
 	# either by highlight_url, or if highlight_url is not set,
 	# the current url then select it
-	if {$highlight_url != "" && $highlight_url == [lindex $urls $counter]} {
+	if {$highlight_url ne "" && $highlight_url == [lindex $urls $counter]} {
  	    append return_string "<OPTION VALUE=\"[lindex $urls $counter]\" selected>$item"
-	} elseif {$highlight_url == "" && [string match *$url_stub* [lindex $urls $counter]]} {
+	} elseif {$highlight_url eq "" && [string match *$url_stub* [lindex $urls $counter]]} {
 	    append return_string "<OPTION VALUE=\"[lindex $urls $counter]\" selected>$item"
 	} else {
 	    append return_string "<OPTION VALUE=\"[lindex $urls $counter]\">$item"
@@ -398,7 +433,7 @@ proc ad_menu_header {{section ""} {uplink ""}} {
 
     if { $java_script_p } {
     	append return_string " 
-	<script language=\"JavaScript\">
+	<script type=\"text/javascript\">
 	//<!--
 	
 	go = new Image();
@@ -467,7 +502,7 @@ proc ad_menu_header {{section ""} {uplink ""}} {
 	
 	append return_string "
 
-	<script language=\"JavaScript\">
+	<script type=\"text/javascript\">
 	//<!--
 	
 	function hiLite(imgObjName) \{
@@ -606,7 +641,7 @@ proc ad_menu_footer {{section ""}} {
     append return_string "
     <TABLE border=0 cellpadding=0 cellspacing=0 height=24 width=\"100%\">
        <TR bgcolor=\"#000066\"><TD align=left valign=bottom><A href=#top onMouseOver=\"hiLite('back_to_top')\" onMouseOut=\"unhiLite('back_to_top')\"><img name=\"back_to_top\" src=\"/graphics/24_back_to_top.gif\" border=0 width=200 height=24 alt=\"top\"></A></TD>
-         <TD align=right valign=bottom><A href=\"[ad_parameter GlobalURLStub "" "/global"]/rules\" onMouseOver=\"hiLite('rules')\" onMouseOut=\"unhiLite('rules')\"><img name=\"rules\" src=\"/graphics/rules.gif\" border=0 width=96 height=24 valign=bottom alt=\"rules\"></A><A href=\"[ad_help_link $section]\" onMouseOver=\"hiLite('help')\" onMouseOut=\"unhiLite('help')\"><img name=\"help\" src=\"/graphics/help.gif\" border=0 width=30 height=24 align=bottom alt=\"help\"></A></TD></TR>
+         <TD align=right valign=bottom><A href=\"[parameter::get -parameter GlobalURLStub -default /global]/rules\" onMouseOver=\"hiLite('rules')\" onMouseOut=\"unhiLite('rules')\"><img name=\"rules\" src=\"/graphics/rules.gif\" border=0 width=96 height=24 valign=bottom alt=\"rules\"></A><A href=\"[ad_help_link $section]\" onMouseOver=\"hiLite('help')\" onMouseOut=\"unhiLite('help')\"><img name=\"help\" src=\"/graphics/help.gif\" border=0 width=30 height=24 align=bottom alt=\"help\"></A></TD></TR>
     </TABLE>"
     return $return_string
 }

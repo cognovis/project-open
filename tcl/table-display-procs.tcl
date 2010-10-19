@@ -1,12 +1,12 @@
 ad_library {
     This is the table, dimensional bar and sort tools.
     an example of their use can be found in /acs-examples
-    @cvs-id table-display-procs.tcl,v 1.9 2002/09/20 22:18:16 jeffd Exp
+    @cvs-id $Id$
 }
     
 # Dimensional selection bars.
 #
-proc_doc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}} {
+ad_proc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}} {
     Generate an option bar as in the ticket system; 
     <ul>
       <li> option_list -- the structure with the option data provided 
@@ -45,22 +45,22 @@ proc_doc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}
 } {
     set html {}
 
-    if {[empty_string_p $option_list]} {
+    if {$option_list eq ""} {
         return
     }
 
-    if {[empty_string_p $options_set]} {
+    if {$options_set eq ""} {
         set options_set [ns_getform]
     }
     
-    if {[empty_string_p $url]} {
+    if {$url eq ""} {
         set url [ad_conn url]
     }
 
     append html "<table border=\"0\" cellspacing=\"0\" cellpadding=\"3\" width=\"100%\">\n<tr>\n"
 
     foreach option $option_list { 
-        append html " <th bgcolor=\"#ECECEC\">[lindex $option 1]</th>\n"
+        append html " <th style=\"background-color: #ECECEC\">[lindex $option 1]</th>\n"
     }
     append html "</tr>\n"
 
@@ -73,10 +73,10 @@ proc_doc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}
         # check if a default is set otherwise the first value is used
         set option_key [lindex $option 0]
         set option_val {}
-        if { ! [empty_string_p $options_set]} {
+        if { $options_set ne ""} {
             set option_val [ns_set get $options_set $option_key]
         }
-        if { [empty_string_p $option_val] } {
+        if { $option_val eq "" } {
             set option_val [lindex $option 2]
         }
         
@@ -89,10 +89,10 @@ proc_doc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}
                 append html " | "
             } 
             
-            if {[string compare $option_val $thisoption] == 0} {
+            if {$option_val eq $thisoption } {
                 append html "<strong>[lindex $option_value 1]</strong>"
             } else {
-                append html "<a href=\"$url?[export_ns_set_vars "url" $option_key $options_set]&[ns_urlencode $option_key]=[ns_urlencode $thisoption]\">[lindex $option_value 1]</a>"
+                append html "<a href=\"$url?[export_ns_set_vars "url" $option_key $options_set][ad_quotehtml &][ns_urlencode $option_key]=[ns_urlencode $thisoption]\">[lindex $option_value 1]</a>"
             }
         }
         append html "\]</td>\n"
@@ -100,7 +100,7 @@ proc_doc ad_dimensional {option_list {url {}} {options_set ""} {optionstype url}
     append html "</tr>\n</table>\n"
 }
 
-proc_doc ad_dimensional_sql {option_list {what "where"} {joiner "and"} {options_set ""}} {
+ad_proc ad_dimensional_sql {option_list {what "where"} {joiner "and"} {options_set ""}} {
     see ad_dimensional for the format of option_list
     <p>
     Given what clause we are asking for and the joiner this returns 
@@ -108,11 +108,11 @@ proc_doc ad_dimensional_sql {option_list {what "where"} {joiner "and"} {options_
 } {
     set out {}
 
-    if {[empty_string_p $option_list]} {
+    if {$option_list eq ""} {
         return
     }
 
-    if {[empty_string_p $options_set]} {
+    if {$options_set eq ""} {
         set options_set [ns_getform]
     }
 
@@ -122,20 +122,20 @@ proc_doc ad_dimensional_sql {option_list {what "where"} {joiner "and"} {options_
         set option_key [lindex $option 0]
         set option_val {}
         # get the option from the form
-        if { ! [empty_string_p $options_set]} {
+        if { $options_set ne ""} {
             set option_val [ns_set get $options_set $option_key]
         }
         #otherwise get from default
-        if { [empty_string_p $option_val] } {
+        if { $option_val eq "" } {
             set option_val [lindex $option 2]
         }
         
         foreach option_value [lindex $option 3] { 
             set thisoption [lindex $option_value 0]
-            if {[string compare $option_val $thisoption] == 0} {
+            if {$option_val eq $thisoption } {
                 set code [lindex $option_value 2]
-                if {![empty_string_p $code]} {
-                    if {[string compare [lindex $code 0] $what] == 0} {
+                if {$code ne ""} {
+                    if {[lindex $code 0] eq $what } {
                         append out " $joiner [uplevel [list subst [lindex $code 1]]]"
                     }
                 }
@@ -146,7 +146,7 @@ proc_doc ad_dimensional_sql {option_list {what "where"} {joiner "and"} {options_
     return $out
 }
 
-proc_doc ad_dimensional_set_variables {option_list {options_set ""}} {
+ad_proc ad_dimensional_set_variables {option_list {options_set ""}} {
     set the variables defined in option_list from the form provided 
     (form defaults to ad_conn form) or to default value from option_list if 
     not in the form data.
@@ -156,11 +156,11 @@ proc_doc ad_dimensional_set_variables {option_list {options_set ""}} {
 } {
     set out {}
 
-    if {[empty_string_p $option_list]} {
+    if {$option_list eq ""} {
         return
     }
 
-    if {[empty_string_p $options_set]} {
+    if {$options_set eq ""} {
         set options_set [ns_getform]
     }
 
@@ -170,7 +170,7 @@ proc_doc ad_dimensional_set_variables {option_list {options_set ""}} {
         set option_key [lindex $option 0]
         set option_val {}
         # get the option from the form
-        if { ! [empty_string_p $options_set] && [ns_set find $options_set $option_key] != -1} {
+        if { $options_set ne "" && [ns_set find $options_set $option_key] != -1} {
             uplevel [list set $option_key [ns_set get $options_set $option_key]]
         } else {
             uplevel [list set $option_key [lindex $option 2]]
@@ -178,7 +178,7 @@ proc_doc ad_dimensional_set_variables {option_list {options_set ""}} {
     }
 }
 
-ad_proc ad_table { 
+ad_proc -deprecated ad_table { 
     {
         -Torder_target_url {}
         -Torderby {}
@@ -189,13 +189,13 @@ ad_proc ad_table {
         -Tcolumns {}
         -Taudit {}
         -Trows_per_band 1
-        -Tband_colors {{} {"#ececec"}}
+        -Tband_colors {{} "#ececec"}
         -Tband_classes {{even} {odd}}
         -Trows_per_page 0
         -Tmax_rows 0
         -Ttable_extra_html {cellpadding=3 cellspacing=0 class="table-display"}
-        -Theader_row_extra {bgcolor="#f8f8f8" class="table-header"}
-        -Ttable_break_html "<br /><br />"
+        -Theader_row_extra {style="background-color:#f8f8f8" class="table-header"}
+        -Ttable_break_html "<br><br>"
         -Tpre_row_code {}
         -Trow_code {[subst $Trow_default]}
         -Tpost_data_ns_sets {}
@@ -206,6 +206,9 @@ ad_proc ad_table {
     }
     statement_name sql_qry Tdatadef
 } {
+
+    DRB: New code should use the listbuilder.
+
     Note: all the variables in this function are named Tblah since we could potentially 
     have namespace collisions
     <p>
@@ -290,7 +293,7 @@ ad_proc ad_table {
 	set Tform [ad_conn form]
 	
 	# export variables from calling environment
-	if {![empty_string_p $Textra_vars]} {
+	if {$Textra_vars ne ""} {
 	    foreach Tvar $Textra_vars {
 		upvar $Tvar $Tvar
 	    }
@@ -300,14 +303,14 @@ ad_proc ad_table {
 	set Torderbykey {::not_sorted::}
 	set Treverse {}
 	regexp {^([^*,]+)([*])?} $Torderby match Torderbykey Treverse
-	if {$Treverse == "*"} {
+	if {$Treverse eq "*"} {
 	    set Torder desc
 	} else { 
 	    set Torder asc
 	}
 	
 	# set up the target url for new sorts
-	if {[empty_string_p $Torder_target_url]} {
+	if {$Torder_target_url eq ""} {
 	    set Torder_target_url [ad_conn url]
 	}
 	set Texport "[uplevel [list export_ns_set_vars url [list orderby$Tsuffix]]]&"
@@ -325,7 +328,7 @@ ad_proc ad_table {
 	# generate the header code 
 	#
 	append Theader "<table $Ttable_extra_html>\n"
-	if {[empty_string_p $Theader_row_extra]} {
+	if {$Theader_row_extra eq ""} {
 	    append Theader "<tr>\n"
 	} else {
 	    append Theader "<tr $Theader_row_extra>\n"
@@ -334,18 +337,18 @@ ad_proc ad_table {
 	    set Tcol [lindex $Tdatadef $Ti]
 	    if { ( [ns_set find $selection [lindex $Tcol 0]] < 0
 		   && ([empty_string_p [lindex $Tcol 2]] || 
-	               ([string compare [lindex $Tcol 2] "sort_by_pos"] != 0)
+	               ([lindex $Tcol 2] ne "sort_by_pos" )
 	              )
 	         )
-		 || [string compare [lindex $Tcol 2] no_sort] == 0
+		 || [lindex $Tcol 2] eq "no_sort" 
 	     } {
 		
 		# not either a column in the select or has sort code
 		# then just a plain text header so do not do sorty things
 		append Theader " <th>[lindex $Tcol 1]</th>\n"
 	    } else {
-		if {[string compare [lindex $Tcol 0] $Torderbykey] == 0} {
-		    if {$Torder == "desc"} {
+		if {[lindex $Tcol 0] eq $Torderbykey } {
+		    if {$Torder eq "desc"} {
 			set Tasord $Tasc_order_img
 		    } else {
 			set Tasord $Tdesc_order_img
@@ -379,7 +382,7 @@ ad_proc ad_table {
 	    
 	    if { $Tpost_data && $Tpost_data <= [llength $Tpost_data_ns_sets] } { 
 		# bind the Tpost_data_ns_sets row of the passed in data
-		set_variables_after_query_not_selection [lindex $Tpost_data_ns_sets [expr $Tpost_data - 1]]
+		set_variables_after_query_not_selection [lindex $Tpost_data_ns_sets [expr {$Tpost_data - 1}]]
 	    } elseif { $Tpost_data } { 
 		# past the end of the fake data drop out.
 		break
@@ -402,10 +405,10 @@ ad_proc ad_table {
 
 	    # first check if we are in audit mode and if the audit columns have changed
 	    set Tdisplay_changes_only 0
-	    if {![empty_string_p $Taudit] && $Tcount > 0} { 
+	    if {$Taudit ne "" && $Tcount > 0} { 
 		# check if the audit key columns changed 
 		foreach Taudit_key $Taudit { 
-		    if {[string compare [set $Taudit_key] [set P$Taudit_key]] == 0} { 
+		    if {[set $Taudit_key] eq [set P$Taudit_key] } { 
 			set Tdisplay_changes_only 1
 		    }
 		}
@@ -439,7 +442,7 @@ ad_proc ad_table {
             # do this check since we would like the ability to band with
             # page background as well
             if {$Tn_bands && ![empty_string_p [lindex $Tband_colors $Tband_color]]} {
-                append Trow_default " bgcolor=[lindex $Tband_colors $Tband_color]"
+                append Trow_default " style=\"background-color:[lindex $Tband_colors $Tband_color]\""
             }
             if {$Tn_band_classes && ![empty_string_p [lindex $Tband_classes $Tband_class]]} {
                 append Trow_default " class=\"[lindex $Tband_classes $Tband_class]\""
@@ -468,7 +471,7 @@ ad_proc ad_table {
 		}
 
 		if { $Tdisplay_changes_only 
-		     && [string compare $Tdisplay_field $Tlast_display($Ti)] == 0} { 
+		     && $Tdisplay_field eq $Tlast_display($Ti) } { 
 		    set Tdisplay_field {<td>&nbsp;</td>}
 		} else { 
 		    set Tlast_display($Ti) $Tdisplay_field
@@ -482,7 +485,7 @@ ad_proc ad_table {
 	    # so on next row we can say things like if $Pvar != $var not blank
 	    if { $Tpost_data && $Tpost_data <= [llength $Tpost_data_ns_sets] } { 
 		# bind the Tpost_data_ns_sets row of the passed in data
-		set_variables_after_query_not_selection [lindex $Tpost_data_ns_sets [expr $Tpost_data - 1]] P
+		set_variables_after_query_not_selection [lindex $Tpost_data_ns_sets [expr {$Tpost_data - 1}]] P
 	    } else { 
 		set_variables_after_query_not_selection $selection P
 	    }
@@ -511,11 +514,11 @@ ad_proc ad_table_column_list {
     -sortable from t/f/all 
 } {
     set column_list {}
-    if {[empty_string_p $columns]} {
+    if {$columns eq ""} {
         for {set i 0} {$i < [llength $datadef]} {incr i} {
-            if {$sortable == "all" 
-                || ($sortable == "t" && [lindex [lindex $datadef $i] 2] != "no_sort")
-                || ($sortable == "f" && [lindex [lindex $datadef $i] 2] == "no_sort")
+            if {$sortable eq "all" 
+                || ($sortable eq "t" && [lindex [lindex $datadef $i] 2] != "no_sort")
+                || ($sortable eq "f" && [lindex [lindex $datadef $i] 2] == "no_sort")
             } {
                 lappend column_list $i
             } 
@@ -523,9 +526,9 @@ ad_proc ad_table_column_list {
     } else { 
         set colnames {}
         foreach col $datadef { 
-            if {$sortable == "all" 
-                || ($sortable == "t" && [lindex $col 2] != "no_sort")
-                || ($sortable == "f" && [lindex $col 2] == "no_sort")
+            if {$sortable eq "all" 
+                || ($sortable eq "t" && [lindex $col 2] ne "no_sort")
+                || ($sortable eq "f" && [lindex $col 2] eq "no_sort")
             } {
                 lappend colnames [lindex $col 0]
             } else {
@@ -544,7 +547,7 @@ ad_proc ad_table_column_list {
     return $column_list
 }
 
-proc_doc ad_sort_primary_key orderby {
+ad_proc ad_sort_primary_key orderby {
     return the primary (first) key of an order spec
     used by 
 } {
@@ -554,7 +557,7 @@ proc_doc ad_sort_primary_key orderby {
     return $orderby
 }
 
-proc_doc ad_table_same varname {
+ad_proc ad_table_same varname {
     Called from inside ad_table.
 
     returns true if the variable has same value as
@@ -569,14 +572,14 @@ proc_doc ad_table_same varname {
     }
 }
         
-proc_doc ad_table_span {str {td_html "align=\"left\""}} {
+ad_proc ad_table_span {str {td_html "align=\"left\""}} {
     given string the function generates a row which spans the 
     whole table.
 } {
     return "<tr><td colspan=\"[uplevel llength \$Tcolumn_list]\" $td_html>$str</td></tr>"
 }
 
-proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {item {}} {columns {}} {allowed {}}} {
+ad_proc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {item {}} {columns {}} {allowed {}}} {
     builds a form for chosing the columns to display 
     <p>
     columns is a list of the currently selected columns.
@@ -594,48 +597,48 @@ proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {i
     set n_sel_columns [llength $sel_columns]
 
     set html {}
-    if {[string compare $item "CreateNewCustom"] == 0} {
+    if {$item eq "CreateNewCustom" } {
         set item {} 
     }
     # now spit out the form fragment.
-    if {![empty_string_p $item]} {
+    if {$item ne ""} {
         append html "<h2>Editing <strong>$item</strong></h2>"
         append html "<form method=\"get\" action=\"/tools/table-custom\">"
-        append html "<input type=\"submit\" value=\"Delete this view\" />"
-        append html "<input type=\"hidden\" name=\"delete_the_view\" value=\"1\" />"
+        append html "<input type=\"submit\" value=\"Delete this view\">"
+        append html "<input type=\"hidden\" name=\"delete_the_view\" value=\"1\">"
         append html "[export_form_vars item_group item]"
-        if {![empty_string_p $return_url]} {
+        if {$return_url ne ""} {
             append html "[export_form_vars return_url]"
         }
         append html "</form>"
     }
 
     append html "<form method=get action=\"/tools/table-custom\">" 
-    if {![empty_string_p $return_url]} {
+    if {$return_url ne ""} {
         append html "[export_form_vars return_url]"
     }
-    if {[empty_string_p $item_group]} {
+    if {$item_group eq ""} {
         set item_group [ad_conn url]
     }
 
     append html "[export_form_vars item_group]"
-    if {![empty_string_p $item]} {
+    if {$item ne ""} {
         set item_original $item
         append html "[export_form_vars item_original]"
-        append html "<input type=\"submit\" value=\"Save changes\" />"
+        append html "<input type=\"submit\" value=\"Save changes\">"
     } else {
-        append html "<input type=\"submit\" value=\"Save new view\" />"
+        append html "<input type=\"submit\" value=\"Save new view\">"
     }
 
     append html "<table>"
-    append html "<tr><th>Name:</th><td><input type=\"text\" size=\"60\" name=\"item\" [export_form_value item] /></td></tr>"
-    if {![empty_string_p $item]} {
+    append html "<tr><th>Name:</th><td><input type=\"text\" size=\"60\" name=\"item\" [export_form_value item]></td></tr>"
+    if {$item ne ""} {
         set item_original item
         append html "[export_form_vars item_original]"
         append html "<tr><td>&nbsp;</td><td><em>Editing the name will rename the view</em></td></tr>"
     }
 
-    if {[string compare $type select] == 0} {
+    if {$type eq "select" } {
         # select table
         set options "<option value=\"\">---</option>"
         foreach opt $sel_list { 
@@ -649,7 +652,7 @@ proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {i
             } else { 
                 set out $options
             }
-            append html "<tr><th>[expr $i + 1]</th><td><select name=\"col\">$out</select></td></tr>\n"
+            append html "<tr><th>[expr {$i + 1}]</th><td><select name=\"col\">$out</select></td></tr>\n"
         }
     } else { 
         # radio button table
@@ -660,7 +663,7 @@ proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {i
         append html "</tr>"
 
         foreach opt $sel_list { 
-            append options "<td><input name=\"col_@@\" type=\"radio\" value=\"[lindex [lindex $datadef $opt] 0]\" /></td>"
+            append options "<td><input name=\"col_@@\" type=\"radio\" value=\"[lindex [lindex $datadef $opt] 0]\"></td>"
         }
         for {set i 0} { $i < $max_columns} {incr i} {
             if {$i < $n_sel_columns} {
@@ -670,7 +673,7 @@ proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {i
                 set out $options
             }
             regsub -all {@@} $out $i out
-            append html "<tr><th>[expr $i + 1]</th>$out</tr>\n"
+            append html "<tr><th>[expr {$i + 1}]</th>$out</tr>\n"
         }
     }
     append html "</table></form>"
@@ -678,7 +681,7 @@ proc_doc ad_table_form {datadef {type select} {return_url {}} {item_group {}} {i
     return $html
 }
 
-proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {}} {item {}} {sort_spec {}} {allowed {}}} {
+ad_proc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {}} {item {}} {sort_spec {}} {allowed {}}} {
     builds a form for setting up custom sorts.
     <p>
     <ul>
@@ -706,7 +709,7 @@ proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {
     set direction [list]
     foreach col $full_column {
         regexp {([^*,]+)([*])?} $col match coln dirn
-        if {$dirn == "*"} {
+        if {$dirn eq "*"} {
             set dirn desc
         } else {
             set dirn asc
@@ -719,32 +722,32 @@ proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {
     set n_sel_columns [llength $sel_columns]
 
     set html {}
-    if {[string compare $item "CreateNewCustom"] == 0} {
+    if {$item eq "CreateNewCustom" } {
         set item {} 
     }
     # now spit out the form fragment.
-    if {![empty_string_p $item]} {
+    if {$item ne ""} {
         append html "<h2>Editing <strong>$item</strong></h2>"
         append html "<form method=\"get\" action=\"/tools/sort-custom\">"
-        append html "<input type=\"submit\" value=\"Delete this sort\" />"
-        append html "<input type=\"hidden\" name=\"delete_the_sort\" value=\"1\" />"
+        append html "<input type=\"submit\" value=\"Delete this sort\">"
+        append html "<input type=\"hidden\" name=\"delete_the_sort\" value=\"1\">"
         append html "[export_form_vars item_group item]"
-        if {![empty_string_p $return_url]} {
+        if {$return_url ne ""} {
             append html "[export_form_vars return_url]"
         }
         append html "</form>"
     }
 
     append html "<form method=get action=\"/tools/sort-custom\">" 
-    if {![empty_string_p $return_url]} {
+    if {$return_url ne ""} {
         append html "[export_form_vars return_url]"
     }
-    if {[empty_string_p $item_group]} {
+    if {$item_group eq ""} {
         set item_group [ad_conn url]
     }
 
     append html "[export_form_vars item_group]"
-    if {![empty_string_p $item]} {
+    if {$item ne ""} {
         set item_original $item
         append html "[export_form_vars item_original]"
         append html "<input type=\"submit\" value=\"Save changes\">"
@@ -754,7 +757,7 @@ proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {
 
     append html "<table>"
     append html "<tr><th>Name:</th><td><input type=\"text\" size=\"60\" name=\"item\" [export_form_value item]></td></tr>"
-    if {![empty_string_p $item]} {
+    if {$item ne ""} {
         set item_original item
         append html "[export_form_vars item_original]"
         append html "<tr><td>&nbsp;</td><td><em>Editing the name will rename the sort</em></td></tr>"
@@ -772,7 +775,7 @@ proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {
         } else { 
             set out $options
         }
-        append html "<tr><th>[expr $i + 1]</th><td><select name=\"col\">$out</select>"
+        append html "<tr><th>[expr {$i + 1}]</th><td><select name=\"col\">$out</select>"
         switch [lindex $direction $i] {
             asc {
                 append html "<select name=\"dir\"><option value=\"asc\" selected=\"selected\">increasing</option><option value=\"desc\">decreasing</option></select>"
@@ -789,7 +792,7 @@ proc_doc ad_table_sort_form {datadef {type select} {return_url {}} {item_group {
     return $html
 }
 
-proc_doc ad_order_by_from_sort_spec {sort_by tabledef} {
+ad_proc ad_order_by_from_sort_spec {sort_by tabledef} {
     Takes a sort_by spec, and translates it into into an "order by" clause
     with each sort_by key dictated by the sort info in tabledef
 } {
@@ -800,20 +803,20 @@ proc_doc ad_order_by_from_sort_spec {sort_by tabledef} {
             # if there's a "*" after the key, we want to reverse the usual order
             foreach order_spec $tabledef {
                 if { $sort_key == [lindex $order_spec 0] } {
-                    if { $reverse == "*" } {
+                    if { $reverse eq "*" } {
                         set order "desc"
                     } else {
                         set order "asc"
                     }
 
-                    if { $order_by_clause == "" } {
+                    if { $order_by_clause eq "" } {
                         append order_by_clause "\norder by "
                     } else {
                         append order_by_clause ", "
                     }
 
                     # tack on the order by clause 
-                    if {![empty_string_p [lindex $order_spec 2]] && ([string compare [lindex $order_spec 2] "sort_by_pos"] != 0)} {
+                    if {![empty_string_p [lindex $order_spec 2]] && ([lindex $order_spec 2] ne "sort_by_pos" )} {
                         append order_by_clause "[subst [lindex $order_spec 2]]"
                     } else { 
                         append order_by_clause "$sort_key $order"
@@ -826,7 +829,7 @@ proc_doc ad_order_by_from_sort_spec {sort_by tabledef} {
     return $order_by_clause
 }
 
-proc_doc ad_new_sort_by {key keys} {
+ad_proc ad_new_sort_by {key keys} {
     Makes a new sort_by string, sorting by "key".
 
     If the key is followed by "*", that indicates the ordering should
@@ -838,12 +841,12 @@ proc_doc ad_new_sort_by {key keys} {
     sort key to reorder, the things which have the same value for the newly-sorted
     column will remain in the same relative order.
 } {
-    if { $keys == "" } {
+    if { $keys eq "" } {
         return $key
 
     } elseif { [regexp "^${key}(\\*?)," "$keys," match reverse] } {
         # if this was already the first key, then reverse order
-        if { $reverse == "*" } {
+        if { $reverse eq "*" } {
             regsub "\\*," "$keys," "," keys
         } else {
             regsub "," "$keys," "*," keys
@@ -857,17 +860,17 @@ proc_doc ad_new_sort_by {key keys} {
     }
 }
 
-proc_doc ad_same_page_link {variable value text {form ""}} {
+ad_proc ad_same_page_link {variable value text {form ""}} {
     Makes a link to this page, with a new value for "variable".
 } {
-    if { [empty_string_p $form] } {
+    if { $form eq "" } {
         set form [ns_getform]
     }
     set url_vars [export_ns_set_vars url $variable $form]
     return "<a href=\"[ad_conn url]?$variable=[ns_urlencode $value]$url_vars\">$text</a>"
 }
 
-proc_doc ad_reverse order { 
+ad_proc ad_reverse order { 
     returns the opposite sort order from the
     one it is given.  Mostly for columns whose natural 
     sort order is not the default.
@@ -879,7 +882,7 @@ proc_doc ad_reverse order {
     return $order
 }
 
-proc_doc ad_custom_load {user_id item_group item item_type} {
+ad_proc ad_custom_load {user_id item_group item item_type} {
     load a persisted user customization as saved by 
     for example table-custom.tcl.
 } { 
@@ -899,7 +902,7 @@ proc_doc ad_custom_load {user_id item_group item item_type} {
     return $value
 }
     
-proc_doc ad_custom_list {user_id item_group item_set item_type target_url custom_url {new_string "new view"}} {
+ad_proc ad_custom_list {user_id item_group item_set item_type target_url custom_url {new_string "new view"}} {
     Generates the html fragment for choosing, editing and creating
     user customized data
 } {
@@ -913,7 +916,7 @@ proc_doc ad_custom_list {user_id item_group item_set item_type target_url custom
     
     set break {}
     foreach item $items { 
-        if {[string compare $item_set $item] == 0} {
+        if {$item_set eq $item } {
             append html "$break<strong>$item</strong>&nbsp;(<a href=\"$custom_url$item\">edit</a>)"
         } else { 
             append html "$break<a href=\"$target_url$item\">$item</a>"
@@ -926,13 +929,13 @@ proc_doc ad_custom_list {user_id item_group item_set item_type target_url custom
 }
     
 
-proc_doc ad_custom_page_defaults defaults { 
+ad_proc ad_custom_page_defaults defaults { 
     set the page defaults. If the form is 
     empty do a returnredirect with the defaults set
 } {
     set form [ns_getform]
-    if {[empty_string_p $form] 
-        && ![empty_string_p $defaults]} { 
+    if {$form eq "" 
+        && $defaults ne ""} { 
         # we did not get a form so set all the variables 
         # and redirect to set them
         set redirect "[ad_conn url]?"
@@ -954,22 +957,22 @@ proc_doc ad_custom_page_defaults defaults {
     }
 }
 
-proc_doc ad_custom_form {return_url item_group item} { 
+ad_proc ad_custom_form {return_url item_group item} { 
     sets up the head of a form to feed to /tools/form-custom.tcl
 } {
     append html "<form method=\"get\" action=\"/tools/form-custom\">\n" 
-    if {![empty_string_p $return_url]} {
+    if {$return_url ne ""} {
         append html "[export_form_vars return_url]\n"
     }
-    if {[empty_string_p $item_group]} {
+    if {$item_group eq ""} {
         set item_group [ad_conn url]
     }
     set item_original $item
     append html "[export_form_vars item_group item item_original]\n"
-    append html "<input type=\"submit\" value=\"Save settings\" />"
+    append html "<input type=\"submit\" value=\"Save settings\">"
 }
 
-proc_doc ad_dimensional_settings {define current} {
+ad_proc ad_dimensional_settings {define current} {
     given a dimensional slider definition this routine returns a form to set the 
     defaults for the given slider.
 
@@ -979,14 +982,14 @@ proc_doc ad_dimensional_settings {define current} {
         append html "<tr><th align=\"left\">[lindex $opt 1]</th><td>"
         append html "<select name=\"[lindex $opt 0]\">"
         #append html "<option value=\"\">-- Unset --</option>"
-        if {![empty_string_p $current] 
+        if {$current ne "" 
             && [ns_set find $current [lindex $opt 0]] > -1} { 
             set picked [ns_set get $current [lindex $opt 0]]
         } else {
 	    set picked [lindex $opt 2]
 	}
         foreach val [lindex $opt 3] { 
-            if {[string compare $picked [lindex $val 0]] == 0} { 
+            if {$picked eq [lindex $val 0] } { 
                 append html "<option selected=\"selected\" value=\"[philg_quote_double_quotes [lindex $val 0]]\">[lindex $val 1]</option>\n"
             } else { 
                 append html "<option value=\"[philg_quote_double_quotes [lindex $val 0]]\">[lindex $val 1]</option>\n"
@@ -997,13 +1000,13 @@ proc_doc ad_dimensional_settings {define current} {
     return $html
 }
 
-proc_doc ad_table_orderby_sql {datadef orderby order} {
+ad_proc ad_table_orderby_sql {datadef orderby order} {
     create the order by clause consistent with the orderby and order variables
     and the datadef which built the table
 } {
     set orderclause "order by $orderby $order"
     foreach col $datadef {
-        if {[string compare $orderby [lindex $col 0]] == 0} {
+        if {$orderby eq [lindex $col 0] } {
             if {![empty_string_p [lindex $col 2]]} {
                 set orderclause [subst [lindex $col 2]]
             }

@@ -4,24 +4,13 @@ ad_library {
 
     @creation-date 30 May 2000
     @author Jon Salz [jsalz@arsdigita.com]
-    @cvs-id request-processor-init.tcl,v 1.3 2002/09/20 21:46:34 jeffd Exp
+    @cvs-id $Id$
 }
 
 # These procedures are dynamically defined at startup to alleviate
 # lock contention. Thanks to davis@xarg.net.
 
-proc ad_acs_admin_id_mem {} {
-    return [db_string acs_kernel_id_get {
-	select package_id from apm_packages
-	where package_key = 'acs-admin'
-    } -default 0]
-}
-
-proc ad_acs_admin_id {} "
-    return [ad_acs_admin_id_mem]
-"
-
-if { [ad_parameter -package_id [ad_acs_kernel_id] PerformanceModeP request-processor 0] } {
+if { [parameter::get -package_id [ad_acs_kernel_id] -parameter PerformanceModeP -default 0] } {
   ad_proc -private rp_performance_mode {} {
     Returns 1 if the request processor is in performance mode, 0 otherwise.
   } {
@@ -37,8 +26,8 @@ if { [ad_parameter -package_id [ad_acs_kernel_id] PerformanceModeP request-proce
 
 # JCD this belongs in acs-permission-init.tcl but I did not want to duplicate [ad_acs_kernel_id]
 # Nuke the existing definition. and create one with the parameter set
-rename permission::cache_p {}
-proc permission::cache_p {} "return [ad_parameter -package_id [ad_acs_kernel_id] PermissionCacheP permissions 0]"
+
+#JCD move into first call of cache_p
 
 
 nsv_set rp_properties request_count 0
@@ -58,7 +47,7 @@ ns_unregister_proc HEAD /*.tcl
 ns_unregister_proc POST /*.tcl
 
 set listings [ns_config "ns/server/[ns_info server]" "directorylisting" "none"]
-if { [string equal $listings "fancy"] || [string equal $listings "simple"] } {
+if { $listings eq "fancy" || $listings eq "simple" } {
   nsv_set rp_directory_listing_p . 1
 } else {
   nsv_set rp_directory_listing_p . 0
@@ -90,7 +79,7 @@ ad_after_server_initialization filters_register {
     foreach filter_info $filters {
 	util_unlist $filter_info priority kind method path \
 		proc arg debug critical description script
-	
+
 	# Figure out how to invoke the filter, based on the number of arguments.
 	if { [llength [info procs $proc]] == 0 } {
 	    # [info procs $proc] returns nothing when the procedure has been
@@ -101,15 +90,17 @@ ad_after_server_initialization filters_register {
 	    set arg_count [llength [info args $proc]]
 	}
 
-	if { $debug == "t" } {
+	if { $debug eq "t" } {
 	    set debug_p 1
 	} else {
 	    set debug_p 0
 	}
 
-	ns_register_filter $kind $method $path rp_invoke_filter \
+        ns_log Notice "ns_register_filter $kind $method $path rp_invoke_filter \
+		[list $filter_index $debug_p $arg_count $proc $arg]"
+        ns_register_filter $kind $method $path rp_invoke_filter \
 		[list $filter_index $debug_p $arg_count $proc $arg]
-	
+
 	incr filter_index
     }
 }
@@ -125,7 +116,7 @@ ad_after_server_initialization procs_register {
     foreach proc_info $procs {
 	util_unlist $proc_info method path proc arg debug noinherit description script
 
-	if { $noinherit == "t" } {
+	if { $noinherit eq "t" } {
 	    set noinherit_switch "-noinherit"
 	} else {
 	    set noinherit_switch ""
@@ -141,12 +132,13 @@ ad_after_server_initialization procs_register {
 	    set arg_count [llength [info args $proc]]
 	}
 
-	if { $debug == "t" } {
+	if { $debug eq "t" } {
 	    set debug_p 1
 	} else {
 	    set debug_p 0
 	}
 
+	ns_log Notice "ns_register_proc $noinherit_switch [list $method $path rp_invoke_proc [list $proc_index $debug_p $arg_count $proc $arg]]"
 	eval ns_register_proc $noinherit_switch \
 		[list $method $path rp_invoke_proc [list $proc_index $debug_p $arg_count $proc $arg]]
     }

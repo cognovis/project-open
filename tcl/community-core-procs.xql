@@ -56,51 +56,51 @@
       </querytext>
 </fullquery>
 
+<fullquery name="person::update.update_object_title">      
+      <querytext>
+      
+	update acs_objects
+	set title = :first_names || ' ' || :last_name
+	where object_id = :person_id
+    
+      </querytext>
+</fullquery>
+
 <fullquery name="person::name_not_cached.get_person_name">      
       <querytext>
       
-          select first_names||' '||last_name as person_name
+          select distinct first_names||' '||last_name as person_name
             from persons
            where person_id = :person_id
           
       </querytext>
 </fullquery>
 
-<fullquery name="person::get_bio.select_bio">      
+<fullquery name="person::name_not_cached.get_party_name">      
       <querytext>
-          select attr_value as bio
-          from acs_attribute_values
-          where object_id = :person_id
-          and attribute_id =
-             (select attribute_id
-              from acs_attributes
-              where object_type = 'person'
-              and attribute_name = 'bio')
+      
+          select distinct first_names||' '||last_name as person_name
+            from persons, parties
+           where person_id = party_id 
+             and email = :email
+             
+          
       </querytext>
 </fullquery>
 
-<fullquery name="person::update_bio.insert_bio">      
+<fullquery name="person::get_bio.select_bio">      
       <querytext>
-        insert into acs_attribute_values
-	(object_id, attribute_id, attr_value)
-	values 
-	(:person_id, (select attribute_id
-          from acs_attributes
-          where object_type = 'person'
-          and attribute_name = 'bio'), :bio)
+          select bio
+          from persons
+          where person_id = :person_id
       </querytext>
 </fullquery>
 
 <fullquery name="person::update_bio.update_bio">      
       <querytext>
-        update acs_attribute_values
-	set attr_value = :bio
-	where object_id = :person_id
-	and attribute_id =
-          (select attribute_id
-          from acs_attributes
-          where object_type = 'person'
-          and attribute_name = 'bio')
+        update persons
+	set bio = :bio
+	where person_id = :person_id
       </querytext>
 </fullquery>
 
@@ -115,13 +115,23 @@
       </querytext>
 </fullquery>
 
-<fullquery name="acs_user::get_by_username.user_id_from_username">      
+<fullquery name="acs_user::get_by_username_not_cached.user_id_from_username">      
       <querytext>
 
             select user_id
             from   users
             where  lower(username) = lower(:username)
             and    authority_id =:authority_id
+
+      </querytext>
+</fullquery>
+
+<fullquery name="acs_user::registered_user_p.registered_user_p">
+      <querytext>
+
+            select 1
+            from   registered_users
+            where  user_id = :user_id
 
       </querytext>
 </fullquery>
@@ -136,12 +146,13 @@
       </querytext>
 </fullquery>
 
-<fullquery name="party::get_by_email.select_party_id">
+<fullquery name="party::update.object_title_update">      
       <querytext>
       
-        select party_id 
-        from   parties 
-        where  lower(email) = lower(:email)
+	    update acs_objects
+	    set title = :email
+	    where object_id = :party_id
+	    and object_type = 'party'
 
       </querytext>
 </fullquery>
@@ -185,5 +196,17 @@
 
       </querytext>
 </fullquery>
+
+
+   <fullquery name="acs_user::get_portrait_id_not_cached.get_item_id">
+      <querytext>
+         select c.item_id
+         from acs_rels a, cr_items c
+         where a.object_id_two = c.item_id
+           and a.object_id_one = :user_id
+           and a.rel_type = 'user_portrait_rel'
+      </querytext>
+   </fullquery>
+
 
 </queryset>

@@ -124,6 +124,8 @@
 			pretty_plural => :pretty_plural,
 			initial_install_p => :initial_install_p,
 			singleton_p => :singleton_p,
+                        implements_subsite_p => :implements_subsite_p,
+                        inherit_templates_p => :inherit_templates_p,
 			spec_file_path => :spec_file_path,
 			spec_file_mtime => :spec_file_mtime
           		);
@@ -144,6 +146,8 @@
 			pretty_plural => :pretty_plural,
 			initial_install_p => :initial_install_p,
 			singleton_p => :singleton_p,
+                        implements_subsite_p => :implements_subsite_p,
+                        inherit_templates_p => :inherit_templates_p,
 			spec_file_path => :spec_file_path,
 			spec_file_mtime => :spec_file_mtime
 			);
@@ -255,6 +259,60 @@
       </querytext>
 </fullquery>
 
+<fullquery name="apm_copy_param_to_descendents.param_exists">      
+  <querytext>
+    begin
+      :1 := apm.parameter_p(
+               package_key => :descendent_package_key,
+               parameter_name => :parameter_name);
+    end;
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_param_to_descendents.copy_descendent_param">      
+  <querytext>
+    begin
+      :1 := apm.register_parameter(
+               package_key => :descendent_package_key,
+               parameter_name => :parameter_name,
+               description => :description,
+               scope => :scope,
+               datatype => :datatype,
+               default_value => :default_value,
+               section_name => :section_name,
+               min_n_values => :min_n_values,
+               max_n_values => :max_n_values);
+    end;
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_inherited_params.param_exists">      
+  <querytext>
+    begin
+      :1 := apm.parameter_p(
+               package_key => :new_package_key,
+               parameter_name => :parameter_name);
+    end;
+  </querytext>
+</fullquery>
+
+<fullquery name="apm_copy_inherited_params.copy_inherited_param">      
+  <querytext>
+    begin
+      :1 := apm.register_parameter(
+               package_key => :new_package_key,
+               parameter_name => :parameter_name,
+               description => :description,
+               scope => :scope,
+               datatype => :datatype,
+               default_value => :default_value,
+               section_name => :section_name,
+               min_n_values => :min_n_values,
+               max_n_values => :max_n_values);
+    end;
+  </querytext>
+</fullquery>
+
 <fullquery name="apm_package_upgrade_p.apm_package_upgrade_p">      
       <querytext>
       
@@ -283,6 +341,13 @@
                    apm_package_version.sortable_version_name(:version_name_2) as sortable_version_2
             from   dual
 	
+      </querytext>
+</fullquery>
+
+
+<fullquery name="apm_version_sortable.sortable_version">
+      <querytext>
+	    select apm_package_version.sortable_version_name(:version) from dual
       </querytext>
 </fullquery>
 

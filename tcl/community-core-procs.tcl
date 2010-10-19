@@ -80,19 +80,19 @@ ad_proc -deprecated ad_user_new {
     @see auth::create_user
     @see auth::create_local_account
 } {
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         set user_id [db_nextval acs_object_id_seq]
     }
 
-    if { [empty_string_p $password_question] } {
+    if { $password_question eq "" } {
         set password_question [db_null]
     }
 
-    if { [empty_string_p $password_answer] } {
+    if { $password_answer eq "" } {
         set password_answer [db_null]
     }
 
-    if { [empty_string_p $url] } {
+    if { $url eq "" } {
         set url [db_null]
     }
 
@@ -139,16 +139,25 @@ ad_proc -deprecated ad_user_new {
     return $user_id
 }
 
-ad_proc -deprecated -warn ad_user_remove {
-    -user_id:required
+ad_proc -public person::person_p {
+    {-party_id:required}
 } {
-    completely remove a user from the system.
-    Use <code>acs_user::delete -permanent</code> instead
-    @see acs_user::delete
+    is this party a person? Cached
 } {
-    acs_user::delete -user_id $user_id -permanent
+    return [util_memoize [list ::person::person_p_not_cached -party_id $party_id]]
 }
 
+ad_proc -public person::person_p_not_cached {
+    {-party_id:required}
+} {
+    is this party a person? Cached
+} {
+    if {[db_0or1row contact_person_exists_p {select '1' from persons where person_id = :party_id}]} {
+        return 1
+    } else {
+        return 0
+    }
+}
     
 ad_proc -public person::new {
     {-first_names:required}
@@ -190,28 +199,43 @@ ad_proc -public person::get {
 }
 
 ad_proc -public person::name {
-    {-person_id:required}
+    {-person_id ""}
+    {-email ""}
 } {
     get the name of a person. Cached.
 } {
-    return [util_memoize [list person::name_not_cached -person_id $person_id]]
+    if {$person_id eq "" && $email eq ""} {
+        error "You need to provide either person_id or email"
+    } elseif {"" ne $person_id && "" ne $email } {
+        error "Only provide provide person_id OR email, not both"
+    } else {
+        return [util_memoize [list person::name_not_cached -person_id $person_id -email $email]]
+    }
 }
 
 ad_proc -public person::name_flush {
     {-person_id:required}
+    {-email ""}
 } {
     Flush the person::name cache.
 } {
-    util_memoize_flush [list person::name_not_cached -person_id $person_id]
+    util_memoize_flush [list person::name_not_cached -person_id $person_id -email $email]
     acs_user::flush_cache -user_id $person_id
 }
 
 ad_proc -public person::name_not_cached {
-    {-person_id:required}
+    {-person_id ""}
+    {-email ""}
 } {
     get the name of a person
 } {
-    db_1row get_person_name {}
+    if {$email eq ""} {
+        db_1row get_person_name {}
+    } else {
+        # As the old functionality returned an error, but I want an empty string for e-mail
+        # Therefore for emails we use db_string
+        set person_name [db_string get_party_name {} -default ""]
+    }
     return $person_name
 }
 
@@ -223,8 +247,15 @@ ad_proc -public person::update {
     update the name of a person
 } {
     db_dml update_person {}
+    db_dml update_object_title {}
     name_flush -person_id $person_id
 }
+
+# DRB: Though I've moved the bio field to type specific rather than generic storage, I've
+# maintained the API semantics exactly as they were before mostly in order to make upgrade
+# possible.  In the future, the number of database hits can be diminished by getting rid of
+# the seperate queries for bio stuff. However, I have removed bio_mime_type because it's
+# unused and unsupported in the existing code.
 
 ad_proc -public person::get_bio {
     {-person_id {}}
@@ -232,29 +263,28 @@ ad_proc -public person::get_bio {
 } {
     Get the value of the user's bio(graphy) field.
 
-    @option person_id    The person_id of the person to get the bio for. Leave blank for currently logged in user.
+    @option person_id    The person_id of the person to get the bio for. Leave blank for
+       currently logged in user.
     
     @option exists_var The name of a variable in the caller's namespace, which will be set to 1 
-                       if a bio was found, or 0 if no bio was found. Leave blank if you're not
+                       if the bio column is not null.  Leave blank if you're not
                        interested in this information.
     
     @return The bio of the user as a text string.
 
     @author Lars Pind (lars@collaboraid.biz)
 } {
-    if { [empty_string_p $person_id] } {
+    if { $person_id eq "" } {
         set person_id [ad_conn user_id]
     }
 
-    if { ![empty_string_p $exists_var] } {
+    if { $exists_var ne "" } {
         upvar $exists_var exists_p
     }
 
-    set exists_p [db_0or1row select_bio {}]
+    db_1row select_bio {}
     
-    if { !$exists_p } {
-        set bio {}
-    }
+    set exists_p [expr {$bio ne ""}]
     
     return $bio
 }
@@ -270,33 +300,7 @@ ad_proc -public person::update_bio {
 
     @author Lars Pind (lars@collaboraid.biz)
 } {
-    # This will set exists_p to whether or not a row for the bio existed
-    set bio_old [get_bio -person_id $person_id -exists_var exists_p]
-
-    # bio_change_to = 0 -> insert
-    # bio_change_to = 1 -> don't change
-    # bio_change_to = 2 -> update
-
-    if { !$exists_p } {
-        # There is no bio yet.
-        # If new bio is empty, that's a don't change (1)
-        # If new bio is non-empty, that's an insert (0)
-        set bio_change_to [empty_string_p $bio]
-    } else {
-        if { [string equal $bio $bio_old] } {
-            set bio_change_to 1
-        } else {
-            set bio_change_to 2
-        }
-    }
-    
-    if { $bio_change_to == 0 } {
-	# perform the insert
-	db_dml insert_bio {}
-    } elseif { $bio_change_to == 2 } {
-	# perform the update
-	db_dml update_bio {}
-    }
+    db_dml update_bio {}
 }
 
 
@@ -309,7 +313,7 @@ ad_proc -public acs_user::change_state {
 } {
     set rel_id [db_string select_rel_id {*SQL*} -default {}]
 
-    if {[empty_string_p $rel_id]} {
+    if {$rel_id eq ""} {
         return
     }
 
@@ -379,10 +383,29 @@ ad_proc -public acs_user::get_by_username {
     @return user_id of the user, or the empty string if no user found.
 }  {
     # Default to local authority
-    if { [empty_string_p $authority_id] } {
+    if { $authority_id eq "" } {
         set authority_id [auth::authority::local]
     }
+    
+    set user_id [util_memoize [list acs_user::get_by_username_not_cached -authority_id $authority_id -username $username]]
+    if {$user_id eq ""} {
+	util_memoize_flush [list acs_user::get_by_username_not_cached -authority_id $authority_id -username $username]
+    }
+    return $user_id
+}    
 
+ad_proc -public acs_user::get_by_username_not_cached {
+    {-authority_id:required}
+    {-username:required}
+} {
+    Returns user_id from authority and username. Returns the empty string if no user found.
+    
+    @param authority_id The authority. Defaults to local authority.
+
+    @param username The username of the user you're trying to find.
+
+    @return user_id of the user, or the empty string if no user found.
+}  {
     return [db_string user_id_from_username {} -default {}]
 }    
 
@@ -396,17 +419,17 @@ ad_proc -public acs_user::get {
 } {
     Get basic information about a user. Uses util_memoize to cache info from the database.
     You may supply either user_id, or  username. 
-    If you supply username, you may also supply authority_id, or you may leave it out, 
-    in which case it defaults to the local authority.
-    If you supply neither user_id nor username, and we have a connection, the currently 
-    logged in user will be assumed.
+    If you supply username, you may also supply authority_id, or you may leave it out, in which case it defaults to the local authority.
+    If you supply neither user_id nor username, and we have a connection, the currently logged in user will be assumed.
 
-    @option user_id     The user_id of the user to get the bio for. 
-    			Leave blank for current user.
+    @option user_id     The user_id of the user to get the bio for. Leave blank for current user.
+    
     @option include_bio Whether to include the bio in the user information
+
     @param  array       The name of an array into which you want the information put. 
     
     The attributes returned are: 
+
     <ul>
       <li> user_id 
       <li> username
@@ -435,18 +458,18 @@ ad_proc -public acs_user::get {
 
     @author Lars Pind (lars@collaboraid.biz)
 } {
-    if { [empty_string_p $user_id] } {
-        if { [empty_string_p $username] } {
+    if { $user_id eq "" } {
+        if { $username eq "" } {
             set user_id [ad_conn user_id]
         } else {
-            if { [empty_string_p $authority_id] } {
+            if { $authority_id eq "" } {
                 set authority_id [auth::authority::local]
             }
         }
     }
 
     upvar $array row
-    if { ![empty_string_p $user_id] } {
+    if { $user_id ne "" } {
         array set row [util_memoize [list acs_user::get_from_user_id_not_cached $user_id] [cache_timeout]]
     } else {
         array set row [util_memoize [list acs_user::get_from_username_not_cached $username $authority_id] [cache_timeout]]
@@ -465,7 +488,7 @@ ad_proc -private acs_user::get_from_user_id_not_cached { user_id } {
     @author Peter Marklund
 } {
     db_1row select_user_info {*SQL*} -column_array row
-
+    
     return [array get row]
 }
 
@@ -475,11 +498,7 @@ ad_proc -private acs_user::get_from_username_not_cached { username authority_id 
 
     @author Peter Marklund
 } {
-    if {[catch {
-	db_1row select_user_info {*SQL*} -column_array row
-    } err_msg]} {
-	return {}
-    }
+    db_1row select_user_info {*SQL*} -column_array row
 
     return [array get row]
 }
@@ -507,6 +526,7 @@ ad_proc -public acs_user::flush_cache {
         acs_user::get -user_id $user_id -array user
     }] } {
         util_memoize_flush [list acs_user::get_from_username_not_cached $user(username) $user(authority_id)]
+	util_memoize_flush [list acs_user::get_by_username_not_cached -authority_id $user(authority_id) -username $user(username)]
     }
 }
 
@@ -591,13 +611,34 @@ ad_proc -public acs_user::site_wide_admin_p {
 
     @author Peter Marklund
 } {
-    if { [empty_string_p $user_id]} {
+    if { $user_id eq ""} {
         set user_id [ad_conn user_id]
     }
 
     return [permission::permission_p -party_id $user_id \
 		-object_id [acs_lookup_magic_object security_context_root] \
 		-privilege "admin"]
+}
+
+ad_proc -public acs_user::registered_user_p {
+    {-user_id ""}
+} {
+    Return 1 if the specified user (defaults to logged in user)
+    is a registered user and 0 otherwise.
+
+    A registered user is a user who is in the view registered_users and
+    this is primarily true for any user who is approved and has a
+    verified e-mail.
+
+    @param user_id The id of the user to check.
+
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+} {
+    if { $user_id eq ""} {
+        set user_id [ad_conn user_id]
+    }
+
+    return [db_string registered_user_p {} -default 0]
 }
 
 
@@ -634,6 +675,9 @@ ad_proc -public party::update {
         }
     }
     db_dml party_update {}
+    if {[info exists email]} {
+	db_dml object_title_update {}
+    }
     acs_user::flush_cache -user_id $party_id
 }
 
@@ -647,7 +691,13 @@ ad_proc -public party::get_by_email {
 
     @return party_id
 } {
-    return [db_string select_party_id {*SQL*} -default {}]
+    #    return [db_string select_party_id {*SQL*} -default ""]
+
+    # The following query is identical in the result as the one above
+    # It just takes into account that some applications (like contacts) make email not unique
+    # Instead of overwriting this procedure in those packages, I changed it here, as the functionality
+    # is unchanged.
+    return [lindex [db_list select_party_id {}] 0]
 }
 
 ad_proc -public party::approved_members {
@@ -662,7 +712,7 @@ ad_proc -public party::approved_members {
 
     @author Peter Marklund
 } {
-    if { ![empty_string_p $object_type] } {
+    if { $object_type ne "" } {
         set from_clause ", acs_objects ao"
         set where_clause "and pamm.member_id = ao.object_id
              and ao.object_type = :object_type"
@@ -674,4 +724,24 @@ ad_proc -public party::approved_members {
              $from_clause
              where pamm.party_id = :party_id
              $where_clause"]
+}
+
+ad_proc -public acs_user::get_portrait_id {
+    {-user_id:required}
+} {
+    Return the image_id of the portrait of a user, if it does not exist, return 0
+
+    @param user_id user_id of the user for whom we need the portrait
+} {
+    return [util_memoize [list acs_user::get_portrait_id_not_cached -user_id $user_id] 600]
+}
+
+ad_proc -public acs_user::get_portrait_id_not_cached {
+    {-user_id:required}
+} {
+    Return the image_id of the portrait of a user, if it does not exist, return 0
+
+    @param user_id user_id of the user for whom we need the portrait
+} {
+    return [db_string get_item_id "" -default 0]
 }

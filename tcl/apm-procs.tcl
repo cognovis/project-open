@@ -8,6 +8,8 @@ ad_library {
     @cvs-id $Id$
 }
 
+namespace eval apm {}
+
 #####
 # Globals used by the package manager:
 #
@@ -136,6 +138,225 @@ ad_proc apm_callback_and_log { { -severity Notice } callback message } {
     ns_log $severity $message
 }   
 
+ad_proc apm_one_package_descendents {
+    package_key
+} {
+
+    Returns a list of package keys of all packages that inherit from the given
+    package
+
+} {
+    global apm_visited_package_keys
+    global apm_package_descendents
+
+    foreach descendent [db_list get_descendents {}] {
+        if { [info exists apm_visited_package_keys($descendent)] } {
+            continue
+        }
+        set apm_visited_package_keys($descendent) 1
+        lappend apm_package_descendents $descendent
+        apm_one_package_descendents $descendent
+    }
+
+}
+
+ad_proc apm_build_subsite_packages_list {} {
+
+    Build the nsv_set cache of all packages which claim to implement subsite
+    semantics.  The kludge to add acs-subsite if it's not declared with the subsite
+    attribute set true is needed during the upgrade process ...
+
+} {
+    nsv_set apm_subsite_packages_list package_keys {}
+
+    # Make sure old versions work ...
+    catch { nsv_set apm_subsite_packages_list package_keys [db_list get_subsites {}] }
+    if { [lsearch -exact [nsv_get apm_subsite_packages_list package_keys] acs-subsite] == -1 } {
+        nsv_lappend apm_subsite_packages_list package_keys acs-subsite
+    }
+
+}
+
+ad_proc apm_package_list_url_resolution {
+    package_list
+} {
+    Use a left-right, breadth-first traverse of the inheritance DAG to build a
+    structure to be used by the request processor to resolve URLs based on a
+    package's "extends" and "embeds" dependencies.
+} {
+    global apm_visited_package_keys
+    global apm_package_url_resolution
+
+    foreach package $package_list {
+        foreach {package_key dependency_type} $package {}
+        if { [info exists apm_visited_package_keys($package_key)] } {
+            continue
+        }
+        switch $dependency_type {
+            extends -
+            "" { lappend apm_package_url_resolution [acs_root_dir]/packages/$package_key/www }
+            embeds {
+
+               # Reference to an embedded package is through URLs relative to the embedding
+               # package's mount point, taking one  of the forms package-key,
+               # admin/package-key and sitewide-admin/package-key.  These map to package-key/embed,
+               # package-key/embed/admin, and package-key/embed/sitewide-admin respectively.
+
+               # We break references like package-key/admin because such references are unsafe,
+               # as the request processor will not perform the expected permission check.
+
+               lappend apm_package_url_resolution \
+                   [list [acs_root_dir]/packages/$package_key/embed/admin admin/$package_key]
+               lappend apm_package_url_resolution \
+                   [list "" $package_key/admin]
+
+               lappend apm_package_url_resolution \
+                   [list [acs_root_dir]/packages/$package_key/embed/sitewide-admin \
+                       sitewide-admin/$package_key]
+               lappend apm_package_url_resolution \
+                   [list "" $package_key/sitewide-admin]
+
+               lappend apm_package_url_resolution \
+                   [list [acs_root_dir]/packages/$package_key/embed $package_key]
+            }
+            default {
+                error "apm_package_list_url_resolution: dependency type is $dependency_type"
+            }
+        }
+        set apm_visited_package_keys($package_key) 1
+    }
+
+    # Make sure old versions work ...
+    foreach package $package_list {
+        foreach {package_key dependency_type} $package {}
+        set inherit_templates_p t
+#fix!
+        catch { db_1row get_inherit_templates_p {} }
+        apm_package_list_url_resolution [db_list_of_lists get_dependencies {}]
+    }
+}
+
+ad_proc apm_one_package_inherit_order {
+    package_key
+} {
+
+    Returns a list of package keys in package inheritance order.
+
+} {
+    global apm_visited_package_keys
+    global apm_package_inherit_order
+
+    if { [info exists apm_visited_package_keys($package_key)] } {
+        return
+    }
+    set apm_visited_package_keys($package_key) 1
+
+    foreach dependency [db_list get_dependencies {}] {
+        apm_one_package_inherit_order $dependency
+    }
+
+    lappend apm_package_inherit_order $package_key
+}
+
+ad_proc apm_one_package_load_libraries_dependencies {
+    package_key
+} {
+
+    Generate a list of package keys in library load dependency order.
+
+} {
+    global apm_visited_package_keys
+    global apm_package_load_libraries_order
+
+    if { [info exists apm_visited_package_keys($package_key)] } {
+        return
+    }
+    set apm_visited_package_keys($package_key) 1
+    set package_key_list ""
+
+    foreach dependency [db_list get_dependencies {}] {
+        apm_one_package_load_libraries_dependencies $dependency
+    }
+    lappend apm_package_load_libraries_order $package_key
+}
+
+ad_proc apm_build_one_package_relationships {
+    package_key
+} {
+
+    Builds the nsv dependency structures for a single package.
+
+} {
+    global apm_visited_package_keys
+    global apm_package_url_resolution
+    global apm_package_inherit_order
+    global apm_package_load_libraries_order
+    global apm_package_descendents
+
+    array unset apm_visited_package_keys
+    set apm_package_url_resolution [list]
+    apm_package_list_url_resolution $package_key
+    nsv_set apm_package_url_resolution $package_key $apm_package_url_resolution
+
+    array unset apm_visited_package_keys
+    set apm_package_inherit_order [list]
+    apm_one_package_inherit_order $package_key
+    nsv_set apm_package_inherit_order $package_key $apm_package_inherit_order
+
+    array unset apm_visited_package_keys
+    set apm_package_load_libraries_order [list]
+    apm_one_package_load_libraries_dependencies $package_key
+    nsv_set apm_package_load_libraries_order $package_key $apm_package_load_libraries_order
+
+    array unset apm_visited_package_keys
+    set apm_package_descendents [list]
+    apm_one_package_descendents $package_key
+    nsv_set apm_package_descendents $package_key $apm_package_descendents
+
+}
+
+ad_proc apm_build_package_relationships {} {
+
+    Builds the nsv dependency and ancestor structures.
+
+} {
+    foreach package_key [apm_enabled_packages] {
+        apm_build_one_package_relationships $package_key
+    }
+}
+
+ad_proc apm_package_descendents {
+    package_key
+} {
+    Wrapper that returns the cached package descendents list.
+} {
+    return [nsv_get apm_package_descendents $package_key]
+}
+
+ad_proc apm_package_inherit_order {
+    package_key
+} {
+    Wrapper that returns the cached package inheritance order list.
+} {
+    return [nsv_get apm_package_inherit_order $package_key]
+}
+
+ad_proc apm_package_url_resolution {
+    package_key
+} {
+    Wrapper that returns the cached package search order list.
+} {
+    return [nsv_get apm_package_url_resolution $package_key]
+}
+
+
+ad_proc apm_package_load_libraries_order {
+    package_key
+} {
+    Wrapper that returns the cached package library load order list.
+} {
+    return [nsv_get apm_package_load_libraries_order $package_key]
+}
 
 ad_proc -public apm_version_loaded_p { version_id } {
 
@@ -201,7 +422,7 @@ ad_proc -private apm_mark_version_for_reload { version_id { changed_files_var ""
     <blockquote><pre>[list $file_id $path]</pre></blockquote>
 
 } {
-    if { ![empty_string_p $changed_files_var] } {
+    if { $changed_files_var ne "" } {
 	upvar $changed_files_var changed_files
     }
 
@@ -310,7 +531,7 @@ ad_proc -private apm_load_libraries {
         lappend file_types test_init
     }
  
-    if { [empty_string_p $packages] } {
+    if { $packages eq "" } {
         set packages [apm_enabled_packages]
     }
 
@@ -357,14 +578,26 @@ ad_proc -public apm_load_packages {
                           files should be loaded. Defaults to true.
     @param load_queries   Switch to indicate if xql query files should be loaded. Default true.
     @param packages     A list of package_keys for packages to be loaded. Defaults to 
-                        all enabled packages
+                        all enabled packages.  These packages, along with the packages
+                        they depend on, will be loaded in dependency-order using the
+                        information provided in the packages' "provides" and "requires"
+                        attributes.
 
     @see apm_mark_version_for_reload
 
     @author Peter Marklund
 } {
-    if { [empty_string_p $packages] } {
+    if { $packages eq "" } {
         set packages [apm_enabled_packages]
+    }
+
+    set packages_to_load [list]
+    foreach package_key $packages {
+        foreach package_to_load [apm_package_load_libraries_order $package_key] {
+            if { [lsearch -exact $packages_to_load $package_to_load] == -1 } {
+                lappend packages_to_load $package_to_load
+            }
+        }
     }
 
     # Should acs-automated-testing tests be loaded?
@@ -372,18 +605,18 @@ ad_proc -public apm_load_packages {
 
     # Load *-procs.tcl files
     if { $load_libraries_p } {
-        apm_load_libraries -force_reload=$force_reload_p -packages $packages -procs
+        apm_load_libraries -force_reload=$force_reload_p -packages $packages_to_load -procs
     }
     
     # Load up the Queries (OpenACS, ben@mit.edu)
     if { $load_queries_p } {
-        apm_load_queries -packages $packages
+        apm_load_queries -packages $packages_to_load
     }
 
     # Load up the Automated Tests and associated Queries if necessary
     if {$load_tests_p} {
       apm_load_libraries -force_reload=$force_reload_p -packages $packages -test_procs
-      apm_load_queries -packages $packages -test_queries
+      apm_load_queries -packages $packages_to_load -test_queries
     }
 
     if { $load_libraries_p } {
@@ -391,12 +624,12 @@ ad_proc -public apm_load_packages {
         # because there are packages whose *-init.tcl files depend on it.
         apm_load_libraries -force_reload=$force_reload_p -init -packages acs-lang
 
-        apm_load_libraries -force_reload=$force_reload_p -init -packages $packages
+        apm_load_libraries -force_reload=$force_reload_p -init -packages $packages_to_load
     }
 
     # Load up the Automated Tests initialisation scripts if necessary
     if {$load_tests_p} {
-      apm_load_libraries -force_reload=$force_reload_p -packages $packages -test_init
+      apm_load_libraries -force_reload=$force_reload_p -packages $packages_to_load -test_init
     }
 }
 
@@ -413,7 +646,7 @@ ad_proc -private apm_load_queries {
 
     @author ben@mit.edu
 } {
-    if { [empty_string_p $packages] } {
+    if { $packages eq "" } {
         set packages [apm_enabled_packages]
     }
 
@@ -451,9 +684,9 @@ ad_proc -private apm_load_queries {
             #             !( 1 ^ 0 )             = Nope
             #             !( 1 ^ 1 )             = Yep
             #
-            if {![expr $test_queries_p ^ $is_test_file_p] &&
-                [string equal $file_type query_file] &&
-                ([empty_string_p $file_db_type] || [string equal $file_db_type [db_type]])} {
+            if {![expr {$test_queries_p ^ $is_test_file_p}] &&
+                $file_type eq "query_file" &&
+                ($file_db_type eq "" || $file_db_type eq [db_type])} {
 	        db_qd_load_query_file $file
             } 
         }
@@ -735,7 +968,7 @@ ad_proc -public apm_parameter_update {
 } {
     @return The parameter id that has been updated.
 } {
-    if {[empty_string_p $section_name]} {
+    if {$section_name eq ""} {
 	set section_name [db_null]
     }
 
@@ -750,6 +983,12 @@ ad_proc -public apm_parameter_update {
             max_n_values   = :max_n_values
       where parameter_id = :parameter_id
     }
+
+    db_dml object_title_update {
+	update acs_objects
+	set title = :parameter_name
+	where object_id = :parameter_id
+    }
     
     return $parameter_id
 }
@@ -758,45 +997,38 @@ ad_proc -public apm_parameter_register {
     {
 	-callback apm_dummy_callback
 	-parameter_id ""
+        -scope instance
     } 
     parameter_name description package_key default_value datatype {section_name ""} {min_n_values 1} {max_n_values 1}
 } {
     Register a parameter in the system.
+
+    The new "scope" parameter is named rather than positional to avoid breaking existing
+    code.
+
     @return The parameter id of the new parameter.
 
 } {
-    if {[empty_string_p $parameter_id]} {
+    if {$parameter_id eq ""} {
 	set parameter_id [db_null]
     }
 
-    if {[empty_string_p $section_name]} {
+    if {$section_name eq ""} {
 	set section_name [db_null]
     }
 
     ns_log debug "apm_parameter_register: Registering $parameter_name, $section_name, $default_value"
 
-    set parameter_id [db_exec_plsql parameter_register {
-	    begin
-	    :1 := apm.register_parameter(
-					 parameter_id => :parameter_id,
-					 parameter_name => :parameter_name,
-					 package_key => :package_key,
-					 description => :description,
-					 datatype => :datatype,
-					 default_value => :default_value,
-					 section_name => :section_name,
-					 min_n_values => :min_n_values,
-					 max_n_values => :max_n_values
-	                                );
-	    end;
-	}]
+    set parameter_id [db_exec_plsql parameter_register {}]
+
+    # Propagate to descendents if it's an instance parameter.
+
+    if { $scope eq "instance" } {
+        apm_copy_param_to_descendents $package_key $parameter_name
+    }
 
     # Update the cache.
     db_foreach apm_parameter_cache_update {
-	select v.package_id, p.parameter_name, nvl(p.default_value, v.attr_value) as attr_value
-	from apm_parameters p, apm_parameter_values v
-	where p.package_key = :package_key
-	and p.parameter_id = v.parameter_id (+)
     } {
 	ad_parameter_cache -set $attr_value $package_id $parameter_name
     }
@@ -811,65 +1043,40 @@ ad_proc -public apm_parameter_unregister {
 } {
     Unregisters a parameter from the system.
 } {
-    if { [empty_string_p $parameter_id] } {
-        set parameter_id [db_string select_parameter_id { 
-            select parameter_id
-            from   apm_parameters
-            where  package_key = :package_key
-            and    parameter_name = :parameter
-        }]
+    if { $parameter_id eq "" } {
+        set parameter_id [db_string select_parameter_id {}]
     }
+
+    db_1row get_scope_and_name {}
 
     ns_log Debug "apm_parameter_unregister: Unregistering parameter $parameter_id."
-    db_foreach all_parameters_packages {
-	select package_id, parameter_id, parameter_name 
-	from apm_packages p, apm_parameters ap
-	where p.package_key = ap.package_key
-	and ap.parameter_id = :parameter_id
 
-    } {
-	ad_parameter_cache -delete $package_id $parameter_name
-    } if_no_rows {
-	return
+    if { $scope eq "global" } {
+	ad_parameter_cache -delete $package_key $parameter_name
+    } else {
+        db_foreach all_parameters_packages {} {
+	    ad_parameter_cache -delete $package_id $parameter_name
+        }
     }
-	
-    db_exec_plsql parameter_unregister {
-	begin
-	delete from apm_parameter_values 
-	where parameter_id = :parameter_id;
-	delete from apm_parameters 
-	where parameter_id = :parameter_id;
-	acs_object.del(:parameter_id);
-	end;
-    }   
+    db_exec_plsql unregister {}
 }
 
 ad_proc -public apm_dependency_add {
     {
 	-callback apm_dummy_callback
 	-dependency_id ""
-    } version_id dependency_uri dependency_version
+    } dependency_type version_id dependency_uri dependency_version
 } {
     
     Add a dependency to a version.
     @return The id of the new dependency.
 } {
 
-    if {[empty_string_p $dependency_id]} {
+    if {$dependency_id eq ""} {
 	set dependency_id [db_null]
     }
     
-    return [db_exec_plsql dependency_add {
-	begin
-	:1 := apm_package_version.add_dependency(
-            dependency_id => :dependency_id,
-	    version_id => :version_id,
-	    dependency_uri => :dependency_uri,
-	    dependency_version => :dependency_version
-        );					 
-	end;
-    }]
-}
+    return [db_exec_plsql dependency_add {}] }
 
 ad_proc -public apm_dependency_remove {dependency_id} {
     
@@ -896,7 +1103,7 @@ ad_proc -public apm_interface_add {
     @return The id of the new interface.
 } {
 
-    if {[empty_string_p $interface_id]} {
+    if {$interface_id eq ""} {
 	set interface_id [db_null]
     }
     
@@ -922,7 +1129,7 @@ ad_proc -public apm_interface_remove {interface_id} {
 	apm_package_version.remove_interface(
              interface_id => :interface_id
 	);
-	end;					        
+	end;
     }
 }
 
@@ -943,7 +1150,7 @@ ad_proc -public apm_version_get {
 } {
     upvar $array row
 
-    if { ![empty_string_p $package_key] } {
+    if { $package_key ne "" } {
         set version_id [apm_version_id_from_package_key $package_key]
     }
 
@@ -960,7 +1167,9 @@ ad_proc -public apm_package_key_from_id {package_id} {
     return [util_memoize "apm_package_key_from_id_mem $package_id"]
 }
 
-proc apm_package_key_from_id_mem {package_id} {
+ad_proc -private apm_package_key_from_id_mem {package_id} {
+    unmemoized version of apm_package_key_from_id
+} {
     return [db_string apm_package_key_from_id {
 	select package_key from apm_packages where package_id = :package_id
     } -default ""]
@@ -976,7 +1185,9 @@ ad_proc -public apm_instance_name_from_id {package_id} {
     return [util_memoize "apm_instance_name_from_id_mem $package_id"]
 }
 
-proc apm_instance_name_from_id_mem {package_id} {
+ad_proc -private apm_instance_name_from_id_mem {package_id} {
+    unmemoized version of apm_instance_name_from_id
+} {
     return [db_string apm_package_key_from_id {
 	select instance_name from apm_packages where package_id = :package_id
     } -default ""]
@@ -994,10 +1205,49 @@ ad_proc -public apm_package_id_from_key {package_key} {
     return [util_memoize "apm_package_id_from_key_mem $package_key"]
 }
 
-proc apm_package_id_from_key_mem {package_key} {
+ad_proc -private apm_package_id_from_key_mem {package_key} {
+    unmemoized version of apm_package_id_from_key
+} {
     return [db_string apm_package_id_from_key {
 	select package_id from apm_packages where package_key = :package_key
     } -default 0]
+}
+
+ad_proc -public apm_package_ids_from_key {
+    -package_key:required
+    -mounted:boolean
+} {
+    @param package_key The package key we are looking for the package
+    @param mounted Does the package have to be mounted?
+
+    @return List of package ids of all instances of the package.
+    Empty string 
+} {
+    return [util_memoize [list apm_package_ids_from_key_mem -package_key $package_key -mounted_p $mounted_p]]
+}
+
+ad_proc -private apm_package_ids_from_key_mem {
+    -package_key:required
+    {-mounted_p "0"}
+} {
+    unmemoized version of apm_package_ids_from_key
+} {
+    
+    if {$mounted_p} {
+	set package_ids [list]
+	db_foreach apm_package_ids_from_key {
+	    select package_id from apm_packages where package_key = :package_key
+	} {
+	    if {"" ne [site_node::get_node_id_from_object_id -object_id $package_id] } {
+		lappend package_ids $package_id
+	    } 
+	}
+	return $package_ids
+    } else {
+	return [db_list apm_package_ids_from_key {
+	    select package_id from apm_packages where package_key = :package_key
+	}]
+    }
 }
 
 #
@@ -1005,18 +1255,15 @@ proc apm_package_id_from_key_mem {package_key} {
 #
 
 ad_proc -public apm_package_url_from_id {package_id} {
+    Will return the first url found for a given package_id
+
     @return The package url of the instance of the package.
-    only valid for singleton packages.
 } {
-    return [util_memoize "apm_package_url_from_id_mem $package_id"]
+    return [util_memoize [list apm_package_url_from_id_mem $package_id]]
 }
 
 ad_proc -private apm_package_url_from_id_mem {package_id} {
-    return [db_string apm_package_url_from_id {
-	select site_node.url(node_id) 
-          from site_nodes 
-         where object_id = :package_id
-    } -default ""]
+    return [db_string apm_package_url_from_id {*SQL*} -default {}]
 }
 
 #
@@ -1126,37 +1373,26 @@ ad_proc -private apm_post_instantiation_tcl_proc_from_key { package_key } {
 }
 
 
-ad_proc -public -deprecated -warn apm_package_create_instance {
-    {-package_id 0}
-    instance_name 
-    context_id 
-    package_key
-} {
-    Creates a new instance of a package. Deprecated - please use
-    apm_package_instance_new instead.
-
-    @see apm_package_instance_new
-} {    
-    return [apm_package_instance_new \
-            -package_key $package_key \
-            -instance_name $instance_name \
-            -package_id $package_id \
-            -context_id $context_id]
-}
-
 ad_proc -public apm_package_rename {
     {-package_id ""}
     {-instance_name:required}
 } {
     Renames a package instance
 } {    
-    if { [empty_string_p $package_id] } {
+    if { $package_id eq "" } {
         set package_id [ad_conn package_id]
     }
-    db_dml app_rename {
-        update apm_packages
-        set instance_name = :instance_name
-        where package_id = :package_id
+    db_transaction {
+      db_dml app_rename {
+        update apm_packages 
+           set instance_name = :instance_name
+           where package_id = :package_id
+      }
+      db_dml rename_acs_object {
+        update acs_objects
+          set title = :instance_name
+          where object_id = :package_id
+      }
     }
     foreach node_id [db_list nodes_to_sync {}] {
         site_node::update_cache -node_id $node_id
@@ -1180,8 +1416,8 @@ ad_proc -public apm_set_callback_proc {
 } {
     apm_assert_callback_type_supported $type
 
-    if { [empty_string_p $version_id] } {
-        if { [empty_string_p $package_key] } {
+    if { $version_id eq "" } {
+        if { $package_key eq "" } {
             error "apm_set_package_callback_proc: Invoked with both version_id and package_key empty. You must supply either of these"
         }
         
@@ -1190,7 +1426,7 @@ ad_proc -public apm_set_callback_proc {
 
     set current_proc [apm_get_callback_proc -type $type -version_id $version_id]
 
-    if { [empty_string_p $current_proc] } {
+    if { $current_proc eq "" } {
         # We are adding
         db_dml insert_proc {}
     } else {
@@ -1214,10 +1450,9 @@ ad_proc -public apm_get_callback_proc {
 } {
     apm_assert_callback_type_supported $type
 
-    if { [empty_string_p $version_id] } {
+    if { $version_id eq "" } {
         set version_id [apm_version_id_from_package_key $package_key]
     }
-
     return [db_string select_proc {} -default ""]
 }
 
@@ -1259,6 +1494,7 @@ ad_proc -public apm_unused_callback_types {
 }
 
 ad_proc -public apm_invoke_callback_proc {
+    {-proc_name {}}
     {-version_id ""}
     {-package_key ""}
     {-arg_list {}}
@@ -1268,6 +1504,11 @@ ad_proc -public apm_invoke_callback_proc {
     for a given package version. Any errors during
     invocation are logged.
 
+    @param callback_proc if this is provided it is called 
+      instead of attempting to look up the proc via the package_key or version_id
+      (needed for before-install callbacks since the db is not populated when those 
+       are called).
+
     @return 1 if invocation
     was carried out successfully, 0 if no proc to invoke could
     be found. Will propagate any error thrown by the callback.
@@ -1276,19 +1517,21 @@ ad_proc -public apm_invoke_callback_proc {
 } {
     array set arg_array $arg_list
 
-    set proc_name [apm_get_callback_proc \
-                       -version_id $version_id \
-                       -package_key $package_key \
-                       -type $type]
-    
-    if { [empty_string_p $proc_name] } {
-        if { [string equal $type "after-instantiate"] } {
+    if {$proc_name eq ""} {
+        set proc_name [apm_get_callback_proc \
+                           -version_id $version_id \
+                           -package_key $package_key \
+                           -type $type]
+    }
+
+    if { $proc_name eq "" } {
+        if {$type eq "after-instantiate"} {
             # We check for the old proc on format: package_key_post_instantiation package_id
-            if { [empty_string_p $package_key] } {
+            if { $package_key eq "" } {
                 set package_key [apm_package_key_from_version_id $version_id]
             }
             set proc_name [apm_post_instantiation_tcl_proc_from_key $package_key]
-            if { [empty_string_p $proc_name] } {
+            if { $proc_name eq "" } {
                 # No callback and no old-style callback proc - no options left
                 return 0
             }
@@ -1296,7 +1539,7 @@ ad_proc -public apm_invoke_callback_proc {
             $proc_name $arg_array(package_id)
 
             return 1
-            
+
         } else {
             # No other callback procs to fall back on
             return 0
@@ -1440,7 +1683,7 @@ ad_proc -private apm_callback_has_valid_args {
         append test_arg_list " -${arg_name} value"
     }
 
-    if { [empty_string_p $test_arg_list] } {
+    if { $test_arg_list eq "" } {
         # The callback proc should take no args
         return [empty_string_p [info args ::${proc_name}]]
     }
@@ -1476,13 +1719,19 @@ ad_proc -public apm_package_instance_new {
  
     @return The id of the instantiated package
 } {
-    if { [empty_string_p $instance_name] } {
-        set instance_name [db_string pretty_name_from_key {select pretty_name 
+    if { $instance_name eq "" } {
+	set p_name [apm::package_version::attributes::get_instance_name $package_key]
+
+	if {$p_name eq ""} {
+	    set instance_name [db_string pretty_name_from_key {select pretty_name 
                                                           from apm_enabled_package_versions 
                                                           where package_key = :package_key}]
+	} else {
+	    set instance_name  "$p_name"
+	}
     }
 
-    if { [empty_string_p $package_id] } {
+    if { $package_id eq "" } {
 	set package_id [db_null]
     } 
 
@@ -1490,7 +1739,12 @@ ad_proc -public apm_package_instance_new {
    
     apm_parameter_sync $package_key $package_id
 
-    apm_invoke_callback_proc -package_key $package_key -type "after-instantiate" -arg_list [list package_id $package_id]
+    foreach inherited_package_key [nsv_get apm_package_inherit_order $package_key] {
+        apm_invoke_callback_proc \
+            -package_key $inherited_package_key \
+            -type after-instantiate \
+            -arg_list [list package_id $package_id]
+    }
 
     return $package_id
 }
@@ -1522,9 +1776,14 @@ ad_proc -public apm_package_instance_delete {
 } {
     Deletes an instance of a package
 } {    
-    apm_invoke_callback_proc -package_key [apm_package_key_from_id $package_id] \
-                            -type before-uninstantiate \
-                            -arg_list [list package_id $package_id]
+
+    set package_key [apm_package_key_from_id $package_id]
+    foreach inherited_package_key [nsv_get apm_package_inherit_order $package_key] {
+        apm_invoke_callback_proc \
+            -package_key $inherited_package_key \
+            -type before-uninstantiate \
+            -arg_list [list package_id $package_id]
+    }
 
     db_exec_plsql apm_package_instance_delete {}
 }
@@ -1590,7 +1849,7 @@ ad_proc -public apm_log {
     Centralized APM logging. If you want to debug the APM, change
     APMDebug to Debug and restart the server.  
 } {
-    if {![string equal "APMDebug" $level]} {
+    if {"APMDebug" ne $level } {
         ns_log $level $msg
     }
 }
@@ -1616,4 +1875,212 @@ ad_proc -private apm_application_new_checkbox {} {
     append html_string "</select>"
 
     return $html_string
+}
+
+ad_proc -private apm::read_files {path file_list} {
+    Read the contents from a list of files at a certain path. Return
+    the data to the caller as a big string.
+} {
+    set data ""
+    foreach file $file_list {
+        if {![catch {set fp [open ${path}/${file} r]} err]} { 
+            append data [read $fp]
+            close $fp
+        }
+    }
+    return $data
+}
+
+ad_proc -public apm::metrics {
+    -package_key
+    -file_type
+    -array
+} {
+    Return some code metrics about the files in package $package_key. This
+    will return an array of 3 items: 
+    <ul>
+    <li>count - the number of files</li>
+    <li>lines - the number of lines in the files</li>
+    <li>procs - the number of procs, if applicable (0 if not applicable)</li>
+    </ul>
+    This will be placed in the array variable that is provided
+    to this proc.
+    <p>
+    Valid file_type's: 
+    <ul>
+    <li>data_model_pg - PG datamodel files</li>
+    <li>data_model_ora - Oracle datamodel files</li>
+    <li>include_page - ADP files in package_key/lib</li>
+    <li>content_page - ADP files in package_key/www</li>
+    <li>tcl_procs - TCL procs in package_key/tcl</li>
+    <li>test_procs - automated tests in package_key/tcl/test</li>
+    <li>documentation - docs in package_key/www/doc</li>
+    </ul>
+    
+    This proc is cached.
+
+    @author Vinod Kurup
+    @creation-date 2006-02-09
+
+    @param package_key The package_key of interest
+    @param file_type See options above
+    @param array variable to hold the array that will be returned
+} {
+    upvar $array metrics
+    array set metrics [util_memoize [list apm::metrics_internal $package_key $file_type]]
+}
+
+ad_proc -private apm::metrics_internal {
+    package_key
+    file_type
+} {
+    The cached version of apm::metrics
+
+    @see apm::metrics
+} {
+    array set metrics {}
+    set package_path [acs_package_root_dir $package_key]
+
+    # We'll be using apm_get_package_files to get a list of files
+    # by file type. 
+
+    switch $file_type {
+        data_model_pg -
+        data_model_ora {
+            set file_types [list data_model_create data_model]
+        }
+        default {
+            set file_types $file_type
+        }
+    }
+
+    set filelist [apm_get_package_files \
+                      -all_db_types \
+                      -package_key $package_key \
+                      -file_types $file_types]
+
+    # filelist needs to be weeded for certain file types
+    switch $file_type {
+        include_page -
+        content_page {
+            # weed out non-.adp files
+            set adp_files {}
+            foreach file $filelist {
+                if { [string match {*.adp} $file] } {
+                    lappend adp_files $file
+                }
+            }
+            set filelist $adp_files
+        }
+        data_model_pg {
+            # ignore drop and upgrade scripts
+            set pg_files {}
+            foreach file $filelist {
+                if { [string match {*/postgresql/*} $file] && ![string match *-drop.sql $file] && ![string match {*/upgrade/*} $file] } {
+                    lappend pg_files $file
+                } 
+            }
+            set filelist $pg_files
+        }
+        data_model_ora {
+            # ignore drop and upgrade scripts
+            set ora_files {}
+            foreach file $filelist {
+                if { [string match {*/oracle/*} $file] && ![string match *-drop.sql $file] && ![string match {*/upgrade/*} $file] } {
+                    lappend ora_files $file
+                }
+            }
+            set filelist $ora_files
+        }
+    }
+
+    # read the files, so we can count lines and grep for procs
+    set filedata [apm::read_files $package_path $filelist]
+
+    # The first 2 metrics are easy (file count and line count)
+    set metrics(count) [llength $filelist]
+    set metrics(lines) [llength [split $filedata \n]]
+
+    # extract procs, depending on the file_type
+    switch -exact $file_type {
+        tcl_procs {
+            set metrics(procs) [regexp -all -line {^\s*ad_proc} $filedata]
+        }
+        test_procs {
+            set metrics(procs) [regexp -all -line {^\s*aa_register_case} $filedata]
+        }
+        data_model_pg {
+            set metrics(procs) [regexp -all -line -nocase {^\s*create\s+or\s+replace\s+function\s+} $filedata]
+        }
+        data_model_ora {
+            set metrics(procs) [expr {[regexp -all -line -nocase {^\s+function\s+} $filedata] + [regexp -all -line -nocase {^\s+procedure\s+} $filedata]}]
+        }
+        default {
+            # other file-types don't have procs
+            set metrics(procs) 0
+        }
+    }
+    
+    return [array get metrics]
+}
+
+ad_proc -public apm::get_package_descendent_options {
+    package_key
+} {
+    Get a list of pretty name, package key pairs for all packages which are descendents
+    of the given package key.
+
+    @param package_key The parent package's key.
+    @return a list of pretty name, package key pairs suitable for use in a template
+            select widget.
+} {
+    set in_clause '[join [apm_package_descendents $package_key] ',']'
+    return [db_list_of_lists get {}]
+}
+
+
+ad_proc -public apm::convert_type {
+    -package_id:required
+    -old_package_key:required
+    -new_package_key:required
+} {
+    Convert a package instance to a new type, doing the proper instantiate and mount callbacks and
+    parameter creation.
+
+    @param package_id The package instance to convert.
+    @param old_package_key The package key we're converting from.
+    @param new_package_key The new subsite type we're converting to.
+
+} {
+    db_dml update_package_key {}
+
+    set node_id [site_node::get_node_id_from_object_id -object_id $package_id]
+    if { $node_id ne "" } {
+        site_node::update_cache -node_id $node_id
+    }
+
+# DRB: parameter fix!
+    db_foreach get_params {} {
+        db_1row get_new_parameter_id {}
+        db_dml update_param {}
+    }
+    db_list copy_new_params {}
+    apm_parameter_sync $new_package_key $package_id
+    
+    foreach inherited_package_key [apm_package_inherit_order $new_package_key] {
+        if { [lsearch -exact [apm_package_inherit_order $old_package_key] $inherited_package_key]
+             == -1 } {
+            apm_invoke_callback_proc \
+                -package_key $inherited_package_key \
+                -type after-instantiate \
+                -arg_list [list package_id $package_id]
+            if { $node_id ne "" } {
+                apm_invoke_callback_proc \
+                    -package_key $inherited_package_key \
+                    -type after-mount \
+                    -arg_list [list node_id $node_id package_id $package_id]
+            }
+        }
+    }
+
 }

@@ -4,16 +4,8 @@ ad_library {
 
     @author Multiple
     @creation-date 11/18/98
-    @cvs-id admin-procs.tcl,v 1.9 2002/09/18 18:55:29 jeffd Exp
+    @cvs-id $Id$
 
-}
-
-ad_proc -deprecated -warn ad_ssl_available_p {} {
-    Returns 1 if this AOLserver has the SSL module installed.
-
-    @see security::https_available_p
-} {
-    return [security::https_available_p]
 }
 
 ad_proc -public ad_restrict_to_https {conn args why} {
@@ -35,7 +27,8 @@ ad_proc -public ad_restrict_to_https {conn args why} {
 ad_proc -public ad_approval_system_inuse_p {} {
     Returns 1 if the system is configured to use and approval system.
 } {
-    if {[ad_parameter RegistrationRequiresEmailVerification] && [ad_parameter RegistrationRequiresApprovalP] } {
+    if {[parameter::get -parameter RegistrationRequiresEmailVerification] && 
+	[parameter::get -parameter RegistrationRequiresApprovalP] } {
 	return 1
     } else {
 	return 0
@@ -97,7 +90,7 @@ ad_proc -private ad_user_class_description { set_id } {
 		    lappend clauses "have an email address starting with $email_starts_with"
 		}	
 		"expensive" {
-		    lappend clauses "have accumulated unpaid charges of more than [ad_parameter ExpensiveThreshold "member-value"]"
+		    lappend clauses "have accumulated unpaid charges of more than [parameter::get -parameter ExpensiveThreshold]"
 		}
 		"user_state" {
 		    lappend clauses "have user state of $user_state"
@@ -168,7 +161,7 @@ ad_proc -private ad_user_class_description { set_id } {
 	}
     }
 
-    if { [info exists combine_method] && $combine_method == "or" } {
+    if { [info exists combine_method] && $combine_method eq "or" } {
 	set pretty_description [join $clauses " or "]
     } else {
 	set pretty_description [join $clauses " and "]
@@ -199,7 +192,7 @@ ad_proc -private ad_user_class_query { set_id  } {
     # Get all the non-LOB columns.
     set user_columns [list]
     foreach column [db_columns users] {
-	if { $column != "portrait" && $column != "portrait_thumbnail" } {
+	if { $column ne "portrait" && $column ne "portrait_thumbnail" } {
 	    lappend user_columns "users.$column"
 	}
     }
@@ -217,7 +210,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 	lappend select_list "user_demographics_summary(users.user_id) as demographics_summary"
     }
     
-    if { [info exists user_class_id] && ![empty_string_p $user_class_id] } {
+    if { [info exists user_class_id] && $user_class_id ne "" } {
 	set sql_post_select [db_string sql_post_select_for_user_class "
 	    select sql_post_select
 	    from user_classes where user_class_id = [ns_dbquotevalue $user_class_id]
@@ -226,7 +219,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 	return "select [join $select_list ",\n    "]\n$sql_post_select"
     }
     
-    if { [info exists sql_post_select] && ![empty_string_p $sql_post_select] } {
+    if { [info exists sql_post_select] && $sql_post_select ne "" } {
 	return "select [join $select_list ",\n    "]\n$sql_post_select"
     }
 
@@ -257,7 +250,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 		    
 		}
 		"intranet_user_p" {
-		    if {$intranet_user_p == "t" && [lsearch $tables "intranet_users"] == -1 } {
+		    if {$intranet_user_p eq "t" && [lsearch $tables "intranet_users"] == -1 } {
 			lappend tables "intranet_users"
 			lappend join_clauses "users.user_id = intranet_users.user_id"
 		    }
@@ -281,7 +274,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 		}
 		"expensive" {
 		    if { [info exists count_only_p] && $count_only_p } {
-			lappend where_clauses "[ad_parameter ExpensiveThreshold "member-value"] < (select sum(amount) from users_charges where users_charges.user_id = users.user_id)"
+			lappend where_clauses "[parameter::get -parameter ExpensiveThreshold] < (select sum(amount) from users_charges where users_charges.user_id = users.user_id)"
 		    } else {
 			if {[lsearch $tables "user_charges"] == -1 } {
 			    lappend tables "users_charges"
@@ -290,7 +283,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 
 			set group_clauses [concat $group_clauses $user_columns]
 
-			lappend having_clauses "sum(users_charges.amount) > [ad_parameter ExpensiveThreshold "member-value"]"
+			lappend having_clauses "sum(users_charges.amount) > [parameter::get -parameter ExpensiveThreshold]"
 			# only the ones where they haven't paid
 			lappend where_clauses "users_charges.order_id is null"
 		    }
@@ -373,7 +366,7 @@ ad_proc -private ad_user_class_query { set_id  } {
     }
     #stuff related to the query itself
     
-    if { [info exists combine_method] && $combine_method == "or" } {
+    if { [info exists combine_method] && $combine_method eq "or" } {
 	set complete_where [join $where_clauses " or "]
     } else {
 	set complete_where [join $where_clauses " and "]
@@ -387,7 +380,7 @@ ad_proc -private ad_user_class_query { set_id  } {
     if { [llength $join_clauses] == 0 } {
 	set final_query "select [join $select_list ",\n    "]
 	from [join $tables ", "]"
-	if { ![empty_string_p $complete_where] } {
+	if { $complete_where ne "" } {
 	    append final_query "\nwhere $complete_where"
 	}
     } else {
@@ -395,7 +388,7 @@ ad_proc -private ad_user_class_query { set_id  } {
 	set final_query "select [join $select_list ",\n    "]
 	from [join $tables ", "]
 	where [join $join_clauses "\nand "]"
-	if { ![empty_string_p $complete_where] } {
+	if { $complete_where ne "" } {
 	    append final_query "\n and ($complete_where)"
 	}
     }
@@ -419,40 +412,67 @@ ad_proc -private ad_user_class_query_count_only { set_id } {
 }
 
 ad_proc -private ad_registration_finite_state_machine_admin_links {
+    -nohtml:boolean
     member_state
     email_verified_p
     user_id
     {return_url ""}
 } {
-    Returns the admininistation links to change the user's state in the user_state finite state machine.
+    Returns the admininistation links to change the user's state in the user_state finite state machine. If the nohtml switch is set, then a list of lists will be returned (url label).
 } {
-    set user_finite_state_links [list]
+    set user_finite_states [list]
     switch $member_state {
-	"approved" {
-	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=banned\">[_ acs-tcl.ban]</a>"
- 	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=deleted\">[_ acs-tcl.delete]</a>"
-	}
-	"deleted" {
-	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=approved\">[_ acs-tcl.undelete]</a>"
- 	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=banned\">[_ acs-tcl.ban]</a>"
-	}
-	"needs approval" {
-	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=approved\">[_ acs-tcl.approve]</a>"
- 	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=rejected\">[_ acs-tcl.reject]</a>"
-	}
-	"rejected" {
- 	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=approved\">[_ acs-tcl.approve]</a>"
-	}
-	"banned" {
- 	    lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&member_state=approved\">[_ acs-tcl.approve]</a>"
-	}
+        "approved" {
+            lappend user_finite_states \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state banned}}] [_ acs-tcl.ban]] \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state deleted}}] [_ acs-tcl.delete]]
+        }
+        "deleted" {
+            lappend user_finite_states \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state approved}}] [_ acs-tcl.undelete]] \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state banned}}] [_ acs-tcl.ban]]
+        }
+        "needs approval" {
+            lappend user_finite_states \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state approved}}] [_ acs-tcl.approve]] \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state rejected}}] [_ acs-tcl.reject]]
+        }
+        "rejected" {
+            lappend user_finite_states \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state approved}}] [_ acs-tcl.approve]]
+        }
+        "banned" {
+            lappend user_finite_states \
+                [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {member_state approved}}] [_ acs-tcl.approve]]
+        }
     }
 
-    if { $email_verified_p == "t" } {
- 	lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&email_verified_p=f\">[_ acs-tcl.lt_require_email_verific]</a>"	
+    if { $email_verified_p eq "t" } {
+        lappend user_finite_states \
+            [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {email_verified_p f}}] [_ acs-tcl.lt_require_email_verific]]
     } else {
- 	lappend user_finite_state_links "<a href=\"/acs-admin/users/member-state-change?[export_url_vars user_id return_url]&email_verified_p=t\">[_ acs-tcl.approve_email]</a>"
+        lappend user_finite_states \
+            [list [export_vars -base "/acs-admin/users/member-state-change" {user_id return_url {email_verified_p t}}] [_ acs-tcl.approve_email]]
     }
 
-    return $user_finite_state_links
-}    
+    if { $nohtml_p } {
+
+        # Return the list of lists (url label)
+        return $user_finite_states
+
+    } else {
+
+        # Build the list of A tags
+
+        set user_finite_state_links [list]
+
+        foreach elm $user_finite_states {
+            set url [lindex $elm 0]
+            set label [lindex $elm 1]
+            lappend user_finite_state_links [subst {<a href="$url">$label</a>}]
+        }
+        
+        return $user_finite_state_links
+
+    }
+}

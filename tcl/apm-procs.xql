@@ -1,6 +1,82 @@
 <?xml version="1.0"?>
 <queryset>
 
+  <fullquery name="apm_one_package_descendents.get_descendents">
+    <querytext>
+      select apv.package_key
+      from apm_package_versions apv, apm_package_dependencies apd
+      where apd.version_id = apv.version_id
+        and apv.enabled_p = 't'
+        and apd.dependency_type in ('extends', 'embeds')
+        and apd.service_uri = :package_key
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_build_subsite_packages_list.get_subsites">
+    <querytext>
+      select package_key
+      from apm_package_types
+      where implements_subsite_p = 't'
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_package_list_search_order.get_dependencies">
+    <querytext>
+      select apd.service_uri
+      from apm_package_versions apv, apm_package_dependencies apd
+      where apv.package_key = :package_key
+        and apv.installed_p = 't'
+        and apd.version_id = apv.version_id
+        and apd.dependency_type in ('extends', 'embeds')
+      order by apd.dependency_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_package_list_url_resolution.get_inherit_templates_p">
+    <querytext>
+      select inherit_templates_p
+      from apm_package_types
+      where package_key = :package_key
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_package_list_url_resolution.get_dependencies">
+    <querytext>
+      select apd.service_uri, apd.dependency_type
+      from apm_package_versions apv, apm_package_dependencies apd
+      where apv.package_key = :package_key
+        and apv.installed_p = 't'
+        and apd.version_id = apv.version_id
+        and (apd.dependency_type = 'embeds'
+             or apd.dependency_type =  'extends' and :inherit_templates_p = 't')
+      order by apd.dependency_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_one_package_inherit_order.get_dependencies">
+    <querytext>
+      select apd.service_uri
+      from apm_package_versions apv, apm_package_dependencies apd
+      where apv.package_key = :package_key
+        and apv.installed_p = 't'
+        and apd.version_id = apv.version_id
+        and apd.dependency_type in ('extends', 'embeds')
+      order by apd.dependency_id desc
+    </querytext>
+  </fullquery>
+
+  <fullquery name="apm_one_package_load_libraries_dependencies.get_dependencies">
+    <querytext>
+      select apd.service_uri
+      from apm_package_versions apv, apm_package_dependencies apd
+      where apv.package_key = :package_key
+        and apv.installed_p = 't'
+        and apd.version_id = apv.version_id
+        and apd.dependency_type in ('requires', 'embeds', 'extends')
+      order by apd.dependency_id desc
+    </querytext>
+  </fullquery>
+
   <fullquery name="apm_package_version_enabled_p.apm_package_version_enabled_p">
     <querytext>
       select case when count(*) = 0 then 0 else 1 end from apm_package_versions
@@ -11,7 +87,7 @@
 
   <fullquery name="apm_parameter_register.apm_parameter_cache_update">      
     <querytext>
-      select v.package_id, p.parameter_name, 
+      select coalesce(v.package_id, 0) as package_id, p.parameter_name, 
       case when v.value_id is null then p.default_value else v.attr_value end as attr_value
       from apm_parameters p left outer join apm_parameter_values v
       using (parameter_id)
@@ -24,6 +100,7 @@
       select distinct package_key
       from apm_package_versions
       where enabled_p='t'
+      order by package_key
     </querytext>
   </fullquery>
   
@@ -87,6 +164,31 @@
     </querytext>
   </fullquery>
   
+  <fullquery name="apm_parameter_update.object_title_update">      
+    <querytext>
+	update acs_objects
+	set title = :parameter_name
+	where object_id = :parameter_id
+    </querytext>
+  </fullquery>
+  
+  <fullquery name="apm_parameter_unregister.select_parameter_id">      
+    <querytext>
+      select parameter_id
+      from apm_parameters
+      where package_key = :package_key
+        and parameter_name = :parameter
+    </querytext>
+  </fullquery>
+  
+  <fullquery name="apm_parameter_unregister.get_scope_and_name">      
+    <querytext>
+      select scope, parameter_name
+      from apm_parameters
+      where parameter_id = :parameter_id
+    </querytext>
+  </fullquery>
+  
   <fullquery name="apm_parameter_unregister.all_parameters_packages">      
     <querytext>
       select package_id, parameter_id, parameter_name 
@@ -140,7 +242,8 @@
     <querytext>
       select parameter_name, attr_value
       from apm_parameters p, apm_parameter_values v, apm_packages a
-      where p.parameter_id = v.parameter_id
+      where p.scope = 'instance'
+      and p.parameter_id = v.parameter_id
       and a.package_id = v.package_id
       and a.package_id = :package_id
     </querytext>
@@ -213,6 +316,50 @@
                apm_package_types t
         where  v.version_id = :version_id
         and    t.package_key = v.package_key
+    </querytext>
+  </fullquery>  
+
+  <fullquery name="apm::get_package_descendent_options.get">      
+    <querytext>
+      select pretty_name, package_key
+      from apm_package_types
+      where implements_subsite_p = 't'
+        and package_key in ($in_clause)
+      order by pretty_name
+    </querytext>
+  </fullquery>  
+
+  <fullquery name="apm::convert_type.update_package_key">      
+    <querytext>
+      update apm_packages
+      set package_key = :new_package_key
+      where package_id = :package_id
+    </querytext>
+  </fullquery>  
+
+  <fullquery name="apm::convert_type.get_params">      
+    <querytext>
+      select parameter_name, parameter_id
+      from apm_parameters
+      where package_key = :old_package_key
+    </querytext>
+  </fullquery>  
+
+  <fullquery name="apm::convert_type.get_new_parameter_id">      
+    <querytext>
+      select parameter_id as new_parameter_id
+      from apm_parameters
+      where package_key = :new_package_key
+        and parameter_name = :parameter_name
+    </querytext>
+  </fullquery>  
+
+  <fullquery name="apm::convert_type.update_param">      
+    <querytext>
+      update apm_parameter_values
+      set parameter_id = :new_parameter_id
+      where parameter_id = :parameter_id
+        and package_id = :package_id
     </querytext>
   </fullquery>  
 

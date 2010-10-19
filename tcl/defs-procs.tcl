@@ -5,10 +5,10 @@ ad_library {
 
     @author Many others at ArsDigita and in the OpenACS community.
     @creation-date 2 April 1998
-    @cvs-id defs-procs.tcl,v 1.19.2.2 2003/03/28 13:43:28 lars Exp
+    @cvs-id $Id$
 }
 
-ad_proc -public ad_acs_version {} {
+ad_proc -public ad_acs_version_no_cache {} {
     The OpenACS version of this instance. Uses the version name
     of the acs-kernel package.
 
@@ -17,6 +17,14 @@ ad_proc -public ad_acs_version {} {
     apm_version_get -package_key acs-kernel -array kernel
 
     return $kernel(version_name)
+}
+ad_proc -public ad_acs_version {} {
+    The OpenACS version of this instance. Uses the version name
+    of the acs-kernel package.
+
+    @author Peter Marklund
+} {
+    return [util_memoize ad_acs_version_no_cache]
 }
 
 ad_proc -public ad_acs_release_date {} {
@@ -35,28 +43,20 @@ ad_proc -public ad_host_administrator {} {
 
     @return The e-mail address of a technical person who can fix problems
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id]  HostAdministrator]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter HostAdministrator]
 }
 
 ad_proc -public ad_outgoing_sender {} {
     @return The email address that will sign outgoing alerts
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id] OutgoingSender]
-}
-
-
-ad_proc -deprecated ad_graphics_site_available_p {} {
-    As defined in the GraphicsSiteAvailableP kernel parameter.
-    @return 1 if there is a graphics site
-} {
-    return [ad_parameter -package_id [ad_acs_kernel_id]  GraphicsSiteAvailableP]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter OutgoingSender]
 }
 
 ad_proc -public ad_system_name {} {
     This is the main name of the Web service that you're offering
     on top of the OpenACS Web Publishing System.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id] SystemName]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter SystemName]
 }
 
 
@@ -64,7 +64,7 @@ ad_proc -public ad_pvt_home {} {
     This is the URL of a user's private workspace on the system, usually
     [subsite]/pvt/home.tcl
 } {
-    return "[subsite::get_element -element url -notrailing][ad_parameter -package_id [ad_acs_kernel_id] HomeURL]"
+    return "[subsite::get_element -element url -notrailing][parameter::get -package_id [ad_acs_kernel_id] -parameter HomeURL]"
 }
 
 ad_proc -public ad_admin_home {} {
@@ -85,10 +85,12 @@ ad_proc -public ad_pvt_home_name {} {
     This is the name that will be used for the user's workspace (usually "Your Workspace").
     @return the name especified for the user's workspace in the HomeName kernel parameter.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id] HomeName]
+    return [lang::util::localize [parameter::get -package_id [ad_acs_kernel_id] -parameter HomeName]]
 }
 
 ad_proc -public ad_pvt_home_link {} {
+    @return the html fragment for the /pvt link
+} {
     return "<a href=\"[ad_pvt_home]\">[ad_pvt_home_name]</a>"
 }
 
@@ -107,7 +109,7 @@ ad_proc -public ad_system_owner {} {
     Person who owns the service 
     this person would be interested in user feedback, etc.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id]  SystemOwner]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter SystemOwner]
 }
 
 
@@ -115,28 +117,27 @@ ad_proc -public ad_publisher_name {} {
     A human-readable name of the publisher, suitable for
     legal blather.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id]  PublisherName]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter PublisherName]
 }
 
 ad_proc -public ad_url {} {
     This will be called by email alerts. Do not use ad_conn location
     @return the system url as defined in the kernel parameter SystemURL.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id] SystemURL]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter SystemURL]
 }
 
 ad_proc -public acs_community_member_page {} {
     @return the url for the community member page
 } {
-    return "[subsite::get_element -element url -notrailing][ad_parameter \
-	    -package_id [ad_acs_kernel_id] CommunityMemberURL]"
+    return "[subsite::get_element -element url -notrailing][parameter::get \
+	    -package_id [ad_acs_kernel_id] -parameter CommunityMemberURL]"
 }
 
 ad_proc -public acs_community_member_url {
     {-user_id:required}
 } {
     @return the url for the community member page of a particular user
-    @see acs_community_member_url
 } {
     return "[acs_community_member_page]?[export_vars user_id]"
 }
@@ -148,7 +149,7 @@ ad_proc -public acs_community_member_link {
     @return the link of the community member page of a particular user
     @see acs_community_member_url
 } {
-    if {[empty_string_p $label]} {
+    if {$label eq ""} {
         acs_user::get -user_id $user_id -array user
         set label "$user(first_names) $user(last_name)"
     }
@@ -188,7 +189,7 @@ ad_proc -public acs_community_member_admin_link {
 } {
     @return the HTML link of the community member page of a particular admin user.
 } {
-    if {[empty_string_p $label]} {
+    if {$label eq ""} {
         set label [db_string select_community_member_link_label {
             select persons.first_names || ' ' || persons.last_name
             from persons
@@ -219,36 +220,34 @@ ad_proc -deprecated ad_admin_present_user {
 
 ad_proc -deprecated ad_header {
     {-focus ""}
-    {-extra_stuff_for_body ""}
     page_title
     {extra_stuff_for_document_head ""} 
 } {
     writes HEAD, TITLE, and BODY tags to start off pages in a consistent fashion
+
+
+    @see   Documentation on the site master template for the proper way to standardize page headers
 } {
     
     #    if {[ad_parameter MenuOnUserPagesP pdm] == 1} {
     #	return [ad_header_with_extra_stuff -focus $focus $page_title [ad_pdm] [ad_pdm_spacer]]
     #    } else {
     #    }
-    return [ad_header_with_extra_stuff \
-	-focus $focus \
-	-extra_stuff_for_body $extra_stuff_for_body \
-	$page_title \
-	$extra_stuff_for_document_head \
-    ]
+    return [ad_header_with_extra_stuff -focus $focus $page_title $extra_stuff_for_document_head]
+
 }
 
 ad_proc -deprecated ad_header_with_extra_stuff {
     {-focus ""}
-    {-extra_stuff_for_body ""}
     page_title
     {extra_stuff_for_document_head ""} 
     {pre_content_html ""}
 } {
     This is the version of the ad_header that accepts extra stuff for the document head and pre-page content html
+
+    @see  Documentation on the site master template for the proper way to standardize page headers
 } {
-    set html "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
-<html>
+    set html "<html>
 <head>
 $extra_stuff_for_document_head
 <title>$page_title</title>
@@ -257,23 +256,17 @@ $extra_stuff_for_document_head
 
     array set attrs [list]
 
-    if { [info exists prefer_text_only_p] && $prefer_text_only_p == "f" && [ad_graphics_site_available_p] } {
-        set attrs(bgcolor) [ad_parameter -package_id [ad_acs_kernel_id]  bgcolor "" "white"]
-	set attrs(background) [ad_parameter -package_id [ad_acs_kernel_id]  background "" "/graphics/bg.gif"]
-	set attrs(text) [ad_parameter -package_id [ad_acs_kernel_id]  textcolor "" "black"]
-    } else {
-	set attrs(bgcolor) [ad_parameter -package_id [ad_acs_kernel_id]  bgcolor "" "white"]
-	set attrs(text) [ad_parameter -package_id [ad_acs_kernel_id]  textcolor "" "black"]
-    }
+    set attrs(bgcolor) [parameter::get -package_id [ad_acs_kernel_id] -parameter bgcolor -default "white"]
+    set attrs(text)    [parameter::get -package_id [ad_acs_kernel_id] -parameter textcolor -default "black"]
 
-    if { ![empty_string_p $focus] } {
+    if { $focus ne "" } {
 	set attrs(onLoad) "javascript:document.${focus}.focus()"
     }
 
     foreach attr [array names attrs] {
 	lappend attr_list "$attr=\"$attrs($attr)\""
     }
-    append html "<body [join $attr_list] $extra_stuff_for_body>\n"
+    append html "<body [join $attr_list]>\n"
 
     append html $pre_content_html
     return $html
@@ -286,9 +279,12 @@ ad_proc -deprecated ad_footer {
     Writes a horizontal rule, a mailto address box 
     (ad_system_owner if not specified as an argument), 
     and then closes the BODY and HTML tags
+
+
+    @see  Documentation on the site master template for the proper way to standardize page footers
 } {
     global sidegraphic_displayed_p
-    if { [empty_string_p $signatory] } {
+    if { $signatory eq "" } {
 	set signatory [ad_system_owner]
     } 
     if { [info exists sidegraphic_displayed_p] && $sidegraphic_displayed_p } {
@@ -298,7 +294,7 @@ ad_proc -deprecated ad_footer {
     } else {
 	set extra_br ""
     }
-    if { [ad_parameter -package_id [ad_acs_kernel_id]  EnabledP curriculum 0] && [ad_parameter -package_id [ad_acs_kernel_id]  StickInFooterP curriculum 0] && !$suppress_curriculum_bar_p} {
+    if { [parameter::get -package_id [ad_acs_kernel_id] -parameter EnabledP -default 0] && [parameter::get -package_id [ad_acs_kernel_id] -parameter StickInFooterP -default 0] && !$suppress_curriculum_bar_p} {
 	set curriculum_bar "<center>[curriculum_bar]</center>"
     } else {
 	set curriculum_bar ""
@@ -329,13 +325,16 @@ $ds_link
 ad_proc -public ad_admin_owner {} {
     @return E-mail address of the Administrator of this site.
 } {
-    return [ad_parameter -package_id [ad_acs_kernel_id]  AdminOwner]
+    return [parameter::get -package_id [ad_acs_kernel_id] -parameter AdminOwner]
 }
 
 ad_proc -deprecated ad_admin_header {
     {-focus ""}
     page_title
-} "" {
+} {
+    
+    @see  Documentation on the site master template for the proper way to standardize page headers
+} {
     
     # if {[ad_parameter -package_id [ad_acs_kernel_id]  MenuOnAdminPagesP pdm] == 1} {
 	
@@ -349,6 +348,9 @@ ad_proc -deprecated ad_admin_header {
 ad_proc -deprecated ad_admin_footer {} {
     Signs pages with ad_admin_owner (usually a programmer who can fix 
     bugs) rather than the signatory of the user pages
+
+
+    @see  Documentation on the site master template for the proper way to standardize page footers
 } {
     if { [llength [info procs ds_link]] == 1 } {
 	set ds_link [ds_link]
@@ -360,6 +362,22 @@ $ds_link
 <a href=\"mailto:[ad_admin_owner]\"><address>[ad_admin_owner]</address></a>
 </body>
 </html>"
+}
+
+ad_proc -public ad_return_string_as_file {
+    -string
+    -filename
+    -mime_type
+} {
+    Return a string as the content of a file
+    
+    @param string Content of the file to be sent back
+    @param filename Name of the file to be returned
+    @param mime_type Mime Type of the file being returned
+} {
+    ns_set put [ns_conn outputheaders] "Content-Disposition" "attachment; filename=\"$filename\""
+    ReturnHeaders "$mime_type"
+    ns_write $string
 }
 
 ad_proc -public ad_return_complaint {
@@ -374,10 +392,12 @@ ad_proc -public ad_return_complaint {
 
     @param exception_text HTML chunk to go inside an UL tag with the error messages.
 } {
+    set complaint_template [parameter::get_from_package_key -package_key "acs-tcl" -parameter "ReturnComplaint" -default "/packages/acs-tcl/lib/ad-return-complaint"]
     ns_return 200 text/html [ad_parse_template \
                                  -params [list [list exception_count $exception_count] \
                                               [list exception_text $exception_text]] \
-                                 "/packages/acs-tcl/lib/ad-return-complaint"]
+				 $complaint_template]
+				 
     
     # raise abortion flag, e.g., for templating
     global request_aborted
@@ -398,7 +418,8 @@ ad_proc ad_return_exception_page {
     @param title Title to be used for the error (will be shown to user)
     @param explanation Explanation for the exception.
 } {
-    set page [ad_parse_template -params [list [list title $title] [list explanation $explanation]] "/packages/acs-tcl/lib/ad-return-error"]
+    set error_template [parameter::get_from_package_key -package_key "acs-tcl" -parameter "ReturnError" -default "/packages/acs-tcl/lib/ad-return-error"]
+    set page [ad_parse_template -params [list [list title $title] [list explanation $explanation]] $error_template]
     if {$status > 399 
         && [string match {*; MSIE *} [ns_set iget [ad_conn headers] User-Agent]]
         && [string length $page] < 512 } { 
@@ -489,7 +510,7 @@ ad_proc ad_return_if_another_copy_is_running {
     if { $n_matches > $max_simultaneous_copies } {
 	ad_return_warning "Too many copies" "This is an expensive page for our server, which is already running the same program on behalf of some other users.  Please try again at a less busy hour."
 	# blow out of the caller as well
-	if $call_adp_break_p {
+	if {$call_adp_break_p} {
 	    # we were called from an ADP page; we have to abort processing
 	    ns_adp_break
 	}
@@ -497,30 +518,6 @@ ad_proc ad_return_if_another_copy_is_running {
     }
     # we're okay
     return 1
-}
-
-ad_proc ad_record_query_string {
-    query_string 
-    subsection 
-    n_results 
-    {user_id 0}
-} {
-    Records the query string and other params in the "query_string_record" table.
-    I'm not sure what's that's for.
-
-    @author Unknown
-    @author Roberto Mello
-} {  
-
-    if { $user_id == 0 } {
-	set user_id [db_null]
-    }
-
-    db_dml query_string_record {
-	insert into query_strings 
-	(query_date, query_string, subsection, n_results, user_id) values
-	(sysdate, :query_string, :subsection, :n_results, :user_id)
-    }
 }
 
 ad_proc ad_pretty_mailing_address_from_args {
@@ -538,16 +535,16 @@ ad_proc ad_pretty_mailing_address_from_args {
     @author Roberto Mello
 } {
     set lines [list]
-    if { [empty_string_p $line2] } {
+    if { $line2 eq "" } {
 	lappend lines $line1
-    } elseif { [empty_string_p $line1] } {
+    } elseif { $line1 eq "" } {
 	lappend lines $line2
     } else {
 	lappend lines $line1
 	lappend lines $line2
     }
     lappend lines "$city, $state $postal_code"
-    if { ![empty_string_p $country_code] && $country_code != "us" } {
+    if { $country_code ne "" && $country_code ne "us" } {
 	lappend lines [ad_country_name_from_country_code $country_code]
     }
     return [join $lines "\n"]
@@ -589,7 +586,7 @@ ad_proc ad_decorate_top {
     string, ad_decorate_top will make a one-row table for the 
     top of the page
 } {
-    if { [empty_string_p $potential_decoration] } {
+    if { $potential_decoration eq "" } {
 	return $simple_headline
     } else {
 	return "<table cellspacing=10><tr><td>$potential_decoration<td>$simple_headline</tr></table>"
@@ -607,7 +604,7 @@ ad_proc -private ad_requested_object_id {} {
 	set package_id [ad_conn package_id]
     }
 
-    if { [empty_string_p $package_id] } {
+    if { $package_id eq "" } {
 	if { [catch {
 	    set package_id [ad_acs_kernel_id]
 	}] } {
@@ -673,7 +670,7 @@ ad_proc -public ad_parameter_from_file {
     # The below is really a hack because none of the calls to ad_parameter in the system
     # actually call 'ad_parameter param_name acs-kernel'.
 
-    if { [empty_string_p $package_key] || $package_key == "acs-kernel"} {
+    if { $package_key eq "" || $package_key eq "acs-kernel"} {
 	set ns_param [ns_config "ns/server/[ns_info server]/acs" $name]
     } else {
 	set ns_param [ns_config "ns/server/[ns_info server]/acs/$package_key" $name]
@@ -686,42 +683,39 @@ ad_proc -public ad_parameter_from_file {
 ad_proc -private ad_parameter_cache {
     -set
     -delete:boolean
-    package_id
+    -global:boolean
+    key
     parameter_name
 } {
     
     Manages the cache for ad_paremeter.
     @param -set Use this flag to indicate a value to set in the cache.
-    @param package_id Specifies the package instance id for the parameter.
+    @param -delete Delete the value from the cache
+    @param -global If true, global param, false, instance param
+    @param key Specifies the key for the cache'd parameter, either the package instance
+     id (instance parameter) or package key (global parameter).
     @param parameter_name Specifies the parameter name that is being cached.
     @return The cached value.
     
 } {
     if {$delete_p} {
-	if {[nsv_exists ad_param_$package_id $parameter_name]} {
-	    nsv_unset ad_param_$package_id $parameter_name
+	if {[nsv_exists ad_param_$key $parameter_name]} {
+	    nsv_unset ad_param_$key $parameter_name
 	}
 	return
     }
     if {[info exists set]} {
-	nsv_set "ad_param_${package_id}" $parameter_name $set
+	nsv_set "ad_param_${key}" $parameter_name $set
 	return $set
-    } elseif { [nsv_exists ad_param_$package_id $parameter_name] } {
-	return [nsv_get ad_param_$package_id $parameter_name]
+    } elseif { [nsv_exists ad_param_$key $parameter_name] } {
+	return [nsv_get ad_param_$key $parameter_name]
+    } elseif { $global_p } {
+        set value [db_string select_global_parameter_value {} -default ""]
     } else {
-        set value [db_string select_parameter_value {
-            select apm_parameter_values.attr_value
-            from apm_parameters,
-                 apm_parameter_values
-            where apm_parameter_values.package_id = :package_id
-            and apm_parameter_values.parameter_id = apm_parameters.parameter_id
-            and apm_parameters.parameter_name = :parameter_name
-        } -default ""]
-
-	nsv_set "ad_param_${package_id}" $parameter_name $value
-
-	return $value
+        set value [db_string select_instance_parameter_value {} -default ""]
     }
+    nsv_set "ad_param_${key}" $parameter_name $value
+    return $value
 }
 
 ad_proc -private ad_parameter_cache_all {} {
@@ -748,7 +742,7 @@ ad_proc -public ad_parameter_all_values_as_list {
     Returns multiple values for a parameter as a list.
 
 } {  
-    return [join [ad_parameter -package_id $package_id $name $subsection] " "]
+    return [join [parameter::get -package_id $package_id -parameter $name ] " "]
 }
 
 ad_proc doc_return {args} {
@@ -869,6 +863,6 @@ ad_proc -public ad_progress_bar_end {
     @see ad_progress_bar_begin
 } { 
     util_user_message -message $message_after_redirect
-    ns_write "<script language=\"javascript\">window.location='$url';</script>"
+    ns_write "<script type=\"text/javascript\">window.location='$url';</script>"
     ns_conn close
 }

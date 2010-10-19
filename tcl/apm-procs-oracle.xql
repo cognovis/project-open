@@ -47,9 +47,10 @@
 	    begin
 	    :1 := apm.register_parameter(
 					 parameter_id => :parameter_id,
-					 parameter_name => :parameter_name,
 					 package_key => :package_key,
+					 parameter_name => :parameter_name,
 					 description => :description,
+                                         scope => :scope,
 					 datatype => :datatype,
 					 default_value => :default_value,
 					 section_name => :section_name,
@@ -61,11 +62,18 @@
       </querytext>
 </fullquery>
 
+<fullquery name="apm_parameter_unregister.unregister">
+  <querytext>
+    begin
+      apm.unregister_parameter(:parameter_id);
+    end;
+  </querytext>
+</fullquery>
  
 <fullquery name="apm_parameter_register.apm_parameter_cache_update">      
       <querytext>
       
-	select v.package_id, p.parameter_name,
+	select nvl(v.package_id, 0) as package_id, p.parameter_name,
           decode(v.value_id, null, p.default_value, v.attr_value) as attr_value
 	from apm_parameters p, apm_parameter_values v
 	where p.package_key = :package_key
@@ -80,6 +88,7 @@
       
 	begin
 	:1 := apm_package_version.add_dependency(
+            dependency_type => :dependency_type,
             dependency_id => :dependency_id,
 	    version_id => :version_id,
 	    dependency_uri => :dependency_uri,
@@ -182,7 +191,7 @@
 <fullquery name="apm_package_url_from_id_mem.apm_package_url_from_id">      
       <querytext>
       
-	select site_node.url(node_id) 
+	select site_node.url(min(node_id))
           from site_nodes 
          where object_id = :package_id
     
@@ -199,5 +208,19 @@
       </querytext>
 </fullquery>
 
+  <fullquery name="apm::convert_type.copy_new_params">
+    <querytext>
+      select apm_parameter_value.new(
+               package_id => :package_id,
+               parameter_id => ap.parameter_id,
+               value => ap.default_value)
+      from apm_parameters ap
+      where ap.package_key = :new_package_key
+        and not exists (select 1
+                        from apm_parameters ap2
+                        where ap2.package_key = :old_package_key
+                          and ap2.parameter_name = ap.parameter_name)
+    </querytext>
+  </fullquery>
  
 </queryset>

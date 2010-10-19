@@ -23,7 +23,7 @@ proc xml_support_ok {varname} {
 # Parse a document and return a doc_id
 proc xml_parse args {
 #   ns_log notice "xml_parse $args"
-    if {[lindex $args 0] == "-persist"} {
+    if {[lindex $args 0] eq "-persist"} {
 	return [dom parse -simple [lindex $args 1]]
     } else {
 	dom parse -simple [lindex $args 0] doc
@@ -77,6 +77,11 @@ proc xml_node_get_name {node_id} {
 proc xml_node_get_attribute {node_id attribute_name {default ""}} {
 #   ns_log notice "xml_node_get_attribute [$node_id nodeName] $attribute_name --> [$node_id getAttribute $attribute_name $default]"
     return [$node_id getAttribute $attribute_name $default]
+}
+
+# Set Node Attribute
+proc xml_node_set_attribute {node_id attribute_name value} {
+  $node_id setAttribute $attribute_name $value
 }
 
 # Get Content

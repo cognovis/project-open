@@ -118,7 +118,7 @@ ad_proc -public apm_package_info_file_path {
     as a specification file.
 
 } {
-    if { [empty_string_p $path] } {
+    if { $path eq "" } {
 	set path "[acs_package_root_dir $package_key]/$package_key.info"
     } else {
 	set path "$path/$package_key/$package_key.info"
@@ -149,9 +149,10 @@ ad_proc -private apm_extract_tarball { version_id dir } {
                  } $apm_file
 
     file mkdir $dir
-    # cd, gunzip, and untar all in the same subprocess (to avoid having to
-    # chdir first).
-    exec sh -c "cd $dir ; [apm_gunzip_cmd] -q -c $apm_file | [apm_tar_cmd] xf -" 2>/dev/null
+    # avoid chdir 
+    #ns_log notice "exec sh -c 'cd $dir ; [apm_gzip_cmd] -d -q -c $apm_file | [apm_tar_cmd] xf - 2>/dev/null'"
+    exec [apm_gzip_cmd] -d -q -c -S .apm $apm_file | [apm_tar_cmd] -xf - -C $dir 2> [apm_dev_null]
+
     file delete $apm_file
 }
 
@@ -182,7 +183,7 @@ ad_proc -private apm_generate_tarball { version_id } {
     # file; we need this to ensure that the tarballs are relative to the
     # package root directory ([acs_root_dir]/packages).
 
-    set cmd [list exec [apm_tar_cmd] cf -  2>/dev/null]
+    set cmd [list exec [apm_tar_cmd] cf - 2> [apm_dev_null]]
     foreach file $files {
 	lappend cmd -C "[acs_root_dir]/packages"
 	lappend cmd "$package_key/$file"
@@ -195,7 +196,7 @@ ad_proc -private apm_generate_tarball { version_id } {
     # the database.
 
     set creation_ip [ad_conn peeraddr]
-    set user_id     [ad_verify_and_get_user_id]
+    set user_id     [ad_conn user_id]
     set name        "tarball-for-package-version-${version_id}"
     set title       "${package_key}-tarball"
 
@@ -242,7 +243,7 @@ ad_proc -private apm_generate_tarball { version_id } {
         #Let's check if a current revision exists:
         if {![db_0or1row get_revision_id "select live_revision as revision_id
               from cr_items
-             where item_id = :item_id"] || [empty_string_p $revision_id]} {
+             where item_id = :item_id"] || $revision_id eq ""} {
             # It's an insert rather than an update            
             set revision_id [db_exec_plsql create_revision $create_revision]
         }
@@ -314,7 +315,7 @@ ad_proc -public apm_file_watch {path} {
 
     @param path The path of the file relative to server root
 } {
-    if { [string equal $path "packages/acs-bootstrap-installer/tcl/30-apm-load-procs.tcl"] } {
+    if {$path eq "packages/acs-bootstrap-installer/tcl/30-apm-load-procs.tcl"} {
         ns_log Warning "apm_file_watch: Skipping file $path as it cannot be watched. You have to restart the server instead"
     }
 
@@ -332,7 +333,7 @@ ad_proc -public apm_file_watch_cancel {
 
     @author Peter Marklund
 } {
-    if { ![empty_string_p $path] } {
+    if { $path ne "" } {
         catch { nsv_unset apm_reload_watch $path }
     } else {
         catch {nsv_unset apm_reload_watch}
@@ -368,7 +369,7 @@ ad_proc -public apm_file_watchable_p { path } {
 
     # Check the db type
     set file_db_type [apm_guess_db_type $package_key $package_rel_path]
-    set right_db_type_p [expr [empty_string_p $file_db_type] || \
+    set right_db_type_p [expr {$file_db_type eq ""} || \
                             [string equal $file_db_type [db_type]]]
 
     # Check the file type
@@ -376,10 +377,10 @@ ad_proc -public apm_file_watchable_p { path } {
     # I would like to add test_procs to the list but currently test_procs files are used to register test cases
     # and we don't want to resource these files in every interpreter. Test procs should be defined in test_init files.
     set watchable_file_types [list tcl_procs query_file test_procs]
-    set right_file_type_p [expr [lsearch -exact $watchable_file_types $file_type] != -1]
+    set right_file_type_p [expr {[lsearch -exact $watchable_file_types $file_type] != -1}]
 
     # Both db type and file type must be right
-    set watchable_p [expr $right_db_type_p && $right_file_type_p]
+    set watchable_p [expr {$right_db_type_p && $right_file_type_p}]
 
     return $watchable_p
 }
@@ -442,49 +443,27 @@ ad_proc -public pkg_home {package_key} {
     return "/packages/$package_key"
 }
 
-ad_proc -public -deprecated -warn apm_version_file_list { 
-    {-type ""} 
-    {-db_type ""}
-    version_id 
-} {
-    Returns a list of paths to files of a given type (or all files, if
-    $type is not specified) which support a given database (if specified) in a version.
-    Use the proc apm_get_package_files instead.
-
-    @param type Optionally specifiy what type of files to check, for instance "tcl_procs"
-    @param db_type This argument is ignored for now.
-    @param version_id The version to retrieve the file list from.
-    @param path_prefix A prefix that will be used for all the returned paths. By default
-                       the prefix will be the empty string which means that the returned paths
-                       will be relative to the package root.
-
-    @see apm_get_package_files
-} {
-    set package_key [apm_package_key_from_version_id $version_id]
-
-    return [apm_get_package_files -package_key $package_key -file_types $type]
-}
-
 ad_proc -private apm_system_paths {} {
 
     @return a list of acceptable system paths to search for executables in.
 
 } {
     set paths [ad_parameter_all_values_as_list -package_id [ad_acs_kernel_id] SystemCommandPaths acs-kernel]
-    if {[empty_string_p $paths]} {
+    if {$paths eq ""} {
 	return [list "/usr/local/bin" "/usr/bin" "/bin" "/usr/sbin" "/sbin" "/usr/sbin"]
     } else {
 	return $paths
     }
 }
 
-ad_proc -private apm_gunzip_cmd {} {
+ad_proc -private apm_gzip_cmd {} {
 
-    @return A valid pointer to gunzip, 0 otherwise.
+    @return A valid pointer to gzip, 0 otherwise.
  
 } {
-    return gunzip
+    return gzip
 }
+
 
 ad_proc -private apm_tar_cmd {} {
 
@@ -495,12 +474,69 @@ ad_proc -private apm_tar_cmd {} {
 }
 
 
-ad_proc -private apm_gzip_cmd {} {
-    
-    @return A valid pointer to gzip, 0 otherwise.
+ad_proc -private apm_dev_null {} {
 
+    @return null device
+ 
 } {
-    return gzip
+  if {$::tcl_platform(platform) ne "windows"} {
+    return /dev/null
+  } else {
+    return nul
+  }
+}
+
+ad_proc -private apm_transfer_file {
+  {-url}
+  {-output_file_name}
+} {
+  #
+  # The original solution using ns_httpopen + file_copy does not work
+  # reliably under windows, for unknown reasons the downloaded file is
+  # truncated.
+  #
+  # Therefore, we check first if the optional xotcl-core components
+  # are available...
+  #
+  if {[info command ::xo::HttpRequest] ne ""} {
+    # 
+    # ... use xo::HttpRequest...
+    #
+    #ns_log notice "Transfer $url based to $output_file_name on ::xo::HttpRequest"
+    #
+    set r [::xo::HttpRequest new -url $url]
+    set fileChan [open $output_file_name w 0640]
+    fconfigure $fileChan -translation binary -encoding binary
+    puts -nonewline $fileChan [$r set data]
+    close $fileChan
+
+  } elseif {[set wget [::util::which wget]] ne ""} {
+    #
+    # ... if we have no ::xo::* and we have "wget" installed, we use
+    # it.
+    #
+    ns_log notice "Transfer $url based on wget"
+    catch {exec $wget -O $output_file_name $url}
+
+  } else {
+    #
+    # Everything else failed, fall back to the original solution.
+    #
+    ns_log notice "Transfer $url based on ns_httpopen"
+    # Open a destination file.
+    set fileChan [open  $output_file_name w 0640]
+    # Open the channel to the server.
+    set httpChan [lindex [ns_httpopen GET $url] 0]
+    ns_log Debug "APM: Copying data from $url"
+    fconfigure $httpChan -encoding binary
+    fconfigure $fileChan -encoding binary
+    # Copy the data
+    fcopy $httpChan $fileChan
+    # Clean up.
+    ns_log Debug "APM: Done copying data."
+    close $httpChan
+    close $fileChan
+  }
 }
 
 ad_proc -private apm_load_apm_file {
@@ -518,24 +554,10 @@ ad_proc -private apm_load_apm_file {
 
 } {    
     # First download the apm file if a URL is provided
-    if { ![empty_string_p $url] } {
+    if { $url ne "" } {
+        set file_path [ns_tmpnam].apm
         apm_callback_and_log $callback "<li>Downloading $url..."
-        if { [catch {
-            # Open a destination file.
-            set file_path [ns_tmpnam].apm
-            set fileChan [open $file_path w 0640]
-            # Open the channel to the server.
-            set httpChan [lindex [ns_httpopen GET $url] 0]
-            ns_log Debug "APM: Copying data from $url"
-            fconfigure $httpChan -encoding binary
-            fconfigure $fileChan -encoding binary
-            # Copy the data
-            fcopy $httpChan $fileChan
-            # Clean up.
-            ns_log Debug "APM: Done copying data."
-            close $httpChan
-            close $fileChan
-        } errmsg] } {
+        if { [catch {apm_transfer_file -url $url -output_file_name $file_path} errmsg] } {
             apm_callback_and_log $callback "Unable to download. Please check your URL.</ul>.
             The following error was returned: <blockquote><pre>[ad_quotehtml $errmsg]
             </pre></blockquote>[ad_footer]"
@@ -551,10 +573,11 @@ ad_proc -private apm_load_apm_file {
         }
     }
 
+    #ns_log notice "*** try to exec [apm_gzip_cmd] -d -q -c -S .apm $file_path | [apm_tar_cmd] tf - 2> [apm_dev_null]"
     if { [catch {
 	set files [split [string trim \
-		[exec [apm_gunzip_cmd] -q -c $file_path | [apm_tar_cmd] tf - 2>/dev/null]] "\n"]
-	apm_callback_and_log $callback  "<li>Done. Archive is [format "%.1f" [expr { [file size $file_path] / 1024.0 }]]KB, with [llength $files] files.<li>"
+		[exec [apm_gzip_cmd] -d -q -c -S .apm $file_path | [apm_tar_cmd] tf - 2> [apm_dev_null]]] "\n"]
+	apm_callback_and_log $callback  "<li>Done. Archive is [format %.1f [expr { [file size $file_path] / 1024.0 }]]KB, with [llength $files] files.<li>"
     } errmsg] } {
 	apm_callback_and_log $callback "The follow error occured during the uncompression process:
 	<blockquote><pre>[ad_quotehtml $errmsg]</pre></blockquote><br>
@@ -576,7 +599,7 @@ ad_proc -private apm_load_apm_file {
     foreach file $files {
 	set components [split $file "/"]
 
-	if { [string compare [lindex $components 0] $package_key] } {
+	if {[lindex $components 0] ne $package_key  } {
 	    apm_callback_and_log $callback  "All files in the archive must be contained in the same directory 
 	    (corresponding to the package's key). This is not the case, so the archive is not 
 	    a valid APM file.\n"
@@ -584,7 +607,7 @@ ad_proc -private apm_load_apm_file {
 	    return
 	}
     
-	if { [llength $components] == 2 && ![string compare [file extension $file] ".info"] } {
+	if { [llength $components] == 2 && [file extension $file] eq ".info" } {
 	    if { [info exists info_file] } {
 		apm_callback_and_log $callback  "The archive contains more than one <tt>package/*/*.info</tt> file, so it is not a valid APM file.</ul>\n"
                 ns_log Error "Error loading APM file form url $url: Invalid APM file. More than one package .info file."
@@ -604,7 +627,9 @@ ad_proc -private apm_load_apm_file {
     apm_callback_and_log $callback  "Extracting the .info file (<tt>$info_file</tt>)..."
     set tmpdir [ns_tmpnam]
     file mkdir $tmpdir
-    exec sh -c "cd $tmpdir ; [apm_gunzip_cmd] -q -c $file_path | [apm_tar_cmd] xf - $info_file" 2>/dev/null
+    exec [apm_gzip_cmd] -d -q -c -S .apm $file_path | [apm_tar_cmd] -xf - -C $tmpdir $info_file 2> [apm_dev_null]
+
+    #exec sh -c "cd $tmpdir ; [apm_gzip_cmd] -d -q -c -S .apm $file_path | [apm_tar_cmd] xf - $info_file" 2> [apm_dev_null]
     
     if { [catch {
 	array set package [apm_read_package_info_file [file join $tmpdir $info_file]]
@@ -640,13 +665,8 @@ ad_proc -private apm_load_apm_file {
 	apm_callback_and_log $callback  "<li>Extracting files into the filesytem."
 	apm_callback_and_log $callback  "<li>$pretty_name $version_name ready for installation."
 
-        # LARS: This looks odd -- package_key is not a directory
-	# Remove the directory if it exists.
-	#if {[file exists $package_key]} {
-	#    file delete -force $package_key
-	#}
-        
-	exec sh -c "cd $install_path ; [apm_gunzip_cmd] -q -c $file_path | [apm_tar_cmd] xf -" 2>/dev/null
+	#ns_log notice "exec sh -c 'cd $install_path ; [apm_gzip_cmd] -d -q -c $file_path | [apm_tar_cmd] xf -' 2>/dev/null"
+	exec [apm_gzip_cmd] -d -q -c -S .apm $file_path | [apm_tar_cmd] -xf - -C $install_path 2> [apm_dev_null]
 
         return "${install_path}/${package_key}/${package_key}.info"
     }

@@ -45,6 +45,7 @@
 					 :package_key,
 					 :parameter_name,
 					 :description,
+                                         :scope,
 					 :datatype,
 					 :default_value,
 					 :section_name,
@@ -55,10 +56,17 @@
       </querytext>
 </fullquery>
 
+<fullquery name="apm_parameter_unregister.unregister">
+  <querytext>
+    select apm__unregister_parameter(:parameter_id)
+  </querytext>
+</fullquery>
+
 <fullquery name="apm_dependency_add.dependency_add">      
       <querytext>
 
 	select apm_package_version__add_dependency(
+            :dependency_type,
             :dependency_id,
 	    :version_id,
 	    :dependency_uri,
@@ -140,28 +148,10 @@
   </querytext>
 </fullquery>
 
-
-<fullquery name="apm_parameter_unregister.parameter_unregister">      
-      <querytext>
-      
-	begin
-	delete from apm_parameter_values 
-	where parameter_id = :parameter_id;
-	delete from apm_parameters 
-	where parameter_id = :parameter_id;
-	PERFORM acs_object__delete(:parameter_id);
-
-        return null;
-	end;
-    
-      </querytext>
-</fullquery>
-
-
 <fullquery name="apm_package_url_from_id_mem.apm_package_url_from_id">      
       <querytext>
       
-	select site_node__url(node_id) 
+	select site_node__url(min(node_id))
           from site_nodes 
          where object_id = :package_id
     
@@ -179,5 +169,16 @@
       </querytext>
 </fullquery>
 
+  <fullquery name="apm::convert_type.copy_new_params">
+    <querytext>
+      select apm_parameter_value__new(null, :package_id, ap.parameter_id, ap.default_value)
+      from apm_parameters ap
+      where ap.package_key = :new_package_key
+        and not exists (select 1
+                        from apm_parameters ap2
+                        where ap2.package_key = :old_package_key
+                          and ap2.parameter_name = ap.parameter_name)
+    </querytext>
+  </fullquery>
 
 </queryset>

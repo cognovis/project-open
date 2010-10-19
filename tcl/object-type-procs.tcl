@@ -48,7 +48,7 @@ ad_proc -public acs_object_type_hierarchy {
 	    append result $join_string
 	}
 	incr i
-	append result "\n    $indent<a href=./one?[export_url_vars object_type]>$pretty_name</a>"
+	append result "\n    $indent<a href=./one?[export_url_vars object_type]>[lang::util::localize $pretty_name]</a>"
 	append result $additional_html
 
     }
@@ -93,4 +93,70 @@ ad_proc -public acs_object_type::get {
         from   acs_object_types
         where  object_type = :object_type
     } -column_array row
+}
+
+ad_proc -private acs_object_type::acs_object_instance_of {
+    {-object_id:required}
+    {-type:required}
+} {
+    Returns true if the specified object_id is a subtype of the specified type.
+    This is an inclusive check.
+
+    @author Lee Denison (lee@thaum.net)
+} {
+    acs_object::get -object_id $object_id -array obj
+
+    return [acs_object_type::supertype \
+        -supertype $type \
+        -subtype $obj(object_type)]
+}
+
+ad_proc -private acs_object_type::supertype {
+    {-supertype:required}
+    {-subtype:required}
+} {
+    Returns true if subtype is equal to, or a subtype of, supertype.
+
+    @author Lee Denison (lee@thaum.net)
+} {
+    set supertypes [object_type::supertypes]
+    append supertypes $subtype
+
+    return [expr {[lsearch $supertypes $supertype] >= 0}]
+}
+
+ad_proc -private acs_object_type::supertypes {
+    {-subtype:required}
+    {-no_cache:boolean}
+} {
+    Returns a list of the supertypes of subtypes.
+
+    @author Lee Denison (lee@thaum.net)
+} {
+    if {$no_cache_p} {
+        return [db_list supertypes {}]
+    } else {
+        return [util_memoize [list acs_object_type::supertypes \
+            -subtype $subtype \
+            -no_cache]]
+    }
+}
+
+ad_proc -private acs_object_type::get_table_name {
+    -object_type:required
+} {
+    Return the table name associated with an object_type.
+
+    Allow caching of the table_name as it is unlikely to change without a restart of the server (\which is mandatory after an upgrade)
+} {
+    return [util_memoize [list acs_object_type::get_table_name_not_cached -object_type $object_ty\pe]]
+}
+
+ad_proc -private acs_object_type::get_table_name_not_cached {
+    -object_type:required
+} {
+    Return the table name associated with an object_type.
+
+} {
+    return [db_string get_table_name ""]
 }

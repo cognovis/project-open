@@ -8,154 +8,263 @@ ad_library {
 
 }
 
-namespace eval parameter {
+namespace eval parameter {}
 
-    ad_proc -public set_value {
-        {-package_id ""}
-        {-parameter:required}
-        {-value:required}
-    } {
-        set a parameter
+ad_proc -public parameter::set_default {
+    -package_key:required
+    -parameter:required
+    -value:required
+} {
+    Set the default for the package parameter to the provided value.
+    The new default will be used for new installs of the package
+    but does not change existing package instances values.
 
-        @param package_id what package to set the parameter in. defaults to
-                          [ad_conn package_id]
-        @param parameter which parameter's value to set
-        @param value what value to set said parameter to
-    } {
-        if {[empty_string_p $package_id]} {
-            ::set package_id [ad_requested_object_id]
-        }
+    @param package_key what package to set the parameter for
+    @param parameter which parameter's value to set
+    @param value what value to set said parameter to
+} {
+    db_dml set {}
+}
 
-        db_exec_plsql set_parameter_value {}
+ad_proc -public parameter::set_global_value {
+    {-package_key:required}
+    {-parameter:required}
+    {-value:required}
+} {
+    Set a global package parameter.
 
-        return [ad_parameter_cache -set $value $package_id $parameter]
+    Do not confuse this with the proc "set_from_package_key", which was previously
+    used to emulate global parameters declared for singleton packages.
+
+    @param package_key identifies the package to which the global param belongs
+    @param parameter which parameter's value to set
+    @param value what value to set said parameter to
+} {
+
+    db_exec_plsql set_parameter_value {}
+
+    return [ad_parameter_cache -set $value $package_key $parameter]
+}
+
+ad_proc -public parameter::get_global_value {
+    -localize:boolean
+    -boolean:boolean
+    {-package_key:required}
+    {-parameter:required}
+    {-default ""}
+} {
+    Get the value of a global package parameter.
+
+    @param localize should we attempt to localize the parameter 
+    @param boolean insure boolean parameters are normalized to 0 or 1
+    @param package_key identifies the package to which the global param belongs
+    @param parameter which parameter's value to get
+    @param default what to return if we don't find a value. Defaults to returning the empty string.
+
+    @return The string trimmed (leading and trailing spaces removed) parameter value
+} {
+
+    # Is there a parameter by this name in the parameter file?  If so, it takes precedence.
+    # Note that this makes *far* more sense for global parameters than for package instance
+    # parameters.
+
+    # 1. use the parameter file
+    set value [ad_parameter_from_file $parameter $package_key]
+
+    # 2. check the parameter cache
+    if {$value eq ""} {
+        set value [ad_parameter_cache -global $package_key $parameter]
+    }
+    # 3. use the default value
+    if {$value eq ""} {
+        set value $default
     }
 
-    ad_proc -public get {
-        -localize:boolean
-        -boolean:boolean
-        {-package_id ""}
-        {-parameter:required}
-        {-default ""}
-    } {
-        Get the value of a package parameter.
+    if { $localize_p } {
+        # Replace message keys in hash marks with localized texts
+        set value [lang::util::localize $value]
+    }
 
-        @param package_id what package to get the parameter from. defaults to
-                          [ad_conn package_id]
-        @param parameter which parameter's value to get
-        @param default what to return if we don't find a value. Defaults to returning the empty string.
+    # Trimming the value as people may have accidentally put in trailing spaces
+    set value [string trim $value]
 
-        @return The string trimmed (leading and trailing spaces removed) parameter value
-    } {
-
-        if {[empty_string_p $package_id]} {
-            ::set package_id [ad_requested_object_id]
-        }
-
-	::set package_key ""
-	::set value ""
-	if {![empty_string_p $package_id]} {
-	    # This can fail at server startup--OpenACS calls parameter::get to
-	    # get the size of the util_memoize cache so it can setup the cache.
-	    # apm_package_key_from_id needs that cache, but on server start 
-	    # when the toolkit tries to get the parameter for the cache size
-	    # the cache doesn't exist yet, so apm_package_key_from_id fails
-	    catch {
-		::set package_key [apm_package_key_from_id $package_id]
-	    }
-	}
-
-	# If I convert the package_id to a package_key, is there a parameter by this
-	# name in the parameter file?  If so, it takes precedence.
-	# 1. use the parameter file
-	if {![empty_string_p $package_key]} {
-	    ::set value [ad_parameter_from_file $parameter $package_key]
-	}
-
-        # 2. check the parameter cache
-        if {[empty_string_p $value]} {
-	    ::set value [ad_parameter_cache $package_id $parameter]
-	}
-        # 3. use the default value
-        if {[empty_string_p $value]} {
-            ::set value $default
-        }
-
-        if { $localize_p } {
-           # Replace message keys in hash marks with localized texts
-           set value [lang::util::localize $value]
-        }
-
-        # Trimming the value as people may have accidentally put in trailing spaces
-        set value [string trim $value]
-
-        # Special parsing for boolean parameters, true and false can be written
-        # in many different ways
-        if { $boolean_p } {
-            if { [catch { 
-                if { [template::util::is_true $value] } {
-                    set value 1
-                } else {
-                    set value 0
-                }
-            } errmsg] } {
-                global errorInfo
-                ns_log Error "Parameter $parameter not a boolean:\n$errorInfo"
-                set value $default
+    # Special parsing for boolean parameters, true and false can be written
+    # in many different ways
+    if { $boolean_p } {
+        if { [catch { 
+            if { [template::util::is_true $value] } {
+                set value 1
+            } else {
+                set value 0
             }
+        } errmsg] } {
+            global errorInfo
+            ns_log Error "Parameter $parameter not a boolean:\n$errorInfo"
+            set value $default
         }
-
-        return $value
     }
 
-    ad_proc -public set_from_package_key {
-        {-package_key:required}
-        {-parameter:required}
-        {-value:required}
-    } {
-        set_value \
-            -package_id [apm_package_id_from_key $package_key] \
-            -parameter $parameter \
-            -value $value
+    return $value
+}
+
+ad_proc -public parameter::set_value {
+    {-package_id ""}
+    {-parameter:required}
+    {-value:required}
+} {
+    Set the value of a package instance parameter
+
+    @param package_id what package to set the parameter in. defaults to
+    [ad_conn package_id]
+    @param parameter which parameter's value to set
+    @param value what value to set said parameter to
+} {
+    if {$package_id eq ""} {
+        set package_id [ad_requested_object_id]
     }
 
-    ad_proc -public get_from_package_key {
-        -localize:boolean
-        -boolean:boolean
-        {-package_key:required}
-        {-parameter:required}
-        {-default ""}
-    } {
-        get a parameter
+    db_exec_plsql set_parameter_value {}
 
-        @param package_key what package to get the parameter from. we will try
-                           to get the package_id from the package_key. this
-                           may cause an error if there are more than one
-                           instance of this package
-        @param parameter which parameter's value to get
-        @param default what to return if we don't find a value
-    } {
-        # 1. check to see if this parameter is being set in the server's
-        # configuration file; this value has highest precedence
-        ::set value [ad_parameter_from_file $parameter $package_key]
+    return [ad_parameter_cache -set $value $package_id $parameter]
+}
 
-        # 2. try to get a package_id for this package_key and use the standard
-        # parameter::get function to get the value
-        if {[empty_string_p $value]} {
-            with_catch errmsg {
-                ::set value [get \
-                    -localize=$localize_p \
-                    -boolean=$boolean_p \
-                    -package_id [apm_package_id_from_key $package_key] \
-                    -parameter $parameter \
-                    -default $default \
-                ]
-            } {
-                ::set value $default
+ad_proc -public parameter::get {
+    -localize:boolean
+    -boolean:boolean
+    {-package_id ""}
+    {-parameter:required}
+    {-default ""}
+} {
+    Get the value of a package instance parameter.
+
+    @param localize should we attempt to localize the parameter 
+    @param boolean insure boolean parameters are normalized to 0 or 1
+    @param package_id what package to get the parameter from. defaults to
+    [ad_conn package_id]
+    @param parameter which parameter's value to get
+    @param default what to return if we don't find a value. Defaults to returning the empty string.
+
+    @return The string trimmed (leading and trailing spaces removed) parameter value
+} {
+
+    if {$package_id eq ""} {
+        set package_id [ad_requested_object_id]
+    }
+
+    set package_key ""
+    set value ""
+    if {$package_id ne ""} {
+        # This can fail at server startup--OpenACS calls parameter::get to
+        # get the size of the util_memoize cache so it can setup the cache.
+        # apm_package_key_from_id needs that cache, but on server start 
+        # when the toolkit tries to get the parameter for the cache size
+        # the cache doesn't exist yet, so apm_package_key_from_id fails
+        catch {
+            set package_key [apm_package_key_from_id $package_id]
+        }
+    }
+
+    # If I convert the package_id to a package_key, is there a parameter by this
+    # name in the parameter file?  If so, it takes precedence.
+    # 1. use the parameter file
+    if {$package_key ne ""} {
+        set value [ad_parameter_from_file $parameter $package_key]
+    }
+
+    # 2. check the parameter cache
+    if {$value eq ""} {
+        set value [ad_parameter_cache $package_id $parameter]
+    }
+    # 3. use the default value
+    if {$value eq ""} {
+        set value $default
+    }
+
+    if { $localize_p } {
+        # Replace message keys in hash marks with localized texts
+        set value [lang::util::localize $value]
+    }
+
+    # Trimming the value as people may have accidentally put in trailing spaces
+    set value [string trim $value]
+
+    # Special parsing for boolean parameters, true and false can be written
+    # in many different ways
+    if { $boolean_p } {
+        if { [catch { 
+            if { [template::util::is_true $value] } {
+                set value 1
+            } else {
+                set value 0
             }
+        } errmsg] } {
+            global errorInfo
+            ns_log Error "Parameter $parameter not a boolean:\n$errorInfo"
+            set value $default
         }
-
-        return $value
     }
 
+    return $value
+}
+
+ad_proc -public parameter::set_from_package_key {
+    {-package_key:required}
+    {-parameter:required}
+    {-value:required}
+} {
+    sets an instance parameter for the package corresponding to package_key.
+    
+    Note that this makes the assumption that the package is a singleton
+    and does not set the value for all packages corresponding to package_key.
+
+    New packages should use global parameters instead.
+
+} {
+    parameter::set_value \
+        -package_id [apm_package_id_from_key $package_key] \
+        -parameter $parameter \
+        -value $value
+}
+
+ad_proc -public parameter::get_from_package_key {
+    -localize:boolean
+    -boolean:boolean
+    {-package_key:required}
+    {-parameter:required}
+    {-default ""}
+} {
+    Gets an instance parameter for the package corresponding to package_key.
+    
+    Note that this makes the assumption that the package is a singleton.
+
+    New packages should use global parameters instead.
+
+    @param package_key what package to get the parameter from. we will try
+    to get the package_id from the package_key. this
+    may cause an error if there are more than one
+    instance of this package
+    @param parameter which parameter's value to get
+    @param default what to return if we don't find a value
+} {
+    # 1. check to see if this parameter is being set in the server's
+    # configuration file; this value has highest precedence
+    set value [ad_parameter_from_file $parameter $package_key]
+
+    # 2. try to get a package_id for this package_key and use the standard
+    # parameter::get function to get the value
+    if {$value eq ""} {
+        with_catch errmsg {
+            set value [parameter::get \
+                             -localize=$localize_p \
+                             -boolean=$boolean_p \
+                             -package_id [apm_package_id_from_key $package_key] \
+                             -parameter $parameter \
+                             -default $default \
+                            ]
+        } {
+            set value $default
+        }
+    }
+
+    return $value
 }

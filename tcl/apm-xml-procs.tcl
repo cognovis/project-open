@@ -16,7 +16,7 @@ ad_proc -private apm_required_attribute_value { element attribute } {
 
 } {
     set value [apm_attribute_value $element $attribute]
-    if { [empty_string_p $value] } {
+    if { $value eq "" } {
 	error "Required attribute \"$attribute\" missing from <[xml_node_get_name $element]>"
     }
     return $value
@@ -46,7 +46,7 @@ ad_proc -private apm_tag_value {
     ns_log Debug "apm_tag_value [$root nodeName] $property_name"
     set node [xml_node_get_first_child_by_name $root $property_name]
 
-    if { ![empty_string_p $node] } {
+    if { $node ne "" } {
 	return [xml_node_get_content $node]
     }    
     ns_log Debug "apm_tag_value $root $property_name $default --> $default"
@@ -72,38 +72,44 @@ ad_proc -private apm_generate_package_spec { version_id } {
     <pretty-plural>[ad_quotehtml $pretty_plural]</pretty-plural>
     <initial-install-p>$initial_install_p</initial-install-p>
     <singleton-p>$singleton_p</singleton-p>
+    <implements-subsite-p>$implements_subsite_p</implements-subsite-p>
+    <inherit-templates-p>$inherit_templates_p</inherit-templates-p>
     ${auto_mount_tag}
     <version name=\"$version_name\" url=\"[ad_quotehtml $version_uri]\">\n"
 
     db_foreach owner_info {} {
         append spec "        <owner"
-        if { ![empty_string_p $owner_uri] } {
+        if { $owner_uri ne "" } {
     	append spec " url=\"[ad_quotehtml $owner_uri]\""
         }
         append spec ">[ad_quotehtml $owner_name]</owner>\n"
     }
 
     apm_log APMDebug "APM: Writing Version summary and description"
-    if { ![empty_string_p $summary] } {
+    if { $summary ne "" } {
         append spec "        <summary>[ad_quotehtml $summary]</summary>\n"
     }
-    if { ![empty_string_p $release_date] } {
+    if { $release_date ne "" } {
         append spec "        <release-date>[ad_quotehtml [string range $release_date 0 9]]</release-date>\n"
     }
-    if { ![empty_string_p $vendor] || ![empty_string_p $vendor_uri] } {
+    if { $vendor ne "" || $vendor_uri ne "" } {
         append spec "        <vendor"
-        if { ![empty_string_p $vendor_uri] } {
+        if { $vendor_uri ne "" } {
     	append spec " url=\"[ad_quotehtml $vendor_uri]\""
         }
         append spec ">[ad_quotehtml $vendor]</vendor>\n"
     }
-    if { ![empty_string_p $description] } {
+    if { $description ne "" } {
         append spec "        <description"
-        if { ![empty_string_p $description_format] } {
+        if { $description_format ne "" } {
 	    append spec " format=\"[ad_quotehtml $description_format]\""
         }
         append spec ">[ad_quotehtml $description]</description>\n"
     }
+
+    append spec [apm::package_version::attributes::generate_xml \
+                     -version_id $version_id \
+                     -indentation "        "]
 
     append spec "\n"
     
@@ -123,20 +129,23 @@ ad_proc -private apm_generate_package_spec { version_id } {
     append spec "        </callbacks>"
     append spec "\n        <parameters>\n"
     apm_log APMDebug "APM: Writing parameters"
+
+    set parent_package_keys [lrange [apm_one_package_inherit_order $package_key] 0 end-1]
+
     db_foreach parameter_info {} {
-	append spec "            <parameter datatype=\"[ad_quotehtml $datatype]\" \
+	append spec "            <parameter scope=\"[ad_quotehtml $scope]\" datatype=\"[ad_quotehtml $datatype]\" \
 		min_n_values=\"[ad_quotehtml $min_n_values]\" \
 		max_n_values=\"[ad_quotehtml $max_n_values]\" \
 		name=\"[ad_quotehtml $parameter_name]\" "
-	if { ![empty_string_p $default_value] } {
+	if { $default_value ne "" } {
 	    append spec " default=\"[ad_quotehtml $default_value]\""
 	}
 
-	if { ![empty_string_p $description] } {
+	if { $description ne "" } {
 	    append spec " description=\"[ad_quotehtml $description]\""
 	}
 	
-	if { ![empty_string_p $section_name] } {
+	if { $section_name ne "" } {
 	    append spec " section_name=\"[ad_quotehtml $section_name]\""
 	}
 
@@ -163,8 +172,10 @@ ad_proc -public apm_read_package_info_file { path } {
     <ul>
     <li><code>path</code>: a path to the file read
     <li><code>mtime</code>: the mtime of the file read
-    <li><code>provides</code> and <code>requires</code>: lists of dependency
-    information, containing elements of the form <code>[list $url $version]</code>
+    <li><code>provides</code>, <code>embeds</code>, <code>extends</code>,
+      and <code>requires</code>: <p>
+      lists of dependency information, containing elements of the form
+      <code>[list $url $version]</code>
     <li><code>owners</code>: a list of owners containing elements of the form
     <code>[list $url $name]</code>
     <li><code>files</code>: a list of files in the package,
@@ -205,8 +216,6 @@ ad_proc -public apm_read_package_info_file { path } {
     descriptive error.
 
 } {
-    ns_log Notice "apm_read_package_info_file: path=$path"
-
     global ad_conn
 
     # If the .info file hasn't changed since last read (i.e., has the same
@@ -244,7 +253,7 @@ ad_proc -public apm_read_package_info_file { path } {
 	apm_log APMDebug "XML - one root child: [xml_node_get_name $child]"
     }
 
-    if { ![string equal $root_name "package"] } {
+    if { $root_name ne "package" } {
 	apm_log APMDebug "XML: the root name is $root_name"
 	error "Expected <package> as root node"
     }
@@ -253,8 +262,10 @@ ad_proc -public apm_read_package_info_file { path } {
     set properties(package.type) [apm_attribute_value -default "apm_application" $package type]
     set properties(package-name) [apm_tag_value $package package-name]
     set properties(initial-install-p) [apm_tag_value -default "f" $package initial-install-p]
-    set properties(singleton-p) [apm_tag_value -default "f" $package singleton-p]
     set properties(auto-mount) [apm_tag_value -default "" $package auto-mount]
+    set properties(singleton-p) [apm_tag_value -default "f" $package singleton-p]
+    set properties(implements-subsite-p) [apm_tag_value -default "f" $package implements-subsite-p]
+    set properties(inherit-templates-p) [apm_tag_value -default "t" $package inherit-templates-p]
     set properties(pretty-plural) [apm_tag_value -default "$properties(package-name)s" $package pretty-plural]
 
 
@@ -274,6 +285,9 @@ ad_proc -public apm_read_package_info_file { path } {
 	set properties($property_name) [apm_tag_value $version $property_name]
     }
 
+    apm::package_version::attributes::parse_xml \
+        -parent_node $version \
+        -array properties
 
     # Set an entry in the properties array for each of these attributes:
     #
@@ -285,7 +299,7 @@ ad_proc -public apm_read_package_info_file { path } {
 	description format
     } {
 	set node [xml_node_get_first_child_by_name $version $property_name]
-	if { ![empty_string_p $node] } {
+	if { $node ne "" } {
 	    set properties($property_name.$attribute_name) [apm_attribute_value $node $attribute_name]
 	} else {
 	    set properties($property_name.$attribute_name) ""
@@ -301,15 +315,17 @@ ad_proc -public apm_read_package_info_file { path } {
 
     set properties(provides) [list]
     set properties(requires) [list]
+    set properties(embeds) [list]
+    set properties(extends) [list]
 
-    foreach dependency_type { provides requires } {
+    foreach dependency_type { provides requires embeds extends } {
 	set dependency_types [xml_node_get_children_by_name $version $dependency_type]
 
 	foreach node $dependency_types {
 	    set service_uri [apm_required_attribute_value $node url]
 	    set service_version [apm_required_attribute_value $node version]
             # Package always provides itself, we'll add that below, so don't add it here
-            if { ![string equal $dependency_type provides] || ![string equal $service_uri $properties(package.key)] } {
+            if { $dependency_type ne "provides" || ![string equal $service_uri $properties(package.key)] } {
                 lappend properties($dependency_type) [list $service_uri $service_version]
             }
 	}
@@ -381,9 +397,14 @@ ad_proc -public apm_read_package_info_file { path } {
 	    set section_name [apm_attribute_value $parameter_node section_name]
 	    set datatype [apm_attribute_value $parameter_node datatype]
 	    set name [apm_attribute_value $parameter_node name]
+	    set scope [apm_attribute_value $parameter_node scope]
+
+            if { $scope eq "" } {
+                set scope instance
+            }
 
 	    apm_log APMDebug "APM: Reading parameter $name with default $default_value"
-	    lappend properties(parameters) [list $name $description $section_name $datatype $min_n_values $max_n_values $default_value]
+	    lappend properties(parameters) [list $name $description $section_name $scope $datatype $min_n_values $max_n_values $default_value]
 	}
     }
     
