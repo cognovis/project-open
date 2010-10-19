@@ -1,17 +1,15 @@
 <?xml version='1.0' ?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
 <!ENTITY % myvars SYSTEM "../variables.ent">
 %myvars;
 ]>
 <chapter id="maintenance-web">
   <title>Production Environments</title>
-
     <authorblurb>
-      <para>By <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
+      <para>by <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
+
     </authorblurb>
-    
-    <para>Maintenance tasks, optional software, and alternate configurations for AOLserver.</para>
     
     <sect1 id="install-openacs-keepalive" xreflabel="Keep AOLserver alive">
 	<title>Starting and Stopping an OpenACS instance.</title> 
@@ -67,7 +65,7 @@ nsd: no process killed
 [root root]# <userinput>ln -s /var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/etc/daemontools/ /service/<replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput></screen>
             <para>Verify that AOLserver is running.</para>
             <screen>[root root]#<userinput> ps -auxw | grep nsd</userinput>
-<replaceable>$OPENACS_SERVICE_NAME</replaceable>   5562 14.2  6.2 22436 15952 ?       S    11:55   0:04 /usr/local/aolserver/bin/nsd -it /var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/etc/config.tcl -u serve
+<replaceable>$OPENACS_SERVICE_NAME</replaceable>   5562 14.4  6.2 22436 15952 ?       S    11:55   0:04 /usr/local/aolserver/bin/nsd -it /var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/etc/config.tcl -u serve
 root      5582  0.0  0.2  3276  628 pts/0    S    11:55   0:00 grep nsd
 [root root]#</screen>
           </listitem>
@@ -133,7 +131,7 @@ root      5582  0.0  0.2  3276  628 pts/0    S    11:55   0:00 grep nsd
             <para>
 
         Most of this information comes from Tom Jackson's <ulink
-          url="http://zmbh.com/daemontools-aolserver/aolserver+daemontools.html">AOLserver+Daemontools
+          url="http://zmbh.com/daemontools-aolserver/daemontools-aolserver.html">AOLserver+Daemontools
           Mini-HOWTO</ulink>.
 </para>
         </listitem>
@@ -226,7 +224,7 @@ root      5582  0.0  0.2  3276  628 pts/0    S    11:55   0:00 grep nsd
 		<listitem><para> 
 			Copy this <ulink
 			  url="files/restart-aolserver.txt">file</ulink> into
-			<computeroutput>/tmp/restart-aolserver.txt</computeroutput>.
+			<computeroutput>/var/tmp/restart-aolserver.txt</computeroutput>.
 		  </para></listitem>
 
 		<listitem><para> 
@@ -243,7 +241,7 @@ root      5582  0.0  0.2  3276  628 pts/0    S    11:55   0:00 grep nsd
 		<programlisting>
 [joeuser ~]$ su - 
 Password: ***********
-[root ~]# cp /tmp/restart-aolserver.txt /usr/local/bin/restart-aolserver
+[root ~]# cp /var/tmp/restart-aolserver.txt /usr/local/bin/restart-aolserver
 [root ~]# chown root.web /usr/local/bin/restart-aolserver
 [root ~]# chmod 4750 /usr/local/bin/restart-aolserver
 [root ~]# ln -s /usr/bin/perl /usr/local/bin/perl
@@ -379,7 +377,8 @@ set address                127.0.0.1 </programlisting>
     <sect1 id="maintenance-deploy">
   <title>Staged Deployment for Production Networks</title>
     <authorblurb>
-      <para>By <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>      
+<para>By <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
     </authorblurb>
   <para>This section describes two minimal-risk methods for deploying changes on a production network.  The important characteristics of a safe change deployment include:  (THIS SECTION IN DEVELOPMENT)</para>
   <itemizedlist>
@@ -487,6 +486,8 @@ cvs up -Pd index.adp</programlisting>
 <para>The production site can run "HEAD" from cvs.</para>
 
 <para>The drawback to using HEAD as the live code is that you cannot commit new work on the development server without erasing the definition of 'working production code.'  So a better method is to use a tag.  This guarantees that, at any time in the future, you can retrieve exactly the same set of code.  This is useful for both of the characteristics of safe change deployment.  For control, you can use tags to define a body of code, test that code, and then know that what you are deploying is exactly that code.  For rollback, you can use return to the last working tag if the new tag (or new, untagged changes) cause problems.  .... example of using tags to follow ...</para>
+
+
     </sect2>
     <sect2>
       <title>Method 2: A/B Deployment</title>
@@ -571,6 +572,15 @@ chmod 700 /var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/et
           <listitem>
             <para>It takes two files to support an SSL connection.  The certificate is the public half of the key pair - the server sends the certificate to browser requesting ssl.  The key is the private half of the key pair.  In addition, the certificate must be signed by Certificate Authority or browsers will protest.  Each web browser ships with a built-in list of acceptable Certificate Authorities (CAs) and their keys.  Only a site certificate signed by a known and approved CA will work smoothly.  Any other certificate will cause browsers to produce some messages or block the site.  Unfortunately, getting a site certificate signed by a CA costs money.  In this section, we'll generate an unsigned certificate which will work in most browsers, albeit with pop-up messages.</para>
             <para>Use an OpenSSL perl script to generate a certificate and key.</para>
+
+        <para>
+          Debian users: use /usr/lib/ssl/misc/CA.pl instead of /usr/share/ssl/CA
+        </para>
+
+        <para>
+          Mac OS X users: use perl /System/Library/OpenSSL/misc/CA.pl -newcert instead of /usr/share/ssl/CA
+        </para>
+
             <screen>[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cd /var/lib/aolserver/$OPENACS_SERVICE_NAME/etc/certs</userinput>
 [$OPENACS_SERVICE_NAME certs]$ <userinput>perl /usr/share/ssl/misc/CA -newcert</userinput>
 Using configuration from /usr/share/ssl/openssl.cnf
@@ -600,6 +610,12 @@ S/Sd2MYA0JVmQuIt5bYowXR1KYKDka1d3DUgtoVTiFepIRUrMkZlCli08mWVjE6T
 1MU24SHLgdTfDJprEdxZOnxajnbxL420xNVc5RRXlJA8Xxhx/HBKTw==
 -----END RSA PRIVATE KEY-----</programlisting>
         </listitem>
+      <listitem><para>
+        If you start up using the etc/daemontools/run script, you will
+        need to edit this script to make sure the ports are bound for
+        SSL. Details of this are in the run script.
+        </para>
+      </listitem>
       </orderedlist>
     </sect1>
 
@@ -615,30 +631,29 @@ S/Sd2MYA0JVmQuIt5bYowXR1KYKDka1d3DUgtoVTiFepIRUrMkZlCli08mWVjE6T
       <listitem>
         <screen>[root src]# <userinput>su - $OPENACS_SERVICE_NAME</userinput>
 [$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cd /var/lib/aolserver/$OPENACS_SERVICE_NAME</userinput>
-[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cp /var/lib/aolserver/$OPENACS_SERVICE_NAME/packages/acs-core-docs/www/files/analog.cfg.txt etc/analog.cfg</userinput>
 [$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>mkdir www/log</userinput>
-[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cp -r /usr/share/analog-5.31/images www/log/</userinput>
+[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cp -r /usr/share/analog-5.32/images www/log/</userinput>
 [$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <action>
 su - $OPENACS_SERVICE_NAME
 cd /var/lib/aolserver/$OPENACS_SERVICE_NAME
 cp /var/lib/aolserver/$OPENACS_SERVICE_NAME/packages/acs-core-docs/www/files/analog.cfg.txt etc/analog.cfg
 mkdir www/log
-cp -r /usr/share/analog-5.31/images www/log/</action></screen>
+cp -r /usr/share/analog-5.32/images www/log/</action></screen>
         <para>Edit
 <computeroutput>/var/lib/aolserver/$OPENACS_SERVICE_NAME/etc/analog.cfg</computeroutput> and change the variable in <computeroutput>HOSTNAME "[my
 organisation]"</computeroutput> to reflect your website title.  If you
 don't want the traffic log to be publicly visible, change
 <computeroutput>OUTFILE /var/lib/aolserver/$OPENACS_SERVICE_NAME/www/log/traffic.html</computeroutput> to use a private
-directory.</para>
+directory. You'll also need to edit all instances of service0 to your $OPENACS_SERVICE_NAME.</para>
       </listitem>
       <listitem>
         <para>Run it.</para>
-        <screen>[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>/usr/share/analog-5.31/analog -G -g/var/lib/aolserver/$OPENACS_SERVICE_NAME/etc/analog.cfg</userinput>
-/usr/share/analog-5.31/analog: analog version 5.31/Unix
-/usr/share/analog-5.31/analog: Warning F: Failed to open DNS input file
+        <screen>[$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>/usr/share/analog-5.32/analog -G -g/var/lib/aolserver/$OPENACS_SERVICE_NAME/etc/analog.cfg</userinput>
+/usr/share/analog-5.32/analog: analog version 5.32/Unix
+/usr/share/analog-5.32/analog: Warning F: Failed to open DNS input file
   /home/$OPENACS_SERVICE_NAME/dnscache: ignoring it
   (For help on all errors and warnings, see docs/errors.html)
-/usr/share/analog-5.31/analog: Warning R: Turning off empty Search Word Report
+/usr/share/analog-5.32/analog: Warning R: Turning off empty Search Word Report
 [$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$</screen>
         <para>Verify that it works by browing to <computeroutput>http://yourserver.test:8000/log/traffic.html</computeroutput></para>
       </listitem>
@@ -652,7 +667,7 @@ logout
         <para>Put this into the file:</para>
         <programlisting>#!/bin/sh
 
-/usr/share/analog-5.31/analog -G -g/var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/etc/analog.cfg</programlisting>
+/usr/share/analog-5.32/analog -G -g/var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/etc/analog.cfg</programlisting>
         <screen>[root root]# <userinput>chmod 755 /etc/cron.daily/analog</userinput></screen>
         <para>Test it by running the script.</para>
         <screen>[root root]# <userinput>sh /etc/cron.daily/analog</userinput></screen>
@@ -827,10 +842,10 @@ openacs.org=&gt;</programlisting>
     package</ulink>.
       </para>
     </sect3>
+
   </sect2>
+
+
   </sect1>
-  
-  <para>
-    <phrase role="cvstag">($Id$)</phrase></para>
 </chapter>
    

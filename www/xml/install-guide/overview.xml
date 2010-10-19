@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
 <!ENTITY % myvars SYSTEM "../variables.ent">
 %myvars;
 ]>
@@ -38,11 +38,15 @@
   <sect2 id="install-rpms">
     <title>Binaries and other shortcuts</title>
 
+    <para>You can try out OpenACS using some binary installers. In
+    general, they are not yet supported by the community, so they are
+    mostly for evaluation purposes. <ulink url="http://openacs.org/faq/one-faq?faq_id=130897#130917">Installing
+    OpenACS</ulink></para>
+
+    <para>You can see a list of <ulink url="http://openacs.org/projects/openacs/installer">current installers</ulink>.
+    </para>
+
     <orderedlist>
-      <listitem>
-        <para>The patched version of AOLserver we use is not currently
-          available in a precompiled binary.  </para>
-      </listitem>
       <listitem>
         <para>
           The packaged version of
@@ -159,13 +163,13 @@ createdb <replaceable>$OPENACS_SERVICE_NAME</replaceable></action></screen>
             </row>
             <row>
               <entry>Location of source code tarballs for new software</entry>
-              <entry>/tmp</entry>
+              <entry>/var/tmp</entry>
             </row>
             <row>
               <entry>The OpenACS tarball contains some files which
                 are useful while setting up other software.  Those
                 files are located at:</entry>
-              <entry>/tmp/&tarballpath;/packages/acs-core-docs/www/files</entry>
+              <entry>/var/tmp/&tarballpath;/packages/acs-core-docs/www/files</entry>
             </row>
             <row>
               <entry>Database backup directory</entry>

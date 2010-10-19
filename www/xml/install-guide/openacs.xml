@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
-<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
 <!ENTITY % myvars SYSTEM "../variables.ent">
 %myvars;
 ]>
@@ -10,6 +10,67 @@
   <authorblurb>
     <para>by <ulink url="mailto:vinod@kurup.com">Vinod Kurup</ulink></para>
   </authorblurb>
+
+  <sect2 id="install-aolserver-user-accounts">
+    <title>Set up a user account for each site.</title>
+    <para>
+      AOLserver needs to be started as the root user if you want to use
+      port 80. Once it starts, though, it will drop the root privileges and
+      run as another user, which you must specify on the command line. It's
+      important that this user has as few privileges as possible. Why?
+      Because if an intruder somehow breaks in through AOLserver, you don't
+      want her to have any ability to do damage to the rest of your
+      server.</para>
+
+        <para>At the same time, AOLserver needs to have write access to
+      some files on your system in order for OpenACS to function
+      properly. So, we'll run AOLserver with a different user account
+      for each different service.  A service name should be a single
+      word, <emphasis>letters and numbers only</emphasis>. If the name
+      of your site is one word, that would be a good choice. For
+      example &quot;<replaceable>$OPENACS_SERVICE_NAME</replaceable>&quot; might be the service name for the
+      <ulink url="http://$OPENACS_SERVICE_NAME.net/"><replaceable>$OPENACS_SERVICE_NAME</replaceable>.net</ulink>
+      community.</para>
+
+        <para>We'll leave the password blank, which prevents login by
+      password, for increased security.  The only way to log in will
+      be with ssh certificates.  The only people who should log in are
+      developers for that specific instance.  Add this user, and put
+      it in the <computeroutput><replaceable>$OPENACS_SERVICE_NAME</replaceable></computeroutput> group so that it
+      can use database and server commands associated with that group.
+      (If you don't know how to do this, type 
+      <userinput>man usermod</userinput>. You can type
+      <userinput>groups</userinput> to find out which groups a user
+      is a part of)
+    </para>
+
+<screen>
+[root root]# <userinput>useradd <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
+</screen>
+
+    <para>You also need to set up a group called web.</para>
+
+      <screen>
+[root root]# <userinput>groupadd web</userinput>
+      </screen>
+
+    <para>
+      Then change the user to be a part of this group:
+    </para>
+
+      <screen>
+[root root]# <userinput>usermod -g web <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
+      </screen>
+    <para>FreeBSD creates the user this way:</para>
+<screen>
+[root root]# <userinput>mkdir -p /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
+[root root]# <userinput>pw useradd -n <replaceable>$OPENACS_SERVICE_NAME</replaceable> -g web -d /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable> -s /bin/bash</userinput>
+[root root]#
+<action>mkdir -p /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable>
+pw useradd -n <replaceable>$OPENACS_SERVICE_NAME</replaceable> -g web -d /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable> -s /bin/bash
+</action></screen>
+
+  </sect2>
 
   <sect2 id="openacs-setup">
     <title>Set up the file system for one or more OpenACS Sites</title>
@@ -27,44 +88,6 @@
 chgrp web /var/lib/aolserver
 chmod 770 /var/lib/aolserver</action></screen>
 
-  </sect2>
-  <sect2 id="install-aolserver-user-accounts">
-    <title>Set up a user account for each site.</title>
-    <para>
-      AOLserver needs to be started as the root user if you want to use
-      port 80. Once it starts, though, it will drop the root privileges and
-      run as another user, which you must specify on the command line. It's
-      important that this user has as few privileges as possible. Why?
-      Because if an intruder somehow breaks in through AOLserver, you don't
-      want her to have any ability to do damage to the rest of your
-      server.</para>
-        <para>At the same time, AOLserver needs to have write access to
-      some files on your system in order for OpenACS to function
-      properly. So, we'll run AOLserver with a different user account
-      for each different service.  A service name should be a single
-      word, <emphasis>letters and numbers only</emphasis>. If the name
-      of your site is one word, that would be a good choice. For
-      example &quot;<replaceable>$OPENACS_SERVICE_NAME</replaceable>&quot; might be the service name for the
-      <ulink url="http://$OPENACS_SERVICE_NAME.net/"><replaceable>$OPENACS_SERVICE_NAME</replaceable>.net</ulink>
-      community.</para>
-        <para>We'll leave the password blank, which prevents login by
-      password, for increased security.  The only way to log in will
-      be with ssh certificates.  The only people who should log in are
-      developers for that specific instance.  Add this user, and put
-      it in the <computeroutput><replaceable>$OPENACS_SERVICE_NAME</replaceable></computeroutput> group so that it
-      can use database and server commands associated with that group.
-    </para>
-<screen>
-[root root]# <userinput>useradd <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
-[root root]#</screen>
-    <para>FreeBSD creates the user this way:</para>
-<screen>
-[root root]# <userinput>mkdir -p /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
-[root root]# <userinput>pw useradd -n <replaceable>$OPENACS_SERVICE_NAME</replaceable> -g web -d /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable> -s /bin/bash</userinput>
-[root root]#
-<action>mkdir -p /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable>
-pw useradd -n <replaceable>$OPENACS_SERVICE_NAME</replaceable> -g web -d /home/<replaceable>$OPENACS_SERVICE_NAME</replaceable> -s /bin/bash
-</action></screen>
   </sect2>
   
   <sect2 id="install-with-script">
@@ -109,10 +132,10 @@ admin password: xxxx
   <sect2 id="install-from-tarball">
     <title>Installation Option 2: Install from tarball</title>
     <para>You should already have downloaded the OpenACS tarball
-      to the <computeroutput>/tmp</computeroutput> directory.  If
+      to the <computeroutput>/var/tmp</computeroutput> directory.  If
       not, <link linkend="openacs-download">download the OpenACS
       tarball</link> and save it in
-      <computeroutput>/tmp</computeroutput> and proceed:</para>
+      <computeroutput>/var/tmp</computeroutput> and proceed:</para>
     <orderedlist>
       <listitem id="install-openacs-download">
         <para>Unpack the OpenACS tarball and rename it to <computeroutput>$OPENACS_SERVICE_NAME</computeroutput>.  Secure the directory so that only the owner can access it.  Check the permissions by listing the directory.</para> 
@@ -120,7 +143,7 @@ admin password: xxxx
         </para>
         <screen>[root root]# <userinput>su - <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
 [$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME]$ <userinput>cd /var/lib/aolserver</userinput>
-[$OPENACS_SERVICE_NAME aolserver]$ <userinput>tar xzf /tmp/&tarballpath;.tgz</userinput>
+[$OPENACS_SERVICE_NAME aolserver]$ <userinput>tar xzf /var/tmp/&tarballpath;.tgz</userinput>
 [$OPENACS_SERVICE_NAME aolserver]$ <userinput>mv &tarballpath; <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
 [$OPENACS_SERVICE_NAME aolserver]$ <userinput>chmod -R 775 <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
 [$OPENACS_SERVICE_NAME aolserver]$ <userinput>chown -R <replaceable>$OPENACS_SERVICE_NAME</replaceable>.<replaceable>$OPENACS_SERVICE_NAME</replaceable> <replaceable>$OPENACS_SERVICE_NAME</replaceable></userinput>
@@ -134,7 +157,7 @@ logout
 [root root]#
 <action>su - $OPENACS_SERVICE_NAME
 cd /var/lib/aolserver
-tar xzf /tmp/&tarballpath;.tgz
+tar xzf /var/tmp/&tarballpath;.tgz
 mv &tarballpath; $OPENACS_SERVICE_NAME
 chmod -R 755 $OPENACS_SERVICE_NAME
 chown -R $OPENACS_SERVICE_NAME.$OPENACS_SERVICE_NAME $OPENACS_SERVICE_NAME
@@ -402,7 +425,7 @@ CREATE DATABASE
               <listitem>
                 <para><emphasis>httpsport</emphasis> - This is the
       port for https requests.  The Reference Platform https port is
-      8443.  If http port is set to 80, httpsport should be 143 to
+      8443.  If http port is set to 80, httpsport should be 443 to
       match the standard.</para>
               </listitem>
               
@@ -605,7 +628,7 @@ Loading package .info files ... this will take a few minutes</programlisting>
 
   <sect2 id="install-from-cvs">
     <title>Installation Option 3: Install from CVS</title>
-    <para>If you want to track fresh code developments inbetween releases, or you are an OpenACS core developer, you may want to install from CVS.  This is identical to Option 2 except that you get the files from CVS instead of the tarball: <ulink url="http://openacs.org/4/checkout">CVS Checkout Instructions</ulink>.  So, instead of <computeroutput><userinput>tar xzf /tmp/&tarballpath;.tgz</userinput></computeroutput>, <computeroutput><userinput>cvs -z3 -d :pserver:anonymous@cvs.openacs.org:/cvsroot co acs-core</userinput></computeroutput>.</para>
+    <para>If you want to track fresh code developments inbetween releases, or you are an OpenACS core developer, you may want to install from CVS.  This is identical to Option 2 except that you get the files from CVS instead of the tarball: <ulink url="http://openacs.org/4/checkout">CVS Checkout Instructions</ulink>.  So, instead of <computeroutput><userinput>tar xzf /var/tmp/&tarballpath;.tgz</userinput></computeroutput>, <computeroutput><userinput>cvs -z3 -d :pserver:anonymous@openacs.org:/cvsroot co acs-core</userinput></computeroutput>.</para>
   </sect2>
   <sect2 id="install-next-steps">
     <title>Next Steps</title>

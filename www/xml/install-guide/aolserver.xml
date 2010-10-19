@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
-<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
 <!ENTITY % myvars SYSTEM "../variables.ent">
 %myvars;
 ]>
@@ -133,21 +133,21 @@ Done Building Sat Mar  8 10:31:35 PST 2003
             <listitem>
               <para>Oracle</para>
               <screen>[root aolserver]# <userinput>cd /usr/local/aolserver/bin</userinput>
-[root bin]# <userinput>cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-oracle.txt ./nsd-oracle</userinput>
+[root bin]# <userinput>cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-oracle.txt ./nsd-oracle</userinput>
 [root bin]# <userinput>chmod 750 nsd-oracle</userinput>
 [root bin]#
 <action>cd /usr/local/aolserver/bin
-cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-oracle.txt ./nsd-oracle
+cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-oracle.txt ./nsd-oracle
 chmod 750 nsd-oracle</action></screen>
             </listitem>
             <listitem>
               <para>PostgreSQL</para>
               <screen>[root aolserver]# <userinput>cd /usr/local/aolserver/bin</userinput>
-[root bin]# <userinput>cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-postgres.txt ./nsd-postgres</userinput>
+[root bin]# <userinput>cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-postgres.txt ./nsd-postgres</userinput>
 [root bin]# <userinput>chmod 755 nsd-postgres</userinput>
 [root bin]#
 <action>cd /usr/local/aolserver/bin
-cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-postgres.txt ./nsd-postgres
+cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/nsd-postgres.txt ./nsd-postgres
 chmod 755 nsd-postgres</action></screen>
         </listitem>
       </itemizedlist>
@@ -327,8 +327,8 @@ config file.</screen>
     </para>
       </formalpara>
     <screen>
-[01/Jun/2000:12:11:20][5914.2051][-nssock-] Notice: nssock: listening on http://localhost.localdomain:8000 (127.0.0.1:8000)
-[01/Jun/2000:12:11:20][5914.2051][-nssock-] Notice: accepting connections</screen>
+[01/Jun/2000:12:11:20][5914.4051][-nssock-] Notice: nssock: listening on http://localhost.localdomain:8000 (127.0.0.1:8000)
+[01/Jun/2000:12:11:20][5914.4051][-nssock-] Notice: accepting connections</screen>
 
     <para>
 

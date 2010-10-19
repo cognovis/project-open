@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
-<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
 <!ENTITY % myvars SYSTEM "../variables.ent">
 %myvars;
 ]>
@@ -14,13 +14,15 @@
   
   <para>Skip this section if you will run only Oracle.</para>
 
-  <para>OpenACS &version; will run with <link linkend="source-postgresql">PostgreSQL</link> 7.3.2, 7.3.3, and 7.3.4 and 7.4.x.  7.4.5 is the recommended version of PostgreSQL.</para>
+  <para>OpenACS &version; will run with <link linkend="source-postgresql">PostgreSQL</link> 7.3.2, 7.3.3, and 7.3.4 and 7.4.x.  7.4.7 is the recommended version of PostgreSQL.</para>
 
   <itemizedlist>
     <listitem>
       <formalpara id="install-postgres-mac">
         <title>Special notes for Mac OS X</title>
-        <para>If you are running Mac OS X prior to 10.3, you should be able to install and use PostGreSQL 7.3.x.  Mac OS X 10.3 requires PostGreSQL 7.4.</para>
+        <para>If you are running Mac OS X prior to 10.3, you should be
+        able to install and use PostGreSQL 7.3.x.  Mac OS X 10.3
+        requires PostGreSQL 7.4. </para>
       </formalpara>
     </listitem>
     <listitem>
@@ -28,11 +30,22 @@
         <title>Special Notes for Debian</title>
         <para></para>
       </formalpara>
-      <para>Debian users, especially Debian stable users, should
-      install PostGreSQL from source as detailed below. Debian
+      
+      <para>Debian stable user should install PostGreSQL from source
+      as detailed below, or they should use the www.backports.org
+      backport for Postgres to get a more current version. Debian
       unstable users: the following process has been known to work
       (but you should double-check that the version of PostGreSQL is
       7.3 or above):</para>
+      
+      <para>For Debian stable users, you can use backports, by adding
+      this line to the /etc/apt/sources.list</para>
+
+      <screen>
+        <userinput>deb http://www.backports.org/debian stable bison postgresql openssl openssh tcl8.4 courier debconf spamassassin tla diff patch neon chkrootkit
+        </userinput>
+      </screen>
+
       <screen><userinput>apt-get install postgresql postgresql-dev postgresql-doc
 ln -s /usr/include/postgresql/ /usr/include/pgsql
 ln -s /var/lib/postgres /usr/local/pgsql
@@ -79,29 +92,29 @@ su - postgres</action></screen>
   <orderedlist>
     <listitem>
       <formalpara>
-        <title>Unpack PostgreSQL 7.4.5.</title>
+        <title>Unpack PostgreSQL 7.4.7.</title>
         <para>If you have not downloaded the postgresql tarball to
-        <computeroutput>/tmp/postgresql-7.4.5.tar.gz</computeroutput>,
+        <computeroutput>/var/tmp/postgresql-7.4.7.tar.gz</computeroutput>,
         <link linkend="source-postgresql">get it</link>.</para>
       </formalpara>
       <screen>[root root]# <userinput>cd /usr/local/src</userinput>
-[root src]# <userinput>tar xzf /tmp/postgresql-7.4.5.tar.gz</userinput>
+[root src]# <userinput>tar xzf /var/tmp/postgresql-7.4.7.tar.gz</userinput>
 [root src]# 
 <action>cd /usr/local/src
-tar xzf /tmp/postgresql-7.4.5.tar.gz</action></screen>
+tar xzf /var/tmp/postgresql-7.4.7.tar.gz</action></screen>
     </listitem>
     <listitem>
       <formalpara>
-        <title>ALTERNATIVE: Unpack PostgreSQL 7.4.1</title>
+        <title>ALTERNATIVE: Unpack PostgreSQL 7.4.7</title>
         <para>If you have not downloaded the postgresql tarball to
-        <computeroutput>/tmp/postgresql-7.4.1.tar.bz2</computeroutput>,
+        <computeroutput>/var/tmp/postgresql-7.4.7.tar.bz2</computeroutput>,
         <link linkend="source-postgresql">get it</link>.</para>
       </formalpara>
       <screen>[root root]# <userinput>cd /usr/local/src</userinput>
-[root src]# <userinput>tar xfj /tmp/postgresql-7.4.1.tar.bz2</userinput>
+[root src]# <userinput>tar xfj /var/tmp/postgresql-7.4.7.tar.bz2</userinput>
 [root src]# 
 <action>cd /usr/local/src
-tar xfj /tmp/postgresql-7.4.1.tar.bz2</action></screen>
+tar xfj /var/tmp/postgresql-7.4.7.tar.bz2</action></screen>
     </listitem>
     <listitem>
       <formalpara>
@@ -133,13 +146,13 @@ tar xfj /tmp/postgresql-7.4.1.tar.bz2</action></screen>
       <screen>[root src]# <userinput>groupadd web</userinput>
 [root src]# <userinput>useradd -g web -d /usr/local/pgsql postgres</userinput>
 [root src]# <userinput>mkdir -p /usr/local/pgsql</userinput>
-[root src]# <userinput>chown -R postgres.web /usr/local/pgsql /usr/local/src/postgresql-7.4.5</userinput>
+[root src]# <userinput>chown -R postgres.web /usr/local/pgsql /usr/local/src/postgresql-7.4.7</userinput>
 [root src]# <userinput>chmod 750 /usr/local/pgsql</userinput>
 [root src]#
 <action>groupadd web
 useradd -g web -d /usr/local/pgsql postgres
 mkdir -p /usr/local/pgsql
-chown -R postgres.web /usr/local/pgsql /usr/local/src/postgresql-7.4.5
+chown -R postgres.web /usr/local/pgsql /usr/local/src/postgresql-7.4.7
 chmod 750 /usr/local/pgsql</action></screen>
       <itemizedlist>
         <listitem>
@@ -162,7 +175,7 @@ sudo niutil -create / /users/<replaceable>$OPENACS_SERVICE_NAME</replaceable>
 sudo niutil -createprop / /users/<replaceable>$OPENACS_SERVICE_NAME</replaceable> gid  <replaceable>201</replaceable>
 sudo niutil -createprop / /users/<replaceable>$OPENACS_SERVICE_NAME</replaceable> uid <replaceable>201</replaceable>
 mkdir -p /usr/local/pgsql
-chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.1
+chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.7
 chmod 750 /usr/local/pgsql</userinput></screen>
         </listitem>
         <listitem>
@@ -174,13 +187,13 @@ chmod 750 /usr/local/pgsql</userinput></screen>
       <screen>[root src]# <userinput>mkdir -p /usr/local/pgsql</userinput>
 [root src]# <userinput>pw groupadd -n web</userinput>
 [root src]# <userinput>pw useradd -n postgres -g web -d /usr/local/pgsql -s /bin/bash</userinput>
-[root src]# <userinput>chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.5</userinput>
+[root src]# <userinput>chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.7</userinput>
 [root src]# <userinput>chmod -R 750 /usr/local/pgsql</userinput>
 [root src]#
 <action>mkdir -p /usr/local/pgsql
 pw groupadd -n web
 pw useradd -n postgres -g web -d /usr/local/pgsql -s /bin/bash
-chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.5
+chown -R postgres:web /usr/local/pgsql /usr/local/src/postgresql-7.4.7
 chmod -R 750 /usr/local/pgsql</action></screen>
         </listitem>
 </itemizedlist>
@@ -200,7 +213,7 @@ chmod -R 750 /usr/local/pgsql</action></screen>
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/pgsql/lib</programlisting>
       <para>Test this by logging in as
 	<computeroutput>postgres</computeroutput> and checking the
-	paths; you should see <computeroutput>/usr/local/pgsql/bin</computeroutput></para>
+	paths; you should see <computeroutput>/usr/local/pgsql/bin</computeroutput> somewhere in the output (the total output is system-dependent so yours may vary)</para>
       <screen>[root src]# <userinput>su - postgres</userinput>
 [postgres pgsql]$ <userinput>env | grep PATH</userinput>
 LD_LIBRARY_PATH=:/usr/local/pgsql/lib
@@ -222,27 +235,27 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin/X11:/
       </formalpara>
           <para>On debian woody (stable, 3.0), do <computeroutput>./configure --without-readline --without-zlib</computeroutput>.</para>
       <screen>[root src]# <userinput>su - postgres</userinput>
-[postgres pgsql]$<userinput> cd /usr/local/src/postgresql-7.4.5</userinput>
-[postgres postgresql-7.4.5]$ <userinput>./configure</userinput>
+[postgres pgsql]$<userinput> cd /usr/local/src/postgresql-7.4.7</userinput>
+[postgres postgresql-7.4.7]$ <userinput>./configure</userinput>
 creating cache ./config.cache
 checking host system type... i686-pc-linux-gnu
 (many lines omitted>
 linking ./src/makefiles/Makefile.linux to src/Makefile.port
 linking ./src/backend/port/tas/dummy.s to src/backend/port/tas.s
-[postgres postgresql-7.4.5]$ <userinput>make all</userinput>
+[postgres postgresql-7.4.7]$ <userinput>make all</userinput>
 make -C doc all
-make[1]: Entering directory `/usr/local/src/postgresql-7.4.5/doc'
+make[1]: Entering directory `/usr/local/src/postgresql-7.4.7/doc'
 (many lines omitted)
-make[1]: Leaving directory `/usr/local/src/postgresql-7.4.5/src'
+make[1]: Leaving directory `/usr/local/src/postgresql-7.4.7/src'
 All of PostgreSQL successfully made. Ready to install.
-[postgres postgresql-7.4.5]$ <userinput>make install</userinput>
+[postgres postgresql-7.4.7]$ <userinput>make install</userinput>
 make -C doc install
-make[1]: Entering directory `/usr/local/src/postgresql-7.4.5/doc'
+make[1]: Entering directory `/usr/local/src/postgresql-7.4.7/doc'
 (many lines omitted)
 Thank you for choosing PostgreSQL, the most advanced open source database
 engine.
 <action>su - postgres
-cd /usr/local/src/postgresql-7.4.5
+cd /usr/local/src/postgresql-7.4.7
 ./configure 
 make all
 make install</action></screen>
@@ -257,15 +270,15 @@ make install</action></screen>
           Tuning PostgreSQL (below).
 	</para>
       </formalpara>
-      <screen>[postgres postgresql-7.4.5]$ <userinput>/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data</userinput>
+      <screen>[postgres postgresql-7.4.7]$ <userinput>/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data</userinput>
 The files belonging to this database system will be owned by user "postgres".
 This user must also own the server process.
 (17 lines omitted)
 or
     /usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start
-[postgres postgresql-7.4.5]$ <userinput>/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l /usr/local/pgsql/data/server.log start</userinput>
+[postgres postgresql-7.4.7]$ <userinput>/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l /usr/local/pgsql/data/server.log start</userinput>
 postmaster successfully started
-[postgres postgresql-7.4.5]$
+[postgres postgresql-7.4.7]$
 <action>/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data
 /usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l /usr/local/pgsql/data/server.log start</action></screen>
 	<para>
@@ -282,7 +295,7 @@ postmaster successfully started
 	  databases are created.  We can verify that it was created
 	  with the createlang command in list mode.</para>
       </formalpara>
-      <screen>[postgres postgresql-7.4.5]$ <userinput>createlang plpgsql template1</userinput>
+      <screen>[postgres postgresql-7.4.7]$ <userinput>createlang plpgsql template1</userinput>
 [postgres pgsql]$ <userinput>createlang -l template1</userinput>
 Procedural languages
   Name   | Trusted?
@@ -290,7 +303,7 @@ Procedural languages
  plpgsql | t
 (1 row)
 
-[postgres pgsql-7.4.5]$
+[postgres pgsql-7.4.7]$
 <action>createlang plpgsql template1
 createlang -l template1</action></screen>
     </listitem>
@@ -351,11 +364,11 @@ logout
         </listitem>
         <listitem><para>Red Hat from source:</para>
           
-          <screen>[root src]# <userinput>cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql</userinput>
+          <screen>[root src]# <userinput>cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql</userinput>
 [root src]# <userinput>chown root.root /etc/rc.d/init.d/postgresql</userinput>
 [root src]# <userinput>chmod 755 /etc/rc.d/init.d/postgresql</userinput>
 [root src]# 
-<action>cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql
+<action>cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql
 chown root.root /etc/rc.d/init.d/postgresql
 chmod 755 /etc/rc.d/init.d/postgresql</action></screen>
           
@@ -385,11 +398,11 @@ chkconfig --list postgresql
 service postgresql start</action></screen>
         </listitem>
         <listitem><para>Debian:</para>
-          <screen>[root ~]# <userinput>cp /tmp/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql</userinput>
+          <screen>[root ~]# <userinput>cp /var/tmp/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql</userinput>
 [root ~]# <userinput>chown root.root /etc/init.d/postgresql</userinput>
 [root ~]# <userinput>chmod 755 /etc/init.d/postgresql</userinput>
 [root ~]# <action>
-cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql
+cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/init.d/postgresql
 chown root.root /etc/init.d/postgresql
 chmod 755 /etc/init.d/postgresql</action></screen>
           <para>Test the script</para>
@@ -454,7 +467,7 @@ Starting PostgreSQL: ok
           </para>
           </note>
           
-          <screen>[root ~]# <userinput>cp /tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/rc.d/init.d/postgresql</userinput>
+          <screen>[root ~]# <userinput>cp /var/tmp/&tarballpath;/packages/acs-core-docs/www/files/postgresql.txt /etc/rc.d/init.d/postgresql</userinput>
 [root ~]# <userinput>chown root.root /etc/rc.d/init.d/postgresql</userinput>
 [root ~]# <userinput>chmod 755 /etc/rc.d/init.d/postgresql</userinput></screen>
           <para>
@@ -501,13 +514,31 @@ Starting PostgreSQL: ok
 root:~ # </screen>
         </listitem>
         <listitem>
-          <para>Mac OS X:</para>
+          <para>Mac OS X 10.3:</para>
           <orderedlist>
             <listitem>
               <para>Install the startup script:</para>
-              <screen><userinput>cd /Library/StartupItems/</userinput>
+              <screen><userinput>cd /System/Library/StartupItems/</userinput>
 <userinput>tar xfz /var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/packages/acs-core-docs/www/files/osx-postgres-startup-item.tgz</userinput>
 </screen>
+            </listitem>
+          </orderedlist>
+        </listitem>
+        <listitem>
+          <para>Mac OS X 10.4 can use Launchd:</para>
+          <orderedlist>
+            <listitem>
+              <para>Install the startup script:</para>
+              <screen><userinput>cd /Library/LaunchDaemons</userinput>
+<userinput>cp
+/var/lib/aolserver/<replaceable>$OPENACS_SERVICE_NAME</replaceable>/packages/acs-core-docs/www/files/osx-postgres-launchd-item.txt
+org.postgresql.PostgreSQL.plist</userinput>
+</screen>
+    <para>If postgres does not start automatically on reboot, see what
+    error you get when manually starting it with:</para>
+  <screen>
+$ <userinput>sudo launchctl load /Library/LaunchDaemons/org.postgresql.PostgreSQL.plist</userinput>
+$ <userinput>sudo launchctl start org.postgresql.PostgreSQL</userinput></screen>
             </listitem>
           </orderedlist>
         </listitem>
