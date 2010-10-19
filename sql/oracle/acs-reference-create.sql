@@ -46,14 +46,14 @@ create table acs_reference_repositories (
     -- what is the table name we are monitoring
     table_name		varchar2(100)  
 			constraint arr_table_name_nn not null
-			constraint arr_table_name_uq unique,
+			constraint arr_table_name_un unique,
     -- is this external or internal data
     internal_data_p     char(1)       
 			constraint arr_internal_data_p_ck
         		check (internal_data_p in ('t','f')),
     -- Does this source include pl/sql package?
     package_name	varchar2(100)
-			constraint arr_package_name_uq unique,
+			constraint arr_package_name_un unique,
     -- last updated
     last_update		date,
     -- where is this data from
@@ -134,7 +134,8 @@ as
              creation_date => creation_date,
              creation_user => creation_user,
              creation_ip   => creation_ip,
-             object_type   => object_type
+             object_type   => object_type,
+             title         => source
         );
 
 	if first_names is not null and last_name is not null then

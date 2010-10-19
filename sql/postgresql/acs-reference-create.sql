@@ -41,12 +41,12 @@ create table acs_reference_repositories (
     -- what is the table name we are monitoring
     table_name		varchar(100)  
 			constraint arr_table_name_nn not null
-			constraint arr_table_name_uq unique,
+			constraint arr_table_name_un unique,
     -- is this external or internal data
     internal_data_p     boolean,
     -- Does this source include pl/sql package?
     package_name	varchar(100)
-			constraint arr_package_name_uq unique,
+			constraint arr_package_name_un unique,
     -- last updated
     last_update		timestamptz,
     -- where is this data from
@@ -108,6 +108,9 @@ begin
          now(),
          p_creation_user,
          p_creation_ip,
+         null,
+         ''t'',
+         p_source,
          null
     );
 
@@ -190,6 +193,7 @@ create function acs_reference__is_expired_p (integer)
 returns char as '
 declare
     repository_id alias for $1;
+    v_expiry_date acs_reference_repositories.expiry_date%TYPE;
 begin
     select expiry_date into v_expiry_date
     from   acs_reference_repositories
