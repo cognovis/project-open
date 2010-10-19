@@ -73,11 +73,11 @@ ad_proc dt_widget_week {
     <tr class=\"table-header\" bgcolor=lavender>
     <td align=center>
     [subst $prev_week_template]
-    <FONT face=\"Arial,Helvetica\" SIZE=-1>
+    <span style=\"font-family:Arial,Helvetica; size: smaller\">
     <B>
     [util_AnsiDatetoPrettyDate $sunday_date] - [util_AnsiDatetoPrettyDate $saturday_date]
     </B>
-    </FONT>
+    </span>
     [subst $next_week_template]
     </td>
     </tr>
@@ -120,9 +120,9 @@ ad_proc dt_widget_week {
             append return_html "
             <tr>
             <td class=\"cal-week-event\">
-            <font size=-1>
+            <span style=\"font-size: smaller\">
             [ns_set value $calendar_details $index]		    
-	    </font>
+	    </span>
 	    </td>      
 	    </tr>
 	    "
@@ -251,8 +251,8 @@ ad_proc dt_widget_day {
     set start_time ""
     set odd_row_p 0
     set display_hour "<img border=0 align=\"center\" src=\"/resources/acs-subsite/diamond.gif\" alt=\"[_ acs-datetime.All_day]\">"
-    append return_html "<tr class=\"odd\"><td class=\"center\" align=\"left\" width=\"60\" \"nowrap\"><font size=-1>[subst $hour_template]</font></td>"
-    append return_html "<td colspan=\"$max_n_events\"><font size=-1>"
+    append return_html "<tr class=\"odd\"><td class=\"center\" align=\"left\" width=\"60\" \"nowrap\"><span style=\"font-size: smaller\">[subst $hour_template]</span></td>"
+    append return_html "<td colspan=\"$max_n_events\"><span style=\"font-size: smaller\">"
     
     # Go through events
     while {1} {
@@ -270,7 +270,7 @@ ad_proc dt_widget_day {
         ns_set delete $calendar_details $index
     }
 
-    append return_html "</font>
+    append return_html "</span>
     </td></tr>"
     
     for {set hour $start_hour} {$hour <= $end_hour} {incr hour} {
@@ -319,7 +319,7 @@ ad_proc dt_widget_day {
 	}
 
         set display_hour [subst $hour_template]
-        append return_html "<tr class=\"$class\"><td class=\"center\" align=left width=\"60\" \"nowrap\"><nobr><font size=-2>$display_hour</font></nobr></td>\n"
+        append return_html "<tr class=\"$class\"><td class=\"center\" align=left width=\"60\" \"nowrap\"><nobr><span style=\"font-size: smaller\">$display_hour</span></nobr></td>\n"
         
         set n_processed_events 0
         
@@ -359,7 +359,7 @@ ad_proc dt_widget_day {
                     set colspan 1
                 } 
 
-                append return_html "<td valign=top rowspan=[expr $hour_diff + 1] colspan=$colspan><font size=-1>[lindex $one_item_val 2]</font></td>"
+                append return_html "<td valign=top rowspan=[expr $hour_diff + 1] colspan=$colspan><span style=\"font-size: smaller\">[lindex $one_item_val 2]</span></td>"
             } else {
                 append return_html "[ns_set value $calendar_details $index]<br>\n"
             }

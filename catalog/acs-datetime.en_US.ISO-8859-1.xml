@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-datetime" package_version="4.1" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="acs-datetime" locale="en_US" charset="ISO-8859-1">
 
   <msg key="All_day">All day</msg>
   <msg key="back_one_day">back one day</msg>
@@ -31,5 +31,10 @@
   <msg key="short_days_of_week">S M T W T F S</msg>
   <msg key="to">to</msg>
   <msg key="Today">Today</msg>
+  <msg key="view_calendar_day">Calendar Day View</msg>
+  <msg key="view_calendar_list">Calendar List View</msg>
+  <msg key="view_calendar_month">Calendar Month View</msg>
+  <msg key="view_calendar_week">Calendar Week View</msg>
   <msg key="Week">Week</msg>
+  <msg key="Year">Year</msg>
 </message_catalog>

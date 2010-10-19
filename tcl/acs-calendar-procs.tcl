@@ -19,7 +19,7 @@ ad_proc dt_widget_month {
 	-header_bgcolor "black" 
 	-header_text_color "white" 
 	-header_text_size "+2" 
-	-day_number_template {<!--$julian_date--><font size=1>$day_number</font>} 
+	-day_number_template {<!--$julian_date-->$day_number} 
 	-day_header_size 2 
 	-day_header_bgcolor "#666666" 
 	-calendar_width "100%" 
@@ -75,42 +75,46 @@ ad_proc dt_widget_month {
     # in the title bar
 
     if { $prev_next_links_in_title == 0 } {
-	set title "
-	<td colspan=7 align=center>
-	<font size=$header_text_size color=$header_text_color><b>$month_heading</b></font>
-	</td>\n"
+        set title [subst {
+            <td colspan=7 align="center">
+            <span style="font-size:$header_text_size; color:$header_text_color; background:inherit; font-weight:bold">
+            $month_heading
+            </span>
+            </td>\n}]
     } else {
-	set title "
-	<td class=\"no-border\" colspan=7>
-	<table width=100% cellpadding=0 cellspacing=0 border=0>
-	<tr class=\"table-header\">
-	<td align=left>$prev_month_url</td>
-	<td align=center><font size=$header_text_size color=$header_text_color>
-	<b>$month_heading</b></font>
-	</td>
-	<td align=right>$next_month_url</td>
-	</tr>
-	</table>
-	</td>\n"
+        set title [subst {
+            <td class=\"no-border\" colspan=7>
+            <table width=100% cellpadding=0 cellspacing=0 border=0>
+            <tr class=\"table-header\">
+            <td align=left>$prev_month_url</td>
+            <td align=center>
+            <span style="font-size:$header_text_size; color:$header_text_color; background:inherit; font-weight:bold">
+            $month_heading
+            </span>
+            </td>
+            <td align=right>$next_month_url</td>
+            </tr>
+            </table>
+            </td>\n}]
     }
 
     # Write out the header and the days of the week
 
-    append output "
-    <table class=\"table-display\" bgcolor=$master_bgcolor cellpadding=0 cellspacing=0 border=1 width=$calendar_width>
-    <tr bgcolor=$header_bgcolor> $title </tr>
-    <tr bgcolor=$day_header_bgcolor class=\"table-header\">\n"
+    append output [subst {
+        <table class=\"table-display\" style="background:$master_bgcolor; color:inherit;" cellpadding=0 cellspacing=0 border=1 width=$calendar_width>
+        <tr style="background:$header_bgcolor; color:inherit;"> $title </tr>
+        <tr style="background:$day_header_bgcolor; color:inherit;" class=\"table-header\">\n}]
 
     foreach day_of_week $days_of_week {
-	append output "
-	<td width=14% align=center class=\"no-border\">
-	<font face=\"Verdana,Arial,Helvetica\" size=$day_header_size color=$day_text_color>
-	<b>$day_of_week</b>
-	</font>
-	</td>\n"
+        append output [subst {
+            <td style="width:14%" align=center class=\"no-border\">
+            <span style="font-family: Verdana,Arial,Helvetica; font-size:$day_header_size; color:$day_text_color; background:inherit; font-weight:bold;">
+            $day_of_week
+            </span>
+            </td>\n}]
     }
 
-    append output "</tr><tr>\n"
+    append output "</tr>\n"
 
     set day_of_week 1
     set julian_date $first_julian_date
@@ -140,68 +144,68 @@ ad_proc dt_widget_month {
             set day_number 1
         }
 
-	if { $day_of_week == 1} {
-	    append output "<tr>\n"
-	}
+        if { $day_of_week == 1} {
+            append output "<tr>\n"
+        }
 
-	set skip_day 0
+        set skip_day 0
 
-	if {$before_month_p || $after_month_p} {
-	    append output "<td class=\"no-border\" bgcolor=$empty_bgcolor align=right valign=top>&nbsp;"
-	    if { $fill_all_days == 0 } {
-		set skip_day 1
-	    } else {
-		append output "[subst $day_number_template]&nbsp;"
-	    }
-	} else {
+        if {$before_month_p || $after_month_p} {
+            append output "<td class=\"no-border\" style=\"background:$empty_bgcolor; color:inherit;\" align=right valign=top>&nbsp;"
+            if { $fill_all_days == 0 } {
+                set skip_day 1
+            } else {
+                append output "[subst $day_number_template]&nbsp;"
+            }
+        } else {
             if {$julian_date == $today_julian_date} {
                 set the_bgcolor $today_bgcolor
-		set the_class "cal-month-today"
+                set the_class "cal-month-today"
             } else {
                 set the_bgcolor $day_bgcolor
-		set the_class "cal-month-day"
+                set the_class "cal-month-day"
             }
 
-	    append output "<td class=$the_class bgcolor=$the_bgcolor align=left valign=top>[subst $day_number_template]&nbsp;"
-	}
+            append output "<td class=\"$the_class\" style=\"background:$the_bgcolor; color:inherit;\" align=left valign=top>[subst $day_number_template]&nbsp;"
+        }
 
-	if { (!$skip_day) && $large_calendar_p == 1 } {
-	    append output "<div align=left>"
+        if { (!$skip_day) && $large_calendar_p == 1 } {
+            append output "<div align=left>"
 
-	    set calendar_day_index [ns_set find $calendar_details $julian_date]
-	    
-	    while { $calendar_day_index >= 0 } {
-		set calendar_day [ns_set value $calendar_details $calendar_day_index]
+            set calendar_day_index [ns_set find $calendar_details $julian_date]
+        
+            while { $calendar_day_index >= 0 } {
+                set calendar_day [ns_set value $calendar_details $calendar_day_index]
 
-		ns_set delete $calendar_details $calendar_day_index
+                ns_set delete $calendar_details $calendar_day_index
 
-		append output "$calendar_day"
+                append output "$calendar_day"
 
-		set calendar_day_index [ns_set find $calendar_details $julian_date]
-	    }
-	    append output "</div>"
-	}
+                set calendar_day_index [ns_set find $calendar_details $julian_date]
+            }
+            append output "</div>"
+        }
 
-	append output "</td>\n"
+        append output "</td>\n"
 
-	incr day_of_week
-	incr julian_date
+        incr day_of_week
+        incr julian_date
         incr day_number
 
-	if { $day_of_week > 7 } {
-	    set day_of_week 1
-	    append output "</tr>\n"
-	}
+        if { $day_of_week > 7 } {
+            set day_of_week 1
+            append output "</tr>\n"
+        }
     }
 
     # There are two ways to display previous and next month link -
     # this is the default 
 
     if { $prev_next_links_in_title == 0 } {
-	append output "
-	<tr bgcolor=white>
-	<td align=center colspan=7>$prev_month_url$next_month_url</td>
-	</tr>\n"
+        append output [subst {
+            <tr style="background:white; color:inherit;">
+            <td align=center colspan=7>$prev_month_url$next_month_url</td>
+            </tr>\n}]
     }
 
     return [concat $output "</table>\n"]
@@ -217,7 +221,7 @@ ad_proc dt_widget_month_small {
 	-header_bgcolor "black" 
 	-header_text_color "white" 
 	-header_text_size "+1" 
-	-day_number_template {<!--$julian_date--><font size=1>$day_number</font>} 
+	-day_number_template {<!--$julian_date-->$day_number} 
 	-day_header_size 1 
 	-day_header_bgcolor "#666666" 
 	-calendar_width 0 
@@ -263,7 +267,7 @@ ad_proc dt_widget_month_centered {
 	-header_bgcolor "black" 
 	-header_text_color "white" 
 	-header_text_size "+1" 
-	-day_number_template {<!--$julian_date--><font size=1>$day_number</font>} 
+	-day_number_template {<!--$julian_date-->$day_number} 
 	-day_header_size 1 
 	-day_header_bgcolor "#666666" 
 	-calendar_width 0 
@@ -315,7 +319,7 @@ ad_proc dt_widget_year {
 	-header_bgcolor "black" 
 	-header_text_color "white" 
 	-header_text_size "+1" 
-	-day_number_template {<!--$julian_date--><font size=1>$day_number</font>} 
+	-day_number_template {<!--$julian_date-->$day_number} 
 	-day_header_size 1 
 	-day_header_bgcolor "#666666" 
 	-calendar_width 0 
@@ -372,7 +376,7 @@ ad_proc dt_widget_calendar_year {
 	-header_bgcolor "black" 
 	-header_text_color "white" 
 	-header_text_size "+1" 
-	-day_number_template {<!--$julian_date--><font size=1>$day_number</font>} 
+	-day_number_template {<!--$julian_date-->$day_number} 
 	-day_header_size 1 
 	-day_header_bgcolor "#666666" 
 	-calendar_width 0 
@@ -446,18 +450,18 @@ ad_proc -private dt_navbar_view {
     <tr align=center class=\"table-header\">"
     
     # ben: taking out year for now, since it doesn't work
-    foreach viewname {list day week month} {
-        set text [string toupper $viewname 0]
+    foreach {viewname viewlink viewdesc} [list "list" [_ acs-datetime.List] [_ acs-datetime.view_calendar_day] "day" [_ acs-datetime.Day] [_ acs-datetime.view_calendar_list] "week" [_ acs-datetime.Week] [_ acs-datetime.view_calendar_week] "month" [_ acs-datetime.Month] [_ acs-datetime.view_calendar_month]] {
+        set text [string toupper $viewlink 0]
         if { $viewname == $view } {
             # current view
             append result "<td class=\"selected\">
-    <font size=-1><b>$text</b></font>
+    <span style=\"font-size: smaller\; font-weight: bold\">$text</span>
     </td>
     "
         } else {
             append result "<td class=\"no-border\">
-    <a href=\"$base_url" "view=$viewname&date=$date\">
-    <font size=-1><b>$text</b></font></a>
+    <a href=\"$base_url" "view=$viewname&date=$date\" title=\"$viewdesc\">
+    <span style=\"font-size: smaller; font-weight: bold\">$text</span></a>
     </td>
     "
         }
@@ -589,7 +593,7 @@ ad_proc -private dt_navbar_month {
     }
     
     append results "
-    <font size=-1><b>$curr_month</b></font>"
+    <span style=\"font-size: smaller; font-weight: bold\">$curr_month</span>"
 
     # Output link to next month only if it's a legal month
     if {$next_month_legal_p != 0} {
@@ -690,7 +694,7 @@ ad_proc dt_widget_calendar_navigation {
 	    if {$i == $curr_month} {
 		append output "
 		<td>
-		<font size=-1 color=red>$month</font>
+		<span style=\"font-size: smaller; color: red\">$month</span>
 		</td>\n"
 	    } else {
 		set target_date [clock format \
@@ -699,7 +703,7 @@ ad_proc dt_widget_calendar_navigation {
 		append output "
 		<td>
 		<a href=\"$base_url" "view=month&date=[ns_urlencode $target_date]\">
-		<font size=-1 color=blue>$month</font></a>
+		<span style=\"font-size: smaller; color: blue;\">$month</span></a>
 		</td>\n"
 	    }
 	}
@@ -724,12 +728,12 @@ ad_proc dt_widget_calendar_navigation {
 	for {set year [expr $curr_year - 2]} {$year <= $end_year} {incr year} {
 	    if {$year == $curr_year} {
 		append output "
-		<td><font size=-1 color=red>$year</font></td>\n"
+		<td><span style=\"font-size: smaller; color: red\">$year</span></td>\n"
 	    } else {
 		append output "
 		<td>
 		<a href=\"$base_url" "view=year&date=[ns_urlencode "$year-$monthday"]\">
-		<font size=-1 color=blue>$year</font></a>
+		<span style=\"font-size: smaller; color: blue;\">$year</span></a>
 		</td>\n"
 	    }
 	}
@@ -752,7 +756,7 @@ ad_proc dt_widget_calendar_navigation {
 	set days_of_week [list S M T W T F S]
 
 	foreach day_of_week $days_of_week {
-	    append output "<td align=right><font size=-1><b>$day_of_week</b></td>\n"
+	    append output "<td align=right><span style=\"font-size: smaller; font-weight: bold;\">$day_of_week</span></td>\n"
 	}
 	append output "</tr><tr><td colspan=7><hr></td></tr>"
 
@@ -791,18 +795,18 @@ ad_proc dt_widget_calendar_navigation {
 		append output "
 		<td align=right>
 		<a href=\"$base_url" "view=$view&date=[ns_urlencode $ansi_date]\">
-		<font color=gray>$day_number</font></a>
+		<span style=\"color: gray\">$day_number</span></a>
 		</td>"
 	    } elseif {$julian_date == $julian_date_today} {
 		append output "
 		<td align=right>
-		<b>$day_number</b>
+		<strong>$day_number</strong>
 		</td>"
 	    } else {
 		append output "
 		<td align=right>
 		<a href=\"$base_url" "view=$view&date=[ns_urlencode $ansi_date]\">
-		<font color=blue>$day_number</font></a>
+		<span style=\"color: blue\">$day_number</span></a>
 		</td>"
 	    }
 
@@ -833,21 +837,23 @@ ad_proc dt_widget_calendar_navigation {
     <tr class=\"table-header\"><td align=center colspan=5>
     <table cellspacing=0 cellpadding=0 border=0>
     <tr><td nowrap>
-    <font size=-2>"
+    <span style=\"font-size: smaller\">"
 
     if { $view == "day" && [dt_sysdate] == $date } {
-        append output "<b>Today</b>"
+        append output "<strong>Today</strong>"
     } else {
         append output "<a href=\"$today_url\">
-    <b>Today</b></a> "
+    <strong>Today</strong></a> "
     }
     
     append output "
-    is [dt_ansi_to_pretty]</font></td></tr>
+    is [dt_ansi_to_pretty]</span></td></tr>
     <tr><td align=center><br>
     <form method=get action=$base_url>
-    <INPUT TYPE=text name=date size=10> <INPUT type=image src=\"/resources/acs-subsite/go.gif\" alt=\"Go\" border=0><br><font size=-2>Date as YYYYMMDD</font>
+    <div>
+    <INPUT TYPE=text name=date size=10><INPUT type=image src=\"/resources/acs-subsite/go.gif\" alt=\"Go\" border=0> <br><span style=\"font-size:smaller\">Date as YYYYMMDD</span>
     <INPUT TYPE=hidden name=view value=day>
+    </div>
     "
 
     foreach var $list_of_vars {

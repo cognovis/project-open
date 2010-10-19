@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-datetime" package_version="4.0" locale="fa_IR" charset="utf-8">
+<message_catalog package_key="acs-datetime" locale="fa_IR" charset="utf-8">
 
   <msg key="back_one_day">يک روز به عقب</msg>
   <msg key="Date">تاريخ</msg>

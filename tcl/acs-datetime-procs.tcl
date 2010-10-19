@@ -9,7 +9,7 @@ ad_library {
     @cvs-id  $Id$
 }
 
-ad_proc dt_systime {
+ad_proc -public dt_systime {
     {-format "%Y-%m-%d %H:%M:%S" -gmt f}
 } {
     Returns current server time in the standard format "yyyy-mm-dd
@@ -19,7 +19,7 @@ ad_proc dt_systime {
     return [clock format [clock seconds] -format $format -gmt $gmt]
 }
     
-ad_proc dt_sysdate {
+ad_proc -public dt_sysdate {
     {-format "%Y-%m-%d"}
 } {
     Returns current server date in the standard format "yyyy-mm-dd"
@@ -27,7 +27,7 @@ ad_proc dt_sysdate {
     return [clock format [clock seconds] -format $format]
 }
 
-ad_proc dt_valid_time_p { 
+ad_proc -public dt_valid_time_p { 
     time 
 } {
     Returns 1 if "time" is a valid time specification, 0 otherwise.
@@ -50,19 +50,23 @@ ad_proc -deprecated dt_format {
     return [clock format [clock scan $time] -format $format -gmt $gmt]
 }
 
-ad_proc dt_month_names {} {
+ad_proc -public dt_month_names {} {
     Returns the calendar month names as a Tcl list (January, February, ...)
+
+    @see lc_get
 } {
     return [lc_get mon]
 }
 
-ad_proc dt_month_abbrev {} {
+ad_proc -public dt_month_abbrev {} {
     Returns the calendar month names as a Tcl list (Jan, Feb, ...)
+
+    @see lc_get
 } {
     return [lc_get abmon]
 }
 
-ad_proc dt_ansi_to_julian_single_arg {
+ad_proc -public dt_ansi_to_julian_single_arg {
     ansi
     {era ""}
 } {
@@ -75,7 +79,7 @@ ad_proc dt_ansi_to_julian_single_arg {
     return [dt_ansi_to_julian $year $month $day $era]
 }
 
-ad_proc dt_ansi_to_julian {
+ad_proc -public dt_ansi_to_julian {
     year
     month
     day
@@ -121,7 +125,7 @@ ad_proc dt_ansi_to_julian {
     return [expr int($julian_date)]
 }
 
-ad_proc dt_julian_to_ansi {
+ad_proc -public dt_julian_to_ansi {
     julian_date
 } {
     Returns julian_date formatted as "yyyy-mm-dd"
@@ -168,7 +172,7 @@ ad_proc dt_julian_to_ansi {
     return $year-$month-$day
 }
 
-ad_proc dt_ansi_to_pretty {
+ad_proc -public dt_ansi_to_pretty {
     {ansi_date ""}
 } {
     Converts 1998-09-05 to September 5, 1998.  With no argument it
@@ -182,7 +186,7 @@ ad_proc dt_ansi_to_pretty {
     return [lc_time_fmt $ansi_date "%x"]
 }
 
-ad_proc dt_ansi_to_list {
+ad_proc -public dt_ansi_to_list {
     {ansi_date ""}
 } {
     Parses the given ansi_date string into a list of year, month, day,
@@ -200,7 +204,7 @@ ad_proc dt_ansi_to_list {
     return $date_info
 }
 
-ad_proc dt_num_days_in_month {
+ad_proc -public dt_num_days_in_month {
     year
     month
 } {
@@ -221,7 +225,7 @@ ad_proc dt_num_days_in_month {
     return [clock format [clock scan "last day" -base [clock scan $year-$month-01]] -format %d]
 }
 
-ad_proc dt_first_day_of_month {
+ad_proc -public dt_first_day_of_month {
     year
     month
 } {
@@ -231,7 +235,7 @@ ad_proc dt_first_day_of_month {
     return [expr [clock format [clock scan $year-$month-01] -format %w] + 1]
 }
 
-ad_proc dt_next_month {
+ad_proc -public dt_next_month {
     year
     month
 } {
@@ -252,7 +256,7 @@ ad_proc dt_next_month {
     return $next_month
 }
 
-ad_proc dt_prev_month {
+ad_proc -public dt_prev_month {
     year
     month
 } {
@@ -274,7 +278,7 @@ ad_proc dt_prev_month {
     return $prev_month
 }
 
-ad_proc dt_next_month_name {
+ad_proc -public dt_next_month_name {
     year
     month
 } {
@@ -297,7 +301,7 @@ ad_proc dt_next_month_name {
 
 }
 
-ad_proc dt_prev_month_name {
+ad_proc -public dt_prev_month_name {
     year
     month
 } {
@@ -443,7 +447,7 @@ ad_proc -public dt_widget_datetime {
     return $input
 }
 
-ad_proc dt_widget_month_names { 
+ad_proc -public dt_widget_month_names { 
     name 
     {default ""}
 } {
@@ -460,7 +464,7 @@ ad_proc dt_widget_month_names {
     return "<select name=\"$name\">\n $input \n </select>\n"
 }
 
-ad_proc dt_widget_numeric_range { 
+ad_proc -public dt_widget_numeric_range { 
     name 
     begin 
     end 
@@ -489,7 +493,7 @@ ad_proc dt_widget_numeric_range {
     return "<select name=\"$name\">\n$input</select>"
 }
 
-ad_proc dt_widget_maybe_range {
+ad_proc -public dt_widget_maybe_range {
     {-hide t -hidden_value "00" -default "" -format "%02d"}
     ask_for_value 
     name 
@@ -515,7 +519,7 @@ ad_proc dt_widget_maybe_range {
 	    "$name" $start $end $default_value $interval $with_leading_zeros]
 }
 
-ad_proc dt_interval_check { start end } {
+ad_proc -public dt_interval_check { start end } {
 
     Checks the values of start and end to see if they form a valid
     time interval.  Returns:

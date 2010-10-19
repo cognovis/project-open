@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-datetime" package_version="4.0" locale="ast_ES" charset="ISO-8859-1">
+<message_catalog package_key="acs-datetime" locale="ast_ES" charset="ISO-8859-1">
 
   <msg key="Date">Fecha</msg>
   <msg key="Date_as">Fecha en</msg>
