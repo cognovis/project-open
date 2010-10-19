@@ -13,6 +13,8 @@ ad_page_contract {
     @param target URL to return to
     @param passthrough Form variables to pass along from caller
     @param limit_to_users_in_group_id Limits search to users in the specified group id.  This can be a comma separated list to allow searches within multiple groups. (optional)
+    @param limit_to_user_id. This is useful is you don't want to show a list of user_ids. This could be a comma separated list. (optional)
+    @param from_user_id is used if you want to merge the user_id with user_id_from_search (optional)
 
     @author Jin Choi (jsc@arsdigita.com)
 } {
@@ -23,6 +25,8 @@ ad_page_contract {
     {passthrough ""}
     {limit_users_in_group_id ""}
     {only_authorized_p:integer 1}
+    {limit_to_user_id ""}
+    {from_user_id ""}
 } -properties {
     group_name:onevalue
     search_type:onevalue
@@ -41,27 +45,27 @@ set exception_text ""
 
 set context [list [list "./" "Users"] "Search"]
 
-if [info exists keyword] {
+if {[info exists keyword]} {
     # this is an administrator 
-    if { [empty_string_p $keyword] } {
+    if { $keyword eq "" } {
 	incr exception_count
 	append exception_text "<li>You forgot to type a search string!\n"
     }
 } else {
     # from one of the user pages
-    if { (![info exists email] || [empty_string_p $email]) && \
-	    (![info exists last_name] || [empty_string_p $last_name]) } {
+    if { (![info exists email] || $email eq "") && \
+	    (![info exists last_name] || $last_name eq "") } {
 	incr exception_count
 	append exception_text "<li>You must specify either an email address or last name to search for.\n"
     }
 
     if { [info exists email] && [info exists last_name] && \
-	    ![empty_string_p $email] && ![empty_string_p $last_name] } {
+	    $email ne "" && $last_name ne "" } {
 	incr exception_count
 	append exception_text "<li>You can only specify either email or last name, not both.\n"
     }
 
-    if { ![info exists target] || [empty_string_p $target] } {
+    if { ![info exists target] || $target eq "" } {
 	incr exception_count
 	append exception_text "<li>Target was not specified. This shouldn't have happened,
 please contact the <a href=\"mailto:[ad_host_administrator]\">administrator</a>
@@ -82,7 +86,7 @@ if { [info exists keyword] } {
     set search_type "keyword"
     set sql_keyword "%[string tolower $keyword]%"
     lappend where_clause "(email like :sql_keyword or lower(first_names || ' ' || last_name) like :sql_keyword)"
-} elseif { [info exists email] && ![empty_string_p $email] } {
+} elseif { [info exists email] && $email ne "" } {
     set search_type "email"    
     set sql_email "%[string tolower $email]%"
     lappend where_clause "email like :sql_email"
@@ -100,6 +104,11 @@ if { ![info exists passthrough] } {
     set passthrough_parameters ""
 } else {
     set passthrough_parameters "[export_entire_form_as_url_vars $passthrough]"
+}
+
+if { [exists_and_not_null limit_to_user_id ] } {
+    set limit_to_user_id [join $limit_to_user_id ","]
+    lappend where_clause "cc_users.user_id not in ($limit_to_user_id)"
 }
 
 if { [exists_and_not_null limit_to_users_in_group_id] } {
@@ -132,14 +141,19 @@ db_foreach user_search_admin $query {
     set last_name_from_search $last_name
     set email_from_search $email
     
-    set user_search:[set rowcount](user_id) $user_id
+    if { $from_user_id eq "" } {
+	set user_search:[set rowcount](user_id) $user_id
+    } else {
+	set user_search:[set rowcount](user_id) $from_user_id
+    }
+
     set user_search:[set rowcount](first_names) $first_names
     set user_search:[set rowcount](last_name) $last_name
     set user_search:[set rowcount](email) $email
     set user_search:[set rowcount](export_vars) [export_url_vars user_id_from_search first_names_from_search last_name_from_search email_from_search]
     set user_search:[set rowcount](member_state) $member_state
     
-    if { $member_state != "approved" } {
+    if { $member_state ne "approved" } {
 	set user_search:[set rowcount](user_finite_state_links) [join [ad_registration_finite_state_machine_admin_links $member_state $email_verified_p $user_id_from_search "search?[export_url_vars email last_name keyword target passthrough limit_users_in_group_id only_authorized_p]"] " | "]
     } else {
 	set user_search:[set rowcount](user_finite_state_links) ""

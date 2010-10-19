@@ -26,7 +26,7 @@ if { $version_name_index >= 0 } {
     set version_uri_suffix [string range $version_uri [expr { $version_name_index + [string length $version_name] }] end]
 
     doc_body_append "
-<script language=javascript>
+<script type=\"text/javascript\">
 function updateVersionURL() {
     var form = document.forms\[0\];
     form.version_uri.value = '$version_uri_prefix' + form.version_name.value + '$version_uri_suffix';
@@ -39,7 +39,7 @@ function updateVersionURL() {
 }
 
 doc_body_append "
-<script language=javascript>
+<script type=\"text/javascript\">
 function checkMailto(element) {
     // If it looks like an email address without a mailto: (contains an @ but
     // no colon) then prepend 'mailto:'.
@@ -68,17 +68,27 @@ function checkMailto(element) {
 
 <tr>
   <th align=right nowrap>OpenACS Core:</th>
-  <td>$initial_install_p</td>
+  <td>[ad_decode $initial_install_p t Yes No]</td>
 </tr>
 
 <tr>
   <th align=right nowrap>Singleton:</th>
-  <td>$singleton_p</td>
+  <td>[ad_decode $singleton_p t Yes No]</td>
+</tr>
+
+<tr>
+  <th align=right nowrap>Implements Subsite:</th>
+  <td>[ad_decode $implements_subsite_p t Yes No]</td>
+</tr>
+
+<tr>
+  <th align=right nowrap>Inherit Templates:</th>
+  <td>[ad_decode $inherit_templates_p t Yes No]</td>
 </tr>
 
 <tr>
   <th align=right nowrap>Auto-mount:</th>
-  <td><input name=auto_mount size=30 value=\"$auto_mount\" /></td>
+  <td><input name=auto_mount size=30 value=\"$auto_mount\"></td>
 </tr>
 
 <tr>
@@ -114,6 +124,31 @@ This description is <select name=description_format>
 </td>
 </tr>
 "
+
+# Dynamic package version attributes
+array set all_attributes [apm::package_version::attributes::get_spec]
+array set attributes [apm::package_version::attributes::get \
+                          -version_id $version_id \
+                          -array attributes]
+foreach attribute_name [array names all_attributes] {
+    array set attribute $all_attributes($attribute_name)
+
+    if { [info exists attributes($attribute_name)] } {
+        # Attribute is already in db
+        set attribute_value $attributes($attribute_name)
+    } else {
+        # The attribute is not in the db yet
+        set attribute_value [apm::package_version::attributes::default_value $attribute_name]
+    }
+
+    doc_body_append "
+<tr>
+  <th align=right nowrap>${attribute(pretty_name)}:</th>
+  <td><input name=\"$attribute_name\" size=\"30\" value=\"$attribute_value\">
+</td>
+</tr>
+"
+}
 
 # Build a list of owners. Ensure that there are at least two.
 set owners [db_list_of_lists apm_all_owners {

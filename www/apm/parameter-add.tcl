@@ -10,10 +10,11 @@ ad_page_contract {
 
 set user_id [ad_get_user_id]
 
+set parameter_id [db_nextval acs_object_id_seq]
 db_1row apm_get_name { 
-    select package_key, pretty_name, version_name, acs_object_id_seq.nextval as parameter_id
-      from apm_package_version_info
-     where version_id = :version_id
+  select package_key, pretty_name, version_name
+  from apm_package_version_info
+  where version_id = :version_id
 }
 db_release_unused_handles
 
@@ -29,7 +30,7 @@ append body "
 <tr>
   <td></td>
   <td>A parameter can be used to store information that is specific to a package but that needs to
-be easily configurable and customized on a package instance basis.  The name should be a brief 
+be easily configurable and customized.  The name should be a brief 
 plain text string that identifies the parameter.
   </td>
 </tr>
@@ -63,6 +64,19 @@ to indicate which parameters pertain to security.
 </td>
 </tr>
 
+<tr>
+  <td></td>
+  <td>Please indicate if the parameter is of \"global\" (has one system-wide value) or \"instance\" (a vlue for each package instance) scope.<br>
+  </td>
+</tr>
+
+<tr>
+  <th align=right nowrap>Scope:</th>
+  <td><select name=scope>
+[ad_generic_optionlist {instance global} {instance global}]
+      </select>
+  </td>
+</tr>
 
 <tr>
   <td></td>
@@ -72,7 +86,7 @@ to indicate which parameters pertain to security.
 <tr>
   <th align=right nowrap>Type:</th>
   <td><select name=datatype>
-      [ad_generic_optionlist {number string} {number string}]
+[ad_generic_optionlist {number string textarea} {number string text}]
       </select>
   </td>
 </tr>

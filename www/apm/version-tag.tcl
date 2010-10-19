@@ -9,19 +9,14 @@ ad_page_contract {
     {version_id:integer}
 }
 
-db_1row apm_package_by_version_id {
-    select package_name, version_name, package_id 
-    from apm_package_version_info where version_id = :version_id
-}
+db_1row apm_package_by_version_id {}
 
-if { $installed_p == "f" } {
+if { $installed_p eq "f" } {
     ad_return_complaint 1 "<li>The selected version is not installed"
     return
 }
 
-set files [db_list apm_all_paths {
-	select path from apm_package_files where version_id = :version_id order by path
-}]
+set files [db_list apm_all_paths {}]
 
 if { [llength $files] == 0 } {
     ad_return_complaint 1 "<li>No files in this packages"
@@ -36,14 +31,13 @@ set version_tag [apm_package_version_release_tag $package_key $version_name]
 
 # Path to the CVS executable
 
-set cvs [ad_parameter CvsPath vc]
+set cvs [parameter::get  -package_id [ad_acs_kernel_id] -parameter CvsPath]
 
-doc_body_append "[apm_header [list "version-view?version_id=$version_id" "$package_name $version_name"] [list "version-files?version_id=$version_id" "Files"] "Tag"]
-
-<p> We're going to write the CVS tag <code>$version_tag</code> into
+doc_body_append [apm_header [list "version-view?version_id=$version_id" "$pretty_name $version_name"] [list "version-files?version_id=$version_id" "Files"] "Tag"] \
+"<p> We're going to write the CVS tag <code>$version_tag</code> into
 the repository for each file in this package.  This will let you
 retrieve the exact set of revisions that make up
-$package_name $version_name in the future.  You can repeat
+$pretty_name $version_name in the future.  You can repeat
 this operation as often as you want, to tag new files for example.
 
 <p>Here goes:
@@ -121,18 +115,10 @@ if {$bad_file_count} {
     this page or run the tagging operation again.  This package won't
     be archivable until the tagging is completed with no errors."
 
-    db_dml apm_all_files_untag {
-	update apm_package_versions 
-	set    tagged_p   = 'f' 
-	where  version_id = :version_id
-    }
+    db_dml apm_all_files_untag {}
 } else {
     doc_body_append "<p>All files were tagged successfully."
-    db_dml apm_all_files_tag {
-	update apm_package_versions 
-	set    tagged_p   = 't' 
-	where  version_id = :version_id
-    }
+    db_dml apm_all_files_tag {}
 }
 
 doc_body_append "

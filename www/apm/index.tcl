@@ -53,7 +53,7 @@ set missing_text "<strong>No packages match criteria.</strong>"
 
 append body "<center><table><tr><td>[ad_dimensional $dimensional_list]</td></tr></table></center>"
 
-set use_watches_p [expr ! [ad_parameter -package_id [ad_acs_kernel_id] PerformanceModeP request-processor 1]]
+set use_watches_p [expr {![parameter::get -package_id [ad_acs_kernel_id] -parameter PerformanceModeP -default 1]}]
 
 set table_def {
     { package_key "Key" "" "<td><a href=\"[export_vars -base version-view { version_id }]\">$package_key</a></td>" }
@@ -61,8 +61,8 @@ set table_def {
     { version_name "Ver." "" "" }
     {
 	status "Status" "" {<td align=center>&nbsp;&nbsp;[eval {
-	    if { $installed_p == "t" } {
-		if { $enabled_p == "t" } {
+	    if { $installed_p eq "t" } {
+		if { $enabled_p eq "t" } {
 		    set status "Enabled"
 		} else {
 		    set status "Disabled"
@@ -82,8 +82,8 @@ set table_def {
             set file_link_list [list]
             lappend file_link_list "<a href=\"version-files?version_id=$version_id\">view files</a>"
 
-	    if { $installed_p == "t" && $enabled_p == "t" } {
-	        if { ! [ad_parameter -package_id [ad_acs_kernel_id] PerformanceModeP request-processor 1] } {
+	    if { $installed_p eq "t" && $enabled_p eq "t" } {
+	        if {![parameter::get -package_id [ad_acs_kernel_id] -parameter PerformanceModeP -default 1]} {
                     lappend file_link_list "<a href=\"package-watch?package_key=$package_key\">watch all files</a>"
                 } 
 
@@ -137,9 +137,9 @@ if { $use_watches_p } {
     set watch_files [nsv_array names apm_reload_watch]
     if { [llength $watch_files] > 0 } {
         append body "<h3>Watches</h3><ul>
-<li><a href=\"file-watch-cancel\">Stop watching all files</a></li><br />"
+<li><a href=\"file-watch-cancel\">Stop watching all files</a></li><br>"
         foreach file [lsort $watch_files] {
-            if { [string compare $file "."] } {
+            if {$file ne "."  } {
                 append body "<li>$file (<a href=\"file-watch-cancel?watch_file=[ns_urlencode $file]\">stop watching this file</a>)\n"
             }
         }

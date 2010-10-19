@@ -18,7 +18,7 @@ Message:
 @first_names@ @last_name@, 
 
 You have been added as a user to @system_name@
-at @system_url@
+at @system_url@.
 
 Login information:
 Email: @email@
@@ -30,10 +30,8 @@ Thank you,
 </textarea>
 
 <center>
-<input type="submit" value="Send Email" />
+<input type="submit" value="Send Email">
 </center>
 
 </form>
 </p>
-
-

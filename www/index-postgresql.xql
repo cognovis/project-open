@@ -10,7 +10,7 @@
            instance_name
     from   site_nodes s, apm_packages p
     where  s.object_id = p.package_id
-    and    p.package_key = 'acs-subsite'
+    and    p.package_key in ($package_keys)
 
       </querytext>
 </fullquery>

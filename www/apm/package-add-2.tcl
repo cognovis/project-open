@@ -11,6 +11,8 @@ ad_page_contract {
     { package_type "apm_application"}
     { initial_install_p "f" }
     { singleton_p "f" }
+    { implements_subsite_p f }
+    { inherit_templates_p t }
     { auto_mount "" }
     package_uri
     version_name
@@ -25,6 +27,8 @@ ad_page_contract {
     { vendor [db_null] } 
     { vendor_uri [db_null] }
     { install_p 0 }
+    {implements_subsite_p "f"}
+    {inherit_templates_p "f"}
 } -validate {
     package_key_format -requires {package_key} {
 	if { [regexp {[^a-z0-9-]} $package_key] } {
@@ -95,15 +99,24 @@ is already registerd to another package."
     version_id {You must provide an integer key for your package version.}
 }
 
+# XXXJCD: this should be in the UI, along with license etc.
+set attributes(maturity) 0
+
 db_transaction {
     # Register the package.
     apm_package_register $package_key $pretty_name $pretty_plural $package_uri \
-	    $package_type $initial_install_p $singleton_p
+	    $package_type $initial_install_p $singleton_p $implements_subsite_p \
+            $inherit_templates_p
     # Insert the version
-    set version_id [apm_package_install_version -callback apm_dummy_callback -version_id \
-	    $version_id $package_key $version_name $version_uri $summary $description \
-	    $description_format $vendor $vendor_uri $auto_mount]
+    set version_id [apm_package_install_version \
+                        -callback apm_dummy_callback \
+                        -version_id $version_id \
+                        -array attributes \
+                        $package_key $version_name $version_uri $summary $description \
+                        $description_format $vendor $vendor_uri $auto_mount]
     apm_version_enable -callback apm_dummy_callback $version_id
+    apm_build_one_package_relationships $package_key
+    apm_build_subsite_packages_list
     apm_package_install_owners -callback apm_dummy_callback \
 	    [apm_package_install_owners_prepare $owner_name $owner_uri] $version_id
 

@@ -9,7 +9,7 @@ ad_page_contract {
 }
 
 
-set user_id [ad_verify_and_get_user_id]
+set user_id [ad_conn user_id]
 
 db_1row param_info { 
     select parameter_name, datatype, description, default_value, min_n_values, max_n_values, parameter_id, 
@@ -80,7 +80,7 @@ to indicate which parameters pertain to security.
 <tr>
   <th align=right nowrap>Type:</th>
   <td><select name=datatype>
-      [ad_generic_optionlist {number string} {number string} $datatype]
+      [ad_generic_optionlist {number string "textarea"} {number string text} $datatype]
       </select>
   </td>
 </tr>

@@ -12,12 +12,13 @@ ad_page_contract {
     section_name
     description:notnull,nohtml
     datatype:notnull
+    scope:notnull
     {default_value [db_null]}
     {min_n_values:integer 1}
     {max_n_values:integer 1}
 } -validate {
     datatype_type_ck {
-	if {$datatype != "number" && $datatype != "string"} {
+	if {$datatype != "number" && $datatype != "string" && $datatype != "text"} {
 	    ad_complain
 	}
     }
@@ -32,11 +33,11 @@ ad_page_contract {
 	}
     }
 } -errors {
-    datatype_type_ck {The datatype must be either a number or a string.}
+    datatype_type_ck {The datatype must be either a number or a string or text.}
 }
 
 db_transaction {
-    apm_parameter_register -parameter_id $parameter_id $parameter_name $description $package_key \
+    apm_parameter_register -parameter_id $parameter_id -scope $scope $parameter_name $description $package_key \
 	$default_value $datatype $section_name $min_n_values $max_n_values
     apm_package_install_spec $version_id
 } on_error {
@@ -52,7 +53,7 @@ db_transaction {
 # LARS hack
 set sections [lindex [lindex [apm_parameter_section_slider $package_key] 0] 3]
 foreach section $sections {
-    if { [string equal $section_name [lindex $section 1]] } {
+    if {$section_name eq [lindex $section 1]} {
         set section_name [lindex $section 0]
         break
     }

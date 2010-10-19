@@ -22,7 +22,7 @@ ad_proc apm_parameter_section_slider {package_key} {
         lappend section_list [list $package_key $package_key [list "where" "section_name is null"]]
         foreach section $sections {
             incr i
-            if { ![empty_string_p $section] } {
+            if { $section ne "" } {
                 lappend section_list [list "section_$i" $section [list "where" "section_name = '[db_quote $section]'"]]
             }
         }
@@ -56,10 +56,14 @@ ad_proc apm_header { { -form "" } args } {
             lappend cmd $elem
         }
         set context_bar [eval $cmd]
+        # this is rather a hack, but just needed for streaming output
+        # a more general solution can be provided at some later time...
+        regsub "#acs-kernel.Main_Site#" $context_bar \
+	    [_ acs-kernel.Main_Site] context_bar
     }
     set header [ad_header $title ""]
     append body "$header\n"
-    if {![empty_string_p $form]} {
+    if {$form ne ""} {
         append body "<form $form>"
     }
     
@@ -70,7 +74,7 @@ ad_proc apm_header { { -form "" } args } {
     "
 }
 
-proc_doc apm_shell_wrap { cmd } { Returns a command string, wrapped it shell-style (with backslashes) in case lines get too long. } {
+ad_proc apm_shell_wrap { cmd } { Returns a command string, wrapped it shell-style (with backslashes) in case lines get too long. } {
     set out ""
     set line_length 0
     foreach element $cmd {
@@ -88,7 +92,6 @@ proc_doc apm_shell_wrap { cmd } { Returns a command string, wrapped it shell-sty
 
 ad_proc -private apm_package_selection_widget {
     -install_enable:boolean
-    { -update_only_p 0 }
     pkg_info_list
     {to_install ""} 
     {to_enable ""}
@@ -100,12 +103,12 @@ ad_proc -private apm_package_selection_widget {
     only the enable checkbox will be displayed, and the resulting page is expected to assume that enable also means install.
 
 } {
-    if {[empty_string_p $pkg_info_list]} {
+    if {$pkg_info_list eq ""} {
         return ""
     }
     
     set checkbox_count 0
-    set counter 1
+    set counter 0
     set band_colors { white "#ececec" }
     set widget "<blockquote><table cellpadding=5 cellspacing=5>
 <tr bgcolor=\"\#f8f8f8\"><th>Install</th>[ad_decode $install_enable_p 1 "<th>Enable</th>" ""]<th>Package</th><th>Directory</th><th>Comment</th></tr>
@@ -113,6 +116,7 @@ ad_proc -private apm_package_selection_widget {
 
     foreach pkg_info $pkg_info_list {
         
+        incr counter
         set package_key [pkg_info_key $pkg_info]
         set package_path [pkg_info_path $pkg_info]
         set package_rel_path [string range $package_path [string length [acs_root_dir]] end]
@@ -120,12 +124,13 @@ ad_proc -private apm_package_selection_widget {
         array set package [apm_read_package_info_file $spec_file]
         set version_name $package(name)
         ns_log Debug "Selection widget: $package_key, Dependency: [pkg_info_dependency_p $pkg_info]"
-	
-        if { ![string compare [pkg_info_dependency_p $pkg_info] "t"]} {
 
+
+        append widget "  <tr valign=baseline bgcolor=[lindex $band_colors \
+                [expr { $counter % [llength $band_colors] }]]>"
+        if { [pkg_info_dependency_p $pkg_info] eq "t" } {
             # Dependency passed.
-	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors  [expr { $counter % [llength $band_colors] }]]>"
-	    
+
             if { $install_enable_p } {
                 if { ([lsearch -exact $to_install $package_key] != -1) } {
                     append widget "  <td align=center><input type=checkbox checked 
@@ -151,33 +156,29 @@ ad_proc -private apm_package_selection_widget {
                 append widget "
                 onclick=\"if (checked) document.forms\[0\].elements\[$checkbox_count\].checked=true\""
             }
-	    
+
             append widget "></td>
             <td>$package(package-name) $package(name)</td>
             <td>$package_rel_path</td>
             <td><font color=green>Dependencies satisfied.</font></td>
             </tr> "
-
-        } elseif { ![string compare [pkg_info_dependency_p $pkg_info] "f"] } {
-
-            # Dependency failed.
-
-	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors  [expr { $counter % [llength $band_colors] }]]>"
-
+        } elseif { [pkg_info_dependency_p $pkg_info] eq "f" } {
+            #Dependency failed.
             if { $install_enable_p } {
                 append widget "  <td align=center><input type=checkbox name=install value=\"$package_key\"
                 onclick=\"if (!checked) document.forms\[0\].elements\[$checkbox_count+1\].checked=false\"></td>"
             }
             append widget "
             <td align=center><input type=checkbox name=enable value=\"$package_key\" "
-	    
+
             if { $install_enable_p } {
                 append widget "onclick=\"if (checked) document.forms\[0\].elements\[$checkbox_count\].checked=true\""
             }
-	    
+
             append widget "></td>
             <td>$package(package-name) $package(name)</td>
-            <td>$package_rel_path</td><td><font color=red>
+            <td>$package_rel_path</td>
+    <td><font color=red>
             "
             foreach comment [pkg_info_comment $pkg_info] {
                 append widget "$comment<br>"
@@ -187,29 +188,24 @@ ad_proc -private apm_package_selection_widget {
             </tr>
             "
         } else {
-	    
             # No dependency information.           
             # See if the install is already installed with a higher version number.
             if {[apm_package_registered_p $package_key]} {
                 set higher_version_p [apm_higher_version_installed_p $package_key $version_name]
-	    } else {
-		set higher_version_p 2
-	    }
-	    if {$higher_version_p == 2 } {
-		set comment "New install."
-
-		# Skip this if it's update only
-		if {$update_only_p} { continue }
-
-	    } elseif {$higher_version_p == 1 } {
-		set comment "Upgrade."
-	    } elseif {$higher_version_p == 0} {
-		set comment "Package version already installed."
-	    } else {
-		set comment "Installing older version of package."
-	    }
+                } else {
+                    set higher_version_p 2
+                }
+                if {$higher_version_p == 2 } {
+                    set comment "New install."
+                } elseif {$higher_version_p == 1 } {
+                    set comment "Upgrade."
+                } elseif {$higher_version_p == 0} {
+                    set comment "Package version already installed."
+                } else {
+                    set comment "Installing older version of package."
+                }
             
-	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors [expr { $counter % [llength $band_colors] }]]>"
+            append widget "  <tr valign=baseline bgcolor=[lindex $band_colors [expr { $counter % [llength $band_colors] }]]>"
 
             if { ([lsearch -exact $to_install $package_key] != -1) } {
                 set install_checked "checked"
@@ -239,9 +235,6 @@ ad_proc -private apm_package_selection_widget {
            </tr>"
         }
         incr checkbox_count 2
-
-        incr counter
-	
     }
     append widget "</table></blockquote>"
     return $widget
@@ -407,7 +400,7 @@ ad_proc -private apm_build_repository {
 	
 	foreach { cur_work_dir cur_cvs_root cur_module } $checkout_list {
 	    cd $cur_work_dir
-	    if { ![string equal $channel_tag($channel) HEAD] } {
+	    if { $channel_tag($channel) ne "HEAD" } {
 		ns_log Debug "Repository: Checking out $cur_module from CVS:"
 		catch { exec $cvs_command -d $cur_cvs_root -z3 co -r $channel_tag($channel) $cur_module } output
 		ns_log Debug "Repository:  [llength $output] files"
@@ -490,11 +483,16 @@ ad_proc -private apm_build_repository {
 
 				     # The path to the 'packages' directory in the checkout
 				     set packages_root_path [eval file join [lrange [file split $spec_file] 0 end-2]]
-				     
-				     lappend cmd -C $packages_root_path
+
+				     set tmp_filename [ns_tmpnam]
+				     lappend cmd  --files-from $tmp_filename -C $packages_root_path
+
+				     set fp [open $tmp_filename w]
 				     foreach file $files {
-					 lappend cmd $package_key/$file
+				       puts $fp $package_key/$file
 				     }
+				     close $fp
+
 				     lappend cmd "|" [apm_gzip_cmd] -c ">" $apm_file
 				     ns_log Notice "Executing: [ad_quotehtml $cmd]"
 				     eval $cmd

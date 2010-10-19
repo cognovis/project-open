@@ -7,7 +7,6 @@ ad_page_contract {
 
 } {
     {checked_by_default_p:boolean 0}
-    {update_only_p 0}
 }
 
 ad_return_top_of_page "[apm_header "Package Installation"]
@@ -67,7 +66,7 @@ apm_log APMDebug $spec_files
 ns_write "Done.<p>
 "
 
-if { [empty_string_p $spec_files] } {
+if { $spec_files eq "" } {
     # No spec files to work with.
     ns_write "
     <h2>No New Packages to Install</h2><p>
@@ -84,14 +83,14 @@ if { [empty_string_p $spec_files] } {
 
     ns_write "
 
-<script language=javascript>
+<script type=\"text/javascript\">
 function uncheckAll() {
-    for (var i = 0; i < [expr [llength $spec_files] ]; ++i)
+    for (var i = 0; i < [expr {[llength $spec_files] }]; ++i)
         document.forms\[0\].elements\[i\].checked = false;
     this.href='';
 }
 function checkAll() {
-    for (var i = 0; i < [expr [llength $spec_files] ]; ++i)
+    for (var i = 0; i < [expr {[llength $spec_files] }]; ++i)
         document.forms\[0\].elements\[i\].checked = true;
     this.href='';
 }
@@ -121,18 +120,18 @@ function checkAll() {
 	} else {
 	    apm_log APMDebug "APM: Adding $package(package.key) to list for installation." 
 	    lappend pkg_info_list [pkg_info_new $package(package.key) $spec_file \
-		    $package(provides) $package(requires) ""]
+		    $package(embeds) $package(extends) $package(provides) $package(requires) ""]
             lappend pkg_key_list $package(package.key)
 	}
     }
 	
     if { $checked_by_default_p } {
-        set widget [apm_package_selection_widget -update_only_p $update_only_p $pkg_info_list $pkg_key_list $pkg_key_list]
+        set widget [apm_package_selection_widget $pkg_info_list $pkg_key_list $pkg_key_list]
     } else {
-        set widget [apm_package_selection_widget -update_only_p $update_only_p $pkg_info_list]
+        set widget [apm_package_selection_widget $pkg_info_list]
     }
 
-    if {[empty_string_p $widget]} {
+    if {$widget eq ""} {
 	ns_write "There are no new packages available.<p>
 	[ad_footer]"
 	ad_script_abort
@@ -144,7 +143,7 @@ function checkAll() {
     </form>
     "
     
-    if {![empty_string_p $errors]} {
+    if {$errors ne ""} {
 	ns_write "The following errors were generated
 	<ul>
 	    $errors

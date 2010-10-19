@@ -27,7 +27,8 @@
         Deleting or banning this user may mean you will be unable to administrate the site.
       </p>
   </if>
-  <p>Member state: <b>@user_info.member_state@</b> - change member state: @user_finite_state_links;noquote@</p>
+  <p>Member state: <b>@user_info.member_state@</b> - change member state: @user_finite_state_links;noquote@<br>
+  Delete user: <a href="@delete_user_url@">temporarily</a>, <a href="@delete_user_permanent_url@">permanently</a></p>
 </if>
 <else>
   <p>Member state: <b>@user_info.member_state@</b> <i>(cannot change state for yourself)</i></p>
@@ -76,6 +77,17 @@ above.
 <else>
   <li><a href="modify-admin-privileges?user_id=@user_id@&action=grant">Grant site-wide administration privileges</a></li>
 </else>
+
+<li>Merge this user with:
+   <form method=get action=search>
+    <input type="hidden" name="target" value="merge">
+    <input type="hidden" name="limit_to_user_id" value="@user_id@">
+    <input type="hidden" name="from_user_id" value="@user_id@">
+    <input type="hidden" name="only_authorized_p" value="0">
+    <input type="text" size="15" name="keyword">
+    <input type="submit" value="Find User">
+  </form>
+ </li>
 
 <if @password_reset_url@ not nil>
   <li><a href="@password_reset_url@">Reset this user's password</a></li>

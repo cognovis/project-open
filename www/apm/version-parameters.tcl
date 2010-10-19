@@ -24,6 +24,7 @@ set dimensional_list [apm_parameter_section_slider $package_key]
 set table_def [list \
 		   [list  parameter_name "Parameter"] \
 		   [list datatype "Type"] \
+                   [list scope "Scope"] \
 		   [list description "Description" {} {<td>[ad_quotehtml $description]</td>}]]
 
 #DRB: sql_clauses must not contain RDBMS-specific query clauses.
@@ -49,23 +50,23 @@ append body "
 <blockquote>
 "
 
-if { ![empty_string_p $dimensional_list] } {
+if { $dimensional_list ne "" } {
     append body "[ad_dimensional $dimensional_list]<p>"
 }
 
 # LARS hack
 set sections [lindex [lindex $dimensional_list 0] 3]
 foreach section $sections {
-    if { [string equal $section_name [lindex $section 0]] } {
+    if {$section_name eq [lindex $section 0]} {
         set section_name [lindex $section 1]
         break
     }
 }
 
-
+set parent_package_keys [lrange [apm_one_package_inherit_order $package_key] 0 end-1]
 
 append body "[ad_table -Torderby $orderby \
-     -bind [ad_tcl_vars_to_ns_set version_id package_key] \
+     -bind [ad_tcl_vars_to_ns_set version_id package_key parent_package_keys] \
      -Textra_vars {version_id} \
      -Tmissing_text "No parameters registered in this section." \
 		     parameter_table "" $table_def]

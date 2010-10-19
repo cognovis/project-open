@@ -25,7 +25,7 @@ set title "Adding new users in bulk"
 while {[regexp {(.[^\n]+)} $userlist match_fodder row] } {
     # remove each row as it's handled
     set remove_count [string length $row]
-    set userlist [string range $userlist [expr $remove_count + 1] end]
+    set userlist [string range $userlist [expr {$remove_count + 1}] end]
     set row [split $row ,]
     set email [string trim [lindex $row 0]]
     set first_names [string trim [lindex $row 1]]
@@ -44,12 +44,12 @@ from parties where email = lower(:email)"]
 	}
     }
     
-    if {![info exists first_names] || [empty_string_p $first_names]} {
+    if {![info exists first_names] || $first_names eq ""} {
 	append exception_text "<li> No first name in ($row)</li>\n"
 	continue
     }
     
-    if {![info exists last_name] || [empty_string_p $last_name]} {
+    if {![info exists last_name] || $last_name eq ""} {
 	append exception_text "<li> No last name in ($row)</li>\n"
 	continue
     }
@@ -79,15 +79,14 @@ from parties where email = lower(:email)"]
     foreach key $key_list value $value_list {
 	regsub -all "<$key>" $sub_message $value sub_message
     }
-
-#    if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
-#	ad_return_error "Mail Failed" "The system was unable to send email.  Please notify the user personally.  This problem is probably caused by a misconfiguration of your email system.  Here is the error: 
-#<blockquote><pre>
-#[ad_quotehtml $errmsg]
-#</pre></blockquote>"
-#        return
-#    }
-
+    
+    if {[catch {acs_mail_lite::send -send_immediately -to_addr $email -from_addr $from -subject $subject -body $sub_message} errmsg]} {
+	ad_return_error "Mail Failed" "<p>The system was unable to send email.  Please notify the user personally.  This problem is probably caused by a misconfiguration of your email system.  Here is the error:</p> 
+<div><code>
+[ad_quotehtml $errmsg]
+</code></div>"
+        return
+    }
 
 }
 
