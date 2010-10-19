@@ -17,9 +17,9 @@ begin
         object_type => 'acs_message',
         pretty_name => 'Message',
         pretty_plural => 'Messages',
-        table_name => 'ACS_MESSAGES',
-        id_column => 'MESSAGE_ID',
-        name_method => 'ACS_MESSAGE.NAME'
+        table_name => 'acs_messages',
+        id_column => 'message_id',
+        name_method => 'acs_message.name'
     );
 
     acs_object_type.create_type (
@@ -27,9 +27,7 @@ begin
         object_type => 'acs_message_revision',
         pretty_name => 'Message Revision',
         pretty_plural => 'Message Revisions',
-        table_name => 'CR_REVISIONS',
-        id_column => 'REVISION_ID',
-        name_method => 'ACS_OBJECT.DEFAULT_NAME'
+        name_method => 'acs_object.default_name'
     );
 
 end;
@@ -42,7 +40,7 @@ create table acs_messages (     -- extends cr_items
     message_id integer
         constraint acs_messages_message_id_fk
             references cr_items (item_id) on delete cascade
-        constraint acs_messages_pk
+        constraint acs_messages_message_id_pk
             primary key,
     -- we will need to find a way to make reply_to go to 0 instead of null
     -- to improve scalability

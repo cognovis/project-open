@@ -15,12 +15,12 @@ select acs_object_type__create_type (
     'Message',
     'Messages',
     'content_item',
-    'ACS_MESSAGES',
-    'MESSAGE_ID',
+    'acs_messages',
+    'message_id',
     null,
     'f',
     null,
-    'ACS_MESSAGE.NAME'
+    'acs_message__name'
 );
 
 select acs_object_type__create_type (
@@ -28,12 +28,12 @@ select acs_object_type__create_type (
     'Message Revision',
     'Message Revisions',
     'content_revision',
-    'CR_REVISIONS',
-    'REVISION_ID',
+    null,
+    null,
     null,
     'f',
     null,
-    'ACS_OBJECT.DEFAULT_NAME'
+    'acs_object__default_name'
 );
 
 
@@ -43,7 +43,7 @@ create table acs_messages (     -- extends cr_items
     message_id integer
         constraint acs_messages_message_id_fk
             references cr_items (item_id) on delete cascade
-        constraint acs_messages_pk
+        constraint acs_messages_message_id_pk
             primary key,
     -- we will need to find a way to make reply_to go to 0 instead of null
     -- to improve scalability

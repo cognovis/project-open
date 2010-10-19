@@ -23,10 +23,10 @@ ad_page_contract_filter acs_message_id { name value } {
     of an already-existing OpenACS message.
 } {
     # empty is okay (handled by notnull)
-    if [empty_string_p $value] {
+    if {$value eq ""} {
         return 1
     }
-    if ![acs_message_p $value] {
+    if {![acs_message_p $value]} {
         ad_complain "$name ($value) does not refer to a valid OpenACS message"
         return 0
     }
@@ -43,11 +43,11 @@ ad_proc -public acs_messaging_format_as_html {
     @param mime_type MIME content-type of content
     @param content   Text to view
 } {
-    if {[string eq $mime_type "text/plain"]} {
+    if {$mime_type eq "text/plain"} {
 	set result "<pre>[ad_quotehtml $content]</pre>"
-    } elseif {[string eq $mime_type "text/plain; format=flowed"]} {
+    } elseif {$mime_type eq "text/plain; format=flowed"} {
 	set result [ad_text_to_html -- $content]
-    } elseif {[string eq $mime_type "text/html"]} {
+    } elseif {$mime_type eq "text/html"} {
 	set result $content
     } else {
 	set result "<i>content type undecipherable</i>"
@@ -140,49 +140,18 @@ ad_proc -private acs_messaging_process_queue {
 } {
     Process the message queue, sending any reasonable messages.
 } {
-     db_foreach acs_message_send {
-        select o.message_id as sending_message_id,
-               o.to_address as recip_email,
-               p.email as sender_email,
-               to_char(m.sent_date, 'Dy, DD Mon YYYY HH24:MI:SS') as sent_date,
-               m.rfc822_id,
-               m.title,
-               m.mime_type,
-               m.content,
-               m2.rfc822_id as in_reply_to
-            from acs_messages_outgoing o,
-                 acs_messages_all m,
-                 acs_messages_all m2,
-                 parties p
-            where o.message_id = m.message_id
-                and m2.message_id(+) = m.reply_to
-                and p.party_id = m.sender
-                and wait_until <= sysdate
-    } {
-        # Need to process content to do CRLF conversions?
-        set headers [ns_set create]
-		
-        ns_set put $headers Sender [ad_parameter "OutgoingSender" "acs-kernel"]
-	if ![string equal $in_reply_to ""] {
-	    ns_set put $headers In-Reply-To "<$in_reply_to>"
-	}
-        ns_set put $headers Message-ID "<$rfc822_id>"
-        ns_set put $headers Date "$sent_date [acs_messaging_timezone_offset]"
-        ns_set put $headers MIME-Version "1.0"
-        ns_set put $headers Content-Type $mime_type
-        ns_log "Notice" "About to send"
-        if ![catch {
-             ns_sendmail $recip_email $sender_email $title $content $headers
-        } errMsg] {
-            ns_log "Notice" "Sending"
+    db_foreach acs_message_send {} {
+        if {![catch {
+            acs_mail_lite::send -send_immediately \
+                -to_addr $recip_email \
+                -from_addr $sender_email \
+                -subject $title \
+                -body $content
+        } errMsg]} {
             # everything went well, dequeue
-            db_dml acs_message_remove_from_queue {
-                delete from acs_messages_outgoing
-                    where message_id = :sending_message_id
-                        and to_address = :recip_email
-            }
+            db_dml acs_message_remove_from_queue {}
         } else {
-            ns_log "Notice" "Not sending: $errMsg"
+            ns_log "Error" "acs-messaging: Error processing queue: $errMsg"
         }
     }
 }
