@@ -3,7 +3,7 @@
 --
 -- @author Jeff Davis (davis@xarg.net)
 -- @creation-date 2000-09-10
--- @cvs-id $Id: ad-locales.sql,v 1.1 2005/04/18 19:25:53 cvs Exp $
+-- @cvs-id $Id: ad-locales.sql,v 1.2 2010/10/19 20:11:51 po34demo Exp $
 --
 
 -- ****************************************************************************
@@ -15,39 +15,39 @@
 
 create table ad_locales (
   locale		varchar2(30)
-                        constraint ad_locale_abbrev_pk
+                        constraint ad_locales_locale_pk
                         primary key,
-  language		char(3) constraint ad_language_name_nil
+  language		char(3) constraint ad_locales_language_nn
 			not null,
-  country		char(2) constraint ad_country_name_nil
+  country		char(2) constraint ad_locales_country_nn
 			not null,
   variant		varchar2(30),
   label			varchar2(200)
-                        constraint ad_locale_name_nil
+                        constraint ad_locale_label_nn
 			not null
-                        constraint ad_locale_name_unq
+                        constraint ad_locales_label_un
                         unique,
   nls_language		varchar2(30)
-                        constraint ad_locale_nls_lang_nil
+                        constraint ad_locales_nls_lang_nn
 			not null,
   nls_territory		varchar2(30),
   nls_charset		varchar2(30),
   mime_charset		varchar2(30),
   -- is this the default locale for its language
   default_p             char(1) default 'f'
-                        constraint ad_locale_defp_tf check (default_p in ('t','f')),
+                        constraint ad_locale_defp_ck check (default_p in ('t','f')),
   enabled_p             char(1) default 't'
-                        constraint ad_locale_enp_tf check (enabled_p in ('t','f'))
+                        constraint ad_locale_enp_ck check (enabled_p in ('t','f'))
 );
 
 comment on table ad_locales is '
-  An ACS locale is identified by a language and country.
+  An OpenACS locale is identified by a language and country.
   Locale definitions in Oracle consist of a language, and optionally
   territory and character set.  (Languages are associated with default
   territories and character sets when not defined).  The formats
   for numbers, currency, dates, etc. are determined by the territory.
-  language is two letter abbrev is ISO 639 language code
-  country is two letter abbrev is ISO 3166 country code
+  language is the shortest ISO 639 code (lowercase).
+  country is two letter (uppercase) abbrev is ISO 3166 country code
   mime_charset is IANA charset name
   nls_charset is  Oracle charset name
 ';
@@ -64,9 +64,19 @@ create table ad_locale_user_prefs (
                         constraint lang_package_l_u_package_id_fk
                         references apm_packages(package_id) on delete cascade,
   locale                varchar(30) not null
-                        constraint trb_language_preference_lid_fk
+                        constraint ad_locale_user_prefs_locale_fk
                         references ad_locales (locale) on delete cascade
 );
+
+
+-- alter user_preferences to add the locale column
+
+alter table user_preferences add (
+  locale                varchar2(30)
+                        constraint user_preferences_locale_fk
+                        references ad_locales(locale)
+);
+
 
 --
 --
@@ -107,7 +117,7 @@ values ('ast_ES', 'Asturian (ES)', 'ast', 'ES', 'SPANISH',
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
         nls_charset, mime_charset, default_p, enabled_p) 
-values ('gl_ES', 'Galician-Portugese (ES)', 'gl', 'ES', 'SPANISH', 
+values ('gl_ES', 'Galician (ES)', 'gl', 'ES', 'SPANISH', 
        'SPAIN', 'WE8DEC', 'ISO-8859-1', 't', 'f');
 
 insert into ad_locales 
@@ -210,12 +220,12 @@ insert into ad_locales
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
         nls_charset, mime_charset, default_p, enabled_p)
- values ('ar_EG', 'Arabic (EG)', 'AR', 'EG', 'ARABIC', 'EGYPT', 'AR8ISO8859P6', 'ISO-8859-6', 'f', 'f');
+ values ('ar_EG', 'Arabic (EG)', 'ar', 'EG', 'ARABIC', 'EGYPT', 'AR8ISO8859P6', 'ISO-8859-6', 'f', 'f');
 
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
         nls_charset, mime_charset, default_p, enabled_p)
- values ('ar_LB', 'Arabic (LB)', 'AR', 'LB', 'ARABIC', 'LEBANON', 'AR8ISO8859P6', 'ISO-8859-6', 't', 'f');
+ values ('ar_LB', 'Arabic (LB)', 'ar', 'LB', 'ARABIC', 'LEBANON', 'AR8ISO8859P6', 'ISO-8859-6', 't', 'f');
 
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
@@ -240,7 +250,7 @@ insert into ad_locales
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
         nls_charset, mime_charset, default_p, enabled_p)
- values ('zh_TW', 'Chinese (TW)', 'zh', 'TW', 'TRADITIONAL CHINESE', 'TAIWAN', 'ZHT16BIG5', 'Big5', 't', 'f');
+ values ('zh_TW', 'Chinese (TW)', 'zh', 'TW', 'TRADITIONAL CHINESE', 'TAIWAN', 'ZHT16BIG5', 'Big5', 'f', 'f');
 
 insert into ad_locales 
        (locale, label, language, country, nls_language, nls_territory, 
@@ -265,18 +275,120 @@ insert into ad_locales
 insert into ad_locales
        (locale, label, language, country, nls_language, nls_territory,
         nls_charset, mime_charset, default_p, enabled_p)
-values ('es_GT', 'Spanish (GT)', 'es', 'GT', 'SPANISH',  'GUATEMALA', 'WE8DEC', 'ISO-8859-1', 't', 'f');
+ values ('es_GT', 'Spanish (GT)', 'es', 'GT', 'SPANISH',  'GUATEMALA', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
 
 insert into ad_locales
        (locale, label, language, country, nls_language, nls_territory,
         nls_charset, mime_charset, default_p, enabled_p)
-values ('eu_ES', 'Basque (ES)', 'eu', 'ES', 'SPANISH',  'SPAIN', 'WE8DEC', 'ISO-8859-1', 't', 'f');
+ values ('eu_ES', 'Basque (ES)', 'eu', 'ES', 'SPANISH',  'SPAIN', 'WE8DEC', 'ISO-8859-1', 't', 'f');
 
 insert into ad_locales
        (locale, label, language, country, nls_language, nls_territory,
         nls_charset, mime_charset, default_p, enabled_p)
-values ('ca_ES', 'Catalan (ES)', 'ca', 'ES', 'SPANISH',  'SPAIN','WE8DEC', 'ISO-8859-1', 't', 'f');
+ values ('ca_ES', 'Catalan (ES)', 'ca', 'ES', 'SPANISH',  'SPAIN','WE8DEC', 'ISO-8859-1', 't', 'f');
 
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_CO', 'Spanish (CO)', 'es', 'CO', 'SPANISH', 'COLOMBIA', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
 
-end;
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('ind_ID', 'Bahasa Indonesia (ID)', 'id', 'ID', 'INDONESIAN', 'INDONESIA', 'WEB8ISO8559P1', 'ISO-8559-1', 't', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('bg_BG', 'Bulgarian (BG)', 'bg', 'BG', 'Bulgarian', 'BULGARIAN_BULGARIA', 'CL8ISO8859P5', 'windows-1251', 't', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('pa_IN', 'Punjabi', 'pa', 'IN', 'Punjabi', 'India', 'UTF8', 'UTF-8', 't', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('fr_BE', 'French (BE)', 'fr', 'BE', 'French (Belgium)', 'Belgium', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('nl_BE', 'Dutch (BE)', 'nl', 'BE', 'Dutch (Belgium)', 'Belgium', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('en_CA', 'English (CA)', 'en', 'CA', 'English (Canada)', 'Canada', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('fr_CA', 'French (CA)', 'fr', 'CA', 'French (Canada)', 'Canada', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('zh_HK', 'Simplified Chinese (HK)', 'zh', 'HK', 'Simplified Chinese (Hong Kong)', 'Hong Kong', 'UTF8', 'UTF-8', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('cz_CZ', 'Czech (CZ)', 'cs', 'CZ', 'Czech (Czech Republic)', 'Czech Republic', 'EE8ISO8859P2', 'ISO-8859-2', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_EC', 'Spanish (EC)', 'es', 'EC', 'Spanish', 'Ecuador', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('et_EE', 'Estonian (EE)', 'et', 'EE', 'Estonian', 'Estonia', 'BLT8', 'ISO-8859-15', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('is_IS', 'Icelandic (IS)', 'is', 'IS', 'Icelandic', 'Iceland', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('lt_LT', 'Lithuanian (LT)', 'lt', 'LT', 'Lithuanian', 'Lithuania', 'BLT8', 'ISO-8859-13', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('lv_LV', 'Latvian (LV)', 'lv', 'LV', 'Latvian', 'Latvia', 'BLT8', 'ISO-8859-13', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_MX', 'Spanish (MX)', 'es', 'MX', 'Mexican Spanish', 'Mexico', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_PA', 'Spanish (PA)', 'es', 'PA', 'Spanish (Panama)', 'Panama', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_PY', 'Spanish (PY)', 'es', 'PY', 'Spanish (Paraguay)', 'Paraguay', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_SV', 'Spanish (SV)', 'es', 'SV', 'Spanish (El Salvador)', 'El Salvador', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('uk_UA', 'Ukranian (UA)', 'uk', 'UA', 'Ukranian', 'Ukraine', 'UTF8', 'UTF-8', 'f', 'f');
+
+insert into ad_locales
+       (locale, label, language, country, nls_language, nls_territory,
+        nls_charset, mime_charset, default_p, enabled_p)
+ values ('es_VE', 'Spanish (VE)', 'es', 'VE', 'Spanish (Venezuela)', 'Venezuela', 'WE8DEC', 'ISO-8859-1', 'f', 'f');
 

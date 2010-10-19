@@ -1,19 +1,19 @@
-ad_page_contract {
-    Change user preffered locale
+# includelet pseudo-contract
+#    Change user preferred locale
 
-    @author Peter Marklund (peter@collaboraid.biz)
-    @author Christian Hvid
-} {
-    { return_url "" }
-    { package_id "" }
-}
+#    @author Peter Marklund (peter@collaboraid.biz)
+#    @author Christian Hvid
 
-if { $return_url == "" } {
+if { ![exists_and_not_null return_url] } {
     # Use referer header
     set return_url [ns_set iget [ns_conn headers] referer]
 }
 
-set use_timezone_p [expr [lang::system::timezone_support_p] && [ad_conn user_id]]
+if { ![exists_and_not_null package_id] } {
+    set package_id [ad_conn package_id]
+}
+
+set use_timezone_p [expr {[lang::system::timezone_support_p] && [ad_conn user_id]}]
 
 #
 # LARS:
@@ -29,7 +29,14 @@ set use_timezone_p [expr [lang::system::timezone_support_p] && [ad_conn user_id]
 
 # Create a list of lists containing the possible locale choiches
 
-set list_of_locales [db_list_of_lists locale_loop { select label, locale from enabled_locales order by label }]
+set list_of_locales [list]
+
+db_foreach locale_loop {} {
+    if { [lang::message::message_exists_p $locale acs-lang.this-language] } {
+        set label "[lang::message::lookup $locale  acs-lang.this-language]"
+    }
+    lappend list_of_locales [list ${label} $locale]
+}
 
 set list_of_package_locales [linsert $list_of_locales 0 [list (default) ""]]
 
@@ -46,26 +53,28 @@ if { [form is_valid locale] } {
 }
 
 # are we selecting package level locale as well?
-set package_level_locales_p [expr [lang::system::use_package_level_locales_p] && ![empty_string_p $package_id] && [ad_conn user_id] != 0]
+set package_level_locales_p [expr {[lang::system::use_package_level_locales_p] && $package_id ne "" && [ad_conn user_id] != 0}]
 
 if { $package_level_locales_p } {
     element create locale site_wide_explain -datatype text -widget inform -label "&nbsp;" \
-        -value "Your locale setting for the whole site."
+        -value "[_ acs-lang.Your_locale_site_wide]"
 }
 
 element create locale site_wide_locale \
     -datatype text \
-    -widget select \
+    -widget select_locales \
     -optional \
-    -label "Your Preferred Locale" \
-    -options $list_of_locales
+    -label "[_ acs-lang.Your_Preferred_Locale]" \
+    -options $list_of_locales \
+    -values [ad_conn locale]
 
 if { $package_level_locales_p } {
+    set package_name [apm_instance_name_from_id $package_id]
     element create locale package_level_explain -datatype text -widget inform -label "&nbsp;" \
-            -value "Your locale setting for [apm_instance_name_from_id $package_id]. If set, this will override the site-wide setting in this particular application."
+            -value "[_ acs-lang.Your_locale_for_package]"
     
     element create locale package_level_locale -datatype text -widget select -optional \
-            -label "Locale for [apm_instance_name_from_id $package_id]" \
+            -label "[_ acs-lang.Locale_for]" \
             -options $list_of_package_locales
 }
 
@@ -73,7 +82,7 @@ if { $use_timezone_p } {
     set timezone_options [db_list_of_lists all_timezones {}]
 
     element create locale timezone -datatype text -widget select -optional \
-        -label "Your Timezone" \
+        -label "[_ acs-lang.Your_timezone]" \
         -options $timezone_options
 }
 
@@ -83,7 +92,7 @@ if { [form is_request locale] } {
     }
     
     set site_wide_locale [lang::user::site_wide_locale]
-    if { [empty_string_p $site_wide_locale] } {
+    if { $site_wide_locale eq "" } {
         set site_wide_locale [lang::system::site_wide_locale]
     }
 
@@ -93,7 +102,7 @@ if { [form is_request locale] } {
 
     if { $use_timezone_p } {
         set timezone [lang::user::timezone]
-        if { [empty_string_p $timezone] } {
+        if { $timezone eq "" } {
             set timezone [lang::system::timezone]
         }
         element set_properties locale timezone -value $timezone

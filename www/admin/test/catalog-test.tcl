@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author John Lowry (lowry@ardigita.com)
     @creation-date 29 September 2000
-    @cvs-id $Id: catalog-test.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: catalog-test.tcl,v 1.2 2010/10/19 20:11:58 po34demo Exp $
 } { }
 
 set title "Test acs-lang package message catalog and locale API"
@@ -20,10 +20,10 @@ set spanish [_ es test.Spanish]
 set german  [_ de test.German]
 
 
-set locale [ad_locale user locale]
+set locale [lang::user::locale]
 #set locale "ja_JP"
 
-set language [ad_locale user language]
+set language [lang::user::language]
 #set language ja
 
 set language_name [ad_locale_language_name $language]

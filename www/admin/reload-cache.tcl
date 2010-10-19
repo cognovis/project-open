@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @creation-date 2002-10-07
-    @cvs-id $Id: reload-cache.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: reload-cache.tcl,v 1.2 2010/10/19 20:11:57 po34demo Exp $
 }
 
 lang::message::cache

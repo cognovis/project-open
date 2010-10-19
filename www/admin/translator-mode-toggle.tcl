@@ -3,12 +3,12 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date October 24, 2002
-    @cvs-id $Id: translator-mode-toggle.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: translator-mode-toggle.tcl,v 1.2 2010/10/19 20:11:57 po34demo Exp $
 } {
     {return_url "."}
 }
 
-lang::util::translator_mode_set [expr ![lang::util::translator_mode_p]]
+lang::util::translator_mode_set [expr {![lang::util::translator_mode_p]}] 
 
 ad_returnredirect $return_url
 

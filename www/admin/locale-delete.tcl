@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @creation-date 19 march 2002
-    @cvs-id $Id: locale-delete.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: locale-delete.tcl,v 1.2 2010/10/19 20:11:55 po34demo Exp $
 } {
     locale
     confirm_p:optional
@@ -17,8 +17,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Delete $locale_label"
 set context [list $page_title]

@@ -5,7 +5,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
 
     @creation-date 2003-08-15
-    @cvs-id $Id: message-delete.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: message-delete.tcl,v 1.2 2010/10/19 20:11:56 po34demo Exp $
 
 } {
     locale
@@ -20,8 +20,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Delete Message"
 set context [list [list "package-list?[export_vars { locale }]" $locale_label] \

@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @creation-date 19 march 2002
-    @cvs-id $Id: locale-make-default.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: locale-make-default.tcl,v 1.2 2010/10/19 20:11:56 po34demo Exp $
 } {
     locale
 } -properties {
@@ -23,9 +23,6 @@ db_transaction {
 
     db_dml make_locale_default "update ad_locales set default_p = 't'
         where locale = :locale"
-
-    util_memoize_flush [list ad_locale_locale_from_lang $locale]
-
 }
 
 # Flush caches

@@ -24,7 +24,7 @@ ad_library {
     @author Jeff Davis
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-catalog-procs.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: lang-catalog-procs.tcl,v 1.2 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::catalog {}
@@ -66,7 +66,7 @@ ad_proc -private lang::catalog::get_required_xml_attribute { element attribute }
 } {
     set value [xml_node_get_attribute $element $attribute]
 
-    if { [empty_string_p $value] } {
+    if { $value eq "" } {
         error "Required attribute \"$attribute\" missing from <[xml_node_get_name $element]>"
     }
 
@@ -172,7 +172,7 @@ ad_proc -private lang::catalog::get_catalog_file_path {
 } {
     set catalog_dir [package_catalog_dir $package_key]
 
-    if { ![empty_string_p $charset] } {
+    if { $charset ne "" } {
         set file_charset $charset
     } else {
         # We had problems storing digits in ISO-8859-6 so we decided
@@ -180,12 +180,12 @@ ad_proc -private lang::catalog::get_catalog_file_path {
         # ISO-8859-1 an exception is that some developers may make the shortcut of editing
         # the en_US catalog files directly to add keys and they might mess up the
         # utf-8 encoding of the files when doing so.
-        set system_charset [ad_locale charset $locale]
+        set system_charset [lang::util::charset_for_locale $locale]
         set file_charset [ad_decode $system_charset "ISO-8859-1" $system_charset utf-8]
     }
 
     set message_backup_prefix ""
-    if { ![empty_string_p $backup_from_version] } {
+    if { $backup_from_version ne "" } {
         set message_backup_prefix "[message_backup_file_prefix]${backup_from_version}-${backup_to_version}_"
     }
 
@@ -215,13 +215,6 @@ ad_proc -private lang::catalog::get_catalog_files { package_key } {
     }
 
     return $catalog_paths
-}
-
-ad_proc -private lang::catalog::system_package_version_name { package_key } {
-    Returns the version name of the highest version of the given
-    package_key in the system.
-} {
-    return [db_string get_version_name {}]
 }
 
 ad_proc -private lang::catalog::messages_in_db {
@@ -344,7 +337,7 @@ ad_proc -private lang::catalog::export_to_file {
         # Parse locale from filename
         array set old_filename_info [apm_parse_catalog_path $old_catalog_file]
 
-        if { [string equal $old_filename_info(locale) $filename_info(locale)] } {
+        if {$old_filename_info(locale) eq $filename_info(locale)} {
             file delete $old_catalog_file
         }
     }
@@ -356,16 +349,15 @@ ad_proc -private lang::catalog::export_to_file {
     fconfigure $catalog_file_id -encoding $file_encoding
 
     # Open the root node of the document
-    set package_version [system_package_version_name $filename_info(package_key)]
     puts $catalog_file_id "<?xml version=\"1.0\" encoding=\"$filename_info(charset)\"?>
-<message_catalog package_key=\"$filename_info(package_key)\" package_version=\"$package_version\" locale=\"$filename_info(locale)\" charset=\"$filename_info(charset)\">
+<message_catalog package_key=\"$filename_info(package_key)\" locale=\"$filename_info(locale)\" charset=\"$filename_info(charset)\">
 "
 
    # Loop over and write the messages to the file
    set message_count "0"
    foreach message_key $message_key_list {
        puts $catalog_file_id "  <msg key=\"[ad_quotehtml $message_key]\">[ad_quotehtml $messages_array($message_key)]</msg>"
-       if { [exists_and_not_null descriptions_array($message_key)] && $filename_info(locale) == "en_US" } {
+       if { [exists_and_not_null descriptions_array($message_key)] && $filename_info(locale) eq "en_US" } {
            puts $catalog_file_id "  <description key=\"[ad_quotehtml $message_key]\">[ad_quotehtml $descriptions_array($message_key)]</description>\n"
        }
        incr message_count
@@ -391,39 +383,42 @@ ad_proc -public lang::catalog::export {
 
     @author Peter Marklund
 } {
-    if { ![empty_string_p $package_key] } {
+    if { $package_key ne "" } {
         set package_key_list $package_key
     } else {
         set package_key_list [apm_enabled_packages]
     }
 
     foreach package_key $package_key_list {
-        # Loop over all locales that the package has messages in
-        # and write a catalog file for each such locale
-        db_foreach get_locales_for_package {} {
-            # If we are only exporting certain locales and this is not one of them - continue
-            if { [llength $locales] > 0 && [lsearch -exact $locales $locale] == -1 } {
-                continue
-            }
-
-            # Get messages and descriptions for the locale
-            set messages_list [list]
-            set descriptions_list [list]
-            all_messages_for_package_and_locale $package_key $locale
-            template::util::multirow_foreach all_messages {
-                lappend messages_list @all_messages.message_key@ @all_messages.message@
-                lappend descriptions_list @all_messages.message_key@ @all_messages.description@
-            }
-
-            set catalog_file_path [get_catalog_file_path \
-                                       -package_key $package_key \
-                                       -locale $locale]
-
-            export_to_file -descriptions_list $descriptions_list $catalog_file_path $messages_list
-
-            # Messages exported to file are in sync with file
-            db_dml update_sync_time {}
-        }
+	# We do not want to export acs-translations. This usually is a very bad idea as the object_ids are different from site to site.
+	if {$package_key ne "acs-translations" } {
+	    # Loop over all locales that the package has messages in
+	    # and write a catalog file for each such locale
+	    db_foreach get_locales_for_package {} {
+		# If we are only exporting certain locales and this is not one of them - continue
+		if { [llength $locales] > 0 && [lsearch -exact $locales $locale] == -1 } {
+		    continue
+		}
+		
+		# Get messages and descriptions for the locale
+		set messages_list [list]
+		set descriptions_list [list]
+		all_messages_for_package_and_locale $package_key $locale
+		template::util::multirow_foreach all_messages {
+		    lappend messages_list @all_messages.message_key@ @all_messages.message@
+		    lappend descriptions_list @all_messages.message_key@ @all_messages.description@
+		}
+		
+		set catalog_file_path [get_catalog_file_path \
+					   -package_key $package_key \
+					   -locale $locale]
+		
+		export_to_file -descriptions_list $descriptions_list $catalog_file_path $messages_list
+		
+		# Messages exported to file are in sync with file
+		db_dml update_sync_time {}
+	    }
+	}
     }
 }
 
@@ -469,7 +464,6 @@ ad_proc -private lang::catalog::parse { catalog_file_contents } {
 
     <pre>
       package_key
-      package_version
       locale
       charset
       messages    - An array-list with message keys as keys and the message texts as values.
@@ -481,14 +475,13 @@ ad_proc -private lang::catalog::parse { catalog_file_contents } {
 } {      
 
     # Check arguments
-    if { [empty_string_p $catalog_file_contents] } {
+    if { $catalog_file_contents eq "" } {
         error "lang::catalog::parse the catalog_file_contents arguments is the empty string"
     }
 
     # The names of xml tags and attributes
     set MESSAGE_CATALOG_TAG "message_catalog"
     set PACKAGE_KEY_ATTR "package_key"
-    set PACKAGE_VERSION_ATTR "package_version"
     set LOCALE_ATTR "locale"
     set CHARSET_ATTR "charset"
     set MESSAGE_TAG "msg"
@@ -509,7 +502,6 @@ ad_proc -private lang::catalog::parse { catalog_file_contents } {
 
     # Set the message catalog root level attributes
     set msg_catalog_array(package_key) [get_required_xml_attribute $root_node ${PACKAGE_KEY_ATTR}]
-    set msg_catalog_array(package_version) [get_required_xml_attribute $root_node ${PACKAGE_VERSION_ATTR}]
     set msg_catalog_array(locale) [get_required_xml_attribute $root_node ${LOCALE_ATTR}]
     set msg_catalog_array(charset) [get_required_xml_attribute $root_node ${CHARSET_ATTR}]
 
@@ -586,7 +578,7 @@ ad_proc -private lang::catalog::import_from_file {
     set charset $filename_info(charset)
 
     # Compare xml package_key with file path package_key - abort if there is a mismatch
-    if { ![string equal $package_key $catalog_array(package_key)] } {
+    if { $package_key ne $catalog_array(package_key) } {
         error "the package_key $catalog_array(package_key) in the file $file_path does not match the package_key $package_key in the filesystem"
     }
 
@@ -767,7 +759,7 @@ ad_proc -private lang::catalog::import_messages {
 
             if { [info exists db_messages($message_key)] } {
                 # db message exists
-                if { ![string equal $db_messages($message_key) $base_messages($message_key)] } {
+                if { $db_messages($message_key) ne $base_messages($message_key) } {
                     # db message and base message differ
                     set db_change "update"
                 }
@@ -778,7 +770,7 @@ ad_proc -private lang::catalog::import_messages {
 
             if { [info exists file_messages($message_key)] } {
                 # file message exists
-                if { ![string equal $file_messages($message_key) $base_messages($message_key)] } {
+                if { $file_messages($message_key) ne $base_messages($message_key) } {
                     # file message and base message differ
                     set file_change "update"
                 }
@@ -840,7 +832,7 @@ ad_proc -private lang::catalog::import_messages {
                 switch $file_change {
                     none {} 
                     add {
-                        if { ![string equal $db_messages($message_key) $file_messages($message_key)] } {
+                        if { $db_messages($message_key) ne $file_messages($message_key) } {
                             # case 8
                             set import_case 8
                             # differing additions in db and file
@@ -854,7 +846,7 @@ ad_proc -private lang::catalog::import_messages {
                 switch $file_change {
                     none {}
                     update {
-                        if { ![string equal $db_messages($message_key) $file_messages($message_key)] } {
+                        if { $db_messages($message_key) ne $file_messages($message_key) } {
                             # case 14
                             set import_case 14
                             # differing updates in file and db
@@ -899,7 +891,7 @@ ad_proc -private lang::catalog::import_messages {
         ###########################################        
 
         # For certain messages we need to move the sync point so that we have a current base for the next upgrade. 
-        if { [string equal $db_change "none"] || ![string equal $file_change "none"] } {
+        if { $db_change eq "none" || $file_change ne "none" } {
             # If there is no db change then any change in the file will be reflected in 
             # db (file takes precedence) and file and db are identical. 
             # Also, regardless of what's happened in db, if
@@ -912,7 +904,7 @@ ad_proc -private lang::catalog::import_messages {
 
         # Store a new message in the database if we are adding or updating
         set error_p 0
-        if { [string equal $upgrade_status "added"] || [string equal $upgrade_status "updated"] } {
+        if { $upgrade_status eq "added" || $upgrade_status eq "updated" } {
 
             ns_log Debug "lang::catalog::import_messages - invoking lang::message::register with import_case=\"$import_case\" -update_sync=$update_sync_p $message_key $upgrade_status $conflict_p"
             if { [catch {lang::message::register \
@@ -927,13 +919,13 @@ ad_proc -private lang::catalog::import_messages {
                 lappend message_count(errors) $errmsg
                 set error_p 1
             }
-        } elseif { $update_sync_p || [string equal $upgrade_status "deleted"] } {
+        } elseif { $update_sync_p || $upgrade_status eq "deleted" } {
             # Set the upgrade_status, deleted_p, conflict_p, and sync_time properties of the message
 
             # If we are doing nothing, the only property of the message we might want to update in the db
             # is the sync_time as we might have discovered that db and file are in sync
             array unset edit_array
-            if { ![string equal $upgrade_status "no_upgrade"] } {
+            if { $upgrade_status ne "no_upgrade" } {
                 set edit_array(upgrade_status) $upgrade_status
                 set edit_array(deleted_p) [string equal $upgrade_status "deleted"]
                 set edit_array(conflict_p) $conflict_p
@@ -996,7 +988,7 @@ ad_proc -public lang::catalog::import {
     set message_count(deleted) 0
     set message_count(errors) [list]
 
-    if { ![empty_string_p $package_key] } {
+    if { $package_key ne "" } {
         set package_key_list $package_key
     } else {
         set package_key_list [apm_enabled_packages]
@@ -1022,7 +1014,7 @@ ad_proc -public lang::catalog::import {
                                -locales $locales]
 
         # Issue a warning and exit if there are no catalog files
-        if { [empty_string_p $catalog_files] } {
+        if { $catalog_files eq "" } {
             ns_log Warning "No catalog files found for package $package_key"
             continue
         }
@@ -1036,8 +1028,8 @@ ad_proc -public lang::catalog::import {
                 ns_log Error "The import of file $file_path failed, error message is:\n\n${errMsg}\n\nstack trace:\n\n$errorInfo\n\n"
             } else {
                 foreach action [array names loop_message_count] {
-                    if { ![string equal $action "errors"] } {
-                        set message_count($action) [expr $message_count($action) + $loop_message_count($action)]
+                    if { $action ne "errors" } {
+                        set message_count($action) [expr {$message_count($action) + $loop_message_count($action)}]
                     }
                 }
                 set message_count(errors) [concat $message_count(errors) $loop_message_count(errors)]

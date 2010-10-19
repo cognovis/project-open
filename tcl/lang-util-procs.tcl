@@ -9,12 +9,12 @@ ad_library {
     http://www.fsf.org/copyleft/gpl.html
 
     @creation-date 10 September 2000
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
     @author Christian Hvid
-    @cvs-id $Id: lang-util-procs.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: lang-util-procs.tcl,v 1.2 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::util {}
@@ -32,7 +32,7 @@ ad_proc -public lang::util::lang_sort {
     insert into lang_testsort values ('lzim');  
     </pre>
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
 
     @param field       Name of Oracle column
     @param locale      Locale for sorting. 
@@ -47,7 +47,7 @@ ad_proc -public lang::util::lang_sort {
     set lang(fr) "XFrench" 
     set lang(es) "XSpanish" 
     
-    if { [empty_string_p $locale] || ![info exists lang($locale)] } {
+    if { $locale eq "" || ![info exists lang($locale)] } {
         return $field
     } else { 
         return "NLSSORT($field,'NLS_SORT = $lang($locale)')"
@@ -61,7 +61,7 @@ ad_proc -private lang::util::get_hash_indices { multilingual_string } {
 
     @author Peter marklund (peter@collaboraid.biz)
 } {
-    set regexp_pattern {(?:^|[^\\])(\#[-a-zA-Z0-9_:\.]+\#)}
+    set regexp_pattern {(?:^|[^\\])(\#[-a-zA-Z0-9_:]+\.[-a-zA-Z0-9_:]+\#)}
     return [get_regexp_indices $multilingual_string $regexp_pattern]
 }
 
@@ -109,11 +109,11 @@ ad_proc -private lang::util::get_regexp_indices { multilingual_string regexp_pat
         set start_idx [lindex $key_match_idx 0]
         set end_idx [lindex $key_match_idx 1]
 
-        lappend indices_list [list [expr $multilingual_string_offset + $start_idx] \
-                [expr $multilingual_string_offset + $end_idx]]
+        lappend indices_list [list [expr {$multilingual_string_offset + $start_idx}] \
+                [expr {$multilingual_string_offset + $end_idx}]]
         
-        set new_offset [expr $end_idx + 1]
-        set multilingual_string_offset [expr $multilingual_string_offset + $new_offset]
+        set new_offset [expr {$end_idx + 1}]
+        set multilingual_string_offset [expr {$multilingual_string_offset + $new_offset}]
         set offset_string [string range $offset_string $new_offset end]
     }
     
@@ -214,12 +214,12 @@ ad_proc lang::util::replace_temporary_tags_with_lookups {
 
             # if the message key is the _ symbol (an underscore) then automatically generate a key
             # based on the message text
-            if { [string equal $message_key "_"] } {
+            if {$message_key eq "_"} {
                 set message_key [suggest_key $new_text]
             }
 
             # If this is an adp file - replace adp variable syntax with percentage variables
-            if { [string equal $file_ending "adp"] } {
+            if {$file_ending eq "adp"} {
                 set new_text [convert_adp_variables_to_percentage_signs $new_text]
             }
 
@@ -229,10 +229,10 @@ ad_proc lang::util::replace_temporary_tags_with_lookups {
             while { 1 } {
                 set existing_text [lindex [array get messages_array $unique_key] 1]
 
-                if { ![empty_string_p $existing_text] } {
+                if { $existing_text ne "" } {
                     # The key already exists
 
-                    if { [string equal $existing_text $new_text] } {
+                    if {$existing_text eq $new_text} {
                         # New and old texts are identical - don't add the key
                         ns_log Notice [list lang::util::replace_temporary_tags_with_lookups - \
                                        message key $unique_key already exists in catalog \
@@ -242,12 +242,12 @@ ad_proc lang::util::replace_temporary_tags_with_lookups {
                         break
                     } else {
                         # New and old texts differ, try to make the key unique and check again
-                        set unique_key "${message_key}_[expr ${key_comp_counter} + 1]"
+                        set unique_key "${message_key}_[expr {${key_comp_counter} + 1}]"
                     }
                 } else {
                     # The key is new - save it in the array for addition
 
-                    if { ![string equal $message_key $unique_key] } {
+                    if { $message_key ne $unique_key } {
                         # The message key had to be changed to be made unique
                         ns_log Warning [list lang::util::replace_temporary_tags_with_lookups - \
                                             The message key $message_key was changed to $unique_key \
@@ -326,7 +326,7 @@ ad_proc -public lang::util::localize {
         return $string_with_hashes
     }
 
-    if {[string equal "" $locale]} {   
+    if {$locale eq ""} {   
          set locale [ad_conn locale]   
     } 
 
@@ -338,7 +338,7 @@ ad_proc -public lang::util::localize {
         # The replacement string starts and ends with a hash mark
         set replacement_string [string range $string_with_hashes [lindex $item_idx 0] \
                 [lindex $item_idx 1]]
-        set message_key [string range $replacement_string 1 [expr [string length $replacement_string] - 2]]
+        set message_key [string range $replacement_string 1 [expr {[string length $replacement_string] - 2}]]
 
         # Attempt a message lookup
         set message_value [lang::message::lookup $locale $message_key "" "" 2]
@@ -346,10 +346,10 @@ ad_proc -public lang::util::localize {
         # Replace the string
         # LARS: We don't use regsub here, because regsub interprets certain characters
         # in the replacement string specially.
-        append subst_string [string range $string_with_hashes $start_idx [expr [lindex $item_idx 0]-1]]
+        append subst_string [string range $string_with_hashes $start_idx [expr {[lindex $item_idx 0]-1}]]
         append subst_string $message_value
 
-        set start_idx [expr [lindex $item_idx 1] + 1]
+        set start_idx [expr {[lindex $item_idx 1] + 1}]
     }        
 
     append subst_string [string range $string_with_hashes $start_idx end]
@@ -366,9 +366,8 @@ ad_proc -public lang::util::charset_for_locale {
     @param locale  Name of a locale, as language_COUNTRY using ISO 639 and ISO 3166
     @return        IANA MIME character set name
 } {
-    # LARS:
-    # This should probably be cached
-    return [db_string charset_for_locale {}]
+    # DRB: cache this now that ad_conn tracks it
+    return [db_string -cache_key ad_lang_mime_charset_$locale charset_for_locale {}]
 }
 
 ad_proc -private lang::util::default_locale_from_lang_not_cached { 
@@ -537,8 +536,8 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
 
     #ns_write "input== s=[string range $s 0 600]\n"
     set x {}
-    while {![empty_string_p $s] && $n < 1000} { 
-        if { $state == "text" } { 
+    while {$s ne "" && $n < 1000} { 
+        if { $state eq "text" } { 
 
             # clip non tag stuff
             if {![regexp {(^[^<]*?)(<.*)$} $s match text s x]} { 
@@ -565,7 +564,7 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
 
                 regexp {^(\s*)(.*?)(\s*)$} $text match lead text lag
 
-                if { $mode == "report" } {
+                if { $mode eq "report" } {
                     # create a key for the text
                     
                     set key [suggest_key $text]
@@ -575,7 +574,7 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
                     # Write mode
                     if { [llength $keys] != 0} {
                         # Use keys supplied                            
-                        if { [lindex $keys $n] != "" } {
+                        if { [lindex $keys $n] ne "" } {
                             # Use supplied key
                             set write_key [lindex $keys $n]
                         } else {
@@ -587,7 +586,7 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
                         set write_key [suggest_key $text]                            
                     }
 
-                    if { ![empty_string_p $write_key] } {
+                    if { $write_key ne "" } {
                         # Write tag to file
                         lappend report [list ${write_key} "<code>[string range [remove_gt_lt $out$lead] end-20 end]<b><span style=\"background:yellow\">$text</span></b>[string range [remove_gt_lt $lag$s] 0 20]</code>" ]
 
@@ -623,7 +622,7 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
             }
             set state tag            
 
-        } elseif { $state == "tag"} { 
+        } elseif { $state eq "tag"} { 
             if {![regexp {(^<[^>]*?>)(.*)$} $s match tag s]} { 
                 set s {}
             } 
@@ -633,7 +632,7 @@ ad_proc -public lang::util::replace_adp_text_with_message_tags {
         }
     }
 
-    if { $mode == "write" } {
+    if { $mode eq "write" } {
         if { $n > 0 } {
             # backup original file - fail silently if backup already exists
 
@@ -675,8 +674,8 @@ ad_proc -public lang::util::translator_mode_set {
     translator_mode_p
 } {
     Sets whether translator mode is enabled for this session or
-    not. 
-    
+    not.
+
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date October 24, 2002
 
@@ -686,7 +685,7 @@ ad_proc -public lang::util::translator_mode_set {
 } {
     ad_set_client_property acs-lang translator_mode_p $translator_mode_p
 }
-    
+
 ad_proc -private lang::util::record_message_lookup {
     message_key
 } {
@@ -698,7 +697,7 @@ ad_proc -private lang::util::record_message_lookup {
     global __lang_message_lookups
 
     # Only makes sense to offer translation list if we're not in en_US locale
-    if { ![string equal [ad_conn locale] "en_US"] } {
+    if { [ad_conn locale] ne "en_US" } {
         if { ![info exists __lang_message_lookups] } {
             lappend __lang_message_lookups $message_key
         } elseif { [lsearch -exact $__lang_message_lookups $message_key] == -1 } {
@@ -714,7 +713,7 @@ ad_proc -private lang::util::get_message_lookups {} {
     @author Peter Marklund
 } {
     global __lang_message_lookups
-    
+
     if { [info exists __lang_message_lookups] } {
         return $__lang_message_lookups
     } else {
@@ -722,73 +721,188 @@ ad_proc -private lang::util::get_message_lookups {} {
     }
 }
 
-#####
-#
-# Compatibility procs
-#
-#####
 
-ad_proc -deprecated -warn lang_sort {
-    field 
-    {locale {}}
-} { 
-    Each locale can have a different alphabetical sort order. You can test
-    this proc with the following data:
-    <pre>
-    insert into lang_testsort values ('lama');
-    insert into lang_testsort values ('lhasa');
-    insert into lang_testsort values ('llama');
-    insert into lang_testsort values ('lzim');  
-    </pre>
+ad_proc -public lang::util::get_label { locale } {
 
-    @author Jeff Davis (davis@arsdigita.com)
+    Returns the label (name) of locale
 
-    @param field       Name of Oracle column
-    @param locale      Locale for sorting. 
-                       If locale is unspecified just return the column name
-    @return Language aware version of field for Oracle <em>ORDER BY</em> clause.
+    @author	Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
 
-    @see lang::util::sort
+    @param locale	Code for the locale, eg "en_US"
+
+    @return	String containing the label for the locale
+
 } {
-    return [lang::util::sort $field $locale]
+    return [db_string select {}]
 }
 
-ad_proc -deprecated -warn ad_locale_charset_for_locale { 
-    locale 
-} {
-    Returns the MIME charset name corresponding to a locale.
 
-    @see           ad_locale
-    @author        Henry Minsky (hqm@mit.edu)
-    @param locale  Name of a locale, as language_COUNTRY using ISO 639 and ISO 3166
-    @return        IANA MIME character set name
-    @see           lang::util::charset_for_locale
+ad_proc -private lang::util::escape_vars_if_not_null {
+    list
 } {
-    return [lang::util::charset_for_locale $locale]
+    Processes a list of variables before they are passed into
+    a regexp command.
+
+    @param list   List of variable names
+} {
+    foreach lm $list {
+	upvar $lm foreign_var
+	if { [exists_and_not_null foreign_var] } {
+	    set foreign_var "\[$foreign_var\]"
+	}
+    }
 }
 
-ad_proc -deprecated -warn ad_locale_locale_from_lang { 
-    language
+ad_proc -public lang::util::convert_to_i18n {
+    {-locale}
+    {-package_key "acs-translations"}
+    {-message_key ""}
+    {-prefix ""}
+    {-text:required}
 } {
-    Returns the default locale for a language
-    
-    @author          Henry Minsky (hqm@mit.edu)
-    @param language  Name of a country, using ISO-3166 two letter code
-    @return          Default locale
-    @see             lang::util::default_locale_from_lang
+    Internationalising of Attributes. This is done by storing the attribute with it's acs-lang key
 } {
-    return [lang::util::default_locale_from_lang $language]
+
+    # If the package acs-translations is installed do the conversion
+    # magic, otherwise just return the text again.
+
+    if {[apm_package_id_from_key acs-translations]} {
+	if {$message_key eq ""} {
+	    if {$prefix eq ""} {
+		# Having no prefix or message_key is discouraged as it
+		# might have interesting side effects due to double
+		# meanings of the same english string in multiple contexts
+		# but for the time being we should still allow this.
+		set message_key [lang::util::suggest_key $text]
+	    } else {
+		set message_key "${prefix}_[lang::util::suggest_key $text]"
+	    }
+	} 
+	
+	# Register the language keys
+	lang::message::register en_US $package_key $message_key $text
+	if {[exists_and_not_null locale]} {
+	    lang::message::register $locale $package_key $message_key $text
+	}
+	
+	return "#${package_key}.${message_key}#"
+    } else {
+	return "$text"
+    }
 }
 
-ad_proc -deprecated -warn ad_locale_language_name { 
-    language 
+ad_proc -public lang::util::localize_list_of_lists {
+    {-list}
 } {
-    Returns the nls_language name for a language
+    localize the elements of a list_of_lists
+} {
+    set list_output [list]
+    foreach item $list {
+	set item_output [list]
+	foreach part $item {
+	    lappend item_output [lang::util::localize $part]
+	}
+	lappend list_output $item_output
+    }
+    return $list_output
+}
 
-    @author          Henry Minsky (hqm@mit.edu)
-    @param language  Name of a country, using ISO-3166 two letter code
-    @return          The nls_language name of the language.
-    @see             lang::util::nls_language_from_language
+ad_proc -public lang::util::get_locale_options {
 } {
-    return [lang::util::nls_language_from_language $language]
+    Return a list of locales know to the system
+} {
+    return [util_memoize lang::util::get_locale_options_not_cached]
+}
+
+ad_proc -private lang::util::get_locale_options_not_cached {} {
+    Return all enabled locales in the system in a format suitable for the options argument of a form.
+
+    @author Lars Pind
+} {
+    return [db_list_of_lists select_locales {}]
+}
+
+ad_proc -public lang::util::edit_lang_key_url {
+    -message:required
+    {-package_key "acs-translations"}
+} {
+} {
+    if { [regsub "^${package_key}." [string trim $message "\#"] {} message_key] } {
+	 set edit_url [export_vars -base "[apm_package_url_from_key "acs-lang"]admin/edit-localized-message" { { locale {[ad_conn locale]} } package_key message_key { return_url [ad_return_url] } }]
+     } else {
+	 set edit_url ""
+     }
+     return $edit_url
+ }
+
+ad_proc -public lang::util::iso6392_from_language { 
+    -language:required
+} {
+
+    Returns the ISO-639-2 code for a language.
+
+    @param language  Language, using ISO-639 code (2 or 3 chars)
+    @return          The ISO-639-2 terminology code for the language
+
+} {
+
+    set iso6392_code ""
+    set lang_len [string length $language]
+    if { $lang_len eq 2 } {
+        # input is iso-639-1 language code
+
+        set iso6392_code [db_string get_iso2_code_from_iso1 {} -default ""]
+
+    } elseif { $lang_len eq 3 } {
+        # input is iso-639-2 language code
+        # we check in the table in case the language code is wrong
+        
+        set iso6392_code [db_string get_iso2_code_from_iso2 {} -default ""]
+    }
+
+    return $iso6392_code
+}
+
+ad_proc -public lang::util::iso6392_from_locale { 
+    -locale:required
+} {
+
+    Returns the ISO-639-2 code for a locale.
+
+    @param locale    Locale to get the language ISO-639-2 code for
+    @return          The ISO-639-2 language code for the locale
+
+} {
+
+    # Don't use string range since 3 digits languages may be used
+    set language [lindex [split $locale "_"] 0]
+    return [lang::util::iso6392_from_language -language $language]
+}
+
+ad_proc -public lang::util::language_label { 
+    -language:required
+} {
+
+    Returns the ISO-639 label for a language code.
+
+    @param language  Language, using ISO-639 code (2 or 3 chars)
+    @return          The ISO-639 label for the language
+
+} {
+
+    set lang_label ""
+    set lang_len [string length $language]
+    if { $lang_len eq 2 } {
+        # input is iso-639-1 language code
+
+        set lang_label [db_string get_label_from_iso1 {} -default ""]
+
+    } elseif { $lang_len eq 3 } {
+        # input is iso-639-2 language code
+        # we check in the table in case the language code is wrong
+        
+        set lang_label [db_string get_label_from_iso2 {} -default ""]
+    }
+
+    return $lang_label
 }

@@ -7,15 +7,14 @@ ad_page_contract {
     package_key
     {show "all"}
     {page_start 0}
-    { submit_remote_p 1}
 }
 
 # We rename to avoid conflict in queries
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Batch edit messages"
 set context [list [list "package-list?[export_vars { locale }]" $locale_label] \
@@ -84,7 +83,7 @@ db_1row counts {
            (select count(*) from lang_message_keys where package_key = :package_key) as num_messages
     from   dual
 }
-set num_untranslated [expr $num_messages - $num_translated]
+set num_untranslated [expr {$num_messages - $num_translated}]
 
 set num_messages_pretty [lc_numeric $num_messages]
 set num_translated_pretty [lc_numeric $num_translated]
@@ -110,7 +109,7 @@ set keys [db_list get_keys "
 "]
 
 set total [llength $keys]
-set page_end [expr $page_start + 10]
+set page_end [expr {$page_start + 10}]
 
 
 
@@ -124,13 +123,13 @@ set page_end [expr $page_start + 10]
 
 set edit_buttons [list]
 
-if { ![string equal $show "untranslated"] && $page_start > 0 } { 
+if { $show ne "untranslated" && $page_start > 0 } { 
     lappend edit_buttons { "< Update and back" "prev" }
 }
 
 lappend edit_buttons { "Update" "ok" }
 
-if { ![string equal $show "untranslated"] && $page_end < [expr $total] } { 
+if { $show ne "untranslated" && $page_end < [expr {$total}] } { 
     lappend edit_buttons { "Update and next >" "next" }
 }
 
@@ -152,19 +151,27 @@ ad_form -name batch_editor -edit_buttons $edit_buttons -form {
 
 
 set count $page_start
+array set sections {}
 db_foreach get_messages {} {
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_$count:text(hidden)" {value $message_key}]]
     
     set message_url "edit-localized-message?[export_vars { locale package_key message_key show }]"
 
+	# Adding section
+	set section_name "$package_key.$message_key"
+	if { ![info exists sections($section_name)] } {
+		set sec [list "-section" $section_name {legendtext "$section_name"}]
+		ad_form -extend -name batch_editor -form [list $sec]
+		set sections($section_name) "$section_name"
+	}
+
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_pretty_$count:text(inform)" \
                    {label "Message Key"} \
-                   {value "<a href=\"$message_url\">$package_key.$message_key</a>"} \
-                   {section "$package_key.$message_key"}]]
+                   {value "<a href=\"$message_url\">$package_key.$message_key</a>"}]]
     
-    if { ![empty_string_p $description] } {
+    if { $description ne "" } {
         set description_edit_url "edit-description?[export_vars { locale package_key message_key show }]"
         set description "[ad_text_to_html -- $description] [subst { (<a href="$description_edit_url">edit</a>)}]"
 
@@ -174,7 +181,7 @@ db_foreach get_messages {} {
                        {value $description}]]
     }
 
-    if { ![string equal $current_locale $default_locale] } {
+    if { $current_locale ne $default_locale } {
         ad_form -extend -name batch_editor -form \
             [list [list "default_locale_message_$count:text(inform),optional" \
                        {label $default_locale_label} \
@@ -199,14 +206,6 @@ db_foreach get_messages {} {
     incr count
 }
 
-set submit_remote_options_list [list [list "Submit to translation server" 1]]
-ad_form -extend -name batch_editor -form {
-    {submit_remote_p:text(checkbox),optional
-        {label "" }
-        {options $submit_remote_options_list}
-    }
-}
-
 
 ad_form -extend -name batch_editor -on_request {
     # Set from local vars
@@ -214,33 +213,27 @@ ad_form -extend -name batch_editor -on_request {
 
     for { set i $page_start } { $i < $page_end && $i < $total } { incr i } {
         
-        if { ![string equal [set org_message_$i] [set message_$i]] } {
+        if { [set org_message_$i] ne [set message_$i] } {
             lang::message::register $current_locale $package_key \
                 [set message_key_$i] \
                 [set message_$i]
-
-	    if {1 == $submit_remote_p} {
-                lang::message::register_remote $current_locale $package_key \
-                    [set message_key_$i] \
-                    [set message_$i]
-	    }
-	}
+        }
     }
 
     set button [form::get_button batch_editor]
 
-    if { ![string equal $button "ok"] } {
+    if { $button ne "ok" } {
         switch $button {
             prev {
-                set page_start [expr $page_start - 10]
+                set page_start [expr {$page_start - 10}]
                 if { $page_start < 0 } { 
                     set page_start 0
                 }
             }
             next {
-                set page_start [expr $page_start + 10]
+                set page_start [expr {$page_start + 10}]
                 if { $page_start > $total } {
-                    set page_start [expr $total - ($total % 10)]
+                    set page_start [expr {$total - ($total % 10)}]
                 }
             }
         }
@@ -261,9 +254,9 @@ ad_form -extend -name batch_editor -on_request {
 multirow create pagination text hint url selected group
 
 for {set count 0} {$count < $total} {incr count 10 } {
-    set end_page [expr $count + 9]
-    if { $end_page > [expr $total-1] } {
-        set end_page [expr $total-1]
+    set end_page [expr {$count + 9}]
+    if { $end_page > [expr {$total-1}] } {
+        set end_page [expr {$total-1}]
     }
     
     
@@ -284,8 +277,8 @@ for {set count 0} {$count < $total} {incr count 10 } {
         $text \
         "[lindex $keys $count] - [lindex $keys $end_page]" \
         "batch-editor?[export_vars { { page_start $count } locale package_key show }]" \
-        [expr $count == $page_start] \
-        [expr $count / 100]
+        [expr {$count == $page_start}] \
+        [expr {$count / 100}]
 }
 
 
@@ -308,7 +301,7 @@ multirow extend show_opts url selected_p
 
 multirow foreach show_opts {
     set selected_p [string equal $show $value]
-    if { [string equal $value "all"] } {
+    if {$value eq "all"} {
         set url "[ad_conn url]?[export_vars { locale package_key }]"
     } else { 
         set url "[ad_conn url]?[export_vars { locale package_key {show $value} }]"

@@ -5,20 +5,18 @@ set new_message [db_string current_message { select message from lang_messages w
 multirow create audit_inv creation_user_id creation_user_name creation_date old_message new_message old_new_message comment_text
 
 db_foreach audit_inv_select {
-        select
-                a.old_message,
-                a.overwrite_user,
-                im_name_from_user_id(a.overwrite_user) as overwrite_user_name,
-                to_char(a.overwrite_date, 'YYYY-MM-DD HH24:MI:SS') as overwrite_date,
-                a.comment_text
-        from
-                lang_messages_audit a
-        where
-                locale = :current_locale and
-                message_key = :message_key and
-                package_key = :package_key
-        order by
-                overwrite_date desc
+    select a.old_message,
+           p.first_names || ' ' || p.last_name as overwrite_user_name,
+           a.overwrite_user,
+           to_char(a.overwrite_date, 'YYYY-MM-DD HH24:MI:SS') as overwrite_date,
+           a.comment_text
+    from lang_messages_audit a,
+         persons p
+    where locale = :current_locale
+    and message_key = :message_key
+    and package_key = :package_key
+    and a.overwrite_user = p.person_id
+    order by overwrite_date desc
 } {
     multirow append audit_inv \
         $overwrite_user \

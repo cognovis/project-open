@@ -5,7 +5,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
 
     @creation-date 26 October 2001
-    @cvs-id $Id: message-list.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: message-list.tcl,v 1.2 2010/10/19 20:11:56 po34demo Exp $
 } {
     locale
     package_key
@@ -24,8 +24,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title $package_key
 set context [list [list [export_vars -base package-list { locale }] $locale_label] $page_title]
@@ -66,7 +66,7 @@ db_1row counts {
              and deleted_p = 't') as num_deleted
     from dual
 }
-set num_untranslated [expr $num_messages - $num_translated]
+set num_untranslated [expr {$num_messages - $num_translated}]
 set num_messages_pretty [lc_numeric $num_messages]
 set num_translated_pretty [lc_numeric $num_translated]
 set num_untranslated_pretty [lc_numeric $num_untranslated]
@@ -145,10 +145,19 @@ multirow extend show_opts url selected_p
 
 multirow foreach show_opts {
     set selected_p [string equal $show $value]
-    if { [string equal $value "all"] } {
+    if {$value eq "all"} {
         set url "[ad_conn url]?[export_vars { locale package_key }]"
     } else { 
         set url "[ad_conn url]?[export_vars { locale package_key {show $value} }]"
     }
 }
 
+
+# Locale switch
+set languages [lang::system::get_locale_options]
+
+ad_form -name locale_form -action [ad_conn url] -export { tree_id category_id } -form {
+    {locale:text(select) {label "Language"} {value $locale} {options $languages}}
+}
+
+set form_vars [export_ns_set_vars form {locale form:mode form:id __confirmed_p __refreshing_p formbutton:ok} [ad_conn form]]

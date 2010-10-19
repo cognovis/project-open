@@ -3,7 +3,7 @@
 --
 -- @author Jeff Davis (davis@xarg.net)
 -- @creation-date 2000-09-10
--- @cvs-id $Id: ad-locales-drop.sql,v 1.1 2005/04/18 19:25:53 cvs Exp $
+-- @cvs-id $Id: ad-locales-drop.sql,v 1.2 2010/10/19 20:11:52 po34demo Exp $
 --
 
 -- ****************************************************************************
@@ -16,4 +16,3 @@
 drop table ad_locale_user_prefs;
 drop view enabled_locales;
 drop table ad_locales;
-

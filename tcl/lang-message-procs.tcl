@@ -8,59 +8,14 @@ ad_library {
     http://www.fsf.org/copyleft/gpl.html
 
     @creation-date 10 September 2000
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-message-procs.tcl,v 1.7 2009/10/16 13:38:39 po34demo Exp $
+    @cvs-id $Id: lang-message-procs.tcl,v 1.8 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::message {}
-
-ad_proc -public lang::message::register_remote {
-    {-update_sync:boolean}
-    {-upgrade_status "no_upgrade"}
-    {-conflict:boolean}
-    {-comment ""}
-    locale
-    package_key
-    message_key
-    message
-} {
-    <p>
-    Submits the translation to the translation server.
-    </p>
-    @author Frank Bergmann (frank.bergmann@project-open.com)
-    @see lang::message::register for parameters
-} {
-    # Send a message to the language server
-    set http_response ""
-    if {[catch {
-	set package_version [db_string package_version "select max(version_name) from apm_package_versions where package_key = :package_key" -default ""]
-	set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner "" [ad_system_owner]]
-	set sender_email [db_string sender_email "select email as sender_email from parties where party_id = [ad_get_user_id]" -default $system_owner_email]
-	set sender_first_names [db_string sender_email "select first_names from persons where person_id = [ad_get_user_id]" -default "System"]
-	set sender_last_name [db_string sender_email "select last_name from persons where person_id = [ad_get_user_id]" -default "Administrator"]
-	set lang_server_base_url "http://l10n.project-open.net/acs-lang-server/lang-message-register"
-	set lang_server_base_url [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerURL" -default $lang_server_base_url]
-	set lang_server_timeout [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerTimeout" -default 5]
-	set lang_server_url [export_vars -base $lang_server_base_url {locale package_key message_key message comment package_version sender_email sender_first_names sender_last_name}]
-
-	set http_response [ns_httpget $lang_server_url $lang_server_timeout]
-
-    } err_msg]} {
-
-	ad_return_complaint 1 "<b>Error Submitting Translation</b>:$
-		<pre>err_msg</pre>
-		While executing the command:<br>
-		<pre>ns_httpget $lang_server_url $lang_server_timeout</pre>
-	"
-	ad_script_abort
-    }
-
-    return http_response
-}
-
 
 ad_proc -public lang::message::register { 
     {-update_sync:boolean}
@@ -131,14 +86,14 @@ ad_proc -public lang::message::register {
     set key_exists_p [db_string message_key_exists_p {}]
 
     if { ! $key_exists_p } {
-        if { [string equal $locale "en_US"] } {
+        if {$locale eq "en_US"} {
             db_dml insert_message_key {}
         } else {
             # Non-default locale
             # The system will not function correctly if there are keys registered in other locales
             # than en_US that are not present for en_US. This introduces the inconvenience of having to
             # register the en_US messages first, but that is manageable
-            set error_message "lang::message::register - refusing to register message for non-en_US locale ${locale}. The message key ${package_key}.${message_key} bust be registered in en_US first"
+            set error_message "lang::message::register - refusing to register message for non-en_US locale ${locale}. The message key ${package_key}.${message_key} must be registered in en_US first"
             ns_log Error $error_message
             error $error_message
         }
@@ -148,7 +103,7 @@ ad_proc -public lang::message::register {
     # Exclude the special case of datetime configuration messages in acs-lang. An alternative
     # to treating those messages as a special case here would be to have those messages use
     # quoted percentage signs (double percentage signs).
-    if { ![string equal $locale "en_US"] && ![regexp {^acs-lang\.localization-} $key] } {
+    if { $locale ne "en_US" && ![regexp {^acs-lang\.localization-} $key] } {
         set embedded_vars [get_embedded_vars $message]
         set embedded_vars_en_us [get_embedded_vars [lang::message::lookup en_US $key {} {} 0]]
         set missing_vars [util_get_subset_missing $embedded_vars $embedded_vars_en_us]
@@ -468,7 +423,7 @@ ad_proc -private lang::message::edit {
                 $old_message_array(upgrade_status)            
 
             # If we are deleting an en_US message we need to mark the message deleted in all locales
-            if { [string equal $locale "en_US"] } {
+            if {$locale eq "en_US"} {
                 set message_locales [db_list all_message_locales {
                     select locale
                     from lang_messages
@@ -582,7 +537,7 @@ ad_proc -private lang::message::get_embedded_vars {
     while { [regexp [embedded_vars_regexp] $remaining_message \
             match before_percent percent_match remaining_message] } {
 
-        if { [string equal $percent_match "%%"] } {
+        if {$percent_match eq "%%"} {
             # A quoted percentage sign - ignore
             continue
         } else {
@@ -624,7 +579,7 @@ ad_proc -private lang::message::format {
 
         append formated_message $before_percent
 
-        if { [string equal $percent_match "%%"] } {
+        if {$percent_match eq "%%"} {
             # A quoted percent sign
             append formated_message "%"
         } else {
@@ -696,7 +651,7 @@ ad_proc -public lang::message::message_exists_p { locale key } {
 ad_proc -public lang::message::lookup {
     locale
     key
-    {default ""}
+    {default "TRANSLATION MISSING"}
     {substitution_list {}}
     {upvar_level 1}
     {translator_mode_p 1}
@@ -731,7 +686,7 @@ ad_proc -public lang::message::lookup {
     @param default            Text to return if there is no message in the message catalog for
                               the given locale. This argument is optional. If this argument is
                               not provided or is the empty string then the text returned will
-                              be TRANSLATION MISSING - $key.
+                              be TRANSLATION MISSING - $key. 
 
     @param substitution_list  A list of values to substitute into the message. This argument should
                               only be given for certain messages that contain place holders (on the syntax
@@ -748,7 +703,7 @@ ad_proc -public lang::message::lookup {
                               Useful if you're not using this message in the page itself, but e.g.
                               for localization data or for the list of messages on the page.
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Henry Minsky (hqm@arsdigita.com)
     @author Peter Marklund (peter@collaboraid.biz)
 
@@ -760,7 +715,13 @@ ad_proc -public lang::message::lookup {
     # Make sure messages are in the cache
     cache
 
-    if { [empty_string_p $locale] } {
+    # Make sure that a default of "" is transformed into Translation Missing
+    # As per discussion on IRC on 2008-03-06
+    if { $default eq ""} {
+	set default "TRANSLATION MISSING"
+    }
+    
+    if { $locale eq "" } {
         # No locale provided
 
         if { [ad_conn isconnected] } {
@@ -773,7 +734,7 @@ ad_proc -public lang::message::lookup {
     } elseif { [string length $locale] == 2 } {
         # Only language provided, let's get the default locale for this language
         set default_locale [lang::util::default_locale_from_lang $locale]
-        if { [empty_string_p $default_locale] } {
+        if { $default_locale eq "" } {
             error "Could not look up locale for language $locale"
         } else {
             set locale $default_locale
@@ -809,15 +770,18 @@ ad_proc -public lang::message::lookup {
                     if { [message_exists_p $locale $key] } {
                         set message [nsv_get lang_message_$locale $key]
                     } else {
-                        ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-
-			if {![empty_string_p $default]} {
+			if {"TRANSLATION MISSING" != $default} {
 			    set message $default
 			} else {
-			    set message "MESSAGE KEY MISSING: '$key'"
+			    if {[string match "acs-translations.*" $key]} {
+				ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
+				set message "MESSAGE KEY MISSING: '$key'"
+			    } else {
+				ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
+				set message "MESSAGE KEY MISSING: '$key'"
+			    }
 			}
-
-                    }
+		    }
                 }
             }
         }
@@ -826,7 +790,7 @@ ad_proc -public lang::message::lookup {
     # Do any variable substitutions (interpolation of variables)
     # Set upvar_level to 0 and substitution_list empty to prevent substitution from happening
     if { [llength $substitution_list] > 0 || ($upvar_level >= 1 && [string first "%" $message] != -1) } {
-        set message [lang::message::format $message $substitution_list [expr $upvar_level + 1]]
+        set message [lang::message::format $message $substitution_list [expr {$upvar_level + 1}]]
     }
 
     if { [lang::util::translator_mode_p] } {
@@ -870,7 +834,7 @@ ad_proc -private lang::message::translate {
     set url "http://babel.altavista.com/translate.dyn?doit=done&BabelFishFrontPage=yes&bblType=urltext&url="
     set babel_result [ns_httpget "$url&lp=$lang&urltext=[ns_urlencode $qmsg]"]
     set result_pattern "$marker (\[^<\]*)"
-    if [regexp -nocase $result_pattern $babel_result ignore msg_tr] {
+    if {[regexp -nocase $result_pattern $babel_result ignore msg_tr]} {
         regsub "$marker." $msg_tr "" msg_tr
         return [string trim $msg_tr]
     } else {
@@ -891,7 +855,7 @@ ad_proc -private lang::message::cache {
     if { ![nsv_exists lang_message_cache executed_p] } {            
         nsv_set lang_message_cache executed_p 1
 
-        if { [empty_string_p $package_key] } {
+        if { $package_key eq "" } {
             set package_where_clause ""
         } else {
             set package_where_clause "where package_key = :package_key"
@@ -929,7 +893,7 @@ ad_proc -public _mr { locale key message } {
 
     package_key.message_key
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     
     @param locale  Abbreviation for language of the message or the locale.
     @param key     Unique identifier for this message. Will be the same identifier
@@ -972,7 +936,7 @@ ad_proc -public _ {
 
     @return           A localized message
     
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Christian Hvid (chvid@collaboraid.biz)
 
@@ -987,57 +951,6 @@ ad_proc -public _ {
 # Backwards compatibility procs
 #
 #####
-
-ad_proc -private -deprecated -warn lang_message_register { locale key message } { 
-
-    Normally accessed through the _mr procedure.
-    Registers a message in a given locale or language.
-    Inserts the message into the table lang_messages
-    if it does not exist and updates if it does.
-
-    @author Jeff Davis (davis@arsdigita.com)
-    @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
-    @see _mr
-    
-    @param locale  Locale or language of the message. If a language is supplied,
-                   the default locale for the language is looked up. 
-                   Taken from ad_locales table.
-    @param key     Unique identifier for this message. Will be the same identifier
-                   for each language
-    @param message Text of the message
-    
-    @see lang::message::register
-} { 
-    return [lang::message::register $locale $key $message]
-}
-
-ad_proc -private -deprecated -warn lang_message_lookup {
-    locale
-    key
-    {default "TRANSLATION MISSING"}
-} {    
-    @see lang::message::lookup
-} { 
-    return [lang::message::lookup $locale $key $default {} 2]
-}
-
-ad_proc -deprecated -warn lang_babel_translate { 
-    msg
-    lang
-} {
-    Translates an English string into a different language
-    using Babelfish.
-
-    @author            Henry Minsky (hqm@mit.edu)
-
-    @param msg         String to translate
-    @param lang        Abbreviation for lang in which to translate string
-    @return            Translated string
-
-    @see lang::message::translate
-} {
-    return [lang::message::translate $msg $lang]
-}     
 
 
 ad_proc -public lang::message::update_description {

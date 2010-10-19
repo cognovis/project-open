@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author John Lowry (lowry@ardigita.com)
     @creation-date 29 September 2000
-    @cvs-id $Id: format-test.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: format-test.tcl,v 1.2 2010/10/19 20:11:58 po34demo Exp $
 } { }
 
 set title "Test acs-lang package formatting routines"

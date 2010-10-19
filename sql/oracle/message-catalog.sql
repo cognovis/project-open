@@ -6,7 +6,7 @@
 -- @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
 --
 -- @creation-date 2000-09-10
--- @cvs-id $Id: message-catalog.sql,v 1.1 2005/04/18 19:25:53 cvs Exp $
+-- @cvs-id $Id: message-catalog.sql,v 1.2 2010/10/19 20:11:51 po34demo Exp $
 --
 
 create table lang_user_timezone (
@@ -81,7 +81,7 @@ create table lang_messages_audit (
                        constraint lang_messages_audit_p_key_nn
                        not null,
     locale             varchar2(30) 
-                       constraint lang_messages_audit_l_fk
+                       constraint lang_messages_audit_locale_fk
                        references ad_locales(locale)
                        constraint lang_messages_audit_l_nn
                        not null,

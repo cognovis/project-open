@@ -7,12 +7,12 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 19 October 2001
-    @cvs-id $Id: index.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: index.tcl,v 1.2 2010/10/19 20:11:55 po34demo Exp $
 }
 
 # We rename to avoid conflict in queries
 set system_locale [lang::system::locale -site_wide]
-set system_locale_label [ad_locale_get_label $system_locale]
+set system_locale_label [lang::util::get_label $system_locale]
 
 set page_title "Administration of Localization"
 set context [list]
@@ -69,6 +69,6 @@ db_multirow -extend {
     set locale_enabled_p_url "locale-set-enabled-p?[export_vars { locale {enabled_p $toggle_enabled_p} }]"
     
     set num_translated_pretty [lc_numeric $num_translated]
-    set num_untranslated [expr $num_messages - $num_translated]
+    set num_untranslated [expr {$num_messages - $num_translated}]
     set num_untranslated_pretty [lc_numeric $num_untranslated]
 }

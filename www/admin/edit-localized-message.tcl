@@ -6,7 +6,7 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Christian Hvid
     @creation-date 30 October 2001
-    @cvs-id $Id: edit-localized-message.tcl,v 1.2 2009/02/09 16:40:19 cvs Exp $
+    @cvs-id $Id: edit-localized-message.tcl,v 1.3 2010/10/19 20:11:54 po34demo Exp $
 
 } {
     locale
@@ -15,15 +15,24 @@ ad_page_contract {
     show:optional
     {usage_p "f"}
     {return_url {}}
-    {submit_remote_p "1" }
+}
+
+if { [string length $locale] == 2 } {
+    # Only language provided, let's get the default locale for this language
+    set default_locale [lang::util::default_locale_from_lang $locale]
+    if { $default_locale eq "" } {
+        error "Could not look up locale for language $locale"
+    } else {
+        set locale $default_locale
+    }
 }
 
 # We rename to avoid conflict in queries
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Edit $package_key.$message_key"
 set context [list [list [export_vars -base package-list { locale }] $locale_label] \
@@ -59,15 +68,13 @@ ad_form -name message -form {
     }
 } 
 
-if { ![string equal $default_locale $current_locale] } {
+if { $default_locale ne $current_locale } {
     ad_form -extend -name message -form {
         {original_message:text(inform)
             {label "$default_locale_label Message"}
         }
     }
 }
-
-set submit_remote_options_list [list [list "Submit to translation server" 1]]
     
 ad_form -extend -name message -form {
     {message:text(textarea)
@@ -77,10 +84,6 @@ ad_form -extend -name message -form {
     {comment:text(textarea),optional
         {label "Comment"}
         {html { rows 6 cols 40 }}
-    }
-    {submit_remote_p:text(checkbox),optional
-        {label "" }
-        {options $submit_remote_options_list}
     }
     {submit:text(submit)
         {label "     Update     "}
@@ -114,21 +117,21 @@ ad_form -extend -name message -form {
         and    cu.user_id = lm.creation_user
     }]
 
-    set original_message [ad_quotehtml $original_message]
     if { [exists_and_not_null message] } {
         set message $message
     } else {
-	set message $original_message
+        set message $original_message
     }
+    set original_message [ad_quotehtml $original_message]
 
-    if { [empty_string_p $description] } {
+    if { $description eq "" } {
         set description [subst {(<a href="$description_edit_url">add description</a>)}]
     } else {
         set description "[ad_text_to_html -- $description] [subst { (<a href="$description_edit_url">edit</a>)}]"
     }
 
     # Augment the audit trail with info on who created the first message
-    if { ![string equal $current_locale $default_locale] && $translated_p } {
+    if { $current_locale ne $default_locale && $translated_p } {
         set edited_p [db_string edit_count {
             select count(*)
             from lang_messages_audit
@@ -168,12 +171,7 @@ ad_form -extend -name message -form {
     # Register message via acs-lang
     lang::message::register -comment $comment $locale $package_key $message_key $message
 
-    # Register on remote server
-    if {1 == $submit_remote_p} {
-        lang::message::register_remote -comment $comment $locale $package_key $message_key $message
-    }
-
-    if { [empty_string_p $return_url] } {
+    if { $return_url eq "" } {
         set return_url "[ad_conn url]?[export_vars { locale package_key message_key show }]"
     }
     ad_returnredirect $return_url

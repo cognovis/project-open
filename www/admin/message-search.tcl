@@ -13,8 +13,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Search Messages"
 set context [list [list "package-list?[export_vars { locale }]" $locale_label] $page_title]
@@ -22,8 +22,8 @@ set context [list [list "package-list?[export_vars { locale }]" $locale_label] $
 set default_locale en_US
 
 set search_locales [list]
-lappend search_locales [list "Current locale - [ad_locale_get_label $locale]" $locale ]
-lappend search_locales [list "Master locale - [ad_locale_get_label $default_locale]" $default_locale]
+lappend search_locales [list "Current locale - [lang::util::get_label $locale]" $locale ]
+lappend search_locales [list "Master locale - [lang::util::get_label $default_locale]" $default_locale]
 
 set submit_p 0
 
@@ -31,7 +31,7 @@ ad_form -name search -action message-search -form {
     {locale:text(hidden) {value $locale}}
 }
 
-if { ![string equal $default_locale $current_locale] } {
+if { $default_locale ne $current_locale } {
     ad_form -extend -name search -form {
         {search_locale:text(select)
             {options $search_locales}
@@ -69,8 +69,8 @@ if { [exists_and_not_null search_locale] && [exists_and_not_null q] } {
         set message_key_pretty "$package_key.$message_key"
     }
 
-    if { ![string equal $current_locale $default_locale] } {
-        if { [string equal $default_locale $search_locale] } {
+    if { $current_locale ne $default_locale } {
+        if {$default_locale eq $search_locale} {
             set other_locale $locale_label
             set other_search_url "[ad_conn url]?[export_vars { locale q {search_locale $current_locale} }]"
         } else {

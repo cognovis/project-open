@@ -13,7 +13,7 @@
 -- @author Lars Pind (lars@collaboraid.biz)
 --
 -- @creation-date 2003-08-11
--- @cvs-id $Id: upgrade-4.7d9-5.0d1.sql,v 1.1 2005/04/18 19:25:53 cvs Exp $
+-- @cvs-id $Id: upgrade-4.7d9-5.0d1.sql,v 1.2 2010/10/19 20:11:51 po34demo Exp $
 --
 
 

@@ -4,7 +4,7 @@
 
 <if @admin_p@>
   <div style="float: right;">
-    <a href="admin" class="button">Administration</a>
+    <a href="admin" class="button">#acs-kernel.common_Administration#</a>
   </div>
 </if>
 

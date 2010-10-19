@@ -3,7 +3,7 @@
 #
 # @author Peter Marklund (peter@collaboraid.biz)
 # @author Lars Pind (lars@collaboraid.biz)
-# @cvs-id $Id: message-usage-include.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+# @cvs-id $Id: message-usage-include.tcl,v 1.2 2010/10/19 20:11:57 po34demo Exp $
 
 set full_key "$package_key.$message_key"
 
@@ -28,8 +28,8 @@ with_catch errmsg {
             set colon [string first ":" $line]
             
             multirow append message_usage \
-                [string range $line 0 [expr $colon-1]] \
-                [string trim [string range $line [expr $colon+1] end]]
+                [string range $line 0 [expr {$colon-1}]] \
+                [string trim [string range $line [expr {$colon+1}] end]]
         }
     }
 }
