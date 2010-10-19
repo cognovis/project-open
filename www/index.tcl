@@ -1,13 +1,11 @@
-# File:        index.tcl
-# Package:     developer-support
-# Author:      jsalz@mit.edu
-# Date:        22 June 2000
-# Description: Index page for developer support.
-#
-# $Id$
+ad_page_contract {
+    Index page for developer support.
 
-ad_page_variables {
-    { request_limit 25 }
+    @author  jsalz@mit.edu
+    @creation-date        22 June 2000
+    @cvs-id $Id$
+} {
+    {request_limit:integer 25}
 }
 
 ds_require_permission [ad_conn package_id] "admin"
@@ -15,6 +13,8 @@ ds_require_permission [ad_conn package_id] "admin"
 set enabled_p [nsv_get ds_properties enabled_p]
 set user_switching_enabled_p [nsv_get ds_properties user_switching_enabled_p]
 set database_enabled_p [nsv_get ds_properties database_enabled_p]
+set profiling_enabled_p [nsv_get ds_properties profiling_enabled_p]
+set adp_reveal_enabled_p [nsv_get ds_properties adp_reveal_enabled_p]
 
 set package_id [ad_conn package_id]
 
@@ -26,8 +26,8 @@ append body "
 <li><a href=\"shell.tcl\">OpenACS Shell</a>
 <li>Developer support toolbar is currently
 [ad_decode $enabled_p 1 \
-    "on (<a href=\"set-enabled?enabled_p=0\">turn it off</a>)" \
-    "off (<a href=\"set-enabled?enabled_p=1\">turn it on</a>)"]
+     "on (<a href=\"set?field=ds&amp;enabled_p=0\">turn it off</a>)" \
+     "off (<a href=\"set?field=ds&amp;enabled_p=1\">turn it on</a>)"]
 
 <li>Developer support information is currently
 restricted to the following IP addresses:
@@ -59,8 +59,8 @@ set requests [nsv_array names ds_request]
 append body "
 </ul>
 
-<li>Information is being swept every [ad_parameter DataSweepInterval "developer-support" 900] sec
-and has a lifetime of [ad_parameter DataLifetime "developer-support" 900] sec
+<li>Information is being swept every [parameter::get -parameter DataSweepInterval -default 900] sec
+and has a lifetime of [parameter::get -parameter DataLifetime -default 900] sec
 
 <li><a href=\"/shared/parameters?[export_vars { package_id { return_url {[ad_return_url]} } }]\">Set package parameters</a>
 
@@ -68,14 +68,26 @@ and has a lifetime of [ad_parameter DataLifetime "developer-support" 900] sec
 
 <li>User-switching is currently
 [ad_decode $user_switching_enabled_p 1 \
-    "on (<a href=\"set-user-switching-enabled?enabled_p=0\">turn it off</a>)" \
-    "off (<a href=\"set-user-switching-enabled?enabled_p=1\">turn it on</a>)"]
+     "on (<a href=\"set?field=user&amp;enabled_p=0\">turn it off</a>)" \
+     "off (<a href=\"set?field=user&amp;enabled_p=1\">turn it on</a>)"]
 
 <li>Database statistics is currently
 [ad_decode $database_enabled_p 1 \
-    "on (<a href=\"set-database-enabled?enabled_p=0\">turn it off</a>)" \
-    "off (<a href=\"set-database-enabled?enabled_p=1\">turn it on</a>)"]
+     "on (<a href=\"set?field=db&amp;enabled_p=0\">turn it off</a>)" \
+     "off (<a href=\"set?field=db&amp;enabled_p=1\">turn it on</a>)"]
 
+<li>Template profiling is currently
+[ad_decode $profiling_enabled_p 1 \
+     "on (<a href=\"set?field=prof&amp;enabled_p=0\">turn it off</a>)" \
+     "off (<a href=\"set?field=prof&amp;enabled_p=1\">turn it on</a>)"]
+
+<li>ADP reveal is currently
+[ad_decode $adp_reveal_enabled_p 1 \
+     "on (<a href=\"set?field=adp&amp;enabled_p=0\">turn it off</a>)" \
+     "off (<a href=\"set?field=adp&amp;enabled_p=1\">turn it on</a>)"]
+
+<p>
+<li> Help on <a href=\"doc/editlocal\">edit and code links</a>.
 </ul>
 
 <h3>Available Request Information</h3>
@@ -117,7 +129,7 @@ if { [llength $requests] == 0 } {
 	    }
 
 	    if { [info exists conn(startclicks)] && [info exists conn(endclicks)] } {
-		set duration "[expr { ($conn(endclicks) - $conn(startclicks)) / 1000 }] ms"
+		set duration "[expr { ($conn(endclicks) - $conn(startclicks))}] ms"
 	    } else {
 		set duration ""
 	    }
@@ -154,13 +166,17 @@ if { [llength $requests] == 0 } {
 	    } else {
 		set query ""
 	    }
-
+            if {[ns_cache get ds_page_bits $id:error dummy]} {
+                set elink " <a href=\"send?output=$id:error\" style=\"color: red\">Errors</span></a>"
+            } else { 
+                set elink {}
+            }
 	    append body "
 <tr bgcolor=[lindex $colors [expr { $counter % [llength $colors] }]]>
 <td align=center>&nbsp;$start&nbsp;</td>
 <td align=right>&nbsp;$duration&nbsp;</td>
 <td>&nbsp;$peeraddr&nbsp;</td>
-<td><a href=\"request-info?request=$id\">[ns_quotehtml "$method $url$query"]</a></td>
+<td><a href=\"request-info?request=$id\">[ns_quotehtml "$method $url$query"]</a>$elink</td>
 </tr>
 "
             incr counter

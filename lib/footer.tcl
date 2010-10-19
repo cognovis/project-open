@@ -1,10 +1,20 @@
-set show_p [ds_show_p]
-
 # TODO: Go through request-processor to see what other information should be exposed to developer-support
 
 # TODO: Always show comments inline by default?
+set request [ad_conn request]
 
-if { $show_p } {
+if { [ds_show_p] } {
+
+    set show_p 0
+
+    if {[ns_cache get ds_page_bits "$request:error" errors]} {
+        set errcount [llength $errors]
+        set show_p 1
+    } else {
+        set errcount 0
+    }
+
+    set page_fragment_cache_p [ds_page_fragment_cache_enabled_p]
 
     set ds_url [ds_support_url]
 
@@ -16,19 +26,21 @@ if { $show_p } {
     if { $comments_p } {
         foreach comment [ds_get_comments] {
             multirow append comments $comment
+            set show_p 1
         }
     }
 
     set user_switching_p [ds_user_switching_enabled_p]
     if { $user_switching_p } {
 
+        set show_p 1
         set fake_user_id [ad_get_user_id]
         set real_user_id [ds_get_real_user_id]
-        
+
         if { $fake_user_id == 0 } {
             set selected " selected"
-            set you_are "<small>You are currently <strong>not logged in</strong></small><br />"
-            set you_are_really "<small>You are really <strong>not logged in</strong></small><br />"
+            set you_are "<small>You are currently <strong>not logged in</strong></small><br>"
+            set you_are_really "<small>You are really <strong>not logged in</strong></small><br>"
         } else {
             set selected {}
         }
@@ -84,18 +96,4 @@ if { $show_p } {
         }
         
     }
-
-    # Profiling information
-    global ds_profile__total_ms ds_profile__iterations 
-
-    multirow create profiling tag num_iterations total_ms ms_per_iteration
-
-    if { [info exists ds_profile__total_ms] } {
-        foreach tag [lsort [array names ds_profile__total_ms]] {
-            multirow append profiling $tag [set ds_profile__iterations($tag)] [lc_numeric [set ds_profile__total_ms($tag)]] \
-                    [ad_decode [set ds_profile__iterations($tag)] 0 {} \
-                    [lc_numeric [expr [set ds_profile__total_ms($tag)]/[set ds_profile__iterations($tag)]]]]
-        }
-    }
-
 }

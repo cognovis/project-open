@@ -16,6 +16,8 @@ ds_require_permission [ad_conn package_id] "admin"
 set page_title "Request Information"
 set context [list $page_title]
 
+set page_fragment_cache_p [ds_page_fragment_cache_enabled_p]
+
 foreach name [nsv_array names ds_request] {
     ns_log Debug "DS: Checking request $request, $name."
     if { [regexp {^([0-9]+)\.([a-z]+)$} $name "" m_request key] && $m_request == $request } {
@@ -32,7 +34,7 @@ if { [info exists property(start)] } {
 <tr><th align=left>Request Start Time:&nbsp;</th><td>[clock format [lindex $property(start) 0] -format "%Y-%m-%d %H:%M:%S"]\n"
 } else {
     append body "The information for this request is gone - either the server has been restarted, or
-the request is more than [ad_parameter DeveloperSupportLifetime "" 900] seconds old.
+the request is more than [parameter::get -parameter DeveloperSupportLifetime -default 900] seconds old.
 [ad_admin_footer]"
     return
 }
@@ -60,7 +62,7 @@ if { [info exists property(conn)] } {
 		    set value "<pre>[ns_quotehtml $conn($key)]</pre>"
 		}
 		endclicks {
-		    set value "[format "%.f" [expr { ($conn(endclicks) - $conn(startclicks)) / 1000 }]] ms"
+		    set value "[format "%.f" [expr { ($conn(endclicks) - $conn(startclicks)) }]] ms"
 		}
 		end {
 		    set value [clock format $conn($key) -format "%Y-%m-%d %H:%M:%S"  ]
@@ -104,14 +106,14 @@ if { [info exists property(rp)] } {
 	set action [lindex $rp 4]
 	set error [lindex $rp 5]
 
-	set duration "[format "%.1f" [expr { ($endclicks - $startclicks) / 1000.0 }]] ms"
+	set duration "[format "%.1f" [expr { ($endclicks - $startclicks) }]] ms"
 
 	if { [string equal $kind debug] && !$rp_show_debug_p } {
 	    continue
 	}
 
 	if { [info exists conn(startclicks)] } {
-	    append body "<li>[format "%+.1f" [expr { ($startclicks - $conn(startclicks)) / 1000.0 }]] ms: "
+	    append body "<li>[format "%+06.1f" [expr { ($startclicks - $conn(startclicks)) }]] ms: "
 	} else {
 	    append body "<li>"
 	}
@@ -248,7 +250,7 @@ if { ![info exists property(db)] } {
                 set sql $new_sql
             }
 
-	    append value "$command $handle<pre>[ns_quotehtml $sql]</pre>"
+	    append value "$command $statement_pool $handle<pre>[ns_quotehtml $sql]</pre>"
 	}
 
         if { ![string equal $command "getrow"] || [template::util::is_true $getrow_p] } {
@@ -257,7 +259,8 @@ if { ![info exists property(db)] } {
 
     }
 
-    # TODO: Sort by duration, so you can see slowest queries at top
+    multirow sort dbreqs -integer -decreasing duration_ms
+
     template::list::create \
         -name dbreqs \
         -sub_class narrow \
@@ -291,4 +294,56 @@ if { ![info exists property(db)] } {
         }
             
 }
-    
+
+# Profiling information
+global ds_profile__total_ms ds_profile__iterations
+
+template::list::create -name profiling -multirow profiling -elements {
+	file_links {
+	    label "Ops"
+	    display_template {
+		@profiling.file_links;noquote@
+	    }
+	}
+	tag {
+	    label "Template"
+	}
+	total_ms {
+	    label "Total time"
+	}
+	size {
+	    label "Size"
+	}
+}
+
+multirow create profiling tag total_ms file_links size
+
+if { [info exists property(prof)] } {
+    foreach {tag time} $property(prof) {
+        if {[file exists $tag]} {
+            set file_links "<a href=\"send?fname=[ns_urlencode $tag]\" title=\"edit\">e</a>"
+            append file_links " <a href=\"send?code=[ns_urlencode $tag]\" title=\"compiled code\">c</a>"
+        } else {
+            set file_links {}
+        }
+
+        if { $page_fragment_cache_p } {
+            if { [string match *.adp $tag]} {
+                append file_links " <a href=\"send?output=$request:[ns_urlencode $tag]\" title=\"output\">o</a>"
+                if {[ns_cache get ds_page_bits "$request:$tag" dummy]} {
+                    set size [string length $dummy]
+                } else {
+                    set size {?}
+                }
+            } else {
+                append file_links " x"
+                set size -
+            }
+        } else { 
+            set size {}
+        }
+
+        set total_ms [lc_numeric $time]
+        multirow append profiling $tag $total_ms $file_links $size
+    }
+}
