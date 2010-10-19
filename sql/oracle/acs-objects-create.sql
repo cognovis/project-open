@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: acs-objects-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: acs-objects-create.sql,v 1.2 2010/10/19 20:11:32 po34demo Exp $
 --
 
 -----------------------------
@@ -71,6 +71,13 @@ begin
  );
 
  attr_id := acs_attribute.create_attribute (
+   object_type => 'acs_object',
+   attribute_name => 'modifying_user',
+   datatype => 'integer',
+   pretty_name => 'Modifying User'
+ );
+
+ attr_id := acs_attribute.create_attribute (
         object_type => 'acs_object',
         attribute_name => 'creation_user',
         datatype => 'integer',
@@ -86,6 +93,26 @@ begin
         datatype => 'integer',
         pretty_name => 'Context ID',
         pretty_plural => 'Context IDs',
+	min_n_values => 0,
+	max_n_values => 1
+      );
+
+ attr_id := acs_attribute.create_attribute (
+        object_type => 'acs_object',
+        attribute_name => 'package_id',
+        datatype => 'integer',
+        pretty_name => 'Package ID',
+        pretty_plural => 'Package IDs',
+	min_n_values => 0,
+	max_n_values => 1
+      );
+
+ attr_id := acs_attribute.create_attribute (
+        object_type => 'acs_object',
+        attribute_name => 'title',
+        datatype => 'string',
+        pretty_name => 'Title',
+        pretty_plural => 'Titles',
 	min_n_values => 0,
 	max_n_values => 1
       );
@@ -106,33 +133,40 @@ show errors
 create sequence acs_object_id_seq cache 1000;
 
 create table acs_objects (
-	object_id		integer not null
-				constraint acs_objects_pk primary key,
-	object_type		not null
+	object_id		integer 
+				constraint acs_objects_object_id_nn not null
+				constraint acs_objects_object_id_pk primary key,
+	object_type		constraint acs_objects_object_type_nn not null
 				constraint acs_objects_object_type_fk
 				references acs_object_types (object_type),
+        title			varchar2(1000) default null,
+        package_id		integer default null,
         context_id		constraint acs_objects_context_id_fk
 				references acs_objects(object_id),
 	security_inherit_p	char(1) default 't' not null,
 				constraint acs_objects_sec_inherit_p_ck
 				check (security_inherit_p in ('t', 'f')),
 	creation_user		integer,
-	creation_date		date default sysdate not null,
+	creation_date		date default sysdate 
+				constraint acs_objects_creation_date_nn not null,
 	creation_ip		varchar2(50),
-	last_modified		date default sysdate not null,
+	last_modified		date default sysdate 
+				constraint acs_objects_last_modified_nn not null,
 	modifying_user		integer,
 	modifying_ip		varchar2(50),
         constraint acs_objects_context_object_un
 	unique (context_id, object_id) disable
 );
 
-create index acs_objects_context_object_idx on
-       acs_objects (context_id, object_id);
+create index acs_objects_context_object_idx on acs_objects (context_id, object_id);
 
 alter table acs_objects modify constraint acs_objects_context_object_un enable;
 
 create index acs_objects_creation_user_idx on acs_objects (creation_user);
 create index acs_objects_modify_user_idx on acs_objects (modifying_user);
+
+create index acs_objects_package_idx on acs_objects (package_id);
+create index acs_objects_title_idx on acs_objects(title);
 
 -- create bitmap index acs_objects_object_type_idx on acs_objects (object_type);
 create index acs_objects_object_type_idx on acs_objects (object_type);
@@ -150,10 +184,15 @@ create or replace trigger acs_objects_last_mod_update_tr
 before update on acs_objects
 for each row
 begin
- :new.last_modified := sysdate;
+  if :new.last_modified is null then
+     :new.last_modified := :old.last_modified;
+  elsif :new.last_modified = :old.last_modified then
+     :new.last_modified := sysdate;
+  end if;
 end acs_objects_last_mod_update_tr;
 /
 show errors
+
 
 comment on table acs_objects is '
 ';
@@ -178,6 +217,18 @@ comment on column acs_objects.modifying_user is '
  Who last modified the object
 ';
 
+comment on column acs_objects.package_id is '
+ Which package instance this object belongs to.
+ Please note that in mid-term this column will replace all
+ package_ids of package specific tables.
+';
+
+comment on column acs_objects.title is '
+ Title of the object if applicable.
+ Please note that in mid-term this column will replace all
+ titles or object_names of package specific tables.
+';
+
 -----------------------
 -- CONTEXT HIERARCHY --
 -----------------------
@@ -197,6 +248,7 @@ create table acs_object_context_index (
 ) organization index;
 
 create index acs_obj_ctx_idx_ancestor_idx on acs_object_context_index (ancestor_id);
+create index acs_obj_ctx_idx_object_id_idx on acs_object_context_index (object_id);
 
 create or replace view acs_object_paths
 as select object_id, ancestor_id, n_generations
@@ -385,7 +437,9 @@ as
 			   default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
   context_id    in acs_objects.context_id%TYPE default null,
-  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't'
+  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
+  title		in acs_objects.title%TYPE default null,
+  package_id    in acs_objects.package_id%TYPE default null
  ) return acs_objects.object_id%TYPE;
 
  procedure del (
@@ -401,6 +455,10 @@ as
  function default_name (
   object_id	in acs_objects.object_id%TYPE
  ) return varchar2;
+
+ function package_id (
+  object_id	in acs_objects.object_id%TYPE
+ ) return acs_objects.package_id%TYPE;
 
  -- Determine where the attribute is stored and what sql needs to be
  -- in the where clause to retreive it
@@ -495,11 +553,15 @@ as
 		   default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
   context_id    in acs_objects.context_id%TYPE default null,
-  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't'
+  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
+  title		in acs_objects.title%TYPE default null,
+  package_id    in acs_objects.package_id%TYPE default null
  )
  return acs_objects.object_id%TYPE
  is
   v_object_id acs_objects.object_id%TYPE;
+  v_title acs_objects.title%TYPE;
+  v_object_type_pretty_name acs_object_types.pretty_name%TYPE;
   v_creation_date acs_objects.creation_date%TYPE;
  begin
   if object_id is null then
@@ -510,18 +572,29 @@ as
     v_object_id := object_id;
   end if;
 
-  if creation_date is null then
-   select sysdate into v_creation_date from dual;
+  if title is null then
+   select pretty_name
+   into v_object_type_pretty_name
+   from acs_object_types
+   where object_type = new.object_type;
+
+   v_title := v_object_type_pretty_name || ' ' || v_object_id;
   else
-   v_creation_date := creation_date;
+    v_title := title;
+  end if;
+
+  if creation_date is null then
+    select sysdate into v_creation_date from dual;
+  else
+    v_creation_date := creation_date;
   end if;
 
   insert into acs_objects
    (object_id, object_type, context_id, creation_date,
-    creation_user, creation_ip, security_inherit_p)
+    creation_user, creation_ip, security_inherit_p, title, package_id)
   values
    (v_object_id, object_type, context_id, v_creation_date,
-    creation_user, creation_ip, security_inherit_p);
+    creation_user, creation_ip, security_inherit_p, v_title, package_id);
 
   acs_object.initialize_attributes(v_object_id);
 
@@ -579,7 +652,7 @@ as
  )
  return varchar2
  is
-  object_name varchar2(500);
+  object_name acs_objects.title%TYPE;
   v_object_id integer := object_id;
  begin
   -- Find the name function for this object, which is stored in the
@@ -587,6 +660,14 @@ as
   -- object's actual type, traverse the type hierarchy upwards until
   -- a non-null name_method value is found.
   --
+  select title into object_name
+  from acs_objects
+  where object_id = name.object_id;
+
+  if (object_name is not null) then
+    return object_name;
+  end if;
+
   for object_type
   in (select name_method
       from acs_object_types
@@ -627,6 +708,23 @@ as
 
   return object_type_pretty_name || ' ' || object_id;
  end default_name;
+
+ function package_id (
+  object_id	in acs_objects.object_id%TYPE
+ ) return acs_objects.package_id%TYPE
+ is
+  v_package_id acs_objects.package_id%TYPE;
+ begin
+  if object_id is null then
+    return null;
+  end if;
+
+  select package_id into v_package_id
+  from acs_objects
+  where object_id = package_id.object_id;
+
+  return v_package_id;
+ end package_id;
 
  procedure get_attribute_storage ( 
    object_id_in      in  acs_objects.object_id%TYPE,
@@ -1088,13 +1186,15 @@ show errors
 -------------------
 
 create table general_objects (
-	object_id		not null
+	object_id		constraint general_objects_object_id_nn not null
 				constraint general_objects_object_id_fk
 				references acs_objects (object_id)
-				constraint general_objects_pk
+				constraint general_objects_object_id_pk
 				primary key,
-	on_which_table		varchar2(30) not null,
-	on_what_id		integer not null,
+	on_which_table		varchar2(30) 
+				constraint go_on_which_table_nn not null,
+	on_what_id		integer 
+				constraint general_objects_on_what_id_nn not null,
 	constraint general_objects_un
 		unique (on_which_table, on_what_id)
 );

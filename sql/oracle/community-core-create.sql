@@ -15,7 +15,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: community-core-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: community-core-create.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
 --
 
 -- HIGH PRIORITY:
@@ -185,6 +185,16 @@ begin
 	max_n_values => 1
       );
 
+ attr_id := acs_attribute.create_attribute (
+        object_type => 'person',
+        attribute_name => 'bio',
+        datatype => 'string',
+        pretty_name => '#acs-kernel.Bio#',
+        pretty_plural => '#acs-kernel.Bios#',
+	min_n_values => 0,
+	max_n_values => 1
+      );
+
  --
  -- User: people who have registered in the system
  --
@@ -198,6 +208,26 @@ begin
    package_name => 'acs_user'
  );
 
+ attr_id := acs_attribute.create_attribute (
+        object_type => 'user',
+        attribute_name => 'username',
+        datatype => 'string',
+        pretty_name => '#acs-kernel.Username#',
+        pretty_plural => '#acs-kernel.Usernames#',
+	min_n_values => 0,
+	max_n_values => 1
+      );
+
+ attr_id := acs_attribute.create_attribute (
+        object_type => 'user',
+        attribute_name => 'screen_name',
+        datatype => 'string',
+        pretty_name => '#acs-kernel.Screen_Name#',
+        pretty_plural => '#acs-kernel.Screen_Names#',
+	min_n_values => 0,
+	max_n_values => 1
+      );
+
  commit;
 end;
 /
@@ -208,10 +238,10 @@ show errors
 -- ******************************************************************
 
 create table parties (
-	party_id	not null
+	party_id	constraint parties_party_id_nn not null
 			constraint parties_party_id_fk references
 			acs_objects (object_id)
-			constraint parties_pk primary key,
+			constraint parties_party_id_pk primary key,
 	email		varchar2(100)
 			constraint parties_email_un unique,
 	url		varchar2(200)
@@ -299,8 +329,14 @@ as
   v_party_id parties.party_id%TYPE;
  begin
   v_party_id :=
-   acs_object.new(party_id, object_type,
-                  creation_date, creation_user, creation_ip, context_id);
+   acs_object.new(
+     object_id => party_id,
+     object_type => object_type,
+     title => lower(email),
+     creation_date => creation_date,
+     creation_user => creation_user,
+     creation_ip => creation_ip,
+     context_id => context_id);
 
   insert into parties
    (party_id, email, url)
@@ -356,12 +392,15 @@ show errors
 -------------
 
 create table persons (
-	person_id	not null
+	person_id	constraint persons_person_id_nn not null
 			constraint persons_person_id_fk
 			references parties (party_id)
-			constraint persons_pk primary key,
-	first_names	varchar2(100) not null,
-	last_name	varchar2(100) not null
+			constraint persons_person_id_pk primary key,
+	first_names	varchar2(100) 
+			constraint persons_first_names_nn not null,
+	last_name	varchar2(100) 
+			constraint persons_last_name_nn not null,
+        bio             varchar2(4000)
 );
 
 comment on table persons is '
@@ -444,6 +483,10 @@ as
   values
    (v_person_id, first_names, last_name);
 
+  update acs_objects
+  set title = first_names || ' ' || last_name
+  where object_id = v_person_id;
+
   return v_person_id;
  end new;
 
@@ -511,9 +554,9 @@ create table users (
 	user_id			not null
 				constraint users_user_id_fk
 				references persons (person_id)
-				constraint users_pk primary key,
+				constraint users_user_id_pk primary key,
         authority_id            integer
-                                constraint users_auth_authorities_fk
+                                constraint users_authority_id_fk
                                 references auth_authorities(authority_id),
         username                varchar2(100) 
                                 constraint users_username_nn 
@@ -549,9 +592,9 @@ create table users (
 create index users_email_verified_idx on users (email_verified_p);
 
 create table user_preferences (
-	user_id			constraint user_prefs_user_id_fk
+	user_id			constraint user_preferences_user_id_fk
 				references users (user_id)
-				constraint user_preferences_pk
+				constraint user_preferences_user_id_pk
 				primary key,
 	prefer_text_only_p	char(1) default 'f'
 				constraint user_prefs_pref_txt_only_p_ck
@@ -562,7 +605,6 @@ create table user_preferences (
 				constraint user_prefs_dont_spam_me_p_ck
 				check (dont_spam_me_p in ('t','f')),
 	email_type		varchar2(64),
-        locale                  varchar2(30),
         timezone                varchar2(100)
 );
 

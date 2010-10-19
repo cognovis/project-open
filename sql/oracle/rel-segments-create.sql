@@ -3,7 +3,7 @@
 --
 -- @author Oumi Mehrotra oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id $Id: rel-segments-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: rel-segments-create.sql,v 1.2 2010/10/19 20:11:34 po34demo Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -29,7 +29,6 @@ begin
    table_name => 'rel_segments',
    id_column => 'segment_id',
    package_name => 'rel_segment',
-   type_extension_table => 'rel_segment',
    name_method => 'rel_segment.name'
  );
 
@@ -45,18 +44,21 @@ show errors
 -- using rel_segment.delete before dropping a relationship type.
 
 create table rel_segments (
-        segment_id      not null
+        segment_id      constraint rel_segments_segment_id_nn not null
                         constraint rel_segments_segment_id_fk
                         references parties (party_id)
-                        constraint rel_segments_pk primary key,
-        segment_name    varchar2(230) not null,
-        group_id        not null
+                        constraint rel_segments_segment_id_pk primary key,
+        segment_name    varchar2(230) 
+			constraint rel_segments_segment_name_nn not null,
+        group_id        constraint rel_segments_group_id_nn not null
                         constraint rel_segments_group_id_fk
-                        references groups (group_id),
-        rel_type        not null
+                        references groups (group_id)
+                        on delete cascade,
+        rel_type        constraint rel_segments_rel_type_nn not null
                         constraint rel_segments_rel_type_fk
-                        references acs_rel_types (rel_type),
-        constraint rel_segments_grp_rel_type_uq unique(group_id, rel_type)
+                        references acs_rel_types (rel_type)
+                        on delete cascade,
+        constraint rel_segments_grp_rel_type_un unique(group_id, rel_type)
 );
 
 -- rel_type has a foreign key reference - create an index

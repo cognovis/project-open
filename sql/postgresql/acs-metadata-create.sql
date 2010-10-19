@@ -12,8 +12,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id acs-metadata-create.sql,v 1.9.2.8 2001/01/22 20:23:46 mbryzek Exp
---
+-- @cvs-id $Id: acs-metadata-create.sql,v 1.3 2010/10/19 20:11:38 po34demo Exp $
 
 -- ******************************************************************
 -- * KNOWLEDGE LEVEL
@@ -23,12 +22,7 @@
 -- OBJECT TYPES --
 ------------------
 
--- DRB: As originally defined two types couldn't share an attribute
--- table, which seems stupid.  Why in the world should I be forbidden
--- to define two types inherited from two different parent types (specifically
--- content_revision and image) and to extend them with the same attributes
--- table?  
-
+-- DRB: null table name change
 create table acs_object_types (
 	object_type	varchar(1000) not null
 			constraint acs_object_types_pk primary key,
@@ -41,15 +35,18 @@ create table acs_object_types (
 	pretty_plural	varchar(1000) not null
 			constraint acs_obj_types_pretty_plural_un
 			unique,
-	table_name	varchar(30) not null
+	table_name	varchar(30)
                         constraint acs_object_types_table_name_un unique,
-	id_column	varchar(30) not null,
+	id_column	varchar(30),
 	package_name	varchar(30) not null
 			constraint acs_object_types_pkg_name_un unique,
 	name_method	varchar(100),
 	type_extension_table varchar(30),
         dynamic_p       boolean default 'f',
-        tree_sortkey    varbit
+        tree_sortkey    varbit,
+	constraint acs_object_types_table_id_name_ck
+	check ((table_name is null and id_column is null) or
+               (table_name is not null and id_column is not null))
 );
 
 create index acs_obj_types_supertype_idx on acs_object_types (supertype);
@@ -64,7 +61,7 @@ begin
   return tree_sortkey from acs_object_types where object_type = p_object_type;
 end;' language 'plpgsql';
 
-create function acs_object_type_insert_tr () returns opaque as '
+create function acs_object_type_insert_tr () returns trigger as '
 declare
         v_parent_sk     varbit default null;
         v_max_value     integer;
@@ -87,7 +84,7 @@ create trigger acs_object_type_insert_tr before insert
 on acs_object_types for each row 
 execute procedure acs_object_type_insert_tr ();
 
-create function acs_object_type_update_tr () returns opaque as '
+create function acs_object_type_update_tr () returns trigger as '
 declare
         v_parent_sk     varbit default null;
         v_max_value     integer;
@@ -266,9 +263,9 @@ comment on column acs_object_type_tables.id_column is '
 
 create table acs_datatypes (
 	datatype	varchar(50) not null
-			constraint acs_datatypes_pk primary key,
+			constraint acs_datatypes_datatype_pk primary key,
 	max_n_values	integer default 1
-			constraint acs_datatypes_max_n_ck
+			constraint acs_datatypes_max_n_values_ck
 			check (max_n_values > 0)
 );
 
@@ -348,6 +345,10 @@ begin
  values
   (''email'', null);
 
+ insert into acs_datatypes
+  (datatype, max_n_values)
+ values
+  (''file'', 1);
 
   return 0;
 end;' language 'plpgsql';
@@ -367,7 +368,7 @@ select nextval('t_acs_attribute_id_seq') as nextval;
 
 create table acs_attributes (
 	attribute_id	integer not null
-			constraint acs_attributes_pk
+			constraint acs_attributes_attribute_id_pk
 			primary key,
 	object_type	varchar(100) not null
 			constraint acs_attributes_object_type_fk
@@ -385,10 +386,10 @@ create table acs_attributes (
 			references acs_datatypes (datatype),
 	default_value	text,
 	min_n_values	integer default 1 not null
-			constraint acs_attributes_min_n_ck
+			constraint acs_attributes_min_n_values_ck
 			check (min_n_values >= 0),
 	max_n_values	integer default 1 not null
-			constraint acs_attributes_max_n_ck
+			constraint acs_attributes_max_n_values_ck
 			check (max_n_values >= 0),
 	storage 	varchar(13) default 'type_specific'
 			constraint acs_attributes_storage_ck
@@ -515,7 +516,8 @@ where attr.object_type = all_types.ancestor_type;
 -----------------------
 -- METADATA PACKAGES --
 -----------------------
-
+select define_function_args('acs_object_type__create_type','object_type,pretty_name,pretty_plural,supertype,table_name,id_column,package_name,abstract_p;f,type_extension_table,name_method');
+-- DRB: null table_name change
 create function acs_object_type__create_type (varchar,varchar,varchar,varchar,varchar,varchar,varchar,boolean,varchar,varchar)
 returns integer as '
 declare
@@ -523,8 +525,8 @@ declare
   create_type__pretty_name            alias for $2;  
   create_type__pretty_plural          alias for $3;  
   create_type__supertype              alias for $4;  
-  create_type__table_name             alias for $5;  
-  create_type__id_column              alias for $6;  -- default ''XXX''
+  create_type__table_name             alias for $5;  -- default null
+  create_type__id_column              alias for $6;  -- default null
   create_type__package_name           alias for $7;  -- default null
   create_type__abstract_p             alias for $8;  -- default ''f''
   create_type__type_extension_table   alias for $9;  -- default null
@@ -533,12 +535,7 @@ declare
   v_supertype						  acs_object_types.supertype%TYPE;
   v_name_method                       varchar;
   v_idx                               integer;
-  v_count			      integer;
 begin
-    select count(*) into v_count from acs_object_types
-    where object_type = create_type__object_type;
-    if v_count > 0 then return 0; end if;
-
     v_idx := position(''.'' in create_type__name_method);
     if v_idx <> 0 then
          v_name_method := substr(create_type__name_method,1,v_idx - 1) || 
@@ -574,6 +571,7 @@ begin
 end;' language 'plpgsql';
 
 
+select define_function_args('acs_object_type__drop_type','object_type,cascade_p;f');
 -- procedure drop_type
 create or replace function acs_object_type__drop_type (varchar,boolean)
 returns integer as '
@@ -581,8 +579,17 @@ declare
   drop_type__object_type            alias for $1;  
   drop_type__cascade_p              alias for $2;  -- default ''f''
   row                               record;
+  object_row                        record;
 begin
-    -- XXX: drop_type cascade_p is ignored (ignored in oracle too, but defaults f)
+
+   if drop_type__cascade_p then
+     for object_row in select object_id
+                         from acs_objects
+                         where object_type = drop_type__object_type
+     loop
+       PERFORM acs_object__delete (object_row.object_id);
+     end loop;
+   end if;
 
     -- drop all the attributes associated with this type
     for row in select attribute_name 
@@ -647,10 +654,11 @@ end;' language 'plpgsql' stable;
 -- show errors
 
 
+select define_function_args('acs_attribute__create_attribute','object_type,attribute_name,datatype,pretty_name,pretty_plural,table_name,column_name,default_value,min_n_values;1,max_n_values;1,sort_order,storage;type_specific,static_p;f');
 
 -- create or replace package body acs_attribute
 -- function create_attribute
-create function acs_attribute__create_attribute (varchar,varchar,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer,integer,varchar,boolean)
+create or replace function acs_attribute__create_attribute (varchar,varchar,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer,integer,varchar,boolean)
 returns integer as '
 declare
   create_attribute__object_type            alias for $1;  
@@ -679,7 +687,7 @@ begin
       v_sort_order := create_attribute__sort_order;
     end if;
 
-    select acs_attribute_id_seq.nextval into v_attribute_id;
+    select nextval(''t_acs_attribute_id_seq'') into v_attribute_id;
 
     insert into acs_attributes
       (attribute_id, object_type, table_name, column_name, attribute_name,
@@ -698,7 +706,7 @@ begin
    
 end;' language 'plpgsql';
 
-create function acs_attribute__create_attribute (varchar,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer,integer,integer,varchar,boolean)
+create or replace function acs_attribute__create_attribute (varchar,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer,integer,integer,varchar,boolean)
 returns integer as '
 begin
     return acs_attribute__create_attribute ($1, $2, $3, $4, $5, $6, $7, cast ($8 as varchar), $9, $10, $11, $12, $13);
@@ -725,7 +733,7 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
-
+select define_function_args('acs_attribute__add_description','object_type,attribute_name,description_key,description');
 -- procedure add_description
 create function acs_attribute__add_description (varchar,varchar,varchar,text)
 returns integer as '
@@ -744,7 +752,7 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
-
+select define_function_args('acs_attribute__drop_description','object_type,attribute_name,description_key');
 -- procedure drop_description
 create function acs_attribute__drop_description (varchar,varchar,varchar)
 returns integer as '

@@ -7,7 +7,7 @@
 --
 -- @creation-date 20003-08-21
 --
--- @cvs-id $Id: authentication-drop.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: authentication-drop.sql,v 1.2 2010/10/19 20:11:39 po34demo Exp $
 --
 
 create function inline_0 ()

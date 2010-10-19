@@ -8,7 +8,7 @@
 -- @author Richard Li (richardl@arsdigita.com)
 --
 -- @creation-date 2000/02/02
--- @cvs-id security-create.sql,v 1.16.2.4 2001/01/12 22:58:16 mbryzek Exp
+-- @cvs-id $Id: security-create.sql,v 1.2 2010/10/19 20:11:42 po34demo Exp $
 
 create table sec_session_properties (
     session_id     integer
@@ -26,7 +26,7 @@ create table sec_session_properties (
     last_hit	   integer
                    constraint sec_session_date_nn
                    not null,
-    primary key(session_id, module, property_name)
+    constraint sec_session_prop_pk primary key(session_id, module, property_name)
 );
 
 create index sec_property_names on sec_session_properties(property_name);

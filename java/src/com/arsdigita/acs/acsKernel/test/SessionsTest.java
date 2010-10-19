@@ -4,7 +4,7 @@ package com.arsdigita.acs.acsKernel.test;
  *
  * @author Patrick McNeill (pmcneill@arsdigita.com)
  * @creation-date 2000-12-07
- * @cvs-id $Id: SessionsTest.java,v 1.1 2005/04/18 19:25:34 cvs Exp $
+ * @cvs-id $Id: SessionsTest.java,v 1.2 2010/10/19 20:11:31 po34demo Exp $
  */
 
 import com.meterware.httpunit.*;

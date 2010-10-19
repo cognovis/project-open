@@ -3,7 +3,7 @@
 --
 -- @author Lars Pind (lars@pinds.com)
 -- @creation-date 2000-22-18
--- @cvs-id journal-create.sql,v 1.7.2.1 2000/12/08 00:38:24 yon Exp
+-- @cvs-id $Id: journal-create.sql,v 1.2 2010/10/19 20:11:41 po34demo Exp $
 --
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 --
@@ -42,10 +42,10 @@ drop function inline_0 ();
 create table journal_entries (
   journal_id		integer constraint journal_entries_journal_id_fk
 			references acs_objects (object_id)
-			constraint journal_entries_pk
+			constraint journal_entries_journal_id_pk
 			primary key,
   object_id 		integer
-			constraint journal_entries_object_fk
+			constraint journal_entries_object_id_fk
 			references acs_objects on delete cascade,
   action                varchar(100),
   action_pretty         text,
@@ -107,7 +107,10 @@ begin
 	  new__creation_date,
 	  new__creation_user,
 	  new__creation_ip,
-	  new__object_id
+	  new__object_id,
+          ''t'',
+          new__action,
+          null
 	);
 
         insert into journal_entries (

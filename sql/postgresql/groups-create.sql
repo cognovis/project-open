@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id groups-create.sql,v 1.16.2.3 2001/01/19 00:50:37 mbryzek Exp
+-- @cvs-id $Id: groups-create.sql,v 1.2 2010/10/19 20:11:40 po34demo Exp $
 --
 
 ----------------------------
@@ -17,27 +17,30 @@
 -- the "DENORMALIZATION" section further below).
 
 create table composition_rels (
-        rel_id          integer constraint composition_rel_rel_id_fk
+        rel_id          integer constraint composition_rels_rel_id_fk
                         references acs_rels (rel_id)
-                        constraint composition_rel_rel_id_pk
+                        on delete cascade
+                        constraint composition_rels_rel_id_pk
                         primary key
 );
 
 create table membership_rels (
-        rel_id          integer constraint membership_rel_rel_id_fk
+        rel_id          integer constraint membership_rels_rel_id_fk
                         references acs_rels (rel_id)
-                        constraint membership_rel_rel_id_pk
+                        on delete cascade
+                        constraint membership_rels_rel_id_pk
                         primary key,
         -- null means waiting for admin approval
-        member_state    varchar(20) constraint membership_rel_mem_ck
-                        check (member_state in ('approved', 'needs approval',
+        member_state    varchar(20) constraint membership_rels_member_state_ck
+                        check (member_state in ('merged', 'approved', 'needs approval',
                                               'banned', 'rejected', 'deleted'))
 );
 
 create table admin_rels (
-        rel_id          integer constraint admin_rel_rel_id_fk
+        rel_id          integer constraint admin_rels_rel_id_fk
                         references membership_rels (rel_id)
-                        constraint admin_rel_rel_id_pk
+                        on delete cascade
+                        constraint admin_rels_rel_id_pk
                         primary key
 );
 
@@ -51,23 +54,23 @@ begin
  --
  attr_id := acs_object_type__create_type (
    ''group'',
-   ''Group'',
-   ''Groups'',
+   ''#acs-kernel.Group#'',
+   ''#acs-kernel.Groups#'',
    ''party'',
    ''groups'',
    ''group_id'',
    ''acs_group'',
    ''f'',
    ''group_types'',
-   ''acs_group.name''
+   ''acs_group__name''
    );
 
  attr_id := acs_attribute__create_attribute (
 	''group'',
 	''group_name'',
 	''string'',
-	''Group name'',
-	''Group names'',
+	''#acs-kernel.Group_name#'',
+	''#acs-kernel.Group_names#'',
 	null,
 	null,
 	null,
@@ -110,8 +113,8 @@ begin
 
  attr_id := acs_rel_type__create_type (
    ''membership_rel'',                 -- rel_type
-   ''Membership Relation'',            -- pretty_name
-   ''Membership Relationships'',       -- pretty_plural
+   ''#acs-kernel.Membership_Relation#'',            -- pretty_name
+   ''#acs-kernel.lt_Membership_Relationsh#'',       -- pretty_plural
    ''relationship'',                   -- supertype
    ''membership_rels'',                -- table_name
    ''rel_id'',                         -- id_column
@@ -129,12 +132,12 @@ begin
  --
  -- Administrator Relationship
  --
- attr_id := acs_rel_type__create_role (''admin'', ''Administrator'', ''Administrators'');
+ attr_id := acs_rel_type__create_role (''admin'', ''#acs-kernel.Administrator#'', ''#acs-kernel.Administrators#'');
 
  attr_id := acs_rel_type__create_type (
    ''admin_rel'',                      -- rel_type
-   ''Administrator Relation'',         -- pretty_name
-   ''Administrator Relationships'',    -- pretty_plural
+   ''#acs-kernel.lt_Administrator_Relatio#'',         -- pretty_name
+   ''#acs-kernel.lt_Administrator_Relatio_1#'',    -- pretty_plural
    ''membership_rel'',                 -- supertype
    ''admin_rels'',                     -- table_name
    ''rel_id'',                         -- id_column
@@ -161,13 +164,13 @@ drop function inline_0 ();
 
 create table group_types (
         group_type              varchar(400) not null
-                                constraint group_types_pk primary key
-                                constraint group_types_obj_type_fk
+                                constraint group_types_group_type_pk primary key
+                                constraint group_types_group_type_fk
                                 references acs_object_types (object_type),
 	-- commented out by Ben (OpenACS), to make it in sync with Oracle version..
 	--        approval_policy         varchar(30) not null,
         default_join_policy     varchar(30) default 'open' not null
-                                constraint group_types_join_policy_ck
+                                constraint group_types_join_dft_policy_ck
                                 check (default_join_policy in 
                                 ('open', 'needs approval', 'closed'))
 );
@@ -181,12 +184,13 @@ create table groups (
         group_id        integer not null
                         constraint groups_group_id_fk
                         references parties (party_id)
-                        constraint groups_pk primary key,
+                        constraint groups_group_id_pk primary key,
         group_name      varchar(1000) not null,
         join_policy     varchar(30) default 'open' not null
                         constraint groups_join_policy_ck
                         check (join_policy in 
-                               ('open', 'needs approval', 'closed'))
+                               ('open', 'needs approval', 'closed')),
+        description     varchar(4000)
 );
 
 
@@ -194,11 +198,11 @@ create table groups (
 create table group_type_rels (
        group_rel_type_id      integer constraint gtr_group_rel_type_id_pk primary key,
        rel_type		      varchar(100) not null 
-                              constraint gtr_rel_type_fk
+                              constraint group_type_rels_rel_type_fk
                               references acs_rel_types (rel_type)
                               on delete cascade,
        group_type	      varchar(100) not null 
-                              constraint gtr_group_type_fk
+                              constraint group_type_rels_group_type_fk
                               references acs_object_types (object_type)
                               on delete cascade,
        constraint gtr_group_rel_types_un unique (group_type, rel_type)
@@ -270,21 +274,26 @@ comment on table group_rels is '
 create table group_element_index (
 	group_id	integer not null
 			constraint group_element_index_grp_id_fk
-			references groups (group_id),
+			references groups (group_id)
+                        on delete cascade,
 	element_id	integer not null
 			constraint group_element_index_elem_id_fk
-			references parties (party_id),
+			references parties (party_id)
+                        on delete cascade,
 	rel_id		integer not null
 			constraint group_element_index_rel_id_fk
-			references acs_rels (rel_id),
+			references acs_rels (rel_id)
+                        on delete cascade,
 	container_id	integer not null
 			constraint group_element_index_cont_id_fk
-			references groups (group_id),
+			references groups (group_id)
+                        on delete cascade,
         rel_type        varchar(100) not null
                         constraint group_elem_index_rel_type_fk
-                        references acs_rel_types (rel_type),
+                        references acs_rel_types (rel_type)
+                        on delete cascade,
         ancestor_rel_type varchar(100) not null
-                        constraint grp_el_idx_ancstr_rel_type_ck
+                        constraint group_element_index_ant_rt_ck 
                         check (ancestor_rel_type in ('composition_rel','membership_rel')),
 	constraint group_element_index_pk
 	primary key (element_id, group_id, rel_id)
@@ -403,7 +412,7 @@ end;' language 'plpgsql' stable;
 -- sourced. That file will replace these triggers with triggers
 -- that actually do useful work
 
-create function membership_rels_in_tr () returns opaque as '
+create function membership_rels_in_tr () returns trigger as '
 declare
 begin
   raise EXCEPTION ''-20000: Insert to membership rels not yet supported'';
@@ -418,7 +427,7 @@ for each row  execute procedure membership_rels_in_tr ();
 -- show errors
 
 
-create function composition_rels_in_tr () returns opaque as '
+create function composition_rels_in_tr () returns trigger as '
 declare
 begin
   raise EXCEPTION ''-20000: Insert to composition rels not yet supported'';
@@ -441,9 +450,9 @@ for each row  execute procedure  composition_rels_in_tr();
 insert into group_type_rels 
 (group_rel_type_id, rel_type, group_type)
 values
-(acs_object_id_seq.nextval, 'membership_rel', 'group');
+(nextval('t_acs_object_id_seq'), 'membership_rel', 'group');
 
 insert into group_type_rels 
 (group_rel_type_id, rel_type, group_type)
 values
-(acs_object_id_seq.nextval, 'composition_rel', 'group');
+(nextval('t_acs_object_id_seq'), 'composition_rel', 'group');

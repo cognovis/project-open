@@ -3,7 +3,7 @@
 --
 -- @author Lars Pind (lars@pinds.com)
 -- @creation-date 2000-22-18
--- @cvs-id $Id: journal-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: journal-create.sql,v 1.2 2010/10/19 20:11:34 po34demo Exp $
 --
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 --
@@ -30,10 +30,10 @@ show errors
 create table journal_entries (
   journal_id		constraint journal_entries_journal_id_fk
 			references acs_objects (object_id)
-			constraint journal_entries_pk
+			constraint journal_entries_journal_id_pk
 			primary key,
   object_id 		integer
-			constraint journal_entries_object_fk
+			constraint journal_entries_object_id_fk
 			references acs_objects on delete cascade,
   action                varchar2(100),
   action_pretty         varchar2(4000),
@@ -93,6 +93,7 @@ as
 	v_journal_id := acs_object.new (
 	  object_id => journal_id,
 	  object_type => 'journal_entry',
+          title => action,
 	  creation_date => creation_date,
 	  creation_user => creation_user,
 	  creation_ip => creation_ip,

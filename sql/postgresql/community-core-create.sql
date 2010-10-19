@@ -15,7 +15,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id community-core-create.sql,v 1.11.2.2 2001/01/12 22:49:48 mbryzek Exp
+-- @cvs-id $Id: community-core-create.sql,v 1.3 2010/10/19 20:11:40 po34demo Exp $
 --
 
 -- HIGH PRIORITY:
@@ -124,23 +124,23 @@ begin
  -- 
  PERFORM acs_object_type__create_type (
    ''party'',
-   ''Party'',
-   ''Parties'',
+   ''#acs-kernel.Party#'',
+   ''#acs-kernel.Parties#'',
    ''acs_object'',
    ''parties'',
    ''party_id'',
-   ''party'',
+    ''party'',
    ''f'',
    null,
-   ''party.name''
+   ''party__name''
    );
 
  attr_id := acs_attribute__create_attribute (
 	''party'',
 	''email'',
 	''string'',
-	''Email Address'',
-	''Email Addresses'',
+	''#acs-kernel.Email_Address#'',
+	''#acs-kernel.Email_Addresses#'',
 	null,
 	null,
 	null,
@@ -155,8 +155,8 @@ begin
 	''party'',
 	''url'',
 	''string'',
-	''URL'',
-	''URLs'',
+	''#acs-kernel.URL#'',
+	''#acs-kernel.URLs#'',
 	null,
 	null,
 	null,
@@ -172,23 +172,23 @@ begin
  --
  attr_id := acs_object_type__create_type (
    ''person'',
-   ''Person'',
-   ''People'',
+   ''#acs-kernel.Person#'',
+   ''#acs-kernel.People#'',
    ''party'',
    ''persons'',
    ''person_id'',
    ''person'',
    ''f'',
    null,
-   ''person.name''
+   ''person__name''
    );
 
  attr_id := acs_attribute__create_attribute (
         ''person'',
         ''first_names'',
         ''string'',
-        ''First Names'',
-        ''First Names'',
+        ''#acs-kernel.First_Names#'',
+        ''#acs-kernel.First_Names#'',
         null,
         null,
         null,
@@ -203,8 +203,8 @@ begin
         ''person'',
         ''last_name'',
         ''string'',
-        ''Last Name'',
-        ''Last Names'',
+        ''#acs-kernel.Last_Name#'',
+        ''#acs-kernel.Last_Names#'',
         null,
         null,
         null,
@@ -219,8 +219,8 @@ begin
  --
  attr_id := acs_object_type__create_type (
    ''user'',
-   ''User'',
-   ''Users'',
+   ''#acs-kernel.User#'',
+   ''#acs-kernel.Users#'',
    ''person'',
    ''users'',
    ''user_id'',
@@ -230,6 +230,53 @@ begin
    null
    );
 
+ attr_id := acs_attribute__create_attribute (
+        ''user'',
+        ''username'',
+        ''string'',
+        ''#acs-kernel.Username#'',
+        ''#acs-kernel.Usernames#'',
+        null,
+        null,
+        null,
+	0,
+	1,
+        null,
+        ''type_specific'',
+        ''f''
+      );
+
+ attr_id := acs_attribute__create_attribute (
+        ''user'',
+        ''screen_name'',
+        ''string'',
+        ''#acs-kernel.Screen_Name#'',
+        ''#acs-kernel.Screen_Names#'',
+        null,
+        null,
+        null,
+	0,
+	1,
+        null,
+        ''type_specific'',
+        ''f''
+      );
+
+ attr_id := acs_attribute__create_attribute (
+        ''person'',
+        ''bio'',
+        ''string'',
+        ''#acs-kernel.Bio#'',
+        ''#acs-kernel.Bios#'',
+        null,
+        null,
+        null,
+	0,
+	1,
+        null,
+        ''type_specific'',
+        ''f''
+      );
 
   return 0;
 end;' language 'plpgsql';
@@ -249,7 +296,7 @@ create table parties (
 	party_id	integer not null
 			constraint parties_party_id_fk references
 			acs_objects (object_id)
-			constraint parties_pk primary key,
+			constraint parties_party_id_pk primary key,
 	email		varchar(100)
 			constraint parties_email_un unique,
 	url		varchar(200)
@@ -286,7 +333,8 @@ declare
 begin
   v_party_id :=
    acs_object__new(new__party_id, new__object_type, new__creation_date, 
-                   new__creation_user, new__creation_ip, new__context_id);
+                   new__creation_user, new__creation_ip, new__context_id,
+                   ''t'', new__email, null);
 
   insert into parties
    (party_id, email, url)
@@ -310,13 +358,14 @@ end;' language 'plpgsql';
 create or replace function party__name (integer)
 returns varchar as '
 declare
-  p_party_id               alias for $1;  
+  party_id               alias for $1;  
 begin
-  if p_party_id = -1 then
+  if party_id = -1 then
    return ''The Public'';
   else
-   return email from parties p where p.party_id = p_party_id;
+   return null;
   end if;
+  
 end;' language 'plpgsql' immutable strict;
 
 create or replace function party__email (integer)
@@ -340,9 +389,10 @@ create table persons (
 	person_id	integer not null
 			constraint persons_person_id_fk
 			references parties (party_id)
-			constraint persons_pk primary key,
+			constraint persons_person_id_pk primary key,
 	first_names	varchar(100) not null,
-	last_name	varchar(100) not null
+	last_name	varchar(100) not null,
+        bio             text
 );
 
 comment on table persons is '
@@ -407,6 +457,10 @@ begin
    party__new(new__person_id, new__object_type,
              new__creation_date, new__creation_user, new__creation_ip,
              new__email, new__url, new__context_id);
+
+  update acs_objects
+  set title = new__first_names || '' '' || new__last_name
+  where object_id = v_person_id;
 
   insert into persons
    (person_id, first_names, last_name)
@@ -479,9 +533,9 @@ create table users (
         user_id                 integer not null
                                 constraint users_user_id_fk
                                 references persons (person_id)
-                                constraint users_pk primary key,
+                                constraint users_user_id_pk primary key,
         authority_id            integer
-                                constraint users_auth_authorities_fk
+                                constraint users_authority_id_fk
                                 references auth_authorities(authority_id),
         username                varchar(100) 
                                 constraint users_username_nn 
@@ -514,16 +568,15 @@ create index users_username_lower_idx on users(lower(username));
 create index users_screenname_lower_idx on users(lower(screen_name));
 
 create table user_preferences (
-	user_id			integer constraint user_prefs_user_id_fk
+	user_id			integer constraint user_preferences_user_id_fk
 				references users (user_id)
-				constraint user_preferences_pk
+				constraint user_preferences_user_id_pk
 				primary key,
 	prefer_text_only_p	boolean default 'f',
 	-- an ISO 639 language code (in lowercase)
 	language_preference	char(2) default 'en',
 	dont_spam_me_p		boolean default 'f',
 	email_type		varchar(64),
-        locale                  varchar(30),
         timezone                varchar(100)
 );
 

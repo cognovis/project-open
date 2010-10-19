@@ -3,7 +3,7 @@
 --
 -- @author Oumi Mehrotra oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id rel-segments-create.sql,v 1.1.4.3 2001/01/16 18:54:05 oumi Exp
+-- @cvs-id $Id: rel-segments-create.sql,v 1.2 2010/10/19 20:11:41 po34demo Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -25,15 +25,15 @@ begin
  --
  PERFORM acs_object_type__create_type (
    ''rel_segment'',
-   ''Relational Party Segment'',
-   ''Relational Party Segments'',
+   ''#acs-kernel.lt_Relational_Party_Segm#'',
+   ''#acs-kernel.lt_Relational_Party_Segm_1#'',
    ''party'',
    ''rel_segments'',
    ''segment_id'',
    ''rel_segment'',
    ''f'',
-   ''rel_segment'',
-   ''rel_segment.name''
+   null,
+   ''rel_segment__name''
    );
 
   return 0;
@@ -57,15 +57,17 @@ create table rel_segments (
         segment_id      integer not null
                         constraint rel_segments_segment_id_fk
                         references parties (party_id)
-                        constraint rel_segments_pk primary key,
+                        constraint rel_segments_segment_id_pk primary key,
         segment_name    varchar(230) not null,
         group_id        integer not null
                         constraint rel_segments_group_id_fk
-                        references groups (group_id),
+                        references groups (group_id)
+                        on delete cascade,
         rel_type        varchar(100) not null
                         constraint rel_segments_rel_type_fk
-                        references acs_rel_types (rel_type),
-        constraint rel_segments_grp_rel_type_uq unique(group_id, rel_type)
+                        references acs_rel_types (rel_type)
+                        on delete cascade,
+        constraint rel_segments_grp_rel_type_un unique(group_id, rel_type)
 );
 
 -- rel_type has a foreign key reference - create an index
@@ -160,12 +162,14 @@ create table party_approved_member_map (
                     constraint party_member_party_nn
                     not null
                     constraint party_member_party_fk
-                    references parties,
+                    references parties
+                    on delete cascade,
     member_id       integer
                     constraint party_member_member_nn
                     not null
                     constraint party_member_member_fk
-                    references parties,
+                    references parties
+                    on delete cascade,
     tag             integer
                     constraint party_member_tag_nn
                     not null,
@@ -272,7 +276,7 @@ end;' language 'plpgsql';
 -- destroyed.  These don't call the above helper functions because we're just
 -- creating the identity row for the party.
 
-create or replace function parties_in_tr () returns opaque as '
+create or replace function parties_in_tr () returns trigger as '
 begin
 
   insert into party_approved_member_map
@@ -287,7 +291,7 @@ end;' language 'plpgsql';
 create trigger parties_in_tr after insert on parties
 for each row execute procedure parties_in_tr ();
 
-create or replace function parties_del_tr () returns opaque as '
+create or replace function parties_del_tr () returns trigger as '
 begin
 
   delete from party_approved_member_map
@@ -307,7 +311,7 @@ for each row execute procedure parties_del_tr ();
 -- group with that rel_type.  This was intentional on the part of the aD folks
 -- who added relational segments to ACS 4.2.
 
-create or replace function rel_segments_in_tr () returns opaque as '
+create or replace function rel_segments_in_tr () returns trigger as '
 begin
 
   insert into party_approved_member_map
@@ -324,7 +328,7 @@ end;' language 'plpgsql';
 create trigger rel_segments_in_tr before insert on rel_segments
 for each row execute procedure rel_segments_in_tr ();
 
-create or replace function rel_segments_del_tr () returns opaque as '
+create or replace function rel_segments_del_tr () returns trigger as '
 begin
 
   delete from party_approved_member_map

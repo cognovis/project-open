@@ -19,11 +19,12 @@
 create sequence lob_sequence;
 
 create table lobs (
-	lob_id			integer not null primary key,
+	lob_id			integer not null 
+                            constraint lobs_lob_id_pk primary key,
 	refcount		integer not null default 0
 );
 
-create or replace function on_lobs_delete() returns opaque as '
+create or replace function on_lobs_delete() returns trigger as '
 begin
 	delete from lob_data where lob_id = old.lob_id;
 	return old;
@@ -33,11 +34,14 @@ create trigger lobs_delete_trig before delete on lobs
 for each row execute procedure on_lobs_delete();
 
 create table lob_data (
-	lob_id			integer not null references lobs,
-	segment			integer not null,
-	byte_len		integer not null,
-	data			bytea not null,
-	primary key (lob_id, segment)
+        lob_id              integer not null
+                            constraint lob_data_lob_id_fk
+                            references lobs on delete cascade,
+        segment             integer not null,
+        byte_len            integer not null,
+        data                bytea not null,
+        constraint lob_data_lob_id_segment_pk
+        primary key (lob_id, segment)
 );
 
 create index lob_data_index on lob_data(lob_id);
@@ -47,7 +51,7 @@ create index lob_data_index on lob_data(lob_id);
 -- and PG 7.0.  The ACS doesn't share LOBs between tables
 -- or rows within a table anyway, I don't think/hope.
 
-create or replace function on_lob_ref() returns opaque as '
+create or replace function on_lob_ref() returns trigger as '
 begin
 	if TG_OP = ''UPDATE'' then
 		if new.lob = old.lob then
@@ -87,9 +91,10 @@ declare
         v_rec   record;
         v_data  text default '''';
 begin
-        for v_rec in select data, segment from lob_data where lob_id = p_lob_id order by segment;
+        for v_rec in select data, segment from lob_data where lob_id = p_lob_id order by segment 
+        loop
             v_data := v_data || v_rec.data;
-        end if;
+        end loop;
 
         return v_data;
 

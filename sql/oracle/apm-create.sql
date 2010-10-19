@@ -6,7 +6,7 @@
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id $Id: apm-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: apm-create.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
 
 -----------------------------
 --     PACKAGE OBJECT	   --
@@ -18,15 +18,15 @@
 
 create table apm_package_types (
     package_key			varchar2(100)
-				constraint apm_package_types_p_key_pk primary key,
+				constraint apm_package_types_pkg_key_pk primary key,
     pretty_name			varchar(100)
     	    	    	    	constraint apm_package_types_pretty_n_nn not null
 				constraint apm_package_types_pretty_n_un unique,
     pretty_plural	        varchar2(100)
 				constraint apm_package_types_pretty_pl_un unique,
     package_uri			varchar2(1500)
-				constraint apm_packages_types_p_uri_nn not null
-				constraint apm_packages_types_p_uri_un unique,
+				constraint apm_packages_types_pkg_uri_nn not null
+				constraint apm_packages_types_pkg_uri_un unique,
     package_type		varchar2(300)
 				constraint apm_packages_pack_type_ck 
 				check (package_type in ('apm_application', 'apm_service')),
@@ -36,8 +36,14 @@ create table apm_package_types (
 				constraint apm_packages_init_install_p_ck
 				check (initial_install_p in ('t', 'f')),
     singleton_p			char(1) default 'f' not null
-				constraint apm_packages_site_avail_p_ck
-				check (singleton_p in ('t', 'f'))
+				constraint apm_packages_singleton_p_ck
+				check (singleton_p in ('t', 'f')),
+    implements_subsite_p        char(1) default 'f' not null
+				constraint apm_packages_impl_subsite_p_ck
+				check (implements_subsite_p in ('t', 'f')),
+    inherit_templates_p         char(1) default 't' not null
+				constraint apm_packages_inherit_t_p_ck
+				check (inherit_templates_p in ('t', 'f'))
 );
 
 comment on table apm_package_types is '
@@ -77,6 +83,18 @@ comment on column apm_package_types.initial_install_p is '
  in other words whether or not this package is part of the OpenACS core.
 ';
 
+comment on column apm_package_types.implements_subsite_p is '
+  If true, this package implements subsite semantics, typically by extending the
+  acs-subsite package.  Used by the admin "mount subsite" UI, the request processor (for
+  setting ad_conn''s subsite_* attributes), etc.
+';
+
+comment on column apm_package_types.inherit_templates_p is '
+  If true, inherit templates from packages this package extends.  If false, only
+  templates in this package''s www subdirectory tree will be mapped to URLs by the
+  request processor.
+';
+
 begin
 -- Create a new object type for packages.
  acs_object_type.create_type (
@@ -84,7 +102,7 @@ begin
    object_type => 'apm_package',
    pretty_name => 'Package',
    pretty_plural => 'Packages',
-   table_name => 'APM_PACKAGES',
+   table_name => 'apm_packages',
    id_column => 'package_id',
    package_name => 'apm_package',
    type_extension_table => 'apm_package_types',
@@ -106,46 +124,6 @@ begin
    pretty_plural => 'Package Keys'
  );
 
- attr_id := acs_attribute.create_attribute(
-   object_type => 'apm_package',
-   attribute_name => 'package_uri',
-   datatype => 'string',
-   pretty_name => 'Package URI',
-   pretty_plural => 'Package URIs'
- );
-
- attr_id := acs_attribute.create_attribute(
-   object_type => 'apm_package',
-   attribute_name => 'spec_file_path',
-   datatype => 'string',
-   pretty_name => 'Specification File Path',
-   pretty_plural => 'Specification File Paths'
- );
-
- attr_id := acs_attribute.create_attribute(
-   object_type => 'apm_package',
-   attribute_name => 'spec_file_mtime',
-   datatype => 'number',
-   pretty_name => 'Specification File Modified Time',
-   pretty_plural => 'Specification File Modified Times'
- );
-
- attr_id := acs_attribute.create_attribute(
-   object_type => 'apm_package',
-   attribute_name => 'singleton_p',
-   datatype => 'boolean',
-   pretty_name => 'Singleton',
-   pretty_plural => 'Singletons'
- ); 
-
- attr_id := acs_attribute.create_attribute(
-   object_type => 'apm_package',
-   attribute_name => 'initial_install_p',
-   datatype => 'boolean',
-   pretty_name => 'Initial Install',
-   pretty_plural => 'Initial Installs'
- ); 
-
 end;
 /
 show errors;
@@ -153,17 +131,20 @@ show errors;
 create table apm_packages (
     package_id			constraint apm_packages_package_id_fk
 				references acs_objects(object_id)
-				constraint apm_packages_pack_id_pk primary key,
+				constraint apm_packages_package_id_pk primary key,
     package_key			constraint apm_packages_package_key_fk
 				references apm_package_types(package_key),
     instance_name		varchar2(300)
-			        constraint apm_packages_inst_name_nn not null,
+			        constraint apm_packages_instance_name_nn not null,
     -- default system locale for this package
     default_locale              varchar2(30)
 );
 
 -- create bitmap index apm_packages_package_key_idx on apm_packages (package_key);
 create index apm_packages_package_key_idx on apm_packages (package_key);
+
+-- This cant be added at table create time since acs_objects is created before apm_packages;
+alter table acs_objects add constraint acs_objects_package_id_fk foreign key (package_id) references apm_packages(package_id) on delete set null;
 
 comment on table apm_packages is '
    This table maintains the list of all package instances in the sytem. 
@@ -352,6 +333,23 @@ comment on column apm_package_versions.auto_mount is '
  such as general-comments and notifications.
 ';
 
+-- Use this table to make it easy to change the attribute set of package versions
+-- TODO: Migrate this to use acs_attributes instead?
+create table apm_package_version_attr (
+    version_id         integer
+                       constraint apm_package_vers_attr_vid_fk
+                       references apm_package_versions(version_id)
+                       on delete cascade
+                       constraint apm_package_vers_attr_vid_nn
+                       not null,
+    attribute_name     varchar(100)
+                       constraint apm_package_vers_attr_an_nn
+                       not null,
+    attribute_value    varchar(4000),
+    constraint apm_package_vers_attr_pk
+    primary key (version_id, attribute_name)
+);
+
 -- Metadata for the apm_package_versions object.
 
 declare
@@ -362,9 +360,9 @@ begin
    object_type => 'apm_package_version',
    pretty_name => 'Package Version',
    pretty_plural => 'Package Versions',
-   table_name => 'APM_PACKAGE_VERSIONS',
+   table_name => 'apm_package_versions',
    id_column => 'version_id',
-   package_name => 'APM_PACKAGE_VERSION'
+   package_name => 'apm_package_version'
  );
 
  attr_id := acs_attribute.create_attribute(
@@ -434,7 +432,7 @@ begin
  attr_id := acs_attribute.create_attribute(
    object_type => 'apm_package_version',
    attribute_name => 'enabled_p',
-   datatype => 'string',
+   datatype => 'boolean',
    pretty_name => 'Enabled',
    pretty_plural => 'Enabled'
  );
@@ -450,7 +448,7 @@ begin
  attr_id := acs_attribute.create_attribute(
    object_type => 'apm_package_version',
    attribute_name => 'deactivation_date',
-   datatype => 'string',
+   datatype => 'date',
    pretty_name => 'Deactivation Date',
    pretty_plural => 'Deactivation Dates'
  );
@@ -525,8 +523,10 @@ comment on column apm_package_callbacks.type is '
 create or replace view apm_package_version_info as
     select v.package_key, t.package_uri, t.pretty_name, t.singleton_p, t.initial_install_p,
            v.version_id, v.version_name,
+           t.inherit_templates_p, t.implements_subsite_p,
            v.version_uri, v.summary, v.description_format, v.description, v.release_date,
-           v.vendor, v.vendor_uri, v.auto_mount, v.enabled_p, v.installed_p, v.tagged_p, v.imported_p, v.data_model_loaded_p,
+           v.vendor, v.vendor_uri, v.auto_mount, v.enabled_p, v.installed_p, v.tagged_p,
+           v.imported_p, v.data_model_loaded_p,
            v.activation_date, v.deactivation_date,
            nvl(v.content_length,0) as tarball_length,
            distribution_uri, distribution_date
@@ -553,26 +553,33 @@ comment on table apm_package_db_types is '
 ';
 
 create table apm_parameters (
-	parameter_id		constraint apm_parameters_fk 
+	parameter_id		constraint apm_parameters_parameter_id_fk 
 				references acs_objects(object_id)
-			        constraint apm_parameters_pk primary key,
+			        constraint apm_parameters_parameter_id_pk primary key,
 	package_key		varchar2(100)
-				constraint apm_pack_param_pack_key_nn not null 	
-				constraint apm_pack_param_type_fk
+				constraint apm_parameters_package_key_nn not null 	
+				constraint apm_parameters_package_key_fk
 			        references apm_package_types (package_key),
 	parameter_name		varchar2(100) 
 				constraint apm_pack_params_name_nn not null,
+        scope                   varchar2(20) default 'instance'
+                                constraint apm_parameters_scope_ck
+                                check (scope in ('global','instance'))
+                                constraint apm_parameters_scope_nn not null,
         description		varchar2(2000),
 	section_name		varchar2(200),
-	datatype	        varchar2(100) not null
-			        constraint apm_parameter_datatype_ck 
-				check(datatype in ('number', 'string')),
+	datatype	        varchar2(100) 
+				constraint apm_parameters_datatype_nn not null
+			        constraint apm_parameters_datatype_ck 
+				check(datatype in ('number', 'string','text')),
 	default_value		varchar2(4000),
-	min_n_values		integer default 1 not null
-			        constraint apm_paramters_min_n_ck
+	min_n_values		integer default 1 
+				constraint apm_parameters_min_n_values_nn not null
+			        constraint apm_parameters_min_n_values_ck
 			        check (min_n_values >= 0),
-	max_n_values		integer default 1 not null
-			        constraint apm_paramters_max_n_ck
+	max_n_values		integer default 1 
+				constraint apm_parameters_max_n_values_nn not null
+			        constraint apm_paramaters_max_n_values_ck
 			        check (max_n_values >= 0),
 	constraint apm_paramters_attr_name_un
 	unique (parameter_name, package_key),
@@ -585,11 +592,16 @@ create index apm_parameters_package_idx on apm_parameters (package_key);
 comment on table apm_parameters is '
   This table stores information about parameters on packages.  Every package parameter
 is specific to a particular package instance and is queryable with the Tcl call 
-ad_parameter.
+parameter::get.
 ';
 
 comment on column apm_parameters.parameter_name is '
   This is the name of the parameter, for example "DebugP."
+';
+
+comment on column apm_parameters.scope is '
+  If the scope is "global", only one value of the parameter exists for the entire site.
+  If "instance", each package instance has its own value.
 ';
 
 comment on column apm_parameters.description is '
@@ -613,7 +625,7 @@ comment on column apm_parameters.min_n_values is '
   that the default is always enforced (but is somewhat pointless).  One value means that
   it can only be set to one value.  Increasing this number beyond one enables associating 
   a list of values with a parameter.  
-  XXX (bquinn): More than one value is not supported by ad_parameter call at this time.
+  XXX (bquinn): More than one value is not supported by the parameter::get call at this time.
 ';
 
 comment on column apm_parameters.max_n_values is '
@@ -654,7 +666,7 @@ begin
    object_type => 'apm_parameter',
    pretty_name => 'Package Parameter',
    pretty_plural => 'Package Parameters',
-   table_name => 'APM_PARAMETERS',
+   table_name => 'apm_parameters',
    id_column => 'parameter_id',
    package_name => 'apm_parameter'
  );
@@ -673,6 +685,14 @@ begin
    datatype => 'string',
    pretty_name => 'Parameter Name',
    pretty_plural => 'Parameter Name'
+ );
+
+ attr_id := acs_attribute.create_attribute(
+   object_type => 'apm_parameter',
+   attribute_name => 'scope',
+   datatype => 'string',
+   pretty_name => 'Scope',
+   pretty_plural => 'Scope'
  );
 
  attr_id := acs_attribute.create_attribute(
@@ -703,7 +723,7 @@ begin
  attr_id := acs_attribute.create_attribute(
    object_type => 'apm_parameter',
    attribute_name => 'max_n_values',
-   datatype => 'string',
+   datatype => 'integer',
    pretty_name => 'Maximum Number of Values',
    pretty_plural => 'Maximum Number of Values Settings',
    default_value => 1
@@ -760,7 +780,8 @@ create table apm_package_dependencies (
                        constraint apm_package_deps_version_id_nn not null,
     dependency_type    varchar2(20)
                        constraint apm_package_deps_type_nn not null
-                       constraint apm_package_deps_type_ck check(dependency_type in ('provides','requires')),
+                       constraint apm_package_deps_type_ck
+                       check(dependency_type in ('embeds', 'extends', 'provides','requires')),
     service_uri        varchar2(1500)
                        constraint apm_package_deps_uri_nn not null,
     service_version    varchar2(100)
@@ -791,9 +812,9 @@ This table records data on all of the applications registered in OpenACS.
 
 create table apm_services (
        service_id			integer
-					constraint services_service_id_fk
+					constraint apm_services_service_id_fk
 					references apm_packages(package_id)
-				        constraint services_pk primary key
+				        constraint apm_services_service_id_pk primary key
 );
 
 comment on table apm_services is '
@@ -845,6 +866,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -865,6 +890,10 @@ as
     	    	    	    	default null,    
     singleton_p			in apm_package_types.singleton_p%TYPE 
     	    	    	    	default null,    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default null,    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default null,    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
     	    	    	    	default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -890,6 +919,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -912,6 +945,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -933,6 +970,8 @@ as
     parameter_name		in apm_parameters.parameter_name%TYPE,
     description			in apm_parameters.description%TYPE
 				default null,
+    scope                       in apm_parameters.scope%TYPE
+                                default 'instance',
     datatype			in apm_parameters.datatype%TYPE 
 				default 'string',
     default_value		in apm_parameters.default_value%TYPE 
@@ -974,30 +1013,37 @@ as
 				default null
   );
 
-  -- Return the value of this parameter for a specific package and parameter.
-  function get_value (
-    parameter_id		in apm_parameter_values.parameter_id%TYPE,
-    package_id			in apm_packages.package_id%TYPE		    
-  ) return apm_parameter_values.attr_value%TYPE;
+  function id_for_name (
+    package_key in apm_parameters.package_key%TYPE,
+    parameter_name in apm_parameters.parameter_name%TYPE
+  ) return apm_parameters.parameter_id%TYPE;
+
+  function id_for_name (
+    package_id in apm_packages.package_id%TYPE,
+    parameter_name in apm_parameters.parameter_name%TYPE
+  ) return apm_parameters.parameter_id%TYPE;
 
   function get_value (
     package_id			in apm_packages.package_id%TYPE,
     parameter_name		in apm_parameters.parameter_name%TYPE
   ) return apm_parameter_values.attr_value%TYPE;
 
-  -- Sets a value for a parameter for a package instance.
-  procedure set_value (
-    parameter_id		in apm_parameter_values.parameter_id%TYPE,
-    package_id			in apm_packages.package_id%TYPE,	    
-    attr_value			in apm_parameter_values.attr_value%TYPE
-  );
+  function get_value (
+    package_key			in apm_packages.package_key%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE
+  ) return apm_parameter_values.attr_value%TYPE;
 
   procedure set_value (
     package_id			in apm_packages.package_id%TYPE,
     parameter_name		in apm_parameters.parameter_name%TYPE,
     attr_value			in apm_parameter_values.attr_value%TYPE
   );	
-    		    
+
+  procedure set_value (
+    package_key			in apm_packages.package_key%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE,
+    attr_value			in apm_parameter_values.attr_value%TYPE
+  );	
 
 end apm;
 /
@@ -1051,6 +1097,11 @@ function new (
     function parent_id (
         package_id in apm_packages.package_id%TYPE
     ) return apm_packages.package_id%TYPE;
+
+  function is_child (
+    parent_package_key in apm_packages.package_key%TYPE,
+    child_package_key in apm_packages.package_key%TYPE
+  ) return char;
 
 end apm_package;
 /
@@ -1134,6 +1185,7 @@ as
   function add_dependency(
     dependency_id		in apm_package_dependencies.dependency_id%TYPE
 			        default null,
+    dependency_type             in apm_package_dependencies.dependency_type%TYPE,
     version_id			in apm_package_versions.version_id%TYPE,
     dependency_uri		in apm_package_dependencies.service_uri%TYPE,
     dependency_version		in apm_package_dependencies.service_version%TYPE
@@ -1186,6 +1238,8 @@ as
     package_type		in apm_package_types.package_type%TYPE,
     initial_install_p		in apm_package_types.initial_install_p%TYPE,
     singleton_p			in apm_package_types.singleton_p%TYPE,
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE,
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE,
     spec_file_path		in apm_package_types.spec_file_path%TYPE default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE default null
   );
@@ -1204,6 +1258,10 @@ as
     	    	    	    	default null,
     singleton_p			in apm_package_types.singleton_p%TYPE
     	    	    	    	default null,
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default null,
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default null,    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
     	    	    	    	default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE
@@ -1302,6 +1360,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -1317,6 +1379,8 @@ as
 	package_type => register_package.package_type,
 	initial_install_p => register_package.initial_install_p,
 	singleton_p => register_package.singleton_p,
+	implements_subsite_p => register_package.implements_subsite_p,
+	inherit_templates_p => register_package.inherit_templates_p,
 	spec_file_path => register_package.spec_file_path,
 	spec_file_mtime => spec_file_mtime
     );
@@ -1336,6 +1400,10 @@ as
     	    	    	    	default null,    
     singleton_p			in apm_package_types.singleton_p%TYPE 
     	    	    	    	default null,    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default null,
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default null,    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
     	    	    	    	default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -1352,6 +1420,8 @@ as
 	package_type => update_package.package_type,
 	initial_install_p => update_package.initial_install_p,
 	singleton_p => update_package.singleton_p,
+	implements_subsite_p => update_package.implements_subsite_p,
+	inherit_templates_p => update_package.inherit_templates_p,
 	spec_file_path => update_package.spec_file_path,
 	spec_file_mtime => update_package.spec_file_mtime
     );
@@ -1391,6 +1461,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -1406,6 +1480,8 @@ as
 	package_type => 'apm_application',
 	initial_install_p => register_application.initial_install_p,
 	singleton_p => register_application.singleton_p,
+	implements_subsite_p => register_application.implements_subsite_p,
+	inherit_templates_p => register_application.inherit_templates_p,
 	spec_file_path => register_application.spec_file_path,
 	spec_file_mtime => register_application.spec_file_mtime
    ); 
@@ -1432,6 +1508,10 @@ as
 				default 'f',    
     singleton_p			in apm_package_types.singleton_p%TYPE 
 				default 'f',    
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default 'f',    
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default 't',    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
 				default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE 
@@ -1447,6 +1527,8 @@ as
 	package_type => 'apm_service',
 	initial_install_p => register_service.initial_install_p,
 	singleton_p => register_service.singleton_p,
+	implements_subsite_p => register_service.implements_subsite_p,
+	inherit_templates_p => register_service.inherit_templates_p,
 	spec_file_path => register_service.spec_file_path,
 	spec_file_mtime => register_service.spec_file_mtime
    );   
@@ -1472,6 +1554,8 @@ as
     parameter_name		in apm_parameters.parameter_name%TYPE,
     description			in apm_parameters.description%TYPE
 				default null,
+    scope                       in apm_parameters.scope%TYPE
+                                default 'instance',
     datatype			in apm_parameters.datatype%TYPE 
 				default 'string',
     default_value		in apm_parameters.default_value%TYPE 
@@ -1490,26 +1574,34 @@ as
     -- Create the new parameter.    
     v_parameter_id := acs_object.new(
        object_id => parameter_id,
-       object_type => 'apm_parameter'
+       object_type => 'apm_parameter',
+       title => register_parameter.package_key || ': Parameter ' || register_parameter.parameter_name
     );
     
     insert into apm_parameters 
-    (parameter_id, parameter_name, description, package_key, datatype, 
+    (parameter_id, parameter_name, description, package_key, datatype, scope,
     default_value, section_name, min_n_values, max_n_values)
     values
     (v_parameter_id, register_parameter.parameter_name, register_parameter.description,
-    register_parameter.package_key, register_parameter.datatype, 
+    register_parameter.package_key, register_parameter.datatype, register_parameter.scope,
     register_parameter.default_value, register_parameter.section_name, 
-	register_parameter.min_n_values, register_parameter.max_n_values);
+    register_parameter.min_n_values, register_parameter.max_n_values);
     -- Propagate parameter to new instances.	
-    for pkg in (select package_id from apm_packages where package_key = register_parameter.package_key)
-      loop
-      	v_value_id := apm_parameter_value.new(
-	    package_id => pkg.package_id,
-	    parameter_id => v_parameter_id, 
-	    attr_value => register_parameter.default_value
-	    ); 	
-      end loop;		
+    if register_parameter.scope = 'instance' then
+      for pkg in (select package_id from apm_packages where package_key = register_parameter.package_key)
+        loop
+        	v_value_id := apm_parameter_value.new(
+  	                      package_id => pkg.package_id,
+  	                      parameter_id => v_parameter_id, 
+  	                      attr_value => register_parameter.default_value); 	
+        end loop;		
+    else
+      v_value_id := apm_parameter_value.new(
+  	                   package_id => null,
+  	                   parameter_id => v_parameter_id, 
+  	                   attr_value => register_parameter.default_value); 	
+    end if;
+
     return v_parameter_id;
   end register_parameter;
 
@@ -1541,6 +1633,13 @@ as
             min_n_values   = nvl(update_parameter.min_n_values, min_n_values),
             max_n_values   = nvl(update_parameter.max_n_values, max_n_values)
       where parameter_id = update_parameter.parameter_id;
+
+    update acs_objects
+       set title = (select package_key || ': Parameter ' || parameter_name
+                    from apm_parameters
+                    where parameter_id = update_parameter.parameter_id)
+     where object_id = update_parameter.parameter_id;
+
     return parameter_id;
   end;
 
@@ -1572,8 +1671,8 @@ as
   end unregister_parameter;
 
   function id_for_name (
-    parameter_name		in apm_parameters.parameter_name%TYPE,
-    package_key			in apm_parameters.package_key%TYPE
+    package_key			in apm_parameters.package_key%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE
   ) return apm_parameters.parameter_id%TYPE
   is
     a_parameter_id apm_parameters.parameter_id%TYPE; 
@@ -1582,66 +1681,104 @@ as
     from apm_parameters p
     where p.parameter_name = id_for_name.parameter_name and
           p.package_key = id_for_name.package_key;
+
     return a_parameter_id;
+
+    exception when no_data_found then
+      raise_application_error(-20000, 'The specified package ' || 
+        id_for_name.package_key || ' AND/OR parameter ' || id_for_name.package_key || 
+        ' do not exist');
+
   end id_for_name;
-		
-  function get_value (
-    parameter_id		in apm_parameter_values.parameter_id%TYPE,
-    package_id			in apm_packages.package_id%TYPE		    
-  ) return apm_parameter_values.attr_value%TYPE
+
+  function id_for_name (
+    package_id			in apm_packages.package_id%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE
+  ) return apm_parameters.parameter_id%TYPE
   is
-    value apm_parameter_values.attr_value%TYPE;
+    a_parameter_id apm_parameters.parameter_id%TYPE; 
   begin
-    select attr_value into value from apm_parameter_values v
-    where v.package_id = get_value.package_id
-    and parameter_id = get_value.parameter_id;
-    return value;
-  end get_value;
+    select parameter_id into a_parameter_id
+    from apm_parameters p
+    where p.parameter_name = id_for_name.parameter_name and
+          p.package_key = (select package_key from apm_packages
+                           where package_id = id_for_name.package_id);
+
+    return a_parameter_id;
+
+    exception when no_data_found then
+      raise_application_error(-20000, 'The specified package ' || 
+        id_for_name.package_id || ' AND/OR parameter ' || id_for_name.parameter_name || 
+        ' do not exist');
+
+  end id_for_name;
 
   function get_value (
     package_id			in apm_packages.package_id%TYPE,
     parameter_name		in apm_parameters.parameter_name%TYPE
   ) return apm_parameter_values.attr_value%TYPE
   is
-    v_parameter_id apm_parameter_values.parameter_id%TYPE;
+    parameter_id apm_parameter_values.parameter_id%TYPE;
+    value apm_parameter_values.attr_value%TYPE;
   begin
-    select parameter_id into v_parameter_id 
-    from apm_parameters 
-    where parameter_name = get_value.parameter_name
-    and package_key = (select package_key  from apm_packages
-			where package_id = get_value.package_id);
-    return apm.get_value(
-	parameter_id => v_parameter_id,
-	package_id => get_value.package_id
-    );	
+    parameter_id := apm.id_for_name(package_id, parameter_name);
+
+    select attr_value into value
+    from apm_parameter_values v
+    where v.package_id = get_value.package_id
+      and parameter_id = get_value.parameter_id;
+
+    return value;
   end get_value;	
 
+  function get_value (
+    package_key			in apm_packages.package_key%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE
+  ) return apm_parameter_values.attr_value%TYPE
+  is
+    parameter_id apm_parameter_values.parameter_id%TYPE;
+    value apm_parameter_values.attr_value%TYPE;
+  begin
+    parameter_id := apm.id_for_name(package_key, parameter_name);
 
-  -- Sets a value for a parameter for a package instance.
+    select attr_value into value from apm_parameter_values v
+    where v.package_id is null
+      and parameter_id = get_value.parameter_id;
+
+    return value;
+  end get_value;	
+
   procedure set_value (
-    parameter_id		in apm_parameter_values.parameter_id%TYPE,
-    package_id			in apm_packages.package_id%TYPE,	    
+    package_key			in apm_packages.package_key%TYPE,
+    parameter_name		in apm_parameters.parameter_name%TYPE,
     attr_value			in apm_parameter_values.attr_value%TYPE
   ) 
   is
-    v_value_id apm_parameter_values.value_id%TYPE;
+    parameter_id apm_parameter_values.parameter_id%TYPE;
+    value_id apm_parameter_values.value_id%TYPE;
   begin
-    -- Determine if the value exists
-    select value_id into v_value_id from apm_parameter_values 
-     where parameter_id = set_value.parameter_id 
-     and package_id = set_value.package_id;
-    update apm_parameter_values set attr_value = set_value.attr_value
-     where parameter_id = set_value.parameter_id 
-     and package_id = set_value.package_id;    
-     exception 
-       when NO_DATA_FOUND
-       then
-         v_value_id := apm_parameter_value.new(
-            package_id => set_value.package_id,
-            parameter_id => set_value.parameter_id,
-            attr_value => set_value.attr_value
-         );
-   end set_value;
+    parameter_id := apm.id_for_name(package_key, parameter_name);
+
+    select value_id into value_id from apm_parameter_values
+    where parameter_id = set_value.parameter_id
+      and package_id is null;
+
+    update apm_parameter_values
+    set attr_value = set_value.attr_value
+    where parameter_id = set_value.parameter_id
+    and package_id = null;
+
+
+    exception
+      when NO_DATA_FOUND
+      then
+        value_id := apm_parameter_value.new(
+           package_id => null,
+           parameter_id => set_value.parameter_id,
+           attr_value => set_value.attr_value
+        );
+
+  end set_value;	
 
   procedure set_value (
     package_id			in apm_packages.package_id%TYPE,
@@ -1649,23 +1786,32 @@ as
     attr_value			in apm_parameter_values.attr_value%TYPE
   ) 
   is
-    v_parameter_id apm_parameter_values.parameter_id%TYPE;
+    parameter_id apm_parameter_values.parameter_id%TYPE;
+    value_id apm_parameter_values.value_id%TYPE;
   begin
-    select parameter_id into v_parameter_id 
-    from apm_parameters 
-    where parameter_name = set_value.parameter_name
-    and package_key = (select package_key  from apm_packages
-			where package_id = set_value.package_id);
-    apm.set_value(
-	parameter_id => v_parameter_id,
-	package_id => set_value.package_id,
-	attr_value => set_value.attr_value
-    );
+    parameter_id := apm.id_for_name(package_id, parameter_name);
+
+    select value_id into value_id from apm_parameter_values
+    where parameter_id = set_value.parameter_id
+      and package_id = set_value.package_id;
+
+    update apm_parameter_values
+    set attr_value = set_value.attr_value
+    where parameter_id = set_value.parameter_id
+    and package_id = set_value.package_id;
+
+
     exception
       when NO_DATA_FOUND
       then
-      	RAISE_APPLICATION_ERROR(-20000, 'The parameter named ' || set_value.parameter_name || ' that you attempted to set does not exist AND/OR the specified package ' || set_value.package_id || ' does not exist in the system.');	
+        value_id := apm_parameter_value.new(
+           package_id => set_value.package_id,
+           parameter_id => set_value.parameter_id,
+           attr_value => set_value.attr_value
+        );
+
   end set_value;	
+
 end apm;
 /
 show errors  
@@ -1681,7 +1827,8 @@ as
    cursor cur is
        select parameter_id, default_value
        from apm_parameters
-       where package_key = initialize_parameters.package_key;
+       where package_key = initialize_parameters.package_key
+         and scope = 'instance';
   begin
     -- need to initialize all params for this type
     for cur_val in cur
@@ -1739,20 +1886,26 @@ as
 	  creation_ip => creation_ip,
 	  context_id => context_id
 	 );
+
        if instance_name is null then 
 	 v_instance_name := package_key || ' ' || v_package_id;
        else
 	 v_instance_name := instance_name;
        end if;
 
-       select package_type into v_package_type
-       from apm_package_types
-       where package_key = apm_package.new.package_key;
-
        insert into apm_packages
        (package_id, package_key, instance_name)
        values
        (v_package_id, package_key, v_instance_name);
+
+       update acs_objects
+       set title = v_instance_name,
+           package_id = v_package_id
+       where object_id = v_package_id;
+
+       select package_type into v_package_type
+       from apm_package_types
+       where package_key = apm_package.new.package_key;
 
        if v_package_type = 'apm_application' then
 	   insert into apm_applications
@@ -1907,6 +2060,34 @@ end new;
             return -1;
     end parent_id;
 
+  function is_child (
+    parent_package_key in apm_packages.package_key%TYPE,
+    child_package_key in apm_packages.package_key%TYPE
+  ) return char
+    is
+    begin
+
+      if parent_package_key = child_package_key then
+        return 't';
+      end if;
+
+      for row in
+        (select apd.service_uri
+         from apm_package_versions apv, apm_package_dependencies apd
+         where apd.version_id = apv.version_id
+           and apv.enabled_p = 't'
+           and apd.dependency_type in ('embeds', 'extends')
+           and apv.package_key = child_package_key)
+      loop
+        if row.service_uri = parent_package_key or
+          is_child(parent_package_key, row.service_uri) = 't' then
+        return 't';
+      end if;
+    end loop;
+ 
+    return 'f';
+  end is_child;
+
 end apm_package;
 /
 show errors
@@ -1945,7 +2126,8 @@ as
       end if;
 	v_version_id := acs_object.new(
 		object_id => v_version_id,
-		object_type => 'apm_package_version'
+		object_type => 'apm_package_version',
+                title => package_key || ', Version ' || version_name
         );
       insert into apm_package_versions
       (version_id, package_key, version_name, version_uri, summary, description_format, description,
@@ -2017,6 +2199,12 @@ as
 		   release_date, vendor, vendor_uri, auto_mount
 	    from apm_package_versions
 	    where version_id = copy.version_id;
+
+        update acs_objects
+        set title = (select v.package_key || ', Version ' || v.version_name
+                     from apm_package_versions v
+                     where v.version_id = copy.version_id)
+        where object_id = copy.version_id;
     
 	insert into apm_package_dependencies(dependency_id, version_id, dependency_type, service_uri, service_version)
 	    select acs_object_id_seq.nextval, v_version_id, dependency_type, service_uri, service_version
@@ -2074,7 +2262,7 @@ as
          else 
 	   v_version_id := edit.version_id;			
        end if;
-       
+
        update apm_package_versions 
 		set version_uri = edit.version_uri,
 		summary = edit.summary,
@@ -2143,6 +2331,7 @@ as
   function add_dependency(
     dependency_id		in apm_package_dependencies.dependency_id%TYPE
 			        default null,
+    dependency_type             in apm_package_dependencies.dependency_type%TYPE,
     version_id			in apm_package_versions.version_id%TYPE,
     dependency_uri		in apm_package_dependencies.service_uri%TYPE,
     dependency_version		in apm_package_dependencies.service_version%TYPE
@@ -2159,8 +2348,8 @@ as
       insert into apm_package_dependencies
       (dependency_id, version_id, dependency_type, service_uri, service_version)
       values
-      (v_dep_id, add_dependency.version_id, 'requires', add_dependency.dependency_uri,
-	add_dependency.dependency_version);
+      (v_dep_id, add_dependency.version_id, add_dependency.dependency_type,
+       add_dependency.dependency_uri, add_dependency.dependency_version);
       return v_dep_id;
   end add_dependency;
 
@@ -2354,6 +2543,8 @@ as
     package_type		in apm_package_types.package_type%TYPE,
     initial_install_p		in apm_package_types.initial_install_p%TYPE,
     singleton_p			in apm_package_types.singleton_p%TYPE,
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE,
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE,
     spec_file_path		in apm_package_types.spec_file_path%TYPE default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE default null
   ) 
@@ -2361,11 +2552,13 @@ as
   begin
    insert into apm_package_types
     (package_key, pretty_name, pretty_plural, package_uri, package_type,
-    spec_file_path, spec_file_mtime, initial_install_p, singleton_p)
+    spec_file_path, spec_file_mtime, initial_install_p, singleton_p,
+    implements_subsite_p, inherit_templates_p)
    values
     (create_type.package_key, create_type.pretty_name, create_type.pretty_plural,
      create_type.package_uri, create_type.package_type, create_type.spec_file_path, 
-     create_type.spec_file_mtime, create_type.initial_install_p, create_type.singleton_p);
+     create_type.spec_file_mtime, create_type.initial_install_p, create_type.singleton_p,
+     create_type.implements_subsite_p, create_type.inherit_templates_p);
   end create_type;
 
   function update_type(    
@@ -2382,6 +2575,10 @@ as
     	    	    	    	default null,
     singleton_p			in apm_package_types.singleton_p%TYPE
     	    	    	    	default null,
+    implements_subsite_p        in apm_package_types.implements_subsite_p%TYPE 
+				default null,
+    inherit_templates_p         in apm_package_types.inherit_templates_p%TYPE 
+				default null,    
     spec_file_path		in apm_package_types.spec_file_path%TYPE 
     	    	    	    	default null,
     spec_file_mtime		in apm_package_types.spec_file_mtime%TYPE
@@ -2397,7 +2594,9 @@ as
     	spec_file_path = nvl(update_type.spec_file_path, spec_file_path),
     	spec_file_mtime = nvl(update_type.spec_file_mtime, spec_file_mtime),
     	initial_install_p = nvl(update_type.initial_install_p, initial_install_p),
-    	singleton_p = nvl(update_type.singleton_p, singleton_p)
+    	singleton_p = nvl(update_type.singleton_p, singleton_p),
+        implements_subsite_p = nvl(update_type.implements_subsite_p, implements_subsite_p),
+        inherit_templates_p = nvl(update_type.inherit_templates_p, inherit_templates_p)
       where package_key = update_type.package_key;
       return update_type.package_key;
   end update_type;

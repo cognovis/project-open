@@ -7,54 +7,64 @@
 --
 -- @creation-date 20003-08-21
 --
--- @cvs-id $Id: authentication-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: authentication-create.sql,v 1.2 2010/10/19 20:11:39 po34demo Exp $
 --
 
 create table auth_authorities (
     authority_id             integer
-                             constraint auth_authorities_pk
+                             constraint auth_authorities_auth_id_pk
                              primary key
-                             constraint auth_authorities_aid_fk
+                             constraint auth_authorities_auth_id_fk
                              references acs_objects(object_id)
                              on delete cascade,
     short_name               varchar(255)
-                             constraint auth_authority_short_name_un
+                             constraint auth_authorities_short_name_un
                              unique,
     pretty_name              varchar(4000),
     help_contact_text        varchar(4000),
     help_contact_text_format varchar(200),
     enabled_p                boolean default 't' 
-                             constraint auth_authority_enabled_p_nn
+                             constraint auth_authorities_enbl_p_nn
                              not null,
     sort_order               integer not null,
     -- auth_authentication implementation
     -- (Cannot reference acs_sc_impls table as it doesn't exist yet)
     auth_impl_id             integer
-                             constraint auth_authority_auth_impl_fk
+                             constraint auth_authorities_auth_impl_fk
                              references acs_objects(object_id),
     -- auth_password implementation
     pwd_impl_id              integer
-                             constraint auth_authority_pwd_impl_fk
+                             constraint auth_authorities_pwd_impl_fk
                              references acs_objects(object_id),
     forgotten_pwd_url        varchar(4000),
     change_pwd_url           varchar(4000),
     -- auth_registration implementation
     register_impl_id         integer
-                             constraint auth_authority_reg_impl_fk
+                             constraint auth_authorities_reg_impl_fk
                              references acs_objects(object_id),
     register_url             varchar(4000),
     -- auth_user_info implementation
     user_info_impl_id        integer
-                             constraint auth_authority_userinf_impl_fk
+                             constraint auth_authorities_urinf_ipl_fk
                              references acs_objects(object_id),
     -- batch sync
     -- auth_sync_retrieve implementation
-    get_doc_impl_id          integer references acs_objects(object_id),
+    get_doc_impl_id          integer 
+                             constraint auth_authorities_getdoc_ipl_fk
+                             references acs_objects(object_id),
     -- auth_sync_process implementation
-    process_doc_impl_id      integer references acs_objects(object_id),
+    process_doc_impl_id      integer 
+                             constraint auth_authorities_procdoc_ipl_fk
+                             references acs_objects(object_id),
     batch_sync_enabled_p     boolean default 'f'
-                             constraint auth_authority_bs_enabled_p_nn
-                             not null
+                             constraint auth_authorities_bsenabled_p_nn
+                             not null,
+    allow_user_entered_info_p boolean default 'f'
+                             constraint auth_authority_allow_user_i_p_nn
+                             not null,
+    search_impl_id           integer
+                             constraint auth_authorities_search_impl_id_fk
+                             references acs_objects(object_id)
 );
 
 comment on column auth_authorities.help_contact_text is '
@@ -94,10 +104,10 @@ create table auth_driver_params(
                              constraint auth_driver_params_aid_nn
                              not null,
     impl_id                  integer
-                             constraint auth_driver_params_iid_fk
+                             constraint auth_driver_params_impl_id_fk
                              -- Cannot reference acs_sc_impls table as it doesn't exist yet
                              references acs_objects(object_id)
-                             constraint auth_driver_params_iid_nn
+                             constraint auth_driver_params_impl_id_nn
                              not null,
     key                      varchar(200),
     value                    text,

@@ -5,7 +5,7 @@ create sequence t_anon_func_seq;
 create view anon_func_seq as 
 select nextval('t_anon_func_seq') as nextval;
 
-create function instr(varchar,char,integer,integer) returns integer as '
+create or replace function instr(varchar,char,integer,integer) returns integer as '
 declare
         str             alias for $1;
         pat             alias for $2;
@@ -44,7 +44,7 @@ begin
 end;' language 'plpgsql' immutable;
 
 
-create function instr(varchar,char,integer) returns integer as '
+create or replace function instr(varchar,char,integer) returns integer as '
 declare
         str             alias for $1;
         pat             alias for $2;
@@ -54,7 +54,7 @@ begin
 end;' language 'plpgsql' immutable;
 
 
-create function instr(varchar,char) returns integer as '
+create or replace function instr(varchar,char) returns integer as '
 declare
         str             alias for $1;
         pat             alias for $2;
@@ -66,7 +66,7 @@ end;' language 'plpgsql' immutable;
 -- Splits string on requested character. Returns requested element
 -- (1-based)
 
-create function split(varchar,char,integer)
+create or replace function split(varchar,char,integer)
 returns varchar as '
 declare
   p_string		alias for $1;
@@ -97,7 +97,7 @@ begin
 end;' language 'plpgsql' immutable;
 
 
-create function get_func_drop_command (varchar) returns varchar as '
+create or replace function get_func_drop_command (varchar) returns varchar as '
 declare
         fname           alias for $1;
         nargs           integer default 0;
@@ -132,16 +132,16 @@ begin
                             else '','' || typname 
                           end into v_one_type 
                 from pg_type 
-               where oid = v_one_arg;
+               where oid = v_one_arg::integer;
               v_funcdef := v_funcdef || v_one_type;            
         end loop;
-        v_funcdef := v_funcdef || '')'';
+        v_funcdef := v_funcdef || '') CASCADE'';
 
         return v_funcdef;
 
 end;' language 'plpgsql';
 
-create function drop_package (varchar) returns varchar as '
+create or replace function drop_package (varchar) returns varchar as '
 declare
        package_name      alias for $1;
        v_rec             record;
@@ -157,7 +157,7 @@ begin
                    order by proname 
         LOOP
             raise NOTICE ''DROPPING FUNCTION: %'', v_rec.proname;
-            v_drop_cmd := get_func_drop_command (v_rec.proname);
+            v_drop_cmd := get_func_drop_command (v_rec.proname::varchar);
             EXECUTE v_drop_cmd;
         end loop;
 
@@ -171,7 +171,7 @@ begin
 
 end;' language 'plpgsql';
 
-create function number_src(text) returns text as '
+create or replace function number_src(text) returns text as '
 declare
         v_src   alias for $1;
         v_pos   integer;
@@ -191,12 +191,12 @@ begin
             exit when v_pos = 0;
 
             if v_cnt != 0 then
-              v_ret := v_ret || rpad(v_cnt,10) || substr(v_tmp,1,v_pos);
+              v_ret := v_ret || to_char(v_cnt,''9999'') || '':'' || substr(v_tmp,1,v_pos);
             end if;
             v_tmp := substr(v_tmp,v_pos + 1);
         end LOOP;
 
-        return v_ret || rpad(v_cnt,10) || v_tmp;
+        return v_ret || to_char(v_cnt,''9999'') || '':'' || v_tmp;
 
 end;' language 'plpgsql' immutable strict;
 
@@ -215,14 +215,14 @@ declare
         v_rettype       varchar;
 begin
         select proargtypes, pronargs, number_src(prosrc), 
-               (select typname from pg_type where oid = p.prorettype)
+               (select typname from pg_type where oid = p.prorettype::integer)
           into v_args, v_nargs, v_src, v_rettype
           from pg_proc p 
          where proname = fname::name
            and proargtypes = args;
 
          v_funcdef := v_funcdef || ''
-create function '' || fname || ''('';
+create or replace function '' || fname || ''('';
 
          v_pos := position('' '' in v_args);
 
@@ -241,7 +241,7 @@ create function '' || fname || ''('';
                            else '','' || typname 
                          end into v_one_type 
                from pg_type 
-              where oid = v_one_arg;
+              where oid = v_one_arg::integer;
              v_funcdef := v_funcdef || v_one_type;
          end loop;
          v_funcdef := v_funcdef || '') returns '' || v_rettype || '' as \\\'\\n'' || v_src || ''\\\' language \\\'plpgsql\\\';'';
@@ -250,7 +250,7 @@ create function '' || fname || ''('';
 
 end;' language 'plpgsql' stable strict;
 
-create function get_func_header(varchar,oidvector) returns text as '
+create or replace function get_func_header(varchar,oidvector) returns text as '
 declare
         fname   alias for $1;
         args    alias for $2;
@@ -265,20 +265,20 @@ begin
 end;' language 'plpgsql' stable strict;
 
 create view acs_func_defs as 
-select get_func_definition(proname,proargtypes) as definition, 
+select get_func_definition(proname::varchar,proargtypes) as definition, 
        proname as fname 
   from pg_proc;
 
 create view acs_func_headers as 
-select get_func_header(proname,proargtypes) as definition, 
+select get_func_header(proname::varchar,proargtypes) as definition, 
        proname as fname 
   from pg_proc;
 
 ----------------------------------------------------------------------------
 
-create function inline_0 () returns integer as '
+create or replace function inline_0 () returns integer as '
 -- Create a bitfromint4(integer) function if it doesn''t exists.
--- Due to a bug in PG 7.3 this function is absent in PG 7.3.
+-- This function is no longer present in 7.3 and above
 declare
     v_bitfromint4_count integer;
 begin
@@ -295,9 +295,9 @@ end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
 
-create function inline_1 () returns integer as '
+create or replace function inline_1 () returns integer as '
 -- Create a bitfromint4(integer) function if it doesn''t exists.
--- Due to a bug in PG 7.3 this function is absent in PG 7.3.
+-- This function is no longer present in 7.3 and above
 declare
     v_bittoint4_count integer;
 begin
@@ -374,7 +374,7 @@ begin
 
 end;' language 'plpgsql' immutable strict;
 
-create function tree_key_to_int(varbit, integer) returns integer as '
+create or replace function tree_key_to_int(varbit, integer) returns integer as '
 
 -- Convert the compressed key for the node at the given level to an 
 -- integer.
@@ -410,7 +410,7 @@ begin
 
 end;' language 'plpgsql' immutable strict;
 
-create function tree_ancestor_key(varbit, integer) returns varbit as '
+create or replace function tree_ancestor_key(varbit, integer) returns varbit as '
 
 -- Returns a key for the ancestor at the given level.  The root is level
 -- one.
@@ -439,7 +439,7 @@ begin
 
 end;' language 'plpgsql' immutable strict;
 
-create function tree_root_key(varbit) returns varbit as '
+create or replace function tree_root_key(varbit) returns varbit as '
 
 -- Return the tree_sortkey for the root node of the node with the 
 -- given tree_sortkey.  
@@ -456,7 +456,7 @@ begin
 
 end;' language 'plpgsql' immutable strict;
 
-create function tree_leaf_key_to_int(varbit) returns integer as '
+create or replace function tree_leaf_key_to_int(varbit) returns integer as '
 
 -- Convert the bitstring for the last, or leaf, node represented by this key
 -- to an integer.
@@ -485,7 +485,7 @@ begin
 
 end;' language 'plpgsql' immutable strict;
 
-create function tree_next_key(varbit, integer) returns varbit as '
+create or replace function tree_next_key(varbit, integer) returns varbit as '
 declare
   p_parent_key      alias for $1;
   p_child_value     alias for $2;
@@ -509,7 +509,7 @@ begin
 
 end;' language 'plpgsql' immutable;
 
-create function tree_increment_key(varbit)
+create or replace function tree_increment_key(varbit)
 returns varbit as '
 declare
     p_child_sort_key                alias for $1;
@@ -524,7 +524,7 @@ begin
     return int_to_tree_key(v_child_sort_key);
 end;' language 'plpgsql' immutable;
 
-create function tree_left(varbit) returns varbit as '
+create or replace function tree_left(varbit) returns varbit as '
 
 -- Create a key less than or equal to that of any child of the
 -- current key.
@@ -539,7 +539,7 @@ begin
   end if;
 end;' language 'plpgsql' immutable;
 
-create function tree_right(varbit) returns varbit as '
+create or replace function tree_right(varbit) returns varbit as '
 
 -- Create a key greater or equal to that of any child of the current key.
 -- Used in BETWEEN expressions to select the subtree rooted at the given
@@ -555,7 +555,7 @@ begin
   end if;
 end;' language 'plpgsql' immutable;
 
-create function tree_level(varbit) returns integer as '
+create or replace function tree_level(varbit) returns integer as '
 
 -- Return the tree level of the given key.  The root level is defined
 -- to be at level one.
@@ -586,7 +586,7 @@ begin
   return v_level;
 end;' language 'plpgsql' immutable;
 
-create function tree_ancestor_p(varbit, varbit) returns boolean as '
+create or replace function tree_ancestor_p(varbit, varbit) returns boolean as '
 declare
   p_potential_ancestor      alias for $1;
   p_potential_child         alias for $2;
@@ -604,7 +604,7 @@ end;' language 'plpgsql' immutable;
 -- tree_ancestor_keys(varbit), which returns the set of tree_sortkeys for all of the
 -- ancestors of the given tree_sortkey...
 
-create function tree_ancestor_keys(varbit, integer) returns setof varbit as '
+create or replace function tree_ancestor_keys(varbit, integer) returns setof varbit as '
   select $1
 ' language 'sql';
 
@@ -725,50 +725,50 @@ create table acs_function_args (
 create or replace function define_function_args(varchar,varchar)
 returns integer as '
 declare
-	p_function		alias for $1;
-	p_arg_list		alias for $2;
+  p_function            alias for $1;
+  p_arg_list            alias for $2;
 
-	v_arg_seq		integer default 1;
-	v_arg_name		varchar;
-	v_arg_default		varchar;
-	v_elem			varchar;
-	v_pos			integer;
+  v_arg_seq             integer default 1;
+  v_arg_name            varchar;
+  v_arg_default         varchar;
+  v_elem                varchar;
+  v_pos                 integer;
 begin
-	delete from acs_function_args where upper(function) = upper(p_function);
+  delete from acs_function_args where function = upper(trim(p_function));
 
-	v_elem = split(p_arg_list, '','', v_arg_seq);
-	while v_elem is not null loop
-		
-		v_pos = instr(v_elem, '';'', 1, 1);
-		if v_pos > 0 then
-			v_arg_name := substr(v_elem, 1, v_pos-1);
-			v_arg_default := substr(v_elem, v_pos+1, length(v_elem) - v_pos);
-		else
-			v_arg_name := v_elem;
-			v_arg_default := NULL;
-		end if;
+  v_elem = split(p_arg_list, '','', v_arg_seq);
+  while v_elem is not null loop
+    
+    v_pos = instr(v_elem, '';'', 1, 1);
+    if v_pos > 0 then
+      v_arg_name := substr(v_elem, 1, v_pos-1);
+      v_arg_default := substr(v_elem, v_pos+1, length(v_elem) - v_pos);
+    else
+      v_arg_name := v_elem;
+      v_arg_default := NULL;
+    end if;
 
-		insert into acs_function_args (function, arg_seq, arg_name, arg_default)
-		values (upper(p_function), v_arg_seq, upper(v_arg_name), v_arg_default);
+    insert into acs_function_args (function, arg_seq, arg_name, arg_default)
+	   values (upper(trim(p_function)), v_arg_seq, upper(trim(v_arg_name)), v_arg_default);
 
-		v_arg_seq := v_arg_seq + 1;
-		v_elem = split(p_arg_list, '','', v_arg_seq);
-	end loop;
-		
-	return 1;
+    v_arg_seq := v_arg_seq + 1;
+    v_elem = split(p_arg_list, '','', v_arg_seq);
+  end loop;
+    
+  return 1;
 end;' language 'plpgsql';
 
 -- Returns an english-language description of the trigger type.  Used by the
 -- schema browser
 
-create function trigger_type (integer) returns varchar as '
+create or replace function trigger_type (integer) returns varchar as '
 declare
   tgtype            alias for $1;
   description       varchar;
   sep               varchar;
 begin
 
- if tgtype & 2 then
+ if (tgtype & 2) > 0 then
     description := ''BEFORE '';
  else 
     description := ''AFTER '';
@@ -776,22 +776,22 @@ begin
 
  sep := '''';
 
- if tgtype & 4 then
+ if (tgtype & 4) > 0 then
     description := description || ''INSERT '';
     sep := ''OR '';
  end if;
 
- if tgtype & 8 then
+ if (tgtype & 8) > 0 then
     description := description || sep || ''DELETE '';
     sep := ''OR '';
  end if;
 
- if tgtype & 16 then
+ if (tgtype & 16) > 0 then
     description := description || sep || ''UPDATE '';
     sep := ''OR '';
  end if;
 
- if tgtype & 1 then
+ if (tgtype & 1) > 0 then
     description := description || ''FOR EACH ROW'';
  else
     description := description || ''STATEMENT'';

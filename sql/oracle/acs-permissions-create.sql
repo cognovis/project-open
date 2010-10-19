@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-08-13
 --
--- @cvs-id $Id: acs-permissions-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: acs-permissions-create.sql,v 1.2 2010/10/19 20:11:32 po34demo Exp $
 --
 
 
@@ -19,7 +19,9 @@
 ---------------------------------------------
 
 create table acs_privileges (
-	privilege	varchar2(100) not null constraint acs_privileges_pk
+	privilege	varchar2(100) 
+			constraint acs_privileges_privilege_nn not null 
+			constraint acs_privileges_privilege_pk
 			primary key,
 	pretty_name	varchar2(100),
 	pretty_plural	varchar2(100)
@@ -137,14 +139,22 @@ show errors
 ------------------------------------
 
 create table acs_permissions (
-	object_id		not null
-				constraint acs_permissions_on_what_id_fk
-				references acs_objects (object_id),
-	grantee_id		not null
+				constraint acs_permissions_object_id_fk
+	object_id		integer 
+				constraint acs_permissions_object_id_nn not null
+				constraint acs_permissions_object_id_fk
+				references acs_objects (object_id)
+                                on delete cascade,
+	grantee_id		integer 
+				constraint acs_permissions_grantee_id_nn not null
 				constraint acs_permissions_grantee_id_fk
-				references parties (party_id),
-	privilege		not null constraint acs_permissions_priv_fk
-				references acs_privileges (privilege),
+				references parties (party_id)
+                                on delete cascade,
+	privilege		varchar(100) 
+				constraint acs_permissions_privilege_nn not null 
+                                constraint acs_permissions_privilege_fk
+				references acs_privileges (privilege)
+                                on delete cascade,
 	constraint acs_permissions_pk
 	primary key (object_id, grantee_id, privilege)
 );
@@ -152,6 +162,7 @@ create table acs_permissions (
 create index acs_permissions_grantee_idx on acs_permissions (grantee_id);
 -- create bitmap index acs_permissions_privilege_idx on acs_permissions (privilege);
 create index acs_permissions_privilege_idx on acs_permissions (privilege);
+create index acs_permissions_object_id_idx on acs_permissions(object_id);
 
 create or replace view acs_privilege_descendant_map
 as select p1.privilege, p2.privilege as descendant

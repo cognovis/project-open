@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-kernel" package_version="5.1.2d4" locale="ms_MY" charset="utf-8">
+<message_catalog package_key="acs-kernel" locale="ms_MY" charset="utf-8">
 
   <msg key="authentication_authority">Pihak Berkuasa</msg>
   <msg key="common_Add">Tambah</msg>
@@ -42,7 +42,8 @@
   <msg key="common_new">baru</msg>
   <msg key="common_Next">Terus</msg>
   <msg key="common_next">terus</msg>
-  <msg key="common_no">Tidak</msg>
+  <msg key="common_No">Tidak</msg>
+  <msg key="common_no">tidak</msg>
   <msg key="common_OK">OK</msg>
   <msg key="common_ok">ok</msg>
   <msg key="common_Open">Buka</msg>

@@ -4,7 +4,7 @@
 -- @author Don Baccus (dhogaza@pacifier.net)
 -- @author Lars Pind (lars@collaboraid.biz)
 --
--- @cvs-id $Id: upgrade-4.7.2d-5.0d.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: upgrade-4.7.2d-5.0d.sql,v 1.2 2010/10/19 20:11:43 po34demo Exp $
 --
 
 

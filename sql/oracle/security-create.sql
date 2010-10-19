@@ -8,7 +8,7 @@
 -- @author Richard Li (richardl@arsdigita.com)
 --
 -- @creation-date 2000/02/02
--- @cvs-id $Id: security-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: security-create.sql,v 1.2 2010/10/19 20:11:34 po34demo Exp $
 
 create table sec_session_properties (
     session_id     integer
@@ -29,7 +29,7 @@ create table sec_session_properties (
     last_hit	   integer
                    constraint sec_session_date_nn
                    not null,
-    primary key(session_id, module, property_name)
+    constraint sec_session_prop_pk primary key(session_id, module, property_name)
 ) nologging storage (
       initial 50m
       next 50m

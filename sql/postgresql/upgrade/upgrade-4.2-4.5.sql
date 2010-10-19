@@ -2,7 +2,7 @@
 --
 -- @author vinod@kurup.com
 -- @creation-date 2002-05-15
--- @cvs-id $Id: upgrade-4.2-4.5.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: upgrade-4.2-4.5.sql,v 1.2 2010/10/19 20:11:43 po34demo Exp $
 --
 
 -- fixes bug #1515 http://openacs.org/sdm/one-bug.tcl?baf_id=1515

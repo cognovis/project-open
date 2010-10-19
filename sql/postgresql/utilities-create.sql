@@ -5,7 +5,7 @@
 --
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 12 Aug 2000
--- @cvs-id utilities-create.sql,v 1.3 2000/11/02 17:55:51 yon Exp
+-- @cvs-id $Id: utilities-create.sql,v 1.2 2010/10/19 20:11:42 po34demo Exp $
 --
 
 create function util__multiple_nextval (varchar,integer)
@@ -17,7 +17,7 @@ declare
   v_rec                  record;
 begin
     for counter in 1..v_count loop
-        for v_rec in EXECUTE ''select '' || quote_ident(v_sequence_name) ''.nextval as a_seq_val''
+        for v_rec in EXECUTE ''select '' || quote_ident(v_sequence_name) || ''.nextval as a_seq_val''
         LOOP
            a_sequence_values := a_sequence_values || '''','''' || v_rec.a_seq_val;
           exit;

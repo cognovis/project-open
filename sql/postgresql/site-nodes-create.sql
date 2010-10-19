@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-05
--- @cvs-id site-nodes-create.sql,v 1.6.2.2 2001/01/12 22:53:32 dennis Exp
+-- @cvs-id $Id: site-nodes-create.sql,v 1.2 2010/10/19 20:11:42 po34demo Exp $
 --
 
 create or replace function inline_0 ()
@@ -69,7 +69,7 @@ begin
   return tree_sortkey from site_nodes where node_id = p_node_id;
 end;' language 'plpgsql' stable strict;
 
-create or replace function site_node_insert_tr () returns opaque as '
+create or replace function site_node_insert_tr () returns trigger as '
 declare
         v_parent_sk     varbit default null;
         v_max_value     integer;
@@ -98,7 +98,7 @@ create trigger site_node_insert_tr before insert
 on site_nodes for each row 
 execute procedure site_node_insert_tr ();
 
-create or replace function site_node_update_tr () returns opaque as '
+create or replace function site_node_update_tr () returns trigger as '
 declare
         v_parent_sk     varbit default null;
         v_max_value     integer;
@@ -235,7 +235,10 @@ begin
       now(),
       new__creation_user,
       new__creation_ip,
-      null
+      null,
+      ''t'',
+      new__name,
+      new__object_id
     );
 
     insert into site_nodes

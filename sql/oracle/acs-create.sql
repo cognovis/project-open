@@ -8,9 +8,10 @@
 
 create table acs_magic_objects (
         name                varchar2(100)
-                        constraint acs_magic_objects_pk primary key,
-        object_id        not null constraint acs_magic_objects_object_id_fk
-                        references acs_objects(object_id)
+	 	            constraint acs_magic_objects_name_pk primary key,
+        object_id           constraint acs_magic_objects_object_id_nn not null 
+			    constraint acs_magic_objects_object_id_fk
+                            references acs_objects(object_id)
 );
 
 create index acs_mo_object_id_idx on acs_magic_objects (object_id);
@@ -215,7 +216,8 @@ declare
   root_id integer;
 begin
   root_id := acs_object.new (
-    object_id => -4
+    object_id => -4,
+    title => 'Security context root'
   );
 
   insert into acs_magic_objects
@@ -236,15 +238,17 @@ begin
  acs_privilege.create_privilege('create');
  acs_privilege.create_privilege('delete');
  acs_privilege.create_privilege('admin');
+ acs_privilege.create_privilege('annotate');
 
- ---------------------------------------------------------
- -- Administrators can read, write, create, and delete. -- 
- ---------------------------------------------------------
+ -------------------------------------------------------------------
+ -- Administrators can read, write, create, delete, and annotate. -- 
+ -------------------------------------------------------------------
 
  acs_privilege.add_child('admin', 'read');
  acs_privilege.add_child('admin', 'write');
  acs_privilege.add_child('admin', 'create');
  acs_privilege.add_child('admin', 'delete');
+ acs_privilege.add_child('admin', 'annotate');
 
  commit;
 end;
@@ -260,9 +264,9 @@ begin
   -- LARS: Make object_id 0 be a user, not a person
 
   insert into acs_objects
-    (object_id, object_type)
+    (object_id, object_type, title)
   values
-    (0, 'user');
+    (0, 'user', 'Unregistered Visitor');
 
   insert into parties
     (party_id)
@@ -337,7 +341,8 @@ declare
   object_id integer;
 begin
   object_id := acs_object.new (
-    object_id => -3
+    object_id => -3,
+    title => 'Default Context'
   );
 
   insert into acs_magic_objects

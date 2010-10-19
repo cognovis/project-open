@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-05
--- @cvs-id $Id: site-nodes-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: site-nodes-create.sql,v 1.2 2010/10/19 20:11:35 po34demo Exp $
 --
 
 begin
@@ -126,6 +126,8 @@ as
     v_node_id := acs_object.new (
       object_id => node_id,
       object_type => 'site_node',
+      title => name,
+      package_id => object_id,
       creation_user => creation_user,
       creation_ip => creation_ip
     );

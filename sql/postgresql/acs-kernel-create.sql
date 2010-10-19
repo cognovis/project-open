@@ -5,7 +5,7 @@
 --
 -- @author Michael Yoon (michael@arsdigita.com)
 -- @creation-date 2000/07/29
--- @cvs-id acs-kernel-create.sql,v 1.7.2.1 2001/01/12 22:47:21 oumi Exp
+-- @cvs-id $Id: acs-kernel-create.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 -- set feedback off

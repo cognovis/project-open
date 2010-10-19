@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id $Id: groups-body-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: groups-body-create.sql,v 1.2 2010/10/19 20:11:40 po34demo Exp $
 --
 
 --------------
@@ -15,18 +15,18 @@
 
 -- However, PG 7.3 introduces a new type "trigger" for the return type
 -- needed for functions called by triggers.  "create function" transmorgifies
--- the return type "opaque" to "trigger" so PG 7.2 dumps can be restored into
+-- the return type "trigger" to "trigger" so PG 7.2 dumps can be restored into
 -- PG 7.3.  But "create or replace" doesn't do it.   We can't use "trigger"
 -- because we currently are still supporting PG 7.2.  Isn't life a pleasure?
 
 -- I'm leaving the triggers we aren't overriding as "create or replace" because
 -- this will be the right thing to do if the PG folks fix this problem or when
--- we drop support of PG 7.2 and no longer need to declare these as type "opaque"
+-- we drop support of PG 7.2 and no longer need to declare these as type "trigger"
 
 drop trigger membership_rels_in_tr on membership_rels;
 drop function membership_rels_in_tr ();
 
-create or replace function membership_rels_in_tr () returns opaque as '
+create or replace function membership_rels_in_tr () returns trigger as '
 declare
   v_object_id_one acs_rels.object_id_one%TYPE;
   v_object_id_two acs_rels.object_id_two%TYPE;
@@ -85,7 +85,7 @@ end;' language 'plpgsql';
 create trigger membership_rels_in_tr after insert on membership_rels
 for each row execute procedure membership_rels_in_tr ();
 
-create or replace function membership_rels_up_tr () returns opaque as '
+create or replace function membership_rels_up_tr () returns trigger as '
 declare
   map             record;
 begin
@@ -112,7 +112,7 @@ end;' language 'plpgsql';
 create trigger membership_rels_up_tr before update on membership_rels
 for each row execute procedure membership_rels_up_tr ();
 
-create or replace function membership_rels_del_tr () returns opaque as '
+create or replace function membership_rels_del_tr () returns trigger as '
 declare
   v_error text;
   map             record;
@@ -143,7 +143,7 @@ for each row execute procedure membership_rels_del_tr ();
 drop trigger composition_rels_in_tr on composition_rels;
 drop function composition_rels_in_tr ();
 
-create or replace function composition_rels_in_tr () returns opaque as '
+create or replace function composition_rels_in_tr () returns trigger as '
 declare
   v_object_id_one acs_rels.object_id_one%TYPE;
   v_object_id_two acs_rels.object_id_two%TYPE;
@@ -253,7 +253,7 @@ for each row execute procedure composition_rels_in_tr ();
 -- TO DO: See if this can be optimized now that the member and component
 -- mapping tables have been combined
 --
-create or replace function composition_rels_del_tr () returns opaque as '
+create or replace function composition_rels_del_tr () returns trigger as '
 declare
   v_object_id_one acs_rels.object_id_one%TYPE;
   v_object_id_two acs_rels.object_id_two%TYPE;
@@ -701,6 +701,18 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
+-- procedure merge
+create or replace function membership_rel__merge (integer)
+returns integer as '
+declare
+  merge__rel_id                alias for $1;  
+begin
+    update membership_rels
+    set member_state = ''merged''
+    where rel_id = merge__rel_id;
+
+    return 0; 
+end;' language 'plpgsql';
 
 -- function check_index
 create or replace function membership_rel__check_index (integer,integer,integer)
@@ -833,6 +845,10 @@ begin
       end if;
   end if;
 
+  update acs_objects
+  set title = new__group_name
+  where object_id = v_group_id;
+
   insert into groups
    (group_id, group_name, join_policy)
   values
@@ -850,10 +866,24 @@ begin
 
   insert into group_rels
   (group_rel_id, group_id, rel_type)
-  select nextval(''t_acs_object_id_seq''), v_group_id, g.rel_type
-    from group_type_rels g
-   where g.group_type = new__object_type;
-
+  select nextval(''t_acs_object_id_seq''), v_group_id, rels.rel_type
+    from
+    ( select distinct g.rel_type
+      from group_type_rels g,
+      ( select parent.object_type as parent_type
+        from acs_object_types child, acs_object_types parent
+        where child.object_type <> parent.object_type
+        and child.tree_sortkey between parent.tree_sortkey
+        and tree_right(parent.tree_sortkey)
+        and child.object_type = new__object_type
+        order by parent.tree_sortkey desc) types
+     where g.group_type = types.parent_type
+     and not exists
+     ( select 1 from group_rels
+       where group_rels.group_id = v_group_id
+       and group_rels.rel_type = g.rel_type)
+  ) rels;
+  
   return v_group_id;
   
 end;' language 'plpgsql';

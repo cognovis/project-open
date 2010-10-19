@@ -3,12 +3,12 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id acs-create.sql,v 1.1.2.9 2000/08/24 07:09:18 rhs Exp
+-- @cvs-id $Id: acs-create.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 create table acs_magic_objects (
 	name		varchar(100)
-			constraint acs_magic_objects_pk primary key,
+			constraint acs_magic_objects_name_pk primary key,
 	object_id	integer not null constraint acs_magic_objects_object_id_fk
                         references acs_objects(object_id)
 );
@@ -131,7 +131,7 @@ begin
     return object_id
     from acs_magic_objects
     where name = magic_object_id__name;
-end;' language 'plpgsql' immutable strict;
+end;' language 'plpgsql' stable strict;
 
 -- ******************************************************************
 -- * Community Core API
@@ -187,13 +187,16 @@ returns integer as '
 declare
   root_id integer;
 begin
-  
+
   root_id := acs_object__new (
     -4,
     ''acs_object'',
     now(),
     null,
     null,
+    null,
+    ''t'',
+    ''#acs-kernel.lt_Security_context_root#'',
     null
     );
 
@@ -225,15 +228,17 @@ begin;
  select acs_privilege__create_privilege('create', null, null);
  select acs_privilege__create_privilege('delete', null, null);
  select acs_privilege__create_privilege('admin', null, null);
+ select acs_privilege__create_privilege('annotate', null, null);
 
- ---------------------------------------------------------
- -- Administrators can read, write, create, and delete. -- 
- ---------------------------------------------------------
+ -------------------------------------------------------------------
+ -- Administrators can read, write, create, delete, and annotate. -- 
+ -------------------------------------------------------------------
 
  select acs_privilege__add_child('admin', 'read');
  select acs_privilege__add_child('admin', 'write');
  select acs_privilege__add_child('admin', 'create');
  select acs_privilege__add_child('admin', 'delete');
+ select acs_privilege__add_child('admin', 'annotate');
 
 end;
 
@@ -250,9 +255,9 @@ begin
   -- with the user_id assigned throughout the toolkit Tcl code
 
   insert into acs_objects
-    (object_id, object_type)
+    (object_id, object_type, title)
   values
-    (0, ''user'');
+    (0, ''user'', ''#acs-kernel.Unregistered_Visitor#'');
 
   insert into parties
     (party_id)
@@ -262,7 +267,7 @@ begin
   insert into persons
     (person_id, first_names, last_name)
   values
-    (0, ''Unregistered'', ''Visitor'');
+    (0, ''#acs-kernel.Unregistered#'', ''#acs-kernel.Visitor#'');
 
   insert into users
     (user_id, username)
@@ -282,7 +287,7 @@ begin
     null,
     null,
     null,
-    ''The Public'',
+    ''#acs-kernel.The_Public#'',
     ''closed'',
     null
   );
@@ -329,7 +334,7 @@ begin
     null,
     null,
     null,
-    ''Registered Users'',
+    ''#acs-kernel.Registered_Users#'',
     ''closed'',
     null
   );
@@ -363,7 +368,8 @@ select acs_object__new (
     now(),
     null,
     null,
-    null
+    null,
+    '#acs-kernel.Default_Context#'
   );
 
 insert into acs_magic_objects
@@ -383,7 +389,7 @@ select authority__new(
     null,              -- authority_id
     null,              -- object_type
     'local',           -- short_name
-    'OpenACS Local',   -- pretty_name 
+    '#acs-kernel.OpenACS_Local#',   -- pretty_name 
     't',               -- enabled_p
     1,                 -- sort_order
     null,              -- auth_impl_id

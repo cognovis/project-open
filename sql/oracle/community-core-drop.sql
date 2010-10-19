@@ -5,7 +5,7 @@
 --
 -- @author Michael Yoon (michael@arsdigita.com)
 -- @creation-date 2000-05-18
--- @cvs-id $Id: community-core-drop.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: community-core-drop.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
 --
 
 -- We need to drop the circular creation_user and modifying_user

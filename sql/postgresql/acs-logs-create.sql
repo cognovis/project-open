@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-10-02
--- @cvs-id acs-logs-create.sql,v 1.6 2000/11/02 17:55:49 yon Exp
+-- @cvs-id $Id: acs-logs-create.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 create sequence t_acs_log_id_seq;
@@ -12,7 +12,7 @@ select nextval('t_acs_log_id_seq') as nextval;
 
 create table acs_logs (
 	log_id		integer
-			constraint acs_logs_pk
+			constraint acs_logs_log_id_pk
 			primary key,
 	log_date	timestamptz default current_timestamp not null,
 	log_level	varchar(20) not null
@@ -61,7 +61,7 @@ begin
     insert into acs_logs
      (log_id, log_level, log_key, message)
     values
-     (acs_log_id_seq.nextval, ''notice'', notice__log_key, notice__message);
+     (nextval(''t_acs_log_id_seq''), ''notice'', notice__log_key, notice__message);
 
     return 0; 
 end;' language 'plpgsql';
@@ -77,7 +77,7 @@ begin
     insert into acs_logs
      (log_id, log_level, log_key, message)
     values
-     (acs_log_id_seq.nextval, ''warn'', warn__log_key, warn__message);
+     (nextval(''t_acs_log_id_seq''), ''warn'', warn__log_key, warn__message);
 
     return 0; 
 end;' language 'plpgsql';
@@ -93,7 +93,7 @@ begin
     insert into acs_logs
      (log_id, log_level, log_key, message)
     values
-     (acs_log_id_seq.nextval, ''error'', error__log_key, error__message);
+     (nextval(''t_acs_log_id_seq''), ''error'', error__log_key, error__message);
 
     return 0; 
 end;' language 'plpgsql';
@@ -109,7 +109,7 @@ begin
     insert into acs_logs
      (log_id, log_level, log_key, message)
     values
-     (acs_log_id_seq.nextval, ''debug'', debug__log_key, debug__message);
+     (nextval(''t_acs_log_id_seq''), ''debug'', debug__log_key, debug__message);
 
     return 0; 
 end;' language 'plpgsql';

@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-08-13
 --
--- @cvs-id acs-permissions-create.sql,v 1.10.2.2 2001/01/12 22:59:20 oumi Exp
+-- @cvs-id $Id: acs-permissions-create.sql,v 1.4 2010/10/19 20:11:39 po34demo Exp $
 --
 
 
@@ -19,7 +19,7 @@
 ---------------------------------------------
 
 create table acs_privileges (
-	privilege	varchar(100) not null constraint acs_privileges_pk
+	privilege	varchar(100) not null constraint acs_privileges_privilege_pk
 			primary key,
 	pretty_name	varchar(100),
 	pretty_plural	varchar(100)
@@ -71,6 +71,13 @@ create table acs_privilege_descendant_map (
 
 create index acs_priv_desc_map_idx on acs_privilege_descendant_map(descendant);
 
+-- Gustaf (Jan 2009): interesting enough, the index above is never
+-- used on openacs.org and can be most likely dropped. The index below
+-- (together with acs_obj_ctx_idx_object_id_idx) makes real-world
+-- applications more than a factor of 10 faster (openacs/download and
+-- openacs/download/one-revision?revision_id=2089636)
+create index acs_priv_desc_map_privilege_idx on acs_privilege_descendant_map (privilege);
+
 -- This trigger is used to create a pseudo-tree hierarchy that
 -- can be used to emulate tree queries on the acs_privilege_hierarchy table.
 -- The acs_privilege_hierarchy table maintains the permissions structure, but 
@@ -111,7 +118,7 @@ create index acs_priv_desc_map_idx on acs_privilege_descendant_map(descendant);
 -- This would be better, since the same query could be used for both oracle
 -- and postgresql.
 
-create or replace function acs_priv_hier_ins_del_tr () returns opaque as '
+create or replace function acs_priv_hier_ins_del_tr () returns trigger as '
 declare
         new_value       integer;
         new_key         varbit default null;
@@ -183,7 +190,7 @@ create trigger acs_priv_hier_ins_del_tr after insert or delete
 on acs_privilege_hierarchy for each row
 execute procedure acs_priv_hier_ins_del_tr ();
 
-create or replace function acs_priv_del_tr () returns opaque as '
+create or replace function acs_priv_del_tr () returns trigger as '
 begin
 
   delete from acs_privilege_descendant_map
@@ -270,13 +277,7 @@ declare
   create_privilege__privilege              alias for $1;  
   create_privilege__pretty_name            alias for $2;  -- default null  
   create_privilege__pretty_plural          alias for $3;  -- default null
-
-  v_count				   integer;
 begin
-    select count(*) into v_count from acs_privileges
-    where privilege = create_privilege__privilege;
-    IF v_count > 0 THEN return 0; END IF;
-
     insert into acs_privileges
      (privilege, pretty_name, pretty_plural)
     values
@@ -312,12 +313,7 @@ returns integer as '
 declare
   add_child__privilege              alias for $1;  
   add_child__child_privilege        alias for $2;  
-  v_count                           integer;
 begin
-    select count(*) into v_count from acs_privilege_hierarchy
-    where privilege = add_child__privilege and child_privilege = add_child__child_privilege;
-    IF v_count > 0 THEN return 0; END IF;
-
     insert into acs_privilege_hierarchy
      (privilege, child_privilege)
     values
@@ -346,20 +342,24 @@ end;' language 'plpgsql';
 
 create table acs_permissions (
 	object_id		integer not null
-				constraint acs_permissions_on_what_id_fk
-				references acs_objects (object_id),
+				constraint acs_permissions_object_id_fk
+				references acs_objects (object_id)
+                                on delete cascade,
 	grantee_id		integer not null
 				constraint acs_permissions_grantee_id_fk
-				references parties (party_id),
+				references parties (party_id)
+                                on delete cascade,
 	privilege		varchar(100) not null 
-                                constraint acs_permissions_priv_fk
-				references acs_privileges (privilege),
+                                constraint acs_permissions_privilege_fk
+				references acs_privileges (privilege)
+                                on delete cascade,
 	constraint acs_permissions_pk
 	primary key (object_id, grantee_id, privilege)
 );
 
 create index acs_permissions_grantee_idx on acs_permissions (grantee_id);
 create index acs_permissions_privilege_idx on acs_permissions (privilege);
+create index acs_permissions_object_id_idx on acs_permissions(object_id);
 
 -- Added table to materialize view that previously used 
 -- acs_privilege_descendant_map name
@@ -418,7 +418,7 @@ create table acs_permissions_lock (
        lck  integer
 );
 
-create function acs_permissions_lock_tr () returns opaque as '
+create function acs_permissions_lock_tr () returns trigger as '
 begin
         raise EXCEPTION ''FOR LOCKING ONLY, NO DML STATEMENTS ALLOWED'';
         return null;
@@ -453,6 +453,10 @@ begin
           grant_permission__privilege);
 
     end if;
+
+    -- exception
+    --  when dup_val_on_index then
+    --    return;
 
     return 0; 
 end;' language 'plpgsql';

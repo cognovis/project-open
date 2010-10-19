@@ -7,18 +7,18 @@
 --
 -- @creation-date 20003-05-13
 --
--- @cvs-id $Id: authentication-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: authentication-create.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
 --
 
 create table auth_authorities (
     authority_id             integer
-                             constraint auth_authorities_pk
+                             constraint auth_authorities_auth_id_pk
                              primary key
                              constraint auth_authorities_aid_fk
                              references acs_objects(object_id)
                              on delete cascade,
     short_name               varchar2(255)
-                             constraint auth_authority_short_name_un
+                             constraint auth_authorities_short_name_un
                              unique,
     pretty_name              varchar2(4000),
     help_contact_text        varchar2(4000),
@@ -51,14 +51,24 @@ create table auth_authorities (
                              references acs_objects(object_id),
     -- batch sync
     -- auth_sync_retrieve implementation
-    get_doc_impl_id          integer references acs_objects(object_id),
+    get_doc_impl_id          integer 
+                             constraint auth_authority_getdoc_impl_fk
+                             references acs_objects(object_id),
     -- auth_sync_process implementation
-    process_doc_impl_id      integer references acs_objects(object_id),
+    process_doc_impl_id      integer 
+                             constraint auth_authority_procdoc_impl_fk
+                             references acs_objects(object_id),
     batch_sync_enabled_p     char(1) default 'f' 
                              constraint auth_authority_bs_enabled_p_nn
                              not null 
                              constraint auth_authority_bs_enabled_p_ck
-                             check (batch_sync_enabled_p in ('t','f'))
+                             check (batch_sync_enabled_p in ('t','f')),
+    allow_user_entered_info_p char(1) default 'f'
+                             constraint auth_auth_allow_user_i_p_nn
+                             not null,
+    search_impl_id           integer
+                             constraint auth_auth_search_impl_id_fk
+                             references acs_objects(object_id)
 );
 
 comment on column auth_authorities.help_contact_text is '
@@ -101,10 +111,10 @@ create table auth_driver_params(
                       constraint auth_driver_params_aid_nn
                       not null,
       impl_id         integer
-                      constraint auth_driver_params_iid_fk
+                      constraint auth_driver_params_impl_id_fk
                       -- Cannot reference acs_sc_impls table as it doesn't exist yet
                       references acs_objects(object_id)
-                      constraint auth_driver_params_iid_nn
+                      constraint auth_driver_params_impl_id_nn
                       not null,
       key             varchar2(200),
       value           clob,

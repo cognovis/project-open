@@ -5,7 +5,7 @@
 --
 -- @author Peter Marklund
 -- @creation-date 2000/10/01
--- @cvs-id $Id: acs-install.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: acs-install.sql,v 1.2 2010/10/19 20:11:31 po34demo Exp $
 --
 
 declare
@@ -18,7 +18,7 @@ begin
 
   main_site_id := apm_service.new(
 		    package_key => 'acs-subsite',
-		    instance_name => 'Main Site',
+		    instance_name => '#acs-kernel.Main_Site#',
                     context_id => acs.magic_object_id('default_context')
 	       );
 
@@ -51,13 +51,13 @@ begin
     from dual;
 
   segment_id := rel_segment.new(
-    segment_name => 'Main Site Members',
+    segment_name => '#acs-kernel.Main_Site_Members#',
     group_id => -2,
     rel_type => 'membership_rel'
   );
 
   segment_id := rel_segment.new(
-    segment_name => 'Main Site Administrators',
+    segment_name => '#acs-kernel.lt_Main_Site_Administrat#',
     group_id => -2,
     rel_type => 'admin_rel'
   );

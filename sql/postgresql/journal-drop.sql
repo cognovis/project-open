@@ -5,7 +5,7 @@
 --
 -- @author Lars Pind (lars@pinds.com)
 -- @creation-date 2000-22-18
--- @cvs-id journal-drop.sql,v 1.5 2000/10/24 22:26:20 bquinn Exp
+-- @cvs-id $Id: journal-drop.sql,v 1.2 2010/10/19 20:11:41 po34demo Exp $
 --
 
 \t

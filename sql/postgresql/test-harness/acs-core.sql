@@ -7,7 +7,7 @@
 --
 -- @creation-date 2000-08-05
 --
--- @cvs-id $Id: acs-core.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: acs-core.sql,v 1.2 2010/10/19 20:11:43 po34demo Exp $
 --
 
 create function test_acs_core () returns integer as '

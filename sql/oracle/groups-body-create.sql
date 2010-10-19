@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id $Id: groups-body-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: groups-body-create.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
 --
 
 --------------
@@ -503,9 +503,6 @@ end composition_rel;
 /
 show errors
 
-
-
-
 create or replace package body membership_rel
 as
 
@@ -557,6 +554,16 @@ as
     update membership_rels
     set member_state = 'approved'
     where rel_id = approve.rel_id;
+  end;
+
+  procedure merge (
+    rel_id      in membership_rels.rel_id%TYPE
+  )
+  is
+  begin
+    update membership_rels
+    set member_state = 'merged'
+    where rel_id = merge.rel_id;
   end;
 
   procedure reject (
@@ -777,14 +784,30 @@ is
   values
    (v_group_id, group_name, v_join_policy);
 
+  update acs_objects
+  set title = group_name
+  where object_id = v_group_id;
+
 
   -- setup the permissible relationship types for this group
   insert into group_rels
   (group_rel_id, group_id, rel_type)
-  select acs_object_id_seq.nextval, v_group_id, g.rel_type
-    from group_type_rels g
-   where g.group_type = new.object_type;
-
+  select acs_object_id_seq.nextval, v_group_id, rels.rel_type
+    from
+    ( select distinct g.rel_type
+      from group_type_rels g,
+      ( select object_type as parent_type
+        from acs_object_types
+        start with new.object_type = object_type
+        connect by prior supertype = object_type
+        ) types
+     where g.group_type = types.parent_type
+     and not exists
+     ( select 1 from group_rels
+       where group_rels.group_id = v_group_id
+       and group_rels.rel_type = g.rel_type)
+  ) rels;
+  
   return v_group_id;
  end new;
 

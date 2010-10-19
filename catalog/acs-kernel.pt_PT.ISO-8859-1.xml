@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-kernel" package_version="5.1.5" locale="pt_PT" charset="ISO-8859-1">
+<message_catalog package_key="acs-kernel" locale="pt_PT" charset="ISO-8859-1">
 
   <msg key="authentication_authority">Autoridade</msg>
   <msg key="common_apply">Aplicar</msg>
-  <msg key="common_Cancel">Cancelar</msg>
   <msg key="common_cancel">Cancelar</msg>
   <msg key="common_close">Fechar</msg>
   <msg key="common_continue">Continuar</msg>
@@ -15,7 +14,8 @@
   <msg key="common_help">Ajuda</msg>
   <msg key="common_login">Log in</msg>
   <msg key="common_next">Próximo</msg>
-  <msg key="common_no">Não</msg>
+  <msg key="common_No">Não</msg>
+  <msg key="common_no">não</msg>
   <msg key="common_previous">Anterior</msg>
   <msg key="common_register">Registar</msg>
   <msg key="common_reset">Restaurar</msg>

@@ -5,7 +5,7 @@
 --
 -- @author Peter Marklund
 -- @creation-date 2000/10/01
--- @cvs-id acs-install.sql,v 1.9.2.1 2001/01/12 18:32:21 dennis Exp
+-- @cvs-id $Id: acs-install.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 create function inline_0 ()
@@ -17,7 +17,7 @@ begin
 
   main_site_id := apm_service__new(
                     null,
-		    ''Main Site'',
+		    ''#acs-kernel.Main_Site#'',
 		    ''acs-subsite'',
                     ''apm_service'',
                     now(),
@@ -54,7 +54,7 @@ begin
                    null,
                    null,
                    null,
-                   ''Main Site Members'',
+                   ''#acs-kernel.Main_Site_Members#'',
                    -2,
                    ''membership_rel'',
                    null
@@ -68,7 +68,7 @@ begin
                    null,
                    null,
                    null,
-                   ''Main Site Administrators'',
+                   ''#acs-kernel.lt_Main_Site_Administrat#'',
                    -2,
                    ''admin_rel'',
                    null

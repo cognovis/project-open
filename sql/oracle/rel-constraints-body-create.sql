@@ -5,7 +5,7 @@
 --
 -- @author Oumi Mehrotra (oumi@arsdigita.com)
 -- @creation-date 2000-11-22
--- @cvs-id $Id: rel-constraints-body-create.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: rel-constraints-body-create.sql,v 1.2 2010/10/19 20:11:34 po34demo Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -33,6 +33,7 @@ as
     v_constraint_id := acs_object.new (
       object_id => constraint_id,
       object_type => constraint_type,
+      title => constraint_name,
       context_id => context_id,
       creation_user => creation_user,
       creation_ip => creation_ip

@@ -6,7 +6,7 @@
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id apm-create.sql,v 1.21.2.5 2001/01/22 19:10:41 mayoff Exp
+-- @cvs-id $Id: apm-create.sql,v 1.2 2010/10/19 20:11:39 po34demo Exp $
 
 -----------------------------
 --     PACKAGE OBJECT	   --
@@ -32,8 +32,18 @@ create table apm_package_types (
 				check (package_type in ('apm_application', 'apm_service')),
     spec_file_path		varchar(1500),
     spec_file_mtime		integer,
-    initial_install_p		boolean default 'f' not null,
-    singleton_p			boolean default 'f' not null
+    initial_install_p		boolean default 'f'
+                                constraint apm_packages_in_inst_nn
+                                not null,
+    singleton_p			boolean default 'f'
+                                constraint apm_packages_singleton_nn
+                                not null,
+    implements_subsite_p        boolean default 'f'
+                                constraint apm_packages_impl_subs_p_nn
+                                not null,
+    inherit_templates_p         boolean default 't'
+                                constraint inherit_templates_p_nn
+                                not null
 );
 
 comment on table apm_package_types is '
@@ -73,6 +83,17 @@ comment on column apm_package_types.singleton_p is '
  restricted to the acs-admin/ subsite.
 ';
 
+comment on column apm_package_types.implements_subsite_p is '
+  If true, this package implements subsite semantics, typically by extending the
+  acs-subsite package.  Used by the admin "mount subsite" UI, the request processor (for
+  setting ad_conn''s subsite_* attributes), etc.
+';
+
+comment on column apm_package_types.inherit_templates_p is '
+  If true, inherit templates from packages this package extends.  If false, only
+  templates in this package''s www subdirectory tree will be mapped to URLs by the
+  request processor.
+';
 
 create or replace function inline_0 ()
 returns integer as '
@@ -83,12 +104,12 @@ begin
    ''Package'',             -- pretty_name
    ''Packages'',            -- pretty_plural
    ''acs_object'',          -- supertype
-   ''APM_PACKAGES'',        -- table_name
+   ''apm_packages'',        -- table_name
    ''package_id'',          -- id_column
    ''apm_package'',         -- package_name
    ''f'',                   -- abstract_p
    ''apm_package_types'',   -- type_extension_table
-   ''apm_package.name''     -- name_method
+   ''apm_package__name''     -- name_method
    );
 
   return 0;
@@ -123,86 +144,6 @@ begin
    ''f''
    );
 
- attr_id := acs_attribute__create_attribute (
-   ''apm_package'',
-   ''package_uri'',
-   ''string'',
-   ''Package URI'',
-   ''Package URIs'',
-   null,
-   null,
-   null,
-   1,
-   1,
-   null,
-   ''type_specific'',
-   ''f''
-   );
-
- attr_id := acs_attribute__create_attribute (
-   ''apm_package'',
-   ''spec_file_path'',
-   ''string'',
-   ''Specification File Path'',
-   ''Specification File Paths'',
-   null,
-   null,
-   null,
-   1,
-   1,
-   null,
-   ''type_specific'',
-   ''f''
-   );
-
- attr_id := acs_attribute__create_attribute (
-   ''apm_package'',
-   ''spec_file_mtime'',
-   ''number'',
-   ''Specification File Modified Time'',
-   ''Specification File Modified Times'',
-   null,
-   null,
-   null,
-   1,
-   1,
-   null,
-   ''type_specific'',
-   ''f''
-   );
-
- attr_id := acs_attribute__create_attribute (
-   ''apm_package'',
-   ''initial_install_p'',
-   ''boolean'',
-   ''Initial Install'',
-   ''Initial Installs'',
-   null,
-   null,
-   null,
-   1,
-   1,
-   null,
-   ''type_specific'',
-   ''f''
-   );
-
- attr_id := acs_attribute__create_attribute (
-   ''apm_package'',
-   ''singleton_p'',
-   ''boolean'',
-   ''Singleton'',
-   ''Singletons'',
-   null,
-   null,
-   null,
-   1,
-   1,
-   null,
-   ''type_specific'',
-   ''f''
-   );
-
   return 0;
 end;' language 'plpgsql';
 
@@ -216,16 +157,19 @@ drop function inline_1 ();
 create table apm_packages (
     package_id			integer constraint apm_packages_package_id_fk
 				references acs_objects(object_id)
-				constraint apm_packages_pack_id_pk primary key,
+				constraint apm_packages_package_id_pk primary key,
     package_key			varchar(100) constraint apm_packages_package_key_fk
 				references apm_package_types(package_key),
     instance_name		varchar(300)
-			        constraint apm_packages_inst_name_nn not null,
+			        constraint apm_packages_instance_name_nn not null,
     -- default system locale for this package
     default_locale              varchar(30)
 );
 
 create index apm_packages_package_key_idx on apm_packages (package_key);
+
+-- This cant be added at table create time since acs_objects is created before apm_packages;
+alter table acs_objects add constraint acs_objects_package_id_fk foreign key (package_id) references apm_packages(package_id) on delete set null;
 
 comment on table apm_packages is '
    This table maintains the list of all package instances in the sytem. 
@@ -412,6 +356,25 @@ comment on column apm_package_versions.auto_mount is '
  such as general-comments and notifications.
 ';
 
+-- Use this table to make it easy to change the attribute set of package versions
+-- TODO: Migrate this to use acs_attributes instead?
+create table apm_package_version_attr (
+    version_id         integer
+                       constraint apm_package_vers_attr_vid_fk	
+                       references apm_package_versions(version_id) 
+                       on delete cascade
+                       constraint apm_package_vers_attr_vid_nn
+                       not null,
+    attribute_name     varchar(100)
+                       constraint apm_package_vers_attr_an_nn
+                       not null,
+    attribute_value    varchar(4000),
+    constraint apm_package_vers_attr_pk
+    primary key (version_id, attribute_name)
+);
+
+
+
 -- Metadata for the apm_package_versions object.
 
 create or replace function inline_2 ()
@@ -424,9 +387,9 @@ begin
    ''Package Version'',
    ''Package Versions'',
    ''acs_object'',
-   ''APM_PACKAGE_VERSIONS'',
+   ''apm_package_versions'',
    ''version_id'',
-   ''APM_PACKAGE_VERSION'',
+   ''apm_package_version'',
    ''f'',
    null,
    null
@@ -563,7 +526,7 @@ begin
  attr_id := acs_attribute__create_attribute (
    ''apm_package_version'',
    ''enabled_p'',
-   ''string'',
+   ''boolean'',
    ''Enabled'',
    ''Enabled'',
    null,
@@ -595,7 +558,7 @@ begin
  attr_id := acs_attribute__create_attribute (
    ''apm_package_version'',
    ''deactivation_date'',
-   ''string'',
+   ''date'',
    ''Deactivation Date'',
    ''Deactivation Dates'',
    null,
@@ -699,9 +662,11 @@ comment on column apm_package_callbacks.type is '
 -- DCW - 2001-05-04, converted tarball storage to use content repository.
 create view apm_package_version_info as
     select v.package_key, t.package_uri, t.pretty_name, t.singleton_p, t.initial_install_p,
+           t.inherit_templates_p, t.implements_subsite_p,
            v.version_id, v.version_name,
            v.version_uri, v.summary, v.description_format, v.description, v.release_date,
-           v.vendor, v.vendor_uri, v.auto_mount, v.enabled_p, v.installed_p, v.tagged_p, v.imported_p, v.data_model_loaded_p,
+           v.vendor, v.vendor_uri, v.auto_mount, v.enabled_p, v.installed_p, v.tagged_p,
+           v.imported_p, v.data_model_loaded_p,
            v.activation_date, v.deactivation_date,
            coalesce(v.content_length,0) as tarball_length,
            distribution_uri, distribution_date
@@ -729,26 +694,31 @@ comment on table apm_package_db_types is '
 ';
 
 create table apm_parameters (
-	parameter_id		integer constraint apm_parameters_fk 
+	parameter_id		integer constraint apm_parameters_parameter_id_fk 
 				references acs_objects(object_id)
-			        constraint apm_parameters_pk primary key,
+			        constraint apm_parameters_parameter_id_pk primary key,
 	package_key		varchar(100)
-				constraint apm_pack_param_pack_key_nn not null 	
-				constraint apm_pack_param_type_fk
+				constraint apm_parameters_package_key_nn not null 	
+				constraint apm_parameters_package_key_fk
 			        references apm_package_types (package_key),
 	parameter_name		varchar(100) 
 				constraint apm_pack_params_name_nn not null,
         description		varchar(2000),
 	section_name		varchar(200),
 	datatype	        varchar(100) not null
-			        constraint apm_parameter_datatype_ck 
-				check(datatype in ('number', 'string')),
+			        constraint apm_parameters_datatype_ck 
+				check(datatype in ('number', 'string','text')),
+        scope                   varchar(10) default 'instance'
+                                constraint apm_parameters_scope_ck
+                                check (scope in ('global','instance'))
+                                constraint apm_parameters_scope_nn
+                                not null,
 	default_value		text,
 	min_n_values		integer default 1 not null
-			        constraint apm_paramters_min_n_ck
+			        constraint apm_parameters_min_n_values_ck
 			        check (min_n_values >= 0),
 	max_n_values		integer default 1 not null
-			        constraint apm_paramters_max_n_ck
+			        constraint apm_parameters_max_n_values_ck
 			        check (max_n_values >= 0),
 	constraint apm_paramters_attr_name_un
 	unique (parameter_name, package_key),
@@ -761,11 +731,16 @@ create index apm_parameters_package_idx on apm_parameters (package_key);
 comment on table apm_parameters is '
   This table stores information about parameters on packages.  Every package parameter
 is specific to a particular package instance and is queryable with the Tcl call 
-ad_parameter.
+parameter::get.
 ';
 
 comment on column apm_parameters.parameter_name is '
   This is the name of the parameter, for example "DebugP."
+';
+
+comment on column apm_parameters.scope is '
+  If the scope is "global", only one value of the parameter exists for the entire site.
+  If "instance", each package instance has its own value.
 ';
 
 comment on column apm_parameters.description is '
@@ -789,7 +764,7 @@ comment on column apm_parameters.min_n_values is '
   that the default is always enforced (but is somewhat pointless).  One value means that
   it can only be set to one value.  Increasing this number beyond one enables associating 
   a list of values with a parameter.  
-  XXX (bquinn): More than one value is not supported by ad_parameter call at this time.
+  XXX (bquinn): More than one value is not supported by parameter::get call at this time.
 ';
 
 comment on column apm_parameters.max_n_values is '
@@ -801,9 +776,9 @@ create table apm_parameter_values (
 	value_id		integer constraint apm_parameter_values_fk
 				references acs_objects(object_id)
 				constraint apm_parameter_values_pk primary key,
-	package_id		integer constraint apm_pack_values_obj_id_fk
+	package_id		integer constraint apm_parameter_values_pk_id_fk 
 				references apm_packages (package_id) on delete cascade,
-	parameter_id		integer constraint apm_pack_values_parm_id_fk
+	parameter_id		integer constraint apm_parameter_values_pm_id_fk
 				references apm_parameters (parameter_id),
 	attr_value		text,
 	constraint apm_parameter_values_un 
@@ -832,7 +807,7 @@ begin
    ''Package Parameter'',
    ''Package Parameters'',
    ''acs_object'',
-   ''APM_PARAMETERS'',
+   ''apm_parameters'',
    ''parameter_id'',
    ''apm_parameter'',
    ''f'',
@@ -871,6 +846,22 @@ begin
    ''type_specific'',
    ''f''
    );
+
+attr_id := acs_attribute__create_attribute (
+   ''apm_parameter'',
+   ''scope'',
+   ''string'',
+   ''Scope'',
+   ''Scope'',
+   null,
+   null,
+   null,
+   1,
+   1,
+   null,
+   ''type_specific'',
+   ''f''
+   ); 
 
  attr_id := acs_attribute__create_attribute (
    ''apm_parameter'',
@@ -923,7 +914,7 @@ begin
  attr_id := acs_attribute__create_attribute (
    ''apm_parameter'',
    ''max_n_values'',
-   ''string'',
+   ''integer'',
    ''Maximum Number of Values'',
    ''Maximum Number of Values Settings'',
    null,
@@ -1030,7 +1021,8 @@ create table apm_package_dependencies (
                        constraint apm_package_deps_version_id_nn not null,
     dependency_type    varchar(20)
                        constraint apm_package_deps_type_nn not null
-                       constraint apm_package_deps_type_ck check(dependency_type in ('provides','requires')),
+                       constraint apm_package_deps_type_ck
+                       check(dependency_type in ('embeds', 'extends', 'provides','requires')),
     service_uri        varchar(1500)
                        constraint apm_package_deps_uri_nn not null,
     service_version    varchar(100)
@@ -1049,9 +1041,9 @@ comment on column apm_package_dependencies.service_version is '
 
 create table apm_applications (
        application_id		integer
-				constraint applications_application_id_fk
+				constraint apm_applications_aplt_id_fk
 				references apm_packages(package_id)
-				constraint applications_pk primary key
+				constraint apm_applications_pk primary key
 );
 
 comment on table apm_applications is '
@@ -1061,9 +1053,9 @@ This table records data on all of the applications registered in OpenACS.
 
 create table apm_services (
        service_id			integer
-					constraint services_service_id_fk
+					constraint apm_services_service_id_fk
 					references apm_packages(package_id)
-				        constraint services_pk primary key
+				        constraint apm_services_service_id_pk primary key
 );
 
 comment on table apm_services is '
@@ -1127,7 +1119,7 @@ select inline_7 ();
 
 drop function inline_7 ();
 
-create or replace function apm__register_package (varchar,varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm__register_package (varchar,varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns integer as '
 declare
   package_key            alias for $1;  
@@ -1137,8 +1129,10 @@ declare
   package_type           alias for $5;  
   initial_install_p      alias for $6;  -- default ''f''  
   singleton_p            alias for $7;  -- default ''f''  
-  spec_file_path         alias for $8;  -- default null
-  spec_file_mtime        alias for $9;  -- default null
+  implements_subsite_p   alias for $8;  -- default ''f''  
+  inherit_templates_p    alias for $9;  -- default ''f''  
+  spec_file_path         alias for $10;  -- default null
+  spec_file_mtime        alias for $11;  -- default null
 begin
     PERFORM apm_package_type__create_type(
     	package_key,
@@ -1148,6 +1142,8 @@ begin
 	package_type,
 	initial_install_p,
 	singleton_p,
+        implements_subsite_p,
+        inherit_templates_p,
 	spec_file_path,
 	spec_file_mtime
     );
@@ -1155,9 +1151,8 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
-
 -- function update_package
-create or replace function apm__update_package (varchar,varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm__update_package (varchar,varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns varchar as '
 declare
   package_key            alias for $1;  
@@ -1167,8 +1162,10 @@ declare
   package_type           alias for $5;  -- default null  
   initial_install_p      alias for $6;  -- default null  
   singleton_p            alias for $7;  -- default null  
-  spec_file_path         alias for $8;  -- default null  
-  spec_file_mtime        alias for $9;  -- default null  
+  implements_subsite_p   alias for $8;  -- default ''f''  
+  inherit_templates_p    alias for $9;  -- default ''f''  
+  spec_file_path         alias for $10;  -- default null
+  spec_file_mtime        alias for $11;  -- default null
 begin
  
     return apm_package_type__update_type(
@@ -1179,27 +1176,30 @@ begin
 	package_type,
 	initial_install_p,
 	singleton_p,
+        implements_subsite_p,
+        inherit_templates_p,
 	spec_file_path,
 	spec_file_mtime
     );
-   
 end;' language 'plpgsql';
-
 
 -- procedure unregister_package
 create or replace function apm__unregister_package (varchar,boolean)
 returns integer as '
 declare
   package_key            alias for $1;  
-  cascade_p              alias for $2;  -- default ''t''  
+  p_cascade_p            alias for $2;  -- default ''t''  
+  v_cascade_p            boolean;
 begin
    if cascade_p is null then 
-	cascade_p := ''t'';
+	v_cascade_p := ''t'';
+   else 
+       v_cascade_p := p_cascade_p;
    end if;
 
    PERFORM apm_package_type__drop_type(
 	package_key,
-	cascade_p
+	v_cascade_p
    );
 
    return 0; 
@@ -1223,7 +1223,7 @@ end;' language 'plpgsql' stable;
 
 
 -- procedure register_application
-create or replace function apm__register_application (varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm__register_application (varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns integer as '
 declare
   package_key            alias for $1;  
@@ -1232,8 +1232,10 @@ declare
   package_uri            alias for $4;  
   initial_install_p      alias for $5;  -- default ''f'' 
   singleton_p            alias for $6;  -- default ''f'' 
-  spec_file_path         alias for $7;  -- default null
-  spec_file_mtime        alias for $8;  -- default null
+  implements_subsite_p   alias for $7;  -- default ''f''  
+  inherit_templates_p    alias for $8;  -- default ''f''  
+  spec_file_path         alias for $9;  -- default null
+  spec_file_mtime        alias for $10;  -- default null
 begin
    PERFORM apm__register_package(
 	package_key,
@@ -1243,6 +1245,8 @@ begin
 	''apm_application'',
 	initial_install_p,
 	singleton_p,
+        implements_subsite_p,
+        inherit_templates_p,
 	spec_file_path,
 	spec_file_mtime
    ); 
@@ -1256,11 +1260,18 @@ create or replace function apm__unregister_application (varchar,boolean)
 returns integer as '
 declare
   package_key            alias for $1;  
-  cascade_p              alias for $2;  -- default ''f''  
+  p_cascade_p              alias for $2;  -- default ''f''  
+  v_cascade_p            boolean;
 begin
+   if p_cascade_p is null then 
+	v_cascade_p := ''f'';
+   else 
+       v_cascade_p := p_cascade_p;
+   end if;
+
    PERFORM apm__unregister_package (
-	package_key,
-	cascade_p
+        package_key,
+        v_cascade_p
    );
 
    return 0; 
@@ -1268,7 +1279,7 @@ end;' language 'plpgsql';
 
 
 -- procedure register_service
-create or replace function apm__register_service (varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm__register_service (varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns integer as '
 declare
   package_key            alias for $1;  
@@ -1277,8 +1288,10 @@ declare
   package_uri            alias for $4;  
   initial_install_p      alias for $5;  -- default ''f''  
   singleton_p            alias for $6;  -- default ''f''  
-  spec_file_path         alias for $7;  -- default null
-  spec_file_mtime        alias for $8;  -- default null
+  implements_subsite_p   alias for $7;  -- default ''f''  
+  inherit_templates_p    alias for $8;  -- default ''f''  
+  spec_file_path         alias for $9;  -- default null
+  spec_file_mtime        alias for $10;  -- default null
 begin
    PERFORM apm__register_package(
 	package_key,
@@ -1288,6 +1301,8 @@ begin
 	''apm_service'',
 	initial_install_p,
 	singleton_p,
+        implements_subsite_p,
+        inherit_templates_p,
 	spec_file_path,
 	spec_file_mtime
    );  
@@ -1300,20 +1315,92 @@ end;' language 'plpgsql';
 create or replace function apm__unregister_service (varchar,boolean)
 returns integer as '
 declare
-  package_key            alias for $1;  
-  cascade_p              alias for $2;  -- default ''f''  
+  package_key           alias for $1;  
+  p_cascade_p           alias for $2;  -- default ''f''  
+  v_cascade_p           boolean;
 begin
-   if cascade_p is null then 
-	cascade_p := ''f'';
+   if p_cascade_p is null then 
+	v_cascade_p := ''f'';
+   else 
+	v_cascade_p := p_cascade_p;
    end if;
 
    PERFORM apm__unregister_package (
 	package_key,
-	cascade_p
+	v_cascade_p
    );
 
    return 0; 
 end;' language 'plpgsql';
+
+create or replace function apm__register_parameter (integer,varchar,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer)
+returns integer as '
+declare
+  register_parameter__parameter_id           alias for $1;  -- default null  
+  register_parameter__package_key            alias for $2;  
+  register_parameter__parameter_name         alias for $3;  
+  register_parameter__description            alias for $4;  -- default null  
+  register_parameter__scope                  alias for $5;  
+  register_parameter__datatype               alias for $6;  -- default ''string''  
+  register_parameter__default_value          alias for $7;  -- default null  
+  register_parameter__section_name           alias for $8;  -- default null 
+  register_parameter__min_n_values           alias for $9;  -- default 1
+  register_parameter__max_n_values           alias for $10;  -- default 1
+
+  v_parameter_id         apm_parameters.parameter_id%TYPE;
+  v_value_id             apm_parameter_values.value_id%TYPE;
+  v_pkg                  record;
+
+begin
+    -- Create the new parameter.    
+    v_parameter_id := acs_object__new(
+       register_parameter__parameter_id,
+       ''apm_parameter'',
+       now(),
+       null,
+       null,
+       null,
+       ''t'',
+       register_parameter__package_key || '' - '' || register_parameter__parameter_name,
+       null
+    );
+    
+    insert into apm_parameters 
+    (parameter_id, parameter_name, scope, description, package_key, datatype, 
+    default_value, section_name, min_n_values, max_n_values)
+    values
+    (v_parameter_id, register_parameter__parameter_name, register_parameter__scope,
+     register_parameter__description, register_parameter__package_key, 
+     register_parameter__datatype, register_parameter__default_value, 
+     register_parameter__section_name, register_parameter__min_n_values, 
+     register_parameter__max_n_values);
+
+    -- Propagate parameter to new instances.	
+    if register_parameter__scope = ''instance'' then
+      for v_pkg in
+          select package_id
+  	from apm_packages
+  	where package_key = register_parameter__package_key
+        loop
+          v_value_id := apm_parameter_value__new(
+  	    null,
+  	    v_pkg.package_id,
+  	    v_parameter_id, 
+  	    register_parameter__default_value); 	
+        end loop;		
+     else
+       v_value_id := apm_parameter_value__new(
+  	 null,
+  	 null,
+  	 v_parameter_id, 
+  	 register_parameter__default_value); 	
+     end if;
+	
+    return v_parameter_id;
+   
+end;' language 'plpgsql';
+
+-- For backwards compatibility, register a parameter with "instance" scope.
 
 create or replace function apm__register_parameter (integer,varchar,varchar,varchar,varchar,varchar,varchar,integer,integer)
 returns integer as '
@@ -1328,47 +1415,13 @@ declare
   register_parameter__min_n_values           alias for $8;  -- default 1
   register_parameter__max_n_values           alias for $9;  -- default 1
 
-  v_parameter_id         apm_parameters.parameter_id%TYPE;
-  v_value_id             apm_parameter_values.value_id%TYPE;
-  v_pkg                  record;
-
 begin
-    -- Create the new parameter.    
-    v_parameter_id := acs_object__new(
-       register_parameter__parameter_id,
-       ''apm_parameter'',
-       now(),
-       null,
-       null,
-       null
-    );
-    
-    insert into apm_parameters 
-    (parameter_id, parameter_name, description, package_key, datatype, 
-    default_value, section_name, min_n_values, max_n_values)
-    values
-    (v_parameter_id, register_parameter__parameter_name, 
-     register_parameter__description, register_parameter__package_key, 
-     register_parameter__datatype, register_parameter__default_value, 
-     register_parameter__section_name, register_parameter__min_n_values, 
-     register_parameter__max_n_values);
-
-    -- Propagate parameter to new instances.	
-    for v_pkg in
-        select package_id
-	from apm_packages
-	where package_key = register_parameter__package_key
-      loop
-      	v_value_id := apm_parameter_value__new(
-	    null,
-	    v_pkg.package_id,
-	    v_parameter_id, 
-	    register_parameter__default_value
-	    ); 	
-      end loop;		
-	
-    return v_parameter_id;
-   
+  return
+    apm__register_parameter(register_parameter__parameter_id, register_parameter__package_key,
+                           register_parameter__parameter_name, register_parameter__description,
+                           ''instance'',  register_parameter__datatype,
+                           register_parameter__default_value, register_parameter__section_name,
+                           register_parameter__min_n_values, register_parameter__max_n_values);
 end;' language 'plpgsql';
 
 -- function update_parameter
@@ -1393,6 +1446,12 @@ begin
             min_n_values   = coalesce(update_parameter__min_n_values, min_n_values),
             max_n_values   = coalesce(update_parameter__max_n_values, max_n_values)
       where parameter_id = update_parameter__parameter_id;
+
+    update acs_objects
+       set title = (select package_key || '': Parameter '' || parameter_name
+                    from apm_parameters
+                    where parameter_id = update_parameter__parameter_id)
+     where object_id = update_parameter__parameter_id;
 
     return parameter_id;
      
@@ -1432,13 +1491,33 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
+create or replace function apm__id_for_name (integer,varchar)
+returns integer as '
+declare
+  id_for_name__package_id             alias for $1;  
+  id_for_name__parameter_name         alias for $2;  
+  a_parameter_id                      apm_parameters.parameter_id%TYPE;
+begin
+    select parameter_id into a_parameter_id 
+    from apm_parameters 
+    where parameter_name = id_for_name__parameter_name
+      and package_key = (select package_key from apm_packages
+                         where package_id = id_for_name__package_id);
 
--- function id_for_name
+    if NOT FOUND
+      then
+      	raise EXCEPTION ''-20000: The specified package % AND/OR parameter % do not exist in the system'', id_for_name__package_id, id_for_name__parameter_name;
+    end if;
+
+    return a_parameter_id;
+   
+end;' language 'plpgsql' stable strict;
+
 create or replace function apm__id_for_name (varchar,varchar)
 returns integer as '
 declare
-  id_for_name__parameter_name         alias for $1;  
-  id_for_name__package_key            alias for $2;  
+  id_for_name__package_key            alias for $1;  
+  id_for_name__parameter_name         alias for $2;  
   a_parameter_id                      apm_parameters.parameter_id%TYPE;
 begin
     select parameter_id into a_parameter_id
@@ -1446,19 +1525,25 @@ begin
     where p.parameter_name = id_for_name__parameter_name and
           p.package_key = id_for_name__package_key;
 
+    if NOT FOUND
+      then
+      	raise EXCEPTION ''-20000: The specified package % AND/OR parameter % do not exist in the system'', id_for_name__package_key, id_for_name__parameter_name;
+    end if;
+
     return a_parameter_id;
    
 end;' language 'plpgsql' stable strict;
 
-
--- function get_value
-create or replace function apm__get_value (integer,integer)
+create or replace function apm__get_value (integer,varchar)
 returns varchar as '
 declare
-  get_value__parameter_id           alias for $1;  
-  get_value__package_id             alias for $2;  
+  get_value__package_id             alias for $1;  
+  get_value__parameter_name         alias for $2;  
+  v_parameter_id                    apm_parameter_values.parameter_id%TYPE;
   value                             apm_parameter_values.attr_value%TYPE;
 begin
+    v_parameter_id := apm__id_for_name (get_value__package_id, get_value__parameter_name);
+
     select attr_value into value from apm_parameter_values v
     where v.package_id = get_value__package_id
     and parameter_id = get_value__parameter_id;
@@ -1467,60 +1552,24 @@ begin
    
 end;' language 'plpgsql' stable strict;
 
-
--- function get_value
-create or replace function apm__get_value (integer,varchar)
+create or replace function apm__get_value (varchar,varchar)
 returns varchar as '
 declare
-  get_value__package_id             alias for $1;  
+  get_value__package_key            alias for $1;  
   get_value__parameter_name         alias for $2;  
   v_parameter_id                    apm_parameter_values.parameter_id%TYPE;
+  value                             apm_parameter_values.attr_value%TYPE;
 begin
-    select parameter_id into v_parameter_id 
-    from apm_parameters 
-    where parameter_name = get_value__parameter_name
-    and package_key = (select package_key  from apm_packages
-			where package_id = get_value__package_id);
-    return apm__get_value(
-	v_parameter_id,
-	get_value__package_id
-    );	
+    v_parameter_id := apm__id_for_name (get_value__package_key, get_value__parameter_name);
+
+    select attr_value into value from apm_parameter_values v
+    where v.package_id is null
+    and parameter_id = get_value__parameter_id;
+
+    return value;
    
 end;' language 'plpgsql' stable strict;
 
-
--- procedure set_value
-create or replace function apm__set_value (integer,integer,varchar)
-returns integer as '
-declare
-  set_value__parameter_id           alias for $1;  
-  set_value__package_id             alias for $2;  
-  set_value__attr_value             alias for $3;  
-  v_value_id                        apm_parameter_values.value_id%TYPE;
-begin
-    -- Determine if the value exists
-    select value_id into v_value_id from apm_parameter_values 
-     where parameter_id = set_value__parameter_id 
-     and package_id = set_value__package_id;
-    update apm_parameter_values set attr_value = set_value__attr_value
-     where parameter_id = set_value__parameter_id 
-     and package_id = set_value__package_id;    
-   --  exception 
-     if NOT FOUND
-       then
-         v_value_id := apm_parameter_value__new(
-            null,
-            set_value__package_id,
-            set_value__parameter_id,
-            set_value__attr_value
-         );
-     end if;
-
-     return 0; 
-end;' language 'plpgsql';
-
-
--- procedure set_value
 create or replace function apm__set_value (integer,varchar,varchar)
 returns integer as '
 declare
@@ -1528,33 +1577,93 @@ declare
   set_value__parameter_name         alias for $2;  
   set_value__attr_value             alias for $3;  
   v_parameter_id                    apm_parameter_values.parameter_id%TYPE;
+  v_value_id                        apm_parameter_values.value_id%TYPE;
 begin
-    select parameter_id into v_parameter_id 
-    from apm_parameters 
-    where parameter_name = set_value__parameter_name
-    and package_key = (select package_key  from apm_packages
-			where package_id = set_value__package_id);
+    v_parameter_id := apm__id_for_name (set_value__package_id, set_value__parameter_name);
 
-    if NOT FOUND
-      then
-      	raise EXCEPTION ''-20000: The specified package % AND/OR parameter % do not exist in the system'', set_value__package_id, set_value__parameter_name;
-    end if;
-
-    PERFORM apm__set_value(
-	v_parameter_id,
-	set_value__package_id,
-	set_value__attr_value
-    );
+    -- Determine if the value exists
+    select value_id into v_value_id from apm_parameter_values 
+     where parameter_id = v_parameter_id 
+     and package_id = set_value__package_id;
+    update apm_parameter_values set attr_value = set_value__attr_value
+     where value_id = v_value_id;
+    update acs_objects set last_modified = now() 
+     where object_id = v_value_id;
+   --  exception 
+     if NOT FOUND
+       then
+         v_value_id := apm_parameter_value__new(
+            null,
+            set_value__package_id,
+            v_parameter_id,
+            set_value__attr_value
+         );
+     end if;
 
     return 0; 
 end;' language 'plpgsql';
 
+create or replace function apm__set_value (varchar,varchar,varchar)
+returns integer as '
+declare
+  set_value__package_key            alias for $1;  
+  set_value__parameter_name         alias for $2;  
+  set_value__attr_value             alias for $3;  
+  v_parameter_id                    apm_parameter_values.parameter_id%TYPE;
+  v_value_id                        apm_parameter_values.value_id%TYPE;
+begin
+    v_parameter_id := apm__id_for_name (set_value__package_key, set_value__parameter_name);
 
+    -- Determine if the value exists
+    select value_id into v_value_id from apm_parameter_values 
+     where parameter_id = v_parameter_id 
+     and package_id is null;
+    update apm_parameter_values set attr_value = set_value__attr_value
+     where value_id = v_value_id;
+    update acs_objects set last_modified = now() 
+     where object_id = v_value_id;
+   --  exception 
+     if NOT FOUND
+       then
+         v_value_id := apm_parameter_value__new(
+            null,
+            null,
+            v_parameter_id,
+            set_value__attr_value
+         );
+     end if;
 
--- show errors
+    return 0; 
+end;' language 'plpgsql';
 
--- create or replace package body apm_package
--- procedure initialize_parameters
+create or replace function apm_package__is_child(varchar, varchar) returns boolean as '
+declare
+  parent_package_key       alias for $1;
+  child_package_key        alias for $2;
+  dependency               record;
+begin
+
+  if parent_package_key = child_package_key then
+    return ''t'';
+  end if;
+
+  for dependency in 
+    select apd.service_uri
+    from apm_package_versions apv, apm_package_dependencies apd
+    where apd.version_id = apv.version_id
+      and apv.enabled_p
+      and apd.dependency_type in (''embeds'', ''extends'')
+      and apv.package_key = child_package_key
+  loop
+    if dependency.service_uri = parent_package_key or
+      apm_package__is_child(parent_package_key, dependency.service_uri) then
+      return ''t'';
+    end if;
+  end loop;
+      
+  return ''f'';
+end;' language 'plpgsql';
+
 create or replace function apm_package__initialize_parameters (integer,varchar)
 returns integer as '
 declare
@@ -1567,6 +1676,7 @@ begin
     for cur_val in select parameter_id, default_value
        from apm_parameters
        where package_key = ip__package_key
+         and scope = ''instance''
       loop
         v_value_id := apm_parameter_value__new(
           null,
@@ -1635,6 +1745,11 @@ begin
        values
        (v_package_id, new__package_key, v_instance_name);
 
+       update acs_objects
+       set title = v_instance_name,
+           package_id = v_package_id
+       where object_id = v_package_id;
+
        if v_package_type = ''apm_application'' then
 	   insert into apm_applications
 	   (application_id)
@@ -1661,12 +1776,22 @@ create or replace function apm_package__delete (integer) returns integer as '
 declare
    delete__package_id   alias for $1;
    cur_val              record;
+   v_folder_row         record;
 begin
     -- Delete all parameters.
     for cur_val in select value_id from apm_parameter_values
 	where package_id = delete__package_id loop
     	PERFORM apm_parameter_value__delete(cur_val.value_id);
     end loop;    
+
+   -- Delete the folders
+    for v_folder_row in select
+        folder_id
+        from cr_folders
+        where package_id = delete__package_id
+    loop
+        perform content_folder__del(v_folder_row.folder_id,''t'');
+    end loop;
 
     delete from apm_applications where application_id = delete__package_id;
     delete from apm_services where service_id = delete__package_id;
@@ -1676,6 +1801,7 @@ begin
 	where object_id = delete__package_id loop
     	PERFORM site_node__delete(cur_val.node_id);
     end loop;
+
     -- Delete the object.
     PERFORM acs_object__delete (
        delete__package_id
@@ -1807,6 +1933,9 @@ begin
                 now(),
                 null,
                 null,
+                null,
+                ''t'',
+                apm_pkg_ver__package_key || '', Version '' || apm_pkg_ver__version_name,
                 null
         );
 
@@ -1902,6 +2031,12 @@ begin
 	    from apm_package_versions
 	    where version_id = copy__version_id;
     
+        update acs_objects
+        set title = (select v.package_key || '', Version '' || v.version_name
+                     from apm_package_versions v
+                     where v.version_id = copy__version_id)
+        where object_id = copy__version_id;
+
 	insert into apm_package_dependencies(dependency_id, version_id, dependency_type, service_uri, service_version)
 	    select nextval(''t_acs_object_id_seq''), v_version_id, dependency_type, service_uri, service_version
 	    from apm_package_dependencies
@@ -2037,13 +2172,14 @@ end;' language 'plpgsql';
 
 
 -- function add_dependency
-create or replace function apm_package_version__add_dependency (integer,integer,varchar,varchar)
+create or replace function apm_package_version__add_dependency (varchar,integer,integer,varchar,varchar)
 returns integer as '
 declare
-  add_dependency__dependency_id          alias for $1;  -- default null  
-  add_dependency__version_id             alias for $2;  
-  add_dependency__dependency_uri         alias for $3;  
-  add_dependency__dependency_version     alias for $4;  
+  add_dependency__dependency_type        alias for $1;
+  add_dependency__dependency_id          alias for $2;  -- default null  
+  add_dependency__version_id             alias for $3;  
+  add_dependency__dependency_uri         alias for $4;  
+  add_dependency__dependency_version     alias for $5;  
   v_dep_id                            apm_package_dependencies.dependency_id%TYPE;
 begin
       if add_dependency__dependency_id is null then
@@ -2055,8 +2191,8 @@ begin
       insert into apm_package_dependencies
       (dependency_id, version_id, dependency_type, service_uri, service_version)
       values
-      (v_dep_id, add_dependency__version_id, ''requires'', add_dependency__dependency_uri,
-	add_dependency__dependency_version);
+      (v_dep_id, add_dependency__version_id, add_dependency__dependency_type,
+        add_dependency__dependency_uri, add_dependency__dependency_version);
 
       return v_dep_id;
    
@@ -2262,7 +2398,7 @@ end;' language 'plpgsql';
 
 -- create or replace package body apm_package_type
 -- procedure create_type
-create or replace function apm_package_type__create_type (varchar,varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm_package_type__create_type (varchar,varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns integer as '
 declare
   create_type__package_key            alias for $1;  
@@ -2272,23 +2408,27 @@ declare
   create_type__package_type           alias for $5;  
   create_type__initial_install_p      alias for $6;  
   create_type__singleton_p            alias for $7;  
-  create_type__spec_file_path         alias for $8;  -- default null  
-  create_type__spec_file_mtime        alias for $9;  -- default null
+  create_type__implements_subsite_p   alias for $8;
+  create_type__inherit_templates_p    alias for $9;
+  create_type__spec_file_path         alias for $10;  -- default null  
+  create_type__spec_file_mtime        alias for $11;  -- default null
 begin
    insert into apm_package_types
     (package_key, pretty_name, pretty_plural, package_uri, package_type,
-    spec_file_path, spec_file_mtime, initial_install_p, singleton_p)
+    spec_file_path, spec_file_mtime, initial_install_p, singleton_p,
+    implements_subsite_p, inherit_templates_p)
    values
     (create_type__package_key, create_type__pretty_name, create_type__pretty_plural,
      create_type__package_uri, create_type__package_type, create_type__spec_file_path, 
-     create_type__spec_file_mtime, create_type__initial_install_p, create_type__singleton_p);
+     create_type__spec_file_mtime, create_type__initial_install_p, create_type__singleton_p,
+     create_type__implements_subsite_p, create_type__inherit_templates_p);
 
    return 0; 
 end;' language 'plpgsql';
 
 
 -- function update_type
-create or replace function apm_package_type__update_type (varchar,varchar,varchar,varchar,varchar,boolean,boolean,varchar,integer)
+create or replace function apm_package_type__update_type (varchar,varchar,varchar,varchar,varchar,boolean,boolean,boolean,boolean,varchar,integer)
 returns varchar as '
 declare
   update_type__package_key            alias for $1;  
@@ -2298,8 +2438,10 @@ declare
   update_type__package_type           alias for $5;  -- default null  
   update_type__initial_install_p      alias for $6;  -- default null  
   update_type__singleton_p            alias for $7;  -- default null  
-  update_type__spec_file_path         alias for $8;  -- default null  
-  update_type__spec_file_mtime        alias for $9;  -- default null  
+  update_type__implements_subsite_p   alias for $8;  -- default null  
+  update_type__inherit_templates_p    alias for $9;  -- default null  
+  update_type__spec_file_path         alias for $10;  -- default null  
+  update_type__spec_file_mtime        alias for $11;  -- default null  
 begin
       UPDATE apm_package_types SET
       	pretty_name = coalesce(update_type__pretty_name, pretty_name),
@@ -2308,8 +2450,10 @@ begin
     	package_type = coalesce(update_type__package_type, package_type),
     	spec_file_path = coalesce(update_type__spec_file_path, spec_file_path),
     	spec_file_mtime = coalesce(update_type__spec_file_mtime, spec_file_mtime),
-    	singleton_p = coalesce(update_type__singleton_p, singleton_p)
-    	initial_install_p = coalesce(update_type__initial_install_p, initial_install_p)
+    	singleton_p = coalesce(update_type__singleton_p, singleton_p),
+    	initial_install_p = coalesce(update_type__initial_install_p, initial_install_p),
+    	implements_subsite_p = coalesce(update_type__implements_subsite_p, implements_subsite_p),
+    	inherit_templates_p = coalesce(update_type__inherit_templates_p, inherit_templates_p)
       where package_key = update_type__package_key;
 
       return update_type__package_key;
@@ -2386,22 +2530,29 @@ declare
   new__parameter_id           alias for $3;  
   new__attr_value             alias for $4;  
   v_value_id                  apm_parameter_values.value_id%TYPE;
+  v_title                     acs_objects.title%TYPE;
 begin
+   select pkg.package_key || '': '' || pkg.instance_name || '' - '' || par.parameter_name into v_title from apm_packages pkg, apm_parameters par where pkg.package_id = new__package_id and par.parameter_id = new__parameter_id;
+
    v_value_id := acs_object__new(
      new__value_id,
      ''apm_parameter_value'',
      now(),
      null,
      null,
-     null
+     null,
+     ''t'',
+     v_title,
+     new__package_id
    );
-   insert into apm_parameter_values 
+
+   insert into apm_parameter_values
     (value_id, package_id, parameter_id, attr_value)
      values
     (v_value_id, new__package_id, new__parameter_id, new__attr_value);
 
    return v_value_id;
-    
+
 end;' language 'plpgsql';
 
 
@@ -2514,6 +2665,3 @@ begin
     return 0; 
 end;' language 'plpgsql';
 
-
-
--- show errors

@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-06
--- @cvs-id $Id: site-nodes-drop.sql,v 1.1 2005/04/18 19:25:33 cvs Exp $
+-- @cvs-id $Id: site-nodes-drop.sql,v 1.2 2010/10/19 20:11:35 po34demo Exp $
 --
 
 drop package site_node;

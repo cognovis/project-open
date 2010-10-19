@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-kernel" package_version="5.1.2d4" locale="en_AU" charset="ISO-8859-1">
+<message_catalog package_key="acs-kernel" locale="en_AU" charset="ISO-8859-1">
 
   <msg key="authentication_authority">Authority</msg>
-  <description key="authentication_authority">The identifying label for an authentication server, such as an  LDAP or RADIUS server.</description>
-
   <msg key="common_Add">Add</msg>
   <msg key="common_add">add</msg>
   <msg key="common_Administration">Administration</msg>
@@ -36,15 +34,16 @@
   <msg key="common_go">go</msg>
   <msg key="common_Help">Help</msg>
   <msg key="common_help">help</msg>
-  <msg key="common_Login">Log in</msg>
-  <msg key="common_login">log in</msg>
+  <msg key="common_Login">Login</msg>
+  <msg key="common_login">login</msg>
   <msg key="common_Needs_Approval">Needs Approval</msg>
   <msg key="common_needs_approval">needs approval</msg>
   <msg key="common_New">New</msg>
   <msg key="common_new">new</msg>
   <msg key="common_Next">Next</msg>
   <msg key="common_next">next</msg>
-  <msg key="common_no">No</msg>
+  <msg key="common_no">no</msg>
+  <msg key="common_No">No</msg>
   <msg key="common_OK">OK</msg>
   <msg key="common_ok">ok</msg>
   <msg key="common_Open">Open</msg>

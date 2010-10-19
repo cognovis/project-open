@@ -5,7 +5,7 @@
 --
 -- @author Oumi Mehrotra (oumi@arsdigita.com)
 -- @creation-date 2000-11-22
--- @cvs-id rel-constraints-create.sql,v 1.1.4.8 2001/01/23 17:03:58 oumi Exp
+-- @cvs-id $Id: rel-constraints-create.sql,v 1.2 2010/10/19 20:11:41 po34demo Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -22,8 +22,8 @@ returns integer as '
 begin
     PERFORM acs_object_type__create_type (
       ''rel_constraint'',
-      ''Relational Constraint'',
-      ''Relational Constraints'',
+      ''#acs-kernel.lt_Relational_Constraint#'',
+      ''#acs-kernel.lt_Relational_Constraint_1#'',
       ''acs_object'',
       ''rel_constraints'',
       ''constraint_id'',
@@ -52,16 +52,16 @@ create table rel_constraints (
 					references acs_objects(object_id),
     constraint_name		varchar(100) not null,
     rel_segment 		integer not null
-				constraint rc_rel_segment_fk
+				constraint rel_constraints_rel_segment_fk
 					references rel_segments (segment_id),
     rel_side                    char(3) default 'two' not null
-				constraint rc_rel_side_ck
+				constraint rel_constraints_rel_side_ck
 					check (rel_side in
 					('one', 'two')),
     required_rel_segment	integer not null
-				constraint rc_required_rel_segment
+				constraint rc_required_rel_segment_fk
 					references rel_segments (segment_id),
-    constraint rel_constraints_uq
+    constraint rel_constraints_un
 	unique (rel_segment, rel_side, required_rel_segment)
 );
 
@@ -487,16 +487,16 @@ create table rc_segment_required_seg_map (
 					check (rel_side in
 					('one', 'two')),
     required_rel_segment	integer not null
-				constraint rc_required_rel_segment
+				constraint rc_required_rel_segment_fk
 					references rel_segments (segment_id),
-    constraint rc_segment_required_seg_map_uq
+    constraint rc_segment_required_seg_map_un
 	unique (rel_segment, rel_side, required_rel_segment)
 );
 
 create index rc_segment_required_seg_idx on 
 rc_segment_required_seg_map(required_rel_segment);
 
-create function rel_constraints_ins_tr () returns opaque as '
+create function rel_constraints_ins_tr () returns trigger as '
 declare
         v_rec   record;
 begin
@@ -539,7 +539,7 @@ create trigger rel_constraints_ins_tr after insert
 on rel_constraints for each row 
 execute procedure rel_constraints_ins_tr ();
 
-create function rel_constraints_del_tr () returns opaque as '
+create function rel_constraints_del_tr () returns trigger as '
 declare
         v_rec   record;
 begin

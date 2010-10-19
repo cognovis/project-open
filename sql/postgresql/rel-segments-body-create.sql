@@ -3,7 +3,7 @@
 --
 -- @author Oumi Mehrotra oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id rel-segments-body-create.sql,v 1.1.4.1 2001/01/12 22:58:33 mbryzek Exp
+-- @cvs-id $Id: rel-segments-body-create.sql,v 1.2 2010/10/19 20:11:41 po34demo Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -34,6 +34,10 @@ begin
   v_segment_id :=
    party__new(new__segment_id, object_type, creation_date, creation_user,
              creation_ip, email, url, context_id);
+
+  update acs_objects
+  set title = new__segment_name
+  where object_id = v_segment_id;
 
   insert into rel_segments
    (segment_id, segment_name, group_id, rel_type)
