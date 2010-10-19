@@ -22,10 +22,10 @@ ad_page_contract {
 }
 set title "System test cases"
 
-if {$by_package_key != ""} {
+if {$by_package_key ne ""} {
     append title " for package $by_package_key"
 }
-if {$by_category != ""} {
+if {$by_category ne ""} {
     append title ", category $by_category"
 } else {
     append title ", all categories"
@@ -41,9 +41,9 @@ foreach testcase [nsv_get aa_test cases] {
     set packages($package_key) [list 0 0 0]
 }
 
-db_foreach acs-automated-testing.results_query {
+db_foreach acs-automated-testing.results_queryx {
     select testcase_id, package_key,
-    to_char(timestamp,'DD-MM-YYYY HH24:MI:SS') timestamp, passes, fails
+    to_char(timestamp,'YYYY-MM-DD_HH24:MI:SS') as timestamp, passes, fails
     from aa_test_final_results
 } {
     if {[info exists results("$testcase_id,$package_key")]} {
@@ -54,11 +54,11 @@ db_foreach acs-automated-testing.results_query {
         # If viewing by package, update the by-package results, taking into
         # account whether a specific category has been specified.
         #
-        if {$view_by == "package"} {
+        if {$view_by eq "package"} {
             set package_total [lindex $packages($package_key) 0]
             set package_pass  [lindex $packages($package_key) 1]
             set package_fail  [lindex $packages($package_key) 2]
-            if {$by_category != ""} {
+            if {$by_category ne ""} {
                 # Category specific, only add results if this testcase is of the
                 # specified category.
                 set categories  [lindex $results("$testcase_id,$package_key") 2]
@@ -81,7 +81,7 @@ db_foreach acs-automated-testing.results_query {
     }
 }
 
-if {$view_by == "package"} {
+if {$view_by eq "package"} {
     #
     # Prepare the template data for a view_by "package"
     #
@@ -115,10 +115,10 @@ if {$view_by == "package"} {
         # - The package key is blank or it matches the specified.
         # - The category is blank or it matches the specified.
         #
-        if {($by_package_key == "" || ($by_package_key == $package_key)) && \
-                ($by_category == "" || ([lsearch $categories $by_category] != -1))} {
+        if {($by_package_key eq "" || ($by_package_key eq $package_key)) && \
+                ($by_category eq "" || ([lsearch $categories $by_category] != -1))} {
             # Swap the highlight flag between packages.
-            if {$old_package_key != $package_key} {
+            if {$old_package_key ne $package_key} {
                 set marker 1
                 set old_package_key $package_key
             } else {
@@ -147,5 +147,9 @@ foreach category [nsv_get aa_test categories] {
         template::multirow append exclusion_categories $category
     }
 }
+#
+# Set return url 
+#
 
+set record_url [export_vars -base "record-test" -url {{return_url [ad_return_url]} package_key}]
 ad_return_template

@@ -1,3 +1,4 @@
+
 ##############################################################################
 #
 #   Copyright 2001, OpenACS, Peter Harper.
@@ -26,6 +27,11 @@ if { ![nsv_exists aa_test cases] } {
     nsv_set aa_test init_classes {}
     nsv_set aa_test categories { config db api web smoke stress security_risk populator production_safe }
     nsv_set aa_test exclusion_categories { stress security_risk }
+    if {[parameter::get_from_package_key -package_key "acs-automated-testing" -parameter "SeleniumRcServer"] ne ""} {
+        nsv_lappend aa_test categories "selenium"
+    } else {
+        nsv_lappend aa_test exclusion_categories "selenium"
+    }    
 }
 
 ad_proc -public aa_stub {
@@ -129,6 +135,11 @@ ad_proc -public aa_register_init_class {
     the descructor to unmount the package.
     @author Peter Harper
     @creation-date 04 November 2001
+
+    @param init_class_id Unique string to identify the init class
+    @param init_class_desc Longer description of the init class
+    @param constructor Tcl code block to run to setup the init class
+    @param destructor Tcl code block to tear down the init class
 } {
     #
     # Work out the package key
@@ -136,7 +147,9 @@ ad_proc -public aa_register_init_class {
     set package_root [file join [acs_root_dir] packages]
     set package_rel [string replace [info script] \
                          0 [string length $package_root]]
-    set package_key [lindex [file split $package_rel] 0]
+    if {![info exists package_key]} {
+        set package_key [lindex [file split $package_rel] 0]
+    }
     #
     # First, search the current list of init_classes. If an old version already
     # exists, replace it with the new version.
@@ -266,7 +279,7 @@ ad_proc -public aa_call_component {
     # If the component exists, execute the body code in the testcases stack
     # level.
     #
-    if {$body != ""} {
+    if {$body ne ""} {
         aa_log "Running component $component_id"
         uplevel 1 "_${aa_package_key}__c_$component_id"
         return
@@ -349,7 +362,7 @@ ad_proc -public aa_register_case {
 
     # run library specific code
     foreach library $libraries {
-        if { $library == "tclwebtest" } {
+        if { $library eq "tclwebtest" } {
 
             # kludge: until tclwebtest installs itself in the proper
             # place following the tcl way, we use this absolute path
@@ -374,7 +387,10 @@ ad_proc -public aa_register_case {
     #
     set filtered_inits {}
     foreach init_class $init_classes {
-        if {[string trim $init_class] != ""} {
+        if {[llength $init_class] == 2} {
+            set init_class [lindex $init_class 0]
+        }
+        if {[string trim $init_class] ne ""} {
             set found 0
             foreach init_class_info [nsv_get aa_test init_classes] {
                 if {$init_class == [lindex $init_class_info 0]} {
@@ -419,7 +435,7 @@ ad_proc -public aa_register_case {
         nsv_lappend aa_test cases $test_case_list
     }
 
-    if { $case_error != "" } {
+    if { $case_error ne "" } {
 
         # we don't source this file but insert a little warning text
         # into the procs body. There seems to be no better way to
@@ -440,10 +456,16 @@ ad_proc -public aa_register_case {
     global aa_init_class_logs
     upvar 2 _aa_exports _aa_exports
     foreach init_class \[list $init_classes\] {
-      foreach v \$_aa_exports(\[list $package_key \$init_class\]) {
+      if {[llength $init_class] == 2} {
+        set init_package_key [lindex $init_class 1]
+        set init_class [lindex $init_class 0]
+      } else {
+        set init_package_key $package_key
+      }
+      foreach v \$_aa_exports(\[list \$init_package_key \$init_class\]) {
         upvar 2 \$v \$v
       }
-      foreach logpair \$aa_init_class_logs(\[list $package_key \$init_class\]) {
+      foreach logpair \$aa_init_class_logs(\[list \$init_package_key \$init_class\]) {
         aa_log_result \[lindex \$logpair 0\] \[lindex \$logpair 1\]
       }
     }
@@ -477,7 +499,7 @@ ad_proc -public aa_export_vars {
     explicitly export the specified variables to the current testcase. You need
     to call aa_export_vars <b>before</b> you create the variables. Example:
     <pre>
-    aa_export_vars package_id item_id
+    aa_export_vars {package_id item_id}
     set package_id 23
     set item_id 109
     </pre>
@@ -516,7 +538,7 @@ ad_proc -public aa_runseries {
     # Work out the list of initialisation classes.
     #
     set testcase_ids {}
-    if {$testcase_id != ""} {
+    if {$testcase_id ne ""} {
         lappend testcase_ids $testcase_id
         foreach testcase [nsv_get aa_test cases] {
             if {$testcase_id == [lindex $testcase 0]} {
@@ -704,7 +726,7 @@ ad_proc -public aa_equals {
     global aa_testcase_id
     global aa_package_key
 
-    if { [string equal $affirm_actual $affirm_value] } {
+    if {$affirm_actual eq $affirm_value} {
         aa_log_result "pass" "$affirm_name Affirm PASSED, actual = \"$affirm_actual\""
         return 1
     } else {
@@ -819,17 +841,17 @@ ad_proc -public aa_log_result {
     # entry, but don't write it to the database.  Individual testcase will make
     # their own copies of these log entries.
     #
-    if {$aa_in_init_class != ""} {
+    if {$aa_in_init_class ne ""} {
         lappend aa_init_class_logs($aa_in_init_class) \
             [list $test_result $test_notes]
         return
     }
 
     incr aa_testcase_test_id
-    if {$test_result == "pass"} {
+    if {$test_result eq "pass"} {
         ns_log Debug "aa_log_result: PASSED: $aa_testcase_id, $test_notes"
         incr aa_testcase_passes
-    } elseif {$test_result == "fail"} {
+    } elseif {$test_result eq "fail"} {
         switch $aa_error_level {
             notice {
                 ns_log notice "aa_log_result: NOTICE: $aa_testcase_id, $test_notes"
@@ -934,7 +956,7 @@ ad_proc -public aa_run_with_teardown {
 
     # Teardown
     set teardown_error_p 0
-    if { ![empty_string_p $teardown_code] } {
+    if { $teardown_code ne "" } {
         set teardown_error_p [catch {uplevel $teardown_code} teardown_error]
         global errorInfo
         set teardown_error_stack $errorInfo
@@ -948,7 +970,7 @@ ad_proc -public aa_run_with_teardown {
     if { $teardown_error_p } {
         append error_text "\n\nTeardown failed with error $teardown_error\n\n$teardown_error_stack"
     }
-    if { ![empty_string_p $error_text] } {
+    if { $error_text ne "" } {
         error $error_text
     }
 }
@@ -1019,6 +1041,10 @@ ad_proc -private aa_execute_rollback_tests {} {
 namespace eval aa_test {}
 
 ad_proc -public aa_test::xml_report_dir {} {
+    Retrieves the XMLReportDir parameter.
+
+    @return Returns the value for the XMLReportDir parameter.
+} {
     return [parameter::get -parameter XMLReportDir]
 }
 
@@ -1056,13 +1082,13 @@ ad_proc -public aa_test::parse_install_file {
     set service(parse_errors) {}
 
     set service(name) [xml_node_get_attribute $root_node "name"]
-    if { [empty_string_p $service(name)] } {
+    if { $service(name) eq "" } {
         append service(parse_error) "No service name attribute;"
     }
 
     foreach child [xml_node_get_children $root_node] {
         set info_type [xml_node_get_attribute $child "type"]
-        if { [empty_string_p $info_type] } {
+        if { $info_type eq "" } {
             append service(parse_error) "No type on info tag;"
             continue
         } 
@@ -1072,7 +1098,7 @@ ad_proc -public aa_test::parse_install_file {
     }
 
     if { [string is integer -strict $service(install_begin_epoch)] && [string is integer -strict $service(install_end_epoch)] } {
-        set service(install_duration) [expr $service(install_end_epoch) - $service(install_begin_epoch)]
+        set service(install_duration) [expr {$service(install_end_epoch) - $service(install_begin_epoch)}]
         set service(install_duration_pretty) [util::interval_pretty -seconds $service(install_duration)]
     }
 
@@ -1188,3 +1214,83 @@ ad_proc -public aa_test::parse_test_file {
     }
     set test(testcase_failure) [array get testcase_failure]
 }
+
+ad_proc -public aa_get_first_url {
+    {-package_key:required}
+} {
+  Procedure for geting the url of a mounted package with the package_key. It uses the first instance that it founds. This is usefull for tclwebtest tests.
+} {
+
+    if {![db_0or1row first_url { *SQL* }]} {
+        site_node::instantiate_and_mount -package_key $package_key
+	db_1row first_url {*SQL*}
+}
+
+ return $url
+
+}
+
+ad_proc -public aa_display_result {
+    {-response:required}
+    {-explanation:required}
+} {
+    Displays either a pass or fail result with specified explanation
+    depending on the given response.
+
+    @param response A boolean value where true (or 1, etc) corresponds
+    to a pass result, otherwise the result is a fail.
+    @param explanation An explanation accompanying the response.
+} {
+    if {$response} {
+	aa_log_result "pass" $explanation
+    } else {
+	aa_log_result "fail" $explanation
+    }
+}
+
+ad_proc -public aa_selenium_init {} {
+    Setup a global Selenium RC server connection
+
+    @return true is everything is ok, false if there was any error
+} {
+    # check if the global selenium connection already exists
+    global _acs_automated_testing_selenium_init
+    if {[info exists _acs_automated_testing_selenium_init]} {
+        # if we already initialized Selenium RC this will be true if
+        # we already failed to initialize Selenium RC this will be
+        # false. We don't want to try to initialize Selenium RC more
+        # than once per request thread in any case so just return the
+        # previous status. This is a global and is reset on every
+        # request.
+        return $_acs_automated_testing_selenium_init
+    }
+            
+    set server_url [parameter::get_from_package_key \
+                        -package_key acs-automated-testing \
+                        -parameter "SeleniumRcServer" \
+                        -default ""]
+    if {$server_url eq ""} {
+        # no server configured so don't try to initialize
+        return 0
+    }
+    set server_port [parameter::get_from_package_key \
+                         -package_key acs-automated-testing \
+                         -parameter "SeleniumRcPort" \
+                         -default "4444"]
+    set browsers [parameter::get_from_package_key \
+                      -package_key acs-automated-testing \
+                      -parameter "SeleniumRcBrowsers" \
+                      -default "*firefox"]
+    set success_p [expr {![catch {Se init $server_url $server_port ${browsers} [ad_url]} errmsg]}]
+    if {!$success_p} {
+        ns_log error [ad_log_stack_trace]
+    }
+    set _acs_automated_testing_selenium_init $success_p
+    return $success_p
+}
+
+aa_register_init_class \
+    "selenium" \
+    "Init Class for Selenium Remote Control" \
+    {aa_selenium_init} \
+    {catch {Se stop} errmsg}
