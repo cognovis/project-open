@@ -32,7 +32,7 @@ ad_proc -public acs_sc::impl::new {
     
     @return the ID of the new implementation
 } {
-    if { [empty_string_p $pretty_name] } {
+    if { $pretty_name eq "" } {
         set pretty_name $name
     }
     return [db_exec_plsql impl_new {}]
@@ -134,6 +134,19 @@ ad_proc -public acs_sc::impl::get_id {
     {-name:required}
     -contract
 } {
+    Retrieves the ID for a service contract.  If the contract is specified
+    then the ID is retrieved for the specified contract, otherwise all
+    service contract IDs will be retrieved that match the specified owner
+    and implementation name.
+
+    @param owner Owner of the service contract.
+    @param name Implementation name.
+    @param contract Implementation contract name.
+    @return Returns the ID for a specified service contract, or all IDs for
+    for service contracts that match the owner and implementation name of
+    a service contract,
+    if the contract is not specified.
+} {
     if {[exists_and_not_null contract]} {
         return [db_string select_impl_id_with_contract {}]
     } else {
@@ -183,7 +196,7 @@ ad_proc -public acs_sc::impl::get_options {
 
     set impl_list [list]
 
-    if { ![empty_string_p $empty_label] } {
+    if { $empty_label ne "" } {
         lappend impl_list [list $empty_label ""]
     }
 

@@ -22,7 +22,7 @@ select acs_sc_binding__exists_p(:contract,:impl)
 
 <fullquery name="acs_sc_proc.get_operation_definition">
 <querytext>
-	select distinct
+	select 
 	    operation_desc,
             coalesce(operation_iscachable_p,'f') as operation_iscachable_p,
 	    operation_nargs,

@@ -1,3 +1,6 @@
+-- register function record
+select define_function_args('acs_sc_contract__new','contract_name,contract_desc');
+-- declare function
 create or replace function acs_sc_contract__new(varchar,text)
 returns integer as '
 declare
@@ -12,6 +15,9 @@ begin
                 now(),
                 null,
                 null,
+                null,
+                ''t'',
+                p_contract_name,
                 null
             );
 
@@ -30,7 +36,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_contract__get_id','contract_name');
+-- declare function
 create or replace function acs_sc_contract__get_id(varchar)
 returns integer as '
 declare
@@ -47,7 +55,9 @@ begin
 end;' language 'plpgsql' stable strict;
 
 
-
+-- register function record
+select define_function_args('acs_sc_contract__get_name','contract_id');
+-- declare function
 create or replace function acs_sc_contract__get_name(integer)
 returns varchar as '
 declare
@@ -64,7 +74,6 @@ begin
 end;' language 'plpgsql' stable strict;
 
 
-
 create or replace function acs_sc_contract__delete(integer)
 returns integer as '
 declare
@@ -79,7 +88,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_contract__delete','contract_name');
+-- declare function
 create or replace function acs_sc_contract__delete(varchar)
 returns integer as '
 declare
@@ -96,7 +107,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_operation__new','contract_name,operation_name,operation_desc,operation_iscachable_p;f,operation_nargs,operation_inputtype,operation_outputtype');
+-- declare function
 create or replace function acs_sc_operation__new(varchar,varchar,text,boolean,integer,varchar,varchar)
 returns integer as '
 declare
@@ -121,6 +134,9 @@ begin
                          now(),
                          null,
                          null,
+                         null,
+                         ''t'',
+                         p_operation_name,
                          null
                      );
 
@@ -155,7 +171,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_operation__get_id','contract_name,operation_name');
+-- declare function
 create or replace function acs_sc_operation__get_id(varchar,varchar)
 returns integer as '
 declare
@@ -173,7 +191,9 @@ begin
 
 end;' language 'plpgsql' stable strict;
 
-
+-- register function record
+select define_function_args('acs_sc_operation__delete','operation_id');
+-- declare function
 create or replace function acs_sc_operation__delete(integer)
 returns integer as '
 declare
@@ -208,6 +228,9 @@ begin
 
 end;' language 'plpgsql' strict;
 
+-- register function record
+select define_function_args('acs_sc_impl__new','impl_contract_name,impl_name,impl_pretty_name,impl_owner_name');
+-- declare function
 create or replace function acs_sc_impl__new(varchar,varchar,varchar,varchar)
 returns integer as '
 declare
@@ -224,6 +247,9 @@ begin
                 now(),
                 null,
                 null,
+                null,
+                ''t'',
+                p_impl_pretty_name,
                 null
             );
 
@@ -266,6 +292,9 @@ begin
 
 end;' language 'plpgsql';
 
+-- register function record
+select define_function_args('acs_sc_impl__get_id','impl_contract_name,impl_name');
+-- declare function
 create or replace function acs_sc_impl__get_id(varchar,varchar)
 returns integer as '
 declare
@@ -283,7 +312,9 @@ begin
 
 end;' language 'plpgsql' stable strict;
 
-
+-- register function record
+select define_function_args('acs_sc_impl__get_name','impl_id');
+-- declare function
 create or replace function acs_sc_impl__get_name(integer)
 returns varchar as '
 declare
@@ -299,8 +330,9 @@ begin
 
 end;' language 'plpgsql' stable strict;
 
-
-
+-- register function record
+select define_function_args('acs_sc_impl__delete','impl_contract_name,impl_name');
+-- declare function
 create or replace function acs_sc_impl__delete(varchar,varchar)
 returns integer as '
 declare
@@ -320,7 +352,9 @@ end;' language 'plpgsql';
 
 
 
-
+-- register function record
+select define_function_args('acs_sc_impl_alias__new','impl_contract_name,impl_name,impl_operation_name,impl_alias,impl_pl');
+-- declare function
 create or replace function acs_sc_impl_alias__new(varchar,varchar,varchar,varchar,varchar)
 returns integer as '
 declare
@@ -356,7 +390,9 @@ end;' language 'plpgsql';
 
 
 
-
+-- register function record
+select define_function_args('acs_sc_impl_alias__delete','impl_contract_name,impl_name,impl_operation_name');
+-- declare function
 create or replace function acs_sc_impl_alias__delete(varchar,varchar,varchar)
 returns integer as '
 declare
@@ -378,7 +414,6 @@ begin
 end;' language 'plpgsql';
 
 
-
 create or replace function acs_sc_binding__new(integer,integer)
 returns integer as '
 declare
@@ -387,12 +422,13 @@ declare
     v_contract_name             varchar;
     v_impl_name                 varchar;
     v_count                     integer;
+    v_missing_op                varchar;
 begin
 
     v_contract_name := acs_sc_contract__get_name(p_contract_id);
     v_impl_name := acs_sc_impl__get_name(p_impl_id);
 
-    select count(*) into v_count
+    select count(*),min(operation_name) into v_count, v_missing_op
     from acs_sc_operations
     where contract_id = p_contract_id
     and operation_name not in (select impl_operation_name
@@ -401,7 +437,7 @@ begin
                                and impl_id = p_impl_id);
 
     if v_count > 0 then
-        raise exception ''Binding of % to % failed since certain operations are not implemented.'', v_contract_name, v_impl_name;
+        raise exception ''Binding of % to % failed since certain operations are not implemented like: %.'', v_contract_name, v_impl_name, v_missing_op;
     end if;
 
     insert into acs_sc_bindings (
@@ -417,7 +453,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_binding__new','contract_name,impl_name');
+-- declare function
 create or replace function acs_sc_binding__new(varchar,varchar)
 returns integer as '
 declare
@@ -442,7 +480,6 @@ begin
 
 end;' language 'plpgsql';
 
-
 create or replace function acs_sc_binding__delete(integer,integer)
 returns integer as '
 declare
@@ -458,6 +495,9 @@ begin
 end;' language 'plpgsql';
 
 
+-- register function record
+select define_function_args('acs_sc_binding__delete','contract_name,impl_name');
+-- declare function
 create or replace function acs_sc_binding__delete(varchar,varchar)
 returns integer as '
 declare
@@ -478,7 +518,9 @@ begin
 end;' language 'plpgsql';
 
 
-
+-- register function record
+select define_function_args('acs_sc_binding__exists_p','contract_name,impl_name');
+-- declare function
 create or replace function acs_sc_binding__exists_p(varchar,varchar)
 returns integer as '
 declare
