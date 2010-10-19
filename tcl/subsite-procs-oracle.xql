@@ -3,7 +3,7 @@
 <queryset>
    <rdbms><type>oracle</type><version>8.1.6</version></rdbms>
 
-<fullquery name="subsite::after_mount.add_constraint">      
+<fullquery name="subsite::default::create_app_group.add_constraint">      
       <querytext>
       
 		    BEGIN
@@ -66,10 +66,24 @@
     from   apm_package_types
     where  not (apm_package.singleton_p(package_key) = 1 and
                 apm_package.num_instances(package_key) >= 1)
-    and    package_key != 'acs-subsite'
+    and    implements_subsite_p = 'f'
+    and    package_type = 'apm_application'
     order  by upper(pretty_name)
 
         </querytext>
     </fullquery>
+ 
+    <partialquery name="subsite::get_url.orderby">
+        <querytext>
+        and rownum < 2
+        order by decode(host, :search_vhost, 1, 0) desc
+        </querytext>
+    </partialquery>
+ 
+    <partialquery name="subsite::get_url.simple_search">
+        <querytext>
+        and rownum < 2
+        </querytext>
+    </partialquery>
  
 </queryset>

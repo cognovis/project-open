@@ -75,7 +75,7 @@ ad_proc -private package_create_attribute_list {
                   attributes
 
 } {
-    if { [empty_string_p $table] || [empty_string_p $column] } {
+    if { $table eq "" || $column eq "" } {
 	# pull out the table and column names based on the object type
 	db_1row select_type_info {
 	    select t.table_name as table, t.id_column as column
@@ -103,7 +103,7 @@ ad_proc -private package_create_attribute_list {
     # duplicate column names
     set all_attributes([string toupper $column]) 1
 
-    if { ![empty_string_p $column_value] } {
+    if { $column_value ne "" } {
 	# column value is the same physical column as $column - just
 	# named differently in the attribute list. We still don't want
 	# duplicates
@@ -128,7 +128,7 @@ ad_proc -private package_create_attribute_list {
         order by t.type_level 
     } {
 	# First make sure the attribute is okay
-	if { ![empty_string_p $limit_to] } {
+	if { $limit_to ne "" } {
 	    # We have a limited list of arguments to use. Make sure
 	    # this attribute is one of them
 	    if { [lsearch -exact $limit_to $attr_column_name] == -1 } {
@@ -145,7 +145,7 @@ ad_proc -private package_create_attribute_list {
 	set all_attributes($attr_column_name) 1
     }
     
-    if { ![empty_string_p $supertype] && ![empty_string_p $object_name] } {
+    if { $supertype ne "" && $object_name ne "" } {
 	foreach row [util_memoize "package_table_columns_for_type \"$supertype\""] {
 	    set table_name [lindex $row 0]
 	    set column_name [lindex $row 1]
@@ -200,7 +200,7 @@ ad_proc -private package_attribute_default {
 
     # We handle defaults grossly here, but I don't currently have
     # a better idea how to do this
-    if { ![empty_string_p $attr_default] } {
+    if { $attr_default ne "" } {
 	return "'[DoubleApos $attr_default]'"
     } 
 
@@ -208,7 +208,7 @@ ad_proc -private package_attribute_default {
     # attributes. Default case sets default to null unless the
     # attribute is required (min_n_values > 0)
 
-    if { [string equal $table "ACS_OBJECTS"] } {
+    if {$table eq "ACS_OBJECTS"} {
 	switch -- $column {
 	    "OBJECT_TYPE"   { return "'[DoubleApos $object_type]'" }
 	    "CREATION_DATE" { return [db_map creation_date] }
@@ -217,7 +217,7 @@ ad_proc -private package_attribute_default {
 	    "LAST_MODIFIED" { return [db_map last_modified] }
 	    "MODIFYING_IP"  { return "NULL" }
 	}
-    } elseif { [string equal $table "ACS_RELS"] } {
+    } elseif {$table eq "ACS_RELS"} {
 	switch -- $column {
 	    "REL_TYPE"      { return "'[DoubleApos $object_type]'" }
 	}
@@ -312,7 +312,7 @@ ad_proc -private package_create {
     lappend plsql [list "package" "create_package" [package_generate_spec $object_type]]
     lappend plsql [list "package body" "create_package_body" [package_generate_body $object_type]]
 
-    if { $debug_p == "t" } {
+    if { $debug_p eq "t" } {
 	foreach pair $plsql {
 #	    append text "[plsql_utility::parse_sql [lindex $pair 1]]\n\n"
 	    append text [lindex $pair 2]
@@ -475,7 +475,7 @@ ad_proc -public package_object_view {
     @param start_with The highest parent object type for which to include attributes
     @param object_type The object for which to create a package spec
 } {
-    if { [string eq $refresh_p "t"] } {
+    if {$refresh_p eq "t"} {
 	package_object_view_reset $object_type
     }
     return [util_memoize "package_object_view_helper -start_with $start_with $object_type"]
@@ -510,7 +510,7 @@ ad_proc -private package_object_view_helper {
     
 
     set columns [list "${table_name}.${id_column}"]
-    if { ![string eq [string tolower $id_column] "object_id"] } {
+    if { [string tolower $id_column] ne "object_id" } {
 	# Add in an alias for object_id
 	lappend columns "${table_name}.${id_column} as object_id"
     }
@@ -522,7 +522,7 @@ ad_proc -private package_object_view_helper {
 	set column [lindex $row 2]
 	set object_column [lindex $row 8]
 
-	if { [string eq [string tolower $column] "object_id"] } {
+	if {[string tolower $column] eq "object_id"} {
 	    # We already have object_id... skip this column
 	    continue
 	}
@@ -544,8 +544,8 @@ ad_proc -private package_object_view_helper {
     }
 
     set pk_formatted [list]
-    for { set i 0 } { $i < [expr [llength $primary_keys] - 1] } { incr i } {
-	lappend pk_formatted "[lindex $primary_keys $i] = [lindex $primary_keys [expr $i +1]]"
+    for { set i 0 } { $i < [expr {[llength $primary_keys] - 1}] } { incr i } {
+	lappend pk_formatted "[lindex $primary_keys $i] = [lindex $primary_keys [expr {$i +1}]]"
     }
     return "SELECT [string tolower [join $columns ",\n       "]]
   FROM [string tolower [join $tables ", "]]
@@ -606,7 +606,7 @@ ad_proc package_object_attribute_list {
 
     set storage_clause ""
 
-    if {![empty_string_p $include_storage_types]} {
+    if {$include_storage_types ne ""} {
 	set storage_clause "
           and a.storage in ('[join $include_storage_types "', '"]')"
     }
@@ -633,7 +633,7 @@ ad_proc package_object_attribute_list {
 
 
 ad_proc -private package_plsql_args {
-    { -function_name "NEW" }
+    { -object_name "NEW" }
     package_name
 } {
     Generates a list of parameters expected to a plsql function defined within
@@ -646,12 +646,20 @@ ad_proc -private package_plsql_args {
 
     @param package_name The package which owns the function
 
-    @param function_name The function name which we're looking up
+    @param object_name The function name which we're looking up
 } {
     # Get just the args
     return [db_list select_package_func_param_list {}]
 }
-    
+
+ad_proc -private package_function_p {
+    -object_name:required
+    package_name
+} {
+    Returns true if the package's object is a function.
+} {
+    return [db_0or1row function_p ""]
+}
 
 ad_proc -private package_table_columns_for_type {
     object_type
@@ -781,12 +789,12 @@ ad_proc -public package_instantiate_object {
     
 } {
     
-    if {![empty_string_p $variable_prefix]} {
+    if {$variable_prefix ne ""} {
 	append variable_prefix "."
     }
 
     # Select out the package name if it wasn't passed in
-    if { [empty_string_p $package_name] } {
+    if { $package_name eq "" } {
 	if { ![db_0or1row package_select {
 	    select t.package_name
 	      from acs_object_types t
@@ -797,10 +805,10 @@ ad_proc -public package_instantiate_object {
     }
 
     if { [ad_conn isconnected] } {
-	if { [empty_string_p $creation_user] } {
+	if { $creation_user eq "" } {
 	    set creation_user [ad_conn user_id]
 	} 
-	if { [empty_string_p $creation_ip] } {
+	if { $creation_ip eq "" } {
 	    set creation_ip [ad_conn peeraddr]
 	}
     }
@@ -811,7 +819,8 @@ ad_proc -public package_instantiate_object {
 
     lappend var_list [list creation_user $creation_user]
     lappend var_list [list creation_ip $creation_ip]
-    
+    lappend var_list [list object_type $object_type]
+
     # The first thing we need to do is select out the list of all
     # the parameters that can be passed to this object type's new function.
     # This will prevent us from passing in any parameters that are
@@ -830,6 +839,7 @@ ad_proc -public package_instantiate_object {
     set pieces [list]
     
     foreach pair $var_list {
+
 	set __key [lindex $pair 0]
 	set __value [lindex $pair 1]
 	if { ![info exists real_params([string toupper $__key])] } {
@@ -844,7 +854,7 @@ ad_proc -public package_instantiate_object {
     }
 
     # Go through the extra_vars (ben - OpenACS)
-    if {! [empty_string_p $extra_vars] } {
+    if {$extra_vars ne "" } {
 	for {set i 0} {$i < [ns_set size $extra_vars]} {incr i} {
 	    set __key [ns_set key $extra_vars $i]
 	    set __value [ns_set value $extra_vars $i]
@@ -862,7 +872,7 @@ ad_proc -public package_instantiate_object {
     }
 	    
 
-    if { ![empty_string_p $form_id]} {
+    if { $form_id ne ""} {
 
         #DRB: This needs to be cached!
         set __id_column [db_string get_id_column {}]
@@ -872,7 +882,7 @@ ad_proc -public package_instantiate_object {
       	    lappend pieces [list $__id_column]
 	}
 
-        if { [string equal $start_with ""] } {
+        if {$start_with eq ""} {
             set start_with $object_type
         }
 
@@ -899,21 +909,10 @@ ad_proc -public package_instantiate_object {
 
 }
 
-ad_proc -public package_function_p {
-  package_name
-  function_name
-} {
-    Returns 0 if the given function is a procedure, 1 if a function.  Always
-    returns 1 in the Postgres version.  Broken out into its own function so we
-    can util_memoize it.
-} {
-    return [db_string function_p {}]
-}
-
 ad_proc -public package_exec_plsql {
     { -var_list "" }
     package_name 
-    function_name 
+    object_name 
 } {
 
     Calls a pl/[pg]sql proc/func defined within the object type's package.  Use of
@@ -924,7 +923,7 @@ ad_proc -public package_exec_plsql {
     @creation-date 12/31/2003
 
     @param package_name The PL/[pg]SQL package 
-    @param function_name The PL/[pg]SQL function within the package 
+    @param object_name The PL/[pg]SQL function within the package 
 
     @param var_list A list of pairs of additional attributes and their
     values to pass to the constructor. Each pair is a list of two
@@ -941,27 +940,31 @@ ad_proc -public package_exec_plsql {
     package_exec_plsql -var_list $var_list group delete
 
     </pre>
-    
 } {
-    
-    foreach arg [util_memoize "package_plsql_args -function_name $function_name \"$package_name\""] {
+    # Ugly hack for the case where a proc has params named "package_name" or "object_name".
+
+    set __package_name $package_name
+    set __object_name $object_name
+
+    foreach arg [util_memoize [list package_plsql_args -object_name $__object_name $__package_name]] {
 	set real_params([string toupper $arg]) 1
     }
-    
+
     # Use pieces to generate the parameter list to the new
     # function. Pieces is just a list of lists where each list contains only
     # one item - the name of the parameter. We keep track of
     # parameters we've already added in the array param_array (all keys are
     # in upper case)
-    
+
     set pieces [list]
-    
+
     foreach pair $var_list {
 	set __key [lindex $pair 0]
 	set __value [lindex $pair 1]
 	if { ![info exists real_params([string toupper $__key])] } {
 	    # The parameter is not accepted as a parameter to the
 	    # pl/sql function. Ignore it.
+            ns_log Warning "package_exec_plsql: skipping $__key not found in params for $__package_name $__object_name"
 	    continue;
 	} 
 	lappend pieces [list $__key]
@@ -970,10 +973,10 @@ ad_proc -public package_exec_plsql {
 	set $__key $__value
     }
 
-    if { [util_memoize "package_function_p $package_name $function_name"] } {
-         return [db_exec_plsql exec_plsql_func {}]
+    if { [util_memoize [list package_function_p -object_name $__object_name $__package_name]] } {
+        return [db_exec_plsql exec_func_plsql {}]
     } else {
-         db_exec_plsql exec_plsql_proc {}
+        db_exec_plsql exec_proc_plsql {}
     }
 
 }

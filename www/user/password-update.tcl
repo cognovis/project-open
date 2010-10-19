@@ -18,7 +18,7 @@ if { [security::RestrictLoginToSSLP] } {
     security::require_secure_conn
 }
 
-if { ![empty_string_p $old_password] } {
+if { $old_password ne "" } {
     # If old_password is set, this is a user who has had his password recovered,
     # so they won't be authenticated yet.
 } else {
@@ -51,16 +51,14 @@ set context [list [list [ad_pvt_home] [ad_pvt_home_name]] $page_title]
 set system_name [ad_system_name]
 set site_link [ad_site_home_link]
 
-
-
 acs_user::get -user_id $user_id -array user
 
 ad_form -name update -edit_buttons [list [list [_ acs-kernel.common_update] "ok"]] -form {
-    {user_id:integer(hidden)}
-    {return_url:text(hidden),optional}
-    {old_password:text(hidden),optional}
-    {message:text(hidden),optional}
-}
+        {user_id:integer(hidden)}
+        {return_url:text(hidden),optional}
+        {old_password:text(hidden),optional}
+        {message:text(hidden),optional}
+    }
 
 if { [exists_and_not_null old_password] } {
     set focus "update.password_1"
@@ -162,20 +160,16 @@ ad_form -extend -name update -form {
     }
 
     # If the account was closed, it might be open now
-    if { [string equal [ad_conn account_status] "closed"] } {
+    if {[ad_conn account_status] eq "closed"} {
         auth::verify_account_status
     }
     
 } -after_submit {
-    if { [empty_string_p $return_url] } {
+    if { $return_url eq "" } {
         set return_url [ad_pvt_home]
-        set pvt_home_name [ad_pvt_home_name]
-        set continue_label [_ acs-subsite.Continue_to_your_account]
-    } else {
-        set continue_label [_ acs-subsite.Continue]
     }
     set message [_ acs-subsite.confirmation_password_changed]
-    set continue_url $return_url
 
-    ad_return_template /packages/acs-subsite/www/register/display-message
+    ad_returnredirect -message $message -- $return_url
+    ad_script_abort
 }

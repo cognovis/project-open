@@ -73,7 +73,7 @@ ad_proc -public relation_add {
         and    object_id_two = :object_id_two
     } -default {}]
     
-    if { ![empty_string_p $existing_rel_id] } {
+    if { $existing_rel_id ne "" } {
         return $existing_rel_id
     }
 
@@ -85,7 +85,7 @@ ad_proc -public relation_add {
     # membership relation before adding the member_state variable.  The 
     # package_instantiate_object proc will ignore the member_state variable
     # if the rel_type's plsql package doesn't support it.
-    if {![empty_string_p $member_state]} {
+    if {$member_state ne ""} {
 	lappend var_list [list member_state $member_state]
     }
 
@@ -117,7 +117,7 @@ ad_proc -public relation_add {
 	#    select rel_constraint.violation(:rel_id) from dual
 	# } -default ""]
 	#
-	# if { ![empty_string_p $violated_err_msg] } {
+	# if { $violated_err_msg ne "" } {
 	#     error $violated_err_msg
 	# }
     } on_error {
@@ -158,7 +158,7 @@ ad_proc -public relation_remove {
     # relation. Note that this segment is defined by joining against
     # acs_rels to find the group and rel_type for this relation.
 
-    if { ![empty_string_p $segment_id] } {
+    if { $segment_id ne "" } {
 	if { [relation_segment_has_dependant -segment_id $segment_id -party_id $party_id] } {
 	    error "Relational constraints violated by removing this relation"
 	}
@@ -187,14 +187,14 @@ ad_proc -public relation_segment_has_dependant {
 
 } {
 
-    if { ![empty_string_p $rel_id] } {
+    if { $rel_id ne "" } {
 	if { ![db_0or1row select_rel_info {}] } {
 	    # There is either no relation or no segment... thus no dependants
 	    return 0
 	}
     }
 
-    if { [empty_string_p $segment_id] || [empty_string_p $party_id] } {
+    if { $segment_id eq "" || $party_id eq "" } {
 	error "Both of segment_id and party_id must be specified in call to relation_segment_has_dependant"
     }
 
@@ -219,7 +219,7 @@ ad_proc -public relation_type_is_valid_to_group_p {
                       [application_group::group_id_from_package_id]
     @param rel_type
 } {
-    if {[empty_string_p $group_id]} {
+    if {$group_id eq ""} {
 	set group_id [application_group::group_id_from_package_id]
     }
 
@@ -265,7 +265,7 @@ ad_proc relation_types_valid_to_group_multirow {
                       [applcation_group::group_id_from_package_id] is used.
 } {
 
-    if {[empty_string_p $group_id]} {
+    if {$group_id eq ""} {
 	set group_id [application_group::group_id_from_package_id]
     }
 
@@ -288,7 +288,7 @@ ad_proc -public relation_required_segments_multirow {
     Sets up a multirow datasource.
     Also returns a list containing the most essential information.
 } {
-    if {[empty_string_p $group_id]} {
+    if {$group_id eq ""} {
 	set group_id [application_group::group_id_from_package_id]
     }
 
@@ -317,4 +317,54 @@ ad_proc -public relation::get_id {
     @return rel_id of the found acs_rel, or the empty string if none existed.
 } {
     return [db_string select_rel_id {} -default {}]
+}
+
+ad_proc -public relation::get_object_one {
+    {-object_id_two:required}
+    {-rel_type "membership_rel"}
+    {-multiple:boolean}
+} {
+    Return the object_id of object one if a relation of rel_type exists between the supplied object_id_two and it.
+    
+    @param multiple_p If set to "t" return a list instead of only one object_id
+} {
+    if {$multiple_p} {
+	return [db_list select_object_one {}]
+    } else {
+	return [db_string select_object_one {} -default {}]
+    }
+}
+
+ad_proc -public relation::get_object_two {
+    {-object_id_one:required}
+    {-rel_type "membership_rel"}
+    {-multiple:boolean}
+} {
+    Return the object_id of object two if a relation of rel_type exists between the supplied object_id_one and it.
+    
+    @param multiple_p If set to "t" return a list instead of only one object_id
+} {
+    if {$multiple_p} {
+	return [db_list select_object_two {}]
+    } else {
+	return [db_string select_object_two {} -default {}]
+    }
+}
+
+ad_proc -public relation::get_objects {
+    {-object_id_one ""}
+    {-object_id_two ""}
+    {-rel_type "membership_rel"}
+} {
+    Return the list of object_ids if a relation of rel_type exists between the supplied object_id and it.
+} {
+    if {$object_id_one eq ""} {
+	if {$object_id_two eq ""} {
+	    ad_return_error "[_ acs-subsite.Missing_argument]" "[_ acs-subsite.lt_You_have_to_provide_a]"
+	} else {
+	    return [relation::get_object_one -object_id_two $object_id_two -rel_type $rel_type -multiple]
+	}
+    } else {
+	return [relation::get_object_two -object_id_one $object_id_one -rel_type $rel_type -multiple]
+    }
 }

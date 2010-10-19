@@ -9,22 +9,22 @@ ad_page_contract {
     context:onevalue
 }
 
-set title "Who's Online?"
-set context [list "Who's Online"]
+set doc(title) [_ acs-subsite.Whos_Online_title]
+set context [list $doc(title)]
 
 set whos_online_interval [whos_online::interval]
 
 template::list::create \
     -name online_users \
     -multirow online_users \
-    -no_data "No registered users online" \
+    -no_data [_ acs-subsite.Nobody_is_online] \
     -elements {
         name {
-            label "User name"
+            label "[_ acs-subsite.User_name]"
             link_url_col url
         }
         online_time_pretty {
-            label "Online Time"
+            label "[_ acs-subsite.Online_time]"
             html { align right }
         }
     }
@@ -34,7 +34,7 @@ set users [list]
 foreach user_id [whos_online::user_ids] {
     acs_user::get -user_id $user_id -array user
 
-    set first_request_minutes [expr [whos_online::seconds_since_first_request $user_id] / 60]
+    set first_request_minutes [expr {[whos_online::seconds_since_first_request $user_id] / 60}]
 
     lappend users [list \
                        "$user(first_names) $user(last_name)" \
@@ -53,4 +53,3 @@ foreach elm $users {
         [lindex $elm 1] \
         [lindex $elm 2]
 }
-

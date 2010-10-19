@@ -1,4 +1,4 @@
-# /packages/subsite/www/admin/parties/new.tcl
+# /packages/subsite/www/admin/users/new.tcl
 
 ad_page_contract {
 
@@ -51,8 +51,8 @@ set create_p [group::permission_p -privilege create $add_to_group_id]
 
 # Membership relations have a member_state attribute that gets set
 # based on the group's join policy.
-if {[string equal $ancestor_rel_type membership_rel]} {
-    if {[string equal $add_to_group_join_policy "closed"] && !$create_p} {
+if {$ancestor_rel_type eq "membership_rel"} {
+    if {$add_to_group_join_policy eq "closed" && !$create_p} {
 	ad_complain "You do not have permission to add elements to $add_to_group_name"
 	return
     }
@@ -86,7 +86,7 @@ db_1row select_type_info {
 ## constraint violations in the database because the constraints are enforced
 ## by triggers in the DB.
 
-if { [string eq $user_type_exact_p "f"] && \
+if { $user_type_exact_p eq "f" && \
 	[subsite::util::sub_type_exists_p $user_type] } {
 
     # Sub user-types exist... select one
@@ -135,7 +135,7 @@ template::element create add_user password \
 
 
 # Get whether they requre some sort of approval
-if {[ad_parameter RegistrationRequiresApprovalP "security" 0]} {
+if {[parameter::get -parameter RegistrationRequiresApprovalP -default 0]} {
     set member_state ""
 } else {
     set member_state "approved"
@@ -150,11 +150,11 @@ if { [template::form is_valid add_user] } {
 
     set password [ad_generate_random_string]
 
-    if {[empty_string_p $add_to_group_id]} {
+    if {$add_to_group_id eq ""} {
 	set add_to_group_id [application_group::group_id_from_package_id]
     }
 
-    if {[ad_parameter RegistrationRequiresEmailVerificationP "security" 0]} {
+    if {[parameter::get -parameter RegistrationRequiresEmailVerificationP -default 0]} {
 	set email_verified_p "f"
     } else {
 	set email_verified_p "t"
@@ -189,7 +189,7 @@ if { [template::form is_valid add_user] } {
             # Hack for adding users to the main subsite, whose application group is the registered users group.
 
             if { $add_to_group_id != [acs_lookup_magic_object "registered_users"] ||
-                 ![string equal $add_with_rel_type "membership_rel"] } {
+                 $add_with_rel_type ne "membership_rel" } {
 	        relation_add -member_state $rel_member_state $add_with_rel_type $add_to_group_id $user_id
             }
 
@@ -212,16 +212,16 @@ if { [template::form is_valid add_user] } {
 
     set return_url_stacked [subsite::util::return_url_stack $return_url_list]
 
-    if {[empty_string_p $return_url_stacked]} {
+    if {$return_url_stacked eq ""} {
 	set return_url_stacked "../parties/one?party_id=$user_id"
     }
     ad_returnredirect $return_url_stacked
 
     if {!$double_click_p} {
 
-	set notification_address [ad_parameter NewRegistrationEmailAddress "security" [ad_system_owner]]
+	set notification_address [parameter::get -parameter NewRegistrationEmailAddress -default [ad_system_owner]]
 
-	if {[ad_parameter NotifyAdminOfNewRegistrationsP "security" 0]} {
+	if {[parameter::get -parameter NotifyAdminOfNewRegistrationsP -default 0]} {
 
 	    set creation_user [ad_conn user_id]
 	    set creation_name [db_string creation_name_query {
@@ -232,17 +232,18 @@ if { [template::form is_valid add_user] } {
 	    }]
 
 	    # we're supposed to notify the administrator when someone new registers
-	    ns_sendmail $notification_address \
-		    [template::element::get_value add_user email] \
-		    "New registration at [ad_url]" "
-	[template::element::get_value add_user first_names] [template::element::get_value add_user last_name] ([template::element::get_value add_user email]) was added as a registered as a user of 
+	    acs_mail_lite::send -send_immediately \
+            -to_addr $notification_address \
+		    -from_addr [template::element::get_value add_user email] \
+            -subject "New registration at [ad_url]" \
+            -body "[template::element::get_value add_user first_names] [template::element::get_value add_user last_name] ([template::element::get_value add_user email]) was added as a registered as a user of 
 [ad_url]
 
-The user was added by $creation_name from [ad_conn url].
-	"
-        }
+The user was added by $creation_name from [ad_conn url]."
 
-	if { $email_verified_p == "f" } {
+    }
+
+	if { $email_verified_p eq "f" } {
 	
 	    set row_id [db_string user_new_2_rowid_for_email "select rowid from users where user_id = :user_id"]
 	    # the user has to come back and activate their account
@@ -250,7 +251,7 @@ The user was added by $creation_name from [ad_conn url].
 	    ns_sendmail [template::element::get_value add_user email] \
 		    $notification_address \
 		    "Welcome to [ad_system_name]" \
-		    "To confirm your registration, please go to [ad_parameter -package_id [ad_acs_kernel_id] SystemURL]/register/email-confirm?[export_url_vars row_id]
+		    "To confirm your registration, please go to [parameter::get -package_id [ad_acs_kernel_id] -parameter SystemURL]/register/email-confirm?[export_url_vars row_id]
 
 After confirming your email, here's how you can log in at [ad_url]:
 

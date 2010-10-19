@@ -14,23 +14,23 @@ ad_page_contract {
     {rename_application:integer {}}
 }
 
-if {[empty_string_p $root_id]} {
+if {$root_id eq ""} {
     set root_id [ad_conn node_id]
 }
 
 # Check if the user has site-wide-admin privileges
 set site_wide_admin_p [acs_user::site_wide_admin_p]
 
+
 array set node [site_node::get -node_id $root_id]
 set parent_id $node(parent_id)
 set object_id $node(object_id)
 
-
-if {![empty_string_p $new_parent]} {
+if {$new_parent ne ""} {
     set javascript "onLoad=\"javascript:document.new_parent.name.focus();document.new_parent.name.select()\""
-} elseif {![empty_string_p $new_application]} {
+} elseif {$new_application ne ""} {
     set javascript "onLoad=\"javascript:document.new_application.instance_name.focus();document.new_application.instance_name.select()\""
-} elseif {![empty_string_p $rename_application]} {
+} elseif {$rename_application ne ""} {
    set javascript "onLoad=\"javascript:document.rename_application.instance_name.focus();document.rename_application.instance_name.select()\""
 } else {
     set javascript ""
@@ -46,20 +46,20 @@ set context [list $page_title]
 set user_id [ad_conn user_id]
 
 db_foreach path_select {} {
-    if {$node_id != $root_id && $admin_p == "t"} {
-	append head "<a href=.?[export_url_vars expand:multiple root_id=$node_id]>"
+    if {$node_id != $root_id && $admin_p eq "t"} {
+        append head "<a href=\".?[export_url_vars expand:multiple root_id=$node_id]\">"
     }
-    if {[empty_string_p $name]} {
+    if {$name eq ""} {
 	append head "$obj_name:"
     } else {
 	append head $name
     }
     
-    if {$node_id != $root_id && $admin_p == "t"} {
+    if {$node_id != $root_id && $admin_p eq "t"} {
 	append head "</a>"
     }
     
-    if {$directory_p == "t"} {
+    if {$directory_p eq "t"} {
 	append head "/"
     }
 } if_no_rows {
@@ -68,7 +68,7 @@ db_foreach path_select {} {
 
 if {[llength $expand] == 0} {
     lappend expand $root_id 
-    if { ![empty_string_p $parent_id] } {
+    if { $parent_id ne "" } {
         lappend expand $parent_id
     }
 }
@@ -80,20 +80,21 @@ template::list::create \
     -key node_id \
     -elements {
 	 name_instance {
-	     html "align left"
-	     display_template {
+         label "#acs-subsite.Name#"
+            html "align left"
+	    display_template {
 		<a name="@nodes.node_id@">@nodes.tree_indent;noquote@</a>
 	        <if @nodes.instance@ eq "">
-		<a href=@nodes.instance_url@>@nodes.name;noquote@</a>
+		<a href="@nodes.instance_url@">@nodes.name;noquote@</a>
 		</if>
 		<else>
-		    <a href=@nodes.instance_url@>@nodes.instance;noquote@</a>   
+		    <a href="@nodes.instance_url@">@nodes.instance;noquote@</a>   
 		</else>
 		<if @nodes.expand_mode@ eq 1>
-		&nbsp;<a href="?@nodes.expand_url@#@nodes.node_id@"><img border=0 src=/resources/down.gif></a>
+		&nbsp;<a href="?@nodes.expand_url@#@nodes.node_id@"><img style="border:0" src="/resources/down.gif"></a>
 		</if>
 		<if @nodes.expand_mode@ eq 2>
-                &nbsp;<a href="?@nodes.expand_url@#@nodes.node_id@"><img border=0 src=/resources/up.gif></a>
+                &nbsp;<a href="?@nodes.expand_url@#@nodes.node_id@"><img style="border:0" src="/resources/up.gif"></a>
                 </if>
 
 		<if @nodes.action_type@ eq "new_folder">
@@ -107,6 +108,7 @@ template::list::create \
 		</if>
 	    }
         } instance_url {
+            label "#acs-subsite.URL#"
             html "align left"
 	    display_template {
 		<if @nodes.action_type@ eq "new_app">
@@ -126,7 +128,7 @@ template::list::create \
 		</form>
 		</if>
 		<else>
-		<font size=2>(@nodes.instance_url;noquote@)</font>
+		(@nodes.instance_url;noquote@)
 		</else>
 	    }
         }
@@ -145,11 +147,11 @@ db_foreach nodes_select {} {
     set parameters_url ""
     set permissions_url ""
 
-    if { [lsearch -exact $open_nodes $parent_id] == -1 && $parent_id != "" && $mylevel > 2 } { continue } 
+    if { [lsearch -exact $open_nodes $parent_id] == -1 && $parent_id ne "" && $mylevel > 2 } { continue } 
         
-    if {$directory_p == "t"} {
+    if {$directory_p eq "t"} {
 	set add_folder_url "?[export_url_vars expand:multiple root_id node_id new_parent=$node_id new_type=folder]"
-	if {[empty_string_p $object_id]} {
+	if {$object_id eq ""} {
 	    set mount_url "mount?[export_url_vars expand:multiple root_id node_id]"
 	    set new_app_url "?[export_url_vars expand:multiple root_id new_application=$node_id]"
 	} else {
@@ -165,7 +167,7 @@ db_foreach nodes_select {} {
 		set delete_url "instance-delete?package_id=$object_id&root_id=$root_id"
 	    }
 	    # Is the object a package?
-	    if {![empty_string_p $package_id]} {
+	    if {$package_id ne ""} {
 		if {$object_admin_p && ($parameter_count > 0)} {
 		    set parameters_url "[export_vars -base "/shared/parameters" { package_id {return_url {[ad_return_url]} } }]"
 		}
@@ -173,7 +175,7 @@ db_foreach nodes_select {} {
 	}
     }
     
-    if {[ad_conn node_id] != $node_id && $n_children == 0 && [empty_string_p $object_id]} {
+    if {[ad_conn node_id] != $node_id && $n_children == 0 && $object_id eq ""} {
 	set delete_url "delete?[export_url_vars expand:multiple root_id node_id]"
     }
     
@@ -222,7 +224,7 @@ db_foreach nodes_select {} {
     set action_type 0
     set action_form_part ""
     
-    if {[empty_string_p $object_id]} {
+    if {$object_id eq ""} {
 	if {$new_application == $node_id} {
 	    
 	    set action_type "new_app"
@@ -250,7 +252,7 @@ db_foreach nodes_select {} {
 
 }
 
-#set new_app_form_part_1 "<p align=\"top\"><form name=new_application action=package-new><input type=hidden name=node_id value=$node(node_id) /><input type=hidden name=root_id value=$node(node_id) /><input type=hidden name=new_node_p value=t />[export_form_vars expand:multiple]<input name=node_name type=text size=8></p>"
+#set new_app_form_part_1 "<p align=\"top\"><form name=new_application action=package-new><input type=hidden name=node_id value=$node(node_id)><input type=hidden name=root_id value=$node(node_id)><input type=hidden name=new_node_p value=t>[export_form_vars expand:multiple]<input name=node_name type=text size=8></p>"
 
 #set new_app_form_part_2 "<p align=\"top\">[apm_application_new_checkbox]</p>"
 #set new_app_form_part_3 "<p align=\"top\"><input type=submit value=\"Mount Package\"></form></p>"

@@ -3,7 +3,7 @@
 <queryset>
    <rdbms><type>postgresql</type><version>7.1</version></rdbms>
 
-<fullquery name="subsite::after_mount.add_constraint">      
+<fullquery name="subsite::default::create_app_group.add_constraint">      
       <querytext>
 
 	select rel_constraint__new(
@@ -68,10 +68,25 @@
     from   apm_package_types
     where  not (apm_package__singleton_p(package_key) = 1 and
                 apm_package__num_instances(package_key) >= 1)
-    and    package_key != 'acs-subsite'
+    and    not implements_subsite_p
+    and    package_type = 'apm_application'
     order  by upper(pretty_name)
 
         </querytext>
     </fullquery>
  
+    <partialquery name="subsite::get_url.orderby">
+        <querytext>
+        order by case when host = :search_vhost then 1
+                 else 0 end desc
+        limit 1
+        </querytext>
+    </partialquery>
+ 
+    <partialquery name="subsite::get_url.simple_search">
+        <querytext>
+        limit 1
+        </querytext>
+    </partialquery>
+
 </queryset>

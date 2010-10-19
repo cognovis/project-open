@@ -100,7 +100,8 @@
 	            creation_user => :creation_user,
 	            creation_ip   => :creation_ip,
 		    email         => :email,
-		    url           => :url
+		    url           => :url,
+                    join_policy   => null
 		);
 		end;
 	    
@@ -112,7 +113,7 @@
       
 		begin
 		application_group.del (
-	                group_id      => :group_id,
+	                group_id      => :group_id
 		);
 		end;
 	    

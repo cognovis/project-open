@@ -13,21 +13,21 @@ if { ![exists_and_not_null return_url] } {
 }
 
 if { ![exists_and_not_null privs] } {
-    set privs { read create write admin }
+    set privs { read create write delete admin }
 }
 
 db_1row object_info {}
 
 set elements [list]
 lappend elements grantee_name { 
-    label "[_ acs-subsite.Name]" 
+    label "[_ acs-subsite.Name]"
     link_url_col name_url
     display_template {
         <if @permissions.any_perm_p_@ true>
           @permissions.grantee_name@
         </if>
         <else>
-          <font color="gray">@permissions.grantee_name@</font>
+          <span style="color: gray">@permissions.grantee_name@</span>
         </else>
     }
 }
@@ -42,10 +42,10 @@ foreach priv $privs {
     lappend elements ${priv}_p \
         [list \
              html { align center } \
-             label [string totitle [string map {_ { }} $priv]] \
+             label [string totitle [string map {_ { }} [_ acs-subsite.$priv]]] \
              display_template "
                <if @permissions.${priv}_p@ ge 2>
-                 <img src=\"/shared/images/checkboxchecked\" border=\"0\" height=\"13\" width=\"13\" alt=\"X\" title=\"This permission is inherited, to remove, click the 'Do not inherit ...' button above.\">
+                 <img src=\"/shared/images/checkboxchecked\" style=\"border:0\" height=\"13\" width=\"13\" alt=\"X\" title=\"This permission is inherited, to remove, click the 'Do not inherit ...' button above.\">
                </if>
                <else>
                  <input type=\"checkbox\" name=\"perm\" value=\"@permissions.grantee_id@,${priv}\" @permissions.${priv}_checked@>
@@ -63,24 +63,24 @@ lappend elements remove_all {
 
 
 
-set perm_url "[site_node_closest_ancestor_package_url]permissions/"
+set perm_url "[ad_conn subsite_url]permissions/"
 
 if { ![exists_and_not_null user_add_url] } {
     set user_add_url "${perm_url}perm-user-add"
 }
 set user_add_url [export_vars -base $user_add_url { object_id expanded {return_url "[ad_return_url]"}}]
 
+set actions [list \
+                 [_ acs-subsite.Grant_Permission] "${perm_url}grant?[export_vars {return_url application_url object_id}]" [_ acs-subsite.Grant_Permission] \
+                 [_ acs-subsite.Search_For_Exist_User] $user_add_url [_ acs-subsite.Search_For_Exist_User]]
 
-set actions [list "[_ acs-subsite.Grant_Permission]" "${perm_url}grant?[export_vars {return_url application_url object_id}]" "[_ acs-subsite.Grant_Permission]" \
-				"[_ acs-subsite.Search_For_Exist_User]" $user_add_url "[_ acs-subsite.Search_For_Exist_User]"]
-				
-if { ![empty_string_p $context_id] } {
+if { $context_id ne "" } {
     set inherit_p [permission::inherit_p -object_id $object_id]
 
     if { $inherit_p } {
-        lappend actions "Do not inherit from $parent_object_name" [export_vars -base "${perm_url}toggle-inherit" {object_id {return_url [ad_return_url]}}] "Stop inheriting permissions from the $parent_object_name"
+        lappend actions "[_ acs-subsite.lt_Do_not_inherit_from_p]" [export_vars -base "${perm_url}toggle-inherit" {object_id {return_url [ad_return_url]}}] "[_ acs-subsite.lt_Stop_inheriting_permi]"
     } else {
-        lappend actions "Inherit from $parent_object_name" [export_vars -base "${perm_url}toggle-inherit" {object_id {return_url [ad_return_url]}}] "Inherit permissions from the $parent_object_name"
+        lappend actions "[_ acs-subsite.lt_Inherit_from_parent_o]" [export_vars -base "${perm_url}toggle-inherit" {object_id {return_url [ad_return_url]}}] "[_ acs-subsite.lt_Inherit_permissions_f]"
     }
 }
 
@@ -91,7 +91,7 @@ template::list::create \
     -name permissions \
     -multirow permissions \
     -actions $actions \
-    -elements $elements 
+    -elements $elements
 
 
 set perm_form_export_vars [export_vars -form {object_id privs return_url}]
@@ -99,7 +99,6 @@ set perm_form_export_vars [export_vars -form {object_id privs return_url}]
 set perm_modify_url "${perm_url}perm-modify"
 
 set application_group_id [application_group::group_id_from_package_id -package_id [ad_conn subsite_id]]
-
 
 # PERMISSION: yes = 2, no = 0
 # DIRECT:     yes = 1, no = -1
@@ -118,11 +117,9 @@ set application_group_id [application_group::group_id_from_package_id -package_i
 # We do not include site-wide admins in the list
 
 db_multirow -extend { name_url } permissions permissions {} {
-    if { [string equal $object_type "user"] && $grantee_id != 0 } {
+    if { $object_type eq "user" && $grantee_id != 0 } {
         set name_url [acs_community_member_url -user_id $grantee_id]
-}
+    }
 }
 
-
-ad_return_template
 

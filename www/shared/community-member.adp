@@ -4,8 +4,9 @@
   <property name="displayed_object_id">@user_id;noquote@</property>
 
 <if @inline_portrait_state@ eq "inline">
-  <a href="portrait?@portrait_export_vars@"><img src="portrait-bits?@portrait_export_vars@"
-  align="right" width="@width@" height="@height@" alt="Portrait of @first_names@ @last_name@"></a>
+      <div style="float:right">
+        <a href="portrait?@portrait_export_vars@"><img src="portrait-bits?@portrait_export_vars@" width="@width@" height="@height@" alt="Portrait of @first_names@ @last_name@"></a>
+      </div>
 </if>
 <else>
   <if @inline_portrait_state@ eq "link">
@@ -41,14 +42,12 @@
 </p>
 
 <if @show_email_p@ true>
-  <p>
-    <b>#acs-subsite.E_mail#:</b> <a href="mailto:@email@">@email@</a>
-  </p>
+ 	@email_image;noquote@
 </if>
 
 <if @url@ not nil>
   <p>
-    <b>#acs-subsite.Home_page#:</b> <a href="@url@">@url@</a>
+    <b>#acs-subsite.Home_page#:</b><a href="@url@">@url@</a>
   </p>
 </if>
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-subsite" package_version="5.1.2" locale="en_AU" charset="ISO-8859-1">
+<message_catalog package_key="acs-subsite" locale="en_AU" charset="ISO-8859-1">
 
   <msg key="_or">, or</msg>
   <msg key="_Update_Basic_Information">Update Basic Information</msg>
@@ -7,10 +7,6 @@
   <msg key="About_You">About You</msg>
   <msg key="Account_at_system_closed">Your account at %system_name% has been closed.</msg>
   <msg key="Account_close_confirm_no_label">No, take me back to %pvt_home_name%</msg>
-  <description key="Account_close_confirm_no_label">Description please - does this refer to 'Close account' on the 'Your(/My) Account' page? Where ist the user taken if he doesn't confirm? On the 'MySpace' page? (pvt=private?)
-
---Anja Wicht</description>
-
   <msg key="Account_close_confirm_yes_label">Yes, please close my account</msg>
   <msg key="Account_closed">
     &lt;p&gt;Your account is currently closed.&lt;/p&gt;
@@ -82,8 +78,6 @@ logging in again. &lt;/p&gt;
   <msg key="default_context">default context</msg>
   <msg key="Delete">Delete</msg>
   <msg key="DevAdmin">DevAdmin</msg>
-  <description key="DevAdmin">Can we please have a description about the purpose of this key?</description>
-
   <msg key="Developers_Admin">Developer's Administration</msg>
   <msg key="Direct_Permissions">Direct Permissions</msg>
   <msg key="Disable">Disable</msg>
@@ -155,8 +149,8 @@ Please visit the following link to change your password now:
   <msg key="Leave_this_community">Leave this community</msg>
   <msg key="Leave_this_subsite">Leave this subsite</msg>
   <msg key="lGo_back_without_adding">Go back without adding any users</msg>
-  <msg key="Log_In">Log In</msg>
-  <msg key="log_in">log in</msg>
+  <msg key="Log_In">Login</msg>
+  <msg key="log_in">login</msg>
   <msg key="Log_in_to_system">Log in to %system_name%</msg>
   <msg key="logging_back_in">logging back in</msg>
   <msg key="Login_has_expired">The login page has expired. Please log in again.</msg>
@@ -264,8 +258,6 @@ account was deleted for some reason.</msg>
   <msg key="No_pretty_plural">No %pretty_plural%</msg>
   <msg key="No_services">No services</msg>
   <msg key="none">none</msg>
-  <description key="none">Used to indicate that a list of permissions or objects is empty.</description>
-
   <msg key="Not_logged_in">Not logged in</msg>
   <msg key="Notes">Notes:</msg>
   <msg key="Notice">Notice:</msg>
@@ -345,8 +337,6 @@ You can always change your password by doing the following:
   <msg key="Topic">Topic</msg>
   <msg key="type_specific_info">type-specific info</msg>
   <msg key="UP">UP</msg>
-  <description key="UP">Can we please have a description of this key??</description>
-
   <msg key="up_to_context_name">up to %context_name%</msg>
   <msg key="Update">Update</msg>
   <msg key="Update_Password">Update Password</msg>

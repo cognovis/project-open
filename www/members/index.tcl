@@ -94,9 +94,10 @@ template::list::create \
             link_url_eval {[acs_community_member_url -user_id $user_id]}
         }
         email {
-            label "[_ acs-subsite.Email]"
-            link_url_col email_url
-            link_html { title "[_ acs-subsite.Send_email_to_this_user]" }
+           label "[_ acs-subsite.Email]"
+	    display_template {
+		@members.user_email;noquote@
+	    }
         }
         rel_role {
             label "[_ acs-subsite.Role]"
@@ -156,7 +157,7 @@ template::list::create \
 
 # Pull out all the relations of the specified type
 
-set show_partial_email_p [expr $user_id == 0]
+set show_partial_email_p [expr {$user_id == 0}]
 
 db_multirow -extend { 
     email_url
@@ -169,14 +170,19 @@ db_multirow -extend {
     make_admin_url
     make_member_url
     rel_role_pretty
+    user_email
 } -unclobber members members_select {} {
     if { $member_admin_p > 0 } {
         set rel_role_pretty [lang::util::localize $admin_role_pretty]
     } else {
-        set rel_role_pretty [lang::util::localize $member_role_pretty]
+        if { $other_role_pretty ne "" } {
+            set rel_role_pretty [lang::util::localize $other_role_pretty]
+        } else {
+            set rel_role_pretty [lang::util::localize $member_role_pretty]
+        }
     }
     set member_state_pretty [group::get_member_state_pretty -member_state $member_state]
-
+    set user_email [email_image::get_user_email -user_id $user_id]
     if { $admin_p } {
         switch $member_state {
             approved {
@@ -211,7 +217,7 @@ db_multirow -extend {
 
     if { [ad_conn user_id] == 0 } {
         set email [string replace $email \
-                       [expr [string first "@" $email]+3] end "..."]
+                       [expr {[string first "@" $email]+3}] end "..."]
     } else {
         set email_url "mailto:$email"
     }

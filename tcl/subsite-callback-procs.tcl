@@ -34,7 +34,7 @@ ad_proc -public subsite_callback {
     not specified
 } {
 
-    if { [empty_string_p $object_type] } {
+    if { $object_type eq "" } {
 	db_1row select_object_type {
 	    select object_type
 	      from acs_objects 
@@ -74,3 +74,42 @@ ad_proc -public subsite_callback {
 	}
     }
 }
+
+ad_proc -public -callback subsite::parameter_changed {
+   -package_id:required
+   -parameter:required
+   -value:required
+} {
+    Callback for changing the value of an instance parameter.
+
+    @param package_id The package_id of the package the parameter was changed for.
+    @param parameter The parameter value.
+    @param value The new value.
+
+    @see package::set_value
+} -
+
+ad_proc -public -callback subsite::global_parameter_changed {
+   -package_key:required
+   -parameter:required
+   -value:required
+} {
+    Callback for changing the value of a global parameter.
+
+    @param package_key The package_key of the package the parameter was changed for.
+    @param parameter The parameter value.
+    @param value The new value.
+
+    @see package::set_value
+} -
+
+ad_proc -public -callback subsite::url {
+    -package_id:required
+    -object_id:required
+    {-type ""}
+} {
+    Callback for creating a URL for an object_id. THis is usually called in /o.vuh, but
+    you could think of scenarios where using this hook makes sense as well.
+
+    The type let's you define what kind of URL you are looking for (e.g. admin/edit/display)
+} -

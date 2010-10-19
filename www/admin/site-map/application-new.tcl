@@ -36,24 +36,24 @@ ad_form -name application -cancel_url . -form {
     # Get the node ID of this subsite
     set node_id [ad_conn node_id]
 
-    if { [empty_string_p $instance_name] } {
+    if { $instance_name eq "" } {
         # Find the package pretty name from the list of packages
 
         foreach elm $packages {
-            if { [string equal [lindex $elm 1] $package_key] } {
+            if {[lindex $elm 1] eq $package_key} {
                 set instance_name [lindex $elm 0]
                 break
             }
         }
-        if { [empty_string_p $instance_name] } {
+        if { $instance_name eq "" } {
             error "Couldn't find package_key '$package_key' in list of system applications"
         }
 
     }
 
     # Autogenerate folder name
-    if { [empty_string_p $folder] } {
-        set existing_urls [site_node::get_children -node_id $parent_node_id -element name]
+    if { $folder eq "" } {
+        set existing_urls [site_node::get_children -node_id $node_id -element name]
 
         set folder [util_text_to_url \
                       -existing_urls $existing_urls \

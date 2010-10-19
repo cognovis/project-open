@@ -1,11 +1,12 @@
 ad_page_contract {
     Inform the user that his/her account is closed
-    
+
     @cvs-id $Id$
 } {
-    {message:allhtml ""}
+    {message:html ""}
 }
 
-set page_title "Registration"
-set context [list $page_title]
+set page_title [_ acs-subsite.Account_closed_title]
+
+set context [list [_ "acs-kernel.common_Register"]]
 

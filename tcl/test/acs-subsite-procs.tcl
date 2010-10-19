@@ -6,6 +6,30 @@ ad_library {
     @cvs-id $Id$
 }
 
+aa_register_case acs_subsite_expose_bug_775 {
+    Exposes Bug 775.
+
+    @author Don Baccus
+} {
+
+    aa_run_with_teardown \
+        -rollback \
+        -test_code {
+
+        set group_id [group::new -group_name group_775]
+        set rel_id [rel_segments_new $group_id membership_rel segment_775]
+        relation_add membership_rel $group_id 0
+        permission::grant -object_id $group_id -party_id 0 -privilege read
+
+        if { [catch {group::delete $group_id} errmsg] } {
+            aa_error "Delete of group \"group_775\" failed."
+        } else {
+            aa_true "Delete of group \"group_775\" succeeded." 1
+        }
+    }
+
+}
+
 aa_register_case acs_subsite_expose_bug_1144 {
     Exposes Bug 1144.
 
@@ -47,6 +71,7 @@ aa_register_case acs_subsite_expose_bug_1144 {
                 where email = :email
             }]
             aa_equals "New user occurs only once in registered_users" $registered_users_count 1
+            acs_user::delete -user_id $creation_info(user_id)
         }
 }
 
@@ -65,4 +90,17 @@ aa_register_case -cats smoke acs_subsite_trivial_smoke_test {
             aa_true "Main subsite exists" [exists_and_not_null main_subsite_id]
 
         }
+}
+
+aa_register_case -cats smoke acs_subsite_unregistered_visitor {
+    Test that unregistered visitor is not in any groups
+} {
+
+    aa_equals "Unregistered vistior is not in any groups except The Public" \
+        [db_string count_rels "
+	    select count(*)
+	    from group_member_map g, acs_magic_objects a
+	    where g.member_id = 0
+	      and g.group_id <> a.object_id
+	      and a.name = 'the_pubic'" -default 0] 0
 }

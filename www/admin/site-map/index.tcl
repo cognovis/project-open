@@ -14,7 +14,7 @@ ad_page_contract {
     {rename_application:integer {}}
 }
 
-if {[empty_string_p $root_id]} {
+if {$root_id eq ""} {
     set root_id [ad_conn node_id]
 }
 
@@ -28,15 +28,15 @@ array set node [site_node::get -node_id $root_id]
 set parent_id $node(parent_id)
 set object_id $node(object_id)
 
-if {![empty_string_p $object_id]} {
+if {$object_id ne ""} {
     ad_require_permission $object_id admin
 }
 
-if {![empty_string_p $new_parent]} {
+if {$new_parent ne ""} {
     set javascript "onLoad=\"javascript:document.new_parent.name.focus();document.new_parent.name.select()\""
-} elseif {![empty_string_p $new_application]} {
+} elseif {$new_application ne ""} {
     set javascript "onLoad=\"javascript:document.new_application.instance_name.focus();document.new_application.instance_name.select()\""
-} elseif {![empty_string_p $rename_application]} {
+} elseif {$rename_application ne ""} {
     set javascript "onLoad=\"javascript:document.rename_application.instance_name.focus();document.rename_application.instance_name.select()\""
 } else {
     set javascript ""
@@ -49,21 +49,30 @@ set context [list $page_title]
 
 set user_id [ad_conn user_id]
 
+set subsite_number [db_string count_subsites "select count(*) from apm_packages where package_key = 'acs-subsite'"]
+if {$subsite_number > 100} {
+    set too_many_subsites_p 1
+    set where_limit "where apm_packages.package_key <> 'acs-subsite'"
+} else {
+    set too_many_subsites_p 0
+    set where_limit ""
+}
+
 db_foreach path_select {} {
-    if {$node_id != $root_id && $admin_p == "t"} {
+    if {$node_id != $root_id && $admin_p eq "t"} {
 	append head "<a href=.?[export_url_vars expand:multiple root_id=$node_id]>"
     }
-    if {[empty_string_p $name]} {
+    if {$name eq ""} {
 	append head "$obj_name:"
     } else {
 	append head $name
     }
     
-    if {$node_id != $root_id && $admin_p == "t"} {
+    if {$node_id != $root_id && $admin_p eq "t"} {
 	append head "</a>"
     }
     
-    if {$directory_p == "t"} {
+    if {$directory_p eq "t"} {
 	append head "/"
     }
 } if_no_rows {
@@ -72,7 +81,7 @@ db_foreach path_select {} {
 
 if {[llength $expand] == 0} {
     lappend expand $root_id 
-    if { ![empty_string_p $parent_id] } {
+    if { $parent_id ne "" } {
         lappend expand $parent_id
     }
 }
@@ -150,28 +159,28 @@ template::list::create \
             html "align left"
 	    display_template {
 		<if @nodes.add_folder_url@ ne "">
-		  <a href="@nodes.add_folder_url@#add">add folder</a>
+		  <a href="@nodes.add_folder_url@#add">[_ acs-subsite.add_folder]</a>
 		</if>
 		<if @nodes.new_app_url@ ne "">
-		  <a href="@nodes.new_app_url@#new">new application</a>
+		  <a href="@nodes.new_app_url@#new">[_ acs-subsite.new_application]</a>
 		</if>
 		<if @nodes.unmount_url@ ne "">
-		  <a href="@nodes.unmount_url@">unmount</a>
+		  <a href="@nodes.unmount_url@">[_ acs-subsite.unmount]</a>
 		</if>
 		<if @nodes.mount_url@ ne "">
-		  <a href="@nodes.mount_url@">mount</a>
+		  <a href="@nodes.mount_url@">[_ acs-subsite.mount]</a>
 		</if>
 		<if @nodes.rename_url@ ne "">
-		  <a href="@nodes.rename_url@#rename">rename</a>
+		  <a href="@nodes.rename_url@#rename">[_ acs-subsite.rename]</a>
 		</if>
 		<if @nodes.delete_url@ ne "">
-		  <a href="@nodes.delete_url@" onclick="return confirm('Are you sure you want to delete node @nodes.name@ and any package mounted there?');">delete</a>
+		  <a href="@nodes.delete_url@" onclick="return confirm('Are you sure you want to delete node @nodes.name@ and any package mounted there?');">[_ acs-subsite.delete]</a>
 		</if>
 		<if @nodes.parameters_url@ ne "">
-		  <a href="@nodes.parameters_url@">parameters</a>
+		  <a href="@nodes.parameters_url@">[_ acs-subsite.parameters]</a>
 		</if>
 		<if @nodes.permissions_url@ ne "">
-		  <a href="@nodes.permissions_url@">permissions</a>
+		  <a href="@nodes.permissions_url@">[_ acs-subsite.permissions]</a>
 		</if>
 		<if @nodes.extra_form_part@ ne "">
 		  @nodes.extra_form_part;noquote@
@@ -194,11 +203,11 @@ db_foreach nodes_select {} {
     set parameters_url ""
     set permissions_url ""
 
-    if { [lsearch -exact $open_nodes $parent_id] == -1 && $parent_id != "" && $mylevel > 2 } { continue } 
+    if { [lsearch -exact $open_nodes $parent_id] == -1 && $parent_id ne "" && $mylevel > 2 } { continue } 
         
-    if {$directory_p == "t"} {
+    if {$directory_p eq "t"} {
 	set add_folder_url "?[export_url_vars expand:multiple root_id node_id new_parent=$node_id new_type=folder]"
-	if {[empty_string_p $object_id]} {
+	if {$object_id eq ""} {
 	    set mount_url "mount?[export_url_vars expand:multiple root_id node_id]"
 	    set new_app_url "?[export_url_vars expand:multiple root_id new_application=$node_id]"
 	} else {
@@ -214,7 +223,7 @@ db_foreach nodes_select {} {
 		set delete_url "instance-delete?package_id=$object_id&root_id=$root_id"
 	    }
 	    # Is the object a package?
-	    if {![empty_string_p $package_id]} {
+	    if {$package_id ne ""} {
 		if {$object_admin_p && ($parameter_count > 0)} {
 		    set parameters_url "[export_vars -base "/shared/parameters" { package_id {return_url {[ad_return_url]} } }]"
 		}
@@ -222,7 +231,7 @@ db_foreach nodes_select {} {
 	}
     }
     
-    if {[ad_conn node_id] != $node_id && $n_children == 0 && [empty_string_p $object_id]} {
+    if {[ad_conn node_id] != $node_id && $n_children == 0 && $object_id eq ""} {
 	set delete_url "delete?[export_url_vars expand:multiple root_id node_id]"
     }
     
@@ -261,7 +270,7 @@ db_foreach nodes_select {} {
     set action_type 0
     set action_form_part ""
     
-    if {[empty_string_p $object_id]} {
+    if {$object_id eq ""} {
 	if {$new_application == $node_id} {
 	    
 	    set action_type "new_app"
@@ -289,10 +298,10 @@ db_foreach nodes_select {} {
 
 }
 
-set new_app_form_part_1 "<p align=\"top\"><form name=new_application action=package-new><input type=hidden name=node_id value=$node(node_id) /><input type=hidden name=root_id value=$node(node_id) /><input type=hidden name=new_node_p value=t />[export_form_vars expand:multiple]<input name=node_name type=text size=8>"
+set new_app_form_part_1 "<form name=new_application action=package-new><input type=hidden name=node_id value=$node(node_id)><input type=hidden name=root_id value=$node(node_id)><input type=hidden name=new_node_p value=t>[export_form_vars expand:multiple]<input name=node_name type=text size=8>"
 
 set new_app_form_part_2 "[apm_application_new_checkbox]"
-set new_app_form_part_3 "<input type=submit value=\"Mount Package\"></form></p>"
+set new_app_form_part_3 "<input type=submit value=\"Mount Package\"></form>"
     multirow append nodes -99999 "" "" "" $new_app_form_part_1 "" "" "" $new_app_form_part_2 "" "" "" "" "" "" "" "" "" "" $new_app_form_part_3
 
 set services ""

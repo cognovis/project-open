@@ -1,21 +1,17 @@
 ad_page_contract {
-    @cvs-id $Id$
+    Page for users to register themselves on the site.
 
+    @cvs-id $Id$
 } {
     token:notnull,trim
     user_id:integer
+    
+    {return_url ""}
 }
 
-if { ![string equal $token [auth::get_user_secret_token -user_id $user_id]] } {
-    set message "Bad token"
-    ad_returnredirect [export_vars -base "[subsite::get_element -element url]register/account-closed" { message }]
-    ad_script_abort    
-} 
+set subsite_id [ad_conn subsite_id]
+set email_confirm_template [parameter::get -parameter "EmailConfirmTemplate" -package_id $subsite_id]
 
-auth::set_email_verified -user_id $user_id
-
-acs_user::get -user_id $user_id -array user_info
-
-set export_vars [export_vars -form { { username $user_info(username) } }]
-set site_link [ad_site_home_link]
-set system_name [ad_system_name]
+if {$email_confirm_template eq ""} {
+    set email_confirm_template "/packages/acs-subsite/lib/email-confirm"
+}

@@ -6,11 +6,12 @@ ad_page_contract {
     {username ""}
     {email ""}
     {return_url ""}
-    {password_hash "" }
-    {time "" }
-    {otp "" }
-    {otp_nr ""}
-    {otp_user_id ""}
-    {otp_enabled_p "" }
+}
+
+set subsite_id [ad_conn subsite_id]
+set login_template [parameter::get -parameter "LoginTemplate" -package_id $subsite_id]
+
+if {$login_template eq ""} {
+    set login_template "/packages/acs-subsite/lib/login"
 }
 

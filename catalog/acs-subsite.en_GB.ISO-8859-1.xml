@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-subsite" package_version="5.1.7" locale="en_GB" charset="ISO-8859-1">
+<message_catalog package_key="acs-subsite" locale="en_GB" charset="ISO-8859-1">
 
-  <msg key="Close_account_explanation">&lt;p&gt; Please confirm that you would like to close your account at %system_name%. &lt;/p&gt;
-
-&lt;p&gt; Closing your account means that we will no longer send you email
-notifications, nor will you show up in lists of members at
-%system_name%. Your contributions to the community, however, will be
-preserved, as they're part of the community's history. &lt;/p&gt;
-
-&lt;p&gt; Note that you may reopen your account at any time, simply by
-logging in again. &lt;/p&gt;
-  </msg>
-  <msg key="lt_Note_that_you_can_era">Note that you can delete your saved email address and password by
-choosing the &quot;log out&quot; option from your workspace.</msg>
-  <msg key="lt_Sure_erase_user_por">Are you sure that you want to delete this user's portrait?</msg>
-  <msg key="lt_Sure_erase_your_por">Are you sure that you want to delete your portrait?</msg>
+  <msg key="lt_Upload_your_favorite">Upload your favourite file, a scanned JPEG or GIF, from your desktop
+computer system (note that you can't refer to an image elsewhere on
+the Internet; this image must be on your computer's hard drive).</msg>
 </message_catalog>

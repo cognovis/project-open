@@ -26,19 +26,19 @@ select acs_object_type__create_type (
 
 
 create table application_groups (
-	group_id		integer constraint app_groups_group_id_fk
+	group_id		integer constraint application_groups_group_id_fk
 				references groups (group_id)
-				constraint app_groups_group_id_pk
+				constraint application_groups_group_id_pk
 				primary key,
-        package_id              integer constraint app_groups_package_id_fk
+        package_id              integer constraint application_groups_package_id_fk
                                 references apm_packages,
-                                constraint app_groups_package_id_un
+                                constraint application_groups_package_id_un
                                 unique (package_id)
 );
 
-select define_function_args('application_group__new','group_id,object_type;application_group,creation_date;now(),creation_user,creation_ip,email,url,group_name,package_id,context_id');
+select define_function_args('application_group__new','group_id,object_type;application_group,creation_date;now(),creation_user,creation_ip,email,url,group_name,package_id,join_policy,context_id');
 
-create function application_group__new(integer,varchar,timestamptz,integer,varchar,varchar,varchar,varchar,integer,integer)
+create function application_group__new(integer,varchar,timestamptz,integer,varchar,varchar,varchar,varchar,integer,varchar,integer)
 returns integer as '
 declare
   new__group_id              alias for $1;
@@ -50,7 +50,8 @@ declare
   new__url                   alias for $7; -- default null,
   new__group_name            alias for $8;
   new__package_id            alias for $9;
-  new__context_id	     alias for $10; -- default null
+  new__join_policy           alias for $10;
+  new__context_id	     alias for $11; -- default null
   v_group_id		     application_groups.group_id%TYPE;
 begin
   v_group_id := acs_group__new (
@@ -62,7 +63,7 @@ begin
     new__email,
     new__url,
     new__group_name,
-    null,
+    new__join_policy,
     new__context_id
   );
 
@@ -116,17 +117,17 @@ end;' language 'plpgsql' stable;
 insert into group_type_rels
 (group_rel_type_id, group_type, rel_type)
 values
-(acs_object_id_seq.nextval, 'application_group', 'composition_rel');
+(nextval('t_acs_object_id_seq'), 'application_group', 'composition_rel');
 
 insert into group_type_rels
 (group_rel_type_id, group_type, rel_type)
 values
-(acs_object_id_seq.nextval, 'application_group', 'membership_rel');
+(nextval('t_acs_object_id_seq'), 'application_group', 'membership_rel');
 
 insert into group_type_rels
 (group_rel_type_id, group_type, rel_type)
 values
-(acs_object_id_seq.nextval, 'application_group', 'admin_rel');
+(nextval('t_acs_object_id_seq'), 'application_group', 'admin_rel');
 
 -----------
 -- Views --

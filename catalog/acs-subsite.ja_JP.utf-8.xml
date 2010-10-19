@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-subsite" package_version="5.1.7" locale="ja_JP" charset="utf-8">
+<message_catalog package_key="acs-subsite" locale="ja_JP" charset="utf-8">
 
   <msg key="About_You">あなたについて</msg>
   <msg key="Answer">回答:</msg>
@@ -12,12 +12,10 @@
   <msg key="Confirm">確認:</msg>
   <msg key="Current_Password">現在のパスワード:</msg>
   <msg key="Customize_Question">質問のカスタマイズ</msg>
-  <msg key="Developers_Admin">開発者管理</msg>
   <msg key="Direct_Permissions">直接権限</msg>
   <msg key="Email_Confirmation">メールの確認</msg>
   <msg key="Email_not_Requested">メールは未登録です</msg>
   <msg key="Error_sending_mail">メール送信エラー</msg>
-  <msg key="Forgot_your_password">パスワードを忘れましたか?</msg>
   <msg key="Grant">付与</msg>
   <msg key="Grant_Permission">権限の付与</msg>
   <msg key="Join_group_name">%group_name% に参加</msg>
@@ -29,11 +27,4 @@
   <msg key="lt_It_would_be_a_very_ba">図書館や学校などで共有のコンピュータを使用している場合は、このオプションにはチェックしないことをお勧めします。このコンピュータのこれ以降のユーザは誰でも、このサイトであなたになりすますことができてしまいます。</msg>
   <msg key="lt_New_registration_at_s">%system_url% への新規登録</msg>
   <msg key="lt_Note_that_you_can_era">保存したメールアドレスとパスワードは、ワークスペースの&quot;ログアウト&quot;オプションを選択することで削除することができます。</msg>
-  <msg key="lt_Password_Confirmation">確認用パスワード</msg>
-  <msg key="lt_Your_login_has_expire">あなたのログインは期限が切れました。 パスワードを再びタイプして続けてください</msg>
-  <msg key="New_Password">新しいパスワード</msg>
-  <msg key="Refresh_login">ログインの更新</msg>
-  <msg key="Remember_my_login">このコンピュータでログイン情報を記録する</msg>
-  <msg key="Site_wide_administration">サイト管理者</msg>
-  <msg key="Topic">話題</msg>
 </message_catalog>

@@ -9,7 +9,7 @@
            u.first_names || ' ' || u.last_name as name,
            u.email
     from   cc_users u
-    where  1 = 1
+    where  u.user_id not in (select grantee_id from acs_permissions_all where object_id = :object_id)
            $page_where_clause
     order  by upper(first_names), upper(last_name)
 
@@ -21,7 +21,7 @@
 
     select u.user_id
     from   cc_users u
-    where  1 = 1
+    where  u.user_id not in (select grantee_id from acs_permissions_all where object_id = :object_id)
     order  by upper(first_names), upper(last_name)
 
       </querytext>

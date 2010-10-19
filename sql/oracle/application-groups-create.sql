@@ -27,13 +27,13 @@ end;
 show errors
 
 create table application_groups (
-	group_id		constraint app_groups_group_id_fk
+	group_id		constraint application_groups_group_id_fk
 				references groups (group_id)
-				constraint app_groups_group_id_pk
+				constraint application_groups_group_id_pk
 				primary key,
-        package_id              constraint app_groups_package_id_fk
+        package_id              constraint ag_package_id_fk
                                 references apm_packages,
-                                constraint app_groups_package_id_un
+                                constraint ag_package_id_un
                                 unique (package_id)
 );
 
@@ -54,6 +54,7 @@ is
   url                   in parties.url%TYPE default null,
   group_name            in groups.group_name%TYPE,
   package_id            in application_groups.package_id%TYPE,
+  join_policy           in groups.join_policy%TYPE default null,
   context_id	in acs_objects.context_id%TYPE default null
  ) return application_groups.group_id%TYPE;
 
@@ -87,6 +88,7 @@ is
   url                   in parties.url%TYPE default null,
   group_name            in groups.group_name%TYPE,
   package_id            in application_groups.package_id%TYPE,
+  join_policy           in groups.join_policy%TYPE default null,
   context_id	in acs_objects.context_id%TYPE default null
  )
  return application_groups.group_id%TYPE
@@ -102,7 +104,8 @@ is
                email => email,
                url => url,
                group_name => group_name,
-               context_id => context_id
+               context_id => context_id,
+               join_policy => join_policy
            );
 
   insert into application_groups (group_id, package_id) 

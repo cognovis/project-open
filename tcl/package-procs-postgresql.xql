@@ -21,7 +21,7 @@
       <querytext>
 
 	select upper(coalesce(attr.table_name,t.table_name)) as attr_table_name, 
-	       upper(coalesce(attr.column_name, attr.attribute_name)) as attr_column_name, 
+	       upper(coalesce(attr.column_name, attr.attribute_name)) as attr_column_name,
 	       attr.ancestor_type, attr.min_n_values, attr.default_value
 	  from acs_object_type_attributes attr, 
 	       (select t2.object_type, t2.table_name, (tree_level(t1.tree_sortkey) - tree_level(t2.tree_sortkey)) + 1 as type_level
@@ -157,7 +157,13 @@
       <querytext>
 	select args.arg_name
         from acs_function_args args
-        where args.function = upper(:package_name) || '__' || upper(:function_name)
+        where args.function = upper(:package_name) || '__' || upper(:object_name)
+      </querytext>
+</fullquery>
+
+<fullquery name="package_function_p.function_p">      
+      <querytext>
+	 select 1
       </querytext>
 </fullquery>
  
@@ -266,16 +272,15 @@ select 1;
       </querytext>
 </fullquery>
 
-<fullquery name="package_exec_plsql.exec_plsql_func">      
+<fullquery name="package_exec_plsql.exec_func_plsql">      
       <querytext>
 
-	select ${package_name}__${function_name}([plpgsql_utility::generate_attribute_parameter_call \
+	select ${__package_name}__${__object_name}([plpgsql_utility::generate_attribute_parameter_call \
 		-prepend ":" \
-		${package_name}__${function_name} \
+		${__package_name}__${__object_name} \
 		$pieces])
 
       </querytext>
 </fullquery>
 
- 
 </queryset>

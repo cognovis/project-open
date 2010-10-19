@@ -13,7 +13,7 @@ ad_library {
 
 namespace eval group {}
 
-ad_proc group::new { 
+ad_proc -public group::new { 
     { -form_id "" }
     { -variable_prefix "" }
     { -creation_user "" }
@@ -21,6 +21,7 @@ ad_proc group::new {
     { -group_id "" } 
     { -context_id "" } 
     { -group_name "" }
+    { -pretty_name ""}
     {group_type "group"}
 } {
     Creates a group of this type by calling the .new function for
@@ -103,11 +104,14 @@ ad_proc group::new {
     set var_list [list]
     lappend var_list [list context_id $context_id]
     lappend var_list [list $id_column $group_id]
-    if { ![empty_string_p $group_name] } {
+    if { $group_name ne "" } {
         lappend var_list [list group_name $group_name]
+	if {$pretty_name eq ""} {
+	    set pretty_name $group_name
+	}
     }
 
-    return [package_instantiate_object \
+    set group_id [package_instantiate_object \
     	-creation_user $creation_user \
     	-creation_ip $creation_ip \
     	-package_name $package_name \
@@ -117,6 +121,21 @@ ad_proc group::new {
     	-variable_prefix $variable_prefix \
     	$group_type]
 
+    # We can't change the group_name to an I18N version as this would
+    # break compatability with group::member_p -group_name and the
+    # like. So instead we change the title of the object of the group
+    # (through the pretty name). We just have to change the display of
+    # groups to the title at the appropriate places.
+
+    if { [info procs "::lang::util::convert_to_i18n"] ne "" } {
+	set pretty_name [lang::util::convert_to_i18n -message_key "group_title_${group_id}" -text "$pretty_name"]
+    } 
+	
+    # Update the title to the pretty name
+    if {$pretty_name ne ""} {
+	db_dml title_update "update acs_objects set title=:pretty_name where object_id = :group_id"
+    }
+    return $group_id
 }
 
 ad_proc group::delete { group_id } {
@@ -168,6 +187,7 @@ ad_proc group::delete { group_id } {
       END;
     "
 
+    util_memoize_flush "group::get_title_not_cached -group_id $group_id"
     return $object_type
 }
 
@@ -183,9 +203,10 @@ ad_proc -public group::get {
 } {
     upvar 1 $array row
     db_1row group_info {
-        select group_name, join_policy
-        from   groups
+        select group_name, title, join_policy, description
+        from   groups g, acs_objects o
         where  group_id = :group_id
+	and object_id = :group_id
     } -column_array row
 }
 
@@ -199,6 +220,114 @@ ad_proc -public group::get_element {
 } {
     group::get -group_id $group_id -array row
     return $row($element)
+}
+
+ad_proc -public group::get_id {
+    {-group_name:required}
+    {-subsite_id ""}
+    {-application_group_id ""}
+} {
+    Retrieve the group_id to a given group-name. If you have more than one group with this name, it will return the first one it finds.
+    Keep that in mind when using this procedure.
+
+    @author Christian Langmann (C_Langmann@gmx.de)
+    @author Malte Sussdorff (openacs@sussdorff.de)
+    @creation-date 2005-06-09
+
+    @param group_name the name of the group to look for
+    @param subsite_id the ID of the subsite to search for the group name
+    @param application_group_id the ID of the application group to search for the group name
+
+    @return the first group_id of the groups found for that group_name.
+
+    @error
+} {
+    return [util_memoize [list group::get_id_not_cached -group_name $group_name -subsite_id $subsite_id -application_group_id ""]]
+}
+
+ad_proc -private group::get_id_not_cached {
+    {-group_name:required}
+    {-subsite_id ""}
+    {-application_group_id ""}
+} {
+    Retrieve the group_id to a given group-name.
+
+    @author Christian Langmann (C_Langmann@gmx.de)
+    @author Malte Sussdorff (openacs@sussdorff.de)
+    @creation-date 2005-06-09
+
+    @param group_name the name of the group to look for
+
+    @return the id of the group
+
+    @error
+} {
+    if {[exists_and_not_null subsite_id]} {
+	set application_group_id [application_group::group_id_from_package_id -package_id [ad_conn subsite_id]]
+    } 
+    
+    if {[exists_and_not_null application_group_id]} {
+	set group_ids [db_list get_group_id_with_application {}]
+    } else {
+	set group_ids [db_list get_group_id {}]
+    }
+    return [lindex $group_ids 0]
+}
+
+ad_proc -public group::get_members {
+    {-group_id:required}
+    {-type "party"}
+} {
+    Get party_ids of all members from cache.
+
+    @param type Type of members - party, person, user
+
+    @see group::get_members_not_cached
+    @see group::flush_members_cache
+
+    @author Timo Hentschel (timo@timohentschel.de)
+    @creation-date 2005-07-26
+} {
+    return [util_memoize [list group::get_members_not_cached -group_id $group_id -type $type]]
+}
+
+ad_proc -private group::get_members_not_cached {
+    {-group_id:required}
+    {-type:required}
+} {
+    Get party_ids of all members.
+
+    @param type Type of members - party, person, user
+
+    @see group::get_members
+    @see group::flush_members_cache
+
+    @author Timo Hentschel (timo@timohentschel.de)
+    @creation-date 2005-07-26
+} {
+    switch $type {
+	party  { set member_list [db_list group_members_party {}] }
+	default { set member_list [db_list group_members {}] }
+    }
+
+    return $member_list
+}
+
+ad_proc -private group::flush_members_cache {
+    {-group_id:required}
+} {
+    Flush group members cache.
+
+    @see group::get_members
+    @see group::get_members_not_cached
+
+    @author Timo Hentschel (timo@timohentschel.de)
+    @creation-date 2005-07-26
+} {
+    util_memoize_flush "group::get_members_not_cached -group_id $group_id -type party"
+    util_memoize_flush "group::get_members_not_cached -group_id $group_id -type user"
+    util_memoize_flush "group::get_members_not_cached -group_id $group_id -type person"
+    util_memoize_flush_regexp "group::member_p_not_cached -group_id $group_id (.*)"
 }
 
 ad_proc -public group::permission_p { 
@@ -233,6 +362,19 @@ ad_proc -public group::join_policy {
     }]
 }
 
+ad_proc -public group::description {
+    {-group_id:required}
+} {
+    Returns a group's description
+
+    @creation-date 09/2008
+
+} {
+    return [db_string select_description {
+        select description from groups where group_id = :group_id
+    }]
+}
+
 ad_proc -public group::update {
     {-group_id:required}
     {-array:required}
@@ -249,7 +391,7 @@ ad_proc -public group::update {
     upvar $array row
     
     # Construct clauses for the update statement
-    set columns { group_name join_policy }
+    set columns { group_name join_policy description }
     set set_clauses [list]
     foreach name [array names row] {
         if { [lsearch -exact $columns $name] == -1 } {
@@ -269,6 +411,16 @@ ad_proc -public group::update {
         set    [join $set_clauses ", "]
         where  group_id = :group_id
     "
+
+    if {[info exists group_name]} {
+	set pretty_name [lang::util::convert_to_i18n -message_key "group_title.${group_id}" -text "$group_name"]
+	db_dml update_object_title {
+	    update acs_objects
+	    set title = :pretty_name
+	    where object_id = :group_id
+	}
+	util_memoize_flush "group::get_title_not_cached -group_id $group_id"
+    }
 }
 
 ad_proc -public group::possible_member_states {} {
@@ -327,11 +479,11 @@ ad_proc -public group::default_member_state {
     @param create_p - 1 if the user has 'create' privilege on the group, 
                       0 otherwise.
 } {
-    if {$create_p || [string equal $join_policy open]} {
+    if {$create_p || $join_policy eq "open"} {
         return "approved"
     }
 
-    if {[string equal $join_policy "needs approval"]} {
+    if {$join_policy eq "needs approval"} {
         return "needs approval"
     }
 
@@ -347,9 +499,80 @@ ad_proc -public group::member_p {
     { -user_id "" }
     { -group_name "" }
     { -group_id "" }
+    { -subsite_id "" }
     -cascade:boolean
 } {
     Return 1 if the user is a member of the group specified.
+    You can specify a group name or group id.
+    </p><p>
+    If there is more than one group with this name, it will use the first one.
+     <p>
+    If cascade is true, check to see if the user is
+    a member of the group by virtue of any other component group.
+    (e.g. if group B is a component of group A then if a user
+     is a member of group B then he is automatically a member of A
+     also.)
+    If cascade is false, then the user must have specifically
+    been granted membership on the group in question.</p>
+    @param subsite_id Only useful when using group_name. Marks the subsite in which to search for the group_id that belongs to the group_name
+
+    @see group::flush_members_cache
+
+} {
+
+    if { $user_id eq "" } {
+	set user_id [ad_conn user_id]
+    }
+
+    if { $group_name eq "" && $group_id eq "" } {
+	return 0
+    }
+
+    if { $group_name ne "" } {
+	set group_id [group::get_id -group_name $group_name -subsite_id $subsite_id]
+	if { $group_id eq "" } {
+	    return 0
+	}
+    }
+    
+    return [util_memoize [list group::member_p_not_cached -group_id $group_id -user_id $user_id -cascade_p $cascade_p]]
+}
+
+ad_proc -public group::member_p_not_cached {
+    { -user_id "" }
+    { -group_id "" }
+    {-cascade_p ""}
+} {
+    Return 1 if the user is a member of the group specified.
+    You can specify a group id.
+    </p><p>
+    If there is more than one group with this name, it will use the first one.
+     <p>
+    If cascade is true, check to see if the user is
+    a member of the group by virtue of any other component group.
+    (e.g. if group B is a component of group A then if a user
+     is a member of group B then he is automatically a member of A
+     also.)
+    If cascade is false, then the user must have specifically been granted membership on the group in question.</p>
+    @param subsite_id Only useful when using group_name. Marks the subsite in which to search for the group_id that belongs to the group_name
+
+    @see group::flush_members_cache
+
+} {
+
+    set cascade [db_boolean $cascade_p]
+    set result [db_string user_is_member {} -default "f"]
+    
+    return [template::util::is_true $result]
+}
+
+ad_proc -public group::party_member_p {
+    -party_id
+    { -group_name "" }
+    { -group_id "" }
+    { -subsite_id "" }
+} {
+    Return 1 if the party is an approved member of the group specified.
     You can specify a group name or group id.
     </p><p>
     <strong>Note:</strong> The group name is <strong>not</strong> unique
@@ -358,36 +581,35 @@ ad_proc -public group::member_p {
     <strong>will</strong> bomb!!! Using the group name as a parameter is
     thus strongly discouraged unless you are really, really sure the 
     name is unique.</p>
-    <p>
-    If cascade is true, check to see if the user is
-    a member of the group by virtue of any other component group.
-    (e.g. if group B is a component of group A then if a user
-     is a member of group B then he is automatically a member of A
-     also.)
-    If cascade is false, then the user must have specifically
+    <p>The party must have specifically
     been granted membership on the group in question.</p>
+    
 } {
-    if { [empty_string_p $user_id] } {
-	set user_id [ad_conn user_id]
-    }
 
-    if { [empty_string_p $group_name] && [empty_string_p $group_id] } {
+    if { $group_name eq "" && $group_id eq "" } {
 	return 0
     }
 
-    if { ![empty_string_p $group_name] } {
-	set group_id [db_string group_id_from_name {} -default {}]
-	if { [empty_string_p $group_id] } {
+    if { $group_name ne "" } {
+	set group_id [group::get_id -group_name $group_name -subsite_id $subsite_id]
+	if { $group_id eq "" } {
 	    return 0
 	}
     }
 
-    set cascade [db_boolean $cascade_p]
-    set result [db_string user_is_member {} -default "f"]
+    set result [lindex [db_list party_is_member {}] 0]
     
     return [template::util::is_true $result]
 }
 
+ad_proc -public group::get_rel_segment {
+    {-group_id:required}
+    {-type:required}
+} {
+    Get a segment for a particular relation type for a given group.
+} {
+    return [db_string select_segment_id {}]
+}
 
 ad_proc -public group::get_rel_types_options {
     {-group_id:required}
@@ -399,7 +621,6 @@ ad_proc -public group::get_rel_types_options {
     @param group_id The ID of the group for which to get options.
 
     @param object_type The object type which must occupy side two of the relationship. Typically 'person' or 'group'.
-    
     @return a list of lists with label (role two pretty name) and ID (rel_type)
 } {
     # LARS:
@@ -416,13 +637,15 @@ ad_proc -public group::admin_p {
     {-group_id:required}
     {-user_id:required}
 } {
+    @return 1 if user_id is in teh admin_rel for group_id
+} {
     set admin_rel_id [relation::get_id \
                           -object_id_one $group_id \
                           -object_id_two $user_id \
                           -rel_type "admin_rel"]
 
     # The party is an admin if the call above returned something non-empty
-    return [expr ![empty_string_p $admin_rel_id]]
+    return [expr {$admin_rel_id ne ""}] 
 }
 
 
@@ -433,41 +656,41 @@ ad_proc -public group::add_member {
     {-rel_type ""}
     {-member_state ""}
 } {
-    Adds a user to a group, checking that the rel_type is permissible given the user's privileges, 
+    Adds a user to a group, checking that the rel_type is permissible given the user's privileges,
     Can default both the rel_type and the member_state to their relevant values.
-} {       
+} {
     set admin_p [permission::permission_p -object_id $group_id -privilege "admin"]
-    
+
     # Only admins can add non-membership_rel members
-    if { [empty_string_p $rel_type] || \
-             (!$no_perm_check_p && ![empty_string_p $rel_type] && ![string equal $rel_type "membership_rel"] && \
+    if { $rel_type eq "" || \
+             (!$no_perm_check_p && $rel_type ne "" && $rel_type ne "membership_rel" && \
                   ![permission::permission_p -object_id $group_id -privilege "admin"]) } {
         set rel_type "membership_rel"
     }
-    
+
     group::get -group_id $group_id -array group
-    
+
     if { !$no_perm_check_p } {
         set create_p [group::permission_p -privilege create $group_id]
-        if { [string equal $group(join_policy) "closed"] && !$create_p } {
+        if { $group(join_policy) eq "closed" && !$create_p } {
             error "You do not have permission to add members to the group '$group(group_name)'"
         }
     } else {
         set create_p 1
     }
 
-    if { [empty_string_p $member_state] } {
+    if { $member_state eq "" } {
         set member_state [group::default_member_state \
                               -join_policy $group(join_policy) \
                               -create_p $create_p]
     }
 
-    if { ![string equal $rel_type "membership_rel"] } {
-        # Add them with a membership_rel first
-        relation_add -member_state $member_state "membership_rel" $group_id $user_id
+    if { $rel_type ne "membership_rel" } {
+	# add them with a membership_rel first
+	relation_add -member_state $member_state "membership_rel" $group_id $user_id
     }
-    
     relation_add -member_state $member_state $rel_type $group_id $user_id
+    flush_members_cache -group_id $group_id
 }
 
 
@@ -493,4 +716,59 @@ ad_proc -public group::remove_member {
             relation_remove $rel_id
         }
     }
+
+    flush_members_cache -group_id $group_id
 }
+
+ad_proc -public group::title {
+    {-group_name ""}
+    {-group_id ""}
+} {
+    Get the title of a group, cached
+    Use either the group_id or the group_name
+
+    @param group_id The group_id of the group
+    @param group_name The name of the group. Note this is not the I18N title we want to retrieve with this procedure
+} {
+    if {$group_name ne ""} {
+	set group_id [group::get_id -group_name $group_name]
+    } 
+
+    if {$group_id ne ""} {
+	return [util_memoize [list group::title_not_cached -group_id $group_id]]
+    } else {
+	return ""
+    }
+}
+
+ad_proc -private group::title_not_cached {
+    {-group_id ""}
+} {
+    Get the title of a group, not cached
+
+    @param group_id The group_id of the group
+} {
+    return [group::get_element -group_id $group_id -element "title"]
+}
+
+ad_proc -private group::group_p {
+    {-group_id ""}
+} {
+    Get the title of a group, not cached
+
+    @param group_id The group_id of the group
+} {
+    return [util_memoize [list group::group_p_not_cached -group_id $group_id]]
+}
+
+
+ad_proc -private group::group_p_not_cached {
+    {-group_id ""}
+} {
+    Get the title of a group, not cached
+
+    @param group_id The group_id of the group
+} {
+    return [db_string group "select 1 from groups where group_id = :group_id" -default 0]
+}
+
