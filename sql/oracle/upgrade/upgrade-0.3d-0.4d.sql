@@ -235,6 +235,381 @@ end acs_event;
 / 
 show errors
 
+-- packages/acs-events/sql/activity-create.sql
+--
+-- @author W. Scott Meeks
+-- @author Gary Jin (gjin@arsdigita.com)
+-- $Id$
+--
+-- The activity object
+
+
+create or replace package acs_activity
+as
+    function new ( 
+         -- Create a new activity
+         -- @author W. Scott Meeks
+         -- @param activity_id       optional id to use for new activity
+         -- @param name                         Name of the activity 
+         -- @param description          optional description of the activity
+         -- @param html_p               optional description is html
+         -- @param status_summary       optional additional status to display
+         -- @param object_type          'acs_activity'
+         -- @param creation_date        default sysdate
+         -- @param creation_user        acs_object param
+         -- @param creation_ip          acs_object param
+         -- @param context_id           acs_object param
+         -- @return The id of the new activity.
+         --
+         activity_id         in acs_activities.activity_id%TYPE   default null, 
+         name                in acs_activities.name%TYPE,
+         description         in acs_activities.description%TYPE   default null,
+         html_p              in acs_activities.html_p%TYPE        default 'f',
+         status_summary      in acs_activities.status_summary%TYPE        default null,
+         object_type         in acs_object_types.object_type%TYPE default 'acs_activity', 
+         creation_date       in acs_objects.creation_date%TYPE    default sysdate, 
+         creation_user       in acs_objects.creation_user%TYPE    default null, 
+         creation_ip         in acs_objects.creation_ip%TYPE      default null, 
+         context_id          in acs_objects.context_id%TYPE       default null 
+    ) return acs_activities.activity_id%TYPE; 
+
+    function name (
+        -- name method
+        -- @author gjin@arsdigita.com
+        -- @param activity_id
+        --
+        activity_id          in acs_activities.activity_id%TYPE
+        
+    ) return acs_activities.name%TYPE;
+ 
+    procedure del ( 
+         -- Deletes an activity
+         -- @author W. Scott Meeks
+         -- @param activity_id      id of activity to delete
+         activity_id      in acs_activities.activity_id%TYPE 
+    ); 
+
+
+    -- NOTE: can't use update
+
+    procedure edit (
+         -- Update the name or description of an activity
+         -- @author W. Scott Meeks
+         -- @param activity_id activity to update
+         -- @param name        optional New name for this activity
+         -- @param description optional New description for this activity
+         -- @param html_p      optional New value of html_p for this activity
+         activity_id         in acs_activities.activity_id%TYPE, 
+         name                in acs_activities.name%TYPE default null,
+         description         in acs_activities.description%TYPE default null,
+         html_p              in acs_activities.html_p%TYPE default null,
+         status_summary      in acs_activities.status_summary%TYPE default null
+    );
+
+    procedure object_map (
+         -- Adds an object mapping to an activity
+         -- @author W. Scott Meeks
+         -- @param activity_id       id of activity to add mapping to
+         -- @param object_id         id of object to add mapping for
+         --
+         activity_id         in acs_activities.activity_id%TYPE, 
+         object_id           in acs_objects.object_id%TYPE
+    );
+
+    procedure object_unmap (
+         -- Deletes an object mapping from an activity
+         -- @author W. Scott Meeks
+         -- @param activity_id activity to delete mapping from
+         -- @param object_id   object to delete mapping for
+         --
+         activity_id         in acs_activities.activity_id%TYPE, 
+         object_id           in acs_objects.object_id%TYPE
+    );
+
+end acs_activity;
+/
+show errors
+
+
+-- packages/acs-events/sql/recurrence-create.sql
+--
+-- Support for temporal recurrences
+--
+-- $Id$
+
+-- These columns describe how an event recurs.  The are modeled on the Palm DateBook.
+-- The interval_type 'custom' indicates that the PL/SQL function referenced in
+-- custom_func should be used to generate the recurrences.
+
+create or replace package recurrence
+as
+    function new (
+         -- Creates a new recurrence
+         -- @author W. Scott Meeks
+         -- @param interval_type        Sets interval_type of new recurrence
+         -- @param every_nth_interval   Sets every_nth_interval of new recurrence
+         -- @param days_of_week         optional If provided, sets days_of_week
+         --                                  of new recurrence
+         -- @param recur_until          optional If provided, sets recur_until
+         --                                  of new recurrence
+         -- @param custom_func          optional If provided, set name of 
+         --                                  custom recurrence function
+         -- @return id of new recurrence
+         --
+         interval_type          in recurrence_interval_types.interval_name%TYPE,
+         every_nth_interval     in recurrences.every_nth_interval%TYPE,
+         days_of_week           in recurrences.days_of_week%TYPE default null,
+         recur_until            in recurrences.recur_until%TYPE default null,
+         custom_func            in recurrences.custom_func%TYPE default null
+    ) return recurrences.recurrence_id%TYPE;
+
+    procedure del (
+         -- Deletes the recurrence
+         -- @author W. Scott Meeks
+         -- @param recurrence_id id of recurrence to delete
+         --
+         recurrence_id          in recurrences.recurrence_id%TYPE
+    );
+  
+end recurrence;
+/
+show errors
+
+
+-- packages/acs-events/sql/timespan-create.sql
+--
+
+create or replace package time_interval
+as
+    function new (
+         -- Creates a new time interval
+         -- @author W. Scott Meeks
+         -- @param start_date   optional Sets this as start_date of new interval
+         -- @param end_date             optional Sets this as end_date of new interval
+         -- @return id of new time interval
+         --
+         start_date     in time_intervals.start_date%TYPE default null,
+         end_date       in time_intervals.end_date%TYPE default null
+    ) return time_intervals.interval_id%TYPE;
+
+    procedure del (
+         -- Deletes the given time interval
+         -- @author W. Scott Meeks
+         -- @param interval_id  id of the interval to delete
+         --
+         interval_id in time_intervals.interval_id%TYPE
+    );
+
+    -- NOTE: update is reserved and cannot be used for PL/SQL procedure names
+
+    procedure edit (
+         -- Updates the start_date or end_date of an interval
+         -- @author W. Scott Meeks
+         -- @param interval_id  id of the interval to update
+         -- @param start_date   optional If provided, sets this as the new 
+         --                         start_date of the interval.
+         -- @param end_date     optional If provided, sets this as the new 
+         --                         start_date of the interval.
+         --
+         interval_id    in time_intervals.interval_id%TYPE,
+         start_date     in time_intervals.start_date%TYPE default null,
+         end_date       in time_intervals.end_date%TYPE default null
+    );
+
+    procedure shift (
+         -- Updates the start_date or end_date of an interval based on offsets of
+         -- fractional days.
+         -- @author W. Scott Meeks
+         -- @param interval_id  The interval to update.
+         -- @param start_offset optional If provided, adds this number to the
+         --                              start_date of the interval.  No effect if 
+         --                              start_date is null.
+         -- @param end_offset   optional If provided, adds this number to the
+         --                              end_date of the interval.  No effect if 
+         --                              end_date is null.
+         --
+         interval_id    in time_intervals.interval_id%TYPE,
+         start_offset   in number default 0,
+         end_offset     in number default 0
+    );
+        
+    function overlaps_p (
+        -- Returns 't' if the two intervals overlap, 'f' otherwise.
+        -- @author W. Scott Meeks
+        -- @param interval_1_id
+        -- @param interval_2_id
+        -- @return 't' or 'f'
+        --
+        interval_1_id   in time_intervals.interval_id%TYPE,
+        interval_2_id   in time_intervals.interval_id%TYPE
+    ) return char;
+
+    function overlaps_p (
+        -- Returns 't if the interval bounded by the given start_date or
+        -- end_date overlaps the given interval, 'f' otherwise.
+        -- @author W. Scott Meeks
+        -- @param start_date    optional If provided, see if it overlaps 
+        --                                              the interval.
+        -- @param end_date              optional If provided, see if it overlaps 
+        --                                              the interval.
+        -- @return 't' or 'f'
+        --
+        interval_id     in time_intervals.interval_id%TYPE,
+        start_date      in time_intervals.start_date%TYPE default null,
+        end_date        in time_intervals.end_date%TYPE default null
+    ) return char;
+
+    function overlaps_p (
+        start_1 in time_intervals.start_date%TYPE,
+        end_1   in time_intervals.end_date%TYPE,
+        start_2 in time_intervals.start_date%TYPE,
+        end_2   in time_intervals.end_date%TYPE
+    ) return char;
+
+    function eq (
+        -- Checks if two intervals are equivalent
+        -- @author W. Scott Meeks
+        -- @param interval_1_id First interval
+        -- @param interval_2_id Second interval
+        -- @return boolean
+        --
+        interval_1_id   in time_intervals.interval_id%TYPE,
+        interval_2_id   in time_intervals.interval_id%TYPE
+    ) return boolean;
+
+    function copy (
+        -- Creates a new copy of a time interval, offset by optional offset
+        -- @author W. Scott Meeks
+        -- @param interval_id   Interval to copy
+        -- @param offset        optional If provided, interval is
+        --                      offset by this number of days.
+        -- @return interval_id
+        --
+        interval_id     in time_intervals.interval_id%TYPE,
+        offset          in integer default 0
+    ) return time_intervals.interval_id%TYPE;
+
+end time_interval;
+/
+show errors
+
+create or replace package timespan
+as
+    function new (
+        -- Creates a new timespan (20.20.10)
+        -- given a time_interval
+        -- Copies the interval so the caller is responsible for deleting it
+        interval_id in time_intervals.interval_id%TYPE default null
+    ) return timespans.timespan_id%TYPE;
+
+    function new (
+        -- Creates a new timespan (20.20.10)
+        -- given a start_date and end_date
+        start_date      in time_intervals.start_date%TYPE default null,
+        end_date        in time_intervals.end_date%TYPE default null
+    ) return timespans.timespan_id%TYPE;
+
+    procedure del (
+        -- Deletes the timespan and any contained intervals 
+        -- @author W. Scott Meeks
+        -- @param timespan_id   id of timespan to delete
+        timespan_id in timespans.timespan_id%TYPE
+    );
+
+    -- Join a new timespan or time interval to an existing timespan
+
+    procedure join (
+        -- timespan_1_id is modified, timespan_2_id is not
+        timespan_1_id   in timespans.timespan_id%TYPE,
+        timespan_2_id   in timespans.timespan_id%TYPE
+    );
+
+        -- Unfortunately, Oracle can't distinguish the signature of this function
+        -- with the previous because the args have the same underlying types
+        -- 
+    procedure join_interval (
+        -- interval is copied to the timespan
+        timespan_id       in timespans.timespan_id%TYPE,
+        interval_id       in time_intervals.interval_id%TYPE,
+        copy_p                    in boolean default true
+    );
+
+    procedure join (
+        timespan_id       in timespans.timespan_id%TYPE,
+        start_date        in time_intervals.start_date%TYPE default null,
+        end_date          in time_intervals.end_date%TYPE default null
+    );
+
+
+    procedure interval_delete (
+        -- Deletes an interval from the given timespan
+        -- @author W. Scott Meeks
+        -- @param timespan_id   timespan to delete from
+        -- @param interval_id           delete this interval from the set
+        --
+        timespan_id     in timespans.timespan_id%TYPE,
+        interval_id     in time_intervals.interval_id%TYPE
+    );
+
+    -- Information
+
+    function exists_p (
+        -- If its contained intervals are all deleted, then a timespan will
+        -- automatically be deleted.  This checks a timespan_id to make sure it's 
+        -- still valid.
+        -- @author W. Scott Meeks
+        -- @param timespan_id   id of timespan to check
+        -- @return 't' or 'f'
+        timespan_id in timespans.timespan_id%TYPE
+    ) return char;
+
+    function multi_interval_p (
+        -- Returns 't' if timespan contains more than one interval, 
+        -- 'f' otherwise (
+        -- @author W. Scott Meeks
+        -- @param timespan_id   id of set to check
+        -- @return 't' or 'f'
+        timespan_id in timespans.timespan_id%TYPE
+    ) return char;
+
+
+    function overlaps_p (
+        -- Checks to see if a given interval overlaps any of the intervals
+        -- in the given timespan.
+        timespan_1_id   in timespans.timespan_id%TYPE,
+        timespan_2_id   in timespans.timespan_id%TYPE
+    ) return char;
+
+    -- Unfortunately, Oracle can't distinguish the signature of this function
+    -- with the previous because the args have the same underlying types
+    -- 
+    function overlaps_interval_p (
+        timespan_id     in timespans.timespan_id%TYPE,
+        interval_id     in time_intervals.interval_id%TYPE default null
+    ) return char;
+
+    function overlaps_p (
+        timespan_id     in timespans.timespan_id%TYPE,
+        start_date      in time_intervals.start_date%TYPE default null,
+        end_date        in time_intervals.end_date%TYPE default null
+    ) return char;
+
+    function copy (
+        -- Creates a new copy of a timespan, offset by optional offset
+        -- @author W. Scott Meeks
+        -- @param timespan_id   Timespan to copy
+        -- @param offset        optional If provided, all dates in timespan
+        --                      are offset by this number of days.
+        -- @return timespan_id
+        --
+        timespan_id     in timespans.timespan_id%TYPE,
+        offset          in integer default 0
+    ) return timespans.timespan_id%TYPE;
+
+end timespan;
+/
+show errors
+
 create or replace package body acs_event
 as 
     function new ( 
@@ -734,101 +1109,6 @@ end acs_event;
 / 
 show errors
 
--- packages/acs-events/sql/activity-create.sql
---
--- @author W. Scott Meeks
--- @author Gary Jin (gjin@arsdigita.com)
--- $Id$
---
--- The activity object
-
-
-create or replace package acs_activity
-as
-    function new ( 
-         -- Create a new activity
-         -- @author W. Scott Meeks
-         -- @param activity_id       optional id to use for new activity
-         -- @param name                         Name of the activity 
-         -- @param description          optional description of the activity
-         -- @param html_p               optional description is html
-         -- @param status_summary       optional additional status to display
-         -- @param object_type          'acs_activity'
-         -- @param creation_date        default sysdate
-         -- @param creation_user        acs_object param
-         -- @param creation_ip          acs_object param
-         -- @param context_id           acs_object param
-         -- @return The id of the new activity.
-         --
-         activity_id         in acs_activities.activity_id%TYPE   default null, 
-         name                in acs_activities.name%TYPE,
-         description         in acs_activities.description%TYPE   default null,
-         html_p              in acs_activities.html_p%TYPE        default 'f',
-         status_summary      in acs_activities.status_summary%TYPE        default null,
-         object_type         in acs_object_types.object_type%TYPE default 'acs_activity', 
-         creation_date       in acs_objects.creation_date%TYPE    default sysdate, 
-         creation_user       in acs_objects.creation_user%TYPE    default null, 
-         creation_ip         in acs_objects.creation_ip%TYPE      default null, 
-         context_id          in acs_objects.context_id%TYPE       default null 
-    ) return acs_activities.activity_id%TYPE; 
-
-    function name (
-        -- name method
-        -- @author gjin@arsdigita.com
-        -- @param activity_id
-        --
-        activity_id          in acs_activities.activity_id%TYPE
-        
-    ) return acs_activities.name%TYPE;
- 
-    procedure del ( 
-         -- Deletes an activity
-         -- @author W. Scott Meeks
-         -- @param activity_id      id of activity to delete
-         activity_id      in acs_activities.activity_id%TYPE 
-    ); 
-
-
-    -- NOTE: can't use update
-
-    procedure edit (
-         -- Update the name or description of an activity
-         -- @author W. Scott Meeks
-         -- @param activity_id activity to update
-         -- @param name        optional New name for this activity
-         -- @param description optional New description for this activity
-         -- @param html_p      optional New value of html_p for this activity
-         activity_id         in acs_activities.activity_id%TYPE, 
-         name                in acs_activities.name%TYPE default null,
-         description         in acs_activities.description%TYPE default null,
-         html_p              in acs_activities.html_p%TYPE default null,
-         status_summary      in acs_activities.status_summary%TYPE default null
-    );
-
-    procedure object_map (
-         -- Adds an object mapping to an activity
-         -- @author W. Scott Meeks
-         -- @param activity_id       id of activity to add mapping to
-         -- @param object_id         id of object to add mapping for
-         --
-         activity_id         in acs_activities.activity_id%TYPE, 
-         object_id           in acs_objects.object_id%TYPE
-    );
-
-    procedure object_unmap (
-         -- Deletes an object mapping from an activity
-         -- @author W. Scott Meeks
-         -- @param activity_id activity to delete mapping from
-         -- @param object_id   object to delete mapping for
-         --
-         activity_id         in acs_activities.activity_id%TYPE, 
-         object_id           in acs_objects.object_id%TYPE
-    );
-
-end acs_activity;
-/
-show errors
-
 create or replace package body acs_activity
 as
     function new ( 
@@ -943,51 +1223,6 @@ end acs_activity;
 /
 show errors
 
-
--- packages/acs-events/sql/recurrence-create.sql
---
--- Support for temporal recurrences
---
--- $Id$
-
--- These columns describe how an event recurs.  The are modeled on the Palm DateBook.
--- The interval_type 'custom' indicates that the PL/SQL function referenced in
--- custom_func should be used to generate the recurrences.
-
-create or replace package recurrence
-as
-    function new (
-         -- Creates a new recurrence
-         -- @author W. Scott Meeks
-         -- @param interval_type        Sets interval_type of new recurrence
-         -- @param every_nth_interval   Sets every_nth_interval of new recurrence
-         -- @param days_of_week         optional If provided, sets days_of_week
-         --                                  of new recurrence
-         -- @param recur_until          optional If provided, sets recur_until
-         --                                  of new recurrence
-         -- @param custom_func          optional If provided, set name of 
-         --                                  custom recurrence function
-         -- @return id of new recurrence
-         --
-         interval_type          in recurrence_interval_types.interval_name%TYPE,
-         every_nth_interval     in recurrences.every_nth_interval%TYPE,
-         days_of_week           in recurrences.days_of_week%TYPE default null,
-         recur_until            in recurrences.recur_until%TYPE default null,
-         custom_func            in recurrences.custom_func%TYPE default null
-    ) return recurrences.recurrence_id%TYPE;
-
-    procedure del (
-         -- Deletes the recurrence
-         -- @author W. Scott Meeks
-         -- @param recurrence_id id of recurrence to delete
-         --
-         recurrence_id          in recurrences.recurrence_id%TYPE
-    );
-  
-end recurrence;
-/
-show errors
-
 create or replace package body recurrence
 as
     function new (
@@ -1037,124 +1272,6 @@ as
     end del;
 
 end recurrence;
-/
-show errors
-
-
--- packages/acs-events/sql/timespan-create.sql
---
-
-create or replace package time_interval
-as
-    function new (
-         -- Creates a new time interval
-         -- @author W. Scott Meeks
-         -- @param start_date   optional Sets this as start_date of new interval
-         -- @param end_date             optional Sets this as end_date of new interval
-         -- @return id of new time interval
-         --
-         start_date     in time_intervals.start_date%TYPE default null,
-         end_date       in time_intervals.end_date%TYPE default null
-    ) return time_intervals.interval_id%TYPE;
-
-    procedure del (
-         -- Deletes the given time interval
-         -- @author W. Scott Meeks
-         -- @param interval_id  id of the interval to delete
-         --
-         interval_id in time_intervals.interval_id%TYPE
-    );
-
-    -- NOTE: update is reserved and cannot be used for PL/SQL procedure names
-
-    procedure edit (
-         -- Updates the start_date or end_date of an interval
-         -- @author W. Scott Meeks
-         -- @param interval_id  id of the interval to update
-         -- @param start_date   optional If provided, sets this as the new 
-         --                         start_date of the interval.
-         -- @param end_date     optional If provided, sets this as the new 
-         --                         start_date of the interval.
-         --
-         interval_id    in time_intervals.interval_id%TYPE,
-         start_date     in time_intervals.start_date%TYPE default null,
-         end_date       in time_intervals.end_date%TYPE default null
-    );
-
-    procedure shift (
-         -- Updates the start_date or end_date of an interval based on offsets of
-         -- fractional days.
-         -- @author W. Scott Meeks
-         -- @param interval_id  The interval to update.
-         -- @param start_offset optional If provided, adds this number to the
-         --                              start_date of the interval.  No effect if 
-         --                              start_date is null.
-         -- @param end_offset   optional If provided, adds this number to the
-         --                              end_date of the interval.  No effect if 
-         --                              end_date is null.
-         --
-         interval_id    in time_intervals.interval_id%TYPE,
-         start_offset   in number default 0,
-         end_offset     in number default 0
-    );
-        
-    function overlaps_p (
-        -- Returns 't' if the two intervals overlap, 'f' otherwise.
-        -- @author W. Scott Meeks
-        -- @param interval_1_id
-        -- @param interval_2_id
-        -- @return 't' or 'f'
-        --
-        interval_1_id   in time_intervals.interval_id%TYPE,
-        interval_2_id   in time_intervals.interval_id%TYPE
-    ) return char;
-
-    function overlaps_p (
-        -- Returns 't if the interval bounded by the given start_date or
-        -- end_date overlaps the given interval, 'f' otherwise.
-        -- @author W. Scott Meeks
-        -- @param start_date    optional If provided, see if it overlaps 
-        --                                              the interval.
-        -- @param end_date              optional If provided, see if it overlaps 
-        --                                              the interval.
-        -- @return 't' or 'f'
-        --
-        interval_id     in time_intervals.interval_id%TYPE,
-        start_date      in time_intervals.start_date%TYPE default null,
-        end_date        in time_intervals.end_date%TYPE default null
-    ) return char;
-
-    function overlaps_p (
-        start_1 in time_intervals.start_date%TYPE,
-        end_1   in time_intervals.end_date%TYPE,
-        start_2 in time_intervals.start_date%TYPE,
-        end_2   in time_intervals.end_date%TYPE
-    ) return char;
-
-    function eq (
-        -- Checks if two intervals are equivalent
-        -- @author W. Scott Meeks
-        -- @param interval_1_id First interval
-        -- @param interval_2_id Second interval
-        -- @return boolean
-        --
-        interval_1_id   in time_intervals.interval_id%TYPE,
-        interval_2_id   in time_intervals.interval_id%TYPE
-    ) return boolean;
-
-    function copy (
-        -- Creates a new copy of a time interval, offset by optional offset
-        -- @author W. Scott Meeks
-        -- @param interval_id   Interval to copy
-        -- @param offset        optional If provided, interval is
-        --                      offset by this number of days.
-        -- @return interval_id
-        --
-        interval_id     in time_intervals.interval_id%TYPE,
-        offset          in integer default 0
-    ) return time_intervals.interval_id%TYPE;
-
-end time_interval;
 /
 show errors
 
@@ -1355,124 +1472,6 @@ as
     end copy;
 
 end time_interval;
-/
-show errors
-
-
-create or replace package timespan
-as
-    function new (
-        -- Creates a new timespan (20.20.10)
-        -- given a time_interval
-        -- Copies the interval so the caller is responsible for deleting it
-        interval_id in time_intervals.interval_id%TYPE default null
-    ) return timespans.timespan_id%TYPE;
-
-    function new (
-        -- Creates a new timespan (20.20.10)
-        -- given a start_date and end_date
-        start_date      in time_intervals.start_date%TYPE default null,
-        end_date        in time_intervals.end_date%TYPE default null
-    ) return timespans.timespan_id%TYPE;
-
-    procedure del (
-        -- Deletes the timespan and any contained intervals 
-        -- @author W. Scott Meeks
-        -- @param timespan_id   id of timespan to delete
-        timespan_id in timespans.timespan_id%TYPE
-    );
-
-    -- Join a new timespan or time interval to an existing timespan
-
-    procedure join (
-        -- timespan_1_id is modified, timespan_2_id is not
-        timespan_1_id   in timespans.timespan_id%TYPE,
-        timespan_2_id   in timespans.timespan_id%TYPE
-    );
-
-        -- Unfortunately, Oracle can't distinguish the signature of this function
-        -- with the previous because the args have the same underlying types
-        -- 
-    procedure join_interval (
-        -- interval is copied to the timespan
-        timespan_id       in timespans.timespan_id%TYPE,
-        interval_id       in time_intervals.interval_id%TYPE,
-        copy_p                    in boolean default true
-    );
-
-    procedure join (
-        timespan_id       in timespans.timespan_id%TYPE,
-        start_date        in time_intervals.start_date%TYPE default null,
-        end_date          in time_intervals.end_date%TYPE default null
-    );
-
-
-    procedure interval_delete (
-        -- Deletes an interval from the given timespan
-        -- @author W. Scott Meeks
-        -- @param timespan_id   timespan to delete from
-        -- @param interval_id           delete this interval from the set
-        --
-        timespan_id     in timespans.timespan_id%TYPE,
-        interval_id     in time_intervals.interval_id%TYPE
-    );
-
-    -- Information
-
-    function exists_p (
-        -- If its contained intervals are all deleted, then a timespan will
-        -- automatically be deleted.  This checks a timespan_id to make sure it's 
-        -- still valid.
-        -- @author W. Scott Meeks
-        -- @param timespan_id   id of timespan to check
-        -- @return 't' or 'f'
-        timespan_id in timespans.timespan_id%TYPE
-    ) return char;
-
-    function multi_interval_p (
-        -- Returns 't' if timespan contains more than one interval, 
-        -- 'f' otherwise (
-        -- @author W. Scott Meeks
-        -- @param timespan_id   id of set to check
-        -- @return 't' or 'f'
-        timespan_id in timespans.timespan_id%TYPE
-    ) return char;
-
-
-    function overlaps_p (
-        -- Checks to see if a given interval overlaps any of the intervals
-        -- in the given timespan.
-        timespan_1_id   in timespans.timespan_id%TYPE,
-        timespan_2_id   in timespans.timespan_id%TYPE
-    ) return char;
-
-    -- Unfortunately, Oracle can't distinguish the signature of this function
-    -- with the previous because the args have the same underlying types
-    -- 
-    function overlaps_interval_p (
-        timespan_id     in timespans.timespan_id%TYPE,
-        interval_id     in time_intervals.interval_id%TYPE default null
-    ) return char;
-
-    function overlaps_p (
-        timespan_id     in timespans.timespan_id%TYPE,
-        start_date      in time_intervals.start_date%TYPE default null,
-        end_date        in time_intervals.end_date%TYPE default null
-    ) return char;
-
-    function copy (
-        -- Creates a new copy of a timespan, offset by optional offset
-        -- @author W. Scott Meeks
-        -- @param timespan_id   Timespan to copy
-        -- @param offset        optional If provided, all dates in timespan
-        --                      are offset by this number of days.
-        -- @return timespan_id
-        --
-        timespan_id     in timespans.timespan_id%TYPE,
-        offset          in integer default 0
-    ) return timespans.timespan_id%TYPE;
-
-end timespan;
 /
 show errors
 

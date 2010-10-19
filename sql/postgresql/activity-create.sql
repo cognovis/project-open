@@ -198,7 +198,10 @@ begin
             new__creation_date,    -- creation_date  
             new__creation_user,    -- creation_user
             new__creation_ip,	   -- creation_ip
-            new__context_id	   -- context_id
+            new__context_id,	   -- context_id
+            ''t'',		   -- security_inherit_p
+            new__name,		   -- title
+            null		   -- package_id
 	    );
 
        insert into acs_activities
@@ -298,6 +301,10 @@ begin
               description = coalesce(edit__description, description),
               html_p      = coalesce(edit__html_p, html_p),
               status_summary = coalesce(edit__status_summary, status_summary)
+       where activity_id  = edit__activity_id;
+
+       update acs_objects
+       set    title = coalesce(edit__name, name)
        where activity_id  = edit__activity_id;
 
        return 0;

@@ -15,7 +15,7 @@
 create sequence acs_events_sequence start 1;
 create view acs_events_seq as select nextval('acs_events_sequence') as nextval from dual;
 
-create function inline_0 ()
+create or replace function inline_0 ()
 returns integer as '
 declare 
     attr_id acs_attributes.attribute_id%TYPE; 
@@ -419,13 +419,33 @@ comment on view partially_populated_events is '
 --     recurs_p     ()
 
 
+-- backwards compatible 13 param version
+create or replace function acs_event__new ( 
+       integer,
+       varchar,
+       text,
+       boolean,
+       text,
+       integer,
+       integer,
+       integer,
+       varchar,
+       timestamptz,
+       integer,
+       varchar,
+       integer
+)
+returns integer as '
+begin
+       return acs_event__new($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,null);
+end;' language 'plpgsql';
 
-create function acs_event__new ( 
+create or replace function acs_event__new (
        --
        -- Creates a new event (20.10.10)
        --
        -- @author W. Scott Meeks
-       -- 
+       --
        -- @param event_id          id to use for new event
        -- @param name              Name of the new event
        -- @param description       Description of the new event
@@ -454,7 +474,8 @@ create function acs_event__new (
        timestamptz,	-- acs_objects.creation_date%TYPE,    
        integer,		-- acs_objects.creation_user%TYPE,    
        varchar,		-- acs_objects.creation_ip%TYPE,	     
-       integer		-- acs_objects.context_id%TYPE,	     
+       integer,		-- acs_objects.context_id%TYPE,	     
+       integer		-- acs_objects.package_id%TYPE,	     
 )
 returns integer as '	-- acs_events.event_id%TYPE
 declare
@@ -471,6 +492,7 @@ declare
        new__creation_user   alias for $11;  -- default null, 
        new__creation_ip     alias for $12; -- default null, 
        new__context_id      alias for $13; -- default null 
+       new__package_id      alias for $14; -- default null 
        v_event_id	    acs_events.event_id%TYPE;
 begin
        v_event_id := acs_object__new(
@@ -479,9 +501,12 @@ begin
             new__creation_date, -- creation_date
             new__creation_user,	-- creation_user
             new__creation_ip,	-- creation_ip
-            new__context_id	-- context_id
+            new__context_id,	-- context_id
+            ''t'',		-- security_inherit_p
+            new__name,		-- title
+            new__package_id	-- package_id
 	    );
-                
+
        insert into acs_events
             (event_id, name, description, html_p, status_summary, activity_id, timespan_id, recurrence_id)
        values
@@ -493,7 +518,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__delete ( 
+create or replace function acs_event__delete ( 
        --
        -- Deletes an event (20.10.40)
        -- Also deletes party mappings (via on delete cascade).
@@ -529,7 +554,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__delete_all_recurrences (
+create or replace function acs_event__delete_all_recurrences (
        --
        -- Deletes all instances of an event with the same (non-null) recurrence_id.  
        --
@@ -555,13 +580,13 @@ begin
                 PERFORM acs_event__delete(rec_event.event_id);
             end loop;
        end if;
-	
+
        return 0;
 
 end;' language 'plpgsql';
 
 
-create function acs_event__delete_all (
+create or replace function acs_event__delete_all (
        --
        -- Deletes all instances of a recurring event with this event_id
        -- Use acs_event__delete for events with no recurrence
@@ -592,7 +617,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__get_name (
+create or replace function acs_event__get_name (
        --
        -- Returns the name or the name of the activity associated with the event if 
        -- name is null.
@@ -623,7 +648,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__get_description (
+create or replace function acs_event__get_description (
        --
        -- Returns the description or the description of the activity associated 
        -- with the event if description is null.
@@ -654,7 +679,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__get_html_p (
+create or replace function acs_event__get_html_p (
        --
        -- Returns html_p or html_p of the activity associated with the event if 
        -- html_p is null.
@@ -669,7 +694,7 @@ create function acs_event__get_html_p (
 )
 returns boolean as '	-- acs_events.html_p%TYPE
 declare
-       get_html_p__event_id    acs_events.event_id%TYPE;
+       get_html_p__event_id    alias for $1; -- in acs_events.event_id%TYPE 
        v_html_p		acs_events.html_p%TYPE; 
 begin
        select coalesce(e.html_p, a.html_p) into v_html_p
@@ -682,7 +707,7 @@ begin
 
 end;' language 'plpgsql';
 
-create function acs_event__get_status_summary (
+create or replace function acs_event__get_status_summary (
        --
        -- Returns status_summary or status_summary of the activity associated with the event if 
        -- status_summary is null.
@@ -695,9 +720,9 @@ create function acs_event__get_status_summary (
        --
        integer		-- acs_events.event_id%TYPE 
 )
-returns boolean as '	-- acs_events.status_summary%TYPE
+returns boolean as '
 declare
-       get_status_summary__event_id    acs_events.event_id%TYPE;
+       get_status_summary__event_id    alias for $1; -- acs_events.event_id%TYPE 
        v_status_summary		acs_events.status_summary%TYPE; 
 begin
        select coalesce(e.status_summary, a.status_summary) into v_status_summary
@@ -711,7 +736,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__timespan_set (
+create or replace function acs_event__timespan_set (
        --
        -- Sets the time span for an event (20.10.15)
        --
@@ -738,8 +763,7 @@ begin
 
 end;' language 'plpgsql';
 
-
-create function acs_event__recurrence_timespan_edit (
+create or replace function acs_event__recurrence_timespan_edit (
        integer,
        timestamptz,
        timestamptz
@@ -748,6 +772,25 @@ DECLARE
         p_event_id                      alias for $1;
         p_start_date                    alias for $2;
         p_end_date                      alias for $3;
+BEGIN
+    return acs_event__recurrence_timespan_edit (
+           p_event_id,
+           p_start_date,
+           p_end_date,
+           ''t'');
+END;' language 'plpgsql';
+
+create or replace function acs_event__recurrence_timespan_edit (
+       integer,
+       timestamptz,
+       timestamptz,
+       boolean
+) returns integer as '
+DECLARE
+        p_event_id                      alias for $1;
+        p_start_date                    alias for $2;
+        p_end_date                      alias for $3;
+        p_edit_past_events_p            alias for $4;
         v_timespan                   RECORD;
         v_one_start_date             timestamptz;
         v_one_end_date               timestamptz;
@@ -762,7 +805,7 @@ BEGIN
         where time_intervals.interval_id = timespans.interval_id
           and timespans.timespan_id = acs_events.timespan_id
           and event_id=p_event_id;
-
+raise notice ''v_one_start_date = %'',v_one_start_date;
         FOR v_timespan in
             select *
             from time_intervals
@@ -772,17 +815,18 @@ BEGIN
                                                         from acs_events 
                                                         where recurrence_id = (select recurrence_id 
                                                                                from acs_events where event_id = p_event_id)))
+           and (p_edit_past_events_p = ''t'' or start_date >= v_one_start_date)
         LOOP
                 PERFORM time_interval__edit(v_timespan.interval_id, 
-                                            v_timespan.start_date + (p_start_date - v_one_start_date), 
-                                            v_timespan.end_date + (p_end_date - v_one_end_date));
+                                            (to_char(v_timespan.start_date,''yyyy-mm-dd'') || '' '' || to_char(p_start_date,''hh24:mi:ss'')) :: timestamptz, 
+                                            (to_char(v_timespan.end_date,''yyyy-mm-dd'') || '' '' || to_char(p_end_date,''hh24:mi:ss'')) :: timestamptz);
         END LOOP;
 
         return p_event_id;
 END;
 ' language 'plpgsql';
 
-create function acs_event__activity_set (
+create or replace function acs_event__activity_set (
        --
        -- Sets the activity for an event (20.10.20)
        --
@@ -810,7 +854,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__party_map (
+create or replace function acs_event__party_map (
        --
        -- Adds a party mapping to an event (20.10.30)
        --
@@ -839,7 +883,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__party_unmap (
+create or replace function acs_event__party_unmap (
        --
        -- Deletes a party mapping from an event (20.10.30)
        --
@@ -867,7 +911,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__recurs_p (
+create or replace function acs_event__recurs_p (
        --
        -- Returns true if event recurs, false otherwise (20.50.40)
        --
@@ -896,7 +940,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__instances_exist_p (
+create or replace function acs_event__instances_exist_p (
        --
        -- Returns true if events with the given recurrence_id exist, false otherwise
        --
@@ -929,7 +973,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__get_value (
+create or replace function acs_event__get_value (
        --
        -- This function is used internally by insert_instances
        --
@@ -960,7 +1004,7 @@ begin
 
 end;' language 'plpgsql';
 
-create function acs_event__new_instance (
+create or replace function acs_event__new_instance (
        --
        -- Create a new instance of an event, with dateoffset from the start_date
        -- and end_date of event identified by event_id. Note that dateoffset
@@ -1015,7 +1059,8 @@ begin
 	    now(),		      -- creation_date (default)
             object_row.creation_user, -- creation_user
             object_row.creation_ip,   -- creation_ip
-            object_row.context_id     -- context_id
+            object_row.context_id,     -- context_id
+            object_row.package_id     -- context_id
 	    );
 
       return v_event_id;
@@ -1024,7 +1069,7 @@ end;' language 'plpgsql';
 
 
 
-create function acs_event__insert_instances (
+create or replace function acs_event__insert_instances (
        --
        -- This is the key procedure creating recurring events.  This procedure
        -- uses the interval set and recurrence information referenced by the event
@@ -1089,6 +1134,8 @@ declare
        v_days_index		       integer;
        v_day_num		       integer;
        rec_execute		       record;
+       v_new_current_date              timestamptz;
+       v_offset_notice interval;
 begin
 
 	-- Get event parameters
@@ -1187,7 +1234,7 @@ begin
                 -- Find last day of correct month
                 v_last_day := last_day(add_months(v_current_date, v_n_intervals));
                 -- Back up one week and find correct day of week
-                v_current_date := next_day(v_last_day - to_interval(7,''days''), to_char(v_current_date, ''DAY''));
+                v_current_date := next_day(v_last_day ::timestamp - to_interval(7,''days'') :: timestamptz, to_char(v_current_date, ''DAY''));
 	    end if;
 
 	    -- Add a full year (12 months)
@@ -1220,13 +1267,13 @@ begin
                 v_week_date  := v_current_date;
                 while v_days_index <= v_days_length loop
                     v_day_num   := SUBSTR(v_days_of_week, v_days_index, 1);
-                    v_week_date := v_current_date + to_interval(v_day_num,''days'');
-                    if date_trunc(''day'',v_week_date) > date_trunc(''day'',v_start_date) 
+                    v_week_date := (v_current_date ::timestamp + to_interval(v_day_num,''days'')) :: timestamptz;
+	           if date_trunc(''day'',v_week_date) > date_trunc(''day'',v_start_date) 
 		       and date_trunc(''day'',v_week_date) <= date_trunc(''day'',v_stop_date) then
                          -- This is where we add the event
                          v_event_id := acs_event__new_instance(
                               insert_instances__event_id,					   -- event_id
-                              date_trunc(''day'',v_week_date) - date_trunc(''day'',v_event_date)    -- offset
+                              date_trunc(''day'',v_week_date :: timestamp) - date_trunc(''day'',v_event_date :: timestamp)    -- offset
                          );
                          v_last_date_done := v_week_date;
 
@@ -1243,13 +1290,13 @@ begin
                  end loop;
 
                  -- Now move to next week with repeats.
-                v_current_date := v_current_date + to_interval(7 * v_n_intervals,''days'');
+                v_current_date := (v_current_date :: timestamp + to_interval(7 * v_n_intervals,''days'')) :: timestamptz;
             else
                 -- All other interval types
                 -- This is where we add the event
                 v_event_id := acs_event__new_instance(
                     insert_instances__event_id,						    -- event_id 
-                    date_trunc(''day'',v_current_date) - date_trunc(''day'',v_event_date)   -- offset
+                    date_trunc(''day'',v_current_date ::timestamp) - date_trunc(''day'',v_event_date ::timestamp)   -- offset
                 );
                 v_last_date_done := v_current_date;
             end if;
@@ -1264,7 +1311,7 @@ end;' language 'plpgsql';
 
 
 
-create function acs_event__shift (
+create or replace function acs_event__shift (
        --
        -- Shifts the timespan of an event by the given offsets.
        --
@@ -1317,7 +1364,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__shift (
+create or replace function acs_event__shift (
        --
        -- Shifts the timespan of an event by the given offsets.
        --
@@ -1355,7 +1402,7 @@ begin
 end;' language 'plpgsql';
 
 
-create function acs_event__shift_all (
+create or replace function acs_event__shift_all (
        --
        -- Shifts the timespan of all instances of a recurring event
        -- by the given offsets.
@@ -1415,7 +1462,7 @@ end;' language 'plpgsql';
 --    end shift_all;
 
 
-create function acs_event__shift_all (
+create or replace function acs_event__shift_all (
        --
        -- Shifts the timespan of all instances of a recurring event
        -- by the given offsets.

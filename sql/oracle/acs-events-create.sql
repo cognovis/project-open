@@ -365,7 +365,8 @@ as
         creation_date   in acs_objects.creation_date%TYPE default sysdate, 
         creation_user   in acs_objects.creation_user%TYPE default null, 
         creation_ip     in acs_objects.creation_ip%TYPE default null, 
-        context_id      in acs_objects.context_id%TYPE default null 
+        context_id      in acs_objects.context_id%TYPE default null,
+        package_id      in acs_objects.package_id%TYPE default null 
     ) return acs_events.event_id%TYPE; 
 
     procedure del ( 
@@ -444,7 +445,8 @@ as
     procedure recurrence_timespan_edit (
         event_id               in acs_events.event_id%TYPE,
         start_date             in time_intervals.start_date%TYPE,
-        end_date               in time_intervals.end_date%TYPE
+        end_date               in time_intervals.end_date%TYPE,
+        edit_past_events       in char default 't'
     );
 
     procedure activity_set (
@@ -579,7 +581,8 @@ as
         creation_date   in acs_objects.creation_date%TYPE default sysdate, 
         creation_user   in acs_objects.creation_user%TYPE default null, 
         creation_ip     in acs_objects.creation_ip%TYPE default null, 
-        context_id      in acs_objects.context_id%TYPE default null 
+        context_id      in acs_objects.context_id%TYPE default null,
+        package_id      in acs_objects.package_id%TYPE default null 
     ) return acs_events.event_id%TYPE
     is
         new_event_id acs_events.event_id%TYPE;
@@ -587,12 +590,14 @@ as
         new_event_id := acs_object.new(
             object_id => event_id,
             object_type => object_type,
+            title => name,
             creation_date => creation_date,
             creation_user => creation_user,
             creation_ip => creation_ip,
-            context_id => context_id
+            context_id => context_id,
+            package_id => package_id
         );
-                
+
         insert into acs_events
             (event_id, name, description, html_p, status_summary, activity_id, timespan_id, recurrence_id)
         values
@@ -725,7 +730,8 @@ as
     procedure recurrence_timespan_edit (
         event_id               in acs_events.event_id%TYPE,
         start_date             in time_intervals.start_date%TYPE,
-        end_date               in time_intervals.end_date%TYPE
+        end_date               in time_intervals.end_date%TYPE,
+        edit_past_events       in char default 't'
     )
     is
         v_timespan           timespans%ROWTYPE;
@@ -740,7 +746,8 @@ as
         event_id= recurrence_timespan_edit.event_id;
 
         for v_timespan in 
-        (select * from time_intervals where interval_id in (select interval_id from timespans where timespan_id in (select timespan_id from acs_events where recurrence_id = (select recurrence_id from acs_events where event_id = recurrence_timespan_edit.event_id))))
+        (select * from time_intervals where interval_id in (select interval_id from timespans where timespan_id in (select timespan_id from acs_events where recurrence_id = (select recurrence_id from acs_events where event_id = recurrence_timespan_edit.event_id)))
+        and (edit_past_events = 't' or start_date >= to_date(v_one_start_date,'YYYY-MM-DD HH24:MI:SS') ))
         LOOP
                 time_interval.edit(v_timespan.interval_id, v_timespan.start_date + (start_date - v_one_start_date), v_timespan.end_date + (end_date - v_one_end_date));
         END LOOP;
@@ -858,7 +865,8 @@ as
             recurrence_id => event.recurrence_id,
             creation_user => object.creation_user,
             creation_ip   => object.creation_ip,
-            context_id    => object.context_id
+            context_id    => object.context_id,
+            package_id    => object.package_id
         );
 
         return new_event_id;

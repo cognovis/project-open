@@ -200,6 +200,7 @@ as
         new_activity_id := acs_object.new(
             object_id     => activity_id,
             object_type   => object_type,
+            title         => name,
             creation_date => creation_date,
             creation_user => creation_user,
             creation_ip   => creation_ip,
@@ -265,6 +266,10 @@ as
                html_p      = nvl(edit.html_p, html_p),
                status_summary = nvl(edit.status_summary, status_summary)
         where activity_id  = edit.activity_id;
+
+        update acs_objects
+        set    title = nvl(edit.name, title)
+        where object_id = edit.activity_id;
     end edit;
 
     procedure object_map (
