@@ -1,119 +1,51 @@
 <?xml version="1.0"?>
 <queryset>
 
-    <fullquery name="acs_mail_lite::bouncing_email_p.bouncing_p">
-      <querytext>
-
-    	select case when email_bouncing_p = 't' then 1 else 0 end 
-	as send_p 
-      	from cc_users 
-     	where lower(email) = lower(:email)
-
-      </querytext>
-    </fullquery>
-
-
-    <fullquery name="acs_mail_lite::bouncing_user_p.bouncing_p">
-      <querytext>
-
-    	select case when email_bouncing_p = 't' then 1 else 0 end 
-	as send_p 
-      	from cc_users 
-     	where user_id = :user_id
-
-      </querytext>
-    </fullquery>
-
-   <fullquery name="acs_mail_lite::log_mail_sending.record_mail_sent">
-     <querytext>
-
-       update acs_mail_lite_mail_log
-       set last_mail_date = sysdate
-       where user_id = :user_id
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::log_mail_sending.insert_log_entry">
-     <querytext>
-
-       insert into acs_mail_lite_mail_log (user_id, last_mail_date)
-       values (:user_id, sysdate)
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::load_mail_dir.record_bounce">
-     <querytext>
-
-       update acs_mail_lite_bounce
-       set bounce_count = bounce_count + 1
-       where user_id = :user_id
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::load_mail_dir.insert_bounce">
-     <querytext>
-
-       insert into acs_mail_lite_bounce (user_id, bounce_count)
-       values (:user_id, 1)
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::check_bounces.delete_log_if_no_recent_bounce">
-     <querytext>
-
-       delete from acs_mail_lite_bounce
-       where user_id in (select user_id
-                         from acs_mail_lite_mail_log
-                         where last_mail_date < sysdate - :max_days_to_bounce)
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::check_bounces.disable_bouncing_email">
-     <querytext>
-
-       update users
-       set email_bouncing_p = 't'
-       where user_id in (select user_id
-                         from acs_mail_lite_bounce
-                         where bounce_count >= :max_bounce_count)
-
-     </querytext>
-   </fullquery>
-
-   <fullquery name="acs_mail_lite::check_bounces.delete_bouncing_users_from_log">
-     <querytext>
-
-       delete from acs_mail_lite_bounce
-       where bounce_count >= :max_bounce_count
-
-     </querytext>
-   </fullquery>
-
    <fullquery name="acs_mail_lite::get_address_array.get_user_name_and_id">
      <querytext>
 
-       select user_id, first_names || ' ' || last_name as user_name
-       from cc_users
+       select person_id as user_id, first_names || ' ' || last_name as user_name
+       from parties, persons
        where email = :email
+         and party_id = person_id
+	order by party_id desc
+	limit 1
 
      </querytext>
    </fullquery>
+
+
+    <fullquery name="acs_mail_lite::sweeper.get_queued_message">
+        <querytext>
+            select message_id as id
+            from acs_mail_lite_queue
+            where message_id=:id and (locking_server = '' or locking_server is NULL)
+        </querytext>
+    </fullquery>
+
+    <fullquery name="acs_mail_lite::sweeper.lock_queued_message">
+        <querytext>
+            update acs_mail_lite_queue
+               set locking_server = :locking_server
+            where message_id=:id
+        </querytext>
+    </fullquery> 
 
 
     <fullquery name="acs_mail_lite::sweeper.delete_queue_entry">
         <querytext>
-            delete
-            from acs_mail_lite_queue
-            where message_id = :message_id
+            delete from acs_mail_lite_queue
+            where message_id=:id
         </querytext>
     </fullquery>
 
-
-
+  <fullquery name="acs_mail_lite::send_immediately.get_file_info">
+    <querytext>
+      select r.mime_type,r.title, r.content as filename, i.name
+      from cr_revisions r, cr_items i
+      where r.revision_id = i.latest_revision
+        and i.item_id in ([join $item_ids ","])
+    </querytext>
+  </fullquery>
 
 </queryset>
