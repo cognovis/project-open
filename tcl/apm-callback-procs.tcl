@@ -13,7 +13,7 @@ namespace eval auth::registration {}
 namespace eval auth::get_doc {}
 namespace eval auth::process_doc {}
 namespace eval auth::user_info {}
-
+namespace eval auth::search {}
 
 ad_proc -private auth::package_install {} {} {
 
@@ -25,6 +25,7 @@ ad_proc -private auth::package_install {} {} {
         auth::get_doc::create_contract
         auth::process_doc::create_contract
         auth::user_info::create_contract
+        auth::search::create_contract
 
         # Register local authentication implementations and update the local authority
         auth::local::install
@@ -63,12 +64,15 @@ ad_proc -private auth::package_uninstall {} {} {
         auth::get_doc::delete_contract
         auth::process_doc::delete_contract
         auth::user_info::delete_contract
+        auth::search::delete_contract
     }
 }
 
-ad_proc -public auth::after_upgrade {
+ad_proc -private auth::after_upgrade {
     {-from_version_name:required}
     {-to_version_name:required}
+} {
+    After upgrade callback.
 } {
     apm_upgrade_logic \
         -from_version_name $from_version_name \
@@ -76,7 +80,7 @@ ad_proc -public auth::after_upgrade {
         -spec {
             5.0a1 5.0a2 {
                 db_transaction {
-                    
+
                     # Delete and recreate contract
                     auth::process_doc::delete_contract
                     auth::process_doc::create_contract
@@ -136,6 +140,36 @@ ad_proc -public auth::after_upgrade {
 
 		}
 	    }
+            5.1.5 5.2.0a1 {
+                db_transaction {
+
+		    # I will add support to MergeUser operation 
+		    # this is a direct update to the SC tables, 
+		    # we should expect a new API for handling updates on SC, 
+		    # but since there's no one yet, we'll do it 
+		    # in this way. (quio@galileo.edu)
+		    ns_log notice "acs_authentication: Starting Upgrade (adding merge support)"
+		    acs_sc::contract::operation::new \
+			-contract_name "auth_authentication" \
+			-operation "MergeUser" \
+			-input { from_user_id:integer to_user_id:integer authority_id:integer } \
+			-output {} \
+			-description "Merges two accounts given the user_id of each one"
+
+ 		    acs_sc::impl::alias::new \
+ 			-contract_name "auth_authentication" \
+ 			-impl_name "local" \
+ 			-operation "MergeUser" \
+ 			-alias "auth::local::authentication::MergeUser" \
+		     
+  		    ns_log notice "acs_authentication: Finishing Upgrade (adding merge support)"
+
+		}
+	    }
+            5.5.0d1 5.5.0d2 {
+                auth::search::create_contract
+            }
+
 	}
 }
 
@@ -174,6 +208,17 @@ ad_proc -private auth::authentication::create_contract {} {
                     account_status:string
                     account_message:string
                 }
+            }
+            MergeUser {
+                description {
+		    Merges two accounts given the user_id of each one                 
+                }
+                input {
+                    from_user_id:integer
+                    to_user_id:integer
+		    authority_id:integer
+                }
+                output {}
             }
             GetParameters {
                 description {
@@ -567,3 +612,56 @@ ad_proc -private auth::user_info::delete_contract {} {
 }
 
 
+#####
+#
+# auth_search service contract
+#
+#####
+
+ad_proc -private auth::search::create_contract {} {
+    Create service contract for authority searches.
+} {
+    set spec {
+        name "auth_search"
+        description "Search users in given authority"
+        operations {
+            Search {
+                description {
+                    Search authority using "search" string. Returns array-list of usernames.
+                }
+                input {
+                    search:string
+                    parameters:string,multiple
+                }
+                output {
+                    usernames:string,multiple
+                }
+            }
+            GetParameters {
+                description {
+                    Get an array-list of the parameters required by this service contract implementation.
+                }
+                output {
+                    parameters:string,multiple
+                }
+            }
+	    FormInclude {
+		description {
+		    File location of an includable search form
+		} 
+		output {
+		    form_include:string
+		}
+	    }
+        }
+    }
+
+    acs_sc::contract::new_from_spec -spec $spec
+}
+
+
+ad_proc -private auth::search::delete_contract {} {
+    Delete service contract for authority search.
+} {
+    acs_sc::contract::delete -name "auth_search"
+}

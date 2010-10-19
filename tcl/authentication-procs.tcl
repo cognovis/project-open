@@ -43,12 +43,35 @@ ad_proc -public auth::require_login {
     }
 
     set message {}
-    if { [string equal [ad_conn auth_level] "expired"] } {
+    if {[ad_conn auth_level] eq "expired"} {
         set message [_ acs-subsite.lt_Your_login_has_expire]
     }
 
+    set return_url [ad_get_login_url -return]
+
+    # Long URLs (slightly above 4000 bytes) can kill aolserver-4.0.10, causing
+    # a restart. They lead to empty Bowser-windows with aolserver 4.5 (but no 
+    # crash so far). May browsers have length limitations for URLs. E.g. 
+    # 2083 is the documented maximal length of MSIE.
+    #
+    # Long URLs will be generated e.g. when 
+    #   a) a user edits a form with text entries
+    #   b) before submitting the form logs out of OpenACS from a different browser window
+    #   c) submits the form. 
+    # When submitting needs authentication, OpenACS generates the redirect to 
+    # /register with the form-data coded into the URL to continue there.....
+
+    # set user_agent [string tolower [ns_set get [ns_conn headers] User-Agent]]
+    # ns_log notice "URL have url, len=[string length $return_url] $user_agent"
+
+    if {[expr {[string length $return_url] > 2083}]} {
+      set message "Your login expired and the computed URL for automated continuation is too long. " 
+      append message "If you were editing a from, please use the back button after logging in and resubmit the form." 
+      set return_url [ad_get_login_url]
+    }
+
     # The -return switch causes the URL to return to the current page
-    ad_returnredirect -message $message -- [ad_get_login_url -return]
+    ad_returnredirect -message $message -- $return_url
     ad_script_abort
 }
 
@@ -63,10 +86,9 @@ ad_proc -public auth::refresh_login {} {
 
     @see ad_script_abort
 } {
-    if { ![string equal [ad_conn auth_level] "expired"] } {
+    if { [ad_conn auth_level] ne "expired" } {
         return [ad_conn user_id]
     }
-        
 
     # The -return switch causes the URL to return to the current page
     ad_returnredirect [ad_get_login_url -return]
@@ -74,16 +96,16 @@ ad_proc -public auth::refresh_login {} {
 }
 
 ad_proc -public auth::self_registration {} {
-   #Check AllowSelfRegister parameter
-
+    Check AllowSelfRegister parameter and set user message if 
+    self registration not allowed.
+} { 
     if { [string is false [parameter::get_from_package_key \
 			       -package_key acs-authentication \
 			       -parameter AllowSelfRegister]] } {
 	util_user_message -message "Self registration is not allowed"
-	ad_maybe_redirect_for_registration
+	auth::require_login
     }
-}          
-
+}
 
 ad_proc -public auth::get_user_id {
     {-level ok}
@@ -94,19 +116,18 @@ ad_proc -public auth::get_user_id {
     high security level, return 0.
 
     @return user_id of user, if the user is logged in, 0 otherwise.
-            
 
     @see ad_script_abort
 } {
     set untrusted_user_id [ad_conn untrusted_user_id]
-    
+
     # Do we have any user_id at all?
     if { $untrusted_user_id == 0 } {
         return 0
     }
-    
+
     # Check account status
-    if { [string equal $account_status "ok"] && ![string equal [ad_conn account_status] "ok"] } {
+    if { $account_status eq "ok" && [ad_conn account_status] ne "ok" } {
         return 0
     }
     
@@ -145,6 +166,8 @@ ad_proc -public auth::authenticate {
     {-password:required}
     {-persistent:boolean}
     {-no_cookie:boolean}
+    {-first_names ""}
+    {-last_name ""}
 } {
     Try to authenticate and login the user forever by validating the username/password combination, 
     and return authentication and account status codes.    
@@ -178,20 +201,20 @@ ad_proc -public auth::authenticate {
     </ul>
 
 } {
-    if { [empty_string_p $username] } {
-        if { [empty_string_p $email] } {
+    if { $username eq "" } {
+        if { $email eq "" } {
             set result(auth_status) "auth_error"
             if { [auth::UseEmailForLoginP] } {
-                set result(auth_message) "Email required"
+                set result(auth_message) [_ acs-subsite.Email_required]
             } else {
-                set result(auth_message) "Username required"
+                set result(auth_message) [_ acs-subsite.Username_required]
             }
             return [array get result]
         }
         set user_id [cc_lookup_email_user $email]
-        if { [empty_string_p $user_id] } {
+        if { $user_id eq "" } {
             set result(auth_status) "no_account"
-            set result(auth_message) "Unknown email"
+            set result(auth_message) [_ acs-subsite.Unknown_email]
             return [array get result]
         }
         acs_user::get -user_id $user_id -array user
@@ -199,7 +222,7 @@ ad_proc -public auth::authenticate {
         set username $user(username)
     } else {
         # Default to local authority
-        if { [empty_string_p $authority_id] } {
+        if { $authority_id eq "" } {
             set authority_id [auth::authority::local]
         }
     }
@@ -212,7 +235,7 @@ ad_proc -public auth::authenticate {
 
         # We do this so that if there aren't even the auth_status and account_status that need be
         # in the array, that gets caught below
-        if { [string equal $result(auth_status) "ok"] } {
+        if {$result(auth_status) eq "ok"} {
             set dummy $result(account_status)
         }
     } {
@@ -252,7 +275,7 @@ ad_proc -public auth::authenticate {
             ns_log Error "auth::authenticate: Illegal auth_status code '$result(auth_status)' returned from authentication driver for authority_id $authority_id ([auth::authority::get_element -authority_id $authority_id -element pretty_name])"
 
             set result(auth_status) "failed_to_connect"
-            set result(auth_message) "Internal error during authentication"
+            set result(auth_message) [_ acs-subsite.Auth_internal_error]
             return [array get result]
         }
     }
@@ -267,14 +290,14 @@ ad_proc -public auth::authenticate {
         }
         closed {
             if { ![exists_and_not_null result(account_message)] } {
-                set result(account_message) "This account is not available at this time"
+                set result(account_message) [_ acs-subsite.Account_not_avail_now]
             }
         }
         default {
             ns_log Error "auth::authenticate: Illegal account_status code '$result(account_status)' returned from authentication driver for authority_id $authority_id ([auth::authority::get_element -authority_id $authority_id -element pretty_name])"
 
             set result(account_status) "closed"
-            set result(account_message) "Internal error during authentication"
+            set result(account_message) [_ acs-subsite.Auth_internal_error]
         }
     }
 
@@ -291,8 +314,10 @@ ad_proc -public auth::authenticate {
     array set result [auth::get_local_account \
                           -return_url $return_url \
                           -username $username \
-                          -authority_id $authority_id]
-
+                          -authority_id $authority_id \
+			  -email $email \
+                          -first_names $first_names \
+			  -last_name $last_name]
     # Returns: 
     #   result(account_status)
     #   result(account_message)  
@@ -309,19 +334,19 @@ ad_proc -public auth::authenticate {
         }
         closed {
             if { ![exists_and_not_null result(account_message)] } {
-                set result(account_message) "This account is not available at this time"
+                set result(account_message) [_ acs-subsite.Account_not_avail_now]
             }
         }
         default {
             ns_log Error "auth::authenticate: Illegal account_status code '$result(account_status)' returned from auth::get_local_account for authority_id $authority_id ([auth::authority::get_element -authority_id $authority_id -element pretty_name])"
 
             set result(account_status) "closed"
-            set result(account_message) "Internal error during authentication"
+            set result(account_message) [_ acs-subsite.Auth_internal_error]
         }
     }
     
     # If the remote account was closed, the whole account is closed, regardless of local account status
-    if { [string equal $remote_account_status "closed"] } {
+    if {$remote_account_status eq "closed"} {
         set result(account_status) closed
     }
 
@@ -335,7 +360,7 @@ ad_proc -public auth::authenticate {
     }
         
     # Issue login cookie if login was successful
-    if { [string equal $result(auth_status) "ok"] && !$no_cookie_p && [exists_and_not_null result(user_id)] } {
+    if { $result(auth_status) eq "ok" && !$no_cookie_p && [exists_and_not_null result(user_id)] } {
         auth::issue_login \
             -user_id $result(user_id) \
             -persistent=$persistent_p \
@@ -373,7 +398,7 @@ ad_proc -private auth::get_register_authority {
         # Check that the authority has a register implementation
         auth::authority::get -authority_id $authority_id -array authority
         
-        if { [empty_string_p $authority(register_impl_id)] } {
+        if { $authority(register_impl_id) eq "" } {
             ns_log Error "auth::get_register_authority: parameter value for RegisterAuthority is an authority without registration driver, defaulting to local authority"
             set authority_id [auth::authority::local]
         }
@@ -390,7 +415,7 @@ ad_proc -public auth::create_user {
     {-verify_password_confirm:boolean}
     {-user_id ""}
     {-username ""}
-    {-email ""}
+    {-email:required} 
     {-first_names ""}
     {-last_name ""}
     {-screen_name ""}
@@ -443,12 +468,12 @@ ad_proc -public auth::create_user {
     #####
 
     if { $verify_password_confirm_p } {
-        if { ![string equal $password $password_confirm] } {
+        if { $password ne $password_confirm } {
             return [list \
                         creation_status data_error \
-                        creation_message "Passwords don't match" \
+                        creation_message [_ acs-subsite.Passwords_dont_match] \
                         element_messages [list \
-                                              password_confirm "Passwords don't match"]]
+                                              password_confirm [_ acs-subsite.Passwords_dont_match] ]]
         }
     }
 
@@ -483,7 +508,7 @@ ad_proc -public auth::create_user {
         # so we control it 100%
 
         # Local account creation ok?
-        if { [string equal $creation_info(creation_status) "ok"] } {
+        if {$creation_info(creation_status) eq "ok"} {
             # Need to find out which username was set
             set username $creation_info(username)
 
@@ -563,7 +588,7 @@ ad_proc -public auth::create_user {
                 }
                 closed {
                     if { ![exists_and_not_null creation_info(account_message)] } {
-                        set creation_info(account_message) "This account is not available at this time"
+                        set creation_info(account_message) [_ acs-subsite.Account_not_avail_now]
                     }
                 }
                 default {
@@ -580,7 +605,7 @@ ad_proc -public auth::create_user {
         ns_log Error "auth::create_user: Error invoking account registration driver for authority_id = $authority_id: $errorInfo"
     } 
 
-    if { ![string equal $creation_info(creation_status) "ok"] } { 
+    if { $creation_info(creation_status) ne "ok" } { 
         return [array get creation_info]
     }
 
@@ -591,7 +616,7 @@ ad_proc -public auth::create_user {
     #####
     
     # If the local account was closed, the whole account is closed, regardless of remote account status
-    if { [string equal $local_account_status "closed"] } {
+    if {$local_account_status eq "closed"} {
         set creation_info(account_status) closed
     }
 
@@ -605,7 +630,7 @@ ad_proc -public auth::create_user {
     }
         
     # Issue login cookie if login was successful
-    if { !$nologin_p && [string equal $creation_info(creation_status) "ok"] && [string equal $creation_info(account_status) "ok"] && [ad_conn user_id] == 0 } {
+    if { !$nologin_p && $creation_info(creation_status) eq "ok" && $creation_info(account_status) eq "ok" && [ad_conn user_id] == 0 } {
         auth::issue_login -user_id $creation_info(user_id)
     }
     
@@ -836,7 +861,7 @@ ad_proc -public auth::create_local_account {
             set user_info($elm) {}
         }
     }
-
+    
     # Validate data
     auth::validate_account_info \
         -authority_id $authority_id \
@@ -854,9 +879,9 @@ ad_proc -public auth::create_local_account {
     }
 
     # Admin approval
+    set system_name [ad_system_name]
     if { [parameter::get -parameter RegistrationRequiresApprovalP -default 0] } {
         set member_state "needs approval"
-        set system_name [ad_system_name]
         set result(account_status) "closed"
         set result(account_message) [_ acs-subsite.Registration_Approval_Notice]
     } else {
@@ -874,7 +899,7 @@ ad_proc -public auth::create_local_account {
     # Default a local account username
     if { $user_info(authority_id) == [auth::authority::local] \
              && [auth::UseEmailForLoginP] \
-             && [empty_string_p $username] } {
+             && $username eq "" } {
 
         # Generate a username that's guaranteed to be unique
         # Rather much work, but that's the best I could think of
@@ -886,7 +911,7 @@ ad_proc -public auth::create_local_account {
         set existing_user_id [acs_user::get_by_username -authority_id $authority_id -username $username]
 
         # If so, add -2 or -3 or ... to make it unique
-        if { ![empty_string_p $existing_user_id] } {
+        if { $existing_user_id ne "" } {
             set match "${username}-%"
             set existing_usernames [db_list select_existing_usernames { 
                 select username 
@@ -899,7 +924,7 @@ ad_proc -public auth::create_local_account {
             foreach existing_username $existing_usernames {
                 if { [regexp "^${username}-(\\d+)\$" $existing_username match existing_number] } {
                     # matches the foo-123 pattern
-                    if { $existing_number >= $number } { set number [expr $existing_number + 1] }
+                    if { $existing_number >= $number } { set number [expr {$existing_number + 1}] }
                 }
             }
             set username "$username-$number"
@@ -938,7 +963,7 @@ ad_proc -public auth::create_local_account {
 
     if { $error_p || $user_id == 0 } {
         set result(creation_status) "failed_to_connect"
-        set result(creation_message) "We experienced an error while trying to register an account for you."
+        set result(creation_message) [_ acs-subsite.Error_trying_to_register]
         global errorInfo
         ns_log Error "auth::create_local_account: Error creating local account.\n$errorInfo"
         return [array get result]
@@ -946,7 +971,7 @@ ad_proc -public auth::create_local_account {
 
     set result(user_id) $user_id
 
-    if { [empty_string_p $username] } {
+    if { $username eq "" } {
         set username [acs_user::get_element -user_id $user_id -element username]
     }
     set result(username) $username
@@ -964,7 +989,7 @@ ad_proc -public auth::create_local_account {
         } {
             global errorInfo
             ns_log Error "auth::create_local_account: Error sending out email verification email to email $email:\n$errorInfo"
-            set auth_info(account_message) "We got an error sending out the email for email verification"
+            set auth_info(account_message) [_ acs_subsite.Error_sending_verification_mail]
         }
     }
 
@@ -1093,7 +1118,7 @@ ad_proc -public auth::update_local_account {
 
     if { $error_p } {
         set result(update_status) "failed_to_connect"
-        set result(update_message) "We experienced an error while trying to update the account information."
+        set result(update_message) [_ acs-subsite.Error_update_account_info]
         global errorInfo
         ns_log Error "Error updating local account.\n$errorInfo"
         return [array get result]
@@ -1132,9 +1157,9 @@ ad_proc -public auth::delete_local_account {
                      -authority_id $authority_id \
                      -username $username]
     
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         set result(delete_status) "delete_error"
-        set result(delete_message) "No user found with this username"
+        set result(delete_message) [_ acs-subsite.No_user_with_this_username]
         return [array get result]
     }
     
@@ -1179,6 +1204,9 @@ ad_proc -private auth::get_local_account {
     {-return_url ""}
     {-username:required}
     {-authority_id ""}
+    {-email ""}
+    {-first_names ""}
+    {-last_name ""}
 } {
     Get the user_id of the local account for the given 
     username and domain combination.
@@ -1194,17 +1222,16 @@ ad_proc -private auth::get_local_account {
     #   auth_info(account_message)  
     #   auth_info(user_id)
 
-    if { [empty_string_p $authority_id] } {
+    if { $authority_id eq "" } {
         set authority_id [auth::authority::local]
     }
-
+    ns_log notice "auth::get_local_account authority_id = '${authority_id}' local = [auth::authority::local]"
     with_catch errmsg {
         acs_user::get -authority_id $authority_id -username $username -array user
         set account_found_p 1
     } {
         set account_found_p 0
     }
-
     if { !$account_found_p } {
 
         # Try for an on-demand sync
@@ -1212,14 +1239,46 @@ ad_proc -private auth::get_local_account {
                                    -authority_id $authority_id \
                                    -username $username]
 
-        if { [string equal $info_result(info_status) "ok"] } {
+        if {$info_result(info_status) eq "ok"} {
 
             array set user $info_result(user_info)
-            set user(user_id) [auth::create_local_account \
+	    
+	    if {$email ne "" \
+		    && (![info exists user(email)] || $user(email) eq "")} {
+		set user(email) $email
+	    }
+	    if {$first_names ne "" \
+		    && (![info exists user(first_names)] || $user(first_names) eq "")} {
+		set user(first_names) $first_names
+	    }
+	    if {$last_name ne "" \
+		    && (![info exists user(last_name)] || $user(last_name) eq "")} {
+		set user(last_name) $last_name
+	    }
+            array set creation_info [auth::create_local_account \
                                    -authority_id $authority_id \
                                    -username $username \
                                    -array user]
-            acs_user::get -authority_id $authority_id -username $username -array user
+
+	    if {$creation_info(creation_status) eq "ok"} {
+		acs_user::get -authority_id $authority_id -username $username -array user
+	    } else {
+		set auth_info(account_status) "closed"
+		# Used to get help contact info
+		auth::authority::get -authority_id $authority_id -array authority
+		set system_name [ad_system_name]
+		set auth_info(account_message) "You have successfully authenticated, but we were unable to create an account for you on $system_name. "
+		set auth_info(element_messages) $creation_info(element_messages)
+		append auth_info(account_message) "The error was: $creation_info(element_messages). Please contact the system administrator." 
+		
+		if { $authority(help_contact_text) ne "" } {
+		    append auth_info(account_message) "<p><h3>Help Information</h3>"
+		    append auth_info(account_message) [ad_html_text_convert \
+							   -from $authority(help_contact_text_format) \
+							   -to "text/html" -- $authority(help_contact_text)]
+		}
+		return [array get auth_info]
+	    }
 
         } else {
         
@@ -1229,10 +1288,10 @@ ad_proc -private auth::get_local_account {
             # Used to get help contact info
             auth::authority::get -authority_id $authority_id -array authority
             set system_name [ad_system_name]
-            set auth_info(account_message) "You have successfully authenticated, but you do not have an account on $system_name yet."
+            set auth_info(account_message) [_ acs-subsite.Success_but_no_account_yet]
             
-            if { ![empty_string_p $authority(help_contact_text)] } {
-                append auth_info(account_message) "<p><h3>Help Information</h3>"
+            if { $authority(help_contact_text) ne "" } {
+                append auth_info(account_message) [_ acs-subsite.Help_information]
                 append auth_info(account_message) [ad_html_text_convert \
                                                        -from $authority(help_contact_text_format) \
                                                        -to "text/html" -- $authority(help_contact_text)]
@@ -1287,7 +1346,7 @@ ad_proc -private auth::check_local_account_status {
             set PasswordExpirationDays [parameter::get -parameter PasswordExpirationDays -package_id [ad_acs_kernel_id] -default 0]
             
 
-            if { $email_verified_p == "f" } {
+            if { $email_verified_p eq "f" } {
                 if { !$no_dialogue_p } {
                     set result(account_message) "<p>[_ acs-subsite.lt_Registration_informat]</p><p>[_ acs-subsite.lt_Please_read_and_follo]</p>"
                     
@@ -1296,16 +1355,16 @@ ad_proc -private auth::check_local_account_status {
                     } {
                         global errorInfo
                         ns_log Error "auth::check_local_account_status: Error sending out email verification email to email $email:\n$errorInfo"
-                        set result(account_message) "We got an error sending out the email for email verification"
+                        set result(account_message) [_ acs-subsite.Error_sending_verification_mail]
                     }
                 }
-            } elseif { [string equal [acs_user::ScreenName] "require"] && [empty_string_p $screen_name] } {
+            } elseif { [string equal [acs_user::ScreenName] "require"] && $screen_name eq "" } {
                 set message "Please enter a screen name now."
                 set result(account_url) [export_vars -no_empty -base "[subsite::get_element -element url]user/basic-info-update" { message return_url {edit_p 1} }]
             } elseif { $PasswordExpirationDays > 0 && \
-                           ([empty_string_p $password_age_days] || $password_age_days > $PasswordExpirationDays) } {
+                           ($password_age_days eq "" || $password_age_days > $PasswordExpirationDays) } {
                 
-                set message "Your password must be changed regularly. Please change your password now."
+                set message [_ acs-subsite.Password_regular_change_now]
                 set result(account_url) [export_vars -base "[subsite::get_element -element url]user/password-update" { return_url message }]
             } else {
                 set result(account_status) "ok"
@@ -1323,8 +1382,7 @@ ad_proc -private auth::check_local_account_status {
                 "<p>[_ acs-subsite.lt_registration_request_submitted]</p><p>[_ acs-subsite.Thank_you]</p>"
         }
         default {
-            set result(account_message) \
-                "There was a problem authenticating the account. Most likely, the database contains users with no member_state."
+            set result(account_message) [_ acs-subsite.Problem_auth_no_memb]
             ns_log Error "auth::check_local_account_status: problem with registration state machine: user_id $user_id has member_state '$member_state'"
         }
     }
@@ -1372,11 +1430,11 @@ ad_proc -private auth::send_email_verification_email {
     set confirmation_url [export_vars -base "[ad_url]/register/email-confirm" { token user_id }]
     set system_name [ad_system_name]    
 
-    ns_sendmail \
-        $user(email) \
-        [parameter::get -parameter NewRegistrationEmailAddress -default [ad_system_owner]] \
-        [_ acs-subsite.lt_Welcome_to_system_nam] \
-        [_ acs-subsite.lt_To_confirm_your_regis]
+    acs_mail_lite::send -send_immediately \
+        -to_addr $user(email) \
+        -from_addr "\"$system_name\" <[parameter::get -parameter NewRegistrationEmailAddress -default [ad_system_owner]]>" \
+        -subject [_ acs-subsite.lt_Welcome_to_system_nam] \
+        -body [_ acs-subsite.lt_To_confirm_your_regis]
 }
 
 ad_proc -private auth::validate_account_info {
@@ -1401,6 +1459,7 @@ ad_proc -private auth::validate_account_info {
     if { !$update_p } {
         set required_elms [concat $required_elms { first_names last_name email }]
     }
+    
     foreach elm $required_elms {
         if { ![exists_and_not_null user($elm)] } {
             set element_messages($elm) "Required"
@@ -1408,19 +1467,21 @@ ad_proc -private auth::validate_account_info {
     }
 
     if { [info exists user(email)] } {
-        set user(email) [string trim $user(email)]
+	set user(email) [string trim $user(email)]
     }
+    
     if { [info exists user(username)] } {
-        set user(username) [string trim $user(username)]
+	set user(username) [string trim $user(username)]
     }
-
+    
     if { $update_p } {
         set user(user_id) [acs_user::get_by_username \
                                -authority_id $authority_id \
                                -username $username]
         
-        if { [empty_string_p $user(user_id)] } {
-            set element_messages(username) "No user with username '$username' found for authority [auth::authority::get_element -authority_id $authority_id -element pretty_name]"
+        if { $user(user_id) eq "" } {
+    set this_authority [auth::authority::get_element -authority_id $authority_id -element pretty_name]
+            set element_messages(username) [_ acs-subsite.Username_not_found_for_authority]
         }
     } else {
         set user(username) $username
@@ -1438,14 +1499,14 @@ ad_proc -private auth::validate_account_info {
 
     if { [exists_and_not_null user(email)] } { 
         if { ![util_email_valid_p $user(email)] } {
-            set element_messages(email) "This is not a valid email address"
+            set element_messages(email) [_ acs-subsite.Not_valid_email_addr]
         } else {
             set user(email) [string tolower $user(email)]
         }
     }
 
     if { [info exists user(url)] } {
-        if { [empty_string_p $user(url)] || [string equal $user(url) "http://"] } {
+        if { $user(url) eq "" || $user(url) eq "http://" } {
             # The user left the default hint for the url
             set user(url) {}
         } elseif { ![util_url_valid_p $user(url)] } {
@@ -1456,8 +1517,8 @@ ad_proc -private auth::validate_account_info {
 
     if { [info exists user(screen_name)] } {
         set screen_name_user_id [acs_user::get_user_id_by_screen_name -screen_name $user(screen_name)]
-        if { ![empty_string_p $screen_name_user_id] && (!$update_p || $screen_name_user_id != $user(user_id)) } {
-            set element_messages(screen_name) "This screen name is already taken."
+        if { $screen_name_user_id ne "" && (!$update_p || $screen_name_user_id != $user(user_id)) } {
+            set element_messages(screen_name) [_ acs-subsite.screen_name_already_taken]
 
             # We could do the same logic as below with 'stealing' the screen_name of an old, banned user.
         }
@@ -1468,12 +1529,12 @@ ad_proc -private auth::validate_account_info {
         set email $user(email)
         set email_party_id [party::get_by_email -email $user(email)]
 
-        if { ![empty_string_p $email_party_id] && (!$update_p || $email_party_id != $user(user_id)) } {
+        if { $email_party_id ne "" && (!$update_p || $email_party_id != $user(user_id)) } {
             # We found a user with this email, and either we're not updating, 
             # or it's not the same user_id as the one we're updating
             
-            if { ![string equal [acs_object_type $email_party_id] "user"] } {
-                set element_messages(email) "We already have a group with this email"
+            if { [acs_object_type $email_party_id] ne "user" } {
+                set element_messages(email) [_ acs-subsite.Have_group_mail]
             } else {
                 acs_user::get \
                     -user_id $email_party_id \
@@ -1488,7 +1549,7 @@ ad_proc -private auth::validate_account_info {
                             -email "dummy-email-$email_party_id"
                     }
                     default { 
-                        set element_messages(email) "We already have a user with this email."
+                        set element_messages(email) [_ acs-subsite.Have_user_mail]
                     }
                 } 
             }
@@ -1500,7 +1561,7 @@ ad_proc -private auth::validate_account_info {
         # Check that username is unique
         set username_user_id [acs_user::get_by_username -authority_id $authority_id -username $user(username)]
 
-        if { ![empty_string_p $username_user_id] && (!$update_p || $username_user_id != $user(user_id)) } {
+        if { $username_user_id ne "" && (!$update_p || $username_user_id != $user(user_id)) } {
             # We already have a user with this username, and either we're not updating, or it's not the same user_id as the one we're updating
             
             set username_member_state [acs_user::get_element -user_id $username_user_id -element member_state] 
@@ -1513,7 +1574,7 @@ ad_proc -private auth::validate_account_info {
                         -username "dummy-username-$username_user_id"
                 }
                 default { 
-                    set element_messages(username) "We already have a user with this username."
+                    set element_messages(username) [_ acs-subsite.Have_user_name]
                 }
             }
         }
@@ -1565,7 +1626,7 @@ ad_proc -private auth::authentication::Authenticate {
 } {
     set impl_id [auth::authority::get_element -authority_id $authority_id -element "auth_impl_id"]
 
-    if { [empty_string_p $impl_id] } {
+    if { $impl_id eq "" } {
         # No implementation of authentication
         set authority_pretty_name [auth::authority::get_element -authority_id $authority_id -element "pretty_name"]
         error "The authority '$authority_pretty_name' doesn't support authentication"
@@ -1580,8 +1641,7 @@ ad_proc -private auth::authentication::Authenticate {
     # version number -jfr 
 
     set authentication_version [util_memoize [list apm_highest_version_name acs-authentication]]
-    set old_version_p [util_memoize [list apm_version_names_compare 5.2.0 $authentication_version]]
-    set old_version_p 0
+    set old_version_p [util_memoize [list apm_version_names_compare 5.1.3 $authentication_version]]
 
     if {[string is true $old_version_p]} {
 	return [acs_sc::invoke \
@@ -1623,7 +1683,7 @@ ad_proc -private auth::registration::Register {
 } {
     set impl_id [auth::authority::get_element -authority_id $authority_id -element "register_impl_id"]
 
-    if { [empty_string_p $impl_id] } {
+    if { $impl_id eq "" } {
         # No implementation of authentication
         set authority_pretty_name [auth::authority::get_element -authority_id $authority_id -element "pretty_name"]
         error "The authority '$authority_pretty_name' doesn't support account registration"
@@ -1657,7 +1717,7 @@ ad_proc -private auth::registration::GetElements {
 } {
     set impl_id [auth::authority::get_element -authority_id $authority_id -element "register_impl_id"]
 
-    if { [empty_string_p $impl_id] } {
+    if { $impl_id eq "" } {
         # No implementation of authentication
         set authority_pretty_name [auth::authority::get_element -authority_id $authority_id -element "pretty_name"]
         error "The authority '$authority_pretty_name' doesn't support account registration"
@@ -1692,7 +1752,7 @@ ad_proc -private auth::user_info::GetUserInfo {
 } {
     set impl_id [auth::authority::get_element -authority_id $authority_id -element "user_info_impl_id"]
 
-    if { [empty_string_p $impl_id] } {
+    if { $impl_id eq "" } {
         # No implementation of authentication
         return { 
             info_status no_account

@@ -72,7 +72,7 @@ ad_proc -public auth::authority::create {
 
     db_transaction {
 
-        if { [empty_string_p $authority_id] } {
+        if { $authority_id eq "" } {
             set authority_id [db_nextval "acs_object_id_seq"]
         }
 
@@ -119,7 +119,7 @@ ad_proc -public auth::authority::create {
         # Auto generate short name if not provided and make
         # sure it's unique
         # TODO: check for max length 255?
-        if { [empty_string_p $short_name] } {
+        if { $short_name eq "" } {
             set existing_short_names [db_list select_short_names {
                 select short_name
                 from auth_authorities
@@ -251,7 +251,7 @@ ad_proc -public auth::authority::edit {
         if { [lsearch -exact $columns $name] == -1 } {
             error "Attribute '$name' isn't valid for auth_authorities."
         }
-        if { [string equal $name "authority_id"] } {
+        if {$name eq "authority_id"} {
             error "Attribute '$name' is the primary key for auth_authorities, and thus cannot be edited."
         }
         set $name $row($name)
@@ -265,6 +265,12 @@ ad_proc -public auth::authority::edit {
 
     get_flush -authority_id $authority_id
     get_id_flush -short_name $old_short_name
+
+    # check if we need to update the object title
+    set new_short_name [get_element -authority_id $authority_id -element short_name]
+    if {$old_short_name ne $new_short_name } {
+	db_dml update_object_title {}
+    }
 }
 
 ad_proc -public auth::authority::delete {
@@ -304,9 +310,9 @@ ad_proc -public auth::authority::batch_sync {
     set message {}
 
     # Verify that we have implementations
-    if { [empty_string_p $authority(get_doc_impl_id)] } {
+    if { $authority(get_doc_impl_id) eq "" } {
         set message "No Get Document implementation"
-    } elseif { [empty_string_p $authority(process_doc_impl_id)] } { 
+    } elseif { $authority(process_doc_impl_id) eq "" } { 
         set message "No Process Document implementation"
     } else {
         auth::sync::job::start_get_document -job_id $job_id
@@ -335,7 +341,7 @@ ad_proc -public auth::authority::batch_sync {
             -document $doc_result(document) \
             -snapshot=$snapshot_p
 
-        if { [string equal $doc_result(doc_status) "ok"] && ![empty_string_p $doc_result(document)] } {
+        if { $doc_result(doc_status) eq "ok" && $doc_result(document) ne "" } {
             with_catch errmsg {
                 auth::sync::ProcessDocument \
                     -authority_id $authority_id \
@@ -352,7 +358,7 @@ ad_proc -public auth::authority::batch_sync {
                                        -package_key acs-authentication \
                                        -default {}]
                                        
-                if { ![empty_string_p $ack_file_name] } {
+                if { $ack_file_name ne "" } {
                     # Interpolate
                     set pairs [list \
                                    acs_root_dir [acs_root_dir] \
@@ -372,7 +378,7 @@ ad_proc -public auth::authority::batch_sync {
                 set message "Error processing sync document: $errmsg"
             }
         } else {
-            if { [empty_string_p $message] } {
+            if { $message eq "" } {
                 set message $doc_result(doc_message)
             }
         }
@@ -428,7 +434,7 @@ ad_proc -private auth::authority::get_column_defaults {} {
 
     @author Peter Marklund
 } {
-    return { 
+    set columns { 
         authority_id ""
         short_name ""
         pretty_name ""
@@ -447,6 +453,10 @@ ad_proc -private auth::authority::get_column_defaults {} {
         process_doc_impl_id ""
         batch_sync_enabled_p "f"
     }
+    if {[apm_version_names_compare [ad_acs_version] 5.5.0] > -1} {
+        lappend columns allow_user_entered_info_p "f" search_impl_id ""
+    }
+    return $columns
 }
 
 ad_proc -private auth::authority::get_required_columns {} {
@@ -467,7 +477,12 @@ ad_proc -private auth::authority::get_sc_impl_columns {} {
 
     @author Peter Marklund 
 } {
-    return {auth_impl_id pwd_impl_id register_impl_id user_info_impl_id get_doc_impl_id process_doc_impl_id}
+    # DAVEB
+    set columns {auth_impl_id pwd_impl_id register_impl_id user_info_impl_id get_doc_impl_id process_doc_impl_id}
+    if {[apm_version_names_compare [ad_acs_version] 5.5.0] > -1} {
+        lappend columns search_impl_id
+    }
+    return $columns
 }
 
 ad_proc -private auth::authority::get_select_columns {} {
@@ -475,7 +490,11 @@ ad_proc -private auth::authority::get_select_columns {} {
     
     @author Lars Pind (lars@collaboraid.biz)
 } {
-    return [concat [get_columns] auth_impl_name pwd_impl_name register_impl_name user_info_impl_name get_doc_impl_name process_doc_impl_name]
+    set columns [concat [get_columns] auth_impl_name pwd_impl_name register_impl_name user_info_impl_name get_doc_impl_name process_doc_impl_name]
+    if {[apm_version_names_compare [ad_acs_version] 5.5.0] > -1} {
+        lappend columns get_search_impl_name
+    }
+    return $columns
 }
 
 
@@ -486,7 +505,7 @@ ad_proc -private auth::authority::get_flush {
     
     @see auth::authority::get
 } {
-    if { ![empty_string_p $authority_id] } {
+    if { $authority_id ne "" } {
         util_memoize_flush [list auth::authority::get_not_cached $authority_id]
     } else {
         util_memoize_flush_regexp [list auth::authority::get_not_cached .*]
@@ -506,6 +525,9 @@ ad_proc -private auth::authority::get_not_cached {
     lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = pwd_impl_id) as pwd_impl_name"
     lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = register_impl_id) as register_impl_name"
     lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = user_info_impl_id) as user_info_impl_name"
+    if {[apm_version_names_compare [ad_acs_version] 5.5.0] > -1} {
+        lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = search_impl_id) as search_impl_name"
+    }
     lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = get_doc_impl_id) as get_doc_impl_name"
     lappend columns "(select impl_pretty_name from acs_sc_impls where impl_id = process_doc_impl_id) as process_doc_impl_name"
 
@@ -523,7 +545,7 @@ ad_proc -private auth::authority::get_id_flush {
 } {
     Flush the cache for gett authority_id by short_name.
 } {
-    if { [empty_string_p $short_name] } {
+    if { $short_name eq "" } {
         util_memoize_flush_regexp [list auth::authority::get_id_not_cached .*]
     } else {
         util_memoize_flush [list auth::authority::get_id_not_cached -short_name $short_name]

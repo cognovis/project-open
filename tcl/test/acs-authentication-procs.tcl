@@ -56,7 +56,7 @@ aa_register_case \
                      -password "blabla"]
 
             aa_equals "auth_status for bad password authentication" $auth_info(auth_status) "bad_password"
-            aa_true "auth_message for bad password authentication" ![empty_string_p $auth_info(auth_message)]
+            aa_true "auth_message for bad password authentication" [expr {$auth_info(auth_message) ne ""}]
 
             # Blank password
             array unset auth_info
@@ -67,7 +67,7 @@ aa_register_case \
                      -password ""]
 
             aa_equals "auth_status for blank password authentication" $auth_info(auth_status) "bad_password"
-            aa_true "auth_message for blank password authentication" ![empty_string_p $auth_info(auth_message)]
+            aa_true "auth_message for blank password authentication" [expr {$auth_info(auth_message) ne ""}]
 
             # Incorrect username
             array unset auth_info
@@ -78,7 +78,7 @@ aa_register_case \
                      -password $password]
 
             aa_equals "auth_status for bad username authentication" $auth_info(auth_status) "no_account"
-            aa_true "auth_message for bad username authentication" ![empty_string_p $auth_info(auth_message)]
+            aa_true "auth_message for bad username authentication" [expr {$auth_info(auth_message) ne ""}]
 
             # Blank username
             array unset auth_info
@@ -89,7 +89,7 @@ aa_register_case \
                      -password $password]
 
             aa_equals "auth_status for blank username authentication" $auth_info(auth_status) "auth_error"
-            aa_true "auth_message for blank username authentication" ![empty_string_p $auth_info(auth_message)]
+            aa_true "auth_message for blank username authentication" [expr {$auth_info(auth_message) ne ""}]
 
             # Authority bogus
             array unset auth_info
@@ -101,7 +101,7 @@ aa_register_case \
                      -password $password]
 
             aa_equals "auth_status for bad authority_id authentication" $auth_info(auth_status) "failed_to_connect"
-            aa_true "auth_message for bad authority_id authentication" ![empty_string_p $auth_info(auth_message)]
+            aa_true "auth_message for bad authority_id authentication" [expr {$auth_info(auth_message) ne ""}]
 
             # Closed account status
             set closed_states {banned rejected "needs approval" deleted}
@@ -117,10 +117,14 @@ aa_register_case \
                          -password $password]
     
                 aa_equals "auth_status for '$closed_state' user" $auth_info(auth_status) "ok"
-                if { [string equal $auth_info(auth_status) "ok"] } {
+                if {$auth_info(auth_status) eq "ok"} {
                     # Only perform this test if auth_status is ok, otherwise account_status won't be set
                     aa_equals "account_status for '$closed_state' user" $auth_info(account_status) "closed"
                 }
+            }
+
+            if { $user_id ne "" } {
+                acs_user::delete -user_id $user_id
             }
     
             # Error handling    
@@ -157,7 +161,7 @@ aa_register_case \
             if { [info exists user_info(creation_status)] } {
                 aa_equals "creation_status for successful creation" $user_info(creation_status) "ok"
                 
-                if { ![string equal $user_info(creation_status) "ok"] } {
+                if { $user_info(creation_status) ne "ok" } {
                     aa_log "Element messages: '$user_info(element_messages)'"
                     aa_log "Element messages: '$user_info(creation_message)'"
                 }
@@ -169,7 +173,31 @@ aa_register_case \
             if { [info exists user_info(user_id)] } {         
                 aa_true "returns integer user_id ([array get user_info])" [regexp {[1-9][0-9]*} $user_info(user_id)]
             }
+
+            # Duplicate email and username
+            array unset user_info
+            array set user_info [auth::create_user \
+                                     -username "auth_create_user1" \
+                                     -email "auth_create_user1@test_user.com" \
+                                     -first_names "Test3" \
+                                     -last_name "User" \
+                                     -password "changeme" \
+                                     -secret_question "no_question" \
+                                     -secret_answer "no_answer"]
+
+            aa_equals "creation_status for duplicate email and username" $user_info(creation_status) "data_error"
             
+            aa_true "element_messages exists" [exists_and_not_null user_info(element_messages)]
+            if { [exists_and_not_null user_info(element_messages)] } {
+                array unset elm_msgs
+                array set elm_msgs $user_info(element_messages)
+                aa_true "element_message for username exists" [exists_and_not_null elm_msgs(username)]
+                aa_true "element_message for email exists" [exists_and_not_null elm_msgs(email)]
+            }
+            set user_id [acs_user::get_by_username -username auth_create_user1]
+            if { $user_id ne "" } {
+                acs_user::delete -user_id $user_id
+            }
             
             # Missing first_names, last_name, email
             array unset user_info
@@ -198,6 +226,10 @@ aa_register_case \
                 if { [aa_true "element_message(last_name) exists" [exists_and_not_null elm_msgs(last_name)]] } {
                     aa_log "element_message(last_name) = $elm_msgs(last_name)"
                 }
+            }
+            set user_id [acs_user::get_by_username -username auth_create_user2]
+            if { $user_id ne "" } {
+                acs_user::delete -user_id $user_id
             }
             
             # Malformed email
@@ -228,27 +260,6 @@ aa_register_case \
                     aa_log "element_message(last_name) = $elm_msgs(last_name)"
                 }
             }
-
-            # Duplicate email and username
-            array unset user_info
-            array set user_info [auth::create_user \
-                                     -username "auth_create_user1" \
-                                     -email "auth_create_user1@test_user.com" \
-                                     -first_names "Test3" \
-                                     -last_name "User" \
-                                     -password "changeme" \
-                                     -secret_question "no_question" \
-                                     -secret_answer "no_answer"]
-
-            aa_equals "creation_status for duplicate email and username" $user_info(creation_status) "data_error"
-            
-            aa_true "element_messages exists" [exists_and_not_null user_info(element_messages)]
-            if { [exists_and_not_null user_info(element_messages)] } {
-                array unset elm_msgs
-                array set elm_msgs $user_info(element_messages)
-                aa_true "element_message for username exists" [exists_and_not_null elm_msgs(username)]
-                aa_true "element_message for email exists" [exists_and_not_null elm_msgs(email)]
-            }
             
         } 
 }
@@ -271,6 +282,7 @@ aa_register_case \
             auth::set_email_verified -user_id $user_id
             
             aa_equals "email should be verified" [acs_user::get_element -user_id $user_id -element email_verified_p] "t"
+            acs_user::flush_cache -user_id $user_id
         }
 }
 
@@ -284,8 +296,8 @@ aa_register_case  \
 
     aa_log "Elements array: '[array get element_array]'"
 
-    aa_true "there is more than one required element" [expr [llength $element_array(required)] > 0]
-    aa_true "there is more than one optional element" [expr [llength $element_array(optional)] > 0]
+    aa_true "there is more than one required element" [expr {[llength $element_array(required)] > 0}]
+    aa_true "there is more than one optional element" [expr {[llength $element_array(optional)] > 0}]
 }
 
 aa_register_case  \
@@ -296,7 +308,7 @@ aa_register_case  \
 } {
     set form_elements [auth::get_registration_form_elements]
 
-    aa_true "Form elements are not empty: $form_elements" [expr ![empty_string_p $form_elements]]
+    aa_true "Form elements are not empty: $form_elements" [expr {$form_elements ne ""}] 
 }
 
 ###########
@@ -339,9 +351,11 @@ aa_register_case  \
     auth_password_change {
     Test the auth::password::change proc.
 } {
-    aa_stub ns_sendmail {
+    aa_stub acs_mail_lite::send {
+	acs_mail_lite::send__arg_parser
+
         global ns_sendmail_to
-        set ns_sendmail_to $to
+        set ns_sendmail_to $to_addr
     }
 
     aa_run_with_teardown \
@@ -359,7 +373,7 @@ aa_register_case  \
             set user_id $user_info(user_id)
 
             global ns_sendmail_to
-            set ns_sendmail_to {}
+            set ns_sendmail_to {ns_sendmail_UNCALLED}
 
             parameter::set_value -parameter EmailAccountOwnerOnPasswordChangeP  -package_id [ad_acs_kernel_id] -value 1
             aa_true "Send email" [parameter::get -parameter EmailAccountOwnerOnPasswordChangeP -package_id [ad_acs_kernel_id] -default 1]
@@ -386,6 +400,9 @@ aa_register_case  \
                 "1"
 
             ad_parameter_cache -delete [ad_acs_kernel_id] EmailAccountOwnerOnPasswordChangeP
+            if { $user_id ne "" } {
+                acs_user::delete -user_id $user_id
+            }
         }
 }
 
@@ -414,7 +431,7 @@ aa_register_case  \
                                            -username $test_vars(username)]
 
             aa_equals "status ok" $password_result(password_status) "ok"
-            aa_true "non-empty message" [expr ![empty_string_p $password_result(password_message)]]
+            aa_true "non-empty message" [expr {$password_result(password_message) ne ""}] 
         }
 }
 
@@ -450,8 +467,8 @@ aa_register_case  \
                           -authority_id $test_vars(authority_id) \
                           -username $test_vars(username)]
     
-    aa_equals "cannot retrieve pwd from local auth" $result(password_status) "not_supported"
-    aa_true "must have message on failure" [expr ![empty_string_p $result(password_message)]]
+    aa_equals "retrieve pwd from local auth" $result(password_status) "ok"
+    aa_true "must have message on failure" [expr {$result(password_message) ne ""}] 
 }
 
 aa_register_case  \
@@ -484,7 +501,7 @@ aa_register_case  \
                                          -secret_question "foo" \
                                          -secret_answer "bar"]
             aa_equals "status should be ok for creating user" $create_result(creation_status) "ok"
-            if { ![string equal $create_result(creation_status) "ok"] } {
+            if { $create_result(creation_status) ne "ok" } {
                 aa_log "Create-result: '[array get create_result]'"
             }
                 
@@ -507,6 +524,10 @@ aa_register_case  \
                                            -authority_id [auth::authority::local] \
                                            -password $test_user(password)]
                 aa_false "cannot authenticate with old password" [string equal $auth_result(auth_status) "ok"]
+            }
+            set user_id [acs_user::get_by_username -username $test_user(username)]
+            if { $user_id ne "" } {
+                acs_user::delete -user_id $user_id
             }
         }
 }
@@ -606,7 +627,7 @@ aa_register_case  \
 
             set parameters [array names parameters_array]
 
-            aa_true "List of parameters is not empty" [expr [llength $parameters] != 0]
+            aa_true "List of parameters is not empty" [expr {[llength $parameters] != 0}]
 
             array set values [list]
 
@@ -671,7 +692,7 @@ aa_register_case  \
 
             # GetElements
             array set elms [auth::get_registration_elements]
-            aa_true "Registration elements do NOT contain username" [expr [lsearch [concat $elms(required) $elms(optional)] "username"] == -1]
+            aa_true "Registration elements do NOT contain username" [expr {[lsearch [concat $elms(required) $elms(optional)] "username"] == -1}]
             
             # Create a user with no username
             set email [string tolower "[ad_generate_random_string]@foobar.com"]
@@ -705,9 +726,11 @@ aa_register_case  \
     auth_email_on_password_change {
     Test acs-kernel.EmailAccountOwnerOnPasswordChangeP parameter
 } {
-    aa_stub ns_sendmail {
+    aa_stub acs_mail_lite::send {
+	acs_mail_lite::send__arg_parser
+
         global ns_sendmail_to
-        set ns_sendmail_to $to
+        set ns_sendmail_to $to_addr
     }
 
     aa_run_with_teardown \
@@ -753,7 +776,7 @@ aa_register_case  \
             
             # Check that we get email
             aa_equals "Email sent to user" $ns_sendmail_to $email
-            set ns_sendmail_to {}
+            set ns_sendmail_to {ns_sendmail_UNCALLED}
 
             # Set parameter to false
             parameter::set_value -parameter EmailAccountOwnerOnPasswordChangeP -package_id [ad_acs_kernel_id] -value 0
@@ -768,7 +791,7 @@ aa_register_case  \
             aa_equals "Password change OK" $result(password_status) "ok"
             
             # Check that we do not get an email
-            aa_equals "Email NOT sent to user" $ns_sendmail_to {}
+            aa_equals "Email NOT sent to user" $ns_sendmail_to {ns_sendmail_UNCALLED}
 
             ad_parameter_cache -delete [ad_acs_kernel_id] EmailAccountOwnerOnPasswordChangeP
         }

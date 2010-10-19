@@ -11,8 +11,8 @@ namespace eval auth::local {}
 namespace eval auth::local::authentication {}
 namespace eval auth::local::password {}
 namespace eval auth::local::registration {}
-
-
+namespace eval auth::local::user_info {}
+namespace eval auth::local::search {}
 
 #####
 #
@@ -29,7 +29,8 @@ ad_proc -private auth::local::install {} {
         set row(auth_impl_id) [auth::local::authentication::register_impl]
         set row(pwd_impl_id) [auth::local::password::register_impl]
         set row(register_impl_id) [auth::local::registration::register_impl]
-        
+	set row(user_info_impl_id) [auth::local::user_info::register_impl]
+
         # Set the authority pretty-name to be the system name
         set row(pretty_name) [ad_system_name]
         
@@ -83,6 +84,7 @@ ad_proc -private auth::local::authentication::register_impl {} {
         name "local"
         pretty_name "Local"
         aliases {
+            MergeUser auth::local::authentication::MergeUser
             Authenticate auth::local::authentication::Authenticate
             GetParameters auth::local::authentication::GetParameters
         }
@@ -97,6 +99,40 @@ ad_proc -private auth::local::authentication::unregister_impl {} {
     acs_sc::impl::delete -contract_name "auth_authentication" -impl_name "local"
 }
 
+ad_proc -private auth::local::authentication::MergeUser {
+    from_user_id
+    to_user_id
+    {authority_id ""}
+} {
+    Merge Implementation of local authentication. This will
+    merge the names, emails, usernames, permissions, etc
+    of the two users to merge.
+} {
+    ns_log Notice "Starting auth::local::authentication::MergeUser"
+    db_transaction {
+	ns_log Notice "  Merging user portraits"
+
+	ns_log notice "  Merging username, email and basic info in general"
+
+	set new_username "merged_$from_user_id"
+	append new_username "_$to_user_id"
+	
+	# Shall we keep the domain for email?
+	# Actually, the username 'merged_xxx_yyy'
+	# won't be an email, so we will keep it without
+	# domain 
+	set new_email $new_username
+	    
+	set rel_id [db_string getrelid { *SQL* }]  
+	membership_rel::change_state -rel_id $rel_id -state "merged"
+	
+	acs_user::update -user_id $from_user_id -username "$new_username" -screen_name "$new_username"
+	party::update -party_id $from_user_id -email "$new_email" 
+	
+    }
+    ns_log notice "Finishing auth::local::authentication::MergeUser"
+}
+
 
 ad_proc -private auth::local::authentication::Authenticate {
     username
@@ -109,12 +145,12 @@ ad_proc -private auth::local::authentication::Authenticate {
 } {
     array set auth_info [list]
 
-    if [empty_string_p $authority_id] {
+    if {$authority_id eq ""} {
 	set authority_id [auth::authority::local]
     }
 
     set user_id [acs_user::get_by_username -authority_id $authority_id -username $username]
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         set result(auth_status) "no_account"
         return [array get result]
     }
@@ -198,8 +234,8 @@ ad_proc -private auth::local::password::CanRetrievePassword {
     Implements the CanRetrievePassword operation of the auth_password 
     service contract for the local account implementation.
 } {
-    # Nope, passwords are stored hashed, so we can't retrieve it for you
-    return 0
+    # passwords are stored hashed, so we send the hash and let the user choose a new password
+    return 1
 }
 
 ad_proc -private auth::local::password::CanResetPassword {
@@ -228,12 +264,12 @@ ad_proc -private auth::local::password::ChangePassword {
     }
 
     set user_id [acs_user::get_by_username -authority_id $authority_id -username $username]
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         set result(password_status) "no_account"
         return [array get result]
     }
 
-    if { ![empty_string_p $old_password] } {
+    if { $old_password ne "" } {
 	if { ![ad_check_password $user_id $old_password] } {
 	    set result(password_status) "old_password_bad"
 	    return [array get result]
@@ -268,11 +304,12 @@ ad_proc -private auth::local::password::ChangePassword {
 	    set subject [_ acs-subsite.Password_changed_subject]
 	    set body [_ acs-subsite.Password_changed_body]
 	    
-	    ns_sendmail \
-		$user(email) \
-		[ad_outgoing_sender] \
-		$subject \
-		$body
+	    acs_mail_lite::send \
+            -send_immediately \
+            -to_addr $user(email) \
+            -from_addr [ad_outgoing_sender] \
+            -subject $subject \
+            -body $body
 	} {
             global errorInfo
             ns_log Error "Error sending out password changed notification to account owner with user_id $user(user_id), email $user(email): $errmsg\n$errorInfo"
@@ -289,8 +326,22 @@ ad_proc -private auth::local::password::RetrievePassword {
     Implements the RetrievePassword operation of the auth_password 
     service contract for the local account implementation.
 } {
-    set result(password_status) "not_supported"
-    set result(password_message) [_ acs-subsite.cannot_retrieve_password]
+    set result(password_status) "ok"
+    set result(password_message) [_ acs-subsite.Request_Change_Password_token_email]
+
+    db_1row get_usr_id_and_password_hash {SELECT user_id, password as password_hash FROM users WHERE username = :username}
+
+    set email [party::email -party_id $user_id]
+    # TODO: This email message text should go in the recipient user language, english or every language supported
+    set subject "[ad_system_name]: [_ acs-subsite.change_password_email_subject] $username"
+    set body "[_ acs-subsite.change_password_email_body_0]\n\n[export_vars -base "[ad_url]/user/password-reset" {user_id password_hash}]\n\n[_ acs-subsite.change_password_email_body_1]"
+
+    acs_mail_lite::send \
+        -send_immediately \
+        -to_addr $email \
+        -from_addr [ad_outgoing_sender] \
+        -subject $subject \
+        -body $body
 
     return [array get result]
 }
@@ -310,13 +361,13 @@ ad_proc -private auth::local::password::ResetPassword {
     }
 
     set user_id [acs_user::get_by_username -authority_id $authority_id -username $username]
-    if { [empty_string_p $user_id] } {
+    if { $user_id eq "" } {
         set result(password_status) "no_account"
         return [array get result]
     }
 
     # Reset the password
-    if [exists_and_not_null new_password] {
+    if {[exists_and_not_null new_password]} {
 	set password $new_password
     } else {
 	set password [ad_generate_random_string]
@@ -433,7 +484,7 @@ ad_proc -private auth::local::registration::Register {
     # LARS TODO: Move this out of the local driver and into the auth framework
     # Generate random password?
     set generated_pwd_p 0
-    if { [empty_string_p $password] || [parameter::get -package_id [ad_conn subsite_id] -parameter RegistrationProvidesRandomPasswordP -default 0] } {
+    if { $password eq "" || [parameter::get -package_id [ad_conn subsite_id] -parameter RegistrationProvidesRandomPasswordP -default 0] } {
         set password [ad_generate_random_string]
         set generated_pwd_p 1
     }
@@ -450,50 +501,55 @@ ad_proc -private auth::local::registration::Register {
 
     # LARS TODO: Move this out of the local driver and into the auth framework
     # Send password confirmation email to user
+    if { [set email_reg_confirm_p [parameter::get -parameter EmailRegistrationConfirmationToUserP -package_id [ad_conn subsite_id] -default 0]] != -1 } {
+	if { $generated_pwd_p || \
+		 [parameter::get -parameter RegistrationProvidesRandomPasswordP -package_id [ad_conn subsite_id] -default 0] || \
+		 $email_reg_confirm_p } {
 
-    # Fraber: 051123: Removed parts of OR clause to avoid sending out
-    # passwords for users registered for CRM:
-    # $generated_pwd_p ||
-    # [parameter::get -parameter RegistrationProvidesRandomPasswordP -package_id [ad_conn subsite_id] -default 0] ||
-
-    if { [parameter::get -parameter EmailRegistrationConfirmationToUserP -package_id [ad_conn subsite_id] -default 0] } {
-	with_catch errmsg {
-            auth::password::email_password \
-                -username $username \
-                -authority_id $authority_id \
-                -password $password \
-                -from [parameter::get -parameter NewRegistrationEmailAddress -package_id [ad_conn subsite_id] -default [ad_system_owner]] \
-                -subject_msg_key "acs-subsite.email_subject_Registration_password" \
-                -body_msg_key "acs-subsite.email_body_Registration_password" 
-	} {
-            # We don't fail hard here, just log an error
-            global errorInfo
-	    ns_log Error "Error sending registration confirmation to $email.\n$errorInfo"
+	    with_catch errmsg {
+		auth::password::email_password \
+		    -username $username \
+		    -authority_id $authority_id \
+		    -password $password \
+		    -from [parameter::get -parameter NewRegistrationEmailAddress -package_id [ad_conn subsite_id] -default [ad_system_owner]] \
+		    -subject_msg_key "acs-subsite.email_subject_Registration_password" \
+		    -body_msg_key "acs-subsite.email_body_Registration_password" 
+	    } {
+		# We don't fail hard here, just log an error
+		global errorInfo
+		ns_log Error "Error sending registration confirmation to $email.\n$errorInfo"
+	    }
 	}
     }
 
     # LARS TODO: Move this out of the local driver and into the auth framework
     # Notify admin on new registration
     if { [parameter::get -parameter  NotifyAdminOfNewRegistrationsP -default 0] } {
-	with_catch errmsg {
-	    set admin_email [parameter::get \
-				 -parameter NewRegistrationEmailAddress \
-				 -package_id [ad_conn subsite_id] \
-				 -default [ad_system_owner]]
+        with_catch errmsg {
+            set admin_email [parameter::get \
+                                 -parameter NewRegistrationEmailAddress \
+                                 -package_id [ad_conn subsite_id] \
+                                 -default [ad_system_owner]]
+            set admin_id [party::get_by_email -email $admin_email]
+            if { $admin_id eq "" } {
+                set admin_locale [lang::system::site_wide_locale]
+            } else {
+                set admin_locale [lang::user::locale -user_id $admin_id]
+            }
 
-	    set admin_locale [lang::user::locale -user_id [party::get_by_email -email $admin_email]]
-	    set system_url [ad_url]
+            set system_url [ad_url]
 
-            ns_sendmail \
-		$admin_email \
-                $email \
-		[lang::message::lookup $admin_locale acs-subsite.lt_New_registration_at_s] \
-		[lang::message::lookup $admin_locale acs-subsite.lt_first_names_last_name]
-	} {
+            acs_mail_lite::send \
+                -send_immediately \
+                -to_addr $admin_email \
+                -from_addr [ad_outgoing_sender] \
+                -subject [lang::message::lookup $admin_locale acs-subsite.lt_New_registration_at_s] \
+                -body [lang::message::lookup $admin_locale acs-subsite.lt_first_names_last_name]
+        } {
             # We don't fail hard here, just log an error
             global errorInfo
-	    ns_log Error "Error sending admin notification to $admin_email.\n$errorInfo"
-	}
+            ns_log Error "Error sending admin notification to $admin_email.\n$errorInfo"
+        }
     }
 
     return [array get result]
@@ -501,6 +557,84 @@ ad_proc -private auth::local::registration::Register {
 
 ad_proc -private auth::local::registration::GetParameters {} {
     Implements the GetParameters operation of the auth_registration
+    service contract for the local account implementation.
+} {
+    # No parameters
+    return [list]
+}
+
+#####
+#
+# The 'auth_user_info' service contract implementation
+#
+
+ad_proc -private auth::local::user_info::register_impl {} {
+    Register the 'local' implementation of the 'auth_user_info' service contract. 
+    
+    @return impl_id of the newly created implementation.
+} {
+    set spec {
+        contract_name "auth_user_info"
+        owner "acs-authentication"
+        name "local"
+        pretty_name "Local"
+        aliases {
+            GetUserInfo auth::local::user_info::GetUserInfo
+            GetParameters auth::local::user_info::GetParameters
+        }
+    }
+    return [acs_sc::impl::new_from_spec -spec $spec]
+}
+
+ad_proc -private auth::local::user_info::unregister_impl {} {
+    Unregister the 'local' implementation of the 'auth_user_info' service contract.
+} {
+    acs_sc::impl::delete -contract_name "auth_user_info" -impl_name "local"
+}
+
+ad_proc -private auth::local::user_info::GetUserInfo {
+    user_id
+    {parameters ""}
+} {
+    Implements the GetUserInfo operation of the auth_user_info
+    service contract for the local account implementation.
+} {
+
+    set result(info_status) [auth::get_local_account_status -user_id $user_id]
+    set result(info_message) ""
+    db_1row get_user_info {} -column_array user_info
+    set result(user_info) [array get user_info]
+
+    return [array get result]
+}
+
+ad_proc -private auth::local::user_info::GetParameters {} {
+    Implements the GetParameters operation of the auth_user_info
+    service contract for the local account implementation.
+} {
+    # No parameters
+    return [list]
+}
+
+ad_proc -private auth::local::search::Search {
+    search_text
+    {parameters ""}
+} {
+    Implements the Search operation of the auth_search
+    service contract for the local account implementation.
+} {
+
+    set results [list]
+    db_foreach user_search {} {
+	lappend results $user_id
+    }
+
+    return $results
+
+}
+
+ad_proc -private auth::local::search::GetParameters {} {
+    Implements the GetParameters operation of the auth_search
     service contract for the local account implementation.
 } {
     # No parameters
