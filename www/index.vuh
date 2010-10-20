@@ -1,0 +1,9 @@
+# 
+#
+# Redirect to administration
+#
+# @author Dave Bauer (dave@thedesignexperience.org)
+# @creation-date 2004-02-16
+# @cvs-id $Id$
+
+ad_returnredirect "admin/"
