@@ -50,13 +50,27 @@ namespace eval notification {
     }
     
     ad_proc -public get_intervals {
+        {-localized:boolean}
         {-type_id:required}
     } {
-	return a list of intervals that are associated with a given notification type
-	(not all intervals are available to all notification types).
-	The fields for each interval is: name, interval_id, n_seconds.
+        return a list of intervals that are associated with a given notification type
+        (not all intervals are available to all notification types).
+        The fields for each interval is: name, interval_id, n_seconds.
+        If the localized flag is set, then the name of the interval will be localized.
     } {
-        return [db_list_of_lists select_intervals {}]
+        set intervals [db_list_of_lists select_intervals {}]
+        if { $localized_p } {
+            # build pretty names for intervals
+            set intervals_pretty [list]
+            foreach elm $intervals {
+                set elm_name [lindex $elm 0]
+                set elm_id [lindex $elm 1]
+                lappend intervals_pretty [list [_ notifications.${elm_name}] $elm_id]
+            }
+            return $intervals_pretty
+        } else {
+            return $intervals
+        }
     }
 
     ad_proc -public get_delivery_methods {
@@ -84,6 +98,8 @@ namespace eval notification {
         {-default_request_data {}}
         {-return_notified:boolean}
         {-notif_user {}}
+	{-notif_date {}}
+        {-file_ids {}}
     } {
         Create a new notification if any notification requests exist for the object and type.
         
@@ -303,7 +319,13 @@ namespace eval notification {
                 set extra_vars [ns_set create]
                 oacs_util::vars_to_ns_set \
                     -ns_set $extra_vars \
-                    -var_list {notification_id type_id object_id response_id notif_subject notif_text notif_html notif_user}
+                    -var_list {notification_id type_id object_id response_id notif_subject notif_text notif_html notif_user file_ids}
+
+                if { $notif_date ne "" } {
+                    oacs_util::vars_to_ns_set \
+                        -ns_set $extra_vars \
+                        -var_list {notif_date}
+                }
                 
                 # Create the notification
                 package_instantiate_object -extra_vars $extra_vars notification

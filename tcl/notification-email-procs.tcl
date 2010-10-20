@@ -11,6 +11,9 @@ ad_library {
 namespace eval notification::email {
 
     ad_proc -public get_package_id {} {
+        Get the package id for notifications (depends on this being a singular
+        package)
+    } {
         return [apm_package_id_from_key notifications]
     }
 
@@ -18,10 +21,15 @@ namespace eval notification::email {
         {-name:required}
         {-default ""}
     } {
+        Shorthand proc to return a given notifications package parameter.
+    } {
         return [parameter::get -package_id [get_package_id] -parameter $name -default $default]
     }
 
     ad_proc -public address_domain {} {
+        Get the domain name to use for e-mail.  The package parameter "EmailDomain" is
+        preferred, but if it doesn't exist, we build one using the system URL.
+    } {
         set domain [get_parameter -name "EmailDomain"]
         if { [empty_string_p $domain] } {
             # No domain set up, let's use the default from the system info
@@ -36,18 +44,26 @@ namespace eval notification::email {
     }
 
     ad_proc -public manage_notifications_url {} {
+        Build a url to the "manage notifications" script.
+    } {
         return "[ad_url][apm_package_url_from_key [notification::package_key]]manage"
     }
 
     ad_proc -public reply_address_prefix {} {
+        Shorthand proc to return the email reply address prefix parameter value.
+    } {
         return [get_parameter -name "EmailReplyAddressPrefix"]
     }
 
     ad_proc -private qmail_mail_queue_dir {} {
+        Shorthand proc to return the email qmail-style mail queue (i.e. a Maildir directory)
+    } {
         return [get_parameter -name "EmailQmailQueue"]
     }
 
     ad_proc -private parse_email_address {email} {
+        Strip out the user's name (in angle brackets) from an e-mail address if it exists.
+    } {
         if {![regexp {<([^>]*)>} $email all clean_email]} {
             return $email
         } else {
@@ -59,10 +75,12 @@ namespace eval notification::email {
         {-object_id:required}
         {-type_id:required}
     } {
+        Build an object/type-specific e-mail address that the user can reply to.
+    } {
         if {[empty_string_p $object_id] || [empty_string_p $type_id]} {
-            return "[address_domain] mailer <[reply_address_prefix]@[address_domain]>"
+            return "\"[address_domain] mailer\" <[reply_address_prefix]@[address_domain]>"
         } else {
-            return "[address_domain] mailer <[reply_address_prefix]-$object_id-$type_id@[address_domain]>"
+            return "\"[address_domain] mailer\" <[reply_address_prefix]-$object_id-$type_id@[address_domain]>"
         }
     }
 
@@ -90,61 +108,61 @@ namespace eval notification::email {
         subject
         content_text
         content_html
+        file_ids
     } {
         Send the actual email.
 
         @param from_user_id The user_id of the user that the email should be sent as. Leave empty for the standard mailer from address.
     } {
 
-       # Get email
+       # Get user data
        set email [cc_email_from_party $to_user_id]
-        
+       set user_locale [lang::user::site_wide_locale -user_id $to_user_id]
+       if { $user_locale eq "" } {
+           set user_locale lang::system::site_wide_locale
+       }
+
        # Variable used in the content
        set manage_notifications_url [manage_notifications_url]
 
-       append content_text "\n[_ notifications.lt_Getting_too_much_emai]"
        if { [string length $content_html] == 0 } {
-         set text_only_p 1
+           set mime_type "text/plain"
+           append content_text "\n#notifications.lt_Getting_too_much_emai#"
+           set content $content_text
        } else {
-         set text_only_p 0
-         append content_html "\n[_ notifications.lt_Getting_too_much_emai]"
+           set mime_type "text/html"
+           append content_html "<p>#notifications.lt_Getting_too_much_emai#</p>"
+           set content $content_html
        }
 
-        # Use this to build up extra mail headers        
-        set extra_headers [ns_set new]
+       # Use this to build up extra mail headers        
+       set extra_headers [list]
 
-        # This should disable most auto-replies.
-        ns_set put $extra_headers Precedence list
+       # This should disable most auto-replies.
+       lappend extra_headers [list "Precedence" "list"]
         
-        set reply_to [reply_address -object_id $reply_object_id -type_id $notification_type_id]
+       set reply_to [reply_address -object_id $reply_object_id -type_id $notification_type_id]
 
-        if { ![empty_string_p $from_user_id] && [db_0or1row get_person {}]} {
-            set from_email "\"$first_names $last_name\" <[cc_email_from_party $from_user_id]>"
+       if { ![empty_string_p $from_user_id] && $from_user_id != 0 && [db_0or1row get_person {}]} {
+           set from_email [cc_email_from_party $from_user_id]
+	   
+           # Set the Mail-Followup-To address to the
+           # address of the notifications handler.
+           lappend extra_headers [list "Mail-Followup-To" $reply_to]
+       } else {
+           set from_email $reply_to
+       }
 
-            # Set the Reply-To and Mail-Followup-To addresses to the
-            # address of the notifications handler.
-            ns_set put $extra_headers Reply-To $reply_to
-            ns_set put $extra_headers Mail-Followup-To $reply_to
-        } else {
-            set from_email $reply_to
-        }
-
-if { $text_only_p } {
-  set content $content_text
-} else {
-        set message_data [build_mime_message $content_text $content_html]
-        ns_set put $extra_headers MIME-Version [ns_set get $message_data MIME-Version]
-        ns_set put $extra_headers Content-ID [ns_set get $message_data Content-ID]
-        ns_set put $extra_headers Content-Type [ns_set get $message_data Content-Type]
-        set content [ns_set get $message_data body]
-}
-
-        acs_mail_lite::send \
-            -to_addr $email \
-            -from_addr $from_email \
-            -subject $subject \
-            -body $content \
-            -extraheaders $extra_headers
+       acs_mail_lite::send \
+           -to_addr $email \
+           -from_addr $from_email \
+           -reply_to $reply_to \
+           -mime_type $mime_type \
+           -subject [lang::util::localize $subject $user_locale] \
+           -body [lang::util::localize $content $user_locale] \
+           -file_ids $file_ids \
+           -use_sender \
+           -extraheaders $extra_headers
     }
 
     ad_proc -public bounce_mail_message {
