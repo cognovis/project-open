@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="nn_NO" charset="ISO-8859-1">
+
+  <msg key="Disable">Gjer utilgjengeleg</msg>
+  <msg key="Disable_Folders">Gjer utvalde mapper utilgjengelege</msg>
+  <msg key="Disabled">Gjort utilgjengeleg</msg>
+  <msg key="Enable">Gjer tilgjengeleg</msg>
+  <msg key="Enable_Folders">Gjer utvalde mapper tilgjengelege</msg>
+  <msg key="Enabled">Gjort tilgjengeleg</msg>
+  <msg key="Folder_Name">Mappenavn</msg>
+  <msg key="Folder_URL">URL for mappe</msg>
+  <msg key="Folders_Disabled">Utvalde mapper som er utilgjengelege for WebDAV support.</msg>
+  <msg key="Folders_Enabled">Utvalde mapper som er tilgjengelege for WebDAV support.</msg>
+  <msg key="Package_Name">Pakkenavn</msg>
+  <msg key="Package_Type">Pakketype</msg>
+  <msg key="Status">Status</msg>
+  <msg key="WebDAV_Folder_Administration">Administrasjon av WebDAV mappe</msg>
+</message_catalog>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="pa_IN" charset="utf-8">
+
+  <msg key="Disable">ਅਯੋਗ</msg>
+  <msg key="Disable_Folders">ਚੁਣੇ ਫੋਲਡਰ ਅਯੋਗ</msg>
+  <msg key="Disabled">ਅਯੋਗ</msg>
+  <msg key="Enable">ਯੋਗ</msg>
+  <msg key="Enable_Folders">ਚੁਣੇ ਫੋਲਡਰ ਯੋਗ</msg>
+  <msg key="Enabled">ਯੋਗ ਕੀਤਾ</msg>
+  <msg key="Folder_Name">ਫੋਲਡਰ ਨਾਂ</msg>
+  <msg key="Folder_URL">ਫੋਲਡਰ URL</msg>
+  <msg key="Package_Name">ਪੈਕੇਜ ਨਾਂ</msg>
+  <msg key="Package_Type">ਪੈਕੇਜ ਕਿਸਮ</msg>
+  <msg key="Status">ਹਾਲਤ</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV ਫੋਲਡਰ ਪਰਬੰਧਨ</msg>
+</message_catalog>

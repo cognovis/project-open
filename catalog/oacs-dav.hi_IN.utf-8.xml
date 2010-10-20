@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="hi_IN" charset="utf-8">
+
+  <msg key="Disable">अशकतता </msg>
+  <msg key="Disable_Folders">अशकतता चुनना पुस्तिका</msg>
+  <msg key="Disabled">अशकतता </msg>
+  <msg key="Enable">समर्थ करना </msg>
+  <msg key="Enable_Folders">समर्थ चुनना पुस्तिका </msg>
+  <msg key="Enabled">समर्थ करना </msg>
+  <msg key="Folder_Name">पुस्तिका नाम </msg>
+  <msg key="Folder_URL">पुस्तिका URL</msg>
+  <msg key="Folders_Disabled">अशकतता चुनना पुस्तिका का WebDAV सहारा । </msg>
+  <msg key="Folders_Enabled">समर्थ चुनना पुस्तिका का WebDAV सहारा । </msg>
+  <msg key="Package_Name">पैकेज  नाम  </msg>
+  <msg key="Package_Type">पैकेज प्रकार </msg>
+  <msg key="Status">स्थिति </msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV पुस्तिका शासन</msg>
+</message_catalog>

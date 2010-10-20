@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="el_GR" charset="utf-8">
+
+  <msg key="Disable">Απενεργοποίηση</msg>
+  <msg key="Disable_Folders">Απενεργοποίηση επιλεγμένων φακέλων</msg>
+  <msg key="Disabled">Απενεργοποιημένο</msg>
+  <msg key="Enable">Ενεργοποίηση</msg>
+  <msg key="Enable_Folders">Ενεργοποίηση επιλεγμένων φακέλων</msg>
+  <msg key="Enabled">Ενεργοποιημένο</msg>
+  <msg key="Folder_Name">Όνομα φακέλου</msg>
+  <msg key="Folder_URL">URL φακέλου</msg>
+  <msg key="Folders_Disabled">Επιλεγμένοι φάκελοι ανενεργοί για υποστήριξη WebDAV </msg>
+  <msg key="Folders_Enabled">Επιλεγμένοι φάκελοι ενεργοί για υποστήριξη WebDAV </msg>
+  <msg key="Package_Name">Όνομα πακέτου</msg>
+  <msg key="Package_Type">Τύπος πακέτου</msg>
+  <msg key="Status">Κατάσταση</msg>
+  <msg key="WebDAV_Folder_Administration">Διαχείριση WebDAV φακέλου</msg>
+</message_catalog>

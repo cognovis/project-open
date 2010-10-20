@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="ru_RU" charset="utf-8">
+
+  <msg key="Disable">Запретить</msg>
+  <msg key="Disable_Folders">Запретить для выбранных папок</msg>
+  <msg key="Disabled">Запрещено</msg>
+  <msg key="Enable">Разрешить</msg>
+  <msg key="Enable_Folders">Разрешить для выбранных папок</msg>
+  <msg key="Enabled">Разрешено</msg>
+  <msg key="Folder_Name">Название папки</msg>
+  <msg key="Folder_URL">URL папки</msg>
+  <msg key="Folders_Disabled">Для выбранных папок запрещена поддержка WebDAV.</msg>
+  <msg key="Folders_Enabled">Для выбранных папок разрешена поддержка WebDAV.</msg>
+  <msg key="Package_Name">Название пакета</msg>
+  <msg key="Package_Type">Тип пакета</msg>
+  <msg key="Status">Состояние</msg>
+  <msg key="WebDAV_Folder_Administration">Управление папкой WebDAV</msg>
+</message_catalog>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="eu_ES" charset="ISO-8859-1">
+
+  <msg key="Disable">Desaktibatu</msg>
+  <msg key="Disable_Folders">Desaktibatu aukeratutako karpetak</msg>
+  <msg key="Disabled">Desaktibatuta</msg>
+  <msg key="Enable">Aktibatu</msg>
+  <msg key="Enable_Folders">Aktibatu aukeratutako karpetak</msg>
+  <msg key="Enabled">Aktibatuta</msg>
+  <msg key="Folder_Name">Karpetaren Izena</msg>
+  <msg key="Folder_URL">Karpetaren URLa</msg>
+  <msg key="Folders_Disabled">Aukeratutako karpetak desaktibatuta WebDAV euskarrirako.</msg>
+  <msg key="Folders_Enabled">Aukeratutako karpetak aktibatuta WebDAV euskarrirako.</msg>
+  <msg key="Package_Name">Paketearen Izena</msg>
+  <msg key="Package_Type">Pakete-mota</msg>
+  <msg key="Status">Egoera</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV karpetaren kudeaketa</msg>
+</message_catalog>
