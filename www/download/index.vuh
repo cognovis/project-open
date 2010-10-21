@@ -1,0 +1,28 @@
+# packages/attachments/www/download/index.vuh
+
+ad_page_contract {
+
+    Virtual URL handler for file downloads
+
+    @author Ben Adida
+    @creation-date 2 July 2002
+    @cvs-id $Id$
+} {
+    object_id:integer,notnull
+    attachment_id:integer,notnull
+}
+
+# Permission check
+permission::require_permission -object_id $object_id -privilege read
+
+# Get the live version 
+# (and check that this is the right attachment while we're at it)
+set version_id [db_string select_version_id {} -default {}]
+
+if {[empty_string_p $version_id]} {
+    ad_return_complaint "bad attachment"
+    ad_script_abort
+    return
+}
+
+cr_write_content -revision_id $version_id
