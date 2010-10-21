@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="el_GR" charset="utf-8">
+
+  <msg key="Action">Ενέργεια</msg>
+  <msg key="Add_File">Προσθήκη αρχείου</msg>
+  <msg key="Add_folder_Link">Προσθήκη συνδέσμου φακέλου</msg>
+  <msg key="Add_pretty_name">Προσθήκη %pretty_name%</msg>
+  <msg key="Are_you_sure_detach">Είστε σίγουροι οτι θέλετε να διαγράψετε αυτό το συνημμένο;</msg>
+  <msg key="Attach">Συννημα</msg>
+  <msg key="attach_new">Επισύναψη &lt;b&gt;νέου&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Επισύναψη URL</msg>
+  <msg key="Attachment">Συνημμένο</msg>
+  <msg key="Can_delete">Αυτό είναι το μοναδικό αντικείμενο στο οποίο είναι συνημμένο. Μπορείτε να επιλέξετε να το διαγράψετε από την αποθήκευση αρχείων.</msg>
+  <msg key="Choose">Επιλέξτε</msg>
+  <msg key="delete_from_fs">Διαγραφή αυτού του συνημμένου από την αποθήκευση αρχείων;</msg>
+  <msg key="Description">Περιγαρφή:</msg>
+  <msg key="Detach">Αποσύνδεση</msg>
+  <msg key="Detach_file_from">Αποσύνδεση αρχείου από το %object_name%</msg>
+  <msg key="File">Αρχείο</msg>
+  <msg key="Last_Modified">Τελευταία ενημέρωση</msg>
+  <msg key="lt_Add_Attachment_Folder">Προσθήκη συνδέσμου φακέλου συνημμένων</msg>
+  <msg key="lt_Attach_a_File_to_pret">Επισυνάψτε ένα φάκελο στο %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% αντικείμενο</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte </msg>
+  <msg key="lt_Created_by_the_attach">Δημιουργήθηκε από το πακέτο συνημμένων</msg>
+  <msg key="lt_dont_know_how_to_deal">Δεν γνωρίζω πως θα χειριστώ τα συνημμένα τύπου %content_type%</msg>
+  <msg key="lt_Error_Attachment_root">Σφάλμα: Οι διαδρομές φακέλου συνημμένων και αποθήκευσης αρχείων είναι διαφορετικές! </msg>
+  <msg key="lt_Error_empty_folder_id">Σφάλμα: άδειος folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">Ο φάκελος %folder_name% είναι άδειος</msg>
+  <msg key="lt_Found_file-storage_fo">Βρέθηκε φάκελος αποθήκευσης XXX folder_name XXX ... Θέλετε να συνδεθείτε σε αυτό:</msg>
+  <msg key="lt_No_file-storage_folde">Δεν υπάρχουν φάκελοι αποθήκευσης αρχείων για να συνδεθείτε. Θέλετε να δημιουργήσετε έναν;</msg>
+  <msg key="lt_No_such_attachment_fo">Δεν υπάρχει τέτοιο συνημμένο για αυτό το αντικείμενο</msg>
+  <msg key="lt_The_specified_parent_">Ο συγκεκριμένος γονικός φάκελος είναι άκυρος. </msg>
+  <msg key="lt_To_attach_a_file_alre">Για να επισυνάψετε ένα αρχείο που βρίσκεται ήδη σε ένα φάκελο, ανοίξτε το φάκελο και στη συνέχεια πατήστε  &amp;quot;[ Choose ]&amp;quot; σύνδεσμοδίπλα από το αρχείο. Εαν έχετε τα απαιτούμενα προνόμια από το σύστημα, θα μπορείτε επίσης να ανεβάσετε ένα νέο αρχείο στο φάκελο.</msg>
+  <msg key="lt_Upload_New_Attachment">Ανέβασμα νέας επισύναψης</msg>
+  <msg key="lt_Use_the_Browse_button">Χρησιμοποιήστε το πλήκτρο &quot;Πλοήγηση&quot; για να εντοπίσετε το αρχείο και στη συνέχεια πατήστε &quot;Άνοιγμα&quot;</msg>
+  <msg key="lt_You_are_attaching_a_d">Επισυνάπτετε ένα έγγραφο στο %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Πιθανότατα επιλέξατε το κουμπί Προσθήκη περισσότερες από μια φορές . Ελέγξτε εαν το αρχείο είναι σωστά φορτωμένο στο &lt;a href=&quot;%folder_url%&quot;&gt;φάκελο&lt;/a&gt; που επιθυμείτε, μπορείτε να χρησιμοποιήσετε το κουμπί Πίσω/Επιστροφή για να επιστρέψετε και να επανεισάγετε το αρχείο.</msg>
+  <msg key="lt_Your_file_is_larger_t">Το αρχείο σας είναι μεγαλύτερο από το ανώτατο επιτρεπτό μέγεθος αρχείου που ορίζει το σύστημα (%max_number_of_bytes% bytes)</msg>
+  <msg key="Name">Όνομα</msg>
+  <msg key="No_such_type">Δεν υπάρχει τέτοιος τύπος</msg>
+  <msg key="Object">Αντικείμενο</msg>
+  <msg key="on_Object">στο αντικείμενο</msg>
+  <msg key="Only_detach">Το στοιχείο είναι συνδεδεμένο με άλλα αντικείμενα. Μπορείτε μόνο να το διαγράψετε από το αντικείμενο αλλά όχι από την αποθήκευση αρχείων</msg>
+  <msg key="remove">διαγραφή</msg>
+  <msg key="Size">Μέγεθος</msg>
+  <msg key="Title">Τίτλος</msg>
+  <msg key="Top">Επάνω</msg>
+  <msg key="Type">Τύπος</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Έκδοση αρχείου:</msg>
+  <msg key="you_are_attaching_document_to_object">Επισυνάπτετε ένα νέο έγγραφο στο %pretty_object_name%. 
+</msg>
+  <msg key="you_are_attaching_url_to_object">Επισυνάπτετε ένα νέο url στο %pretty_object_name%. 
+</msg>
+</message_catalog>

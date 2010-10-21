@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Action">Actie</msg>
+  <msg key="Add_File">Bestand toevoegen</msg>
+  <msg key="Add_folder_Link">Koppeling naar map toevoegen</msg>
+  <msg key="Add_pretty_name">%pretty_name% toevoegen</msg>
+  <msg key="Attach">Bijvoegen</msg>
+  <msg key="attach_new">&lt;b&gt;Nieuwe&lt;/b&gt; bijlage:</msg>
+  <msg key="Attach_URL">URL bijvoegen</msg>
+  <msg key="Choose">Kiezen</msg>
+  <msg key="Description">Beschrijving:</msg>
+  <msg key="File">Bestand</msg>
+  <msg key="Last_Modified">Laatste wijziging</msg>
+  <msg key="lt_Add_Attachment_Folder">Nieuwe hoofdmap aanmaken</msg>
+  <msg key="lt_Attach_a_File_to_pret">Bestand bijvoegen bij %pretty_object_name% </msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% bericht</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte</msg>
+  <msg key="lt_Created_by_the_attach">Aangemaakt door de Bijlagen module (Attachments)</msg>
+  <msg key="lt_dont_know_how_to_deal">Onbekend hoe met bijlagen van het type %content_type% moet worden omgegaan </msg>
+  <msg key="lt_Error_Attachment_root">Fout: de hoofdmap voor bijlagen en voor bestandsopslag verschillen!</msg>
+  <msg key="lt_Error_empty_folder_id">Fout: geen folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">Map %folder_name% is leeg</msg>
+  <msg key="lt_Found_file-storage_fo">Folder voor bestandsopslag XXX gevonden
+map_naam XXX... Een koppeling hiernaar maken?</msg>
+  <msg key="lt_No_file-storage_folde">Geen mappen voor bestandsopslag gevonden om naar te kunnen koppelen. Moet er één aangemaakt worden?</msg>
+  <msg key="lt_No_such_attachment_fo">De bijlage voor dit object bestaat niet </msg>
+  <msg key="lt_The_specified_parent_">De gekozen bovenliggende map is niet geldig</msg>
+  <msg key="lt_To_attach_a_file_alre">Om een bestand uit een map bij te voegen, dient op de mapnaam te worden geklikt en vervolgens op de koppeling &amp;quot;[ Kiezen ]&amp;quot; naast het bestand. Om een nieuw bestand in een map te plaatsen, dient op de mapnaam te worden geklikt en vervolgens op de koppeling &amp;quot;Invoeren nieuw bestand | URL&amp;quot;</msg>
+  <msg key="lt_Upload_New_Attachment">Nieuwe bijlage aanbieden</msg>
+  <msg key="lt_Use_the_Browse_button">De knop \&quot;Bladeren\&quot; gebruiken om een bestand te vinden en dan op \&quot;Openen\&quot; klikken</msg>
+  <msg key="lt_You_are_attaching_a_d">Er wordt een document bij %pretty_object_name% bijgevoegd.</msg>
+  <msg key="lt_You_probably_clicked_">Je hebt waarschijnlijk meer dan eens op de knop &quot;Toevoegen&quot; geklikt. Controleer of het bestand correct in de &lt;a href=&quot;%folder_url%&quot;&gt;gewenste map&lt;/a&gt; is opgeslagen. De knop &quot;Terug&quot; van de browser kan gebruikt worden om de handeling te herhalen.</msg>
+  <msg key="lt_Your_file_is_larger_t">Het bestand is groter dan de maximaal toegestane omvang (%max_number_of_bytes% bytes)</msg>
+  <msg key="Name">Naam</msg>
+  <msg key="No_such_type">Dit type bestaat niet</msg>
+  <msg key="Object">Object</msg>
+  <msg key="Size">Grootte</msg>
+  <msg key="Title">Titel</msg>
+  <msg key="Top">Top</msg>
+  <msg key="Type">Type</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Bestandsnaam versie:</msg>
+  <msg key="you_are_attaching_document_to_object">Er wordt een nieuw document bij %pretty_object_name% bijgevoegd.</msg>
+  <msg key="you_are_attaching_url_to_object">Er wordt een nieuwe url bij %pretty_object_name% bijgevoegd.</msg>
+</message_catalog>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="en_AU" charset="ISO-8859-1">
+
+  <msg key="Action">Action</msg>
+  <msg key="Add_File">Add File</msg>
+  <msg key="Add_folder_Link">Add folder Link</msg>
+  <msg key="Add_pretty_name">Add %pretty_name%</msg>
+  <msg key="Attach">Attach</msg>
+  <msg key="attach_new">Attach a &lt;b&gt;new&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Attach URL</msg>
+  <msg key="Choose">Choose</msg>
+  <msg key="Description">Description:</msg>
+  <msg key="File">File</msg>
+  <msg key="Last_Modified">Last Modified</msg>
+  <msg key="lt_Add_Attachment_Folder">Add Attachment Folder Link</msg>
+  <msg key="lt_Attach_a_File_to_pret">Attach a File to %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% item</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte</msg>
+  <msg key="lt_Created_by_the_attach">Created by the attachments packge</msg>
+  <msg key="lt_dont_know_how_to_deal">Don't know how to deal with attachment type %content_type%</msg>
+  <msg key="lt_Error_Attachment_root">Error: Attachment root folder and file storage root folder are different!</msg>
+  <msg key="lt_Error_empty_folder_id">Error: empty folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">Folder %folder_name% is empty</msg>
+  <msg key="lt_Found_file-storage_fo">Found file-storage folder XXX folder_name XXX ... would you like to link to it?</msg>
+  <msg key="lt_No_file-storage_folde">No file-storage folders found to link to. Would you like to create one?</msg>
+  <msg key="lt_No_such_attachment_fo">No such attachment for this object</msg>
+  <msg key="lt_The_specified_parent_">The specified parent folder is not valid.</msg>
+  <msg key="lt_To_attach_a_file_alre">To attach a file already in a folder, open the folder by clicking the folder's name, then click the &amp;quot;[ Choose ]&amp;quot; link next to the file. If you have appropriate system permissions, you will also be able to upload a new file into a folder. To do so, open the folder by clicking the link.  The &quot;Attach a new: File | URL&quot; link will only appear if you have permission to use it.</msg>
+  <msg key="lt_Upload_New_Attachment">Upload New Attachment</msg>
+  <msg key="lt_Use_the_Browse_button">Use the &quot;Browse...&quot; button to locate your file, 
+    then click &quot;Open&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">You are attaching a document to %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">You probably clicked on the Add button more than once. Check if the file is properly loaded on the &lt;a href=&quot;%folder_url%&quot;&gt;folder&lt;/a&gt; you want, or you can use the Back button to return and re-enter the version file.</msg>
+  <msg key="lt_Your_file_is_larger_t">Your file is larger than the maximum file size allowed on this system (%max_number_of_bytes% bytes)</msg>
+  <msg key="Name">Name</msg>
+  <msg key="No_such_type">No such type</msg>
+  <msg key="Object">Object</msg>
+  <msg key="Size">Size</msg>
+  <msg key="Title">Title</msg>
+  <msg key="Top">Top</msg>
+  <msg key="Type">Type</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Version filename :</msg>
+  <msg key="you_are_attaching_document_to_object">You are attaching a new document to %pretty_object_name%.</msg>
+  <msg key="you_are_attaching_url_to_object">You are attaching a new url to %pretty_object_name%.</msg>
+</message_catalog>

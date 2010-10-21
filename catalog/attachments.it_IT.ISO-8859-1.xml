@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Action">Azione</msg>
+  <msg key="Add_File">Aggiungi un File</msg>
+  <msg key="Add_folder_Link">Aggiungi un collegamento a una cartella</msg>
+  <msg key="Add_pretty_name">Aggiungi un %pretty_name%</msg>
+  <msg key="Attach">Allega</msg>
+  <msg key="attach_new">Allega un &lt;b&gt;nuovo&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Allega una URL</msg>
+  <msg key="Choose">Scegli</msg>
+  <msg key="Description">Descrizione:</msg>
+  <msg key="File">File</msg>
+  <msg key="Last_Modified">Ultima Modifica</msg>
+  <msg key="lt_Add_Attachment_Folder">Aggiungi un allegato alla cartella</msg>
+  <msg key="lt_Attach_a_File_to_pret">Allega un file a %pretty_object_name% </msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% elemento</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte</msg>
+  <msg key="lt_Created_by_the_attach">Creato dal pacchetto Attachments</msg>
+  <msg key="lt_dont_know_how_to_deal">sono incerto su come trattare questo tipo di allegato</msg>
+  <msg key="lt_Error_Attachment_root">Errore: la directory root dell'allegato e quella del filesystem sono differenti!</msg>
+  <msg key="lt_Error_empty_folder_id">Errore: ID cartella vuoto!</msg>
+  <msg key="lt_Folder_folder_name_is">La cartella %folder_name% è vuota</msg>
+  <msg key="lt_Found_file-storage_fo">Trovata cartella d'archivio XXX folder_name XXX ... vuoi collegarela ad essa?</msg>
+  <msg key="lt_No_file-storage_folde">Nessuna cartella d'archivio trovata per il collegamento. Vorresti crearne una?</msg>
+  <msg key="lt_No_such_attachment_fo">Nessun tipo di allegato per questo oggetto.</msg>
+  <msg key="lt_The_specified_parent_">La cartella superiore specificata non è valida.</msg>
+  <msg key="lt_To_attach_a_file_alre">Per allegare un file già in una cartella, apri la cartella cliccando sul suo nome, poi clicca sul link &amp;quot;[ Scegli ]&amp;quot; vicino al file.
+Per caricare il file in una cartella, apri la cartella cliccando sul suo nome, poi clicca l'appropriato &amp;quot;Allega nuovo: File | URL&amp;quot; link</msg>
+  <msg key="lt_Upload_New_Attachment">Carica un nuovo allegato</msg>
+  <msg key="lt_Use_the_Browse_button">Usa il bottone &quot;Sfoglia...&quot; per individuare il tuo file, poi clicca su &quot;Apri&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Stai allegando un documento a %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Probabilmente hai premuto più di una volta il tasto &quot;Aggiungi&quot;. Controlla se il file è stato caricato correttamente nella &lt;a href=&quot;%folder_url%&quot;&gt;cartella&lt;/a&gt;, o usa il tasto Back per tornare indietro e reimmattere la versione del file</msg>
+  <msg key="lt_Your_file_is_larger_t">Il tuo file eccede la dimensione massima consentita sul sistema (%max_number_of_bytes% bytes) </msg>
+  <msg key="Name">Nome</msg>
+  <msg key="No_such_type">Nessun tipo</msg>
+  <msg key="Object">Oggetto</msg>
+  <msg key="Size">Dimensione</msg>
+  <msg key="Title">Titolo:</msg>
+  <msg key="Top">In alto</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Versione file :</msg>
+  <msg key="you_are_attaching_document_to_object">Stai allegando un nuovo documento a %pretty_object_name%</msg>
+  <msg key="you_are_attaching_url_to_object">Stai allegando un nuovo collegameno a %pretty_object_name%.</msg>
+</message_catalog>
