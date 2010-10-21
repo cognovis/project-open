@@ -14,19 +14,13 @@ ad_page_contract {
     {julian_date ""}
     {start_time ""}
     {end_time ""}
-    {view "month"}
+    {view "day"}
     {return_url "./"}
 }
 auth::require_login
 
 set package_id [ad_conn package_id]
 set user_id [ad_conn user_id]
-
-if { [ns_queryget time_p] == 1 } {
-   set js ""
-} else {
-   set js "disableTime('cal_item');"
-}
 
 if {![info exists item_type_id]} {
     set item_type_id ""
@@ -37,6 +31,10 @@ set ansi_date $date
 set calendar_list [calendar::calendar_list]
 set calendar_options [calendar::calendar_list -privilege create]
 
+# Header stuff
+template::add_body_handler -event "onload" -script "TimePChanged()"
+template::head::add_css -href "/resources/calendar/calendar.css" -media all
+template::head::add_css -alternate -href "/resources/calendar/calendar-hc.css" -title "highContrast"
 
 # TODO: Move into ad_form
 if { ![ad_form_new_p -key cal_item_id] } {
@@ -50,10 +48,10 @@ if { ![ad_form_new_p -key cal_item_id] } {
 }
 # TODO: Move into ad_form
 if { [exists_and_not_null cal_item_id] } {
-    set page_title "One calendar item"
+    set page_title [_ calendar.Calendar_Edit_Item]
     set ad_form_mode display
 } else {
-    set page_title "Add a calendar item"
+    set page_title [_ calendar.Calendar_Add_Item]
     set ad_form_mode edit
 }
 
@@ -66,9 +64,8 @@ ad_form -name cal_item  -export { return_url } -form {
     }
     {date:date
         {label "[_ calendar.Date_1]"}
-	{format "YYYY MM DD"}
-        {html {id date} } 
-	{after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('date', 'y-m-d');" /> \[<b>[_ calendar.y-m-d]</b>\]} } }
+        {format "YYYY MM DD"}
+        {after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('date', 'y-m-d');" > \[<b>[_ calendar.y-m-d]</b>\]} } }
     {time_p:text(radio)     
         {label "&nbsp;"}
         {html {onClick "javascript:TimePChanged(this);"}} 
@@ -88,7 +85,7 @@ ad_form -name cal_item  -export { return_url } -form {
 
     {description:text(textarea),optional
         {label "[_ calendar.Description]"}
-        {html {cols 45 rows 10 wrap soft} maxlength 255}
+        {html {cols 45 rows 10}}
     }
     {calendar_id:integer(radio)
         {label "[_ calendar.Sharing]"}
@@ -106,10 +103,11 @@ if { [ad_form_new_p -key cal_item_id] } {
     }
 } else {
     ad_form -extend -name cal_item -form {
-        {edit_all_p:text(radio)
-            {label "[_ calendar.Apply_to_all]"}
-            {options {{"[_ calendar.Yes]" 1}
-                {"[_ calendar.No]" 0} }}
+        {edit_what:text(radio)
+            {label "[_ calendar.Apply_Changes_to]"}
+             {options {{"[_ calendar.This_Event]" this}
+                {"[_ calendar.All_Past_and_Future_Events]" all} 
+                {"[_ calendar.This_and_All_Future_Events]" future}}}
         }
     }
 }
@@ -167,7 +165,11 @@ ad_form -extend -name cal_item -validate {
 } -new_request {
     # Seamlessly create a private calendar if the user doesn't have one
     if { ![calendar::have_private_p -party_id $user_id] } {
-	calendar::new -owner_id $user_id -private_p "t" -calendar_name "" -package_id $package_id
+	set calendar_id [calendar::new \
+                            -owner_id $user_id \
+                            -private_p "t" \
+                            -calendar_name "Personal" \
+                            -package_id $package_id]
     } 
     
     set date [calendar::from_sql_datetime -sql_date $ansi_date  -format "YYY-MM-DD"]
@@ -221,10 +223,10 @@ ad_form -extend -name cal_item -validate {
     # this is a usability issue, since it prevents unexpected
     # behavior. According to carlb, this is how palm os works
     # and that sounds like a reasonable interface to emulate
-    # set edit_all_p $repeat_p
+    # set edit_what $repeat_p
     if { !$repeat_p } {
-        element set_properties cal_item edit_all_p -widget hidden
-        element set_value cal_item edit_all_p 0
+        element set_properties cal_item edit_what -widget hidden
+        element set_value cal_item edit_what 0
     }
     # To support green calendar
     # set date [template::util::date::from_ansi $ansi_start_date]
@@ -288,9 +290,24 @@ ad_form -extend -name cal_item -validate {
     # set up the datetimes
     set start_date [calendar::to_sql_datetime -date $date -time $start_time -time_p $time_p]
     set end_date [calendar::to_sql_datetime -date $date -time $end_time -time_p $time_p]
-
-
-
+    set edit_all_p 0
+    set edit_past_events_p 0
+    if {[info exists edit_what]} {
+        switch $edit_what {
+            this {
+                set edit_all_p 0
+                set edit_past_events_p 0
+            }
+            all {
+                set edit_all_p 1
+                set edit_past_events_p 1
+            }
+            future {
+                set edit_all_p 1
+                set edit_past_events_p 0
+            }
+        }
+    }
     # Do the edit
     calendar::item::edit \
         -cal_item_id $cal_item_id \
@@ -300,12 +317,13 @@ ad_form -extend -name cal_item -validate {
         -description $description \
         -item_type_id $item_type_id \
         -edit_all_p $edit_all_p \
+        -edit_past_events_p $edit_past_events_p \
         -calendar_id $calendar_id
-    
+
     if { [string compare $return_url "./"] } {
     	ad_returnredirect $return_url
     } else {
-	ad_returnredirect [export_vars -base cal-item-view { cal_item_id }]	
+	ad_returnredirect [export_vars -base cal-item-view { cal_item_id }]
     }
     ad_script_abort
 }

@@ -2,20 +2,14 @@
 <if @ad_form_mode@ eq display>
   <property name="title">#calendar.Calendar_Edit_Item#</property>
   <property name="context">#calendar.Edit#</property>
-  <property name="focus">cal_item.title</property>
 </if>
 <else>
   <property name="title">#calendar.Calendar_Add_Item#</property>
   <property name="context">#calendar.Add#</property>
-  <property name="focus">cal_item.title</property>
 </else>
-<property name="onload">TimePChanged()</property>
-<property name="header_stuff">
-  <link href="/resources/calendar/calendar.css" rel="stylesheet" type="text/css">
-</property>
+<property name="focus">cal_item.title</property>
 
-
-<script language="JavaScript">
+<script type="text/javascript">
     function disableTime(form_name) {
           <multiple name="time_format_elms">
             document.forms[form_name].elements["start_time.@time_format_elms.name@"].disabled = true;
@@ -44,15 +38,19 @@
 
   <div id="viewadp-mini-calendar">
     <include src="mini-calendar" base_url="view" view="@view@" date="@ansi_date@">
+    <include src="cal-options">	
   </div>
         
-  <div id="events">   
+  <div id="viewadp-cal-table">   
     <formtemplate id="cal_item"></formtemplate>
   </div>
 
 
-<script language="JavaScript">
-  // TimePChanged();
-  @js;noquote@
+<script type="text/javascript">
+      if (document.forms["cal_item"].time_p[0].checked == true ) {
+        // All day event
+        disableTime("cal_item");
+      } else {
+        enableTime("cal_item");
+      }
 </script>
-

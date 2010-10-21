@@ -1,0 +1,225 @@
+/*  Month View  ---------------------------------------------------*/
+.cal-month-day {
+	background: inherit;
+}
+
+.cal-month-day:hover {
+	background: #555555;
+}
+
+.cal-month-today {
+	background-color: #555555;
+    color: #fff;
+}
+
+.cal-month-today:hover {
+	background: #555555;
+}
+
+.cal-month-today a:link, .cal-month-today a:visited {
+    color: inherit;
+    background: inherit;
+}
+
+.cal-month-today a:hover {
+	color: #222222;
+	background-color: #cccc3d;
+}
+
+.cal-month-day-inactive {
+	background: #aaaaaa;
+}
+
+.cal-month-event {
+	border:1px #ffffff solid;
+	opacity:1; 
+}
+
+.cal-month-event a:link, .cal-month-event a:visited {
+    color: #000000;
+}
+
+.cal-month-table {
+	border-top: 1px #ffffff solid;
+	border-left: 1px #ffffff solid;
+}
+
+.cal-month-table th {
+    color: #000000;
+}
+
+.cal-month-table td, .cal-month-table th {
+	border-right: 1px #ffffff solid;
+	border-bottom: 1px #ffffff solid;
+}
+
+/* END Month View  ---------------------------------------------------*/
+
+.cal-table-caption {
+    color: inherit;
+    background: #222222;
+}
+
+/* at-a-glance ---------------------------------------------------*/
+/* This is the small cal that appears in month/week/day views on the left hand side*/
+
+#at-a-glance {
+	border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+}
+
+#at-a-glance th, #at-a-glance td {
+    border-right: 1px solid #ffffff;
+	border-bottom: 1px solid #ffffff;
+	background-color: inherit;
+}
+
+#at-a-glance td.selected {
+	background-color: #555555;
+}
+
+#at-a-glance td.inactive {
+	background-color: #aaaaaa;
+}
+
+#at-a-glance td.inactive a:link, #at-a-glance td.inactive a:visited {
+    background: inherit;
+	color: #000;
+}
+
+#at-a-glance td.active {
+	background-color: inherit;
+}
+
+#at-a-glance td.active:hover {
+	background-color: #555555;
+}
+
+#at-a-glance td.today {
+	background-color: #555555;
+}
+
+#at-a-glance td.today a:link, #at-a-glance td.today a:visited, #at-a-glance td.selected a:link, #at-a-glance td.selected a:visited {
+    color: #fff;
+    background:inherit;
+}
+
+#at-a-glance td.today a:hover, #at-a-glance td.selected a:hover {
+	color: #222222;
+	background-color: #cccc3d;
+}
+
+/* END at-a-glance ---------------------------------------------------*/
+
+
+.cal-text-grey-sml {
+	color: inherit;
+}
+
+/*  Week/Day View Common Styles  ---------------------------------------------------*/
+#cal-table-day, #cal-table-week  {
+	background-color: #ffffff;
+}
+
+#cal-table-day th, #cal-table-week th {
+    background-color: #ffffff;
+    color: #000000;
+} 
+
+#cal-table-day th a, #cal-table-week th a {
+    color: #000000;
+}
+
+.day-time-1 {
+	border:1px #ffffff solid;
+	background-color: #222222;
+}
+
+.day-time-2 {
+	border:1px #ffffff solid;
+	background-color:#343434;
+}
+.day-time-2 a:link, .day-time-2 a:visited {
+	color: #fff59e;
+}
+	
+.day-time-2 a:hover {
+	color: #222222;
+}
+
+
+/*  Week View  ---------------------------------------------------*/
+
+.week-event-1 {
+	background-color:#222222;
+}
+
+.week-event-2 {
+	background-color:#555555;
+}
+
+.week-entry-box a {
+	color: #000000;
+}
+
+.week-entry-item {
+	border:1px #ffffff solid;
+	opacity:1; 
+}
+
+/*  END Week View  ---------------------------------------------------*/
+
+/*  Day View  ---------------------------------------------------*/
+.day-event-1 {
+	border:0px #ffffff solid;
+	background-color:#222222;
+}
+
+.day-event-2 {
+	border:0px #ffffff solid;
+	background-color:#555555;
+}
+
+.day-entry-item {
+	border:1px #ffffff solid;
+	opacity:1; 
+}
+
+.day-entry-item a {
+    color: #000000;
+}
+
+/*  END Day View  ---------------------------------------------------*/
+
+/* view-list-display ---------------------------------------------------*/
+
+.list-table caption {
+    background: #222222;
+}
+
+/* END view-list-display ---------------------------------------------------*/
+
+.topnavbar { 
+	background:#555555;
+    color: #ffffff; 
+}
+
+.topnavbar .active { 
+	background:#222222; 
+}
+
+a.cal-icons {
+    background-color: inherit;
+    color: #ffffff;
+}
+
+a.cal-icons:hover {
+	color: #222222;
+	background-color: #cccc3d;
+}
+
+.calendar-Item {
+	background-color:#FFFFFF;
+	border: 1px solid #555555;
+	opacity:1; 
+}

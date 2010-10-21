@@ -3,7 +3,7 @@
 <queryset>
 <rdbms><type>postgresql</type><version>7.1</version></rdbms>
 
-<fullquery name="calendar_create.create_new_calendar">      
+<fullquery name="calendar::create.create_new_calendar">      
   <querytext>
     select calendar__new(
     	null,
@@ -19,7 +19,6 @@
     );
   </querytext>
 </fullquery>
-
  
 <fullquery name="calendar::calendar_list.select_calendar_list">
   <querytext>

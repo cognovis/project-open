@@ -33,7 +33,7 @@ template::list::create \
         edit {
             label ""
             display_template {
-                <img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0">
+                <img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" style="border:0">
             }
             link_url_eval {[export_vars -base calendar-edit { calendar_id }]}
             sub_class narrow
@@ -61,7 +61,7 @@ template::list::create \
             label ""
             display_template {
                 <if @calendars.num_items@ eq 0>
-                  <img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0">
+                  <img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" style="border:0">
                 </if>
             }
             link_url_eval {[export_vars -base calendar-delete { calendar_id }]}

@@ -28,7 +28,7 @@ foreach dow [list [list "#calendar.Sunday#" 0] [list "#calendar.Monday#" 1] [lis
                 set checked_html ""
         }
 
-        set dow_string "$dow_string <INPUT TYPE=checkbox name=days_of_week value=[lindex $dow 1] $checked_html id=\"cal_item:elements:interval_type:days_of_week\" >[lindex $dow 0] &nbsp;\n"
+    set dow_string "$dow_string <INPUT TYPE=checkbox name=days_of_week value=[lindex $dow 1] $checked_html id=\"cal_item:elements:interval_type:days_of_week:[lindex $dow 1]\" >[lindex $dow 0] &nbsp;\n"
 }
 
 set recurrance_options [list \
@@ -56,11 +56,10 @@ ad_form -name cal_item  -export {return_url} -form {
 
     {recur_until:date
         {label "[_ calendar.lt_Repeat_this_event_unt]"}
-	{format "YYYY MM DD"}
-	{html {id sel1}}
-	{after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('sel1', 'y-m-d');" /> \[<b>[_ calendar.y-m-d]</b>\] 
-        } }
-
+        {format "YYYY MM DD"}
+        {after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('recur_until', 'y-m-d');"> \[<b>[_ calendar.y-m-d]</b>\]} 
+        }
+        
     }
 
     {submit:text(submit) {label "[_ calendar.Add_Recurrence]"}}

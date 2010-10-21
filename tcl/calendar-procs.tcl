@@ -106,6 +106,8 @@ ad_proc calendar::create { owner_id
 	end;
     }
     ]
+    #removing inherited permissions
+    permission::set_not_inherit -object_id $calendar_id
     
     return $calendar_id
     
@@ -209,7 +211,8 @@ ad_proc -public calendar::get_month_multirow_information {
         set today_p f
     }
     set day_number [expr $current_day - $first_julian_date_of_month +1]
-    set weekday [expr [expr $current_day % 7] +1]
+    set weekday [expr [expr $current_day % 7] + 1]
+    set weekday [ad_decode $weekday 7 0 $weekday]
 
     set beginning_of_week_p f
     set end_of_week_p f
@@ -221,7 +224,8 @@ ad_proc -public calendar::get_month_multirow_information {
     return [list day_number $day_number \
                 today_p $today_p \
                 beginning_of_week_p $beginning_of_week_p \
-                end_of_week_p $end_of_week_p]
+                end_of_week_p $end_of_week_p \
+                weekday $weekday]
 }
 
 ad_proc -public calendar::from_sql_datetime {
@@ -342,26 +346,9 @@ ad_proc -public calendar::adjust_date {
 ad_proc -public calendar::new {
     {-owner_id:required}
     {-private_p "f"}
-    {-calendar_name ""}
+    {-calendar_name:required}
     {-package_id ""}
 } {
-    set duplicate_cal_p [db_string duplicate_cal "
-	select count(*)
-	from calendars
-	where calendar_name = :calendar_name
-    "]
-
-    if {[empty_string_p $calendar_name] || $duplicate_cal_p} {
-
-        set user_name [db_string uname "select im_name_from_user_id([ad_get_user_id])"]
-	if {"f" != $private_p} {
-	    set calendar_name [lang::message::lookup "" calendar.Pers_Cal_Name "%user_name% Personal Calendar"]
-	} else {
-	    set calendar_name [lang::message::lookup "" calendar.Pub_Cal_Name "%user_name% Public Calendar"]
-	}
-
-    }
-
     if { [empty_string_p $package_id] } {
         set package_id [ad_conn package_id]
     }

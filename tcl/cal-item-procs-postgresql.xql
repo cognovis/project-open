@@ -14,7 +14,6 @@
     <fullquery name="calendar::item::get.select_item_data">      
       <querytext>
       select
-	 e.*,
          i.cal_item_id,
          0 as n_attachments,
          to_char(start_date, 'YYYY-MM-DD HH24:MI:SS') as start_date_ansi,
@@ -27,7 +26,10 @@
          on_which_calendar as calendar_id,
          c.calendar_name,
          o.creation_user,
-         c.package_id as calendar_package_id
+         c.package_id as calendar_package_id,
+         e.related_link_url,
+         e.related_link_text,
+         e.redirect_to_rel_link_p
        from
          acs_events e join timespans s
            on (e.timespan_id = s.timespan_id)
@@ -51,7 +53,6 @@
     <fullquery name="calendar::item::get.select_item_data_with_attachment">      
       <querytext>
        select
-	 e.*,
          i.cal_item_id,
          (select count(*) from attachments where object_id = cal_item_id) as n_attachments,
          to_char(start_date, 'YYYY-MM-DD HH24:MI:SS') as start_date_ansi,
@@ -64,7 +65,10 @@
          on_which_calendar as calendar_id,
          c.calendar_name,
          o.creation_user,
-         c.package_id as calendar_package_id
+         c.package_id as calendar_package_id,
+         e.related_link_url,
+         e.related_link_text,
+         e.redirect_to_rel_link_p
        from
          acs_events e join timespans s
            on (e.timespan_id = s.timespan_id)
@@ -193,6 +197,54 @@ select
     :end_date
   )
 </querytext>
+</fullquery>
+
+<fullquery name="calendar::item::edit_recurrence.recurrence_events_update">
+    <querytext>
+    update acs_events set
+    [join $colspecs ", "]
+    where recurrence_id= :recurrence_id
+    and event_id in
+            (select e.event_id
+            from acs_events e, timespans t, time_intervals i
+            where e.recurrence_id = :recurrence_id
+            and t.timespan_id = e.timespan_id
+            and i.interval_id = t.interval_id
+            and (:edit_past_events_p = 't'
+                 or i.start_date >= :start_date)
+            )
+    </querytext>
+</fullquery>
+
+<fullquery name="calendar::item::edit_recurrence.recurrence_items_update">
+    <querytext>
+            update cal_items
+            set    [join $colspecs ", "]
+            where  cal_item_id in (select e.event_id
+            from acs_events e, timespans t, time_intervals i
+            where e.recurrence_id = :recurrence_id
+            and t.timespan_id = e.timespan_id
+            and i.interval_id = t.interval_id
+            and (:edit_past_events_p = 't'
+                 or i.start_date >= :start_date)
+            )
+    </querytext>
+</fullquery>
+
+<fullquery name="calendar::item::edit_recurrence.update_context_id">
+    <querytext>
+        update acs_objects
+        set    context_id = :calendar_id
+        where  object_id in
+            (select e.event_id
+            from acs_events e, timespans t, time_intervals i
+            where e.recurrence_id = :recurrence_id
+            and t.timespan_id = e.timespan_id
+            and i.interval_id = t.interval_id
+            and (:edit_past_events_p = 't'
+                 or i.start_date >= :start_date)
+            )
+    </querytext>
 </fullquery>
 
 </queryset>

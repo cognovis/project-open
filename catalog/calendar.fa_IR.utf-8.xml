@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b6" locale="fa_IR" charset="utf-8">
+<message_catalog package_key="calendar" locale="fa_IR" charset="utf-8">
 
   <msg key="Date_1">تاريخ</msg>
   <msg key="Edit">ويرايش</msg>

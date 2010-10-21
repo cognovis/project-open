@@ -35,7 +35,7 @@ ad_proc -public calendar::item::new {
     {-end_date:required}
     {-name:required}
     {-description:required}
-    {-calendar_id:required}
+    {-calendar_id ""}
     {-item_type_id ""}
 } {
     if {[dates_valid_p -start_date $start_date -end_date $end_date]} {
@@ -45,9 +45,15 @@ ad_proc -public calendar::item::new {
         set activity_id [db_exec_plsql insert_activity {} ]
         
         # Convert from user timezone to system timezone
-        set start_date [lc_time_conn_to_system $start_date]
-        set end_date [lc_time_conn_to_system $end_date]        
-        
+        if { $start_date ne $end_date } {
+
+            # Convert to server timezone only if it's not an all-day event
+            # otherwise, keep the start and end time as 00:00
+
+            set start_date [lc_time_conn_to_system $start_date]
+            set end_date [lc_time_conn_to_system $end_date]        
+        }
+
         set timespan_id [db_exec_plsql insert_timespan {}]
         
         # create the cal_item
@@ -61,11 +67,10 @@ ad_proc -public calendar::item::new {
 	
 	db_dml set_item_type_id "update cal_items set item_type_id=:item_type_id where cal_item_id=:cal_item_id"
 
-		# removing inherited permissions
-		if { [calendar::personal_p -calendar_id $calendar_id] } {
-			permission::set_not_inherit -object_id $cal_item_id
-		}
-		# ##
+        # removing inherited permissions
+        if { $calendar_id ne "" && [calendar::personal_p -calendar_id $calendar_id] } {
+            permission::set_not_inherit -object_id $cal_item_id
+        }
 
         assign_permission  $cal_item_id  $creation_user read
         assign_permission  $cal_item_id  $creation_user write
@@ -109,7 +114,7 @@ ad_proc -public calendar::item::get {
 	set row(end_date_ansi) [lc_time_system_to_conn $row(end_date_ansi)]
     }
 
-    if { $row(start_date_ansi) ==  $row(end_date_ansi) && [string equal [lc_time_fmt $row(start_date_ansi) "%T"] "00:00:00"]} {
+    if { $row(start_date_ansi) eq $row(end_date_ansi) } {
         set row(time_p) 0
     } else {
         set row(time_p) 1
@@ -162,6 +167,7 @@ ad_proc -public calendar::item::edit {
     {-description:required}
     {-item_type_id ""}
     {-edit_all_p 0}
+    {-edit_past_events_p 1}
     {-calendar_id ""}
 } {
     Edit the item
@@ -180,15 +186,22 @@ ad_proc -public calendar::item::edit {
                     -name $name \
                     -description $description \
                     -item_type_id $item_type_id \
-                    -calendar_id $calendar_id
+                    -calendar_id $calendar_id \
+                    -edit_past_events_p $edit_past_events_p
 
                 return
             }
         }
 
         # Convert from user timezone to system timezone
-        set start_date [lc_time_conn_to_system $start_date]
-        set end_date [lc_time_conn_to_system $end_date]        
+        if { $start_date ne $end_date } {
+
+            # Convert to server timezone only if it's not an all-day event
+            # otherwise, keep the start and end time as 00:00
+
+            set start_date [lc_time_conn_to_system $start_date]
+            set end_date [lc_time_conn_to_system $end_date]        
+        }
 
         db_dml update_event {}
 
@@ -271,25 +284,35 @@ ad_proc -public calendar::item::edit_recurrence {
     {-description:required}
     {-item_type_id ""}
     {-calendar_id ""}
+    {-edit_past_events_p "t"}
 } {
     edit a recurrence
 } {
     set recurrence_id [db_string select_recurrence_id {}]
-    
+    set edit_past_events_p [string map {0 f 1 t} [string is true $edit_past_events_p]]
     db_transaction {
         db_exec_plsql recurrence_timespan_update {}
-
-        db_dml recurrence_events_update {}
+        # compare this event to the original one we are
+        # editing DAVEB 2007-03-15
+        calendar::item::get \
+            -cal_item_id $event_id \
+            -array orig_event
         
         set colspecs [list]
+        foreach col {name description} {
+            if {$orig_event($col) ne [set $col]} {
+                lappend colspecs "$col = :$col"
+            }
+        }
+        if {[llength $colspecs]} {
+            db_dml recurrence_events_update {}
+        }
+	set colspecs [list]
         lappend colspecs {item_type_id = :item_type_id}
         if { ![empty_string_p $calendar_id] } {
             lappend colspecs {on_which_calendar = :calendar_id}
 
             db_dml update_context_id {
-                update acs_objects
-                set    context_id = :calendar_id
-                where  object_id in (select event_id from acs_events where recurrence_id = :recurrence_id)
             }
         }
 

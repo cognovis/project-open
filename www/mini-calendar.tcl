@@ -4,7 +4,21 @@ if {![exists_and_not_null base_url]} {
 
 if {![exists_and_not_null date]} {
     set date [dt_sysdate]
-} 
+}
+
+ad_form -name go-to-date -method get -has_submit 1 -action $base_url  -export [lappend list_of_vars page_num] -html {class inline-form} -form {
+    {date:text,nospell,optional
+        {label "[_ acs-datetime.Date]"}
+        {html {size 10}}
+    }
+    {btn_ok:text(submit)
+        {label "[_ calendar.Go_to_date]"}
+    } 
+    {view:text(hidden)
+        {value "day"}
+    }
+} -on_submit {}
+
 
 if {[exists_and_not_null page_num]} {
     set page_num_formvar [export_form_vars page_num]
@@ -60,15 +74,21 @@ if {[catch {
 }
 
 set now        [clock scan $date]
-    set date_list [dt_ansi_to_list $date]
-    set year [dt_trim_leading_zeros [lindex $date_list 0]]
-    set month [dt_trim_leading_zeros [lindex $date_list 1]]
-    set day [dt_trim_leading_zeros [lindex $date_list 2]]
+set date_list [dt_ansi_to_list $date]
+set year [dt_trim_leading_zeros [lindex $date_list 0]]
+set month [dt_trim_leading_zeros [lindex $date_list 1]]
+set day [dt_trim_leading_zeros [lindex $date_list 2]]
 
 set months_list [dt_month_names]
 set curr_month_idx  [expr [dt_trim_leading_zeros [clock format $now -format "%m"]]-1]
+set curr_day [clock format $now -format "%d"]
+set curr_month [clock format $now -format "%B"]
+set curr_year [clock format $now -format "%Y"]
+set curr_date_pretty [lc_time_fmt $date "%q"]
+
+set today [lc_time_fmt [dt_sysdate] "%q"]
+
 if [string equal $view month] {
-    set curr_year [clock format $now -format "%Y"]
     set prev_year [clock format [clock scan "1 year ago" -base $now] -format "%Y-%m-%d"]
     set next_year [clock format [clock scan "1 year" -base $now] -format "%Y-%m-%d"]
     set prev_year_url "$base_url?view=$view&date=[ad_urlencode $prev_year]${page_num}${url_stub_period_days}"
@@ -84,11 +104,12 @@ if [string equal $view month] {
 
         # show 3 months in a row
 
-        if {($i != 0) && ([expr $i % 3] == 0)} {
-            set new_row_p t
-        } else {
-            set new_row_p f
-        }
+        set new_row_p [expr $i / 3]
+#         if {($i != 0) && ([expr $i % 3] == 0)} {
+#             set new_row_p t
+#         } else {
+#             set new_row_p f
+#         }
 
         if {$i == $curr_month_idx} {
             set current_month_p t 
@@ -102,7 +123,6 @@ if [string equal $view month] {
         
     }
 } else {
-    set curr_month [lindex $months_list $curr_month_idx ]
     set prev_month [clock format [clock scan "1 month ago" -base $now] -format "%Y-%m-%d"]
     set next_month [clock format [clock scan "1 month" -base $now] -format "%Y-%m-%d"]
     set prev_month_url "$base_url?view=$view&date=[ad_urlencode $prev_month]${page_num}${url_stub_period_days}"
@@ -110,13 +130,15 @@ if [string equal $view month] {
     
     set first_day_of_week [lc_get firstdayofweek]
     set week_days [lc_get abday]
-    multirow create days_of_week day_short
+    set long_weekdays [lc_get day]
+    multirow create days_of_week day_short day_num
     for {set i 0} {$i < 7} {incr i} {
-        multirow append days_of_week [lindex $week_days [expr [expr $i + $first_day_of_week] % 7]]
+        multirow append days_of_week \
+            [lindex $week_days [expr [expr $i + $first_day_of_week] % 7]] \
+            $i
     }
 
-
-    multirow create days day_number beginning_of_week_p end_of_week_p today_p active_p url
+    multirow create days day_number beginning_of_week_p end_of_week_p today_p active_p url weekday day_num pretty_date
 
     set day_of_week 1
 
@@ -140,6 +162,7 @@ if [string equal $view month] {
             set active_p f
         } 
         set ansi_date [dt_julian_to_ansi $julian_date]
+        set pretty_date [lc_time_fmt $ansi_date %Q]
         
         if {$julian_date == $first_julian_date_of_month} {
             set day_number 1
@@ -151,7 +174,8 @@ if [string equal $view month] {
             set today_p t
         }
 
-        if { $day_of_week == 0} {
+        set day_num [expr { $day_of_week - 1 }]
+        if { $day_of_week == 1} {
             set beginning_of_week_p t
         } else {
             set beginning_of_week_p f
@@ -164,8 +188,14 @@ if [string equal $view month] {
             set end_of_week_p f
         }
 
+        set weekday [lindex $long_weekdays $day_of_week]
+
         multirow append days $day_number $beginning_of_week_p $end_of_week_p $today_p $active_p \
-            "[export_vars -base $base_url {{date $ansi_date} view}]${page_num}${url_stub_period_days}"
+            "[export_vars -base $base_url {{date $ansi_date} view}]${page_num}${url_stub_period_days}" \
+            $weekday \
+            $day_num \
+            $pretty_date
+
         incr day_number
         incr day_of_week
     }
@@ -183,4 +213,10 @@ if { $view == "day" && [dt_sysdate] == $date } {
 set form_vars ""
 foreach var $list_of_vars {
     append form_vars "<INPUT TYPE=hidden name=[lindex $var 0] value=[lindex $var 1]>"
+}
+
+ad_form -name choose_new_date -show_required_p f -has_edit 0 -has_submit 0 -form {
+    {new_date:date
+        {label ""}
+        {format {MM DD YYYY}}}
 }

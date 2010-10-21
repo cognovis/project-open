@@ -1,60 +1,67 @@
 <master>
 <property name="title">#calendar.Calendars#</property>
 
-<property name="header_stuff">
-  <link href="/resources/calendar/calendar.css" rel="stylesheet" type="text/css">
-</property>
+<include src="/packages/calendar/www/navbar" view="@view@" base_url="@ad_conn_url@" date="@date@">
 
-<table cellspacing=0 cellpadding=0 width="100%">
-<tr valign=top>
-<td>
+  <div id="viewadp-mini-calendar">
+    <if @view@ eq "list">
+      <include src="mini-calendar" base_url="view" view="@view@" date="@date@" period_days="@period_days@">
+    </if>
+    <else>
+      <include src="mini-calendar" base_url="view" view="@view@" date="@date@">
+    </else>
+    <p>
+    <a href="@add_item_url@" title="#calendar.Add_Item#" class="button">#calendar.Add_Item#</a>
+    <if @admin_p@ true>
+      <a href="admin/" title="#calendar.lt_Calendar_Administrati#" class="button">#calendar.lt_Calendar_Administrati#</a>
+    </if>
+    </p>
+  
+    <if @calendar_personal_p@ false>
+	    <p>@notification_chunk;noquote@</p>
+    </if>
+  
+    <include src="cal-options">	
+   </div>
 
-	<if @view@ eq "list">
-	      <include src="mini-calendar" base_url="view" view="@view@" date="@date@" period_days="@period_days@">
-	</if>
-	<else>
-	      <include src="mini-calendar" base_url="view" view="@view@" date="@date@">
-	</else>
-	
-	<p>
-	    <a href="cal-item-new?date=@date@&view=@view@&return_url=@return_url;noquote@" title="#calendar.Add_Item#">
-	    <img border=0 align="left" valign="top" src="/resources/acs-subsite/add.gif" alt="#calendar.Add_Item#">#calendar.Add_Item#</a>
-	</p>
-	<p>@notification_chunk;noquote@</p>
-	<p>
-	    <if @admin_p@ true>
-	      <a href="admin/">#calendar.lt_Calendar_Administrati#</a>
-	    </if>
-	</p>
+  <div id="viewadp-cal-table">
+    <if @view@ eq "list">
+      <include src="view-list-display"
+        portlet_p="0"
+        start_date="@start_date@"
+        return_url="@return_url@"
+        end_date="@end_date@"
+        date="@date@"
+        period_days="@period_days@"
+        sort_by="@sort_by@"
+        show_calendar_name_p="@show_calendar_name_p@"
+        export="@export@"> 
+    </if>
 
-<!--	<p><include src="cal-options"></p> -->
-
-</td>
-<td>&nbsp;</td>
-<td>
-	    <if @view@ eq "list">
-	      <include src="view-list-display" start_date=@start_date@ return_url="@return_url@"
-	      end_date=@end_date@ date=@date@ period_days=@period_days@ sort_by=@sort_by@
-	      show_calendar_name_p=@show_calendar_name_p@> 
-	    </if>
-	    
-	    
-	    <if @view@ eq "day">
-	      <include src="view-one-day-display" date="@date@" start_hour=0 end_hour=23 return_url="@return_url@"
-	      show_calendar_name_p=@show_calendar_name_p@>
-	    </if>
-	    
-	    <if @view@ eq "week">
-	      <include src="view-week-display" date="@date@" return_url="@return_url@"
-	      show_calendar_name_p=@show_calendar_name_p@>
-	    </if>
-	    
-	    
-	    <if @view@ eq "month">
-	      <include src="view-month-display" date=@date@ return_url="@return_url@"
-	      show_calendar_name_p=@show_calendar_name_p@>
-	    </if>
-
-</td>
-</tr>
-</table>
+    <if @view@ eq "day">
+      <include src="view-one-day-display"
+        date="@date@" 
+        start_display_hour="7"
+        end_display_hour="22"
+        return_url="@return_url@"
+        calendar_url=""
+        show_calendar_name_p="@show_calendar_name_p@">
+    </if>
+    
+    <if @view@ eq "week">
+      <include src="view-week-display"
+        date="@date@"
+        return_url="@return_url@"
+        calendar_url=""
+        show_calendar_name_p="@show_calendar_name_p@">
+    </if>
+    
+    
+    <if @view@ eq "month">
+      <include src="view-month-display"
+        date="@date@"
+        return_url="@return_url@"
+        calendar_url=""
+        show_calendar_name_p="@show_calendar_name_p@">
+    </if>
+   </div>

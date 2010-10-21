@@ -3,7 +3,7 @@
 <queryset>
 <rdbms><type>oracle</type><version>8.1.6</version></rdbms>
 
-<fullquery name="calendar_create.create_new_calendar">      
+<fullquery name="calendar::create.create_new_calendar">      
   <querytext>
   
     begin

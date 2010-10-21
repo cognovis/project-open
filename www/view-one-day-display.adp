@@ -1,73 +1,34 @@
-<table class="cal-table-display" cellpadding="1" cellspacing="2" width="99%">
-  <tr>
-    <td class="cal-month-title-text nobr">
-	<a href="@previous_week_url@" title="#calendar.prev_day#"><img border=0 src="<%=[dt_left_arrow]%>" alt="#calendar.prev_day#"></a>
-	@dates@
-	<a href="@next_week_url@" title="#calendar.next_day#"><img border=0 src="<%=[dt_right_arrow]%>" alt="#calendar.next_day#"></a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <table>
+  <table id="cal-table-day" cellpadding="0" cellspacing="1" border="0" width="90%">
+    <caption class="cal-table-caption">@pretty_date@</caption>
+    <thead>
       <tr>
-      <td>
-
-	<table>
-	<tr class="cal-row-light">
-	<td class="cal-day-time">
-		<a href="@item_add_without_time@" title="#calendar.Add_all_day_event#"><img border="0" src="/resources/acs-subsite/add.gif" alt="#calendar.Add_all_day_event#"> #calendar.Add_all_day_event#</a>
-	</td>
-	<td>
-	
-		<table> 
-		<multiple name="items_without_time">
-		      <tr>
-		      <td class="cal-day-event-notime">
-		      <a href="@items_without_time.event_url@" title="#calendar.goto_items_without_time_event_name#">@items_without_time.event_name@</a>
-		      </td>
-		      </tr>
-		</multiple>
-		</table>
-
-	</td>
-	</tr>
-
-	<if @items:rowcount@ gt 0>
-	<multiple name="items">
-	<if @items.current_hour@ odd>
-	  <tr class="odd">
-	</if>
-	<else>
-	  <tr class="even">
-	</else>
-	    
-			<td width="10%" class="cal-day-time">     
-			  <nobr>
-			  <a href="@items.add_url@" title="#calendar.Add_item_beginning_at#"><img border="0" src="/resources/acs-subsite/add.gif" alt="#calendar.Add_item_beginning_at#"> @items.localized_current_hour@</a>
-			  </nobr>
-			</td>
-	    
-			<group column="current_hour">
-			  <if @items.event_name@ true>
-			    <td class="cal-day-event" rowspan="@items.rowspan@"  colspan="@items.colspan@" valign="top">
-			      <a href="@items.event_url@" title="#calendar.goto_items_event_name#">@items.event_name@  (@items.start_time@ - @items.end_time@)</a>
-			      <if @show_calendar_name_p@>
-				<span class="cal-text-grey-sml">@items.calendar_name@</span>
-			      </if>
-			    </td>
-			  </if>
-			</group>
-	</tr>
-	</multiple>
-			</table>
-
-
-	</if>
-
-
-	  </td>
-	</tr>
-      </table>
-    </td>
-  </tr>
-</table>
+        <th id="hours">#calendar.Hours#</th>
+        <th id="events">#calendar.Events#</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td headers="hours" style="vertical-align: top;"> <div class="day-time-1"><p><a href="@grid_first_add_url@" title="#calendar.Add_item_beginning_at#">@grid_first_hour@</a></p></div></td>
+        <td headers="events" style="vertical-align: top; width:80%" class="day-event-1" valign="top">
+          <div id="day-entry-box">
+            <multiple name="items">
+              <div id="day-entry-@items.rownum@" class="day-entry-item @items.style_class@" style="top: @items.top@@hour_height_units@; height: @items.height@@hour_height_units@; @items.style@"><p><if @items.num_attachments@ gt 0><img src="/resources/calendar/images/attach.png" alt=""></if><a href="@items.event_url@" title="#calendar.goto_items_event_name#">@items.event_name@</a></p></div>
+            </multiple>
+          </div><!-- day-entry-box -->
+        </td>
+      </tr>
+      <multiple name="grid">
+        <tr>
+          <if @grid.rownum@ even>
+            <td headers="hours"> <div class="day-time-1"><p><a href="@grid.add_url@" title="#calendar.Add_item_beginning_at#">@grid.hour@</a></p></div></td>
+            <td headers="events" class="day-event-1" style="width: 80%" valign="top">
+            </td>
+          </if>
+          <else>
+            <td headers="hours"> <div class="day-time-2"><p><a href="@grid.add_url@" title="#calendar.Add_item_beginning_at#">@grid.hour@</a></p></div></td>
+            <td headers="events" class="day-event-2" style="width: 80%" valign="top"></td>
+          </else>
+        </tr>
+      </multiple>
+    </tbody>
+  </table>
