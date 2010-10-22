@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-simple-survey</auto-mount>
 
-    <version name="3.5.0.0.0" url="http://www.project-open.org/download/apm/intranet-simple-survey-3.5.0.0.0.apm">
+    <version name="4.0.0.0.0" url="http://www.project-open.org/download/apm/intranet-simple-survey-4.0.0.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Allows to associated &quot;Simple Surveys&quot; with business objects such as users, projects and companies.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
