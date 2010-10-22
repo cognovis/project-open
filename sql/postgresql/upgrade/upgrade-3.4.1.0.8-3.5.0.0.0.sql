@@ -180,11 +180,17 @@ BEGIN
 	update im_dynfield_attributes set also_hard_coded_p = p_also_hard_coded_p
 	where attribute_id = v_dynfield_id;
 
-	insert into im_dynfield_layout (
-		attribute_id, page_url, pos_y, label_style
-	) values (
-		v_dynfield_id, ''default'', p_pos_y, ''plain''
-	);
+	select	count(*) into v_count
+	from	im_dynfield_layout
+	where	attribute_id = v_dynfield_id and page_url = ''default'';
+
+	IF 0 = v_count THEN
+		insert into im_dynfield_layout (
+			attribute_id, page_url, pos_y, label_style
+		) values (
+			v_dynfield_id, ''default'', p_pos_y, ''plain''
+		);
+	END IF;
 
 	-- set all im_dynfield_type_attribute_map to "edit"
 	select type_category_type into v_type_category from acs_object_types
