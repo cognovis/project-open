@@ -50,20 +50,35 @@ drop function inline_0();
 
 
 -- this should eventually be added to acs-kernel
+create or replace function inline_0 ()
+returns integer as $body$
+DECLARE
+	v_count		integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where  table_name = 'ACS_NAMED_OBJECTS';
+	IF v_count > 0 THEN return 1; END IF;
 
-create table acs_named_objects (
-	object_id	integer not null
-			constraint acs_named_objs_pk primary key
-			constraint acs_named_objs_object_id_fk
-			references acs_objects(object_id) on delete cascade,
-	object_name	varchar(200),
-	package_id	integer
-			constraint acs_named_objs_package_id_fk
-			references apm_packages(package_id) on delete cascade
-);
+	create table acs_named_objects (
+		object_id	integer not null
+				constraint acs_named_objs_pk primary key
+				constraint acs_named_objs_object_id_fk
+				references acs_objects(object_id) on delete cascade,
+		object_name	varchar(200),
+		package_id	integer
+				constraint acs_named_objs_package_id_fk
+				references apm_packages(package_id) on delete cascade
+	);
+	
+	create index acs_named_objs_name_ix on acs_named_objects(object_name);
+	create index acs_named_objs_package_ix on acs_named_objects(package_id);
 
-create index acs_named_objs_name_ix on acs_named_objects(object_name);
-create index acs_named_objs_package_ix on acs_named_objects(package_id);
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
 
 create function inline_0 ()
 returns integer as '
