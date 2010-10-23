@@ -25,7 +25,7 @@ ad_page_contract {
     pages:onerow
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 array set tree [category_tree::get_data $tree_id $locale]
 if {$tree(site_wide_p) == "f"} {
     permission::require_permission -object_id $tree_id -privilege category_tree_read

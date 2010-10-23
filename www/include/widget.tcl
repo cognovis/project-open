@@ -23,7 +23,7 @@ foreach tree [category_tree::get_mapped_trees $package_id] {
 	util_unlist $category category_id category_name deprecated_p level
 	set indent ""
 	if {$level>1} {
-	    set indent "[string repeat "&nbsp;" [expr 2*$level -4]].."
+	    set indent "[string repeat "&nbsp;" [expr {2*$level -4}]].."
 	}
 	set selected_p [info exists mapped($category_id)]
 

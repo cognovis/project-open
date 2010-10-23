@@ -31,7 +31,7 @@ ad_page_contract {
     pages:onerow
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 
 set page_title "Browse categories"
 
@@ -58,7 +58,7 @@ foreach tree_id $tree_ids {
 	util_unlist $category category_id category_name deprecated_p level
 	set indent ""
 	if {$level>1} {
-	    set indent "[string repeat "&nbsp;" [expr 2*$level -4]].."
+	    set indent "[string repeat "&nbsp;" [expr {2*$level -4}]].."
 	}
 	template::multirow append trees $tree_id $tree_name $category_id $category_name $indent [info exists category_selected($category_id)]
     }
@@ -108,9 +108,9 @@ if {[info exists package_id]} {
 }
 
 set category_ids_length [llength $category_ids]
-if {$join == "and"} {
+if {$join eq "and"} {
     # combining categories with and
-    if {$subtree_p == "t"} {
+    if {$subtree_p eq "t"} {
 	# generate sql for exact categorizations plus subcategories
 	set subtree_sql [db_map include_subtree_and]
     } else {
@@ -119,7 +119,7 @@ if {$join == "and"} {
     }
 } else {
     # combining categories with or
-    if {$subtree_p == "t"} {
+    if {$subtree_p eq "t"} {
 	# generate sql for exact categorizations plus subcategories
 	set subtree_sql [db_map include_subtree_or]
     } else {

@@ -37,7 +37,9 @@ begin
 		p_creation_date,   -- creation_date
 		p_creation_user,   -- creation_user
 		p_creation_ip,     -- creation_ip
-		p_context_id       -- context_id
+		p_context_id,      -- context_id
+                p_tree_name,       -- title
+                null               -- package_id
 	);
 
 	insert into category_trees
@@ -186,9 +188,9 @@ declare
     p_creation_user         alias for $3;
     p_creation_ip           alias for $4;
 
-    source		    RECORD;
     v_new_left_ind          integer;
     v_category_id	    integer;
+    source record;
 begin
 	select coalesce(max(right_ind),0) into v_new_left_ind 
 	from categories
@@ -197,6 +199,7 @@ begin
 	for source in (select category_id, parent_id, left_ind, right_ind from categories where tree_id = p_source_tree) loop
 
 	   v_category_id := acs_object__new ( 
+                null,
 		''category'',     -- object_type
 		now(),            -- creation_date
 		p_creation_user,  -- creation_user
@@ -211,11 +214,11 @@ begin
 	end loop;
 
 	-- correct parent_ids
-	update categories c
+	update categories
 	set parent_id = (select t.category_id
 			from categories s, categories t
-			where s.category_id = c.parent_id
-			and t.tree_id = copy.dest_tree
+			where s.category_id = categories.parent_id
+			and t.tree_id = p_dest_tree
 			and s.left_ind + v_new_left_ind = t.left_ind)
 	where tree_id = p_dest_tree;
 
@@ -241,7 +244,8 @@ create or replace function category_tree__map (
     integer,   -- tree_id
     integer,   -- subtree_category_id
     char,      -- assign_single_p
-    char       -- require_category_p
+    char,      -- require_category_p
+    varchar    -- widget
 )
 returns integer as '
 declare
@@ -250,6 +254,7 @@ declare
     p_subtree_category_id    alias for $3;
     p_assign_single_p        alias for $4;
     p_require_category_p     alias for $5;
+    p_widget                 alias for $6;
 
     v_map_count              integer;
 begin
@@ -262,9 +267,9 @@ begin
 	if v_map_count = 0 then
 	   insert into category_tree_map
 	   (tree_id, subtree_category_id, object_id,
-	    assign_single_p, require_category_p)
+	    assign_single_p, require_category_p, widget)
 	   values (p_tree_id, p_subtree_category_id, p_object_id,
-	           p_assign_single_p, p_require_category_p);
+	           p_assign_single_p, p_require_category_p, p_widget);
 	end if;
         return 0;
 end;

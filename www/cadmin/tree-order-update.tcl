@@ -9,6 +9,7 @@ ad_page_contract {
     sort_key:array
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 }
 
 permission::require_permission -object_id $tree_id -privilege category_tree_write
@@ -20,7 +21,7 @@ db_transaction {
     set count 0
     db_foreach get_tree "" {
         incr count 10
-        if {[empty_string_p $parent_id]} {
+        if {$parent_id eq ""} {
             # need this as an anchor for toplevel categories
             set parent_id -1
         }
@@ -30,7 +31,7 @@ db_transaction {
             lappend child($parent_id) [list $count $category_id 0 0]
         }
     }
-    set last_ind [expr ($count / 5) + 1]
+    set last_ind [expr {($count / 5) + 1}]
 
     set count 1
     set stack [list]
@@ -54,7 +55,7 @@ db_transaction {
             set stack [concat [lsort -integer -index 0 $child($act_category)] $stack]
         } else {
             ## this category has no children, so it is done
-            lappend done_list [list $act_category $count [expr $count + 1]]
+            lappend done_list [list $act_category $count [expr {$count + 1}]]
             incr count 1
         }
         incr count 1
@@ -77,4 +78,4 @@ if {$count != $last_ind} {
     return
 }
 
-ad_returnredirect [export_vars -no_empty -base tree-view {tree_id locale object_id}]
+ad_returnredirect [export_vars -no_empty -base tree-view {tree_id locale object_id ctx_id}]

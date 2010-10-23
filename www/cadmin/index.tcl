@@ -15,10 +15,10 @@ ad_page_contract {
     trees_with_read_permission:multirow
 }
 
-set page_title "Category Management"
+set page_title "[_ categories.cadmin]"
 set context_bar [list $page_title]
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 set package_id [ad_conn package_id]
 
 permission::require_permission -object_id $package_id -privilege category_admin
@@ -31,9 +31,9 @@ db_foreach trees {} {
     array unset tree_array
     array set tree_array [category_tree::get_data $tree_id $locale]
 
-    if { [string equal $has_write_p "t"] } {
+    if {$has_write_p == "t"} {
 	template::multirow append trees_with_write_permission $tree_id $tree_array(tree_name) $site_wide_p $tree_array(description)
-    } elseif { [string equal $has_read_p "t"] || [string equal $site_wide_p "t"] } {
+    } elseif { $has_read_p == "t" || $site_wide_p == "t" } {
 	template::multirow append trees_with_read_permission $tree_id $tree_name $site_wide_p $tree_array(description)
     }
 }
@@ -61,12 +61,15 @@ set elements {
     }
 }
 
-template::list::create \
+list::create \
     -name trees_with_write_permission \
     -no_data "None" \
-    -elements $elements
+    -elements $elements \
+    -key tree_id \
+    -bulk_action_export_vars {locale} \
+    -bulk_actions [list "[_ categories.export]" trees-code "[_ categories.code_export]"] \
 
-template::list::create \
+list::create \
     -name trees_with_read_permission \
     -no_data "None" \
     -elements $elements

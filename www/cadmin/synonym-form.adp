@@ -4,6 +4,4 @@
 <property name="change_locale">f</property>
 <property name="focus">synonym_form.name</property>
 
-<blockquote>
   <formtemplate id="synonym_form"></formtemplate>
-</blockquote>

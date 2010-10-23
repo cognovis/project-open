@@ -4,6 +4,4 @@
 <property name="change_locale">f</property>
 <property name="focus">category_form.name</property>
 
-<blockquote>
   <formtemplate id="category_form"></formtemplate>
-</blockquote>

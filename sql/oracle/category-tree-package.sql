@@ -57,7 +57,8 @@ as
 	tree_id			in category_trees.tree_id%TYPE,
 	subtree_category_id	in categories.category_id%TYPE		default null,
 	assign_single_p		in category_tree_map.assign_single_p%TYPE	default 'f',
-	require_category_p	in category_tree_map.require_category_p%TYPE	default 'f'
+	require_category_p	in category_tree_map.require_category_p%TYPE	default 'f',
+	widget          	in category_tree_map.widget%TYPE	
     );
 
     PROCEDURE unmap (
@@ -98,7 +99,8 @@ as
 		creation_date => creation_date,
 		creation_user => creation_user,
 		creation_ip   => creation_ip,
-		context_id    => context_id 
+		context_id    => context_id,
+                title         => tree_name
 	);
 
 	insert into category_trees
@@ -265,7 +267,8 @@ as
 	tree_id			in category_trees.tree_id%TYPE,
 	subtree_category_id	in categories.category_id%TYPE		default null,
 	assign_single_p		in category_tree_map.assign_single_p%TYPE	default 'f',
-	require_category_p	in category_tree_map.require_category_p%TYPE	default 'f'
+	require_category_p	in category_tree_map.require_category_p%TYPE	default 'f',
+	widget			in category_tree_map.widget%TYPE
     ) is
 	v_map_count integer;
     BEGIN
@@ -277,9 +280,9 @@ as
 
 	if v_map_count = 0 then
 	   insert into category_tree_map
-	   (tree_id, subtree_category_id, object_id, assign_single_p, require_category_p)
+	   (tree_id, subtree_category_id, object_id, assign_single_p, require_category_p,widget)
 	   values (map.tree_id, map.subtree_category_id, map.object_id,
-	           map.assign_single_p, map.require_category_p);
+	           map.assign_single_p, map.require_category_p,map.widget);
 	end if;
 
     END map;

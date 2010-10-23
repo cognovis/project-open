@@ -8,6 +8,7 @@ ad_page_contract {
     tree_id:integer
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 } -properties {
     page_title:onevalue
     context_bar:onevalue
@@ -16,14 +17,16 @@ ad_page_contract {
     tree_id:onevalue
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $tree_id -privilege category_tree_write
 
 set tree_name [category_tree::get_name $tree_id $locale]
 set target_tree_id $tree_id
 set page_title "Copy a tree into \"$tree_name\""
 
-set context_bar [category::context_bar $tree_id $locale [value_if_exists object_id]]
+set context_bar [category::context_bar $tree_id $locale \
+                     [value_if_exists object_id] \
+                     [value_if_exists ctx_id]]
 lappend context_bar "Copy tree"
 
 template::multirow create trees tree_id tree_name site_wide_p view_url copy_url
@@ -33,8 +36,8 @@ db_foreach trees_select "" {
 	set source_tree_name [category_tree::get_name $source_tree_id $locale]
 
 	template::multirow append trees $source_tree_id $source_tree_name $site_wide_p \
-	[export_vars -no_empty -base tree-copy-view { source_tree_id target_tree_id locale object_id }] \
-	[export_vars -no_empty -base tree-copy-2 { source_tree_id target_tree_id locale object_id }]
+	[export_vars -no_empty -base tree-copy-view { source_tree_id target_tree_id locale object_id ctx_id }] \
+	[export_vars -no_empty -base tree-copy-2 { source_tree_id target_tree_id locale object_id ctx_id }]
     }
 }
 

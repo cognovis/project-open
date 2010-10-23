@@ -10,6 +10,7 @@ ad_page_contract {
     tree_id:integer,notnull
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 } -properties {
     page_title:onevalue
     context_bar:onevalue
@@ -17,7 +18,7 @@ ad_page_contract {
     trees:multirow
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 
 permission::require_permission -object_id $tree_id -privilege category_tree_write
 permission::require_permission -object_id $link_tree_id -privilege category_tree_write
@@ -27,10 +28,12 @@ set tree_name [category_tree::get_name $tree_id $locale]
 set link_tree_name [category_tree::get_name $link_tree_id $locale]
 set page_title "Add link from \"$link_tree_name\" to category \"$tree_name :: $category_name\""
 
-set context_bar [category::context_bar $tree_id $locale [value_if_exists object_id]]
+set context_bar [category::context_bar $tree_id $locale \
+                     [value_if_exists object_id] \
+                     [value_if_exists ctx_id]]
 lappend context_bar \
-    [list [export_vars -no_empty -base category-links-view {category_id tree_id locale object_id}] "Links to $category_name"] \
-    [list [export_vars -no_empty -base category-link-add {category_id tree_id locale object_id}] "Select link target"] \
+    [list [export_vars -no_empty -base category-links-view {category_id tree_id locale object_id ctx_id}] "Links to $category_name"] \
+    [list [export_vars -no_empty -base category-link-add {category_id tree_id locale object_id ctx_id}] "Select link target"] \
     "Add link"
 
 
@@ -51,9 +54,9 @@ foreach category [category_tree::get_tree -all $link_tree_id $locale] {
 
     template::multirow append tree $link_category_name $link_category_id $forward_exists_p $backward_exists_p \
 	[string repeat "&nbsp;" [expr ($level-1)*5]] \
-	[export_vars -no_empty -base category-links-view {{category_id $link_category_id} {tree_id $link_tree_id} locale object_id}] \
-	[export_vars -no_empty -base category-link-add-3 {link_category_id category_id tree_id locale object_id}] \
-	[export_vars -no_empty -base category-link-add-4 {link_category_id category_id tree_id locale object_id}]
+	[export_vars -no_empty -base category-links-view {{category_id $link_category_id} {tree_id $link_tree_id} locale object_id  ctx_id}] \
+	[export_vars -no_empty -base category-link-add-3 {link_category_id category_id tree_id locale object_id ctx_id}] \
+	[export_vars -no_empty -base category-link-add-4 {link_category_id category_id tree_id locale object_id ctx_id}]
     }
 
 template::list::create \
@@ -63,13 +66,13 @@ template::list::create \
     -bulk_actions {
 	"Add links" "category-link-add-3" "Add category links to checked categories"
 	"Add bidirectional links" "category-link-add-4" "Add bidirectional category links to checked categories"
-    } -bulk_action_export_vars { category_id tree_id locale object_id } \
+    } -bulk_action_export_vars { category_id tree_id locale object_id ctx_id} \
     -elements {
 	links {
 	    sub_class narrow
 	    display_template {
-		<if @tree.backward_exists_p@ true><img src="/resources/acs-subsite/left.gif" height="16" width="16" alt="backward link" border="0"></if>
-		<if @tree.forward_exists_p@ true><img src="/resources/acs-subsite/right.gif" height="16" width="16" alt="forward link" border="0"></if>
+		<if @tree.backward_exists_p@ true><img src="/resources/acs-subsite/left.gif" height="16" width="16" alt="backward link" style="border:0"></if>
+		<if @tree.forward_exists_p@ true><img src="/resources/acs-subsite/right.gif" height="16" width="16" alt="forward link" style="border:0"></if>
 	    }
 	    html {align center}
 	}

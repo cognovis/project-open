@@ -7,6 +7,7 @@ ad_page_contract {
     tree_id:integer,optional
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 } -properties {
     context_bar:onevalue
     page_title:onevalue
@@ -21,8 +22,13 @@ if { ![ad_form_new_p -key tree_id] } {
 }
 
 if { [info exists object_id] } {
-    set context_bar [list [category::get_object_context $object_id] [list [export_vars -no_empty -base object-map {locale object_id}] "Category Management"]]
+    set context_bar [list \
+          [category::get_object_context $object_id] \
+          [list [export_vars -no_empty -base object-map {locale ctx_id object_id}] \
+          [_ categories.cadmin]]]
 } else {
-    set context_bar [list [list ".?[export_vars -no_empty {locale}]" "Category Management"]]
+    set context_bar [list \
+          [list ".?[export_vars -no_empty {locale ctx_id}]" \
+          [_ categories.cadmin]]]
 }
 lappend context_bar $page_title

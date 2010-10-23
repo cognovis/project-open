@@ -5,15 +5,7 @@
 
 <if @change_locale@ eq t and @languages@ not nil>
   <div style="float: right;">
-    <formtemplate id="locale_form">
-      <table cellspacing="2" cellpadding="2" border="0">
-        <tr class="form-element"><td class="form-label">Language</td>
-        <td class="form-widget"><formwidget id="locale"></td></tr>
-        @form_vars;noquote@
-        <tr class="form-element">
-        <td align="left" colspan="2"><formwidget id="formbutton:ok"></td></tr>
-      </table>
-    </formtemplate>
+    <formtemplate id="locale_form"></formtemplate>
   </div>
 </if>
 

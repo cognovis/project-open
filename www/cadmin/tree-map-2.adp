@@ -4,6 +4,4 @@
 <property name="change_locale">f</property>
 <property name="focus">tree_map_form.assign_single_p</property>
 
-<blockquote>
   <formtemplate id="tree_map_form"></formtemplate>
-</blockquote>

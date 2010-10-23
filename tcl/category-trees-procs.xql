@@ -11,19 +11,51 @@
       </querytext>
 </fullquery>
 
- 
+<fullquery name="category_tree::get_categories.get_categories">
+       <querytext>
+            select c.category_id as category_id from categories c, category_translations ct
+            where parent_id is null
+		and tree_id = :tree_id
+		and c.category_id = ct.category_id
+		and locale = :locale
+            order by name
+       </querytext>
+</fullquery>
+         
 <fullquery name="category_tree::edit_mapping.edit_mapping">
       <querytext>
       
 	    update category_tree_map
 	    set assign_single_p = :assign_single_p,
-	        require_category_p = :require_category_p
+                require_category_p = :require_category_p,
+                widget = :widget
 	    where tree_id = :tree_id
 	    and object_id = :object_id
 	
       </querytext>
 </fullquery>
 
+<fullquery name="category_tree::get_id.get_category_tree_id">
+      <querytext>
+      
+		select tree_id
+		from category_tree_translations
+		where name = :name
+		and locale = :locale
+	    
+      </querytext>
+</fullquery>
+
+<fullquery name="category_tree::get_id_by_object_title.get_tree_id">
+      <querytext>
+
+                select object_id
+                from acs_objects
+                where title = :title
+                and object_type = 'category_tree'
+
+      </querytext>
+</fullquery>
  
 <fullquery name="category_tree::update.check_tree_existence">      
       <querytext>
@@ -41,19 +73,27 @@
       <querytext>
       
 	    select tree_id, subtree_category_id, assign_single_p,
-	           require_category_p
+	           require_category_p, widget
 	    from category_tree_map
 	    where object_id = :object_id
 	
       </querytext>
 </fullquery>
-
+<fullquery name="category_tree::get_trees.get_trees">      
+      <querytext>
+      
+	    select distinct tree_id
+	    from category_object_map_tree
+	    where object_id = :object_id
+	
+      </querytext>
+</fullquery>
 
 <fullquery name="category_tree::get_mapped_trees_from_object_list.get_mapped_trees_from_object_list">      
       <querytext>
       
             select tree_id, subtree_category_id, assign_single_p,
-                   require_category_p
+                   require_category_p, widget
             from category_tree_map
             where object_id in ([join $object_id_list ", "])
         
@@ -109,4 +149,16 @@
 </fullquery>
 
  
+<fullquery name="category_tree::get_id.get_category_tree_id">
+      <querytext>
+      
+		select tree_id
+		from category_tree_translations
+		where name = :name
+		and locale = :locale
+	    
+      </querytext>
+</fullquery>
+
+
 </queryset>

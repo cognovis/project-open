@@ -10,7 +10,9 @@
 			      :tree_id,
 			      :subtree_category_id,
 			      :assign_single_p,
-			      :require_category_p)
+			      :require_category_p,
+			      :widget
+			      )
       </querytext>
 </fullquery>
 
@@ -100,10 +102,10 @@
  
 <fullquery name="category_tree::usage.category_tree_usage">      
       <querytext>
-	    select t.pretty_plural, n.object_id, n.object_name, p.package_id,
+	    select t.pretty_plural, n.object_id, n.title, p.package_id,
 	           p.instance_name,
 	           acs_permission__permission_p(n.object_id, :user_id, 'read') as read_p
-	    from category_tree_map m, acs_named_objects n,
+	    from category_tree_map m, acs_objects n,
 	         apm_packages p, apm_package_types t
 	    where m.tree_id = :tree_id
 	    and n.object_id = m.object_id

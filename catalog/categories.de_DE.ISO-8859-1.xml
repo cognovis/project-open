@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="categories" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="cadmin">Management der Kategorien</msg>
+  <msg key="Categories">Kategorien</msg>
+  <msg key="code_export">Code zum Erstellen der Kategoriebäume exportieren</msg>
+  <msg key="code_necessary">TCL Code um ausgewählte Kategoriebäume zu importieren</msg>
+  <msg key="export">Export</msg>
+</message_catalog>

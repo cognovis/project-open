@@ -16,7 +16,7 @@
 <fullquery name="get_mapping_parameters">
       <querytext>
       
-	    select assign_single_p, require_category_p
+	    select assign_single_p, require_category_p, widget
 	    from category_tree_map
 	    where tree_id = :tree_id
 	    and object_id = :object_id

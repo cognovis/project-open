@@ -8,6 +8,7 @@ ad_page_contract {
     tree_id:integer
     {locale ""}
     object_id:integer,notnull
+    ctx_id:integer,optional
 } -properties {
     page_title:onevalue
     context_bar:onevalue
@@ -15,7 +16,7 @@ ad_page_contract {
     tree:multirow
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $object_id -privilege admin
 
 array set tree_data [category_tree::get_data $tree_id $locale]
@@ -26,7 +27,10 @@ if {$tree_data(site_wide_p) == "f"} {
 
 set page_title "Select subtree of \"$tree_name\" to map"
 
-set context_bar [list [category::get_object_context $object_id] [list [export_vars -no_empty -base object-map {locale object_id}] "Category Management"] "Map subtree"]
+set context_bar [list \
+   [category::get_object_context $object_id] \
+   [list [export_vars -no_empty -base object-map {locale object_id ctx_id}] [_ categories.cadmin]] \
+   "Map subtree"]
 
 template::multirow create tree category_id category_name level left_indent map_url
 
@@ -34,8 +38,8 @@ foreach category [category_tree::get_tree -all $tree_id $locale] {
     util_unlist $category category_id category_name deprecated_p level
 
     template::multirow append tree $category_id $category_name $level \
-	[string repeat "&nbsp;" [expr ($level-1)*5]] \
-	[export_vars -no_empty -base tree-map-2 { category_id tree_id locale object_id }]
+	[string repeat "&nbsp;" [expr {($level-1)*5}]] \
+	[export_vars -no_empty -base tree-map-2 { category_id tree_id locale object_id ctx_id}]
 }
 
 template::list::create \

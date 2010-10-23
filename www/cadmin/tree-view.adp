@@ -3,6 +3,6 @@
 <property name="context_bar">@context_bar;noquote@</property>
 <property name="locale">@locale;noquote@</property>
 
-<include src="/packages/categories/lib/tree-form" &="tree_id" &="locale">
+<include src="/packages/categories/lib/tree-form" &="tree_id" &="locale" &="ctx_id">
 
 <listtemplate name="one_tree"></listtemplate>

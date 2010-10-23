@@ -6,13 +6,13 @@
 <p>
 <table>
   <tr><th>Tree Name</th><td>@tree_name@</td></tr>
-  <tr><th>Description</th><td> @tree_description@</td></tr>
+  <tr><th>Description</th><td>@tree_description@</td></tr>
 </table>
 </p>
 
 <if @instances_using_p@ eq t>
   This tree is still used by some modules. For a complete list, please go
-  <a href="tree-usage?@url_vars;noquote@">here</a>.
+  <a href="@usage_url@">here</a>.
 </if>
 
 <if @used_categories:rowcount@ gt 0>

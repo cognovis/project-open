@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="categories" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="cadmin">Gerenciamento de Categorias</msg>
+  <msg key="code_export">Exportar código para recriar árvores de categoria</msg>
+  <msg key="code_necessary">Código Tcl para recriar as árvores de categoria selecionadas</msg>
+  <msg key="export">Exportar</msg>
+</message_catalog>

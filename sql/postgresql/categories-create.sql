@@ -172,6 +172,7 @@ create table category_tree_map (
 	require_category_p	char(1) default 'f'
 				constraint cat_tree_map_categ_p_ck
 				check (require_category_p in ('t','f')),
+        widget                  varchar(20),
 	primary key (object_id, tree_id)
 );
 
@@ -199,6 +200,10 @@ comment on column category_tree_map.assign_single_p is '
 comment on column category_tree_map.require_category_p is '
   Do the users have to assign at least one category to objects?
 ';
+comment on column category_tree_map.widget is '
+  What widget do we want to use for this cateogry?
+';
+
 
 create table category_object_map (
        category_id		integer
@@ -447,7 +452,9 @@ comment on column category_search_results.similarity is '
 \i category-package.sql
 \i category-link-package.sql
 \i category-synonym-package.sql
+\i categories-relation.sql
 
 \i categories-permissions.sql
 
 \i categories-init.sql
+

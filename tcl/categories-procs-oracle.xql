@@ -131,5 +131,16 @@
       </querytext>
 </fullquery>
 
+<fullquery name="category::map_object.insert_mapped_categories">      
+      <querytext>
+      
+			insert into category_object_map (category_id, object_id)
+			select :category_id, :object_id from dual
+                        where not exists (select 1
+                                          from category_object_map
+                                          where category_id = :category_id
+                                            and object_id = :object_id)
+      </querytext>
+</fullquery>
  
 </queryset>

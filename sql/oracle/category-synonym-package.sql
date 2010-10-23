@@ -62,7 +62,7 @@ CREATE OR REPLACE PACKAGE BODY category_synonym AS
     BEGIN
 	-- get new synonym_id
 	if (new.synonym_id is null) then
-		select category_synonyms_id_seq.nextval() into v_synonym_id from dual;
+		select category_synonyms_id_seq.nextval into v_synonym_id from dual;
 	else 
 		v_synonym_id := new.synonym_id;
 	end if;
@@ -141,7 +141,7 @@ CREATE OR REPLACE PACKAGE BODY category_synonym AS
 	end if;
 
 	-- get new search query id
-	select category_search_id_seq.nextval() into v_query_id from dual;
+	select category_search_id_seq.nextval into v_query_id from dual;
 
 	-- convert string to uppercase and substitute special chars
 	v_search_text := category_synonym.convert_string (search.search_text);

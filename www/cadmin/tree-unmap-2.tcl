@@ -8,9 +8,10 @@ ad_page_contract {
     tree_id:integer,notnull
     {locale ""}
     object_id:integer,notnull
+    ctx_id:integer,optional
 } 
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $object_id -privilege admin
 
 array set tree [category_tree::get_data $tree_id $locale]
@@ -20,4 +21,4 @@ if {$tree(site_wide_p) == "f"} {
 
 category_tree::unmap -tree_id $tree_id -object_id $object_id
 
-ad_returnredirect [export_vars -no_empty -base object-map {locale object_id}]
+ad_returnredirect [export_vars -no_empty -base object-map {locale object_id ctx_id}]

@@ -15,7 +15,8 @@
   <group column=package>
     </ul><if @modules.object_name@ ne @modules.instance_name@>@modules.instance_name@</if><ul>
     <group column=package_id>
-      <li><a href="/o/@modules.object_id@">@modules.object_name@</a></li>
+      <li><a href="/o/@modules.object_id@">@modules.object_name@</a>
+          <a href="@unmap_url@" class="button">unmap</a></li>
     </group>
   </group>
   </ul>

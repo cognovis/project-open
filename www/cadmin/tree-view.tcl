@@ -8,6 +8,7 @@ ad_page_contract {
     tree_id:integer,notnull
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 } -properties {
     page_title:onevalue
     tree_name:onevalue
@@ -19,7 +20,7 @@ ad_page_contract {
     can_write_p:onevalue
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 
 array set tree [category_tree::get_data $tree_id $locale]
 if {$tree(site_wide_p) == "f"} {
@@ -31,9 +32,9 @@ set tree_description $tree(description)
 
 set page_title "Category Tree \"$tree_name\""
 if {[info exists object_id]} {
-    set context_bar [list [category::get_object_context $object_id] [list [export_vars -no_empty -base object-map {locale object_id}] "Category Management"] $tree_name]
+    set context_bar [list [category::get_object_context $object_id] [list [export_vars -no_empty -base object-map {locale object_id ctx_id}] "[_ categories.cadmin]"] $tree_name]
 } else {
-    set context_bar [list [list ".?[export_vars -no_empty {locale}]" "Category Management"] $tree_name]
+    set context_bar [list [list ".?[export_vars -no_empty {locale ctx_id}]" "[_ categories.cadmin]"] $tree_name]
 }
 
 set can_write_p [permission::permission_p -object_id $tree_id -privilege category_tree_write]
@@ -47,7 +48,7 @@ foreach category [category_tree::get_tree -all $tree_id $locale] {
     util_unlist $category category_id category_name deprecated_p level
     incr sort_key 10
 
-    template::multirow append one_tree $category_name $sort_key $category_id $deprecated_p $level [string repeat "&nbsp;" [expr ($level-1)*5]]
+    template::multirow append one_tree $category_name $sort_key $category_id $deprecated_p $level [string repeat "&nbsp;" [expr {($level-1)*5}]]
 }
 
 
@@ -58,18 +59,18 @@ foreach category [category_tree::get_tree -all $tree_id $locale] {
 
 multirow extend one_tree usage_url add_url edit_url delete_url parent_url phase_in_url phase_out_url links_view_url synonyms_view_url
 multirow foreach one_tree {
-    set usage_url [export_vars -no_empty -base category-usage { category_id tree_id locale object_id }]
+    set usage_url [export_vars -no_empty -base category-usage { category_id tree_id locale object_id ctx_id}]
     if { $can_write_p } {
-	set add_url [export_vars -no_empty -base category-form { { parent_id $category_id } tree_id locale object_id }]
-	set edit_url [export_vars -no_empty -base category-form { category_id tree_id locale object_id }]
-	set delete_url [export_vars -no_empty -base category-delete { category_id tree_id locale object_id }]
-	set parent_url [export_vars -no_empty -base category-parent-change { category_id tree_id locale object_id }]
-	set links_view_url [export_vars -no_empty -base category-links-view { category_id tree_id locale object_id }]
-	set synonyms_view_url [export_vars -no_empty -base synonyms-view { category_id tree_id locale object_id }]
+	set add_url [export_vars -no_empty -base category-form { { parent_id $category_id} tree_id locale object_id ctx_id}]
+	set edit_url [export_vars -no_empty -base category-form { category_id tree_id locale object_id ctx_id}]
+	set delete_url [export_vars -no_empty -base category-delete { category_id tree_id locale object_id ctx_id}]
+	set parent_url [export_vars -no_empty -base category-parent-change { category_id tree_id locale object_id ctx_id}]
+	set links_view_url [export_vars -no_empty -base category-links-view { category_id tree_id locale object_id ctx_id}]
+	set synonyms_view_url [export_vars -no_empty -base synonyms-view { category_id tree_id locale object_id ctx_id}]
 	if { [template::util::is_true $deprecated_p] } {
-	    set phase_in_url [export_vars -no_empty -base category-phase-in { category_id tree_id locale object_id }]
+	    set phase_in_url [export_vars -no_empty -base category-phase-in { category_id tree_id locale object_id ctx_id}]
 	} else {
-	    set phase_out_url [export_vars -no_empty -base category-phase-out { category_id tree_id locale object_id }]
+	    set phase_out_url [export_vars -no_empty -base category-phase-out { category_id tree_id locale object_id ctx_id}]
 	}
     }
 }
@@ -80,7 +81,7 @@ if { $can_write_p } {
     lappend elements edit {
 	sub_class narrow
 	display_template {
-	    <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="Edit" border="0">
+	    <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="Edit" style="border:0">
 	}
 	link_url_col edit_url
 	link_html {title "Edit this category"}
@@ -99,7 +100,7 @@ if { $can_write_p } {
     lappend elements add_child {
 	sub_class narrow
 	display_template {
-	    <img src="/resources/acs-subsite/Add16.gif" height="16" width="16" alt="Add" border="0">
+	    <img src="/resources/acs-subsite/Add16.gif" height="16" width="16" alt="Add" style="border:0">
 	}
 	link_url_col add_url
 	link_html { title "Add subcategory" }
@@ -122,7 +123,7 @@ if { $can_write_p } {
     lappend elements delete {
 	sub_class narrow
 	display_template {
-	    <img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0">
+	    <img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" style="border:0">
 	}
 	link_url_col delete_url
 	link_html { title "Delete category and all subcategories" }
@@ -139,13 +140,13 @@ if { $can_write_p } {
 	"Update ordering" "tree-order-update" "Update ordering from values in list"
     }
     set actions [list \
-		     "Add root category" [export_vars -no_empty -base category-form { tree_id locale object_id }] "Add category at the root level" \
-		     "Copy tree" [export_vars -no_empty -base tree-copy { tree_id locale object_id }] "Copy categories from other tree" \
-		     "Delete tree" [export_vars -no_empty -base tree-delete { tree_id locale object_id }] "Delete this category tree" \
-		     "Applications" [export_vars -no_empty -base tree-usage { tree_id locale object_id }] "Applications using this tree"]
+		     "Add root category" [export_vars -no_empty -base category-form { tree_id locale object_id ctx_id}] "Add category at the root level" \
+		     "Copy tree" [export_vars -no_empty -base tree-copy { tree_id locale object_id ctx_id}] "Copy categories from other tree" \
+		     "Delete tree" [export_vars -no_empty -base tree-delete { tree_id locale object_id ctx_id}] "Delete this category tree" \
+		     "Applications" [export_vars -no_empty -base tree-usage { tree_id locale object_id ctx_id}] "Applications using this tree"]
 
     if { $can_grant_p } {
-	lappend actions "Permissions" [export_vars -no_empty -base permission-manage { tree_id locale object_id }] "Manage permissions for tree"
+	lappend actions "Permissions" [export_vars -no_empty -base permission-manage { tree_id locale object_id ctx_id}] "Manage permissions for tree"
     }
 
 }
@@ -156,6 +157,6 @@ template::list::create \
     -key category_id \
     -actions $actions \
     -bulk_actions $bulk_actions \
-    -bulk_action_export_vars { tree_id locale object_id }
+    -bulk_action_export_vars { tree_id locale object_id ctx_id}
 
 ad_return_template

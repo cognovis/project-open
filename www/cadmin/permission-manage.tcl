@@ -15,7 +15,7 @@ ad_page_contract {
     url_vars:onevalue
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $tree_id -privilege category_tree_grant_permissions
 
 array set tree [category_tree::get_data $tree_id $locale]

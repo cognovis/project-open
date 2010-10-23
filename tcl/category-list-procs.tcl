@@ -7,7 +7,7 @@ ad_library {
     @author Timo Hentschel (timo@timohentschel.de)
 
     @creation-date 17 February 2004
-    @cvs-id $Id:
+    @cvs-id $Id$
 }
 
 namespace eval category::list {}
@@ -44,7 +44,7 @@ ad_proc -public category::list::collapse_multirow {
 	set row_id $row($object_column)
 	set category_id $row($category_column)
 
-	if {![empty_string_p $category_id]} {
+	if {$category_id ne ""} {
 	    lappend category_list $category_id
 	}
 
@@ -65,7 +65,7 @@ ad_proc -public category::list::collapse_multirow {
 	}
     }
 
-    for {set counter [expr $rownum+1]} {$counter < $rowcount} {incr counter} {
+    for {set counter [expr {$rownum+1}]} {$counter < $rowcount} {incr counter} {
         uplevel 1 unset ${name}:$counter
     }
     set rowcount $rownum
@@ -77,6 +77,9 @@ ad_proc -public category::list::get_pretty_list {
     {-category_link ""}
     {-category_link_eval ""}
     {-category_link_html ""}
+    {-remove_link ""}
+    {-remove_link_eval ""}
+    {-remove_link_text ""}
     {-tree_delimiter "; "}
     {-tree_colon ": "}
     {-tree_link ""}
@@ -119,9 +122,9 @@ ad_proc -public category::list::get_pretty_list {
     @see category::list::prepare_display
     @see category::list::elements
 } {
-    if {![empty_string_p $category_link_eval]} {
+    if {$category_link_eval ne ""} {
 	upvar $uplevel $category_varname category_id $tree_varname tree_id
-    } elseif {![empty_string_p $tree_link_eval]} {
+    } elseif {$tree_link_eval ne ""} {
 	upvar $uplevel $tree_varname tree_id
     }
 
@@ -146,22 +149,29 @@ ad_proc -public category::list::get_pretty_list {
 	util_unlist $category category_id category_name tree_id tree_name
 
 	set category_name [ad_quotehtml $category_name]
-	if {![empty_string_p $category_link_eval]} {
+	if {$category_link_eval ne ""} {
 	    set category_link [uplevel $uplevel concat $category_link_eval]
 	}
-	if {![empty_string_p $category_link]} {
+
+	if {$remove_link_eval ne ""} {
+	    set remove_link [uplevel $uplevel concat $remove_link_eval]
+	}
+	if {$category_link ne ""} {
 	    set category_name "<a href=\"$category_link\"$cat_link_html>$category_name</a>"
 	}
+        if {$remove_link ne ""} { 
+            append category_name "&nbsp;<a href=\"$remove_link\" title=\"Remove this category\">$remove_link_text</a>"
+        }
 
 	if {$tree_id != $old_tree_id} {
-	    if {![empty_string_p $result]} {
+	    if {$result ne ""} {
 		append result $tree_delimiter
 	    }
 	    set tree_name [ad_quotehtml $tree_name]
-	    if {![empty_string_p $tree_link_eval]} {
+	    if {$tree_link_eval ne ""} {
 		set tree_link [uplevel $uplevel concat $tree_link_eval]
 	    }
-	    if {![empty_string_p $tree_link]} {
+	    if {$tree_link ne ""} {
 		set tree_name "<a href=\"$tree_link\"$cat_tree_link_html>$tree_name</a>"
 	    }
 	    append result "$tree_name$tree_colon$category_name"
@@ -235,9 +245,9 @@ ad_proc -public category::list::prepare_display {
     @see category::list::elements
     @see category::list::get_pretty_list
 } {
-    if {![empty_string_p $category_link_eval]} {
+    if {$category_link_eval ne ""} {
 	upvar 1 $category_varname category_id $tree_varname tree_id
-    } elseif {![empty_string_p $tree_link_eval]} {
+    } elseif {$tree_link_eval ne ""} {
 	upvar 1 $tree_varname tree_id
     }
 
@@ -251,7 +261,7 @@ ad_proc -public category::list::prepare_display {
     }
 
     # get trees to display
-    if {[empty_string_p $tree_ids]} {
+    if {$tree_ids eq ""} {
 	foreach mapped_tree [category_tree::get_mapped_trees $container_object_id] {
 	    lappend tree_ids [lindex $mapped_tree 0]
 	}
@@ -279,7 +289,7 @@ ad_proc -public category::list::prepare_display {
 	for {set i 1} {$i <= ${list_data:rowcount}} {incr i} {
 
 	    upvar 1 $name:$i row
-	    if {![empty_string_p $category_link_eval]} {
+	    if {$category_link_eval ne ""} {
 		foreach column_name ${list_data:columns} {
 		    upvar 1 $column_name column_value
 		    if { [info exists row($column_name)] } {
@@ -309,13 +319,13 @@ ad_proc -public category::list::prepare_display {
 		foreach category $tree_categories($tree_id) {
 		    util_unlist $category category_id category_name
 		    set category_name [ad_quotehtml $category_name]
-		    if {![empty_string_p $category_link_eval]} {
+		    if {$category_link_eval ne ""} {
 			set category_link [uplevel 1 concat $category_link_eval]
 		    }
-		    if {![empty_string_p $category_link]} {
+		    if {$category_link ne ""} {
 			set category_name "<a href=\"$category_link\"$cat_link_html>$category_name</a>"
 		    }
-		    if {![empty_string_p $pretty_category_list]} {
+		    if {$pretty_category_list ne ""} {
 			append pretty_category_list "$category_delimiter$category_name"
 		    } else {
 			set pretty_category_list $category_name
@@ -339,7 +349,7 @@ ad_proc -public category::list::prepare_display {
 	for {set i 1} {$i <= ${list_data:rowcount}} {incr i} {
 
 	    upvar 1 $name:$i row
-	    if {![empty_string_p $category_link_eval]} {
+	    if {$category_link_eval ne ""} {
 		foreach column_name ${list_data:columns} {
 		    upvar 1 $column_name column_value
 		    if { [info exists row($column_name)] } {
@@ -462,7 +472,7 @@ ad_proc -public category::list::elements {
 	}"
 	return $result
     } else {
-	if {[empty_string_p $tree_ids]} {
+	if {$tree_ids eq ""} {
 	    # get tree columns in multirow
 	    template::multirow upvar $name list_data
 	    foreach column ${list_data:columns} {

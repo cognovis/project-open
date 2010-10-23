@@ -26,7 +26,7 @@
 	 and m.category_id = :category_id
 	 and acs_permission__permission_p(m.object_id, :user_id, 'read') = 't'
              $order_by_clause
-       limit $last_row offset $first_row
+       limit $last_row offset $first_row -1
     </querytext>
   </fullquery>
 

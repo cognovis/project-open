@@ -41,7 +41,9 @@ begin
 		p_creation_user,        -- creation_user
 		p_creation_ip,          -- creation_ip
 		p_tree_id,              -- context_id
-                ''t''                   -- security_inherit_p
+                ''t'',                  -- security_inherit_p
+                p_name,                 -- title
+                null                    -- package_id
 	);
 
 	if (p_parent_id is null) then
@@ -324,11 +326,13 @@ begin
 end;
 ' language 'plpgsql';
 
+
 create or replace function category__name (
     integer   -- category_id
 )
 returns integer as '
 declare
+    p_category_id       alias for $1;
     v_name      varchar;
 begin
 	select name into v_name

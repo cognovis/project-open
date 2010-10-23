@@ -4,7 +4,7 @@ ad_library {
     @author Timo Hentschel (timo@timohentschel.de)
 
     @creation-date 04 February 2004
-    @cvs-id $Id:
+    @cvs-id $Id$
 }
 
 namespace eval category_link {}

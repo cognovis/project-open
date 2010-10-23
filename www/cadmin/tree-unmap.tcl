@@ -8,6 +8,7 @@ ad_page_contract {
     tree_id:integer,notnull
     {locale ""}
     object_id:integer,notnull
+    ctx_id:integer,optional
 } -properties {
     page_title:onevalue
     context_bar:onevalue
@@ -18,7 +19,7 @@ ad_page_contract {
     cancel_form_vars:onevalue
 }
  
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $object_id -privilege admin
 
 array set tree [category_tree::get_data $tree_id $locale]
@@ -28,13 +29,13 @@ if {$tree(site_wide_p) == "f"} {
 
 set page_title "Unmap tree"
 
-set delete_url [export_vars -no_empty -base tree-unmap-2 { tree_id locale object_id }]
-set cancel_url [export_vars -no_empty -base object-map { locale object_id }]
+set delete_url [export_vars -no_empty -base tree-unmap-2 { tree_id locale object_id ctx_id}]
+set cancel_url [export_vars -no_empty -base object-map { locale object_id ctx_id}]
 
 set object_context [category::get_object_context $object_id]
 set object_name [lindex $object_context 1]
 set tree_name $tree(tree_name)
 
-set context_bar [list $object_context [list [export_vars -no_empty -base object-map {locale object_id}] "Category Management"] "Unmap \"$tree_name\""]
+set context_bar [list $object_context [list [export_vars -no_empty -base object-map {locale object_id ctx_id}] [_ categories.cadmin]] "Unmap \"$tree_name\""]
 
 ad_return_template

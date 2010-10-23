@@ -10,9 +10,10 @@ ad_page_contract {
     tree_id:integer,notnull
     {locale ""}
     object_id:integer,optional
+    ctx_id:integer,optional
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 permission::require_permission -object_id $tree_id -privilege category_tree_write
 
 db_transaction {
@@ -24,4 +25,4 @@ db_transaction {
     return
 }
 
-ad_returnredirect [export_vars -no_empty -base category-links-view {category_id tree_id locale object_id}]
+ad_returnredirect [export_vars -no_empty -base category-links-view {category_id tree_id locale object_id ctx_id}]

@@ -15,7 +15,7 @@ ad_page_contract {
 set page_title "Categories"
 set context_bar ""
 
-set user_id [ad_maybe_redirect_for_registration]
+set user_id [auth::require_login]
 set package_id [ad_conn package_id]
 set locale [ad_conn locale]
 
@@ -24,7 +24,7 @@ set admin_p [permission::permission_p -object_id $package_id -privilege category
 template::multirow create trees tree_ids tree_name site_wide_p short_name
 
 db_foreach get_trees "" {
-    if { [string equal $has_read_p "t"] || [string equal $site_wide_p "t"] } {
+    if { $has_read_p == "t" || $site_wide_p == "t" } {
 	set tree_name [category_tree::get_name $tree_id $locale]
 	template::multirow append trees $tree_id $tree_name $site_wide_p
     }

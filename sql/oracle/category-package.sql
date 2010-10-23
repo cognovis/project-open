@@ -91,7 +91,8 @@ CREATE OR REPLACE PACKAGE BODY CATEGORY AS
 		creation_date => creation_date,
 		creation_user => creation_user,
 		creation_ip   => creation_ip,
-		context_id    => tree_id
+		context_id    => tree_id,
+                title         => name
 	);
 
 	if (new.parent_id is null) then

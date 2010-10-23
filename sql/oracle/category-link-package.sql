@@ -28,7 +28,7 @@ CREATE OR REPLACE PACKAGE BODY category_link AS
     IS
         v_link_id	integer; 
     BEGIN
-	select category_links_id_seq.nextval() into v_link_id from dual;
+	select category_links_id_seq.nextval into v_link_id from dual;
 
 	insert into category_links (link_id, from_category_id, to_category_id)
 	values (v_link_id, new.from_category_id, new.to_category_id);
