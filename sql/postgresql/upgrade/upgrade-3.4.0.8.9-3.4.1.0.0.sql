@@ -12,16 +12,16 @@ SELECT im_lang_add_message('en_US','intranet-core','Category_Type','Category Typ
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-        v_count                 integer;
+	v_count		integer;
 BEGIN
-        select count(*) into v_count from user_tab_columns
-        where  lower(table_name) = ''im_companies'' and lower(column_name) = ''default_tax'';
-        IF v_count > 0 THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = ''im_companies'' and lower(column_name) = ''default_tax'';
+	IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_companies add default_tax numeric(12,1);
 	alter table im_companies alter column default_tax set default 0;
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
