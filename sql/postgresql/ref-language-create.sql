@@ -28,6 +28,11 @@ comment on column language_codes.name is '
     This is the English version of the language name. 
 ';
 
+
+
+-- Make sure the reference did not exist before
+delete from acs_reference_repositories where table_name = 'LANGUAGE_CODES';
+
 -- now register this table with the repository
 select acs_reference__new(
     'LANGUAGE_CODES',
