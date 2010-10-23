@@ -31,8 +31,11 @@ comment on column countries.default_name is '
 See country.sql for more comments.
 ';
 
--- add this table into the reference repository
 
+-- Make sure the reference did not exist before
+delete from acs_reference_repositories where table_name = 'COUNTRIES';
+
+-- add this table into the reference repository
 select acs_reference__new (
         'COUNTRIES', -- table_name
         '2000-08-21',
