@@ -508,8 +508,8 @@ ad_form -extend -name helpdesk_ticket -on_request {
         -type_id [notification::type::get_type_id -short_name ticket_notif] \
         -object_id $ticket_id \
         -response_id "" \
-        -notif_subject "New: Subject" \
-        -notif_text "Text"
+        -notif_subject $ticket_name \
+        -notif_text $message
 
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action create
