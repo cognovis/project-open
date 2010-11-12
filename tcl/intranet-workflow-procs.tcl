@@ -1434,3 +1434,55 @@ ad_proc im_workflow_object_permissions {
 
     return $perm_set
 }
+
+
+
+
+
+# ---------------------------------------------------------------
+# Cancel the workflow in case the underlying object gets closed, 
+# such like a ticket of a deleted project.
+#
+
+ad_proc im_workflow_cancel_workflow {
+    -object_id:required
+} {
+    Cancel the workflow in case the underlying object gets closed, 
+    such like a ticket of a deleted project.
+} {
+    set journal_id ""
+    
+    # Delete all tokens of the case
+    db_dml delete_tokens "
+    	delete from wf_tokens
+    	where case_id in (select case_id from wf_cases where object_id = :object_id) and
+    	state in ('free', 'locked')
+    "
+    
+    set cancel_tasks_sql "
+    	select 	task_id as wf_task_id
+    	from	wf_tasks
+    	where	case_id in (select case_id from wf_cases where object_id = :object_id) and
+		state in ('started')
+    "
+    db_foreach cancel_started_tasks $cancel_tasks_sql {
+        ns_log Notice "im_workflow_cancel_workflow: canceling task $wf_task_id"
+        set journal_id [im_workflow_task_action -task_id $wf_task_id -action "cancel" -message "Canceling workflow"]
+    }
+
+    # fraber 101112: 
+    # ToDo: Validate that it's OK just to change the status of a task to "canceled"
+    # in order to disable it. Or should the task be deleted?
+    #
+    set del_enabled_tasks_sql "
+    	select 	task_id as wf_task_id
+    	from	wf_tasks
+    	where	case_id in (select case_id from wf_cases where object_id = :object_id) and
+		state in ('enabled')
+    "
+    db_foreach cancel_started_tasks $del_enabled_tasks_sql {
+        ns_log Notice "im_workflow_cancel_workflow: deleting enabled task $wf_task_id"
+	db_dml del_task "update wf_tasks set state = 'canceled' where task_id = :wf_task_id"
+    }
+}
+
