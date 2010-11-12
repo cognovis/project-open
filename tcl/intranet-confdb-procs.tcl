@@ -171,6 +171,7 @@ ad_proc -public im_conf_item_select_sql {
     {-status_id ""} 
     {-project_id ""} 
     {-owner_id ""} 
+    {-member_id ""}
     {-cost_center_id ""} 
     {-var_list "" }
     {-parent_id ""}
@@ -184,6 +185,12 @@ ad_proc -public im_conf_item_select_sql {
     standards. Important returned variables include:
 	- im_conf_items.*, (all fields from the base table)
 	- conf_item_status, conf_item_type, (status and type human readable)
+    The result set is a conjunction (and-connection) of the specified
+    conditions:
+	- type_id & status_id: Limit type and status, including sub-types and states
+	- project_id: Returns CIs associated with project
+	- owner_id: Checks for the specific conf_item_owner_id
+	- member_id: Check for owner_id OR association relationship.
 } {
     # Prepare and check some variables.
     set current_user_id 0
@@ -196,6 +203,7 @@ ad_proc -public im_conf_item_select_sql {
     im_security_alert_check_integer -location im_conf_item_select_sql -value $status_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $project_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $cost_center_id
+    im_security_alert_check_integer -location im_conf_item_select_sql -value $member_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $owner_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $parent_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $treelevel
@@ -207,12 +215,23 @@ ad_proc -public im_conf_item_select_sql {
     set extra_froms [list]
     set extra_wheres [list]
 
-    if {"" != $owner_id} {
-	lappend extra_wheres "owner_rel.object_id_one = i.conf_item_id"
-	lappend extra_wheres "(owner_rel.object_id_two = $owner_id OR conf_item_owner_id = $owner_id)"
-	lappend extra_froms "acs_rels owner_rel"
+    # Member: Either owner or membership_rel
+    if {"" != $member_id && 0 != $member_id} {
+	lappend extra_wheres "(
+		i.conf_item_owner_id = $member_id
+	OR	i.conf_item_id in (
+		select	r.object_id_two
+		from	acs_rels r
+		where	r.object_id_one = $member_id
+	))"
     }
-    if {"" != $project_id} {
+
+    # Owner: Check for conf_item_owner_id field
+    if {"" != $owner_id && 0 != $owner_id} {
+	lappend extra_wheres "i.conf_item_owner_id = $owner_id"
+    }
+
+    if {"" != $project_id && 0 != $project_id} {
 	lappend extra_wheres "project_rel.object_id_two = i.conf_item_id"
 	lappend extra_wheres "project_rel.object_id_one = $project_id"
 	lappend extra_froms "acs_rels project_rel"
@@ -412,6 +431,503 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 }
 
 
+
+
+
+
+# ----------------------------------------------------------------------
+# Configurable list of Configuration Items
+# ---------------------------------------------------------------------
+
+ad_proc -public im_conf_item_list_component {
+    {-view_name "im_conf_item_list_short"} 
+    {-order_by ""} 
+    {-restrict_to_type_id 0} 
+    {-restrict_to_status_id 0} 
+    {-restrict_to_owner_id 0} 
+    {-restrict_to_member_id 0} 
+    {-restrict_to_project_id 0} 
+    {-max_entries_per_page 50} 
+    {-export_var_list {} }
+    {-return_url "" }
+} {
+    Creates a HTML table showing a list of configuration items associated with
+    a project, a user or a ticket.
+} {
+    # ---------------------- Security - Show the comp? -------------------------------
+    set user_id [ad_get_user_id]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+
+    set include_subconf_items 0
+
+    if {"" == $order_by} {
+	set order_by [parameter::get_from_package_key -package_key intranet-confdb -parameter ConfItemComponentDefaultSortOrder -default "tree_sortkey"] 
+    }
+
+    # URL to toggle open/closed tree
+    set open_close_url "/intranet/biz-object-tree-open-close"    
+
+    # ---------------------- Defaults ----------------------------------
+    # Get parameters from HTTP session
+    # Don't trust the container page to pass-on that value...
+    set form_vars [ns_conn form]
+    if {"" == $form_vars} { set form_vars [ns_set create] }
+
+    # Get the start_idx in case of pagination
+    set start_idx [ns_set get $form_vars "conf_item_start_idx"]
+    if {"" == $start_idx} { set start_idx 0 }
+    set end_idx [expr $start_idx + $max_entries_per_page - 1]
+
+    set bgcolor(0) " class=roweven"
+    set bgcolor(1) " class=rowodd"
+    set date_format "YYYY-MM-DD"
+
+    set current_url [im_url_with_query]
+
+    if {![info exists current_page_url]} { set current_page_url [ad_conn url] }
+    if {![exists_and_not_null return_url]} { set return_url $current_url }
+
+    # Get the "view" (=list of columns to show)
+    set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
+    if {0 == $view_id} {
+	ns_log Error "im_conf_item_list_component: we didn't find view_name=$view_name"
+	set view_name "im_conf_item_conf_item_list"
+	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+    }
+    ns_log Notice "im_conf_item_list_component: view_id=$view_id"
+
+
+    # ---------------------- Get Columns ----------------------------------
+    # Define the column headers and column contents that
+    # we want to show:
+    #
+    set column_headers [list]
+    set column_vars [list]
+    set admin_links [list]
+    set extra_selects [list]
+    set extra_froms [list]
+    set extra_wheres [list]
+    set view_order_by_clause ""
+
+    set column_sql "
+	select	*
+	from	im_view_columns
+	where	view_id = :view_id
+		and group_id is null
+	order by sort_order
+    "
+    set col_span 0
+    db_foreach column_list_sql $column_sql {
+	if {"" == $visible_for || [eval $visible_for]} {
+	    lappend column_headers "$column_name"
+	    lappend column_vars "$column_render_tcl"
+	    lappend admin_links "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}] target=\"_blank\">[im_gif wrench]</a>"
+
+	    if {"" != $extra_select} { lappend extra_selects $extra_select }
+	    if {"" != $extra_from} { lappend extra_froms $extra_from }
+	    if {"" != $extra_where} { lappend extra_wheres $extra_where }
+	    if {"" != $order_by_clause && $order_by == $column_name} { set view_order_by_clause $order_by_clause }
+	}
+	incr col_span
+    }
+#    ns_log Notice "im_conf_item_list_component: column_headers=$column_headers"
+
+    # -------- Compile the list of parameters to pass-through-------
+    set form_vars [ns_conn form]
+    if {"" == $form_vars} { set form_vars [ns_set create] }
+
+    set bind_vars [ns_set create]
+    foreach var $export_var_list {
+	upvar 1 $var value
+	if { [info exists value] } {
+	    ns_set put $bind_vars $var $value
+	    ns_log Notice "im_conf_item_list_component: $var <- $value"
+	} else {
+	    set value [ns_set get $form_vars $var]
+	    if {![string equal "" $value]} {
+ 		ns_set put $bind_vars $var $value
+ 		ns_log Notice "im_conf_item_list_component: $var <- $value"
+	    }
+	}
+    }
+
+    ns_set delkey $bind_vars "order_by"
+    ns_set delkey $bind_vars "conf_item_start_idx"
+    set params [list]
+    set len [ns_set size $bind_vars]
+    for {set i 0} {$i < $len} {incr i} {
+	set key [ns_set key $bind_vars $i]
+	set value [ns_set value $bind_vars $i]
+	if {![string equal $value ""]} {
+	    lappend params "$key=[ns_urlencode $value]"
+	}
+    }
+    set pass_through_vars_html [join $params "&"]
+
+
+    # ---------------------- Format Header ----------------------------------
+    # Set up colspan to be the number of headers + 1 for the # column
+    set colspan [expr [llength $column_headers] + 1]
+
+    # Format the header names with links that modify the
+    # sort order of the SQL query.
+    #
+    set col_ctr 0
+    set admin_link ""
+    set table_header_html ""
+    foreach col $column_headers {
+	set cmd_eval ""
+	ns_log Notice "im_conf_item_list_component: eval=$cmd_eval $col"
+	set cmd "set cmd_eval $col"
+	eval $cmd
+	regsub -all " " $cmd_eval "_" cmd_eval_subs
+	set cmd_eval [lang::message::lookup "" intranet-confdb.$cmd_eval_subs $cmd_eval]
+	if {$user_is_admin_p} { set admin_link [lindex $admin_links $col_ctr] }
+	append table_header_html "  <th class=rowtitle>$cmd_eval$admin_link</th>\n"
+	incr col_ctr
+    }
+
+    set table_header_html "
+	<thead>
+	    <tr class=tableheader>
+		$table_header_html
+	    </tr>
+	</thead>
+    "
+    
+    # ---------------------- Build the SQL query ---------------------------
+    set order_by_clause "order by ci.tree_sortkey"
+    set order_by_clause_ext "order by conf_item_nr, conf_item_name"
+    switch $order_by {
+	"Status" { 
+	    set order_by_clause "order by ci.conf_item_status_id" 
+	    set order_by_clause_ext "m.conf_item_id"
+	}
+    }
+	
+    # ---------------------- Calculate the Children's restrictions -------------------------
+    set criteria [list]
+
+    if {[string is integer $restrict_to_status_id] && $restrict_to_status_id > 0} {
+	lappend criteria "ci.conf_item_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])"
+    }
+
+    if {[string is integer $restrict_to_type_id] && $restrict_to_type_id > 0} {
+	lappend criteria "ci.conf_item_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
+    }
+
+    # Owner is stictly the owner_id of the conf_item
+    if {[string is integer $restrict_to_owner_id] && $restrict_to_owner_id > 0} {
+	lappend criteria "ci.conf_item_owner_id = :restrict_to_owner_id"
+    }
+
+    # Member is anybody associated with the conf item + the owner
+    if {[string is integer $restrict_to_member_id] && $restrict_to_member_id > 0} {
+	lappend criteria "ci.conf_item_id in (
+				select object_id_one from acs_rels where object_id_two = :restrict_to_member_id
+			UNION	select	conf_item_id from im_conf_items where conf_item_owner_id = :restrict_to_member_id
+	)"
+    }
+
+    set restriction_clause [join $criteria "\n\tand "]
+    if {"" != $restriction_clause} { 
+	set restriction_clause "and $restriction_clause" 
+    }
+
+
+    set extra_select [join $extra_selects ",\n\t"]
+    if { ![empty_string_p $extra_select] } { set extra_select ",\n\t$extra_select" }
+
+    set extra_from [join $extra_froms ",\n\t"]
+    if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
+
+    set extra_where [join $extra_wheres "and\n\t"]
+    if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+
+
+    # ---------------------- Inner Permission Query -------------------------
+    # Check permissions for showing subconf_items
+    set child_perm_sql "
+			select	ci.* 
+			from	im_conf_items ci,
+				acs_rels r 
+			where	r.object_id_one = ci.conf_item_id and 
+				r.object_id_two = :user_id
+				$restriction_clause
+    "
+
+    if {[im_permission $user_id "view_conf_items_all"]} { 
+	set child_perm_sql "
+			select	ci.*
+			from	im_conf_items ci
+			where	1=1
+				$restriction_clause
+	"
+    }
+
+    set parent_perm_sql "
+			select	ci.*
+			from	im_conf_items ci,
+				acs_rels r
+			where	r.object_id_one = ci.conf_item_id and 
+				r.object_id_two = :user_id
+    "
+
+    if {[im_permission $user_id "view_conf_items_all"]} {
+	set parent_perm_sql "
+			select	ci.*
+			from	im_conf_items ci
+			where	1=1
+	"
+    }
+
+
+    # ---------------------- Get the SQL Query -------------------------
+    set sql "
+	select
+		child.*,
+		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as conf_item_level,
+		im_category_from_id(child.conf_item_status_id) as conf_item_status,
+		im_category_from_id(child.conf_item_type_id) as conf_item_type
+		$extra_select
+	from
+		($parent_perm_sql) parent,
+		($child_perm_sql) child
+		$extra_from
+	where
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+		child.conf_item_status_id not in ([im_conf_item_status_deleted])
+		$extra_where
+	order by
+		child.tree_sortkey
+    "
+
+    db_multirow conf_item_list_multirow conf_item_list_sql $sql {
+
+	# Perform the following steps in addition to calculating the multirow:
+	# The list of all conf_items
+	set all_conf_items_hash($conf_item_id) 1
+
+	# The list of conf_items that have a sub-conf_item
+        set parents_hash($conf_item_parent_id) 1
+    }
+
+    # ----------------------------------------------------
+    # Determine closed CIs and their children
+
+    # Store results in hash array for faster join
+    # Only store positive "closed" branches in the hash to save space+time.
+    # Determine the sub-conf_items that are also closed.
+    set oc_sub_sql "
+	select	child.conf_item_id as child_id
+	from	im_conf_items child,
+		im_conf_items parent
+	where	parent.conf_item_id in (
+			select	ohs.object_id
+			from	im_biz_object_tree_status ohs
+			where	ohs.open_p = 'c' and
+				ohs.user_id = :user_id and
+				ohs.page_url = 'default' and
+				ohs.object_id in (
+					select	conf_item_id
+					from	($sql) t
+				)
+			) and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+    "
+    db_foreach oc_sub $oc_sub_sql {
+	set closed_conf_items_hash($child_id) 1
+    }
+
+    # Calculate the list of leaf conf_items
+    set all_conf_items_list [array names all_conf_items_hash]
+    set parents_list [array names parents_hash]
+    set leafs_list [set_difference $all_conf_items_list $parents_list]
+    foreach leaf_id $leafs_list { set leafs_hash($leaf_id) 1 }
+
+    ns_log Notice "timesheet-tree: all_conf_items_list=$all_conf_items_list"
+    ns_log Notice "timesheet-tree: parents_list=$parents_list"
+    ns_log Notice "timesheet-tree: leafs_list=$leafs_list"
+    ns_log Notice "timesheet-tree: closed_conf_items_list=[array get closed_conf_items_hash]"
+    ns_log Notice "timesheet-tree: "
+
+    # Render the multirow
+    set table_body_html ""
+    set ctr 0
+    set idx $start_idx
+    set old_conf_item_id 0
+
+    # ----------------------------------------------------
+    # Render the list of CIs
+    template::multirow foreach conf_item_list_multirow {
+
+	# Skip this entry completely if the parent of this conf_item is closed
+	if {[info exists closed_conf_items_hash($conf_item_parent_id)]} { continue }
+
+	set indent_html ""
+	set indent_short_html ""
+	for {set i 0} {$i < $conf_item_level} {incr i} {
+	    append indent_html "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+	    append indent_short_html "&nbsp;&nbsp;&nbsp;"
+	}
+
+	if {[info exists closed_conf_items_hash($conf_item_id)]} {
+	    # Closed conf_item
+	    set gif_html "<a href='[export_vars -base $open_close_url {user_id {page_url "default"} {object_id $conf_item_id} {open_p "o"} return_url}]'>[im_gif "plus_9"]</a>"
+	} else {
+	    # So this is an open conf_item - show a "(-)", unless the conf_item is a leaf.
+	    set gif_html "<a href='[export_vars -base $open_close_url {user_id {page_url "default"} {object_id $conf_item_id} {open_p "c"} return_url}]'>[im_gif "minus_9"]</a>"
+	    if {[info exists leafs_hash($conf_item_id)]} { set gif_html "&nbsp;" }
+	}
+
+	set object_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $conf_item_id} {form_mode display} return_url}]
+
+	# Table fields for timesheet conf_items
+	set status_select [im_category_select {Intranet Conf Item Status} conf_item_status_id.$conf_item_id $conf_item_status_id]
+
+	set conf_item_name "<nobr>[string range $conf_item_name 0 20]</nobr>"
+
+	# We've got a conf_item.
+	# Write out a line with conf_item information
+	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	foreach column_var $column_vars {
+	    append table_body_html "\t<td valign=top>"
+	    set cmd "append table_body_html $column_var"
+	    eval $cmd
+	    append table_body_html "</td>\n"
+	}
+	append table_body_html "</tr>\n"
+
+	# Update the counter.
+	incr ctr
+	if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
+	    set more_url [export_vars -base "/intranet-confdb/index" {{conf_item_id $restrict_to_project_id} {view_name "im_conf_item_conf_item_list"}}]
+	    append table_body_html "
+		<tr><td colspan=99>
+		<b>[lang::message::lookup "" intranet-confdb.List_cut_at_n_entries "List cut at %max_entries_per_page% entries"]</b>.
+		[lang::message::lookup "" intranet-confdb.List_cut_at_n_entries_msg "
+			Please click <a href=%more_url%>here</a> for the entire list.
+		"]
+		</td></tr>\n"
+
+	    break
+	}
+
+    }
+
+    # ----------------------------------------------------
+    # Show a reasonable message when there are no result rows:
+    if { [empty_string_p $table_body_html] } {
+        set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $restrict_to_project_id} {return_url $current_url}}]"
+	set table_body_html "
+		<tr class=table_list_page_plain>
+			<td colspan=$colspan align=left>
+			<b>[_ intranet-confdb.There_are_no_active_conf_items]</b>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=$colspan>
+			<ul>
+			<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
+			</ul>
+			</td>
+		</tr>
+	"
+    }
+    
+    set total_in_limited 0
+
+    # Deal with pagination
+    if {$ctr == $max_entries_per_page && $end_idx < [expr $total_in_limited - 1]} {
+	# This means that there are rows that we decided not to return
+	# Include a link to go to the next page
+	set next_start_idx [expr $end_idx + 1]
+	set conf_item_max_entries_per_page $max_entries_per_page
+	set next_page_url  "$current_page_url?[export_url_vars conf_item_id conf_item_object_id conf_item_max_entries_per_page order_by]&conf_item_start_idx=$next_start_idx&$pass_through_vars_html"
+	set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
+    } else {
+	set next_page_html ""
+    }
+    
+    if { $start_idx > 0 } {
+	# This means we didn't start with the first row - there is
+	# at least 1 previous row. add a previous page link
+	set previous_start_idx [expr $start_idx - $max_entries_per_page]
+	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
+	set previous_page_html "<A href=$current_page_url?[export_url_vars conf_item_id]&$pass_through_vars_html&order_by=$order_by&conf_item_start_idx=$previous_start_idx>&lt;&lt;</a>"
+    } else {
+	set previous_page_html ""
+    }
+    
+
+    # ---------------------- Format the action bar at the bottom ------------
+
+    set table_footer_action "
+
+	<table width='100%'>
+	<tr>
+	<td align=left>
+		<a href=\"/intranet-confdb/new?[export_url_vars conf_item_id return_url]\"
+		>[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
+	</td>
+	<td align=right>
+		<select name=action>
+		<option value=save>[lang::message::lookup "" intranet-confdb.Save_Changes "Save Changes"]</option>
+		<option value=delete>[_ intranet-confdb.Delete]</option>
+		</select>
+		<input type=submit name=submit value='[_ intranet-confdb.Apply]'>
+	</td>
+	</tr>
+	</table>
+    "
+    set table_footer_action ""
+
+    set table_footer "
+	<tfoot>
+	<tr>
+	  <td class=rowplain colspan=$colspan align=right>
+	    $previous_page_html
+	    $next_page_html
+	    $table_footer_action
+	  </td>
+	</tr>
+	<tfoot>
+    "
+
+    # ---------------------- Join all parts together ------------------------
+
+    set component_html "
+	<form action=/intranet-confdb/conf_item-action method=POST>
+	[export_form_vars conf_item_id return_url]
+	<table bgcolor=white border=0 cellpadding=1 cellspacing=1 class=\"table_list_page\">
+	  $table_header_html
+	  $table_body_html
+	  $table_footer
+	</table>
+	</form>
+    "
+
+    return $component_html
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ----------------------------------------------------------------------
 # Options for ad_form
 # ---------------------------------------------------------------------
@@ -456,14 +972,16 @@ ad_proc -public im_conf_item_options {
 # Components
 # ---------------------------------------------------------------------
 
-ad_proc -public im_conf_item_list_component {
+ad_proc -public im_conf_item_list_component_old {
     { -object_id 0 }
+    { -owner_id 0 }
 } {
     Returns a HTML component to show all project related conf items
 } {
     set params [list \
 	[list base_url "/intranet-confdb/"] \
 	[list object_id $object_id] \
+	[list owner_id $owner_id] \
 	[list return_url [im_url_with_query]] \
     ]
 
