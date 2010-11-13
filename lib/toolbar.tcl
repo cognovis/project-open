@@ -8,7 +8,7 @@ set show_p [ds_show_p]
 if { $show_p } {
     set ds_url [ds_support_url]
 
-    set base_url [ad_url]
+    set base_url ""
     set num_comments [llength [ds_get_comments]]
 
     multirow create ds_buttons label title toggle_url state
