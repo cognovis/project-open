@@ -1,7 +1,6 @@
--- upgrade-3.4.1.0.7-3.4.1.0.8.sql
+-- upgrade-3.4.1.0.8-3.5.0.0.0.sql
 
-SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.1.0.7-3.4.1.0.8.sql','');
-
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.1.0.8-3.5.0.0.0.sql','');
 
 create or replace function im_dynfield_attribute__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
