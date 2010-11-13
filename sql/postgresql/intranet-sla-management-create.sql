@@ -1,0 +1,398 @@
+-- /packages/intranet-sla-management/sql/postgresql/intranet-sla-management-create.sql
+--
+-- Copyright (c) 2003-2011 ]project-open[
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @author frank.bergmann@project-open.com
+
+-----------------------------------------------------------
+-- SLA-Management
+--
+-- SLAs are defined by a number of parameters per SLA including:
+--	- Maximum response time per ticket type
+--	- Maximum resolution time per ticket type
+--	- Business hours
+--	- Minimum availability of servers, services and other CIs
+--
+
+-- SLA parameters can be defined in various ways:
+--	- As a DynField in general
+--	- As a im_sla_parameter which includes dynamic columns
+--	- As business hours in the im_sla_business_hours table
+--	- You may add additional tables to specify service parameters
+
+-- SLA parameters are checked using a number of reports and indicators
+-- that will turn red if the parameters are exceeded. Every SLA parameter
+-- will need a customer indicator for evaluation. This indicator will
+-- take specific assumptions about how the "world" is modelled in ]po[.
+
+
+SELECT acs_object_type__create_type (
+	'im_sla_parameter',		-- object_type - only lower case letters and "_"
+	'SLA Parameter',		-- pretty_name - Human readable name
+	'SLA Parameter',		-- pretty_plural - Human readable plural
+	'acs_object',			-- supertype - "acs_object" is topmost object type.
+	'im_sla_parameters',		-- table_name - where to store data for this object?
+	'param_id',			-- id_column - where to store object_id in the table?
+	'intranet-sla-management',	-- package_name - name of this package
+	'f',				-- abstract_p - abstract class or not
+	null,				-- type_extension_table
+	'im_sla_parameter__name'	-- name_method - a PL/SQL procedure that
+					-- returns the name of the object.
+);
+
+-- Add additional meta information to allow DynFields to extend the im_note object.
+update acs_object_types set
+        status_type_table = 'im_sla_management',		-- which table contains the status_id field?
+        status_column = 'param_status_id',			-- which column contains the status_id field?
+        type_column = 'param_type_id'				-- which column contains the type_id field?
+where object_type = 'im_sla_parameter';
+
+-- Object Type Tables contain the lists of all tables (except for
+-- acs_objects...) that contain information about an im_sla_parameter object.
+-- This way, developers can add "extension tables" to an object to
+-- hold additional DynFields, without changing the program code.
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_sla_parameter', 'im_sla_parameters', 'param_id');
+
+
+
+-- Generic URLs to link to an object of type "im_sla_parameter".
+-- These URLs are used by the Full-Text Search Engine and the Workflow
+-- to show links to the object type.
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_sla_parameter','view','/intranet-sla-management/new?display_mode=display&param_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_sla_parameter','edit','/intranet-sla-management/new?display_mode=edit&param_id=');
+
+
+create table im_sla_parameters (
+				-- The object_id: references acs_objects.object_id.
+				-- So we can lookup object metadata such as creation_date,
+				-- object_type etc in acs_objects.
+	param_id		integer
+				constraint im_sla_parameter_id_pk
+				primary key
+				constraint im_sla_parameter_id_fk
+				references acs_objects,
+				-- Every ]po[ object should have a "status_id" to control
+				-- its lifecycle. Status_id reference im_categories, where 
+				-- you can define the list of stati for this object type.
+	param_status_id		integer 
+				constraint im_sla_parameter_status_nn
+				not null
+				constraint im_sla_parameter_status_fk
+				references im_categories,
+				-- Every ]po[ object should have a "type_id" to allow creating
+				-- sub-types of the object. Type_id references im_categories
+				-- where you can define the list of subtypes per object type.
+	param_type_id		integer 
+				constraint im_sla_parameter_type_nn
+				not null
+				constraint im_sla_parameter_type_fk
+				references im_categories,
+				-- This is the main content of a "note". Just a piece of text.
+	param_sla_id		integer
+				constraint im_sla_parameter_sla_nn
+				not null
+				constraint im_sla_parameter_sla_fk
+				references im_projects,
+				-- Note for parameter
+	param_note		text,
+				-- First default parameter: Type of ticket
+				-- The name of the field should be identical to the name
+				-- of the corresponding im_tickets field.
+	ticket_type_id		integer
+				constraint im_sla_parameter_ticket_type_fk
+				references im_categories,
+				-- First default value: Resolution time 
+	max_resolution_hours	numeric(12,1)
+	
+	-- More parameters are added using DynFields
+);
+
+
+-- Speed up (frequent) queries to find all sla-management for a specific object.
+create index im_sla_parameters_sla_idx on im_sla_parameters(param_sla_id);
+
+-- Avoid duplicate entries.
+-- Make an exception and skip this step here and accept 
+-- that there may be duplicates.
+-- Shis shouldn't be critical for the app...
+
+
+
+-----------------------------------------------------------
+-- PL/SQL functions to Create and Delete sla-management and to get
+-- the name of a specific note.
+--
+-- These functions represent constructor/destructor
+-- functions for the OpenACS object system.
+-- The double underscore ("__") represents the dot ("."),
+-- which is not allowed in PostgreSQL.
+
+
+-- Get the name for a specific note.
+-- This function allows displaying object in generic contexts
+-- such as the Full-Text Search engine or the Workflow.
+--
+-- Input is the param_id, output is a string with the name.
+-- The function just pulls out the "note" text of the note
+-- as the name. Not pretty, but we don't have any other data,
+-- and every object needs this "__name" function.
+create or replace function im_sla_parameter__name(integer)
+returns varchar as '
+DECLARE
+	p_param_id		alias for $1;
+	v_name			varchar;
+BEGIN
+	select	substring(param_note for 30)
+	into	v_name
+	from	im_sla_parameters
+	where	param_id = p_param_id;
+
+	return v_name;
+end;' language 'plpgsql';
+
+
+-- Create a new parameter.
+-- The first 6 parameters are common for all ]po[ business objects
+-- with metadata such as the creation_user etc. Context_id 
+-- is always disabled (NULL) for ]po[ objects (inherit permissions
+-- from a super object...).
+-- The following parameters specify the content of a note with
+-- the required fields of the im_sla_management table.
+create or replace function im_sla_parameter__new (
+	integer, varchar, timestamptz,
+	integer, varchar, integer,
+	varchar, integer,
+	integer, integer 
+) returns integer as '
+DECLARE
+	-- Default 6 parameters that go into the acs_objects table
+	p_param_id		alias for $1;		-- param_id  default null
+	p_object_type   	alias for $2;		-- object_type default ''im_sla_parameter''
+	p_creation_date 	alias for $3;		-- creation_date default now()
+	p_creation_user 	alias for $4;		-- creation_user default null
+	p_creation_ip   	alias for $5;		-- creation_ip default null
+	p_context_id		alias for $6;		-- context_id default null
+
+	-- Specific parameters with data to go into the im_sla_management table
+	p_param_sla_id		alias for $7;		-- SLA for the parameter
+	p_param_type_id		alias for $8;		-- type
+	p_param_status_id	alias for $9;		-- status ("active" or "deleted").
+	p_param_note		alias for $10;		-- name/comment for the parameter
+
+	-- This is a variable for the PL/SQL function
+	v_param_id	integer;
+BEGIN
+	-- Create an acs_object as the super-type of the note.
+	-- (Do you remember, im_sla_parameter is a subtype of acs_object?)
+	-- acs_object__new returns the object_id of the new object.
+	v_param_id := acs_object__new (
+		p_param_id,		-- object_id - NULL to create a new id
+		p_object_type,		-- object_type - "im_sla_parameter"
+		p_creation_date,	-- creation_date - now()
+		p_creation_user,	-- creation_user - Current user or "0" for guest
+		p_creation_ip,		-- creation_ip - IP from ns_conn, or "0.0.0.0"
+		p_context_id,		-- context_id - NULL, not used in ]po[
+		''t''			-- security_inherit_p - not used in ]po[
+	);
+	
+	-- Create an entry in the im_sla_management table with the same
+	-- v_param_id from acs_objects.object_id
+	insert into im_sla_parameters (
+		param_id, param_sla_id,
+		param_type_id, param_status_id
+	) values (
+		v_param_id, v_param_sla_id,
+		p_param_type_id, p_param_status_id
+	);
+
+	return v_param_id;
+END;' language 'plpgsql';
+
+
+-- Delete a note from the system.
+-- Delete entries from both im_sla_management and acs_objects.
+-- Deleting only from im_sla_management would lead to an invalid
+-- entry in acs_objects, which is probably harmless, but innecessary.
+create or replace function im_sla_parameter__delete(integer)
+returns integer as '
+DECLARE
+	p_param_id	alias for $1;
+BEGIN
+	-- Delete any data related to the object
+	delete	from im_sla_parameters
+	where	param_id = p_param_id;
+
+	-- Finally delete the object iself
+	PERFORM acs_object__delete(p_param_id);
+
+	return 0;
+end;' language 'plpgsql';
+
+
+
+
+-----------------------------------------------------------
+-- Categories for Type and Status
+--
+-- Create categories for SLA-Management type and status.
+-- Status acutally is not used by the application, 
+-- so we just define "active" and "deleted".
+-- Type contains information on how to format the data
+-- in the im_sla_management.note field. For example, a "HTTP"
+-- note is shown as a link.
+--
+-- The categoriy_ids for status and type are used as a
+-- global unique constants and defined in 
+-- /packages/intranet-core/sql/common/intranet-categories.sql.
+-- Please send an email to support@project-open.com with
+-- the subject line "Category Range Request" in order to
+-- request a range of constants for your own packages.
+--
+-- 72000-72999  Intranet SLA Management (1000)
+-- 72000-72099	SLA Parameter Status (100)
+-- 72100-72299	SLA Parameter Type (200)
+-- 72300-72999	reserved (700)
+
+-- Status
+SELECT im_category_new (72000, 'Active', 'Intranet SLA Parameter Status');
+SELECT im_category_new (72002, 'Deleted', 'Intranet SLA Parameter Status');
+
+-- Type
+SELECT im_category_new (72100, 'Default', 'Intranet SLA Parameter Type');
+
+
+-----------------------------------------------------------
+-- Create views for shortcut
+--
+-- These views are optional.
+
+create or replace view im_sla_parameter_status as
+select	category_id as param_status_id, category as param_status
+from	im_categories
+where	category_type = 'Intranet SLA Parameter Status'
+	and enabled_p = 't';
+
+create or replace view im_sla_parameter_types as
+select	category_id as param_type_id, category as param_type
+from	im_categories
+where	category_type = 'Intranet SLA Parameter Type'
+	and enabled_p = 't';
+
+
+
+
+-------------------------------------------------------------
+-- Permissions and Privileges
+--
+
+-- A "privilege" is a kind of parameter that can be set per group
+-- in the Admin -> Profiles page. This way you can define which
+-- users can see sla-management.
+-- In the default configuration below, only Employees have the
+-- "privilege" to "view" sla-management.
+-- The "acs_privilege__add_child" line below means that "view_sla-management"
+-- is a sub-privilege of "admin". This way the SysAdmins always
+-- have the right to view sla-management.
+
+select acs_privilege__create_privilege('edit_sla_parameters_all','Edit all SLA Parameters','Edit all SLA Parameters');
+select acs_privilege__add_child('admin', 'edit_sla_parameters_all');
+
+-- Allow all employees to view sla-management. You can add new groups in 
+-- the Admin -> Profiles page.
+select im_priv_create('edit_sla_parameters_all','Employees');
+
+
+-----------------------------------------------------------
+-- Plugin Components
+--
+-- Plugins are these grey boxes that appear in many pages in 
+-- the system. The plugin shows the list of sla-management that are
+-- associated with the specific object.
+-- This way we can add sla-management to projects, users companies etc.
+-- with only a single TCL/ADP page.
+--
+-- You can add/modify these plugin definitions in the Admin ->
+-- Plugin Components page
+
+
+
+-- Create a SLA-Management plugin for the ProjectViewPage.
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'SLA Parameters',		-- plugin_name
+	'intranet-sla-management',	-- package_name
+	'right',			-- location
+	'/intranet/projects/view',	-- page_url
+	null,				-- view_name
+	90,				-- sort_order
+	'im_sla_parameter_component -object_id $project_id'	-- component_tcl
+);
+
+update im_component_plugins 
+set title_tcl = 'lang::message::lookup "" intranet-sla-management.SLA_Parameters "SLA Parameters"'
+where plugin_name = 'SLA Parameters';
+
+
+
+-----------------------------------------------------------
+-- Menu for SLA-Management
+--
+-- Create a menu item in the main menu bar and set some default 
+-- permissions for various groups who should be able to see the menu.
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu		integer;
+	v_employees		integer;
+
+BEGIN
+	-- Get some group IDs
+	select group_id into v_employees from groups where group_name = ''Employees'';
+
+	-- Determine the main menu. "Label" is used to
+	-- identify menus.
+	select menu_id into v_main_menu from im_menus where label=''main'';
+
+	-- Create the menu.
+	v_menu := im_menu__new (
+		null,				-- p_menu_id
+		''im_menu'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-sla-management'',	-- package_name
+		''sla-management'',		-- label
+		''SLAs'',			-- name
+		''/intranet-sla-management/'',	-- url
+		85,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		null				-- p_visible_tcl
+	);
+
+	-- Grant some groups the read permission for the main "SLA-Management" tab.
+	-- These permissions are independent from the user`s permission to
+	-- read the actual sla-management.
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+	return 0;
+end;' language 'plpgsql';
+-- Execute and then drop the function
+select inline_0 ();
+drop function inline_0 ();
+
