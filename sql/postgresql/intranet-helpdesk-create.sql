@@ -1228,7 +1228,7 @@ BEGIN
 		null,			-- context_id
 		''intranet-helpdesk'',	-- package_name
 		''helpdesk'',		-- label
-		''Helpdesk'',		-- name
+		''Tickets'',		-- name
 		''/intranet-helpdesk/'',	-- url
 		75,			-- sort_order
 		v_main_menu,		-- parent_menu_id
@@ -1327,7 +1327,7 @@ insert into im_view_columns (
 	column_render_tcl,
         visible_for
 ) values (
-        27099,270,99,
+        27099,270,-1,
         '<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''ticket'',this.checked)">',
         '$action_checkbox',
         ''

@@ -60,6 +60,20 @@ switch $action_id {
 
 		im_ticket::add_reply -ticket_id $ticket_id -subject \
 		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
+
+		# Cancel associated workflow
+		im_workflow_cancel_workflow -object_id $ticket_id
+		
+		# Close associated forum by moving to "deleted" folder
+		db_dml move_to_deleted "
+			update im_forum_topic_user_map
+        	        set folder_id = 1
+                	where topic_id in (
+				select	t.topic_id
+				from	im_forum_topics t
+				where	t.object_id = :tid
+			)
+		"
 	    }
 
 	    if {$action_id == 30510} {

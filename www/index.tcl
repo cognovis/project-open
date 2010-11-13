@@ -644,13 +644,15 @@ set table_continuation_html "
 set table_submit_html "
   <tfoot>
 	<tr valign=top>
-	  <td align=right colspan=[expr $colspan-1] valign=top>
-		[im_gif cleardot]
+	  <td align=left colspan=[expr $colspan-1] valign=top>
+<!--		[im_gif cleardot]	-->
 		<table cellspacing=1 cellpadding=1 border=0>
 		<tr valign=top>
+<!--
 		<td>
-			[lang::message::lookup "" intranet-helpdesk.Action "Action:"]
+			[lang::message::lookup "" intranet-helpdesk.Action "Action:"]	
 		</td>
+-->
 		<td>
 			[im_category_select \
 			     -translate_p 1 \
