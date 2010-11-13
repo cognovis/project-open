@@ -1,6 +1,6 @@
--- upgrade-3.4.1.0.8-3.4.1.0.8.sql
+-- upgrade-3.4.1.0.8-3.5.0.0.0.sql
 
-SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-3.4.1.0.7-3.4.1.0.8.sql','');
+SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-3.4.1.0.8-3.5.0.0.0.sql','');
 
 
 -- Fix the "Summary" tab to show the ticket in read-only mode
