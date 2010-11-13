@@ -65,7 +65,7 @@ if {"" == $return_url} {
 # Options - get the value range for input fields
 set conf_item_parent_options [im_conf_item_options -include_empty_p 1]
 set project_options [util_memoize "im_project_options -include_empty 1 -project_status_id [im_project_status_open]" 3600]
-set owner_options [util_memoize "im_employee_options 1" 3600]
+set owner_options [util_memoize "im_user_options"]
 set cost_center_options [util_memoize "im_cost_center_options -include_empty 0" 3600]
 
 set action_url "/intranet-confdb/new"

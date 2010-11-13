@@ -631,6 +631,44 @@ end;' language 'plpgsql';
 
 
 
+-- -------------------------------------------------------------------
+-- ConfItem List Page Configuration
+-- -------------------------------------------------------------------
+
+--
+-- 940-949              intranet-confdb
+--
+--
+-- Wide View in ConfItemListPage, including Description
+--
+delete from im_view_columns where view_id = 940;
+delete from im_views where view_id = 940;
+--
+insert into im_views (view_id, view_name, visible_for) values (940, 'im_conf_item_list', 'view_conf_items');
+
+
+
+--
+-- short view for ticket and project pages
+--
+delete from im_view_columns where view_id = 941;
+delete from im_views where view_id = 941;
+--
+insert into im_views (view_id, view_name, visible_for) values (941, 'im_conf_item_list_short', 'view_conf_items');
+
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL, 
+'"[im_gif del "Delete"]"', '"<input type=checkbox name=conf_item_id.$conf_item_id>"', '', '', 1, '');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (94105, 941, NULL, '"Name"',
+'"<nobr>$indent_short_html$gif_html<a href=$object_url>$conf_item_name</a></nobr>"','','',5,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (94110, 941, NULL, '"Type"',
+'"<nobr>$conf_item_type</nobr>"','','',10,'');
+
 
 
 
@@ -641,7 +679,7 @@ end;' language 'plpgsql';
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -657,7 +695,7 @@ SELECT im_component_plugin__new (
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -670,6 +708,27 @@ SELECT im_component_plugin__new (
 	190,				-- sort_order
 	'im_conf_item_list_component -object_id $user_id'	-- component_tcl
 );
+
+
+-- Show the list of user's configuration items in the Ticket page
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Customer Configuration Items',	-- plugin_name
+	'intranet-confdb',		-- package_name
+	'right',			-- location
+	'/intranet-helpdesk/new',		-- page_url
+	null,				-- view_name
+	150,				-- sort_order
+	'im_conf_item_list_component -owner_id $ticket_customer_contact_id'	-- component_tcl
+);
+
+
+
 
 
 

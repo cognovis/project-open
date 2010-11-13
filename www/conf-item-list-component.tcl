@@ -9,7 +9,8 @@
 
 # -------------------------------------------------------------
 # Variables:
-#	object_id:integer
+#	object_id:integer:	For specifying an associated object
+#	owner_id:integer:	For specifying the owner
 #	return_url
 
 if {![info exists object_id]} {
@@ -80,8 +81,22 @@ ad_form -extend -name $form_id \
 # ----------------------------------------------------
 
 multirow create conf_items conf_item_type conf_item conf_item_formatted
+
+
 if {$object_read} {
-    set conf_items_sql [im_conf_item_select_sql -project_id $project_id]
+
+    if {![info exists project_id]} { set project_id "" }
+    if {![info exists owner_id]} { set owner_id "" }
+    if {![info exists member_id]} { set member_id "" }
+
+set owner_id ""
+
+    set conf_items_sql [im_conf_item_select_sql \
+			    -member_id $member_id \
+			    -owner_id $owner_id \
+			    -project_id $project_id \
+			   ]
+
     db_multirow -extend { conf_item_formatted } conf_items conf_items_query $conf_items_sql { }
 }
 
