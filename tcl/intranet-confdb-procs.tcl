@@ -440,6 +440,7 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 # ---------------------------------------------------------------------
 
 ad_proc -public im_conf_item_list_component {
+    {-debug 0}
     {-object_id 0}
     {-owner_id 0}
     {-member_id 0}
@@ -496,7 +497,7 @@ ad_proc -public im_conf_item_list_component {
 	set view_name "im_conf_item_conf_item_list"
 	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
     }
-    ns_log Notice "im_conf_item_list_component: view_id=$view_id"
+    if {$debug} { ns_log Notice "im_conf_item_list_component: view_id=$view_id" }
 
 
     # ---------------------- Get Columns ----------------------------------
@@ -532,7 +533,7 @@ ad_proc -public im_conf_item_list_component {
 	}
 	incr col_span
     }
-#    ns_log Notice "im_conf_item_list_component: column_headers=$column_headers"
+    if {$debug} { ns_log Notice "im_conf_item_list_component: column_headers=$column_headers" }
 
     # -------- Compile the list of parameters to pass-through-------
     set form_vars [ns_conn form]
@@ -543,12 +544,12 @@ ad_proc -public im_conf_item_list_component {
 	upvar 1 $var value
 	if { [info exists value] } {
 	    ns_set put $bind_vars $var $value
-	    ns_log Notice "im_conf_item_list_component: $var <- $value"
+	    if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
 	} else {
 	    set value [ns_set get $form_vars $var]
 	    if {![string equal "" $value]} {
  		ns_set put $bind_vars $var $value
- 		ns_log Notice "im_conf_item_list_component: $var <- $value"
+ 		if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
 	    }
 	}
     }
@@ -579,7 +580,7 @@ ad_proc -public im_conf_item_list_component {
     set table_header_html ""
     foreach col $column_headers {
 	set cmd_eval ""
-	ns_log Notice "im_conf_item_list_component: eval=$cmd_eval $col"
+	if {$debug} { ns_log Notice "im_conf_item_list_component: eval=$cmd_eval $col" }
 	set cmd "set cmd_eval $col"
 	eval $cmd
 	regsub -all " " $cmd_eval "_" cmd_eval_subs
@@ -747,11 +748,13 @@ ad_proc -public im_conf_item_list_component {
     set leafs_list [set_difference $all_conf_items_list $parents_list]
     foreach leaf_id $leafs_list { set leafs_hash($leaf_id) 1 }
 
-    ns_log Notice "timesheet-tree: all_conf_items_list=$all_conf_items_list"
-    ns_log Notice "timesheet-tree: parents_list=$parents_list"
-    ns_log Notice "timesheet-tree: leafs_list=$leafs_list"
-    ns_log Notice "timesheet-tree: closed_conf_items_list=[array get closed_conf_items_hash]"
-    ns_log Notice "timesheet-tree: "
+    if {$debug} { 
+	ns_log Notice "im_conf_item_list_component: all_conf_items_list=$all_conf_items_list"
+	ns_log Notice "im_conf_item_list_component: parents_list=$parents_list"
+	ns_log Notice "im_conf_item_list_component: leafs_list=$leafs_list"
+	ns_log Notice "im_conf_item_list_component: closed_conf_items_list=[array get closed_conf_items_hash]"
+	ns_log Notice "im_conf_item_list_component: "
+    }
 
     # Render the multirow
     set table_body_html ""
