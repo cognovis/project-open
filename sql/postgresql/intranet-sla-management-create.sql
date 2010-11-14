@@ -174,8 +174,8 @@ end;' language 'plpgsql';
 create or replace function im_sla_parameter__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
-	varchar, varchar, integer,
-	integer, integer 
+	varchar, integer, integer,
+	integer, varchar
 ) returns integer as '
 DECLARE
 	-- Default 6 parameters that go into the acs_objects table
@@ -215,7 +215,7 @@ BEGIN
 		param_id, param_name, param_sla_id,
 		param_type_id, param_status_id
 	) values (
-		v_param_id, v_param_name, v_param_sla_id,
+		v_param_id, p_param_name, p_param_sla_id,
 		p_param_type_id, p_param_status_id
 	);
 

@@ -47,8 +47,11 @@ set elements {
 		  onclick=\"acs_ListCheckAll('param_list', this.checked)\" \
 		  title=\"Check/uncheck all rows\">"
 	    display_template {
-		@param_list_lines.param_chk;noquote@
+		@param_lines.param_chk;noquote@
 	    }
+	}
+	param_name {	
+	    label "[lang::message::lookup {} intranet-sla-management.SLA_Parameter_Type {Name}]"
 	}
 	ticket_type {	
 	    label "[lang::message::lookup {} intranet-sla-management.Ticket_Type {Ticket Type}]"
@@ -85,9 +88,6 @@ db_foreach column_list_sql $column_sql {
 }
 set extra_select [join $extra_selects ",\n\t"]
 
-lappend elements param_note 
-lappend elements { label "[lang::message::lookup {} intranet-sla-management.Note {Note}]" }
-
 
 # -------------------------------------------------------------
 # Define the list view
@@ -97,7 +97,7 @@ set bulk_actions_list [list]
 
 if {$object_write} {
     set new_msg [lang::message::lookup "" intranet-sla-management.New_Parameter "New Param"]
-    lappend actions_list $new_msg "new" $new_msg
+    lappend actions_list $new_msg [export_vars -base "/intranet-sla-management/new" {return_url {param_sla_id $object_id}}] $new_msg
 
     set delete_msg [lang::message::lookup "" intranet-sla-management.Delete_Parameter "Delete Param"]
     lappend bulk_actions_list $delete_msg "del-param" $delete_msg
@@ -121,27 +121,21 @@ template::list::create \
     -row_pretty_plural "[lang::message::lookup {} intranet-sla-management.SLA_Parameters {SLA parameters}]" \
     -elements $elements
 
-
-
-
 # ----------------------------------------------------
 # Create a "multirow" to show the results
 #
-
-
 set extend_list {param_chk}
 
-db_multirow -extend $extend_list param_lines params "
-	select
-		sp.*,
+set params_sql "
+	select	sp.*,
+		im_category_from_id(ticket_type_id) as ticket_type,
 		$extra_select
-	from
-		im_sla_parameters sp
-	where
-		sp.param_sla_id = :object_id
-	order by
-		sp.param_id
-" {
-    set param_chk "<input type=checkbox name=param_ids value=$param_id id='param_list,$user_id'>"
+	from	im_sla_parameters sp
+	where	sp.param_sla_id = :object_id
+	order by sp.param_id
+"
+
+db_multirow -extend $extend_list param_lines params $params_sql {
+    set param_chk "<input type=checkbox name=param_ids value=$param_id id='param_list,$param_id'>"
 }
 
