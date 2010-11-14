@@ -17,8 +17,8 @@ BEGIN
 	IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_audits 
-	add column audit_status_id integer
-	constraint im_audits_status_fk
+	add column audit_object_status_id integer
+	constraint im_audits_object_status_fk
 	references im_categories;
 
 	return 0;
