@@ -80,6 +80,9 @@ create table im_sla_parameters (
 				-- Every ]po[ object should have a "status_id" to control
 				-- its lifecycle. Status_id reference im_categories, where 
 				-- you can define the list of stati for this object type.
+	param_name		text
+				constraint im_sla_parameter_name_nn
+				not null,
 	param_status_id		integer 
 				constraint im_sla_parameter_status_nn
 				not null
@@ -118,9 +121,13 @@ create table im_sla_parameters (
 create index im_sla_parameters_sla_idx on im_sla_parameters(param_sla_id);
 
 -- Avoid duplicate entries.
--- Make an exception and skip this step here and accept 
--- that there may be duplicates.
--- Shis shouldn't be critical for the app...
+-- Every ]po[ object should contain one such "unique" constraint in order
+-- to avoid creating duplicate entries during data import or if the user
+-- performs a "double-click" on the "Create New Note" button...
+-- (This makes a lot of sense in practice. Otherwise there would be loads
+-- of duplicated projects in the system and worse...)
+create unique index im_sla_parameters_un_idx on im_sla_parameters(param_name, param_sla_id);
+
 
 
 
@@ -148,7 +155,7 @@ DECLARE
 	p_param_id		alias for $1;
 	v_name			varchar;
 BEGIN
-	select	substring(param_note for 30)
+	select	substring(param_name for 30)
 	into	v_name
 	from	im_sla_parameters
 	where	param_id = p_param_id;
@@ -167,7 +174,7 @@ end;' language 'plpgsql';
 create or replace function im_sla_parameter__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
-	varchar, integer,
+	varchar, varchar, integer,
 	integer, integer 
 ) returns integer as '
 DECLARE
@@ -180,10 +187,11 @@ DECLARE
 	p_context_id		alias for $6;		-- context_id default null
 
 	-- Specific parameters with data to go into the im_sla_management table
-	p_param_sla_id		alias for $7;		-- SLA for the parameter
-	p_param_type_id		alias for $8;		-- type
-	p_param_status_id	alias for $9;		-- status ("active" or "deleted").
-	p_param_note		alias for $10;		-- name/comment for the parameter
+	p_param_name		alias for $7;		-- Unique name
+	p_param_sla_id		alias for $8;		-- SLA for the parameter
+	p_param_type_id		alias for $9;		-- type
+	p_param_status_id	alias for $10;		-- status ("active" or "deleted").
+	p_param_note		alias for $11;		-- name/comment for the parameter
 
 	-- This is a variable for the PL/SQL function
 	v_param_id	integer;
@@ -204,10 +212,10 @@ BEGIN
 	-- Create an entry in the im_sla_management table with the same
 	-- v_param_id from acs_objects.object_id
 	insert into im_sla_parameters (
-		param_id, param_sla_id,
+		param_id, param_name, param_sla_id,
 		param_type_id, param_status_id
 	) values (
-		v_param_id, v_param_sla_id,
+		v_param_id, v_param_name, v_param_sla_id,
 		p_param_type_id, p_param_status_id
 	);
 
