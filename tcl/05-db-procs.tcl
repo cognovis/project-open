@@ -1607,7 +1607,7 @@ namespace eval ::xo::db {
 
     my instvar datatype pretty_name min_n_values max_n_values domain column_name
     set object_type [$domain object_type]
-    iif {[db_string dbqd..check_att {select 0 from acs_attributes where 
+    if {[db_string dbqd..check_att {select 0 from acs_attributes where 
       attribute_name = :column_name and object_type = :object_type} -default 1]} {
 
       if {![::xo::db::Class object_type_exists_in_db -object_type $object_type]} {
