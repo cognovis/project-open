@@ -13,7 +13,7 @@ DECLARE
 	v_count		integer;
 BEGIN
 	select count(*) into v_count from user_tab_columns
-	where  lower(table_name) = 'im_audits' and lower(column_name) = 'audit_status_id';
+	where  lower(table_name) = 'im_audits' and lower(column_name) = 'audit_object_status_id';
 	IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_audits 
