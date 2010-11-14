@@ -224,6 +224,7 @@ ad_proc wf_generate_dot_representation {
     {-orientation portrait}
     {-rankdir UD}
     {-size}
+    {-debug 0 }
     workflow_varname
 } {
     Generates a dot-file for use with Graphviz.
@@ -355,7 +356,7 @@ ad_proc wf_generate_dot_representation {
     
     append dot_text "}"
 
-    ns_log Notice $dot_text
+    if {$debug} { ns_log Notice "wf_generate_dot_representation: $dot_text" }
 
     return $dot_text
 }
