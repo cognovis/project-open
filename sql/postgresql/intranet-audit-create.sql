@@ -20,6 +20,9 @@ create table im_audits (
 	audit_object_id		integer
 				constraint im_audits_object_nn
 				not null,
+	audit_status_id		integer
+				constraint im_audits_status_fk
+				references im_categories,
 	audit_action		text
 				constraint im_audits_action_ck
 				check (audit_action in ('create','update','delete','nuke','pre_update')),
