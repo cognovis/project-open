@@ -440,13 +440,14 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 # ---------------------------------------------------------------------
 
 ad_proc -public im_conf_item_list_component {
+    {-object_id 0}
+    {-owner_id 0}
+    {-member_id 0}
     {-view_name "im_conf_item_list_short"} 
     {-order_by ""} 
+    {-restrict_to_member_id 0} 
     {-restrict_to_type_id 0} 
     {-restrict_to_status_id 0} 
-    {-restrict_to_owner_id 0} 
-    {-restrict_to_member_id 0} 
-    {-restrict_to_project_id 0} 
     {-max_entries_per_page 50} 
     {-export_var_list {} }
     {-return_url "" }
@@ -458,6 +459,7 @@ ad_proc -public im_conf_item_list_component {
     set user_id [ad_get_user_id]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 
+    if {"" == $member_id} { set member_id $restrict_to_member_id }
     set include_subconf_items 0
 
     if {"" == $order_by} {
@@ -617,15 +619,15 @@ ad_proc -public im_conf_item_list_component {
     }
 
     # Owner is stictly the owner_id of the conf_item
-    if {[string is integer $restrict_to_owner_id] && $restrict_to_owner_id > 0} {
-	lappend criteria "ci.conf_item_owner_id = :restrict_to_owner_id"
+    if {[string is integer $owner_id] && $owner_id > 0} {
+	lappend criteria "ci.conf_item_owner_id = :owner_id"
     }
 
     # Member is anybody associated with the conf item + the owner
-    if {[string is integer $restrict_to_member_id] && $restrict_to_member_id > 0} {
+    if {[string is integer $member_id] && $member_id > 0} {
 	lappend criteria "ci.conf_item_id in (
-				select object_id_one from acs_rels where object_id_two = :restrict_to_member_id
-			UNION	select	conf_item_id from im_conf_items where conf_item_owner_id = :restrict_to_member_id
+				select object_id_one from acs_rels where object_id_two = :member_id
+			UNION	select	conf_item_id from im_conf_items where conf_item_owner_id = :member_id
 	)"
     }
 
@@ -801,7 +803,7 @@ ad_proc -public im_conf_item_list_component {
 	# Update the counter.
 	incr ctr
 	if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
-	    set more_url [export_vars -base "/intranet-confdb/index" {{conf_item_id $restrict_to_project_id} {view_name "im_conf_item_conf_item_list"}}]
+	    set more_url [export_vars -base "/intranet-confdb/index" {{conf_item_id $object_id} {view_name "im_conf_item_conf_item_list"}}]
 	    append table_body_html "
 		<tr><td colspan=99>
 		<b>[lang::message::lookup "" intranet-confdb.List_cut_at_n_entries "List cut at %max_entries_per_page% entries"]</b>.
@@ -818,7 +820,7 @@ ad_proc -public im_conf_item_list_component {
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
     if { [empty_string_p $table_body_html] } {
-        set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $restrict_to_project_id} {return_url $current_url}}]"
+        set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $object_id} {return_url $current_url}}]"
 	set table_body_html "
 		<tr class=table_list_page_plain>
 			<td colspan=$colspan align=left>
