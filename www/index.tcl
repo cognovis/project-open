@@ -474,7 +474,6 @@ if {[string equal $letter "ALL"]} {
 # ----------------------------------------------------------
 # Do we have to show administration links?
 
-ns_log Notice "/intranet/ticket/index: Before admin links"
 set admin_html "<ul>"
 
 if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
