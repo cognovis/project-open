@@ -25,3 +25,7 @@ BEGIN
 end; $body$ language 'plpgsql';
 select inline_0();
 drop function inline_0();
+
+select im_component_plugin__delete(
+	(select plugin_id from im_component_plugins where plugin_name = 'Earned Value' and package_name = 'intranet-audit')
+);
