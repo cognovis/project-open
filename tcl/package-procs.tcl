@@ -922,7 +922,7 @@ namespace eval ::xowiki {
     my instvar id folder_id
     #my msg "--f [my isobject ::$folder_id] folder_id=$folder_id"
 
-    if {$folder_id == 0} {
+    if {$folder_id == 0 || $folder_id == ""} {
       # TODO: we should make a parameter allowed_page_types (see content_types), 
       # but the package admin should not have necessarily the rights to change it
       set folder_id [::xowiki::Page require_folder \
@@ -941,12 +941,16 @@ namespace eval ::xowiki {
           }]
           break
         }
+
         if {[info exists item_id]} {
           # we have a valid item_id and get the folder object
           #my log "--f fetch folder object -object ::$folder_id -item_id $item_id"
           ::xowiki::Object fetch_object -object ::$folder_id -item_id $item_id
         } else {
           # we have no folder object yet. so we create one...
+
+	  ns_log Notice "xowiki: folder_id=$folder_id"
+
           ::xowiki::Object create ::$folder_id
           ::$folder_id set text "# this is the payload of the folder object\n\n\
                 #set index_page \"index\"\n"
