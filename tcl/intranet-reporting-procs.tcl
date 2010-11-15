@@ -40,6 +40,68 @@ ad_proc -private im_package_reporting_id_helper {} {
 
 
 # -------------------------------------------------------
+# Options and Selects
+# -------------------------------------------------------
+
+ad_proc -public im_report_select { 
+    {-include_empty 0} 
+    {-include_empty_name "" }
+    {-report_type_id 0} 
+    select_name 
+    {default ""} 
+} {
+    Returns a select box with all Reports in the company.
+} {
+    set options [im_report_options \
+		     -include_empty $include_empty \
+		     -include_empty_name $include_empty_name \
+		     -report_type_id $report_type_id \
+		    ]
+
+    return [im_options_to_select_box $select_name $options $default]
+}
+
+
+ad_proc -public im_report_options { 
+    {-include_empty 0} 
+    {-include_empty_name "" }
+    {-report_type_id ""} 
+} {
+    Returns a list of all Reports. 
+} {
+    set current_user_id [ad_get_user_id]
+
+    if {"" != $report_type_id && 0 != $report_type_id} {
+	set report_type_sql "and r.report_type_id in ([join [im_sub_categories $report_type_id] ","])"
+    }
+
+    set options_sql "
+	select	r.report_name,
+		r.report_id
+        from	im_reports r
+	where	1=1
+		$report_type_sql
+	order by
+		r.report_name
+    "
+
+    set options [list]
+    if {$include_empty} { lappend options [list $include_empty_name ""] }
+
+    db_foreach report_options $options_sql {
+        lappend options [list $report_name $report_id]
+    }
+
+    if {$include_empty && [llength $options] == 0} {
+	set invalid_cc [lang::message::lookup "" intranet-cost.No_CC_permissions_for_report_type "No CC permissions for \"%report_type%\""]
+	lappend options [list $invalid_cc ""]
+    }
+
+    return $options
+}
+
+
+# -------------------------------------------------------
 # Report specific number formatting
 #
 # Needed for localized versions of Excel that take either
