@@ -57,6 +57,9 @@ ad_proc -public im_audit_component {
 		display_col audit_ip
 		label "[lang::message::lookup {} intranet-audit.IP_Address {IP}]"
 	    }
+	    audit_object_status {
+		label "[lang::message::lookup {} intranet-audit.Object_Status {Status}]"
+	    }
 	    audit_diff {
 		label "[lang::message::lookup {} intranet-audit.Diff {Diff}]"
 	    }
@@ -65,6 +68,7 @@ ad_proc -public im_audit_component {
     set audit_sql "
 	select	*,
 		to_char(audit_date, 'YYYY-MM-DD') as audit_date_pretty,
+		im_category_from_id(audit_object_status_id) as audit_object_status,
 		im_initials_from_user_id(audit_user_id) as audit_user_initials
 	from	im_audits
 	where	audit_object_id = :object_id
