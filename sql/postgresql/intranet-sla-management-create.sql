@@ -293,8 +293,6 @@ where	category_type = 'Intranet SLA Parameter Type'
 	and enabled_p = 't';
 
 
-
-
 -------------------------------------------------------------
 -- Permissions and Privileges
 --
@@ -314,6 +312,137 @@ select acs_privilege__add_child('admin', 'edit_sla_parameters_all');
 -- Allow all employees to view sla-management. You can add new groups in 
 -- the Admin -> Profiles page.
 select im_priv_create('edit_sla_parameters_all','Employees');
+
+
+
+
+-- --------------------------------------------------------
+-- Param - Indicator Relationship
+--
+-- This relationship connects params with indicators validating the param
+
+create table im_sla_param_indicator_rels (
+	rel_id			integer
+				constraint im_sla_param_indicator_rels_rel_fk
+				references acs_rels (rel_id)
+				constraint im_sla_param_indicator_rels_rel_pk
+				primary key,
+	sort_order		integer
+);
+
+select acs_rel_type__create_type (
+	'im_sla_param_indicator_rel',	-- relationship (object) name
+	'Param Project Rel',		-- pretty name
+	'Param Project Rels',		-- pretty plural
+	'relationship',			-- supertype
+	'im_sla_param_indicator_rels',	-- table_name
+	'rel_id',			-- id_column
+	'intranet-sla-management-rel',	-- package_name
+	'im_sla_parameter',		-- object_type_one
+	'member',			-- role_one
+	0,				-- min_n_rels_one
+	null,				-- max_n_rels_one
+	'im_indicator',			-- object_type_two
+	'member',			-- role_two
+	0,				-- min_n_rels_two
+	null				-- max_n_rels_two
+);
+
+
+create or replace function im_sla_param_indicator_rel__new (
+integer, varchar, integer, integer, integer, integer, varchar, integer)
+returns integer as '
+DECLARE
+	p_rel_id		alias for $1;	-- null
+	p_rel_type		alias for $2;	-- im_sla_param_indicator_rel
+	p_param_id		alias for $3;
+	p_indicator_id		alias for $4;
+	p_context_id		alias for $5;
+	p_creation_user		alias for $6;	-- null
+	p_creation_ip		alias for $7;	-- null
+	p_sort_order		alias for $8;
+
+	v_rel_id	integer;
+BEGIN
+	v_rel_id := acs_rel__new (
+		p_rel_id,
+		p_rel_type,
+		p_param_id,
+		p_indicator_id,
+		p_context_id,
+		p_creation_user,
+		p_creation_ip
+	);
+
+	insert into im_sla_param_indicator_rels (
+		rel_id, sort_order
+	) values (
+		v_rel_id, p_sort_order
+	);
+
+	return v_rel_id;
+end;' language 'plpgsql';
+
+
+create or replace function im_sla_param_indicator_rel__delete (integer)
+returns integer as '
+DECLARE
+	p_rel_id	alias for $1;
+BEGIN
+	delete	from im_sla_param_indicator_rels
+	where	rel_id = p_rel_id;
+
+	PERFORM acs_rel__delete(p_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
+
+create or replace function im_sla_param_indicator_rel__delete (integer, integer)
+returns integer as '
+DECLARE
+	p_param_id	alias for $1;
+		p_indicator_id	alias for $2;
+
+	v_rel_id	integer;
+BEGIN
+	select	rel_id into v_rel_id
+	from	acs_rels
+	where	object_id_one = p_param_id
+		and object_id_two = p_indicator_id;
+
+	PERFORM im_sla_param_indicator_rel__delete(v_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
+
+
+
+
+-----------------------------------------------------------
+-- DynFields
+--
+-- Setup the statically created "ticket_type_id" field as a DynField.
+
+--		p_object_type		alias for $1;
+--		p_column_name		alias for $2;
+--		p_pretty_name		alias for $3;
+--		p_widget_name		alias for $4;
+--		p_datatype		alias for $5;
+--		p_required_p		alias for $6;
+--		p_pos_y			alias for $7;
+--		p_also_hard_coded_p	alias for $8;
+--		p_table_name		alias for $9;
+
+SELECT im_dynfield_attribute_new (
+	'im_sla_parameter', 'ticket_type_id', 'Ticket Type', 'ticket_type', 'integer', 'f', 30, 'f', 'im_sla_parameters'
+);
+
+
+
+SELECT im_dynfield_attribute_new (
+	'im_sla_parameter', 'max_resolution_hours', 'Max Resolution Hours', 'numeric', 'integer', 'f', 900, 'f', 'im_sla_parameters'
+);
+
 
 
 -----------------------------------------------------------
@@ -350,6 +479,29 @@ SELECT im_component_plugin__new (
 update im_component_plugins 
 set title_tcl = 'lang::message::lookup "" intranet-sla-management.SLA_Parameters "SLA Parameters"'
 where plugin_name = 'SLA Parameters';
+
+
+-- Show a list of associated objects in the SLAParameterViewPage
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'SLA Parameter Related Objects',	-- plugin_name
+	'intranet-sla-management',	-- package_name
+	'right',			-- location
+	'/intranet-sla-management/new',	-- page_url
+	null,				-- view_name
+	50,				-- sort_order
+	'im_biz_object_related_objects_component -object_id $param_id'	-- component_tcl
+);
+
+update im_component_plugins 
+set title_tcl = 'lang::message::lookup "" intranet-sla-management.SLA_Parameter_Related_Objects "SLA Parameter Related Objects"'
+where plugin_name = 'SLA Parameter Related Objects';
+
 
 
 
@@ -403,4 +555,7 @@ end;' language 'plpgsql';
 -- Execute and then drop the function
 select inline_0 ();
 drop function inline_0 ();
+
+
+
 
