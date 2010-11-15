@@ -45,6 +45,14 @@ insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_indicator', 'im_reports', 'report_id');
 
 
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_indicator','view','/intranet-reporting-indicators/view?indicator_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_indicator','edit','/intranet-reporting-indicators/new?indicator_id=');
+
+
+
+
 create table im_indicators (
 	indicator_id		integer
 				constraint im_indicator_id_pk
