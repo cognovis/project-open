@@ -16,7 +16,8 @@ ad_page_contract {
     param_id:integer,optional
     {param_sla_id:integer "" }
     {param_name "" }
-    {return_url "/intranet-sla-management/index"}
+    { plugin_id:integer "" }
+    {return_url ""}
     {form_mode "edit"}
 }
 
@@ -24,10 +25,13 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-set user_id [ad_maybe_redirect_for_registration]
+set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-sla-management.SLA_Parameter "SLA Parameter"]
 if {[info exists param_id]} { set page_title [lang::message::lookup "" intranet-sla-management.SLA_parameter SLA_parameter] }
 set context_bar [im_context_bar $page_title]
+set context [list $page_title]
+set focus "ticket.var_name"
+if {"" == $return_url} { set return_url [im_url_with_query] }
 
 # We can determine the ID of the "container object" from the
 # SLA parameter data, if the param_id is there (viewing an existing param).
@@ -35,6 +39,13 @@ if {[info exists param_id] && "" == $param_sla_id} {
     set param_sla_id [db_string oid "select param_sla_id from im_sla_parameters where param_id = :param_id" -default ""]
 }
 
+set enable_master_p 1
+
+# Show the ADP component plugins?
+set show_components_p 1
+if {"edit" == $form_mode} { set show_components_p 0 }
+
+set edit_param_status_p [im_permission $current_user_id edit_param_status]
 
 # ---------------------------------------------------------------
 # Create the Form
@@ -53,13 +64,50 @@ ad_form \
     }
 
 
+
+# ---------------------------------------------
 # Add DynFields to the form
-set my_param_id 0
-if {[info exists param_id]} { set my_param_id $param_id }
+# ---------------------------------------------
+
+set dynfield_param_type_id ""
+if {[info exists param_type_id]} { set dynfield_param_type_id $param_type_id}
+
+set dynfield_param_id ""
+if {[info exists param_id]} { set dynfield_param_id $param_id }
+
+# Add DynFields to the form
 im_dynfield::append_attributes_to_form \
+    -form_display_mode $form_mode \
+    -object_subtype_id $dynfield_param_type_id \
     -object_type "im_sla_parameter" \
     -form_id $form_id \
-    -object_id $my_param_id
+    -object_id $dynfield_param_id
+
+
+# ------------------------------------------------------------------
+# Param Action
+# ------------------------------------------------------------------
+
+set pid [value_if_exists param_id]
+set param_action_html "
+<form action=/intranet-sla-management/parameters/action name=param_action>
+[export_form_vars return_url pid]
+<input type=submit value='[lang::message::lookup "" intranet-sla-management.Action "Action"]'>
+[im_category_select \
+     -translate_p 1 \
+     -package_key "intranet-sla-management" \
+     -plain_p 1 \
+     -include_empty_p 1 \
+     -include_empty_name "" \
+     "Intranet Param Action" \
+     action_id \
+     ]
+</form>
+"
+
+if {!$edit_param_status_p} { set param_action_html "" }
+
+
 
 
 
@@ -95,7 +143,7 @@ ad_form -extend -name $form_id \
 			:param_id,
 			'im_sla_parameter',
 			now(),
-			:user_id,
+			:current_user_id,
 			'[ad_conn peeraddr]',
 			null,
 
@@ -114,13 +162,13 @@ ad_form -extend -name $form_id \
 
     } -edit_data {
 
-        set note [string trim $note]
+        set note [string trim $param_note]
 	db_dml edit_note "
 		update im_sla_parameters set 
 			param_name = :param_name,
 			param_sla_id = :param_sla_id,
-			param_type_id = :param_type,
-			param_note = :param_notenote
+			param_type_id = :param_type_id,
+			param_note = :param_note
 		where param_id = :param_id
 	"
         im_dynfield::attribute_store \
@@ -133,3 +181,45 @@ ad_form -extend -name $form_id \
 	ad_script_abort
     }
 
+
+# ---------------------------------------------------------------
+# Param Menu
+# ---------------------------------------------------------------
+
+# Setup the subnavbar
+set bind_vars [ns_set create]
+if {[info exists param_id]} { ns_set put $bind_vars param_id $param_id }
+if {![info exists param_id]} { set param_id "" }
+
+set param_parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='helpdesk'" -default 0]
+set sub_navbar [im_sub_navbar \
+    -components \
+    -current_plugin_id $plugin_id \
+    -base_url "/intranet-sla-management/new?param_id=$param_id" \
+    -plugin_url "/intranet-sla-management/new" \
+    $param_parent_menu_id \
+    $bind_vars "" "pagedesriptionbar" "helpdesk_summary" \
+]
+
+
+# ----------------------------------------------------------
+# Navbars
+# ----------------------------------------------------------
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+# eval [template::adp_compile -string {<formtemplate id="param_filter"></formtemplate>}]
+# set form_html $__adp_output
+
+set admin_html ""
+
+if {1} {
+    append left_navbar_html "
+            <div class='filter-block'>
+                <div class='filter-title'>
+                    [lang::message::lookup "" intranet-helpdesk.Admin_Params "Admin Params"]
+                </div>
+                $admin_html
+            </div>
+            <hr/>
+    "
+}
