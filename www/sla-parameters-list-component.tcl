@@ -52,6 +52,7 @@ set elements {
 	}
 	param_name {	
 	    label "[lang::message::lookup {} intranet-sla-management.SLA_Parameter_Type {Name}]"
+	    link_url_col param_url
 	}
 	ticket_type {	
 	    label "[lang::message::lookup {} intranet-sla-management.Ticket_Type {Ticket Type}]"
@@ -124,7 +125,7 @@ template::list::create \
 # ----------------------------------------------------
 # Create a "multirow" to show the results
 #
-set extend_list {param_chk}
+set extend_list {param_chk param_url}
 
 set params_sql "
 	select	sp.*,
@@ -137,5 +138,6 @@ set params_sql "
 
 db_multirow -extend $extend_list param_lines params $params_sql {
     set param_chk "<input type=checkbox name=param_ids value=$param_id id='param_list,$param_id'>"
+    set param_url [export_vars -base "/intranet-sla-management/new" {{form_mode display} param_id}]
 }
 
