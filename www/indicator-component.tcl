@@ -28,6 +28,8 @@ set page_title [lang::message::lookup "" intranet-reporting.Indicators "Indicato
 set context_bar [im_context_bar $page_title]
 set context ""
 
+# Evaluate indicators every X hours:
+set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
 
 # Calculate important vars:
 # sla_id is the ID of the effective SLA of the parameters
@@ -38,18 +40,15 @@ if {"" == $project_id} {
 } else {
     set sla_id $project_id
     set param_id [db_list param_per_sla "
-		select	object_id_two
-		from	acs_rels r,
-			im_sla_parameters p 
-		where	object_id_one = p.param_id and 
-			r.object_id_two = :project_id
+		select	p.param_id
+		from	im_sla_parameters p
+		where	p.param_sla_id = :sla_id
     "]
 }
 
 # Permissions: Check read permissions on the SLA
 im_project_permissions $current_user_id $sla_id sla_view sla_read sla_write sla_admin
 # $read is queries in the .adp template
-
 
 
 # ------------------------------------------------------
@@ -114,16 +113,23 @@ db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif 
 		im_category_from_id(i.indicator_section_id) as section,
 		ir.result
 	from
+		im_sla_parameters sp,
+		acs_rels re,
+		im_sla_param_indicator_rels spir,
 		im_reports r,
 		im_indicators i
 		LEFT OUTER JOIN (
 			select	avg(result) as result,
 				result_indicator_id
 			from	im_indicator_results
-			where	result_date >= now()
+			where	result_date >= now() - '$eval_interval_hours hours'::interval
 			group by result_indicator_id
 		) ir ON (i.indicator_id = ir.result_indicator_id)
 	where
+		sp.param_id in ([join $param_id ","]) and
+		re.object_id_one = sp.param_id and
+		re.object_id_two = r.report_id and
+		re.rel_id = spir.rel_id and
 		r.report_id = i.indicator_id and
 		r.report_type_id = [im_report_type_indicator]
 		$permission_sql
