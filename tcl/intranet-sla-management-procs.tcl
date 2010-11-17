@@ -77,15 +77,32 @@ ad_proc -public im_sla_service_hours_component {
 }
 
 
+ad_proc -public im_sla_day_of_week_list {
+} {
+    Returns a list with weekday names from 0=Su to 6=Sa
+} {
+    set dow_list [list]
+    lappend dow_list [lang::message::lookup "" intranet-core.Sunday Sunday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Monday Monday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Tuesday Tuesday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Wednesday Wednesday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Thursday Thursday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Friday Friday]
+    lappend dow_list [lang::message::lookup "" intranet-core.Saturday Saturday]
+    return $dow_list
+}
+
 # ----------------------------------------------------------------------
 # Calculate the Solution time for every ticket
 # ---------------------------------------------------------------------
 
 ad_proc -public im_sla_ticket_solution_time {
-    {-ticket_id "44001"}
+    {-ticket_id ""}
 } {
     Calculates "resolution time" for all open tickets.
 } {
+    # ToDo!!!: Check the semaphore if this is the only thread runnging
+
     set debug_html ""
 
     # ----------------------------------------------------------------
@@ -103,6 +120,8 @@ ad_proc -public im_sla_ticket_solution_time {
     # Saturday from 9:00 til 12:00
     lappend service_hours_list {09:00 18:00}
 
+    # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa
+    set dow_list [im_sla_day_of_week_list]
 
     # ----------------------------------------------------------------
     # Get the list of all selected ticket (either all open ones or one
@@ -144,25 +163,26 @@ ad_proc -public im_sla_ticket_solution_time {
 	
 	# Loop through all days between start and end and add the start
 	# and end of the business hours this day.
+	append debug_html "<li>Starting to go loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n"
 	for {set j $ticket_creation_julian} {$j < $now_julian} {incr j} {
 	    
 	    # Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
 	    # service_hours are like {09:00 18:00}
-	    set dow [expr ($j + 2) % 7]
+	    set dow [expr ($j + 1) % 7]
 	    set service_hours [lindex $service_hours_list $dow]
-	    append debug_html "<li>Ticket: $ticket_id, j=$j, dow=$dow, service_hours=$service_hours\n"
+	    append debug_html "<li>Ticket: $ticket_id, julian=$j, ansi=[im_date_julian_to_ansi $j], dow=$dow: [lindex $dow_list $dow], service_hours=$service_hours\n"
 	    
 	    # Example: service_start = '09:00'. Add 0.01 to avoid overwriting.
 	    set service_start [lindex $service_hours 0]
 	    set service_start_epoch [db_string epoch "select extract(epoch from to_timestamp('$j $service_start', 'J HH24:MM')) + 0.01"]
             set epoch_{$ticket_id}($service_start_epoch) "service_start"
-	    append debug_html "<li>Start: j=$j, service_start=$service_start, service_start_epoch=$service_start_epoch\n"
+	    append debug_html "<li>Start: julian=$j, ansi=[im_date_julian_to_ansi $j], service_start=$service_start, service_start_epoch=$service_start_epoch\n"
 
 	    # service_end = '18:00'. Add 0.02 to avoid overwriting.
 	    set service_end [lindex $service_hours 1]
 	    set service_end_epoch [db_string epoch "select extract(epoch from to_timestamp('$j $service_end', 'J HH24:MM')) + 0.02"]
             set epoch_{$ticket_id}($service_end_epoch) "service_end"
-	    append debug_html "<li>End: j=$j, service_end=$service_end, service_end_epoch=$service_end_epoch\n"
+	    append debug_html "<li>End: julian=$j, ansi=[im_date_julian_to_ansi $j], service_end=$service_end, service_end_epoch=$service_end_epoch\n"
 
 	}
     }
@@ -258,16 +278,13 @@ ad_proc -public im_sla_ticket_solution_time {
 	if {!$count_duration_p} { set color red }
 	append time_html "<li>
 		<font color=$color>
-		$e, event=$event, 
+		[im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e], event=$event, 
 		duration=$duration_epoch, count_duration_p=$count_duration_p, resolution_seconds=$ticket_resolution_seconds
 		</font>
         "
+
+	set last_epoch $e
     }
-
-set ttt {
-		open_p=$ticket_open_p, lifetime_p=$ticket_lifetime_p, service_hour_p=$ticket_service_hour_p, 
-
-}
     
     ad_return_complaint 1 "
 	<ul>

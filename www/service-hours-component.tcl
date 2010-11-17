@@ -29,16 +29,8 @@ im_project_permissions $current_user_id $project_id sla_view sla_read sla_write 
 # sla_read checked in the .adp file
 
 # ---------------------------------------------------------------
-# List of weekdays
-set dow_list [list]
-lappend dow_list [lang::message::lookup "" intranet-core.Sunday Sunday]
-lappend dow_list [lang::message::lookup "" intranet-core.Monday Monday]
-lappend dow_list [lang::message::lookup "" intranet-core.Tuesday Tuesday]
-lappend dow_list [lang::message::lookup "" intranet-core.Wednesday Wednesday]
-lappend dow_list [lang::message::lookup "" intranet-core.Thursday Thursday]
-lappend dow_list [lang::message::lookup "" intranet-core.Friday Friday]
-lappend dow_list [lang::message::lookup "" intranet-core.Saturday Saturday]
-
+# List of weekdays, 0=Su, 1=Mo, 6=Sa
+set dow_list [im_sla_day_of_week_list]
 
 # Create the header for the table
 multirow create hours hour
