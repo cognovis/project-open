@@ -67,7 +67,7 @@ ad_proc -public im_audit_component {
 
     set audit_sql "
 	select	*,
-		to_char(audit_date, 'YYYY-MM-DD') as audit_date_pretty,
+		to_char(audit_date, 'YYYY-MM-DD HH24:MI:SS') as audit_date_pretty,
 		im_category_from_id(audit_object_status_id) as audit_object_status,
 		im_initials_from_user_id(audit_user_id) as audit_user_initials
 	from	im_audits
