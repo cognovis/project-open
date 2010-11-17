@@ -6,7 +6,7 @@
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id $Id: apm-create.sql,v 1.2 2010/10/19 20:11:39 po34demo Exp $
+-- @cvs-id $Id: apm-create.sql,v 1.3 2010/11/17 20:47:58 po34demo Exp $
 
 -----------------------------
 --     PACKAGE OBJECT	   --
@@ -1537,16 +1537,16 @@ end;' language 'plpgsql' stable strict;
 create or replace function apm__get_value (integer,varchar)
 returns varchar as '
 declare
-  get_value__package_id             alias for $1;  
-  get_value__parameter_name         alias for $2;  
+  p_get_value__package_id             alias for $1;  
+  p_get_value__parameter_name         alias for $2;  
   v_parameter_id                    apm_parameter_values.parameter_id%TYPE;
   value                             apm_parameter_values.attr_value%TYPE;
 begin
-    v_parameter_id := apm__id_for_name (get_value__package_id, get_value__parameter_name);
+    v_parameter_id := apm__id_for_name (p_get_value__package_id, p_get_value__parameter_name);
 
     select attr_value into value from apm_parameter_values v
-    where v.package_id = get_value__package_id
-    and parameter_id = get_value__parameter_id;
+    where v.package_id = p_get_value__package_id
+    and parameter_id = v_parameter_id;
 
     return value;
    
