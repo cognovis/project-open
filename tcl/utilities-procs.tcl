@@ -2223,6 +2223,9 @@ ad_proc -public ad_returnredirect {
             set url [util_current_location][util_current_directory]$target_url
         }
     }
+
+#ad_return_complaint 1 "ad_returnredirect: $url"
+
     #Ugly workaround to deal with IE5.0 bug handling multipart/form-data using 
     #Meta Refresh page instead of a redirect. 
     # jbank@arsdigita.com 6/7/2000
@@ -2395,12 +2398,17 @@ ad_proc -public util_current_location {{}} {
     set Host_port [lindex $Hostv 1]
 
     # suppress the configured http port when server is behind a proxy, to keep connection behind proxy
-    set suppress_port [parameter::get -package_id [ad_acs_kernel_id] -parameter SuppressHttpPort -default 0]
-    if { $suppress_port && [string equal $port [ns_config -int "ns/server/[ns_info server]/module/nssock" Port]] } {
+    # fraber 101118: looking for parameter in the wrong package...
+#    set suppress_port [parameter::get -package_key "acs-tcl" -parameter SuppressHttpPort -default 0]
+    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default "0"]
+
+    if { $suppress_port } {
         ns_log Debug "util_current_location: suppressing http port $Host_port"
         set Host_port ""
         set port ""
     }
+
+    ns_log Notice "util_current_location: suppress_port=$suppress_port, port=$port, Host_port=$Host_port"
 
     # Server config location
     if { ![regexp {^([a-z]+://)?([^:]+)(:[0-9]*)?$} [ad_conn location] match location_proto location_hostname location_port] } {
