@@ -40,10 +40,9 @@ ad_proc -public im_audit_component {
 	    }
 	    audit_user_initials {
 		label "[lang::message::lookup {} intranet-audit.User_Abbrev U]"
-		link_url_eval $audit_user_url
 	        display_template {
 	            <if @audit_multirow.audit_user_id@ ne 0>
-			<a href="@audit_multirow.audit_user_url;noquote@">@audit_multirow.audit_user_initials@</a>
+			<a href="@audit_multirow.audit_user_url;noquote@" title="@audit_multirow.audit_user_name@">@audit_multirow.audit_user_initials@</a>
 	            </if>
 		}
 	    }
@@ -69,7 +68,8 @@ ad_proc -public im_audit_component {
 	select	*,
 		to_char(audit_date, 'YYYY-MM-DD HH24:MI:SS') as audit_date_pretty,
 		im_category_from_id(audit_object_status_id) as audit_object_status,
-		im_initials_from_user_id(audit_user_id) as audit_user_initials
+		im_initials_from_user_id(audit_user_id) as audit_user_initials,
+		im_name_from_user_id(audit_user_id) as audit_user_name
 	from	im_audits
 	where	audit_object_id = :object_id
 	order by audit_id DESC
