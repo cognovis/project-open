@@ -1,7 +1,7 @@
 <if @sla_read@>
 
 <form action="/intranet-sla-management/service-hours-save" method=POST>
-<%= [export_form_vars sla_id] %>
+<%= [export_form_vars return_url sla_id] %>
 <table cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
 <td class=rowtitle><%= [lang::message::lookup "" intranet-sla-management.Day "Day"] %></td>

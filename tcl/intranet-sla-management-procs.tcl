@@ -92,36 +92,75 @@ ad_proc -public im_sla_day_of_week_list {
     return $dow_list
 }
 
+
+ad_proc -public im_sla_check_time_in_service_hours {
+    time
+    service_hours_list
+} {
+    Returns 1 if the time (example: "09:55") falls within service hours 
+    (example: {09:00 20:00})
+} {
+    foreach tuple $service_hours_list {
+	set start [lindex $tuple 0]
+	set end   [lindex $tuple 1]
+	if {$time >= $start && $time <= $end} { return 1 }
+    }
+    return 0
+}
+
+
+
+ad_proc -public im_sla_management_epoch_in_service_hours {
+    epoch
+    service_hours_list
+} {
+    Returns 1 if the epoch falls within service hours
+    ToDo:: Implement
+} {
+    return 1
+}
+
+
+
 # ----------------------------------------------------------------------
 # Calculate the Solution time for every ticket
 # ---------------------------------------------------------------------
 
 ad_proc -public im_sla_ticket_solution_time {
+    {-debug_p 0}
     {-ticket_id ""}
 } {
     Calculates "resolution time" for all open tickets.
 } {
-    # ToDo!!!: Check the semaphore if this is the only thread runnging
+    # Make sure that only one thread is calculating at a time
+#    if {[nsv_incr intranet_sla_management sweeper_p] > 1} {
+#        nsv_incr intranet_sla_management sweeper_p -1
+#        ns_log Notice "im_sla_ticket_solution_time: Aborting. There is another process running"
+#        return
+#    }
+
+    # Deal with timezone offsets for epoch calculation...
+    set tz_offset_seconds [util_memoize "db_string tz_offset {select extract(timezone from now())}"]
 
     set debug_html ""
+    set time_html ""
+
+    # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa
+    set dow_list [im_sla_day_of_week_list]
 
     # ----------------------------------------------------------------
     # Define the service hours per weekday
     #
+    set service_hours_sql "
+        select  *
+        from    im_sla_service_hours
+        where   sla_id = :project_id
+	order by dow
+    "
     set service_hours_list [list]
-    # Sunday no service
-    lappend service_hours_list {}
-    # Monday - Friday from 9:00 til 18:00
-    lappend service_hours_list {09:00 18:00}	
-    lappend service_hours_list {09:00 18:00}
-    lappend service_hours_list {09:00 18:00}
-    lappend service_hours_list {09:00 18:00}
-    lappend service_hours_list {09:00 18:00}
-    # Saturday from 9:00 til 12:00
-    lappend service_hours_list {09:00 18:00}
-
-    # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa
-    set dow_list [im_sla_day_of_week_list]
+    db_foreach service_hours $service_hours_sql {
+	lappend service_hours_list $service_hours
+    }
 
     # ----------------------------------------------------------------
     # Get the list of all selected ticket (either all open ones or one
@@ -143,47 +182,92 @@ ad_proc -public im_sla_ticket_solution_time {
 	where
 		t.ticket_id = p.project_id
 		$extra_where
+	order by
+		t.ticket_id
     "
     
     db_foreach tickets $ticket_sql {
-	append debug_html "
+	if {$debug_p} {
+	    append debug_html "
 		<li><b>$ticket_id : $project_name</b>
 		<li>ticket_creation_date: $ticket_creation_date
 		<li>ticket_creation_julian: $ticket_creation_julian
 		<li>ticket_creation_epoch: $ticket_creation_epoch
-	"
+	    "
+	}
 	set name($ticket_id) $project_name
 	set start_julian($ticket_id) $ticket_creation_julian
 	set start_epoch($ticket_id) $ticket_creation_epoch
 	set end_julian($ticket_id) $now_julian
-	set epoch_{$ticket_id}($ticket_creation_epoch) "creation"
+	set epoch_{$ticket_id}([expr $ticket_creation_epoch - 0.03]) "creation"
 	set julian_{$ticket_id}($ticket_creation_julian) "creation"
-	set epoch_{$ticket_id}($now_epoch) "now"
+	set epoch_{$ticket_id}([expr $now_epoch + 0.03]) "now"
 	set julian_{$ticket_id}($now_julian) "now"
+
+	if {$debug_p} { append time_html "<li>Ticket: $ticket_id, ticket_creation_epoch=$ticket_creation_epoch" }
+
+#	ad_return_complaint 1 "ticket_id=$ticket_id, [array get epoch_{$ticket_id}]"
+
 	
 	# Loop through all days between start and end and add the start
 	# and end of the business hours this day.
-	append debug_html "<li>Starting to go loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n"
+	if {$debug_p} { append debug_html "<li>Starting to go loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n" }
 	for {set j $ticket_creation_julian} {$j < $now_julian} {incr j} {
 	    
 	    # Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
 	    # service_hours are like {09:00 18:00}
 	    set dow [expr ($j + 1) % 7]
 	    set service_hours [lindex $service_hours_list $dow]
-	    append debug_html "<li>Ticket: $ticket_id, julian=$j, ansi=[im_date_julian_to_ansi $j], dow=$dow: [lindex $dow_list $dow], service_hours=$service_hours\n"
+	    if {$debug_p} { append debug_html "<li>Ticket: $ticket_id, julian=$j, ansi=[im_date_julian_to_ansi $j], dow=$dow: [lindex $dow_list $dow], service_hours=$service_hours\n" }
+
+	    foreach sh $service_hours {
+		if {$debug_p} { append debug_html "<li>Ticket: $ticket_id, julian=$j, ansi=[im_date_julian_to_ansi $j], sh=$sh\n" }
+
+		# ----------------------------------------------------------------------------------------
+		# Calculate service start	    
+		# Example: service_start = '09:00'. Add 0.01 to avoid overwriting.
+		set service_start [lindex $sh 0]
+		# On weekends there may be no service hours at all...
+		if {"" == $service_start} { continue }
+		set service_start_list [split $service_start ":"]
+		set service_start_hour [string trimleft [lindex $service_start_list 0] "0"]
+		set service_start_minute [string trimleft [lindex $service_start_list 1] "0"]
+		if {"" == $service_start_hour} { set service_start_hour 0 }
+		if {"" == $service_start_minute} { set service_start_minute 0 }
+		set service_start_epoch [expr [im_date_julian_to_epoch $j] + 3600.0*$service_start_hour + 60.0*$service_start_minute + 0.01]
+		set epoch_{$ticket_id}($service_start_epoch) "service_start"
+		if {$debug_p} { 
+		    ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, service_start=$service_start, hour=$service_start_hour, min=$service_start_minute"
+		    
+		    set service_start_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $service_start', 'J HH24:MM')) + 0.01"]
+		    ns_log Notice "im_sla_ticket_solution_time: diff=[expr $service_start_epoch - $service_start_epoch2]"
+		    append debug_html "<li>Start: julian=$j, ansi=[im_date_julian_to_ansi $j], service_start=$service_start, service_start_epoch=$service_start_epoch\n"
+		}
+
+
+		# ----------------------------------------------------------------------------------------
+		# Calculate service end
+		# Example: service_end = '18:00'. Add 0.02 to avoid overwriting.
+		set service_end [lindex $sh 1]
+		# On weekends there may be no service hours at all...
+		if {"" == $service_end} { continue }
+		set service_end_list [split $service_end ":"]
+		set service_end_hour [string trimleft [lindex $service_end_list 0] "0"]
+		set service_end_minute [string trimleft [lindex $service_end_list 1] "0"]
+		if {"" == $service_end_hour} { set service_end_hour 0 }
+		if {"" == $service_end_minute} { set service_end_minute 0 }
+		set service_end_epoch [expr [im_date_julian_to_epoch $j] + 3600.0*$service_end_hour + 60.0*$service_end_minute + 0.01]
+		set epoch_{$ticket_id}($service_end_epoch) "service_end"
+		if {$debug_p} { 
+		    ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, service_end=$service_end, hour=$service_end_hour, min=$service_end_minute"
+		    
+		    set service_end_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $service_end', 'J HH24:MM')) + 0.01"]
+		    ns_log Notice "im_sla_ticket_solution_time: diff=[expr $service_end_epoch - $service_end_epoch2]"
+		    append debug_html "<li>End: julian=$j, ansi=[im_date_julian_to_ansi $j], service_end=$service_end, service_end_epoch=$service_end_epoch\n"
+		}		
+	    }
 	    
-	    # Example: service_start = '09:00'. Add 0.01 to avoid overwriting.
-	    set service_start [lindex $service_hours 0]
-	    set service_start_epoch [db_string epoch "select extract(epoch from to_timestamp('$j $service_start', 'J HH24:MM')) + 0.01"]
-            set epoch_{$ticket_id}($service_start_epoch) "service_start"
-	    append debug_html "<li>Start: julian=$j, ansi=[im_date_julian_to_ansi $j], service_start=$service_start, service_start_epoch=$service_start_epoch\n"
-
-	    # service_end = '18:00'. Add 0.02 to avoid overwriting.
-	    set service_end [lindex $service_hours 1]
-	    set service_end_epoch [db_string epoch "select extract(epoch from to_timestamp('$j $service_end', 'J HH24:MM')) + 0.02"]
-            set epoch_{$ticket_id}($service_end_epoch) "service_end"
-	    append debug_html "<li>End: julian=$j, ansi=[im_date_julian_to_ansi $j], service_end=$service_end, service_end_epoch=$service_end_epoch\n"
-
+	    # End of looping through service hour start-end tuples
 	}
     }
 
@@ -209,92 +293,151 @@ ad_proc -public im_sla_ticket_solution_time {
     "
     db_foreach audit $audit_sql {
 	if {"" == $audit_object_status} { set audit_object_status "NULL" }
-	append debug_html "
+	if {$debug_p} {	append debug_html "
 		<li>$ticket_id: $audit_date: $audit_object_status
-	"
+	" }
 	set epoch_{$ticket_id}($audit_date_epoch) $audit_object_status_id
 	set julian_{$ticket_id}($audit_date_julian) $audit_object_status_id
     }
+
+
+    # Loop through all open tickets
+    foreach ticket_id [array names name] {
+
+	set ticket_name $name($ticket_id)
     
-    # Copy the epoc_12345 hash into "hash" for easier access.
-    # ToDo: Remove this detour for performance reasons?
-    #
-    array set hash [array get epoch_{$ticket_id}]
+	if {$debug_p} {
+	    append time_html "
+		<li><b>$ticket_id : $ticket_name</b>
+	    "
+	}
 
-    # Loop through the hash in time order and process the various
-    # events.
-    set time_html ""
-    set ticket_resolution_seconds 0.000
+	# Copy the epoc_12345 hash into "hash" for easier access.
+	array set hash [array get epoch_{$ticket_id}]
 
-    set ticket_lifetime_p 1
-    set ticket_service_hour_p 1
-    set ticket_open_p 1
+	# Loop through the hash in time order and process the various events.
+	set resolution_seconds 0.000
+	
+	# Lifetime: Set to 1 by "creation" event and set to 0 by "now" event
+	set ticket_lifetime_p 0
+	set ticket_service_hour_p 0
+	set ticket_open_p 0
+	set count_duration_p 0
+	
+	# Counter from last, reset by "creation" event, this is just a default.
+	set last_epoch $start_epoch($ticket_id)
+	
+	# Loop through events per ticket
+	foreach e [lsort [array names hash]] {
+	    set event_full $hash($e)
+	    set event [lindex $event_full 0]
 
-    # Counter from last 
-    set last_epoch $start_epoch($ticket_id)
-    
-    foreach e [lsort [array names hash]] {
-        set event_full $hash($e)
-	set event [lindex $event_full 0]
+	    # Calculate duration since last event
+	    set duration_epoch [expr $e - $last_epoch]
 
-	# Event can be a ticket_status_id or {creation service_start service_end now}
-        switch $event {
-	    creation {
-		# creation of ticket. Assume that it's open now and that it's created
-		# during service hours (otherwise the taximeter will run until the next day...)
-		set ticket_lifetime_p 1
-		set ticket_service_hour_p 1
-		set ticket_open_p 1	
-	    }
-	    service_start {
-		set ticket_service_hour_p 1
-	    }
-	    service_end {
-		set ticket_service_hour_p 0
-	    }
-	    now {
-		# Current time. Don't count from here into the future...
-		set ticket_lifetime_p 0
-	    }
-	    default {
-		# We assume a valid ticket_status_id here, otherwise we will skip...
-		if {![string is integer $event]} { ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" }
-		if {[im_category_is_a $event 30000]} { 
-		    # Open status: continue counting...
-		    set ticket_open_p 1
-		} else {
-		    # Not open, so thats closed probably...
-		    set ticket_open_p 0
+	    # Event can be a ticket_status_id or {creation service_start service_end now}
+	    switch $event {
+		creation {
+		    # creation of ticket. Assume that it's open now and that it's created
+		    # during service hours (otherwise the taximeter will run until the next day...)
+		    set resolution_seconds 0.000
+		    set last_epoch $e
+		    set ticket_lifetime_p 1
+		    set ticket_service_hour_p [im_sla_management_epoch_in_service_hours $e $service_hours_list]
+		    set ticket_open_p 1	
+		}
+		service_start {
+	
+		    # Check if we were to count the duration until now
+		    set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+		    if {$count_duration_p} {
+			set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+		    }
+		    
+		    # Start counting the time from now on.
+		    set ticket_service_hour_p 1
+		}
+		service_end {
+		    # Check if we were to count the duration until now
+		    set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+		    if {$count_duration_p} {
+			set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+		    }
+
+		    # Don't count time from now on until the next service_start
+		    set ticket_service_hour_p 0
+		}
+		now {
+		    # Check if we were to count the duration until now
+		    set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+		    if {$count_duration_p} {
+			set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+		    }
+
+		    # Current time. Don't count from here into the future...
+		    set ticket_lifetime_p 0
+		}
+		"" {
+		    # No event. Should not occur. But then just ignore...
+		}
+		default {
+		    # We assume a valid ticket_status_id here, otherwise we will skip...
+		    if {![string is integer $event]} { ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" }
+
+		    # Check if we were to count the duration until now
+		    set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+		    if {$count_duration_p} {
+			set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+		    }
+
+		    if {[im_category_is_a $event 30000]} { 
+			# Open status: continue counting...
+			set ticket_open_p 1
+		    } else {
+			# Not open, so thats closed probably...
+			set ticket_open_p 0
+		    }
 		}
 	    }
+
+	    set color black
+	    if {!$count_duration_p} { set color red }
+	    if {$debug_p} {
+		append time_html "<li>
+		<font color=$color>
+		$e, [im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e], event=$event, 
+		duration=$duration_epoch, count_duration_p=$count_duration_p, resolution_seconds=$resolution_seconds
+		</font>
+                "
+	    }
+	    
+	    set last_epoch $e
 	}
 	
-	set duration_epoch [expr $e - $last_epoch]
-	set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
-	if {$count_duration_p} {
-	    set ticket_resolution_seconds [expr $ticket_resolution_seconds + $duration_epoch]
-	}
-        set color black
-	if {!$count_duration_p} { set color red }
-	append time_html "<li>
-		<font color=$color>
-		[im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e], event=$event, 
-		duration=$duration_epoch, count_duration_p=$count_duration_p, resolution_seconds=$ticket_resolution_seconds
-		</font>
-        "
+	# Update the resolution time of the ticket
+	db_dml update_resolution_time "
+		update im_tickets
+		set ticket_resolution_time = [expr $resolution_seconds / 3600.0]
+		where ticket_id = :ticket_id
+	"
 
-	set last_epoch $e
+	if {$debug_p} {
+		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
+
+		append time_html "</ul><ul>\n"
+	}
     }
-    
-    ad_return_complaint 1 "
-	<ul>
-	$debug_html<br>
-	</ul>
-	<br>
-	<ul>
-	$time_html<br>
-	</ul>
-    "
+
+    # De-block the execution of this procedure for a 2nd thread
+    nsv_incr intranet_sla_management sweeper_p -1
+
+    if {$debug_p} {
+	ad_return_complaint 1 "
+		<ul>$debug_html</ul><br>
+		<ul>$time_html</ul><br>
+        "
+    }
+
 }
 
 

@@ -452,6 +452,37 @@ end;' language 'plpgsql';
 
 
 
+-- --------------------------------------------------------
+-- Service Hours per SLA Project
+--
+-- This table stores {start end} tuples for every weekday and SLA.
+-- Example:
+-- 0 (Sun)	""
+-- 1 (Mon)	"{09:00 18:00}"
+-- 2 (Tue)	"{09:00 18:00}"
+-- 3 (Wed)	"{09:00 12:00} {14:00 20:00}"
+-- 4 (Thu)	"{09:00 18:00}"
+-- 5 (Fri)	"{09:00 18:00}"
+-- 6 (Sat)	"{09:00 12:00}"
+
+
+create table im_sla_service_hours (
+	sla_id			integer
+				constraint im_sla_service_hours_sla_nn
+				not null
+				constraint im_sla_service_hours_sla_fk
+				references im_projects,
+	-- Day of Week. 0=Su, 1=Mo, 6=Sa
+	dow			integer
+				constraint im_sla_service_hours_dow_ck
+				check(dow in (0, 1, 2, 3, 4, 5, 6)),
+	-- List of tuples "{09:00 12:00} {14:00 20:00}" of HH24 hours with preceeding "0"
+	service_hours		text,
+	
+	primary key (sla_id, dow)
+);
+
+
 
 
 -----------------------------------------------------------

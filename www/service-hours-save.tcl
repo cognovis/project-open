@@ -29,14 +29,82 @@ set page_focus "im_header_form.keywords"
 im_project_permissions $current_user_id $sla_id view read write admin
 if {!$write} { ad_return_complaint 1 "You don't have permissions to perform this action" }
 
-ad_return_complaint 1 [array get hours]
-
-
 # ---------------------------------------------------------------
 # Save the values
 # ---------------------------------------------------------------
 
-foreach h [array names hours] {
+set start 0
+set end 24
+set state "off"
+foreach dow {0 1 2 3 4 5 6} {
 
+    set debug_html "dow=$dow"
+    set service_hours ""
+    for {set h 0} {$h < 25} {incr h} {
+	set hh $h
+	if {[string length $hh] < 2} { set hh "0$hh" } 
+	set ck "off"
+	set key [string trimleft "$dow$hh" "0"]
+	if {"" == $key} { set key "0" }
+	if {[info exists hours($key)]} { set ck $hours($key) }
+
+        if {"off" == $state && "off" == $ck} { 
+	    set start $h
+	    set state "off"
+	}
+
+        if {"off" == $state && "on" == $ck} { 
+	    set start $h
+	    set state "on"
+	}
+
+        if {"on" == $state && "off" == $ck} { 
+
+	    # Add start-end to list of service hours
+	    set start_pretty $start
+	    if {[string length $start_pretty] < 2} { set start_pretty "0$start" }
+	    # The end time is the start of the next hour, so we have to add +1 to end
+	    set end_pretty [expr $end + 1]
+	    if {[string length $end_pretty] < 2} { set end_pretty "0$end_pretty" }
+	    lappend service_hours [list "$start_pretty:00" "$end_pretty:00"]
+
+	    set end $h
+	    set state "off"
+	}
+
+        if {"on" == $state && "on" == $ck} { 
+	    set end $h
+	    set state "on"
+	}
+
+	ns_log Notice "service-hours-save: befor: dow=$dow, h=$hh, start=$start, end=$end, state=$state, ck=$ck"
+
+    }
+    set service_hours_hash($dow) $service_hours
 }
+
+# -------------------------------------------------------
+# Store the service hours into the SLA
+
+# Delete the old service hours if they exist
+db_dml del_service_hours "
+	delete from im_sla_service_hours
+	where sla_id = :sla_id
+"
+
+foreach dow {0 1 2 3 4 5 6} {
+   db_dml insert_service_hours "
+	insert into im_sla_service_hours (
+		sla_id,
+		dow,
+		service_hours
+	) values (
+		:sla_id,
+		:dow,
+		'$service_hours_hash($dow)'
+	)
+   "
+}
+
+ad_returnredirect $return_url
 
