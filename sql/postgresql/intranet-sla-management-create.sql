@@ -29,6 +29,42 @@
 -- take specific assumptions about how the "world" is modelled in ]po[.
 
 
+
+-- Add a field to im_tickets to store a calculated "resolution time"
+create or replace function inline_0 ()
+returns integer as $body$
+DECLARE
+	v_count		integer;
+	v_attribute_id	integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_tickets' and lower(column_name) = 'ticket_resolution_time';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_tickets
+	add ticket_resolution_time numeric(12,2);
+
+	v_attribute_id = SELECT im_dynfield_attribute_new (
+		'im_ticket', 'ticket_resolution_time', 'Resolution Time', 'numeric', 'integer', 'f', 9000, 'f', 'im_tickets'
+	);
+
+	-- set permissions for ticket_resolution_time to "read only" for all types of tickets.
+	update im_dynfield_type_attribute_map
+	set display_mode = 'display'
+	where attribute_id = v_attribute_id;
+
+	return 0;
+end; $body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+
+-------------------------------------------------------------------------------
+-- SLA Parameter Object
+-------------------------------------------------------------------------------
+
 SELECT acs_object_type__create_type (
 	'im_sla_parameter',		-- object_type - only lower case letters and "_"
 	'SLA Parameter',		-- pretty_name - Human readable name
