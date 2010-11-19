@@ -22,6 +22,13 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-reporting.Edit_Report "Edit Report"]
 set context [im_context_bar $page_title]
+if {![im_permission $user_id "add_reports"]} { 
+    ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.No_ermissions_to_add_or_modify_reports "
+	You don't have the necessary permission to add or modify dynamic reports.
+    "]
+}
+
+
 
 # ----------------------------------------------
 # Calculate form_mode
