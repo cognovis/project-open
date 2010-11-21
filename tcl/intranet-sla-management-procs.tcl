@@ -21,6 +21,42 @@ ad_proc -public im_sla_parameter_type_default {} { return 72100 }
 
 
 # ----------------------------------------------------------------------
+# Permissions
+# ---------------------------------------------------------------------
+
+ad_proc -public im_sla_parameter_permissions {
+    user_id 
+    param_id 
+    view_var 
+    read_var 
+    write_var 
+    admin_var
+} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $ticket_id
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set view 0
+    set read 0
+    set write 0
+    set admin 0
+
+    # Get the SLA for the parameter.
+    # We want to cache the query, so we have to use a "dollar variable" and
+    # so we need to check security before doing so...
+    im_security_alert_check_integer -location "im_sla_parameter_permissions" -value $param_id
+    set sla_id [util_memoize "db_string param_sla {select param_sla_id from im_sla_parameters where param_id = $param_id} -default {}"]
+
+    # Permissions on parameters are permission on the parameter's container project
+    im_project_permissions $user_id $sla_id view read write admin
+}
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 
@@ -30,6 +66,12 @@ ad_proc -public im_sla_parameter_component {
     Returns a HTML component to show a list of SLA parameters with the option
     to add more parameters
 } {
+    set project_id $object_id
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { 
+	ns_log Notice "im_sla_parameter_component: Project \#$project_id is not a 'Service Level Agreement'"
+	return "" 
+    }
+
     set params [list \
 		    [list base_url "/intranet-sla-management/"] \
 		    [list object_id $object_id] \
@@ -48,6 +90,11 @@ ad_proc -public im_sla_parameter_list_component {
     Returns a HTML component with a mix of SLA parameters and indicators.
     The component can be used both on the SLAViewPage and the ParamViewPage.
 } {
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { 
+	ns_log Notice "im_sla_parameter_list_component: Project \#$project_id is not a 'Service Level Agreement'"
+	return "" 
+    }
+
     set params [list \
 		    [list base_url "/intranet-sla-management/"] \
 		    [list project_id $project_id] \
@@ -66,6 +113,11 @@ ad_proc -public im_sla_service_hours_component {
     Returns a HTML component with a component to display and modify working hours
     for the 7 days of the week.
 } {
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { 
+	ns_log Notice "im_sla_service_hours_component: Project \#$project_id is not a 'Service Level Agreement'"
+	return "" 
+    }
+
     set params [list \
 		    [list base_url "/intranet-sla-management/"] \
 		    [list project_id $project_id] \

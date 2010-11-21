@@ -20,11 +20,7 @@ if {![info exists object_id]} {
     }
 }
 
-# Is this an SLA?
 # This portlet only makes sense in SLAs...
-if {![im_project_has_type $object_id "Service Level Agreement"]} {
-    return ""
-}
 
 if {![info exists return_url] || "" == $return_url} { set return_url [im_url_with_query] }
 set current_user_id [ad_maybe_redirect_for_registration]

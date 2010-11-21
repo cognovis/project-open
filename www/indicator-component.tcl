@@ -28,6 +28,10 @@ set page_title [lang::message::lookup "" intranet-reporting.Indicators "Indicato
 set context_bar [im_context_bar $page_title]
 set context ""
 
+if {![info exists param_id]} { set param_id "" }
+if {![info exists project_id]} { set project_id "" }
+if {"" == $param_id && "" == $project_id} { ad_return_complaint 1 "<b>indicator-component: Neither param_id nor project_id specified</b>" }
+
 # Evaluate indicators every X hours:
 set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
 
@@ -36,14 +40,17 @@ set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-
 # param_id is one or more (TCL list) parameters to display
 #
 if {"" == $project_id} {
+    # We know that param_id contains a valid parameter
     set sla_id [db_string sla "select param_sla_id from im_sla_parameters where param_id = :param_id" -default ""]
 } else {
+    # We know that project_id contains the ID of project
     set sla_id $project_id
     set param_id [db_list param_per_sla "
 		select	p.param_id
 		from	im_sla_parameters p
 		where	p.param_sla_id = :sla_id
     "]
+    lappend param_id 0
 }
 
 # Permissions: Check read permissions on the SLA

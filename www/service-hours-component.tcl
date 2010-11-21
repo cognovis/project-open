@@ -65,7 +65,10 @@ for {set day 0} {$day < 7} {incr day} {
 	set hh $h
 	if {[string length $hh] < 2} { set hh "0$hh" }
 	set hh "$hh:01"
-	set service_hours $service_hours_hash($day)
+	set service_hours {}
+	if {[info exists service_hours_hash($day)]} {
+	    set service_hours $service_hours_hash($day)
+	}
 	set service_hour_p [im_sla_check_time_in_service_hours $hh $service_hours]
 	if {$service_hour_p} { set checked "checked" } else { set checked "" }
 	append line_html "<td align=center><input type=checkbox name=hours.$idx $checked></td>\n"
