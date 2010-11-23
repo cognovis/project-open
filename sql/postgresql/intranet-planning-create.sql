@@ -242,6 +242,7 @@ end;' language 'plpgsql';
 -- 73000-73999  Intranet Planning (1000)
 -- 73000-73099  Intranet Planning Status (100)
 -- 73100-73199  Intranet Planning Type (100)
+-- 73200-73299  Intranet Planning Time Dimension (100)
 -- 73200-73999  reserved (800)
 
 -- Status
@@ -251,6 +252,12 @@ SELECT im_category_new (73002, 'Deleted', 'Intranet Planning Status');
 -- Type
 SELECT im_category_new (73100, 'Revenues', 'Intranet Planning Type');
 SELECT im_category_new (73102, 'Costs', 'Intranet Planning Type');
+
+-- Time Dimension
+SELECT im_category_new (73200, 'Quarter', 'Intranet Planning Time Dimension');
+SELECT im_category_new (73202, 'Month', 'Intranet Planning Time Dimension');
+SELECT im_category_new (73204, 'Week', 'Intranet Planning Time Dimension');
+SELECT im_category_new (73206, 'Day', 'Intranet Planning Time Dimension');
 
 
 -----------------------------------------------------------
@@ -306,17 +313,15 @@ select im_priv_create('view_planning_all','Employees');
 -- You can add/modify these plugin definitions in the Admin ->
 -- Plugin Components page
 
-
-
 -- Create a Planning plugin for the ProjectViewPage.
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Project Planning',		-- plugin_name
+	'Project Revenue Planning',	-- plugin_name
 	'intranet-planning',		-- package_name
 	'right',			-- location
 	'/intranet/projects/view',	-- page_url
@@ -324,57 +329,6 @@ SELECT im_component_plugin__new (
 	90,				-- sort_order
 	'im_planning_component -object_id $project_id'	-- component_tcl
 );
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-planning.Project_Planning "Project Planning"'
-where plugin_name = 'Project Planning';
-
-
--- Create a planning plugin for the CompanyViewPage
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Company Planning',		-- plugin_name
-	'intranet-planning',		-- package_name
-	'right',			-- location
-	'/intranet/companies/view',	-- page_url
-	null,				-- view_name
-	90,				-- sort_order
-	'im_planning_component -object_id $company_id'	-- component_tcl
-);
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-planning.Company_Planning "Company Planning"'
-where plugin_name = 'Company Planning';
-
-
-
--- Create a planning plugin for the UserViewPage
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'User Planning',			-- plugin_name
-	'intranet-planning',		-- package_name
-	'right',			-- location
-	'/intranet/users/view',		-- page_url
-	null,				-- view_name
-	90,				-- sort_order
-	'im_planning_component -object_id $user_id'	-- component_tcl
-);
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-planning.User_Planning "User Planning"'
-where plugin_name = 'User Planning';
-
-
 
 
 -----------------------------------------------------------
