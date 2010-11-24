@@ -134,7 +134,7 @@ create unique index im_notes_object_note_idx on im_notes(object_id, note);
 -- as the name. Not pretty, but we don't have any other data,
 -- and every object needs this "__name" function.
 create or replace function im_note__name(integer)
-returns varchar as '
+returns varchar as $body$
 DECLARE
 	p_note_id		alias for $1;
 	v_name			varchar;
@@ -145,7 +145,7 @@ BEGIN
 	where	note_id = p_note_id;
 
 	return v_name;
-end;' language 'plpgsql';
+end; $body$ language 'plpgsql';
 
 
 -- Create a new note.
@@ -160,11 +160,11 @@ create or replace function im_note__new (
 	integer, varchar, integer,
 	varchar, integer,
 	integer, integer 
-) returns integer as '
+) returns integer as $body$
 DECLARE
 	-- Default 6 parameters that go into the acs_objects table
 	p_note_id	alias for $1;		-- note_id  default null
-	p_object_type   alias for $2;		-- object_type default ''im_note''
+	p_object_type   alias for $2;		-- object_type default im_note
 	p_creation_date alias for $3;		-- creation_date default now()
 	p_creation_user alias for $4;		-- creation_user default null
 	p_creation_ip   alias for $5;		-- creation_ip default null
@@ -189,7 +189,7 @@ BEGIN
 		p_creation_user,	-- creation_user - Current user or "0" for guest
 		p_creation_ip,		-- creation_ip - IP from ns_conn, or "0.0.0.0"
 		p_context_id,		-- context_id - NULL, not used in ]po[
-		''t''			-- security_inherit_p - not used in ]po[
+		't'			-- security_inherit_p - not used in ]po[
 	);
 	
 	-- Create an entry in the im_notes table with the same
@@ -203,7 +203,7 @@ BEGIN
 	);
 
 	return v_note_id;
-END;' language 'plpgsql';
+END;$body$ language 'plpgsql';
 
 
 -- Delete a note from the system.
@@ -211,7 +211,7 @@ END;' language 'plpgsql';
 -- Deleting only from im_notes would lead to an invalid
 -- entry in acs_objects, which is probably harmless, but innecessary.
 create or replace function im_note__delete(integer)
-returns integer as '
+returns integer as $body$
 DECLARE
 	p_note_id	alias for $1;
 BEGIN
@@ -223,7 +223,7 @@ BEGIN
 	PERFORM acs_object__delete(p_note_id);
 
 	return 0;
-end;' language 'plpgsql';
+end;$body$ language 'plpgsql';
 
 
 
@@ -321,7 +321,7 @@ select im_priv_create('view_notes','Employees');
 -- Create a Notes plugin for the ProjectViewPage.
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -343,7 +343,7 @@ where plugin_name = 'Project Notes';
 -- Create a notes plugin for the CompanyViewPage
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -366,7 +366,7 @@ where plugin_name = 'Company Notes';
 -- Create a notes plugin for the UserViewPage
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -395,7 +395,7 @@ where plugin_name = 'User Notes';
 
 
 create or replace function inline_0 ()
-returns integer as '
+returns integer as $body$
 declare
 	-- Menu IDs
 	v_menu			integer;
@@ -409,29 +409,28 @@ declare
 	v_reg_users		integer;
 BEGIN
 	-- Get some group IDs
-	select group_id into v_senman from groups where group_name = ''Senior Managers'';
-	select group_id into v_employees from groups where group_name = ''Employees'';
-	select group_id into v_customers from groups where group_name = ''Customers'';
-	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
-	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+	select group_id into v_senman from groups where group_name = 'Senior Managers';
+	select group_id into v_employees from groups where group_name = 'Employees';
+	select group_id into v_customers from groups where group_name = 'Customers';
+	select group_id into v_freelancers from groups where group_name = 'Freelancers';
+	select group_id into v_reg_users from groups where group_name = 'Registered Users';
 
-	-- Determine the main menu. "Label" is used to
-	-- identify menus.
+	-- Determine the main menu. "Label" is used to identify menus.
 	select menu_id into v_main_menu
-	from im_menus where label=''main'';
+	from im_menus where label='main';
 
 	-- Create the menu.
 	v_menu := im_menu__new (
 		null,			-- p_menu_id
-		''acs_object'',		-- object_type
+		'im_component_plugin',	-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
 		null,			-- context_id
-		''intranet-notes'',	-- package_name
-		''notes'',		-- label
-		''Notes'',		-- name
-		''/intranet-notes/'',   -- url
+		'intranet-notes',	-- package_name
+		'notes',		-- label
+		'Notes',		-- name
+		'/intranet-notes/',	-- url
 		75,			-- sort_order
 		v_main_menu,		-- parent_menu_id
 		null			-- p_visible_tcl
@@ -440,14 +439,14 @@ BEGIN
 	-- Grant some groups the read permission for the main "Notes" tab.
 	-- These permissions are independent from the user`s permission to
 	-- read the actual notes.
-	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_customers, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_reg_users, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_customers, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_freelancers, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_reg_users, 'read');
 
 	return 0;
-end;' language 'plpgsql';
+end; $body$ language 'plpgsql';
 -- Execute and then drop the function
 select inline_0 ();
 drop function inline_0 ();
