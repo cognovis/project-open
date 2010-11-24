@@ -33,6 +33,7 @@ ad_page_contract {
     item_name:array
     item_units:float,array
     item_uom_id:integer,array
+    item_material_id:integer,array
     item_type_id:integer,array
     item_project_id:integer,array
     item_rate:float,array
@@ -158,12 +159,13 @@ foreach nr $item_list {
     set name $item_name($nr)
     set units $item_units($nr)
     set uom_id $item_uom_id($nr)
+    set material_id $item_material_id($nr)
     set type_id $item_type_id($nr)
     set project_id $item_project_id($nr)
     set rate $item_rate($nr)
     set currency $item_currency($nr)
     set sort_order $item_sort_order($nr)
-    ns_log Notice "item($nr, $name, $units, $uom_id, $project_id, $rate, $currency)"
+    ns_log Notice "item($nr, $name, $units, $uom_id, $material_id, $project_id, $rate, $currency)"
 
     # Insert only if it's not an empty line from the edit screen
     if {!("" == [string trim $name] && (0 == $units || "" == $units))} {
@@ -172,14 +174,14 @@ foreach nr $item_list {
 	INSERT INTO im_invoice_items (
 		item_id, item_name, 
 		project_id, invoice_id, 
-		item_units, item_uom_id, 
+		item_units, item_uom_id, item_material_id,
 		price_per_unit, currency, 
 		sort_order, item_type_id, 
 		item_status_id, description
 	) VALUES (
 		:item_id, :name, 
 		:project_id, :invoice_id, 
-		:units, :uom_id, 
+		:units, :uom_id, :material_id,
 		:rate, :currency, 
 		:sort_order, :type_id, 
 		null, ''

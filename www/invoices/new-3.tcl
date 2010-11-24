@@ -617,6 +617,13 @@ set task_sum_html ""
 
 db_foreach task_sum_query $task_sum_sql {
 
+    ns_log Notice "new-3: src=[im_category_from_id $source_language_id], tgt=$target_language, type=$task_type, uom=$task_uom_id, uom=$task_uom, sub=[im_category_from_id $subject_area_id]"
+
+    # Make sure the material exists.
+    # The procedure will peek variables defined in DynFields of im_material
+    # from the current stack environment
+    set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation] -debug 1]
+
     # insert intermediate headers for every project
     if {$old_project_id != $project_id} {
 	append task_sum_html "
@@ -635,8 +642,6 @@ db_foreach task_sum_query $task_sum_sql {
 	set old_project_id $project_id
     }
     
-	# ad_return_complaint 1 $task_title	
-
     if {"" == $task_title} {
 	set msg_key [lang::util::suggest_key $task_type]
 	set task_type_l10n [lang::message::lookup "" intranet-core.$msg_key $task_type]
@@ -655,10 +660,12 @@ db_foreach task_sum_query $task_sum_sql {
     db_foreach references_prices $reference_price_sql {
 	
 	ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
+
 	# Take the first line of the result list (=best score) as a price proposal:
 	if {$price_list_ctr == 1} {
 	    set best_match_price $price_formatted
 	    set best_match_min_price $min_price
+	    set best_match_price_id $price_id
 	}
 	
 	set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
@@ -668,8 +675,6 @@ db_foreach task_sum_query $task_sum_sql {
 	
 	set min_price_formatted "$min_price_formatted $invoice_currency"
 	if {"" == $min_price} { set min_price_formatted "" }
-
-#	set price_relevancy "r=$price_relevancy, c=$company_id, u=$uom_id, t=$task_type_id, s=$subject_area_id, s=$source_language_id, t=$target_language_id, f=$file_type_id"
 
 	set company_price_url [export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]
 	set company_html "<a href=\"$company_price_url\">$price_company_name</a>"
@@ -705,6 +710,9 @@ db_foreach task_sum_query $task_sum_sql {
     
     # Add an empty line to the price list to separate prices form item to item
     append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"
+
+# Debug to show material_id and name
+#	    $material_id [db_string mn "select material_name from im_materials where material_id = :material_id" -default "unknown"]
      
     append task_sum_html "
 	<tr $bgcolor([expr $ctr % 2])> 
@@ -713,7 +721,9 @@ db_foreach task_sum_query $task_sum_sql {
 	  </td>
           <td>
 	    <input type=text name=item_name.$ctr size=40 value='[ns_quotehtml $task_title]'>
+	    <input type=hidden name=item_material_id.$ctr value='$material_id'>
 	  </td>
+
           <td align=right>
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
 	  </td>
