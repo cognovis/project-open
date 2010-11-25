@@ -31,9 +31,9 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
-
 set page_focus "im_header_form.keywords"
-set page_title "New Translation Invoice"
+set target_cost_type [im_category_from_id $target_cost_type_id]
+set page_title [lang::message::lookup "" intranet-trans-invoices.New_cost_type_from_translation_tasks "New %target_cost_type% from Translation Tasks"]
 set context_bar [im_context_bar $page_title]
 
 set bgcolor(0) " class=roweven"
@@ -68,7 +68,7 @@ if {[info exists select_project]} {
 		project_id = :project_id
      " -default ""]
     if {"" != $project_name} {
-	append page_title " for Project '$project_name'"
+	append page_title [lang::message::lookup "" intranet-trans-invoices.for_Project_project_name " for Project %project_name%"]
     }
 }
 
@@ -341,12 +341,10 @@ if {![string equal "" $task_table_rows]} {
 }
 
 set deselect_button_html "
-    <tr><td colspan=7 align=right>
-
+    <tr><td colspan=8 align=left>
       <input type=checkbox name=aggregate_tasks_p value=1 $aggregate_tasks_checkbox_enabled>
       [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks_of_the_same_type "Aggregate tasks of the same type"]
-
-      <input type=submit name=submit value='[_ intranet-trans-invoices.lt_Select_Tasks_for_Invo]'>
+      <input type=submit value='[lang::message::lookup "" intranet-trans-invoices.Select_Tasks_for_cost_type "Select Tasks for %target_cost_type%"]'>
     </td></tr>
     <tr><td>&nbsp;</td></tr>
 "

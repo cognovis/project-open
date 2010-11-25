@@ -81,7 +81,8 @@ set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set subproject_types [list "t" "[_ intranet-trans-invoices.Yes]" "f" "[_ intranet-trans-invoices.No]"]
-set page_title "[_ intranet-trans-invoices.Invoices]"
+set target_cost_type [im_category_from_id $target_cost_type_id]
+set page_title [lang::message::lookup "" intranet-trans-invoices.New_cost_type_from_translation_tasks "New %target_cost_type% from Translation Tasks"]
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 
@@ -138,23 +139,19 @@ set end_idx [expr $start_idx + $how_many]
 # Define the column headers and column contents that 
 # we want to show:
 #
-set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+set view_id [db_string get_view_id "select view_id from im_views where view_name = :view_name"]
 set column_headers [list]
 set column_vars [list]
 
 set column_sql "
-select
-	column_name,
-	column_render_tcl,
-	visible_for
-from
-	im_view_columns
-where
-	view_id=:view_id
-	and group_id is null
-order by
-	sort_order"
-
+	select	column_name,
+		column_render_tcl,
+		visible_for
+	from	im_view_columns
+	where	view_id = :view_id
+		and group_id is null
+	order by sort_order
+"
 db_foreach column_list_sql $column_sql {
     if {"" == $visible_for || [eval $visible_for]} {
 	lappend column_headers "$column_name"
@@ -526,9 +523,9 @@ set table_continuation_html "
 
 set submit_button "
       <tr>
-        <td colspan=$colspan align=right>
+        <td colspan=$colspan align=left>
 	   [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select invoice_currency $default_currency]
-	   <input type=submit value='[_ intranet-trans-invoices.lt_Select_Projects_for_I]'> 
+	   <input type=submit value='[lang::message::lookup "" intranet-trans-invoices.Select_Project_for_cost_type "Select Projects for %target_cost_type%"]'>
         </td>
       </tr>
 "
