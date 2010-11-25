@@ -41,11 +41,13 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 values (9044,90,NULL,'Bill. Units Interco','$billable_items_input_interco','','',440,'expr $project_write && $interco_p');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
-values (9050,90,NULL,'Price','$quoted_price','','',500,'im_permission $user_id view_finance');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
-values (9052,90,NULL,'Cost','$po_cost','','',520,'im_permission $user_id view_finance');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
-values (9054,90,NULL,'Gross Margin','$gross_margin','','',540,'im_permission $user_id view_finance');
+values (9050,90,NULL,'Quoted Price','$quoted_price','','',500,'im_permission $user_id view_finance');
+
+-- Show cost and margin only to WhP
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
+-- values (9052,90,NULL,'Ordered Cost','$po_cost','','',520,'im_permission $user_id view_finance');
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
+-- values (9054,90,NULL,'Gross Margin','$gross_margin','','',540,'im_permission $user_id view_finance');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
 values (9060,90,NULL,'End Date','$end_date_formatted','','',600,'expr !$project_write');
