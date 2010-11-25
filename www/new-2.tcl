@@ -535,6 +535,10 @@ order by
     set task_title ""
     db_foreach task_sum_query $task_sum_sql {
 
+	# Check if a material for the select parameter combination exists
+	# or create new material
+	set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation]]
+
 	# insert intermediate headers for every project
 	if {$old_project_id != $project_id} {
 	    append task_sum_html "
@@ -613,12 +617,18 @@ order by
 	    <input type=text name=item_rate.$ctr size=3 value='[string trim $best_match_price]'>
 	    <input type=hidden name=item_currency.$ctr value='$currency'>
 	    $currency
+
+            $material_id [db_string mn "select material_name from im_materials where material_id = :material_id" -default "unknown"]
+
+
+
+
 	  </td>
         </tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
 	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>
-	<input type=hidden name=item_task_id.$ctr value='-1'>
-        <input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>"
+	<input type=hidden name=item_task_id.$ctr value='[im_opt_val task_id]'>
+        <input type=hidden name='item_material_id.$ctr' value='$material_id'>"
 	incr ctr
 	set task_title ""
     }
