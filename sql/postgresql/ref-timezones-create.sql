@@ -164,11 +164,11 @@ declare
 begin
   insert into timezone_rules
     (tz_id, abbrev, utc_start, utc_end, local_start, local_end, gmt_offset, isdst_p)
-  select timezone__get_id(tz), abbrev, rdbms_date(utc_start),
-    rdbms_date(utc_end), rdbms_date(local_start),
-    to_date(local_end),
-    gmt_offset,
-    case isdst_p isdst_p when 0 then ''f'' else ''t''end;
+  select timezone__get_id(p_tz), p_abbrev, rdbms_date(p_utc_start),
+    rdbms_date(p_utc_end), rdbms_date(p_local_start),
+    to_date(p_local_end),
+    p_gmt_offset,
+    case p_isdst_p when 0 then ''f'' else ''t''end;
 end;' language 'plpgsql';
 
 create or replace function timezone__convert_to_utc (integer, varchar) returns timestamptz as '
@@ -253,7 +253,7 @@ end;' language 'plpgsql' stable;
 create or replace function timezone__get_abbrev (integer, timestamptz) returns varchar as '
 declare
   p_tz_id alias for $1;
-  p_time for $2;
+  p_time alias for $2;
   v_abbrev timezone_rules.abbrev%TYPE;
 begin
   v_abbrev := ''GMT'';
