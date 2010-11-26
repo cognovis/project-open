@@ -1,55 +1,31 @@
 <master>
-<property name="title">@page_title@</property>
-<property name="context">@context;noquote@</property>
-<form method=GET action=search>
-  <small>
-    <a href=@url_advanced_search@>#search.Advanced_Search#</a>
-    <br>
-    <input type=text name=q size=31 maxlength=256 value="@query@">
-    <input type=submit value="#search.Search#" name=t>
-    <input type=submit value="#search.Feeling_Lucky#" name=t>
-  </small>
-</form>
-<if @t@ eq "Search">
-  <i>#search.lt_Tip_In_most_browsers_#</i><br><br>
-</if>
+<property name="context">Results</property>
 
+<if @empty_p@ true>
+    <p class="hint">#search.lt_You_must_specify_some#</p>
+</if>
+<else>
 	<if @and_queries_notice_p@ eq 1>
-      	  <font color=6f6f6f>
+      	  <font color="6f6f6f">
           #search.The#
           [<a href=help/basics#and>#search.details#</a>]<br>
         </font>
 	</if>
 	<if @nstopwords@ eq 1>
-        <font color=6f6f6f>
+        <font color="6f6f6f">
           #search.lt_bstopwordsb_is_a_very#
           [<a href=help/basics#stopwords>#search.details#</a>]<br>
         </font>
 	</if>
 	<if @nstopwords@ gt 1>
-      	  <font color=6f6f6f>
+      	  <font color="6f6f6f">
           #search.lt_The_following_words_a# <b>@stopwords@</b>.
           [<a href=help/basics#stopwords>#search.details#</a>]<br>
       	  </font>
 	</if>
 
-<multiple name="searchresult">
-	<if @searchresult.title_summary@ nil>
-  		<a href=@searchresult.url_one@>#search.Untitled#</a><br>
-	</if>	
-	<else>
-	  <a href=@searchresult.url_one@>@searchresult.title_summary;noquote@</a><br>
-	</else>
-	<if @searchresult.txt_summary@ nil>	
-	</if>
-	<else>	
-	@searchresult.txt_summary;noquote@<br>	
-	</else>
-	<font color=green>@searchresult.url_one@</font><br><br>
-</multiple>
-
-<if @count@ eq 0>
-  Your search - <b>@query@</b> - did not match any documents.
+  <if @count@ eq 0>
+  Your search - <b>@query@</b> - did not match any content.
   <br>#search.lt_No_pages_were_found_c#<b>@query@</b>".
   <br><br>#search.Suggestions#
   <ul>
@@ -60,56 +36,67 @@
       <li>#search.Try_fewer_keywords#
     </if>
   </ul>
+  </if>
+  <else>
+        <div id="search-info">
+          <p class="subtitle">#search.Searched_for_query#</p>
+          <p class="times">
+        #search.Results# <strong>@low@-@high@</strong> #search.of_about# <strong>@count@</strong>#search.________Search_took# <strong>@elapsed@</strong> #search.seconds# 
+          </p>
+        </div>
+        <div id="search-results">
+          <ol style="counter-reset:item @offset@">
+            <multiple name="searchresult">
+              <li>
+                  <a href="@searchresult.url_one@" class="result-title">
+                    <if @searchresult.title_summary@ nil>#search.Untitled#</if>	
+                    <else>@searchresult.title_summary;noquote@</else>
+                  </a>
+                <if @searchresult.txt_summary@ not nil>	
+                  <div class="result-text">@searchresult.txt_summary;noquote@</div>
+                </if>
+                <div class="result-url">@searchresult.url_one@</div>
+              </li>
+            </multiple>
+          </ol>
+        </div>
+  </else>
+
+  <include src="/packages/search/lib/navbar" &="urlencoded_query"
+    paginator_class="list-paginator-bottom" count="@result.count@" &="low" &="high"
+    &="offset" &="num" &="search_package_id">
+
+<if @count@ gt 0>
+<div style="text-align:center">
+<form method="get" action="search">
+<div>
+<input type="text" name="q" size="60" maxlength="256" value="@query@">
+<input type="submit" value="#search.Search#">
+</div>
+</form>
+<if @t@ eq "Search">
+<i>#search.lt_Tip_In_most_browsers_#</i>
 </if>
-<else>
-  <table width=100% bgcolor=3366cc border=0 cellpadding=3 cellspacing=0>
-    <tr><td>
-      <font color=white>
-        #search.Searched_for_query#
-      </font>
-    </td><td align=right>
-      <font color=white>
-        #search.Results# <b>@low@-@high@</b> #search.of_about# <b>@count@</b>#search.________Search_took# <b>@elapsed@</b> #search.seconds# 
-      </font>     
-    </td></tr>
-  </table>
-  <br clear=all>
+</div>
+
+<if @stw@ not nil>
+<p style="text-align:center;font-size=-1">#search.lt_Try_your_query_on_stw#</p>
+</if>
+</if>
 </else>
 
-<if @from_result_page@ lt @to_result_page@>
-  <center>
-
-    <small>#search.Result_page#</small>
-
-    <if @from_result_page@ lt @current_result_page@>
-      <small><a href=@url_previous@><font color=0000cc><b>#search.Previous#</b></font></a></small>
-    </if>
-    &nbsp;@choice_bar;noquote@&nbsp;
-    
-    <if @current_result_page@ lt @to_result_page@>
-	<small><a href=@url_next@><font color=0000cc><b>#search.Next#</b></font></a></small>
-    </if>
-  </center>
+<if @and_queries_notice_p@ eq 1>
+<p class="hint">#search.and_not_needed# [<a href="help/basics#and">#search.details#</a>]</p>
 </if>
-<if @count@ gt 0>
-  <center>
-    <table border=0 cellpadding=3 cellspacing=0>
-      <tr><td nowrap>
-        <form method=GET action=search>
-          <center>
-            <small>
-              <input type=text name=q size=31 maxlength=256 value="@query@">
-              <input type=submit value=Search>
-            </small>
-          </center>
-        </form>
-      </td></tr>
-    </table>
-  </center>
-
-  <if @stw@ not nil>
-    <center>
-      <font size=-1>#search.lt_Try_your_query_on_stw#</font></center>
-    </center>
-  </if>
+<if @nstopwords@ eq 1>
+<p class="hint">#search.lt_bstopwordsb_is_a_very# [<a href="help/basics#stopwords">#search.details#</a>]</p>
 </if>
+<if @nstopwords@ gt 1>
+<p class="hint">#search.lt_The_following_words_a# [<a href="help/basics#stopwords">#search.details#</a>]</p>
+</if>
+
+<if @debug_p@>
+<p>#search.Searched_for_query#</p>
+<p>#search.Results_count#</p>
+</if>
+

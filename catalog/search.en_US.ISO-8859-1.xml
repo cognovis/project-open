@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="search" package_version="5.1.5" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="search" locale="en_US" charset="ISO-8859-1">
 
   <msg key="________Search_took">.
         Search took</msg>
@@ -30,7 +30,7 @@
   <msg key="Results">Results</msg>
   <msg key="results">results</msg>
   <msg key="Search">Search</msg>
-  <msg key="Searched_for_query">Searched for: %query%</msg>
+  <msg key="Searched_for_query">Search results for &lt;strong&gt;%query%&lt;/strong&gt;</msg>
   <msg key="seconds">seconds.</msg>
   <msg key="selected">selected</msg>
   <msg key="Suggestions">Suggestions:</msg>
