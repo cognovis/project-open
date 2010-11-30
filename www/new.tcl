@@ -16,6 +16,7 @@ ad_page_contract {
 } {
     indicator_id:integer,optional
     {return_url "/intranet-reporting-indicators/index"}
+    { indicator_object_type "" }
     { indicator_widget_bins 5 }
     {form_mode "edit"}
 }
@@ -42,7 +43,7 @@ if {!$add_reports_p} {
 set object_type_options [db_list_of_lists otype_options "
 	select	pretty_name, object_type
 	from	acs_object_types
-	where	object_type in ('user', 'im_project')
+	where	object_type in ('user', 'im_project', 'im_sla_parameter')
 	order by object_type
 "]
 set object_type_options [linsert $object_type_options 0 {{Not related to a specific object type} {}} ]
@@ -100,7 +101,7 @@ ad_form -extend -name $form_id \
 	db_exec_plsql create_report "
 		SELECT im_indicator__new(
 			:indicator_id,
-			'im_report',
+			'im_indicator',
 			now(),
 			:user_id,
 			'[ad_conn peeraddr]',

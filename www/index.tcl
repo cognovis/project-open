@@ -7,9 +7,18 @@
 ad_page_contract {
     Show all the Reports
 
+    @param object_type 
+	Selects only indicators made for a specific
+        object type (i.e. im_project). If empty, this
+	page will only show indicators with an empty
+	indicator_object_type.
+	This way it is possible to create indicators
+	that take an object_id as a parameter.
     @author frank.bergmann@project-open.com
 } {
     { return_url "" }
+    { object_type "" }
+    { object_id "" }
 }
 
 # ------------------------------------------------------
@@ -21,6 +30,7 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set add_reports_p [im_permission $current_user_id "add_reports"]
 set view_reports_all_p [im_permission $current_user_id "view_reports_all"]
 
+set current_url [im_url_with_query]
 if {"" == $return_url} { set return_url [ad_conn url] }
 set page_title [lang::message::lookup "" intranet-reporting.Indicators "Indicators"]
 set context_bar [im_context_bar $page_title]
@@ -30,6 +40,18 @@ set wiki_url "http://www.project-open.org/documentation"
 
 # Evaluate indicators every X hours:
 set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
+
+# Did the user specify an object? Then show only indicators 
+# designed to be shown with that object.
+if {"" != $object_id} { set o_object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""] }
+
+
+# Do we need to get a sample object?
+if {("" != $object_type && $object_type != $o_object_type) || ("" != $object_type && "" == $object_id)} {
+    # User needs to specify a sample object
+    ad_returnredirect [export_vars -base "index-object-select" {{return_url $current_url} object_type return_url}]
+}
+
 
 # ------------------------------------------------------
 # List creation
@@ -110,6 +132,11 @@ db_foreach history $history_sql {
 }
 
 
+set object_type_sql "and (indicator_object_type is null OR indicator_object_type = '')"
+if {"" != $object_type} { set object_type_sql "and lower(indicator_object_type) = lower(:object_type)" }
+
+
+
 set permission_sql "and 't' = im_object_permission_p(r.report_id, :current_user_id, 'read')"
 if {$view_reports_all_p} { set permission_sql "" }
 
@@ -132,6 +159,7 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
 	where
 		r.report_id = i.indicator_id and
 		r.report_type_id = [im_report_type_indicator]
+		$object_type_sql
 		$permission_sql
 	order by 
 		section
@@ -156,11 +184,28 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
     if {"" == $result} {
 	
 	set result "error"
+
+	
+	# ---------------------------------------------------------------
+	# Variable substitution in the SQL statement
+	#
+	set substitution_list [list user_id $current_user_id object_id $object_id]
+
+	# append form vars to the substitution list
+	set form_vars [ns_conn form]
+	foreach form_var [ad_ns_set_keys $form_vars] {
+	    set form_val [ns_set get $form_vars $form_var]
+	    lappend substitution_list $form_var
+	    lappend substitution_list $form_val
+	}
+	set report_sql_subst [lang::message::format $report_sql $substitution_list]
+
+
+	# Evaluate the indicator
 	set error_occured [catch {
-
-	    set result [db_string value $report_sql]
-
+	    set result [db_string value $report_sql_subst]
 	} err_msg]
+
 	if {$error_occured} { 
 	    set report_description "<pre>$err_msg</pre>" 
 	} else {
@@ -220,3 +265,84 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
 }
 
 
+
+
+# ---------------------------------------------------------------
+# Format the Filter
+# ---------------------------------------------------------------
+
+set object_type_options [list "" "" "im_project" "Project" "im_sla_parameter" "SLA Parameter"]
+
+set object_options_sql "
+	select	*
+	from	(select	acs_object__name(object_id) as object_name,
+			object_id
+		from	acs_objects o
+		where	o.object_type = :object_type) o
+	where
+		object_name is not null and
+		object_name != ''
+	order by object_name
+"
+if {"" != $object_type} {
+    set object_options [db_list_of_lists ooptions $object_options_sql]
+}
+
+
+
+set filter_html "
+	<form method=get action='$return_url' name=filter_form>
+	[export_form_vars return_url]
+	<table border=0 cellpadding=0 cellspacing=0>
+	<tr>
+	  <td valign=top>[lang::message::lookup "" intranet-reporting-indicators.Object_Type "Object Type"] </td>
+	  <td valign=top>[im_select object_type $object_type_options {}]</td>
+	</tr>
+"
+
+if {"" != $object_type} {
+    append filter_html "
+	<tr>
+	  <td valign=top>[lang::message::lookup "" intranet-reporting-indicators.Object "Object"] </td>
+	  <td valign=top>[im_select -ad_form_option_list_style_p 1 object_id $object_options $object_id]</td>
+	</tr>
+    "	
+}
+
+append filter_html "
+	<tr>
+	  <td valign=top>&nbsp;</td>
+	  <td valign=top><input type=submit value='[_ intranet-timesheet2.Go]' name=submit></td>
+	</tr>
+	</table>
+	</form>
+"
+
+
+# ---------------------------------------------------------------
+# Left Navbar
+# ---------------------------------------------------------------
+
+set admin_html ""
+if {$add_reports_p} { append admin_html "<li><a href='[export_vars -base "new" {{indicator_object_type $object_type} return_url}]'>Add a new Indicator</a></li>\n" }
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                [lang::message::lookup "" intranet-reporting-indicators.Filter_Indicators "Filter Indicators"]
+                </div>
+                $filter_html
+            </div>
+            <hr/>
+"
+
+if {$user_admin_p} {
+	append left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                [lang::message::lookup "" intranet-reporting-indicators.Admin_Indicators "Admin Indicators"]
+                </div>
+                $admin_html
+            </div>
+	"
+}
