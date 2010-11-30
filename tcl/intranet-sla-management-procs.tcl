@@ -102,7 +102,7 @@ ad_proc -public im_sla_parameter_list_component {
 		    [list return_url [im_url_with_query]] \
     ]
 
-    set result [ad_parse_template -params $params "/packages/intranet-sla-management/www/indicator-component"]
+    set result [ad_parse_template -params $params "/packages/intranet-sla-management/www/sla-parameter-indicator-component"]
     return [string trim $result]
 }
 

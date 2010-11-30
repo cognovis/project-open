@@ -5,13 +5,17 @@
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
 
-# Shows a list of parameters plus the indicators related to the parameter
+# This indicator is executed from within the view page for a project
+# of sub-type "Service Level Agreement". It shows a list of indicators,
+# one for each SLA parameter.
+#
+# The component is called with a parameter "project_id" representing
+# the SLA project.
 
 # ---------------------------------------------------------------
 # Variables
 # ---------------------------------------------------------------
 
-#    { param_id:integer "" }
 #    { project_id:integer "" }
 #    return_url 
 
@@ -28,33 +32,13 @@ set page_title [lang::message::lookup "" intranet-reporting.Indicators "Indicato
 set context_bar [im_context_bar $page_title]
 set context ""
 
-if {![info exists param_id]} { set param_id "" }
-if {![info exists project_id]} { set project_id "" }
-if {"" == $param_id && "" == $project_id} { ad_return_complaint 1 "<b>indicator-component: Neither param_id nor project_id specified</b>" }
+if {![info exists project_id]} { ad_return_complaint 1 "sla-parameter-indicator-component.tcl: variable project_id not defined" }
 
 # Evaluate indicators every X hours:
 set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
 
-# Calculate important vars:
-# sla_id is the ID of the effective SLA of the parameters
-# param_id is one or more (TCL list) parameters to display
-#
-if {"" == $project_id} {
-    # We know that param_id contains a valid parameter
-    set sla_id [db_string sla "select param_sla_id from im_sla_parameters where param_id = :param_id" -default ""]
-} else {
-    # We know that project_id contains the ID of project
-    set sla_id $project_id
-    set param_id [db_list param_per_sla "
-		select	p.param_id
-		from	im_sla_parameters p
-		where	p.param_sla_id = :sla_id
-    "]
-    lappend param_id 0
-}
-
 # Permissions: Check read permissions on the SLA
-im_project_permissions $current_user_id $sla_id sla_view sla_read sla_write sla_admin
+im_project_permissions $current_user_id $project_id sla_view sla_read sla_write sla_admin
 # $read is queries in the .adp template
 
 
@@ -62,6 +46,14 @@ im_project_permissions $current_user_id $sla_id sla_view sla_read sla_write sla_
 # List creation
 # ------------------------------------------------------
 set elements_list {}
+
+lappend elements_list \
+	param {
+	    label "Param"
+	    display_template {
+		<a href=@reports.param_view_url@>@reports.param_name@</a>
+	    }
+	}
 
 lappend elements_list \
 	value {
@@ -110,12 +102,10 @@ set permission_sql "and 't' = im_object_permission_p(r.report_id, :current_user_
 #if {$view_reports_all_p} { set permission_sql "" }
 
 set indicator_cnt 0
-db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif indicator_color} reports get_reports "
+db_multirow -extend {param_view_url report_view_url report_edit_html value_html edit_html diagram_html help_gif indicator_color} reports get_reports "
 	select
-		r.report_id,
-		r.report_name,
-		r.report_description,
-		r.report_sql,
+		sp.*,
+		r.*,
 		i.*,
 		im_category_from_id(i.indicator_section_id) as section,
 		ir.result
@@ -133,12 +123,13 @@ db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif 
 			group by result_indicator_id
 		) ir ON (i.indicator_id = ir.result_indicator_id)
 	where
-		sp.param_id in ([join $param_id ","]) and
+		sp.param_sla_id = :project_id and
 		re.object_id_one = sp.param_id and
 		re.object_id_two = r.report_id and
 		re.rel_id = spir.rel_id and
 		r.report_id = i.indicator_id and
-		r.report_type_id = [im_report_type_indicator]
+		r.report_type_id = [im_report_type_indicator] and
+		i.indicator_object_type = 'im_sla_parameter'
 		$permission_sql
 	order by 
 		section
@@ -147,6 +138,9 @@ db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif 
 
     set report_view_url [export_vars -base "/intranet-reporting-indicators/view" {indicator_id return_url}]
     set report_edit_url [export_vars -base "/intranet-reporting-indicators/new" {indicator_id return_url}]
+    set param_view_url [export_vars -base "/intranet-sla-management/new" {param_id {form_mode display} return_url}]
+
+
     set perms_url [export_vars -base "/intranet-reporting-indicators/perms" {{object_id $indicator_id} return_url}]
     set edit_html "
 	<a href='$report_edit_url'>[im_gif "wrench"]</a>

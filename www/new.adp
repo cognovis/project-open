@@ -18,7 +18,7 @@
     <table width="100%">
 	<tr valign="top">
 	<td width="50%">
-		<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Ticket_Details "Ticket Details"]] %>
+		<%= [im_box_header [lang::message::lookup "" intranet-sla-management.SAL_Parameter_Details "SLA Parameter Details"]] %>
 		<formtemplate id=form></formtemplate>
 		@param_action_html;noquote@
 		<%= [im_box_footer] %>
