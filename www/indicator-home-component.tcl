@@ -10,6 +10,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { return_url "" }
+    { object_id "" }
 }
 
 # ------------------------------------------------------
@@ -29,6 +30,12 @@ set context ""
 
 # Evaluate indicators every X hours:
 set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
+
+# Did the user specify an object? Then show only indicators designed
+# to be shown with that object.
+if {![info exists object_type]} { set object_type "" }
+if {"" != $object_id} { set object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""] }
+
 
 # ------------------------------------------------------
 # List creation
@@ -81,6 +88,9 @@ list::create \
 set permission_sql "and 't' = im_object_permission_p(r.report_id, :current_user_id, 'read')"
 #if {$view_reports_all_p} { set permission_sql "" }
 
+set object_type_sql "and (indicator_object_type is null OR indicator_object_type = '')"
+if {"" != $object_type} { set object_type_sql "and lower(indicator_object_type) = lower(:object_type)" }
+
 set indicator_cnt 0
 db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif indicator_color} reports get_reports "
 	select
@@ -104,6 +114,7 @@ db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif 
 	where
 		r.report_id = i.indicator_id and
 		r.report_type_id = [im_report_type_indicator]
+		$object_type_sql
 		$permission_sql
 	order by 
 		section
