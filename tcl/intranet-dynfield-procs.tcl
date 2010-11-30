@@ -1266,6 +1266,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 #        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
 
+
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
         }
@@ -1273,6 +1274,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             set display_mode "display"
         }
 	if {"none" == $display_mode} { continue }
+
+	# Don't show a read-only mode in an "edit" form
+	# Doesn't work yet, because the field is expected later
+#	if {"display" == $display_mode && "edit" == $form_display_mode}  {
+#	    continue
+#        }
 
 
 	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }

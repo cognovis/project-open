@@ -59,6 +59,7 @@ set acs_datatype_options [list \
 
 set widget_options [list \
 	[list "Checkbox" checkbox] \
+	[list "\]po\[ Checkbox" im_checkbox] \
 	[list "Cost Center Tree" im_cost_center_tree] \
 	[list "Date" date] \
 	[list "Multiselect" multiselect] \
@@ -67,12 +68,11 @@ set widget_options [list \
 	[list "Select" select] \
 	[list "Text" text] \
 	[list "Textarea" textarea] \
-	[list "P/O Category" im_category_tree] \
 	[list "OpenACS Category" category_tree] \
-	[list "Generic SQL" generic_sql] \
+	[list "\]po\[ Category" im_category_tree] \
+	[list "\]po\[ Generic SQL" generic_sql] \
 	[list "Hidden" hidden] \
 ]
-
 
 set deref_options [list \
 	[list "Generic Default (im_name_from_id)" "im_name_from_id"] \
