@@ -1,12 +1,11 @@
 <if @sla_read@>
-<if @indicator_cnt@>
 <script language="JavaScript" type="text/javascript" src="/resources/diagram/diagram/diagram.js"></script>
-<form action=sla-parameter-indicator-action method=POST>
+<form action="/intranet-sla-management/sla-parameter-action" method=GET>
+<%= [export_form_vars return_url] %>
 <table>
 @header_html;noquote@
 @body_html;noquote@
 </table>
 </form>
 @footer_html;noquote@
-</if>
 </if>

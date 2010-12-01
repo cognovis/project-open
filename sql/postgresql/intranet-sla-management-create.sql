@@ -311,6 +311,12 @@ SELECT im_category_new (72002, 'Deleted', 'Intranet SLA Parameter Status');
 SELECT im_category_new (72100, 'Default', 'Intranet SLA Parameter Type');
 
 
+
+-- Create a new indicator section.
+select im_category_new (15250, 'SLA Management', 'Intranet Indicator Section');
+
+
+
 -----------------------------------------------------------
 -- Create views for shortcut
 --
@@ -705,7 +711,4 @@ end;' language 'plpgsql';
 -- Execute and then drop the function
 select inline_0 ();
 drop function inline_0 ();
-
-
-
 

@@ -22,7 +22,7 @@
 	<tr>
 	<td>	<input type=radio name=target_object_type value=indicator checked></td>
 	<td>	<%= [lang::message::lookup "" intranet-sla-management.Object_Type_Indicator "Indicator"] %></td>
-	<td>	<%= [im_report_select -report_type_id [im_report_type_indicator] indicator_id] %><br>
+	<td>	<%= [im_report_select -report_type_id [im_report_type_indicator] -indicator_object_type "im_sla_parameter" indicator_id] %><br>
 	</td>
 	<td>	<%= [lang::message::lookup "" intranet-sla-management.Associate_Msg_Indicator "
 		Add a new indicator to this SLA parameter."] %>
