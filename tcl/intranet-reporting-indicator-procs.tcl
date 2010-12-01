@@ -304,3 +304,93 @@ ad_proc -public im_indicator_home_page_component {
 }
 
 
+
+
+# ----------------------------------------------------------------------
+# Indicator Evaluation
+# ---------------------------------------------------------------------
+
+ad_proc -public im_indicator_evaluate {
+    -report_id
+    -report_sql
+    { -object_id "" }
+    { -substitution_list {} }
+} {
+    Evaluates the specified indicator.
+    @param substitution_list A key - value list of values to be substituted in the indicator.
+    @param object_id Object ID for evaluating indicators related to an object type.
+} {
+    # -------------------------------------------------------
+    # Append form vars to the substitution list
+    set form_vars [ns_conn form]
+    foreach form_var [ad_ns_set_keys $form_vars] {
+	set form_val [ns_set get $form_vars $form_var]
+	lappend substitution_list $form_var
+	lappend substitution_list $form_val
+    }
+
+    # -------------------------------------------------------
+    # Append vars from object_id if set
+    if {"" != $object_id} {
+	# Get the SQL to extract all values from the object
+	set object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""]
+	set sql [im_rest_object_type_select_sql -rest_otype $object_type]
+
+	# Get the list of index columns of the object's various tables.
+	set index_columns [im_rest_object_type_index_columns -rest_otype $object_type]
+
+	# Execute the sql. As a result we get a result_hash with keys corresponding
+	# to table columns and values
+	array set result_hash {}
+	set rest_oid $object_id
+	db_with_handle db {
+	    set selection [db_exec select $db query $sql 1]
+	    while { [db_getrow $db $selection] } {
+		set col_names [ad_ns_set_keys $selection]
+		set this_result [list]
+		for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		    set var [lindex $col_names $i]
+		    set val [ns_set value $selection $i]
+		    lappend substitution_list $var
+		    lappend substitution_list $val
+		}
+	    }
+	}
+	db_release_unused_handles
+    }
+
+    set report_sql_subst [lang::message::format $report_sql $substitution_list]
+
+    # Evaluate the indicator
+    set result "error"
+    set error_occured [catch {
+	set result [db_string value $report_sql_subst]
+    } err_msg]
+    
+    if {$error_occured} { 
+#	ad_return_complaint 1 "<pre>[join $substitution_list "\n"]\n\n$err_msg\n\n$report_sql_subst</pre>"
+	set report_description "<pre>$err_msg</pre>" 
+	set result $err_msg
+    } else {
+
+	if {"" != $result} {
+	    db_dml insert "
+				insert into im_indicator_results (
+					result_id,
+					result_indicator_id,
+					result_date,
+					result
+				) values (
+					nextval('im_indicator_results_seq'),
+					:report_id,
+					now(),
+					:result
+				)
+	    "
+	}
+
+    }
+    return $result
+}
+
+

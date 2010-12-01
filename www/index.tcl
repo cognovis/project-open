@@ -43,6 +43,7 @@ set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-
 
 # Did the user specify an object? Then show only indicators 
 # designed to be shown with that object.
+set o_object_type ""
 if {"" != $object_id} { set o_object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""] }
 
 
@@ -182,51 +183,13 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
     "
 
     if {"" == $result} {
-	
-	set result "error"
-
-	
-	# ---------------------------------------------------------------
-	# Variable substitution in the SQL statement
-	#
 	set substitution_list [list user_id $current_user_id object_id $object_id]
-
-	# append form vars to the substitution list
-	set form_vars [ns_conn form]
-	foreach form_var [ad_ns_set_keys $form_vars] {
-	    set form_val [ns_set get $form_vars $form_var]
-	    lappend substitution_list $form_var
-	    lappend substitution_list $form_val
-	}
-	set report_sql_subst [lang::message::format $report_sql $substitution_list]
-
-
-	# Evaluate the indicator
-	set error_occured [catch {
-	    set result [db_string value $report_sql_subst]
-	} err_msg]
-
-	if {$error_occured} { 
-	    set report_description "<pre>$err_msg</pre>" 
-	} else {
-
-	    if {"" != $result} {
-		db_dml insert "
-				insert into im_indicator_results (
-					result_id,
-					result_indicator_id,
-					result_date,
-					result
-				) values (
-					nextval('im_indicator_results_seq'),
-					:report_id,
-					now(),
-					:result
-				)
-	        "
-	    }
-
-	}
+	set result [im_indicator_evaluate \
+			-report_id $report_id \
+			-object_id $object_id \
+			-report_sql $report_sql \
+			-substitution_list $substitution_list \
+		       ]
     }	
     
     set value_html $result

@@ -252,6 +252,7 @@ select im_category_new (15230, 'Knowledge Management', 'Intranet Indicator Secti
 select im_category_new (15235, 'Human Resources Management', 'Intranet Indicator Section');
 select im_category_new (15240, 'Other', 'Intranet Indicator Section');
 select im_category_new (15245, 'System Usage', 'Intranet Indicator Section');
+select im_category_new (15250, 'SLA Management', 'Intranet Indicator Section');
 
 
 create or replace view im_indicator_sections as
