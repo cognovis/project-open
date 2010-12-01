@@ -286,7 +286,12 @@ switch $mine_p {
 	lappend criteria "(
 		t.ticket_assignee_id = :current_user_id 
 		OR t.ticket_customer_contact_id = :current_user_id
-		OR t.ticket_assignee_id = :current_user_id
+		OR t.ticket_assignee_id in (
+			select	group_id 
+			from	acs_rels r, groups g
+			where	r.object_id_one = g.group_id and 
+				object_id_two = :current_user_id
+		)
 		OR t.ticket_queue_id in (
 			select distinct
 				g.group_id
@@ -324,7 +329,12 @@ switch $mine_p {
 	lappend criteria "(
 		t.ticket_assignee_id = :current_user_id 
 		OR t.ticket_customer_contact_id = :current_user_id
-		OR t.ticket_assignee_id = :current_user_id
+		OR t.ticket_assignee_id in (
+			select	group_id 
+			from	acs_rels r, groups g
+			where	r.object_id_one = g.group_id and 
+				object_id_two = :current_user_id
+		)
 		OR p.project_id in (	
 			-- cases with user as task holding_user
 			select distinct wfc.object_id
