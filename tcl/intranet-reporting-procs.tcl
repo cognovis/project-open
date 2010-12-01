@@ -47,6 +47,7 @@ ad_proc -public im_report_select {
     {-include_empty 0} 
     {-include_empty_name "" }
     {-report_type_id 0} 
+    {-indicator_object_type ""}
     select_name 
     {default ""} 
 } {
@@ -56,6 +57,7 @@ ad_proc -public im_report_select {
 		     -include_empty $include_empty \
 		     -include_empty_name $include_empty_name \
 		     -report_type_id $report_type_id \
+		     -indicator_object_type $indicator_object_type \
 		    ]
 
     return [im_options_to_select_box $select_name $options $default]
@@ -66,13 +68,18 @@ ad_proc -public im_report_options {
     {-include_empty 0} 
     {-include_empty_name "" }
     {-report_type_id ""} 
+    {-indicator_object_type ""}
 } {
     Returns a list of all Reports. 
 } {
     set current_user_id [ad_get_user_id]
 
+    set where_clause ""
     if {"" != $report_type_id && 0 != $report_type_id} {
-	set report_type_sql "and r.report_type_id in ([join [im_sub_categories $report_type_id] ","])"
+	append where_clause "and r.report_type_id in ([join [im_sub_categories $report_type_id] ","])"
+    }
+    if {"" != $indicator_object_type} {
+	append where_clause "and r.report_id in (select indicator_id from im_indicators where indicator_object_type = :indicator_object_type)"
     }
 
     set options_sql "
@@ -80,7 +87,7 @@ ad_proc -public im_report_options {
 		r.report_id
         from	im_reports r
 	where	1=1
-		$report_type_sql
+		$where_clause
 	order by
 		r.report_name
     "
