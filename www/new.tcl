@@ -18,6 +18,8 @@ ad_page_contract {
     {return_url "/intranet-reporting-indicators/index"}
     { indicator_object_type "" }
     { indicator_widget_bins 5 }
+    { also_add_rel_to_objects {} }
+    { also_add_rel_type "" }
     {form_mode "edit"}
 }
 
@@ -64,7 +66,7 @@ ad_form \
     -action $action_url \
     -actions $actions \
     -mode $form_mode \
-    -export {return_url} \
+    -export {return_url also_add_rel_to_objects also_add_rel_type } \
     -form {
 	indicator_id:key
 	{report_name:text(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Name {Indicator Name}]"} {html {size 60}}}
