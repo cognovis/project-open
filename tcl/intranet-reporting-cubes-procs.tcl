@@ -1421,10 +1421,10 @@ ad_proc im_reporting_cubes_ticket {
         lappend criteria "p.customer_id = :customer_id"
     }
     if {"" != $ticket_type_id && 0 != $ticket_type_id} {
-        lappend criteria "t.ticket_type_id in ([join [im_sub_categories $ticket_type_id] ", "])"
+        lappend criteria "ticket_type_id in ([join [im_sub_categories $ticket_type_id] ", "])"
     }
     if {"" != $ticket_status_id && 0 != $ticket_status_id} {
-        lappend criteria "t.ticket_status_id in ([join [im_sub_categories $ticket_status_id] ", "])"
+        lappend criteria "ticket_status_id in ([join [im_sub_categories $ticket_status_id] ", "])"
     }
 
     set constraint_hash [array get $constraints]
@@ -1448,11 +1448,9 @@ ad_proc im_reporting_cubes_ticket {
     set inner_sql "
   		select
 			t.*,
+			p.*,
 			p.project_name as ticket_name,
 			p.project_nr as ticket_nr,
-			p.company_id,
-			p.start_date,
-			p.end_date,
 			o.creation_user as creation_user_id,
 			1 as one
   		from
@@ -1489,9 +1487,16 @@ ad_proc im_reporting_cubes_ticket {
   		$where_clause
     "
     
+    # Select whether to sum or to "avg"
+    switch $aggregate {
+	"ticket_resolution_time" { set aggregate_function "avg" }
+	default { set aggregate_function "sum" }
+    }
+
+
     set sql "
     select
-  	sum($aggregate) as aggregate,
+  	${aggregate_function}($aggregate) as aggregate,
   	[join $dimension_vars ",\n\t"]
     from
   	($middle_sql) p

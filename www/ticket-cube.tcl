@@ -212,9 +212,11 @@ set this_url [export_vars -base "/intranet-reporting/ticket-cube" {start_date en
 
 set aggregate_options {
 	"one"				"Number of Tickets"
-	"reaction_time"			"Reaction Time"
-	"solution_time"			"Solution Time"
+	"ticket_resolution_time"	"Resolution Time"
+	"cost_timesheet_logged_cache"	"Logged Hours"
 }
+
+#	"reaction_time"			"Reaction Time"
 
 set top_vars_options {
 	"" "No Date Dimension" 
@@ -230,17 +232,13 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"ticket_name" "Ticket Name"
-	"ticket_nr" "Ticket Nr"
-	"ticket_type" "Ticket Type"
-	"ticket_status" "Ticket Status"
-
-	"ticket_creation_user" "Ticket Creator"
-	"ticket_creation_user_dept" "Ticket Creator's Department"
-
-	"customer_name" "Customer Name"
-	"customer_type" "Customer Type"
-	"customer_status" "Customer Status"
+	"ticket_name" "Ticket - Name"
+	"ticket_nr" "Ticket - Nr"
+	"ticket_creation_user" "Ticket - Creation User"
+	"ticket_creation_user_dept" "Ticket - Creator's Department"
+	"customer_name" "Customer - Name"
+	"customer_type" "Customer - Type"
+	"customer_status" "Customer - Status"
 }
 
 
@@ -251,26 +249,33 @@ set left_scale_options {
 
 set dynfield_sql "
 	select	aa.attribute_name,
-		aa.pretty_name,
+		aa.pretty_name as attribute_pretty_name,
+		ot.pretty_name as object_type_pretty_name,
 		w.widget as tcl_widget,
-		w.widget_name as dynfield_widget
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
 	from
 		im_dynfield_attributes a,
 		im_dynfield_widgets w,
-		acs_attributes aa
+		acs_attributes aa,
+		acs_object_types ot
 	where
 		a.widget_name = w.widget_name
 		and a.acs_attribute_id = aa.attribute_id
 		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
 		and aa.object_type in ('im_ticket','im_company')
+		and aa.object_type = ot.object_type
 		and aa.attribute_name not like 'default%'
+	order by
+		aa.object_type,
+		aa.pretty_name
 " 
 
 set derefs [list]
 db_foreach dynfield_attributes $dynfield_sql {
 
     lappend left_scale_options ${attribute_name}_deref
-    lappend left_scale_options $pretty_name
+    lappend left_scale_options "$object_type_pretty_name - $attribute_pretty_name"
 
     # How to dereferentiate the attribute_name to attribute_name_deref?
     # The code is going to be executed as part of an SQL
@@ -281,31 +286,11 @@ db_foreach dynfield_attributes $dynfield_sql {
     }
 
     # Catch the generic ones - We know how to dereferentiate integer references of these fields.
-    set deref ""
-    switch $tcl_widget {
-	im_category_tree {
-	    set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref"
-	}
-	im_cost_center_tree {
-	    set deref "im_cost_center_name_from_id($attribute_name) as ${attribute_name}_deref"
-	}
-    }
-
-    switch $dynfield_widget {
-	gender_select { set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref" }
-	employees { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	employees_and_customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	bit_member { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	active_tickets { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	cost_centers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	ticket_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	pl_fachbereich { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-    }
-	
-    if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
+    set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
     lappend derefs $deref
 }
+
+# ad_return_complaint 1 "$derefs <br> $left_scale_options"
 
 # ------------------------------------------------------------
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
@@ -343,9 +328,6 @@ ns_write "
 [export_form_vars ticket_id]
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
-	<tr>
-	  <td class=form-widget colspan=4 align=center>Constraints</td>
-	</tr>
 	<tr>
 	  <td class=form-label>Start Date</td>
 	  <td class=form-widget colspan=3>
