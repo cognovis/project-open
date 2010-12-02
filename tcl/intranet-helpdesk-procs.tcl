@@ -20,7 +20,8 @@ ad_proc -public im_ticket_status_closed {} { return 30001 }
 ad_proc -public im_ticket_status_internal_review {} { return 30010 }
 ad_proc -public im_ticket_status_assigned {} { return 30011 }
 ad_proc -public im_ticket_status_customer_review {} { return 30012 }
-
+ad_proc -public im_ticket_status_waiting_for_other {} { return 30026 }
+ad_proc -public im_ticket_status_frozen {} { return 30028 }
 ad_proc -public im_ticket_status_duplicate {} { return 30090 }
 ad_proc -public im_ticket_status_invalid {} { return 30091 }
 ad_proc -public im_ticket_status_outdated {} { return 30092 }
