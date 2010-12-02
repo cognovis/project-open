@@ -17,7 +17,6 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     Returns a formatted HTML table representing the 
     prices for the current company
 } {
-
     if {![im_permission $user_id view_costs]} { return "" }
     
     set enable_file_type_p [parameter::get_from_package_key -package_key intranet-trans-invoices -parameter "EnableFileTypeInTranslationPriceList" -default 0]
