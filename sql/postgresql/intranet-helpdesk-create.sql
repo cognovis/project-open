@@ -541,7 +541,11 @@ SELECT im_category_hierarchy_new(30118, 30154);
 SELECT im_category_new(30120, 'SLA Request', 'Intranet Ticket Type');
 SELECT im_category_hierarchy_new(30120, 30150);
 SELECT im_category_new(30122, 'Nagios Alert', 'Intranet Ticket Type');
-SELECT im_category_hierarchy_new(30120, 30150);
+SELECT im_category_hierarchy_new(30122, 30150);
+
+
+SELECT im_category_new(30130, 'Generic Problem Ticket', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30130, 30152);
 
 
 
@@ -575,6 +579,8 @@ update im_categories set category_description = 'Request to implement a new feat
 where category = 'Feature Request' and category_type = 'Intranet Ticket Type';
 update im_categories set category_description = 'Request training time or training material.' 
 where category = 'Training Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Generic heavy-weight problemm responsible for multiple incidents.' 
+where category = 'Generic Problem Ticket' and category_type = 'Intranet Ticket Type';
 
 
 
@@ -1324,8 +1330,12 @@ values (270, 'ticket_list', 'view_tickets', 1400);
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27000,270,00, 'Prio','"$ticket_prio"');
+
+delete from im_view_columns where column_id = 27010;
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
+(27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>\
+<a href=/intranet-helpdesk/new?form_mode=edit&ticket_id=$ticket_id>[im_gif wrench]</a>"');
+
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27020,270,20,'Name','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
 
@@ -1430,14 +1440,11 @@ insert into im_view_columns (
 	column_render_tcl,
         visible_for
 ) values (
-        27299,272,99,
+        27299,272,0,
         'Sel',
         '"<input type=radio name=ticket_id_from_search value=$ticket_id>"',
         ''
 );
-
-
-
 
 
 

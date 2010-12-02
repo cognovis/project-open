@@ -366,8 +366,8 @@ set sql "
 		sla.project_name as sla_name
 		$extra_select
 	FROM
-		im_projects p,
-		LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id)
+		im_projects p
+		LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id),
 		im_tickets t
 		LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
 		im_companies c
@@ -495,7 +495,7 @@ set table_continuation_html "
 
 set table_submit_html "
 	<tr>
-	  <td align=right colspan=$colspan>
+	  <td align=left colspan=$colspan>
 		<input type=submit value='[lang::message::lookup "" intranet-helpdesk.Select "Select"]'>
 	  </td>
 	</tr>

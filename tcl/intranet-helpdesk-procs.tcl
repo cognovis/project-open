@@ -44,6 +44,9 @@ ad_proc -public im_ticket_type_training_request {} { return 30118 }
 ad_proc -public im_ticket_type_sla_request {} { return 30120 }
 ad_proc -public im_ticket_type_nagios_alert {} { return 30122 }
 
+ad_proc -public im_ticket_type_generic_problem_ticket {} { return 30130 }
+
+
 ad_proc -public im_ticket_type_incident_ticket {} { return 30150 }
 ad_proc -public im_ticket_type_problem_ticket {} { return 30152 }
 ad_proc -public im_ticket_type_change_ticket {} { return 30154 }
