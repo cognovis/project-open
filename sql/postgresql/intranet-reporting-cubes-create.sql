@@ -407,10 +407,6 @@ select inline_0 ();
 drop function inline_0 ();
 
 
-
-
-
-
 select im_menu__new (
 	null,						-- p_menu_id
 	'im_menu',					-- object_type
@@ -427,7 +423,11 @@ select im_menu__new (
 	null						-- p_visible_tcl
 );
 
-
+SELECT acs_permission__grant_permission(
+        (select menu_id from im_menus where label = 'reporting-cubes-project'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
 
 
 select im_menu__new (
@@ -441,10 +441,14 @@ select im_menu__new (
 	'reporting-cubes-ticket',			-- label
 	'Ticket Cube',					-- name
 	'/intranet-reporting-cubes/ticket-cube?',	-- url
-	200,						-- sort_order
+	220,						-- sort_order
 	(select menu_id from im_menus where label = 'reporting-other'),
 	null						-- p_visible_tcl
 );
 
-
+SELECT acs_permission__grant_permission(
+        (select menu_id from im_menus where label = 'reporting-cubes-ticket'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
 
