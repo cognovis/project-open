@@ -643,6 +643,9 @@ SELECT im_category_hierarchy_new(30024, 30000);
 SELECT im_category_new(30026, 'Waiting for Other', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30026, 30000);
 
+-- SELECT im_category_new(30028, 'Frozen', 'Intranet Ticket Status');
+-- SELECT im_category_hierarchy_new(30028, 30001);
+
 
 --
 -- Closed States
@@ -730,6 +733,7 @@ SELECT im_category_new(30209, '9', 'Intranet Ticket Priority');
 delete from im_categories where category_type = 'Intranet Ticket Action';
 SELECT im_category_new(30500, 'Close', 'Intranet Ticket Action');
 SELECT im_category_new(30510, 'Close &amp; notify', 'Intranet Ticket Action');
+-- SELECT im_category_new(30515, 'Freeze', 'Intranet Ticket Action');
 SELECT im_category_new(30590, 'Delete', 'Intranet Ticket Action');
 SELECT im_category_new(30599, 'Nuke', 'Intranet Ticket Action');
 
@@ -1257,7 +1261,7 @@ drop function inline_0 ();
 
 SELECT im_menu__new (
 	null,				-- p_menu_id
-	'acs_object',			-- object_type
+	'im_menu',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1276,6 +1280,37 @@ SELECT acs_permission__grant_permission(
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
+
+
+
+
+-----------------------------------------------------------
+-- "Tickets" Section for reports
+--
+
+SELECT im_menu__new (
+	null,				-- p_menu_id
+	'im_menu',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'intranet-helpdesk',		-- package_name
+	'reporting-tickets',		-- label
+	'Tickets',			-- name
+	'/intranet-helpdesk/index',	-- url
+	100,				-- sort_order
+	(select menu_id from im_menus where label = 'reporting'),
+	null				-- p_visible_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'reporting-tickets'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
 
 
 -----------------------------------------------------------
