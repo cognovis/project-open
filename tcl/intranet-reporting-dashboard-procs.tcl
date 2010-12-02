@@ -110,18 +110,78 @@ ad_proc -public im_dashboard_generic_component {
 
 ad_proc -public im_dashboard_histogram_sql {
     -sql:required
+    { -object_id "" }
     { -menu_label "" }
     { -name "" }
     { -diagram_width 400 }
+    { -restrict_to_object_type_id 0 }
 } {
     Returns a dashboard component.
     Requires a SQL statement like 
     "select im_category_from_id(project_type_id), count(*) from im_projects group by project_type_id"
+    @param object_id ID of a container object.
+    @param restrict_to_object_type_id Show this widget only in objects of a specific type
 } {
+    # -------------------------------------------------------
+    # Pull out the object type and sub-type
+    set object_type ""
+    set object_subtype_id ""
+    if {"" != $object_id && 0 != $object_id} {
+	im_security_alert_check_integer -location "im_dashboard_histogram_sql" -value $object_id
+	set object_type [util_memoize "db_string otype {select object_type from acs_objects where object_id = $object_id} -default {}"]
+	set object_subtype_id [util_memoize "db_string osubtype {select im_biz_object__get_type_id($object_id)} -default {}" 60]
+    }
+
+    # -------------------------------------------------------
+    # Check if this portlet should only apply to a specific object sub-type
+    if {"" != $object_id && 0 != $object_id && "" != $restrict_to_object_type_id && 0 != $restrict_to_object_type_id} {
+	if {$object_subtype_id != $restrict_to_object_type_id} { 
+	    ns_log Notice "im_dashboard_histogram_sql: Skipping portlet because object_type_id=$object_type_id != $restrict_to_object_type_id"
+	    return "" 
+	}
+    }
+
+    # -------------------------------------------------------
+    # The substitution list defines variable-key tuples that
+    # the SQL can use.
+    set substitution_list {}
+    lappend substitution_list object_id
+    lappend substitution_list $object_id
+
+    # -------------------------------------------------------
+    # Append vars from object_id if set
+    if {"" != $object_id} {
+	# Get the SQL to extract all values from the object
+	set object_sql [im_rest_object_type_select_sql -rest_otype $object_type]
+
+	# Get the list of index columns of the object's various tables.
+	set index_columns [im_rest_object_type_index_columns -rest_otype $object_type]
+
+	# Execute the sql. As a result we get a result_hash with keys corresponding
+	# to table columns and values
+	array set result_hash {}
+	set rest_oid $object_id
+	db_with_handle db {
+	    set selection [db_exec select $db query $object_sql 1]
+	    while { [db_getrow $db $selection] } {
+		set col_names [ad_ns_set_keys $selection]
+		set this_result [list]
+		for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		    set var [lindex $col_names $i]
+		    set val [ns_set value $selection $i]
+		    lappend substitution_list $var
+		    lappend substitution_list $val
+		}
+	    }
+	}
+	db_release_unused_handles
+    }
+
+    set sql_subst [lang::message::format $sql $substitution_list]
+
     if {"" == $menu_label} { 
 	set read_p "t" 
     } else {
-
 	set current_user_id [ad_maybe_redirect_for_registration]
 	set read_p [db_string report_perms "
 	        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -130,7 +190,7 @@ ad_proc -public im_dashboard_histogram_sql {
 	if {![string equal "t" $read_p]} { return "" }
     }
 
-    set values [db_list_of_lists dashboard_historgram $sql]
+    set values [db_list_of_lists dashboard_historgram $sql_subst]
 
     return [im_dashboard_histogram \
 		-name $name \
