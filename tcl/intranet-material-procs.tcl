@@ -463,11 +463,18 @@ ad_proc -private im_material_create_from_parameters {
     {-debug 0}
     {-material_type_id ""}
 } {
-    # This functionality is used for translation only at the moment...
+    This function selects or creates a material based on a number of
+    parameters. It checks if a materials for these parameters already
+    exists and creates a new material otherwise.
+    The parameters are defined as the DynFields of 'im_material'.
+    In order to create the material, the procedure expects the parameters
+    to be avaiable as variables in the calling stackframe.
+} {
     if {"" == $material_type_id} { set material_type_id [im_material_type_translation] }
 
     # ----------------------------------------------------
-    # Get the list of parameters from DynField
+    # Get the list of parameters as the DynFields of object type "im_material".
+    # 
     set dynfield_sql "
 	select	*
 	from	acs_attributes aa,
@@ -498,7 +505,12 @@ ad_proc -private im_material_create_from_parameters {
 	where	1=1
     "
     foreach param $params {
-	eval "set val $$param"
+
+	# This eval may fail if the parameter doesn't exist in the calling stack frame
+	catch {
+	    eval "set val $$param"
+	} err_msg
+
 	if {"" == $val} {
 	    append sql "\t\tand m.$param is null\n"
 	} else {
