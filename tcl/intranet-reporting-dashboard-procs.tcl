@@ -557,6 +557,7 @@ ad_proc im_dashboard_histogram {
     set diagram_y_size [expr 2*$outer_distance + $value_total_items*($bar_width + $bar_distance)]
     set diagram_y_start 25
 
+    set status_html ""
     set count 1
     foreach v $values {
 
@@ -618,5 +619,13 @@ ad_proc im_dashboard_histogram {
 	</SCRIPT>
 	</div>
     "
+
+    if {"" == $status_html} {
+	# SQL didn't return any rows
+	# So don't show the diagram at all
+	set histogram_html ""
+    }
+
+    return $histogram_html
 }
 
