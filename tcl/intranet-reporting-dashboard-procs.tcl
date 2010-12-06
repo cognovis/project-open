@@ -136,7 +136,7 @@ ad_proc -public im_dashboard_histogram_sql {
     # Check if this portlet should only apply to a specific object sub-type
     if {"" != $object_id && 0 != $object_id && "" != $restrict_to_object_type_id && 0 != $restrict_to_object_type_id} {
 	if {$object_subtype_id != $restrict_to_object_type_id} { 
-	    ns_log Notice "im_dashboard_histogram_sql: Skipping portlet because object_type_id=$object_type_id != $restrict_to_object_type_id"
+	    ns_log Notice "im_dashboard_histogram_sql: Skipping portlet because object_subtype_id=$object_subtype_id != $restrict_to_object_type_id"
 	    return "" 
 	}
     }
