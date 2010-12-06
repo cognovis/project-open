@@ -35,6 +35,7 @@ ad_proc -public im_cost_type_quote {} { return 3702 }
 ad_proc -public im_cost_type_bill {} { return 3704 }
 ad_proc -public im_cost_type_po {} { return 3706 }
 ad_proc -public im_cost_type_company_doc {} { return 3708 }
+ad_proc -public im_cost_type_customer_doc {} { return 3708 }
 ad_proc -public im_cost_type_provider_doc {} { return 3710 }
 ad_proc -public im_cost_type_provider_travel {} { return 3712 }
 ad_proc -public im_cost_type_employee {} { return 3714 }
