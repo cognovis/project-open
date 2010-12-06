@@ -79,8 +79,14 @@ set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
 set user_view_page "/intranet/users/view"
-set letter [string toupper $letter]
 
+set letter [string toupper $letter]
+if {"NONE" == $letter} { set letter "ALL" }
+
+set current_user_id $user_id
+set name ""
+set email ""
+set url ""
 
 # Get the ID of the group of users to show
 # Default 0 corresponds to the list of all users.
