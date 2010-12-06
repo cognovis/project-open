@@ -2,6 +2,9 @@
 
 SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.4.9.9.9-3.5.0.0.0.sql','');
 
+
+drop view im_employees_active;
+
 create or replace view im_employees_active as
 select
         u.*,
