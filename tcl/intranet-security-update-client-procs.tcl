@@ -22,6 +22,8 @@ ad_proc im_security_update_package_look_up_table { } {
     client can only deal with 2048 characters in the URL.
 } {
     # Define a Look-Up-Table for package names.
+    # Last code is "fr" for "intranet-trans-invoice-authorization" for ]po[ stuff
+    # Last code is "xx" for "xowiki" for OpenACS stuff
     set lut_list {
 	acs-admin			aa
 	acs-api-browser			ab
@@ -47,8 +49,10 @@ ad_proc im_security_update_package_look_up_table { } {
 	acs-workflow			av
 	ajaxhelper			ba
 	ams				bb
+	attachments			fc
 	auth-ldap			bc
 	auth-ldap-adldapsearch		bd
+	auth-ldap-openldap		fb
 	batch-importer			be
 	bug-tracker			bf
 	bulk-mail			bg
@@ -61,9 +65,12 @@ ad_proc im_security_update_package_look_up_table { } {
 	ecommerce			bn
 	events				bo
 	faq				bq
+	file-storage			fd
 	general-comments		br
 	intranet-amberjack		ca
+	intranet-asus-server		fe
 	intranet-audit			cb
+	intranet-baseline		ff
 	intranet-big-brother		cc
 	intranet-bug-tracker		cd
 	intranet-calendar		ce
@@ -80,6 +87,7 @@ ad_proc im_security_update_package_look_up_table { } {
 	intranet-cust-lexcelera		cp
 	intranet-cust-projop		cq
 	intranet-cust-reinisch		cr
+	intranet-cust-versia		fg	
 	intranet-cvs-integration	cs
 	intranet-dw-light		ct
 	intranet-dynfield		cu
@@ -92,7 +100,9 @@ ad_proc im_security_update_package_look_up_table { } {
 	intranet-freelance-invoices	db
 	intranet-freelance-rfqs		dc
 	intranet-freelance-translation	dd
+	intranet-funambol		fh
 	intranet-ganttproject		de
+	intranet-gtd-dashboard		fi
 	intranet-helpdesk		df
 	intranet-hr			dg
 	intranet-invoices		dh
@@ -107,6 +117,8 @@ ad_proc im_security_update_package_look_up_table { } {
 	intranet-otp			dq
 	intranet-payments		dr
 	intranet-pdf-htmldoc		ds
+	intranet-planning		fj
+	intranet-portfolio-management	fk
 	intranet-release-mgmt		dt
 	intranet-reporting		du
 	intranet-reporting-cubes	dv
@@ -115,12 +127,18 @@ ad_proc im_security_update_package_look_up_table { } {
 	intranet-reporting-indicators	dy
 	intranet-reporting-translation	dz
 	intranet-reporting-tutorial	ea
+	intranet-resource-management	fl
+	intranet-rest			fm
 	intranet-riskmanagement		eb
+	intranet-rss-reader		fn
+	intranet-scrum			fo
 	intranet-search-pg		ec
 	intranet-search-pg-files	ed
 	intranet-security-update-client	ee
 	intranet-security-update-server	ef
+	intranet-sharepoint		fp
 	intranet-simple-survey		eg
+	intranet-sla-management		fq
 	intranet-soap-lite-server	eh
 	intranet-spam			ei
 	intranet-sql-selectors		ej
@@ -131,10 +149,11 @@ ad_proc im_security_update_package_look_up_table { } {
 	intranet-timesheet2-tasks	eo
 	intranet-timesheet2-workflow	ep
 	intranet-tinytm			eq
+	intranet-trans-invoice-authorization	fr
 	intranet-trans-invoices		er
-	intranet-translation		es
 	intranet-trans-project-wizard	et
 	intranet-trans-quality		eu
+	intranet-translation		es
 	intranet-ubl			ev
 	intranet-update-client		ew
 	intranet-update-server		ex
@@ -144,6 +163,8 @@ ad_proc im_security_update_package_look_up_table { } {
 	lars-blogger			xa
 	mail-tracking			xb
 	notifications			xc
+	oacs-dav			xu
+	openacs-default-theme		xv
 	organizations			xd
 	oryx-ts-extensions		xe
 	postal-address			xf
@@ -161,6 +182,8 @@ ad_proc im_security_update_package_look_up_table { } {
 	wiki				xr
 	workflow			xs
 	xml-rpc				xt
+	xotcl-core			xw
+	xowiki				xx
     }
     return $lut_list
 }
