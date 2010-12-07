@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2010.12.07.19.38.44;	author po40demo;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@-- /packages/intranet-trans-invoice-authorization/sql/postgresql/intranet-trans-invoice-authorization-create.sql
+--
+-- Copyright (c) 2003-2010 ]project-open[
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @@author frank.bergmann@@project-open.com
+
+
+@
