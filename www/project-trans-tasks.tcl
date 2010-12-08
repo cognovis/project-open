@@ -181,7 +181,8 @@ if { ![empty_string_p $where_clause] } {
 }
 
 set warn_interval 3
-set today '2006-07-22'
+set today [db_string today "select now()::date"]
+
 
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
