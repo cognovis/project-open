@@ -43,7 +43,7 @@ foreach id $bundle_id {
 	    "
 
 	    # Audit the deletion
-	    im_audit -object_id $exp_id -action update
+	    im_audit -object_type im_expense_bundle -action after_create -object_id $exp_id
 	}
 
 	db_dml del_tokens "
@@ -60,7 +60,7 @@ foreach id $bundle_id {
 	"
 
 	# Audit the deletion
-	im_audit -object_id $id -action nuke
+	im_audit -object_type im_expense_bundle -action after_delete -object_id $id
 
 	db_string del_expense_bundle {}
 

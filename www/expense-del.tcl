@@ -32,13 +32,17 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 foreach id $expense_id {
     
     # Audit the action
-    im_audit -object_id $id -action nuke
+    im_audit -object_type im_expense -action before_delete -object_id $id
+
 
     # delete expense
     # 
     db_transaction {
 	db_string del_expense {}
     }
+
+    im_audit -object_type im_expense -action after_delete -object_id $id
+
 }
 
 ad_returnredirect $return_url

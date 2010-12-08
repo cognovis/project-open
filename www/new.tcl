@@ -338,8 +338,7 @@ ad_form -extend -name $form_id -on_request {
     }
 
     # Audit the action
-    im_audit -object_id $expense_id -action create
-
+    im_audit -object_type im_expense -action after_create -object_id $expense_id
 
 } -edit_data {
 
@@ -378,7 +377,7 @@ ad_form -extend -name $form_id -on_request {
     }
 
     # Audit the action
-    im_audit -object_id $expense_id -action update
+    im_audit -object_type im_expense -action after_update -object_id $expense_id
 
 
     # ---------------------------------------------------------------
@@ -407,7 +406,7 @@ ad_form -extend -name $form_id -on_request {
          "
 
 	# Audit the action
-	im_audit -object_id $expense_bundle_id -action update
+	im_audit -object_type im_expense_bundle -action after_create -object_id $expense_bundle_id
 
     }
 

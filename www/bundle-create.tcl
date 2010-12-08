@@ -97,7 +97,7 @@ db_transaction {
 }
 
 # Audit the action
-im_audit -object_id $expense_bundle_id -action create
+im_audit -object_type im_expense_bundle -action after_create -object_id $expense_bundle_id -status_id cost_status_id -type_id $cost_type_id
 
 
 # ---------------------------------------------------------------

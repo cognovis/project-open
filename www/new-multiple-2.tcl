@@ -307,7 +307,7 @@ db_transaction {
 	    "
 
 	    # Audit the action
-	    im_audit -object_id $expense_id -action create
+	    im_audit -object_type im_expense -action after_create -object_id $expense_id -status_id $item_cost_status -type_id $item_cost_type_id
 	    
 	}
 	

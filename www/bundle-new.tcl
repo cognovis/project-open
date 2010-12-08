@@ -279,7 +279,7 @@ ad_form -extend -name $form_id \
             "
 
 	    # Audit the action
-	    im_audit -object_id $bundle_id -action create
+	    im_audit -object_type im_expense_bundle -action after_create -object_id $bundle_id
 
 	} else {
 	    im_security_alert \
@@ -318,7 +318,7 @@ ad_form -extend -name $form_id \
 	}
 
 	# Audit the action
-	im_audit -object_id $bundle_id -action update
+	im_audit -object_type im_expense_bundle -action after_update -object_id $bundle_id
 
 
     } -after_submit {

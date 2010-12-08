@@ -56,7 +56,7 @@ db_dml update_items "
 
 # Audit the action
 foreach id $expense_ids {
-    im_audit -object_id $id -action update
+    im_audit -object_type im_expense -action after_update -object_id $id
 }
 
 
