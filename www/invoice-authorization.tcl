@@ -224,8 +224,8 @@ set sql "
 			     AND tt.task_status_id not in (358, 360) THEN 'orange'
 			ELSE 'black'
 		END as warn_color,
-		(select bii.invoice_id from im_invoice_items bii where bii.created_from_item_id = ii.item_id) as bill_invoice_id,
-		(select bi.invoice_nr from im_invoice_items bii, im_invoices bi where bii.invoice_id = bi.invoice_id and bii.created_from_item_id = ii.item_id) as bill_invoice_nr
+		(select min(bii.invoice_id) from im_invoice_items bii where bii.created_from_item_id = ii.item_id) as bill_invoice_id,
+		(select min(bi.invoice_nr) from im_invoice_items bii, im_invoices bi where bii.invoice_id = bi.invoice_id and bii.created_from_item_id = ii.item_id) as bill_invoice_nr
 	from
 		-- Parent_project has child_project which contains trans_tasks.
 		-- Task_id is referenced by PO invoice_items. Its invoice is linked to provider.
