@@ -304,7 +304,7 @@ ad_form -extend -name "rfq-answer-form" -select_query {
         -form_id "rfq-answer-form"
 
     # Write Audit Trail
-    im_audit -object_id $answer_id -action update
+    im_audit -object_type "im_freelance_rfq" -object_id $answer_id -action after_update -status_id $ref_status_id -type_id $rfq_type_id
 
 
 } -on_submit {
