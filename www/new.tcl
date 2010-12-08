@@ -470,6 +470,9 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
     }
 
+
+    set ticket_closed_in_1st_contact_p 1
+
 } -select_query {
 
 	select	t.*,
