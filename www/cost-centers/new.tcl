@@ -115,7 +115,7 @@ ad_form -extend -name cost_center -on_request {
 	-form_id cost_center
     
     # Write Audit Trail
-    im_audit -object_id $cost_center_id -action create
+    im_audit -object_type "im_cost_center" -object_id $cost_center_id -action after_create -status_id $cost_center_status_id -type_id $cost_center_type_id
 
 } -edit_data {
 
@@ -142,7 +142,7 @@ ad_form -extend -name cost_center -on_request {
 	-form_id cost_center
     
     # Write Audit Trail
-    im_audit -object_id $cost_center_id -action update
+    im_audit -object_type "im_cost_center" -object_id $cost_center_id -action after_update -status_id $cost_center_status_id -type_id $cost_center_type_id
 
 } -on_submit {
 
