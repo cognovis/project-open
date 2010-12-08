@@ -129,7 +129,7 @@ ad_form -extend -name material -on_request {
         -form_id "material"
 
     # Write Audit Trail
-    im_audit -object_id $material_id -action create
+    im_audit -object_type im_material -object_id $material_id -action after_create -status_id $material_status_id -type_id $material_type_id
 
 } -edit_data {
 
@@ -141,7 +141,7 @@ ad_form -extend -name material -on_request {
         -form_id "material"
 
     # Write Audit Trail
-    im_audit -object_id $material_id -action update
+    im_audit -object_type im_material -object_id $material_id -action after_update -status_id $material_status_id -type_id $material_type_id
 
 } -on_submit {
 
