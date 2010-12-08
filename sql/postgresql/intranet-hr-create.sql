@@ -128,6 +128,7 @@ select
 	pe.*
 from
 	users u,
+	group_distinct_member_map gdmm,
 	parties pa,
 	persons pe
 	LEFT OUTER JOIN im_employees e ON (pe.person_id = e.employee_id)
@@ -135,19 +136,16 @@ where
 	u.user_id = pa.party_id and
 	u.user_id = pe.person_id and
 	u.user_id = e.employee_id and
+	u.user_id = gdmm.member_id and
+	gdmm.group_id in (select group_id from groups where group_name = 'Employees') and
 	u.user_id in (
-		select	gdmm.member_id
-		from	group_distinct_member_map gdmm
-		where	group_id in (select group_id from groups where group_name = 'Employees')
-	) and
-	u.user_id in (
-		select	r.object_id_two
-		from	acs_rels r,
+		select  r.object_id_two
+		from    acs_rels r,
 			membership_rels mr
-		where	r.rel_id = mr.rel_id and
+		where   r.rel_id = mr.rel_id and
 			r.object_id_one in (
-				select group_id 
-				from groups 
+				select group_id
+				from groups
 				where group_name = 'Registered Users'
 			) and mr.member_state = 'approved'
 	)
