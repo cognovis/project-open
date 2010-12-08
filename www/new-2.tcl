@@ -617,12 +617,6 @@ order by
 	    <input type=text name=item_rate.$ctr size=3 value='[string trim $best_match_price]'>
 	    <input type=hidden name=item_currency.$ctr value='$currency'>
 	    $currency
-
-            $material_id [db_string mn "select material_name from im_materials where material_id = :material_id" -default "unknown"]
-
-
-
-
 	  </td>
         </tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>

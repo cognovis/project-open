@@ -32,7 +32,7 @@
 	          <td class=roweven>@cost_center_label@</td>
 	          <td class=roweven>@cost_center_select;noquote@</td>
 	        </tr>
-
+<!--
 	        <tr> 
 	          <td class=roweven>Payment terms</td>
 	          <td class=roweven> 
@@ -43,16 +43,22 @@
 	          <td class=rowodd>Payment Method</td>
 	          <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %></td>
 	        </tr>
+-->
 	        <tr> 
 	          <td class=roweven>Purchase Order template:</td>
-	          <td class=roweven><%= [im_cost_template_select template_id $default_invoice_template_id] %></td>
+	          <td class=roweven>
+			<%= [im_cost_template_select template_id $default_invoice_template_id] %>
+			<input type=hidden name=cost_type_id value=@target_cost_type_id@>
+		  </td>
 	        </tr>
+<!--
                 <tr>
                   <td class=roweven>Type</td>
                   <td class=roweven>
 		    <%= [im_cost_type_select cost_type_id $target_cost_type_id [im_cost_type_provider_doc]] %>
 		  </td>
                 </tr>
+-->
 	        </table>
 
       </td>
