@@ -77,6 +77,23 @@ ad_proc -public im_release_mgmt_project_component {
 }
 
 
+ad_proc -public im_release_mgmt_task_board_component {
+    -project_id
+} {
+    Shows an interactive task board with release items
+} {
+    # Is this a "Software Release" Project
+    set release_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "ReleaseProjectType" -default "Software Release"]
+    if {![im_project_has_type $project_id $release_category]} { return "" }
+
+    set params [list \
+	[list release_project_id $project_id] \
+    ]
+    set result [ad_parse_template -params $params "/packages/intranet-release-mgmt/www/task-board"]
+    return $result
+}
+
+
 
 # ----------------------------------------------------------------------
 # Projects with reference to this release
