@@ -23,6 +23,7 @@ set user_name [im_name_from_user_id [ad_get_user_id]]
 if {![info exists invoice_item_id]} { set invoice_item_id {} }
 if {"" == $invoice_item_id} { set invoice_item_id 0 }
 
+
 set base_sql "
 	select
 		prov.company_id as provider_id,
@@ -94,15 +95,31 @@ set provider_list [db_list_of_lists provider_list $provider_sql]
 foreach tuple $provider_list {
     set bill_currency [lindex $tuple 0]
     set bill_provider_id [lindex $tuple 1]
+
+    # Get default tax + vat from provider file
+    set company_info_sql "
+	select	default_vat,
+		default_tax,
+		default_payment_days,
+		default_bill_template_id,
+		default_payment_method_id
+	from	im_companies 
+	where	company_id = :bill_provider_id
+    "
+    db_1row company_info $company_info_sql
+
     
     # Create a new "container" object of type im_invoice to represent the provider bill.
     set cost_center_id ""
     set invoice_nr [im_next_invoice_nr -cost_type_id [im_cost_type_bill] -cost_center_id $cost_center_id]
-    set template_id ""
-    set payment_method_id ""
-    set payment_days 0
-    set vat 0.0
-    set tax 0.0
+    set template_id $default_bill_template_id
+    set payment_method_id $default_payment_method_id
+    set payment_days $default_payment_days
+    set vat $default_vat
+    if {"" == $vat} { set vat 0.0 }
+    set tax $default_tax
+    if {"" == $tax} { set tax 0.0 }
+
     set note "Automatically generated using \]po\[ Invoice Authentication Wizard"
     set provider_bill_id [db_string new_bill "select im_invoice__new (
 		null,				-- invoice_id
