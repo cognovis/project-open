@@ -6,13 +6,60 @@ use Net::LDAP::Util qw(ldap_error_text
                          ldap_error_desc
 			 );
 
+# --------------------------------------
+# Parameters
+# --------------------------------------
 
-$ldap = Net::LDAP->new('192.168.21.128', port=>389, timeout=>5) or die "$@";
+my $ip_address = "localhost";
+my $port = 389;
+my $timeout = 5;
+
+$ldap = Net::LDAP->new($ip_address, port=>$port, timeout=>$timeout) or die "$@";
+
+
+# --------------------------------------
+# Bind
+# --------------------------------------
 
 # $mesg = $ldap->bind();
-
-$mesg = $ldap->bind("cn=Manager,dc=project-open,dc=com", password => "secret");
+$mesg = $ldap->bind("cn=Manager,dc=whp,dc=fr", password => "welcome");
 die "Bad bind: ",$mesg->code, "\n" if $mesg->code;
+
+
+# --------------------------------------
+# Search
+# --------------------------------------
+
+# $mesg = $ldap->search(
+#                        filter => "uid=stephane"
+# );
+
+
+my($mesg) = $ldap->search(
+    base => "dc=whp,dc=fr",
+    filter => '(objectclass=*)'
+);
+
+die ldap_error_text($mesg->code) if $mesg->code;
+
+die "Bad search: ",$mesg->code, "\n" if $mesg->code;
+
+
+while( my $entry = $mesg->shift_entry) {
+    print "\n";
+    print "==============================================\n";
+    print "dn: ", $entry->dn, "\n";
+    print "==============================================\n";
+
+    foreach my $attr ($entry->attributes) {
+	foreach my $value ($entry->get_value($attr)) {
+	    print $attr, ": ", $value, "\n";
+	}
+    }  
+}
+
+
+
 
 
 #my $schema = $ldap->schema;
@@ -23,16 +70,3 @@ die "Bad bind: ",$mesg->code, "\n" if $mesg->code;
 
 
 
-$mesg = $ldap->search(
-                       base   => "o=project-open.com",
-                       filter => "uid=fraber"
-);
-
-die ldap_error_text($mesg->code) if $mesg->code;
-
-die "Bad search: ",$mesg->code, "\n" if $mesg->code;
-
-
-while( my $entry = $mesg->shift_entry) {
-    print "$entry\n";
-}
