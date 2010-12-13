@@ -71,9 +71,6 @@ set base_sql "
 		child.tree_sortkey
 "
 
-# ad_return_complaint 1 "<pre>[join [db_list_of_lists sdf $base_sql] "\n"]</pre>"
-# ad_script_abort
-
 # -----------------------------------------------------------
 # Get the list of providers into a list.
 # This is necessary because we want to iterate through the providers
@@ -85,8 +82,6 @@ set provider_sql "
 	from	($base_sql) t
 "
 set provider_list [db_list_of_lists provider_list $provider_sql]
-
-
 
 
 # -----------------------------------------------------------
@@ -180,6 +175,10 @@ foreach tuple $provider_list {
 
 	db_dml insert_invoice_items $insert_invoice_items_sql
     }
+
+    # Callback & Audit
+    im_audit -object_type "im_invoice" -action after_create -object_id $provider_bill_id -status_id [im_cost_status_created] -type_id [im_cost_type_bill]
+
 }
 
 
