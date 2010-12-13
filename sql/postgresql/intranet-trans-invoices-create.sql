@@ -266,7 +266,7 @@ create unique index im_trans_price_idx on im_trans_prices (
 -- Views to Business Objects
 --
 
--- Calculate a match value between a price list item and an invoice_item
+-- Calculate a match value between a price list item and a task
 -- The higher the match value the better the fit.
 
 
