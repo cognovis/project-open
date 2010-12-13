@@ -66,3 +66,15 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 values (9084,90,NULL,'[im_gif save "Download files"]','$download_link','','',840,'');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
 values (9086,90,NULL,'[im_gif open "Upload files"]','$upload_link','','',860,'');
+
+
+
+
+-- Add DynFields with default values for the new surcharge/discount/pm_fee fields of FinDocs
+alter table im_companies add default_pm_fee_perc numeric(12,2);
+alter table im_companies add default_surcharge_perc numeric(12,2);
+alter table im_companies add default_discount_perc numeric(12,2);
+SELECT im_dynfield_attribute_new ('im_company', 'default_pm_fee_perc', 'Default PM Fee Percentage', 'numeric', 'float', 'f');
+SELECT im_dynfield_attribute_new ('im_company', 'default_surcharge_perc', 'Default Surcharge Percentage', 'numeric', 'float', 'f');
+SELECT im_dynfield_attribute_new ('im_company', 'default_discount_perc', 'Default Discount Percentage', 'numeric', 'float', 'f');
+
