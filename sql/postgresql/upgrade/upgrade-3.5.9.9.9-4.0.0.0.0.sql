@@ -78,3 +78,9 @@ SELECT im_dynfield_attribute_new ('im_company', 'default_pm_fee_perc', 'Default 
 SELECT im_dynfield_attribute_new ('im_company', 'default_surcharge_perc', 'Default Surcharge Percentage', 'numeric', 'float', 'f');
 SELECT im_dynfield_attribute_new ('im_company', 'default_discount_perc', 'Default Discount Percentage', 'numeric', 'float', 'f');
 
+
+
+
+SELECT im_dynfield_attribute_new ('im_company', 'default_tax', 'Default TAX', 'numeric', 'float', 'f');
+
+
