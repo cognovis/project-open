@@ -151,6 +151,7 @@ foreach tuple $provider_list {
     db_foreach bill_lines $line_sql {
 	# Insert only if it's not an empty line from the edit screen
 	set item_id [db_nextval "im_invoice_items_seq"]
+	set item_name_with_prefix "$po_name - $item_name"
 	set insert_invoice_items_sql "
 			INSERT INTO im_invoice_items (
 				item_id, item_name,
@@ -162,7 +163,7 @@ foreach tuple $provider_list {
 				item_status_id, description, task_id,
 				created_from_item_id
 			) VALUES (
-				:item_id, :item_name,
+				:item_id, :item_name_with_prefix,
 				:project_id, :provider_bill_id,
 				:item_units, :item_uom_id,
 				:price_per_unit, :bill_currency,
