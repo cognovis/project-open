@@ -10,7 +10,7 @@ ad_page_contract {
     @param return_url the url to return to
     @author frank.bergmann@project-open.com
 } {
-    task_id:integer,multiple,optional
+    invoice_item_id:integer,multiple,optional
     return_url
 }
 
@@ -20,8 +20,8 @@ set user_name [im_name_from_user_id [ad_get_user_id]]
 
 # Make sure task contains at least one number.
 # Otherwise we would get a syntax error further below in the SQL.
-if {![info exists task_id]} { set task_id {} }
-if {"" == $task_id} { set task_id 0 }
+if {![info exists invoice_item_id]} { set invoice_item_id {} }
+if {"" == $invoice_item_id} { set invoice_item_id 0 }
 
 set base_sql "
 	select
@@ -56,8 +56,8 @@ set base_sql "
 		and child.project_status_id not in ([im_project_status_deleted])
 		and child.project_id = tt.project_id
 		and tt.task_id = ii.task_id
-		and tt.task_id in ([join $task_id ","])
 		and ii.invoice_id = i.invoice_id
+		and ii.item_id in ([join $invoice_item_id ","])
 		and i.invoice_id = c.cost_id
 		and c.provider_id = prov.company_id
 		and c.cost_type_id = [im_cost_type_po]
@@ -69,6 +69,9 @@ set base_sql "
 		parent.project_nr,
 		child.tree_sortkey
 "
+
+# ad_return_complaint 1 "<pre>[join [db_list_of_lists sdf $base_sql] "\n"]</pre>"
+# ad_script_abort
 
 # -----------------------------------------------------------
 # Get the list of providers into a list.

@@ -281,7 +281,7 @@ set report_def [list \
 	    } \
 	    content [list \
 		    header {
-			"<input type=checkbox value=$task_id name=task_id $checkbox_checked>"
+			"<input type=checkbox value=$item_id name=invoice_item_id $checkbox_checked>"
 			"<a href=$project_url$child_project_id>$child_project_nr</a>"
 			"<a href=$invoice_url$po_id>$po_name</a>"
 			"$item_name"
