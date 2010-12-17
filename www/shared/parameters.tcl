@@ -54,6 +54,7 @@ if {$section ne ""} {
 }
 
 
+set datatype ""
 array set sections {}
 
 db_foreach select_params {} {
