@@ -1,0 +1,5 @@
+
+dn: cn=Manager,dc=project-open,dc=com
+objectclass: inetOrgPerson
+cn: Manager
+sn: Manager
