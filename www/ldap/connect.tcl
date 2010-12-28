@@ -38,16 +38,15 @@ set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span>
 # ---------------------------------------------------------------
 
 ns_log Notice "connect: before ns_sockopen"
-set fds [ns_sockopen -timeout 3 192.168.21.128 389]
-ns_log Notice "connect: after ns_sockopen"
+set connect_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
+set cmd "perl $connect_perl"
+set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
 
-set rid [lindex $fds 0]
-set wid [lindex $fds 1]
-puts $wid "GET /index.htm HTTP/1.0\r\n\r"
-flush $wid
-while {[set line [string trim [gets $rid]]] != ""} {
-    lappend headers $line
+
+set perl_lines ""
+while {[gets $fp line] >= 0} {
+    append perl_lines $line
+    append perl_lines "<br>\n"
 }
-set page [read $rid]
-close $rid
-close $wid
+close $fp
+
