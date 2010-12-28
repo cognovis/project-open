@@ -19,3 +19,7 @@ You can also enter the url address of your company website.
 </p><br>
 <input type=text name=logo_url size=40>
 </p>
+
+
+@perl_lines;noquote@
+

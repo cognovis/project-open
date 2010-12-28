@@ -21,8 +21,8 @@ $ldap = Net::LDAP->new($ip_address, port=>$port, timeout=>$timeout) or die "$@";
 # Bind
 # --------------------------------------
 
-# $mesg = $ldap->bind();
-$mesg = $ldap->bind("cn=Manager,dc=whp,dc=fr", password => "welcome");
+$mesg = $ldap->bind();
+# $mesg = $ldap->bind("cn=Manager,dc=whp,dc=fr", password => "welcome");
 die "Bad bind: ",$mesg->code, "\n" if $mesg->code;
 
 
@@ -36,7 +36,7 @@ die "Bad bind: ",$mesg->code, "\n" if $mesg->code;
 
 
 my($mesg) = $ldap->search(
-    base => "dc=whp,dc=fr",
+    base => "dc=project-open,dc=com",
     filter => '(objectclass=*)'
 );
 
