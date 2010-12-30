@@ -16,6 +16,9 @@ ad_page_contract {
 }
 
 
+set default_ip_address "192.168.0.1"
+set default_port 389
+
 # ---------------------------------------------------------------
 # Frequently used variables
 # ---------------------------------------------------------------
@@ -37,8 +40,12 @@ set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</s
 
 
 # ---------------------------------------------------------------
-# 
+# Control the display for prev - test - next buttons
 # ---------------------------------------------------------------
 
-set default_ip_address "192.168.0.1"
-set default_port 389
+set enable_next_p 1
+set enable_prev_p 1
+set enable_test_p 0
+
+
+
