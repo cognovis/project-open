@@ -1,3 +1,15 @@
+#!/usr/bin/perl
+#
+# --------------------------------------
+# connect.perl: Test LDAP Port @ IP address
+#
+# The script tries to open a socket connection
+# to the specified IP address and port and 
+# returns and error or 0 on success.
+#
+# --------------------------------------
+
+
 use Net::LDAP;
 use Net::LDAP::Schema;
 use Net::LDAP::LDIF;

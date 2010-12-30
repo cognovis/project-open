@@ -1,4 +1,16 @@
 #!/usr/bin/perl -w
+#
+# -----------------------------------------------------------------
+# ldap-check-port.perl: Test LDAP Port @ IP address
+#
+# The script tries to open a socket connection
+# to the specified IP address and port and 
+# returns and error or 0 on success.
+#
+# -----------------------------------------------------------------
+
+
+
 use strict;
 use warnings;
 use IO::Socket::PortState qw(check_ports);

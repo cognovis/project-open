@@ -9,9 +9,10 @@
 # ---------------------------------------------------------------
 
 ad_page_contract {
-    
+    Connect to the LDAP server and check if the port is open
 } {
-
+    ip_address
+    port
 }
 
 
@@ -37,16 +38,15 @@ set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span>
 # Connect to LDAP server
 # ---------------------------------------------------------------
 
-ns_log Notice "connect: before ns_sockopen"
-set connect_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
-set cmd "perl $connect_perl"
-set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
+
+array set hash [im_sysconfig_ldap_check_port_open -ldap_ip_address $ip_address -ldap_port $port]
+set open_p $hash(open_p)
+set debug $hash(debug)
+
+# ad_return_complaint 1 "Open=$open_p:<br>debug=<pre>$debug</pre>"
 
 
-set perl_lines ""
-while {[gets $fp line] >= 0} {
-    append perl_lines $line
-    append perl_lines "<br>\n"
-}
-close $fp
+set enable_prev_p 0
+set enable_test_p 1
+set enable_next_p $open_p
 

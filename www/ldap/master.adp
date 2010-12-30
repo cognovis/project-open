@@ -18,19 +18,12 @@
 
 </td></tr>
 </thead>
-<% if {$page=="logo"} { %>
-<form name="wizard" method="POST" enctype="multipart/form-data">
-<% } else { %>
 <form name="wizard" method="GET">
-<% } %>
 @export_vars;noquote@
 <tbody>
 <tr><td class=tablebody colspan=3><font size=-1>
-
-
 	<table height=400 width=600 cellspacing=0 cellpadding=0 border=0 background='/intranet/images/girlongrass.600x400.jpg'>
 	<tr valign=top><td>
-
 		<table border=0 align=right>
 		<tr>
 		<td>
@@ -40,12 +33,13 @@
 		</tr>
 		</table>
 
+<!-- Start of "slave" in www/ldap/master.adp -->
 		<slave>
+<!-- End of "slave" in www/ldap/master.adp -->
 
 	</td></tr>
         <tr align=center valign=bottom><td>@navbar;noquote@<br>&nbsp;</td></tr>
 	</table>
-
 </td></tr>
 </tbody>
 </form>

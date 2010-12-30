@@ -1,25 +1,33 @@
 <master src="master">
 <property name="title">@page_title@</property>
+<property name="enable_prev_p">@enable_prev_p@</property>
+<property name="enable_test_p">@enable_test_p@</property>
+<property name="enable_next_p">@enable_next_p@</property>
 
-<input type=hidden name=logo value=1>
-
-<h2>Organization Logo</h2>
-
-<p>
-You can configure @po;noquote@ to show your company logo. 
-</p><br>
+<h2>@page_title@</h2>
 
 <p>
-<input type=file name=logo_file size=40>
+Here are the results of testing if an LDAP server
+exists at the specified IP address:
+
+<h2>IP Address of the LDAP Server</h2>
+
+<p>
+For repeating the test, please enter the IP address 
+and port of your LDAP server below and press "Test Parameters".<br>
 </p>
-
 <br>
 <p>
-You can also enter the url address of your company website.
-</p><br>
-<input type=text name=logo_url size=40>
 </p>
+<nobr>
+IP/Host: 
+<input type=text name=ip_address value="@ip_address@" size=16 maxsize=16>
+Port: 
+<input type=text name=port value="@port@" size=5 maxsize=5>
+</nobr>
+<p>
+<br>
 
-
-@perl_lines;noquote@
-
+<pre>
+@debug@
+</pre>

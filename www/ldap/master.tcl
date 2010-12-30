@@ -14,15 +14,7 @@ ad_page_contract {
     features:optional
     deptcomp:optional
     prodtest:optional
-
     name:optional
-    { name_name:optional "Tigerpond Inc." }
-    { name_email:optional sysadmin@tigerpond.com }
-
-    logo:optional
-    logo_file:optional
-    { logo_url:optional http://www.project-open.com/ }
-
     profiles:optional
     profiles_array:array,optional
 }
@@ -43,11 +35,16 @@ set base_url "/intranet-sysconfig/segment"
 # Define Wizard params
 set pages [list index connect confirm]
 set vars $pages
-lappend vars name_name name_email logo_file logo_url profiles_array:multiple
+lappend vars ip_address port
 
 # Frequent used HTML snippets
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\\#91;</span>"
+
+if {![info exists enable_next_p]} { set enable_next_p 1 }
+if {![info exists enable_prev_p]} { set enable_prev_p 1 }
+if {![info exists enable_test_p]} { set enable_test_p 1 }
+
 
 # ---------------------------------------------------------------
 # Advance Component
@@ -77,6 +74,7 @@ set url [ad_conn url]
 set url_pieces [split $url "/"]
 set url_last_piece [lindex $url_pieces [expr [llength $url_pieces]-1]]
 set page $url_last_piece
+if {"" == $page} { set page "index" }
 
 # ---------------------------------------------------------------
 # See what variables to export
@@ -107,23 +105,41 @@ switch $page {
 }
 
 set prev_page [lindex $pages [expr $index-1]]
+set test_page [lindex $pages [expr $index+0]]
 set next_page [lindex $pages [expr $index+1]]
 
-set prev_link "<input type=button class=button name=prev value='&lt;&lt; Prev'
+if {"index" == $page} { set test_page "" }
+
+set prev_link "<input type=button class=button name=prev value=' &lt;&lt; Prev '
 	onClick=\"window.document.wizard.action='$prev_page'; submit();\" 
 	title='&lt;&lt; Prev' alt='&lt;&lt; Prev'
 >"
-set next_link "<input type=button class=button name=next value='Next &gt;&gt;'
+set test_link "<input type=button class=button name=test value=' Test Parameters '
+	onClick=\"window.document.wizard.action='$test_page'; submit();\" 
+	title='Test Parameters' alt='Test parameters'
+>"
+set next_link "<input type=button class=button name=next value=' Next &gt;&gt; '
 	onClick=\"window.document.wizard.action='$next_page'; submit();\" 
 	title='Next &gt;&gt;' alt='Next &gt;&gt;'
 >"
 
 
 if {"" == $prev_page} { set prev_link "" }
+if {"" == $test_page} { set test_link "" }
 if {"" == $next_page} { set next_link "" }
+
+# Disable links if set specified by "slave"
+if {!$enable_prev_p} { set prev_link "" }
+if {!$enable_test_p} { set test_link "" }
+if {!$enable_next_p} { set next_link "" }
+
 
 set navbar "
 	<table cellspacing=0 cellpadding=4 border=0>
-	<tr><td>$prev_link</td><td>$next_link</td></tr>
+	<tr>
+	<td>$prev_link</td>
+	<td>$test_link</td>
+	<td>$next_link</td>
+	</tr>
 	</table>
 "
