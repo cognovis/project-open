@@ -2005,13 +2005,17 @@ ad_proc im_filestorage_file_type_icon {ext} {
 	"chm" { set icon [im_gif exp-chm] }
 	"cross" { set icon [im_gif exp-cross] }
 	"doc" { set icon [im_gif exp-word] }
+        "docx" { set icon [im_gif exp-word2007] }
 	"excel" { set icon [im_gif exp-excel] }
 	"gif" { set icon [im_gif exp-gif] }
 	"jpg" { set icon [im_gif exp-jpg] }
 	"jpeg" { set icon [im_gif exp-jpg] }
 	"mp3" { set icon [im_gif exp-mp3] }
+	"odt" { set icon [im_gif exp-odt] }
+	"ods" { set icon [im_gif exp-ods] }
 	"pdf" { set icon [im_gif exp-pdf] }
 	"ppt" { set icon [im_gif exp-ppt] }
+        "pptx" { set icon [im_gif exp-ppt2007] }
 	"rar" { set icon [im_gif exp-rar] }
 	"rtf" { set icon [im_gif exp-word] }
 	"sit" { set icon [im_gif exp-sit] }
@@ -2021,11 +2025,7 @@ ad_proc im_filestorage_file_type_icon {ext} {
 	"wav" { set icon [im_gif exp-wav] }
 	"xls" { set icon [im_gif exp-excel] }
 	"zip" { set icon [im_gif exp-zip] }
-        "docx" { set icon [im_gif exp-word2007] }
-        "pptx" { set icon [im_gif exp-ppt2007] }
         "xlsx" { set icon [im_gif exp-excel2007] }
-	"odt" { set icon [im_gif exp-odt] }
-	"ods" { set icon [im_gif exp-ods] }
 	"" { set icon [im_gif exp-unknown] }
 	default {
 #	    set ext [string range $ext 1 end]
