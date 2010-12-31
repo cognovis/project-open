@@ -71,7 +71,7 @@ switch $action_id {
                 	where topic_id in (
 				select	t.topic_id
 				from	im_forum_topics t
-				where	t.object_id = :tid
+				where	t.object_id = :ticket_id
 			)
 		"
 	    }
