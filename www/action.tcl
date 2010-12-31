@@ -91,6 +91,13 @@ switch $action_id {
 			where ticket_id = :ticket_id
 	        "
 
+		# Re-Open the project as well
+		db_dml close_ticket "
+			update im_projects set 
+				project_status_id = [im_project_status_open]
+			where project_id = :ticket_id
+	        "
+
 		im_ticket::add_reply -ticket_id $ticket_id -subject \
 		    [lang::message::lookup "" intranet-helpdesk.Re_opened_by_user "Re-opened by %user_name%"]
 	    }
