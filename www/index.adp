@@ -12,6 +12,8 @@
     <ul>
 	<li><a href="/intranet-sysconfig/segment/index">Basic Configuration Wizard</a><br>
 	&nbsp;
+	<li><a href="/intranet-sysconfig/ldap/index">LDAP Configuration Wizard</a><br>
+	&nbsp;
 
     </ul>
 

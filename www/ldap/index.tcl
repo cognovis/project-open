@@ -12,12 +12,17 @@
 ad_page_contract {
     
 } {
-
+    { ip_address "" }
+    { port "" }
+    { ldap_type "" }
 }
 
 
-set default_ip_address "192.168.0.1"
+set default_ip_address "192.168.21.130"
 set default_port 389
+
+if {"" == $ip_address} { set ip_address $default_ip_address }
+if {"" == $port} { set port $default_port }
 
 # ---------------------------------------------------------------
 # Frequently used variables
