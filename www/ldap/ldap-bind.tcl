@@ -55,6 +55,7 @@ array set hash [im_sysconfig_ldap_check_bind \
 		    -ldap_ip_address $ip_address \
 		    -ldap_port $port \
 		    -ldap_type $ldap_type \
+		    -ldap_domain $domain \
 		    -ldap_binddn $binddn \
 		    -ldap_bindpw $bindpw]
 
