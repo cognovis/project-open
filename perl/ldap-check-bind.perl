@@ -22,23 +22,24 @@ use Net::LDAP::Util qw(ldap_error_text
 # Constants & Parameters
 # --------------------------------------
 
-my $debug = 1;
+my $debug = 0;
 my $prog_name = "ldap-check-bind.perl";
 my $timeout = 2;
 
 my $ip_address	= $ARGV[0];
 my $port	= $ARGV[1];
 my $ldap_type	= $ARGV[2];			# "ad" (Active Directory) or "ol" (Open LDAP)
-my $binddn	= $ARGV[3];
-my $bindpw	= $ARGV[4];
+my $domain	= $ARGV[3];
+my $binddn	= $ARGV[4];
+my $bindpw	= $ARGV[5];
 
-my $domain	= "dc=valdom,dc=com";
 
 if (!defined $bindpw) { $bindpw = ""; }
 
 print "$prog_name: ip_ddress	'$ip_address'\n" if ($debug > 0);
 print "$prog_name: port 	'$port'\n" if ($debug > 0);
 print "$prog_name: ldap_type	'$ldap_type'\n" if ($debug > 0);
+print "$prog_name: domain	'$domain'\n" if ($debug > 0);
 print "$prog_name: binddn	'$binddn'\n" if ($debug > 0);
 print "$prog_name: bindpw	'$bindpw'\n" if ($debug > 0);
 
@@ -75,9 +76,8 @@ if ("ol" eq $ldap_type) {
     $object_class = "inetOrgPerson";
 }
 
-
 my($search_mesg) = $ldap->search(
-    base   => "dc=project-open,dc=com",
+    base   => "$domain",
     filter => "objectClass=$object_class"
 );
 die ldap_error_text($mesg->code) if $mesg->code;

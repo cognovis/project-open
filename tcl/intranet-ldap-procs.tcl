@@ -59,6 +59,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     -ldap_ip_address:required
     -ldap_port:required
     -ldap_type:required
+    -ldap_domain:required
     -ldap_binddn:required
     -ldap_bindpw:required
 } {
@@ -71,7 +72,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     array set hash {}
     
     set bind_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
-    set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_binddn $ldap_bindpw"
+    set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_domain $ldap_binddn $ldap_bindpw"
     ns_log Notice "im_sysconfig_ldap_check_bind: $cmd"
 
     set debug ""
