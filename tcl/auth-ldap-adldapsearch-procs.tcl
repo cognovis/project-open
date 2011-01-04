@@ -95,6 +95,8 @@ ad_proc -private auth::ldap::get_user {
     of { attribute value attribute value ... } or a specific attribute value,
     if the -element switch is set.
 } { 
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::get_user -element $element -username $username -parameters $parameters"
+
     # Parameters
     array set params $parameters
 
@@ -144,10 +146,13 @@ ad_proc -private auth::ldap::get_user {
 
 
 
-ad_proc -private auth::ldap::parse_ldap_reply { ldap_reply } {
+ad_proc -private auth::ldap::parse_ldap_reply { 
+    ldap_reply 
+} {
 	Returns a list of elements for each ldap reply
 } {
-  return [list]
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::parse_ldap_reply $ldap_reply"
+    return [list]
 }
 
 
@@ -157,14 +162,13 @@ ad_proc -private auth::ldap::check_password {
 } {
     Checks a password from LDAP and returns 1 for match, 0 for no match or problem verifying.
     Supports MD5, SMD5, SHA, SSHA, and CRYPT.
-
     @param password_from_ldap The value of the userPassword attribute in LDAP, typically something like 
                               {SSHA}H1W8YiEXl5lwzc7odaU73pNDun9uHRSH.
-           
     @param password_from_user The password entered by the user.
-
     @return 1 if passwords match, 0 otherwise.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::check_password $password_from_ldap $password_from_user"
+
     set result 0
 
     if { [regexp "{(.*)}(.*)" $password_from_ldap match cypher digest_base64] } {
@@ -207,6 +211,8 @@ ad_proc -private auth::ldap::set_password {
 } {
     Update an LDAP user's password.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: set_password -dn $dn -new_password $new_password -parameters $parameters"
+
     # Parameters
     array set params $parameters
 
@@ -261,6 +267,8 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     Implements the Authenticate operation of the auth_authentication 
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Authenticate $username $password $parameters $authority_id"
+
     if {"" == [string trim $password]} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
@@ -341,6 +349,8 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
     Implements the GetParameters operation of the auth_authentication 
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::GetParameters"
+
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
@@ -366,6 +376,8 @@ ad_proc -public auth::ldap::authentication::Sync {
     Creates a new ]po[ user from LDAP information.
     Returns 0 if the user can't be created
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync $username $parameters $authority_id"
+
     # Parameters
     array set params $parameters
 
@@ -674,6 +686,8 @@ ad_proc -private auth::ldap::password::ChangePassword {
     Implements the ChangePassword operation of the auth_password 
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::password::ChangePassword $username $old_password $new_password $parameters $authority_id"
+
     # Parameters
     array set params $parameters
 
@@ -719,6 +733,7 @@ ad_proc -private auth::ldap::password::RetrievePassword {
     Implements the RetrievePassword operation of the auth_password 
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::password::RetrievePassword $username $parameters"
     return { password_status not_supported }
 }
 
@@ -730,6 +745,8 @@ ad_proc -private auth::ldap::password::ResetPassword {
     Implements the ResetPassword operation of the auth_password 
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::password::ResetPassword $username $parameters $authority_id"
+
     # Parameters
     array set params $parameters
 
@@ -754,6 +771,7 @@ ad_proc -private auth::ldap::password::GetParameters {} {
     Implements the GetParameters operation of the auth_password
     service contract for LDAP.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::password::GetParameters"
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
@@ -777,6 +795,8 @@ ad_proc -private auth::ldap::registration::GetElements {
     Implements the GetElements operation of the auth_registration
     service contract.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::registration::GetElements $parameters"
+
     set result(required) { username email first_names last_name }
     set result(optional) { password }
 
@@ -799,6 +819,8 @@ ad_proc -private auth::ldap::registration::Register {
     Implements the Register operation of the auth_registration
     service contract.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::registration::Register $parameters $username $authority_id $first_names $last_name $screen_name $email $url $password $secret_question $secret_answer"
+
     # Parameters
     array set params $parameters
 
@@ -852,6 +874,7 @@ ad_proc -private auth::ldap::registration::GetParameters {} {
     Implements the GetParameters operation of the auth_registration
     service contract.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::registration::GetParameters"
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
@@ -880,6 +903,8 @@ ad_proc -private auth::ldap::user_info::GetUserInfo {
     info_message - string
     user_info - string []
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::user_info::GetUserInfo $username $parameters"
+
     # Parameters
     array set params $parameters
 
@@ -931,6 +956,8 @@ ad_proc -private auth::ldap::user_info::GetUserInfo {
 ad_proc -private auth::ldap::user_info::GetParameters {} {
     Delete service contract for account registration.
 } {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::user_info::GetParameters"
+
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
