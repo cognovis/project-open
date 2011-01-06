@@ -404,11 +404,15 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		# Successfully extacted password
 		set ldap_password_encoded [string trim $ldap_password_encoded]
 		ns_log Notice "auth::ldap::authentication::Authenticate: found encoded password=$ldap_password_encoded]"
-		set ldap_password [::base64::decode [string trim $ldap_password_encoded]]
-		ns_log Notice "auth::ldap::authentication::Authenticate: found ldap_password='$ldap_password'"
+		set password_ok_p [CheckOpenLDAPPassword $password $ldap_password_encoded]
 
-		if {$ldap_password == $password} {
-		    set uid [db_string uid "select party_id from cc_users where lower(email) = lower(:base_dn) OR lower(username) = lower(:username)" -default 0]
+		if {$password_ok_p} {
+
+		    # Determine the user_id from username
+		    set uid [db_string uid "
+			select	party_id from cc_users 
+			where	lower(email) = lower(:base_dn) OR lower(username) = lower(:username)
+		    " -default 0]
 		    set auth_info(auth_status) "ok"
 		    set auth_info(user_id) $uid
 		    set auth_info(auth_message) "Login Successful"
@@ -439,6 +443,45 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     }
 
 }
+
+
+ad_proc -private auth::ldap::authentication::CheckOpenLDAPPassword {
+    password_from_user
+    ldap_password_encoded
+} {
+    Check if the OpenLDAP password has matches the user provided password_from_user.
+    Currently supports CRYPT (13 and 34 digit) and MD5 hashes
+    Returns 1 on a successfull match, or 0 otherwise.
+} {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::CheckOpenLDAPPassword: pwd=$password_from_user, ldap_pwd_enc=$ldap_password_encoded"
+    set ldap_password [::base64::decode [string trim $ldap_password_encoded]]
+    ns_log Notice "auth::ldap::authentication::CheckOpenLDAPPassword: pwd=$password_from_user, ldap_pwd=$ldap_password"
+
+    # 1. Check for plain text passwords stored in OpenLDAP? That's an easy one...
+    if {$password_from_user == $ldap_password} { return 1 }
+
+    # 2. Check for 13 digit CRYPT digest.
+    # The first two letters are the "salt".
+    # Example: {CRYPT}aUihad99hmev6: "aU" is the salt
+    set salt [string range $ldap_password 0 1]
+    set my_digest "{CRYPT}[ns_crypt $password_from_user $salt]"
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::CheckOpenLDAPPassword: my_digest=$my_digest, ldap_pwd=$ldap_password"
+    if {$my_digest == $ldap_password} { return 1 }
+
+    # 3. Check for 34 digit MD5 hash delivered by some glibc2 systems
+    # Example: {CRYPT}$1$czBJdDqS$TmkzUAb836oMxg/BmIwN.1
+    set hash_from_ldap [string range $ldap_password_encoded 0 15]
+    set salt_from_ldap [string range $ldap_password_encoded 16 end]
+    set hash_from_user [binary format H* [md5::md5 "${password_from_user}${salt_from_ldap}"]]
+    if {$hash_from_ldap == $hash_from_user} { return 1 }
+
+    # 4. Last resort: Try running the old OpenACS auth::ldap::check_password routine
+    return [auth::ldap::check_password $ldap_password_encoded password]
+}
+
+
+
+
 
 ad_proc -private auth::ldap::authentication::GetParameters {} {
     Implements the GetParameters operation of the auth_authentication 
