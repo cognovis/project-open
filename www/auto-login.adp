@@ -6,7 +6,8 @@
 <tr class=roweven><td>User ID</td><td>@user_id@</td></tr>
 <tr class=rowodd><td>User</td><td>@name@</td></tr>
 <tr class=roweven><td>Username</td><td>@username@</td>
-<tr class=rowodd><td>Auto-Login<br>Token</td><td>@auto_login@</td></tr>
+<tr class=rowodd><td>Expiry Date</td><td>@expiry_date@</td>
+<tr class=roweven><td>Auto-Login<br>Token</td><td>@auto_login@</td></tr>
 </tr>
 </table>
 

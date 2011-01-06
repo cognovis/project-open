@@ -25,7 +25,13 @@ ad_page_contract {
 if {![info exists user_id]} { set user_id 0 }
 if {![info exists format]} { set format "html" }
 
-set auto_login [im_generate_auto_login -user_id $user_id]
+# Get expiry_date from HTTP headers
+set form_vars [ns_conn form]
+if {"" == $form_vars} { set form_vars [ns_set create] }
+set expiry_date [ns_set get $form_vars expiry_date]
+
+# Generate the auto-login token
+set auto_login [im_generate_auto_login -user_id $user_id -expiry_date $expiry_date]
 
 set username ""
 set name ""
@@ -43,6 +49,7 @@ switch $format {
 		<user_id>$user_id</user_id>
 		<user_name>$name</user_name>
 		<username>$username</username>
+		<expiry_date>$expiry_date</expiry_date>
 		<token>$auto_login</token>
 	</auto_login>
         "

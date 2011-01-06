@@ -1386,13 +1386,15 @@ ad_proc -private im_rest_authenticate {
     # Check for token authentication
     set token_user_id ""
     set token_token ""
+    set expiry_date ""
     if {[info exists query_hash(user_id)]} { set token_user_id $query_hash(user_id)}
     if {[info exists query_hash(auth_token)]} { set token_token $query_hash(auth_token)}
     if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
+    if {[info exists query_hash(expiry_date)]} { set expiry_date $query_hash(expiry_date)}
 
     # Check if the token fits the user
     if {"" != $token_user_id && "" != $token_token} {
-	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
+	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token -expiry_date $expiry_date]} {
 	    set token_user_id ""
 	}
     }
