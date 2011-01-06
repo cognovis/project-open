@@ -33,7 +33,7 @@ if {!$user_is_admin_p} {
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params
-set pages [list index ldap-ip-port ldap-type-domain ldap-bind ldap-authority ldap-authority2]
+set pages [list index ldap-ip-port ldap-type-domain ldap-bind ldap-authority ldap-authority2 ldap-import]
 set vars $pages
 lappend vars ip_address port
 
