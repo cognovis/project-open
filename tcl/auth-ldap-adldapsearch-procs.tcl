@@ -8,6 +8,8 @@ ad_library {
     @creation-date 2008-01-13
 }
 
+package require base64 2.3.1
+
 namespace eval auth {}
 namespace eval auth::ldap {}
 namespace eval auth::ldap::authentication {}
@@ -265,16 +267,31 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     {authority_id {}}
 } {
     Implements the Authenticate operation of the auth_authentication 
-    service contract for LDAP.
+    service contract for LDAP Active Directory and OpenLDAP.
+    <ul>
+    <li>Active Directory<br>
+	AD doesn't return password information, so we have to try to "bind" to AD
+	using the current user.
+    <li>OpenLDAP<br>
+	OL requires a specific user+password (BindDN+BindPW) for connecting.
+	BindDN is typically something like "cn=Manager,dc=project-open,dc=com".
+	OL returns a "userPassword" value when searching for the uid=username.
+    </ul>
+
 } {
     ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Authenticate $username $password $parameters $authority_id"
 
+    # Default setting for auth_info return hash: Bad Password
+    set auth_info(auth_status) "bad_password"
+    set auth_info(user_id) 0
+    set auth_info(info_status) "ok"
+    set auth_info(auth_message) "Generic Error"
+    set auth_info(account_status) "ok"
+    set auth_info(account_message) ""
+
+
     if {"" == [string trim $password]} {
-	set auth_info(auth_status) "bad_password"
-	set auth_info(user_id) 0
 	set auth_info(auth_message) "Empty password"
-	set auth_info(account_status) "ok"
-	set auth_info(account_message) ""
 	return [array get auth_info]
     }
 
@@ -284,65 +301,143 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # Default to failure
     set result(auth_status) bad_password
 
+    # -----------------------------------------------------------------
+    # Pull out the LDAP parameter values. "Catch" errors for compatibility
+    
+    # The LDAP server like: "ldap://localhost"
     set uri $params(LdapURI)
+    # The "domain name", ex: "dc=project-open,dc=com"
     set base_dn $params(BaseDN)
+    # The LDAP-user to connect to the LDAP database. 
+    # This is a fixed account for OpenLDAP ("cn=Manager,dc=project-open,dc=com"),
+    # while Active Directory needs the DN of the user ("{username}@project-open.com")
     set bind_dn $params(BindDN)
+    set bind_pw ""
+    catch { set bind_pw $params(BindPW) }
+    # "ad" = Active Directory, "ol" = OpenLDAP
+    set server_type "ad"
+    catch { set server_type $params(ServerType) }
+    # One of {uid|sAMAccountName}
+    set username_attribute ""
+    catch { set username_attribute $params(UsernameAttribute) }
 
+    # Substitute username in both BindDN and BaseDN
     foreach var { username } {
         regsub -all "{$var}" $base_dn [set $var] base_dn
         regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
 
-    ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
-    set return_code [catch {
-        exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
-    } msg]
+    switch $server_type {
+	ad {
 
-    # Extract the first line - it contains the error message if there is an issue.
-    set msg_first_line ""
-    if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
-    if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
+	    # ------------------------------------------------------------------------------
+	    # For AD auth, we just try to bind as the user and check if that is OK.
+	    ns_log Notice "auth::ldap::authentication::Authenticate: Active Directory"
+	    ns_log Notice "ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
+	    set return_code [catch {
+		exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
+	    } err_msg]
+	    ns_log Notice "auth::ldap::authentication::Authenticate: return_code=$return_code, msg=$err_msg"
 
-    # ----------------------------------------------------
-    # Successfully verified the username/password
-    if {0 == $return_code} {
-	set uid [db_string uid "
-		select	party_id 
-		from   	cc_users
-		where	lower(email) = lower(:base_dn)
-			OR lower(username) = lower(:username)
-	" -default 0]
+	    # Extract the first line - it contains the error message if there is an issue.
+	    set err_msg_first_line ""
+	    if {"" == $err_msg_first_line} { regexp {^(.*)\n} $err_msg match err_msg_first_line }
+	    if {"" == $err_msg_first_line} { regexp {^(.*\))} $err_msg match err_msg_first_line }
+	    
+	    # ----------------------------------------------------
+	    # Successfully verified the username/password
+	    if {0 == $return_code} {
+		set uid [db_string uid "select party_id from cc_users where lower(email) = lower(:base_dn) OR lower(username) = lower(:username) " -default 0]
+		set auth_info(auth_status) "ok"
+		set auth_info(user_id) $uid
+		set auth_info(auth_message) "Login Successful"
+		
+		# Sync the user with the LDAP information, with username as primary key
+		set auth_info_array [auth::ldap::authentication::Authenticate $username $parameters $authority_id]
+		array set auth_info $auth_info_array
+		return [array get auth_info]
+	    }
+	    
+	    # ----------------------------------------------------
+	    # We had an issue with the LDAP
+	    if {[regexp {Invalid credentials \(49\)} $err_msg]} {
+		set auth_info(auth_status) "bad_password"
+		set auth_info(user_id) 0
+		set auth_info(auth_message) "Bad user or password:<br>$err_msg_first_line"
+		set auth_info(account_status) "ok"
+		set auth_info(account_message) ""
+		return [array get auth_info]
+	    }
+	    
+	    set auth_info(auth_status) "auth_error"
+	    set auth_info(user_id) 0
+	    set auth_info(auth_message) "LDAP error:<br>$err_msg_first_line"
+	    set auth_info(account_status) "ok"
+	    set auth_info(account_message) ""
+	    return [array get auth_info]
+	    
+	}
+	ol {
 
-	set auth_info(auth_status) "ok"
-	set auth_info(info_status) "ok"
-	set auth_info(user_id) $uid
-	set auth_info(auth_message) "Login Successful"
-	set auth_info(account_status) "ok"
-	set auth_info(account_message) ""
+	    # ------------------------------------------------------------------------------
+	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
+	    # check if we can construct the same hash
+	    ns_log Notice "auth::ldap::authentication::Authenticate: OpenLDAP"
+	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '$username_attribute=$username' userPassword"
+	    set return_code [catch {
+		# Bind as "Manager" and retreive the userPassword field for
+		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "$username_attribute=$username" userPassword
+	    } err_msg]
+	    ns_log Notice "auth::ldap::authentication::Authenticate: return_code=$return_code, msg=$err_msg"
 
-	# Sync the user with the LDAP information, with username as primary key
-	set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
-	array set auth_info $auth_info_array
-	return [array get auth_info]
+	    if {1 == $return_code} {
+		# ldapsearch didn't retrieve any result. So there is probably something wrong with
+		# the BindDN or the password
+		set auth_info(auth_status) "auth_error"
+		set auth_info(auth_message) "LDAP error:<br>$err_msg"
+		return [array get auth_info]
+	    }
+	    
+	    # Extract the password from the "err_msg"
+	    if {[regexp {userPassword:: ([a-zA-Z0-9\+\/]*)} $err_msg match ldap_password_encoded]} {
+
+		# Successfully extacted password
+		set ldap_password_encoded [string trim $ldap_password_encoded]
+		ns_log Notice "auth::ldap::authentication::Authenticate: found encoded password=$ldap_password_encoded]"
+		set ldap_password [::base64::decode [string trim $ldap_password_encoded]]
+		ns_log Notice "auth::ldap::authentication::Authenticate: found ldap_password='$ldap_password'"
+
+		if {$ldap_password == $password} {
+		    set uid [db_string uid "select party_id from cc_users where lower(email) = lower(:base_dn) OR lower(username) = lower(:username)" -default 0]
+		    set auth_info(auth_status) "ok"
+		    set auth_info(user_id) $uid
+		    set auth_info(auth_message) "Login Successful"
+		    
+#		    # Sync the user with the LDAP information, with username as primary key
+#		    set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
+#		    array set auth_info $auth_info_array
+		    return [array get auth_info]
+
+		} else {
+		    # Wrong password
+		    ns_log Notice "auth::ldap::authentication::Authenticate: Wrong password: password='$password', ldap_password='$ldap_password'"
+		    set auth_info(auth_message) "Bad user or password"
+		    return [array get auth_info]
+		}
+
+	    } else {
+
+		ns_log Notice "auth::ldap::authentication::Authenticate: didn't find 'userPassword' in err_msg=$err_msg"
+		set auth_info(auth_status) "auth_error"
+		set auth_info(auth_message) "LDAP error:<br>Didn't find 'userPassword' in LDAP response"
+		return [array get auth_info]
+
+	    }
+	 
+	    # End of OpenLDAP switch {} statement
+	}
     }
 
-    # ----------------------------------------------------
-    # We had an issue with the LDAP
-    if {[regexp {Invalid credentials \(49\)} $msg]} {
-	set auth_info(auth_status) "bad_password"
-	set auth_info(user_id) 0
-	set auth_info(auth_message) "Bad user or password:<br>$msg_first_line"
-	set auth_info(account_status) "ok"
-	set auth_info(account_message) ""
-	return [array get auth_info]
-    }
-
-    set auth_info(auth_status) "auth_error"
-    set auth_info(user_id) 0
-    set auth_info(auth_message) "LDAP error:<br>$msg_first_line"
-    set auth_info(account_status) "ok"
-    set auth_info(account_message) ""
-    return [array get auth_info]
 }
 
 ad_proc -private auth::ldap::authentication::GetParameters {} {
@@ -355,7 +450,9 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
         BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
-        UsernameAttribute "LDAP attribute to match username against, typically uid"
+	BindPW "The password for the BindDN. Leave empty if this is not necessary."
+	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
+        UsernameAttribute "LDAP attribute to match username against. Example: 'uid' for OpenLDAP, 'sAMAccountName' for ActiveDirectory."
     }
 }
 
@@ -394,7 +491,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     }
 
     set return_code [catch {
-        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
+        ns_log Notice "auth::ldap::authentication::Sync: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
 	exec ldapsearch -x -H $uri -b dc=genedata,dc=win (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
     } msg]
 
