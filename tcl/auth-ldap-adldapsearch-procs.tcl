@@ -16,6 +16,8 @@ namespace eval auth::ldap::authentication {}
 namespace eval auth::ldap::password {}
 namespace eval auth::ldap::registration {}
 namespace eval auth::ldap::user_info {}
+namespace eval auth::ldap::batch_import {}
+
 
 ad_proc -private auth::ldap::after_install {} {} {
     set spec {
@@ -1105,4 +1107,340 @@ ad_proc -private auth::ldap::user_info::GetParameters {} {
         UsernameAttribute "LDAP attribute to match username against, typically uid"
         InfoAttributeMap "Mapping attributes from the LDAP entry to OpenACS user information in the format 'element=attrkbute;element=attribute'. Example: first_names=givenName;last_name=sn;email=mail"
     }
+}
+
+
+#####
+#
+# Batch Import Driver
+#
+#####
+
+
+ad_proc -private auth::ldap::batch_import::Import {
+    {parameters {}}
+    {authority_id {}}
+} {
+    Imports all elements from a LDAP authority
+} {
+    ns_log Notice "auth::ldap::batch_import::Import$parameters $authority_id"
+
+    # Parameters
+    array set params $parameters
+
+    # -----------------------------------------------------------------
+    # Pull out the LDAP parameter values.
+    
+    # The LDAP server like: "ldap://localhost"
+    set uri $params(LdapURI)
+    set base_dn $params(BaseDN)
+    set bind_dn $params(BindDN)
+    set bind_pw $params(BindPW)
+    set server_type $params(ServerType)
+
+    switch $server_type {
+	ad {
+	    ad_return_complaint 1 "Active Directory not supported yet for batch Import"
+	}
+	ol {
+	    # ------------------------------------------------------------------------------
+	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
+	    # check if we can construct the same hash
+	    ns_log Notice "auth::ldap::batch_import::Import OpenLDAP"
+	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=*)'"
+	    set return_code [catch {
+		# Bind as "Manager" and retreive the userPassword field for
+		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=*)"
+	    } err_msg]
+	    ns_log Notice "auth::ldap::batch_import::Import return_code=$return_code, msg=$err_msg"
+
+	    if {1 == $return_code} {
+		# ldapsearch didn't retrieve any result. So there is probably something wrong with
+		# the BindDN or the password
+		ad_return_complaint 1 "<b>Error retreiving LDAP data</b>:<br>
+			Command: ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=*)'<br>
+			Error: <pre>$err_msg</pre>
+	        "
+		ad_script_abort
+	    }
+
+	    array set results [auth::ldap::batch_import::ParseOpenLDAPLdif -authority_id $authority_id $err_msg]
+
+	    ad_return_complaint 1 "
+		<pre>$results(debug)</pre><br>
+		<pre>$err_msg</pre>
+	    "
+
+	}
+    }
+}
+
+
+
+ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdif {
+    -authority_id:required
+   ldif
+} {
+    Parse an OpenLDAP output and generate ]po[ objects from it
+} {
+    ns_log Notice "auth::ldap::batch_import::ParseOpenLDAPLdif"
+
+    set cnt 0
+    set debug ""
+    set lines [split $ldif "\n"]
+    set object_lines {}
+    foreach line $lines {
+	set line [string trim $line]
+#	ns_log Notice "auth::ldap::batch_import::ParseOpenLDAPLdif: line='$line'"
+	if {"#" == [string range $line 0 0]} { 
+	    # A hash starts a comment line
+	    continue 
+	}
+
+	if {"" == $line} {
+	    # We have found the boundary of one object.
+	    # So take the current object lines for parsing and
+	    # start off a new object
+	    array set object_result [auth::ldap::batch_import::ParseOpenLDAPLdifObject -authority_id $authority_id $object_lines]
+	    append debug $object_result(debug)
+	    incr cnt
+
+	    if {$cnt > 10} { return [list result 1 debug $debug] }
+
+	    set object_lines {}
+	} else {
+	    lappend object_lines $line
+	}
+    }
+
+    return [list result 1 debug $debug]
+}
+
+
+
+
+ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdifObject {
+    -authority_id:required
+   object_lines
+} {
+    Collect the LDAP lines of a single object, determine the type and pass on to parsing
+} {
+    if {[llength $object_lines] < 2} { return [list result 0 debug "Empty Lines"] }
+    ns_log Notice "auth::ldap::batch_import::ParseOpenLDAPLdifObject"
+    set debug ""
+
+    # Determine a single object class relevant for ]po[ parsing.
+    set object_classes [list]
+    set object_kv_list [list]
+    set distinguished_name ""
+    set structural_object_class "undefined"
+    foreach line $object_lines {
+
+	# Extract the "objectClass" field
+	if {[regexp {^objectClass: (.*)$} $line match oclass]} {
+	    if {"" == $oclass} { continue }
+	    lappend object_classes $oclass
+	}
+
+	# Search for the Distinguished Name as the object's unique identifier
+	if {[regexp {^dn: (.*)$} $line match dn]} { set distinguished_name $dn }
+
+	# Search for the structuralObjectClass as the type of object
+	if {[regexp {^structuralObjectClass: (.*)$} $line match soc]} { set structural_object_class $soc }
+
+	# Convert all other lines into a hash
+	if {[regexp {^([a-zA-Z0-9]+): (.*)$} $line match key value]} { 
+	    set key [string trim $key]
+	    set value [string trim $value]
+	    lappend object_kv_list $key $value
+	}
+
+    }
+  
+    # Determine the "main" object class of the object for ]po[ parsing.
+    # Options are "Computer", "User", "Group", "Organization"
+    set otype "undefined"
+
+    switch $structural_object_class {
+	account		{ set otype "invalid" }
+	inetOrgPerson	{ set otype "user" }
+	organization	{ set otype "invalid" }
+	organizationalUnit { set otype "invalid" }
+	posixGroup	{ set otype "group" }
+	sambaDomain	{ set otype "invalid" }
+	default		{ set otype "invalid" }
+    }
+
+    # Check for objectClass for type
+    if {[lindex $object_classes "inetOrgPerson"] >= 0} { set otype "user" }
+    if {[lindex $object_classes "organization"] >= 0} { set otype "invalid" }
+
+    # Check for Organizational Unit to set object type
+    if {[regexp -nocase {ou=computers} $distinguished_name match]} { set otype "im_conf_item" }
+    if {[regexp -nocase {ou=groups} $distinguished_name match]} { set otype "group" }
+    if {[regexp -nocase {ou=users} $distinguished_name match]} { set otype "user" }
+
+    switch $otype {
+	user {
+	    array set parse_results [auth::ldap::batch_import::parse_user \
+			-authority_id $authority_id \
+			-dn $distiguished_name \
+			-object_classes $object_classes \
+			-keys_values $object_kv_list \
+			]
+	    append debug $parse_results(debug)
+	    set oid $parse_results(oid)
+	}
+	default {
+	    ns_log Notice "auth::ldap::batch_import::ParseOpenLDAPLdifObject: skipping object: otype=$otype, dn=$distinguished_name"
+	}
+    }
+
+    return [list result 1 debug $debug]
+}
+
+
+
+
+ad_proc -private auth::ldap::batch_import::parse_user {
+    -authority_id:required
+    -dn:required
+    -object_classes:required
+    -keys_values:required
+
+} {
+    Parse a single OpenLDAP object as defined by a number of LDIF lines
+} {
+    if {[llength $object_lines] < 2} { return [list result 0 debug "Empty Lines"] }
+    ns_log Notice "auth::ldap::batch_import::parse_user: dn=$dn, object_classes=$object_classes, kv=$keys_values"
+    set debug ""
+
+    array set hash $keys_values
+
+    set username ""
+    set display_name ""
+    set first_names ""
+    set last_name ""
+    set email ""
+    set description ""
+
+    # Common Name: Extract default values for first and last names
+    if {[info exists hash(displayName)]} { set display_name $hash(displayName) }
+    if {[info exists hash(cn)]} { set display_name $hash(cn) }
+    if {[regexp {^([a-zA-Z\-]+) (.*)$} $display_name match fn ln]} {
+	set first_names $fn
+	set last_name $ln
+    }
+
+    # username: Distinguish between OL and AD
+    if {[info exists hash(uid)]} { set username $hash(uid) }
+    if {[info exists hash(sAMAccountName)]} { set username $hash(sAMAccountName) }
+
+    # last_names: Check for explicit entry
+    if {[info exists hash(sn)]} { set last_name $hash(sn) }
+
+    # first_name: Check for explicit entry
+    if {[info exists hash(sn)]} { set last_name $hash(sn) }
+    
+    # mail:
+    if {[info exists hash(mail)]} { set email $hash(mail) }
+    
+    # description
+    if {[info exists hash(description)]} { set email $hash(description) }
+
+    # Check for empty variables
+    set ok_p 1
+    foreach var {username first_names last_name email } {
+	set val [set $var]
+	if {"" == $val} {
+	    ns_log Notice "auth::ldap::batch_import::parse_user: found empty variable '$var', skipping"
+	    append debug "auth::ldap::batch_import::parse_user: dn=$distinguished_name: found empty variable '$var', skipping\n"
+	    set ok_p 0
+	}
+    }
+
+    # Skip if something was wrong.
+    if {!$ok_p} { return [list result 0 oid 0 debug $debug] }
+
+
+    # Check if the user already exists.
+    # We assume that username and email are unique here.
+    # Normally, username and email are only unique for each Authority,
+    # but this is a special that that we want to ignore here.
+    # 
+    set user_id [db_string uid "
+	select	user_id
+	from	cc_users
+	where	lower(username) = :username OR lower(email) = :email
+    " -default 0]
+
+    if {0 == $user_id} {
+	
+	# The user doesn't exist yet. Create the user.
+
+	# Random password...
+	set pwd [expr rand()]
+	# user_id is the next free ID
+	set user_id [db_nextval acs_object_id_seq]
+
+	# Create the guy
+	array set creation_info [auth::create_user \
+				     -user_id $user_id \
+				     -authority_id $authority_id \
+				     -username $username \
+				     -email $email \
+				     -first_names $first_names \
+				     -last_name $last_name \
+				     -screen_name $display_name \
+				     -password $pwd \
+				     -password_confirm $pwd \
+				    ]
+	# Set creation user
+	db_dml update_creation_user_id "
+                update acs_objects
+                set creation_user = [ad_get_user_id]
+                where object_id = :user_id
+        "
+
+	# For all users: Add a users_contact record
+        catch { db_dml add_users_contact "insert into users_contact (user_id) values (:user_id)" } errmsg
+
+	# Add the user to the "Registered Users" group, because (s)he would get strange problems otherwise
+        set registered_users [im_registered_users_group_id]
+        set reg_users_rel_exists_p [db_string member_of_reg_users "
+                select  count(*)
+                from    group_member_map m, membership_rels mr
+                where   m.member_id = :user_id
+                        and m.group_id = :registered_users
+                        and m.rel_id = mr.rel_id
+                        and m.container_id = m.group_id
+                        and m.rel_type = 'membership_rel'
+        "]
+        if {!$reg_users_rel_exists_p} {
+            relation_add -member_state "approved" "membership_rel" $registered_users $user_id
+        }
+
+    }
+
+    # Update fiels of both existing or new user.
+    db_dml update_user "
+		update users set
+			username = :username,
+			authority_id = :authority_id
+		where user_id = :user_id
+    "
+    db_dml update_person "
+		update persons set
+			first_names = :first_names,
+			last_name = :last_name
+		where person_id = :user_id
+    "
+    db_dml update_parties "
+		update parties set
+			email = :email
+		where party_id = :user_id
+    "
+
+
+    return [list result 1 oid 0 debug $debug]
 }
