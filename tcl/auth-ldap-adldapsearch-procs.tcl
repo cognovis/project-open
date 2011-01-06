@@ -1205,7 +1205,7 @@ ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdif {
 	    append debug $object_result(debug)
 	    incr cnt
 
-	    if {$cnt > 10} { return [list result 1 debug $debug] }
+	    if {$cnt > 15} { return [list result 1 debug $debug] }
 
 	    set object_lines {}
 	} else {
@@ -1225,7 +1225,7 @@ ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdifObject {
 } {
     Collect the LDAP lines of a single object, determine the type and pass on to parsing
 } {
-    if {[llength $object_lines] < 2} { return [list result 0 debug "Empty Lines"] }
+    if {[llength $object_lines] < 2} { return [list result 0 debug "Empty Lines\n"] }
     ns_log Notice "auth::ldap::batch_import::ParseOpenLDAPLdifObject"
     set debug ""
 
@@ -1272,8 +1272,8 @@ ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdifObject {
     }
 
     # Check for objectClass for type
-    if {[lindex $object_classes "inetOrgPerson"] >= 0} { set otype "user" }
-    if {[lindex $object_classes "organization"] >= 0} { set otype "invalid" }
+    if {[lsearch $object_classes "inetOrgPerson"] >= 0} { set otype "user" }
+    if {[lsearch $object_classes "organization"] >= 0} { set otype "invalid" }
 
     # Check for Organizational Unit to set object type
     if {[regexp -nocase {ou=computers} $distinguished_name match]} { set otype "im_conf_item" }
@@ -1284,7 +1284,7 @@ ad_proc -private auth::ldap::batch_import::ParseOpenLDAPLdifObject {
 	user {
 	    array set parse_results [auth::ldap::batch_import::parse_user \
 			-authority_id $authority_id \
-			-dn $distiguished_name \
+			-dn $distinguished_name \
 			-object_classes $object_classes \
 			-keys_values $object_kv_list \
 			]
@@ -1311,7 +1311,6 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 } {
     Parse a single OpenLDAP object as defined by a number of LDIF lines
 } {
-    if {[llength $object_lines] < 2} { return [list result 0 debug "Empty Lines"] }
     ns_log Notice "auth::ldap::batch_import::parse_user: dn=$dn, object_classes=$object_classes, kv=$keys_values"
     set debug ""
 
@@ -1346,7 +1345,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     if {[info exists hash(mail)]} { set email $hash(mail) }
     
     # description
-    if {[info exists hash(description)]} { set email $hash(description) }
+    if {[info exists hash(description)]} { set description $hash(description) }
 
     # Check for empty variables
     set ok_p 1
@@ -1354,7 +1353,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	set val [set $var]
 	if {"" == $val} {
 	    ns_log Notice "auth::ldap::batch_import::parse_user: found empty variable '$var', skipping"
-	    append debug "auth::ldap::batch_import::parse_user: dn=$distinguished_name: found empty variable '$var', skipping\n"
+	    append debug "auth::ldap::batch_import::parse_user: dn=$dn: found empty variable '$var', skipping\n"
 	    set ok_p 0
 	}
     }
@@ -1377,6 +1376,8 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     if {0 == $user_id} {
 	
 	# The user doesn't exist yet. Create the user.
+	ns_log Notice "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name"
+	append debug "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name\n"
 
 	# Random password...
 	set pwd [expr rand()]
@@ -1386,7 +1387,6 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	# Create the guy
 	array set creation_info [auth::create_user \
 				     -user_id $user_id \
-				     -authority_id $authority_id \
 				     -username $username \
 				     -email $email \
 				     -first_names $first_names \
@@ -1395,6 +1395,13 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 				     -password $pwd \
 				     -password_confirm $pwd \
 				    ]
+
+	set creation_status $creation_info(creation_status)
+	if {"ok" != $creation_status} {
+	    ns_log Notice "auth::ldap::batch_import::parse_user: dn=$dn: Failed to create user dn=$dn: [array get creation_info]"
+	    append debug "auth::ldap::batch_import::parse_user: Failed to create user dn=$dn: [array get creation_info]"
+	}
+
 	# Set creation user
 	db_dml update_creation_user_id "
                 update acs_objects
@@ -1420,6 +1427,8 @@ ad_proc -private auth::ldap::batch_import::parse_user {
             relation_add -member_state "approved" "membership_rel" $registered_users $user_id
         }
 
+    } else {
+	append debug "auth::ldap::batch_import::parse_user: dn=$dn: Updating existing user\n"
     }
 
     # Update fiels of both existing or new user.
