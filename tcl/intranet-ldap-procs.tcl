@@ -39,6 +39,7 @@ ad_proc -public im_sysconfig_ldap_check_port_open {
 	close $fp
     } err_msg]} {
 	set open_p 0
+	append debug $err_msg
     } else {
 	set open_p 1
     }
