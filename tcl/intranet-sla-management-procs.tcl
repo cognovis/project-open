@@ -178,7 +178,7 @@ ad_proc -public im_sla_management_epoch_in_service_hours {
 # Calculate the Solution time for every ticket
 # ---------------------------------------------------------------------
 
-ad_proc -public im_sla_ticket_solution_time {
+ad_proc -public im_sla_ticket_solution_time_sweeper {
     {-debug_p 0}
     {-ticket_id ""}
 } {
@@ -289,7 +289,7 @@ ad_proc -public im_sla_ticket_solution_time {
 	    
 	    # Loop through all days between start and end and add the start
 	    # and end of the business hours this day.
-	    if {$debug_p} { append debug_html "<li>Starting to go loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n" }
+	    if {$debug_p} { append debug_html "<li>Starting to loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n" }
 	    for {set j $ticket_creation_julian} {$j < $now_julian} {incr j} {
 		
 		# Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
