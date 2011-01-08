@@ -20,6 +20,12 @@ and port of your LDAP server below and press "Test Parameters".<br>
 
 <input type=hidden name=ip_address value="@ip_address@">
 <input type=hidden name=port value="@port@">
+<input type=hidden name=binddn value="@binddn;noquote@">
+<input type=hidden name=bindpw value="@bindpw;noquote@">
+<input type=hidden name=authority_id value="@authority_id@">
+<input type=hidden name=authority_name value="@authority_name@">
+<input type=hidden name=group_map value="@group_map;noquote@">
+
 
 <table>
 </tr>

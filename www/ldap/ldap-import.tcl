@@ -10,6 +10,8 @@
 
 ad_page_contract {
     Provides a form for additional authority fields.
+    We can run this script only AFTER the authority has been configured,
+    because we need driver procs to actually access the authority data.
 } {
     { ip_address "" }
     { port "" }
@@ -18,7 +20,9 @@ ad_page_contract {
     { binddn "" }
     { bindpw "" }
     { authority_name "" }
-    { authority_id "54316" }
+    { authority_id "" }
+    { group_map "" }
+    group:array,optional
 }
 
 # ---------------------------------------------------------------
@@ -40,9 +44,26 @@ set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span>
 
 
 # ---------------------------------------------------------------
-# Import stuff
+# Update the group_map
 # ---------------------------------------------------------------
 
+# Take the default group mapping as a starting point for the mapping
+array set group_map_hash $group_map
+
+# Store each of the specified mappings in the group_map_hash
+set group_map_groups [array names group]
+foreach group_name $group_map_groups {
+    set group_id $group($group_name)
+    if {"" != $group_id} {
+	set group_map_hash($group_name) $group_id
+    }
+}
+set group_map [array get group_map_hash]
+
+
+# ---------------------------------------------------------------
+# Import stuff
+# ---------------------------------------------------------------
 
 array set params {}
 set params(LdapURI) "ldap://$ip_address:$port"
@@ -50,7 +71,15 @@ set params(BaseDN) $domain
 set params(BindDN) $binddn
 set params(BindPW) $bindpw
 set params(ServerType) $ldap_type
+set params(GroupMap) $group_map
 
-array set result [auth::ldap::batch_import::Import [array get params] $authority_id]
+array set result_hash [auth::ldap::batch_import::import_users [array get params] $authority_id]
+set result $result_hash(result)
+set debug $result_hash(debug)
+
+
+array set result_hash [auth::ldap::batch_import::import_groups [array get params] $authority_id]
+set result $result_hash(result)
+append debug $result_hash(debug)
 
 

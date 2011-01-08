@@ -18,6 +18,8 @@ ad_page_contract {
     { binddn "" }
     { bindpw "" }
     { authority_name "" }
+    { authority_id "" }
+    { group_map "" }
 }
 
 # Remove the "dc=" pieces from the domain

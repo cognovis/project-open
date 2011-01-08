@@ -17,6 +17,9 @@ ad_page_contract {
     { domain "" }
     { binddn "" }
     { bindpw "" }
+    { authority_name "" }
+    { authority_id "" }
+    { group_map "" }
 }
 
 set default_binddn_ad "cn=Administrator,cn=Users,$domain"

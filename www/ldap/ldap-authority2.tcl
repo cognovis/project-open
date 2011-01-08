@@ -18,6 +18,8 @@ ad_page_contract {
     { binddn "" }
     { bindpw "" }
     { authority_name "" }
+    { authority_id "" }
+    { group_map "" }
 }
 
 # ---------------------------------------------------------------
@@ -39,32 +41,10 @@ set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span>
 
 
 # ---------------------------------------------------------------
-# Check for duplicate authority
-# ---------------------------------------------------------------
-
-
-set exists_p [db_string authority_exists "
-	select	count(*)
-	from	auth_authorities
-	where	pretty_name = :authority_name
-"]
-
-if {$exists_p} {
-	ad_return_complaint 1 "
-		<b>Your authority '$authority_name' already exist</b>:<br>
-		Please choose a different name or 
-		<a href='/acs-admin/auth/' target='_blank'>delete</a> the existing authority.
-	"
-	ad_script_abort
-}
-
-# ---------------------------------------------------------------
 # Add the new authority
 # ---------------------------------------------------------------
 
 # Basic Information
-set authority_id [db_nextval "acs_object_id_seq"]
-set auth_hash(authority_id) $authority_id
 set auth_hash(pretty_name) $authority_name
 set auth_hash(short_name) ""
 set auth_hash(enabled_p) "t"
@@ -91,8 +71,25 @@ set auth_hash(get_doc_impl_id) $get_doc_impl_id
 set auth_hash(process_doc_impl_id) $process_doc_impl_id
 set auth_hash(search_impl_id) $search_impl_id
 
-auth::authority::create -authority_id $authority_id -array auth_hash
 
+# Update or create the authority
+set authority_id [db_string authority_exists "
+	select	min(authority_id)
+	from	auth_authorities
+	where	pretty_name = :authority_name
+" -default 0]
+
+if {0 != $authority_id} {
+    # Authority already exists with this name
+    auth::authority::edit -authority_id $authority_id -array auth_hash
+    set create_p 0
+} else {
+    # Create a new authority
+    set authority_id [db_nextval "acs_object_id_seq"]
+    set auth_hash(authority_id) $authority_id
+    auth::authority::create -authority_id $authority_id -array auth_hash
+    set create_p 1
+}
 
 
 # ---------------------------------------------------------------

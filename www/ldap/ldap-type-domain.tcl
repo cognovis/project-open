@@ -11,10 +11,15 @@
 ad_page_contract {
     Connect to the LDAP server and check if the port is open
 } {
-    ip_address
-    port
+    { ip_address "" }
+    { port "" }
     { ldap_type "" }
     { domain "" }
+    { binddn "" }
+    { bindpw "" }
+    { authority_name "" }
+    { authority_id "" }
+    { group_map "" }
 }
 
 set default_domain "dc=your_domain,dc=com"
