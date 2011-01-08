@@ -77,9 +77,6 @@ array set result_hash [auth::ldap::batch_import::import_users [array get params]
 set result $result_hash(result)
 set debug $result_hash(debug)
 
-
 array set result_hash [auth::ldap::batch_import::import_groups [array get params] $authority_id]
 set result $result_hash(result)
 append debug $result_hash(debug)
-
-
