@@ -183,7 +183,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
     information about these groups.
     Returns a hash with the values result, debug and objects.
 } {
-    ns_log Notice "auth::ldap::batch_import::read_groups: parameters=$parameters"
+    ns_log Notice "auth::ldap::batch_import::read_ldif_groups: parameters=$parameters"
     set debug ""
 
     array set result_hash [auth::ldap::batch_import::read_ldif_objects $parameters $authority_id]
@@ -488,10 +488,78 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 			email = :email
 		where party_id = :user_id
     "
-
-
     return [list result 1 oid 0 debug $debug]
 }
 
 
 
+
+
+# -----------------------------------------------------------------
+# Import groups
+# -----------------------------------------------------------------
+
+
+ad_proc -private auth::ldap::batch_import::import_groups {
+    {parameters {}}
+    {authority_id {}}
+} {
+    Parse the LDIF file and import every found groups into ]po[
+    using the group_map defined in parameters.
+    Returns a hash with the values result and debug
+} {
+    ns_log Notice "auth::ldap::batch_import::import_groups: parameters=$parameters"
+    array set params $parameters
+    array set result_hash [auth::ldap::batch_import::read_ldif_groups $parameters $authority_id]
+    if {0 == $result_hash(result)} {
+        # Found some errors
+        return [list result 0 debug $result_hash(debug) groups {}]
+    }
+
+    # Successfully read the group
+    set debug $result_hash(debug)
+    array set group_hash $result_hash(objects)
+    array set group_map_hash $params(GroupMap)
+
+    foreach group_name [array names group_hash] {
+
+	set po_group_id ""
+	if {[info exists group_map_hash($group_name)]} { set po_group_id $group_map_hash($group_name) }
+
+	ns_log Notice "auth::ldap::batch_import::import_groups: group='$group_name' -> $po_group_id"
+
+	# Going through the group members only makes sense if we have mapped the LDAP group to ]po[...
+	if {"" != $po_group_id} {
+
+	    set group_kvs $group_hash($group_name)
+	    set group_kvs_len [llength $group_kvs]
+	    
+	    # Loop for all key-value pairs of the group
+	    for {set i 0} {$i < $group_kvs_len} { incr i 2 } {
+		
+		set key [lindex $group_kvs $i]
+		set val [lindex $group_kvs [expr $i+1]]
+		
+		switch $key {
+		    memberUid {
+			# Val should be the username of a user who is member of this group
+			set user_id [db_string uid "
+				select	user_id
+				from	users
+				where	username = :val
+			" -default 0]
+
+			if {0 != $user_id} {
+			    set group_name [im_profile::profile_name_from_id -translate_p 0 -profile_id $po_group_id]
+			    ns_log Notice "auth::ldap::batch_import::import_groups: Adding user $val ($user_id) to group $group_name"
+			    append debug "auth::ldap::batch_import::import_groups: Adding user $val ($user_id) to group $group_name\n"
+			    relation_add -member_state "approved" "membership_rel" $po_group_id $user_id
+			}
+		    }
+		}
+	    }
+	}
+
+    }
+    return [list result 0 debug $debug]   
+}
