@@ -383,7 +383,8 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	if {[info exists hash($var)]} { set val $hash($var) }
 	if {"" == $val} {
 	    ns_log Notice "auth::ldap::batch_import::parse_user: found empty variable '$var', skipping"
-	    append debug "auth::ldap::batch_import::parse_user: dn=$dn: found empty variable '$var', skipping\n"
+	    append debug "Skpping: dn=$dn\n"
+	    append debug "Skipping because: Found empty variable '$var'\n"
 	    set ok_p 0
 	}
     }
@@ -416,7 +417,8 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	
 	# The user doesn't exist yet. Create the user.
 	ns_log Notice "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name"
-	append debug "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name\n"
+	append debug "Creating new user: dn=$dn\n"
+	append debug "Creating new user '$first_names $last_name'\n"
 
 	# Random password...
 	set pwd [expr rand()]
@@ -438,7 +440,8 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	set creation_status $creation_info(creation_status)
 	if {"ok" != $creation_status} {
 	    ns_log Notice "auth::ldap::batch_import::parse_user: dn=$dn: Failed to create user dn=$dn: [array get creation_info]"
-	    append debug "auth::ldap::batch_import::parse_user: Failed to create user dn=$dn: [array get creation_info]"
+	    append debug "Failed to create user dn=$dn\n"
+	    append debug "Failed to create reason: $creation_info(creation_message)\n"
 	}
 
 	# Set creation user
@@ -467,7 +470,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
         }
 
     } else {
-	append debug "auth::ldap::batch_import::parse_user: dn=$dn: Updating existing user\n"
+	append debug "Update existing user: dn=$dn\n"
     }
 
     # Update fiels of both existing or new user.
@@ -551,8 +554,8 @@ ad_proc -private auth::ldap::batch_import::import_groups {
 
 			if {0 != $user_id} {
 			    set group_name [im_profile::profile_name_from_id -translate_p 0 -profile_id $po_group_id]
-			    ns_log Notice "auth::ldap::batch_import::import_groups: Adding user $val ($user_id) to group $group_name"
-			    append debug "auth::ldap::batch_import::import_groups: Adding user $val ($user_id) to group $group_name\n"
+			    ns_log Notice "auth::ldap::batch_import::import_groups: Adding user '$val' to group '$group_name'"
+			    append debug "Adding user $val ($user_id) to group $group_name\n"
 			    relation_add -member_state "approved" "membership_rel" $po_group_id $user_id
 			}
 		    }

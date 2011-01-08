@@ -496,7 +496,7 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
         BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
 	BindPW "The password for the BindDN. Leave empty if this is not necessary."
 	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
-        GroupMap "A TCL list represnting a map form LDAP groups to \]po\[ groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and 'Administrators' to \]po\[ Admins."
+        GroupMap "A TCL list represnting a map form LDAP groups to PO groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and Windows 'Administrators' to PO Admins."
     }
 }
 
