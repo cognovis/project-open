@@ -60,6 +60,16 @@ foreach group_name $group_map_groups {
 }
 set group_map [array get group_map_hash]
 
+# ----------------------------------------------------------------
+# Store the group_map in the Authority's parameters
+#
+set param_hash(GroupMap) $group_map
+
+set auth_id [im_sysconfig_create_edit_authority \
+		 -authority_name $authority_name \
+		 -parameters [array get param_hash] \
+		]
+
 
 # ---------------------------------------------------------------
 # Import stuff
@@ -80,3 +90,8 @@ set debug $result_hash(debug)
 array set result_hash [auth::ldap::batch_import::import_groups [array get params] $authority_id]
 set result $result_hash(result)
 append debug $result_hash(debug)
+
+
+
+
+
