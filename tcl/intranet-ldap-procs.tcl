@@ -130,3 +130,94 @@ ad_proc -public im_sysconfig_ldap_get_info {
 
     return [array get hash]
 }
+
+
+
+
+# ---------------------------------------------------------------
+# Create/Update an Authority
+# ---------------------------------------------------------------
+
+ad_proc -public im_sysconfig_create_edit_authority {
+    -authority_name:required
+    -parameters:required
+} {
+    Creates or updates an authority with the specified variables and parameters.
+} {
+    array set param_hash $parameters
+
+    # Basic Information
+    set auth_hash(pretty_name) $authority_name
+    set auth_hash(short_name) ""
+    set auth_hash(enabled_p) "t"
+    
+    # Implementation of authentication Service Contracts
+    set auth_impl_id [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_authentication"]
+    set pwd_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_password"]
+    # set register_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_registration"]
+    # set user_info_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_user_info"]
+    # set get_doc_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_sync_retreive"]
+    # set process_doc_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_sync_process"]
+    
+    set register_impl_id ""
+    set user_info_impl_id ""
+    set get_doc_impl_id ""
+    set process_doc_impl_id ""
+    set search_impl_id ""
+    
+    set auth_hash(auth_impl_id) $auth_impl_id
+    set auth_hash(pwd_impl_id) $pwd_impl_id
+    set auth_hash(register_impl_id) $register_impl_id
+    set auth_hash(user_info_impl_id) $user_info_impl_id
+    set auth_hash(get_doc_impl_id) $get_doc_impl_id
+    set auth_hash(process_doc_impl_id) $process_doc_impl_id
+    set auth_hash(search_impl_id) $search_impl_id
+   
+    # Update or create the authority
+    set authority_id [db_string authority_exists "
+	select	min(authority_id)
+	from	auth_authorities
+	where	pretty_name = :authority_name
+    " -default 0]
+
+    if {0 != $authority_id} {
+	# Authority already exists with this name
+	auth::authority::edit -authority_id $authority_id -array auth_hash
+	set create_p 0
+    } else {
+	# Create a new authority
+	set authority_id [db_nextval "acs_object_id_seq"]
+	set auth_hash(authority_id) $authority_id
+	auth::authority::create -authority_id $authority_id -array auth_hash
+	set create_p 1
+    }
+
+
+    # ---------------------------------------------------------------
+    # Set parameter for the new Authority
+    # Each element is a list of impl_ids which have this parameter
+    array set param_impls [list]
+    foreach element_name [auth::authority::get_sc_impl_columns] {
+	set name_column $element_name
+	regsub {^.*(_id)$} $element_name {_name} name_column
+	set impl_params [auth::driver::get_parameters -impl_id $auth_hash($element_name)]
+	foreach { param_name dummy } $impl_params {
+	    lappend param_impls($param_name) $auth_hash($element_name)
+	}
+    }
+
+    foreach element_name [array names param_hash] {
+	
+	# Make sure we have a parameter element
+	if {![info exists param_impls($element_name)] } { continue }
+	
+	foreach impl_id $param_impls($element_name) {
+	    auth::driver::set_parameter_value \
+		-authority_id $authority_id \
+		-impl_id $impl_id \
+		-parameter $element_name \
+		-value $param_hash($element_name)
+	}
+    }
+    return [list result 1 auth_id $authority_id create_p $create_p]
+}
