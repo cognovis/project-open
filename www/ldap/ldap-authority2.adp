@@ -7,7 +7,14 @@
 <h2>@page_title@</h2>
 
 <p>
-We have successfully configured your new LDAP authority.
+<if @create_p@>
+We have successfully created your new LDAP authority <br>
+named '@authority_name@'.
+</if>
+<else>
+We have successfully updated your existing LDAP authority <br>
+named '@authority_name@'.
+</else>
 </p>
 
 <input type=hidden name=ip_address value="@ip_address;noquote@">
@@ -17,13 +24,16 @@ We have successfully configured your new LDAP authority.
 <input type=hidden name=binddn value="@binddn;noquote@">
 <input type=hidden name=bindpw value="@bindpw;noquote@">
 <input type=hidden name=authority_id value="@authority_id@">
+<input type=hidden name=authority_name value="@authority_name@">
+<input type=hidden name=group_map value="@group_map;noquote@">
 
 
-<h2>Next Steps</h2>
+<h2>Finish Configuration Process</h2>
+<p>
+You can finish your configuration process here.<br>
+Additional options:
+</p>
 <ul>
-<li>To import users from the new authority.<br>
-    Just press on the "Next" button belo.<br>
-    &nbsp;
 <li><a href="/acs-admin/auth/authority?authority_id=@authority_id@">See your new authority</a>.
 <li><a href="/acs-admin/auth/">See the list of authorities</a>.
 <li><a href="/register/logout">Logout</a> so that you test the new login screen.
@@ -31,4 +41,8 @@ We have successfully configured your new LDAP authority.
 <li><a href="/">Go to the home page</a>.
 </ul>
 
+<h2>Import LDAP Objects</h2>
+<p>
+Please press "Next" below to continue with importing LDAP objects.
+</p>
 
