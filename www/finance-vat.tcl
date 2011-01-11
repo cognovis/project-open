@@ -260,6 +260,106 @@ order by
 	c.provider_id
 "
 
+
+# ------------------------------------------------------------
+# Calculate report summary cube
+
+set cube_sql "
+	select
+		sum(cost_item_amount) as amount,
+		sum(vat_amount) as vat_amount,
+		sum(tax_amount) as tax_amount,
+		effective_year_quarter,
+		vat_type,
+		cost_type
+	from	($sql) s
+	group by
+		effective_year_quarter,
+		vat_type,
+		cost_type
+"
+
+# Fill the data into hashes
+array set summary_hash {}
+db_foreach cube $cube_sql {
+    set key "$effective_year_quarter-$cost_type-$vat_type"
+    set amount_hash($key) $amount
+    set vat_amount_hash($key) $vat_amount
+    set tax_amount_hash($key) $tax_amount
+}
+
+# Dimensions: something like {2010-4 2011-1 2011-2}
+set quarters_dim [db_list quarters "select distinct effective_year_quarter from ($cube_sql) c order by effective_year_quarter"]
+set vat_type_dim [db_list quarters "select distinct vat_type from ($cube_sql) c order by vat_type"]
+set cost_type_dim [db_list quarters "select distinct cost_type from ($cube_sql) c order by cost_type"]
+set aggregates {amount vat_amount tax_amount}
+set aggregates_pretty {Amount VAT TAX}
+
+# Build the table header
+set cube_html "<table cellspacing=2 cellpadding=2>\n"
+
+append cube_html "<tr class=rowtitle><td class=rowtitle>&nbsp;</td>\n"
+foreach q $quarters_dim { append cube_html "<td class=rowtitle colspan=3>$q</td>\n" }
+append cube_html "<td class=rowtitle colspan=3>Sum</td>\n"
+append cube_html "</tr>\n"
+
+# 2nd header with Aggregate names
+append cube_html "<tr class=rowtitle><td class=rowtitle>&nbsp;</td>\n"
+foreach q $quarters_dim { 
+    foreach aggregate $aggregates_pretty {
+	append cube_html "<td class=rowtitle>$aggregate</td>\n" 
+    }
+}
+# Add the three aggregates again for sum
+foreach aggregate $aggregates_pretty {
+    append cube_html "<td class=rowtitle>$aggregate</td>\n" 
+}
+
+append cube_html "</tr>\n"
+
+
+# Build the table body
+foreach cost_type $cost_type_dim {
+
+    append cube_html "<tr class=rowtitle><td class=rowtitle colspan=999>$cost_type</td></tr>\n"
+	
+    foreach vat_type $vat_type_dim {
+
+	append cube_html "<tr><td><nobr>$vat_type</nobr></td>\n"
+	set amount_sum 0
+	set vat_amount_sum 0
+	set tax_amount_sum 0
+	
+	foreach q $quarters_dim {
+
+	    # set key "$effective_year_quarter-$cost_type-$vat_type"
+	    set key "$q-$cost_type-$vat_type"
+	    set amount "0"
+	    if {[info exists amount_hash($key)]} { set amount $amount_hash($key) }
+	    set vat_amount "0"
+	    if {[info exists vat_amount_hash($key)]} { set vat_amount $vat_amount_hash($key) }
+	    set tax_amount "0"
+	    if {[info exists tax_amount_hash($key)]} { set tax_amount $tax_amount_hash($key) }
+	    append cube_html "<td align=right>$amount</td>\n<td align=right>$vat_amount</td>\n<td align=right>$tax_amount</td>\n"
+
+	    # Aggregate
+	    if {"" != $amount && "0" != $amount} { set amount_sum [expr $amount_sum + $amount] }
+	    if {"" != $vat_amount && "0" != $vat_amount} { set vat_amount_sum [expr $vat_amount_sum + $vat_amount] }
+	    if {"" != $tax_amount && "0" != $tax_amount} { set tax_amount_sum [expr $tax_amount_sum + $tax_amount] }
+	}
+
+	append cube_html "<td align=right>$amount_sum</td>\n<td align=right>$vat_amount_sum</td>\n<td align=right>$tax_amount_sum</td>\n"
+
+	append cube_html "</tr>\n"
+    }
+}
+
+append cube_html "</table>\n"
+
+
+# ------------------------------------------------------------
+# Report Format
+
 set report_def [list \
     group_by effective_year_quarter \
     header {
@@ -443,6 +543,7 @@ switch $output_format {
 }
 
 
+
 # ------------------------------------------------------------
 # Start formatting the report body
 #
@@ -547,6 +648,9 @@ im_report_render_row \
 
 switch $output_format {
     html { 
-	ns_write "</table>\n[im_footer]\n" 
+	ns_write "</table>\n"
+	ns_write "<br>&nbsp;<br>"
+	ns_write $cube_html
+	ns_write [im_footer]
     }
 }
