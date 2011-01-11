@@ -61,6 +61,34 @@ drop function inline_0();
 
 
 
+
+
+
+-- Add a field to im_projects to store ticket priority map
+create or replace function inline_0 ()
+returns integer as $body$
+DECLARE
+	v_count		integer;
+	v_attribute_id	integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_projects' and lower(column_name) = 'sla_ticket_priority_map';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_projects
+	add sla_ticket_priority_map text;
+
+	-- Create a sequence for the map tuples
+	create sequence im_ticket_priority_map_seq;
+
+	return 0;
+end; $body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+
 -------------------------------------------------------------------------------
 -- SLA Parameter Object
 -------------------------------------------------------------------------------
@@ -658,6 +686,31 @@ select im_grant_permission (
 
 
 
+
+
+-- Show the ticket_type x ticket_severity -> ticket_priority map
+select im_component_plugin__new (
+		null,					-- plugin_id
+		'im_component_plugin',			-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creattion_ip
+		null,					-- context_id
+		'SLA Ticket Priority',			-- plugin_name
+		'intranet-sla-management',		-- package_name
+		'right',				-- location
+		'/intranet/projects/view',		-- page_url
+		null,					-- view_name
+		90,					-- sort_order
+		'im_ticket_priority_map_component -project_id $project_id',	-- TCL command
+		'lang::message::lookup {} intranet-sla-management.SLA_Ticket_Prio {SLA Ticket Priority}'
+);
+
+select im_grant_permission (
+	(select plugin_id from im_component_plugins where plugin_name = 'SLA Ticket Priority'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
 
 
 

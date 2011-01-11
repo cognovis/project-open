@@ -129,6 +129,27 @@ ad_proc -public im_sla_service_hours_component {
 }
 
 
+ad_proc -public im_ticket_priority_map_component {
+    {-project_id ""}
+} {
+    Returns a HTML component with a component containing a list of
+    ticket_type x ticket_severity => ticket_priority tuples.
+} {
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { 
+	ns_log Notice "im_sla_service_hours_component: Project \#$project_id is not a 'Service Level Agreement'"
+	return "" 
+    }
+
+    set params [list \
+		    [list project_id $project_id] \
+		    [list return_url [im_url_with_query]] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-sla-management/www/ticket-priority-component"]
+    return [string trim $result]
+}
+
+
 ad_proc -public im_sla_day_of_week_list {
 } {
     Returns a list with weekday names from 0=Su to 6=Sa
