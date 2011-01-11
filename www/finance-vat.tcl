@@ -296,7 +296,7 @@ set aggregates {amount vat_amount tax_amount}
 set aggregates_pretty {Amount VAT TAX}
 
 # Build the table header
-set cube_html "<table cellspacing=2 cellpadding=2>\n"
+set cube_html "<h1>Summary</h1>\n<table cellspacing=2 cellpadding=2>\n"
 
 append cube_html "<tr class=rowtitle><td class=rowtitle>&nbsp;</td>\n"
 foreach q $quarters_dim { append cube_html "<td class=rowtitle colspan=3>$q</td>\n" }
@@ -340,7 +340,12 @@ foreach cost_type $cost_type_dim {
 	    if {[info exists vat_amount_hash($key)]} { set vat_amount $vat_amount_hash($key) }
 	    set tax_amount "0"
 	    if {[info exists tax_amount_hash($key)]} { set tax_amount $tax_amount_hash($key) }
-	    append cube_html "<td align=right>$amount</td>\n<td align=right>$vat_amount</td>\n<td align=right>$tax_amount</td>\n"
+
+	    set amount_pretty [im_report_format_number $amount $output_format $number_locale]
+	    set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
+	    set tax_amount_pretty [im_report_format_number $tax_amount $output_format $number_locale]
+
+	    append cube_html "<td align=right>$amount_pretty</td>\n<td align=right>$vat_amount_pretty</td>\n<td align=right>$tax_amount_pretty</td>\n"
 
 	    # Aggregate
 	    if {"" != $amount && "0" != $amount} { set amount_sum [expr $amount_sum + $amount] }
@@ -348,7 +353,11 @@ foreach cost_type $cost_type_dim {
 	    if {"" != $tax_amount && "0" != $tax_amount} { set tax_amount_sum [expr $tax_amount_sum + $tax_amount] }
 	}
 
-	append cube_html "<td align=right>$amount_sum</td>\n<td align=right>$vat_amount_sum</td>\n<td align=right>$tax_amount_sum</td>\n"
+	set amount_sum_pretty [im_report_format_number $amount_sum $output_format $number_locale]
+	set vat_amount_sum_pretty [im_report_format_number $vat_amount_sum $output_format $number_locale]
+	set tax_amount_sum_pretty [im_report_format_number $tax_amount_sum $output_format $number_locale]
+
+	append cube_html "<td align=right>$amount_sum_pretty</td>\n<td align=right>$vat_amount_sum_pretty</td>\n<td align=right>$tax_amount_sum_pretty</td>\n"
 
 	append cube_html "</tr>\n"
     }
@@ -381,7 +390,7 @@ set report_def [list \
 		    content [list \
 			    header {
 				""
-				"$quarter_cost_type_vat_type"
+				""
 				""
 				"<nobr>$company_html</nobr>"
 				"<nobr>$vat_number</nobr>"
@@ -395,7 +404,7 @@ set report_def [list \
 		    ] \
 	            footer {
 			""
-			"$quarter_cost_type_vat_type"
+			""
 			""
 	                ""
 	                ""
