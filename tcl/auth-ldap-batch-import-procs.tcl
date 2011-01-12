@@ -299,7 +299,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		gecos		{ set user_hash(display_name) $value }
 		givenName	{ set user_hash(first_names) $value }
 		l		{ set user_hash(city) $value }
-		countryCode	{ if {"" == $country_code} { set user_hash(country_code) $value } }
+		countryCode	{ set user_hash(country_code_numeric) $value }
 		co		{ set user_hash(country_name) $value }
 		description	{ set user_hash(description) $value }
 		homePhone	{ set user_hash(home_phone) $value }
