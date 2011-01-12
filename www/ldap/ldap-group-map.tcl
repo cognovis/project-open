@@ -91,7 +91,7 @@ set profile_options [linsert $profile_options 0 [list "-- Don't map --" ""]]
 
 set groups_select_html ""
 array set group_map_hash $group_map
-foreach ldap_group_name $ldap_group_names {
+foreach ldap_group_name [lsort $ldap_group_names] {
 
     # Check the group mapping if we have a default group
     set default_group ""
