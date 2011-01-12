@@ -150,6 +150,20 @@ ad_proc -public im_ticket_priority_map_component {
 }
 
 
+ad_proc -callback im_ticket_after_create {
+    -object_id
+    -status_id 
+    -type_id
+} {
+    Callback after a ticket has been created.
+    Sets the ticket priority depending on parameters
+} {
+
+    ad_return_complaint 1 asdf
+}
+
+
+
 ad_proc -public im_sla_day_of_week_list {
 } {
     Returns a list with weekday names from 0=Su to 6=Sa
