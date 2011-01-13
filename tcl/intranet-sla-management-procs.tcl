@@ -150,16 +150,81 @@ ad_proc -public im_ticket_priority_map_component {
 }
 
 
-ad_proc -callback im_ticket_after_create {
+
+
+ad_proc -public im_ticket_priority_lookup {
+    -sla_id:required
+    -ticket_type_id:required
+    -ticket_status_id:required
+    -map:required
+} {
+    Takes ticket_type and ticket_status to lookup
+    the ticket priority in the "map".
+    "Map" contains triples of {type_id severity_id prio_id}
+    Returns the mapped value or "" if no match has been found.
+} {
+    set result ""
+    foreach tuple $map {
+	set t0 [lindex $tuple 0]
+	set t1 [lindex $tuple 1]
+	set t2 [lindex $tuple 2]
+	if {$t0 == $ticket_type_id && $t1 == $ticket_status_id} {
+	    set result $t2
+	}
+    }
+    return $result
+}
+
+
+
+ad_proc -callback im_ticket_after_create -impl im_sla_management {
     -object_id
     -status_id 
     -type_id
 } {
-    Callback after a ticket has been created.
-    Sets the ticket priority depending on parameters
+    Callback to be executed after the creation of any ticket.
+    The callback performs a lookup of certain ticket properties
+    (ticket_type_id and ticket_severity_id) and assigns a suitable
+    priority to the ticket.
+    The assigned priority overwrites the possibly user-defined priority.
 } {
+    ns_log Notice "im_ticket_after_create -impl im_sla_management: Entering callback code"
+    
+    set found_p [db_0or1row ticket_info "
+	select	t.*,
+		p.*,
+		sla.project_id as sla_id,
+		sla.sla_ticket_priority_map
+	from	im_tickets t,
+		im_projects p,
+		im_projects sla
+	where	t.ticket_id = p.project_id and
+		t.ticket_id = :object_id and
+		p.parent_id = sla.project_id
+    "]
+    
+    if {!$found_p} {
+	ns_log Error "im_ticket_after_create -impl im_sla_management -object_id=$object_id: Didn't find object, skipping"
+	return ""
+    }
 
-    ad_return_complaint 1 asdf
+    set priority_id [im_ticket_priority_lookup \
+			 -sla_id $sla_id \
+			 -ticket_type_id $ticket_type_id \
+			 -ticket_status_id $ticket_status_id \
+			 -map $sla_ticket_priority_map \
+    ]
+
+    # Update the ticket if the mapping was successfull
+    if {"" != $priority_id} {
+	db_dml update_ticket "
+		update im_tickets
+		set ticket_prio_id = :priority_id
+		where ticket_id = :object_id
+	"
+	ns_log Notice "im_ticket_after_create -impl im_sla_management: Updated ticket \#$ticket_id with prio_id=$priority_id"
+    }
+
 }
 
 
