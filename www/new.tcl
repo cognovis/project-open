@@ -34,6 +34,8 @@ if {![info exists task]} {
 	{ view_name "ticket_list"}
 	{ mine_p "all" }
 	{ form_mode "edit" }
+        { printer_friendly_p 0 }
+        { render_template_id:integer 0 }
     }
 
     set show_components_p 1
@@ -60,6 +62,8 @@ if {![info exists task]} {
     set plugin_id ""
     set view_name "standard"
     set mine_p "all"
+
+    set render_template_id 0
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -137,7 +141,7 @@ if {[exists_and_not_null ticket_id]} {
     set ticket_exists_p [db_string ticket_exists_p "select count(*) from im_tickets where ticket_id = :ticket_id"]
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action pre_update
+    im_project_audit -project_id $ticket_id -action before_update
 
 }
 
@@ -155,6 +159,17 @@ set delete_p $edit_p
 set actions {}
 if {$edit_p} { lappend actions {"Edit" edit} }
 # if {$delete_p} { lappend actions {"Delete" delete} }
+
+if {0 == $render_template_id} {
+    lappend actions [list [lang::message::lookup {} intranet-timesheet2.Printer_Friendly {Printer Friendly}] printer_friendly]
+}
+
+
+set button_pressed [template::form get_action "helpdesk_ticket"]
+if {"printer_friendly" == $button_pressed} {
+    ad_returnredirect [export_vars -base "new" {ticket_id return_url {render_template_id 1}}]
+}
+
 
 ad_form \
     -name helpdesk_ticket \
@@ -813,3 +828,81 @@ if {$sla_exists_p} {
 	    <hr/>
     "
 }
+
+
+# ---------------------------------------------------------------
+# Special Output: Format using a template
+# ---------------------------------------------------------------
+
+# Use a specific template ("render_template_id") to render the "preview"
+if {0 != $render_template_id} {
+
+    if {1 == $render_template_id} {
+	# Default Template
+
+	set template_from_param [ad_parameter -package_id [im_package_helpdesk_id] DefaultTicketTemplate "" ""]
+	if {"" == $template_from_param} {
+            # Use the default template that comes as part of the module
+            set template_body "default.adp"
+            set template_path "[acs_root_dir]/packages/intranet-helpdesk/templates/"
+        } else {
+            # Use the user's template in the template path
+            set template_body $template_from_param
+            set template_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
+        }
+    } else {
+	set template_body [im_category_from_id $render_template_id]
+	set template_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
+    }
+
+    if {"" == $template_body} {
+        ad_return_complaint 1 "<li>You haven't specified a template for your ticket."
+        ad_script_abort
+    }
+
+    set template_path "${template_path}/${template_body}"
+
+    if {![file isfile $template_path] || ![file readable $template_path]} {
+        ad_return_complaint "Unknown Ticket Template" "
+        <li>Ticket template'$template_path' doesn't exist or is not readable
+        for the web server. Please notify your system administrator."
+        ad_script_abort
+    }
+
+    # Extract a few more fields for the template
+    db_1row ticket_info "
+	select	p.*,
+		t.*,
+		im_name_from_id(ticket_customer_contact_id) as ticket_customer_contact_name,
+		im_name_from_id(ticket_assignee_id) as ticket_assignee_name,
+		im_category_from_id(ticket_type_id) as ticket_type,
+		im_category_from_id(ticket_status_id) as ticket_status,
+		im_category_from_id(ticket_prio_id) as ticket_prio,
+		sla.project_name as sla_name,
+		cuc.*,
+		(select country_name from country_codes where iso = cuc.ha_country_code) as ha_country_name,
+		(select country_name from country_codes where iso = cuc.wa_country_code) as wa_country_name
+	from	im_projects p,
+		im_tickets t,
+		im_projects sla,
+		users_contact cuc
+	where	p.project_id = t.ticket_id and
+		t.ticket_id = :ticket_id and
+		p.parent_id = sla.project_id and
+		t.ticket_customer_contact_id = cuc.user_id
+    "
+
+    set forum_html [im_forum_full_screen_component -object_id $ticket_id]
+
+    set user_locale [lang::user::locale]
+    set locale $user_locale
+
+
+    # Render the page using the template
+    set invoices_as_html [ns_adp_parse -file $template_path]
+
+    # Show invoice using template
+    ns_return 200 text/html $invoices_as_html
+    ad_script_abort
+}
+
