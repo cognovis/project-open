@@ -12,7 +12,7 @@ begin
 	select count(*) into v_count from user_tab_columns where table_name = ''im_employees'' and column_name = ''personnel_number'';
         IF v_count > 0 THEN return 1; END IF;
 
-        alter table im_employees add column personell_number character varying(10);
+        alter table im_employees add column personnel_number character varying(10);
         RETURN 0;
 
 end;' language 'plpgsql';
