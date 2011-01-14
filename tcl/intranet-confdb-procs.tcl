@@ -460,7 +460,7 @@ ad_proc -public im_conf_item_list_component {
     set user_id [ad_get_user_id]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 
-    if {"" == $member_id} { set member_id $restrict_to_member_id }
+    if {"" == $member_id || 0 == $member_id} { set member_id $restrict_to_member_id }
     set include_subconf_items 0
 
     if {"" == $order_by} {
@@ -624,12 +624,42 @@ ad_proc -public im_conf_item_list_component {
 	lappend criteria "ci.conf_item_owner_id = :owner_id"
     }
 
-    # Member is anybody associated with the conf item + the owner
+    # Member is anybody associated with the conf item + the owner.
+    # Challenge: We also need to show the parents of sub-items with that member.
+    # We assume that there are few ConfItems per user only...
     if {[string is integer $member_id] && $member_id > 0} {
-	lappend criteria "ci.conf_item_id in (
-				select object_id_one from acs_rels where object_id_two = :member_id
-			UNION	select	conf_item_id from im_conf_items where conf_item_owner_id = :member_id
-	)"
+
+	# Get the list of CIs who are directly associated with $member_id
+	set new_parents [db_string user_conf_items "
+		select	ci.conf_item_id
+		from	im_conf_items ci,
+			acs_rels r
+		where	r.object_id_one = ci.conf_item_id and
+			r.object_id_two = :member_id
+	UNION
+		select	ci.conf_item_id
+		from	im_conf_items ci
+		where	ci.conf_item_owner_id = :member_id
+	"]
+
+	# Loop through all parents of member_id CIs
+	set result_list [list 0]
+	set cnt 0
+	while {[llength $new_parents] > 0} {
+	    set result_list [concat $result_list $new_parents]
+	    set new_parents [db_list new_parents "
+		select distinct
+			conf_item_parent_id
+		from	im_conf_items
+		where	conf_item_parent_id is not null and
+			conf_item_id in ([join $new_parents ","])
+	    "]
+	    incr cnt
+	    if {$cnt > 10} { ad_return_complaint 1 "im_conf_item_list_component: Infinite loop looking for parent: '$new_parents'" }
+	}
+
+	# Restrict to this list of direct members and their parents
+	lappend criteria "ci.conf_item_id in ([join $result_list ","])"
     }
 
     set restriction_clause [join $criteria "\n\tand "]
