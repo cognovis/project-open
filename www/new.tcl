@@ -21,6 +21,7 @@ ad_page_contract {
     { hourly_cost:float "0" }
     { job_title "" }
     { job_description "" }
+    { personnel_number "" }
     { ss_number "" }
     { salary:float "0" }
     { social_security:float "0" }
@@ -153,6 +154,7 @@ set supervisor_label "[_ intranet-hr.Supervisor]"
 set availability_label "[_ intranet-hr.Availability_]"
 set hourly_cost_label "[_ intranet-hr.Hourly_Cost]"
 set employee_status_label "[_ intranet-hr.Employee_Status]"
+set personnel_number_label "[_ intranet-hr.Personnel_Number]"
 set ss_number_label "[_ intranet-hr.Social_Security_]"
 set salary_label "[_ intranet-hr.Monthly_Salary]"
 set social_security_label "[_ intranet-hr.lt_Monthly_Social_Securi]"
@@ -185,9 +187,10 @@ ad_form \
 	{availability:text(text) {label $availability_label} {html {size 6}} }
 	{hourly_cost:text(text),optional {label $hourly_cost_label} {html {size 10}} }
 	{employee_status_id:text(select) {label $employee_status_label} {options $employee_status_options} }
+	{personnel_number:text(text),optional {label $personnel_number_label} {html {size 10}} }
 	{ss_number:text(text),optional {label $ss_number_label} {html {size 20}} }
 	{salary:text(text),optional {label $salary_label} {html {size 10}} }
-	{social_security:text(text),optional {label $social_security_label} {html {size 10}} }
+        {social_security:text(text),optional {label $social_security_label} {html {size 10}} }
 	{insurance:text(text),optional {label $insurance_label} {html {size 10}} }
 	{other_costs:text(text),optional {label $other_cost_label} {html {size 10}} }
 	{salary_payments_per_year:text(text),optional {label $salary_payments_per_year_label} {html {size 10}} }
@@ -351,6 +354,7 @@ ad_form -extend -name cost -on_request {
 		supervisor_id = :supervisor_id,
 		ss_number = :ss_number,
 		salary = :salary,
+		personnel_number = :personnel_number,
 		social_security = :social_security,
 		insurance = :insurance,
 		other_costs = :other_costs,
