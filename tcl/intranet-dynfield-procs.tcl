@@ -1070,7 +1070,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     {-advanced_filter_p 0}
     {-include_also_hard_coded_p 0 }
     {-page_url "default" }
-    {-debug 0}
+    {-debug 1}
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
@@ -1226,9 +1226,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		pos_y_coalesce
     "
 
-#   ad_return_complaint 1 "<pre>$sql</pre>"
-
-
     set field_cnt 0
     db_foreach attributes $attributes_sql {
 
@@ -1380,18 +1377,28 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		# ToDo: slow. This piece issues N SQL statements, instead of constructing
 		# a single SQL and issuing it once. Causes performance problems at BaselKB
 		# for example.
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage" }
 		set value [db_string get_single_value "
 		    select	$attribute_name
 		    from	$attribute_table_name
 		    where	$attribute_id_column = :object_id
 		" -default ""]
+		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
 		template::element::set_value $form_id $attribute_name $value
 
 	    }
 
 	}
     }
+
+    # Callback to allow external functions to modify the values in the form
+    callback ${object_type}_form_fill \
+	-form_id $form_id \
+	-object_type $object_type \
+	-object_id $object_id \
+	-type_id $object_subtype_id \
+	-page_url $page_url \
+	-advanced_filter_p $advanced_filter_p \
+	-include_also_hard_coded_p $include_also_hard_coded_p
     
     return $field_cnt
 }
