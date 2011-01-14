@@ -86,7 +86,6 @@ ad_proc -public im_audit_component {
 	    update { set audit_action_abbrev "u" }
 	    delete { set audit_action_abbrev "d" }
 	    nuke { set audit_action_abbrev "n" }
-	    pre_update { set audit_action_abbrev "p" }
 	    default { set audit_action_abbrev "" }
 	}
 	set audit_action_msg [lang::message::lookup "" intranet-audit.Action_${audit_action}_help $audit_action]
