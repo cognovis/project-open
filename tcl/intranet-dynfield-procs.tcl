@@ -1265,7 +1265,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 #        set key "$dynfield_attribute_id.$object_subtype_id"
 #        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
-
+	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
@@ -1273,6 +1273,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
+
+	if {$debug} { ns_log Notice "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
+
 	if {"none" == $display_mode} { continue }
 
 	# Don't show a read-only mode in an "edit" form
