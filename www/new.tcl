@@ -892,7 +892,7 @@ if {0 != $render_template_id} {
 		t.ticket_customer_contact_id = cuc.user_id
     "
 
-    set forum_html [im_forum_full_screen_component -object_id $ticket_id]
+    set forum_html [im_forum_full_screen_component -object_id $ticket_id -read_only_p 1]
 
     set user_locale [lang::user::locale]
     set locale $user_locale
