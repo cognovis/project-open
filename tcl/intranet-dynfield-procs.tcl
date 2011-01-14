@@ -1391,14 +1391,22 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     }
 
     # Callback to allow external functions to modify the values in the form
-    callback ${object_type}_form_fill \
-	-form_id $form_id \
-	-object_type $object_type \
-	-object_id $object_id \
-	-type_id $object_subtype_id \
-	-page_url $page_url \
-	-advanced_filter_p $advanced_filter_p \
-	-include_also_hard_coded_p $include_also_hard_coded_p
+
+    if {[catch {
+	callback ${object_type}_form_fill \
+	    -form_id $form_id \
+	    -object_type $object_type \
+	    -object_id $object_id \
+	    -type_id $object_subtype_id \
+	    -page_url $page_url \
+	    -advanced_filter_p $advanced_filter_p \
+	    -include_also_hard_coded_p $include_also_hard_coded_p
+    } err_msg]} {
+	ad_return_complaint 1 "<b>Error with callback '${object_type}_form_fill'</b>:<br>
+		Please check your callback code and make sure that your object type '$object_type'
+		is part of the list 'object_types' in ~/packages/intranet-core/tcl/intranet-core-init.tcl"
+	ad_script_abort
+    }
     
     return $field_cnt
 }
