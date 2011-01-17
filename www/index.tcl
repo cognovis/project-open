@@ -16,6 +16,7 @@ ad_page_contract {
     { ticket_type_id:integer 0 } 
     { ticket_queue_id:integer 0 } 
     { ticket_sla_id:integer 0 } 
+    { ticket_creator_id:integer 0 } 
     { customer_id:integer 0 } 
     { customer_contact_id:integer 0 } 
     { assignee_id:integer 0 } 
@@ -178,6 +179,16 @@ set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -
 set sla_exists_p 1
 if {[llength $ticket_sla_options] < 2 && !$view_tickets_all_p} { set sla_exists_p 0}
 
+set ticket_creator_options [list]
+db_foreach creator_option "
+	select	distinct
+		im_name_from_user_id(creation_user) as creator_name,
+		creation_user as creator_id
+	from	acs_objects
+	where	object_type = 'im_ticket'
+	order by creator_name
+" { lappend ticket_creator_options [list $creator_name $creator_id] }
+
 # No SLA defined for this user?
 # Allow the user to request a new SLA
 if {!$sla_exists_p} {
@@ -215,6 +226,7 @@ if {$view_tickets_all_p} {
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-helpdesk"} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
 	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
+	{ticket_creator_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Creator Creator]"} {options $ticket_creator_options}}
     }
 
     template::element::set_value $form_id ticket_status_id $ticket_status_id
@@ -257,13 +269,14 @@ if { ![empty_string_p $ticket_queue_id] && $ticket_queue_id != 0 } {
     lappend criteria "t.ticket_queue_id = :ticket_queue_id"
 }
 
-# ad_return_complaint 1 $ticket_sla_id
-
-
-
 if { [empty_string_p $ticket_sla_id] == 0 && $ticket_sla_id != 0 } {
     lappend criteria "p.parent_id = :ticket_sla_id"
 }
+
+if { [empty_string_p $ticket_creator_id] == 0 && $ticket_creator_id != 0 } {
+    lappend criteria "t.ticket_id in (select object_id from acs_objects where creation_user = :ticket_creator_id)"
+}
+
 if {0 != $assignee_id && "" != $assignee_id} {
     lappend criteria "t.ticket_assignee_id = :assignee_id"
 }
