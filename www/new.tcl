@@ -34,7 +34,6 @@ if {![info exists task]} {
 	{ view_name "ticket_list"}
 	{ mine_p "all" }
 	{ form_mode "edit" }
-        { printer_friendly_p 0 }
         { render_template_id:integer 0 }
 	{ escalate_from_ticket_id 0 }
     }
@@ -188,17 +187,6 @@ set delete_p $edit_p
 set actions {}
 if {$edit_p} { lappend actions {"Edit" edit} }
 # if {$delete_p} { lappend actions {"Delete" delete} }
-
-if {0 == $render_template_id} {
-    lappend actions [list [lang::message::lookup {} intranet-timesheet2.Printer_Friendly {Printer Friendly}] printer_friendly]
-}
-
-
-set button_pressed [template::form get_action "helpdesk_ticket"]
-if {"printer_friendly" == $button_pressed} {
-    ad_returnredirect [export_vars -base "new" {ticket_id return_url {render_template_id 1}}]
-}
-
 
 ad_form \
     -name helpdesk_ticket \
@@ -732,11 +720,14 @@ if {$show_components_p} {
 	}]
     }
     
-    set notification_message [ad_decode $notification_subscribed_p 1 "Unsubscribe from $notification_type_pretty_name" "Subscribe to $notification_type_pretty_name"] \
+    set notification_message [ad_decode $notification_subscribed_p 1 "Unsubscribe from $notification_type_pretty_name" "Subscribe to $notification_type_pretty_name"]
+    set printer_friendly_url [export_vars -base "/intranet-helpdesk/new" {ticket_id return_url {render_template_id 1}}]
+    set printer_friendly_message [lang::message::lookup "" intranet-helpdesk.Show_in_printer_friendly_format "Show in printer friendly format"]
 	
     set notification_html "
 	<ul>
 	<li><a href=\"$notification_url\">$notification_message</a>
+	<li><a href=\"$printer_friendly_url\">$printer_friendly_message</a>
 	</ul>
     "
 }
