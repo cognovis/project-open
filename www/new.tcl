@@ -36,6 +36,7 @@ if {![info exists task]} {
 	{ form_mode "edit" }
         { printer_friendly_p 0 }
         { render_template_id:integer 0 }
+	{ escalate_from_ticket_id 0 }
     }
 
     set show_components_p 1
@@ -64,6 +65,7 @@ if {![info exists task]} {
     set mine_p "all"
 
     set render_template_id 0
+    set escalate_from_ticket_id 0
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -76,6 +78,9 @@ if {![info exists task]} {
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" { {ticket_id $task(object_id)} {form_mode display}} ]
 
 }
+
+set escalate_from_ticket_id 53613
+
 
 # ------------------------------------------------------------------
 # Default & Security
@@ -98,6 +103,26 @@ set user_can_create_new_customer_contact_p 1
 set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
 
 
+
+# ------------------------------------------------------------------
+# Create ticket as a copy of another ticket.
+#
+# Get SLA and type if we are copying data from an existing ticket
+# ------------------------------------------------------------------
+
+if {0 != $escalate_from_ticket_id} {
+    db_0or1row copy_ticket_info "
+	select	p.project_name as copy_from_ticket_name,
+		p.parent_id as ticket_sla_id,
+		t.ticket_type_id
+	from	im_tickets t,
+		im_projects p
+	where	t.ticket_id = p.project_id and
+		t.ticket_id = :escalate_from_ticket_id
+    "
+}
+
+
 # ----------------------------------------------
 # Page Title
 
@@ -105,10 +130,14 @@ set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticke
 if {[exists_and_not_null ticket_id]} {
     set page_title [db_string title "select project_name from im_projects where project_id = :ticket_id" -default ""]
 }
+if {0 != $escalate_from_ticket_id} {
+    set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket_escalated_from "New Ticket escalated from '%copy_from_ticket_name%'"]
+}
 if {"" == $page_title && 0 != $ticket_type_id} { 
     set ticket_type [im_category_from_id $ticket_type_id]
     set page_title [lang::message::lookup "" intranet-helpdesk.New_TicketType "New %ticket_type%"]
 } 
+
 set context [list $page_title]
 
 
@@ -178,7 +207,7 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -mode $form_mode \
-    -export {next_url return_url} \
+    -export {next_url return_url escalate_from_ticket_id} \
     -form {
 	ticket_id:key
 	{ticket_name:text(text) {label $title_label} {html {size 50}}}
@@ -476,6 +505,7 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 # Fix for problem changing to "edit" form_mode
 set form_action [template::form::get_action "helpdesk_ticket"]
 if {"" != $form_action} { set form_mode "edit" }
+set next_ticket_nr ""
 
 ad_form -extend -name helpdesk_ticket -on_request {
 
@@ -483,6 +513,48 @@ ad_form -extend -name helpdesk_ticket -on_request {
     if {![info exists ticket_name] || "" == $ticket_name} { 
 	set next_ticket_nr [im_ticket::next_ticket_nr] 
 	set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
+    }
+
+    if {0 != $escalate_from_ticket_id} {
+	# Populate from another ticket
+
+	set sql "
+		select	t.*,
+			p.*
+		from	im_projects p,
+			im_tickets t
+		where	p.project_id = t.ticket_id and
+			p.project_id = :escalate_from_ticket_id
+	"
+	
+	append ticket_name " (escalated from $copy_from_ticket_name)"
+
+	# Get the fields in the form
+	set form_elements [template::form::get_elements helpdesk_ticket]
+
+	# Execute the sql and write values into the form.
+	db_with_handle db {
+	    set selection [db_exec select $db query $sql 1]
+	    while {[db_getrow $db $selection]} {
+		set col_names [ad_ns_set_keys $selection]
+		for {set i 0} {$i < [ns_set size $selection]} {incr i} {
+		    set var [lindex $col_names $i]
+		    set val [ns_set value $selection $i]
+
+		    ns_log Notice "new: Copying from ticket #$escalate_from_ticket_id: $var=$val"
+	
+		    # Skip a number of variables that shouldn't be copied
+		    if {"ticket_resolution_time" == $var} { continue }
+
+		    # Write the value into the form if the form element exists
+		    if {[lsearch $form_elements $var] > -1} {
+		        template::element::set_value helpdesk_ticket $var $val
+		    }	
+
+		}
+	    }
+	}
+	db_release_unused_handles
     }
 
 } -select_query {
@@ -530,9 +602,28 @@ ad_form -extend -name helpdesk_ticket -on_request {
         -notif_subject $ticket_name \
         -notif_text $message
 
+
+    if {[info exists escalate_from_ticket_id] && 0 != $escalate_from_ticket_id} {
+
+	# Add an escalation relationship between the two tickets
+	db_string add_ticket_ticket_rel "
+                        select im_ticket_ticket_rel__new (
+                                null,
+                                'im_ticket_ticket_rel',
+                                :ticket_id,
+                                :escalate_from_ticket_id,
+                                null,
+                                :current_user_id,
+                                '[ad_conn peeraddr]',
+                                0
+                        )
+       "
+
+    }
+
+
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action create
-
 
     # fraber 100928: Disabling return_url.
     # For a new ticket it makes sense to be sent to the new ticket page...
