@@ -114,6 +114,23 @@ switch $action_id {
 		We can escalate only one ticket at a time" ]" }
 	    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {escalate_from_ticket_id $tid}]
 	}
+	30552 {
+	    # Close Escalated Tickets
+	    if {"" == $tid} { ad_returnredirect $return_url }
+	    set escalated_tickets [db_list escalated_tickets "
+		select	t.ticket_id
+		from	im_tickets t,
+			acs_rels r,
+			im_ticket_ticket_rels ttr
+		where	r.rel_id = ttr.rel_id and
+			r.object_id_one in ([join $tid ","]) and
+			r.object_id_two = t.ticket_id
+	    "]
+
+	    # Redirect to this page, but with Action=Close (30500) to close the escalated tickets
+	    ad_returnredirect [export_vars -base "/intranet-helpdesk/action" {{action_id 30500} {tid $escalated_tickets} return_url}]
+	}
+
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {
