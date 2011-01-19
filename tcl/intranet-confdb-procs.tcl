@@ -494,7 +494,7 @@ ad_proc -public im_conf_item_list_component {
     set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
     if {0 == $view_id} {
 	ns_log Error "im_conf_item_list_component: we didn't find view_name=$view_name"
-	set view_name "im_conf_item_conf_item_list"
+	set view_name "im_conf_item_list"
 	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
     }
     if {$debug} { ns_log Notice "im_conf_item_list_component: view_id=$view_id" }
