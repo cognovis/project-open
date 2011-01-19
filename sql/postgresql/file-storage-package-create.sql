@@ -693,6 +693,25 @@ begin
 end;' language 'plpgsql';
 
 
+
+-- Fraber: No idea why this trigger could already exist, but it does...
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from pg_trigger
+        where lower(tgname) = ''fs_package_items_delete_trig'';
+        if v_count = 0 then return 0; end if;
+
+	drop function fs_package_items_delete_trig () cascade;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 -- JS: BEFORE DELETE TRIGGER to clean up CR entries (except root folder)
 create or replace function fs_package_items_delete_trig () returns opaque as '
 declare
