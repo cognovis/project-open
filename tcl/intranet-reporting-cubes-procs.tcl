@@ -340,6 +340,9 @@ ad_proc im_reporting_cubes_finance {
 		im_cost_get_final_customer_name(c.cost_id) as final_customer_name,
   		im_category_from_id(c.cost_type_id) as cost_type,
   		im_category_from_id(c.cost_status_id) as cost_status,
+		im_cost_center_name_from_id(c.cost_center_id) as cost_center,
+		im_name_from_user_id(inv.company_contact_id) as customer_contact_name,
+		im_category_from_id(inv.payment_method_id) as customer_payment_method,
   		to_char(c.effective_date, 'YYYY') as year,
   		to_char(c.effective_date, 'MM') as month_of_year,
   		to_char(c.effective_date, 'Q') as quarter_of_year,
@@ -376,6 +379,7 @@ ad_proc im_reporting_cubes_finance {
   		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
   		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
   		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
+		LEFT OUTER JOIN im_invoices inv ON (c.cost_id = inv.invoice_id)
   	where
   		1 = 1
   		$where_clause
