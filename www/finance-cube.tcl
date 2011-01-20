@@ -285,6 +285,7 @@ set left_scale_options {
 }
 
 
+
 # ------------------------------------------------------------
 # add all DynField attributes from Projects with datatype integer and a
 # CategoryWidget for display. This widget shows distinct values suitable
