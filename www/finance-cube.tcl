@@ -256,15 +256,15 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"main_project_name" "Main Project Name"
-	"main_project_nr" "Main Project Nr"
-	"main_project_type" "Main Project Type"
-	"main_project_status" "Main Project Status"
+	"main_project_name" "Project Main Name"
+	"main_project_nr" "Project Main Nr"
+	"main_project_type" "Project Main Type"
+	"main_project_status" "Project Main Status"
 
-	"sub_project_name" "Sub Project Name"
-	"sub_project_nr" "Sub Project Nr"
-	"sub_project_type" "Sub Project Type"
-	"sub_project_status" "Sub Project Status"
+	"sub_project_name" "Project Sub Name"
+	"sub_project_nr" "Project Sub Nr"
+	"sub_project_type" "Project Sub Type"
+	"sub_project_status" "Project Sub Status"
 
 	"customer_name" "Customer Name"
 	"customer_path" "Customer Nr"
@@ -278,6 +278,10 @@ set left_scale_options {
 
 	"cost_type" "Cost Type"
 	"cost_status" "Cost Status"
+	"cost_center" "Cost Center"
+        "currency" "Cost Currency"
+        "customer_contact_name" "Customer Contact"
+        "customer_payment_method" "Customer Payment Method"
 }
 
 
@@ -286,7 +290,7 @@ set left_scale_options {
 # CategoryWidget for display. This widget shows distinct values suitable
 # as dimension.
 
-set dynfield_sql "
+set company_dynfield_sql "
 	select	aa.attribute_name,
 		aa.pretty_name,
 		w.widget as tcl_widget,
@@ -305,7 +309,7 @@ set dynfield_sql "
 " 
 
 set derefs [list]
-db_foreach dynfield_attributes $dynfield_sql {
+db_foreach company_dynfield_attributes $company_dynfield_sql {
 
     lappend left_scale_options "cust_${attribute_name}_deref"
     lappend left_scale_options "Customer $pretty_name"
@@ -330,8 +334,61 @@ db_foreach dynfield_attributes $dynfield_sql {
     }
 }
 
+set project_dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
+	from
+		im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where
+		a.widget_name = w.widget_name
+		and a.acs_attribute_id = aa.attribute_id
+		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
+		and aa.object_type in ('im_project')
+		and aa.attribute_name not like 'default%'
+" 
+
+set derefs [list]
+db_foreach project_dynfield_attributes $project_dynfield_sql {
+
+    lappend left_scale_options "${attribute_name}_deref"
+    lappend left_scale_options "Project $pretty_name"
+
+    # Skip adding "deref" stuff if the variable is not used
+    if {[lsearch $dimension_vars "${attribute_name}_deref"] < 0} { 
+	continue 
+    }
+
+    # Catch the generic ones - We know how to dereferentiate integer references of these fields.
+    if {"" != $deref_plpgsql_function} {
+	lappend derefs "${deref_plpgsql_function} (p.$attribute_name) as ${attribute_name}_deref"
+    } else {
+	lappend derefs "p.$attribute_name as ${attribute_name}_deref"
+    }
+}
+
 
 if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
+
+
+for {set i 0} {$i < [llength $left_scale_options]} {incr i 2} {
+    set deref [lindex $left_scale_options $i]
+    set name  [lindex $left_scale_options [expr $i+1]]
+    set left_scale_options_hash($name) $deref
+}
+
+set sorted_left_scale_options [list]
+foreach name [lsort [array names left_scale_options_hash]] {
+    set deref $left_scale_options_hash($name)
+    lappend sorted_left_scale_options $deref
+    lappend sorted_left_scale_options $name
+}
+
+set left_scale_options $sorted_left_scale_options
 
 
 
