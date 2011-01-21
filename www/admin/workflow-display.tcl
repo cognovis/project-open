@@ -34,7 +34,7 @@ switch $format {
 	set header_stuff [wf_ismap_to_client_map -name "wf_map" [wf_graphviz_dot_exec -output ismap $dot_text]]
 
 	set display "
-	<img src=\"workflow-gif?[export_url_vars tmpfile]\" border=0 usemap=\"#wf_map\" $width_and_height alt=\"Graphical representation of the process network\">
+	<img src=\"/[im_workflow_url]/workflow-gif?[export_url_vars tmpfile]\" border=0 usemap=\"#wf_map\" $width_and_height alt=\"Graphical representation of the process network\">
 	"
     }
     html {

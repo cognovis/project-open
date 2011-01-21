@@ -192,7 +192,7 @@ if { [wf_graphviz_installed_p] } {
     
     ad_set_client_property wf wf_net_tmpfile $tmpfile
     
-    set workflow_img_tag "<img src=\"workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
+    set workflow_img_tag "<img src=\"[im_workflow_url]/workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
     
 } else {
     set workflow_img_tag ""
