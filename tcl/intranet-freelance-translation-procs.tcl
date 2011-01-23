@@ -392,7 +392,9 @@ ad_proc im_freelance_trans_member_select_component {
     # Format the table header
     set freelance_header_html "
 	<tr class=rowtitle>
-	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
+	  <td class=rowtitle>
+	      <input type=checkbox name=_dummy onclick=\"acs_ListCheckAll('trans_freelancers',this.checked)\">
+	  </td>
 	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&list_order_by=name>[_ intranet-freelance.Freelance]</a></td>
 	  <!--<td class=rowtitle>[lang::message::lookup "" intranet-freelance-translation.Worked_with_Customer_Before "Worked With Cust Before?"]</td>-->
 	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&list_order_by=worked_before>[lang::message::lookup "" intranet-freelance-translation.Worked_with_Customer_Before "Worked With Cust Before?"]</a></td>
@@ -439,7 +441,7 @@ ad_proc im_freelance_trans_member_select_component {
 	append freelance_body_html "
 	<tr$bgcolor([expr $ctr % 2])>\n"
 
-	append freelance_body_html "<td><input type=radio name=user_id_from_search value=$user_id></td>"
+	append freelance_body_html "<td><input type=checkbox name=user_id_from_search id=trans_freelancers,$user_id value=$user_id></td>"
 
 	set worked_with_cust [lindex $freelance_row 10]
 	set worked_with_cust ""
