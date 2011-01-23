@@ -91,6 +91,9 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
     set ctr 0
     foreach var $top_vars {
 	set val [lindex $top_entry $ctr]
+	# Remove trailing "0" in week_of_year
+	set val [string trimleft $val "0"]
+	if {"" == $val} { set val 0 }
 	set $var $val
 	incr ctr
     }
@@ -131,8 +134,8 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
     }
 
     if {0 == $julian} { 
-	ad_return_complaint 1 "$top_vars<br>$top_entry"
-	ad_return_complaint 1 "Unable to calculate data from date dimension: '$top_vars'" 
+	ad_return_complaint 1 "<b>Unable to calculate data from date dimension</b>:<br><pre>$top_vars<br>$top_entry" 
+	ad_script_abort
     }
 
     ns_log Notice "im_date_components_to_julian: $julian, top_vars=$top_vars, top_entry=$top_entry"
