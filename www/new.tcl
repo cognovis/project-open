@@ -100,7 +100,7 @@ set user_can_create_new_customer_sla_p 1
 set user_can_create_new_customer_contact_p 1
 
 set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
-
+set copy_from_ticket_name ""
 
 
 # ------------------------------------------------------------------
