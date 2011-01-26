@@ -29,6 +29,7 @@ set user_name [im_name_from_user_id [ad_get_user_id]]
 # 30500, 'Close'
 # 30510, 'Close &amp; notify'
 # 30520, 'Duplicated'
+# 30060, 'Resolved'
 # 30590, 'Delete'
 # 30599, 'Nuke'
 
@@ -130,7 +131,21 @@ switch $action_id {
 	    # Redirect to this page, but with Action=Close (30500) to close the escalated tickets
 	    ad_returnredirect [export_vars -base "/intranet-helpdesk/action" {{action_id 30500} {tid $escalated_tickets} return_url}]
 	}
-
+	30560 {
+	    # Resolved
+	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
+		db_dml resolved_ticket "
+			update im_tickets set 
+			       ticket_status_id = [im_ticket_status_resolved],
+			       ticket_done_date = now()
+			where ticket_id = :ticket_id
+	        "
+		im_ticket::add_reply -ticket_id $ticket_id -subject \
+		    [lang::message::lookup "" intranet-helpdesk.Deleted_by_user "Resolved by %user_name%"]
+	    }
+	}
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {
