@@ -28,10 +28,9 @@ ad_proc -public im_ticket_status_outdated {} { return 30092 }
 ad_proc -public im_ticket_status_rejected {} { return 30093 }
 ad_proc -public im_ticket_status_wontfix {} { return 30094 }
 ad_proc -public im_ticket_status_cantreproduce {} { return 30095 }
-ad_proc -public im_ticket_status_fixed {} { return 30096 }
+ad_proc -public im_ticket_status_resolved {} { return 30096 }
 ad_proc -public im_ticket_status_deleted {} { return 30097 }
 ad_proc -public im_ticket_status_canceled {} { return 30098 }
-
 ad_proc -public im_ticket_type_purchase_request {} { return 30102 }
 ad_proc -public im_ticket_type_workplace_move_request {} { return 30104 }
 ad_proc -public im_ticket_type_telephony_request {} { return 30106 }
