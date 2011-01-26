@@ -44,9 +44,9 @@ BEGIN
 	alter table im_tickets
 	add ticket_resolution_time numeric(12,2);
 
-	v_attribute_id = SELECT im_dynfield_attribute_new (
+	SELECT im_dynfield_attribute_new (
 		'im_ticket', 'ticket_resolution_time', 'Resolution Time', 'numeric', 'integer', 'f', 9000, 'f', 'im_tickets'
-	);
+	) INTO 	v_attribute_id;
 
 	-- set permissions for ticket_resolution_time to "read only" for all types of tickets.
 	update im_dynfield_type_attribute_map
@@ -711,6 +711,50 @@ select im_grant_permission (
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
+
+
+
+
+
+-- Show resolution time per ticket type within a SLA
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Resolution Time per Ticket Type',	-- plugin_name
+	'intranet-sla-management',		-- package_name
+	'right',				-- location
+	'/intranet/projects/view',		-- page_url
+	null,					-- view_name
+	140,					-- sort_order
+	'im_dashboard_histogram_sql -diagram_width 200 \
+-name "Resolution Time per Ticket Type" \
+-object_id $project_id \
+-restrict_to_object_type_id [im_project_type_sla] \
+-sql "
+		select	im_category_from_id(t.ticket_type_id) as ticket_type,
+			coalesce(avg(t.ticket_resolution_time), 0)
+		from	im_tickets t, im_projects p
+		where	t.ticket_id = p.project_id and
+			p.parent_id = %project_id%
+		group by ticket_type_id
+		order by ticket_type
+"',
+	'lang::message::lookup "" intranet-sla-management.Resolution_Time_per_Ticket_Type "Resolution Time per Ticket Type"'
+);
+
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id 
+	from im_component_plugins 
+	where plugin_name = 'Resolution Time per Ticket Type' and package_name = 'intranet-sla-management'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
 
 
 
