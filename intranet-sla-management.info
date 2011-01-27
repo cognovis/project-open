@@ -27,7 +27,10 @@
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="CloseResolvedTicketAfterSeconds"  default="0" description="Should we automatically close 'resolved' tickets? The default is '0' to disable this feature. To enable, please set oa a time span (in seconds). Example: 36000 will close after 10 hours"/>
+
+CloseResolvedTicketAfterSeconds
         </parameters>
 
     </version>
