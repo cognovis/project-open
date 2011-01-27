@@ -630,7 +630,7 @@ ad_proc -public im_conf_item_list_component {
     if {[string is integer $member_id] && $member_id > 0} {
 
 	# Get the list of CIs who are directly associated with $member_id
-	set new_parents [db_string user_conf_items "
+	set new_parents [db_list user_conf_items "
 		select	ci.conf_item_id
 		from	im_conf_items ci,
 			acs_rels r
