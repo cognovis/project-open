@@ -77,8 +77,6 @@ ad_proc im_freelance_trans_member_select_component {
     to select freelancers according to the characteristics of
     the current project.
 } {
-
-
     # ------------------------------------------------
     # Security
   
@@ -112,19 +110,30 @@ ad_proc im_freelance_trans_member_select_component {
     }
     set freel_trans_order_by [string tolower $freel_trans_order_by]
 
-    set list_order_by_sql "min(p.price), p.source_language_id, p.target_language_id, p.task_type_id, p.subject_area_id, p.file_type_id"
-    if { [info exists list_order_by] } { 
-		if { "name" == $list_order_by  } {
-			set list_order_by_sql "f.name"
-			set order_freelancer_sql "user_name"
-		} else {
-                        set list_order_by_sql "f.no_times_worked_for_customer DESC"
-			set order_freelancer_sql "no_times_worked_for_customer DESC"
-		}
-    } else {
-	set order_freelancer_sql "user_name"
-    }
+#    ad_return_complaint 1 $freel_trans_order_by
 
+    # Sort order
+    switch $freel_trans_order_by {
+	s-word {
+	    # Order by the number of time the freelance has worked before with the customer
+	    set freel_trans_order_by_sql "f.no_times_worked_for_customer DESC"
+	    set order_freelancer_sql "no_times_worked_for_customer DESC"
+	}
+	worked_before {
+	    # Order by the number of time the freelance has worked before with the customer
+	    set freel_trans_order_by_sql "f.no_times_worked_for_customer DESC"
+	    set order_freelancer_sql "no_times_worked_for_customer DESC"
+	}
+	name {
+	    set freel_trans_order_by_sql "f.name"
+	    set order_freelancer_sql "user_name"
+	}
+	default {
+	    set freel_trans_order_by_sql "min(p.price), p.source_language_id, p.target_language_id, p.task_type_id, p.subject_area_id, p.file_type_id"
+	    set order_freelancer_sql "user_name"
+	}
+
+    }
 
     # ------------------------------------------------
     # Constants
@@ -253,7 +262,7 @@ ad_proc im_freelance_trans_member_select_component {
 		f.name,
 		f.no_times_worked_for_customer
 	order by 
-		$list_order_by_sql 
+		$freel_trans_order_by_sql 
     "
 
     db_foreach price_hash $price_sql {
@@ -374,15 +383,15 @@ ad_proc im_freelance_trans_member_select_component {
     }
 
     set sorted_table_rows $table_rows
-    if { ![info exists list_order_by] } {
+    if { ![info exists freel_trans_order_by] } {
 	set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
     } 
  
 
     # ------------------------------------------------
 
-    # Remove "list_order_by" from the var_list
-    set order_by_pos [lsearch $var_list "list_order_by"]
+    # Remove "freel_trans_order_by" from the var_list
+    set order_by_pos [lsearch $var_list "freel_trans_order_by"]
     if {$order_by_pos > -1} {
         set var_list [lreplace $var_list $order_by_pos $order_by_pos]
     } else {
@@ -395,9 +404,9 @@ ad_proc im_freelance_trans_member_select_component {
 	  <td class=rowtitle>
 	      <input type=checkbox name=_dummy onclick=\"acs_ListCheckAll('trans_freelancers',this.checked)\">
 	  </td>
-	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&list_order_by=name>[_ intranet-freelance.Freelance]</a></td>
+	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&freel_trans_order_by=name>[_ intranet-freelance.Freelance]</a></td>
 	  <!--<td class=rowtitle>[lang::message::lookup "" intranet-freelance-translation.Worked_with_Customer_Before "Worked With Cust Before?"]</td>-->
-	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&list_order_by=worked_before>[lang::message::lookup "" intranet-freelance-translation.Worked_with_Customer_Before "Worked With Cust Before?"]</a></td>
+	  <td class=rowtitle><a href=[export_vars -base $current_url $var_list]&freel_trans_order_by=worked_before>[lang::message::lookup "" intranet-freelance-translation.Worked_with_Customer_Before "Worked With Cust Before?"]</a></td>
     "
 
     # Add a column for each skill type
