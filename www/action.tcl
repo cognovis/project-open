@@ -45,36 +45,12 @@ switch $action_id {
 	30500 - 30510 {
 	    # Close and "Close & Notify"
 	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
-		db_dml close_ticket "
-			update im_tickets set 
-				ticket_status_id = [im_ticket_status_closed],
-				ticket_done_date = now()
-			where ticket_id = :ticket_id
-	        "
-		db_dml close_ticket "
-			update im_projects set 
-				project_status_id = [im_project_status_closed]
-			where project_id = :ticket_id
-	        "
-
-		im_ticket::add_reply -ticket_id $ticket_id -subject \
-		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
-
-		# Cancel associated workflow
-		im_workflow_cancel_workflow -object_id $ticket_id
-		
-		# Close associated forum by moving to "deleted" folder
-		db_dml move_to_deleted "
-			update im_forum_topic_user_map
-        	        set folder_id = 1
-                	where topic_id in (
-				select	t.topic_id
-				from	im_forum_topics t
-				where	t.object_id = :ticket_id
-			)
-		"
+		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
+		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_closed]
+		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
+		im_ticket::close_workflow	-ticket_id $ticket_id
+		im_ticket::close_forum		-ticket_id $ticket_id
+		im_ticket::audit		-ticket_id $ticket_id -action "update"
 	    }
 
 	    if {$action_id == 30510} {
@@ -85,22 +61,9 @@ switch $action_id {
 	30530 {
 	    # Reopen
 	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
-		db_dml reopen_ticket "
-			update im_tickets set ticket_status_id = [im_ticket_status_open]
-			where ticket_id = :ticket_id
-	        "
-
-		# Re-Open the project as well
-		db_dml close_ticket "
-			update im_projects set 
-				project_status_id = [im_project_status_open]
-			where project_id = :ticket_id
-	        "
-
-		im_ticket::add_reply -ticket_id $ticket_id -subject \
-		    [lang::message::lookup "" intranet-helpdesk.Re_opened_by_user "Re-opened by %user_name%"]
+		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
+		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_open]
+		im_ticket::audit		-ticket_id $ticket_id -action "update"
 	    }
 	}
 	30540 {
@@ -134,51 +97,40 @@ switch $action_id {
 	30560 {
 	    # Resolved
 	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
-		db_dml resolved_ticket "
-			update im_tickets set 
-			       ticket_status_id = [im_ticket_status_resolved],
-			       ticket_done_date = now()
-			where ticket_id = :ticket_id
-	        "
-		im_ticket::add_reply -ticket_id $ticket_id -subject \
-		    [lang::message::lookup "" intranet-helpdesk.Deleted_by_user "Resolved by %user_name%"]
+		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
+		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_resolved]
+		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
+		im_ticket::audit		-ticket_id $ticket_id -action "update"
 	    }
 	}
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
-		db_dml close_ticket "
-			update im_tickets set ticket_status_id = [im_ticket_status_deleted]
-			where ticket_id = :ticket_id
-	        "
-		im_ticket::add_reply -ticket_id $ticket_id -subject \
-		    [lang::message::lookup "" intranet-helpdesk.Deleted_by_user "Deleted by %user_name%"]
+		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
+		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_deleted]
+		im_ticket::close_workflow	-ticket_id $ticket_id
+		im_ticket::close_forum		-ticket_id $ticket_id
+		im_ticket::audit		-ticket_id $ticket_id -action "update"
 	    }
 	}
 	30599 {
 	    # Nuke
-	    if {!$user_is_admin_p} { ad_return_complaint 1 "User needs to be SysAdmin in order to 'Nuke' tickets.<br>Please use 'Delete' otherwise." }
+	    if {!$user_is_admin_p} { 
+	        ad_return_complaint 1 "User needs to be SysAdmin in order to 'Nuke' tickets.<br>Please use 'Delete' otherwise." 
+		ad_script_abort
+	    }
 	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$admin} { ad_return_complaint 1 $action_forbidden_msg }
+	        im_ticket::check_permissions	-ticket_id $ticket_id -operation "admin"
 		im_project_nuke $ticket_id
 	    }
 	}
 	default {
-
 	    # Check if we've got a custom action to perform
 	    set redirect_base_url [db_string redir "select aux_string1 from im_categories where category_id = :action_id" -default ""]
 	    if {"" != [string trim $redirect_base_url]} {
 		# Redirect for custom action
 		set redirect_url [export_vars -base $redirect_base_url {action_id return_url}]
 		foreach ticket_id $tid { append redirect_url "&tid=$ticket_id"}
-
-#		ad_return_complaint 1 $redirect_url
-
 		ad_returnredirect $redirect_url
 	    } else {
 		ad_return_complaint 1 "Unknown Ticket action: $action_id='[im_category_from_id $action_id]'"

@@ -598,6 +598,138 @@ namespace eval im_ticket {
 	# Write Audit Trail
 	im_project_audit -project_id $ticket_id -action create
     }
+
+    ad_proc -public check_permissions {
+	{-check_only_p 0}
+	-ticket_id:required
+        -operation:required
+    } {
+	Check if the user can perform view, read, write or admin the ticket
+    } {
+	set user_id [ad_get_user_id]
+	set user_name [im_name_from_user_id $user_id]
+	im_ticket_permissions $user_id $ticket_id view read write admin
+	if {[lsearch {view read write admin} $operation] < 0} { 
+	    ad_return_complaint 1 "Invalid operation '$operation':<br>Expected view, read, write or admin"
+	    ad_script_abort
+	}
+	set perm [set $operation]
+
+	# Just return the result check_only_p is set
+	if {$check_only_p} { return $perm }
+
+	if {!$perm} { 
+	    set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Forbidden_operation on ticket "
+	    <b>Unable to perform operation '%operation%'</b>:<br>You don't have the necessary permissions for ticket #%ticket_id%."]
+	    ad_return_complaint 1 $action_forbidden_msg 
+	    ad_script_abort
+	}
+	return $perm
+    }
+
+    ad_proc -public set_status_id {
+	-ticket_id:required
+        -ticket_status_id:required
+    } {
+        Set the ticket to the specified status.
+	The procedure deals with some special cases
+    } {
+	set user_id [ad_get_user_id]
+	set user_name [im_name_from_user_id $user_id]
+	im_ticket_permissions $user_id $ticket_id view read write admin
+	if {!$write} { 
+	    set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Forbidden_to_change_ticket_status_msg "
+	    <b>Unable to change the status of the ticket</b>:<br>You don't have the permissions to modify ticket #%ticket_id%."]
+	    ad_return_complaint 1 $action_forbidden_msg 
+	    ad_script_abort
+	}
+	db_dml update_ticket_status "
+		update im_tickets set 
+			ticket_status_id = :ticket_status_id
+		where ticket_id = :ticket_id
+	"
+
+	# Add a message to the forum
+	set ticket_status [im_category_from_id $ticket_status_id]
+	im_ticket::add_reply -ticket_id $ticket_id -subject \
+	    [lang::message::lookup "" intranet-helpdesk.Set_to_status_by_user "Set to status '%ticket_status%' by %user_name%"]
+
+
+	# Set the status of the underlying project depending on the ticket status
+	set project_status_id ""
+	if {[im_category_is_a $ticket_status_id [im_ticket_status_open]]} { set project_status_id [im_project_status_open] }
+	if {[im_category_is_a $ticket_status_id [im_ticket_status_closed]]} { set project_status_id [im_project_status_closed] }
+	if {"" != $project_status_id} {
+	    db_dml update_ticket_project_status "
+		update im_projects set 
+			project_status_id = [im_project_status_closed]
+		where project_id = :ticket_id
+	    "
+	} else {
+	    ad_return_complaint 1 "Internal Error: Found invalid ticket_status_id=$ticket_status_id"
+	    ad_script_abort
+	}
+
+    }
+
+
+    ad_proc -public close_workflow {
+	-ticket_id:required
+    } {
+        Stop the ticket workflow.
+    } {
+	# Cancel associated workflow
+	im_workflow_cancel_workflow -object_id $ticket_id
+    }
+
+    ad_proc -public audit {
+	-ticket_id:required
+	-action:required
+    } {
+        Write the audit trail
+    } {
+	# Write Audit Trail
+	im_project_audit -project_id $ticket_id -action $action
+    }
+
+    ad_proc -public close_forum {
+	-ticket_id:required
+    } {
+        Set the ticket forum to "deleted"
+    } {
+	# Close associated forum by moving to "deleted" folder
+	db_dml move_to_deleted "
+			update im_forum_topic_user_map
+        	        set folder_id = 1
+                	where topic_id in (
+				select	t.topic_id
+				from	im_forum_topics t
+				where	t.object_id = :ticket_id
+			)
+	"
+    }
+
+    ad_proc -public update_timestamp {
+	-timestamp:required
+	-ticket_id:required
+    } {
+        Set the specified timestamp(s) to now()
+    } {
+	foreach ts $timestamp {
+	    switch $ts {
+		done		{ set column "ticket_done_date" }
+		default 	{ set column "" }
+	    }
+	    if {"" != $column} {
+	        db_dml update_ticket_timestamp "
+			update im_tickets set 
+				ticket_done_date = now()
+			where ticket_id = :ticket_id
+	        "
+	    }
+	}
+    }
+
 }
 
 

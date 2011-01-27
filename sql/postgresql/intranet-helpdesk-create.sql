@@ -740,8 +740,6 @@ delete from im_categories where category_type = 'Intranet Ticket Action';
 SELECT im_category_new(30500, 'Close', 'Intranet Ticket Action');
 SELECT im_category_new(30510, 'Close &amp; notify', 'Intranet Ticket Action');
 -- SELECT im_category_new(30515, 'Freeze', 'Intranet Ticket Action');
-SELECT im_category_new(30590, 'Delete', 'Intranet Ticket Action');
-SELECT im_category_new(30599, 'Nuke', 'Intranet Ticket Action');
 
 
 -- Custom screen for duplicate action to select base
@@ -755,6 +753,10 @@ SELECT im_category_new(30540, 'Associate', 'Intranet Ticket Action');
 SELECT im_category_new(30550, 'Escalate', 'Intranet Ticket Action');
 SELECT im_category_new(30552, 'Close Escalated Tickets', 'Intranet Ticket Action');
 
+SELECT im_category_new(30560, 'Resolved', 'Intranet Ticket Action');
+
+SELECT im_category_new(30590, 'Delete', 'Intranet Ticket Action');
+SELECT im_category_new(30599, 'Nuke', 'Intranet Ticket Action');
 
 
 
