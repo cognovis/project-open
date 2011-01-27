@@ -274,6 +274,51 @@ ad_proc -public im_sla_management_epoch_in_service_hours {
 
 
 
+
+# ----------------------------------------------------------------------
+# Close all tickets that are in status "resolved" for more then a certain period
+# ---------------------------------------------------------------------
+
+ad_proc -public im_sla_ticket_close_resolved_tickets_sweeper {
+    {-debug_p 0}
+    {-ticket_id ""}
+} {
+    Set ticket statatus to "closed" after the ticket is in status "resolved"
+    for a certain time.
+} {
+    # Make sure that only one thread is calculating at a time
+#    if {[nsv_incr intranet_sla_management sweeper_p] > 1} {
+#        nsv_incr intranet_sla_management sweeper_p -1
+#        ns_log Notice "im_sla_ticket_solution_time: Aborting. There is another process running"
+#        return
+#    }
+
+    ns_log Notice "im_sla_ticket_close_resolved_tickets_sweeper: debug_p=$debug_p"
+
+    # Check whether to resolved tickets after some time.
+    # Set parameter to 0 to disable this feature.
+    set close_after_seconds [parameter::get_from_package_key -package_key "intranet-timesheet2" -parameter CloseResolvedTicketAfterSeconds -default 0]
+    if {"" == $close_after_seconds || 0 == $close_after_seconds} { return }
+
+    # Get the tickets that are already "resolved" more then X seconds.
+    set resolved_tickets_sql "
+	select	t.*
+	from	im_tickets t
+	where	t.ticket_status_id = [im_ticket_status_resolved] and
+		t.ticket_done_date + :close_after_seconds 'seconds' < now()
+    "
+
+    db_foreach resolved_tickets $resolved_tickets_sql {
+    	if 
+    }
+
+    im_ticket_status_resolved
+
+
+}
+
+
+
 # ----------------------------------------------------------------------
 # Calculate the Solution time for every ticket
 # ---------------------------------------------------------------------
