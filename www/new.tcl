@@ -116,6 +116,9 @@ if {0 != $escalate_from_ticket_id} {
 	where	t.ticket_id = p.project_id and
 		t.ticket_id = :escalate_from_ticket_id
     "
+
+    # Escalation logic: The new ticket is always a "probem ticket" (or below)
+    set ticket_type_id [im_ticket_type_generic_problem_ticket]
 }
 
 

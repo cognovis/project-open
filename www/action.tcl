@@ -76,7 +76,7 @@ switch $action_id {
 	    if {"" == $tid} { ad_returnredirect $return_url }
 	    if {[llength $tid] > 1} { ad_return_complaint 1 "[lang::message::lookup "" intranet-helpdesk.Can_excalate_only_one_ticket "
 		We can escalate only one ticket at a time" ]" }
-	    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {escalate_from_ticket_id $tid}]
+	    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {{escalate_from_ticket_id $tid}}]
 	}
 	30552 {
 	    # Close Escalated Tickets
