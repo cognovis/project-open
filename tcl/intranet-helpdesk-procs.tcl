@@ -697,6 +697,14 @@ namespace eval im_ticket {
     } {
         Set the ticket forum to "deleted"
     } {
+	# Mark the topic as closed
+	db_dml mark_as_closed "
+			update im_forum_topics
+        	        set topic_status_id = [im_topic_status_id_closed]
+			where	parent_id is null and
+				object_id = :ticket_id
+	"
+
 	# Close associated forum by moving to "deleted" folder
 	db_dml move_to_deleted "
 			update im_forum_topic_user_map
@@ -704,7 +712,8 @@ namespace eval im_ticket {
                 	where topic_id in (
 				select	t.topic_id
 				from	im_forum_topics t
-				where	t.object_id = :ticket_id
+				where	t.parent_id is null and
+					t.object_id = :ticket_id
 			)
 	"
     }
