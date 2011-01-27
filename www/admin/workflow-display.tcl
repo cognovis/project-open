@@ -31,7 +31,22 @@ switch $format {
 
 	ad_set_client_property wf wf_net_tmpfile $tmpfile
 
-	set header_stuff [wf_ismap_to_client_map -name "wf_map" [wf_graphviz_dot_exec -output ismap $dot_text]]
+	ns_log Notice "workflow-display: \[wf_graphviz_dot_exec -to_file -output ismap $dot_text\]"
+	set output_file [wf_graphviz_dot_exec -to_file -output ismap $dot_text]
+
+	# Read the output_file
+	if {[catch {
+	    set fl [open $output_file]
+	    set ismap [read $fl]
+	    close $fl
+	    file delete $output_file
+	} err]} {
+	    ad_return_complaint 1 "Unable to read or delete file $output_file:<br><pre>\n$err</pre>"
+	    return ""
+	}
+
+	# Convert into a ckickable map
+	set header_stuff [wf_ismap_to_client_map -name "wf_map" $ismap]
 
 	set display "
 	<img src=\"/[im_workflow_url]/workflow-gif?[export_url_vars tmpfile]\" border=0 usemap=\"#wf_map\" $width_and_height alt=\"Graphical representation of the process network\">
