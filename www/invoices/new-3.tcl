@@ -270,6 +270,7 @@ if {$aggregate_tasks_p} {
 			sum(t.units_in_interval) as interval_sum,
 			sum(t.unbilled_units) as unbilled_sum,
 			parent.project_id as project_id,	
+			t.task_id,
 			im_material_name_from_id(t.task_material_id) as task_name,
 			t.task_type_id,
 			t.uom_id,
@@ -279,6 +280,7 @@ if {$aggregate_tasks_p} {
 			(select
 				t.planned_units,
 				t.billable_units,
+				t.task_id,
 				CASE WHEN t.uom_id = 321 THEN
 					(select sum(h.days) from im_hours h where h.project_id = p.project_id)
 				ELSE
@@ -330,7 +332,8 @@ if {$aggregate_tasks_p} {
 			t.task_type_id,
 			t.uom_id,
 			t.company_id,
-			parent.project_id
+			parent.project_id,
+			t.task_id
     "
 
 } else {
