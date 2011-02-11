@@ -75,8 +75,18 @@ if { [wf_graphviz_installed_p] } {
 
     set dot_text [wf_generate_dot_representation -size $size workflow]
     
-    set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
+
+    # Retry getting the GIF, as graphviz is protected by a semaphore
+    set cnt 0
+    set tmpfile ""
+    while {"" == $tmpfile} {
+	set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
+	incr cnt
+	if {$cnt > 10} { ad_return_complaint 1 "case-state-graph.tcl: Too many tries to get 'wf_graphviz_dot_exec'" }
+    }
+    ns_log Notice "wf_graphviz_dot_exec: tmpfile=$tmpfile, exists=[file exists $tmpfile]"
     
+
     set width_and_height ""
     if { ![catch { set image_size [ns_gifsize $tmpfile] } error] } {
 	if { ![empty_string_p $image_size] } {
