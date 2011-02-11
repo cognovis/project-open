@@ -36,6 +36,11 @@ ad_proc -public im_resource_mgmt_resource_planning_cell {
     # Calculate the percentage / 10, so that height=10 with 100%
     # Always draw a line, even if percentage is < 5% 
     # (which would result in 0 height of the GIF...)
+    set p 0
+    catch {
+        set p [expr round((1.0 * $percentage) / 10.0)]
+    }
+
     set p [expr round((1.0 * $percentage) / 10.0)]
     if {0 == $p && $percentage > 0.0} { set p 1 }
 
