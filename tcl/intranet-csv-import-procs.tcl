@@ -14,7 +14,7 @@ ad_library {
 # 
 # ----------------------------------------------------------------------
 
-ad_proc -public im_csv_import_label_from_object_typet {
+ad_proc -public im_csv_import_label_from_object_type {
     -object_type:required
 } {
     Returns the main navbar lable for the object_type
