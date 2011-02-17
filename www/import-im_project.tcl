@@ -343,6 +343,13 @@ foreach csv_line_fields $values_list_of_lists {
     if {[catch {
 	db_dml update_project "
 		update im_projects set
+			project_name		= :project_name,
+			project_nr		= :project_nr,
+			project_path		= :project_path,
+			company_id		= :customer_id,
+			parent_id		= :parent_id,
+			project_status_id	= :project_status_id,
+			project_type_id		= :project_type_id,
 			project_lead_id		= :project_lead_id,
 			start_date		= :start_date,
 			end_date		= :end_date,
