@@ -9,6 +9,52 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+# ---------------------------------------------------------------------
+# Aux functions
+# ---------------------------------------------------------------------
+
+ad_proc -public im_id_from_user_name { name } {
+    Checks for a user with the given name
+} {
+    set user_id [db_string uid "
+	select	min(user_id)
+	from	users
+	where	lower(trim(username)) = lower(trim(:name))
+    " -default ""]
+
+    if {"" == $user_id} {
+	set user_id [db_string uid "
+		select	min(person_id)
+		from	persons
+		where	lower(trim(im_name_from_user_id(person_id))) = lower(trim(:name))
+	" -default ""]
+    }
+
+    return $user_id
+}
+
+ad_proc -public im_csv_import_parser_date_european { arg } {
+    Parses a European date format like '08.06.2011' as the 8th of June, 2011
+} {
+   if {[regexp {^(.+)\.(.+)\.(....)$} $arg match dom month year]} { 
+       if {1 == [string length $dom]} { set dom "0$dom" }
+       if {1 == [string length $month]} { set dom "0$month" }
+       return [list "$year-$month-$dom" ""] 
+   }
+   return [list "" "Error parsing European date format '$arg': expected 'dd.mm.yyyy'"]
+}
+
+
+ad_proc -public im_csv_import_parser_date_american { arg } {
+    Parses a American date format like '12/31/2011' as the 31st of December, 2011
+} {
+   if {[regexp {^(.+)\/(.+)\/(....)$} $arg match month dom year]} { 
+       if {1 == [string length $dom]} { set dom "0$dom" }
+       if {1 == [string length $month]} { set dom "0$month" }
+       return [list "$year-$month-$dom" ""] 
+   }
+   return [list "" "Error parsing American date format '$arg': expected 'dd.mm.yyyy'"]
+}
 
 # ----------------------------------------------------------------------
 # 
@@ -26,9 +72,6 @@ ad_proc -public im_csv_import_label_from_object_type {
 	default { return "" }
     }
 }
-
-
-
 
 # ---------------------------------------------------------------------
 # Available Fields per Object Type
@@ -119,7 +162,8 @@ ad_proc -public im_csv_import_parsers {
 	im_project {
 	    set parsers {
 		no_change	"No Change"
-		date_european	"European Data Parser (DD.MM.YYYY)"
+		date_european	"European Date Parser (DD.MM.YYYY)"
+		date_american	"American Date Parser (MM/DD/YYYY)"
 	    }
 	}
 	default {
@@ -157,11 +201,13 @@ ad_proc -public im_csv_import_guess_parser {
     foreach val $sample_values { 
 
 	if {![regexp {^(.+)\.(.+)\.(....)$} $val match]} { set date_european_p 0 } 
+	if {![regexp {^(.+)\/(.+)\/(....)$} $val match]} { set date_american_p 0 } 
 	if {![regexp {^[0-9]+$} $val match]} { set number_plain 0 } 
 
     }
 
     if {$date_european_p} { return "date_european" }
+    if {$date_american_p} { return "date_american" }
     if {$number_plain_p} { return "number_plain" }
 
     return ""
