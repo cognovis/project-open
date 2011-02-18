@@ -68,10 +68,12 @@ set values_list_of_lists [im_csv_get_values $lines_content $separator]
 # ------------------------------------------------------------
 # Get DynFields
 
-set dynfield_sql "
+set dynfield_sql {
 	select	aa.*,
 		a.*,
-		w.*
+		w.*,
+		w.widget as tcl_widget,
+		substring(w.parameters from 'category_type "(.*)"') as category_type
 	from	im_dynfield_widgets w,
 		im_dynfield_attributes a,
 		acs_attributes aa
@@ -79,7 +81,7 @@ set dynfield_sql "
 		a.acs_attribute_id = aa.attribute_id and
 		aa.object_type in ('im_project', 'im_timesheet_task') and
 		(also_hard_coded_p is null OR also_hard_coded_p = 'f')
-"
+}
 
 
 # ------------------------------------------------------------
@@ -178,6 +180,32 @@ foreach csv_line_fields $values_list_of_lists {
 	set result [eval $cmd]
     }
 
+
+    # -------------------------------------------------------
+    # Transform DynFields
+
+    db_foreach initiate_dynfields $dynfield_sql {
+	set value [set $attribute_name]
+	if {"" != $value} {
+	    switch $tcl_widget {
+	        "im_category_tree" {
+		    set result [im_id_from_category $value $category_type]
+		    if {"" != $result} {
+		        # ns_write "<li>DynField im_category_tree: parse '$value' with category type '$category_type': '$result'\n"
+		    } else {
+		        ns_write "<li><font color=brown>Warning: 
+				 Failed to parse category '$value' for category type '$category_type'</font>\n"
+		    }
+		    set $attribute_name $result
+		}
+		default {
+		    ns_write "<li><font color=brown>Warning: 
+			 DynField parser for widget '$tcl_widget' not implemented yet - using literal value</font>\n"
+		}
+	    }
+	}
+    }
+
     # -------------------------------------------------------
     # Transform the variables
 
@@ -251,17 +279,15 @@ foreach csv_line_fields $values_list_of_lists {
     # Type is a required field
     set project_type_id [im_id_from_category [list $project_type] "Intranet Project Type"]
     if {"" == $project_type_id} {
-	ns_write "<li><font color=brown>Warning: Didn't find project type '$project_type', using default status 'Other'</font>\n"
-	set project_status_id [im_project_type_other]
+	ns_write "<li><font color=brown>Warning: Didn't find project type '$project_type', using default type 'Other'</font>\n"
+	set project_type_id [im_project_type_other]
     }
 
     # On track status can be NULL without problems
     set on_track_status_id [im_id_from_category [list $on_track_status] "Intranet Project On Track Status"]
 
-
     # Priority has been introduced by department planner...
     set project_priority_id [im_id_from_category [list $project_priority] "Intranet Department Planner Project Priority"]
-    ns_write "<li>priority=$project_priority_id for $project_priority\n"
 
     # customer_id
     if {"" == $customer_id } { set customer_id [db_string cust "select company_id from im_companies where lower(company_name) = trim(lower(:customer_name))" -default ""] }
@@ -285,8 +311,6 @@ foreach csv_line_fields $values_list_of_lists {
 
     # -------------------------------------------------------
     # Check if the project already exists
-
-    ns_write "<li>Checking for project duplicates: name='$project_name', nr='$project_nr'"
 
     set parent_id_sql "= $parent_id"
     if {"" == $parent_id} { 
@@ -339,7 +363,6 @@ foreach csv_line_fields $values_list_of_lists {
 
     } 
 
-    ns_write "<li>Before updating project, on_track_status_id=$on_track_status_id\n"
     if {[catch {
 	db_dml update_project "
 		update im_projects set
@@ -473,7 +496,6 @@ foreach csv_line_fields $values_list_of_lists {
 		where project_id = :project_id
 	"
 	if {[catch {
-	    ns_write "<li>Updating Project Dynfields:<br><pre>$project_update_sql</pre>"
 	    db_dml project_dynfield_update $project_update_sql
 	} err_msg]} {
 	    ns_write "<li><font color=brown>Warning: Error updating dynfields:<br><pre>$err_msg</pre>"
@@ -487,7 +509,6 @@ foreach csv_line_fields $values_list_of_lists {
 		where task_id = :project_id
 	"
 	if {[catch {
-	    ns_write "<li>Updating Task Dynfields:<br><pre>$task_update_sql</pre>"
             db_dml task_dynfield_update $task_update_sql
 	} err_msg]} {
 	    ns_write "<li><font color=brown>Warning: Error updating dynfields:<br><pre>$err_msg</pre>"
