@@ -1,6 +1,6 @@
 -- upgrade-3.4.1.0.1-3.4.1.0.2.sql
 
--- SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.1.0.1-3.4.1.0.2.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.1.0.1-3.4.1.0.2.sql','');
 
 -- --------------------------------------------
 -- New report "Show all project Tasks"
