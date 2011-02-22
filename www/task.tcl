@@ -146,18 +146,14 @@ set extreme_p 0
 if {[string compare $case_state "active"] == 0} {
     set extreme_p 1
     template::multirow create extreme_actions url title
-    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=suspend" "suspend case"
-    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=cancel" "cancel case"
+    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=suspend" [lang::message::lookup "" intranet-workflow.Suspend_Case "Suspend Case"]
+    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=cancel" [lang::message::lookup "" intranet-workflow.Cancel_Case "Cancel Case"]
 }
-
-
 
 # ---------------------------------------------------------
 # Fire all message transitions after the action:
 
 wf_sweep_message_transition_tcl
-
-
 
 set export_form_vars [export_vars -form {task_id return_url}]
 

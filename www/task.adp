@@ -8,7 +8,7 @@
 		<td>
 		<div class="component_header_rounded" >
 			<div class="component_header">
-				<div class="component_title">Task: @task.task_name@</div>
+				<div class="component_title"><%=[lang::message::lookup "" intranet-workflow.Task "Task"]%>: @task.task_name@</div>
 				      <div class="component_icons"></div>
 				</div>
 			</div>
@@ -40,7 +40,7 @@
                 <td>
                 <div class="component_header_rounded" >
                         <div class="component_header">
-                                <div class="component_title">Admin actions:</div>
+                                <div class="component_title"><%=[lang::message::lookup "" intranet-workflow.Admin_Actions "Admin actions"]%></div>
                                       <div class="component_icons"></div>
                                 </div>
                         </div>
