@@ -10,7 +10,7 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-trans-invoice-authorization</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-trans-invoice-authorization-0.1d.apm">
+    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-trans-invoice-authorization-4.0.1.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Invoice Authorization for translation tasks</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
