@@ -51,7 +51,7 @@ BEGIN
 end;' language 'plpgsql';
 
 
-create or replace function im_dynfield_widget__del (integer) returns integer as '
+create or replace function im_dynfield_widget__delete (integer) returns integer as '
 DECLARE
         p_widget_id             alias for $1;
 BEGIN

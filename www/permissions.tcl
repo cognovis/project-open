@@ -18,7 +18,9 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { object_type "" }
+    object_type:optional
+    nomaster_p:optional
+    attribute_id:optional
     { return_url "" }
 }
 
@@ -28,6 +30,11 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+
+# If used as 
+if {![info exists nomaster_p]} { set nomaster_p 0 }
+if {![info exists object_type]} { set object_type "" }
+if {![info exists attribute_id]} { set attribute_id "" }
 
 if {!$user_is_admin_p} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -116,6 +123,8 @@ $table_header\n"
 
 set object_type_where ""
 if {"" != $object_type} { set object_type_where "and aa.object_type = :object_type" }
+if {"" != $attribute_id} { set object_type_where "and fa.attribute_id = :attribute_id" }
+
 
 set attributes_sql "
     select 
