@@ -28,8 +28,7 @@ ad_proc -public im_resource_mgmt_resource_planning_cell {
     # Color selection
     set color ""
     if {$percentage > 0} { set color "bluedot" }
-    if {$percentage > 100} { set color "800000" }
-    if {$percentage > 180} { set color "FF0000" }
+    if {$percentage > 100} { set color "FF0000" }
 
     set color "bluedot"    
 
