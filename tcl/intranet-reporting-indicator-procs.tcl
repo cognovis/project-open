@@ -10,6 +10,28 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+# ---------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------
+
+ad_proc -public im_indicator_section_finance {} { return 15200 }
+ad_proc -public im_indicator_section_customers {} { return 15205 }
+ad_proc -public im_indicator_section_pm {} { return 15210 }
+ad_proc -public im_indicator_section_timesheet {} { return 15215 }
+ad_proc -public im_indicator_section_trans_providers {} { return 15220 }
+ad_proc -public im_indicator_section_trans_pm {} { return 15225 }
+ad_proc -public im_indicator_section_kmc {} { return 15230 }
+ad_proc -public im_indicator_section_hr {} { return 15235 }
+ad_proc -public im_indicator_section_other {} { return 15240 }
+ad_proc -public im_indicator_section_system {} { return 15245 }
+ad_proc -public im_indicator_section_sla {} { return 15250 }
+
+
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
 ad_proc im_diagram_date2seconds { year month day hour min sec } {
 	Convert data format into seconds since 1st of January 0000
 } {
@@ -49,7 +71,7 @@ ad_proc im_indicator_timeline_widget {
     { -font_size 8 }
     { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;font-size:8pt;" }
     { -bar_color "0080FF" }
-    { -outer_distance 2 }
+    { -outer_distance 8 }
     { -left_distance 35 }
     { -bottom_distance 20 }
     { -widget_min 0 }
@@ -286,6 +308,211 @@ ad_proc im_indicator_horizontal_bar {
 # ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
+
+
+
+ad_proc -public im_indicator_timeline_component { 
+    {-object_id ""}
+    {-object_type ""}
+    {-indicator_section_id ""}
+    {-indicator_id ""}
+    {-show_description_long_p ""}
+    {-show_current_value_p ""}
+} {
+    Returns a HTML component with the list of all timeline indicators that the user can see
+} {
+    set current_user_id [ad_get_user_id]
+    set view_reports_all_p [im_permission $current_user_id "view_reports_all"]
+    set add_reports_p [im_permission $current_user_id "add_reports"]
+    set wiki_url "http://www.project-open.org/documentation"
+
+    # Evaluate indicators every X hours:
+    set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
+
+    if {"" == $show_description_long_p && "" != $indicator_section_id} {
+	set show_description_long_p 0
+	set show_current_value_p 0
+    }
+
+    set object_type_sql "and (indicator_object_type is null OR indicator_object_type = '')"
+    if {"" != $object_type} { set object_type_sql "and lower(indicator_object_type) = lower(:object_type)" }
+
+    set permission_sql "and 't' = im_object_permission_p(r.report_id, :current_user_id, 'read')"
+    if {$view_reports_all_p} { set permission_sql "" }
+
+    set section_sql "and i.indicator_section_id = :indicator_section_id"
+    if {"" == $indicator_section_id} { set section_sql "" }
+
+    db_multirow -extend {report_view_url edit_html value_html history_html} reports get_reports "
+	select
+		r.*,
+		i.*,
+		im_category_from_id(i.indicator_section_id) as section,
+		ir.result
+	from
+		im_reports r,
+		im_indicators i
+		LEFT OUTER JOIN (
+			select	avg(result) as result,
+				result_indicator_id
+			from	im_indicator_results
+			where	result_date >= now() - '$eval_interval_hours hours'::interval
+			group by result_indicator_id
+		) ir ON (i.indicator_id = ir.result_indicator_id)
+	where
+		r.report_id = i.indicator_id and
+		r.report_type_id = [im_report_type_indicator]
+		$object_type_sql
+		$permission_sql
+		$section_sql
+	order by 
+		section
+    " {
+	set report_view_url [export_vars -base "view" {indicator_id return_url}]
+	set report_edit_url [export_vars -base "new" {indicator_id}]
+	set perms_url [export_vars -base "perms" {{object_id $indicator_id}}]
+	set delete_url [export_vars -base "delete" {indicator_id return_url}]
+	set edit_html "
+		[im_gif "help" [ns_quotehtml $report_description]]<br>
+		<a href='$report_edit_url'>[im_gif "wrench"]</a><br>
+		<a href='$perms_url'>[im_gif "lock"]</a><br>
+		<a href='$delete_url'>[im_gif "cancel"]</a>
+	"
+
+	regsub -all " " $report_name "_" indicator_name_mangled
+	set help_url "$wiki_url/indicator_[string tolower $indicator_name_mangled]"
+	set report_description "
+	$report_description
+	<a href=\"$help_url\">[lang::message::lookup "" intranet-reporting-indicators.More_dots "more..."]</a><br>
+        "
+
+	if {"" == $result} {
+	    set substitution_list [list user_id $current_user_id object_id $object_id]
+	    set result [im_indicator_evaluate \
+			    -report_id $report_id \
+			    -object_id $object_id \
+			    -report_sql $report_sql \
+			    -substitution_list $substitution_list \
+			   ]
+	}	
+	
+	set value_html $result
+	set history_html ""
+	
+	if {"error" != $result && "" != $result} {
+	    
+	    set indicator_sql "
+	        select	result_date, result
+	        from	im_indicator_results
+	        where	result_indicator_id = :report_id
+	        order by result_date
+            "
+	    set values [db_list_of_lists results $indicator_sql]
+	
+	    set min $indicator_widget_min
+	    if {"" == $min} { set min 1000000 }
+	    set max $indicator_widget_max
+	    if {"" == $max} { set max -1000000 }
+	    
+	    foreach vv $values { 
+		set v [lindex $vv 1]
+		if {$v < $min} { set min $v }
+		if {$v > $max} { set max $v }
+	    }
+	    
+	    set history_html ""
+	    set history_html [im_indicator_timeline_widget \
+				  -name $report_name \
+				  -values $values \
+				  -widget_min $min \
+				  -widget_max $max \
+				 ]
+	}
+	
+    }
+
+    # ------------------------------------------------------
+    # Create List 
+
+    set elements_list {}
+
+    # Show the section only if it's not explicitely specified...
+    if {"" == $indicator_section_id} {
+    	lappend elements_list \
+	section {
+	    label "Section"
+	    display_template {
+		@reports.section@
+	    }
+	}
+    }
+	
+    lappend elements_list \
+	name {
+	    label "Name"
+	    display_template {
+		<a href=@reports.report_view_url@>@reports.report_name@</a>
+	    }
+	}
+    
+    
+    if {0 != $show_current_value_p} {
+       lappend elements_list \
+	value {
+	    label "Value"
+	    display_template {
+		@reports.value_html;noquote@
+	    }
+	}
+    }
+
+    lappend elements_list \
+	history {
+	    label "History"
+	    display_template {
+		@reports.history_html;noquote@
+	    }
+	}
+    
+    if {$add_reports_p} {
+	lappend elements_list \
+	    edit {
+		label "[im_gif wrench]"
+		display_template {
+		    @reports.edit_html;noquote@
+		}
+	    }
+    }
+    
+   if {0 != $show_description_long_p} {
+        lappend elements_list \
+	report_description {
+	    label "Description"
+	    display_template {
+		@reports.report_description;noquote@
+	    }
+	}
+    }
+    
+    
+    template::list::create \
+        -name indicator_list \
+        -multirow reports \
+        -key menu_id \
+        -elements $elements_list \
+        -filters {
+	    return_url
+        }
+    
+    
+    # Compile and execute the formtemplate if advanced filtering is enabled.
+    eval [template::adp_compile -string {<listtemplate name="indicator_list"></listtemplate>}]
+    set list_html $__adp_output
+
+    return $list_html
+}
+
+
 
 ad_proc -public im_indicator_home_page_component { 
     {-module "asdf" }
