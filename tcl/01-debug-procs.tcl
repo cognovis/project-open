@@ -11,6 +11,7 @@ package require xotcl::serializer
   ::xotcl::Object instproc debug
   ::xotcl::Object instproc qn
   ::xotcl::Object instproc serialize
+  ::xotcl::Object instproc show-object
   ::xotcl::Object instforward db_1row
   ::xotcl::Object instproc destroy_on_cleanup
   ::xotcl::Object instproc set_instance_vars_defaults
@@ -32,7 +33,7 @@ if {$::xotcl::version < 1.5} {
   # XOTcl 1.5 or newer supports slots. Here we have to 
   # emulate slots up to a certain point
   namespace eval ::xo {
-    Class create ::xo::Attribute \
+    ::xotcl::MetaSlot create ::xo::Attribute \
       -parameter {
         {name "[namespace tail [::xotcl::self]]"}
         {domain "[lindex [regexp -inline {^(.*)::slot::[^:]+$} [::xotcl::self]] 1]"}
@@ -52,7 +53,7 @@ if {$::xotcl::version < 1.5} {
 } else {
   namespace eval ::xo {
     # create xo::Attribute as a subclass of the slot ::xotcl::Attribute
-    Class create ::xo::Attribute \
+    ::xotcl::MetaSlot create ::xo::Attribute \
         -superclass ::xotcl::Attribute \
         -parameter {
           spec
@@ -81,12 +82,15 @@ if {[info command ::nx::Object] ne ""} {
   ::nx::Slot public method exists {var}   {::nsf::existsvar [self] $var}
   ::nx::Object public method serialize {} {::Serializer deepSerialize [self]}
   ::nx::Object method set_instance_vars_defaults {} {:configure}
+  ::nx::Object public method destroy_on_cleanup {} {set ::xo::cleanup([self]) [list [self] destroy]}
   ::xotcl::Object instproc set_instance_vars_defaults {} {:configure}
   ::xotcl::Object proc setExitHandler {code} {::nsf::exithandler set $code}
 
   ::Serializer exportMethods {
     ::nx::Object method serialize
+    ::nx::Object method show-object
     ::nx::Object method set_instance_vars_defaults
+    ::nx::Object method destroy_on_cleanup
     ::nx::Slot method istype
     ::nx::Slot method exists
     ::nx::Slot method set
@@ -127,6 +131,19 @@ namespace eval ::xo {
 
 ::xotcl::Object instproc serialize {} {
   ::Serializer deepSerialize [self]
+}
+
+::xotcl::Object instproc show-object {} {
+  #
+  # Allow to show an arbitrary object via API-browser.  Per-default,
+  # e.g. site-wide can use e.g. /xowiki/index?m=show-object
+  #
+  set form [rp_getform]
+  ns_set update $form object [self]
+  ns_set update $form show_source    [::xo::cc query_parameter "show_source" 1]
+  ns_set update $form show_methods   [::xo::cc query_parameter "show_methods" 2]
+  ns_set update $form show_variables [::xo::cc query_parameter "show_variables" 1]
+  rp_internal_redirect /packages/xotcl-core/www/show-object
 }
 
 namespace eval ::xo {

@@ -923,6 +923,7 @@ namespace eval ::xo::db {
     switch -glob -- $name {
       ::xo::db::Object   {return acs_object}
       ::xo::db::CrItem   {return content_revision}
+      ::xo::db::image    {return image}
       ::xo::db::CrFolder {return content_folder}
       ::xo::db::*        {return [string range $name 10 end]}
       default            {return $name}
@@ -1591,7 +1592,7 @@ namespace eval ::xo::db {
   }
 
   ##############
-  ::xotcl::Class create ::xo::db::Attribute \
+  ::xotcl::MetaSlot create ::xo::db::Attribute \
       -superclass {::xo::Attribute} \
       -parameter {
         {sqltype} 
@@ -1673,7 +1674,7 @@ namespace eval ::xo::db {
   }
 
   ##############
-  ::xotcl::Class create ::xo::db::CrAttribute \
+  ::xotcl::MetaSlot create ::xo::db::CrAttribute \
       -superclass {::xo::db::Attribute} \
 
   ::xo::db::CrAttribute instproc create_attribute {} {
