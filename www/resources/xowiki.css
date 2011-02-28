@@ -1,23 +1,28 @@
 /* for mini-calendar in weblog */
-#at-a-glance td.inactive  {color: #999999;}
+#at-a-glance td.inactive  {color: #999999; background:#FFF;}
 /*#at-a-glance :active  {background: #999999;}*/
 /*#at-a-glance td.active  {color: #003b53;}*/
 /*#at-a-glance td.today  {color: #003b53;}*/
 
+/* minimize damage of yui-skin-sam */
+#breadcrumbs, #alert-message {clear: both !important; text-align: left !important;}
 
+/* useful helper */
 .visual-clear {clear: both; display: block;}
+
+/* menues and such */
 div.wiki-menu {
     position: relative; right: 0px; 
     text-align: right;  font-family: sans-serif; font-size: 85%;color: #7A7A78;
 }
 
 #wikicmds {position: relative; top: -24px;  right: 0px; height: 0px;
-	  text-align: right;  font-family: sans-serif; font-size: 100%;color: #000000;font-weight: bold}
+	  text-align: right;  font-family: sans-serif; font-size: 85%;color: #7A7A78;}
 /*#portal #wikicmds {top: -90px;}*/
 div.portlet #wikicmds {float: inherit ! important; top: 0px ! important; height: inherit;}
 #page-body #wikicmds {top: -30px;}
 
-#wikicmds a, #wikicmds a:visited, div.wiki-menu a { color: #000000; text-decoration: none; font-weight: bold;}
+#wikicmds a, #wikicmds a:visited, div.wiki-menu a { color: #7A7A78; text-decoration: none;}
 #wikicmds a:hover {text-decoration: underline;}
 #wikicmds a:active {color: rgb(255,153,51);}
 #cmdbar {
@@ -157,7 +162,7 @@ div.xowiki-content h4 {
     margin: 0;
 }
 div.xowiki-content .box {border: 1px solid #a1a5a9; padding: 0 5px 5px 5px; margin: 0 0 1.25em 0;}
-div.xowiki-content .errorMsg {color: red; font-weight: bold;}
+div.xowiki-content .errorMsg {background: #FFF; color: red; font-weight: bold;}
 div.xowiki-content .hr {
     height: 1px; border: none; 
     background-color: silver;
@@ -208,15 +213,24 @@ img.undefined {border-width: 2px; border-color: #859db8; height: 8px;}
 	text-decoration:none;
 	margin:0;
 	margin-right:10px;}
-a:hover.rss {color:#dddddd;}
-a:visited.rss {color: #FFF;}
-a:link.rss {color: #FFF;}
+a:hover.rss {color:#dddddd;background: #F60;}
+a:visited.rss {color: #FFF;background: #F60;}
+a:link.rss {color: #FFF;background: #F60;}
 
 div.rightbox {float:right; right: 1em; clear: right; font-size: 75%; padding: 5px;
     border:dotted; border-width:1px;background: #f8f8f8;
 }
 div.presence div.title {font-size: 90%; margin-bottom: 0px;
         border-bottom: solid silver 1px; color: #222222; 
+}
+
+div.xowiki-content a.missing {
+    color: red;
+    text-decoration: none;
+}
+div.xowiki-content a.missing:hover {
+    text-decoration: underline;
+    background: none;
 }
 
 div.xowiki-content pre, .code {
@@ -303,6 +317,15 @@ div.xowiki-content .margin-form .form-button, .margin-form div.form-help-text {
 div.recent div.portlet .list-table td.list {
     padding: 8px 4px;
 }
+
+/* includelet "categories-recent" */
+div.categories-recent .date {
+    font-size: 85%;
+    font-weight: bold;
+    color: #9a9a9b;
+}
+
+/* inherited markup */
 div.xowiki-content a.inherited {
     background: url(/resources/acs-subsite/arrow-down.gif) right center no-repeat; 
     padding-right: 14px;
@@ -413,10 +436,35 @@ div.xowiki-content  div.hidden-field-set > div.form-widget > .compound-field {
 }
 
 
-
 div.xowiki-content .margin-form fieldset .form-item-wrapper {
     padding: 0px 0px 0px 0px;
 }
+
+/* folder menu placement */
+
+div.xowiki-content div.folders {
+    float:left; width: 200px; 
+    font-size: 90%;
+}
+div.xowiki-content .content-with-folders {
+    float: left; width: 70%;
+}
+div.xowiki-content .content-with-folders div.form-label {
+    width: 9em;
+}
+div.xowiki-content .content-with-folders div.form-widget,  
+div.xowiki-content .content-with-folders .form-help-text,
+div.xowiki-content .content-with-folders .form-button,
+div.xowiki-content .content-with-folders .form-widget-error,
+div.xowiki-content .content-with-folders .form-error {
+    margin-left: 10em;
+}
+
+div.xowiki-content #menubar a.disabled {
+    color: #A0A0A0;
+    /* or maybe display none */
+}
+
 
 /* mc stuff */
 div.xowiki-content table.mchoice td.selection {
@@ -428,27 +476,40 @@ div.xowiki-content form.feedback td.selection {
     padding: 0px 5px 0px 25px;
 }
 
-
-.roundedcornr_box_757569 {
-   background: #ffffff url(roundedcornr_757569_grad.gif) repeat-x top left;
+/* linear forum stuff */
+div.xowiki-content {
+    text-align: left;
 }
-.roundedcornr_top_757569 div {
-   background: url(roundedcornr_757569_tl.gif) no-repeat top left;
+div.xowiki-content .forum .question {
 }
-.roundedcornr_top_757569 {
-   background: transparent url(roundedcornr_757569_tr.gif) no-repeat top right;
-}
-.roundedcornr_bottom_757569 div {
-   background: url(roundedcornr_757569_bl.gif) no-repeat bottom left;
-}
-.roundedcornr_bottom_757569 {
-   background: transparent url(roundedcornr_757569_br.gif) no-repeat bottom right;
+div.xowiki-content .forum .responses {
 }
 
-.roundedcornr_top_757569 div, .roundedcornr_top_757569,
-.roundedcornr_bottom_757569 div, .roundedcornr_bottom_757569 {
-   width: 100%;
-   height: 20px;
-   font-size: 1px;
+div.xowiki-content .forum .cite.photo {
+    float: left;
+    width: 190px;
 }
-.roundedcornr_content_757569 { margin: 0 20px; }
+div.xowiki-content .forum .cite {
+    float: left;
+    width: 100px;
+}
+div.xowiki-content .forum .question-text {
+    margin-left: 200px;
+}
+div.xowiki-content .forum .question-text.nophoto {
+    margin-left: 110px;
+}
+div.xowiki-content .forum .cite .photo {
+    float: right;
+    margin-left: 4px;
+}
+div.xowiki-content .forum  .cite p.author {
+    margin-bottom: 0px;
+    text-align: right;
+}
+div.xowiki-content .forum .cite p.date {
+    text-align: right;
+    font-size: 85%;
+    color: #777777;
+    
+}

@@ -8,11 +8,11 @@
 
 
 namespace eval ::xowiki {
-  
+
   Class ADP_Generator -parameter {
-    {master 1} 
-    {wikicmds 1} 
-    {footer 1} 
+    {master 1}
+    {wikicmds 1}
+    {footer 1}
     {recreate 0}
     {extra_header_stuff ""}
   }
@@ -52,7 +52,7 @@ function get_popular_tags(popular_tags_link, prefix) {
 {<master>
   <property name="title">@title;noquote@</property>
   <property name="context">@context;noquote@</property>
-  <if @item_id@ not nil><property name="displayed_object_id">@item_id@</property></if> 
+  <if @item_id@ not nil><property name="displayed_object_id">@item_id@</property></if>
   <property name="&body">property_body</property>
   <property name="&doc">property_doc</property>
   <property name="header_stuff">
@@ -70,21 +70,18 @@ function get_popular_tags(popular_tags_link, prefix) {
   ADP_Generator instproc wikicmds_part {} {
     if {![my wikicmds]} {return ""}
     return {<div id='wikicmds'>
-
-  <if @login_link@ not nil><a href="@login_link@" accesskey='l' title='#xowiki.login_title#'>#xowiki.login#</a> &middot; </if>
-  <if @logout_link@ not nil><a href="@logout_link@" accesskey='l' title='#xowiki.logout_title#'>#xowiki.logout#</a> &middot; </if>
   <if @view_link@ not nil><a href="@view_link@" accesskey='v' title='#xowiki.view_title#'>#xowiki.view#</a> &middot; </if>
   <if @edit_link@ not nil><a href="@edit_link@" accesskey='e' title='#xowiki.edit_title#'>#xowiki.edit#</a> &middot; </if>
   <if @rev_link@ not nil><a href="@rev_link@" accesskey='r' title='#xowiki.revisions_title#'>#xotcl-core.revisions#</a> &middot; </if>
   <if @new_link@ not nil><a href="@new_link@" accesskey='n' title='#xowiki.new_title#'>#xowiki.new_page#</a> &middot; </if>
   <if @delete_link@ not nil><a href="@delete_link@" accesskey='d' title='#xowiki.delete_title#'>#xowiki.delete#</a> &middot; </if>
   <if @admin_link@ not nil><a href="@admin_link@" accesskey='a' title='#xowiki.admin_title#'>#xowiki.admin#</a> &middot; </if>
-  <if @notification_subscribe_link@ not nil><a href='/notifications/manage' title='#xowiki.notifications_title#'>#xowiki.notifications#</a> 
-      <a href="@notification_subscribe_link@" class="notification-image-button">&nbsp;</a> &middot; </if>  
+  <if @notification_subscribe_link@ not nil><a href='/notifications/manage' title='#xowiki.notifications_title#'>#xowiki.notifications#</a>
+      <a href="@notification_subscribe_link@" class="notification-image-button">&nbsp;</a> &middot; </if>
    <a href='#' onclick='document.getElementById("do_search").style.display="inline";document.getElementById("do_search_q").focus(); return false;'  title='#xowiki.search_title#'>#xowiki.search#</a> &middot;
   <if @index_link@ not nil><a href="@index_link@" accesskey='i' title='#xowiki.index_title#'>#xowiki.index#</a></if>
-<div id='do_search' style='display: none'> 
-  <form action='/search/search'><div><label for='do_search_q'>#xowiki.search#</label><input id='do_search_q' name='q' type='text'><input type="hidden" name="search_package_id" value="@package_id@" ></div></form> 
+<div id='do_search' style='display: none'>
+  <form action='/search/search'><div><label for='do_search_q'>#xowiki.search#</label><input id='do_search_q' name='q' type='text'><input type="hidden" name="search_package_id" value="@package_id@" ></div></form>
 </div>
 </div>}
   }
@@ -132,25 +129,44 @@ function get_popular_tags(popular_tags_link, prefix) {
       close $f
     }
   }
-
+####################################################################################
+# Definition of Templates
+####################################################################################
+#
+# view-plain
+#
   ADP_Generator create view-plain -master 0 -wikicmds 0 -footer 0
+
+####################################################################################
+#
+# view-links
+#
   ADP_Generator create view-links -master 0 -footer 0
+
+#####################################################################################
+#
+# view-default
+#
   ADP_Generator create view-default -master 1 -footer 1
 
+####################################################################################
+#
+# oacs-view
+#
   ADP_Generator create oacs-view -master 1 -footer 1 \
     -extra_header_stuff {
-      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' />
+      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' >
       <script language='javascript' src='/resources/acs-templating/mktree.js' type='text/javascript'></script>
     } \
     -proc content_part {} {
        return [subst -novariables -nobackslashes \
 {<div style="float:left; width: 25%; font-size: 85%;
      background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;			
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8;">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<div style="position:relative; right:6px; bottom:6px;  border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8;">
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="categories -open_page @name@  -decoration plain">
 </div></div>
 <div style="float:right; width: 70%;">
@@ -159,13 +175,16 @@ function get_popular_tags(popular_tags_link, prefix) {
 }]
      }
 
-  #
-  # similar to oacs view (categories left), but having as well a right bar
-  #
+####################################################################################
+#
+# oacs-view2
+#
+# similar to oacs view (categories left), but having as well a right bar
+#
   ADP_Generator create oacs-view2 -master 1 -footer 1 \
     -extra_header_stuff {
-      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' />
-      <link rel='stylesheet' href='/resources/calendar/calendar.css' media='all' />
+      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' >
+      <link rel='stylesheet' href='/resources/calendar/calendar.css' media='all' >
       <script language='javascript' src='/resources/acs-templating/mktree.js' type='text/javascript'></script>
     } \
     -proc before_render {page} {
@@ -175,11 +194,11 @@ function get_popular_tags(popular_tags_link, prefix) {
        return [subst -novariables -nobackslashes \
 {<div style="float:left; width: 25%; font-size: 85%;
      background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<div style="position:relative; right:6px; bottom:6px;  border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="categories -open_page @name@  -decoration plain">
 </div></div>
 <div style="float:right; width: 70%;">
@@ -192,24 +211,24 @@ table.mini-calendar {width: 200px ! important;}
 </div>  <!-- float left -->
 <div id='sidebar' class='column'>
 <div style="background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
-<include src="/packages/xowiki/www/portlets/weblog-mini-calendar" 
-	 &__including_page=page 
+<div style="position:relative; right:6px; bottom:6px;  border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
+<include src="/packages/xowiki/www/portlets/weblog-mini-calendar"
+	 &__including_page=page
          summary="0" noparens="0">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="tags -decoration plain">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="tags -popular 1 -limit 30 -decoration plain">
 <hr>
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="presence -interval {30 minutes} -decoration plain">
 <hr>
-<a href="contributors" text="Show People contributing to this XoWiki Instance">Contributors</a>
+<a href="contributors" title="Show People contributing to this XoWiki Instance">Contributors</a>
 </div>
 </div>
 </div> <!-- sidebar -->
@@ -218,9 +237,12 @@ table.mini-calendar {width: 200px ! important;}
 }]
      }
 
-  #
-  # similar to oacs view2 (categories left), but everything left
-  #
+####################################################################################
+#
+# oacs-view3
+#
+# similar to oacs view2 (categories left), but everything left
+#
   ADP_Generator create oacs-view3 -master 1 -footer 1 \
     -extra_header_stuff {
       <style type='text/css'>
@@ -228,47 +250,44 @@ table.mini-calendar {width: 200px ! important;}
          div.tags h3 {font-size: 80%;}
          div.tags blockquote {font-size: 80%; margin-left: 20px; margin-right: 20px;}
       </style>
-      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' />
-      <link rel='stylesheet' href='/resources/calendar/calendar.css' media='all' />
+      <link rel='stylesheet' href='/resources/xowiki/cattree.css' media='all' >
+      <link rel='stylesheet' href='/resources/calendar/calendar.css' media='all' >
       <script language='javascript' src='/resources/acs-templating/mktree.js' type='text/javascript'></script>
     } \
     -proc before_render {page} {
       ::xo::cc set_parameter weblog_page weblog-portlet
     } \
     -proc content_part {} {
-       return [subst -novariables -nobackslashes \
-{<div style="float:left; width: 245px; font-size: 85%;">
-
-
+      return [subst -novariables -nobackslashes {\
+<div style="float:left; width: 245px; font-size: 85%;">
 <div style="background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
-<include src="/packages/xowiki/www/portlets/weblog-mini-calendar" 
-	 &__including_page=page 
+<div style="position:relative; right:6px; bottom:6px;  border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
+<include src="/packages/xowiki/www/portlets/weblog-mini-calendar"
+	 &__including_page=page
          summary="0" noparens="0">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="tags -decoration plain">
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="tags -popular 1 -limit 30 -decoration plain">
 <hr>
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="presence -interval {30 minutes} -decoration plain">
 <hr>
-<a href="contributors" text="Show People contributing to this XoWiki Instance">Contributors</a>
+<a href="contributors" title="Show People contributing to this XoWiki Instance">Contributors</a>
 </div>
 </div> <!-- background -->
 
 <div style="background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
-
-<include src="/packages/xowiki/www/portlets/include" 
-	 &__including_page=page 
+<div style="position:relative; right:6px; bottom:6px;  border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
+<include src="/packages/xowiki/www/portlets/include"
+	 &__including_page=page
 	 portlet="categories -open_page @name@  -decoration plain">
 </div></div>  <!-- background -->
 </div>
@@ -278,11 +297,12 @@ table.mini-calendar {width: 200px ! important;}
 }]
      }
 
-
-
-  #
-  # view-book, wiki cmds in rhs
-  #
+####################################################################################
+#
+# view-book
+#
+# wiki cmds in rhs
+#
   ADP_Generator create view-book -master 1 -footer 1  -wikicmds 0 \
     -extra_header_stuff {
     } \
@@ -293,18 +313,17 @@ table.mini-calendar {width: 200px ! important;}
        return [subst -novariables -nobackslashes \
 {<div style="float:left; width: 25%; font-size: .8em;
      background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
-     margin-left: 2px; margin-top: 2px; padding: 0px 6px 6px 0px;			    
+     margin-left: 6px; margin-top: 6px; padding: 0px;
 ">
-<div style="margin-top: -2px; margin-left: -2px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
+<div style="position:relative; right:6px; bottom:6px; border: 1px solid #a9a9a9; padding: 5px 5px; background: #f8f8f8">
 @toc;noquote@
 </div></div>
-<div style="float:right; width: 70%;">@top_includelets;noquote@
-
+<div style="float:right; width: 70%;">
 <if @book_prev_link@ not nil or @book_relpos@ not nil or @book_next_link@ not nil>
-<div class="book-navigation" style="background: #f8f8f8; border: 1px solid #a9a9a9;  width: 500px;">
-<table width='100%' 
+  <div class="book-navigation" style="background: #fff; border: 1px dotted #000; padding-top:3px; margin-bottom:0.5em;">
+<table width='100%'
   summary='This table provides a progress bar and buttons for next and previous pages'>
-  <colgroup><col width='20'><col width='450'><col width='20'>
+  <colgroup><col width='20'><col><col width='20'>
   </colgroup>
    <tr>
    <td>
@@ -320,9 +339,10 @@ table.mini-calendar {width: 200px ! important;}
 
    <td>
    <if @book_relpos@ not nil>
-     <table style='display: inline; text-align: center;'>
-     <colgroup><col width='450'></colgroup>
-     <tr><td style='font-size: 75%'><div style='width: @book_relpos@;' ID='bookNavBar'></div><span ID='bookNavRelPosText'>@book_relpos@</span></td></tr>
+     <table width='100%'>
+     <colgroup><col></colgroup>
+     <tr><td style='font-size: 75%'><div style='width: @book_relpos@;' ID='bookNavBar'></div></td></tr>
+  <tr><td style='font-size: 75%; text-align:center;'><span ID='bookNavRelPosText'>@book_relpos@</span></td></tr>
      </table>
    </if>
    </td>
@@ -344,21 +364,24 @@ table.mini-calendar {width: 200px ! important;}
 
 <div id='book-page'>
 <include src="view-page" &="package_id"
-      &="references" &="name" &="title" &="item_id" &="page" &="context" &="header_stuff" &="return_url" 
-      &="content" &="references" &="lang_links" &="package_id" 
-      &="rev_link" &="edit_link" &="delete_link" &="new_link" &="admin_link" &="index_link" 
-      &="tags" &="no_tags" &="tags_with_links" &="save_tag_link" &="popular_tags_link" 
-      &="per_object_categories_with_links" 
-      &="digg_link" &="delicious_link" &="my_yahoo_link" 
-      &="gc_link" &="gc_comments" &="notification_subscribe_link" &="notification_image" 
+      &="references" &="name" &="title" &="item_id" &="page" &="context" &="header_stuff" &="return_url"
+      &="content" &="references" &="lang_links" &="package_id"
+      &="rev_link" &="edit_link" &="delete_link" &="new_link" &="admin_link" &="index_link"
+      &="tags" &="no_tags" &="tags_with_links" &="save_tag_link" &="popular_tags_link"
+      &="per_object_categories_with_links"
+      &="digg_link" &="delicious_link" &="my_yahoo_link"
+      &="gc_link" &="gc_comments" &="notification_subscribe_link" &="notification_image"
       &="top_includelets" &="page">
 </div>
 </div>
 }]}
 
-  #
-  # view-book-no-ajax, adp identical to view-book.
-  #
+####################################################################################
+#
+# view-book-no-ajax
+#
+# adp identical to view-book.
+#
   ADP_Generator create view-book-no-ajax -master 1 -footer 1 -wikicmds 0 \
     -extra_header_stuff {
     } \
@@ -368,4 +391,5 @@ table.mini-calendar {width: 200px ! important;}
     -proc content_part {} {
       return [view-book content_part]
     }
+
 }

@@ -28,11 +28,17 @@
   <msg key="event-location">Ort</msg>
   <msg key="event-start_of_event">Beginnzeit</msg>
   <msg key="event-start_of_lecture">Vortragsbeginn</msg>
+  <msg key="event-title_of_event">Titel</msg>
   <msg key="event-title_of_lecture">Vortragstitel</msg>
+  <msg key="File-name-help_text">Kann von hochegeladener Datei übernommen werden</msg>
   <msg key="Form-form">Formular</msg>
   <msg key="Form-form_constraints">Einschränkungen</msg>
   <msg key="form-menu-button-answers">Einträge für dieses Formular</msg>
+  <msg key="form-menu-button-form">Formular %form_name%</msg>
   <msg key="form-menu-button-new">Formular ausfüllen</msg>
+  <msg key="form-menu-button-wf-instances">Ausprägungen von %form_name%</msg>
+  <msg key="formfield-author">Verfasser</msg>
+  <msg key="FormPage-state">Zustand</msg>
   <msg key="hour">Stunde</msg>
   <msg key="hours">Stunden</msg>
   <msg key="includelet-visitors">Besucher</msg>
@@ -43,7 +49,7 @@
   <msg key="minute">Minute</msg>
   <msg key="minutes">Minuten</msg>
   <msg key="month">Monat</msg>
-  <msg key="months">Monate</msg>
+  <msg key="months">Monaten</msg>
   <msg key="most_frequent_visitors">Häufigsten Besucher</msg>
   <msg key="most_popular_pages">Häufigst besuchten Seiten</msg>
   <msg key="new_page">Neuer Eintrag</msg>
@@ -51,6 +57,7 @@
   <msg key="news-teaser">Kurztext</msg>
   <msg key="notifications">Verständigungen</msg>
   <msg key="notifications_title">Verwalten der Verständigungen ...</msg>
+  <msg key="numeric-validate_numeric">ungültiger numerischer Wert</msg>
   <msg key="Page-creator">Ersteller</msg>
   <msg key="Page-description">Kurzbeschreibung</msg>
   <msg key="Page-last_modified">Änderungsdatum</msg>
@@ -62,6 +69,7 @@
   <msg key="Page-text">Inhalt</msg>
   <msg key="Page-title">Titel der Seite</msg>
   <msg key="Page-validate_name">Another item with the name '%value%' exists already in this folder                                </msg>
+  <msg key="page_kind">Art</msg>
   <msg key="page_type">Typ der Seite</msg>
   <msg key="PageInstance-instance_attributes">Instanzattribute</msg>
   <msg key="PageInstance-page_template">Seitenvorlage</msg>
@@ -78,12 +86,15 @@
   <msg key="recently_changed_pages">Zuletzt geänderte Seiten</msg>
   <msg key="recently_changed_pages_by_categories">Zuletzt geänderte Seiten (nach Kategorien)</msg>
   <msg key="references_label">Verweise auf diese Seite:</msg>
+  <msg key="references_of_label">Verweise dieser Seite:</msg>
   <msg key="revisions">Verlauf</msg>
+  <msg key="revisions_title">Änderungsgeschichte dieser Seite ...</msg>
   <msg key="rss_client">RSS-Klient</msg>
   <msg key="search">Suche</msg>
   <msg key="search_title">Suche in diesem Wiki...</msg>
   <msg key="second">Sekunde</msg>
   <msg key="seconds">Sekunden</msg>
+  <msg key="subscribe">Abonnieren</msg>
   <msg key="title">Titel</msg>
   <msg key="title_of_event">Titel
 </msg>
@@ -92,5 +103,7 @@
   <msg key="weblog-more">mehr...</msg>
   <msg key="week">Woche</msg>
   <msg key="weeks">Wochen</msg>
+  <msg key="year">Jahr</msg>
+  <msg key="years">Jahren</msg>
   <msg key="your_tags_label">Persönliche Schlagworte</msg>
 </message_catalog>

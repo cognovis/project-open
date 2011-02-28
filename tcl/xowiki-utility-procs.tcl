@@ -8,7 +8,34 @@
 
 namespace eval ::xowiki {
 
-  Object create tidy
+  #
+  # Simple clipboard functionality
+  #
+  ::xotcl::Object create clipboard
+  clipboard proc add {ids} {
+    set clipboard [ad_get_client_property xowiki clipboard]
+    eval lappend clipboard $ids
+    ad_set_client_property xowiki clipboard [lsort -unique $clipboard]
+  }
+  clipboard proc clear {} {
+    ad_set_client_property xowiki clipboard ""
+  }
+  clipboard proc get {} {
+    return [ad_get_client_property xowiki clipboard]
+  }
+  clipboard proc is_empty {} {
+    expr {[my size] < 1}
+  }
+  clipboard proc size {} {
+    set clipboard [ad_get_client_property xowiki clipboard]
+    return [llength $clipboard]
+  }
+
+  #
+  #
+  # Helper for tidying up HTML
+  #
+  ::xotcl::Object create tidy
   tidy proc clean {text} {
     if {[[::xo::cc package_id] get_parameter tidy 0] 
         && [info command ::util::which] ne ""} { 
@@ -35,6 +62,14 @@ namespace eval ::xowiki {
       set value [$parameter_obj get -package_id $package_id]
       parameter::set_value -package_id $package_id -parameter $to -value $value
     }
+  }
+
+  proc delete_parameter {from} {
+    set parameter_obj [::xo::parameter get_parameter_object \
+                           -parameter_name $from -package_key xowiki]
+    if {$parameter_obj eq ""} {error "no such parameter $from"}
+    apm_parameter_unregister -package_key [$parameter_obj package_key] [string trimleft $parameter_obj :]
+    $parameter_obj destroy
   }
 
   ad_proc fix_all_package_ids {} {
@@ -223,6 +258,35 @@ namespace eval ::xowiki {
     }
   }
 
+
+  proc ::xowiki::transform_root_folder {package_id} {
+    ::xo::Package initialize -package_id $package_id
+    set item_id [$package_id folder_id]
+    ::xo::clusterwide ns_cache flush xotcl_object_type_cache $item_id
+    set form_id [::xowiki::Weblog instantiate_forms -forms en:folder.form -package_id $package_id]
+
+    if {[db_0or1row check \
+          "select 1 from cr_items where content_type = '::xowiki::FormPage' and item_id = $item_id"]} {
+      ns_log notice "folder $item_id is already converted"
+      set f [FormPage get_instance_from_db -item_id $item_id]
+      if {[$f page_template] != $form_id} {
+        ns_log notice "... must change form_id from [$f page_template] to $form_id"
+        db_dml chg0 "update xowiki_page_instance set page_template = $form_id where page_instance_id = [$f revision_id]"
+      }
+      return
+    }
+    set revision_id [::xo::db::sql::content_revision new \
+                         -title [$package_id instance_name] -text "" \
+                         -item_id $item_id -package_id $package_id]
+    db_dml chg1 "insert into xowiki_page (page_id) values ($revision_id)"
+    db_dml chg2 "insert into xowiki_page_instance (page_instance_id, page_template) values ($revision_id, $form_id)"
+    db_dml chg3 "insert into xowiki_form_page (xowiki_form_page_id) values ($revision_id)"
+    
+    db_dml chg4 "update acs_objects set object_type = 'content_item' where object_id = $item_id"
+    db_dml chg5 "update acs_objects set object_type = '::xowiki::FormPage' where object_id = $revision_id"
+    db_dml chg6 "update cr_items set content_type = '::xowiki::FormPage',  publish_status = 'ready', live_revision = $revision_id, latest_revision = $revision_id where item_id = $item_id"
+  }
+
   ad_proc -public -callback subsite::url -impl apm_package {
     {-package_id:required}
     {-object_id:required}
@@ -245,7 +309,7 @@ namespace eval ::xowiki {
 # Some Date utilities
 #
 
-::xo::Module ::xowiki::utility -eval {
+::xo::Module create ::xowiki::utility -eval {
   my set age \
       [list \
            [expr {3600*24*365}] year years \
@@ -263,7 +327,8 @@ namespace eval ::xowiki {
                       {-locale ""}
                       {-levels 1}
                     } {
-      #
+
+    #
     # This is an internationalized pretty age functions, which prints
     # the rough date in a user friendly fashion.
     #
@@ -319,10 +384,13 @@ namespace eval ::xowiki {
         }
         set time $msg
         set msg [::lang::message::lookup $locale xowiki.ago [list [list time $msg]]]
-        #append msg " ago"
         break
       }
       incr pos
+    }
+    if {$msg eq ""} {
+      set time "0 [::lang::message::lookup $locale xowiki.seconds]"
+      set msg [::lang::message::lookup $locale xowiki.ago [list [list time $time]]]
     }
     return $msg
   }
@@ -430,4 +498,52 @@ namespace eval ::xowiki {
     }
     return $renames
   }
+
+  #
+  # The standard ns_urlencode of aolserver is oversimplifying the
+  # encoding, leading to names with too many percent-encodings. This
+  # is not nice, but not a problem. A real problem with ns_encode in
+  # aolserver is that it encodes spaces in the url path as "+" which is
+  # not backed by RFC 3986. The aolserver coding does not harm as long
+  # the code is just used with aolserver. However, naviserver
+  # implements an RFC-3986 compliant encoding, which distinguishes
+  # between the various parts of the url (via parameter "-part
+  # ..."). The problem occurs, when the url path is decoded according
+  # to the RFC rules, which happens actually in the C implementation
+  # within [ns_conn url] in naviserver. Naviserver performs the
+  # RFC-compliant handling of "+" in the "path" segment of the url,
+  # namely no interpretation.
+  #
+  # Here an example, consider an url path "a + b".  The aolserver
+  # ns_encode yields "a+%2b+b", the aolserver ns_decode maps it back
+  # to "a + b", everything is fine. However, the naviserver C-level
+  # decode in [ns_conn url] converts "a+%2b+b" to "a+++b", which is
+  # correct according to the RFC.
+  #
+  # The problem can be solved for xowiki by encoding spaces not as
+  # "+", but as "%20", which is always correct. The tiny
+  # implementation below fixes the problem at the Tcl level. A better
+  # solution might be to backport ns_urlencode from naviserver to
+  # aolserver or to provide a naviserver compliant Tcl implementation
+  # for aolserver (but these options might break some existing
+  # programs).
+  #
+  # -gustaf neumann (nov 2010)
+
+  set ue_map [list]
+  for {set i 0} {$i < 256} {incr i} {
+    set c [format %c $i]
+    set x %[format %02x $i]
+    if {![string match {[-a-zA-Z0-9_.]} $c]} {
+      lappend ue_map $c $x
+    }
+  }
+
+  my proc urlencode {string} {
+    my instvar ue_map
+    return [string map $ue_map $string]
+  }
+
 }
+::xo::library source_dependent 
+
