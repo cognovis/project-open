@@ -13,6 +13,7 @@ set msg ""
 ad_form \
     -name upload_form \
     -mode edit \
+    -export {parent_id return_url} \
     -html { enctype multipart/form-data } \
     -form {
       {upload_file:file(file) {html {size 30}} {label "Import file for upload"} }
@@ -39,26 +40,39 @@ ad_form \
       set f [open $upload_tmpfile]; 
       # if we do not set translation binary,
       # backslashes at the end of the lines might be lost
-      fconfigure $f -translation binary -encoding utf-8; 
+      fconfigure $f -translation binary -encoding utf-8
       set content [read $f]; close $f
 
       foreach o [::xowiki::Page allinstances] { 
         set preexists($o) 1
       }
       if {[catch {namespace eval ::xo::import $content} error]} {
-        set msg "Error: $error"
+	#my msg "Error: $::errorInfo"
+        set msg "Error: $error\n$::errorInfo"
       } else {
         set objects [list]
         foreach o [::xowiki::Page allinstances] {
           if {![info exists preexists($o)]} {lappend objects $o}
         }
-        set msg [$package_id import -replace $replace -create_user_ids $create_user_ids \
-                     -objects $objects]
+        ns_log notice "objects to import: $objects"
+        set parent_id [ns_queryget parent_id 0]
+        #::xotcl::Object msg parent_id=$parent_id
+        if {[catch {
+          set msg [$package_id import -replace $replace -create_user_ids $create_user_ids \
+                       -parent_id $parent_id -objects $objects]
+        } errMsg]} {
+          ns_log notice "Error during import: $errMsg\nErrInfo: $::errorInfo"
+          ::xotcl::Object msg "Error during import: $errMsg\nErrInfo: $::errorInfo"
+          foreach o $objects {$o destroy}
+          error $errMsg
+        }
+        foreach o $objects {if {[::xotcl::Object isobject $o]} {$o destroy}}
       }
       namespace delete ::xo::import
     }
 
 
+set return_url [ns_queryget return_url ../]
 set title "Import XoWiki Pages"
 set context .
 ad_return_template

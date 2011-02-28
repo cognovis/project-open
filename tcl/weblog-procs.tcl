@@ -5,6 +5,7 @@ namespace eval ::xowiki {
 
   Class create ::xowiki::Weblog -parameter {
     package_id
+    {parent_id 0}
     {page_size 20}
     {page_number ""}
     date
@@ -26,37 +27,27 @@ namespace eval ::xowiki {
     {compute_summary false}
   }
 
-  ::xowiki::Weblog proc instantiate_forms {{-default_lang ""} -forms:required -package_id:required} {
+  ::xowiki::Weblog proc instantiate_forms {
+         {-default_lang ""} 
+         {-parent_id ""} 
+         -forms:required 
+         -package_id:required
+       } {
     set folder_id [::$package_id folder_id]
     set form_item_ids [list]
     foreach t [split $forms |] {
-      # Entry $t might contain a package prefix
-      set form_item_id [$package_id lookup -default_lang $default_lang -name $t]
-      if {$form_item_id == 0} {
-        # The form does not exist in the CR. Maybe we can create it
-        # via a prototype page?
-        regexp {^.+:(.*)$} $t _ t
-	#my msg "Form $t does not exist, try to load via prototype page"
-	# The following approach is not the best and should be
-	# replaced by a better definition of 'contains". The
-	# method "contains" overloads new and stuffs in an additional
-	# argument "-childof...", which causes problems for the 
-	# "new" methods in the database, which do not know about
-	# this argument...
-	set XOTclClassMixins [::xotcl::Class info instmixin]
-	::xotcl::Class instmixin {}
-        set page [$package_id import-prototype-page $t]
-	::xotcl::Class instmixin $XOTclClassMixins
-        if {$page ne ""} {set form_item_id [$page item_id]}
+      #my log "trying to get $t // parent_id $parent_id"
+      set page [$package_id get_page_from_item_ref \
+                    -use_prototype_pages true \
+                    -use_package_path true \
+                    -parent_id $parent_id \
+                    $t]
+      #my log "weblog form $t => $page"
+      if {$page ne ""} {
+        lappend form_item_ids [$page item_id]
       }
-      if {$form_item_id == 0} {error "Cannot lookup page $t"}
-        
-      # make sure, the form object exists (when no item is available)
-      if {![my isobject ::$form_item_id]} {
-        ::xo::db::CrClass get_instance_from_db -item_id $form_item_id
-      }
-      lappend form_item_ids $form_item_id
     }
+    #my log "instantiate: parent_id=$parent_id-forms=$forms -> $form_item_ids"
     return $form_item_ids
   }
 
@@ -69,6 +60,7 @@ namespace eval ::xowiki {
     set folder_id [::$package_id folder_id]
     set filter_msg  ""
     set query_parm ""
+    set query [ns_conn query]
     
     # set up filters
     set extra_from_clause ""
@@ -79,6 +71,7 @@ namespace eval ::xowiki {
       set date_clause "and [::xo::db::sql date_trunc_expression day bt.publish_date $date]"
       set filter_msg "Filtered by date $date"
       set query_parm "&date=$date"
+      set query [::xo::update_query $query date $date]
     } else {
       set date_clause ""
     }
@@ -94,6 +87,7 @@ namespace eval ::xowiki {
       append extra_from_clause  ""
       set filter_msg "Filtered by category [join $cnames {, }]"
       set query_parm "&category_id=$category_id"
+      set query [::xo::update_query $query category_id $category_id]
     }
 #my msg "tag=$tag"
     if {$tag ne ""} {
@@ -109,6 +103,7 @@ namespace eval ::xowiki {
       append extra_from_clause ",xowiki_tags tags "
       append extra_where_clause "and tags.item_id = ci.item_id and tags.tag = :ptag " 
       set query_parm "&ptag=[ad_urlencode $ptag]"
+      set query [::xo::update_query $query ptag $ptag]
     }
 #my msg filter_msg=$filter_msg 
     if {$name_filter ne ""} {
@@ -124,18 +119,28 @@ namespace eval ::xowiki {
 
     if {$entries_of ne ""} {
       if {[string match "::*" $entries_of]} {
-        # xotcl classes were provided as a filter
+        # class names were provided as a filter
         set class_clause \
             " and ci.content_type in ('[join [split $entries_of { }] ',']')"
       } else {
-        # we use a form as a filter
-        my instvar form_items
-        set form_items [::xowiki::Weblog instantiate_forms \
+        my instvar form_ids
+        if {[regexp {^[0-9 ]+$} $entries_of]} {
+          # form item_ids were provided as a filter
+          set form_ids $entries_of
+        } else {
+          # form names provided as a filter
+          set form_ids [::xowiki::Weblog instantiate_forms \
                             -forms $entries_of \
                             -package_id $package_id]
-        append extra_where_clause " and bt.page_template in ('[join $form_items ',']') and bt.page_instance_id = bt.revision_id "
+        }
+	if {$form_ids ne ""} {
+	  append extra_where_clause " and bt.page_template in ('[join $form_ids ',']') and bt.page_instance_id = bt.revision_id "
+	} else {
+	  my msg "could not lookup forms $entries_of"
+	}
         set base_type ::xowiki::FormPage
         set base_table xowiki_form_pagei
+        append attributes ,bt.page_template,bt.state
         set class_clause ""
       }
     }
@@ -158,8 +163,13 @@ namespace eval ::xowiki {
     foreach i [split [my exclude_item_ids] ,] {lappend ::xowiki_page_item_id_rendered $i}
     $items set weblog_obj [self]
 
+    set query_parent_id [my parent_id]
+    if {$query_parent_id == 0} {
+      set query_parent_id $folder_id
+    }
+
     set sql \
-        [list -folder_id $folder_id \
+        [list -parent_id $query_parent_id \
              -select_attributes $attributes \
              -orderby "publish_date desc" \
              -base_table $base_table \
@@ -178,15 +188,15 @@ namespace eval ::xowiki {
       lappend sql -page_number $page_number -page_size $page_size 
     }
     
-    set nr_items [db_string count [eval $base_type instance_select_query $sql -count true]]
+    set nr_items [db_string [my qn count] [eval $base_type instance_select_query $sql -count true]]
     #my msg count=$nr_items
-    #my msg sql=$sql
+    #my ds [eval $base_type instance_select_query $sql]
     set s [$base_type instantiate_objects -sql [eval $base_type instance_select_query $sql]]
     
     foreach c [$s children] {
       $c instvar revision_id publish_date title name item_id creator creation_user \
           parent_id description body instance_attributes
-
+      
       set time [::xo::db::tcl_date $publish_date tz]
       set pretty_date [util::age_pretty -timestamp_ansi $time \
                            -sysdate_ansi [clock_to_ansi [clock seconds]] \
@@ -215,7 +225,7 @@ namespace eval ::xowiki {
         if {[my no_footer]} {$p set __no_footer 1}
 #        if {[catch {$p set description [$p render]} errorMsg]} {}
         if {[catch {$p set description [$p render -with_footer false]} errorMsg]} {
-          set description "Render Error ($errorMsg) $revision_id $name $title"
+          $p set description "Render Error ($errorMsg) $revision_id $name $title"
         }
         if {[my exists entry_flag]} {$p unset [my entry_flag]}
 	#my log "--W $p render (mixins=[$p info mixin]) => $description"
@@ -229,10 +239,13 @@ namespace eval ::xowiki {
       #my log "--W items=$items, added mixin [my set entry_renderer] to $p, has now <[$p info mixin]>"
       $items add $p
     }
-    
     array set smsg {1 full 0 summary}
-    set weblog_href [$package_id package_url][$package_id get_parameter weblog_page]
-    set flink "<a href='$weblog_href?summary=[expr {!$summary}]$query_parm'>$smsg($summary)</a>"
+    
+    set query [::xo::update_query $query summary [expr {!$summary}]]
+    set weblog_href [::xo::cc url]?$query
+    #set weblog_href [$package_id package_url][$package_id get_parameter weblog_page]
+    #set flink "<a href='$weblog_href?summary=[expr {!$summary}]$query_parm'>$smsg($summary)</a>"
+    set flink "<a href='$weblog_href'>$smsg($summary)</a>"
     
     if {$page_number ne ""} {
       set nr [llength [$items children]] 
@@ -250,12 +263,12 @@ namespace eval ::xowiki {
       set prev_p [expr {$page_number > 1}]
   
       if {$next_p} {
-        set query [::xo::update_query_variable [ns_conn query] page_number [expr {$page_number+1}]]
-        set next_page_link [export_vars -base [::xo::cc url] $query]
+        set query [::xo::update_query $query page_number [expr {$page_number+1}]]
+        set next_page_link [::xo::cc url]?$query
       }
       if {$prev_p} {
-        set query [::xo::update_query_variable [ns_conn query] page_number [expr {$page_number-1}]]
-        set prev_page_link [export_vars -base [::xo::cc url] $query]
+        set query [::xo::update_query $query page_number [expr {$page_number-1}]]
+        set prev_page_link [::xo::cc url]?$query
       }
     }
     #my proc destroy {} {my log "--W"; next}
@@ -290,7 +303,7 @@ namespace eval ::xowiki {
     my instvar package_id name title creator creation_user pretty_date description 
     [my set __parent] instvar weblog_obj
 
-    set link [::$package_id pretty_link $name]
+    set link [my pretty_link]
     regsub -all & $link "&amp;" link
     set more [expr {[$weblog_obj summary] ? 
                     " <span class='more'> \[<a href='$link'>#xowiki.weblog-more#</a>\]</span>" : ""}]
@@ -332,3 +345,5 @@ namespace eval ::xowiki {
 
 
 }
+::xo::library source_dependent 
+

@@ -21,6 +21,7 @@ namespace eval ::xowiki {
 
   Class create RSS -superclass XMLSyndication -parameter {
     maxentries 
+    {parent_ids ""}
     {name_filter ""}
     {entries_of ""}
     {days ""}
@@ -109,13 +110,15 @@ namespace eval ::xowiki {
           [::xo::db::sql since_interval_condition p.publish_date "$days days"]
     }
     if {$entries_of ne ""} {
-      set form_items [list]
-      set folder_id [$package_id folder_id]
-      foreach t [split $entries_of |] {
-        set form_item_id [::xo::db::CrClass lookup -name $t -parent_id $folder_id]
-        if {$form_item_id == 0} {error "Cannot lookup page $t"}
-        lappend form_items $form_item_id
+      if {[regexp {^[0-9 ]+$} $entries_of]} {
+        # form item_ids were provided as a filter
+        set form_items $entries_of
+      } else {
+        set form_items [::xowiki::Weblog instantiate_forms \
+                            -forms $entries_of \
+                            -package_id $package_id]
       }
+
       if {[llength $form_items] == 0} {
 	# In case, we have no form_items to select on, let the query fail 
 	# without causing a SQL error.
@@ -130,10 +133,14 @@ namespace eval ::xowiki {
 
   RSS instproc render {} {
     my instvar package_id max_entries name_filter title days description siteurl base_table
-    set folder_id [::$package_id folder_id]
 
-    if {$description eq ""} {set description [::$folder_id set description]}
-    my set link $siteurl[site_node::get_url_from_object_id -object_id $package_id]
+    if {[my parent_ids] ne ""} {
+      set folder_ids [my parent_ids]
+    } else {
+      set folder_ids [::$package_id folder_id]
+    }
+
+    my set link $siteurl[lindex [site_node::get_url_from_object_id -object_id $package_id] 0]
     
     set base_table xowiki_pagex 
     set extra_where_clause [my extra_where_clause]
@@ -151,7 +158,7 @@ namespace eval ::xowiki {
                  -vars "s.body, s.rss_xml_frag, p.name, p.creator, p.title, p.page_id, instance_attributes, \
                 p.object_type as content_type, p.publish_date, p.description" \
                  -from "syndication s, cr_items ci, $base_table p $extra_from" \
-                 -where "ci.parent_id = $folder_id \
+                 -where "ci.parent_id in ([join $folder_ids ,]) \
 			and ci.live_revision = s.object_id \
                 	and ci.publish_status <> 'production' \
                 	and s.object_id = p.page_id \
@@ -159,37 +166,12 @@ namespace eval ::xowiki {
                  -orderby "p.publish_date desc" \
                  -limit [my limit]]
 
-#     set content [my head]
-#     my log "--TITLE=[my title], DESC=[my description]"
-#     db_foreach get_pages $sql {
-#       if {[string match "::*" $name]} continue
-#       if {$content_type eq "::xowiki::PageTemplate"} continue
-#       set description [string trim $description]
-#       if {$description eq ""} {set description $body}
-#       if {$title eq ""}       {set title $name}
-#       set time [::xo::db::tcl_date $publish_date tz]
-#       set link [::xowiki::Includelet detail_link \
-#                     -package_id $package_id -name $name \
-#                     -absolute true \
-#                     -instance_attributes $instance_attributes]
-#       #append title " ($content_type)"
-#       set time "[clock format [clock scan $time] -format {%a, %d %b %Y %T}] ${tz}00"
-#       append content [my item \
-#                           -creator $creator \
-#                           -title $title \
-#                           -link $link \
-#                           -guid $siteurl/$page_id \
-#                           -description $description \
-#                           -pubdate $time \
-#                          ]
-#     }
-
     set content [my head]
-    db_foreach get_pages $sql {
+    db_foreach [my qn get_pages] $sql {
       if {[string match "::*" $name]} continue
-      if {$content_type eq "::xowiki::PageTemplate"} continue
+      if {$content_type eq "::xowiki::PageTemplate" || $content_type eq "::xowiki::Form"} continue
       append content $rss_xml_frag
-    }    
+    }
     append content [my tail]
     return $content
   }
@@ -245,28 +227,28 @@ namespace eval ::xowiki {
     my instvar package_id max_entries name_filter title days \
 	summary subtitle description author siteurl
 
-    set folder_id [::$package_id folder_id]
-    if {$description eq ""} {set description [::$folder_id set description]}
+    set folder_ids [::$package_id folder_id]
     if {$summary  eq ""} {set summary $description}
     if {$subtitle eq ""} {set subtitle $title}
 
-    my set link $siteurl[site_node::get_url_from_object_id -object_id $package_id]
+    my set link $siteurl[lindex [site_node::get_url_from_object_id -object_id $package_id] 0]
     
     set content [my head]
     set sql [::xo::db::sql select \
                  -vars * \
                  -from "xowiki_podcast_itemi p, cr_items ci, cr_mime_types m" \
-                 -where  "ci.parent_id = $folder_id and ci.item_id = p.item_id \
+                 -where  "ci.parent_id in ([join $folder_ids ,]) and ci.item_id = p.item_id \
               and ci.live_revision = p.object_id \
               and p.mime_type = m.mime_type \
               and ci.publish_status <> 'production' [my extra_where_clause]" \
                  -orderby "p.pub_date asc" \
                  -limit [my limit]]
              
-    db_foreach get_pages $sql {
+    db_foreach [my qn get_pages] $sql {
       if {$content_type ne "::xowiki::PodcastItem"} continue
       if {$title eq ""} {set title $name}
-      set link [::$package_id pretty_link -download true -absolute true -siteurl $siteurl $name]
+      set link [::$package_id pretty_link -download true -absolute true -siteurl $siteurl \
+                    -parent_id $parent_id $name]
       append content [my item \
                           -author $creator -title $title -subtitle $subtitle \
                           -description $description \
@@ -292,7 +274,7 @@ namespace eval ::xowiki {
 
   Timeline instproc render {} {
     my instvar package_id 
-    set folder_id [::$package_id folder_id]
+    set folder_ids [::$package_id folder_id]
     set where_clause ""
     set limit ""
 
@@ -304,16 +286,16 @@ namespace eval ::xowiki {
 
     ::xo::OrderedComposite items -destroy_on_cleanup
     set sql [::xo::db::sql select \
-                 -vars "ci.name, o.creation_user, cr.publish_date, o2.creation_date, \
-			cr.item_id, ci.parent_id, cr.title" \
+                 -vars "ci.name, ci.parent_id, o.creation_user, cr.publish_date, o2.creation_date, \
+			cr.item_id, cr.title" \
                  -from "cr_items ci, cr_revisions cr, acs_objects o, acs_objects o2" \
                  -where "cr.item_id = ci.item_id and o.object_id = cr.revision_id 
       			and o2.object_id = cr.item_id 
-		      	and ci.parent_id = :folder_id and o.creation_user is not null 
+		      	and ci.parent_id in ([join $folder_ids ,]) and o.creation_user is not null 
       			$where_clause" \
                  -orderby "revision_id desc" \
                  -limit $limit]
-    db_foreach get_pages $sql {
+    db_foreach [my qn get_pages] $sql {
       set publish_date [::xo::db::tcl_date $publish_date tz]
       set creation_date [::xo::db::tcl_date $creation_date tz]
       set clock [clock scan $publish_date]
@@ -326,7 +308,7 @@ namespace eval ::xowiki {
         }
       }
       set o [Object new]
-      foreach att {item_id creation_user item_id clock name publish_date parent_id title} {
+      foreach att {item_id creation_user clock name publish_date parent_id title} {
         $o set $att [set $att]
       }
       $o set operation [expr {$creation_date eq $publish_date ? "created" : "modified"}]
@@ -378,7 +360,9 @@ namespace eval ::xowiki {
       append result [my tag -atts [list \
                                        start $stamp \
                                        title $title \
-                                       link [$package_id pretty_link [$i set name]]] \
+                                       link [$package_id pretty_link \
+                                                 -parent_id [$i set parent_id] \
+                                                 [$i set name]]] \
                          event $event]  \n
     }
     append result </data>\n
@@ -394,7 +378,7 @@ namespace eval ::xowiki {
   RSS-client instproc init {} {
     set XML [my load]
     if {$XML ne ""} {
-      my parse [my load]
+      my parse $XML
     }
   }
   
@@ -580,4 +564,6 @@ namespace eval ::xowiki {
   
 
 }
+
+::xo::library source_dependent 
 

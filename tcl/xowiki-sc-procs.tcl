@@ -28,27 +28,26 @@ ad_proc -private ::xowiki::datasource { revision_id } {
                   storage_type text mime text/html]
   }
 
-  $page absolute_links 1
-  $page set __no_form_page_footer 1
   #ns_log notice "--sc setting absolute links for page = $page [$page set name]"
 
-  set html [$page render]
+  array set "" [$page search_render]
 
-  $page unset __no_form_page_footer
-
-  set text [ad_html_text_convert -from text/html -to text/plain -- $html]
-  #set text [ad_text_to_html $html]; #this could be used for entity encoded html text in rss entries
+  if {![info exists (title)]} {
+    set (title) [$page title]
+  }
+  set text [ad_html_text_convert -from text/html -to text/plain -- $(html)]
+  #set text [ad_text_to_html $(html)]; #this could be used for entity encoded html text in rss entries
   
   set found [string first {[1]} $text]
-  #$page log "--sc search=$found,html=$html,text=$text"
+  #$page log "--sc search=$found,html=$(html),text=$text"
   if {$found > -1} {
-    append description {<![CDATA[} \n $html { ]]>}
+    append description {<![CDATA[} \n $(html) { ]]>}
   } else {
     set description [string map [list "&" "&amp;" < "&lt;" > "&gt;"] $text]
   }
-  #::xowiki::notification::do_notifications -page $page -html $html -text $text
+  #::xowiki::notification::do_notifications -page $page -html $(html) -text $text
 
-  #ns_log notice "--sc INDEXING $revision_id -> $text"
+  ns_log notice "--sc INDEXING $revision_id -> $text keywords $(keywords)"
   #$page set unresolved_references 0
   $page instvar item_id
   # cleanup old stuff. This might run into an error, when search is not
@@ -61,28 +60,12 @@ ad_proc -private ::xowiki::datasource { revision_id } {
        where item_id = :item_id and revision_id != :revision_id)
     }
   }
-  foreach tag {h1 h2 h3 h4 h5 b strong} {
-    foreach {match words} [regexp -all -inline "<$tag>(\[^<\]+)</$tag>" $html] {
-      foreach w [split $words] {
-        if {$w eq ""} continue
-        set word($w) 1
-      }
-    }
-  }
-  set package_id [$page package_id]
-  foreach tag [::xowiki::Page get_tags -package_id $package_id -item_id $item_id] {
-    set word($tag) 1
-  }
-  #ns_log notice "--sc keywords $revision_id -> [array names word]"
 
   set pubDate [::xo::db::tcl_date [$page set publish_date] tz]
-  set link [::xowiki::Includelet detail_link \
-                    -package_id $package_id -name [$page set name] \
-                    -absolute true \
-                    -instance_attributes [$page get_instance_attributes]]
+  set link [$page detail_link]
 
-  return [list object_id $revision_id title [$page title] \
-              content $html keywords [array names word] \
+  return [list object_id $revision_id title $(title) \
+              content $(html) keywords $(keywords) \
               storage_type text mime text/html \
               syndication [list link [string map [list & "&amp;"] $link] \
                                description $description \
@@ -160,4 +143,6 @@ namespace eval ::xowiki::sc {
     acs_sc::impl::delete -contract_name FtsContentProvider -impl_name ::xowiki::File
   }
 }
+
+::xo::library source_dependent 
 

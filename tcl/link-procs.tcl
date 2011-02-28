@@ -11,16 +11,23 @@ namespace eval ::xowiki {
   # generic links
   #
   Class create BaseLink -parameter {
-    cssclass href label title target extra_query_parameter {anchor ""} {query ""}
+    cssclass cssid href label title target extra_query_parameter 
+    {anchor ""} {query ""}
   }
 
-  BaseLink instproc mk_css_class {-additional {-default ""}} {
+  BaseLink instproc mk_css_class {{-additional ""} {-default ""}} {
     set cls [expr {[my exists cssclass] ? [my cssclass] : $default}]
-    if {[info exists additional]} {
+    if {$additional ne ""} {
       if {$cls eq ""} {set cls $additional} else {append cls " " $additional}
     }
     if {$cls ne ""} {set cls "class='$cls'"}
     return $cls 
+  }
+
+  BaseLink instproc mk_css_class_and_id {{-additional ""} {-default ""}} {
+    if {[my exists cssid]} {set id "id='[my cssid]'"} else {set id ""}
+    set cls [my mk_css_class -additional $additional -default $default]
+    return [string trim "$cls $id"]
   }
 
   #
@@ -32,7 +39,8 @@ namespace eval ::xowiki {
     set title_att ""
     if {[info exists title]}  {append  title_att " title='[string map [list ' {&#39;}] $title]'"}
     if {[info exists target]} {append title_att " target='$target'"}
-    return "<a $title_att [my mk_css_class -additional external] href='$href'>$label<span class='external'>&nbsp;</span></a>"
+    set css_atts [my mk_css_class_and_id -additional external]
+    return "<a $title_att $css_atts href='$href'>$label<span class='external'>&nbsp;</span></a>"
   }
 
   #
@@ -40,13 +48,7 @@ namespace eval ::xowiki {
   #
   Class create Link -superclass BaseLink -parameter {
     {type link} name lang stripped_name page 
-    parent_id package_id 
-  }
-  Link instproc folder_id args {
-    # This method is deprecated
-    # just for backward compatibility
-    my log "--deprecated [self proc] [self args], called from [self callingobject] [self callingproc]"
-    eval my parent_id $args
+    parent_id package_id item_id {form ""}
   }
   Link instproc atts {} {
     set atts ""
@@ -57,7 +59,9 @@ namespace eval ::xowiki {
     my instvar page name
     set class [self class]::[my type]
     if {[my isclass $class]} {my class $class}
-    if {![my exists stripped_name]} {
+    if {![my exists name]} {
+      set name [string trimleft [my lang]:[my stripped_name] :]
+    } elseif {![my exists stripped_name]} {
       # set stripped name and lang from provided name or to the default
       my instvar stripped_name lang
       if {![regexp {^(..):(.*)$} $name _ lang stripped_name]} {
@@ -67,56 +71,68 @@ namespace eval ::xowiki {
     if {![my exists label]}      {my label $name}
     if {![my exists parent_id]}  {my parent_id [$page parent_id]}
     if {![my exists package_id]} {my package_id [$page package_id]}
-
-    #my msg "--L link has class [my info class] // $class"
+    #my msg "--L link has class [my info class] // $class // [my type] // [my parent_id]"
+  }
+  Link instproc link_name {-lang -stripped_name} {
+    return $lang:$stripped_name
   }
   Link instproc resolve {} {
-    #my msg "--lookup of [my name] -page [my page] -> [[my package_id] lookup -name [my name] -parent_id [my parent_id]]"
-    return [[my package_id] lookup -name [my name] -parent_id [my parent_id]]
+    return [my item_id]
   }
   Link instproc render_found {href label} {
-    return "<a [my atts] [my mk_css_class] href='$href'>$label</a>"
+    return "<a [my atts] [my mk_css_class_and_id] href='$href'>$label</a>"
   }
   Link instproc render_not_found {href label} {
     if {$href eq ""} {
       return \[$label\]
     } else {
-      return "<a [my mk_css_class] href='$href'> \[ </a>$label\
-	<a [my mk_css_class] href='$href'> \] </a>"
+      return "<a [my mk_css_class_and_id -additional missing] href='$href'> $label</a>"
     }
   }
+  Link instproc pretty_link {item_id} {
+    my instvar package_id
+    return [::$package_id pretty_link -parent_id [my parent_id] -lang [my lang] \
+                -anchor [my anchor] -query [my query] [my name]]
+  }
+  Link instproc new_link {} {
+    my instvar package_id form
+    set page [my page]
+    set nls_language [$page get_nls_language_from_lang [my lang]]
+    if {$form ne ""} {
+      return [$package_id make_form_link -form $form \
+                  -parent_id [my parent_id] \
+                  -name [my name] \
+                  -nls_language $nls_language]
+    }
+    if {[$page exists __unresolved_object_type]} {
+      # get the desired object_type for unresoved entries
+      set object_type [$page set __unresolved_object_type]
+    } else {
+      set object_type [[$page info class] set object_type]
+      if {$object_type ne "::xowiki::Page" && $object_type ne "::xowiki::PlainPage"} {
+        # TODO: this is a temporary solution. we should find a way to
+        # pass similar to file or image entries the type of this
+        # entry. Maybe we can get the type as well from a kind of
+        # blackboard, where the type of the "edit" wiki-menu-entry is
+        # stored as well.
+        set object_type ::xowiki::Page
+      }
+    }
+    return [$page new_link -name [my name] -title [my label] -parent_id [my parent_id] \
+                -nls_language $nls_language $package_id]
+  }
+
   Link instproc render {} {
     my instvar package_id
     set page [my page]
     set item_id [my resolve]
-    #my msg "--u resolve [my name] returns $item_id, page=[$page name]"
     if {$item_id} {
       $page lappend references [list $item_id [my type]]
       ::xowiki::Package require $package_id
-      set href [::$package_id pretty_link -lang [my lang] \
-		    -anchor [my anchor] -query [my query] [my name]]
-      my render_found $href [my label]
+      my render_found [my pretty_link $item_id] [my label]
     } else {
       $page incr unresolved_references
-      if {[$page exists __unresolved_object_type]} {
-	# get the desired object_type for unresoved entries
-	set object_type [$page set __unresolved_object_type]
-      } else {
-	set object_type [[$page info class] set object_type]
-	if {$object_type ne "::xowiki::Page" && $object_type ne "::xowiki::PlainPage"} {
-	  # TODO: this is a temporary solution. we should find a way to
-	  # pass similar to file or image entries the type of this
-	  # entry. Maybe we can get the type as well from a kind of
-	  # blackboard, where the type of the "edit" wiki-menu-entry is
-	  # stored as well.
-	  set object_type ::xowiki::Page
-	}
-      }
-      set new_link [$page new_link -name [my name] -title [my label] \
-			-nls_language [$page nls_language] $package_id]
-      #set href [export_vars -base [$package_id package_url] \
-      #              {{edit-new 1} object_type name title}]
-
+      set new_link [my new_link]
       set html [my render_not_found $new_link [my label]]
       $page lappend __unresolved_references $html
       return $html
@@ -139,11 +155,33 @@ namespace eval ::xowiki {
     return 0
   }
 
+  #
+  # folder links
+  #
+  Class create ::xowiki::Link::folder -superclass ::xowiki::Link
+  ::xowiki::Link::folder instproc link_name {-lang -stripped_name} {
+    return $stripped_name
+  }
+  ::xowiki::Link::folder instproc pretty_link {item_id} {
+    my instvar package_id
+    return [::$package_id pretty_link \
+                -anchor [my anchor] -parent_id [my parent_id] -query [my query] [my name] ]
+  }
+  ::xowiki::Link::folder instproc new_link {} {
+    my instvar package_id
+    return [$package_id make_link -with_entities 0 \
+                $package_id \
+                edit-new \
+                [list object_type ::xo::db::CrFolder] \
+                [list name [my name]] \
+                [list parent_id [my parent_id]] \
+                [list return_url [::xo::cc url]] \
+                autoname]
+  }
 
   #
   # language links
   #
-
   Class create ::xowiki::Link::language -superclass ::xowiki::Link -parameter {
     return_only
   }
@@ -153,7 +191,7 @@ namespace eval ::xowiki {
     set item_id [my resolve]
     if {$item_id} {
       set image_css_class "found"
-      set link [$package_id pretty_link -lang $lang [my stripped_name]]
+      set link [$package_id pretty_link -lang $lang -parent_id [my parent_id] [my stripped_name]]
     } else {
       set image_css_class "undefined"
       set last_page_id [$page set item_id]
@@ -167,7 +205,7 @@ namespace eval ::xowiki {
     }
     if {$link ne ""} {
       $page lappend lang_links($image_css_class) \
-          "<a href='$link' [my mk_css_class]><img class='$image_css_class' \
+          "<a href='$link' [my mk_css_class_and_id]><img class='$image_css_class' \
                 src='/resources/xowiki/flags/$lang.png' alt='$lang'></a>"
     }
     return ""
@@ -191,10 +229,9 @@ namespace eval ::xowiki {
     set item_id [my resolve]
     #my log "-- image resolve for $page returned $item_id (name=$name, label=$label) "
     if {$item_id} {
-      set link [[my package_id] pretty_link -download true \
+      set link [$package_id pretty_link -download true -query [my query] \
                     -absolute [$page absolute_links] -parent_id [my parent_id] $name]
       #my log "--l fully quali [$page absolute_links], base=$base"
-      #set link [export_vars -base $base {{m download}} ]
       $page lappend references [list $item_id [my type]]
       my render_found $link $label
     } else {
@@ -223,8 +260,9 @@ namespace eval ::xowiki {
       }
     }
     if {$style ne ""} {set style "style='$style'"}
+    if {[my exists geometry]} {append link "?geometry=[my set geometry]"}
     set label [string map [list ' "&#39;"] $label]
-    set cls [my mk_css_class -default image]
+    set cls [my mk_css_class_and_id -default image]
     if {[my exists href]} {
       set href [my set href]
       if {[string match "java*" $href]} {set href .}
@@ -249,20 +287,13 @@ namespace eval ::xowiki {
   #
 
   Class create ::xowiki::Link::file -superclass ::xowiki::Link::image -parameter {
-    width height align pluginspage pluginurl hidden href target
+    width height align pluginspage pluginurl hidden href
     autostart loop volume controls controller mastersound starttime endtime
   }
-  ::xowiki::Link::file instproc resolve {} {
-    set item_id [next]
-    # my log "-- file, lookup of [my name] returned $item_id"
-    if {$item_id == 0 && [regsub {^file:} [my name] image: name]} {
-      set item_id [[my package_id] lookup -name $name -parent_id [my parent_id]]
-    }
-    return $item_id
-  }
+
   ::xowiki::Link::file instproc render_found {internal_href label} {
     foreach f {
-      width height align pluginspage pluginurl hidden href target
+      width height align pluginspage pluginurl hidden href
       autostart loop volume controls controller mastersound starttime endtime
     } {
       if {[my exists $f]} {
@@ -273,7 +304,7 @@ namespace eval ::xowiki {
       set internal_href [export_vars -base $internal_href [my extra_query_parameter]]
     }
     if {![info exists embed_options]} {
-      return "<a href='$internal_href' [my mk_css_class -additional file]>$label<span class='file'>&nbsp;</span></a>"
+      return "<a href='$internal_href' [my mk_css_class_and_id -additional file]>$label<span class='file'>&nbsp;</span></a>"
     } else {
       set internal_href [string map [list %2e .] $internal_href]
       return "<embed src='$internal_href' name=\"[my name]\" $embed_options></embed>"
@@ -308,15 +339,7 @@ namespace eval ::xowiki {
     width height bgcolor version
     quality wmode align salign play loop menu scale
   }
-  ::xowiki::Link::swf instproc resolve {} {
-    set item_id [next]
-    my log "--file, lookup of [my name] returned $item_id"
-    if {$item_id == 0 && [regsub {^swf:} [my name] file: name]} {
-      set item_id [[my package_id] lookup -name $name -parent_id [my parent_id]]
-      my log "--file, 2nd lookup of $name returned $item_id"
-    }
-    return $item_id
-  }
+
   ::xowiki::Link::swf instproc render_found {href label} {
     ::xo::Page requireJS /resources/xowiki/swfobject.js
     my instvar package_id name
@@ -457,29 +480,31 @@ namespace eval ::xowiki {
     ::xo::Page requireJS  "/resources/xowiki/popup-handler.js"
     ::xo::Page requireJS  "/resources/xowiki/overlib/overlib.js"
     return "<a href='$href' onclick=\"showInfo('$href?master=0','$label'); return false;\"\
-        [my mk_css_class -additional glossary]>$label</a>"
+        [my mk_css_class_and_id -additional glossary]>$label</a>"
   }
 
   #
   # link cache
   #
 
-  Class LinkCache
-  LinkCache instproc resolve {} {
-    set key link-[my type]-[my name]-[my parent_id]
-    while {1} {
-      array set r [ns_cache eval xowiki_cache $key {
-        set id [next]
-        if {$id == 0 || $id eq ""} break ;# don't cache
-        return [list item_id $id package_id [my package_id]]
-      }]
-      break
-    }
-    if {![info exists r(item_id)]} {return 0}
-    # we have a valid item. Set the the package_id and return the item_id
-    my package_id $r(package_id)
-    return $r(item_id)
-  }
+#   Class LinkCache
+#   LinkCache instproc resolve {} {
+#     set key link-[my type]-[my name]-[my parent_id]
+#     while {1} {
+#       array set r [ns_cache eval xowiki_cache $key {
+#         set id [next]
+#         if {$id == 0 || $id eq ""} break ;# don't cache
+#         return [list item_id $id package_id [my package_id]]
+#       }]
+#       break
+#     }
+#     if {![info exists r(item_id)]} {return 0}
+#     # we have a valid item. Set the the package_id and return the item_id
+#     my package_id $r(package_id)
+#     return $r(item_id)
+#   }
 
-  Link instmixin add LinkCache
+#   Link instmixin add LinkCache
 }
+::xo::library source_dependent 
+

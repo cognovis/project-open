@@ -48,6 +48,16 @@ namespace eval ::xowiki::formfield {
     {help_text ""}
     {error_msg ""}
     {validator ""}
+    {validate_via_ajax}
+
+    {autocomplete}
+    {autofocus}
+    {formnovalidate}
+    {multiple}
+    {pattern}
+    {placeholder}
+    {readonly}
+
     locale
     default
     object
@@ -69,6 +79,20 @@ namespace eval ::xowiki::formfield {
   #  return [string map [list __COLON__ :] $string]
   #}
 
+  FormField proc get_from_name {name} {
+    #
+    # Get a form field via name. The provided names are unique for a
+    # form. If multiple forms should be rendered simultaneously, we
+    # have to extend the addressing mechanism.
+    #
+    # todo: we could speed this up by an index if needed
+    foreach f [::xowiki::formfield::FormField info instances -closure] {
+      if {[$f name] eq $name} {
+	return $f
+      }
+    }
+    return ""
+  }
 
   FormField instproc init {} {
     if {![my exists label]} {my label [string totitle [my name]]}
@@ -80,8 +104,11 @@ namespace eval ::xowiki::formfield {
 
   FormField instproc validate {obj} {
     my instvar name required
+
     # use the 'value' method to deal e.g. with compound fields
     set value [my value]
+    #my msg "[my info class] value=$value req=$required // [my set value]"
+
     if {$required && $value eq "" && ![my istype ::xowiki::formfield::hidden]} {
       my instvar label
       return [_ acs-templating.Element_is_required]
@@ -277,9 +304,6 @@ namespace eval ::xowiki::formfield {
             my set __state reset
             my initialize
           }
-          #my msg "[my name] [self] [my info class] before searchDefaults, validator='[my validator]'"
-          #::xotcl::Class::Parameter searchDefaults [self]; # TODO: will be different in xotcl 1.6.*
-          #my msg "[my name] [self] [my info class] after searchDefaults, validator='[my validator]'"
         } else {
           if {$s ne ""} {
             error [_ xowiki.error-form_constraint-unknown_spec_entry \
@@ -304,8 +328,8 @@ namespace eval ::xowiki::formfield {
       } else {
         my class ::xowiki::formfield::text
       }
-      # TODO: reset_parameter? needed?
-      ::xotcl::Class::Parameter searchDefaults [self]; # TODO: will be different in xotcl 1.6.*
+      # set missing instance vars with defaults
+      my set_instance_vars_defaults
     }
     regsub -all {,\s+} $spec , spec
     foreach s [split $spec ,] {
@@ -379,7 +403,11 @@ namespace eval ::xowiki::formfield {
   
   FormField instproc render_form_widget {} {
     # This method provides the form-widget wrapper
-    ::html::div -class [my form_widget_CSSclass] { my render_input }
+    set CSSclass [my form_widget_CSSclass]
+    if {[my error_msg] ne ""} {append CSSclass " form-widget-error"}
+    set atts [list class $CSSclass]
+    if {[my inline]} {lappend atts style "display: inline;"}
+    ::html::div $atts { my render_input }
   }
 
   FormField instproc render_input {} {
@@ -388,7 +416,20 @@ namespace eval ::xowiki::formfield {
     # If no special renderer is defined, we fall back to this one, 
     # which is in most cases  a simple input fied of type string.
     #
-    ::html::input [my get_attributes type size maxlength id name value disabled {CSSclass class}] {}
+    if {[my exists validate_via_ajax] && [my validator] ne ""} {
+      set ajaxhelper 1
+      ::xowiki::Includelet require_YUI_JS -ajaxhelper 0 "yahoo/yahoo-min.js"
+      ::xowiki::Includelet require_YUI_JS -ajaxhelper 0 "dom/dom-min.js"
+      ::xowiki::Includelet require_YUI_JS -ajaxhelper 0 "event/event-min.js"
+      ::xowiki::Includelet require_YUI_JS -ajaxhelper 0 "connection/connection-min.js"
+      ::xo::Page requireJS  "/resources/xowiki/yui-form-field-validate.js"
+      set package_url [[[my object] package_id] package_url]
+      ::xo::Page requireJS  "YAHOO.xo_form_field_validate.add('[my id]','$package_url');"
+    }
+
+    ::html::input [my get_attributes type size maxlength id name value disabled {CSSclass class} \
+		       autocomplete autofocus formnovalidate multiple pattern placeholder readonly required] {}
+
     #
     # Disabled fieds are not returned by the browsers. For some
     # fields, we require to be sent. therefore we include in these
@@ -404,7 +445,12 @@ namespace eval ::xowiki::formfield {
 
   FormField instproc render_item {} {
     ::html::div -class [my form_item_wrapper_CSSclass] {
-      ::html::div -class form-label {
+      if {[my error_msg] ne ""} {
+	set CSSclass form-label-error
+      } else {
+	set CSSclass form-label
+      }
+      ::html::div -class $CSSclass {
         ::html::label -for [my id] {
           ::html::t [my label]
         }
@@ -422,7 +468,7 @@ namespace eval ::xowiki::formfield {
   }
   
   FormField instproc render_error_msg {} {
-    if {[my error_msg] ne ""} {
+    if {[my error_msg] ne "" && ![my exists error_reported]} {
       ::html::div -class form-error {
         my instvar label
         ::html::t [::xo::localize [my error_msg]]
@@ -463,7 +509,7 @@ namespace eval ::xowiki::formfield {
 
   FormField instproc pretty_value {v} {
     #my log "mapping $v"
-    return [string map [list & "&amp;" < "&lt;" > "&gt;" \" "&quot;" ' "&apos;" @ "&#64;"] $v]
+    return [string map [list & "&amp;" < "&lt;" > "&gt;" \" "&quot;" ' "&#39;" @ "&#64;"] $v]
   }
 
   FormField instproc has_instance_variable {var value} {
@@ -517,6 +563,13 @@ namespace eval ::xowiki::formfield {
   FormField instproc answer_check=match {} {
     return [string match [lindex [my correct_when] 1] [my value]]
   }
+  FormField instproc answer_check=answer_words {} {
+    set value [regsub -all { +} [my value] " "]
+    if {[string match "*lower*" [lindex [my correct_when] 1]]} {
+      set value [string tolower $value]
+    }
+    return [expr {$value eq [my answer]}]
+  }
 
   FormField instproc answer_is_correct {} {
     #my msg "[my name] ([my info class]): value=[my value], answer=[expr {[my exists answer]?[my set answer]:{NONE}}]"
@@ -546,18 +599,23 @@ namespace eval ::xowiki::formfield {
     }
   }
 
-  FormField instproc pretty_image {-parent_id entry_name} {
+  FormField instproc pretty_image {-parent_id:required entry_name} {
     if {$entry_name eq ""} return
     my instvar object
-    set l [::xowiki::Link new -destroy_on_cleanup \
-               -name $entry_name -page $object -type image -label [my label] \
-               -parent_id $parent_id]
+
+    array set "" [$object item_ref -default_lang [$object lang] -parent_id $parent_id $entry_name]
+    set l [::xowiki::Link create new -destroy_on_cleanup \
+	       -page $object -type "image" -lang $(prefix) \
+	       [list -stripped_name $(stripped_name)] [list -label [my label]] \
+	       -parent_id $(parent_id) -item_id $(item_id)]
+
     foreach option {
         href cssclass
         float width height 
         padding padding-right padding-left padding-top padding-bottom
         margin margin-left margin-right margin-top margin-bottom
         border border-width position top botton left right
+        geometry
     } {
       if {[my exists $option]} {$l set $option [my set $option]}
     }
@@ -584,7 +642,7 @@ namespace eval ::xowiki::formfield {
         break
       }
     }
-    my slots [list Attribute validator -default $value]
+    my slots [list Attribute create validator -default $value]
   }
 
   ###########################################################
@@ -625,10 +683,26 @@ namespace eval ::xowiki::formfield {
   file instproc entry_name {value} {
     return [list name file:[my name] parent_id [[my object] item_id]]
   }
+  file instproc value {args} {
+    if {$args eq ""} {
+      set old_value [[my object] form_parameter __old_value_[my name] ""]
+      #my log "value [my set value] -- $args // old_value = $old_value"
+      #
+      # Figure out, if we got a different file-name (value). If the
+      # file-name is the same as in the last revision, we return a
+      # "-".
+      #
+      if {$old_value ne "" && $old_value eq [my set value]} {
+        return "-"
+      }
+    }
+    next
+  }
   file instproc convert_to_internal {} {
     my instvar value
 
-    if {[my value] eq ""} {
+    set v [my value]
+    if {$v eq "-" || $v eq ""} {
       # nothing to do, keep the old value
       set value [[my object] form_parameter __old_value_[my name] ""]
       [my object] set_property [my name] $value
@@ -638,7 +712,7 @@ namespace eval ::xowiki::formfield {
     set value [::file tail $value]
     [my object] set_property [my name] $value
 
-    set folder_id [[my object] set parent_id]
+    set package_id [[my object] package_id]
     array set entry_info [my entry_name $value]
 
     set content_type [my set content-type]
@@ -646,10 +720,9 @@ namespace eval ::xowiki::formfield {
       set content_type [::xowiki::guesstype $value]
     }
     #my msg "mime_type of $entry_name = [::xowiki::guesstype $value] // [my set content-type] ==> $content_type"
-
-    if {[set id [::xo::db::CrClass lookup -name $entry_info(name) -parent_id $entry_info(parent_id)]]} {
+    set file_object [$package_id get_page_from_name -name $entry_info(name) -parent_id $entry_info(parent_id)]
+    if {$file_object ne ""} {
       # file entry exists already, create a new revision
-      set file_object [::xo::db::CrClass get_instance_from_db -item_id $id]
       $file_object set import_file [my set tmpfile]
       $file_object set mime_type $content_type
       $file_object set title $value
@@ -677,12 +750,13 @@ namespace eval ::xowiki::formfield {
 
   file instproc pretty_value {v} {
     if {$v ne ""} {
-      array set entry_info [my entry_name $v]
-      set l [::xowiki::Link new -volatile \
-                 -page [my object] \
-                 -extra_query_parameter [list [list filename $v]] \
-                 -label [my label_or_value $v] \
-                 -type file -name $entry_info(name) -parent_id $entry_info(parent_id)]
+      my instvar object
+      array set "" [my entry_name $v]
+      array set "" [$object item_ref -default_lang [[my object] lang] -parent_id $(parent_id) $(name)]
+      set l [::xowiki::Link create new -destroy_on_cleanup \
+		 -page $object -type "file" -lang $(prefix) \
+		 [list -stripped_name $(stripped_name)] [list -label [my label]] \
+		 -parent_id $(parent_id) -item_id $(item_id)]
       return [$l render]
     }
   }
@@ -703,6 +777,48 @@ namespace eval ::xowiki::formfield {
 
   ###########################################################
   #
+  # ::xowiki::formfield::import_archive
+  #
+  ###########################################################
+
+  Class import_archive -superclass file -parameter {
+    {cleanup false}
+  }
+  import_archive instproc initialize {} {
+    next
+    if {[my help_text] eq ""} {my help_text "#xowiki.formfield-import_archive-help_text#"}
+  }
+  import_archive instproc pretty_value {v} {
+    my instvar object
+    set package_id [$object package_id]
+    set parent_id  [$object parent_id]
+    array set "" [my entry_name $v]
+    #
+    # Get the file object of the imported file to obtain is full name and path
+    #
+    set file_id [$package_id lookup -parent_id [$object item_id] -name $(name)]
+    ::xo::db::CrClass get_instance_from_db -item_id $file_id
+    set full_file_name [$file_id full_file_name]
+    #
+    # Call the archiver to unpack and handle the archive
+    #
+    set f [::xowiki::ArchiveFile new -file $full_file_name -name $v -parent_id $parent_id]
+    if {[$f unpack]} {
+      #
+      # So, all the hard work is done. We take a hard measure here to
+      # cleanup the entry in case everything was imported
+      # successful. Note that setting "cleanup" without thought might
+      # lead to maybe unexpected deletions of the form-page
+      #
+      if {[my cleanup]} {
+	set return_url [$package_id query_parameter "return_url" [$parent_id pretty_link]]
+	$package_id returnredirect [export_vars -base [$object pretty_link] [list {m delete} return_url]]
+      }
+    }
+  }
+
+  ###########################################################
+  #
   # ::xowiki::formfield::image
   #
   ###########################################################
@@ -715,8 +831,8 @@ namespace eval ::xowiki::formfield {
     border border-width position top botton left right
   }
   image instproc pretty_value {v} {
-    array set entry_info [my entry_name $v]
-    return [my pretty_image -parent_id $entry_info(parent_id) $entry_info(name)]
+    array set "" [my entry_name $v]
+    return [my pretty_image -parent_id $(parent_id) $(name)]
   }
 
   ###########################################################
@@ -786,6 +902,142 @@ namespace eval ::xowiki::formfield {
     my set widget_type text
     foreach p [list size maxlength] {if {[my exists $p]} {my set html($p) [my $p]}}
   }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::color
+  #
+  ###########################################################
+
+  Class color -superclass text 
+  color instproc initialize {} {
+    next
+    my type color
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::datetime
+  #
+  ###########################################################
+
+  Class datetime -superclass text 
+  datetime instproc initialize {} {
+    next
+    my type datetime
+  }
+  # names for HTML5 types 
+  #    date, month 
+  # already in use, should redefine accordingly when avail
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::datetime-local
+  #
+  ###########################################################
+
+  Class datetime-local -superclass text 
+  datetime-local instproc initialize {} {
+    next
+    my type datetime-local
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::time
+  #
+  ###########################################################
+
+  Class time -superclass text 
+  time instproc initialize {} {
+    next
+    my type time
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::week
+  #
+  ###########################################################
+
+  Class week -superclass text 
+  week instproc initialize {} {
+    next
+    my type datetime
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::email
+  #
+  ###########################################################
+
+  Class email -superclass text 
+  email instproc initialize {} {
+    next
+    my type email
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::search
+  #
+  ###########################################################
+
+  Class search -superclass text 
+  search instproc initialize {} {
+    next
+    my type search
+  }
+  ###########################################################
+  #
+  # ::xowiki::formfield::tel
+  #
+  ###########################################################
+
+  Class tel -superclass text 
+  tel instproc initialize {} {
+    next
+    my type tel
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::number
+  #
+  ###########################################################
+
+  Class number -superclass FormField -parameter {
+    min max step value
+  }
+  number instproc initialize {} {
+    my type number
+    my set widget_type text
+  }
+  number instproc render_input {} {
+    ::html::input [my get_attributes type id name value disabled {CSSclass class} min max step value \
+		       autofocus formnovalidate multiple pattern placeholder readonly required] {}
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::range
+  #
+  ###########################################################
+
+  Class range -superclass FormField -parameter {
+    min max step value
+  }
+  range instproc initialize {} {
+    my type range
+    my set widget_type text
+  }
+  range instproc render_input {} {
+    ::html::input [my get_attributes type id name value disabled {CSSclass class} min max step value \
+		       autofocus formnovalidate multiple pattern placeholder readonly required] {}
+  }
+
+
   ###########################################################
   #
   # ::xowiki::formfield::password
@@ -811,13 +1063,14 @@ namespace eval ::xowiki::formfield {
     next
     my set widget_type numeric
     # check, if we we have an integer format
-    my set is_integer [regexp {%[0.9.]*d} [my format]]
+    my set is_integer [regexp {%[0-9.]*d} [my format]]
   }
   numeric instproc convert_to_external value {
     if {$value ne ""} {
       if { [catch "lc_numeric $value [my format] [my locale]" result] } {
         util_user_message -message "[my label]: $result (locale=[my locale])"
 	#my msg [list lc_numeric $value [my format] [my locale]]
+	set converted_value $value
         if {[catch {scan $value [my format] converted_value}]} {
 	  return $value
 	} else {
@@ -863,6 +1116,61 @@ namespace eval ::xowiki::formfield {
     return [::xo::get_user_name $v]
   }
 
+  ###########################################################
+  #
+  # ::xowiki::formfield::author
+  #
+  ###########################################################
+
+  Class author -superclass user_id -parameter {
+    {photo_size 54}
+    {with_photo true}
+    {with_user_link false}
+    {label #xowiki.formfield-author#}
+  }
+  author instproc pretty_value {v} {
+    if {$v ne ""} {
+      my instvar object
+      acs_user::get -user_id $v -array user
+      if {[my with_photo]} {
+	set portrait_id [acs_user::get_portrait_id -user_id $v]
+	if {$portrait_id == 0} {
+	  package require md5
+	  set md5 [string tolower [md5::Hex [md5::md5 -- $user(email)]]]
+	  set src http://www.gravatar.com/avatar/$md5?size=[my photo_size]&d=mm
+	} else {
+	  set src "/shared/portrait-bits.tcl?user_id=$v"
+	}
+	set photo "<img width='[my photo_size]' class='photo' src='$src'>"
+	set photo_class "photo"
+      } else {
+	set photo ""
+	set photo_class ""
+      }
+      set date_field [::xowiki::FormPage get_table_form_fields \
+			  -base_item $object \
+			  -field_names _last_modified \
+			  -form_constraints ""]
+      set date [$date_field pretty_value [$object property _last_modified]]
+
+      if {[my with_user_link]} {
+	set user_link_begin "<a href='/shared/community-member?user_id=$v'>"
+	set user_link_end "</a>"
+      } else {
+	set user_link_begin ""
+	set user_link_end ""
+      }
+
+      return [subst {
+	<div class="cite $photo_class">$photo
+	<p class="author">$user_link_begin$user(first_names) $user(last_name)$user_link_end</p>
+	<p class="date">$date</p>
+	</div>
+      }]
+    }
+    return ""
+  }
+
  ###########################################################
   #
   # ::xowiki::formfield::party_id
@@ -873,7 +1181,7 @@ namespace eval ::xowiki::formfield {
       -extend_slot validator party_id_check
   party_id instproc check=party_id_check {value} {
     if {$value eq ""} {return 1}
-    return [db_0or1row dbq..check_party "select 1 from parties where party_id = :value"]
+    return [db_0or1row [my qn check_party] "select 1 from parties where party_id = :value"]
   }
 
   ###########################################################
@@ -884,6 +1192,10 @@ namespace eval ::xowiki::formfield {
 
   Class url -superclass text -parameter {
     {link_label}
+  }
+  url instproc initialize {} {
+    next
+    my type url
   }
   url instproc pretty_value {v} {
     if {$v ne ""} {
@@ -1066,6 +1378,46 @@ namespace eval ::xowiki::formfield {
 
   ###########################################################
   #
+  # ::xowiki::formfield::richtext::ckeditor
+  #
+  ###########################################################
+  Class richtext::ckeditor -superclass richtext -parameter {
+    {editor ckeditor}
+    {mode wysiwyg}
+    {CSSclass ckeditor}
+  }
+  richtext::ckeditor set editor_mixin 1
+  richtext::ckeditor instproc initialize {} {
+    next
+    my set widget_type richtext
+  }
+  richtext::ckeditor instproc render_input {} {
+    set disabled [expr {[my exists disabled] && [my disabled] ne "false"}]
+    if {![my istype ::xowiki::formfield::richtext] || $disabled } {
+      my render_richtext_as_div
+    } else {
+      ::xo::Page requireJS "/resources/xowiki/ckeditor/ckeditor.js"
+      #::xo::Page requireJS "/resources/xowiki/ckeditor/adapters/jquery.js"
+
+      set name [my name]
+      set mode [my mode]
+
+#      ::xo::Page requireJS {
+#	$( 'textarea.ckeditor' ).ckeditor();
+#      }
+      ::xo::Page requireJS [subst -nocommands -nobackslash {
+        YAHOO.util.Event.onDOMReady(function () {
+	  CKEDITOR.replace( '$name' );
+	  CKEDITOR.instances.$name.setMode( '$mode' );
+	});
+      }]
+
+      next
+    }
+  }
+
+  ###########################################################
+  #
   # ::xowiki::formfield::richtext::wym
   #
   ###########################################################
@@ -1075,7 +1427,7 @@ namespace eval ::xowiki::formfield {
     width
     height
     {skin silver}
-    {plugins "hovertools resizable"}
+    {plugins "hovertools resizable fullscreen"}
   }
   richtext::wym set editor_mixin 1
   richtext::wym instproc initialize {} {
@@ -1091,13 +1443,19 @@ namespace eval ::xowiki::formfield {
       ::xo::Page requireJS  "/resources/xowiki/jquery/jquery.js"
       ::xo::Page requireJS  "/resources/xowiki/wymeditor/jquery.wymeditor.pack.js"
       set postinit ""
-      if {[lsearch -exact [my plugins] hovertools] > -1} {
-	::xo::Page requireJS  "/resources/xowiki/wymeditor/plugins/hovertools/jquery.wymeditor.hovertools.js"
-	append postinit "wym.hovertools();\n"
-      }
-      if {[lsearch -exact [my plugins] resizable] > -1} {
-	::xo::Page requireJS  "/resources/xowiki/wymeditor/plugins/resizable/jquery.wymeditor.resizable.js"
-	append postinit "wym.resizable();\n"
+      foreach plugin {hovertools resizable fullscreen embed} {
+	if {[lsearch -exact [my plugins] $plugin] > -1} {
+	  switch -- $plugin {
+	    embed {}
+	    resizable {
+	      ::xo::Page requireJS  "/resources/xowiki/jquery/jquery.ui.js"
+	      ::xo::Page requireJS  "/resources/xowiki/jquery/jquery.ui.resizable.js"
+	      append postinit "wym.${plugin}();\n"
+	    }
+	    default {append postinit "wym.${plugin}();\n"}
+	  }
+	  ::xo::Page requireJS  "/resources/xowiki/wymeditor/plugins/$plugin/jquery.wymeditor.$plugin.js"
+	}
       }
       regsub -all {[.:]} [my id] {\\\\&} JID
       
@@ -1131,6 +1489,7 @@ namespace eval ::xowiki::formfield {
       next
     }
   }
+
   ###########################################################
   #
   # ::xowiki::formfield::richtext::xinha
@@ -1247,6 +1606,16 @@ namespace eval ::xowiki::formfield {
     }
   }
   enumeration abstract instproc render_input {}
+
+  enumeration instproc get_labels {values} {
+    if {[my multiple]} {
+      set labels [list]
+      foreach v $values {lappend labels [list [my get_entry_label $v] $v]}
+      return $labels
+    } else {
+      return [list [list [my get_entry_label $values] $values]]
+    }
+  }
 
   enumeration instproc pretty_value {v} {
     if {[my exists category_label($v)]} {
@@ -1397,6 +1766,7 @@ namespace eval ::xowiki::formfield {
     next
     if {![my exists options]} {my options [list]}
   }
+
   select instproc render_input {} {
     set atts [my get_attributes id name disabled {CSSclass class}]
     if {[my multiple]} {lappend atts multiple [my multiple]}
@@ -1420,11 +1790,85 @@ namespace eval ::xowiki::formfield {
 
   ###########################################################
   #
+  # ::xowiki::formfield::candidate_box_select
+  #
+  ###########################################################
+  Class create candidate_box_select -superclass select -parameter {
+    {as_box false}
+    {dnd true}
+  }
+  candidate_box_select set abstract 1
+
+  candidate_box_select instproc render_input {} {
+    #my msg "mul=[my multiple]"
+    # makes only sense currently for multiple selects
+    if {[my multiple] && [my dnd]} {
+      if {([my exists disabled] && [my disabled])} {
+        html::t -disableOutputEscaping [my pretty_value [my value]]
+      } else {
+
+        # utilities.js aggregates "yahoo, dom, event, connection, animation, dragdrop"
+        set ajaxhelper 0
+        ::xowiki::Includelet require_YUI_JS -ajaxhelper $ajaxhelper "utilities/utilities.js"
+        ::xowiki::Includelet require_YUI_JS -ajaxhelper $ajaxhelper "selector/selector-min.js"
+        ::xo::Page requireJS  "/resources/xowiki/yui-selection-area.js"
+        
+        set js ""
+        foreach o [my options] {
+          foreach {label rep} $o break
+          set js_label [::xowiki::Includelet js_encode $label]
+          set js_rep   [::xowiki::Includelet js_encode $rep]
+          append js "YAHOO.xo_sel_area.DDApp.values\['$js_label'\] = '$js_rep';\n"
+          append js "YAHOO.xo_sel_area.DDApp.dict\['$js_rep'\] = '$js_label';\n"
+        }
+        
+        ::html::div -class workarea {
+          ::html::h3 { ::html::t "Selection"}
+          set values ""
+          foreach v [my value] {
+            append values $v \n
+            set __values($v) 1
+          }
+          my CSSclass selection
+          my set cols 30
+          set atts [my get_attributes id name disabled {CSSclass class}]
+          
+          # TODO what todo with DISABLED?
+          ::html::textarea [my get_attributes id name cols rows style {CSSclass class} disabled] {
+            ::html::t $values
+          }
+        }
+        ::html::div -class workarea {
+          ::html::h3 { ::html::t "Candidates"}
+          ::html::ul -id [my id]_candidates -class region {
+            #my msg [my options]
+            foreach o [my options] {
+              foreach {label rep} $o break
+              # Don't show current values under candidates
+              if {[info exists __values($rep)]} continue
+              ::html::li -class candidates {::html::t $rep}
+            }
+          }
+        }
+        ::html::div -class visual-clear {
+          ;# maybe some comment
+        }
+        ::html::script { html::t $js }
+      }
+    } else {
+      next
+    }
+  }
+
+  ###########################################################
+  #
   # ::xowiki::formfield::abstract_page
   #
   ###########################################################
-  Class abstract_page -superclass select -parameter {
+
+  Class abstract_page -superclass candidate_box_select -parameter {
     {as_box false}
+    {multiple_style comma}
   }
   abstract_page set abstract 1
 
@@ -1440,30 +1884,22 @@ namespace eval ::xowiki::formfield {
     return [set $entry_label]
   }
   abstract_page instproc get_entry_label {value} {
-    set item_id [[my set package_id] lookup -name $value]
+    set item_id [[my set package_id] lookup -parent_id [[my object] parent_id] -name $value]
     if {$item_id} {
       return [::xo::cc cache [list my fetch_entry_label [my entry_label] $item_id]]
     }
     return ""
   }
-  abstract_page instproc get_labels {values} {
-    if {[my multiple]} {
-      set labels [list]
-      foreach v $values {lappend labels [list [my get_entry_label $v] $v]}
-      return $labels
-    } else {
-      return [list [list [my get_entry_label $values] $values]]
-    }
-  }
   
   abstract_page instproc pretty_value {v} {
     my instvar package_id
+    set object [my object]
+    set parent_id [$object parent_id]
     my set options [my get_labels $v]
-
     if {[my multiple]} {
       foreach o [my set options] {
         foreach {label value} $o break
-        set href [$package_id pretty_link $value]
+        set href [$package_id pretty_link -parent_id $parent_id $value]
         set labels($value) "<a href='$href'>$label</a>"
       }
       set hrefs [list]
@@ -1472,19 +1908,23 @@ namespace eval ::xowiki::formfield {
           #my msg "can't determine label for value '$i' (values=$v, l=[array names labels])"
           set labels($i) $i
         }
-        set href [$package_id pretty_link $i]
+        set href [$package_id pretty_link -parent_id $parent_id $i]
         lappend hrefs "<a href='$href'>$labels($i)</a>"
       }
-      return [join $hrefs {, }]
+      if {[my multiple_style] eq "list"} {
+        return "<ul><li>[join $hrefs {</li><li>}]</li></ul>\n"
+      } else {
+        return [join $hrefs {, }]
+      }
     } else {
       foreach o [my set options] {
         foreach {label value} $o break
         #my log "comparing '$value' with '$v'"
         if {$value eq $v} {
           if {[my as_box]} {
-            return [[my object] include [list $value -decoration rightbox]] 
+            return [$object include [list $value -decoration rightbox]] 
           }
-          set href [$package_id pretty_link $value]
+          set href [$package_id pretty_link -parent_id $parent_id $value]
           return "<a href='$href'>$label</a>"
         }
       }
@@ -1493,56 +1933,7 @@ namespace eval ::xowiki::formfield {
 
   abstract_page instproc render_input {} {
     my compute_options
-    if {[my multiple]} {
-      # utilities.js aggregates "yahoo, dom, event, connection, animation, dragdrop"
-      set ajaxhelper 0
-      ::xowiki::Includelet require_YUI_JS -ajaxhelper $ajaxhelper "utilities/utilities.js"
-      ::xowiki::Includelet require_YUI_JS -ajaxhelper $ajaxhelper "selector/selector-min.js"
-      ::xo::Page requireJS  "/resources/xowiki/yui-selection-area.js"
-
-      set js ""
-      foreach o [my options] {
-        foreach {label rep} $o break
-        set js_label [::xowiki::Includelet js_encode $label]
-        set js_rep   [::xowiki::Includelet js_encode $rep]
-        append js "YAHOO.xo_sel_area.DDApp.values\['$js_label'\] = '$js_rep';\n"
-        append js "YAHOO.xo_sel_area.DDApp.dict\['$js_rep'\] = '$js_label';\n"
-      }
-      
-      ::html::div -class workarea {
-        ::html::h3 { ::html::t "Selection"}
-        set values ""
-        foreach v [my value] {
-          append values $v \n
-          set __values($v) 1
-        }
-        my CSSclass selection
-        my set cols 30
-        set atts [my get_attributes id name disabled {CSSclass class}]
-        # TODO what todo with DISABLED?
-        ::html::textarea [my get_attributes id name cols rows style {CSSclass class} disabled] {
-          ::html::t $values
-        }
-      }
-      ::html::div -class workarea {
-        ::html::h3 { ::html::t "Candidates"}
-        ::html::ul -id [my id]_candidates -class region {
-          #my msg [my options]
-          foreach o [my options] {
-            foreach {label rep} $o break
-            # Don't show current values under candidates
-            if {[info exists __values($rep)]} continue
-            ::html::li -class candidates {::html::t $rep}
-          }
-        }
-      }
-      ::html::div -class visual-clear {
-        ;# maybe some comment
-      }
-      ::html::script { html::t $js }
-    } else {
-      next
-    }
+    next
   }
 
   ###########################################################
@@ -1555,14 +1946,16 @@ namespace eval ::xowiki::formfield {
     {where}
     {entry_label title}
   }
+
   form_page instproc initialize {} {
-    my instvar form_object_item_ids package_id
+    my instvar form_object_item_ids package_id object
     if {![my exists form]} { return }
     next
     set form_name [my form]
-    set package_id [[my object] package_id]
+    set package_id [$object package_id]
     set form_objs [::xowiki::Weblog instantiate_forms \
-                       -default_lang [[my object] lang] \
+                       -parent_id [$object parent_id] \
+                       -default_lang [$object lang] \
                        -forms $form_name -package_id $package_id]
 
     #set form_obj [[my object] resolve_included_page_name $form_name]
@@ -1594,7 +1987,7 @@ namespace eval ::xowiki::formfield {
       #
       # If the form_page has a different package_id, prepend the
       # package_url to the name. TODO: We assume here, that the form_pages
-      # have not special parent_id.
+      # have no special parent_id.
       #
       set object_package_id [$i package_id]
       if {$package_id != $object_package_id} {
@@ -1640,7 +2033,7 @@ namespace eval ::xowiki::formfield {
 
     set package_id [[my object] package_id]
     set options [list]
-    db_foreach instance_select \
+    db_foreach [my qn instance_select] \
         [$type instance_select_query \
              -folder_id [$package_id folder_id] \
              -with_subtypes $with_subtypes \
@@ -1649,7 +2042,7 @@ namespace eval ::xowiki::formfield {
              -where_clause "p.page_id = bt.revision_id $extra_where_clause" \
              -orderby ci.name \
             ] {
-              lappend options [list [set $entry_label] $name]
+              lappend options [list [set [my entry_label]] $name]
             }
     my options $options
   }
@@ -1667,7 +2060,7 @@ namespace eval ::xowiki::formfield {
   #
   ###########################################################
 
-  Class DD -superclass FormField -superclass select
+  Class DD -superclass select
   DD instproc initialize {} {
     my options {
       {01  1} {02  2} {03  3} {04  4} {05  5} {06  6} {07  7} {08  8} {09  9} {10 10}
@@ -1684,7 +2077,7 @@ namespace eval ::xowiki::formfield {
   #
   ###########################################################
 
-  Class HH24 -superclass FormField -superclass select
+  Class HH24 -superclass select
   HH24 instproc initialize {} {
     my options {
       {00  0} {01  1} {02  2} {03  3} {04  4} {05  5} {06  6} {07  7} {08  8} {09  9} 
@@ -1700,7 +2093,7 @@ namespace eval ::xowiki::formfield {
   #
   ###########################################################
 
-  Class MI -superclass FormField -superclass select
+  Class MI -superclass select
   MI instproc value args {
     if {[llength $args] == 0} {return [my set value]} else {
       set v [lindex $args 0]
@@ -1724,7 +2117,7 @@ namespace eval ::xowiki::formfield {
   #
   ###########################################################
 
-  Class MM -superclass FormField -superclass select
+  Class MM -superclass select
   MM instproc initialize {} {
     my options {
       {01  1} {02  2} {03 3} {04 4} {05 5} {06 6} {07 7} {08 8} {09 9} {10 10}
@@ -1778,6 +2171,13 @@ namespace eval ::xowiki::formfield {
   Class YYYY -superclass numeric -parameter {
     {size 4}
     {maxlength 4}
+  } -extend_slot validator YYYY
+
+  YYYY instproc check=YYYY {value} {
+    if {$value ne ""} {
+      return [expr {[catch {clock scan "$value-01-01 00:00:00"}] == 0}]
+    }
+    return 1
   }
 
   ###########################################################
@@ -1786,7 +2186,7 @@ namespace eval ::xowiki::formfield {
   #
   ###########################################################
   Class youtube_url -superclass text
-  youtube_url set urlre {^http://www.youtube.com/watch[?]v=(.*)$}
+  youtube_url set urlre {^http://www.youtube.com/watch[?]v=([^?]+)([?]?)}
   
   youtube_url instproc initialize {} {
     next
@@ -1872,6 +2272,59 @@ namespace eval ::xowiki::formfield {
   image_url instproc pretty_value {v} {
     set entry_name [my entry_name $v]
     return [my pretty_image -parent_id [[my object] parent_id] $entry_name]
+  }
+
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::include
+  #
+  ###########################################################
+
+  # note that the includelet "include" can be used for implementing symbolic links
+  # to other xowiki pages.
+  Class include -superclass text -parameter {
+  }
+
+  include instproc pretty_value {v} {
+    if {$v eq ""} { return $v }
+
+    my instvar object
+    set item_id  [$object get_property_from_link_page item_id]
+    if {$item_id == 0} {
+      # Here, we could call "::xowiki::Link render" to offer the user means
+      # to create the entry like with [[..]], if he has sufficent permissions...;
+      # when $(package_id) is 0, the referenced package could not be
+      # resolved
+      return "Cannot resolve symbolic link '$v'"
+    }
+    set link_type [$object get_property_from_link_page link_type]
+    $object lappend references [list $item_id $link_type]
+
+    #
+    # resetting esp. the item-id is dangerous. Therefore we reset it immediately after the rendering
+    #
+    $item_id set_resolve_context \
+	-package_id [$object package_id] -parent_id [$object parent_id] \
+	-item_id [$object item_id]
+    set html [$item_id render]
+    #my msg "reset resolve-context"
+    $item_id reset_resolve_context
+
+    return $html
+  }
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::redirect
+  #
+  ###########################################################
+
+  Class redirect -superclass text
+  redirect instproc pretty_value {v} {
+    #ad_returnredirect -allow_complete_url $v
+    #ad_script_abort
+    return [[[my object] package_id] returnredirect $v]
   }
 
   ###########################################################
@@ -2081,6 +2534,45 @@ namespace eval ::xowiki::formfield {
     next
   }
 
+
+  ###########################################################
+  #
+  # ::xowiki::formfield::child_pages
+  #
+  ###########################################################
+  Class child_pages -superclass label -parameter {
+    {form}
+    {publish_status all}
+  }
+  child_pages instproc initialize {} {
+    next
+    #
+    # for now, we allow just FormPages as child_pages
+    #
+    if {![my exists form]} { return }
+    my instvar object
+    my set form_objs [::xowiki::Weblog instantiate_forms \
+                          -parent_id [$object parent_id] \
+                          -default_lang [$object lang] \
+                          -forms [my form] \
+                          -package_id [$object package_id]]
+  }
+  child_pages instproc pretty_value {v} {
+    if {[my exists form_objs]} {
+      my instvar object
+      set count 0
+      foreach form [my set form_objs] {
+        incr count [$form count_usages \
+                        -package_id [$object package_id] \
+                        -parent_id [$object item_id] \
+                        -publish_status [my publish_status]]
+      }
+      return $count
+    } else {
+      return 0-NULL
+    }
+  }
+
   ###########################################################
   #
   # ::xowiki::formfield::date
@@ -2201,13 +2693,16 @@ namespace eval ::xowiki::formfield {
       if {[set $v] eq ""} {set $v [my set defaults($v)]}
     }
     #my msg "$year-$month-$day ${hour}:${min}:${sec}"
-    set ticks [clock scan "$year-$month-$day ${hour}:${min}:${sec}"]
+    if {[catch {set ticks [clock scan "$year-$month-$day ${hour}:${min}:${sec}"]}]} {
+      set ticks 0 ;# we assume that the validator flags these values
+    } 
     # TODO: TZ???
     #my msg "DATE [my name] get_compound_value returns [clock format $ticks -format {%Y-%m-%d %T}]"
     return [clock format $ticks -format "%Y-%m-%d %T"]
   }
 
   date instproc pretty_value {v} {
+    my instvar display_format
     #
     # Internally, we use the ansi date format. For displaying the date, 
     # use the specified display format and present the time localized.
@@ -2215,7 +2710,11 @@ namespace eval ::xowiki::formfield {
     # Drop of the value after the "." we assume to have a date in the local zone
     regexp {^([^.]+)[.]} $v _ v
     #return [clock format [clock scan $v] -format [string map [list _ " "] [my display_format]]]
-    return [lc_time_fmt $v [string map [list _ " "] [my display_format]] [my locale]]
+    if {$display_format eq "pretty-age"} {
+      return [::xowiki::utility pretty_age -timestamp [clock scan $v] -locale [my locale]]
+    } else {
+      return [lc_time_fmt $v [string map [list _ " "] [my display_format]] [my locale]]
+    }
   }
 
   date instproc render_input {} {
@@ -2446,3 +2945,5 @@ namespace eval ::xowiki::formfield {
         {date with format}
   }
 }
+
+::xo::library source_dependent 

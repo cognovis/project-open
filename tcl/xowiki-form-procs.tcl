@@ -50,7 +50,6 @@ namespace eval ::xowiki {
     my instvar data autoname
     set __fields ""
     set field_list [my field_list]
-
     set show_page_order [[$data package_id] show_page_order]
     if {!$show_page_order} { my f.page_order "= hidden" } 
     if {$autoname}         { my f.name       "= hidden,optional"}
@@ -128,9 +127,7 @@ namespace eval ::xowiki {
     # setting form fields for later use in validator
     # $data show_fields $form_fields
     my set form_fields $form_fields
-
     my set fields $__fields
-
   }
 
   proc ::xowiki::locales {} {
@@ -149,12 +146,14 @@ namespace eval ::xowiki {
   }
 
   proc ::xowiki::page_templates {} {
-    ::xowiki::f1 instvar data folder_id  ;# form has to be named ::xowiki::f1
+    set form ::xowiki::f1 ;# form has to be named this way for the time being
+    #set form [lindex [::xowiki::WikiForm info instances -closure] 0]
+    $form instvar data folder_id
     set q [::xowiki::PageTemplate instance_select_query \
                -folder_id $folder_id \
                -with_subtypes false \
                -select_attributes {name}]
-    db_foreach [my qn get_page_templates] $q {
+    db_foreach [$form qn get_page_templates] $q {
       lappend lpairs [list $name $item_id]
     } if_no_rows {
       lappend lpairs [list "(No Page Template available)" ""]
@@ -165,11 +164,13 @@ namespace eval ::xowiki {
   #
   # todo: this should be OO-ified -gustaf
   proc ::xowiki::validate_file {} {
-    my instvar data
-    my get_uploaded_file
+    set form ::xowiki::f1 ;# form has to be named this way for the time being
+    #set form [lindex [::xowiki::WikiForm info instances -closure] 0]
+    $form instvar data
+    $form get_uploaded_file
     upvar title title
     if {$title eq ""} {set title [$data set upload_file]}
-    # my log "--F validate_file returns [$data exists import_file]"
+    # $form log "--F validate_file returns [$data exists import_file]"
     return [$data exists import_file]
   }
 
@@ -178,6 +179,7 @@ namespace eval ::xowiki {
     if {$mime eq "*/*" || $mime eq "application/octet-stream"} {
       # ns_guesstype was failing
       switch [file extension $fn] {
+        .xotcl {set mime text/plain}
         .mp3 {set mime audio/mpeg}
         .cdf {set mime application/x-netcdf}
         .flv {set mime video/x-flv}
@@ -192,7 +194,9 @@ namespace eval ::xowiki {
 
   proc ::xowiki::validate_duration {} {
     upvar duration duration
-    my instvar data 
+    set form ::xowiki::f1 ;# form has to be named this way for the time being
+    #set form [lindex [::xowiki::WikiForm info instances -closure] 0]
+    $form instvar data 
     $data instvar package_id
     if {[$data istype ::xowiki::PodcastItem] && $duration eq "" && [$data exists import_file]} {
       set filename [expr {[$data exists full_file_name] ? [$data full_file_name] : [$data set import_file]}]
@@ -208,19 +212,22 @@ namespace eval ::xowiki {
   }
 
 
-  proc ::xowiki::validate_name {} {
-    upvar name name nls_language nls_language
-    my instvar data
+  proc ::xowiki::validate_name {{data ""}} {
+    upvar name name
+    if {$data eq ""} {
+      unset data
+      set form ::xowiki::f1 ;# form has to be named this way for the time being
+      # $form log "--F validate_name data=[$form exists data]"
+      $form instvar data
+    }
     $data instvar package_id
     set cc [$package_id context]
 
     set old_name [$cc form_parameter __object_name ""]
-    #my msg "validate: old='$old_name', current='$name'"
-
-    # my log "--F validate_name data=[my exists data]"
+    #$data msg "validate: old='$old_name', current='$name'"
 
     if {[$data istype ::xowiki::File] && [$data exists mime_type]} {
-      #my log "--mime validate_name data=[my exists data] MIME [$data set mime_type]"
+      #$data log "--mime validate_name MIME [$data set mime_type]"
       set name [$data build_name $name [$data set upload_file]]
       # 
       # Check, if the user is allowed to create a file with the specified
@@ -231,7 +238,7 @@ namespace eval ::xowiki {
       set computed_link [export_vars -base [$package_id package_url] {{edit-new 1} name 
 			 {object_type ::xowiki::File}}]
       set granted [$package_id check_permissions -link $computed_link $package_id edit-new]
-      #my msg computed_link=$computed_link,granted=$granted
+      #$data msg computed_link=$computed_link,granted=$granted
       if {!$granted} {
 	util_user_message -message "User not authorized to to create a file named $name"
 	return 0
@@ -242,7 +249,7 @@ namespace eval ::xowiki {
     }
     set name [::$package_id normalize_name $name]
 
-    #my msg "validate: old='$old_name', new='$name'"
+    #$data msg "validate: old='$old_name', new='$name'"
     if {$name eq $old_name && $name ne ""} {
       # do not change names, which are already validated;
       # otherwise, autonamed entries might get an unwanted en:prefix
@@ -250,33 +257,49 @@ namespace eval ::xowiki {
     }
 
     # check, if we try to create a new item with an existing name
-    #my msg "validate: new=[$data form_parameter __new_p 0], eq=[expr {$old_name ne $name}]"
+    #$data msg "validate: new=[$data form_parameter __new_p 0], eq=[expr {$old_name ne $name}]"
     if {[$data form_parameter __new_p 0]
         || $old_name ne $name
       } {
-      #my msg "exists in db [::xo::db::CrClass lookup -name $name -parent_id [$data parent_id]]"
-      return [expr {[::xo::db::CrClass lookup -name $name -parent_id [$data parent_id]] == 0}]
+      if {[::xo::db::CrClass lookup -name $name -parent_id [$data parent_id]] == 0} {
+	# the provided name is really new
+        return 1
+      }
+      if {[$data istype ::xowiki::PageInstance]} {
+	# The entry might be autonamed. In case of imports from other
+	# xowiki instances, we might have name clashes. Therefore, we
+	# compute a fresh name here.
+	set anon_instances [$data get_from_template anon_instances f]
+	if {$anon_instances} {
+	  set basename [::xowiki::autoname basename [[$data page_template] name]]
+	  $data name [::xowiki::autoname new -name $basename -parent_id [$data parent_id]]
+	  return 1
+	}
+      }
+      return 0
     }
     return 1
   }
 
   proc ::xowiki::validate_form_field {field_name} {
+    set form ::xowiki::f1 ;# form has to be named this way for the time being
+    #set form [lindex [::xowiki::WikiForm info instances -closure] 0]
     #
     # Generic ad_compliant validator using validation methods from
     # form_fields
     #
     upvar $field_name $field_name
-    my instvar data
+    $form instvar data
     #
     # Get the form-field and set its value....
     #
-    set f [$data lookup_form_field -name $field_name [my set form_fields]]
+    set f [$data lookup_form_field -name $field_name [$form set form_fields]]
     $f value [set $field_name]
     set validation_error [$f validate $data]
     #
     # If we get an error, we report it as well via util-user message
     # 
-    #my msg "***** field_name = $field_name, cls=[$f info class] validation_error=$validation_error"
+    #$form msg "***** field_name = $field_name, cls=[$f info class] validation_error=$validation_error"
     if {$validation_error ne ""} {
       util_user_message -message "Error in field [$f label]: $validation_error"
       return 0
@@ -419,7 +442,7 @@ namespace eval ::xowiki {
       my instvar data
       # we can determine submit link only after nls_langauge 
       # is returned from the user
-      my submit_link [[$data package_id] pretty_link [$data name]]
+      my submit_link [$data pretty_link]
     }
     next
   }
@@ -470,7 +493,7 @@ namespace eval ::xowiki {
       $data set upload_file  $upload_file
       $data set import_file [$data form_parameter upload_file.tmpfile]
       set mime_type [$data form_parameter upload_file.content-type]
-      if {[db_0or1row check_mimetype {select 1 from cr_mime_types 
+      if {[db_0or1row [my qn check_mimetype] {select 1 from cr_mime_types 
 	where mime_type = :mime_type}] == 0 || $mime_type eq "application/octet-stream"} {
         set guessed_mime_type [::xowiki::guesstype $upload_file]
         #my msg guess=$guessed_mime_type
@@ -655,7 +678,7 @@ namespace eval ::xowiki {
     if {[$data exists_query_parameter return_url]} {
       set return_url [$data query_parameter return_url]
     }
-    set link [::[$data set package_id] pretty_link [$data set name]]
+    set link [$data pretty_link]
     my submit_link [export_vars -base $link {{m edit} page_template return_url item_id}]
     # my log "-- submit_link = [my submit_link]"
   }
@@ -693,7 +716,7 @@ namespace eval ::xowiki {
     foreach __v $__vars {set $__v [$data from_parameter $__v] ""}
     set item_id [next]
 
-    set link [::[$data set package_id] pretty_link [$data set name]]
+    set link [$data pretty_link]
     my submit_link [export_vars -base $link {{m edit} $__vars}]
     # my log "-- submit_link = [my submit_link]"
     return $item_id
@@ -838,3 +861,5 @@ namespace eval ::xowiki {
 
 
 }
+::xo::library source_dependent 
+
