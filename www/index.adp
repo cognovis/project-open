@@ -7,4 +7,6 @@
    <script language="JavaScript" type="text/javascript" src="/resources/diagram/diagram/diagram.js"></script>
 </property>
 
-<listtemplate name="report_list"></listtemplate>
+@indicator_html;noquote@
+
+
