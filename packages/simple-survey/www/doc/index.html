@@ -1,0 +1,145 @@
+<html>
+<!--AD_DND-->
+<head>
+<title>Survey (Simple)</title>
+</head>
+
+<body bgcolor=#ffffff text=#000000>
+<h2>Survey (Simple)</h2>
+
+part of the <a href="index">ArsDigita Community System</a>
+by <a href="http://photo.net/philg/">Philip Greenspun</a>
+
+<hr>
+
+<ul>
+<li>User-accessible directory:  <a href="/survsimp/">/survsimp/</a>
+<li>Module administrator directory:  <a href="/survsimp/admin/">/survsimp/admin/</a>
+<li>Site administrator directory:  <a href="/admin/survsimp/">/admin/survsimp/</a>
+<li>data model :  <a href="/doc/sql/display-sql?url=/doc/sql/survey-simple.sql">/doc/sql/survey-simple.sql</a>
+<li>Tcl procs:  /tcl/survey-simple-defs
+<li>Configuration parameters: none
+</ul>
+
+<h3>The Big Idea</h3>
+
+We want to be able to survey users.  We want a non-technical person to
+be able to design surveys from HTML forms.  We want someone who is not
+a site-admin to be able to review answers (via the module
+administration directory).
+
+
+<h3>Division of Labor</h3>
+
+A site-wide administrator gets to decide which surveys are enabled or
+not enabled.  A module admin gets to build surveys (which started off
+disabled by default) and edit them.  The module admin also gets to
+review answers (as above). Module admins are designated by adding them
+to the "Simple Survey System Staff" administration group.
+
+
+<h3>Survey Question Possibilities</h3>
+
+Each survey question specifies an abstract data type for responses:
+
+<ul>
+
+<li>boolean
+<li>number
+<li>integer
+<li>shorttext (less than 4000 characters)
+<li>text
+<li>choice 
+
+</ul>
+
+Each survey also specifies a presentation type:
+
+<ul>
+<li>textbox
+<li>textarea (size can be specified in
+<code>presentation_options</code>)
+<li>select (from a fixed set of options in <code>survsimp_question_choices</code>)
+<li>radio (from a fixed set of options in <code>survsimp_question_choices</code>)
+<li>checkbox (from a fixed set of options in <code>survsimp_question_choices</code>)
+
+</ul>
+
+<h3>The data model</h3>
+
+We use the following tables:
+
+<ul>
+<li><code>survsimp_questions</code> -- questions for each survey
+<li><code>survsimp_surveys</code> -- specs for one survey form (except the questions)
+<li><code>survsimp_responses</code> -- user responses to surveys 
+<li><code>survsimp_question_responses</code> -- user responses to
+individual questions within a survey
+
+</ul>
+
+The philosophy about storing the users responses is to use one single
+Oracle table to store all responses, i.e., we do not create a new table
+when we create a new survey.  In order to make it possible to store all
+kinds of data in one table, we give the
+<code>survsimp_question_responses</code> table five columns.
+
+<blockquote>
+<pre><code>
+	-- if the user picked a canned response
+	choice_id		references survsimp_question_choices,
+	boolean_answer		char(1) check(boolean_answer in ('t','f')),
+	clob_answer		clob,
+	number_answer		number,
+	varchar_answer		varchar(4000),
+</code></pre>
+</blockquote>
+
+Only one of the columns will be not-null.
+
+<p>
+
+Why the CLOB in addition to the varchar?  The CLOB is necessary when
+people are using this system for proposal solicitation (people might
+type more than 4000 characters).  
+
+<h3>User Interface</h3>
+
+The user interface for creating a survey is as follows:
+<ol>
+<li>User creates a survey, giving it a name and a description.
+<li>User adds questions one by one, and is given the opportunity to reorder questions.
+
+<li>To add a question, user first types in the question and selects
+its presentation type (radio buttons, checkbox, text field, etc.).
+<li>Then the user is given the opportunity to specify further
+attributes for the question depending upon the presentation type that
+was chosen. For instance, any "choice" presentation (radio buttons,
+checkboxes, and select lists) require a list of choices. A text field
+requires the user to specify an abstract data type and the size of the
+input field.
+</ol>
+
+<h3>Parameters</h3>
+
+This module requires no section in /parameters/ad.ini !
+
+
+
+<h3>The Future</h3>
+
+This entire system should be superseded by a more glorious one that
+Buddy Dennis of UCLA (his PhD apparently isn't helping him get this ACS
+module finished) has developed.  That's why we call this the "simple"
+survey module.
+
+<P>
+
+If Buddy never gets his act together, we should add a feature to this
+system whereby a multiple-choice question can solicit a typed-in "Other"
+answer as well.
+
+<hr>
+<a href="http://photo.net/philg/"><address>philg@mit.edu</address></a>
+</body>
+</html>
