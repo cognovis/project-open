@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Ad_hoc_Fraber_Test_group_id">Identifiant du groupe</msg>
+  <msg key="Ad_hoc_Fraber_Test_group_name">Nom du groupe</msg>
+  <msg key="Add_new_Report">Ajouter un nouveau Rapport</msg>
+  <msg key="Admin_Reports">Rapports admin</msg>
+  <msg key="Available_Reports">Rapports disponibles</msg>
+  <msg key="Dashboard">Tableau de bord</msg>
+  <msg key="Edit_Report">Editer le rapport</msg>
+  <msg key="Finance">Finance</msg>
+  <msg key="Finance_Cube">Finance Cube</msg>
+  <msg key="Finance_Documents_and_their_Projects">Documents financiers &amp; projets</msg>
+  <msg key="Finance_Expenses">Dépenses financières</msg>
+  <msg key="Finance_Income_Statement">Déclaration de revenus financiers</msg>
+  <msg key="Finance_Monthly_Summary">Résumé financier mensuel</msg>
+  <msg key="Finance_Payment_Balance">Balance des paiements </msg>
+  <msg key="Finance_Projects_and_their_Documents">Projets et documents financiers</msg>
+  <msg key="Finance_VAT_Report">Rapport TVA</msg>
+  <msg key="Forum">Forum</msg>
+  <msg key="Gantt_Diagram">Diagramme de Gantt</msg>
+  <msg key="Indicators">Indicateurs</msg>
+  <msg key="Manage_Reports">Gestion des Rapports</msg>
+  <msg key="New_Report">Nouveau rapport</msg>
+  <msg key="Other">Autres</msg>
+  <msg key="Project_Main_List">Liste principale du projet</msg>
+  <msg key="Project_Manager_Salary_Comparision">Comparaison avec le salaire du chef de projets</msg>
+  <msg key="Report_Groups">Groupes</msg>
+  <msg key="Report_Id">ID</msg>
+  <msg key="Report_Name">Nom</msg>
+  <msg key="Report_Sales">Ventes</msg>
+  <msg key="Report_Sort_Order">Ordre de tri</msg>
+  <msg key="Report_Translation_Tasks">Tâches de traduction</msg>
+  <msg key="Report_Users___Contact_Information">Informations sur les contacts et utilisateurs</msg>
+  <msg key="Reporting_Tutorial">Didacticiel sur la création de rapports</msg>
+  <msg key="Reports">Rapports</msg>
+  <msg key="Reports_Description">Description</msg>
+  <msg key="Reports_SQL">Rapport SQL</msg>
+  <msg key="Sales">Ventes</msg>
+  <msg key="Timesheet">Feuille de travail</msg>
+  <msg key="Timesheet_Customers_and_Projects">Feuille de travail clients et objets</msg>
+  <msg key="Timesheet_Productivity">Feuille de travail productivité</msg>
+  <msg key="Timesheet_Project_Hierarchy___Finance">Feuille de travail hiérarchie et finance</msg>
+  <msg key="Translation">Traduction</msg>
+  <msg key="Translation_PM_Productivity">Feuille de travail productivité GP</msg>
+  <msg key="Translation_Tasks">Tâches de traduction</msg>
+  <msg key="Users___Contact_Information">Informations utilisateurs et contacts</msg>
+</message_catalog>

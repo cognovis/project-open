@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="A">R:</msg>
+  <msg key="Add_QA_for_faq_name">Adicione uma Pergunta e uma Resposta (P&amp;R) para %faq_name%</msg>
+  <msg key="administer">administrar</msg>
+  <msg key="All_QA">Todos Q&amp;A</msg>
+  <msg key="Answer">Resposta</msg>
+  <msg key="Answer_text_in_html">Responde texto em HTML</msg>
+  <msg key="Back_to_FAQs">Voltar para FAQs</msg>
+  <msg key="Change_settings">Alterar configurações</msg>
+  <msg key="Configure">Configurar</msg>
+  <msg key="Create_a_new_FAQ">Criar uma nova FAQ</msg>
+  <msg key="Create_an_FAQ">Criar uma FAQ</msg>
+  <msg key="Create_FAQ">Criar FAQ</msg>
+  <msg key="Create_New_QA">Criar Nova P&amp;R</msg>
+  <msg key="Create_new_QA">Criar nova P&amp;R</msg>
+  <msg key="Create_QA">Criar P&amp;R</msg>
+  <msg key="Delete">Remover</msg>
+  <msg key="delete">remover</msg>
+  <msg key="Delete_This_QA">Remover Este P&amp;R</msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="edit">editar</msg>
+  <msg key="Edit_an_FAQ">Editar uma FAQ</msg>
+  <msg key="Enable_Categories">Habilitar Categorias</msg>
+  <msg key="Enable_WYSIWYG">Habilitar WYSIWYG</msg>
+  <msg key="FAQ_Admin">Administrador da FAQ</msg>
+  <msg key="faq_name_Admin">Administrador de %faq_name%</msg>
+  <msg key="FAQs">FAQs</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">inserir depois de</msg>
+  <msg key="lt_Are_you_sure_you_want">Você tem certeza que quer remover este FAQ?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Você tem certeza que quer remover esta questão?</msg>
+  <msg key="lt_no_FAQs">Não há nenhuma FAQ disponível.</msg>
+  <msg key="lt_no_questions">Não há nenhuma pergunta disponível.</msg>
+  <msg key="Name">Nome:</msg>
+  <msg key="New">Nova</msg>
+  <msg key="No">Não</msg>
+  <msg key="One_Question">Uma Pergunta</msg>
+  <msg key="Plain">Simples</msg>
+  <msg key="Preformatted">Pré-formatado</msg>
+  <msg key="preview">prever</msg>
+  <msg key="Q">P:</msg>
+  <msg key="QA_On_Separate_Pages">P&amp;R Em Páginas Separadas?</msg>
+  <msg key="QA_on_Separate_Pages">P&amp;R em Páginas Separadas?</msg>
+  <msg key="Question">Pergunta</msg>
+  <msg key="Question_text_in_html">Texto da pergunta em HTML</msg>
+  <msg key="Set_Category_Mode">Definir Modo de Categoria</msg>
+  <msg key="Site_wide_categories">Categorias para todo o site</msg>
+  <msg key="swap_with_next">trocar com próximo</msg>
+  <msg key="Text_type">Tipo de Texto?</msg>
+  <msg key="Title">Título</msg>
+  <msg key="Update_FAQ">Atualizar FAQ</msg>
+  <msg key="Update_This_QA">Atualizar Este P&amp;R</msg>
+  <msg key="View_All_FAQs">Visualizar Todas FAQs</msg>
+  <msg key="Yes">Sim</msg>
+</message_catalog>

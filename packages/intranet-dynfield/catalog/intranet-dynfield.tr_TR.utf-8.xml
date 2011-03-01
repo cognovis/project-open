@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-dynfield" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="absolute">Kesin</msg>
+  <msg key="Content">İçerik</msg>
+  <msg key="Date">Tarih</msg>
+  <msg key="Del">Sil</msg>
+  <msg key="Delete">Sil</msg>
+  <msg key="Documentation">Dokümantasyon</msg>
+  <msg key="documentation">dokümantasyon</msg>
+  <msg key="examples">örnekler</msg>
+  <msg key="Gender_Select">Cinsiyet Seç</msg>
+  <msg key="Large">Geniş</msg>
+  <msg key="Name">İsim</msg>
+  <msg key="Permissions">İzinler</msg>
+  <msg key="Person">Kişi</msg>
+  <msg key="Preferred_Communication">Tercih edilen iletişim</msg>
+  <msg key="Small">Küçük</msg>
+  <msg key="Sport">Spor</msg>
+  <msg key="Sport_Select">Spor</msg>
+  <msg key="Table_Name">Tablo İsmi</msg>
+  <msg key="This_file_is_located_in">Bu dosya şuradadır</msg>
+  <msg key="This_file_will_be_placed_in">Bu dosya şuraya kaydedilecektir</msg>
+  <msg key="User">Kullanıcı</msg>
+</message_catalog>

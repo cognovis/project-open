@@ -1,0 +1,98 @@
+Licensing
+
+					"First they ignore you...,
+					Then they laugh at you...,
+					Then they fight you...,
+					Then you WIN."
+
+					M. K. Gandhi
+
+
+The basic idea behind ]project-open[ is to create an open-source ERP system. 
+So why don't we release all of our code under under an open-source license 
+such as the GPL?
+
+It's a difficult one. We are convinced open-source "believers" and we are 
+convinced that open-source economics will on the long term change and 
+finally dominate the entire software industry. However, there is a certain 
+misfit between the open-source idea and ERP software, because ERPs are 
+considered by most open-source developers to be very "boring", so that few 
+of them would want to spend their free time developing them. We have tried 
+a lot of different options in the past in order to tackle this issue and to 
+make open-source ERPs work. We even have designed a new type of open-source 
+software license. However, all this hasn't worked out.
+
+
+"Mixed Source" Model
+
+So we have come up with a "mixed source" model for ]project-open[ that is 
+based on the difference between "commodity" and "value added" or "strategic" 
+functionality:
+
+    * "Commodity modules":
+      Commodity modules are open-source and maintained by the community in a 
+      shared effort (GPL and FL licenses). Open-source economics allow to 
+      greatly reduce the development effort for these modules.
+    * "Added Value" or "Strategic Modules:
+      Added value modules are closed-source software written by companies 
+      specialized in a specific sector. These modules allow a companies to 
+      differentiate itself from its competition. These modules are plain 
+      commercial software (CL license).
+
+At least that's easy to explain and it makes economic sense. Here is a 
+comparison between the three licenses:
+
+		GNU		"FreeLicense"	"Commercial License"
+
+License 	"Software wants	"Share costs of	"Maximize profit"
+objective	to be free" 	development" 	
+
+Free for  	yes		yes		no
+end users
+
+Free for IT	yes		no		no
+consulting 
+companies?
+
+
+To determine the license of a given package please check the <package>.info 
+file in the top directory of every package and check the "License" field.
+
+Our hope is that these conditions are interesting for small and medium 
+companies and that it will finally lead to an "Open-Source Marketplace".
+We hope that the combination of these licenses allow all of it:
+
+    * A sprawling open-source software project,
+    * Maximum value and freedom for customer,
+    * Coherence in the development process,
+    * An interesting marketplace for distributors and resellers and
+    * The prosperity of 3rd party IT consultants .
+
+For questions and suggestions please contact us. We are aware that licenses 
+are a critical issue in the Open-Source community and we are eager to learn 
+about your opinion.
+
+GPL - The Gnu Public License
+
+GPLed software is free for everybody to use, modify and redistribute.
+If redistributed, the software needs to be published under the terms of the 
+GPL again. This is the "classical" open-source license that makes sure that 
+an open-source program will always stay open-source.
+
+FL - ]project-open[ "Free License"
+
+FLed software is free for everybody to use and modify. It is "normal" 
+commercial software, but the license fee for use and modification is EUR 0.
+However, its redistribution is restricted in order to avoid the "free loader 
+problem" (companies taking advantage of the efforts of others). Basically, 
+you have to become a "partner" and share the development costs in order to 
+get the right to redistribute these packages.
+
+CL - ]project-open[ "Commercial License"
+
+CLed software is "normal" software in the sense that the user has to pay 
+for the software in order to use it.
+However, the customer receives the source-code of the modules together with 
+the right to modify the software. So he can maintain the code himself and 
+add strategic functionality.
+

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Action">Aktion</msg>
+  <msg key="Admin_workflows">Admin Workflows</msg>
+  <msg key="All_Tasks">Alle Aufgaben</msg>
+  <msg key="Approve">Freigeben</msg>
+  <msg key="Assign_somebody_else">Jemand anderem zuweisen</msg>
+  <msg key="Assign_yourself">Sich selbst zuweisen</msg>
+  <msg key="Assignee">Beauftragter</msg>
+  <msg key="assignment_group">Zuweisungsgruppe</msg>
+  <msg key="Automatic_trigger">Automatischer Trigger</msg>
+  <msg key="Confirm_Quote">Angebot bestätigen</msg>
+  <msg key="Currrent_assignees">Aktuell Beauftragte</msg>
+  <msg key="Execute">Ausführen</msg>
+  <msg key="Modify">Anpassen</msg>
+  <msg key="my_object">Mein Objekt</msg>
+  <msg key="Next_step_details">Details zu nächsten Schritten</msg>
+  <msg key="none">keine</msg>
+  <msg key="Object_Name">Objektname</msg>
+  <msg key="Object_Owner">Objektbesitzer</msg>
+  <msg key="Owner">Besitzer</msg>
+  <msg key="Past_actions">Letzte Aktionen</msg>
+  <msg key="Quote">Angebot</msg>
+  <msg key="Relationship">Beziehnung</msg>
+  <msg key="Reset_Case">Fall zurücksetzen</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Task_name">Aufgabenname</msg>
+  <msg key="Task_state">Aufgabenstatus</msg>
+  <msg key="Type">Typ</msg>
+  <msg key="Unassigned_Tasks">Nicht zugewiesene Aufgaben</msg>
+  <msg key="What">Was?</msg>
+  <msg key="When">Wann?</msg>
+  <msg key="Who">Wer?</msg>
+  <msg key="Workflow_Home">Workflow Homepage</msg>
+  <msg key="Your_Tasks">Meine Änderungsanträge</msg>
+</message_catalog>

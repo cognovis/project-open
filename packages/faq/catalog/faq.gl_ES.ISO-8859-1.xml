@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="gl_ES" charset="ISO-8859-1">
+
+  <msg key="A">R:</msg>
+  <msg key="Add_QA_for_faq_name">Engadir PeR para %faq_name%</msg>
+  <msg key="administer">administrar</msg>
+  <msg key="Answer">Resposta</msg>
+  <msg key="Back_to_FAQs">De volta ás PMFs</msg>
+  <msg key="Create_a_new_FAQ">Criar unha nova PMF</msg>
+  <msg key="Create_an_FAQ">Criar unha PMF</msg>
+  <msg key="Create_FAQ">Criar PMF</msg>
+  <msg key="Create_New_QA">Criar nova PeR</msg>
+  <msg key="Create_new_QA">Criar nova PeR</msg>
+  <msg key="Create_QA">Criar PeR</msg>
+  <msg key="Delete">Eliminar</msg>
+  <msg key="delete">eliminar</msg>
+  <msg key="Delete_This_QA">Eliminar esta PeR</msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="edit">editar</msg>
+  <msg key="Edit_an_FAQ">Editar unha PMF</msg>
+  <msg key="FAQ_Admin">Administración das PMFs</msg>
+  <msg key="faq_name_Admin">Administrar %faq_name%</msg>
+  <msg key="FAQs">PMFs</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">inserir despois</msg>
+  <msg key="lt_Are_you_sure_you_want">Tes a certeza que queres eliminar esta PMF?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Tes a certeza que queres eliminar esta pregunta?</msg>
+  <msg key="lt_no_FAQs">Non existen PMFs disponíbeis</msg>
+  <msg key="lt_no_questions">Non existen preguntas disponíbeis</msg>
+  <msg key="Name">Nome:</msg>
+  <msg key="New">Nova</msg>
+  <msg key="No">Non</msg>
+  <msg key="One_Question">Unha pregunta</msg>
+  <msg key="Plain">Simple</msg>
+  <msg key="Preformatted">Pré-formatado</msg>
+  <msg key="preview">antever</msg>
+  <msg key="Q">P:</msg>
+  <msg key="QA_On_Separate_Pages">PeR en páxinas diferentes?</msg>
+  <msg key="QA_on_Separate_Pages">PeR en páxinas diferentes?</msg>
+  <msg key="Question">Pregunta</msg>
+  <msg key="swap_with_next">trocar coa próxima</msg>
+  <msg key="Text_type">Tipo de texto?</msg>
+  <msg key="Title">Título:</msg>
+  <msg key="Update_FAQ">Actualizar PMF</msg>
+  <msg key="Update_This_QA">Actualizar esta PMF</msg>
+  <msg key="View_All_FAQs">Ver todas as PMFs</msg>
+  <msg key="Yes">Si</msg>
+</message_catalog>

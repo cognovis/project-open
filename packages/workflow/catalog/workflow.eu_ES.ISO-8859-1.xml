@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="workflow" package_version="2.0.0b3" locale="eu_ES" charset="ISO-8859-1">
+
+  <msg key="lt_Please_click_here_to_">Mesedez, klikatu hemen %object_type.pretty_name% hau bisitatzeko:</msg>
+  <msg key="lt_You_are_a_participant">%object_type.pretty_name% honetan partaidea zara.</msg>
+  <msg key="lt_You_are_assigned_to_t">Ondoko ekintza esleitu zaizu.</msg>
+  <msg key="lt_You_have_a_watch_on_t">%object_type.pretty_name% honetan behaketa eduzu.</msg>
+  <msg key="lt_You_have_requested_to">%workflow_object.name%-n %object_type.pretty_plural% guztietan aktibitateari buruzko abisuak eskatu dituzu</msg>
+  <msg key="notification_email_latest_action_chunk">%action_past_tense% : %user_name% (%user_email%)</msg>
+</message_catalog>

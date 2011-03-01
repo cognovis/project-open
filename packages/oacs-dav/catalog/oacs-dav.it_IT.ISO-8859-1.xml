@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Disable">Disabilita</msg>
+  <msg key="Disable_Folders">Disabilita le cartelle selezionate</msg>
+  <msg key="Disabled">Disabilitata</msg>
+  <msg key="Enable">Abilita</msg>
+  <msg key="Enable_Folders">Abilita le cartelle selezionate</msg>
+  <msg key="Enabled">Abilitata</msg>
+  <msg key="Folder_Name">Nome cartella</msg>
+  <msg key="Folder_URL">URL della cartella</msg>
+  <msg key="Folders_Disabled">Le cartelle selezionate sono disabilitate per WebDAV</msg>
+  <msg key="Folders_Enabled">Le cartelle selezionate sono abilitate per WebDAV</msg>
+  <msg key="Package_Name">Nome package</msg>
+  <msg key="Package_Type">Tipo package</msg>
+  <msg key="Status">Stato</msg>
+  <msg key="WebDAV_Folder_Administration">Amministrazione delle cartelle WebDAV</msg>
+</message_catalog>

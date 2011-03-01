@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML xmlns="http://www.w3.org/TR/REC-html40" xmlns:o =
+"urn:schemas-microsoft-com:office:office" xmlns:w =
+"urn:schemas-microsoft-com:office:word"><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=us-ascii">
+<META content=Word.Document name=ProgId>
+<META content="MSHTML 6.00.2900.2627" name=GENERATOR>
+<META content="Microsoft Word 10" name=Originator><LINK
+href="cid:filelist.xml@01C55BC9.B663B8F0" rel=File-List><!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Normal</w:View>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]-->
+<STYLE>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:EN-IE;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:EN-IE;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 77.95pt 72.0pt 77.95pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</STYLE>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]--></HEAD>
+<BODY lang=EN-US style="tab-interval: 36.0pt" vLink=purple
+link=blue><B>From:</B> Brian Fenton<BR><B>Sent:</B> 18 May 2005
+16:44<BR><B>To:</B> Technical Openacs<BR><B>Cc:</B> Tony<BR><B>Subject:</B>
+Brian's DynField notes from Toni's handover<BR>
+<DIV class=Section1>
+<P class=MsoPlainText><B style="mso-bidi-font-weight: normal"><FONT
+face="Courier New" color=black size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal">Front
+End. <o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: black">DynField can only be used with
+object_types defined in the acs_object_types table. DynField takes advantage of
+the template form builder. Usually a form is created with template form builder
+- then DynField uses the</SPAN></FONT><SPAN lang=EN-IE> proc <FONT
+color=blue><SPAN
+style="COLOR: blue">dynfield::append_attributes_to_form</SPAN></FONT> to add
+elements to the form. (It can also create a new form if needed). Then in the
+<FONT color=blue><SPAN style="COLOR: blue">template::form is_valid</SPAN></FONT>
+section the proc <FONT color=blue><SPAN
+style="COLOR: blue">dynfield::attribute_store -object_type $object_type
+-object_id $party_id -form_id $form_id</SPAN></FONT> adds or updates any
+extension records for this object-type for this object_id. It won't create a new
+object (e.g. party or ticket) though if there is none <SPAN
+class=GramE>there(</SPAN>probably a good thing!). No program changes are needed
+to add new DynField attributes to pages.<o:p></o:p></SPAN></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">The proc <FONT color=blue><SPAN
+style="COLOR: blue">dynfield::append_attributes_to_form</SPAN></FONT> is also
+used in Search pages by setting the search_p flag to true.
+<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">The search results are returned using
+<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><FONT face="Courier New" color=blue
+size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: blue">template</SPAN></FONT></SPAN><FONT
+color=blue><SPAN lang=EN-IE style="COLOR: blue">::util::list_of_lists_to_array
+[dynfield::search_query -object_type "ttracker_ticket"
+\<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=blue size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: blue"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>-form_id
+$form_id \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=blue size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: blue"><SPAN
+style="mso-tab-count: 3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-select_part "" \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=blue size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: blue"><SPAN
+style="mso-tab-count: 3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-from_part $from_part \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=blue size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: blue"><SPAN
+style="mso-tab-count: 3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-where_clause ""] query_info<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">Note that program changes are still needed in Search
+pages for new object types to build the queries (the FROM and WHERE
+clauses).<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">The layout manager decides if an element appears in the
+search page. We can use the page_url parameter in <FONT color=blue><SPAN
+style="COLOR: blue">dynfield::append_attributes_to_form</SPAN></FONT> to give
+different layout versions of the same page.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">DynField storage types: we only use 2: multimap or
+value. The difference is in whether we need to store more than 1 value for an
+attribute i.e. whether to use a child table or a column. If multimap is chosen,
+then we use the <FONT color=blue><SPAN
+style="COLOR: blue">dynfield_attr_multi_value</SPAN></FONT> table to store the
+actual values. The storing is done in <FONT color=blue><SPAN
+style="COLOR: blue">dynfield::attribute_store</SPAN></FONT>
+proc.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><B
+style="mso-bidi-font-weight: normal"><FONT face="Courier New" size=3><SPAN
+lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; mso-bidi-font-weight: normal">Adding
+a Widget.</SPAN></FONT></B></SPAN><B style="mso-bidi-font-weight: normal"><FONT
+size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; mso-bidi-font-weight: normal"><o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">Storage Type: right now Multimap values are only
+available for Category, Multi-select and Checkbox Widgets. Therefore choosing
+Multi-Select-Mapping-Table causes the program to ignore most Widget values (NB
+this includes Generic SQL) and can't be used with those widgets.
+<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">OpenACS Datatype: this corresponds to an Oracle table
+column datatype (e.g. <SPAN class=GramE>number(</SPAN>12,2) - this is used when
+adding a new attribute to create the actual column on the table (and maybe even
+check constraints etc). <SPAN class=GramE>Also used in validation.</SPAN>
+There's some confusion about the "SQL Datatype" field as this seems to do the
+same thing. The valid values for SQL Datatype include <FONT color=blue><SPAN
+style="COLOR: blue">Integer, <SPAN class=GramE>char(</SPAN>1), date, integer,
+number(12,2), string, text</SPAN></FONT>.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">Widget options: these are hard-coded into the program.
+<SPAN class=GramE>May eventually need a lookup table.</SPAN> Note that <FONT
+color=blue><SPAN style="COLOR: blue">Generic SQL</SPAN></FONT> creates a
+pulldown the options of which are the results of a SQL query - it will need a
+<FONT color=blue><SPAN style="COLOR: blue">custom</SPAN></FONT> parameter with
+the SQL query (see Parameters below). Also the SQL query must return 2 columns:
+the first is the ID, the 2nd is a description.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">Parameters: this can take 2 things: 1 - the parameters
+that <FONT color=blue><SPAN style="COLOR: blue">template:<SPAN
+class=GramE>:element</SPAN>::create</SPAN></FONT> takes. 2 - <SPAN
+class=GramE>a</SPAN> special custom parameter that dynfield widgets can take.
+(We think the valid values for Parameters is limited to just <FONT
+color=blue><SPAN style="COLOR: blue">html, options </SPAN></FONT>and<FONT
+color=blue><SPAN style="COLOR: blue"> custom</SPAN></FONT>.) <FONT
+color=blue><SPAN style="COLOR: blue">Custom</SPAN></FONT> contains information
+that will be used in the relevant <FONT color=blue><SPAN
+style="COLOR: blue">template:<SPAN
+class=GramE>:widget</SPAN>::whatever</SPAN></FONT> proc (e.g. <FONT
+color=blue><SPAN
+style="COLOR: blue">template::widget:category_tree</SPAN></FONT> for Category
+etc). </SPAN></FONT><SPAN
+style="mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><B
+style="mso-bidi-font-weight: normal"><FONT face="Courier New" color=black
+size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal">Layouts.</SPAN></FONT></B></SPAN><B
+style="mso-bidi-font-weight: normal"><FONT color=black size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal"><o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: black">If no default layout page
+specified in the layout manager for an object then any page calling
+</SPAN></FONT><FONT color=blue><SPAN lang=EN-IE
+style="COLOR: blue">dynfield::append_attributes_to_form</SPAN></FONT><SPAN
+lang=EN-IE> <FONT color=black><SPAN style="COLOR: black">will display ALL the
+dynfield attributes. In general, if there is a layout page with associated
+attributes, only those associated attributes will be displayed if that layout
+page is specified (maybe through being the Default or through the page_url
+parameter to </SPAN></FONT><FONT color=blue><SPAN
+style="COLOR: blue">dynfield::append_attributes_to_form</SPAN></FONT> <FONT
+color=black><SPAN style="COLOR: black">etc). Otherwise all attributes are
+displayed. Toni thinks that Relative isn't fully working - you can only specify
+one column.<o:p></o:p></SPAN></FONT></SPAN></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: black">Layout_type:
+</SPAN></FONT><FONT color=blue><SPAN lang=EN-IE style="COLOR: blue">absolute,
+relative </SPAN></FONT><SPAN lang=EN-IE>or<FONT color=blue><SPAN
+style="COLOR: blue"> <SPAN class=GramE>adp</SPAN></SPAN></FONT><FONT
+color=black><SPAN style="COLOR: black">. Ask
+Banjo.<o:p></o:p></SPAN></FONT></SPAN></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><B
+style="mso-bidi-font-weight: normal"><FONT face="Courier New" color=black
+size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal">Documentation.</SPAN></FONT></B></SPAN><B
+style="mso-bidi-font-weight: normal"><FONT color=black size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal"><o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><SPAN class=GramE><FONT face="Courier New" color=black
+size=2><SPAN lang=EN-IE style="FONT-SIZE: 10pt; COLOR: black">Some in
+packages/intranet-dynfield/doc.</SPAN></FONT></SPAN><FONT color=black><SPAN lang=EN-IE
+style="COLOR: black"> <SPAN class=GramE>Some in
+G:\quest\products\AIMS\doc\dynfield.</SPAN> <o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">Toni says the following in the docs may not be
+true:<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff">In the -on_submit block you
+enter the following:<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: #3366ff"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff">ad_from ... -on_submit
+{<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN><SPAN class=GramE>dynfield</SPAN>::ad_form::save
+\<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-package_key "contacts" \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-object_type "ct_contact" \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN><SPAN style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;</SPAN>-list_name
+"contact_person" \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-form_name "contact_person_ae" \<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</SPAN>-object_id $ct_contact_id<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=#3366ff size=2><SPAN
+lang=EN-IE style="FONT-SIZE: 10pt; COLOR: #3366ff"><SPAN
+style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;
+</SPAN>}<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt">See organisation.tcl for an example of how we do this in
+practice. We don't use ad_form - instead we use the form
+builder.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><B
+style="mso-bidi-font-weight: normal"><FONT face="Courier New" color=black
+size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal">Code.</SPAN></FONT></B></SPAN><B
+style="mso-bidi-font-weight: normal"><FONT color=black size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal"><o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><SPAN class=GramE><FONT face="Courier New" color=black
+size=2><SPAN lang=EN-IE style="FONT-SIZE: 10pt; COLOR: black">All in
+packages/intranet-dynfield.</SPAN></FONT></SPAN><FONT color=black><SPAN lang=EN-IE
+style="COLOR: black"> Toni tells me that the majority of procs aren't actually
+used (especially the cached/flushed stuff). DynField is based on Matthew
+Gedderts OpenACS AMS package and can be considered a subset of his work.
+Therefore many parts of the package are <SPAN class=GramE>unused/untested</SPAN>
+by Quest.<o:p></o:p></SPAN></FONT></P>
+<P class=MsoPlainText><FONT face="Courier New" color=black size=2><SPAN
+lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black"><o:p>&nbsp;</o:p></SPAN></FONT></P>
+<P class=MsoPlainText><SPAN class=GramE><B
+style="mso-bidi-font-weight: normal"><FONT face="Courier New" color=black
+size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal">Notes.</SPAN></FONT></B></SPAN><B
+style="mso-bidi-font-weight: normal"><FONT color=black size=3><SPAN lang=EN-IE
+style="FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black; mso-bidi-font-weight: normal"><o:p></o:p></SPAN></FONT></B></P>
+<P class=MsoPlainText><SPAN class=GramE><FONT face="Courier New" color=black
+size=2><SPAN lang=EN-IE
+style="FONT-SIZE: 10pt; COLOR: black">dynfield/attribute-new</SPAN></FONT></SPAN><FONT
+color=black><SPAN lang=EN-IE style="COLOR: black"> should give a warning to stop
+people changing the Widget once the attribute is
+created.<o:p></o:p></SPAN></FONT></P></DIV></BODY></HTML>

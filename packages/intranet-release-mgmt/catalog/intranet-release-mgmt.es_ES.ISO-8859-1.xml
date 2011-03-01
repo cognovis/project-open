@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-release-mgmt" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Release_Mgmt">Gestión de releases</msg>
+  <msg key="Release_Projects">Proyectos de release</msg>
+</message_catalog>

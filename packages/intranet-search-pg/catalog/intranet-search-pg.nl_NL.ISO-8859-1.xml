@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Advanced_Search">Uitgebreid zoeken</msg>
+  <msg key="Bad_Query">Foutieve query</msg>
+  <msg key="Bad_Query_Msg">De &amp;#93;po&amp;#91; zoekmachine is in staat om complexe queries met meer dan een woord uit te voeren. &lt;br&gt; Echter: u dient wel op te geven hoe gezocht moet worden: &lt;p&gt; &lt;ul&gt; &lt;li&gt;Keyword1 &lt;b&gt;&amp;&lt;/b&gt; Keyword2:&lt;br&gt;zoekt naar objecten die beide woorden bevatten.&lt;br&gt;&amp;nbsp; &lt;li&gt;Keyword1 &lt;b&gt;|&lt;/b&gt; Keyword2:&lt;br&gt;zoekt naar objecten die een van beide woorden bevatten.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;!&lt;/b&gt;Keyword:&lt;br&gt;zoekt naar objecten die waarin het opgegeven woord NIET voorkomt.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;(&lt;/b&gt;Query&lt;b&gt;)&lt;/b&gt;:&lt;br&gt;kunt u gebruiken om een groep van queries te benoemen.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; &lt;H3&gt;Voorbeelden&lt;/h3&gt; &lt;ul&gt; &lt;li&gt;&lt;b&gt;'project &amp; open'&lt;/b&gt;:&lt;br&gt;zoek naar alle objecten waarin 'project' en'open' voorkomen.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;'project | open'&lt;/b&gt;:&lt;br&gt;zoek naar alle objecten waarin 'project' of 'open' voorkomen.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; </msg>
+  <msg key="Include_Deleted">Verwijderden meenemen</msg>
+  <msg key="lt_Make_sure_all_words_a">Verzeker u ervan dat alle woorden goed gespeld zijn.</msg>
+  <msg key="lt_No_pages_were_found_c">Er zijn geen pagina's gevonden voor deze zoekactie: &quot;</msg>
+  <msg key="lt_Try_different_keyword">Probeer andere trefwoorden.</msg>
+  <msg key="lt_Try_more_general_keyw">Probeer meer generieke trefwoorden.</msg>
+  <msg key="Next">Volgene</msg>
+  <msg key="of_about">van ongeveer</msg>
+  <msg key="of_more_then">of meer dan</msg>
+  <msg key="Parent">Ouder</msg>
+  <msg key="Previous">Vorige</msg>
+  <msg key="Result_page">Resultaten pagina</msg>
+  <msg key="Results">Resultaten</msg>
+  <msg key="Search">Zoek</msg>
+  <msg key="Search_Engine">Zoekmachine</msg>
+  <msg key="Search_for_sepcific_object_types">Zoek voor gespecificeerde object typen:</msg>
+  <msg key="Search_Results_for_query">Zoekresultaten voor '%q%'</msg>
+  <msg key="Search_took">Zoekteken</msg>
+  <msg key="seconds">seconden</msg>
+  <msg key="Suggestions">Suggesties</msg>
+  <msg key="Try_fewer_keywords">Probeer minder trefwoorden</msg>
+</message_catalog>

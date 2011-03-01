@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="add_supervisor">adiciona supervisor</msg>
+  <msg key="Availability_">Disponibilidade %</msg>
+  <msg key="Birthdate">Data de Nascimento</msg>
+  <msg key="Cell_Phone">Telefone Celular</msg>
+  <msg key="Currency">Moeda</msg>
+  <msg key="Department">Departamento</msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="Email">Email</msg>
+  <msg key="Employee_Information">Informação do Funcionário</msg>
+  <msg key="Employee_Own_Supervisor">Um funcionário não pode ser seu próprio supervisor.</msg>
+  <msg key="Employee_Status">Status do Funcionário</msg>
+  <msg key="End_date">Data final</msg>
+  <msg key="Filter_Employees">Filtrar Funcionários</msg>
+  <msg key="Go">Ir para</msg>
+  <msg key="Home_Phone">Telefone Residencial</msg>
+  <msg key="Hourly_Cost">Custo por hora</msg>
+  <msg key="Insurance">Seguro</msg>
+  <msg key="Job_Description">Descrição do Cargo</msg>
+  <msg key="Job_Title">Cargo</msg>
+  <msg key="lt_Employee_Information_">Informação de funcionário para %employee_name%</msg>
+  <msg key="lt_Employees_without_sup">Funcionários sem supervisores</msg>
+  <msg key="Name">Nome</msg>
+  <msg key="No">Não</msg>
+  <msg key="Other_Costs">Outros Custos</msg>
+  <msg key="Salary">Salário</msg>
+  <msg key="Start_Date">Data Inicial</msg>
+  <msg key="Start_date">Data inicial</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Supervisor">Supervisor</msg>
+  <msg key="Users">Usuários</msg>
+  <msg key="Work_Phone">Telefone Comercial</msg>
+  <msg key="Yes">Sim</msg>
+</message_catalog>

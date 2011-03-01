@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="es_LA" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Agregar nuevo gasto</msg>
+  <msg key="Add_a_new_Expense_Item">Nuevo item de gastos</msg>
+  <msg key="Add_one_new_Expense_Item">Nuevo item de gastos</msg>
+  <msg key="All">Todos</msg>
+  <msg key="Amount">Monto</msg>
+  <msg key="Billable_p">Facturable?</msg>
+  <msg key="Cash">Caja</msg>
+  <msg key="Copies">Copias</msg>
+  <msg key="Create_Invoice">Crear factura de gastos</msg>
+</message_catalog>

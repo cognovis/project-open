@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="A">A:</msg>
+  <msg key="Add_QA_for_faq_name">Neuen F&amp;A-Eintrag zu %faq_name% hinzufügen</msg>
+  <msg key="administer">Verwalten</msg>
+  <msg key="All_QA">Alle F&amp;amp;As</msg>
+  <msg key="Answer">Antwort</msg>
+  <msg key="Answer_text_in_html">Antwort im HTML-Format</msg>
+  <msg key="Back_to_FAQs">Zurück zu FAQs</msg>
+  <msg key="Change_settings">&amp;Auml;nderungen &amp;uuml;bernehmen</msg>
+  <msg key="Configure">Konfigurieren</msg>
+  <msg key="Create_a_new_FAQ">Neues FAQ erstellen</msg>
+  <msg key="Create_an_FAQ">Neues FAQ erstellen</msg>
+  <msg key="Create_FAQ">FAQ erstellen</msg>
+  <msg key="Create_New_QA">Neuen F&amp;A-Eintrag hinzufügen</msg>
+  <msg key="Create_new_QA">Neuen F&amp;A-Eintrag hinzufügen</msg>
+  <msg key="Create_QA">Neuen F&amp;A-Eintrag hinzufügen</msg>
+  <msg key="Delete">Löschen</msg>
+  <msg key="delete">Löschen</msg>
+  <msg key="Delete_This_QA">Diesen F&amp;A-Eintrag löschen</msg>
+  <msg key="Edit">Bearbeiten</msg>
+  <msg key="edit">Bearbeiten</msg>
+  <msg key="Edit_an_FAQ">Ein FAQ bearbeiten</msg>
+  <msg key="Enable_Categories">Kategorien aktivieren </msg>
+  <msg key="Enable_WYSIWYG">WYSIWYG aktivieren</msg>
+  <msg key="FAQ_Admin">FAQs verwalten</msg>
+  <msg key="faq_name_Admin">%faq_name% verwalten</msg>
+  <msg key="FAQs">FAQs</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">Hier neuen F&amp;A-Eintrag einfügen</msg>
+  <msg key="lt_Are_you_sure_you_want">Wollen Sie dieses FAQ wirklich löschen?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Wollen Sie diese Frage wirklich löschen?</msg>
+  <msg key="lt_no_FAQs">Keine FAQs vorhanden</msg>
+  <msg key="lt_no_questions">Keine Fragen vorhanden</msg>
+  <msg key="Name">Titel:</msg>
+  <msg key="New">Neuen F&amp;A-Eintrag hinzufügen</msg>
+  <msg key="No">Nein</msg>
+  <msg key="One_Question">Eine Frage</msg>
+  <msg key="Plain">Einfacher Text</msg>
+  <msg key="Preformatted">Vorformatierter Text</msg>
+  <msg key="pretty_name">FAQ</msg>
+  <msg key="preview">Vorschau</msg>
+  <msg key="Q">F:</msg>
+  <msg key="QA_On_Separate_Pages">F&amp;A auf getrennten Seiten?</msg>
+  <msg key="QA_on_Separate_Pages">F&amp;A auf getrennten Seiten?</msg>
+  <msg key="Question">Frage</msg>
+  <msg key="Question_text_in_html">Frage im HTML-Format</msg>
+  <msg key="swap_with_next">Um eins nach unten verschieben</msg>
+  <msg key="Text_type">Format</msg>
+  <msg key="Title">Titel:</msg>
+  <msg key="Update_FAQ">FAQ aktualisieren</msg>
+  <msg key="Update_This_QA">Diesen F&amp;A-Eintrag aktualisieren</msg>
+  <msg key="View_All_FAQs">Alle FAQs anzeigen</msg>
+  <msg key="Yes">Ja</msg>
+</message_catalog>

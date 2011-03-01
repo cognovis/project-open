@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Action">Actie</msg>
+  <msg key="Admin_workflows">Beheer workflow</msg>
+  <msg key="All_Tasks">Alle taken</msg>
+  <msg key="Approve">Goedkeuren</msg>
+  <msg key="Assign_somebody_else">Aan iemand anders toegewezen</msg>
+  <msg key="Assign_yourself">Wijs dit aan uw zelf toe</msg>
+  <msg key="Assignee">Toegewezen door</msg>
+  <msg key="assignment_group">toegewezen groep</msg>
+  <msg key="Automatic_trigger">Automatische trigger</msg>
+  <msg key="Confirm_Quote">Offerte bevestigen</msg>
+  <msg key="Currrent_assignees">Op dit moment toegewezen personen</msg>
+  <msg key="Debug_Case">Debug case</msg>
+  <msg key="Execute">Uitvoeren</msg>
+  <msg key="Holding_user">Holding gebruiker</msg>
+  <msg key="Modify">Wijzigen</msg>
+  <msg key="my_object">mijn object</msg>
+  <msg key="Next_step_details">Details van de volgende stap</msg>
+  <msg key="none">geen</msg>
+  <msg key="Object_Name">Object naam</msg>
+  <msg key="Object_Owner">Object eigenaar</msg>
+  <msg key="Owner">Eigenaar</msg>
+  <msg key="Past_actions">Vorige acties</msg>
+  <msg key="Quote">Offerte</msg>
+  <msg key="Relationship">Relatie</msg>
+  <msg key="Reset_Case">Reset case</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Task_name">Taak naam</msg>
+  <msg key="Task_state">Status taak</msg>
+  <msg key="Type">Type</msg>
+  <msg key="Unassigned_Tasks">Niet toegewezen taken</msg>
+  <msg key="What">Wat?</msg>
+  <msg key="When">Wanneer?</msg>
+  <msg key="Who">Wie?</msg>
+  <msg key="Workflow_Home">Thuispagina werkproces</msg>
+  <msg key="Your_Tasks">Mijn taken</msg>
+</message_catalog>

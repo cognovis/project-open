@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="nl_ZA" charset="ISO-8859-1">
+
+  <msg key="A">'n:</msg>
+  <msg key="Add_QA_for_faq_name">Voeg &quot;Vraag &amp; Antwoord&quot; vir %faq_name% toe</msg>
+  <msg key="administer">beheer</msg>
+  <msg key="All_QA">Alle vrae &amp; antwoorde</msg>
+  <msg key="Answer">Antwoord</msg>
+  <msg key="Answer_text_in_html">Antwoordteks in html</msg>
+  <msg key="Back_to_FAQs">Terug naar veelgestelde vrae</msg>
+  <msg key="Change_settings">Verander instellinge</msg>
+  <msg key="Configure">Configureer</msg>
+  <msg key="Create_a_new_FAQ">Maak 'n nuwe veelgestelde vraag (faq) aan</msg>
+  <msg key="Create_an_FAQ">Maak 'n veelgestelde vraag (faq) aan</msg>
+  <msg key="Create_FAQ">Maak Veelgestelde vraag (faq) aan</msg>
+  <msg key="Create_New_QA">Maak nuwe Vraag&amp;Antwoord aan</msg>
+  <msg key="Create_new_QA">Maak nuwe Vraag&amp;Antwoord aan</msg>
+  <msg key="Create_QA">Maak vraag&amp;Antwoord aan</msg>
+  <msg key="Delete">Verwyder</msg>
+  <msg key="delete">verwyder</msg>
+  <msg key="Delete_This_QA">Verwyder hierdie Vraag&amp;Antwoord</msg>
+  <msg key="Edit">Bewerk</msg>
+  <msg key="edit">bewerk</msg>
+  <msg key="Edit_an_FAQ">Wysig 'n veelgestelde vraag</msg>
+  <msg key="Enable_Categories">Skakel kategorië in</msg>
+  <msg key="Enable_WYSIWYG">Skakel WYSIWYG in</msg>
+  <msg key="FAQ_Admin">Beheer veelgestelde vrae (faq's)</msg>
+  <msg key="faq_name_Admin">beheer %faq_name%</msg>
+  <msg key="FAQs">Veelgestelde vrae (faq)</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">voeg in na</msg>
+  <msg key="lt_Are_you_sure_you_want">Wil u hierdie veelgestelde vraag eg verwyder?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Wil u hierdie vraag eg verwyder?</msg>
+  <msg key="lt_no_FAQs">Daar is geen veelgestelde vrae beskikbaar nie.</msg>
+  <msg key="lt_no_questions">Daar is geen vragen beschikbaar nie</msg>
+  <msg key="Name">Naam:</msg>
+  <msg key="New">Nuut</msg>
+  <msg key="No">Nee</msg>
+  <msg key="One_Question">Een vraag</msg>
+  <msg key="Plain">Sonder opmaak</msg>
+  <msg key="Preformatted">Vooraf opgemaak</msg>
+  <msg key="preview">voorskou</msg>
+  <msg key="Q">V:</msg>
+  <msg key="QA_On_Separate_Pages">Vraag&amp;Antwoord op verskillende bladsye?</msg>
+  <msg key="QA_on_Separate_Pages">Vraag&amp;Antwoord op verskillende bladsye?</msg>
+  <msg key="Question">Vraag</msg>
+  <msg key="Question_text_in_html">Vraagteks in html</msg>
+  <msg key="Set_Category_Mode">Stel categoriemode in</msg>
+  <msg key="Site_wide_categories">Werfbreë categorië</msg>
+  <msg key="swap_with_next">wissel met volgende</msg>
+  <msg key="Text_type">Tekstipe?</msg>
+  <msg key="Title">Titel:</msg>
+  <msg key="Update_FAQ">Dateer veelgestelde vraag op</msg>
+  <msg key="Update_This_QA">Dateer hierdie Vraag&amp;Antwoord op</msg>
+  <msg key="View_All_FAQs">Toon alle veelgestelde vrage (faq's)</msg>
+  <msg key="Yes">Ja</msg>
+</message_catalog>

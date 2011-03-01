@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="A">R:</msg>
+  <msg key="administer">administrer</msg>
+  <msg key="Answer">Réponse</msg>
+  <msg key="Delete">Effacer</msg>
+  <msg key="delete">effacer</msg>
+  <msg key="Edit">Editer</msg>
+  <msg key="edit">editer</msg>
+  <msg key="FAQs">FAQs</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="Name">Nom:</msg>
+  <msg key="One_Question">Une question</msg>
+  <msg key="Q">Q:</msg>
+  <msg key="Question">Question</msg>
+  <msg key="Title">Titre:</msg>
+  <msg key="View_All_FAQs">Voir toutes les FAQs</msg>
+  <msg key="Yes">Oui</msg>
+</message_catalog>

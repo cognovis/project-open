@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Bill">Оплачивается?</msg>
+  <msg key="Description">Описание</msg>
+  <msg key="Filter_Materials">Фильтр материалов</msg>
+  <msg key="Material">Материал</msg>
+  <msg key="Name">Имя</msg>
+  <msg key="Nr">Номер</msg>
+  <msg key="Status">Состояние</msg>
+  <msg key="There_are_no_active_materials">Нет материалов, соответствующих заданным условиям</msg>
+  <msg key="Type">Тип</msg>
+  <msg key="UoM">Ед. изм.</msg>
+</message_catalog>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Filter_Invoices">請求書フィルター</msg>
+  <msg key="Include_in_Invoice">請求書に含める</msg>
+  <msg key="Invoice_Currency">請求書の通貨</msg>
+  <msg key="Invoice_Status">請求書の状態</msg>
+  <msg key="Invoices">請求書</msg>
+  <msg key="lt_Select_Projects_for_I">請求書のためのプロジェクトを選択</msg>
+  <msg key="lt_Select_Tasks_for_Invo">請求書のためのタスクを選択</msg>
+  <msg key="lt_There_are_currently_n">選ばれた基準にマッチする請求書がありません</msg>
+  <msg key="lt_There_are_currently_n_1">選ばれた基準に適合するプロジェクトがありません。</msg>
+  <msg key="lt_To_create_a_new_invoi">新規請求書を作成するには&lt;br&gt;&lt;em&gt;同じクライアントの&lt;/em&gt;１つまたは複数のプロジェクトを選択してください。&lt;br&gt;そして、&quot;新規送り状&quot;のページのボタン&lt;br&gt;を押してください。</msg>
+  <msg key="New_Customer_Invoice_from_Translation_Tasks">トランスレーション・タスクから新規企業の請求書を作成する。</msg>
+  <msg key="New_Quote_from_Translation_Tasks">翻訳タスクから新規見積書を作成する。</msg>
+  <msg key="New_Trans_Invoice">新規送付請求書</msg>
+  <msg key="New_Translation_Customer_Invoice">新規翻訳顧客請求書</msg>
+  <msg key="New_Translation_Quote">新規翻訳見積書</msg>
+</message_catalog>

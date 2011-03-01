@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="zh_TW" charset="utf-8">
+
+  <msg key="Case">案件</msg>
+  <msg key="lt_Please_click_here_to_">請按下這裡以進入</msg>
+  <msg key="lt_You_are_a_participant">你是%object_type.pretty_name%的其中一個參與者。</msg>
+  <msg key="lt_You_are_assigned_to_t">你被分配到了下一步的行動。</msg>
+</message_catalog>

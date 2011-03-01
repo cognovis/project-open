@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="ar_LB" charset="utf-8">
+
+  <msg key="Case">حالة</msg>
+  <msg key="lt_Please_click_here_to_">الرجاء إضغط هنا لزيارة %object_type.pretty_name%:</msg>
+  <msg key="lt_You_are_a_participant">أنت مشارك في هذا %object_type.pretty_name%.</msg>
+  <msg key="lt_You_are_assigned_to_t">انت مدرج للعمل التالى</msg>
+  <msg key="lt_You_have_a_watch_on_t">لديك مراقبة لهذا %object_type.pretty_name%.</msg>
+  <msg key="lt_You_have_requested_to">لقد طلبت بان يتم اعلامك بكل نشاطات %object_type.pretty_plural% في %workflow_object.name%.
+
+</msg>
+  <msg key="notification_email_latest_action_chunk">%action_past_tense% بواسطة %user_name% (%user_email%)</msg>
+</message_catalog>

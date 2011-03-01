@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Advanced_Search">高级搜索</msg>
+  <msg key="Bad_Query">糟糕的查询</msg>
+  <msg key="Bad_Query_Msg">&amp;#93;po&amp;#91; 的搜索引擎可以处理超过一个关键字的复杂查询.&lt;br&gt; 当然,您需要按照搜索引擎的方式来查询: &lt;p&gt;&lt;ul&gt;&lt;li&gt;关键字1&lt;b&gt;&amp;&lt;/b&gt; 关键字2:&lt;br&gt;搜索同时包含两边关键字的对象 &lt;br&gt;&amp;nbsp; &lt;li&gt;关键字1 &lt;b&gt;|&lt;/b&gt; 关键字:&lt;br&gt;搜索任意包含两边关键字的对象&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;!&lt;/b&gt;关键字:&lt;br&gt;搜索不包含关键字的对象&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;(&lt;/b&gt;查询语句&lt;b&gt;)&lt;/b&gt;:&lt;br&gt;您可以通过括号进行嵌套查询.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; &lt;H3&gt;范例&lt;/h3&gt; &lt;ul&gt; &lt;li&gt;&lt;b&gt;'project &amp; open'&lt;/b&gt;:&lt;br&gt;搜索所有同时包括 'project' 和 'open' 的对象.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;'project | open'&lt;/b&gt;:&lt;br&gt;搜索所有包括 'project' 或者 'open' 的对象.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; 
+
+
+</msg>
+  <msg key="Include_Deleted">包括删除了的</msg>
+  <msg key="lt_Make_sure_all_words_a">确保所有单词拼写正确</msg>
+  <msg key="lt_No_pages_were_found_c">没有结果返回,查询为:&quot;</msg>
+  <msg key="lt_Try_different_keyword">试试其他关键字.</msg>
+  <msg key="lt_Try_more_general_keyw">试试更常见的关键字</msg>
+  <msg key="Next">下一页</msg>
+  <msg key="of_about">关于</msg>
+  <msg key="of_more_then">更多则</msg>
+  <msg key="Parent">上一级</msg>
+  <msg key="Previous">前一页</msg>
+  <msg key="Result_page">结果页</msg>
+  <msg key="Results">结果</msg>
+  <msg key="Search">搜索</msg>
+  <msg key="Search_Engine">搜索引擎</msg>
+  <msg key="Search_for_sepcific_object_types">搜索特定对象类型</msg>
+  <msg key="Search_Results_for_query">搜索结果为 '%q%'</msg>
+  <msg key="Search_took">搜索花费</msg>
+  <msg key="seconds">秒</msg>
+  <msg key="Suggestions">建议</msg>
+  <msg key="Try_fewer_keywords">试试更少关键字</msg>
+</message_catalog>

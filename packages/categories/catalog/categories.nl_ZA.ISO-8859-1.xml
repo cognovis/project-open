@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="categories" locale="nl_ZA" charset="ISO-8859-1">
+
+  <msg key="cadmin">Kategorieëbeheer</msg>
+  <msg key="code_export">Eksporteer kode om kategoriebome opnuut aan te maak</msg>
+  <msg key="code_necessary">Tcl-kode om betreffende kategoriebome opnuut aan te maak</msg>
+  <msg key="export">Eksporteer</msg>
+</message_catalog>

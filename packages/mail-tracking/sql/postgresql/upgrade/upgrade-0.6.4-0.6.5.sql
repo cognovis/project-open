@@ -1,0 +1,1 @@
+alter table acs_mail_log add column from_addr varchar(400);

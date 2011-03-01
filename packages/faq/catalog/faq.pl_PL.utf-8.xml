@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="pl_PL" charset="utf-8">
+
+  <msg key="A">O:</msg>
+  <msg key="Add_QA_for_faq_name">Dodaj P&amp;O do %faq_name%</msg>
+  <msg key="administer">administruj</msg>
+  <msg key="All_QA">Wszystkie P&amp;O</msg>
+  <msg key="Answer">Odpowiedź</msg>
+  <msg key="Answer_text_in_html">Tekst odpowiedzi w html</msg>
+  <msg key="Back_to_FAQs">Powrót do CZaP</msg>
+  <msg key="Change_settings">Zmień ustawienia</msg>
+  <msg key="Configure">Konfiguruj</msg>
+  <msg key="Create_a_new_FAQ">Utwórz nową CZaPę</msg>
+  <msg key="Create_an_FAQ">Utwórz nową CZaPę</msg>
+  <msg key="Create_FAQ">Utwórz CZaPę</msg>
+  <msg key="Create_New_QA">Utwórz nowe Pytanie - Odpowiedź</msg>
+  <msg key="Create_new_QA">Utwórz nowe Pytanie - Odpowiedź</msg>
+  <msg key="Create_QA">Utwórz Pytanie - Odpowiedź</msg>
+  <msg key="Delete">Usuń</msg>
+  <msg key="delete">usuń</msg>
+  <msg key="Delete_This_QA">Usuń to P&amp;O</msg>
+  <msg key="Edit">Edytuj</msg>
+  <msg key="edit">edytuj</msg>
+  <msg key="Edit_an_FAQ">Edytuj CZaPę</msg>
+  <msg key="Enable_Categories">Włącz Kategorie</msg>
+  <msg key="Enable_WYSIWYG">Włącz WYSIWYG</msg>
+  <msg key="FAQ_Admin">Admin CZaP</msg>
+  <msg key="faq_name_Admin">Admin %faq_name%</msg>
+  <msg key="FAQs">CZaPy</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">wstaw po</msg>
+  <msg key="lt_Are_you_sure_you_want">Czy na pewno usunąć tę CZaPę?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Czy na pewno usunąć to pytanie?</msg>
+  <msg key="lt_no_FAQs">Póki co, brak tu CZaP.</msg>
+  <msg key="lt_no_questions">Brak pytań.</msg>
+  <msg key="Name">Nazwa:</msg>
+  <msg key="New">Nowy</msg>
+  <msg key="No">Nie</msg>
+  <msg key="One_Question">Pytanie</msg>
+  <msg key="Plain">Prosty</msg>
+  <msg key="Preformatted">Preformatowany</msg>
+  <msg key="preview">podgląd</msg>
+  <msg key="Q">P:</msg>
+  <msg key="QA_On_Separate_Pages">P&amp;O na oddzielnych stronach?</msg>
+  <msg key="QA_on_Separate_Pages">P&amp;O na oddzielnych stronach?</msg>
+  <msg key="Question">Pytanie</msg>
+  <msg key="Question_text_in_html">Tekst pytania w html</msg>
+  <msg key="Set_Category_Mode">Ustaw Tryb Kategorii</msg>
+  <msg key="swap_with_next">zamień z następnym</msg>
+  <msg key="Text_type">Typ tekstu?</msg>
+  <msg key="Title">Tytuł:</msg>
+  <msg key="Update_FAQ">Odśwież CZaPę</msg>
+  <msg key="Update_This_QA">Odśwież tę CZaPę</msg>
+  <msg key="View_All_FAQs">Pokaż Wszystkie CZaPy</msg>
+  <msg key="Yes">Tak</msg>
+</message_catalog>

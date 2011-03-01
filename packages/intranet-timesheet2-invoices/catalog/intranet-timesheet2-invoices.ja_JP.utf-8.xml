@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Create_Invoice">請求書作成</msg>
+  <msg key="Create_lt_Quoteintranet-coreQuo">見積書作成</msg>
+  <msg key="Filter_Invoices">請求書フィルター</msg>
+  <msg key="Include_in_Invoice">請求書に含める</msg>
+  <msg key="Invoice_Currency">請求書の通貨</msg>
+  <msg key="Invoice_Data">請求書データ</msg>
+  <msg key="Invoice_date">請求日付</msg>
+  <msg key="Invoice_nr">請求書番号</msg>
+  <msg key="Invoice_Status">請求書の状態</msg>
+  <msg key="Invoice_template">請求書テンプレート</msg>
+  <msg key="Invoices">請求書</msg>
+  <msg key="lt_Select_Projects_for_I">請求書のためのプロジェクトを選択</msg>
+  <msg key="lt_Select_Tasks_for_Invo">請求書のためのタスクを選択</msg>
+  <msg key="lt_There_are_currently_n">選ばれた基準にマッチする請求書がありません</msg>
+  <msg key="lt_There_are_currently_n_1">選ばれた基準にマッチしているプロジェクトがありません。</msg>
+  <msg key="lt_To_create_a_new_invoi">新しい請求書を作成するために&lt;br&gt;&lt;em&gt;同じ顧客&lt;/em&gt;の一つ以上のプロジェクトを選んでください。&quot;新規請求書&quot;ページにあるボタン&lt;br&gt;を押してください。
+		</msg>
+  <msg key="New_Customer_Invoice_from_Timesheet_Tasks">タイムシートタスクから新規顧客請求書を作成</msg>
+  <msg key="New_Invoice">新規請求書</msg>
+  <msg key="New_lt_Quoteintranet-coreQuo">新規見積書</msg>
+  <msg key="New_Quote_from_Timesheet_Tasks">タイムカード・タスクからの新規見積書</msg>
+  <msg key="New_Timesheet_Invoice">新規タイムシート請求書</msg>
+</message_catalog>

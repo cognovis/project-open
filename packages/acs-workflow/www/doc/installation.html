@@ -1,0 +1,195 @@
+<html>
+<head>
+<title>Workflow Installation and Getting Started Guide</title>
+
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Installation and Getting Started Guide</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 26 October 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Installation and Getting Started Guide
+
+<hr>
+
+<dl>
+
+<dt>1. Install the ACS-Workflow APM Package</dt>
+
+<dd>
+Workflow is installed by default on OpenACS 4.
+</dd>
+
+<dt>2. Install GraphViz</dt>
+
+<dd>
+
+<p>
+<ul>
+
+<li><a
+href="http://www.research.att.com/sw/tools/graphviz/download.html">GraphViz
+download page</a>
+
+</ul>
+<p>
+We use GraphViz to create a graphic representation of the
+process. This is used in a number of places, including the Advanced
+Process Builder and the Process Monitor. Although the package will
+operate without GraphViz installed, it is highly recommended that you
+do install GraphViz. 
+
+<p>
+
+On RedHat 7.2, say:
+
+<pre>rpm -ivh http://www.research.att.com/sw/tools/graphviz/dist/graphviz-1.8.1-0.i386.rpm</pre>
+
+On Debian, say:
+
+<pre>apt-get install graphviz</pre>
+
+On other systems, visit the <a
+href="http://www.research.att.com/sw/tools/graphviz/download.html">GraphViz
+download page</a> and see what you can find out.
+
+</dd>
+
+<dt>3. Install Fonts for GraphViz</dt>
+
+<dd>
+
+<p>
+
+<ul>
+
+<li><a
+href="http://rpmfind.net/linux/RPM/contrib/noarch/noarch/webfonts-1-3.noarch.html">webfonts
+RPM</a> 
+
+or <a
+href="http://www.microsoft.com/typography/fontpack/default.htm">Microsoft
+free TrueType font download page</a>
+
+</ul>
+
+<p>
+
+This will work a little differently depending on your platform.
+<p>
+On Linux, you can install the <strong>RPM fonts</strong>:
+
+<pre>
+$ su -
+$ rpm -ivh ftp://rpmfind.net/linux/contrib/noarch/noarch/webfonts-1-3.noarch.rpm
+</pre>
+
+Unfortunately, Graphviz doesn't look in the place where the webfonts
+RPM puts them. Webfonts puts the fonts in
+<code>/usr/X11R6/lib/X11/fonts/webfonts</code>. Graphviz looks in
+<code>/usr/X11R6/lib/X11/fonts/webfonts/truetype</code> (among other
+places, and it may vary from version to version.)
+
+<p>
+
+Here's what you can do to copy the font files from where webfonts puts
+them to where GraphiViz looks:
+
+<pre>
+$ cd /usr/X11R6/lib/X11/fonts
+$ mkdir truetype
+$ cd truetype
+$ cp ../webfonts/* .
+</pre>
+
+<p>
+
+You don't have to copy over all the fonts. For the standard
+installation, you only need <code>arial.ttf</code>,
+<code>arialb.ttf</code>, and <code>times.ttf</code>. You may also
+symlink them if you prefer. But the above will work.
+<p>
+
+If you have a recent version of Solaris, you can probably find the
+fonts in <code>/usr/openwin/lib/X11/font/TrueType/</code>.  The names
+are not what GraphViz expects, though, so you should create links with
+the appropriate names in <code>/usr/local/lib/fonts/</code>:
+
+<pre>
+$ su -
+$ ln -s /usr/openwin/lib/X11/font/TrueType/Arial.ttf /usr/local/lib/fonts/arial.ttf
+$ ln -s /usr/openwin/lib/X11/font/TrueType/Arial-Bold.ttf /usr/local/lib/fonts/arialb.ttf
+$ ln -s /usr/openwin/lib/X11/font/TrueType/TimesNewRoman.ttf /usr/local/lib/fonts/times.ttf
+</pre>
+
+<p>
+
+If neither of these options works for you and you have a Windows
+machine handy, you can download the <strong>Microsoft fonts</strong>:
+
+<ol>
+
+<li>Download and execute <a
+href="http://www.microsoft.com/typography/downloads/arial32.exe">arial32.exe</a>
+on a Windows machine.
+
+<li>Locate your font files in <code>c:\windows\fonts</code> or
+<code>c:\winnt\fonts</code>.
+
+<li>Copy <code>arial.ttf</code> and <code>arialb.ttf</code> onto your
+server Unix machine, into
+<code>/usr/X11R6/lib/X11/fonts/truetype</code>. If you want, you can
+download, install and copy over additional font files.
+
+</ol>
+
+</dd>
+
+<dt>4. Configure the Workflow Package</dt>
+
+<dd>
+
+<ol>
+
+<li>Visit the Site Map at <code><a
+href="/admin/site-map">/admin/site-map</a></code> on your webserver.
+
+<li>Click "set parameters" next to the acs-workflow package.
+
+<li>Make sure the <code>graphviz_dot_path</code> parameter points to the dot
+binary that you just installed e.g., <code>/usr/local/bin/dot</code>,
+and the <code>tmp_path</code> parameter should point to some directory
+where temporary files can be stored e.g., <code>/var/tmp</code>.
+
+</ol>
+
+</dd>
+
+
+<dt>Congratulations</dt>
+
+<dd>
+Your workflow package is installed. You probably want to visit the
+package at <code><a href="/acs-workflow/">/acs-workflow/</a></code> (this
+is where Workflow is mounted by default&#151;may vary on your server),
+click on admin, and study the sample processes included.
+
+
+</dd>
+
+</dl>
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

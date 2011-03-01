@@ -1,0 +1,239 @@
+<sect1 id="requirements" xreflabel="Content Management System Requirements">
+  <title>Content Management System Requirements</title>
+
+   <para>by Karl Goldstein</para>
+
+  <sect2 id="requirements-introduction" xreflabel="Introduction">
+    <title>Introduction</title>
+
+    <para>This document lays out the requirements for a content management
+      system (CMS). A CMS is a client application that allows
+      non-technical members of a web site publishing team to create,
+      manage and deploy all types of content using a single consistent
+      interface.</para>
+  </sect2>
+
+  <sect2 id="requirements-vision-statement" xreflabel="Vision Statement">
+    <title>Vision Statement</title>
+
+    <para>Rich content exerts a powerful draw on web users, and is a key
+      asset for most high-profile sites. Most corporate web sites are
+      supported by a publishing team that may include authors, editors,
+      designers, developers and managers. The CMS should improve the
+      productivity of all members of the publishing team by allowing them
+      to accomplish their respective tasks without the need for regular
+      developer intervention. It should also maximize the quality and
+      accessibility of content by allowing publishers to enforce standard
+      production workflows, as well as by providing publishers with
+      effective tools for organizing, categorizing and scheduling
+      content.</para>
+  </sect2>
+
+  <sect2 id="requirements-systemapplication-overview" xreflabel="System/Application Overview">
+    <title>System/Application Overview</title>
+
+    <para>The basic functions provided by the CMS include:</para>
+
+    <itemizedlist>
+      <listitem><para>Content workflow management</para></listitem>
+
+      <listitem><para>Content data entry and upload interface</para></listitem>
+
+      <listitem><para>Version control</para></listitem>
+
+      <listitem><para>Template management</para></listitem>
+
+      <listitem><para>Scheduled and manual deployment of content to public
+	  server(s)</para></listitem>
+
+      <listitem><para>Classification and linking of content items</para></listitem>
+
+      <listitem><para>Site organization tools</para></listitem>
+    </itemizedlist>
+  </sect2>
+
+  <sect2 id="requirements-dependencies" xreflabel="Dependencies">
+    <title>Dependencies</title>
+
+    <para>The CMS has the following dependencies:</para>
+
+    <orderedlist>
+      <listitem><para>Oracle 8.1.6 or higher.</para></listitem>
+
+      <listitem><para>AOLserver 3.0 or higher (ArsDigita distribution).</para></listitem>
+
+      <listitem><para>ArsDigita templating and form builder API (Tcl).</para></listitem>
+
+      <listitem><para>ACS 4.x kernel data model and stored procedure API.</para></listitem>
+
+      <listitem><para>ACS 4.x workflow data model and stored procedure API.</para></listitem>
+
+      <listitem><para>ACS 4.x content repository data model and stored procedure
+	  API.</para></listitem>
+    </orderedlist>
+  </sect2>
+
+  <sect2 id="requirements-use-cases-and-user-scenarios" xreflabel="Use-cases and User-scenarios">
+    <title>Use-cases and User-scenarios</title>
+
+    <para>The CMS has the following general classes of users:</para>
+
+    <itemizedlist>
+      <listitem>
+	<para><phrase>Authors</phrase> have the ability to browse content and perform
+	  data entry in particular sections of the site map. Their access to
+	  administrative portions of the application is limited.</para>
+      </listitem>
+
+      <listitem>
+	<para><phrase>Managers</phrase> have administrative access that may be limited
+	  to a particular section of the site map.</para>
+      </listitem>
+
+      <listitem>
+	<para><phrase>Administrators</phrase> have full access to all functions of the
+	  system. They may manage users and departments, determine access
+	  levels to all parts of the site, manage content type definitions,
+	  and override the settings and actions of other users.</para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+
+  <sect2 id="requirements-competitive-analysis" xreflabel="Competitive Analysis">
+    <title>Competitive Analysis</title>
+
+    <para>Content management is a critical battleground in the enterprise
+      software arena. Companies including Broadvision, Vignette, Blue
+      Martini, OpenMarket/FutureTense, Interwoven and Allaire all offer
+      highly polished, heavily marketed solutions, all of which are
+      expensive and proprietary. Zope is a widely recognized open-source
+      alternative, but it lacks a formal content management interface and
+      is further constrained by scalability issues.</para>
+
+    <para>The CMS has two key advantages that together provide an
+      advantage over the competition:</para>
+
+    <orderedlist>
+      <listitem><para>It is open-source and easy to extend or customize to meet a
+	  particular client's needs.</para></listitem>
+
+      <listitem><para>It is built on a highly scalable architecture (Oracle).</para></listitem>
+    </orderedlist>
+  </sect2>
+
+  <sect2 id="requirements-related-links" xreflabel="Related Links">
+    <title>Related Links</title>
+
+    <itemizedlist>
+      <listitem><para><emphasis>Design document</emphasis></para></listitem>
+
+      <listitem><para><emphasis>Developer's guide</emphasis></para></listitem>
+
+      <listitem><para><emphasis>User's guide</emphasis></para></listitem>
+
+      <listitem><para><emphasis>Test plan</emphasis></para></listitem>
+
+      <listitem><para><emphasis>Competitive system(s)</emphasis></para></listitem>
+    </itemizedlist>
+  </sect2>
+
+  <sect2 id="requirements-requirements-data-model-and-stored-procedure-api" xreflabel="Requirements: Data Model and Stored Procedure
+	 API">
+    <title>Requirements: Data Model and Stored Procedure
+	API</title>
+
+    <para><emphasis>The data model and data manipulation requirements for CMS are
+	largely met by the ACS 4.0 foundation on which it is
+	constructed:</emphasis></para>
+
+    <itemizedlist>
+      <listitem><para><emphasis>The ACS Kernel package provides a generic persistence
+	    mechanism for typed objects, along with access control and
+	    logging.</emphasis></para></listitem>
+
+      <listitem><para><emphasis>The ACS Workflow package provides a flexible engine for
+	    defining and managing workflows.</emphasis></para></listitem>
+
+      <listitem><para><emphasis>The ACS Content Repository provides storage and methods for
+	    manipulating content data and attributes.</emphasis></para></listitem>
+    </itemizedlist>
+
+    <para><emphasis>The additional database-level requirements for the CMS are
+	solely related to storing and managing additional information
+	associated with the user interface:</emphasis></para>
+
+    <para><emphasis><phrase>10.10 Form Metadata</phrase></emphasis></para>
+  </sect2>
+
+  <sect2 id="requirements-requirements-user-interface-api" xreflabel="Requirements: User Interface API">
+    <title>Requirements: User Interface API</title>
+
+    <para><emphasis>The ACS Templating package provides a general foundation for
+	the CMS User Interface API, simplifying the task of customizing and
+	extending the standard user interface. Some additional requirements
+	are specific to the CMS.</emphasis></para>
+
+    <para><emphasis><phrase>20.10 Form Generation</phrase></emphasis></para>
+
+    <para><emphasis><phrase>20.20 Form Generation</phrase></emphasis></para>
+
+    <para><emphasis><phrase>20.30 Form Processing</phrase></emphasis></para>
+
+    <para><emphasis><phrase>20.40 Content Retrieval</phrase></emphasis></para>
+
+    <para><emphasis><phrase>20.50 Content Publishing</phrase></emphasis></para>
+
+  </sect2>
+
+  <sect2 id="requirements-requirements-user-interface" xreflabel="Requirements: User Interface">
+    <title>Requirements: User Interface</title>
+    <para></para>
+  </sect2>
+
+  <sect2 id="requirements-revision-history" xreflabel="Revision History">
+    <title>Revision History</title>
+
+    <para>
+    <informaltable><tgroup cols="4">
+	  <thead>
+	    <row>
+	      <entry align="center">Document Revision #</entry>
+	      <entry align="center">Action Taken, Notes</entry>
+	      <entry align="center">When?</entry>
+	      <entry align="center">By Whom?</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+	      <entry>0.1</entry>
+	      <entry>Creation</entry>
+	      <entry>09/15/2000</entry>
+	      <entry>Karl Goldstein</entry>
+	    </row>
+	  </tbody>
+	</tgroup></informaltable>
+    </para>
+
+    <para>
+      <emphasis>
+	<ulink url="mailto:karlg@arsdigita.com">karlg@arsdigita.com</ulink>
+      </emphasis>
+    </para>
+
+    <para>
+      <emphasis>
+	Last modified: $Date: 2005/04/18 19:19:25 $
+      </emphasis>
+    </para>
+
+  </sect2>
+</sect1>
+
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

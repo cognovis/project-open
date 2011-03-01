@@ -1,0 +1,150 @@
+<html>
+<head>
+  <title>The Big Picture</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+
+<H2>The Big Picture</H2>
+<a href="template.html">Templates Tutorial</a> : The Big Picture
+<hr>
+
+
+<ul>
+  <li><A HREF="#templates-tool-summary">Tool Summary</A></li>
+  <li><A HREF="#templates-template-development">
+    Template Development</A></li>
+  <li><A HREF="#templates-associating-templates-with-content-items">
+    Associating Templates with Content Items</A></li>
+</ul>
+
+
+<H2>Overview</H2>
+
+<P>Content is published by merging data with <I CLASS="emphasis">templates</I>
+    that specify the format and layout of the finished page. A template
+    is a text file consisting largely of static text and markup such as
+    HTML, WML, SGML or XML. The template also has strategically
+    positioned placeholders dictating the position of content
+    attributes and data.</P>
+
+<P>There are two basic types of templates:</P>
+
+<OL TYPE="1">
+  <LI><P>Templates associated with specific content types. The template
+	contains placeholders for each attribute associated with a content
+	item of that type. For example, the template for a news story may
+	contain placeholders for a title, byline, image, and the body of
+	the story. The template may also incorporate other related dynamic
+	data, such as lists of related links or information such as stock
+	quotes, pricing or inventory.</P>
+      <P>A content type may be associated with multiple templates,
+	enabling publishers and users to choose the presentation of each
+	item individually depending on context, device or any other
+	criteria.</P></LI>
+
+  <LI><P>Templates associated with individual pages. The template is
+	applied only to a specific page on the site. Typically these pages
+	display summary information, such as top-level pages that list the
+	title and description of recent content added to the site. These
+	pages may also be highly personalized, providing links to relevant
+	content or displaying specific data based on a user's profile and
+	preferences.</P></LI>
+</OL>
+
+<P>Production templates are stored in the file system under a
+    special directory known as the <I CLASS="emphasis">template root</I>. 
+    Additional directories may exist under the template root to further 
+    organize the entire set of templates used by a site.</P>
+
+<H3 CLASS="sect3"><A NAME="templates-tool-summary">Tool Summary</A></H3>
+
+<P>CMS includes a set of basic tools for managing the production
+      and deployment of templates:</P>
+
+<P><B CLASS="phrase">Organization.</B> Templates may be organized into folders,
+      reflecting their location under the template root once they go into
+      production. Since the templates are never viewed directory from a
+      public server, this organization does not necessarily correspond to
+      what is specified in the site map.</P>
+
+<P><B CLASS="phrase">Versioning.</B> Before templates go into production, 
+      drafts are stored in the database. A full revision history is maintained,
+      enabling designers or managers to track changes and revert to
+      previous versions.</P>
+
+<P><B CLASS="phrase">Data Dictionary.</B> Designers may review the data sources
+      available to a template, so they know the set of valid placeholders
+      to embed in the markup.</P>
+
+<P><B CLASS="phrase">Asset Management.</B> Templates may include static 
+      references to graphics, sounds, animation or other media assets that 
+      are also managed with CMS. Designers and managers can view and manage 
+      asset dependencies for a template.</P>
+
+<P><B CLASS="phrase">Deployment.</B> The live version of a template is always
+      written to the file system, from where the system may use it for
+      publishing to either the file system or directly to clients.</P>
+
+<H3 CLASS="sect3">
+<A NAME="templates-template-development">Template Development</A>
+</H3>
+
+<P>The typical process of developing a template for use with CMS is
+      as follows:</P>
+
+<OL TYPE="1">
+  <LI><P><B CLASS="phrase">Information design.</B> The first step is to decide
+          on the information that the template will present.</P>
+      <P>For a reusable template applicable to any item of a particular
+	  type, this may include the following:</P>
+      <UL>
+        <LI><P CLASS="listitem">The body of the content item.</P></LI>
+        <LI><P CLASS="listitem">Attributes of the content item, such as the 
+              author, title and publication date.</P></LI>
+        <LI><P CLASS="listitem">Links to related items.</P></LI>
+        <LI><P CLASS="listitem">Keywords and other metadata for inclusion in 
+              the META tags of the document.</P></LI>
+      </UL>
+      <P>For individual page templates, the information may be anything.
+	  Index pages may query for the latest items publishing in a section,
+	  or for featured items previously selected by the publishing
+	  team.</P></LI>
+  <LI><P><B CLASS="phrase">Implement data sources.</B> The product of the 
+          information design step is a list of <I CLASS="emphasis">data 
+          sources</I>. A data source is
+	  typically a database query, but may be modified or created in
+	  procedural code as well (see the templating system documentation
+	  for details).</P>
+      <P>The data sources are implemented in a Tcl script that must
+	  reside in the directory where the template is written when
+	  published. CMS does not currently provide any UI for management of
+	  the Tcl scripts. This must be done with CVS.</P>
+      <P>The developer should document each data source using the
+	  documentation directives provided by the templating system. CMS
+	  parses these directives and presents the documentation to the
+	  designer in the UI.</P></LI>
+  <LI><P><B CLASS="phrase">Write template.</B> The first simple prototype of 
+          the template itself is typically written by the developer for the
+	  purpose of debugging the Tcl script. The developer may create this
+	  file in the file system, and then use the CMS UI to read it into
+	  the repository as the first revision of the template.</P></LI>
+  <LI><P>&#13;	<B CLASS="phrase">Revise template.</B> Once the initial 
+          version of the template is created, the designer may either edit the 
+          template in the browser, or more likely, download the template and 
+          edit it in a client editor and then upload it again to test.</P></LI>
+</OL>
+
+<H3 CLASS="sect3"><A NAME="templates-associating-templates-with-content-items">
+  Associating Templates with Content Items</A></H3>
+
+<P>&#13;      As mentioned earlier, templates can be associated with a 
+      specific content type or an individual page (content item). In order to 
+      associate a template to a specific content item, the template must first 
+      be associated with that item's content type.</P>
+
+
+<hr>
+
+</body>
+</html>

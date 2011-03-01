@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Case">Case</msg>
+  <msg key="lt_Please_click_here_to_">Please click here to visit this %object_type.pretty_name%:</msg>
+  <msg key="lt_You_are_a_participant">You are a participant in this %object_type.pretty_name%.</msg>
+  <msg key="lt_You_are_assigned_to_t">You are assigned to the next action.</msg>
+  <msg key="lt_You_have_a_watch_on_t">You have a watch on this %object_type.pretty_name%.</msg>
+  <msg key="lt_You_have_requested_to">You have requested to be notified about activity on all %object_type.pretty_plural% in %workflow_object.name%.</msg>
+  <msg key="notification_email_latest_action_chunk">%action_past_tense% by %user_name% (%user_email%)</msg>
+</message_catalog>

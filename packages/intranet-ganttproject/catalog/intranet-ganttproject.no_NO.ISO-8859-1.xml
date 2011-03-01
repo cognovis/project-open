@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="Dim_quarter_of_year">Kvartal</msg>
+  <msg key="Dim_year">Year</msg>
+  <msg key="Project_Gantt_View">Gantt Visning</msg>
+</message_catalog>

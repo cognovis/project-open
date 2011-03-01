@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Action">Aktion</msg>
+  <msg key="Add_a_new_ticket">Neues Ticket</msg>
+  <msg key="Admin_Filters">Admin Filter</msg>
+  <msg key="Admin_Tickets">Admin Tickets</msg>
+  <msg key="All">Alle</msg>
+  <msg key="Assigned">Zugewiesen</msg>
+  <msg key="Cant_reproduce">Kann nicht reproduziert werden.</msg>
+  <msg key="Close">Schließen</msg>
+  <msg key="Close_amp_notify">Schließen &amp; Benachrichtigen</msg>
+  <msg key="Closed">Geschlossen</msg>
+  <msg key="Conf_Item_type_Hardware">Hardware</msg>
+  <msg key="Conf_Item_type_License">Lizenz</msg>
+  <msg key="Conf_Item_type_Network">Netzwerk</msg>
+  <msg key="Conf_Item_type_Process">Prozess</msg>
+  <msg key="Conf_Item_type_Software">Software</msg>
+  <msg key="Conf_Item_type_Specs">Spezifikationen</msg>
+  <msg key="Contact">Kontakt</msg>
+  <msg key="Customer">Kunden</msg>
+  <msg key="Customer_Contact">Kundenkontakt</msg>
+  <msg key="Customer_Info">Kundeninfo</msg>
+  <msg key="Delete">Löschen</msg>
+  <msg key="Deleted">Gelöscht</msg>
+  <msg key="Filter_Tickets">Tickets filtern</msg>
+  <msg key="Home_Ticket_Component">Home-Ticket-Komponente</msg>
+  <msg key="Invalid">Ungültig</msg>
+  <msg key="Mine">Meine</msg>
+  <msg key="Name">Name</msg>
+  <msg key="New_SLA">Neues SLA</msg>
+  <msg key="New_Ticket">Neues Ticket</msg>
+  <msg key="Nuke">Löschen</msg>
+  <msg key="Open">Offen</msg>
+  <msg key="Prio">Prio.</msg>
+  <msg key="Service_Mgmt">IT Service Mgmt</msg>
+  <msg key="SLA">SLA</msg>
+  <msg key="SLA_List">SLA-Liste</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Ticket_Details">Ticketinfos</msg>
+  <msg key="Ticket_Members">Ticketmitglieder</msg>
+  <msg key="Ticket_Name">Ticketname</msg>
+  <msg key="Ticket_Nr">Ticketnr.</msg>
+  <msg key="Ticket_Types">Ticketarten</msg>
+  <msg key="Tickets">Tickets</msg>
+  <msg key="Title_Help">Hilfe</msg>
+  <msg key="Type">Art</msg>
+  <msg key="Update_Tickets">Tickets aktualisieren</msg>
+  <msg key="With_Member">Mit Mitglied</msg>
+</message_catalog>

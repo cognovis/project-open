@@ -1,0 +1,1 @@
+# Add a permission record to an object.

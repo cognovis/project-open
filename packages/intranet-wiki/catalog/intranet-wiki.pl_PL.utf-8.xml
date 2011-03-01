@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="pl_PL" charset="utf-8">
+
+  <msg key="Company_Wiki">Baza wiedzy firmy</msg>
+  <msg key="HomeWiki">Główna baza wiedzy</msg>
+  <msg key="Project_Wiki">Baza wiedzy projektu</msg>
+  <msg key="User_Wiki">Baza wiedzy</msg>
+</message_catalog>

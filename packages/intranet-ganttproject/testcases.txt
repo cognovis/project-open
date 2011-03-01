@@ -1,0 +1,40 @@
+
+
+- Import the files of the test suite into an empty project and 
+  check that the exported file is identical (or: deviates in a
+  controlled way).
+
+- Import the same files a 2nd time and check that nothing has
+  changed.
+
+- Export a project that has been defined in ]po[ to all three
+  formats, and then re-import the file.
+
+
+
+- Fields to be procesed during import/export:
+
+	id			=> im_project.sort_order + im_timesheet_task.sort_order
+	uid			=> im_timesheet_task.gantt_project_id
+				=> im_project.project_nr (padded to the left with "0")
+	name			=> im_project.project_name
+	isnull			=> will be ignored by ]po[ if =1. Empty lines are not preserved.
+	duration		=> im_timesheet_tasks.estimated_units + billable_units with UoM=Hour.
+	remainingduration preserved
+	start			=> im_project.start_date
+	finish			=> im_project.end_date
+	priority		=> im_project.priority
+	notes			=> im_project.note
+	outlinenumber		=> creates task hierarchy. => re-generated from hierarchy. 
+	extendedattribute	=> exports task_nr
+	predecessorlink		=> defines task dependencies
+	milestone		=> im_projects.milestone_p
+
+	outlinelevel		?
+	calendaruid		ignored
+	customproperty		only GP(?)
+	task			only GP(?)
+	depend			only GP(?)
+
+
+

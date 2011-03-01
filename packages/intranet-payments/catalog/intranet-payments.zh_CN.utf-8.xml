@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="_Previous">页面</msg>
+  <msg key="Add_New">添加</msg>
+  <msg key="Add_payment">添加支付</msg>
+  <msg key="Amount">数额</msg>
+  <msg key="Amount_Paid">已付数额</msg>
+  <msg key="Client">客户</msg>
+  <msg key="Cost_Name">成本名称</msg>
+  <msg key="Cost_Nr">Cost Nr  </msg>
+  <msg key="Del">删除</msg>
+  <msg key="Delete_payment">删除支付</msg>
+  <msg key="Edit_payment">编辑支付</msg>
+  <msg key="Filter_Payments">筛选支付</msg>
+  <msg key="Go">搜索</msg>
+  <msg key="Invoice">发票</msg>
+  <msg key="Invoice_Amount">发票额</msg>
+  <msg key="lt_Confirm_payment_delet">确认支付删除</msg>
+  <msg key="lt_Do_you_really_want_to">您真的想删除用于 %project_name% 的 %fee_type%支付 %fee_str% 吗?</msg>
+  <msg key="lt_Insufficient_Privileg">权限不足</msg>
+  <msg key="lt_No_costinvoice_item_s">没有指定成本/发票项目</msg>
+  <msg key="lt_The_intranet_start_bl">The intranet start blocks are either undefined or we do not have a start block for this week or later into the future.  </msg>
+  <msg key="lt_There_are_currently_n">目前没有支付匹配选择的条件</msg>
+  <msg key="lt_You_dont_have_suffici">您没有足够的权限来查看本页</msg>
+  <msg key="Mark_invoice_as_paid">标识发票已经支付</msg>
+  <msg key="New_payment">新支付</msg>
+  <msg key="Next_Page">下一页</msg>
+  <msg key="Note">注释</msg>
+  <msg key="One_project">一个项目</msg>
+  <msg key="Payment">支付</msg>
+  <msg key="Payment_Details">支付详情</msg>
+  <msg key="Payment_hash_simbol">支付 #</msg>
+  <msg key="Payment_Status">支付状态:</msg>
+  <msg key="Payment_Type">支付类型</msg>
+  <msg key="Payments">支付</msg>
+  <msg key="Projects">项目</msg>
+  <msg key="Provider">供应商</msg>
+  <msg key="Received">收到</msg>
+  <msg key="Start_block_error">Start block error  </msg>
+  <msg key="Status">状态</msg>
+  <msg key="Update">更新</msg>
+</message_catalog>

@@ -1,0 +1,73 @@
+<html>
+<head>
+  <title>Editing Templates in CMS</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2>Editing Templates in CMS</h2>
+
+<a href="template.html">Templates Tutorial</a> : Editing Templates in CMS
+<hr>
+
+<h4>Overview</h4>
+
+Developers can edit existing templates by entering text in a web browser.
+The datasource files (.tcl files) associated with the templates (.adp files) 
+should be maintained locally in the filesystem and ideally placed under 
+version control.  <em>Currently, there is no way to edit datasources 
+(.tcl files) using CMS although CMS can ascertain important information 
+from the datasource files.</em> 
+
+
+<h4>Step by Step</h4>
+
+<ol>
+  <li><p>Browse to the folder that contains the template to be edited.</p>
+
+  <li><p>Click the <img src="edit.gif" alt="Edit"> icon to edit this
+    template by typing text into a web browser.</p>
+
+    <p>Alternatively, clicking the name of the template and then clicking the
+    "General" tab will bring up a list of options for that template (see
+    Figure 1).  Click the "Edit" link to edit this template in a web 
+    browser.</p>
+
+    <p><center><img src="template-options.gif">
+    <br><b>Figure 1.  Template Options.</b></center></p>
+    
+
+
+
+  <li><p>The page to edit a template (see Figure 2) contains a textarea,
+    an Output Type drop-down list, and the option of editing the current 
+    revision or adding a new version entirely.  The contents and output type
+    of the template's latest revision (if it exists) will automatically be 
+    entered into the form for editing.</p>
+
+    <ul>
+      <li><p>The textarea holds the template (.adp file) body.</p>
+      <li><p><tt>Output Type</tt> corresponds to the desired MIME type of the
+        template.
+	<em>As of now, CMS only supports HTML text for Output Type.</em></p>
+      <li><p>The <tt>Create new revision</tt> option determines whether
+        the changes made to the template body and output type will be saved
+        as the current revision or as a new revision.</p>
+    </ul>
+
+    <p>Click "Save" to save changes to the template and "Cancel" to return to 
+    previous page without saving any changes.</p>
+    <p><center><img src="template-edit.gif" alt="Edit a Template">
+    <br><b>Figure 2.  Edit Template Page.</b></center></p>
+
+  <li><p>If a new revision was specified, clicking the "Save" button will 
+    result in a new revision being added to the template.  Otherwise, clicking
+    the "Save" button will result in the latest revision being modified.</p>
+
+</ol>
+
+
+<hr>
+
+</body>
+</html>

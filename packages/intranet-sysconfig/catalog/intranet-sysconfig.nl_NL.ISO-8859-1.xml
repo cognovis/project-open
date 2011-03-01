@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Page_deptcomp">Afdeling</msg>
+  <msg key="Page_features">Mogelijkheden</msg>
+  <msg key="Page_logo">Logo</msg>
+  <msg key="Page_name">Naam</msg>
+  <msg key="Page_orgsize">Omvang</msg>
+  <msg key="Page_prodtest">Evaluatie</msg>
+  <msg key="Page_profiles">Profiel pagina</msg>
+  <msg key="Page_sector">Sector</msg>
+  <msg key="profiles_all_companies">Wijzig&lt;br&gt;alle&lt;br&gt;bedrijven</msg>
+  <msg key="profiles_all_projects">Wijzig&lt;br&gt;alle&lt;br&gt;projecten</msg>
+  <msg key="profiles_employees">Personeel</msg>
+  <msg key="profiles_finance">Wijzig&lt;br&gt;financiën </msg>
+  <msg key="profiles_project_managers">Project managers</msg>
+  <msg key="profiles_senior_managers">Senior managers</msg>
+  <msg key="SysConfig">SysConfig</msg>
+  <msg key="SysConfig_Wizard">SysConfig Wizard</msg>
+  <msg key="System_Config_Wizard">Systeem configuratie wizard</msg>
+</message_catalog>

@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>Workflow Scenarios</title>
+</head>
+<body bgcolor=white>
+
+<h2>Workflow Scenarios</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on June 7, 2000
+
+<hr>
+
+Three obvious scenarios come to mind:
+
+<ul>
+
+<li>User registration
+
+<li>Ticket tracker
+
+<li>Publishing
+
+</ul>
+
+
+<h3>User Registration</h3>
+
+<img src="user-reg-workflow.jpg" width=844 height=216 alt="User Registration Workflow">
+
+<p>
+
+This is the workflow as it is today. The user starts out in the
+initial state on the left. Then there's an AND-split, a transition
+that triggers automatically, allowing the next two steps to proceed
+concurrently (or at least in any order).
+
+<p>
+
+The email verification transition is external (hence the letter,
+because the workflow system receives a message that it has occured),
+The admin approval is a user action, i.e. something a user must
+do. After both of these activities have taken place, the automatic
+AND-join transition can occur, and the user moves into authorized
+state.
+
+<p>
+
+The rest, we probably wouldn't use workflows for. We'd let the
+workflow end in authorized. Banning the user is something that happens
+outside the workflow and can happen at any time. But as modeled here,
+the administrator can ban the user, thus moving him into the banned
+state, from which he can be unbanned.
+
+<p>
+
+We'd probably also add an OR-split/join around the email verification
+transition, with a timed transition that occurs when the user hasn't
+verified his account after a certain amount of time, ending the
+workflow prematurely.
+
+<p>
+
+All workflows have a higher-level workflow associated with them, which
+allows us to cancel or suspend the entire case at any time. This would
+be used for denying a user access to the system. While there are
+extensions with hierarchy to Petri Nets that would be the conceptual
+model behind this, we won't do it this way. What we do is use a
+finite-state machine with states 'initiated', 'running', 'suspended',
+'canceled', 'completed'. That will be sufficient for our purposes,
+while not burning any bridges for moving to the right thing later on.
+
+<p>
+
+The advantage of using a generic workflow subsystem for this is that
+it allows for easy customization. Siemens, for instance, have pretty
+tight security measures for approving users, sometimes requiring the
+user to go over his information again before allowing access. The
+above workflow could easily be extended with this functionality. Also,
+if, say, several independent departments need to be involved in
+approving users, the workflow subsystem would be what coordinates that
+effort.
+
+
+<h3>Ticket Tracker</h3>
+
+<img src="ticket-tracker-workflow.jpg" height=237 width=663
+alt="Ticket Tracker Workflow">
+
+<p>
+
+This workflow starts with the user specifying his problem, thus
+putting the workflow into the open state. Once here, it will pop up on
+the responsive user's to-do list (sometimes called an in-basket),
+prompting for a fix. This user looks at the case and determines
+whether he can fix it or if he needs more info. This determines what
+new state, the workflow enters. You know the rest.
+
+<p>
+
+As before, the workflow system by default supports cancel and postpone
+actions, determining the overall state of the case. Since the workflow
+subsystem is what coordinates the effort, it would also be the
+workflow subsystem that takes handles communication between
+participants. In other words, the user responsible for performing an
+action on a case, can put in a message on the case at any time, with
+or without a workflow action being performed. All systems using the
+workflow subsystem would benefit from that.
+
+
+<h3>Publishing/Content Submission</h3>
+
+I'll draw it up a little later, but the important point to note is
+that there will be several workflow instances associated with the same
+content item, namely one per major revision. One major revision
+travels from authoring over editing, to publishing. Once published (or
+even before), another workflow can be started on a new major revision
+of the content item. Minor revisions is what happens when the author,
+editor or publisher modifies an item, on its way to publishing. Major
+revision is what happens, when a new workflow process is started from
+afresh.
+
+<h3>Employee Pipeline</h3>
+
+
+<h3>Sales Pipeline</h3>
+
+
+<h3>Project Lifecycle</h3>
+
+
+
+
+<hr>
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

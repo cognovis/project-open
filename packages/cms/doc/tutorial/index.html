@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <title>Content Management System Tutorials</title>
+  </head>
+  <body>
+  <h2>Tutorials</h2>
+  <b><a href="../index.html">Content Management System</a></b>
+<hr>
+
+<p>The tutorials in this section are intended to illustrate a
+variety of common scenarios in which CMS may be applied.</p>
+
+<h3>Getting Started</h3>
+
+<p>Support files for all demos are located in the <tt>demo</tt>
+distribution of the CMS distribution.  Before attempting
+any of the tutorials, you must do the following:</p>
+
+<ol>
+  <li><p>Execute <tt>demo/sql/demo.sql</tt> in the appropriate database
+      schema.  This script creates a folder under the template root to
+      store demo templates.  It also creates an instance of a master
+      template under this folder, and registers this template for use
+      with all basic content items.</p>
+
+  <li><p>Link <tt>demo/templates</tt> to the <tt>demo</tt> directory
+      under the template root in the file system:</p> 
+      <pre>ln -s `pwd`/ats/resources templates/ats</pre> 
+      <p>This contains all the templates used in the demos.</p>
+</ol>
+
+<h3>Demo Index</h3>
+
+<dl>
+  <dt><a href="press.html">Press Releases</a></dt>
+  <dd>A simple example of defining a custom content type, performing
+      data entry using a system-generated form and publishing items.
+</dl>
+
+<hr>
+<a href="mailto:karlg@arsdigita.com">karlg@arsdigita.com</a><br>
+Last revised: $Id: index.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+</body>
+</html>
+
+

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="_Previous">Página</msg>
+  <msg key="Add_New">Adicionar Novo</msg>
+  <msg key="Add_payment">Adicionar pagamento</msg>
+  <msg key="Amount">Quantia</msg>
+  <msg key="Amount_Paid">Quantia Paga</msg>
+  <msg key="Client">Cliente</msg>
+  <msg key="Cost_Name">Nome do Custo</msg>
+  <msg key="Cost_Nr">Custo Nº</msg>
+  <msg key="Del">Apagar</msg>
+  <msg key="Delete_payment">Apagar pagamento</msg>
+  <msg key="Edit_payment">Editar pagamento</msg>
+  <msg key="Filter_Payments">Filtrar Pagamentos</msg>
+  <msg key="Go">Ir para</msg>
+  <msg key="Invoice">Fatura</msg>
+  <msg key="Invoice_Amount">Total da Fatura</msg>
+  <msg key="lt_Confirm_payment_delet">Confirmar cancelamento do pagamento</msg>
+  <msg key="lt_Do_you_really_want_to">Deseja realmente apagar %fee_type% do pagamento de %fee_str% para %project_name%?</msg>
+  <msg key="lt_Insufficient_Privileg">Privilégios Insuficientes</msg>
+  <msg key="lt_No_costinvoice_item_s">Nenhum item de custo/fatura especificado</msg>
+  <msg key="lt_The_intranet_start_bl">O bloco de início da intranet ou está indefinido ou não temos um bloco de início para esta semana, ou em futuro próximo.</msg>
+  <msg key="lt_There_are_currently_n">Atualmente não existem pagamentos para o critério selecionado</msg>
+  <msg key="lt_You_dont_have_suffici">Você não tem privilégios suficientes para acessar esta página.</msg>
+  <msg key="New_payment">Novo pagamento</msg>
+  <msg key="Next_Page">Próxima Página</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="One_project">Um projeto</msg>
+  <msg key="Payment">Pagamento</msg>
+  <msg key="Payment_Details">Detalhes do Pagamento</msg>
+  <msg key="Payment_hash_simbol">Pagamento nº</msg>
+  <msg key="Payment_Status">Status do Pagamento:</msg>
+  <msg key="Payment_Type">Tipo do Pagamento</msg>
+  <msg key="Payments">Pagamentos</msg>
+  <msg key="Projects">Projetos</msg>
+  <msg key="Provider">Fornecedor</msg>
+  <msg key="Received">Recebido</msg>
+  <msg key="Start_block_error">Início do bloco de erro</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Update">Atualizar</msg>
+</message_catalog>

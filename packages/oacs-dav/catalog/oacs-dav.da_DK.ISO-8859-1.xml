@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="da_DK" charset="ISO-8859-1">
+
+  <msg key="Disable">Deaktiver</msg>
+  <msg key="Disable_Folders">Deaktiver Valgte Mapper</msg>
+  <msg key="Disabled">Deaktiveret</msg>
+  <msg key="Enable">Aktiver</msg>
+  <msg key="Enable_Folders">Aktiver Valgte Mapper</msg>
+  <msg key="Enabled">Aktiveret</msg>
+  <msg key="Folder_Name">Mappenavn</msg>
+  <msg key="Folder_URL">Mappe URL</msg>
+  <msg key="Folders_Disabled">Valgte Mapper deaktiveret for WebDAV-understøttelse.</msg>
+  <msg key="Folders_Enabled">Valgte Mapper aktiveret for WebDAV-understøttelse.</msg>
+  <msg key="Package_Name">Pakke Navn</msg>
+  <msg key="Package_Type">Pakke Type</msg>
+  <msg key="Status">Status</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV Mappeadministration</msg>
+</message_catalog>

@@ -1,0 +1,36 @@
+This is ]project-open[ - An open-source based Web project management solution
+
+Version 3.4
+===========
+
+
+Documentation:
+--------------
+
+For documentation please see http://www.project-open.org/
+The "]project-open[ Overview" diagram contains links to 
+the different parts of the system and their documentation.
+Also, on the right-hand side you will find links to download
+the ]po[ user guides.
+
+
+
+Installation:
+-------------
+
+Please see the "INSTALL" file in this directory.
+
+
+
+License:
+--------
+This ]po[ distribution is covered by two different licenses:
+
+- GPL: 
+  The vast majority of the code is covered by the 
+  Gnu Public License
+
+- ]project-open[ "Free License" (FL):
+  Please see the LICENSE.FL file in this directory.
+
+

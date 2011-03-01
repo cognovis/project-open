@@ -1,0 +1,63 @@
+<sect2 id="press-press-release" xreflabel="Press Release">
+  <title>Press Release</title>
+
+  <para>A simple example of defining a custom content type, performing
+    data entry using a system-generated form and publishing items.</para>
+
+  <para>
+    <emphasis>Edit in progress...</emphasis>
+  </para>
+
+  <para>The purpose of this tutorial is to illustrate the basic process
+    of how CMS is deployed, including both developer preparation and
+    the content production process itself.</para>
+
+  <sect3 id="press-getting-started" xreflabel="Getting Started">
+    <title>Getting Started</title>
+
+    <para>Support files for all demos are located in the <computeroutput>demo</computeroutput>
+      directory of the CMS distribution. For this demo, you will need to
+      execute the <computeroutput>press.sql</computeroutput> script in the <computeroutput>demo/sql</computeroutput>
+      directory. This script uses the content repository API to perform
+      the following actions:</para>
+
+    <orderedlist>
+      <listitem><para>Create a new content type named "Press Release"</para></listitem>
+
+      <listitem><para>Add a custom attribute, <computeroutput>location</computeroutput>, to the "Press
+	  Release" content type.</para></listitem>
+
+      <listitem><para>Specify that the user input for the <computeroutput>location</computeroutput> should be
+	  a text box.</para></listitem>
+
+      <listitem><para>Create a few simple pages under the page root.</para></listitem>
+
+      <listitem><para>Create a folder named <computeroutput>press</computeroutput> to hold press
+	  releases.</para></listitem>
+
+      <listitem><para>Create a simple index page and a press release in the
+	  <computeroutput>press</computeroutput> folder.</para></listitem>
+
+      <listitem><para>Register a template as the default for the "Press Release"
+	  content type.</para></listitem>
+    </orderedlist>
+
+    <para>All these operations are (or will be) accessible through the CMS
+      UI as well.</para>
+
+    <para>
+      <ulink url="mailto:karlg@arsdigita.com">karlg@arsdigita.com</ulink>
+    </para>
+    <para>
+      Last revised: $Id: press.xml,v 1.1 2005/04/18 19:19:25 cvs Exp $
+    </para>
+  </sect3>
+</sect2>
+
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("tutorials.xml" "chapter" "sect2")
+ End:
+-->

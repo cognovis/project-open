@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="ja_JP" charset="utf-8">
+
+  <msg key="Delete">削除</msg>
+  <msg key="delete">削除</msg>
+  <msg key="Edit">編集</msg>
+  <msg key="edit">編集</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="No">いいえ</msg>
+  <msg key="preview">プレビュー</msg>
+  <msg key="Title">タイトル:</msg>
+  <msg key="Yes">はい</msg>
+</message_catalog>

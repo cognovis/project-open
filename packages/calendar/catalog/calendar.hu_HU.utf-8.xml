@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" locale="hu_HU" charset="utf-8">
+
+  <msg key="Add">Hozzáad</msg>
+  <msg key="add">hozzáad</msg>
+  <msg key="add_an_event">új esemény</msg>
+  <msg key="Add_Item">Új tétel</msg>
+  <msg key="Add_Recurrence">Új ismétlődő esemény</msg>
+  <msg key="All_Day_Event">Új egész napos esemény</msg>
+  <msg key="all_events">az összes esemény</msg>
+  <msg key="and_Time">és idő</msg>
+  <msg key="Attachments">Csatolt dolgok:</msg>
+  <msg key="Calendar">Naptár</msg>
+  <msg key="Calendar_Add_Item">Naptár: új tétel</msg>
+  <msg key="Calendar_Edit_Item">Naptár: tétel szerkesztése</msg>
+  <msg key="Calendar_Item_Types">Naptárbejegyzés-típusok</msg>
+  <msg key="Calendar_Name">Naptár neve</msg>
+  <msg key="Calendar_Permissions">&quot;Naptár jogosultságok&quot;</msg>
+  <msg key="Calendar_Permissions_1">Naptár jogosultságok</msg>
+  <msg key="Calendar_Preferences">&quot;Naptár beállítások&quot;</msg>
+  <msg key="Calendars">Naptárak</msg>
+  <msg key="Current_Permissions">Jelenlegi jogosultságok</msg>
+  <msg key="Date">Dátum:</msg>
+  <msg key="Date_1">Dátum</msg>
+  <msg key="day">nap</msg>
+  <msg key="day_rolling_period">napos időszak alatt</msg>
+  <msg key="day_s">nap(ok)</msg>
+  <msg key="Delete">Törlés</msg>
+  <msg key="delete">törlés</msg>
+  <msg key="Description">Leírás</msg>
+  <msg key="Details">Részletek:</msg>
+  <msg key="Edit">Szerkesztés</msg>
+  <msg key="edit">szerkesztés</msg>
+  <msg key="Events_over_a">Események egy</msg>
+  <msg key="Friday">Péntek</msg>
+  <msg key="Item">Tétel</msg>
+  <msg key="New_Type">Új típus:</msg>
+  <msg key="No_Items">Nincsenek tételek.</msg>
+</message_catalog>

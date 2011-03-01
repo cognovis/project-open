@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="zh_TW" charset="utf-8">
+
+  <msg key="Action">動作</msg>
+  <msg key="Add_File">增加檔案</msg>
+  <msg key="Add_folder_Link">增加檔案夾連結</msg>
+  <msg key="Add_pretty_name">增加 %pretty_name%</msg>
+  <msg key="Attach">附加</msg>
+  <msg key="attach_new">附加&lt;b&gt;新的&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">附加URL</msg>
+  <msg key="Choose">選擇</msg>
+  <msg key="Description">描述:</msg>
+  <msg key="File">檔案</msg>
+  <msg key="Last_Modified">最後修改</msg>
+  <msg key="lt_Add_Attachment_Folder">增加附件文件夾連結</msg>
+  <msg key="lt_Attach_a_File_to_pret">附加一個檔案至 %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% 件</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% 位元組</msg>
+  <msg key="lt_Created_by_the_attach">由附件所建立</msg>
+  <msg key="lt_dont_know_how_to_deal">無法處理附件類型 %content_type%</msg>
+  <msg key="lt_Error_Attachment_root">錯誤: 附件根檔案夾與檔案儲存根檔案夾不同.</msg>
+  <msg key="lt_Error_empty_folder_id">錯誤: 空的 folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">檔案夾 %folder_name% 是空的</msg>
+</message_catalog>

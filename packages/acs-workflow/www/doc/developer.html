@@ -1,0 +1,511 @@
+<html>
+<head>
+<title>Workflow Developer's Guide</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Developer's Guide</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 30 August 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Workflow Developer's Guide
+
+<hr>
+
+This document deals with how to use the services of the workflow
+package in your own package.
+
+<p>
+
+<h3>What Do I Gain?</h3>
+
+Given the formal specification of a workflow, the workflow package
+will <strong>keep track of what tasks are to be performed</strong>,
+notify via email the people that should perform them, and make sure
+that the same task doesn't accidentally get executed twice by
+different people. 
+
+<p>
+
+It'll also <strong>provide your users with a unified
+user-interface</strong> to help them keep track the tasks they are
+supposed to perform. This user-interface also acts as the
+<strong>single place to go for information relating to the
+task</strong>, such as inputs and aids in performing the specific
+task, a log of all prior activity on the case including comments, and
+a visual overview over the case.
+
+<p>
+
+It also provides you with an interface for <strong>analyzing the
+performance of your workflow</strong>. You'll be able to spot
+bottlenecks, find overdue tasks, etc.
+
+<p>
+
+Finally, as the package evolves based on input from you and other
+users, the features above will grow stronger, and more will be added
+(see <a href="future-plans.html" title="Overview over planned enhancements
+to the workflow package">future plans</a>).
+
+
+<h3>What Does It Take?</h3>
+
+The workflow process is centered around an object. In an insurance
+company, that could be an insurance claim; if you're writing the
+ticket-tracker, it would be the ticket itself; etc. So you need to
+define that object first, creating tables, etc., as necessary.
+
+<p>
+
+From there on, there are four steps involved in taking advantage of
+the services of the workflow package in your application.
+
+<ol>
+
+<li><strong>Define your process.</strong> You need to formally specify
+your process definition. This is as simple or as hard as the actual
+process you're dealing with. If the process for your particular
+application is simple, then formalizing it for use with the workflow
+package is going to be simple. If the process for your application is
+complex, with lots of rules, then formalizing it is going to be
+complex. There is a very easy-to-use web-based interface to help you
+formalize processes.
+
+<p>
+
+<li><strong>Customize the user-interface.</strong> The task page can
+have any number of panels, in addition to the one "Action" panel
+provided by the system. You must write these subtemplates and include
+them in your package, then provide the URL and a header in your
+process definition.
+
+<p>
+
+<li><strong>Add a mechanism for starting cases.</strong> You'll need
+some way to start cases. Typically, you'll want a trigger, so that
+every time a row is inserted into your "tickets" or "claims" table, a
+new case is started. Or you may want to do this at the API level, so
+that the function that creates a new "ticket" or "claim" object also
+starts a new workflow case around it.
+
+<p>
+
+<li><strong>Integrate the user-experience.</strong> Your package
+probably wants some admin pages, as well as some end-user pages. These
+should be integrated with the user-interface offered by the workflow
+package, by providing links to the relevant workflow pages.
+
+</ol>
+
+For more <strong>complex processes</strong>, you may additionally need one or more of
+these steps:
+
+<ul>
+
+<li><strong>Add guards callbacks.</strong> If your process
+contains complex conditional behaviour, chances are that you will need
+to program some PL/SQL. Guards execute an arbitrary PL/SQL function
+with a predefined signature. A few standard guard functions are
+already included, but if you need more control, you'll have to supply
+your own.
+
+<p>
+
+<li><strong>Add action callbacks.</strong> A process can execute when a
+transition fires, when it becomes enabled, when notifications are to
+be sent, etc. Just like with complex guards, you write a PL/SQL
+procedure or function with a pre-defined signature, and supply the
+name of the function for the action.
+
+<p>
+
+</ul>
+
+
+
+<h3>Defining Your Process</h3>
+
+This is pretty simple. You simply use the <strong>web-based
+user-interface</strong> i.e., any combination of the Simple Process
+Wizard and the Advanced Process Builder, to define your process.
+
+<p>
+
+When you're happy with your process and have tested it, you
+<strong>click on export process</strong> from the process page, to
+export the process to a SQL script file, which you can include in your
+distribution. But don't do this just yet. Make sure you've completed
+all of the steps below before you export it.
+
+
+<h3>Customize the User-Interface</h3>
+
+The information provided by default on the task page is somewhat
+shallow. You will want to supply your own sub-templates to this page
+to display information specific to your object of concern. 
+
+<p>
+
+While defining your process, you can define the panels for each of the
+tasks. The panels consist of a header and the URL of the
+subtemplate you want to provide the contents of the panel. The URL is,
+due to the way the templating system works, not a real URL. Rather,
+it's a path to the file to include, and will typically look like this:
+<code>/packages/<i>your-package-name</i>/www/<i>your-panel-template-name</i></code>
+e.g., <code>/packages/insurance-claim-app/www/claim-info</code>. Then,
+in the location in your package, you must provide at least the
+<code>claim-info.adp</code>, and most likely also the
+<code>claim-info.tcl</code> files.
+
+
+<h3>Add a Mechanism for Starting Cases</h3>
+
+If there must be a process for each and every object that your
+application is dealing with (claim reports, articles, tickets, etc.),
+then the smartest way of implementing this is to start a process case
+from the same API call that creates a new object of your type, like this:
+
+<pre>
+create or replace package body ticket
+is
+    function new (
+        ...
+    ) return integer
+    is
+        v_ticket_id number;
+	v_case_id number;
+    begin
+        /* Create the ticket object */
+        v_ticket_id := ... ;
+
+	v_case_id := <strong>workflow_case.new</strong>(
+	    workflow_key => 'ticket_wf',
+	    object_id => v_ticket_id,
+            ...
+        );
+ 	
+	<strong>workflow_case.start_case</strong>(
+	    case_id => v_case_id,
+            ...
+        );
+	
+        return v_ticket_id;
+    end;
+
+    ...
+end ticket;
+</pre>
+
+You can also do this from an after insert trigger on the table holding your objects.
+
+<p>
+
+If, however, only some of your objects give rise to a process case,
+then you're better off creating a UI page for starting a case. The
+workflow API calls to use are the same as in the above.
+
+
+<h3>Integrate the User Experience</h3>
+
+This basically consists of providing links from the relevant pages of
+your application to the relevant pages within the workflow
+package. It's reasonably safe to assume that the workflow package is
+mounted at <code>/workflow/</code>. If you want to be super-general,
+you'll have to query the sitemap tables for the correct URL stub.
+
+<p>
+
+The task page, specifically, takes a <code>return_url</code> argument,
+so you can redirect to this page and expect the user to be able to
+find his way back to your page.
+
+
+<h3>What are Callbacks?</h3>
+
+Callbacks are a mechanism for the Workflow Engine to execute code that
+you supply. You specify to the workflow engine the name of the
+PL/SQL function or procedure you want invoked, and the Workflow Engine
+invokes it with a pre-specified argument list. In other words, the
+procedure or function must have exactly the signature specified by the
+Workflow Engine, but apart from that, it can do anything.
+
+<p>
+
+The principle for callback arguments is that it takes the minimum list
+of arguments necessary to fully qualify what transition or arc
+triggered it, plus a custom argument, the value of which is specified
+during the process design. The custom argument is there, so you can
+parameterize your callback. Say you have a callback that returns the
+a date one week from now. If you need another callback returning the
+date two weeks from now, you don't have to write a new PL/SQL
+function. You can supply one that takes the number of days as its
+custom arg, and returns the date custom arg days from now.
+
+<p>
+
+The signatures are specified in Appendix A.
+
+
+<h3>Adding Guard Callbacks</h3>
+
+I assume you know what a guard is and what it does; otherwise, read
+the <a href="concepts.html">Conceptual Guide</a> now. There is one
+special guard, default, denoted by a hash (#) symbol, which
+evaluated to true when all non-default guards evaluate to false. This
+is useful, because you normally want to make sure that exactly one
+of the guards on arcs going out of the same transition evaluate to
+true. It corresponds to the 'else' clause in an if-statement, or the
+'default' clause in a switch statement.
+
+<p>
+
+Apart from this, there is one guard callback function included in the
+pacakge, namely <code>wf_callback.guard_attribute_true</code>, which
+returns true if the attribute, whose name is given in the
+<code>custom_arg</code> argument evaluates to true. This is probably
+one of the most common guards you'll encounter.
+
+<p>
+
+A guard callback must follow the signature given in appendix A, and
+return either <code>'t'</code> or <code>'f'</code>. It will typically
+query some workflow attribute, but apart from that it may do whatever
+it wants, although it generally shouldn't have side-effects.
+
+
+
+<h3>Adding Action</h3>
+
+If you want an automatic transition, or any other transition, for that
+matter, to have side-effects of any kind, you can specify an action to
+be called either when the transition is enabled or when it fires.
+
+<p>
+
+An action is also a callback, following the signature given for enable
+or fire callbacks below. Actions don't by themselves alter the state
+of the process, they only have side-effects. They can, however, set
+workflow attributes, which can then be queried by guards.
+
+<p>
+
+You can use this to implement a process that doesn't require human
+intervention. If you have a process, such as billing a credit card,
+where a number of operations must happen in some non-trivial order,
+you can model the order and the dependencies in a workflow process,
+and have the actions performed automatically. By doing it this way,
+you separate the logic governing the overall process from the
+technicalities of actually performing the actions.
+
+
+
+<h3>Other Callbacks</h3>
+
+There are a number of places where you can supply a callback to
+control the operation of the workflow engine in minute detail. These
+are:
+
+<dl>
+  <dt>Assignment<dt>
+  <dd>
+    Who is assigned to a task may depend on some application-specific
+    details. By supplying an assignment callback for a transition,
+    your application can determine the assignment at run-time. This
+    callback will get executed each time the transition becomes
+    enabled, and should use the
+    <code>workflow_case.add_task_assignment</code> to set the 
+    resulting assignment for the task.
+  </dd>
+  <dt>Time</dt>
+  <dd>
+    Timed transitions are automatic transitions that trigger at some
+    pre-specified time. You can supply a callback to compute the time
+    that the transition should trigger. This callback will be executed
+    each time a timed transition becomes enabled, and should return an
+    Oracle date. At the date and time specified by this returned date,
+    the transition will automatically fire. For this, as well as for
+    the two following situations, the predefined
+    <code>wf_callback.time_sysdate_plus_x</code> callback function
+    comes in handy. Specify the number of days as the custom_arg. You
+    may specify fractions of a day, by specifying a decimal number.
+  </dd>
+  <dt>Deadline</dt>
+  <dd>
+    Tasks may have deadlines. In order to compute the deadline, a
+    callback can be executed, which must return the deadline as an
+    Oracle date. Alternatively, if the deadline is to be manually
+    specified in another task, that other task should set a workflow
+    attribute of type date, and you specify that the transition should
+    use this attribute as its deadline date. The date used is the
+    value of the attribute as the transition becomes enabled. If the
+    attribute value change, the deadline of the enabled transition
+    does not change, but if the transition becomes enabled again, the
+    new value will be used. See note on
+    <code>wf_callback.time_sysdate_plus_x</code> above.
+  </dd>
+  <dt>Hold Timeout</dt>
+  <dd>
+    When a user starts a task, he obtains a lock on that enabled
+    transition, and the tokens it will consume. But you might not want
+    a user to hang on to a task forever without finishing it. Thus,
+    you can supply a hold timeout date, which is similar to a
+    deadline. When this date comes, if the user is still holding on to
+    the task, the task will automatically be canceled, and thus become
+    available for other users to start. This callback will get called
+    as the user starts the task. See note on
+    <code>wf_callback.time_sysdate_plus_x</code> under Time
+    above. 
+  </dd>
+  <dt>Notification</dt>
+  <dd>
+    The notification callback will get called whenever a user is assigned
+    to this transition. The notification callback is passed the default
+    subject line and body, the recipient party, and the default sending
+    party.  It may modify any of these elements before posting the message,
+    or may choose to ignore the request and return without posting at all.
+    If no notification callback is provided, the party assigned to the
+    task will be notified automatically by the workflow engine.
+    <p><i>In ACS 4.x Classic, the callback procedure did not have to post
+    the message, but rather could modify the subject, body and sending
+    party directly through the use of PL/SQL <b>in out</b> parameters.
+    PL/pgSQL does not support <b>in out</b> parameters, so the semantics
+    were changed to work as described above.
+    </i>
+  </dd>
+  <dt>Unassigned task</dt>
+  <dd>
+    Whenever a transition is enabled, but there are no assignees, this
+    callback will get called. You will typically use this to notify
+    some principal that there's an unassigned task that he will want
+    to take a look at.
+  </dd>
+</dl>
+
+<h3>Message Transitions</h3>
+
+Message transitions are used when the something outside of the
+workflow system triggers the transition e.g., the arrival of an
+email. What you'll need to do is write the code necessary to receive
+that email, and the call the
+<code>workflow_case.fire_message_transition</code> API procedure to
+trigger the transition.
+
+
+
+<h3>You're Ready To Go!</h3>
+
+This concludes our tutorial on everything you need to know to harness
+the powers of the workflow package in your own applications. Good
+luck.
+
+<p>
+
+If you get stuck, don't forget where you can find <a
+href="support.html">the support that you need</a>.
+
+
+
+
+<h3>Appendix A. Callback Signatures</h3>
+
+<dl>
+
+<dt>Guards 
+<dd><pre>function <i>name</i>(
+    case_id           in number, 
+    workflow_key      in varchar2, 
+    transition_key    in varchar2, 
+    place_key         in varchar2, 
+    direction         in varchar2, 
+    custom_arg        in varchar2
+) return char(1);</pre>
+
+Return <code>'t'</code> for true and <code>'f'</code> for false.
+
+<dt>Transition Enable/Fire 
+<dd><pre>procedure <i>name</i>(
+    case_id           in number, 
+    transition_key    in varchar2, 
+    custom_arg        in varchar2
+);</pre>
+
+<dt>Task Assignment 
+<dd><pre>procedure <i>name</i>(
+    task_id           in number, 
+    custom_arg        in varchar2
+)</pre>
+
+This procedure should use 
+<code>workflow_case.add_task_assignment</code> to assign a user to the task.
+
+<p>
+
+<dt>Timed Transition Trigger Time 
+<dd><pre>function <i>name</i>(
+    case_id           in number, 
+    transition_key    in varchar2, 
+    custom_arg        in varchar2
+) return date;</pre>
+
+Return the date the transition should automatically fire.
+
+<dt>Task Deadline Date 
+<dd><pre>function <i>name</i>(
+    case_id           in number, 
+    transition_key    in varchar2, 
+    custom_arg        in varchar2
+) return date;</pre>
+
+Return the deadline date.
+
+<dt>Task Timeout Date 
+<dd><pre>function <i>name</i>(
+    case_id           in number, 
+    transition_key    in varchar2, 
+    custom_arg        in varchar2
+) return date;</pre>
+
+Return the date the user's lock should timeout.
+
+
+<dt>Notification
+<dd><pre>procedure <i>name</i>(
+    task_id           in number, 
+    custom_arg        in varchar2, 
+    party_to          in integer, 
+    party_from        in integer, 
+    subject           in varchar2, 
+    body              in varchar2
+);</pre>
+
+The <code>party_from</code>, <code>subject</code> and
+<code>body</code> arguments will contain the default values, that the
+callback can modify as it wishes.
+
+<dt>Unassigned Task
+<dd><pre>procedure <i>name</i>(
+    case_id           in number, 
+    transition_key    in varchar2,
+    custom_arg 	      in varchar2
+);</pre>
+
+
+
+
+</dl>
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>
+

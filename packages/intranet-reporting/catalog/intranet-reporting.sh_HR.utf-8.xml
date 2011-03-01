@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="sh_HR" charset="utf-8">
+
+  <msg key="Add_new_Report">Add a new Report</msg>
+</message_catalog>

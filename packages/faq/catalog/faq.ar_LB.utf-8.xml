@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="ar_LB" charset="utf-8">
+
+  <msg key="A">ج:</msg>
+  <msg key="Add_QA_for_faq_name">أضفْ س&amp;ج لي %faq_name%</msg>
+  <msg key="administer">أدرْ</msg>
+  <msg key="Answer">الإجابة</msg>
+  <msg key="Back_to_FAQs">عُدْ إلى الأسئلة المكرَّرةِ</msg>
+  <msg key="Create_a_new_FAQ">انشئ أسئلة مكرَّرةَ جديدةَ</msg>
+  <msg key="Create_an_FAQ">انشئ سؤالاً مكرَّراً</msg>
+  <msg key="Create_FAQ">انشئ سؤال مكرَّر</msg>
+  <msg key="Create_New_QA">انشئ س&amp;ج جديدةَ</msg>
+  <msg key="Create_new_QA">انشئ س&amp;ج جديدةَ</msg>
+  <msg key="Create_QA">انشئ  س&amp;ج</msg>
+  <msg key="Delete">إحذفْ</msg>
+  <msg key="delete">إحذفْ</msg>
+  <msg key="Delete_This_QA">إحذفْ هذا س&amp;ج</msg>
+  <msg key="Edit">حررْ</msg>
+  <msg key="edit">حررْ</msg>
+  <msg key="Edit_an_FAQ">حررْ س&amp;ج </msg>
+  <msg key="FAQ_Admin">مدير الأسئلة المتكررة</msg>
+  <msg key="faq_name_Admin">مدير %faq_name%</msg>
+  <msg key="FAQs">أسئلة متكررة</msg>
+  <msg key="HTML">إتش تي إم إل</msg>
+  <msg key="insert_after">ادرج بعد</msg>
+  <msg key="lt_Are_you_sure_you_want">هَلْ أنت متأكّد إنّك تُريدُ أَنْ تَحْذفَ هذا السؤال المكرَّر؟</msg>
+  <msg key="lt_Are_you_sure_you_want_1">هَلْ أنت متأكّد إنّك تُريدُ أَنْ تَحْذفَ هذا السؤال؟ </msg>
+  <msg key="lt_no_FAQs">ليس هناك أسئلة مكرَّرة متوفرة.</msg>
+  <msg key="lt_no_questions">ليس هناك أسئلة متوفرة.</msg>
+  <msg key="Name">إسم:</msg>
+  <msg key="New">جديد</msg>
+  <msg key="No">لا</msg>
+  <msg key="One_Question">سؤال واحد</msg>
+  <msg key="Plain">عادي</msg>
+  <msg key="Preformatted">منسقاً سابقاً</msg>
+  <msg key="preview">معاينة</msg>
+  <msg key="Q">س:</msg>
+  <msg key="QA_On_Separate_Pages">س&amp;ج على الصفحات المنفصلة؟</msg>
+  <msg key="QA_on_Separate_Pages">س&amp;ج على الصفحات المنفصلة؟</msg>
+  <msg key="Question">السؤال</msg>
+  <msg key="swap_with_next">تبادلُ مع بعد ذلك</msg>
+  <msg key="Text_type">نوعُ النَصِّ؟</msg>
+  <msg key="Title">العنوان:</msg>
+  <msg key="Update_FAQ">جدّدْ أسئلة مكرَّرةَ</msg>
+  <msg key="Update_This_QA">جدّدْ هذه الـ س&amp;ج</msg>
+  <msg key="View_All_FAQs">شاهدْ كُلّ الأسئلة المكرَّرة</msg>
+  <msg key="Yes">نعم</msg>
+</message_catalog>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="_Previous">Seite</msg>
+  <msg key="Add_New">Neu</msg>
+  <msg key="Add_payment">Neue Zahlung</msg>
+  <msg key="Amount">Betrag</msg>
+  <msg key="Amount_Paid">Bezahlter Betrag</msg>
+  <msg key="Client">Kunde</msg>
+  <msg key="Cost_Name">Kostenname</msg>
+  <msg key="Cost_Nr">Kostennr.</msg>
+  <msg key="Del">Löschen</msg>
+  <msg key="Delete_payment">Zahlung löschen</msg>
+  <msg key="Edit_payment">Zahlung bearbeiten</msg>
+  <msg key="Filter_Payments">Zahlungen filtern</msg>
+  <msg key="Go">Los</msg>
+  <msg key="Invoice">Rechnung</msg>
+  <msg key="Invoice_Amount">Rechnungsbetrag</msg>
+  <msg key="lt_Confirm_payment_delet">Zahlung löschen bestätigen</msg>
+  <msg key="lt_Do_you_really_want_to">Möchten Sie wirklich die %fee_type% Zahlung der %fee_str% für %project_name% löschen?</msg>
+  <msg key="lt_Insufficient_Privileg">Unzureichende Berechtigungen</msg>
+  <msg key="lt_No_costinvoice_item_s">Keine Kosten/Rechnungs- Stelle angegeben</msg>
+  <msg key="lt_The_intranet_start_bl">Die Intranet Start Blöcke sind entweder undefiniert oder wir haben keinen Start Block für diese Woche oder später in der Zukunft.</msg>
+  <msg key="lt_There_are_currently_n">Es gibt derzeit keine passenden Zahlungen für die ausgewählten Kriterien</msg>
+  <msg key="lt_You_dont_have_suffici">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu sehen.</msg>
+  <msg key="Mark_invoice_as_paid">Rechnung als bezahl markieren</msg>
+  <msg key="New_payment">Neue Zahlung</msg>
+  <msg key="Next_Page">Nächste Seite</msg>
+  <msg key="Note">Notiz</msg>
+  <msg key="One_project">Ein Projekt</msg>
+  <msg key="Payment">Zahlungen</msg>
+  <msg key="Payment_Details">Zahlungsdetails</msg>
+  <msg key="Payment_hash_simbol">Zahlungsnr.</msg>
+  <msg key="Payment_Status">Zahlungsstatus</msg>
+  <msg key="Payment_Type">Zahlungstyp</msg>
+  <msg key="Payments">Zahlungen</msg>
+  <msg key="Projects">Projekte</msg>
+  <msg key="Provider">Zulieferer</msg>
+  <msg key="Received">Empfangen</msg>
+  <msg key="Start_block_error">Start Block Fehler</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Update">Update</msg>
+</message_catalog>

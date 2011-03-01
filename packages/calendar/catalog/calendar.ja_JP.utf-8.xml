@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" locale="ja_JP" charset="utf-8">
+
+  <msg key="All_Day_Event">予定</msg>
+  <msg key="Calendar">カレンダー</msg>
+  <msg key="Date">日時:</msg>
+  <msg key="Date_1">日時</msg>
+  <msg key="Delete">削除</msg>
+  <msg key="delete">削除</msg>
+  <msg key="Description">説明</msg>
+  <msg key="Details">詳細</msg>
+  <msg key="Edit">編集</msg>
+  <msg key="edit">編集</msg>
+  <msg key="Friday">金曜日</msg>
+  <msg key="Monday">月曜日</msg>
+  <msg key="No">いいえ</msg>
+  <msg key="Saturday">土曜日</msg>
+  <msg key="Thursday">木曜日</msg>
+  <msg key="Title">タイトル:</msg>
+  <msg key="Title_1">タイトル</msg>
+  <msg key="Tuesday">火曜日</msg>
+  <msg key="Wednesday">水曜日</msg>
+  <msg key="year">年</msg>
+  <msg key="Yes">はい</msg>
+</message_catalog>

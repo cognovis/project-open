@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.7.0" locale="pl_PL" charset="utf-8">
+
+  <msg key="Description">Opis</msg>
+  <msg key="Filter_Materials">Filtruj materiały</msg>
+  <msg key="Material">Materiał</msg>
+  <msg key="Name">Nazwa</msg>
+  <msg key="Nr">Nr</msg>
+  <msg key="Status">Stan</msg>
+  <msg key="There_are_no_active_materials">Nie ma żadnych materiałów, które pasują do Twoich kryteriów selekcji</msg>
+  <msg key="Type">Rodzaj</msg>
+  <msg key="UoM">Jednostka miary</msg>
+</message_catalog>

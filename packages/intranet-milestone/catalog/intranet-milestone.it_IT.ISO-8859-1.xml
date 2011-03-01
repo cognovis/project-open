@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-milestone" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Milestone">Nuova milestone</msg>
+  <msg key="Current_Milestones">Milestone attuali</msg>
+  <msg key="Deadline">Scadenza</msg>
+  <msg key="Filter_Milestones">Filtra milestone</msg>
+  <msg key="Future_Milestones">Milestone future</msg>
+  <msg key="Late_Milestones">Milestone scadute</msg>
+  <msg key="Member">Membro</msg>
+  <msg key="Milestone_Name">Nome</msg>
+  <msg key="Milestone_Status">Stato</msg>
+  <msg key="Milestone_Type">Tipo</msg>
+  <msg key="Milestones">Milestone</msg>
+  <msg key="On_track_status">OK?</msg>
+  <msg key="Time_Interval">Intervallo di tempo</msg>
+</message_catalog>

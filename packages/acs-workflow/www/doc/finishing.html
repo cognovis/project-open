@@ -1,0 +1,234 @@
+<html>
+<head>
+<title>Workflow Finishing Proposal</title>
+
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Finishing Proposal</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 22 September 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Workflow Finishing Proposal
+
+<hr>
+
+
+<h3>The Approach</h3>
+
+The workflow package isn't very useful as a stand-alone package. It's
+intended to be deployed by some application. We won't fully understand
+the requirements for the workflow package until we have a pilot
+application to develop on top of workflow.
+
+<p>
+
+I propose that we designate such a pilot application and the resources
+to develop it alongside developing the workflow package. We should
+also agree that we have Brian avaiable to for business questions as we
+go along.
+
+
+<h3>Feature List</h3>
+
+This is the list of requirement/features that I've already
+identified. The time estimates are in ideal developer days, and very
+rough, since most of the features aren't very well defined yet. We'll
+close on the definitions in cooperation between marketing and
+development.
+
+<p>
+
+In addition to the list below, I'm expecting especially the end-user
+UI to get extended as we learn more about the real-life requirements.
+
+
+<p>
+
+
+<table cellspacing=0 cellpadding=0 border=0>
+<tr><td bgcolor=#cccccc>
+
+<table width=100% cellspacing=1 cellpadding=4 border=0>
+
+<tr bgcolor=#ffffe4>
+<th>No.</th>
+<th>Feature</th>
+<th>Description</th>
+<th>#&nbsp;Days</th>
+<th>Priority</th>
+<th>Risk</th>
+<th>Status</th>
+<th>Days used</th>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>10.</td>
+<td>Permissions</td>
+<td>Integrate with ACS Kernel permissions system. We need to define exactly what permissions are applicable.</td>
+<td align=center>3</td>
+<td align=center>High</td>
+<td align=center>Med</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>20.</td>
+<td>Email notifications</td>
+<td>The notifications package should be ready to go now.</td>
+<td align=center>1</td>
+<td align=center>High</td>
+<td align=center>Low</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>30.</td>
+<td>Static Assignments UI</td>
+<td>Fixed assignments for tasks can currently only be set in SQL directly. We need a simple UI for this.</td>
+<td align=center>1</td>
+<td align=center>Med</td>
+<td align=center>Low</td>
+<td align=center>Done</td>
+<td align=center>1</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>40.</td>
+<td>Handling Unassigned Task</td>
+<td>We need a way to handle unassigned tasks. Either a place where they can be picked up my an uber-user, have them automatically assigned to some person, and/or spamming some person. This ties in to deciding under what circumstances you're allowed to "pass the buck", i.e. assign a task to someone else, and if so, to whom you can assign it. This ties in to permissions, too.</td>
+<td align=center>3</td>
+<td align=center>High</td>
+<td align=center>Med</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>50.</td>
+<td>Simple Workflow Builder UI</td>
+<td>To design a simple workflow, the user won't have to know anything
+about the internals of the workflow engine. This UI has already been mostly done by Matthew. </td>
+<td align=center>3</td>
+<td align=center>High</td>
+<td align=center>Med</td>
+<td align=center>Done</td>
+<td align=center>5</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>60.</td>
+<td>Advanced Workflow Buidler UI</td>
+<td>Building advanced workflows will require knowledge of how the
+engine operates. This is a very straight-forward programming task,
+tough there may be a lot of work to do.</td>
+<td align=center>5</td>
+<td align=center>Med</td>
+<td align=center>Med</td>
+<td align=center>In progress</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>70.</td>
+<td>Workflow Definition Versioning</td>
+<td>We need to store and manage several version of one workflow 
+definitoin. This is necessary to let the manager redefine workflows
+without having to delete all the information we have on old cases.</td>
+<td align=center>7</td>
+<td align=center>Med</td>
+<td align=center>High</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>80.</td>
+<td>Workflow Summary UI</td>
+<td>We already have a very rudimentary UI for summarizing all the
+cases of a particular workflow, but it needs improvement to be really
+useful.</td>
+<td align=center>4</td>
+<td align=center>Med</td>
+<td align=center>Low</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>90.</td>
+<td>Workflow Debugging UI</td>
+<td>When managers start building advanced workflow and things don't
+behave as they expect, they'll need to have a UI for investigating
+what happened and why.</td>
+<td align=center>3</td>
+<td align=center>Low</td>
+<td align=center>Low</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>100.</td>
+<td>Workflow Maintaner UI</td>
+<td>This is related to the "static assignments UI". It's similar to
+APM, only for workflows. It would allow you to package up your
+workflow definition in some redistributable form, as well as install a
+workflow definition from such a file.</td>
+<td align=center>5</td>
+<td align=center>Low</td>
+<td align=center>High</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#eeeeee>
+<td align=right>110.</td>
+<td>Template User Pages</td>
+<td>Make sure all user pages are using the templating system. Due to the complexity of the pages, this is probably harder than one would expect.</td>
+<td align=center>2</td>
+<td align=center>Low</td>
+<td align=center>Med</td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+
+<!--       
+
+<tr bgcolor=#eeeeee>
+<td align=right>.</td>
+<td></td>
+<td></td>
+<td align=center></td>
+<td align=center></td>
+<td align=center></td>
+<td align=center>&nbsp;</td>
+<td align=center>&nbsp;</td>
+</tr>
+
+-->
+
+
+</table>
+
+</td></tr>
+</table>
+
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

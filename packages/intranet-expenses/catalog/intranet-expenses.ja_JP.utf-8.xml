@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Add_a_new_Expense">新規費用追加</msg>
+  <msg key="Create_Invoice">経費請求書を作成してください</msg>
+  <msg key="create_invoice_help">『経費請求書』は、プロジェクトと関係している確立されたコレクションです。</msg>
+  <msg key="Expense_Date">経費日付</msg>
+  <msg key="Expense_Invoices">経費請求書</msg>
+  <msg key="Expense_Payment_Type">支払い方法</msg>
+  <msg key="Expense_Type">経費タイプ</msg>
+  <msg key="Expenses">経費</msg>
+  <msg key="Expenses_Items">経費</msg>
+  <msg key="Invoice">請求書</msg>
+  <msg key="Invoice_Items">旅費</msg>
+  <msg key="reibursable">払い戻し%</msg>
+  <msg key="reimbursable">払い戻し %%</msg>
+  <msg key="Unassigned">未割当</msg>
+</message_catalog>

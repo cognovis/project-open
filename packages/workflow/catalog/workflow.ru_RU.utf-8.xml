@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="ru_RU" charset="utf-8">
+
+  <msg key="Case">Вариант</msg>
+  <msg key="lt_Please_click_here_to_">Щелкните здесь, чтобы открыть %object_type.pretty_name%:</msg>
+  <msg key="lt_You_are_a_participant">Вы являетесь участником %object_type.pretty_name%:</msg>
+  <msg key="lt_You_are_assigned_to_t">Вы назначены на следующее действие.</msg>
+  <msg key="lt_You_have_a_watch_on_t">Вы наблюдаете за %object_type.pretty_name%.</msg>
+  <msg key="lt_You_have_requested_to">Вы подписались на уведомления обо всех действиях в отношении %object_type.pretty_plural% в %workflow_object.name%.</msg>
+  <msg key="notification_email_latest_action_chunk">%action_past_tense% пользователем %user_name% (%user_email%)</msg>
+</message_catalog>

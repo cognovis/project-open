@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="diagram" package_version="0.2" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Legend">Legend</msg>
+</message_catalog>

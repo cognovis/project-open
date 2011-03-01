@@ -1,0 +1,41 @@
+## DEFINE DIT ROOT/BASE/SUFFIX ####
+## uses RFC 2377 format
+
+## dcObject is an AUXILLIARY objectclass and MUST
+## have a STRUCTURAL objectclass (organization in this case)
+# this is an ENTRY sequence and is preceded by a BLANK line
+
+dn: dc=project-open,dc=com
+dc: project-open
+description: ]project-open[ open-source project management.
+objectClass: dcObject
+objectClass: organization
+o: Project-Open, Inc.
+
+## FIRST Level hierarchy - people 
+## uses mixed upper and lower case for objectclass
+# this is an ENTRY sequence and is preceded by a BLANK line
+
+dn: ou=people, dc=project-open,dc=com
+ou: people
+description: All people in organisation
+objectclass: organizationalunit
+
+## SECOND Level hierarchy
+## ADD a single entry under FIRST (people) level
+# this is an ENTRY sequence and is preceded by a BLANK line
+# the ou: Human Resources is the department name
+
+dn: cn=Frank Bergmann,ou=people,dc=project-open,dc=com
+objectclass: inetOrgPerson
+cn: Frank Bergmann
+cn: Frank W. Bergmann
+sn: Bergmann
+uid: fraber
+userpassword: .fraber
+homephone: +34 609 953 751
+mail: frank.bergmann@project-open.com
+mail: fraber@fraber.de
+description: swell guy
+ou: Human Resources
+

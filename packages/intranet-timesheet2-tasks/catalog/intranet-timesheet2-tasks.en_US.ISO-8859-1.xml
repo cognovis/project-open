@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-tasks" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Add_Dependency">Add Dependency</msg>
+  <msg key="Admin_Tasks">Admin Tasks</msg>
+  <msg key="Apply">Apply</msg>
+  <msg key="Bill">Bill</msg>
+  <msg key="Billable_Units">Billable Units</msg>
+  <msg key="Cost_Center">Cost Center</msg>
+  <msg key="Delete">Delete</msg>
+  <msg key="Dependent_Objects_Exist">&quot;Dependent Objects&quot; (such as timesheet entries, ...) exist for atleast one of the tasks: &lt;br&gt;
+
+&lt;ul&gt;
+
+&lt;li&gt;
+
+%task_names%
+
+&lt;/ul&gt;
+
+</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Done">Done</msg>
+  <msg key="End">End</msg>
+  <msg key="Filter_Tasks">Filter Tasks</msg>
+  <msg key="form_billable_units_help">How many hours will you be able to bill to your customer?</msg>
+  <msg key="form_cost_center_help">Can you assign the costs for this task to a specific cost center? Use your best guess.</msg>
+  <msg key="form_full_name_help">Full name for this task, indexed by the full-text search engine</msg>
+  <msg key="form_material_help">The material determines how much you will charge your customer per unit.</msg>
+  <msg key="form_percentage_completed_help">How much of this task has already been done? Default is '0'.</msg>
+  <msg key="form_planned_units_help">How many hours do you plan for this task (best guess)?</msg>
+  <msg key="form_project_help">To which project does this task belong?</msg>
+  <msg key="form_short_name_help">Short name or abbreviation for this task.</msg>
+  <msg key="Log">Log</msg>
+  <msg key="Material">Material</msg>
+  <msg key="Name">Name</msg>
+  <msg key="New_Timesheet_Task">New Timesheet Task</msg>
+  <msg key="No_permission_to_delete_a_task">You don't have the permission to delete a task.</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Percentage_completed">Percentage completed</msg>
+  <msg key="Plan">Plan</msg>
+  <msg key="Planned_Units">Planned Units</msg>
+  <msg key="Save_Changes">Save Changes</msg>
+  <msg key="Short_Name">Short Name</msg>
+  <msg key="Start">Start</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Task_Code">Task Code</msg>
+  <msg key="Task_Name">Task Name</msg>
+  <msg key="There_are_no_active_tasks">There are no active tasks for your parameters</msg>
+  <msg key="Timesheet_Task">Timesheet Tasks</msg>
+  <msg key="Timesheet_Tasks">Timesheet Tasks</msg>
+  <msg key="Type">Type</msg>
+  <msg key="Unable_to_delete_tasks">Unable to delete tasks</msg>
+  <msg key="Unit_of_Measure">Unit of Measure</msg>
+  <msg key="UoM">UoM</msg>
+</message_catalog>

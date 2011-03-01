@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="_Previous">Página</msg>
+  <msg key="Add_New">Añadir nuevo</msg>
+  <msg key="Add_payment">Añadir pago</msg>
+  <msg key="Amount">Importe</msg>
+  <msg key="Amount_Paid">Importe pagado</msg>
+  <msg key="Client">Cliente</msg>
+  <msg key="Cost_Name">Desig. coste</msg>
+  <msg key="Cost_Nr">Coste no.</msg>
+  <msg key="Del">Borrar</msg>
+  <msg key="Delete_payment">Borrar pago</msg>
+  <msg key="Edit_payment">Editar pago</msg>
+  <msg key="Filter_Payments">Filtrar pagos</msg>
+  <msg key="Go">Ir</msg>
+  <msg key="Invoice">Factura</msg>
+  <msg key="Invoice_Amount">Importe factura</msg>
+  <msg key="lt_Confirm_payment_delet">Confirmar borrado del pago</msg>
+  <msg key="lt_Do_you_really_want_to">¿Confirma que desea borrar el %fee_type% pago de %fee_str% por %project_name%?</msg>
+  <msg key="lt_Insufficient_Privileg">Privilegios insuficientes</msg>
+  <msg key="lt_No_costinvoice_item_s">No se ha especificado ningún elemento de coste/factura</msg>
+  <msg key="lt_The_intranet_start_bl">O bien los bloques iniciales de la intranet no están definidos, o bien no disponemos de un bloque inicial para esta semana o para el futuro.</msg>
+  <msg key="lt_There_are_currently_n">Actualmente no hay pagos que coincidan con los criterios seleccionados</msg>
+  <msg key="lt_You_dont_have_suffici">Carece de los privilegios suficientes para ver esta página.</msg>
+  <msg key="Mark_invoice_as_paid">Marcar factura como pagada</msg>
+  <msg key="New_payment">Nuevo pago</msg>
+  <msg key="Next_Page">Página siguiente</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="One_project">Un proyecto</msg>
+  <msg key="Payment">Pago</msg>
+  <msg key="Payment_Details">Detalles del pago</msg>
+  <msg key="Payment_hash_simbol">Pago no.</msg>
+  <msg key="Payment_Status">Status de pago:</msg>
+  <msg key="Payment_Type">Tipo de pago</msg>
+  <msg key="Payments">Pagos</msg>
+  <msg key="Projects">Proyectos</msg>
+  <msg key="Provider">Proveedor</msg>
+  <msg key="Received">Recibido</msg>
+  <msg key="Start_block_error">Error de bloque inicial</msg>
+  <msg key="Status">Estatus</msg>
+  <msg key="Update">Actualizar</msg>
+</message_catalog>

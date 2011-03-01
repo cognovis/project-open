@@ -1,0 +1,438 @@
+<sect1 id="dev-permissions" xreflabel="Using Permissions">
+  <title>Using Permissions</title>
+
+  <sect2 id="dev-permissions-overview" xreflabel="Overview">
+    <title>Overview</title>
+
+    <para>
+      Permissions provide a way of answering the question, "may the user
+      X perform some action Y on an object Z" ? The CMS permissions are
+      built on top of the <computeroutput>acs-permissions</computeroutput> package of ACS4; CMS
+      provides extended functionality such as recursive granting of
+      permissions and verifying permission changes. 
+    </para>
+  </sect2>
+
+  <sect2 id="dev-permissions-cms-privileges" xreflabel="CMS Privileges">
+    <title>CMS Privileges</title><para>
+
+      By default, CMS defines the privilege shown below. Other privileges
+      may be defined by calling <computeroutput>acs_privilege.create_privilege</computeroutput>
+      and <computeroutput>as_privilege.add_child</computeroutput>. Privileges are arranged in a
+      hierarchial tree; a privilege includes the capabilities of all of
+      its children. 
+
+    </para>
+
+    <informaltable><tgroup cols="3">
+	<thead>
+	  <row>
+	    <entry align="center">Privilege</entry>
+	    <entry align="center">Pretty Name</entry>
+	    <entry align="center">Description</entry>
+	  </row>
+	</thead>
+
+	<tbody>
+	  <row>
+	    <entry><computeroutput>cm_admin</computeroutput></entry>
+	    <entry>Administrator</entry>
+	    <entry>Perform any action on any item</entry>
+	  </row>
+
+	  <row>
+	    <entry><computeroutput>&nbsp;&nbsp;&nbsp;&nbsp;cm_item_workflow</computeroutput></entry>
+	    <entry>Modify Workflow</entry>
+	    <entry>Modify or create item workflow; assign/unassign users to/from
+	      workflow tasks.</entry>
+	  </row>
+
+	  <row>
+	    <entry>&nbsp;&nbsp;&nbsp;&nbsp;<computeroutput>cm_perm_admin</computeroutput></entry>
+	    <entry>Modify Any Permissions</entry>
+	    <entry>Modify any permissions on the item for any user; similar to the
+	      "owner" concept in UNIX</entry>
+	  </row>
+
+	  <row>
+	    <entry>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      <computeroutput>cm_perm</computeroutput></entry>
+	    <entry>Donate Permissions</entry>
+	    <entry>Donate own permissions to other users (cannot gain new
+	      permissions); revoke own permissions</entry>
+	  </row>
+
+	  <row>
+	    <entry>&nbsp;&nbsp;&nbsp;&nbsp;<computeroutput>cm_relate</computeroutput></entry>
+	    <entry>Relate Items</entry>
+	    <entry>Relate items to this item</entry>
+	  </row>
+
+	  <row>
+	    <entry>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <computeroutput>cm_write</computeroutput></entry>
+	    <entry>Write</entry>
+	    <entry>Modify or delete the item</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      <computeroutput>cm_new</computeroutput></entry>
+	    <entry>Create New Item</entry>
+	    <entry>Create new items with the current item as the parent (useful
+	      for content creators)</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      &nbsp;&nbsp;&nbsp;&nbsp;<computeroutput>cm_examine</computeroutput></entry>
+	    <entry>Admin-level Read</entry>
+	    <entry>View the item in the CMS admin UI</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	      <computeroutput>cm_read</computeroutput></entry>
+	    <entry>User-level Read</entry>
+	    <entry>View the item in the public pages</entry>
+	  </row>
+	</tbody></tgroup></informaltable>
+  </sect2>
+
+  <sect2 id="dev-permissions-sql-api-granting-and-revoking-permissions" xreflabel="SQL API: Granting and Revoking Permissions">
+    <title>SQL API: Granting and Revoking Permissions</title><para>
+
+      A user (the donor) can grant a permission on an item to another
+      user (the recipient) under the following conditions: 
+
+    </para><itemizedlist>
+      <listitem><para>The donor has the <computeroutput>cm_perm_admin</computeroutput> permission on the
+	  item</para></listitem>
+    </itemizedlist><para>
+
+      or 
+
+    </para><itemizedlist>
+      <listitem><para>The donor has the <computeroutput>cm_perm</computeroutput> permission on the item as
+	  well as the permission he is trying to grant.</para></listitem>
+    </itemizedlist>
+
+    <para>A user (the revoker) can revoke a permission an item I to
+      another user (the revokee) under the following conditions:</para>
+
+    <itemizedlist>
+      <listitem><para>The revoker has the <computeroutput>cm_perm</computeroutput> permission on the item and
+	  the revokee does not have the <computeroutput>cm_perm_admin</computeroutput> permission on
+	  the item.</para></listitem>
+    </itemizedlist><para>
+
+      or 
+
+    </para><itemizedlist>
+      <listitem><para>The revoker has the <computeroutput>cm_perm_admin</computeroutput> permission on the
+	  item and the revokee does not have the <computeroutput>cm_admin</computeroutput> permission
+	  on the item.</para></listitem>
+    </itemizedlist>
+
+    <para>The procedures <computeroutput>cms_permission.grant_permission</computeroutput> and
+      <computeroutput>cms_permission.revoke_permission</computeroutput> may be used to grant and
+      revoke permissions, optionally modifying permissions on only on the
+      item itself but also on its children. If the conditions above are
+      not satisfied, these functions do nothing. In addition,
+      <computeroutput>grant_permission</computeroutput> automatically removes all children of the
+      permissions being granted (since the parent permission includes all
+      their capabilities). Similarly, <computeroutput>revoke_permission</computeroutput> grants
+      all children of the revoked permission in order to make sure that
+      the user does not lose all of his permissions permanently. The
+      parameters to the procedures are as follows:</para>
+
+    <sect3 id="dev-permissions-procedure-cmspermissiongrantpermission" xreflabel="Procedure cms_permission.grant_permission">
+      <title>Procedure cms_permission.grant_permission</title>
+
+      <variablelist>
+	<varlistentry>
+	  <term><phrase>item_id</phrase></term>
+	  <listitem><para>
+	      The item whose permissions are to be changed
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>holder_id</phrase></term>
+	  <listitem><para>
+	      The person who is attempting to grant the privilege
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>privilege</phrase></term>
+	  <listitem><para>
+	      The privilege to be granted
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>recepient_id</phrase></term>
+	  <listitem><para>
+	      The person who will gain the privilege
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>is_recursive</phrase></term>
+	  <listitem><para>
+	      If 't', applies the operation recursively to all child items of
+	      the item (equivalent to UNIX's <computeroutput>chmod -r</computeroutput>). 
+	      If 'f', only affects the item itself.
+	  </para></listitem>
+	</varlistentry>
+      </variablelist>
+    </sect3>
+
+    <sect3 id="dev-permissions-procedure-cmspermissionrevokepermission" xreflabel="Procedure cms_permission.revoke_permission">
+      <title>Procedure cms_permission.revoke_permission</title>
+
+      <variablelist>
+	<varlistentry>
+	  <term><phrase>item_id</phrase></term>
+	  <listitem><para>
+	      The item whose permissions are to be changed
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>holder_id</phrase></term>
+	  <listitem><para>
+	      The person who is attempting to revoke the privilege
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>privilege</phrase></term>
+	  <listitem><para>
+	      The privilege to be revoked
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>revokee_id</phrase></term>
+	  <listitem><para>
+	      The person who will lose the privilege
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>is_recursive</phrase></term>
+	  <listitem><para>
+	      If 't', applies the permission change recursively to all child
+	      items of the item (equivalent to UNIX's <computeroutput>chmod -r</computeroutput>).
+	      If 'f', only affects the item itself.
+	  </para></listitem>
+	</varlistentry>
+      </variablelist>
+    </sect3>
+    <sect3 id="dev-permissions-function-cmspermissionpermissionp" xreflabel="Function cms_permission.permission_p">
+      <title>Function cms_permission.permission_p</title>
+
+      <variablelist>
+	<varlistentry>
+	  <term><phrase>item_id</phrase></term>
+	  <listitem><para>
+	      The item whose permissions are to be checked
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>holder_id</phrase></term>
+	  <listitem><para>
+	      The person whose permissions are to be examined
+	  </para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><phrase>privilege</phrase></term>
+	  <listitem><para>
+	      The privilege to be checked
+	    </para></listitem>
+	</varlistentry>
+	
+	<varlistentry>
+	  <term><phrase>Return Value</phrase></term>
+	  <listitem><para>
+	      't' if the user has the specified permission on the item, 'f'
+	      otherwise
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      
+      <para>
+	The above documentation may be out of date; a more
+	up-to-date description of the functions may be obtained using the
+	<ulink url="/cms/package-doc.acs?show=1&amp;package_name=cms_permission">package
+	  documentation browser</ulink>.</para>
+      
+      
+      <para>In addition, whenever a new item is created, its creator gains
+	the <computeroutput>cm_write</computeroutput> and <computeroutput>cm_perm</computeroutput> permissions on the item,
+	in addition to inheriting all of his permissions from the parent
+	item.</para>
+    </sect3>
+    
+    <sect3 id="dev-permissions-example" xreflabel="Example">
+      <title>Example</title><para>
+	
+	For example, let's say that Alice has the <computeroutput>cm_admin</computeroutput>
+	permission on a folder "foo". She may perform any action on the
+	folder, and so she chooses to give Bob the <computeroutput>cm_new</computeroutput>
+	permission on the folder. Bob can now view the folder in the CMS
+	admin UI (since <computeroutput>cm_new</computeroutput> entails <computeroutput>cm_examine</computeroutput>), and
+	he can create new items in the folder, but he cannot give himself
+	more permissions on the folder. 
+
+      </para><para>Weary with the pressures of administration, Alice decides to
+	remove her <computeroutput>cm_admin</computeroutput> permission on "foo". She does so,
+	automatically gaining <computeroutput>cm_write</computeroutput>, <computeroutput>cm_item_workflow</computeroutput>
+	and <computeroutput>cm_perm_admin</computeroutput>.</para>
+
+      <para>Bob creates a new folder under "foo", called "bar", using his
+	newly-acquired <computeroutput>cm_new</computeroutput> permission on "foo". He
+	automatically gains <computeroutput>cm_write</computeroutput> and <computeroutput>cm_perm</computeroutput> on
+	"bar"; in addition, Alice's pemissions from "foo" are inherited on
+	"bar". Even though Bob has <computeroutput>cm_perm</computeroutput> on "bar", he cannot
+	revoke any of Alice's permissions, since her <computeroutput>cm_perm_admin</computeroutput>
+	permission is higher.</para>
+    </sect3>
+  </sect2>
+
+  <sect2 id="dev-permissions-sql-implementation" xreflabel="SQL Implementation">
+    <title>SQL Implementation</title><para>
+
+      When a new content item is created, its <computeroutput>context_id</computeroutput> in
+      acs_objects is set to the <computeroutput>parent_id</computeroutput>, and
+      <computeroutput>security_inherit_p</computeroutput> is set to 't'. This enables the item to
+      inherit the permissions from its parent. In addition, the trigger
+      <computeroutput>cr_items_permission_tr</computeroutput> assigns the <computeroutput>cm_perm</computeroutput> and
+      <computeroutput>cm_write</computeroutput> permissions to the item's creator, unless no
+      creator has been specified. 
+
+    </para><para>When permissions are modified for some item, and its
+      <computeroutput>security_inherit_p</computeroutput> flag is set to 't', permissions from
+      the parent item are copied to the child item, and the
+      <computeroutput>security_inherit_p</computeroutput> flag is changed to 'f'. This ensures
+      that individual access control lists are maintained for each
+      item.</para>
+
+    <para>The <computeroutput>grant_permission</computeroutput> and <computeroutput>revoke_permission</computeroutput>
+      procedures ensure that no duplicate permissions exist in the
+      <computeroutput>cms_permissions</computeroutput> table. That is, if the user is granted a
+      parent privilege, all of its child privileges are removed, since
+      the parent privilege entails all of the child privileges.</para>
+  </sect2>
+
+  <sect2 id="dev-permissions-tcl-api-checking-permissions-in-cms" xreflabel="Tcl API: Checking permissions in CMS">
+    <title>Tcl API: Checking permissions in CMS</title><para>
+
+      The CMS provides a user interface for modifying permissions; the UI
+      is described in more detail in the <link linkend="user-permissions">User Guide</link>. 
+
+    </para><para>The simplest way to check if a user has some permission on an
+      item is to query the database directly:</para>
+
+    <programlisting>
+template::query permission_p onevalue "
+  select cms_permission.permission_p(:item_id, :user_id, :privilege)
+    from dual"
+    </programlisting>
+
+    <para>
+
+      In addition, CMS provides a Tcl proc <computeroutput>check_access</computeroutput>, which
+      will verify that the user has a certain permission, and redirect to
+      an error page if the he does not. In addition,
+      <computeroutput>check_accesss</computeroutput> creates an array called
+      <computeroutput>user_permissions</computeroutput> in the calling frame. The keys of the
+      array are the privileges, such as <computeroutput>cm_admin</computeroutput> or
+      <computeroutput>cm_examine</computeroutput>, and the values are "t" or "f". The syntax for
+      calling the function is as follows: 
+
+    </para>
+
+    <programlisting>
+content::check_access item_id privilege args
+    </programlisting>
+
+    <para>
+      where args represents any number of the following switches in any
+      order: 
+    </para>
+
+    <informaltable><tgroup cols="3">
+	<thead>
+	  <row>
+	    <entry align="center">Switch</entry>
+	    <entry align="center">Values</entry>
+	    <entry align="center">Purpose</entry>
+	  </row>
+	</thead>
+
+	<tbody>
+	  <row>
+	    <entry>
+	      <computeroutput>-user_id</computeroutput></entry>
+	    <entry>The id of some user</entry>
+	    <entry>The user whose permissions are to be checked; the current user
+	      will be used by the default.</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      <computeroutput>-db</computeroutput></entry>
+	    <entry>A valid database handle</entry>
+	    <entry>The database handle to be used in querying; the proc will
+	      allocate and release a handle if this switch is not specified.</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      <computeroutput>-return_url</computeroutput></entry>
+	    <entry>Any URL</entry>
+	    <entry>If the standard error page is shown (which it is by default),
+	      provide a link back from the error page to this URL</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      <computeroutput>-passthrough</computeroutput></entry>
+	    <entry>A Tcl list of name-value pairs</entry>
+	    <entry>Passthrough for the return URL; soon to be deprecated</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      <computeroutput>-request-error</computeroutput></entry>
+	    <entry><emphasis>none</emphasis></entry>
+	    <entry>Indicates that the standard ATS request error should be used
+	      for error messages instead of the CMS error page</entry>
+	  </row>
+
+	  <row>
+	    <entry>
+	      <computeroutput>-refresh</computeroutput></entry>
+	    <entry><emphasis>none</emphasis></entry>
+	    <entry>By default, permissions retreived using <computeroutput>check_access</computeroutput>
+	      are cached persistently. Specify this switch if you wish to refresh
+	      the cache from the database.</entry>
+	  </row>
+	</tbody></tgroup></informaltable>
+  </sect2>
+</sect1>
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

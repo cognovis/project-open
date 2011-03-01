@@ -1,0 +1,99 @@
+<sect3 id="user-permissions" xreflabel="Using Permissions">
+  <title>Using Permissions</title>
+
+  <sect4 id="permissions-overview" xreflabel="Overview">
+    <title>Overview</title><para>
+
+      Permissions provide a way of answering the question, "may the user
+      X perform some action Y on an object Z" ? The CMS UI provides forms
+      for viewing and maintaining permissions, as well as a set of
+      standard permissions which should be useful for web publishing
+      applications. For a more complete description of the various
+      permissions, see the <ulink url="../developer-guide/permissions.html">CMS developer guide</ulink>. 
+
+    </para></sect4>
+  <sect4 id="permissions-viewing-permissions" xreflabel="Viewing Permissions">
+    <title>Viewing Permissions</title><para>
+
+      To view permissions on folders, select the folder on the tree and
+      click the "Folder Attributes" link. To view permissions on items,
+      simply select the item in the folder and scroll down to the bottom
+      of the page. In both cases, the permissions listing for the
+      item/folder appears on the screen: 
+    </para>
+
+    <screenshot>
+      <mediaobject>
+	<imageobject>
+	  <imagedata format="GIF" width="678" depth="112" fileref="images/permission-viewing.gif"/>
+	</imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <para>
+      To grant permissions to another user, mark the user on the
+      clipboard and click "[ Grant ] more permissions to a marked user".
+      You will only be allowed to grant permissions which you already
+      possess, unless you have the "Modify Any Permissions" privilege. 
+
+    </para><para>To edit permissions for a particular user, click the 
+      <inlinemediaobject><imageobject><imagedata format="GIF" fileref="images/Edit16.gif"/></imageobject></inlinemediaobject>
+      icon next to the user's name. The icon
+      will not be visible unless you are allowed to edit permissions for that
+      particular user.</para>
+
+  </sect4>
+  <sect4 id="permissions-granting-and-editing-permissions" xreflabel="Granting and Editing permissions">
+    <title>Granting and Editing permissions</title><para>
+
+      In both cases, a permission editing form will appear on the screen:
+    </para>
+    
+    <screenshot>
+      <mediaobject>
+	<imageobject>
+	  <imagedata format="GIF" width="458" depth="406" fileref="images/permission-editing.gif"/>
+	</imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <para>
+      The privileges are arranged on the form in a tree-like hierarchy;
+      possession of a parent permission entails the possession of all of
+      its child permissions, as well.  For example, a user with "Admin-level Read"
+      would also have <emphasis>read</emphasis> access to anything 
+      requiring "User-level Read."</para>
+    
+    <para>Check any permissions that you wish to grant to the user and uncheck any
+      permissions that you wish to revoke. If you select "Yes" for the
+      "Apply changes to child items and subfolders" option, your changes
+      will affect the current item or folder, all the items in the
+      folder, all subfolders of the folder, all the items in the
+      subfolders, etc. If you select "No", only the current item or
+      folder will be affected.</para>
+    
+    <para>Note that if you revoke a permission, all of its descendants
+      will remain granted to the user. For example, if you revoke the
+      "Admin-Level Read" permission from a user, the user will retain the
+      "User-level Read" permission.</para>
+
+    <para>Also note that you may not be able to modify some permissions on
+      certain items; for example, you may not revoke somebody's
+      "Administrator" permission if you yourself do not possess the
+      "Administrator" permission on the item.</para>
+  </sect4>
+</sect3>
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("setup-administration.xml" "sect2" "sect3")
+ End:
+-->
+
+
+
+
+
+
+
+

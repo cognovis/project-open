@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Advanced_Search">Búsqueda ampliada</msg>
+  <msg key="Bad_Query">Consulta incorrecta</msg>
+  <msg key="Bad_Query_Msg">El motor de búsqueda de &amp;#93;po&amp;#91; es capaz de procesar consultas complejas, con múltiples términos de búsqueda. &lt;br&gt; Sin embargo, debe indicarle al motor de búsqueda cómo buscar: &lt;p&gt; &lt;ul&gt; &lt;li&gt;TérminoDeBúsqueda &lt;b&gt;&amp;&lt;/b&gt; TérminoDeBúsqueda2:&lt;br&gt;Busca objetos que contienen ambos términos de búsqueda.&lt;br&gt;&amp;nbsp; &lt;li&gt;TérminoDeBúsqueda1 &lt;b&gt;|&lt;/b&gt; TérminoDeBúsqueda2:&lt;br&gt;Busca objetos que contienen uno de los dos términos de búsqueda.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;!&lt;/b&gt;TérminoDeBúsqueda:&lt;br&gt;Busca todos los objetos que NO contienen el término de búsqueda.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;(&lt;/b&gt;Consulta&lt;b&gt;)&lt;/b&gt;:&lt;br&gt;Puede utilizar paréntesis para agrupar consultas.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; &lt;H3&gt;Ejemplos&lt;/h3&gt; &lt;ul&gt; &lt;li&gt;&lt;b&gt;'proyecto &amp; abierto'&lt;/b&gt;:&lt;br&gt;Busca todos los objetos que contienen tanto 'proyecto' como 'abierto'.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;'proyecto | abierto'&lt;/b&gt;:&lt;br&gt;Busca todos los objetos que contienen ya sea 'proyecto' o 'abierto'.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; </msg>
+  <msg key="Include_Deleted">Incluir borrados</msg>
+  <msg key="lt_Make_sure_all_words_a">Asegúrese de teclear correctamente todas las palabras.</msg>
+  <msg key="lt_No_pages_were_found_c">No se han hallado páginas para esta búsqueda: &amp;quot;</msg>
+  <msg key="lt_Try_different_keyword">Intente con otros términos de búsqueda.</msg>
+  <msg key="lt_Try_more_general_keyw">Intente con términos más genéricos.</msg>
+  <msg key="Next">Siguientes</msg>
+  <msg key="of_about">de aprox.</msg>
+  <msg key="of_more_then">de más de</msg>
+  <msg key="Parent">Padre</msg>
+  <msg key="Previous">Anteriores</msg>
+  <msg key="Result_page">Página de resultados</msg>
+  <msg key="Results">Resultados</msg>
+  <msg key="Search">Búsqueda</msg>
+  <msg key="Search_Engine">Motor de búsqueda</msg>
+  <msg key="Search_for_sepcific_object_types">Buscar tipos de objeto específicos:</msg>
+  <msg key="Search_Results_for_query">Buscar resultados para '%q%'</msg>
+  <msg key="Search_took">Tiempo invertido en la búsqueda</msg>
+  <msg key="seconds">segundos</msg>
+  <msg key="Suggestions">Consejos</msg>
+  <msg key="Try_fewer_keywords">Pruebe con menos términos de búsqueda</msg>
+</message_catalog>

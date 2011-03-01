@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Admin_All_Pages">管理所有页面</msg>
+  <msg key="Admin_Wiki_Changes">管理Wiki更改</msg>
+  <msg key="Admin_Wiki_Permissions">Wiki权限</msg>
+  <msg key="Categories">分类</msg>
+  <msg key="Company_Wiki">公司Wiki</msg>
+  <msg key="HomeWiki">首页Wiki</msg>
+  <msg key="Main_Index">主页</msg>
+  <msg key="Project_Wiki">项目Wiki</msg>
+  <msg key="User_Wiki">Wiki</msg>
+</message_catalog>

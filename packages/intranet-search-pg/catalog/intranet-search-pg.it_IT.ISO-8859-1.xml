@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Advanced_Search">Ricerca avanzata</msg>
+  <msg key="Bad_Query">Consulta non corretta</msg>
+  <msg key="Bad_Query_Msg">Il motore di ricerca di &amp;#93;po&amp;#91; è in grado di processare interrogazioni complesse con più di un termine. &lt;br&gt; Tuttaiva è necessario indicare al motore di ricerca in che modo cercare: &lt;p&gt; &lt;ul&gt; &lt;li&gt;Parola chiave 1 &lt;b&gt;&amp;&lt;/b&gt; Parola chiave 2:&lt;br&gt;Ricerca oggetti contenenti entrambe le parole chiave.&lt;br&gt;&amp;nbsp; &lt;li&gt;Parola chiave 1 &lt;b&gt;|&lt;/b&gt; Parola chiave 2:&lt;br&gt;Ricerca oggetti contenenti una delle due parole chiave.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;!&lt;/b&gt;Parola chiave:&lt;br&gt;Ricerca tutti gli oggetti che NON contengono la parola chiave.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;(&lt;/b&gt;Interrogazione&lt;b&gt;)&lt;/b&gt;:&lt;br&gt;Si possono usare parentesi per raggruppare i criteri.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; &lt;H3&gt;Esempi&lt;/h3&gt; &lt;ul&gt; &lt;li&gt;&lt;b&gt;'project &amp; open'&lt;/b&gt;:&lt;br&gt;Ricerca tutti gli oggetti contenenti sia 'project' sia 'open'.&lt;br&gt;&amp;nbsp; &lt;li&gt;&lt;b&gt;'project | open'&lt;/b&gt;:&lt;br&gt;Ricerca tutti gli oggetti contenenti o 'project' o 'open'.&lt;br&gt;&amp;nbsp; &lt;/ul&gt; </msg>
+  <msg key="Include_Deleted">Includere eliminati</msg>
+  <msg key="lt_Make_sure_all_words_a">Assicurarsi che tutte le parole siano state digitate correttamente.</msg>
+  <msg key="lt_No_pages_were_found_c">La ricerca non ha prodotto risultati in nessun documento: &amp;quot;</msg>
+  <msg key="lt_Try_different_keyword">Provare con parole chiave diverse.</msg>
+  <msg key="lt_Try_more_general_keyw">Provare con parole chiave più generiche.</msg>
+  <msg key="Next">Avanti</msg>
+  <msg key="of_about">su circa</msg>
+  <msg key="of_more_then">di oltre</msg>
+  <msg key="Parent">Principale</msg>
+  <msg key="Previous">Precedente</msg>
+  <msg key="Result_page">Pagina risultato</msg>
+  <msg key="Results">Risultati</msg>
+  <msg key="Search">Cerca</msg>
+  <msg key="Search_Engine">Motore di ricerca</msg>
+  <msg key="Search_for_sepcific_object_types">Cerca oggetti specifici:</msg>
+  <msg key="Search_Results_for_query">Risultati della ricerca per '%q%'</msg>
+  <msg key="Search_took">La ricerca ha impiegato</msg>
+  <msg key="seconds">secondi</msg>
+  <msg key="Suggestions">Suggerimenti</msg>
+  <msg key="Try_fewer_keywords">Provare con meno parole chiave</msg>
+</message_catalog>

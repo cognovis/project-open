@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-expenses-workflow" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Request_Expense_Bundle">要求费用捆绑 </msg>
+</message_catalog>

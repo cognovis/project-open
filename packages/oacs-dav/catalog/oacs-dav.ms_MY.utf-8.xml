@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="ms_MY" charset="utf-8">
+
+  <msg key="Disable">Lumpuh</msg>
+  <msg key="Disable_Folders">Folder-folder Terpilih Dilumpuhkan</msg>
+  <msg key="Disabled">Dilumpuh</msg>
+  <msg key="Enable">Pulih</msg>
+  <msg key="Enable_Folders">Folder-folder Terpilih Dipulihkan</msg>
+  <msg key="Enabled">Dipulih</msg>
+  <msg key="Folder_Name">Nama Folder</msg>
+  <msg key="Folder_URL">Folder URL</msg>
+  <msg key="Folders_Disabled">Folder-folder Terpilih dilumpuhkan untuk sokongan WebDAV.</msg>
+  <msg key="Folders_Enabled">Folder-folder Terpilih dipulihkan untuk sokongan WebDAV.</msg>
+  <msg key="Package_Name">Nama Pakej</msg>
+  <msg key="Package_Type">Jenis Pakej</msg>
+  <msg key="Status">Status</msg>
+  <msg key="WebDAV_Folder_Administration">Pentadbiran Folder WebDAV</msg>
+</message_catalog>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="el_GR" charset="utf-8">
+
+  <msg key="A">Α:</msg>
+  <msg key="Add_QA_for_faq_name">Προσθήκη Q&amp;amp;A για %faq_name%</msg>
+  <msg key="administer">διαχείριση</msg>
+  <msg key="All_QA">Όλες Q&amp;amp;A </msg>
+  <msg key="Answer">Απάντηση</msg>
+  <msg key="Answer_text_in_html">Κείμενο απάντησης σε html</msg>
+  <msg key="Back_to_current_FAQ">Επιστροφή σε </msg>
+  <msg key="Back_to_FAQs">Επιστροφή στις συχνές ερωτήσεις και απαντήσεις</msg>
+  <msg key="Categorize_Q">Κατηγοριοποίηση ερώτησης</msg>
+  <msg key="Change_settings">Αλλαγή ρυθμίσεων</msg>
+  <msg key="Configure">Ρύθμιση</msg>
+  <msg key="Configure_FAQ_Preferences">Ρύθμιση προτιμήσεων</msg>
+  <msg key="Create_a_new_FAQ">Δημιουργία νέων συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="Create_an_FAQ">Δημιουργία συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="Create_FAQ">Δημιουργία συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="Create_New_QA">Δημιουργία νέου Q&amp;amp;A 
+</msg>
+  <msg key="Create_new_QA">Δημιουργία νέου Q&amp;amp;A 
+</msg>
+  <msg key="Create_QA">Δημιουργία Q&amp;amp;A 
+</msg>
+  <msg key="Delete">Διαγραφή</msg>
+  <msg key="delete">διαγραφή</msg>
+  <msg key="Delete_FAQ">Διαγραφή συχνών ερωτήσεων και απαντήσεων:</msg>
+  <msg key="Delete_This_QA">Διαγραφή αυτού του Q&amp;amp;A </msg>
+  <msg key="Disable">Απενεργοποίηση</msg>
+  <msg key="Disable_FAQ">Απενεργοποίηση συχνών ερωτήσεων και απαντήσεων:</msg>
+  <msg key="Edit">Επεξεργασία</msg>
+  <msg key="edit">επεξεργασία</msg>
+  <msg key="Edit_an_FAQ">Επεξεργασία συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="Edit_FAQ">Επεξεργασία συχνών ερωτήσεων και απαντήσεων:</msg>
+  <msg key="Enable">Ενεργοποίηση</msg>
+  <msg key="Enable_Categories">Ενεργοποίηση κατηγοριών</msg>
+  <msg key="Enable_FAQ">Ενεργοποίηση συχνών ερωτήσεων και απαντήσεων:</msg>
+  <msg key="Enable_WYSIWYG">Ενεργοποίηση WYSIWYG</msg>
+  <msg key="FAQ_Admin">Διαχείριση συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="faq_name_Admin">Διαχείριση %faq_name%</msg>
+  <msg key="FAQs">Συχνές ερωτήσεις και απαντήσεις</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">εισαγωγή μετά</msg>
+  <msg key="Jump_to_Answer">Μετάβαση στην απάντηση</msg>
+  <msg key="lt_Are_you_sure_you_want">Είστε σίγουροι ότι θέλετε να διαγράψετε αυτές τις συχνές ερωτήσεις και απαντήσεις;</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την ερώτηση;</msg>
+  <msg key="lt_Comments_on_this_faq">Σχόλια για αυτές τις συχνές ερωτήσεις και απαντήσεις:</msg>
+  <msg key="lt_no_FAQs">Δεν υπάρχουν συχνές ερωτήσεις και απαντήσεις διαθέσιμες.</msg>
+  <msg key="lt_no_questions">Δεν υπάρχουν ερωτήσεις διαθέσιμες.</msg>
+  <msg key="Name">Όνομα:</msg>
+  <msg key="New">Νέο</msg>
+  <msg key="No">Όχι</msg>
+  <msg key="One_Question">Μια ερώτηση</msg>
+  <msg key="Plain">Απλό</msg>
+  <msg key="Preformatted">Ορισμένη διάταξη </msg>
+  <msg key="pretty_name">Συχνές ερωτήσεις και απαντήσεις</msg>
+  <msg key="preview">προεπισκόπιση</msg>
+  <msg key="Q">Ε:</msg>
+  <msg key="QA_On_Separate_Pages">Q&amp;amp;A σε ξεχωριστές σελίδες;</msg>
+  <msg key="QA_on_Separate_Pages">Q&amp;amp;A σε ξεχωριστές σελίδες;</msg>
+  <msg key="Question">Ερώτηση</msg>
+  <msg key="Question_text_in_html">Κείμενο ερώτησης σε html</msg>
+  <msg key="Set_Category_Mode">Ορισμός κατάστασης κατηγορίας</msg>
+  <msg key="Site_wide_categories">Κατηγορίες ιστοχώρου</msg>
+  <msg key="swap_with_next">εναλλαγή με επόμενο</msg>
+  <msg key="Text_type">Τύπος κειμένου;</msg>
+  <msg key="Title">Τίτλος:</msg>
+  <msg key="Update_FAQ">Ανανέωση συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="Update_This_QA">Ανανέωση του Q&amp;amp;A</msg>
+  <msg key="View">Προβολή</msg>
+  <msg key="View_All_FAQs">Προβολή όλων των συχνών ερωτήσεων και απαντήσεων</msg>
+  <msg key="View_in_Category">Προβολή ερωτήσεων κατηγοριοποιημένων ως προς</msg>
+  <msg key="View_QA">Προβολή ερώτησης και απάντησης</msg>
+  <msg key="Yes">Ναι</msg>
+</message_catalog>

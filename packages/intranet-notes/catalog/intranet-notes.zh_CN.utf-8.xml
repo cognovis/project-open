@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-notes" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Address">地址</msg>
+  <msg key="Company_Notes">公司注释</msg>
+  <msg key="Create_new_Note">新注释</msg>
+  <msg key="Delete_Notes">删除注释</msg>
+  <msg key="Duplicate_note">重复注释</msg>
+  <msg key="Duplicate_note_msg">特定对象已经有一个注释了.</msg>
+  <msg key="Email">电子邮件</msg>
+  <msg key="Fax">传真</msg>
+  <msg key="Ftp">Ftp</msg>
+  <msg key="Http">Http</msg>
+  <msg key="Mobile">手机</msg>
+  <msg key="No_Notes_Available">没有注释</msg>
+  <msg key="Notes_creation">新注释</msg>
+  <msg key="Notes_Note">注释</msg>
+  <msg key="Notes_Type">注释类型</msg>
+  <msg key="Other">其他</msg>
+  <msg key="Phone">电话</msg>
+  <msg key="Project_Notes">项目注释</msg>
+  <msg key="User_Notes">用户注释</msg>
+</message_catalog>

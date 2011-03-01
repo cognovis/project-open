@@ -1,0 +1,201 @@
+<html>
+<head>
+<title>Petri Nets in the Workflow Package</title>
+</head>
+
+<body bgcolor=white>
+<h2>Petri Nets in the Workflow Package</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 31 August 2000.
+
+<hr>
+
+<em><strong>Warning! This document is a complete mess. Read at your own risk!</strong></em>
+
+
+A workflow-net or Petri net is essentially like a finite state
+machine. There are states (although in Petri nets, they're called
+places), and there are transitions between them. Places are depicted
+as circles and transitions are depicted as rectangles.
+
+<p>
+
+So what's different? An instance of a FSM is always in exactly one
+<b>state</b>, modeled by the presence of a token in that state. In
+Petri nets, there can be <b>more than one token</b>. The overall
+"state" of the Petri net (in the general computer-science sense of the
+word "state") is the distribution of tokens in the places (called the
+<b>marking</b>). That's why they're not called states anymore.
+
+<p>
+
+Arcs between transitions and places define the <b>input places</b> and <b>output
+places</b> of the transition. All places with an arc pointing into a
+transition is an input place for that transition. All places with arc
+pointing from a transition to the place is an output place for that
+transition.
+
+<p>
+
+In an FSM, when the transition fires, it moves the one token from one
+state to another. In a Petri net, it consumes exactly one token in
+each of its input places and produces one token in each of its output
+places. Thus, the number of tokens before and after a transition fires
+need not be the same. 
+
+<p>
+
+It's important to differentiate between the time a transition is
+<b>enabled</b> (meaning it's ready to fire) and the time it actually
+<b>fires</b>. A transition is enabled when there is at least one token
+in each of its input places. Firing the transition is the act of
+actually moving the tokens.
+
+<p>
+
+<table align=right><tr>
+  <td align=center><img src="and-split.gif" width=114 height=98 alt="AND-split"></td>
+  <td align=center><img src="and-join.gif" width=110 height=96 alt="AND-join"></td>
+</tr><tr>
+  <td align=center><font size=-1>AND-split</font></td>
+  <td align=center><font size=-1>AND-join</font></td>
+</tr></table>
+
+<p>
+
+This is used to model <b>parallel routing</b>, where one or more
+transitions happen simultaneously or in no particular order. A
+transition that consumes one token and produces two or more is called
+an <b>and-split</b>, and the transition that consumes two tokens and
+produces one is called an <b>and-join</b>, and is used to
+re-synchronize the workflow after all of the parallel activities are
+done.
+
+<p>
+
+While FSMs do support <b>conditional routing</b>, they can't
+differentiate between the <b>time of choice</b> between the possible
+transitions. Petri nets support <b>explicit or-splits</b>, where the
+choice is made as soon as the previous transition has fired, and
+<b>implicit or-splits</b> where the choice is simply made by letting
+the transition that fires first win.
+
+<p>
+
+<table align=right><tr>
+  <td align=center><img src="explicit-or-split.gif" width=113 height=99 alt="Explicit OR-split"></td>
+  <td align=center><img src="implicit-or-split.gif" width=115 height=103 alt="Implicit OR-split"></td>
+</tr><tr>
+  <td align=center><font size=-1>Explicit OR-split</font></td>
+  <td align=center><font size=-1>Implicit OR-split</font></td>
+</tr></table>
+
+<p>
+
+To support <b>explicit or-splits</b> we introduce <b>guards</b>. A
+guard is an expression attached to an arc that must return either true
+or false. Only if the expression evaluates to true can tokens travel
+over the arc. Thus if there are two arcs going out of a transition,
+each with guards that are mutually exclusive (although they need not
+be), only the arc whose guard evaluates to true will produce a token
+in its place.
+
+<p>
+
+
+An <b>implicit or-split</b> is modeled by having two arcs going out of
+the same place. Since the transition that fires first gets the token,
+and there will be no token for the other transitions to consume. Thus,
+even though they were enabled up until the point when the first
+transition fired, the others will not fire.
+
+<table align=right><tr>
+  <td align=center><img src="or-join.gif" width=112 height=96 alt="OR-join"></td>
+</tr><tr>
+  <td align=center><font size=-1>OR-join</font></td>
+</tr></table>
+
+<p>
+
+
+
+
+<h3>Margin Note: Why Petri Nets?</h3>
+
+Petri Nets are a very simple mathematical model. It is a graphical
+language, yet the semantics are clear. There's essentially just one
+rule of action, which is the rule of how transitions are enabled and
+fire.
+
+<p>
+
+The Petri Net model has been around for many years and has been used
+extensively in simluation and verification of network protocols, a
+subject that is very like workflows in many ways. Therefore, it comes
+as no surprise that the concepts used in workflows maps onto Petri
+Nets in a very straight-forward way. If you're interested in reading
+more about this, <a href="http://wwwis.win.tue.nl/~wsinwa/">W.M.P. van
+der Aalst</a> has written an excellent paper, entitled <a
+href="http://wwwis.win.tue.nl/~wsinwa/jcsc/jcsc.html"><i>The
+Application of Petri Nets to Workflow Management</i></a>. Or, if
+you're lazy, you might want to <a
+href="http://wwwis.win.tue.nl/~wsinwa/jcsc/node24.html">just read the
+conclusion</a> of the paper.
+
+<p>
+
+Being mathematically well-founded brings many benefits. Some of the
+benefits of using Petri Nets are:
+
+<ul>
+
+<li><b>Verification:</b> It is easy to verify properties of Petri
+Nets, e.g. that all executions lead to the desired result, regardless
+of how it may execute.
+
+<li><b>Simulation:</b> It is easy to simulate several executions,
+which will help identify possible bottlenecks and estimate both
+overall throughput and the execution time of the individual case.
+
+</ul>
+
+These are prime reasons Petri Nets are so heavily used in modeling
+network protocols, and workflows benefit in the same way.
+
+<p>
+
+Moreover, some of the common extensions to classical Petri Nets make
+immediate sense when applied to workflows:
+
+<ul>
+
+<li><b>Time:</b> For workflows, it is almost always important to know
+the durations and delays during execution, in order to optimize
+throughput and the time of the individual case.
+
+<li><b>Hierarchy:</b> It is a common structuring mechanism in
+workflows to define a task in terms of subtasks. The same is the case
+in Petri Nets, which have been extended in a straight-forward and
+mathematically well-founded way with hierarchy.
+
+<li><b>Color:</b> Remember the papers and inbox-metaphor above? Color
+is the things you scribble on the individual piece of paper. Colored
+Petri Nets associate attributes with the individual token. This is
+something you often want to do in real-world workflows, i.e., people
+do scribble things on the papers in the inbox-metaphor, and it adds to
+the expression power of the workflow. It is commonly used in network
+protocol simulation and, of course, mathematically well-founded.
+
+</ul>
+
+
+
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

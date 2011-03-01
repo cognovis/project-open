@@ -1,0 +1,21 @@
+select acs_sc_impl__new(
+       'RssGenerationSubscriber',		-- impl_contract_name
+       'bboard_forum',				-- impl_name
+       'bboard'					-- impl_owner_name
+);
+
+select acs_sc_impl_alias__new(
+       'RssGenerationSubscriber',		-- impl_contract_name
+       'bboard_forum',				-- impl_name
+       'datasource',				-- impl_operation_name
+       'bboard__rss_datasource',		-- impl_alias
+       'TCL'					-- impl_pl
+);
+
+select acs_sc_impl_alias__new(
+       'RssGenerationSubscriber',		-- impl_contract_name
+       'bboard_forum',				-- impl_name
+       'lastUpdated',				-- impl_operation_name
+       'bboard__rss_lastUpdated',		-- impl_alias
+       'TCL'					-- impl_pl
+);

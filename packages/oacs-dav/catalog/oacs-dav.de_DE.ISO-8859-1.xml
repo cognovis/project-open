@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Disable">Deaktivieren</msg>
+  <msg key="Disable_Folders">Die ausgewählten Ordner deaktivieren</msg>
+  <msg key="Disabled">Deaktiviert</msg>
+  <msg key="Enable">Aktivieren</msg>
+  <msg key="Enable_Folders">Die ausgewählten Ordner aktivieren</msg>
+  <msg key="Enabled">Aktiviert</msg>
+  <msg key="Folder_Name">Ordnername</msg>
+  <msg key="Folder_URL">Ordner-URL</msg>
+  <msg key="Folders_Disabled">Die ausgewählten Ordner wurden für  die WebDAV-Unterstützung deaktiviert</msg>
+  <msg key="Folders_Enabled">Die ausgewählten Ordner wurden für die WebDAV-Unterstützung aktiviert.</msg>
+  <msg key="Package_Name">Paket-Bezeichnung</msg>
+  <msg key="Package_Type">Paket-Typ</msg>
+  <msg key="Status">Status</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV-Ordnerverwaltung</msg>
+</message_catalog>

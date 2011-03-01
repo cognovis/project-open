@@ -1,0 +1,116 @@
+--
+-- A "project" is one instance of the bug-tracker.
+--
+
+-- In SDM: sdm_packages
+-- In BT:
+create table bt_projects (
+  project_id    integer references apm_packages(package_id) primary key,
+  project_name  varchar,
+  description   varchar
+);
+
+-- In SDM: sdm_package_admins
+-- In BT: assign admin privilege using permissions
+
+
+-- In SDM: sdm_package_releases
+-- In BT:
+create table bt_versions (
+  version_id                     integer primary key,
+  project_id                     integer references bt_projects(project_id),
+  version_number                 varchar, -- like apm_package_versions.version_name
+  anticipated_freeze_date        date,
+  actual_freeze_date             date,
+  anticipated_release_date       date,
+  actual_release_date            date,
+  --other stuff--
+);
+-- Versions are global to the project.
+
+-- In SDM: sdm_modules
+-- In BT:
+create table bt_components (
+  component_id                  integer primary key,
+  project_id                    integer references bt_projects(project_id),
+  name                          varchar,
+  description                   varchar,
+  owner                         integer references cc_users(user_id)
+);
+
+-- In SDM: sdm_module_users
+-- In BT: permissions or acs_rels, probably the latter
+
+-- In SDM: sdm_ticket_status, sdm_ticket_severity
+-- In BT:
+create table bt_code_types (
+  code_type_id                  integer primary key,
+  code_type_name                varchar,
+  description                   varchar,
+  system_required_p             char (t/f)
+);
+
+create table bt_code_values (
+  value_id                      integer primary key,
+  code_type_id                  integer,
+  value_name                    varchar,
+  description                   varchar,
+  open_p                        char (t/f),
+  order_key                     integer
+);
+
+-- In SDM: sdm_tickets
+-- In BT:
+create table bt_tickets (
+  ticket_id                     integer primary key,
+  project_id                    integer references bt_projects,
+  component_id                  integer references bt_components,
+  ticket_type                   integer references bt_code_values,
+  ticket_status                 integer references bt_code_values,
+  
+  expected_completion
+  original_estimate
+  latest_estimate
+  time_used
+  fix_for_release
+  
+  summary
+  description
+  desc_format (html/plaintext/preformatted)
+  
+  ...
+
+);
+
+-- In SDM: sdm_patches
+-- In SDM, this is a relationship between a general comment and a ticket
+--         supposedly the patch itself is stored as a special comment
+-- In BT: Probably something similar, not sure.
+
+-- In SDM: sdm_ticket_ratings
+-- In BT: We'll leave that out for now, but supposedly we could use a modified 
+--        version of my ratings package from pinds.com
+
+-- All of the following should be doable with acs_rels of some sort
+-- (I'm not too strong in that data model, but I suppose I'll learn over the next few days)
+
+-- sdm_ticket_assignments
+-- sdm_bug_release_maps
+-- sdm_user_ticket_interest_map
+-- sdm_user_module_interest_map
+-- sdm_user_package_interest_map
+-- sdm_related_tickets_map
+
+
+-- In SDM: sdm_notifications
+--         This seems to be a table to hold notifications until they're actually sent out in batch
+--         depending on the user's preferences
+-- In BT: We'd probably do something similar.
+
+-- In SDM: sdm_notification_prefs
+-- In BT: 
+create table bt_user_prefs (
+  user_id                       integer references cc_users(user_id),
+  ...
+);
+

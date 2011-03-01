@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Dim_day_of_month">日</msg>
+  <msg key="Dim_month_of_year">月</msg>
+  <msg key="Dim_quarter_of_year">季</msg>
+  <msg key="Dim_week_of_year">周</msg>
+  <msg key="Dim_year">年</msg>
+  <msg key="Download_Gantt_File">下载甘特项目文件</msg>
+  <msg key="Download_OpenProj_File">下载OpenProj日程</msg>
+  <msg key="Gantt_Resources">甘特资源</msg>
+  <msg key="No_Gantt_preview_available">没有甘特预览</msg>
+  <msg key="OK">好的</msg>
+  <msg key="Project_Gantt_Resource">项目甘特资源</msg>
+  <msg key="Project_Gantt_Resource_Assignations">甘特资源分配</msg>
+  <msg key="Project_Gantt_Schedule">项目甘特安排</msg>
+  <msg key="Project_Gantt_View">甘特图</msg>
+  <msg key="Scheduling">安排</msg>
+  <msg key="Upload_Gantt_File">上传甘特文件</msg>
+</message_catalog>

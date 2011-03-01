@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="workflow" package_version="2.0.0b3" locale="ms_MY" charset="utf-8">
+
+  <msg key="Case">Kes</msg>
+  <msg key="lt_Please_click_here_to_">Sila klik disini untuk melawat %object_type.pretty_name% ini:</msg>
+  <msg key="lt_You_are_a_participant">Anda adalah seorang peserta dalam %object_type.pretty_name% ini.</msg>
+  <msg key="lt_You_are_assigned_to_t">Anda ditugaskan untuk tindakan yang seterusnya.</msg>
+  <msg key="lt_You_have_a_watch_on_t">Anda mempunyai suatu 'watch' pada %object_type.pretty_name% ini.</msg>
+  <msg key="lt_You_have_requested_to">Anda telah memohon untuk diberi notifikasi tentang aktiviti untuk semua %object_type.pretty_plural% dalam %workflow_object.name%.</msg>
+  <msg key="notification_email_latest_action_chunk"> %action_past_tense% oleh %user_name% (%user_email%)</msg>
+</message_catalog>

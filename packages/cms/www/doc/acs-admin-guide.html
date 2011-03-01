@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>ACS Administrator's guide</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="User's Guide"
+HREF="cms-user-guide.html"><LINK
+REL="NEXT"
+TITLE="Setup and Administration"
+HREF="setup-administration.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="cms-user-guide.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="setup-administration.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="acs-admin-guide"
+>Chapter 2. ACS Administrator's guide</A
+></H1
+><P
+>&#13;      <I
+CLASS="emphasis"
+>Documents of interest to site administrators (an installation guide, 
+	for example) should be included here.</I
+>
+    </P
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="install-installation"
+>2.1. Installation</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>2.1.1. <A
+HREF="acs-admin-guide.html#install-install-acs-4x"
+>Install ACS 4.x</A
+></DT
+><DT
+>2.1.2. <A
+HREF="acs-admin-guide.html#install-downloading-and-installing-cms"
+>Downloading and Installing CMS</A
+></DT
+><DT
+>2.1.3. <A
+HREF="acs-admin-guide.html#install-getting-started"
+>Getting Started</A
+></DT
+></DL
+></DIV
+><P
+>This document describes how to install the Content Management
+    System in conjunction with ACS 4.x.</P
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="install-install-acs-4x"
+>2.1.1. Install ACS 4.x</A
+></H2
+><P
+>&#13;
+
+
+      <P
+><IMG
+SRC="images/cms-acs-relationship.gif"
+ALIGN="right"></P
+>
+
+
+CMS is essentially an administrative interface built on the ACS
+      4.x data model and stored procedure API. You must <A
+HREF="http://www.arsdigita.com/download"
+TARGET="_top"
+>download</A
+> and install ACS
+      4.x prior to installing CMS. The ACS 4.x documentation includes an
+      excellent guide to the entire process of configuring Oracle and
+      AOLserver in addition to installing ACS itself.</P
+><P
+>CMS depends on a variety of core ACS packages, which are included
+      in the standard ACS 4.x distribution.</P
+><P
+>CMS is typically deployed in conjunction with a public web
+      service built on ACS. CMS can either run on the public web server or
+      on a dedicated server, using either a separate domain name or port
+      number from the public server. The production staff uses CMS to
+      create, manage and deploy content for the public web service. In
+      either scenario, the public server(s) access the published content in
+      one of two ways:
+    </P
+><P
+><B
+CLASS="phrase"
+>SQL and the Content Repository API</B
+>. Provided
+      your public servers have access to the same database schema as CMS,
+      you can use SQL queries in conjunction with the Content Repository
+      API to access content objects and attributes dynamically on a
+      per-request basis.
+    </P
+><P
+><B
+CLASS="phrase"
+>Publish to File System</B
+>. CMS can merge published
+      content with a template chosen by the publisher and write the output
+      to the file system. The output files may be static HTML, or may
+      themselves have dynamic includes appropriate for your public web
+      server(s) (i.e. ADP, PHP, JSP, ASP, SSI, etc.).
+    </P
+><P
+>Note that although you must install ACS 4.x for CMS, you are not
+      required to use ACS 4.x as part of your public server architecture.
+      If you choose to publish all content to the file system, a
+      connection between your public web server(s) and the database is
+      likewise optional.
+    </P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="install-downloading-and-installing-cms"
+>2.1.2. Downloading and Installing CMS</A
+></H2
+><P
+>The latest release of CMS is always available from the <A
+HREF="http://cms.arsdigita.com/download.html"
+TARGET="_top"
+>CMS download page</A
+> or
+      from the <A
+HREF="http://www.arsdigita.com/download"
+TARGET="_top"
+>ArsDigita
+	download page</A
+>.
+    </P
+><P
+> The Arsdigita Package Manager takes care of all the nitty-gritty
+      details of installing a package such as CMS. After you have installed
+      ACS 4.x, it is available at <A
+HREF="/acs-admin/apm/"
+TARGET="_top"
+><TT
+CLASS="filename"
+>/acs-admin/apm/</TT
+></A
+> on
+      your server.
+    </P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="install-getting-started"
+>2.1.3. Getting Started</A
+></H2
+><P
+> After installation, you need to mount CMS using the ACS' site
+      map. It is available on your server at 
+      <A
+HREF="/admin/site-map/"
+TARGET="_top"
+>&#13;	<TT
+CLASS="filename"
+>/admin/site-map</TT
+></A
+>. CMS uses a few
+	parameters which you can modify from the same page once you have
+	mounted it.
+    </P
+><P
+>&#13;      <A
+HREF="mailto:karlg@arsdigita.com"
+TARGET="_top"
+>karlg@arsdigita.com</A
+>
+    </P
+><P
+>&#13;      Last revised: $Id: acs-admin-guide.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="cms-user-guide.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="setup-administration.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>User's Guide</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Setup and Administration</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

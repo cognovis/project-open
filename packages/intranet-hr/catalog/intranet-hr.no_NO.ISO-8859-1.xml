@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="Availability_">Stillingsprosent</msg>
+  <msg key="Birthdate">Fødselsdato</msg>
+  <msg key="Department">Avdeling</msg>
+  <msg key="Edit">Rediger</msg>
+  <msg key="Employee_Information">Ansattinfo</msg>
+  <msg key="Employee_Status">Ansattstatus</msg>
+  <msg key="Hourly_Cost">Timekost</msg>
+  <msg key="Job_Title">Jobbtittel</msg>
+  <msg key="lt_Employee_Information_">Ansattinformasjon for %employee_name%</msg>
+  <msg key="lt_Salary_Payments_per_Y">Lønnsutbetalinger per år</msg>
+  <msg key="Monthly_Insurance">Månedlig forsikring </msg>
+  <msg key="Monthly_Salary">Månedlig lønn</msg>
+  <msg key="Other_Costs">Andrekostnader</msg>
+  <msg key="Salary">Lønn</msg>
+  <msg key="Salary_Period">Lønnsperiode</msg>
+</message_catalog>

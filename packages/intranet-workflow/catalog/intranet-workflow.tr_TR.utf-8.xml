@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Admin_workflows">Yönetici İşakışı</msg>
+  <msg key="Owner">Sahibi</msg>
+  <msg key="Unassigned_Tasks">Verilmemiş Görevler</msg>
+  <msg key="Your_Tasks">Görevlerim</msg>
+</message_catalog>

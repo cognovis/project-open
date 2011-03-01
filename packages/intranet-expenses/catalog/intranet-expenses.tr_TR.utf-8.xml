@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Add_a_new_Expense">Yeni Masraf Ekle</msg>
+  <msg key="Amount">Miktar</msg>
+  <msg key="Billable_p">faturalandırılabilir ?</msg>
+  <msg key="Create_Invoice">Masraf faturası Oluştur</msg>
+  <msg key="create_invoice_help">onaylanan ve proje ile ilgili 'masraf faturaları'</msg>
+  <msg key="create_trabel_cost_help">Seyahat masrafı faturası oluştur</msg>
+  <msg key="Create_Travel_Cost">Seyahat maliyeti Oluştur</msg>
+  <msg key="Currency">Kur</msg>
+  <msg key="Delete">Sil</msg>
+  <msg key="Delete_Expenses">masrafları sil</msg>
+  <msg key="Expense_Date">Masraf Tarihi</msg>
+  <msg key="Expense_Invoices">Masraf Faturaları</msg>
+  <msg key="Expense_Payment_Type">Ödeme</msg>
+  <msg key="Expense_Type">Masraf Türü</msg>
+  <msg key="Expenses">Harcamalar</msg>
+  <msg key="Expenses_Items">Masraflar</msg>
+  <msg key="External_company_name">Fiş-fatura Alınan Şirket</msg>
+  <msg key="External_Company_VatNr">Şirketin Vergi No</msg>
+  <msg key="Filter_Expenses">Masrafları Filtrele</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice">Fatura</msg>
+  <msg key="Invoice_Items">Seyahat Gideri</msg>
+  <msg key="New_Expense">Yeni Masraf</msg>
+  <msg key="Note">Not</msg>
+  <msg key="Project">Proje</msg>
+  <msg key="Project_Name">Proje İsmi</msg>
+  <msg key="Receip_reference">Fis referansı</msg>
+  <msg key="Receipt_reference">Fiş Ref.</msg>
+  <msg key="reibursable">Geri alınabilir</msg>
+  <msg key="reimbursable">Geri Alınabilir %%</msg>
+  <msg key="Remove_checked_items">İşaretlenmiş Olanları Kaldır</msg>
+  <msg key="Travel_cost_invoices">Seyahat Gideri Faturaları</msg>
+  <msg key="Unassigned">İlişkilendirilmemiş</msg>
+  <msg key="Unassigned_Expenses">İlişkilendirilmemiş Masraflar</msg>
+  <msg key="Vat_Included">KDV % Dahil.</msg>
+</message_catalog>

@@ -1,0 +1,161 @@
+<sect2 id="templates-template-management" xreflabel="Template Management">
+  <title>Template Management</title>
+
+  <para>Content is published by merging data with <emphasis>templates</emphasis>
+    that specify the format and layout of the finished page. A template
+    is a text file consisting largely of static text and markup such as
+    HTML, WML, SGML or XML. The template also has strategically
+    positioned placeholders dictating the position of content
+    attributes and data.</para>
+
+  <para>There are two basic types of templates:</para>
+
+  <orderedlist>
+    <listitem>
+      <simpara>Templates associated with specific content types. The template
+	contains placeholders for each attribute associated with a content
+	item of that type. For example, the template for a news story may
+	contain placeholders for a title, byline, image, and the body of
+	the story. The template may also incorporate other related dynamic
+	data, such as lists of related links or information such as stock
+	quotes, pricing or inventory.</simpara>
+
+      <simpara>A content type may be associated with multiple templates,
+	enabling publishers and users to choose the presentation of each
+	item individually depending on context, device or any other
+	criteria.</simpara>
+    </listitem>
+
+    <listitem>
+      <simpara>Templates associated with individual pages. The template is
+	applied only to a specific page on the site. Typically these pages
+	display summary information, such as top-level pages that list the
+	title and description of recent content added to the site. These
+	pages may also be highly personalized, providing links to relevant
+	content or displaying specific data based on a user's profile and
+	preferences.</simpara>
+    </listitem>
+  </orderedlist>
+
+  <para>Production templates are stored in the file system under a
+    special directory known as the <emphasis>template root</emphasis>. Additional
+    directories may exist under the template root to further organize
+    the entire set of templates used by a site.</para>
+
+  <sect3 id="templates-tool-summary" xreflabel="Tool Summary">
+    <title>Tool Summary</title>
+
+    <para>CMS includes a set of basic tools for managing the production
+      and deployment of templates:</para>
+
+    <para><phrase>Organization.</phrase> Templates may be organized into folders,
+      reflecting their location under the template root once they go into
+      production. Since the templates are never viewed directory from a
+      public server, this organization does not necessarily correspond to
+      what is specified in the site map.</para>
+
+    <para><phrase>Versioning.</phrase> Before templates go into production, drafts
+      are stored in the database. A full revision history is maintained,
+      enabling designers or managers to track changes and revert to
+      previous versions.</para>
+
+    <para><phrase>Data Dictionary.</phrase> Designers may review the data sources
+      available to a template, so they know the set of valid placeholders
+      to embed in the markup.</para>
+
+    <para><phrase>Asset Management.</phrase> Templates may include static references
+      to graphics, sounds, animation or other media assets that are also
+      managed with CMS. Designers and managers can view and manage asset
+      dependencies for a template.</para>
+
+    <para><phrase>Deployment.</phrase> The live version of a template is always
+      written to the file system, from where the system may use it for
+      publishing to either the file system or directly to clients.</para>
+
+  </sect3>
+  <sect3 id="templates-template-development" xreflabel="Template Development">
+    <title>Template Development</title>
+
+    <para>The typical process of developing a template for use with CMS is
+      as follows:</para>
+
+    <orderedlist>
+      <listitem>
+	<simpara><phrase>Information design.</phrase> The first step is to decide on the
+	  information that the template will present.</simpara>
+
+	<simpara>For a reusable template applicable to any item of a particular
+	  type, this may include the following:</simpara>
+
+	<itemizedlist>
+	  <listitem><para>The body of the content item.</para></listitem>
+
+	  <listitem><para>Attributes of the content item, such as the author, title and
+	      publication date.</para></listitem>
+
+	  <listitem><para>Links to related items.</para></listitem>
+
+	  <listitem><para>Keywords and other metadata for inclusion in the META tags of
+	      the document.</para></listitem>
+	</itemizedlist>
+
+	<simpara>For individual page templates, the information may be anything.
+	  Index pages may query for the latest items publishing in a section,
+	  or for featured items previously selected by the publishing
+	  team.</simpara>
+      </listitem>
+
+      <listitem>
+	<simpara><phrase>Implement data sources.</phrase> The product of the information
+	  design step is a list of <emphasis>data sources</emphasis>. A data source is
+	  typically a database query, but may be modified or created in
+	  procedural code as well (see the templating system documentation
+	  for details).</simpara>
+
+	<simpara>The data sources are implemented in a Tcl script that must
+	  reside in the directory where the template is written when
+	  published. CMS does not currently provide any UI for management of
+	  the Tcl scripts. This must be done with CVS.</simpara>
+
+	<simpara>The developer should document each data source using the
+	  documentation directives provided by the templating system. CMS
+	  parses these directives and presents the documentation to the
+	  designer in the UI.</simpara>
+      </listitem>
+
+      <listitem>
+	<simpara><phrase>Write template.</phrase> The first simple prototype of the
+	  template itself is typically written by the developer for the
+	  purpose of debugging the Tcl script. The developer may create this
+	  file in the file system, and then use the CMS UI to read it into
+	  the repository as the first revision of the template.</simpara>
+      </listitem>
+
+      <listitem><simpara>
+	<phrase>Revise template.</phrase> Once the initial version of the template
+	  is created, the designer may either edit the template in the
+	  browser, or more likely, download the template and edit it in a
+	  client editor and then upload it again to test.
+      </simpara></listitem>
+    </orderedlist>
+
+  </sect3>
+  <sect3 id="templates-associating-templates-with-content-items" xreflabel="Associating Templates with Content Items">
+    <title>Associating Templates with Content Items</title>
+
+    <para>
+      As mentioned earlier, templates can be associated with a specific content
+      type or an individual page (content item). In order to associate a
+      template to a specific content item, the template must first be 
+      associated with that item's content type.
+    </para>
+  </sect3>
+</sect2>
+
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("user-guide.xml" "sect1" "sect2")
+ End:
+-->

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Availability_">仕事割合 %</msg>
+  <msg key="Employee_Information">社員情報</msg>
+  <msg key="Insurance">保険</msg>
+  <msg key="lt_There_are_currently_n">選択された基準に適合するエントリはありません。</msg>
+  <msg key="Other_Costs">その他コスト</msg>
+  <msg key="Salaries_per_Year">年間給与</msg>
+  <msg key="Salary">給与</msg>
+  <msg key="Salary_Period">給与支払</msg>
+  <msg key="Social_Security">社会保険</msg>
+  <msg key="Social_Security_nr">社会保障NO</msg>
+  <msg key="Start_Date">入社日</msg>
+  <msg key="Supervisor">スパーバイザ</msg>
+  <msg key="Termination_Date">退社日</msg>
+</message_catalog>

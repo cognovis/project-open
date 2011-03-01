@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="oacs-dav" locale="es_GT" charset="ISO-8859-1">
+
+  <msg key="Disable">Deshabitar</msg>
+  <msg key="Disable_Folders">Deshabitar Carpetas Selecciondas </msg>
+  <msg key="Disabled">Deshabilitado</msg>
+  <msg key="Enable">Habilitar</msg>
+  <msg key="Enable_Folders">Habilitar Carpetas Seleccionadas</msg>
+  <msg key="Enabled">Habilitar</msg>
+  <msg key="Folder_Name">Nombre de la Carpeta</msg>
+  <msg key="Folder_URL">Carpeta URL</msg>
+  <msg key="Folders_Disabled">Carpetas Seleccionadas deshabilitadas para soporte WebDav.</msg>
+  <msg key="Folders_Enabled">Carpetas Seleccionadas habilitadas para soporte WebDAV.</msg>
+  <msg key="Package_Name">Nombre del Paquete</msg>
+  <msg key="Package_Type">Tipo del Paquete</msg>
+  <msg key="Status">Estado</msg>
+  <msg key="WebDAV_Folder_Administration">Administración de la capeta WebDAV</msg>
+</message_catalog>

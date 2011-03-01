@@ -1,0 +1,83 @@
+<sect2 id="page-relation" xreflabel="Relating Pages, Content Items and Templates">
+  <title>Relating Pages, Content Items and Templates</title>
+
+  <para>Consider the site map for a simple dynamic, content-rich
+    site:</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata format="GIF" fileref="images/sitemap.gif"/>
+    </imageobject>
+  </mediaobject>
+
+  <para>Each page in the site map corresponds to an item in the content
+    repository. Note that the pages in the site map have two basic
+    relationships to the actual content of the site:</para>
+
+  <orderedlist>
+    <listitem>
+      <simpara>The majority of the pages in the site are dedicated to
+	displaying the body and attributes of individual content items or
+	small logical collections of items, such as the photos on an album
+	page.</simpara>
+    </listitem>
+
+    <listitem>
+      <simpara>In addition to the content pages themselves, publishers must
+	implement index pages to provide context for the content of the
+	site. These top-level pages provide an interface for searching and
+	navigating among the sections of the site and for reaching recent
+	or featured content. Besides index pages, the site may also have
+	special pages without a direct relationship to content.</simpara>
+
+      <simpara>In order to be represented in the site map and managed in a
+	consistent fashion, top-level and special pages must also be
+	represented as content items. In the simplest case, the content
+	type of these items may just be a Basic Item. This is appropriate
+	because these pages typically possess little if any content or
+	special attributes of their own, acting merely as containers for
+	presenting aggregated summary information. If the top-level pages
+	of your site do possess special attributes, or if you wish to
+	constrain the relations on those pages, then you can also employ a
+	subtype.</simpara>
+    </listitem>
+  </orderedlist>
+
+  <sect3 id="page-representing-items-as-pages" xreflabel="Representing Items as Pages">
+    <title>Representing Items as Pages</title>
+
+    <para>There are two necessary conditions for an item to be represented
+      as a page:</para>
+
+    <orderedlist>
+      <listitem>
+	<simpara>The item must have a unique URL. This is true for all content
+	  items. Just as the absolute path to a file reflects its location
+	  within a directory in the file system, the URL for an item reflects
+	  its position within the hierarchical organization of the
+	  repository. The URL is simply composed of the name of the item
+	  preceded by the names of all its parent items.</simpara>
+
+	<simpara>One major difference from a file system is that the URL includes
+	  <emphasis>all</emphasis> parent items, regardless of whether they are folders
+	  or not. This is necessary to ensure that all URL's are indeed
+	  unique.</simpara>
+      </listitem>
+
+      <listitem>
+	<simpara>The item must be associated with a presentation template. For
+	  content pages, the template is typically selected from the one or
+	  more templates that are registered with the items's content type.
+	  For top-level and special pages, the template is typically unique
+	  to the page.</simpara>
+      </listitem>
+    </orderedlist>
+  </sect3>
+</sect2>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("user-guide.xml" "sect1" "sect2")
+ End:
+-->

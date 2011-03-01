@@ -1,0 +1,1 @@
+# Remove an object from the clipboard

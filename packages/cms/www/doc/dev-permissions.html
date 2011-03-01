@@ -1,0 +1,1129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Using Permissions</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Developer's guide"
+HREF="dev-guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Customizing Item Information Pages and Data Entry Forms"
+HREF="custom-interface.html"><LINK
+REL="NEXT"
+TITLE="Publishing to the file system"
+HREF="publishing-filesystem.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="custom-interface.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Developer's guide</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="publishing-filesystem.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="dev-permissions"
+>3.3. Using Permissions</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>3.3.1. <A
+HREF="dev-permissions.html#dev-permissions-overview"
+>Overview</A
+></DT
+><DT
+>3.3.2. <A
+HREF="dev-permissions.html#dev-permissions-cms-privileges"
+>CMS Privileges</A
+></DT
+><DT
+>3.3.3. <A
+HREF="dev-permissions.html#dev-permissions-sql-api-granting-and-revoking-permissions"
+>SQL API: Granting and Revoking Permissions</A
+></DT
+><DD
+><DL
+><DT
+>3.3.3.1. <A
+HREF="dev-permissions.html#dev-permissions-procedure-cmspermissiongrantpermission"
+>Procedure cms_permission.grant_permission</A
+></DT
+><DT
+>3.3.3.2. <A
+HREF="dev-permissions.html#dev-permissions-procedure-cmspermissionrevokepermission"
+>Procedure cms_permission.revoke_permission</A
+></DT
+><DT
+>3.3.3.3. <A
+HREF="dev-permissions.html#dev-permissions-function-cmspermissionpermissionp"
+>Function cms_permission.permission_p</A
+></DT
+><DT
+>3.3.3.4. <A
+HREF="dev-permissions.html#dev-permissions-example"
+>Example</A
+></DT
+></DL
+></DD
+><DT
+>3.3.4. <A
+HREF="dev-permissions.html#dev-permissions-sql-implementation"
+>SQL Implementation</A
+></DT
+><DT
+>3.3.5. <A
+HREF="dev-permissions.html#dev-permissions-tcl-api-checking-permissions-in-cms"
+>Tcl API: Checking permissions in CMS</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="dev-permissions-overview"
+>3.3.1. Overview</A
+></H2
+><P
+>&#13;      Permissions provide a way of answering the question, "may the user
+      X perform some action Y on an object Z" ? The CMS permissions are
+      built on top of the <TT
+CLASS="computeroutput"
+>acs-permissions</TT
+> package of ACS4; CMS
+      provides extended functionality such as recursive granting of
+      permissions and verifying permission changes. 
+    </P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="dev-permissions-cms-privileges"
+>3.3.2. CMS Privileges</A
+></H2
+><P
+>&#13;
+      By default, CMS defines the privilege shown below. Other privileges
+      may be defined by calling <TT
+CLASS="computeroutput"
+>acs_privilege.create_privilege</TT
+>
+      and <TT
+CLASS="computeroutput"
+>as_privilege.add_child</TT
+>. Privileges are arranged in a
+      hierarchial tree; a privilege includes the capabilities of all of
+      its children. 
+
+    </P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN1698"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Privilege</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Pretty Name</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>cm_admin</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Administrator</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Perform any action on any item</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>    cm_item_workflow</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Modify Workflow</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Modify or create item workflow; assign/unassign users to/from
+	      workflow tasks.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>    <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Modify Any Permissions</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Modify any permissions on the item for any user; similar to the
+	      "owner" concept in UNIX</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>        
+	      <TT
+CLASS="computeroutput"
+>cm_perm</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Donate Permissions</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Donate own permissions to other users (cannot gain new
+	      permissions); revoke own permissions</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>    <TT
+CLASS="computeroutput"
+>cm_relate</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Relate Items</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Relate items to this item</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>        
+              <TT
+CLASS="computeroutput"
+>cm_write</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Write</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Modify or delete the item</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	                  
+	      <TT
+CLASS="computeroutput"
+>cm_new</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Create New Item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Create new items with the current item as the parent (useful
+	      for content creators)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	                  
+	          <TT
+CLASS="computeroutput"
+>cm_examine</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Admin-level Read</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>View the item in the CMS admin UI</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	                  
+	               
+	      <TT
+CLASS="computeroutput"
+>cm_read</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>User-level Read</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>View the item in the public pages</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="dev-permissions-sql-api-granting-and-revoking-permissions"
+>3.3.3. SQL API: Granting and Revoking Permissions</A
+></H2
+><P
+>&#13;
+      A user (the donor) can grant a permission on an item to another
+      user (the recipient) under the following conditions: 
+
+    </P
+><UL
+><LI
+><P
+CLASS="listitem"
+>The donor has the <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+> permission on the
+	  item</P
+></LI
+></UL
+><P
+>&#13;
+      or 
+
+    </P
+><UL
+><LI
+><P
+CLASS="listitem"
+>The donor has the <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> permission on the item as
+	  well as the permission he is trying to grant.</P
+></LI
+></UL
+><P
+>A user (the revoker) can revoke a permission an item I to
+      another user (the revokee) under the following conditions:</P
+><UL
+><LI
+><P
+CLASS="listitem"
+>The revoker has the <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> permission on the item and
+	  the revokee does not have the <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+> permission on
+	  the item.</P
+></LI
+></UL
+><P
+>&#13;
+      or 
+
+    </P
+><UL
+><LI
+><P
+CLASS="listitem"
+>The revoker has the <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+> permission on the
+	  item and the revokee does not have the <TT
+CLASS="computeroutput"
+>cm_admin</TT
+> permission
+	  on the item.</P
+></LI
+></UL
+><P
+>The procedures <TT
+CLASS="computeroutput"
+>cms_permission.grant_permission</TT
+> and
+      <TT
+CLASS="computeroutput"
+>cms_permission.revoke_permission</TT
+> may be used to grant and
+      revoke permissions, optionally modifying permissions on only on the
+      item itself but also on its children. If the conditions above are
+      not satisfied, these functions do nothing. In addition,
+      <TT
+CLASS="computeroutput"
+>grant_permission</TT
+> automatically removes all children of the
+      permissions being granted (since the parent permission includes all
+      their capabilities). Similarly, <TT
+CLASS="computeroutput"
+>revoke_permission</TT
+> grants
+      all children of the revoked permission in order to make sure that
+      the user does not lose all of his permissions permanently. The
+      parameters to the procedures are as follows:</P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="dev-permissions-procedure-cmspermissiongrantpermission"
+>3.3.3.1. Procedure cms_permission.grant_permission</A
+></H3
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>item_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The item whose permissions are to be changed
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>holder_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The person who is attempting to grant the privilege
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>privilege</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The privilege to be granted
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>recepient_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The person who will gain the privilege
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>is_recursive</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      If 't', applies the operation recursively to all child items of
+	      the item (equivalent to UNIX's <TT
+CLASS="computeroutput"
+>chmod -r</TT
+>). 
+	      If 'f', only affects the item itself.
+	  </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="dev-permissions-procedure-cmspermissionrevokepermission"
+>3.3.3.2. Procedure cms_permission.revoke_permission</A
+></H3
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>item_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The item whose permissions are to be changed
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>holder_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The person who is attempting to revoke the privilege
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>privilege</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The privilege to be revoked
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>revokee_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The person who will lose the privilege
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>is_recursive</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      If 't', applies the permission change recursively to all child
+	      items of the item (equivalent to UNIX's <TT
+CLASS="computeroutput"
+>chmod -r</TT
+>).
+	      If 'f', only affects the item itself.
+	  </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="dev-permissions-function-cmspermissionpermissionp"
+>3.3.3.3. Function cms_permission.permission_p</A
+></H3
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>item_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The item whose permissions are to be checked
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>holder_id</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The person whose permissions are to be examined
+	  </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>privilege</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      The privilege to be checked
+	    </P
+></DD
+><DT
+CLASS="listitem"
+><B
+CLASS="phrase"
+>Return Value</B
+></DT
+><DD
+><P
+CLASS="listitem"
+>&#13;	      't' if the user has the specified permission on the item, 'f'
+	      otherwise
+	    </P
+></DD
+></DL
+></DIV
+><P
+>&#13;	The above documentation may be out of date; a more
+	up-to-date description of the functions may be obtained using the
+	<A
+HREF="/cms/package-doc.acs?show=1&package_name=cms_permission"
+TARGET="_top"
+>package
+	  documentation browser</A
+>.</P
+><P
+>In addition, whenever a new item is created, its creator gains
+	the <TT
+CLASS="computeroutput"
+>cm_write</TT
+> and <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> permissions on the item,
+	in addition to inheriting all of his permissions from the parent
+	item.</P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="dev-permissions-example"
+>3.3.3.4. Example</A
+></H3
+><P
+>&#13;	
+	For example, let's say that Alice has the <TT
+CLASS="computeroutput"
+>cm_admin</TT
+>
+	permission on a folder "foo". She may perform any action on the
+	folder, and so she chooses to give Bob the <TT
+CLASS="computeroutput"
+>cm_new</TT
+>
+	permission on the folder. Bob can now view the folder in the CMS
+	admin UI (since <TT
+CLASS="computeroutput"
+>cm_new</TT
+> entails <TT
+CLASS="computeroutput"
+>cm_examine</TT
+>), and
+	he can create new items in the folder, but he cannot give himself
+	more permissions on the folder. 
+
+      </P
+><P
+>Weary with the pressures of administration, Alice decides to
+	remove her <TT
+CLASS="computeroutput"
+>cm_admin</TT
+> permission on "foo". She does so,
+	automatically gaining <TT
+CLASS="computeroutput"
+>cm_write</TT
+>, <TT
+CLASS="computeroutput"
+>cm_item_workflow</TT
+>
+	and <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+>.</P
+><P
+>Bob creates a new folder under "foo", called "bar", using his
+	newly-acquired <TT
+CLASS="computeroutput"
+>cm_new</TT
+> permission on "foo". He
+	automatically gains <TT
+CLASS="computeroutput"
+>cm_write</TT
+> and <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> on
+	"bar"; in addition, Alice's pemissions from "foo" are inherited on
+	"bar". Even though Bob has <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> on "bar", he cannot
+	revoke any of Alice's permissions, since her <TT
+CLASS="computeroutput"
+>cm_perm_admin</TT
+>
+	permission is higher.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="dev-permissions-sql-implementation"
+>3.3.4. SQL Implementation</A
+></H2
+><P
+>&#13;
+      When a new content item is created, its <TT
+CLASS="computeroutput"
+>context_id</TT
+> in
+      acs_objects is set to the <TT
+CLASS="computeroutput"
+>parent_id</TT
+>, and
+      <TT
+CLASS="computeroutput"
+>security_inherit_p</TT
+> is set to 't'. This enables the item to
+      inherit the permissions from its parent. In addition, the trigger
+      <TT
+CLASS="computeroutput"
+>cr_items_permission_tr</TT
+> assigns the <TT
+CLASS="computeroutput"
+>cm_perm</TT
+> and
+      <TT
+CLASS="computeroutput"
+>cm_write</TT
+> permissions to the item's creator, unless no
+      creator has been specified. 
+
+    </P
+><P
+>When permissions are modified for some item, and its
+      <TT
+CLASS="computeroutput"
+>security_inherit_p</TT
+> flag is set to 't', permissions from
+      the parent item are copied to the child item, and the
+      <TT
+CLASS="computeroutput"
+>security_inherit_p</TT
+> flag is changed to 'f'. This ensures
+      that individual access control lists are maintained for each
+      item.</P
+><P
+>The <TT
+CLASS="computeroutput"
+>grant_permission</TT
+> and <TT
+CLASS="computeroutput"
+>revoke_permission</TT
+>
+      procedures ensure that no duplicate permissions exist in the
+      <TT
+CLASS="computeroutput"
+>cms_permissions</TT
+> table. That is, if the user is granted a
+      parent privilege, all of its child privileges are removed, since
+      the parent privilege entails all of the child privileges.</P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="dev-permissions-tcl-api-checking-permissions-in-cms"
+>3.3.5. Tcl API: Checking permissions in CMS</A
+></H2
+><P
+>&#13;
+      The CMS provides a user interface for modifying permissions; the UI
+      is described in more detail in the <A
+HREF="setup-administration.html#user-permissions"
+>User Guide</A
+>. 
+
+    </P
+><P
+>The simplest way to check if a user has some permission on an
+      item is to query the database directly:</P
+><PRE
+CLASS="programlisting"
+>    
+    template::query permission_p onevalue "
+      select cms_permission.permission_p(:item_id, :user_id, :privilege)
+        from dual"
+        </PRE
+><P
+>&#13;
+      In addition, CMS provides a Tcl proc <TT
+CLASS="computeroutput"
+>check_access</TT
+>, which
+      will verify that the user has a certain permission, and redirect to
+      an error page if the he does not. In addition,
+      <TT
+CLASS="computeroutput"
+>check_accesss</TT
+> creates an array called
+      <TT
+CLASS="computeroutput"
+>user_permissions</TT
+> in the calling frame. The keys of the
+      array are the privileges, such as <TT
+CLASS="computeroutput"
+>cm_admin</TT
+> or
+      <TT
+CLASS="computeroutput"
+>cm_examine</TT
+>, and the values are "t" or "f". The syntax for
+      calling the function is as follows: 
+
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    content::check_access item_id privilege args
+        </PRE
+><P
+>&#13;      where args represents any number of the following switches in any
+      order: 
+    </P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN1914"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Switch</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Values</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Purpose</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-user_id</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The id of some user</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The user whose permissions are to be checked; the current user
+	      will be used by the default.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-db</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>A valid database handle</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The database handle to be used in querying; the proc will
+	      allocate and release a handle if this switch is not specified.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-return_url</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Any URL</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>If the standard error page is shown (which it is by default),
+	      provide a link back from the error page to this URL</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-passthrough</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>A Tcl list of name-value pairs</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Passthrough for the return URL; soon to be deprecated</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-request-error</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><I
+CLASS="emphasis"
+>none</I
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Indicates that the standard ATS request error should be used
+	      for error messages instead of the CMS error page</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;	      <TT
+CLASS="computeroutput"
+>-refresh</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><I
+CLASS="emphasis"
+>none</I
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>By default, permissions retreived using <TT
+CLASS="computeroutput"
+>check_access</TT
+>
+	      are cached persistently. Specify this switch if you wish to refresh
+	      the cache from the database.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="custom-interface.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="publishing-filesystem.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Customizing Item Information Pages and Data Entry Forms</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="dev-guide.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Publishing to the file system</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

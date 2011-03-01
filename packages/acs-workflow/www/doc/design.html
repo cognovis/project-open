@@ -1,0 +1,800 @@
+<html>
+<head>
+<title>Workflow Design Documentation</title>
+
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Design Documentation</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 7 September 2000. <br><br>
+By <a href="mailto:khy@arsdigita.com">Khy Huang</a> on 12 April 2001. 
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="./">Workflow</a> : Workflow Design Documentation
+
+<hr>
+
+This is the design document for the workflow package.
+
+
+<h3>I.  Essentials</h3>
+
+<ul>
+    <li> <a href="requirements.html">Requirements document</a> </li>
+</ul>
+
+
+
+<h3>II.  Introduction</h3>
+
+This package is intended to:
+
+<ul>
+
+<li>Manage the <strong>definition and execution of workflow processes</strong>,
+i.e. computing the next tasks to execute, who to assign to them, etc.
+
+<li>Provide a <strong>unified user-interface for the end user</strong> to manage the
+list of tasks to do, provide the information necessary to perform the
+task, and provide mechanisms for providing feedback, e.g. when a task
+is finished.
+
+<li>Provide the business manager with a <strong>user-interface for
+defining workflow processes</strong>, adapting a workflow process
+definition to the local context, in particular assignments, and
+getting an overview of the performance of the workflow process.
+
+</ul>
+
+Strong <strong>candidate applications</strong> for workflow are the
+Content Management System, ticket-tracker, ecommerce order fulfillment
+and customer service and recruiting pipeline. In general, applications
+where the coordination of multiple people working on a project is
+central.
+
+<p>
+
+It's <em>not</em> going to be possible to build all of these
+applications just by doing some UI tweaking on top of the workflow
+package alone. Rather, these packages will be made much skinnier and
+development much faster and less risky by outsourcing some of the more
+intricate parts to the worklflow package.
+
+<p>
+
+There's one part of the workflow package for each of the goals above.
+The engine is implemented as a data model and a PL/SQL API, with a
+thin wrapper for the API in Tcl. The user-interfaces are implemented
+as AOLserver Tcl pages.
+
+<p>
+
+Discussion is currently being undertaken of the <strong>scope</strong>
+of the workflow package. We currently fulfill all the requirements of
+the Content Management System, which only uses the engine data model
+and API. The user-interface part is not yet done, and we need to
+polish the requirements and design for that.
+
+
+
+<h3>III.  Historical Considerations</h3> 
+
+
+One of the classic claims of the OpenACS is that it is "<strong>data
+models and workflow</strong>". That's not coincidental. For
+collaborative software, there's going to be a lot of coordination of
+people working towards the same goal. So workflow is a key part of the
+problem space that OpenACS is designed to solve.
+
+<p>
+
+Historically, every module has implemented its own
+<strong>mini-version of workflow enactment
+code</strong>. Ticket-tracker is a prime example, but other examples
+include order fulfillment and customer service in the ecommerce
+module, the recruting pipeline in the intranet module, and user
+approval in the OpenACS core.
+
+<p>
+
+This has the benefit of making it possible to completely tailorize the
+workflow to the needs of the application. But there are <strong>many
+disadvantages</strong>: The user has to visit several different URLs
+to figure out what's on his plate; the user experience will be
+different for each module, since each module developer will have done
+things slightly differently; you can't alter the process without
+hacking the module code directly; the module developer needs to write
+custom code to provide administrative features such as checking on the
+general performance of a workflow process; and generally, we can spend
+the time saved by speeding up development of workflow-centered
+applications on providing even better end-user and administrative
+tools that will benefit users of any workflow-based application.
+
+
+
+<h3>IV.  Competitive Analysis</h3>
+
+The <strong>only open-source competitor</strong>, I've been able to locate is <a
+href="http://www.vivtek.com/wftk.html">wftk</a> by <a
+href="http://www.vivtek.com">Vivtek</a>. They have a fairly nice
+<a
+href="http://www.vivtek.com/workflow/wftk_exec/pdm/pdm.cgi">interface
+for defining workflow processes</a> that we could probably learn
+from. However, they've chosen a different model with explicit
+routing constructs, such as "sequential", "parallel", etc. It does
+limit the expressive power and require some special constructs like
+raising a "situation", and having a handler for that situation. 
+
+<p>
+
+We've also looked at, and strive to adhere to, the
+<strong>standards</strong> set forth by the <a
+href="http://www.wfmc.org">Workflow Management Coalition</a>.
+
+<p>
+
+There's also a host of <strong>commercial workflow software</strong>
+implementations. We haven't looked at them, but we'd very much like
+to. I'm not sure how easy it'd be, given that they're commercial, but
+at least we should have a chance to look at <a
+href="http://oradoc.arsdigita.com/wf/doc/US/wf/wftop.htm">Oracle
+Workflow</a>.
+
+
+
+
+<h3>V.  Design Tradeoffs</h3> 
+
+There are many design tradeoffs in the workflow package. We want it to
+be both easy, to provide as much out-of-the-box functionality for the
+end-user as possible, and at the same time make it powerful enough to
+handle the workflows that other application developers need to model.
+Here are the most important tradeoffs made:
+
+<p>
+
+For the <strong>underlying conceptual model</strong> we considered one
+based on finite state machines (FSM) and one based on Petri Nets. We
+decided against finite state machines because FSMs don't support the
+routing constructs that we needed (parallel, implicit and explicit
+conditional routing). We also considered some extension of FSMs, but
+couldn't find any well-defined ones, and we didn't want to invent some
+model where the semantics might not have been well-considered
+enough. A workflow is really a distributed protocol, and as any
+computer scientist knows, these can be really hard to formalize in a
+way, that ensures there are no dead-locks, dead states, etc. Petri
+Nets provides a formal mathematical model with an abundance of proven
+analysis techniques that can be used to both ensure static and dynamic
+properties of the workflow. Besides, W.M.P. van der Aalst made such a
+good argument in <a
+href="http://wwwis.win.tue.nl/~wsinwa/jcsc/jcsc.html"><em>The
+Application of Petri Nets to Workflow Management</em></a> that we felt
+confident it was the right decision. Parts of this argument is also
+that there are standard extensions to Petri Nets that are very useful
+for use with workflows, such as color, time and inheritance.
+
+<p>
+
+One <strong>downside of the Petri Net approach</strong> is that the
+model is more difficult to grasp than the finite state machine. We've
+tried to accommodate that problem by differentiating between a
+"simple" and a "non-simple" (or complex) workflow process. "Simple"
+basically means we can provide a very intuitive, easy-to-use and
+understand UI for defining workflows, that doesn't require the user to
+invest any time in learning how the workflow package operates. The
+idea is that if you only want to do simple, straight-forward things,
+we can abstract away from the complexity. However, if you want to do
+more complex things, then there is no way to avoid knowing what you're
+doing. Not because our model is hard, but because the problem of
+formalizing a workflow so it accurately models what you want without
+introducing problems such as deadlocks or dead states.
+
+<p>
+
+Since the engine will need to be tightly integrated with and
+customized to suit a specific package, we need some <strong>callback mechanism</strong>
+that'll allow custom code to get executed by the engine. The code had
+to be executed in the database, since we wanted to allow for
+non-AOLserver/Tcl clients to use it. We considered three general
+approaches to that: (1) take an arbitrary chunk of PL/SQL code as a
+varchar and pass it to <code>execute immediate</code>, (2) take the
+name of a PL/SQL procedure/function with a fixed signature and call
+that with arguments depending on the situation, or (3) take the name
+of a PL/SQL procedure/function, and have a dependent table hold the
+arguments it takes and the values to supply. We chose (2) because it
+is simpler than (3) and provides more structure and static
+checkability than (1).
+
+<p>
+
+We have the concept of <strong>workflow attributes</strong>, which
+directs the execution of the workflow. For example, if one of the
+tasks is to approve or reject something, we'll typically have an
+<code>approved_p</code> attribute that takes a boolean value, and can
+be branched on in an or-split. We considered (1) having a skinny table
+as part of the workflow package to hold the values, (2) using the OpenACS
+kernel metadata/attribute system or (3) have a clob column in the case
+table that holds an XML document with the values. We originally did
+(1), then migrated to (2) when the kernel was somewhat ready for it,
+so we don't reproduce functionality. Plus doing it with the kernel
+offers a way abstract away from whether it's implemented using a
+skinny table or a fat table. The disadvantage is that there are severe
+limits as to what values can be represented, e.g. you can only
+represent atomic SQL datatypes. In particular, you can't (nicely)
+store compound datatypes, such as lists or arrays. Lists are
+especially helpful for storing assignments, i.e. a list of party_ids.
+The disadvantage of (3) is that you get no help from the database in
+type checking, and that queries and updates against the data are bound
+to be much slower than with a table.
+
+<p>
+
+At some point, we implemented <strong>manual, per-case
+assignments</strong> by setting and querying a workflow
+attribute. Conceptually, this is very nice, but with the current
+implementation of workflow attributes, it doesn't allow multiple
+assignments to the same task, so we had to scrap that. 
+Since then we introduce the notion of <strong>roles</strong> to provide more flexibility
+in assignment of users to task.  Roles are assigned to parties and 
+they are associated with a case and/or task.  This adds the functionality to
+group a set of task together for assignment (i.e. assign a role 
+to a set of task)
+<p>
+
+We've decided to make the workflow engine have a <strong>PL/SQL-only
+API</strong>, with the Tcl API being simple, small wrappers around the
+PL/SQL API. This has the benefit of being easy to port to an ACS/Java
+version. The downside is that it's going to be harder to port to
+PostgreSQL. On the other hand, there is one Tcl-callback, but this is
+one that's used purely for UI purposes, so that seemed acceptable.
+
+<p>
+
+We've decided to <strong>keep all historical information</strong>
+about the execution of a workflow, i.e. enabled transitions, tokens,
+workflow attributes, and tie all that into the journal. This obviously
+consumes more space and takes more querying time when there's
+non-current information in the database, but it adds tremendously to
+our ability to troubleshoot, backtrack and analyze the performance of
+the workflow.
+
+<p>
+
+Some things, such as assignments, may be <strong>defined
+cascadingly</strong> at several levels, such as statically for all
+workflows, manually for each individual case, or programatically, by
+executing a callback that determines who to assign based on roles. 
+For example, a task such as "send out check" would always be assigned to 
+the billing department. A task such as "author article" would be assigned 
+manually by the editor based on his knowledge of the skills of the individual
+authors in "author" role. In the ticket-tracker, the task of fixing a problem
+ would typically be assigned to a party based on who owns the corresponding
+project or feature area, and would be implemented by a callback from
+the workflow package into the ticket-tracker package. The callback would 
+include the "module owner" role as its parameter. 
+
+<h3>VI.  API</h3> 
+
+The API comes in two parts. There's one for manipulating
+<strong>workflow process definitions</strong> (the
+<code>workflow</code> PL/SQL package) and one for manipulating
+<strong>workflow cases</strong> (the <code>workflow_case</code> PL/SQL
+pacakge). You could also say that the first concerns the static
+properties, while the other concerns the dynamic properties.
+
+<p>
+
+The <strong>workflow</strong> package currently only implement the
+most basic operations: create/drop a workflow, create/drop an
+attribute of a workflow, determine whether a workflow is simple or
+not, and delete all cases of a workflow (useful for dropping
+workflows).
+
+<p>
+
+To modify <strong>other static properties</strong> of workflows, such
+as the places, transitions and arcs, etc., you'll need to access the
+tables directly. There might not be much gained by providing a
+procedural API for this, since the basic design is considered very
+stable.
+
+<p>
+
+Much more thorough is the API for dealing with <strong>workflow
+cases</strong>. This provides the handles to interact with the
+execution of a workflow, which consists of: Altering its top-level
+state, i.e. start, suspend, resume or cancel a whole workflow case at
+a time; interact with tasks, i.e. start, cancel, finish or comment on
+a task; and finally, inform the workflow package that some external
+action that the workflow package is waiting for has occurred.
+
+<p>
+
+Some notes on the <strong>internals</strong> is in place: The key word
+is encapsulation of logic. 
+
+<p>
+
+All the <strong>execution of callbacks</strong>, which involve use of
+<code>execute immediate</code>, have been encapsulated in some PL/SQL
+procedures/functions that do the work. They're usually pretty simple,
+but in some cases they incorporate some extra logic, such as the
+result if there's no callback defined. 
+
+<p>
+
+The <strong>cascading features</strong>, such as task assignments and
+task deadlines (static per-context setting, manual per-case setting,
+programmtic setting), the logic is encapsulated in their own PL/SQL
+functions, <code>get_task_deadline</code> and
+<code>set_task_assignments</code>.
+
+<p>
+
+The <strong>token manipulation procedures</strong> (produce, lock,
+release, consume tokens) encapsulate the actions on tokens and ensure
+the information we keep for the history of a token is consistent.
+
+<p>
+
+One procedure, <code>sweep_automatic_transitions</code> is responsible
+for <strong>turning the wheels</strong> of a workflow execution. It is
+to be called whenever the state changes due to some action either by
+the user, by time (timed transitions and user-task-hold timeouts), or
+by external systems (in the form of message transitions). It
+checks to see if the case is finished, it loops over all the enabled
+automatic transitions and fire these, and it updates the table
+<code>wf_tasks</code> to make sure it accurately reflects the true
+state of the workflow. It uses two helper procedures for this:
+<code>finished_p</code> and <code>enable_transitions</code>. The
+latter is also responsible for sending out email notifications
+as new user tasks are enabled.
+
+<p>
+
+The procedure <code>fire_transition_internal</code> is responsible for
+<strong>firing any transition</strong>. It consumes the appropriate
+tokens, produces new tokens in the relevant output places, and fires
+any fire callback on the transition.
+
+<p>
+
+For workflow to be really functional, we rely on the OpenACS kernel at
+some point implementing a system for <strong>automatically generating
+forms based on metadata</strong>. This is used for setting workflow
+attributes as part of performing a taks. Currently, we do it ourselves
+in a very ad-hoc fashion. Speaking of attributes, we store a
+<code>wf_datatype</code> about attributes, in addition to the
+information stored by the OpenACS kernel. This is historical. We needed
+it, because the OpenACS kernel currently doesn't let us say that the
+datatype of some attribute is the primary key of some object of a
+specific type, e.g. that the value of an attribute should be a
+party. In this case, the OpenACS kernel datatype would be number, and the
+<code>wf_datatype</code> would be party. We needed that for the manual
+assignments, when we did those with attributes, but now that we don't
+use attributes to store those anymore, because attributes can only
+hold one value each, we actually don't need it anymore. We've left it
+there, though, in case we need it for something else. Once we've
+definitively established that we don't need it anymore, it'll go away.
+
+<p>
+
+
+
+
+<h3>VII.  Data Model Discussion</h3>
+
+The <strong>knowledge level</strong> data model is quite
+straight-forward given the underlying Petri Net model. There's a table
+for each of the elements, i.e. places, transitions and arcs. There's
+also a mapping table between transitions and workflow attributes,
+saying which attributes should be the output of which transitions. And
+there's the now-obsololeted <code>wf_attribute_info</code> table that
+holds the <code>wf_datatype</code> discussed above under design
+tradeoffs.
+
+<p>
+
+The context-level is less obvious. We've decided to store all the
+callback information at the context level, assuming that they might
+need to change depending on the context. This is not necessarily the
+right decision, so we might have to move them to the workflow level
+later. The code review also raised the issue of whether these should
+be normalized into a generic <code>wf_callbacks</code> table, as the
+current <code>wf_context_transition_info</code> table has rather many
+columns, many of which share a common pattern.
+
+<p>
+
+The <strong>operational level</strong> datamodel also follows the
+Petri Net pretty closely. There's a table, <code>wf_tasks</code>
+holding dynamic information corresponding to transitions, and one,
+<code>wf_tokens</code>, holding information about the tokens, which
+corresponds to dynamic information on places. 
+There is a <code> wf_roles </code> that stores all roles for the 
+workflow.  Besides that, there are two tables, <code>wf_case_assignments</code>
+ and <code>wf_case_deadlines</code>, holding case-level manual assignments
+and deadlines. The assignments table is necessary because attributes
+can't hold multiple values. The deadlines table isn't strictly
+necessary, but it is an option in line with setting the deadline in
+the form of an attribute, provided particularly for the Content
+Management System. There's also a
+<code>wf_attribute_value_audit</code> table, which all the historical
+values of workflow attributes, a service that is conceptually better
+provided by the OpenACS kernel, but since the kernel currently doesn't do
+that, we have it here.
+
+<p>
+
+Finally, there are a number of views intended to abstract away from
+whether something is defined at the workflow or context level, to
+query the actual workflow state (used by
+<code>workflow_case.enable_transitions</code>), and one to abstract
+away from traversing the OpenACS kernel party hierarchy.
+
+<p>
+
+There's a specific process for defining workflows, i.e. the order in
+which inserts should happen. This is described in the "Defining Your
+Workflow" section of the <a href="developers.html">Developer's
+Guide</a>.
+
+<h4>Data Model Changes as per Nov 8, 2000 (<b>Planned, but not implemented</b>)</h4>
+
+For <b>permissions</b>, the right solution seems to be to <b>make at least
+<code>wf_workflows</code>, <code>wf_cases</code> and
+<code>wf_tasks</code> ACS Objects</b> (<code>wf_cases</code> is
+already). The system level permissions could belong on the workflow
+package instance. Then, to make the hierarchical permissioning scheme
+work, the context_id of a task will point to the case, the context_id
+of a case will point to the workflow, and the context_id of a workflow
+will point to the workflow package instance in which it was created.
+That way, you can also create multiple workflow package instances and
+have each of these see only its own set of processes. 
+
+<p>
+
+If we also make transitions, places and arcs ACS Objects, we'll have
+a more consistent data model, and the callback signatures will be
+easier and more streamlined.
+
+<p>
+
+In order to store the attributes and take advantage of the kernel
+services (generic/specific storage handling, auditing, automatic
+form-generation, etc.), and since the attributes differ from process
+to process, we'll have to <b>make the process an object type</b>, in
+addition to being an object. Should we make every version of a process
+its own object type, or should we have only one object type per
+process? This is a trade-off. If we want to be able to alter/delete
+attributes, we'll have to make each version its own object type. If
+we're more concerned with quickly scraping up all the cases of a
+particular process, regardless of version, one object type per case is
+more relevant. But that can be solved with a foreign key. In any
+event, we'll have to be clever to come up with a good UI and code for
+summarizing all cases of a process, regardless of version. Finally,
+there's the uglyness of creating all those object types. I guess the
+conclusion is: we'll make each version an object type, it's cleaner.
+
+<p>
+
+<b>General class hierarchy</b>: Workflow is the abstract ancestor object type
+of all workflows. Each process, e.g. "<code>expenses_wf</code>" is an
+object type, subclassing the workflow object type. Then each process
+<i>version</i> is an object type,
+e.g. "<code>expenses_wf_123</code>", subclassing the process
+object type.
+
+<p>
+
+In other words, we have this class hierarchy:
+
+<blockquote><pre>workflow => expenses_wf => expenses_wf_123</pre></blockquote>
+
+Why? We need the version to be an object type if we want to use the
+kernel's generic attribute storage, or even the automatic
+form-generation facilities to come. We need the process itself to be
+an object type if we want a quick way to get all the cases of a
+specific process, across all versions. Finally, the master generic
+obejct type is a good match for the top-level <code>wf_cases</code>
+table.
+
+<p>
+
+<b>Contexts are replaced with package instances</b>. Currently, a context is
+nothing but a token that allows us to exchange some parts of the
+workflow definition, such as assignments, and make them different for
+different contexts. The idea is that the same process can be used with
+different static assignments in two different departments of the same
+company, or within different companies on the same website. The way
+this would work is that you install multiple instances of the target
+application (e.g. ticket-tracker), one per department or company (or,
+in general, per subsite).
+
+<p>
+
+In addition, we'll allow you to install <b>multiple versions of the
+workflow package</b>. Each version will only be able to see the
+workflows created in that specific instance. It would then make sense
+to split up the workflow package into a worklist package and a
+workflow package: The basic idea of the worklist is that it always
+shows all the items on your personal worklist, regardless of what
+process or whatever they belong to. This would make even more sense,
+because there's no reason that there has to be an associated workflow
+process just to add a task to your worklist. So the worklist package
+would be more generic. That split takes a bit more thought, though, as
+we'd have to develop the worklist as a standalone application and
+figure out the exact interaction between that and the workflow package.
+
+<p>
+
+We want to <b>clean up the current callback mechanism</b> in a few
+ways.
+
+<ul>
+
+<li>First, we generally want callbacks to be <b>associated with the
+process, rather than the process in a context</b> (i.e., move from
+<code>wf_context_transition_info</code> to
+<code>wf_transitions</code>, although, for the following two reasons,
+that's not what we're actually going to do). We might later add the
+ability to add another callback which is specific to the context/package, but
+we'll postpone that for now.
+
+<p>
+
+<li>Second, we want to <b>normalize the current mess in
+<code>wf_context_transition_info</code></b>, what with all the nullable
+columns pertaining to callbacks.
+
+<p>
+
+<li>Third, we want to provide a <b>repository of callback routines</b>
+to be applied, so we can provide a nice user-interface for adding
+callbacks to a process.
+</ul>
+
+<p>
+
+
+Here are the different types of callbacks (i.e., different
+signatures), and the concrete callbacks of these types. 
+
+<ul>
+
+<li>Task before it's created: time, deadline and hold-timeout
+callbacks. Signature <code>(case_id, transition_id)
+return date</code>
+
+<li>Task: enable, fire, assignment. Signature <code>(task_id)</code>
+
+<li>Arc: guard. Signature: <code>(case_id, arc_id) return char</code>
+
+</ul>
+
+
+Here's an example data model sketch to store the information.
+
+<pre>
+/* This is the callback repository */
+create table wf_callbacks (
+  callback_id    integer
+  pretty_name    varchar
+  description    varchar
+  callback_proc  varchar
+  type           enum(task_date, task_notify, task_assign, guard)
+);
+
+/* This is the list of custom arguments for these callbacks i.e.,
+   arguments not required by the signature. */
+create table wf_callback_args (
+  arg_id         integer
+  callback_id    integer
+  pretty_name    varchar
+  description    varchar
+  position       integer 
+  type           enum(integer, number, string, attribute, transition)
+);
+/* The argument type is mainly a UI thing. If you say 'integer',
+   'number' or 'string', we ask the user for such a value, and
+   validate that it is in fact a valid integer/number/string. If you
+   say attribute, we present the user with a box where he can select
+   one of the existing attributes of this workflow. If you say
+   transition, we ask the user to select one of the existing
+   transitions, etc. We can easily add more types, e.g. places, arcs,
+   maybe an enumeration (a list of options), etc. This is all just so
+   that we can create a nice UI for the callbacks. */
+
+
+/* This is a generic invocation of a callback, which basically just
+   means that we've filled in the custom arguments with static values */
+create table wf_callback_invocation (
+  invocation_id  integer
+  callback_id    integer
+  compiled_call  varchar
+);
+/* Compiled call is the string to be passed to execute immediate in
+   Oracle. It'll contain bind variables for the arguments covered by
+   the signature, and the static values for the custom arguments will
+   be put directly into the string (don't forget to quote and escape
+   properly). */
+
+/* This table holds the static values to the custom arguments. We
+   don't need to query this, once the 'compiled_call' column has been set. */
+create table wf_callback_invocation_args (
+  invocation_id  integer
+  arg_id         integer
+  value          varchar
+);
+
+/* This is how we apply the callback to a transition */ 
+create table wf_transition_invocation_map (
+  transition_id  integer
+  type           enum(enable, fire, assignment, time, deadline, hold_timeout)
+  sort_order     integer /* the order, if there are more than one per transition
+  invocation_id  integer
+);
+
+/* Here's the guard */
+create table wf_arcs (
+  ...
+  guard_id       integer /* points to a row in wf_callback_invocation */
+);
+</pre>
+
+<p>
+
+Finally, the table <code>wf_attribute_info</code> should go away. We
+don't need it any more, since it was only used for assignment
+attributes, something that's gone now.
+<p>
+
+<h3>Note: </h3>
+The describe changes, as of Nov 8, are not implemented.  These design changes
+will be factored into the next release of workflow.  For the next release
+the most significant change is reimplementing the engine in Java.  It will
+require changes the way guards, callbacks, attributes, and object transitions
+are handled.  Don't worry as part of the next release we'll include, 
+hopefully, a straight foward upgrade path. 
+
+
+<h3>VIII.  User Interface</h3>
+
+The user-interface falls in these separate parts:
+
+<dl>
+
+<dt>End users interaction 
+
+<dd>View the current worklist, view a task, including the journal of
+the case, pick a task to start, cancel/finish the task.
+
+<dt>Workflow Summary UI
+
+<dd>Intended for managers, the workflow summary provides information
+about how the workflow is performing, in particular tools for spotting
+bottlenecks and other performance problems, identifying cases that
+seem to have been forgotten, calculating throughput and other
+performance parameters, etc. The intent is to make sure we're
+providing our customers with the desired level of service.
+
+
+<dt>Workflow Maintainer UI
+
+<dd>Predefined, distributed workflows need to be customized to the
+context, in particular with respect to assignments. There must be a UI
+for making these adaptions of a predefined workflow to the current
+context. It might also be nice to have a UI for downloading/installing
+workflow definitions a' la APM.
+
+
+<dt>Simple Workflow Builder UI
+
+<dd>Under the assumption that building complex workflows can be
+difficult, we'll provide an interface for building simple workflows,
+meaning only sequential routing and simple iteration. Specifically, it
+should abstract away from implementation details, such as places,
+transitions and arcs. We have yet to determine just how this is going
+to be used, i.e. whether and how you can just "attach" a workflow to
+any object at will.
+
+
+<dt>Advanced Workflow Builder UI
+
+<dd>We need a UI for building workflows that exploit the full power of
+the workflow engine. It would fully expose implementation details,
+because these are necessary to understand how to build non-simple
+workflows. It would also allow the user to export the workflow in some
+way that is importable into another OpenACS installation for distribution
+either alone or with a package, either as a SQL file to load into the
+RDBMS, or as an XML in the <a href="http://www.wfmc.org">WfMC</a>
+standard format.
+
+
+<dt>Workflow Debugging UI (not implemented, future feature)
+
+<dd>For managers building workflows, we'll provide an interface for
+debugging the execution of the workflow, so there's a way to figure
+out what happened when it doesn't behave as expected. It might allow
+the user to step through the historic execution of the workflow, to
+verify what happened at each step of the execution.
+
+</dl>
+
+
+
+<h3>IX.  Configuration/Parameters</h3>
+
+There are two optional parameters under the APM, 
+graphviz_dot_path and tmp_path.  These parameters are required for
+the <a href="http://www.research.att.com/sw/tools/graphviz/download.html">
+GraphVizv</a> program used to generated the diagrams.  Please read
+the installation guide for more details.
+
+
+<h3>X.  Future Improvements/Areas of Likely Change</h3>
+
+Two major things: As said before, we'll need to work permissions into
+this system. And we'll need to amend the core datamodel with a concept
+of "revisions" of workflow process definitions, so it's possible to
+revise a workflow without deleting all the old cases that are still
+using earlier revisions.
+
+<p>
+
+For more far-fetched future plans, refer to <a
+href="future-plans.html">Future Plans</a>.
+
+
+
+<h3>XI.  Authors</h3>
+
+<ul>
+    <li> System creator: Khy Huang (<a href="mailto:khy@arsdigita.com">khy@arsdigita.com</a>)
+    <li> System owner: Khy Huang (<a href="mailto:khy@arsdigita.com">khy@arsdigita.com</a>)
+    <li> Documentation author: Khy Huang (<a href="mailto:khy@arsdigita.com">khy@arsdigita.com</a>)
+</ul>
+
+
+<h3>XII.  Revision History</h3>
+
+<table cellpadding=2 cellspacing=2 width=90% bgcolor=#efefef>
+<tr bgcolor=#e0e0e0>
+    <th width=10%>Document Revision #</th>
+    <th width=50%>Action Taken, Notes</th>
+    <th>When?</th>
+    <th>By Whom?</th>
+</tr>
+<tr>
+   <td>1.0</td>
+   <td>Minor updates about wf roles, parameters, and operational datamodel</td>
+   <td>04/12/2001</td>
+   <td>Khy Huang (<a href="mailto:khy@arsdigita.com">khy@arsdigita.com<a/>)</td>
+</tr>
+<tr>
+   <td>0.1</td>
+   <td>Creation</td>
+   <td>9/18/2000</td>
+   <td>Lars Pind (<a href="mailto:lars@pinds.com">lars@pinds.com<a/>)</td>
+</tr>
+
+</table>
+
+<p>
+
+
+
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

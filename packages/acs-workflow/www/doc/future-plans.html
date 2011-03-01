@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>Workflow Future Plans</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Future Plans</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 30 August 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Workflow Future Plans
+
+<hr>
+
+This document lists areas for future development of the workflow package.
+
+<p>
+
+All the existing features and UIs will be continually improved to
+better serve users' needs. But there are also entirely new areas that
+we're planning to explore. These are:
+
+<ul>
+
+<li><strong>Extension with color.</strong> By letting tokens carry
+values themselves, we can implement parallel routing without a
+predetermined number of concurrent threads of execution. Color is a
+standard extension of Petri Nets, and thus straight-forward to
+implement in that all the hard work of defining the semantics have
+already been done by others. The most likely implementation is to have
+each token carry a XML document, the places carry a DTD, which must be
+the DTD of tokens residing in that place, and arcs perform XSLT
+transformations on the tokens.
+
+<p>
+
+<li><strong>Extension with hierarchy.</strong> Hierarchy is another
+one of the standard Petri Net extensions that make excellent sense for
+workflow nets. Each task can consist of a number of sub-tasks. The
+interface between the levels are well-defined, in the form of places
+that exist on both levels. The hierarchy can be arbitrarily deep.
+
+<p>
+
+<li><strong>Analysis of workflows.</strong> At a minimum we'll want a
+way to ensure that a workflow net is well-constructed, i.e. no
+deadlocks, we can't end up in inconsistent states, such as "workflow
+is not finished but there are no tasks to perform either", etc. But
+more importantly, the underlying model we're using (Petri nets) lends
+itself very easily to simulation and analysis of performance and
+throughput, discover bottlenecks, and lots of other interesting
+features of workflows. The analysis can both be on simulated data and
+on historic data.
+
+<p>
+
+<li><strong>Cooperation with other systems.</strong> The workflow
+package should integrate with other software, including other workflow
+management systems. We're investigaing and evaluating the existing
+standards in the field, especially <a href="http://www.wfmc.org/">WfMC</a>.
+
+<p>
+
+<li><strong>Separate task manager package.</strong> It makes sense to
+separate the task list into its own PIM-style task manager package,
+so we're expecting to do that.
+
+<p>
+
+<li><strong>Engine written in Java</strong>. The next-generation
+workflow engine will probably be written in Java, to run inside a Java
+application server or perhaps an EJB container. Thus, actions and
+other forms of callbacks can be implemented as JavaBeans or EJBs,
+providing for a much cleaner environment. We're currently
+investigating the technology options.
+
+<p>
+
+<li><strong>Process and Callback Repository</strong> As the workflow
+package gains in popularity, we'll host a process and callback
+repository, so you can share and get access to processes and callbacks
+without having to write them yourself. This will be facilitated
+by an XML representation of a process, as well as by callbacks written
+as JavaBeans or EJBs rather than PL/SQL functions/packages.
+
+<p>
+
+<li><strong>Manually manipulate the state of a case.</strong> We're
+planning on providing a web-based interface for manually manipulating
+the state of a case. The simplest form is undoing actions on a
+case. The more advanced form is to let an administrator put the case
+into any valid state.
+
+<p>
+
+<li><strong>Leverage an automated form-builder system.</strong> Once
+the ACS has a fully functional automated form-generating subsystem in
+place, we'll want to use it for generating more complex forms to fill
+in workflow attributes or, when that time comes, values to be carried
+by the tokens.
+
+</ul>
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

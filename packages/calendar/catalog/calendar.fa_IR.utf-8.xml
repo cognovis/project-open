@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" locale="fa_IR" charset="utf-8">
+
+  <msg key="Date_1">تاريخ</msg>
+  <msg key="Edit">ويرايش</msg>
+  <msg key="Friday">جمعه</msg>
+  <msg key="lt_Create_a_new_calendar">ايجاد تقويم جديد</msg>
+  <msg key="Monday">دوشنبه</msg>
+  <msg key="Saturday">شنبه</msg>
+  <msg key="Sunday">يکشنبه</msg>
+  <msg key="Title">عنوان:</msg>
+  <msg key="Wednesday">چهارشنبه</msg>
+  <msg key="year">سال</msg>
+</message_catalog>

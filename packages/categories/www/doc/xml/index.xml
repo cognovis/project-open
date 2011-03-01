@@ -1,0 +1,16 @@
+<?xml version='1.0' ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [ 
+]>
+
+  <article id="categories" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <title>Categories</title>
+      <xi:include href="install.xml" xmlns:xi="http://www.w3.org/2003/XInclude">
+        <xi:fallback>Section Missing</xi:fallback>
+      </xi:include>
+      <xi:include href="requirements.xml" xmlns:xi="http://www.w3.org/2003/XInclude">
+        <xi:fallback>Section Missing</xi:fallback>
+      </xi:include>
+      <para><ulink url="design.html">Design Document</ulink>  </para>
+            <para><ulink url="o.html">Object Names and IdHandler Service Contract</ulink></para>
+      </article>

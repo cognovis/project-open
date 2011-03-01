@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="ar_LB" charset="utf-8">
+
+  <msg key="Disable">غير مفعل</msg>
+  <msg key="Disable_Folders"> عدم تفعيل الحافظات المختارة</msg>
+  <msg key="Disabled">غير مفعل</msg>
+  <msg key="Enable">تفعيل</msg>
+  <msg key="Enable_Folders">تفعيل الحافظات المختارة</msg>
+  <msg key="Enabled">مفعل</msg>
+  <msg key="Folder_Name">اسم الحافظة</msg>
+  <msg key="Folder_URL">حافظة العناوين</msg>
+  <msg key="Folders_Disabled">عدم تفعيل الحافظات المختارة لدعم WebDAV </msg>
+  <msg key="Folders_Enabled">تفعيل الحافظات المختارة لدعم WebDAV </msg>
+  <msg key="Package_Name">اسم الحزمة</msg>
+  <msg key="Package_Type">نوع الحزمة</msg>
+  <msg key="Status">الحالة</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV     حافظة الادارة ل</msg>
+</message_catalog>

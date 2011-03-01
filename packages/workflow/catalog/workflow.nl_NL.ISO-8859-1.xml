@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Case">Spel (case)</msg>
+  <msg key="lt_Please_click_here_to_">Click hier voor %object_type.pretty_name%</msg>
+  <msg key="lt_You_are_a_participant">U bent een deelnemer van %object_type.pretty_name%</msg>
+  <msg key="lt_You_are_assigned_to_t">U heeft de volgende opdracht:</msg>
+  <msg key="lt_You_have_a_watch_on_t">%object_type.pretty_name% wordt voor u in de gaten gehouden.</msg>
+  <msg key="lt_You_have_requested_to">U heeft verzocht om notificatie over alle %object_type.pretty_plural% in %workflow_object.name%</msg>
+  <msg key="notification_email_latest_action_chunk"> %action_past_tense% door %user_name% (%user_email%)</msg>
+</message_catalog>

@@ -1,0 +1,252 @@
+<html>
+<head>
+<title>Workflow Concepts Reference</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Concepts Reference</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 31 August 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Workflow Conceptual Reference
+
+<hr>
+
+This document is an <strong>alphabetical reference-form</strong> of the material presented in the <a
+href="concepts">Conceptual Guide</a>.
+
+
+
+<dl>
+
+
+<dt>
+And-split
+
+<dd>
+
+<img src="and-split.gif" width=114 height=98 alt="AND-split">
+
+<p>
+
+A case of <b>parallel routing</b>, where several tasks are performed
+in parallel or in no particular order. It is modeled by a transition
+with one input place and two or more output places.
+
+
+<dt>
+And-join
+
+<dd>
+
+<img src="and-join.gif" width=110 height=96 alt="AND-join">
+<p>
+
+
+A transition with two or more input places and one output place. This
+will only be enabled, once there is a token in all of the input
+places, which would be after each parallel thread of execution has
+finished.
+
+
+<dt>
+Arc
+
+<dd>
+Arcs are the arrows that connect transitions and places. They always go
+either from a place to a transition (thus defining an <b>input place</b> for
+that transition), or from a transition to a place (thus defining an
+<b>output place</b> for the transition).
+
+
+<dt>
+Case Attribute
+
+<dd>
+Correspond to "for-internal-use-only" fields on the forms. They're
+filled out as part of a transition, and can be used to branch on in
+or-splits.
+
+
+<dt>
+Enabled Transition
+
+<dd>
+An enabled transition is a transition for which there is <b>at least one
+token in each of its input places</b>. In the office metaphor this is
+the same as saying that all the forms necessary to complete a certain
+task are present.
+
+
+<dt>
+Explicit Or-split
+
+<dd>
+
+<img  src="explicit-or-split.gif" width=113 height=99 alt="Explicit OR-split">
+
+<p>
+
+An example of <b>conditional routing</b>, where the decision is made <b>as
+early as possible</b>. It is modeled by attaching conditions or
+<b>guards</b> the arcs going out of a transition.
+
+
+<dt>
+Firing a Transition
+
+<dd>
+When a transition fires, it <b>consumes</b> one token from each of its
+input places and <b>produces</b> one token in each of its output
+places, <b>for which the guard evaluates to true.</b> Thus that a
+transition is enabled is a necessary condition for the transition to
+fire. In the office metaphor, this corresponds to taking each of the
+forms in the in-boxes, perform the task, and put a form in each of the
+in-boxes of the next task to be performed. We'll just photocopy or
+discard forms as necessary to make the numbers fit.
+
+
+<dt>
+Guard
+
+<dd>
+An expression attached to an arc, shown in brackets, that evaluates to
+true or false. Tokens can only travel over arcs when their guard
+evaluates to true. The expression will typically involve the <b>case
+attributes</b>.
+
+
+<dt>
+Implicit Or-Split
+
+<dd>
+
+<img src="implicit-or-split.gif" width=115 height=103 alt="Implicit OR-split">
+
+<p>
+
+An example of <b>conditional routing</b>, where the decision is made
+<b>as late as possible</b>. Implicit or-splits are modeled as two arcs
+going from the same place but to different tasks. That way, the
+transition that happens to fire first will get the token. Once the
+token is gone, the others are no longer enabled and thus cannot fire.
+
+
+<dt>
+Or-join (Explicit and Implicit)
+
+<dd>
+
+<img src="or-join.gif" width=112 height=96 alt="OR-join">
+
+<p>
+
+Is simply a place, that serves as the output place of two different
+transitions. That way, the next transition after the or-join place
+will be enabled when either of the two conditional threads are
+done.
+
+
+<dt>
+Place
+
+<dd>
+Places are the <b>in-boxes</b> of the office. They're represented as circles on the
+diagram. Places hold Tokens.
+
+
+<dt>
+Place (Start and End Places)
+
+<dd>
+There are two special places. When the workflow starts, a token is put
+in the start place, which should enable at least transition. The end
+place is a place which does not serve as the input place for any
+transitions. When the token lands in this place, the case is
+closed.
+
+
+<dt>
+Task
+
+<dd>
+Used as a synonym for an enabled transition. In practice, though,
+people often use the word task as a synonym for transition as well.
+
+<dt>
+Token
+
+<dd>
+A token is the <b>form representing a case</b>. Tokens stay in Places.
+
+<dt>
+Transition
+
+<dd>
+A transition represents a <b>task</b> (or a desk) in the office
+metaphor. They correspond to activity. They move tokens from one or
+more places to one or more other places governed by certain rules.
+
+<dt>
+Transition Trigger
+
+<dd>
+A transition need not fire the instant it is enabled. If the task is
+something that has to be done by a human being, she might not be
+able, available or willing to perform the task. In general there are
+<b>four types of triggers</b>:
+
+<p>
+
+<ol>
+
+<li><b>User</b>: The transition must be executed by some
+person. Instances of these transitions (the transition for a specific
+case) is also referred to as <b>tasks</b>.
+
+<li><b>Time</b>: The transition is fired automatically at some
+specific time, typically after the transition has been enabled for a
+certain number of days. An example is when we mail a form to a
+customer and we wait for a response. We could then add a transition that
+automatically closes the case if we haven't heard back from the
+customer in three weeks.
+
+<li><b>Message</b>: Some tasks need to be executed by something
+outside the control of the workflow application. An example of that is
+when we mail a form the some person and asks him to fill it out. The
+way the workflow package learns that the task has been executed is
+through a message of some form.
+
+<li><b>Automatic</b>: The workflow engine automatically fires the
+transition as soon as it becomes enabled. These can be used to build
+control structures like and-splits, and-joins, or-splits and
+or-joins. Or they can be used for their side-effects, such as
+executing some code.
+
+</ol>
+
+
+<dt>Workflow
+
+<dd>A workflow is the formal definition of the process used to manage
+a certain case. The example of an insurance claim was given
+above. More examples of workflows are:
+
+
+</dl>
+
+
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

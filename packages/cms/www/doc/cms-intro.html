@@ -1,0 +1,498 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Introduction</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="NEXT"
+TITLE="User's Guide"
+HREF="cms-user-guide.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="index.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="cms-user-guide.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="cms-intro"
+>Chapter 1. Introduction</A
+></H1
+><P
+><I
+CLASS="emphasis"
+>Briefly answer two questions:</I
+></P
+><UL
+><LI
+><P
+CLASS="listitem"
+>What does this package do?</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>How can my business benefit from using it?</P
+></LI
+></UL
+><P
+><I
+CLASS="emphasis"
+>You may want to cut and paste from your requirements doc.</I
+></P
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="overview"
+>1.1. Introduction</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>1.1.1. <A
+HREF="cms-intro.html#overview-setup-and-customization"
+>Setup and Customization</A
+></DT
+><DD
+><DL
+><DT
+>1.1.1.1. <A
+HREF="cms-intro.html#overview-defining-content-types"
+>Defining Content Types</A
+></DT
+><DT
+>1.1.1.2. <A
+HREF="cms-intro.html#overview-customizing-the-interface"
+>Customizing the Interface</A
+></DT
+><DT
+>1.1.1.3. <A
+HREF="cms-intro.html#overview-implementing-presentation-templates"
+>Implementing Presentation Templates</A
+></DT
+></DL
+></DD
+><DT
+>1.1.2. <A
+HREF="cms-intro.html#overview-data-production"
+>Data Production</A
+></DT
+><DT
+>1.1.3. <A
+HREF="cms-intro.html#overview-deployment"
+>Deployment</A
+></DT
+><DD
+><DL
+><DT
+>1.1.3.1. <A
+HREF="cms-intro.html#overview-static-content"
+>Static Content</A
+></DT
+><DT
+>1.1.3.2. <A
+HREF="cms-intro.html#overview-dynamic-content"
+>Dynamic Content</A
+></DT
+><DT
+>1.1.3.3. <A
+HREF="cms-intro.html#overview-personalization"
+>Personalization</A
+></DT
+></DL
+></DD
+><DT
+>1.1.4. <A
+HREF="cms-intro.html#overview-closing-the-loop"
+>Closing the Loop</A
+></DT
+></DL
+></DIV
+><P
+>This document provides an overview of how CMS is typically
+    deployed for a site with highly dynamic content and
+    personalization.</P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/overview.gif"
+></IMG
+></P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="overview-setup-and-customization"
+>1.1.1. Setup and Customization</A
+></H2
+><P
+>CMS is designed to support content production without the
+      regular intervention of a developer. Unless your publishing needs
+      are extremely simple, however, a developer is required initially to
+      set up and customize the system.</P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-defining-content-types"
+>1.1.1.1. Defining Content Types</A
+></H3
+><P
+>The first step in the production process is to define the types
+	of content that are relevant to a particular application. Examples
+	of content types include Press Releases, News Stories, Images, and
+	Product Reviews. A content type definition specifies what kinds of
+	data may be associated with a content item of that type. This
+	includes simple <I
+CLASS="emphasis"
+>attributes</I
+>, such as author, summary text,
+	SKU number, etc., as well as valid <I
+CLASS="emphasis"
+>associations</I
+> with other
+	content items, such as between news stories and images or
+	graphics.</P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-customizing-the-interface"
+>1.1.1.2. Customizing the Interface</A
+></H3
+><P
+>Successful deployment of any content management system requires
+	careful anticipation of the needs of the entire publishing team,
+	including content producers, managers and any number of other
+	staffpersons across the organization who may be monitoring the
+	production and deployment process. The system must provide each
+	class of users with an interface this is both intuitive and robust
+	enough to provide access to all necessary functions.</P
+><P
+>CMS includes a generic user interface designed to meet the basic
+	needs of the majority of publishing teams. In recognition of the
+	uniqueness of each organization, it is implemented in a highly
+	modular fashion that simplifies the task of assembling customized
+	interfaces. Common examples of customization include:</P
+><UL
+><LI
+><P
+CLASS="listitem"
+>Simplified browsing interfaces that organize content in a
+	    manner specific to a particular content type or categorization
+	    scheme.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Information display panels that emphasize what is most
+	    important or appropriate for the particular production
+	    context.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Data entry forms and "wizards" to guide producers through a
+	    specific task or related set of tasks.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Search pages tailored to the attributes of a specific set of
+	    content types.</P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-implementing-presentation-templates"
+>1.1.1.3. Implementing Presentation Templates</A
+></H3
+><P
+>In addition to implementing an appropriate interface for
+	managing your content internally, you must implement templates that
+	specify how content is presented to the public as part of your
+	application. A <I
+CLASS="emphasis"
+>presentation template</I
+> is an HTML document
+	with special placeholders indicating where content should be
+	inserted, much like the templates used in a word processor to
+	generate a form letter or other standard document. The
+	implementation of presentation templates is typically a
+	collaborative effort among publisher, developer and designer. The
+	process is typically as follows:</P
+><OL
+TYPE="1"
+><LI
+><P
+CLASS="listitem"
+>You decide what information you want to present on a page. For
+	    example, "This page has a news story as its centerpiece. On the
+	    marging there is a list of related stories. The page may also
+	    include one or two images."</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>The developer implements the database queries to extract the
+	    appropriate content from the database and make it available for
+	    merging with the template. The developer may write a skeletal HTML
+	    layout for the purpose of testing the queries.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>The designer implements a layout for the page in HTML, possibly
+	    based on the skeleton provided by the developer. The initial draft
+	    may be a mockup for illustration purposes only.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>The designer uses the documentation provided by the deveoper to
+	    insert variable names in their proper position in the layout.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>The developer and designer test the template with actual data
+	    and revise as necessary.</P
+></LI
+></OL
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="overview-data-production"
+>1.1.2. Data Production</A
+></H2
+><P
+>Data production is the everyday process by which producers enter
+      content into the system, and managers edit, approve and deploy
+      content to the public site.</P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="overview-deployment"
+>1.1.3. Deployment</A
+></H2
+><P
+>CMS can coexist with your public server infrastructure in a
+      variety of ways, ranging from total indepedence to tight
+      integration.</P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-static-content"
+>1.1.3.1. Static Content</A
+></H3
+><P
+>Static content consists of pages that, once published, do not
+	change unless edited manually. Examples of static content typically
+	include Press Releases and News Stories. At the time of deployment,
+	CMS can merge content with a presentation template and write it to
+	the file system as a static HTML file. Your public server
+	infrastructure can then deliver these pages to users without any
+	further processing.</P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-dynamic-content"
+>1.1.3.2. Dynamic Content</A
+></H3
+><P
+>Dynamic content consists of pages that are constantly changing
+	as new content is deployed. These are typically "top-level" or
+	summary pages that provide links to actual content. These pages
+	must stay up-to-date without manual editing or intervention. For
+	dynamic pages, you can query the content repository directly to
+	ensure that the latest available content is always listed.
+	Depending on your public server infrastructure, you may opt to
+	cache this information and refresh it at regular brief intervals,
+	rather than performing database queries for each user request.</P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="overview-personalization"
+>1.1.3.3. Personalization</A
+></H3
+><P
+>Personalized pages are by necessity highly dynamic. As such,
+	they invariably need to query the content repository directly to
+	retrieve content appropropriate for the user who is making the
+	request.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="overview-closing-the-loop"
+>1.1.4. Closing the Loop</A
+></H2
+><P
+>Monitoring usage trends is a critical final element to the
+      production process. Publishers must continually adjust their
+      content output to adapt to predominant user interests. Actual
+      logging and reporting of user traffic is dependent on your public
+      server infrastructure.</P
+><P
+>&#13;      <A
+HREF="mailto:karlg@arsdigita.com"
+TARGET="_top"
+>karlg@arsdigita.com</A
+>
+    </P
+><P
+>&#13;      Last revised: $Id: cms-intro.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="index.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="cms-user-guide.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Content Management System</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>User's Guide</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

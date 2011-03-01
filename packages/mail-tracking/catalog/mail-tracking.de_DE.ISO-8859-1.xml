@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="mail-tracking" package_version="0.6" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Attachments">Dateianhänge</msg>
+  <msg key="BCC">BCC</msg>
+  <msg key="Body">Inhalt</msg>
+  <msg key="CC">CC</msg>
+  <msg key="Emails_to">Email ansehen für die:</msg>
+  <msg key="Employees">Mitarbeiter</msg>
+  <msg key="Forward">Weiterleiten</msg>
+  <msg key="Forward_message">Nachricht weiterleiten</msg>
+  <msg key="Go_Back">Zurück</msg>
+  <msg key="Mail_Tracking">Mail Tracking</msg>
+  <msg key="MessageID">MessageID</msg>
+  <msg key="messages">Nachrichten</msg>
+  <msg key="One_message">Eine Nachricht</msg>
+  <msg key="Organization">Organisation</msg>
+  <msg key="Package">Paket</msg>
+  <msg key="Recipient">Empfänger</msg>
+  <msg key="Request_mail_tracking_for_instance_name">Mail Tracking für %instance_name% einrichten</msg>
+  <msg key="Request_Notification_for_instance_name">Benachrichtigung für %instance_name% beantragen</msg>
+  <msg key="Sender">Absender</msg>
+  <msg key="Sent_Date">Versanddatum</msg>
+  <msg key="Subject">Betreff</msg>
+  <msg key="The_specified_message_does_not_exist">Die angegebene Nachricht existiert nicht.</msg>
+  <msg key="View">Ansehen</msg>
+  <msg key="View_full_message">Die gesamte Nachricht ansehen</msg>
+  <msg key="You_have_requested_to_track_emails_from_this_package">Sie haben das Mail Tracking für diese Paket aktiviert (&lt;a href=&quot;%sub_url%&quot;&gt;deaktivieren&lt;/a&gt;).</msg>
+  <msg key="You_may_request_mail_tracking_for_this_package">Sie können &lt;a href=&quot;%sub_url%&quot;&gt; das Mail Tracking für dieses Paket aktivieren&lt;/a&gt;: '%pretty_name%'.</msg>
+</message_catalog>

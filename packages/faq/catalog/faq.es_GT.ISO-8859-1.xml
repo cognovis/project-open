@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="es_GT" charset="ISO-8859-1">
+
+  <msg key="A">A:</msg>
+  <msg key="Add_QA_for_faq_name">Añadir Pregunta y Respuesta a %faq_name%</msg>
+  <msg key="administer">administrar</msg>
+  <msg key="Answer">Respuesta</msg>
+  <msg key="Back_to_FAQs">Volver a Preguntas Frecuentes</msg>
+  <msg key="Create_a_new_FAQ">Crear una Pregunta Frecuentes</msg>
+  <msg key="Create_an_FAQ">Crear Preguntas Frecuentes</msg>
+  <msg key="Create_FAQ">Crear Preguntas Frecuentes</msg>
+  <msg key="Create_New_QA">Añadir Preguntas y Respuestas</msg>
+  <msg key="Create_new_QA">Añadir Preguntas y Respuestas</msg>
+  <msg key="Create_QA">Añadir Preguntas y Respuestas</msg>
+  <msg key="Delete">Borrar</msg>
+  <msg key="delete">borrar</msg>
+  <msg key="Delete_This_QA">Borrar esta Pregunta y Respuesta</msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="edit">editar</msg>
+  <msg key="Edit_an_FAQ">Editar una Pregunta Frecuente</msg>
+  <msg key="FAQ_Admin">Administración de Preguntas Frecuentes</msg>
+  <msg key="faq_name_Admin">Administrar %faq_name%</msg>
+  <msg key="FAQs">Preguntas Frecuentes</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">insertar despues</msg>
+  <msg key="lt_Are_you_sure_you_want">¿Estás seguro de borrar estas Preguntas Frecuentes?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">¿Estás seguro de borrar esta pregunta?</msg>
+  <msg key="lt_no_FAQs">No hay Preguntas Frecuentes disponibles.</msg>
+  <msg key="lt_no_questions">No hay preguntas disponibles</msg>
+  <msg key="Name">Nombre:</msg>
+  <msg key="New">Nuevo</msg>
+  <msg key="No">No</msg>
+  <msg key="One_Question">Una pregunta</msg>
+  <msg key="Plain">Plano</msg>
+  <msg key="Preformatted">Preformateado</msg>
+  <msg key="preview">previsualización</msg>
+  <msg key="Q">P:</msg>
+  <msg key="QA_On_Separate_Pages">¿Preguntas y Respuestas en páginas separadas?</msg>
+  <msg key="QA_on_Separate_Pages">¿Preguntas y Respuestas en páginas separadas?</msg>
+  <msg key="Question">Pregunta</msg>
+  <msg key="swap_with_next">intercambiar con la próxima</msg>
+  <msg key="Text_type">¿Tipo texto?</msg>
+  <msg key="Title">Título:</msg>
+  <msg key="Update_FAQ">Actualizar Preguntas Frecuentes</msg>
+  <msg key="Update_This_QA">Actualizar esta Pregunta y Respuesta</msg>
+  <msg key="View_All_FAQs">Ver todas las Preguntas Frecuentes</msg>
+  <msg key="Yes">Sí</msg>
+</message_catalog>

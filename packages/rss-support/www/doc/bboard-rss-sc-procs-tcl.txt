@@ -1,0 +1,85 @@
+ad_proc -private bboard__rss_datasource {
+    summary_context_id
+} {
+    This procedure implements the "datasource" operation of the
+    RssGenerationSubscriber service contract.  Its internal details
+    are entirely up the author provided that it returns a correct
+    datastructure.
+
+    @author Andrew Grumet
+} {
+
+    set this [ad_url]
+
+    db_1row forum_info {
+	select short_name,
+               charter,
+               to_char(now(),'DD Mon YYYY hh12:MI am') as channel_pubdate,
+               bboard_id
+	from bboard_forums
+        where forum_id = :summary_context_id
+    }
+
+    set bboard_url [rss_first_url_for_package_id $bboard_id]
+
+    set column_array(channel_title) $short_name
+    set column_array(channel_description) $charter
+    set column_array(channel_pubDate) $channel_pubdate
+
+    set column_array(version) .91
+
+    set column_array(channel_link)  "${this}${bboard_url}forum?forum_id=$summary_context_id"
+    set column_array(image) ""
+
+    set last_n_days 0
+
+    set items [list]
+    set i 0
+    
+    db_foreach bboard_rss_items "
+	select message_id, title, 
+               first_names || ' ' || last_name || ' ' as poster,
+	       to_char(last_reply_date,'DD Mon YYYY hh12:MI am') as post_date
+          from bboard_messages_all b, persons
+          where forum_id = :summary_context_id
+	    and person_id = sender
+            and reply_to is null
+	order by sent_date desc limit 10
+    " {
+	set link "${this}${bboard_url}message?message_id=$message_id&forum_id=$summary_context_id"
+	lappend items [list link $link title $title description \
+		$poster$post_date]
+	if !$i {
+	    set column_array(channel_lastBuildDate) $post_date
+	    incr i
+	}
+    }
+    set column_array(items) $items
+    set column_array(channel_language)               ""
+    set column_array(channel_copyright) ""
+    set column_array(channel_managingEditor)         ""
+    set column_array(channel_webMaster)              ""
+    set column_array(channel_rating)                 ""
+    set column_array(channel_skipDays)               ""
+    set column_array(channel_skipHours)              ""
+
+    return [array get column_array]
+}
+
+ad_proc -private bboard__rss_lastUpdated {
+    summary_context_id
+} {
+    Returns the time that the last forum thread was initiated,
+    in Unix time.  Returns 0 otherwise.
+
+    @author Andrew Grumet
+} {
+    db_0or1row get_last_update {
+	select coalesce (date_part('epoch',max(sent_date)),0) as last_update
+	from bboard_messages_all
+	where forum_id = :summary_context_id
+            and reply_to is null
+    }
+
+    return $last_update
+}

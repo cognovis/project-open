@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="mail-tracking" package_version="0.6.2" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Attachments">Attachments</msg>
+  <msg key="BCC">BCC</msg>
+  <msg key="Body">Body</msg>
+  <msg key="CC">CC</msg>
+  <msg key="Emails_to">Watch Emails to:</msg>
+  <msg key="Employees">Employees</msg>
+  <msg key="Files">Files</msg>
+  <msg key="Forward">Forward</msg>
+  <msg key="Forward_message">Forward message</msg>
+  <msg key="Go_Back">Go Back</msg>
+  <msg key="Mail_Tracking">Mail Tracking</msg>
+  <msg key="MessageID">MessageID</msg>
+  <msg key="messages">messages</msg>
+  <msg key="Object_id">Object Id</msg>
+  <msg key="One_message">One Message</msg>
+  <msg key="Organization">Organization</msg>
+  <msg key="Package">Package</msg>
+  <msg key="Recipient">Recipient</msg>
+  <msg key="Request_mail_tracking_for_instance_name">Request mail tracking for %instance_name%</msg>
+  <msg key="Request_Notification_for_instance_name">Request Notification for %instance_name%</msg>
+  <msg key="Sender">Sender</msg>
+  <msg key="Sent_Date">Sent Date</msg>
+  <msg key="Subject">Subject</msg>
+  <msg key="The_specified_message_does_not_exist">The specified message does not exist</msg>
+  <msg key="View">View</msg>
+  <msg key="View_full_message">View Full Message</msg>
+  <msg key="You_have_requested_to_track_emails_from_this_package">You have requested to track emails from this package (&lt;a href=&quot;%sub_url%&quot;&gt;unsubscribe&lt;/a&gt;).</msg>
+  <msg key="You_may_request_mail_tracking_for_this_package">You may &lt;a href=&quot;%sub_url%&quot;&gt;request mail tracking&lt;/a&gt; for this package: '%pretty_name%'.</msg>
+</message_catalog>

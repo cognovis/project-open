@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="nn_NO" charset="ISO-8859-1">
+
+  <msg key="A">Sv:</msg>
+  <msg key="Add_QA_for_faq_name">Legg inn spørsmål/svar for %faq_name%</msg>
+  <msg key="administer">administrer</msg>
+  <msg key="Answer">Svar</msg>
+  <msg key="Back_to_FAQs">Attende til Vanlege spørsmål (FAQ)</msg>
+  <msg key="Create_a_new_FAQ">Lag ny FAQ</msg>
+  <msg key="Create_an_FAQ">Legg inn eit nytt spørsmål/svar</msg>
+  <msg key="Create_FAQ">Lag spørsmål/svar</msg>
+  <msg key="Create_New_QA">Lag nytt spørsmål/svar</msg>
+  <msg key="Create_new_QA">Lag nytt spørsmål/svar</msg>
+  <msg key="Create_QA">Lag spørsmål/svar</msg>
+  <msg key="Delete">Slett</msg>
+  <msg key="delete">slett</msg>
+  <msg key="Delete_This_QA">Slett dette spørsmål/svar</msg>
+  <msg key="Edit">Rediger</msg>
+  <msg key="edit">rediger</msg>
+  <msg key="Edit_an_FAQ">Rediger eit spørsmål/svar</msg>
+  <msg key="FAQ_Admin">Administrere FAQ</msg>
+  <msg key="faq_name_Admin">%faq_name% Admin</msg>
+  <msg key="FAQs">Vanlege spørsmål (FAQ)</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">Legg inn etter</msg>
+  <msg key="lt_Are_you_sure_you_want">Er du sikker på at du vil slette dette FAQ?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Er du sikker på at du vil slette dette spørsmålet?</msg>
+  <msg key="lt_no_FAQs">Det er ikkje nokon spørsmål/svar (FAQ) tilgjegeleg</msg>
+  <msg key="lt_no_questions">Det er ingen spørsmål tilgjengeleg</msg>
+  <msg key="Name">Navn:</msg>
+  <msg key="New">Ny</msg>
+  <msg key="No">Nei</msg>
+  <msg key="One_Question">Eit spørsmål</msg>
+  <msg key="Plain">Enkel</msg>
+  <msg key="Preformatted">Preformatert</msg>
+  <msg key="preview">oversikt</msg>
+  <msg key="Q">Sp:</msg>
+  <msg key="QA_On_Separate_Pages">Spørsmål og svar på forskjellige sider?</msg>
+  <msg key="QA_on_Separate_Pages">Spørsmål og svar på forskjellige sider?</msg>
+  <msg key="Question">Spørsmål</msg>
+  <msg key="swap_with_next">byt med neste</msg>
+  <msg key="Text_type">Tekst type?</msg>
+  <msg key="Title">Tittel:</msg>
+  <msg key="Update_FAQ">Oppdater Vanlege spørsmål (FAQ)</msg>
+  <msg key="Update_This_QA">Oppdater desse spørsmål/svar</msg>
+  <msg key="View_All_FAQs">Sjå alle vanlege spørsmål (FAQ)</msg>
+  <msg key="Yes">Ja</msg>
+</message_catalog>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Action">Action</msg>
+  <msg key="Admin_workflows">Admin Workflows</msg>
+  <msg key="All_Tasks">All Tasks</msg>
+  <msg key="Approve">Approve</msg>
+  <msg key="Assign_somebody_else">Assign to somebody else</msg>
+  <msg key="Assign_yourself">Assign to yourself</msg>
+  <msg key="Assignee">Assignee</msg>
+  <msg key="assignment_group">assignment group</msg>
+  <msg key="Automatic_trigger">Automatic Trigger</msg>
+  <msg key="Confirm_Quote">Confirm Quote</msg>
+  <msg key="Currrent_assignees">Current Assignees</msg>
+  <msg key="Debug_Case">Debug Case</msg>
+  <msg key="Execute">Execute</msg>
+  <msg key="Holding_user">Holding User</msg>
+  <msg key="Modify">Modify</msg>
+  <msg key="my_object">my object</msg>
+  <msg key="Next_step_details">Next Step Details</msg>
+  <msg key="none">none</msg>
+  <msg key="Object_Name">Object Name</msg>
+  <msg key="Object_Owner">Object Owner</msg>
+  <msg key="Owner">Owner</msg>
+  <msg key="Past_actions">Past Actions</msg>
+  <msg key="Quote">Quote</msg>
+  <msg key="Relationship">Relationship</msg>
+  <msg key="Reset_Case">Reset Case</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Task_name">Task Name</msg>
+  <msg key="Task_state">Task State</msg>
+  <msg key="Type">Type</msg>
+  <msg key="Unassigned_Tasks">Unassigned Tasks</msg>
+  <msg key="What">What?</msg>
+  <msg key="When">When?</msg>
+  <msg key="Who">Who?</msg>
+  <msg key="Workflow_Home">Workflow Home</msg>
+  <msg key="Your_Tasks">My RFCs</msg>
+</message_catalog>

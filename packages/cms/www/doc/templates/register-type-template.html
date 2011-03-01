@@ -1,0 +1,98 @@
+<html>
+<head>
+  <title>Registering Templates to Content Types</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2>Registering Templates to Content Types</h2>
+
+<a href="template.html">Templates Tutorial</a> : Registering Templates to 
+Content Types
+<hr>
+
+<h4>Overview</h4>
+
+<p>Developers may register and unregister templates to a specific 
+content type for a given context.  Additionally, developers may choose one 
+template to be the default for a given content type/context.</p>
+
+
+<h4>Step by Step - Registering a Template to a Content Type</h4>
+
+<ol>
+  <li><p>Browse to the folder that contains the template that will be
+    associated with a content type.</p>
+
+  <li><p>Check the box under the "Mark" column next to the name of the 
+    desired template.  The template should now appear in the clipboard.</p>
+
+  <li><p>Browse to the content type with which the template will be 
+     associated.  Click on the "Templates" tab to bring up a page listing
+     templates that are registered to this content type (see Figure 1).</p>
+
+    <p><center><img src="type-templates.gif">
+    <br><b>Figure 1.  Templates Associated with a Content Type.</b>
+    </center></p>
+
+  <li><p>Click the "Register marked templates to this content type" link.
+    This will bring up a page that contains a form for registering any
+    marked templates to this content type, excluding those that have 
+    already been registered (see Figure 2).</p>
+
+    <ul>
+      <li><p><tt>Template</tt> is the full path of the template. 
+        This field
+        is used to identify the template and cannot be edited.</p>
+      <li><p><tt>Context</tt> corresponds to the context the 
+        template will
+        be used.  For example, "Public" context means that the template will
+        be associated with the current content type for public pages.
+	<em>As of now, CMS only supports the "public" context.</em></p>
+    </ul>
+
+    <p>Click "Submit" to register all marked templates to the current content
+      type.  These templates should now appear as the registered templates
+      for the current content type.</p>
+
+    <p><center><img src="type-template-register.gif">
+    <img src="type-template-register-2.gif">
+    <br><b>Figure 2.  Register a Template to a Content Type.</b>
+    </center></p>
+</ol>
+
+
+<h4>Step by Step - Unregistering a Template to a Content Type</h4>
+
+<ol>
+  <li><p>Browse to the content type with which the template will be 
+     disassociated.  Click on the "Templates" tab to bring up a page listing
+     templates that are registered to this content type (see Figure 1).</p>
+
+  <li><p>Click the "Unregister" link next to the desired template to 
+    disassociate the template from the current content type.  The template
+    should no longer appear in the registered templates listing.</p>
+</ol>
+
+<h4>Step by Step - Setting a Default Template for a Content Type</h4>
+
+<ol>
+  <li><p>Browse to the content type for which a default template will be set.
+     Click on the "Templates" tab to bring up a page listing templates that 
+     are registered to this content type (see Figure 1).</p>
+
+     <p>Alternatively, browsing to a content item of the desired content
+     type and clicking on the "Publishing" tab will show a listing of
+     templates registered to the content item and templates registered to the
+     content type.</p>
+
+  <li><p>Click the "Make Default" link next to the desired template to 
+    distinguish a template as the default for that content type.  The word
+    "Default" should now appear next to that template (and no other 
+    templates with the same context).</p>
+</ol>
+
+<hr>
+
+</body>
+</html>

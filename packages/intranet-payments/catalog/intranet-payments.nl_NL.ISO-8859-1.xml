@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="_Previous">Pagina</msg>
+  <msg key="Add_New">Nieuwe toevoegen</msg>
+  <msg key="Add_payment">Betaling toevoegen</msg>
+  <msg key="Amount">Bedrag</msg>
+  <msg key="Amount_Paid">Bedrag betaald</msg>
+  <msg key="Client">Klant</msg>
+  <msg key="Cost_Name">Naam kosten</msg>
+  <msg key="Cost_Nr">Kosten nr.</msg>
+  <msg key="Del">Verwijder</msg>
+  <msg key="Delete_payment">Verwijder betaling</msg>
+  <msg key="Edit_payment">Bewerk betaling</msg>
+  <msg key="Filter_Payments">Filter betalingen</msg>
+  <msg key="Go">Toon </msg>
+  <msg key="Invoice">Factuur</msg>
+  <msg key="Invoice_Amount">Factuurbedrag</msg>
+  <msg key="lt_Confirm_payment_delet">Bevestig verwijderen betaling</msg>
+  <msg key="lt_Do_you_really_want_to">Wilt u werkelijk de betaling van %fee_type% van %fee_str% voor %project_name% verwijderen?</msg>
+  <msg key="lt_Insufficient_Privileg">Onvoldoende rechten</msg>
+  <msg key="lt_No_costinvoice_item_s">Geen kosten/factuur item gespecificeerd</msg>
+  <msg key="lt_The_intranet_start_bl">Het intranet start blokken zijn ofwel niet gedefinieerd ofwel we hebben geen startblok voor deze week of verder in de toekomst.</msg>
+  <msg key="lt_There_are_currently_n">Er zijn geen betalingen die overeenkomen met de geselecteerde criteria</msg>
+  <msg key="lt_You_dont_have_suffici">U heeft onvoldoende rechten om deze pagina te zien.</msg>
+  <msg key="New_payment">Nieuwe betaling</msg>
+  <msg key="Next_Page">Volgende pagina</msg>
+  <msg key="Note">Notitie</msg>
+  <msg key="One_project">Een project</msg>
+  <msg key="Payment">Betaling</msg>
+  <msg key="Payment_Details">Betaling details</msg>
+  <msg key="Payment_hash_simbol">Betaling #</msg>
+  <msg key="Payment_Status">Betaling status:</msg>
+  <msg key="Payment_Type">Betaling type</msg>
+  <msg key="Payments">Betalingen</msg>
+  <msg key="Projects">Projecten</msg>
+  <msg key="Provider">Leverancier </msg>
+  <msg key="Received">Ontvangen</msg>
+  <msg key="Start_block_error">Start blok fout</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Update">Update</msg>
+</message_catalog>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Company_Wiki">会社Wiki</msg>
+  <msg key="HomeWiki">ホームWiki</msg>
+  <msg key="Project_Wiki">プロジェクトWiki</msg>
+</message_catalog>

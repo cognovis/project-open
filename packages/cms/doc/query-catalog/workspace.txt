@@ -1,0 +1,113 @@
+
+
+# /workspace/index.tcl - MY TASKS
+# GET A LISTING OF ALL THE TASKS ASSIGNED TO ME THAT HAVEN'T BEEN STARTED
+# BY ANOTHER
+#   title of the item (title)
+#   content_type of the item
+#   item_id of the item
+#   name of the task  (transition_name)
+#   deadline
+#   task state (either 'started' or 'enabled')
+#   can reject
+#   is approvable
+#   -- holding_user
+  select
+    types.pretty_name, 
+    obj.object_id item_id, 
+    content_item.get_title(obj.object_id) title,
+    task.task_id,
+    task.holding_user,
+    task.state,
+    assign.case_id, 
+    trans.transition_name, trans.transition_key,
+    to_char(dead.deadline,'Mon. DD, YYYY') deadline,
+    content_workflow.can_reject(task.task_id, :user_id) can_reject,
+    content_workflow.approve_string(task.task_id, :user_id) approve_string
+  from
+    acs_object_types types,
+    acs_objects obj,
+    wf_case_assignments assign,
+    wf_transitions trans, 
+    wf_tasks task,
+    wf_cases case,
+    wf_case_deadlines dead
+  where 
+    dead.case_id = case.case_id
+  and
+    dead.transition_key = task.transition_key
+  and
+    assign.party_id = :user_id
+  and
+    assign.case_id = task.case_id
+  and
+    assign.transition_key = task.transition_key
+  and (
+    task.state = 'enabled'
+    or (task.state = 'started' and task.holding_user = :user_id)
+  ) and
+    task.transition_key = trans.transition_key
+  and
+    assign.case_id = case.case_id
+  and
+    case.object_id = obj.object_id
+  and
+    types.object_type = content_item.get_content_type(obj.object_id)
+  order by
+    dead.deadline"
+
+
+
+
+# /workspace/assignments.tcl - MY TASKS CHECKOUT OUT BY OTHER USERS
+# GET A LISTING OF TASKS THAT ARE ASSIGNED TO ME BUT HAVE BEEN ASSIGNED
+# TO ANOTHER PERSON
+#   title of the item
+#   item_id of the item
+#   content_type of the item
+#   task name (transition)
+#   holding user and holding user name
+#   hold timeout
+#   deadline
+  select
+    types.pretty_name, 
+    obj.object_id item_id, 
+    content_item.get_title(obj.object_id) title,
+    task.task_id,
+    content_workflow.get_holding_user_name(task.task_id) holding_user_name,
+    to_char(task.hold_timeout,'Mon. DD, YYYY') hold_timeout,
+    assign.case_id, 
+    trans.transition_name, trans.transition_key,
+    to_char(dead.deadline,'Mon. DD, YYYY') deadline
+  from
+    acs_object_types types,
+    acs_objects obj,
+    wf_case_assignments assign,
+    wf_transitions trans, 
+    wf_tasks task,
+    wf_cases case,
+    wf_case_deadlines dead
+  where 
+    dead.case_id = case.case_id
+  and
+    dead.transition_key = task.transition_key
+  and
+    assign.party_id = :user_id
+  and
+    assign.case_id = task.case_id
+  and
+    assign.transition_key = task.transition_key
+  and 
+    task.state = 'started'
+  and
+    task.transition_key = trans.transition_key
+  and
+    assign.case_id = case.case_id
+  and
+    case.object_id = obj.object_id
+  and
+    types.object_type = content_item.get_content_type(obj.object_id)
+  and
+    task.holding_user ^= :user_id
+  order by
+    dead.deadline"

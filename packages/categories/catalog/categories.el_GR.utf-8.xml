@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="categories" locale="el_GR" charset="utf-8">
+
+  <msg key="cadmin">Κατηγορία διαχείρισης</msg>
+  <msg key="code_export">Εξαγωγή κώδικα για επαναδημιουργία δένδρων κατηγοριών</msg>
+  <msg key="code_necessary">Tcl κώδικα για επαναδημιουργία επιλεγμένων δένδρων κατηγοριών</msg>
+  <msg key="export">Εξαγωγή</msg>
+</message_catalog>

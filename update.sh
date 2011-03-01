@@ -1,0 +1,120 @@
+#!/bin/bash
+
+
+# Main directories
+git pull -s subtree etc master
+git pull -s subtree tcl master
+git pull -s subtree www master
+git pull -s subtree bin master
+
+# ACS Core 5.6 version
+git pull -s subtree acs-content-repository oacs-5-6
+git pull -s subtree acs-reference oacs-5-6
+git pull -s subtree intermedia-driver oacs-5-6
+git pull -s subtree search oacs-5-6
+git pull -s subtree acs-admin oacs-5-6
+git pull -s subtree acs-core-docs oacs-5-6
+git pull -s subtree acs-service-contract oacs-5-6
+git pull -s subtree notifications oacs-5-6
+git pull -s subtree tsearch2-driver oacs-5-6
+git pull -s subtree acs-api-browser oacs-5-6
+git pull -s subtree acs-kernel oacs-5-6
+git pull -s subtree acs-subsite oacs-5-6
+git pull -s subtree openacs-default-theme oacs-5-6
+git pull -s subtree acs-authentication oacs-5-6
+git pull -s subtree acs-lang oacs-5-6
+git pull -s subtree acs-tcl oacs-5-6
+git pull -s subtree ref-countries oacs-5-6
+git pull -s subtree acs-automated-testing oacs-5-6
+git pull -s subtree acs-mail-lite oacs-5-6
+git pull -s subtree acs-templating oacs-5-6
+git pull -s subtree ref-language oacs-5-6
+git pull -s subtree acs-bootstrap-installer oacs-5-6
+git pull -s subtree acs-messaging oacs-5-6
+git pull -s subtree acs-translations oacs-5-6
+git pull -s subtree ref-timezones oacs-5-6
+
+
+# Additional packages from openacs
+git pull -s subtree acs-datetime master
+git pull -s subtree acs-developer-support master
+git pull -s subtree acs-events master
+git pull -s subtree attachments master
+git pull -s subtree file-storage master
+git pull -s subtree calendar master
+git pull -s subtree categories master
+git pull -s subtree faq master
+git pull -s subtree general-comments master
+git pull -s subtree mail-tracking master
+git pull -s subtree xowiki master
+git pull -s subtree oacs-dav master
+git pull -s subtree rss-support master
+git pull -s subtree xml-rpc master
+git pull -s subtree xotcl-core master
+
+# ]project-open[ repository
+git pull -s subtree acs-workflow master
+git pull -s subtree auth-ldap-adldapsearch master
+git pull -s subtree wiki master
+git pull -s subtree workflow master
+git pull -s subtree acs-mail master
+git pull -s subtree bug-tracker master
+git pull -s subtree cms master
+git pull -s subtree diagram master
+git pull -s subtree intranet-big-brother master
+git pull -s subtree intranet-bug-tracker master
+git pull -s subtree intranet-calendar master
+git pull -s subtree intranet-calendar-holidays master
+git pull -s subtree intranet-confdb master
+git pull -s subtree intranet-contacts master
+git pull -s subtree intranet-core master
+git pull -s subtree intranet-cost master
+git pull -s subtree intranet-cvs-integration master
+git pull -s subtree intranet-dw-light master
+git pull -s subtree intranet-dynfield master
+git pull -s subtree intranet-exchange-rate master
+git pull -s subtree intranet-expenses master
+git pull -s subtree intranet-expenses-workflow master
+git pull -s subtree intranet-filestorage master
+git pull -s subtree intranet-forum master
+git pull -s subtree intranet-ganttproject master
+git pull -s subtree intranet-helpdesk master
+git pull -s subtree intranet-hr master
+git pull -s subtree intranet-idea-management master
+git pull -s subtree intranet-invoices master
+git pull -s subtree intranet-invoices-templates master
+git pull -s subtree intranet-mail-import master
+git pull -s subtree intranet-material master
+git pull -s subtree intranet-milestone master
+git pull -s subtree intranet-nagios master
+git pull -s subtree intranet-notes master
+git pull -s subtree intranet-notes-tutorial master
+git pull -s subtree intranet-payments master
+git pull -s subtree intranet-release-mgmt master
+git pull -s subtree intranet-reporting master
+git pull -s subtree intranet-reporting-indicators master
+git pull -s subtree intranet-reporting-tutorial master
+git pull -s subtree intranet-resource-management master
+git pull -s subtree intranet-rest master
+git pull -s subtree intranet-riskmanagement master
+git pull -s subtree intranet-rss-reader master
+git pull -s subtree intranet-search-pg master
+git pull -s subtree intranet-search-pg-files master
+git pull -s subtree intranet-security-update-client master
+git pull -s subtree intranet-soap-lite-server master
+git pull -s subtree intranet-sysconfig master
+git pull -s subtree intranet-simple-survey master
+git pull -s subtree intranet-timesheet2 master
+git pull -s subtree intranet-timesheet2-invoices master
+git pull -s subtree intranet-timesheet2-task-popup master
+git pull -s subtree intranet-timesheet2-tasks master
+git pull -s subtree intranet-timesheet2-workflow master
+git pull -s subtree intranet-tinytm master
+git pull -s subtree intranet-trans-invoices master
+git pull -s subtree intranet-trans-project-wizard master
+git pull -s subtree intranet-translation master
+git pull -s subtree intranet-ubl master
+git pull -s subtree intranet-update-client master
+git pull -s subtree intranet-wiki master
+git pull -s subtree intranet-workflow master
+git pull -s subtree intranet-xmlrpc master

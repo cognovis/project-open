@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>Content Management System: Architecture Overview</title>
+  </head>
+  <body>
+  <h2>Architecture Overview</h2>
+  <b><a href="index.html">Content Management System</a></b>
+<hr>
+
+<p>The CMS architecture consists of four distinct layers.</p>
+
+<img src=layers.gif border=1 align=left hspace=20>
+
+<h3>CMS Application</h3>
+
+<p>CMS includes a standard application interface that provides
+extensive general functionality without the need for custom
+development.  It is designed for rapid deployment in a broad
+range of publishing environments.</p>
+
+<h3>CMS Toolkit</h3>
+
+<p>The standard CMS application interface is built on the CMS Toolkit,
+a collection of reusable code libraries and interface widgets that
+standardize and simplify interaction between the database layer and
+the end user.  Developers can employ the toolkit to customize and
+extend the application interface to suit the specific requirements of
+individual publishers.</p>
+
+<h3>Content Repository</h3>
+
+<p>The Content Repository, a standard component of the ArsDigita
+Community System (ACS), provides the foundation for storing and
+managing content as structured data.  It consists of an extensible set
+of data tables as well as a procedural API for all basic data
+operations involving content.</p>
+
+<h3>ACS Core</h3>
+
+<p>The Content Repository is in turn an extension of the ACS Core
+database layer.  The ACS Core implements an extensible framework for
+managing all classes of data objects, including content.</p>
+
+<hr>
+<a href="mailto:karlg@arsdigita.com">karlg@arsdigita.com</a><br>
+Last revised: $Id: layers.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+</body>
+</html>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-release-mgmt" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Release_Mgmt">发布管理</msg>
+  <msg key="Release_Projects">发布项目</msg>
+</message_catalog>

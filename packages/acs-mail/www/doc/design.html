@@ -1,0 +1,199 @@
+<pre>
+    Mail System Design
+    ------------------
+
+    1.  The mail store
+
+        The mail store is a complex problem.  On the one hand, we
+        could simply store RFC822 messages in raw form.
+        Unfortunately, this could lead to serious problems when trying
+        to manipulate messages.  (For example, the code to parse out
+        part 2.1.5 of a message would have to actuall parse MIME.)  It
+        might be better to use a view in which MIME messages are
+        pre-separated into parts.  Or perhaps a single message is
+        stored and a "part" table describes the ranges covered by
+        various MIME parts.
+
+        More research into this needs to be done.  For the short term,
+        using a non-MIME mechanism for storing information we wish to
+        send out (attachments in bboard, the like) is sufficient.  The
+        conversion can be done at mail send time.  Received email can
+        be treated as text/plain for the moment, even when it is
+        richer.
+
+        Here's a plan for the table design:
+
+        message_body
+        ------------
+        rfc822_id
+        header_from
+        header_date
+        header_message_id
+        header_content_type
+        ... others
+
+        message
+        -------
+        message_id
+        rfc822_id
+        env_from
+        env_to
+
+        With each message_body being associated with a content value
+        from the acs_contents table (or CR revisions table.)
+
+        Notice that each message body belongs to one *or more*
+        messages.  This is because the same message might be addressed
+        to more than one recipient, but still be the same message.
+        Because of this it is recommended that editing messages take
+        place via "copy on write" rather than "modify in place".  This
+        will allow messages to be edited, but for old versions in
+        other locations not be be lost.  (Keep the message_id the
+        same, but point it at a new rfc822_id for the body.)
+
+        Separating messages from message_bodies also makes it more
+        clear how to determine what access control and URL any message
+        belongs to.  Each message belongs in only one place, but the
+        message_body may be shared.
+
+        The above design for message_body should include whatever
+        header fields are determined to be necessary and useful.
+        Difficulties arise, since for email addresses it would be nice
+        for this version to point at parties, but the "from" header of
+        messages may actually contain more than one address, and so
+        on.  Some thought needs to be applied here.
+
+
+
+    2.  Sending email
+
+        The first iteration should send email using ns_sendmail or the
+        Oracle UTL_SMTP stuff.  ns_sendmail is preferred, since it's
+        much higher level than UTL_SMTP.
+
+        A simple queue should be sufficient for sending.  Each message
+        may be queued to be sent to various people, like so:
+
+        outgoing_message_queue
+        ----------------------
+        message_id
+
+        Notice that the pointer is to a message, not a message body.
+        The expectation is that a new message is created (to contain
+        the new envelope information), and that that message is
+        recorded in this queue.
+ 
+        Once the message is sent, the message is removed from this
+        queue (and possibly added to an audit trail?  Kept in the
+        queue marked as done?)
+
+        The requirement to be able to delete messages from the system
+        immediately after deletion means that there are some other
+        issues here.  See "open issues" below.
+
+
+
+    3.  Receiving email
+
+        The simplest design for receiving email into various queues
+        assumes that each message actually belongs to one and only one
+        queue:
+
+        incoming_message_queue
+        ----------------------
+        message_id
+        queue_name
+
+        A table can describe a set of rules (with like patterns?) to
+        use to determine what queue_name should be used for initial
+        insertion.  This gives any application the capability to
+        periodically find all new messages that it's interested in
+        processing.  Removal from the queue is per application
+        request.
+
+        An alternative method is for messages to go in all queues with
+        matching requirements.  The same as above, only unique on the
+        pair instead of just message_id.  This would allow messages to
+        be placed into multiple queues for processing by more than one
+        application.  I suspect this is unnecessary.
+
+        A final thought is that it would be possible to simply record
+        message ids in this table (as in the outgoing queue.)  Then
+        individual applications do a select over the incoming message
+        queue, looking for interesting messages.  When they are
+        finished, they delete the message.  Again, this is based on
+        the "no message will belong to more than one application"
+        model.
+
+
+
+    4.  Manipulating messages
+
+        This is a difficult task in Tcl, since MIME is fairly
+        complicated.  There is already a good API for Java.  I suggest
+        that for the Tcl API, simple abilities to deal with encoding
+        (and later possibly decoding) messages with multipart/mixed
+        and multipart/alternative content types.  This will require
+        good base64 encoding tools in Tcl.
+
+
+
+    5.  Open questions
+
+        The biggest open question is garbage collection.
+        Paradoxically, the split into messages and message_bodys may
+        help with this.  Since we can imagine that each application
+        keeps its own message_body object, the application is allowed
+        to delete that message_body in a reasonable way.  At that
+        point, it's sufficient to periodically clear the message store
+        of any message bodies that have no associated messages!
+
+        Extension of the message class also becomes more possible.
+        When a new message comes in to be entered into a bboard forum,
+        the bboard application can create a new message object
+        pointing at the same message body.  The new message object can
+        be a "bboard_message".  Previously, acs_messaging would create
+        the message object, and bboard would have to deal with it even
+        if it were a "normal" message.
+
+        It is unclear at this point whether this system should
+        actually provide mechanisms to automatically build digests.
+        On the one hand, it already has scheduled tasks to do such
+        things.  On the other hand, putting the generic mechanisms to
+        handle collation and the like into the system is messy.  And
+        on top of that, there are optimizations that applications can
+        do.  (For example, bboard could build a single message_body
+        for a daily digest and send it out to all subscribers, instead
+        of messaging building a customized message for each
+        subscriber, because it can't determine that they would all be
+        the same.)
+
+
+
+    6.  Data model in short:
+
+
+                        outgoing_message_queue
+                         | (message_id)
+                         |
+        message_body -- message --<|------------ [ extended by application ]
+           (rfc822_id)   | (message_id)
+                         |
+                        incoming_message_queue
+                           (message_id, queue_name)
+                
+        A scheduled process periodically sends any messages in the
+        outgoing message_queue and deletes the message entry.
+
+        When messages arrive, some MTA mechanism inserts them as a
+        message_body, with a message containing the envelope info, and
+        puts that message into the appropriate
+        incoming_message_queues.  
+
+        A scheduled process periodically deletes any message_body for
+        which there exists no referencing message.
+
+        Each message belongs to an individual application.  That
+        application is responsible for removing it once it is no
+        longer needed (and then GC can be accomplished.)
+</pre>

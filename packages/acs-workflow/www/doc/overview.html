@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>Workflow Overview</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Conceptual Guide</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 27 July 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> :
+Workflow Conceptual Guide
+
+<hr>
+
+Who should read this? (a) <strong>Managers</strong> who want
+to know what the workflow package can do for your business. (b)
+<strong>Developers</strong> who want to learn how the workflow package
+can make your application easier to develop.
+
+
+<h3>The Quick Basics</h3>
+
+The workflow packages <strong>coordinates the work of multiple people
+dealing with the same project in a fixed  process</strong>. 
+
+<p>
+
+That project could be the <strong>fulfillment of orders on an
+ecommerce website</strong>. The process would include billing the
+credit card, packing and shipment.  If we can't bill the customer's
+credit card, we'd spam him and ask him to come back and change his
+billing information. If some items are on back order, we may put the
+packaging on hold until all the items are there, or we may ship an
+incomplete shipment. Eventually, the order will be fulfilled (unless
+it was canceled during the processing).
+
+<p>
+
+
+<h3>More Examples Of Workflows</h3>
+
+<ul>
+
+<li><b>Publishing</b>: Someone authors the article, the editor edits
+it, the article goes back to the author for revision, the editor reads
+it again, marks it off for the publisher to decide when it should be
+published.
+
+<p>
+
+<li><b>Expense approval</b>: An employee asks for permission to buy
+something. The manager must approve it. If it's more than a certain
+amount, the manager's manager must approve it, too. Once it's been
+approved, it's routed to accounting to write a check.
+
+<p>
+
+<li><b>Bug tracking</b>: A user submits a bug report. A
+bug-list-maintainer looks it over and decides how to when and who
+should fix it. The developer then fixes it, or he might send it back
+to the submitter for more information. Eventually the bug is
+fixed, and the submitter must come back and verify that the fix works
+as expected.
+
+</ul>
+
+
+<h3>What the Workflow Package Does for You</h3>
+
+The workflow engine provides <strong>one-stop shopping for handling
+the project</strong>.
+
+<ul>
+
+<li>Each user gets <strong>a personal in-box</strong> listing the
+tasks that they're assigned to do, helping them prioritize their time
+according to the business needs.
+
+<p>
+
+<li>The customer-service department gets <strong>an overview of the
+individual project</strong>. The workflow package keeps track of all
+activity on the project, i.e. what was done when and by whom. The
+users working on the project can also consult this log when performing
+a task.
+
+<p>
+
+<li>The manager gets <strong>an overview of the entire
+process</strong>, to pin-point bottlenecks and evaluate the
+performance of the process.
+
+<p>
+
+<li>The manager also gets an <strong>interface for defining
+and refining the workflow process</strong> to be used for specific
+projects.
+
+</ul>
+
+
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

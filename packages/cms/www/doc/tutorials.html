@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Tutorials</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Developer's guide"
+HREF="dev-guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Publishing to the file system"
+HREF="publishing-filesystem.html"><LINK
+REL="NEXT"
+TITLE="Content Management System Requirements"
+HREF="requirements.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="publishing-filesystem.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Developer's guide</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="requirements.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="tutorials"
+>3.5. Tutorials</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>3.5.1. <A
+HREF="tutorials.html#tutorials-getting-started"
+>Getting Started</A
+></DT
+><DT
+>3.5.2. <A
+HREF="tutorials.html#press-press-release"
+>Press Release</A
+></DT
+></DL
+></DIV
+><P
+>The tutorials in this section are intended to illustrate a
+    variety of common scenarios in which CMS may be applied.</P
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="tutorials-getting-started"
+>3.5.1. Getting Started</A
+></H2
+><P
+>Support files for all demos are located in the <TT
+CLASS="computeroutput"
+>demo</TT
+>
+      distribution of the CMS distribution. Before attempting any of the
+      tutorials, you must do the following:</P
+><OL
+TYPE="1"
+><LI
+><P
+CLASS="listitem"
+>Execute <TT
+CLASS="computeroutput"
+>demo/sql/demo.sql</TT
+> in the appropriate database
+	  schema. This script creates a folder under the template root to
+	  store demo templates. It also creates an instance of a master
+	  template under this folder, and registers this template for use
+	  with all basic content items.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Link <TT
+CLASS="computeroutput"
+>demo/templates</TT
+> to the <TT
+CLASS="computeroutput"
+>demo</TT
+> directory
+	  under the template root in the file system:</P
+><PRE
+CLASS="programlisting"
+>    
+    ln -s `pwd`/ats/resources templates/ats
+    	</PRE
+><P
+CLASS="listitem"
+>This contains all the templates used in the demos.</P
+></LI
+></OL
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="press-press-release"
+>3.5.2. Press Release</A
+></H2
+><P
+>A simple example of defining a custom content type, performing
+    data entry using a system-generated form and publishing items.</P
+><P
+>&#13;    <I
+CLASS="emphasis"
+>Edit in progress...</I
+>
+  </P
+><P
+>The purpose of this tutorial is to illustrate the basic process
+    of how CMS is deployed, including both developer preparation and
+    the content production process itself.</P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="press-getting-started"
+>3.5.2.1. Getting Started</A
+></H3
+><P
+>Support files for all demos are located in the <TT
+CLASS="computeroutput"
+>demo</TT
+>
+      directory of the CMS distribution. For this demo, you will need to
+      execute the <TT
+CLASS="computeroutput"
+>press.sql</TT
+> script in the <TT
+CLASS="computeroutput"
+>demo/sql</TT
+>
+      directory. This script uses the content repository API to perform
+      the following actions:</P
+><OL
+TYPE="1"
+><LI
+><P
+CLASS="listitem"
+>Create a new content type named "Press Release"</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Add a custom attribute, <TT
+CLASS="computeroutput"
+>location</TT
+>, to the "Press
+	  Release" content type.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Specify that the user input for the <TT
+CLASS="computeroutput"
+>location</TT
+> should be
+	  a text box.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Create a few simple pages under the page root.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Create a folder named <TT
+CLASS="computeroutput"
+>press</TT
+> to hold press
+	  releases.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Create a simple index page and a press release in the
+	  <TT
+CLASS="computeroutput"
+>press</TT
+> folder.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Register a template as the default for the "Press Release"
+	  content type.</P
+></LI
+></OL
+><P
+>All these operations are (or will be) accessible through the CMS
+      UI as well.</P
+><P
+>&#13;      <A
+HREF="mailto:karlg@arsdigita.com"
+TARGET="_top"
+>karlg@arsdigita.com</A
+>
+    </P
+><P
+>&#13;      Last revised: $Id: tutorials.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="publishing-filesystem.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="requirements.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Publishing to the file system</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="dev-guide.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Content Management System Requirements</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

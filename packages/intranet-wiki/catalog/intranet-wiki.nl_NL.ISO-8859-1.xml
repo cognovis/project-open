@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Admin_All_Pages">Admin alle pagina's</msg>
+  <msg key="Admin_Wiki_Changes">Admin Wiki wijzigingen</msg>
+  <msg key="Admin_Wiki_Permissions">Wiki bevoegdheden</msg>
+  <msg key="Categories">Categorieën</msg>
+  <msg key="Company_Wiki">Wiki Bedrijf</msg>
+  <msg key="HomeWiki">Wiki Hoofdpagina</msg>
+  <msg key="Main_Index">Hoofd Index</msg>
+  <msg key="Project_Wiki">Wiki Project</msg>
+  <msg key="User_Wiki">Wiki</msg>
+</message_catalog>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Page_deptcomp">部门</msg>
+  <msg key="Page_features">特征</msg>
+  <msg key="Page_logo">标识(Logo)</msg>
+  <msg key="Page_name">名字</msg>
+  <msg key="Page_orgsize">尺寸</msg>
+  <msg key="Page_prodtest">评估</msg>
+  <msg key="Page_profiles">信任模型</msg>
+  <msg key="Page_sector">区域</msg>
+  <msg key="profiles_all_companies">编辑&lt;br&gt;所有&lt;br&gt;公司</msg>
+  <msg key="profiles_all_projects">编辑&lt;br&gt;所有&lt;br&gt;项目</msg>
+  <msg key="profiles_employees">员工</msg>
+  <msg key="profiles_finance">编辑&lt;br&gt;财务</msg>
+  <msg key="profiles_project_managers">项目经理</msg>
+  <msg key="profiles_senior_managers">高级经理</msg>
+  <msg key="SysConfig">系统配置</msg>
+  <msg key="SysConfig_Wizard">系统配置向导</msg>
+  <msg key="System_Config_Wizard">系统配置向导</msg>
+  <msg key="System_Configuration_Wizard">系统配置向导</msg>
+</message_catalog>

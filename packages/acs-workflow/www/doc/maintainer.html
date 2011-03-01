@@ -1,0 +1,220 @@
+<html>
+<head>
+<title>Workflow Maintainer's Guide</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Maintainer's Guide</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 27 July 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> : Workflow Maintainer's Guide
+
+<hr>
+
+This document is about the internal details of the workflow package,
+aimed at developers maintaining the package.
+
+
+<h3>System Overview</h3>
+
+The workflow package consists of five major components:
+
+<p>
+
+<table align=center>
+<tr><td align=center>
+<img src="workflow-system.gif" width="616" height="201" alt="Major components of the Workflow Package">
+</td></tr>
+<tr><td align=center><small>Major components of the Workflow Package (<a
+href="workflow-system.gif" target=_new>open in separate window</a>)</small></td></tr>
+</table>
+
+<p>
+
+<strong>The Engine is the heart of the system</strong>. It's the part that determines
+what actions you can perform on a case, and keeps track of the state
+of the case as actions are performed. It also stores the process
+definitions and the state of all the cases on the system.
+
+<p>
+
+<strong>The Worklist is what the normal end-user sees</strong>. It's
+where the user goes to see the list of tasks he or she is assigned to,
+and interacts with the system to let us know he's done.
+
+<p>
+
+The <strong>Process Builder</strong> lets you define and share
+processes. The <strong>Process Adapter</strong> lets you customize
+assignments and special side-effects of your process to your
+situation. And finally, the <strong>Process Monitor</strong> lets you
+monitor the performance of a process.
+
+
+
+<h3>Transitions and Tasks</h3>
+
+When a transition becomes enabled, a row representing the enabled
+transition is inserted into <code>wf_tasks</code>. This table may have
+more than one row per transition for a number of reasons. If the user
+starts the task, then decides to cancel, a new row is inserted, as the
+same transition becomes enabled again. If there's an iteration in the
+workflow definition, so the same transition becomes enabled more than
+once, a new row is inserted each time.
+
+<p>
+
+Each task has a state. It starts out as 'enabled'. It moves to
+'started', then possibly to 'canceled' or 'finished' in response to
+user actions. If the transition is part of an implicit or-split (where
+two transitions share one input place), the task may become
+'overridden' if the other task is triggered.
+
+
+
+<h3>Assignments</h3>
+
+Assignments can be done in three different ways:
+
+<ol>
+
+<li><b>Programmatic:</b> You supply a callback to do the
+assignment. The callback will get called when the transition becomes
+enabled. Put the name of your callback in the
+<code>assignment_callback</code> column in
+<code>wf_context_transition_info</code>.
+
+<p>
+
+<li><b>Manual:</b> Assignment for one case. This is implemented as
+rows in <code>wf_case_assignments</code>. You're encouraged to use the
+API: <code>workflow_case.add_manual_assignment</code> and
+<code>workflow_case.clear_manual_assignments</code>.
+
+<p>
+
+<li><b>Static:</b> Fixed assignment for all cases of a given
+workflow. This is implemented as rows in
+<code>wf_context_assignments</code> table.
+
+</ol>
+
+The actual assignment occurs when the transition is enabled. At that
+point, a row is inserted into <code>wf_tasks</code> and the actual
+assignment is determined, and copied over into
+<code>wf_task_assignments</code>. The logic is this: 
+
+<p>
+
+<ol>
+
+<li>First, we see if there are any manual assignments in
+<code>wf_case_assignments</code>. If there is, we copy these over to
+<code>wf_task_assignments</code>.  (We used to check for a callback
+first, but this way if a task is reassigned, the reassignment persists
+for subsequent instances of the transition.)
+
+<p>
+
+<li>If there are no manual assignments and a callback is registered,
+that callback procedure is executed, and is expected to use the
+<code>workflow_case.add_task_assignment</code> API to add the actual
+assignment for this task.
+
+<p>
+
+<li>Otherwise, we resort to the static assignment by copying over the
+rows from <code>wf_context_assignments</code> to
+<code>wf_task_assignments</code>.
+
+</ol>
+
+<p>
+
+In every event, a number of rows are created in
+<code>wf_task_assignments</code>. This is the authoritative version of
+who's assigned to this task. You're free to change the assignment of a
+task by altering the contents of
+<code>wf_task_assignments</code> through the API or directly.  If you
+use the workflow UI, this change will be persistent.  However, if you
+don't want reassignment to persist in your application, changing
+<code>wf_task_assignments</code> alone will accomplish this.
+
+<p>
+
+The view <code>wf_user_tasks</code> returns one row per task and per
+user assigned to a task. This is the view to query to get the list of
+tasks on a user's plate, and to get information about assignments for
+a task. It does the job of traversing the parties hierarchy to expand
+groups.
+
+
+
+<h3>User Actions</h3>
+
+Users can start, cancel and finish tasks. Since you can set workflow
+attributes as part of an action, for each of these actions, you have
+to make the following sequence of API calls:
+
+<ol>
+
+<li><code>workflow_case.begin_task_action</code>
+
+<li><code>workflow_case.set_attribute_value</code> zero or more times.
+
+<li><code>workflow_case.end_task_action</code>
+
+</ol>
+
+(We would just accept a list of key/value pairs for the attributes,
+but we couldn't figure out a way to do that with PL/SQL).
+
+<p>
+
+The <code>action</code> argument to the procs are 'start', 'cancel',
+'finish' or 'comment'. Comment doesn't alter the state of the task,
+and can be used for either adding a comment on the case, and/or to set
+a workflow attribute without finishing the task.
+
+<p>
+
+It's perfectly okay to finish a task without explicitly starting
+it. If there are multiple users assigned to the same task, however,
+it's strongly recommended that the user starts the task first, as that
+will remove it from the worklist of other users, so we don't have
+multiple users working on the same task.
+
+
+<h3>Data Model Changes</h3>
+
+Whenever there's a data model change, don't forget to propagate that
+change to:
+
+<ul>
+
+<li>The <code>sql/wf-core-drop.sql</code> DDL script.
+
+<li>The <code>sql/upgrade/*.sql</code> DDL upgrade scripts.
+
+<li>The <code>tcl/workflow-procs.tcl</code> file, proc
+<code>wf_export_workflow</code> (at the bottom).
+
+<li>... and of course any UI pages that are affected must be changed
+too.
+
+</ul>
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

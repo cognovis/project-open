@@ -1,0 +1,435 @@
+<html>
+<head>
+<title>DynField Documentation</title>
+<style type="text/css">
+pre {
+      border: 1px solid #CCC;
+      background-color: #EEE;
+      padding: 10px;
+      font-size: 0.9em;
+}
+code {
+      background-color: #EEE;
+      font-size: 0.9em;
+      padding-top: 0.05em;
+      padding-bottom: 0.05em;
+      padding-left: 2em;
+      padding-right: 2em;
+}
+</style>
+</head>
+
+<body>
+<h1>DynField - Extensible Architecture</h1>
+<p>By <A href="http://www.project-open.com">Frank Bergmann</a>
+and <A href="mailto:juanjoruizx@yahoo.es">Juanjo Ruiz</a></P>
+<hr>
+
+<p>
+<a href="handover.html">Brian's notes</a>
+</p>
+
+<h2>What is DynField?</h2>
+<p>DynField is an extension of the original OpenACS SQL Metadata system. DynField
+  allows developers to extend objects with new fields. These new fields will appear
+  automatically on all suitable OpenACS pages that deal with this object such
+  as the object's view-, edit and list pages.</p>
+<p>DynField is an _extension_ mechanism which allows adding dynamic attributes
+  to existing OpenACS objects. However, DynField is not a generic object management
+  system. The creation and deleting of objects are outside of the scope of DynField,
+  because is functionality is frequently handled using PL/SQL or PG/SQL in an
+  object specific way.</p>
+<p>DynField is based on code of the great Attribute Management System (AMS) from
+  Matthew Geddard and Richard Hamilton. Also, this document is based on their
+  documentation. </p>
+<h2>Do I need DynField?</h2>
+<p>The main purpose of DynField is to allow developers to customize the system
+  for specific web sites or customers without modifying the underlying TCL and
+  ADP source code in the CVS version control system.</p>
+<ul>
+  <li>You probably won't need DynField if you only develop a single web community
+    or if you are in the business of adapting OpenACS to customer requirements.</li>
+  <li>However, you probably need DynField if you develop a new module that may
+    be useful to many customers with slight variations for each customer.</li>
+</ul>
+<h2>Design Decisions and Requirements</h2>
+<p>Please see the <a href="oacs_posting.html">initial posting at OpenACS</a> for
+  an overview over design decisions and requirements. Basically, we tried to keep
+  the system as simple as possible (it only defines two new tables) and to stick
+  as much as possible to the original OpenACS Metadata system.
+  Also check the <A href="DynField.050106.ppt">enclosed PowerPoint slides</A>.
+</p>
+
+<h2>Architecture</h2>
+
+<p>The architecture consists of an extension table to <tt>acs_attributes </tt>
+  and one new table containing preconfigured &quot;widgets&quot;:</p>
+<p><img src=dynfield_data_model.gif></p>
+<p>acs_attributes already contains the link to OpenACS objects via the <tt>object_type</tt>
+  field, so <tt>dynfield_attributes</tt> is basically an extension table that links
+  to <tt>dynfield_widgets</tt>.</p>
+<h2>Defining New Attributes</h2>
+<p><img align=right src="extension_tables.gif" width="211" height="302">
+DynField comes with several maintenance screens that allow to define new attributes
+  for a given object type. There are two options:</p>
+<ul>
+  <li>Create a new entry for an attribute that <strong>already exists</strong>.<br>
+    Use this option in order to enter the existing object fields into DynField.
+    This allows you to use DynField to create object maintenance screens</li>
+  <li>Create a new entry and create a <strong>new table column</strong>.<br>
+    Use this option if you really want to extend the object type.</li>
+</ul>
+<h3>Extension Tables</h3>
+<p>The figure to the right shows a typical setting for the object type &quot;User&quot;.
+  &quot;User&quot; information is generally stored in the &quot;users&quot; table.
+  However, part of the information is stored in the superclasses of &quot;User&quot;
+  such as &quot;Person&quot;, &quot;Party&quot; and &quot;Object&quot;.</p>
+<p>As a consequence we will have to gather information from all of these &quot;extension
+  tables&quot; when displaying a &quot;User&quot; and we will have to save information
+  to all of these tables when modifying a user. The management of these extension
+  tables can be very difficult in practice, because there can be any number of
+  database constraints related to these extension tables, and some of the extension
+  tables may require a creation using a PL/SQL or PG/SQL database procedure.</p>
+<p>This is the reason why we decided NOT to support a generic object creation
+  functionality in DynField. Instead, DynField restricts itself to modifying existing
+  objects, which can be mapped into SQL &quot;update&quot; statements for the
+  extension tables. Even with these restrictions it is possible that a DynField
+  &quot;update&quot; will violate database constraints. However, the probability
+  is much lower in general.</p>
+<h3>Attribute Widgets</h3>
+<p>The most important information of an attribute is defined via its &quot;Widget&quot;.
+  This widget includes the definition of:</p>
+<ul>
+  <li>How the attribute is displayed in an HTML form (using a text box, a drop-down
+    box etc.)</li>
+  <li>How it is stored in the database</li>
+  <li>Whether or not a validator can be applied to the attribute (when editing
+    the attribute value)</li>
+</ul>
+<p>In short, the widget defines the semantics of an attribute. Widgets are explained
+  further below.</p>
+<h2>DynField and ad_form</h2>
+
+<p>You have two options when dealing with DynField and ad_form. Shorthand and detailed.</p>
+
+<h3>Shorthand</h3>
+
+<p>Shorthands is a completely simple way of creating forms without many options.
+  The supplied object_id must already exist in the acs_object table. The shorthand
+  procs is <a href="/api-doc/proc-view?proc=dynfield_form">dynfield_form</a>,
+  which is simply a wrapper for ad_form. For example, to create and ad_form named
+  "contact_person_ae" create a page contacts/www/contact-person-ae.tcl with the
+  following content:</p>
+
+<pre>
+ad_page_contract {
+} {
+        {ct_contact_id:integer,notnull}
+}
+set title "Contact Person Add/Edit"
+set context [list $title]
+dynfield_form -package_key "contacts" \
+         -object_type "ct_contact" \
+         -page_name "edit_page" \
+         -form_name "contact_person_ae" \
+         -object_id $ct_contact_id \
+         -return_url ""
+ad_return_template</pre>
+
+<p>The positioning of the form elements on the screen is defined with the attributes
+  themselves. Please see the DynField &quot;layout manager&quot; for details.</p>
+<p>The contacts/www/contact-person-ae.adp would contain:</p>
+
+<pre>&lt;master&gt;
+&lt;property name="title">@title@&lt;/property"&gt;
+&lt;property name="context">@context@&lt;/property"&gt;
+&lt;formtemplate id="contact_person_ae"&gt;
+&lt;/formtemplate"&gt;</pre>
+
+<p>That's it. If this isn't flexible enough you can also go with the detailed method.</p>
+
+<h3>Detailed</h3>
+
+<p>For many application the DynField and ad_form shorthand will be too simplistic. For those situations, you can use DynField to interface with <a href="/api-doc/proc-view?proc=ad_form">ad_form</a>. You need to define ad_from <strong>-form</strong> elements like this:
+<pre>
+ad_form ... -form [dynfield::ad_form::elements \
+		-package_key "contacts" \
+		-object_type "ct_contact" \
+		-list_name "contact_person"] ...
+</pre>
+<p>Note that this procedure returns an ad form appropriate element list. If you
+  intending to define other elements you will need to <code>ad_from -extend -name
+  form_name -form ...</code></p>
+<p>In the ad_form <strong>-edit_request</strong> block put</p>
+<pre>
+ad_form ... -edit_request {
+        dynfield::object::attribute::values -vars -object_id $object_id
+    } ...</pre>
+
+<p>This returns the variables upvared into your page, i.e. the first_names attribute could be returned with a value of "Jane" and the last_name attribute with a value of "Doe"... etc. ad_from looks for all form elements and appropriately pre-fills the form with the given values.</p>
+<p>In the <strong>-on_submit</strong> block you enter the following:</p>
+
+<pre>
+ad_from ... -on_submit {
+        dynfield::ad_form::save \
+            -package_key "contacts" \
+            -object_type "ct_contact" \
+            -list_name "contact_person" \
+            -form_name "contact_person_ae" \
+            -object_id $ct_contact_id
+    }</pre>
+<p>This is how you interface with DynField and ad_form. You may also specify other
+  code in the <strong>-form -on_submit</strong> and <strong>-on_submit</strong>
+  blocks.</p>
+<h2>DynField and Your Package's UI</h2>
+
+<p>To display attributes you can call <a href="/api-doc/proc-view?proc=ams::object::attribute::values">dynfield::object::attribute::values</a>
+  to get the results back as upvared variables, as an array or as a list however
+  you want. So, if on the contact-view page you do, for example to get an array
+  with all attribute_values that are not null represented in. </p>
+
+<pre>
+dynfield::object::attribute::values -array "contact_info" -object_id $ct_contact_id</pre>
+<p>To add dynfield_attribute_values to a multirow you call <a href="/api-doc/proc-view?proc=ams::multirow::extend">dynfield::multirow::extend</a> to efficiently extend your multirow with dynfield_attribute_values. For example:</p>
+<pre>
+db_multirow contacts get_contacts { select ct_contact_id from ct_contacts }
+dynfield::multirow::extend \
+    -package_key "contacts" \
+    -object_type "ct_contact" \
+    -list_name "contact_person" \
+    -multirow "contacts" \
+    -key "ct_contact_id"</pre>
+<p> ToDo ...
+<p>&nbsp;</p>
+
+
+<h2>&quot;Pages&quot; and Attribute Layout</h2>
+<p>DynField defines the notion of a &quot;page&quot;, allowing attributes to be
+  layouted differently in different TCL/ADP pages. Each page defines the position
+  for each attribute. There are three different types of layout defined in DynField,
+  for each type there are specific actions to be taken, but in all of them you can specify
+  which attributes you want to show and which not. This combined with the Cascade Style Sheets and
+  the style option in the &lt;formtemplate&gt; ACS templating tag gives a wide variety of formating options.
+</p>
+<p>Hint: The layout management makes heavy use of the <a href="/doc/acs-templating">acs-templating</a>
+   and <a href="/api-doc/proc-view?proc=template::form">template::form</a> systems, if you do not feel comfortable with it,
+   please revise the corresponding documentation.
+</p>
+<ol>
+<h3><li> &quot;Absolute positioning&quot;</li></h3>
+  <p>The &quot;Absolute positioning&quot; uses DIV classes for each label/widget pair. Once the classes
+     are defined is up to the CSS to move each field to the desired place. The use of DIV tags complies with
+     European Accessability regulations.
+  </p>
+<h3><li> &quot;Relative positioning&quot;</li></h3>
+<p>
+  <p>The &quot;Relative positioning&quot; uses the same principle as the
+     <a href="/doc/acs-templating/tagref/grid.html">&lt;grid&gt;</a> tag of the
+     ACS template system in order to emulate a table-like structure.
+  </p>
+  <p>First we define the height and the width of the desired table and after that we sort all the included attributes. The
+     table-builder will use this sort order and the width (x) of the table, so the first (x) elements will be placed in the
+     first rown, the second ones in the second rown, and so on as you can see in the next table example:
+  </p>
+
+<table width="200" border="1">
+  <tr>
+    <td>1st</td>
+    <td>2nd</td>
+    <td>3rd</td>
+  </tr>
+  <tr>
+    <td>4th</td>
+    <td>5th</td>
+    <td>6th</td>
+  </tr>
+  <tr>
+    <td>7th</td>
+    <td>8th</td>
+    <td>...</td>
+  </tr>
+</table>
+
+<h3><li> &quot;ADP template&quot;</li></h3>
+<p>
+  <p>&quot;ADP template&quot; has all the posible freedom because you are editing line by line how you want your
+     form to look like. For the people who has already embebed some dynamic form in a template it should be pretty
+     straight forward as they are used to use the different <a href="/doc/acs-templating/tagref/">&lt;form[...]&gt;</a>
+     tags. The dynfield package just adds two new tags to the existent ones which we think are very usefull:
+     <ul>
+      <li>&lt;formlabel&gt;: Returns the label of the element</li>
+      <li>&lt;formhelptext&gt;: Returns the help text and the 'chunk' between the (&lt;&gt;) and (&lt;/&gt;) tag</li>
+     </ul>
+     For those who have never work with formtemplate there is an <a href="example.txt">example</a>.
+  </p>
+</p>
+</ol>
+
+<h3>Layout process</h3>
+<p>The dynfield package is just an extension of what we already have in our page. So you can add fields to pages without form, pages defining the form in the adp file or pages using template::form/ad_form. The drawback of this implementation is that one can get confuse about what is really being executed at one moment and which what values. The standard process shall be the following:</p>
+<ul>
+  <li>Call to the load&show dynfield procedure in the tcl file which:
+     <ol>
+       <li>Get the old attributes values from the database</li>
+       <li>Set the page layout/style. First look at the -style paramenter, if nil use the -page_url parameter, if nil get the default page_url for the specified object_type, if nil not to use layout manager (i.e. use standard ACS layout)</li>
+       <li>If page_url is used get the layout variables of the corresponding layout_type</li>
+       <li>Create form and form elements</li>
+     </ol>
+  </li>
+  <li>Call to the &lt;formtemplate&gt; tag in the adp file
+  </li>
+  <li>Call to the store dynfield procedure in the 'is_valid' section of your template::form/ad_form or in the *-2.tcl page if you do not use it.
+  </li>
+</ul>
+<h3>Layout tables</h3>
+<p>The layout pages are defined in the table <strong>dynfield_layout_pages</strong>:</p>
+<ul>
+  <li>object_type: each page can use attributes from more than one object_type</li>
+  <li>page_url: we use the global page url as the page identifier</li>
+  <li>layout_type: one of the previusly described types 'absolute' 'relative' 'adp'</li>
+  <li>table_width: number of rows for the table, only for 'relative' layouts</li>
+  <li>table_height: number of cols for the table, only for 'relative' layouts</li>
+  <li>adp_file: name of the adp template to use, only for  'adp'  layouts</li>
+  <li>default_p: use this page as the default one for this object_type</li>
+</ul>
+<p>The <strong>dynfield_layout</strong> table define the attributes showed in each page</p>
+<ul>
+  <li>attribute_id: dynfield attribute identifier</li>
+  <li>object_type</li>
+  <li>page_url: reference to dynfield_layout_pages</li>
+  <li>class: the name of the CSS class, only for 'absolute' layouts</li>
+  <li>sort_key: an integer defining the place of the attribute, only for 'relative' layouts</li>
+</ul>
+<p>
+... For further reference please look the documentation in the dynfield procedures.
+</p>
+<p>&nbsp;</p>
+
+<h2>DynField Widgets</h2>
+DynField defines several kinds of widgets:
+<ul>
+  <li> <b>Standard OpenACS Widgets</b>:<br>
+    These widgets use the existing OpenACS widgets to display a wide range of
+    data types.<br>
+    DynField sets up a number of these widgets during the installation process,
+    so they are ready to use
+  <li> <b>Category Select Widgets</b>:<br>
+    These widgets define drop-down boxes with options defined using the OpenACS
+    categories module.<br>
+    Please read below how to create a new Category Widget.
+  <li> <b>SQL Select Widgets</b>:<br>
+    These widgets define drop-down boxes using an SQL statement to determine the
+    range of valid options.
+</ul>
+<p>The following section explains the different choices for a widget in detail:</p>
+<p>&nbsp;</p>
+<h3>Storage Type</h3>
+<p>The storage type determines how the value of the widget is stored in the database.
+  There are several options:</p>
+<ul>
+  <li><strong>&quot;Table Column&quot;</strong>: <br>
+    The standard storage type: A new column is created in the object's table or
+    in an extension table to store the attribute value.</li>
+  <li><strong>&quot;Multi-Select Mapping Table&quot;</strong>: (not implemented
+    yet!) <br>
+    A special storage type to store multiple values, for example from a multiple
+    select box. The values are stored using an internal mapping table. ToDo: Implement
+    and describe mapping table.</li>
+</ul>
+<h3>OpenACS Datatype</h3>
+<p>The OpenACS datatype is a high-level description of the datatype. It is used
+  to create both the SQL datatype for Oracle/Postgres and the datatype for the
+  ad_form.</p>
+<table border="0" cellspacing="1" cellpadding="1">
+  <tr>
+    <th>OpenACS Datatype</th>
+    <th>SQL Datatype</th>
+  </tr>
+  <tr>
+    <td>string</td>
+    <td>varchar(1000)</td>
+  </tr>
+  <tr>
+    <td><p>boolean</p></td>
+    <td>char(1)</td>
+  </tr>
+  <tr>
+    <td>number</td>
+    <td>&quot;number&quot;</td>
+  </tr>
+  <tr>
+    <td>money</td>
+    <td>number (12,2)</td>
+  </tr>
+  <tr>
+    <td>date</td>
+    <td>date</td>
+  </tr>
+  <tr>
+    <td>text</td>
+    <td>varchar(4000)</td>
+  </tr>
+  <tr>
+    <td>integer</td>
+    <td>integer</td>
+  </tr>
+  <tr>
+    <td><p>enumeration</p></td>
+    <td>varchar(100)</td>
+  </tr>
+  <tr>
+    <td>keyword</td>
+    <td>varchar(1000)</td>
+  </tr>
+</table>
+<h3>Datatype</h3>
+<p>&nbsp;</p>
+<h3>Widget</h3>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>Creating a New Category Widget</h3>
+
+<p>Creating a new Category Widget requires an integration between the OpenACS
+  &quot;Categories&quot; package and DynField:</p>
+<ol>
+  <li>You have to create a new Category tree for the widget (if it doesn't exist
+    already). Go to the category admin pages at <a href="/categories/cadmin/">/categories/cadmin/</a>
+    and select &quot;Create a new tree&quot;. Let's call it &quot;Customer Classification&quot;
+    and press OK.</li>
+  <li>Select the new tree and choose &quot;Add node at top level&quot; to give
+    it its root node. Let's call the root node &quot;No Classification&quot; and
+    press OK</li>
+  <li>Now you can successifly add sub-categories to &quot;No Classification&quot;
+    by clicking on the &quot;Add child&quot; link. For example we might add the
+    sub classifications &quot;A&quot; (= great customer), &quot;B&quot; (= ok
+    customer) and &quot;C&quot; (= customer to get rid of)</li>
+  <li>Finally on the category part, we have to find out the &quot;tree_id&quot;
+    of the current tree. To do this, please check the current URL for a &quot;tree_id&quot;
+    piece, which is followed by a number. Perhaps &quot;tree_id&quot; is written
+    as &quot;tree%5fid=630&quot;, with the &quot;%5f&quot; representing the underscore
+    &quot;_&quot;. However, we need the number behind the &quot;=&quot;, so the
+    630 in this example.</li>
+  <li>Now let's go to <a href="/intranet-dynfield/widgets/">/intranet-dynfield/widgets/</a> and
+    select &quot;Create a new widget&quot; link at the bottom.</li>
+  <li>Let's enter the following data:
+    <ul>
+      <li>Widget Name = &quot;customer_classification&quot;</li>
+      <li>Pretty Name = &quot;Customer Classification&quot;</li>
+      <li>Pretty Plural = &quot;Customer Classifications&quot;</li>
+      <li>Storage Type = &quot;Normal Value&quot;</li>
+      <li>ACS Datatype = &quot;Integer&quot;</li>
+      <li>Widget = &quot;Category&quot;</li>
+      <li>Datatype = &quot;Integer&quot; and</li>
+      <li>Paremeters = &quot;{custom {category_tree_id 630}}&quot; (please replace
+        the 630 by your tree_id)</li>
+    </ul>
+  </li>
+  <li>That's it. Now you have a new &quot;customer_classification&quot; widget
+    that is available when you define new attributes of an object.</li>
+</ol>
+<p>&nbsp; </p>
+<h2>DynField Permissions</h2>
+<p>ToDo</p>
+<h3 style="color: red;">&nbsp;</h3>
+</body>
+</html>

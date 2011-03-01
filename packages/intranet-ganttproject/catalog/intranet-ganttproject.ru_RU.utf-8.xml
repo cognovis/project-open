@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Dim_day_of_month">День</msg>
+  <msg key="Dim_month_of_year">Месяц</msg>
+  <msg key="Dim_quarter_of_year">Квартал</msg>
+  <msg key="Dim_week_of_year">Неделя</msg>
+  <msg key="Dim_year">Год</msg>
+  <msg key="Download_Gantt_File">Загрузить файл GanttProject</msg>
+  <msg key="Download_OpenProj_File">Загрузить расписание OpenProj</msg>
+  <msg key="Gantt_Resources">Диаграмма - ресурсы</msg>
+  <msg key="No_Gantt_preview_available">Просмотр диаграммы недоступен</msg>
+  <msg key="OK">ОК</msg>
+  <msg key="Project_Gantt_Resource">Диаграмма - ресурсы проекта</msg>
+  <msg key="Project_Gantt_Resource_Assignations">Диаграмма - назначения проекта</msg>
+  <msg key="Project_Gantt_Schedule">Диаграмма - расписание проекта</msg>
+  <msg key="Project_Gantt_View">Диаграмма Гантта</msg>
+  <msg key="Scheduling">Планирование</msg>
+  <msg key="Upload_Gantt_File">Загрузить файл диаграммы</msg>
+</message_catalog>

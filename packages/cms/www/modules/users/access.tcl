@@ -1,0 +1,1 @@
+# Page component listing permission records on any object.

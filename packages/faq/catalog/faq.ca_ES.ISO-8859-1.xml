@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="ca_ES" charset="ISO-8859-1">
+
+  <msg key="A">R: </msg>
+  <msg key="Add_QA_for_faq_name">Afegir pregunta i resposta a %faq_name%</msg>
+  <msg key="administer">administrar</msg>
+  <msg key="Answer">Resposta</msg>
+  <msg key="Back_to_FAQs">Tornar a Preguntes Freqüents </msg>
+  <msg key="Create_a_new_FAQ">Crear Preguntes Freqüents noves </msg>
+  <msg key="Create_an_FAQ">Crear Preguntes Freqüents </msg>
+  <msg key="Create_FAQ">Crear Preguntes Freqüents </msg>
+  <msg key="Create_New_QA">Crear preguntes i respostes noves </msg>
+  <msg key="Create_new_QA">Crear preguntes i respostes noves </msg>
+  <msg key="Create_QA">Crear preguntes i respostes </msg>
+  <msg key="Delete">Eliminar</msg>
+  <msg key="delete">eliminar</msg>
+  <msg key="Delete_This_QA">Eliminar aquesta pregunta i resposta </msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="edit">editar</msg>
+  <msg key="Edit_an_FAQ">Editar Preguntes Freqüents </msg>
+  <msg key="FAQ_Admin">Administració de Preguntes Freqüents </msg>
+  <msg key="faq_name_Admin">Administrar %faq_name%</msg>
+  <msg key="FAQs">Preguntes Freqüents </msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">inserir</msg>
+  <msg key="lt_Are_you_sure_you_want">Esteu segur que voleu eliminar aquestes Preguntes Freqüents?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Esteu segur que voleu eliminar aquesta pregunta?</msg>
+  <msg key="lt_no_FAQs">No hi ha Preguntes Freqüents disponibles.</msg>
+  <msg key="lt_no_questions">No hi ha preguntes disponibles.</msg>
+  <msg key="Name">Nom:</msg>
+  <msg key="New">Nou</msg>
+  <msg key="No">No</msg>
+  <msg key="One_Question">Una pregunta </msg>
+  <msg key="Plain">Pla</msg>
+  <msg key="Preformatted">Preformatejat</msg>
+  <msg key="preview">previsualització </msg>
+  <msg key="Q">P:</msg>
+  <msg key="QA_On_Separate_Pages">P i R en pàgines separades?</msg>
+  <msg key="QA_on_Separate_Pages">P i R en pàgines separades?</msg>
+  <msg key="Question">Pregunta</msg>
+  <msg key="swap_with_next">intercanviar amb la pròxima </msg>
+  <msg key="Text_type">Tipus de text?</msg>
+  <msg key="Title">Títol:</msg>
+  <msg key="Update_FAQ">Actualitzar Preguntes Freqüents </msg>
+  <msg key="Update_This_QA">Actualitzar aquesta P i R</msg>
+  <msg key="View_All_FAQs">Veure totes les Preguntes Freqüents </msg>
+  <msg key="Yes">Sí</msg>
+</message_catalog>

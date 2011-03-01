@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cost" package_version="3.4.0.7.0" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="CostCenter_short">CC</msg>
+  <msg key="Expenses">Despesas</msg>
+  <msg key="Finance">Financas</msg>
+  <msg key="Finance_Summary">Sumário Financeiro</msg>
+  <msg key="New_Timesheet_Invoice">Nova cobrança de Timesheet</msg>
+  <msg key="Org_Amount">Org</msg>
+  <msg key="Outdated_Message">Aviso de Taxas de câmbio desatualizadas</msg>
+  <msg key="Outdated_since_x_days">Desatualizado desde %days% dias</msg>
+  <msg key="Paid_Amount">Quantia paga</msg>
+  <msg key="Paid_Currency">Moeda do pagamento</msg>
+  <msg key="The_exchange_rates_are_outdated">As taxas de câmbio a seguir estão desatualizadas. Por favor contate o Administrador do Sistema para atualizar as seguintes taxas de câmbio:</msg>
+</message_catalog>

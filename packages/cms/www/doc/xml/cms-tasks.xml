@@ -1,0 +1,797 @@
+<sect2 id="cms-tasks-task-requirements" xreflabel="Task Requirements">
+  <title>Task Requirements</title>
+
+  <para>
+    This document contains a listing of Content Management tasks and
+    the required permissions to perform them. The tasks are organized
+    by modules and then main sections/pages within those modules. 
+  </para>
+
+  <para><emphasis>
+    This document is currently under construction.
+  </emphasis></para>
+
+  <sect3 id="cms-tasks-modules" xreflabel="Modules">
+    <title>Modules</title>
+
+    <itemizedlist>
+      <listitem><para><link linkend="cms-tasks-my_tasks">My Tasks</link></para></listitem>
+      <listitem><para><link linkend="cms-tasks-sitemap">Site Map</link>
+
+	  <itemizedlist>
+	    <listitem><para><link linkend="cms-tasks-folder_listing">Folder Listing</link></para></listitem>
+	    <listitem><para><link linkend="cms-tasks-folder_attributes">Folder Attributes</link></para></listitem>
+	    <listitem><para><link linkend="cms-tasks-item_listing">Item Listing</link> 
+
+		<itemizedlist>
+		  <listitem><para>Editing</para></listitem>
+		  <listitem><para>Sub-Items</para></listitem>
+		  <listitem><para>Publishing</para></listitem>
+		  <listitem><para>Permissions</para></listitem>
+		</itemizedlist>
+	      </para></listitem>
+
+	    <listitem><para><link linkend="cms-tasks-revision_view">View Revision</link></para></listitem>
+	  </itemizedlist>
+	</para></listitem>
+      
+      <listitem><para><link linkend="cms-tasks-templates">Templates</link></para></listitem>
+      <listitem><para><link linkend="cms-tasks-types">Content Types</link></para></listitem>
+      <listitem><para>Search</para></listitem>
+      <listitem><para>Subject Keywords</para></listitem>
+      <listitem><para>Users</para></listitem>
+      <listitem><para>Workflow</para></listitem>
+      <listitem><para>Clipboard</para></listitem>
+    </itemizedlist>
+
+    
+    <para><anchor id="cms-tasks-my_tasks"></anchor>
+      <phrase>My Tasks</phrase>
+      <informaltable pgwide="1"><tgroup cols="3">
+	  <tbody>
+	    <row>
+	      <entry align="center"><phrase>Action</phrase></entry>
+	      <entry align="center"><phrase>Required Permission(s)</phrase></entry>
+	      <entry align="center"><phrase>Other Requirement(s)</phrase></entry>
+	    </row>
+	  </tbody>
+	</tgroup></informaltable>
+    </para>
+
+    <para><anchor id="cms-tasks-sitemap"></anchor>
+      <phrase>Site Map</phrase>
+      <informaltable pgwide="1"><tgroup cols="3">
+	  <thead>
+	    <row>
+	      <entry align="center">Action</entry>
+	      <entry align="center">Required Permission(s)</entry>
+	      <entry align="center">Other Requirement(s)</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+
+	      <entry align="center"><phrase>
+		  <anchor id="cms-tasks-folder_listing"></anchor>
+		  Folder Listing</phrase></entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Move marked items to this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the destination folder
+		    </para></listitem>
+
+		  <listitem><para>cm_write on the marked item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Content type of item is registered to destination folder</para></listitem>
+
+		  <listitem><para>Name of item must be unique within destination folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Copy marked items to this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the destination folder
+		    </para></listitem>
+
+		  <listitem><para>cm_examine on the marked item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Content type of item is registered to destination folder</para></listitem>
+
+		  <listitem><para>Name of item must be unique within destination folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Link marked items to this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the destination folder
+		    </para></listitem>
+
+		  <listitem><para>cm_examine on the marked item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Item is not a symlink</para></listitem>
+
+		  <listitem><para>Content type of item is registered to destination folder</para></listitem>
+
+		  <listitem><para>Symlinks are registered to destination folder</para></listitem>
+
+		  <listitem><para>Name of item must be unique within destination folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Rename this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Name must be unique within the parent folder</para></listitem>
+
+		  <listitem><para>Folder is not a root folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Delete marked items</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the marked item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Folders must be empty</para></listitem>
+
+		  <listitem><para>Folders are not root folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Create a new folder within this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the (parent) folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Subfolders must be registered to parent folder</para></listitem>
+
+		  <listitem><para>Name of folder must be unique within parent folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Delete this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Folder must be empty</para></listitem>
+
+		  <listitem><para>Folder is not a root folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Add a new item under this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the (parent) folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Content type of item must be registered to parent folder</para></listitem>
+
+		  <listitem><para>Name of item must be unique within parent folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry align="center"><phrase>
+		  <anchor id="cms-tasks-folder_attributes"></anchor>
+		  Folder Attributes</phrase></entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register marked content types to this folder</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Unregister this content type</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Edit folder options</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry align="center"><phrase>
+		  <anchor id="cms-tasks-item_listing"></anchor>
+		  Item Listing</phrase></entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Preview this content item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_examine on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Item has a live revision</para></listitem>
+
+		  <listitem><para>Item has an associated template</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Rename this content item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Name of item must be unique within parent folder</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Delete this content item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>
+		- Editing</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Edit attributes for this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Item must have a previously existing revision</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Add a revision to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Assign marked keywords to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_new on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>
+		- Sub-Items</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Add a child item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_relate on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>At least one child relation type must be registered to the
+		      content type of the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Relate another object to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_relate on the item</para></listitem>
+
+		  <listitem><para>At least one item relation type must be registered to the
+		      content type of the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>
+		- Publishing</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Edit the publishing status</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_item_workflow on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register template to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+
+		  <listitem><para>cm_examine on the template</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>The template must be registered to the content type of the
+		      item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Unregister template</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+
+		  <listitem><para>cm_examine on the template</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Make this template the default</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+
+		  <listitem><para>cm_examine on the template</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Create a workflow for this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_item_workflow on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Item has no associated publishing workflows</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Finish / Approve a task</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Task must be assigned to user</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Task must be active</para></listitem>
+
+		  <listitem><para>Task must not be currently checked out by another assigned
+		      user</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Steal a task</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Task must be assigned to user</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Task must be active</para></listitem>
+
+		  <listitem><para>Task must be checked out by another assigned user</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Add a comment to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>
+		- Permissions</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Grant more permissions to a marked user</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_perm or cm_perm_admin on item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Alter/Revoke permissions</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_perm or cm_perm_admin on item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry align="center"><phrase>
+		  <anchor id="cms-tasks-revision_view"></anchor>
+		  View Revision</phrase></entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Add content to this item</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the item</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>The current revision must have no content</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+    </para>
+
+    <para>
+      <phrase>
+	<anchor id="cms-tasks-templates"></anchor>
+	Templates
+      </phrase>
+      <informaltable pgwide="1"><tgroup cols="3">
+	  <tbody>
+	    <row>
+	      <entry align="center"><phrase>Action</phrase></entry>
+	      <entry align="center"><phrase>Required Permission(s)</phrase></entry>
+	      <entry align="center"><phrase>Other Requirement(s)</phrase></entry>
+	    </row>
+	  </tbody>
+	</tgroup></informaltable>
+    </para>
+
+    <para>
+      <phrase>
+	<anchor id="cms-tasks-types"></anchor>
+	Content Types
+      </phrase>
+      <informaltable pgwide="1"><tgroup cols="3">
+	  <thead>
+	    <row>
+	      <entry align="center">Action</entry>
+	      <entry align="center">Required Permission(s)</entry>
+	      <entry align="center">Other Requirement(s)</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+	      <entry>Add this content type to the clipboard</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>[ Register Widget | Edit Widget | Unregister Widget ]</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>Widget does not belong to a Basic Item attribute</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register marked templates to this content type</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Unregister template</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Make this template the default</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>The template is not the default template</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register/Unregister a new item relation type</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register/Unregister a new child relation type</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Register/Unregister MIME type</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_write on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>There is at least one unregistered MIME type</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Grant more permissions to a marked user</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_examine on the types module</para></listitem>
+
+		  <listitem><para>cm_perm_admin or cm_perm on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+
+	    <row>
+
+	      <entry>Alter user permissions</entry>
+	      <entry>
+		<itemizedlist>
+
+		  <listitem><para>cm_examine on the types module</para></listitem>
+
+		  <listitem><para>cm_perm_admin or cm_perm on the types module</para></listitem>
+		</itemizedlist>
+	      </entry>
+	      <entry>&nbsp;</entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+    </para>
+  </sect3>
+</sect2>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("setup-administration.xml" "sect1" "sect2")
+ End:
+-->

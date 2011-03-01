@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="zh_CN" charset="utf-8">
+
+  <msg key="Disable">不能</msg>
+  <msg key="Disable_Folders">不可选择的文件夹</msg>
+  <msg key="Disabled">不能</msg>
+  <msg key="Enable">能</msg>
+  <msg key="Enable_Folders">可选择的文件夹</msg>
+  <msg key="Enabled">能</msg>
+  <msg key="Folder_Name">文件夹名</msg>
+  <msg key="Folder_URL">文件夹URL</msg>
+  <msg key="Folders_Disabled">所选文件夹不支持WebDAV。</msg>
+  <msg key="Folders_Enabled">所选文件夹支持WebDAV。</msg>
+  <msg key="Package_Name">包名称</msg>
+  <msg key="Package_Type">包类型</msg>
+  <msg key="Status">状态</msg>
+  <msg key="WebDAV_Folder_Administration">WebDAV文件夹管理</msg>
+</message_catalog>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Action">Acción</msg>
+  <msg key="Admin_workflows">Administrar flujos trabajo</msg>
+  <msg key="All_Tasks">Todas las tareas</msg>
+  <msg key="Approve">Aprobar</msg>
+  <msg key="Assign_somebody_else">Asignar a otra persona</msg>
+  <msg key="Assign_yourself">Asignarme a mí</msg>
+  <msg key="Assignee">Asignada a</msg>
+  <msg key="assignment_group">Grupo de asignación</msg>
+  <msg key="Automatic_trigger">Disparador automático</msg>
+  <msg key="Confirm_Quote">Confirmar cotiz.</msg>
+  <msg key="Currrent_assignees">Asignado actualmente a</msg>
+  <msg key="Debug_Case">Caso de corrección de error</msg>
+  <msg key="Execute">Ejecutar</msg>
+  <msg key="Holding_user">Usuario en espera</msg>
+  <msg key="Modify">Modificar</msg>
+  <msg key="my_object">Mi objeto</msg>
+  <msg key="Next_step_details">Detalles del paso siguiente</msg>
+  <msg key="none">ninguna</msg>
+  <msg key="Object_Name">Nombre del objeto</msg>
+  <msg key="Object_Owner">Propietario del objeto</msg>
+  <msg key="Owner">Propietario</msg>
+  <msg key="Past_actions">Acciones realizadas</msg>
+  <msg key="Quote">Cotizar</msg>
+  <msg key="Relationship">Relación</msg>
+  <msg key="Reset_Case">Resetear caso</msg>
+  <msg key="Status">Estatus</msg>
+  <msg key="Task_name">Nombre de tara</msg>
+  <msg key="Task_state">Estado de tarea</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="Unassigned_Tasks">Tareas sin asignar</msg>
+  <msg key="What">Qué</msg>
+  <msg key="When">Cuándo</msg>
+  <msg key="Who">Quién</msg>
+  <msg key="Workflow_Home">Portada Flujo de trabajo</msg>
+  <msg key="Your_Tasks">Mis tareas</msg>
+</message_catalog>

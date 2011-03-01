@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Dim_day_of_month">Dia</msg>
+  <msg key="Dim_month_of_year">Mes</msg>
+  <msg key="Dim_quarter_of_year">Trimestre</msg>
+  <msg key="Dim_week_of_year">Semana</msg>
+  <msg key="Dim_year">Año</msg>
+  <msg key="Download_Gantt_File">Descargar el fichero GanttProject.gan</msg>
+  <msg key="Download_OpenProj_File">Descargar fichero OpenProj</msg>
+  <msg key="Gantt_Resources">Recursos Gantt</msg>
+  <msg key="No_Gantt_preview_available">Gantt no disponible.</msg>
+  <msg key="OK">OK</msg>
+  <msg key="Project_Gantt_Resource">Recursos de Project Gantt</msg>
+  <msg key="Project_Gantt_Resource_Assignations">Asignaciones de Recursos Gantt</msg>
+  <msg key="Project_Gantt_Schedule">Planificación de Project Gantt</msg>
+  <msg key="Project_Gantt_View">Grafica de Gantt</msg>
+  <msg key="Scheduling">Planificación</msg>
+  <msg key="Upload_Gantt_File">Subir un fichero Gantt</msg>
+</message_catalog>

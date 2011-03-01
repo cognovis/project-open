@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Admin_All_Pages">Admin toutes pages</msg>
+  <msg key="Admin_Wiki_Changes">Admin modifications Wiki</msg>
+  <msg key="Admin_Wiki_Permissions">Autorisations Wiki</msg>
+  <msg key="Categories">Catégories</msg>
+  <msg key="Company_Wiki">Sociéte Wiki</msg>
+  <msg key="HomeWiki">Acceuil Wiki</msg>
+  <msg key="Main_Index">Index principal</msg>
+  <msg key="Project_Wiki">Projet Wiki</msg>
+  <msg key="User_Wiki">Wiki</msg>
+</message_catalog>

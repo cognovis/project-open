@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Page_deptcomp">Abteilung</msg>
+  <msg key="Page_features">Funktionen</msg>
+  <msg key="Page_logo">Logo</msg>
+  <msg key="Page_name">Name</msg>
+  <msg key="Page_orgsize">Größe</msg>
+  <msg key="Page_prodtest">Bewertung</msg>
+  <msg key="Page_profiles">Vertraue Muster</msg>
+  <msg key="Page_sector">Sektor</msg>
+  <msg key="profiles_all_companies">Ändere&amp;lt;br&amp;gt;alle&amp;lt;br&amp;gt;Unternehmen</msg>
+  <msg key="profiles_all_projects">Ändern&amp;lt;br&amp;gt;aller&amp;lt;br&amp;gt;Projekte</msg>
+  <msg key="profiles_employees">Mitarbeiter</msg>
+  <msg key="profiles_finance">Ändere&amp;lt;br&amp;gt;Finanzen</msg>
+  <msg key="profiles_project_managers">Projekt Manager</msg>
+  <msg key="profiles_senior_managers">Bereichsleiter</msg>
+  <msg key="SysConfig">SysConfig</msg>
+  <msg key="SysConfig_Wizard">SysConfig Assistent</msg>
+  <msg key="System_Config_Wizard">System Konfigurations Assistent</msg>
+</message_catalog>

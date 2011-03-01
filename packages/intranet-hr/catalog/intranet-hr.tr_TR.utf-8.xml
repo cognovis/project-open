@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="add_supervisor">amir ekle</msg>
+  <msg key="Availability_">Mevcudiyeti </msg>
+  <msg key="Birthdate">Doğum Tarihi </msg>
+  <msg key="Department">Bölüm</msg>
+  <msg key="Edit">Düzenle </msg>
+  <msg key="Employee_Information">Çalışan Bilgileri</msg>
+  <msg key="Employee_Own_Supervisor">Bir çalışan kendi amiri olamaz.</msg>
+  <msg key="Hourly_Cost">Saat Birim Maliyeti</msg>
+  <msg key="Insurance">Sigorta (özel)</msg>
+  <msg key="Job_Description">İş Tanımı </msg>
+  <msg key="Job_Title">Ünvan </msg>
+  <msg key="lt_Employee_Information_"> %employee_name%Calışan Bilgileri</msg>
+  <msg key="lt_Employees_without_sup">Amirsiz çalışanlar</msg>
+  <msg key="lt_For_the_org_chart_pag">Organizasyon şeması sayfasının görüntülenebilmesi için,  \&amp;quot;who supervises whom\&amp;quot; ilişkilerini düzenlemeniz gerekir, böylece sadece bir kişinin (CEO) üstü ve astı olmaz.</msg>
+  <msg key="lt_Voluntary_Termination">Gönüllü Ayrılma</msg>
+  <msg key="lt_You_have_insufficient">Bu sayfayı kullanma yetkiniz yoktur</msg>
+  <msg key="NDA_Signed">Gizlilik Anlaşması İmzalandı mı?</msg>
+  <msg key="No">Hayır</msg>
+  <msg key="No_Big_Kahuna">Büyük Sihirbaz değil</msg>
+  <msg key="Other_Costs">Diğer Masraflar </msg>
+  <msg key="Salaries_per_Year">Maaş/Yıl </msg>
+  <msg key="Salary">Ücreti </msg>
+  <msg key="Salary_Period">Maaş Aralığı </msg>
+  <msg key="Social_Security">Social Security</msg>
+  <msg key="Social_Security_nr">SGK No: </msg>
+  <msg key="Start_Date">İşe Başlama Tarihi </msg>
+  <msg key="Supervisor">Sorumlusu</msg>
+  <msg key="Termination_Date">İşe Son Verilme Tarihi </msg>
+  <msg key="Yes">Evet</msg>
+</message_catalog>

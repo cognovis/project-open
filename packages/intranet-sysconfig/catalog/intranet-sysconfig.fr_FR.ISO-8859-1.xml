@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Page_deptcomp">Service</msg>
+  <msg key="Page_features">Caractéristiques</msg>
+  <msg key="Page_logo">Logo</msg>
+  <msg key="Page_name">Nom</msg>
+  <msg key="Page_orgsize">Taille</msg>
+  <msg key="Page_prodtest">Evaluation</msg>
+  <msg key="Page_profiles">Niveau de confiance</msg>
+  <msg key="Page_sector">Secteur</msg>
+  <msg key="profiles_all_companies">Modifier&amp;lt;br&amp;gt;All&amp;lt;br&amp;gt;sociétés</msg>
+  <msg key="profiles_all_projects">Modifier&amp;lt;br&amp;gt;All&amp;lt;br&amp;gt;projets</msg>
+  <msg key="profiles_employees">Employés</msg>
+  <msg key="profiles_finance">Modifier&amp;lt;br&amp;gt;finance</msg>
+  <msg key="profiles_project_managers">Chefs de projet</msg>
+  <msg key="profiles_senior_managers">Chefs de projet senior</msg>
+  <msg key="SysConfig">Config syst</msg>
+  <msg key="SysConfig_Wizard">Assistant config syst</msg>
+  <msg key="System_Config_Wizard">Assistant configuration système</msg>
+  <msg key="System_Configuration_Wizard">Assistant de configuration système</msg>
+</message_catalog>

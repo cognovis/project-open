@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="calendar" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="_You_may_choose_to">. Er kan gekozen worden om:</msg>
+  <msg key="Add">Toevoegen</msg>
+  <msg key="add">toevoegen</msg>
+  <msg key="Add_a_new_Audience">Een nieuw publiek toevoegen</msg>
+  <msg key="add_an_event">Een gebeurtenis toevoegen</msg>
+  <msg key="Add_an_item">Voeg een element toe</msg>
+  <msg key="Add_Item">Gebeurtenis toevoegen</msg>
+  <msg key="Add_Recurrence">Repeterend toevoegen</msg>
+  <msg key="All_Day_Event">Gebeurtenis op iedere dag</msg>
+  <msg key="all_events">alle gebeurtenissen</msg>
+  <msg key="and_Time">en tijd</msg>
+  <msg key="Apply_to_all">Op alle gebeurtenissen toepassen</msg>
+  <msg key="Attachments">Bijlagen:</msg>
+  <msg key="Audiences_for_item">Publiek voor gebeurtenis %cal_item_name%</msg>
+  <msg key="Calendar">Kalender</msg>
+  <msg key="Calendar_Add_Item">Kalender: gebeurtenis toevoegen</msg>
+  <msg key="Calendar_Edit_Item">Kalender: gebeurtenis bewerken</msg>
+  <msg key="Calendar_Item">Gebeurtenis</msg>
+  <msg key="Calendar_Item_Delete">Gebeurtenis verwijderen</msg>
+  <msg key="Calendar_Item_Types">Gebeurteniscategoriën</msg>
+  <msg key="Calendar_Name">Kalendernaam</msg>
+  <msg key="Calendar_Permissions">&quot;Kalenderrechten&quot;</msg>
+  <msg key="Calendar_Permissions_1">Kalenderrechten</msg>
+  <msg key="Calendar_Preferences">&quot;Kalender voorkeuren&quot;</msg>
+  <msg key="Calendars">Kalenders</msg>
+  <msg key="Choose">Kiezen</msg>
+  <msg key="Current_Permissions">Huidige rechten</msg>
+  <msg key="Date">Datum:</msg>
+  <msg key="Date_1">Datum</msg>
+  <msg key="day">dag</msg>
+  <msg key="day_rolling_period">dagen</msg>
+  <msg key="day_s">dag(en)</msg>
+  <msg key="Delete">Verwijderen</msg>
+  <msg key="delete">Verwijderen</msg>
+  <msg key="Description">Beschrijving</msg>
+  <msg key="Details">Details:</msg>
+  <msg key="developer_note_calendar_add">Toelichting voor ontwikkelaars: Een kalender aanmaken omvat de volgende stappen: 
+&lt;ol&gt;
+&lt;li&gt;Een kalenderobject aanmaken en - indien nodig- de standaardrechten veranderen.&lt;/li&gt;
+&lt;li&gt;De kalender met groepen en/of gebruikers verbinden.&lt;/li&gt;
+&lt;li&gt;De gewenste groeps- en gebruikersrechten toepassen.&lt;/li&gt;
+&lt;/ol&gt;</msg>
+  <msg key="Edit">Bewerken</msg>
+  <msg key="edit">bewerken</msg>
+  <msg key="End_Time">Eindtijd</msg>
+  <msg key="Events_over_a">Gebeurtenissen binnen een tijdvak van</msg>
+  <msg key="Friday">vrijdag</msg>
+  <msg key="from">van</msg>
+  <msg key="Go_to_monthsname">Ga naar %months.name%</msg>
+  <msg key="Go_to_year_next_year">Ga naar het jaar %next_year%</msg>
+  <msg key="Go_to_year_prev_year">Ga naar het jaar %prev_year%</msg>
+  <msg key="Grant">Toekennen</msg>
+  <msg key="Grant_Permissions">Rechten toekennen</msg>
+  <msg key="is_recurring">Repeterende gebeurtenis.</msg>
+  <msg key="Item">Gebeurtenis</msg>
+  <msg key="lt_Are_you_sure_you_want">Deze kalender echt verwijderen?
+
+Alle gebeurtenissen en alle rechten die met deze kalender zijn verbonden zullen ook worden verwijderd. </msg>
+  <msg key="lt_Are_you_sure_you_want_1">Deze gebeurtenis echt verwijderen?</msg>
+  <msg key="lt_Audiences_for_calenda">Publiek voor kalender</msg>
+  <msg key="lt_Calendar_Administrati">Kalender administratie</msg>
+  <msg key="lt_Calendar_Administrati_1">Kalender administratie voor gebruiker</msg>
+  <msg key="lt_Calendar_Choose_Calen">Kalender: kalender kiezen</msg>
+  <msg key="lt_Calendar_detail_listi">Kalender detail: alle informatie over de persoonlijke kalender</msg>
+  <msg key="lt_Calendar_Item_Adminis">Gebeurtenis administratie</msg>
+  <msg key="lt_Calendar_Item_Permiss">&quot;Rechten van gebeurtenissen&quot;</msg>
+  <msg key="lt_Calendars_Repeating_E">Kalenders: repeterende gebeurtenis</msg>
+  <msg key="lt_Create_a_new_calendar">Nieuwe kalender aanmaken </msg>
+  <msg key="lt_delete_all_occurrence">alle voorkomende gevallen verwijderen</msg>
+  <msg key="lt_delete_only_this_inst">alleen deze instance verwijderen</msg>
+  <msg key="lt_Edit_your_Calendar_Pr">Kalendervoorkeuren bewerken</msg>
+  <msg key="lt_everyone_have_read_pe">iedereen heeft leesrechten en kan de items dus zien, zowel geregistreerde als niet-geregistreerde gebruikers.</msg>
+  <msg key="lt_Go_to_month_name_days">Ga naar %days.day_number% %month_name% %year%</msg>
+  <msg key="lt_Go_to_monthsname_curr">Ga naar %months.name% %curr_year%</msg>
+  <msg key="lt_Go_to_monthsname_curr_1">Ga naar %months.name% %curr_year%&gt; %months.name%&lt;/a&gt;&lt;/td&gt;
+            &lt;/else&gt;
+           &lt;/multiple&gt;
+        &lt;/if&gt;
+
+        &lt;else&gt;
+          &lt;tr class=&quot;days&quot;&gt;
+            &lt;multiple name=&quot;days_of_week&quot;&gt;
+              &lt;td&gt;%days_of_week.day_short%&lt;/td&gt;
+            &lt;/multiple&gt;
+          &lt;/tr&gt;
+      
+          &lt;multiple name=&quot;days&quot;&gt;
+            &lt;if %days.beginning_of_week_p% true&gt;
+              &lt;tr&gt;
+            &lt;/if&gt;
+        
+            &lt;if %days.active_p% true&gt;
+              &lt;if %days.today_p% true&gt;
+                &lt;td class=&quot;today&quot; onclick=&quot;javascript:location.href='%days.url%'&quot;&gt;
+                  &lt;a href=&quot;%days.url&quot; title=&quot;&lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
+  <msg key="lt_Hide_Checked_Calendar">Gemarkeerde kalenders verbergen </msg>
+  <msg key="lt_Manage_Calendar_Audie">Publiek van kalender beheren </msg>
+  <msg key="lt_no_parties_exist_cont">er zijn geen 'parties' gevonden. Neem contact op met de systeembeheerder.</msg>
+  <msg key="lt_no_privilege_exist_co">er zijn geen rechten beschikbaar. Neem contact op met de systeembeheerder.</msg>
+  <msg key="lt_no_privilege_has_been">er zijn geen rechten toegekend</msg>
+  <msg key="lt_only_those_you_choose">de gebeurtenissen op de kalender zijn alleen te zien voor degenen die hiervoor expliciete toestemming hebben gekregen.</msg>
+  <msg key="lt_Repeat_this_event_unt">Deze gebeurtenis laten terugkeren tot:</msg>
+  <msg key="lt_The_following_is_a__l">Dit is een lijst van beschikbare kalenders. Deze lijst is beschikbaar via de persoonlijke kalender, zodat gebeurtenissen tussen twee kalenders kunnen worden ingezien. Men kan zelf aangeven welke kalenders op de lijst moeten blijven en welke niet.</msg>
+  <msg key="lt_There_are_no_audience">Deze kalender heeft geen publiek </msg>
+  <msg key="lt_This_is_a_repeating_e">Deze gebeurtenis is terugkerend</msg>
+  <msg key="lt_You_are_choosing_to_m">Deze gebeurtenis is als repeterend ingesteld, zodat deze vaker in de kalender zal verschijnen. De details zijn:</msg>
+  <msg key="lt_You_can_manage_the_fo">De volgende kalenders staan ter beschikking</msg>
+  <msg key="lt_You_have_no_party_wid">Er is geen kalender die voor alle gebruikers beschikbaar is.</msg>
+  <msg key="Monday">maandag</msg>
+  <msg key="New_Type">Nieuwe categorie:</msg>
+  <msg key="next_month">Volgende maand</msg>
+  <msg key="next_year">Volgend jaar</msg>
+  <msg key="No">Nee</msg>
+  <msg key="No_Calendars">Geen kalenders beschikbaar</msg>
+  <msg key="No_Items">Geen gebeurtenissen beschikbaar</msg>
+  <msg key="no_keep_it">nee, behouden</msg>
+  <msg key="Note">Toelichting</msg>
+  <msg key="of_the_month">van de maand</msg>
+  <msg key="of_the_week">van de week</msg>
+  <msg key="prev_month">Vorige maand</msg>
+  <msg key="prev_year">Vorig jaar</msg>
+  <msg key="Private">Privé:</msg>
+  <msg key="private">privé</msg>
+  <msg key="Public">Publiek:</msg>
+  <msg key="public">publiek</msg>
+  <msg key="Repeat">Herhalen</msg>
+  <msg key="Repeat_1">Herhalen?</msg>
+  <msg key="Repeat_every">Herhaal elke</msg>
+  <msg key="revoke">intrekken</msg>
+  <msg key="same">zelfde</msg>
+  <msg key="Saturday">zaterdag</msg>
+  <msg key="Select_Calendars">Kalenders selecteren</msg>
+  <msg key="Sharing">Uitwisselen</msg>
+  <msg key="skip_day_calendar">Sla dagkalender over</msg>
+  <msg key="skip_month_calendar">Sla maandkalender over</msg>
+  <msg key="Start_Time">Begintijd</msg>
+  <msg key="start_time_before_end_time">Begintijd ligt voor de eindtijd</msg>
+  <msg key="Submit_query">Vraag indienen</msg>
+  <msg key="Sunday">zondag</msg>
+  <msg key="sync_with_Outlook">Synchroniseren met Outlook</msg>
+  <msg key="Thursday">donderdag</msg>
+  <msg key="Time">Tijd:</msg>
+  <msg key="Title">Titel:</msg>
+  <msg key="Title_1">Titel</msg>
+  <msg key="to">tot</msg>
+  <msg key="Tuesday">dinsdag</msg>
+  <msg key="Type">Categorie:</msg>
+  <msg key="Type_1">Categorie</msg>
+  <msg key="Type_Help">Uw kalenderelement kan indien u wilt geclassificeerd worden in soorten. Kies er één uit de keuzelijst.</msg>
+  <msg key="Use_Hours_Below">Gebruik onderstaande uren:</msg>
+  <msg key="Wednesday">woensdag</msg>
+  <msg key="y-m-d">y-m-d</msg>
+  <msg key="year">jaar</msg>
+  <msg key="Yes">Ja</msg>
+  <msg key="yes_delete_it">ja, verwijderen</msg>
+  <msg key="Yes_I_am_sure">Ja, zeker!</msg>
+</message_catalog>

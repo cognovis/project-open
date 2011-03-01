@@ -1,0 +1,2489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Publishing to the file system</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Developer's guide"
+HREF="dev-guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Using Permissions"
+HREF="dev-permissions.html"><LINK
+REL="NEXT"
+TITLE="Tutorials"
+HREF="tutorials.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="dev-permissions.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Developer's guide</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="tutorials.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="publishing-filesystem"
+>3.4. Publishing to the file system</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>3.4.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-overview"
+>Overview</A
+></DT
+><DT
+>3.4.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-relation-child-and-content-tags"
+>Relation, child and content tags</A
+></DT
+><DD
+><DL
+><DT
+>3.4.2.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-the-child-tag"
+>The Child Tag</A
+></DT
+><DD
+><DL
+><DT
+>3.4.2.1.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-child-tag-example"
+>Child tag example</A
+></DT
+><DT
+>3.4.2.1.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-kidtcl"
+><TT
+CLASS="computeroutput"
+>kid.tcl</TT
+></A
+></DT
+><DT
+>3.4.2.1.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-kidadp"
+><TT
+CLASS="computeroutput"
+>kid.adp</TT
+></A
+></DT
+><DT
+>3.4.2.1.4. <A
+HREF="publishing-filesystem.html#publishing-filesystem-daddytcl"
+><TT
+CLASS="computeroutput"
+>daddy.tcl</TT
+></A
+></DT
+><DT
+>3.4.2.1.5. <A
+HREF="publishing-filesystem.html#publishing-filesystem-daddyadp"
+><TT
+CLASS="computeroutput"
+>daddy.adp</TT
+></A
+></DT
+></DL
+></DD
+><DT
+>3.4.2.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-relation-tag"
+>Relation tag</A
+></DT
+><DT
+>3.4.2.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-content-tag"
+>Content tag</A
+></DT
+><DT
+>3.4.2.4. <A
+HREF="publishing-filesystem.html#publishing-filesystem-basic-tcl-api"
+>Basic TCL API</A
+></DT
+><DD
+><DL
+><DT
+>3.4.2.4.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-defining-mime-type-handlers"
+>Defining-mime type handlers</A
+></DT
+><DT
+>3.4.2.4.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-other-api"
+>Other API</A
+></DT
+><DT
+>3.4.2.4.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-handler-examples"
+>Handler Examples</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>3.4.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-publishing-to-the-filesystem"
+>Publishing to the filesystem</A
+></DT
+><DD
+><DL
+><DT
+>3.4.3.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-publishrevision"
+><TT
+CLASS="computeroutput"
+>publish_revision</TT
+></A
+></DT
+><DD
+><DL
+><DT
+>3.4.3.1.1. <A
+HREF="publishing-filesystem.html#publishing-filesystem-imagetemplatetcl"
+><TT
+CLASS="computeroutput"
+>image_template.tcl</TT
+></A
+></DT
+><DT
+>3.4.3.1.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-imagetemplateadp"
+><TT
+CLASS="computeroutput"
+>image_template.adp</TT
+></A
+></DT
+><DT
+>3.4.3.1.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-mysnailhtml"
+><TT
+CLASS="computeroutput"
+>my_snail.html</TT
+></A
+></DT
+></DL
+></DD
+><DT
+>3.4.3.2. <A
+HREF="publishing-filesystem.html#publishing-filesystem-cms-ui"
+>CMS UI</A
+></DT
+><DT
+>3.4.3.3. <A
+HREF="publishing-filesystem.html#publishing-filesystem-scheduling-items-for-release"
+>Scheduling items for release</A
+></DT
+></DL
+></DD
+><DT
+>3.4.4. <A
+HREF="publishing-filesystem.html#publishing-filesystem-conclusion"
+>Conclusion</A
+></DT
+></DL
+></DIV
+><P
+>Note: This document links to the automatically
+    generated TCL <A
+HREF="/ats/doc/api/tcl-procs.html"
+TARGET="_top"
+>documentation</A
+>. You may need to
+    update ATS and regenerate the documentation in order to follow the
+    links.
+  </P
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="publishing-filesystem-overview"
+>3.4.1. Overview</A
+></H2
+><P
+>&#13;
+      A typical content item is usually a collection of child items and
+      related items, as shown in the <A
+HREF="cms-user-guide.html#page-relation"
+>page relation</A
+>
+      document. Therefore,
+      the template registered to the item has to run multiple SQL queries
+      in order to retrieve and process all of the child / related items.
+      In addition to being cumbersome to write, these queries access the
+      datatbase each time an item is being served, thus slowing down the
+      site. The publishing API in CMS may be used to solve both of these
+      problems.
+    </P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="publishing-filesystem-relation-child-and-content-tags"
+>3.4.2. Relation, child and content tags</A
+></H2
+><P
+>&#13;
+      CMS defines three new ATS tags: <TT
+CLASS="computeroutput"
+>child</TT
+>, <TT
+CLASS="computeroutput"
+>relation</TT
+>
+      and <TT
+CLASS="computeroutput"
+>content</TT
+>. The purpose of these tags is to signify a
+      place in the ADP template for the item where a child item, a
+      related item or the current item's content will be inserted. 
+
+    </P
+><P
+>The <TT
+CLASS="computeroutput"
+>child</TT
+> tag can be used to include a child item in
+      the template for the parent item, similarly to the ATS
+      <TT
+CLASS="computeroutput"
+>include</TT
+> tag. The syntax for the <TT
+CLASS="computeroutput"
+>child</TT
+> tag is as
+      follows: </P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-the-child-tag"
+>3.4.2.1. The Child Tag</A
+></H3
+><PRE
+CLASS="programlisting"
+>    
+    	<B
+CLASS="phrase"
+>&#60;child tag=</B
+><I
+CLASS="emphasis"
+>tag</I
+> <B
+CLASS="phrase"
+>index=</B
+><I
+CLASS="emphasis"
+>n</I
+> <B
+CLASS="phrase"
+>embed</B
+> <I
+CLASS="emphasis"
+>args</I
+>&#62;
+          </PRE
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN1982"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Parameter</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Default value</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>tag</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<I
+CLASS="emphasis"
+>This parameter is required</I
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Specifies the relation tag to be used when querying for the
+		child item. For more information, see the acs-content-repository
+		documentation, sepcifically the
+		<TT
+CLASS="computeroutput"
+>content_type.register_child_type</TT
+> procedure.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>index</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>1</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Specifies the index of the item, starting at 1. The index is
+		based on the <TT
+CLASS="computeroutput"
+>order_n</TT
+> of the child relation; the child item
+		with the lowest <TT
+CLASS="computeroutput"
+>order_n</TT
+> has index 1, the item with the
+		next lowest <TT
+CLASS="computeroutput"
+>order_n</TT
+> has index 2, and so on.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>embed</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><I
+CLASS="emphasis"
+>no value</I
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Signifies that the child item should be statically embedded in
+		the current item's template. If this parameter is not specified,
+		the child item will instead be referenced dynamically, most likely
+		using the <TT
+CLASS="computeroutput"
+>&#60;include&#62;</TT
+> tag. If the <TT
+CLASS="computeroutput"
+>embed</TT
+>
+		parameter is specified, the child item may be written to the file
+		system (this is done for images, for example). See the discussion
+		of publishing to the file system 
+		<A
+HREF="publishing-filesystem.html#publishing-filesystem-publishing-to-the-filesystem"
+>below</A
+>
+		for an explanation of how the <TT
+CLASS="computeroutput"
+>embed</TT
+> parameter may be
+		used.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>args</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><I
+CLASS="emphasis"
+>no value</I
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Specifies extra parameters to be passed to the template, in
+		form <TT
+CLASS="computeroutput"
+>name1="value1" name2="value2" ...</TT
+>. The syntax for
+		passing these parameters is the same as the syntax for the
+		<TT
+CLASS="computeroutput"
+>include</TT
+> tag.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>In order for the <TT
+CLASS="computeroutput"
+>child</TT
+> tag to work, the child item must
+	be published. If the child item is not published, or if any other
+	error occurs, the child tag is ignored.</P
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-child-tag-example"
+>3.4.2.1.1. Child tag example</A
+></H4
+><P
+>For example, consider the following template:</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-kidtcl"
+>3.4.2.1.2. <TT
+CLASS="computeroutput"
+>kid.tcl</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    request create
+    request set_param color -datatype text -value "#FFFFFF" -optional
+    content::get_content
+    template::util::array_to_vars content
+    	</PRE
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-kidadp"
+>3.4.2.1.3. <TT
+CLASS="computeroutput"
+>kid.adp</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    &#60;html&#62;
+    &#60;head&#62;&#60;title&#62;@title@&#60;/title&#62;&#60;/head&#62;
+    &#60;body bgcolor=@color@&#62;
+    
+    I am a child
+    
+    &#60;table&#62;
+      &#60;tr bgcolor=@color@&#62;&#60;td&#62;@text@&#60;/td&#62;&#60;/tr&#62;
+    &#60;/table&#62;
+    
+    &#60;/body&#62;
+    &#60;/html&#62;
+    	</PRE
+><P
+>&#13;	  This template can be used to render a basic item whose context is
+	  readable text. The template takes one parameter, <TT
+CLASS="computeroutput"
+>color</TT
+>,
+	  which is used as the background color for the item. Assume that
+	  this template is registered to an item called called "Junior",
+	  whose content is "Hello World !". 
+	</P
+><P
+>Now, consider the following template:</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-daddytcl"
+>3.4.2.1.4. <TT
+CLASS="computeroutput"
+>daddy.tcl</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    content::get_content
+    template::util::array_to_vars content
+    	</PRE
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-daddyadp"
+>3.4.2.1.5. <TT
+CLASS="computeroutput"
+>daddy.adp</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    &#60;html&#62;
+    &#60;head&#62;&#60;title&#62;@title@&#60;/title&#62;&#60;/head&#62;
+    &#60;body bgcolor="#FFFFFF"&#62;
+    
+    &#60;h4&#62;The child:&#60;/h4&#62;
+    
+    &#60;child tag=family index=1 embed color="#00FF00"&#62;
+    
+    &#60;h4&#62;The parent:&#60;/h4&#62;
+    
+    @text@
+    
+    &#60;/body&#62;
+    &#60;/html&#62;
+          </PRE
+><P
+>&#13;	  This template can be also be used to render a basic item whose
+	  context is readable text. In addition, this template assumes that
+	  the current item ahs at least one child item, which is related to
+	  the current item using the <TT
+CLASS="computeroutput"
+>family</TT
+> relation tag. Assume
+	  that this template is registered to an item called "Senior", whose
+	  content is "Who's your daddy ?". The diagram below shows all the
+	  aforementioned relationships: 
+	</P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/publish_1.gif"
+></IMG
+></P
+></DIV
+><P
+>Assuming that the "Junior" and "Senior" items are both
+	  published, the user will see something like 
+	  <A
+HREF="child_example.html"
+TARGET="_top"
+>this</A
+> when requesting
+	  "senior.acs".</P
+><P
+>Note that the child item need not be plain text for the
+	  <TT
+CLASS="computeroutput"
+>child</TT
+> tag to work. In fact, the tag works with images and
+	  may be extended to handle any mime type, as is discussed 
+	  <A
+HREF="publishing-filesystem.html#publishing-filesystem-defining-mime-type-handlers"
+>below</A
+>.
+	  </P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-relation-tag"
+>3.4.2.2. Relation tag</A
+></H3
+><P
+>&#13;
+	The syntax for the <TT
+CLASS="computeroutput"
+>relation</TT
+> tag is almost identical to the
+	syntax of the <TT
+CLASS="computeroutput"
+>child</TT
+> tag: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>&#60;relation tag=</B
+><I
+CLASS="emphasis"
+>tag</I
+> <B
+CLASS="phrase"
+>index=</B
+><I
+CLASS="emphasis"
+>n</I
+> <B
+CLASS="phrase"
+>embed</B
+> <I
+CLASS="emphasis"
+>args</I
+>&#62;
+          </PRE
+><P
+>&#13;	All the parameters of the <TT
+CLASS="computeroutput"
+>relation</TT
+> tag are identical to
+	the parameters of the <TT
+CLASS="computeroutput"
+>child</TT
+> tag. The only difference
+	between the two tags is that the <TT
+CLASS="computeroutput"
+>child</TT
+> tag handles child
+	items, while the <TT
+CLASS="computeroutput"
+>relation</TT
+> tag handles related items. 
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-content-tag"
+>3.4.2.3. Content tag</A
+></H3
+><P
+>&#13;	The <TT
+CLASS="computeroutput"
+>content</TT
+> tag accepts no parameters:
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>&#60;content&#62;</B
+>
+          </PRE
+><P
+>&#13;	This tag can be used to render the content of the current item. For
+	example, the <TT
+CLASS="computeroutput"
+>kid</TT
+> template 
+	<A
+HREF="publishing-filesystem.html#publishing-filesystem-kidtcl"
+>above</A
+>
+	can be modified as follows:
+      </P
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-kidadp-modified"
+>3.4.2.3.1. <TT
+CLASS="computeroutput"
+>kid.adp</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    &#60;html&#62;
+    &#60;head&#62;&#60;title&#62;@title@&#60;/title&#62;&#60;/head&#62;
+    &#60;body bgcolor=@color@&#62;
+    
+    I am a child
+    
+    &#60;table&#62;
+      &#60;tr bgcolor=@color@&#62;&#60;td&#62;<B
+CLASS="phrase"
+>&#60;content&#62;</B
+>&#60;/td&#62;&#60;/tr&#62;
+    &#60;/table&#62;
+    
+    &#60;/body&#62;
+    &#60;/html&#62;
+    	</PRE
+><P
+>&#13;	  Unlike the <TT
+CLASS="computeroutput"
+>@text@</TT
+> variable, however, the <TT
+CLASS="computeroutput"
+>content</TT
+>
+	  tag may also be used to render images and other mime types. The
+	  <TT
+CLASS="computeroutput"
+>content</TT
+> tag is treated similarly to the <TT
+CLASS="computeroutput"
+>child</TT
+> and
+	  <TT
+CLASS="computeroutput"
+>relation</TT
+> tags, with the <TT
+CLASS="computeroutput"
+>embed</TT
+> parameter always
+	  present.
+	</P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-basic-tcl-api"
+>3.4.2.4. Basic TCL API</A
+></H3
+><P
+>&#13;
+	In order to process the <TT
+CLASS="computeroutput"
+>relation</TT
+> and <TT
+CLASS="computeroutput"
+>child</TT
+> tags,
+	the templating system must perform the following steps: 
+
+      </P
+><OL
+TYPE="1"
+><LI
+><P
+CLASS="listitem"
+>Retrieve the item_id of the child/related item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Render the child item in some way, based on the item's mime
+	    type, possibly performing one of the following tasks: 
+
+	    <UL
+><LI
+><P
+CLASS="listitem"
+>Merge the item with its template</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Write the body of the item to the filesystem</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Pass extra parameters to the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>etc...</P
+></LI
+></UL
+>
+	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Insert the rendered child/related item into the parent
+	    item</P
+></LI
+></OL
+><P
+>&#13;
+	Since <TT
+CLASS="computeroutput"
+>content</TT
+> tag renders the content of the current item,
+	it does not need to perform Step 1. 
+
+      </P
+><P
+>Steps 1 and 3 are performed by the private TCL proc
+	<TT
+CLASS="computeroutput"
+>publish::render_subitem</TT
+>. In order to accomplish Step 2,
+	the templating system needs to know how to handle various mime
+	types. This is accomplished through the use of <I
+CLASS="emphasis"
+>handlers</I
+>.</P
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-defining-mime-type-handlers"
+>3.4.2.4.1. Defining-mime type handlers</A
+></H4
+><P
+>&#13;	  A mime-type handler for a mime type (such as "text/plain" or
+	  "image/jpeg") is a TCL proc, with the following signature: 
+	</P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>proc publish::handle::</B
+><I
+CLASS="emphasis"
+>mime_prefix</I
+><B
+CLASS="phrase"
+>::</B
+><I
+CLASS="emphasis"
+>optional_mime_suffix</I
+> <B
+CLASS="phrase"
+>{ item_id args } {
+
+# Process any additional options passed to the handler
+  template::util::get_opts $args
+
+# Perform some calculation to get the HTML for the item
+  #...
+  
+  # Return the rendered HTML for the item
+  return $html
+}</B
+>
+    	</PRE
+><P
+>&#13;	  The handler proc takes in an <TT
+CLASS="computeroutput"
+>item_id</TT
+>, and any of the
+	  following options: 
+	</P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN2132"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Option</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+>-embed</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Signifies that the <TT
+CLASS="computeroutput"
+>embed</TT
+> parameter was specified in
+		  the <TT
+CLASS="computeroutput"
+>child</TT
+>/<TT
+CLASS="computeroutput"
+>relation</TT
+> tag (the <TT
+CLASS="computeroutput"
+>embed</TT
+>
+		  parameter is implicit in the <TT
+CLASS="computeroutput"
+>content</TT
+> tag). In this case,
+		  the handler should return the static HTML for the item. If the
+		  <TT
+CLASS="computeroutput"
+>-embed</TT
+> option is not specified, the handler should insted
+		  return some HTML/ADP code which will dynamically include the item
+		  in the parent item (using the <TT
+CLASS="computeroutput"
+>include</TT
+> tag, for
+		  example)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+>-no_merge</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Usually, the child/related item is merged with its template in
+		  order to produce static HTML. The <TT
+CLASS="computeroutput"
+>-no_merge</TT
+> option
+		  signifies that the item should <B
+CLASS="phrase"
+>not</B
+> be merged with its
+		  template. This option is passed by the <TT
+CLASS="computeroutput"
+>content</TT
+> tag, in
+		  order to prevent infinite recursion.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+>-revision_id <TT
+CLASS="replaceable"
+><I
+>id</I
+></TT
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Specifies the id of the revision which should be used when
+		  rendering the item. If this option is ommitted, the handler is free
+		  to use any revision; the live revision is probably the logical
+		  choice.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>In order to determine which handler is to be used for rendering
+	  a particular item, the publishing API first tries to find a proc
+	  with the name
+	  <TT
+CLASS="computeroutput"
+>publish::handle::<TT
+CLASS="replaceable"
+><I
+>mime_prefix</I
+></TT
+>::<TT
+CLASS="replaceable"
+><I
+>mime_suffix</I
+></TT
+></TT
+>.
+	  If no such proc exists, the publishing API looks for a proc named
+	  <TT
+CLASS="computeroutput"
+>publish::handle::<TT
+CLASS="replaceable"
+><I
+>mime_prefix</I
+></TT
+></TT
+>. If this proc does not
+	  exist, either, the publishing API gives up and the item is not
+	  rendered.</P
+><P
+>By default, only the handlers <TT
+CLASS="computeroutput"
+>publish::handle::image</TT
+>
+	  and <TT
+CLASS="computeroutput"
+>publish::handle::text</TT
+> exist in CMS.</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-other-api"
+>3.4.2.4.2. Other API</A
+></H4
+><P
+>&#13;
+	  There are several procs in the publishing API which make it easier
+	  to write handlers: 
+
+	</P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN2174"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Proc signature</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Purpose</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/publish.html#publish::merge_with_template"
+TARGET="_top"
+>publish::merge_with_template</A
+></TT
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Merge the item with its template and return the resulting HTML
+		  block. The same HTML block is shown to the user when the item's URL
+		  is accessed on the CMS server.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/publish.html#publish::write_content"
+TARGET="_top"
+>publish::write_content</A
+></TT
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Publish the content blob of the specified revision by writing
+		  it to a file under each of the root directories specified under the
+		  PublishRoots parameter in the server's INI file, as described 
+		  <A
+HREF="publishing-filesystem.html#publish_roots"
+>below</A
+>. If the parameter does not exist,
+		  the value of the PageRoot is used as the default. If the PageRoot
+		  parameter does not exist, either, the value of <TT
+CLASS="computeroutput"
+>[ns_info
+		    pageroot]</TT
+> is used.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/publish.html#publish::item_include_tag"
+TARGET="_top"
+>publish::item_include_tag</A
+></TT
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Create an <TT
+CLASS="computeroutput"
+>&#60;include&#62;</TT
+> tag suitable for including
+		  the item dynamically. The <TT
+CLASS="computeroutput"
+>extra_args</TT
+> parameter is a list
+		  of names and values to be passed to the included template, in the
+		  same format as the <TT
+CLASS="computeroutput"
+>-html</TT
+> option.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/content.html#content::get_content_value"
+TARGET="_top"
+>content::get_content_value</A
+></TT
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Returns the content of the revision as a TCL string. Do not
+		  call this function unless the revision has a textual mime type
+		  (such as <TT
+CLASS="computeroutput"
+>text/plain</TT
+>, <TT
+CLASS="computeroutput"
+>text/html</TT
+>, etc.)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/publish.html#publish::handle_binary_file"
+TARGET="_top"
+>publish::handle_binary_file</A
+></TT
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>A helper proc for creating mime handlers for binary mime types;
+		  see the example <A
+HREF="publishing-filesystem.html#image_handler"
+>below</A
+>. Writes the
+		  content blob of the item to the filesystem, and attempts to merge
+		  the item with its template. If the merge is not possible (or if the
+		  <TT
+CLASS="computeroutput"
+>no_merge</TT
+> flag was specified), returns an empty string. The
+		  <TT
+CLASS="computeroutput"
+>-embed</TT
+> flag must be specified for this proc.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <I
+CLASS="emphasis"
+>Any proc in the</I
+> <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/item.html"
+TARGET="_top"
+>item</A
+></TT
+> <I
+CLASS="emphasis"
+>namespace</I
+> </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The procs in the <TT
+CLASS="computeroutput"
+>item</TT
+> namespace simplify access to
+		  many properties of a content item, such as the live revision, the
+		  URL, etc. See the <TT
+CLASS="computeroutput"
+>item</TT
+> documentation for more
+		  information.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-handler-examples"
+>3.4.2.4.3. Handler Examples</A
+></H4
+><P
+>&#13;
+	  For example, here is the annotated code for the default text
+	  handler (found in publish-procs.tcl) : 
+
+	</P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN2228"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Code</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Comments</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+    proc publish::handle::text { item_id args } {
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  This is a mime-type handler which will be
+		  used for any textual mime-type, unless a more specific mime handler
+		  exists.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+     <A
+HREF="/ats/doc/api/template__util.html#template::util::get_opts"
+TARGET="_top"
+>template::util::get_opts</A
+> $args
+    
+      if { [<A
+HREF="/ats/doc/api/template__util.html#template::util::is_nil"
+TARGET="_top"
+>template::util::is_nil</A
+> opts(revision_id)] } {
+        set revision_id [<A
+HREF="/ats/doc/api/item.html#item::get_live_revision"
+TARGET="_top"
+>item::get_live_revision</A
+> $item_id]
+      } else {
+        set revision_id $opts(revision_id)
+      }
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  Process the options and determine the
+		  revision id to be used when rendering the item. If no revision id
+		  is specified, use the live revision.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+     if { [info exists opts(embed)] } {
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  If the <TT
+CLASS="computeroutput"
+>-embed</TT
+> option was specified,
+		  render the item as HTML.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+       if { ![info exists opts(no_merge)] } {
+          set code "<A
+HREF="/ats/doc/api/publish.html#publish::merge_with_template"
+TARGET="_top"
+>publish::merge_with_template</A
+> $item_id $args"
+          set html [eval $code]
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  Unless the <TT
+CLASS="computeroutput"
+>-no_merge</TT
+> option is
+		  specified, merge the item with its template, using all the options
+		  which were passed to the mime handler.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+       } else {
+          set html [<A
+HREF="/ats/doc/api/content.html#content::get_content_value"
+TARGET="_top"
+>content::get_content_value</A
+> $revision_id]
+        } 
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  If the <TT
+CLASS="computeroutput"
+>-no_merge</TT
+> option <I
+CLASS="emphasis"
+>was</I
+>
+		  specified, simply return the content of the revision as a string of
+		  text.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+     } else {
+        if { [info exists opts(html)] } {
+          set extra_args $opts(html)
+        } else {
+          set extra_args ""
+        }
+        set html [<A
+HREF="/ats/doc/api/publish.html#publish::item_include_tag"
+TARGET="_top"
+>publish::item_include_tag</A
+> $item_id $extra_args]
+      } 
+    		  </PRE
+>
+		</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  If the <TT
+CLASS="computeroutput"
+>-embed</TT
+> option was <I
+CLASS="emphasis"
+>not</I
+>
+		  specified, create an <TT
+CLASS="computeroutput"
+>&#60;include&#62;</TT
+> tag to dynamically
+		  include the item's template.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		  <PRE
+CLASS="programlisting"
+>    
+     return $html 
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		All done - return the resulting HTML.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>The handler for binary files is somewhat more complicated, since
+	  it needs to write the content blob to the filesystem in addition to
+	merging the item with its template. The <TT
+CLASS="computeroutput"
+><A
+HREF="/ats/doc/api/publish.html#publish::handle_binary_file"
+TARGET="_top"
+>publish::handle_binary_file</A
+></TT
+>
+	proc simplifies this process, and is used in the default image
+	handler:</P
+><A
+NAME="image_handler"
+></A
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN2280"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Code</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Comments</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+    proc publish::handle::image { item_id args } {
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		This is a mime-type handler which will be
+		used for any image mime-type, unless a more specific mime handler
+		exists.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     <A
+HREF="/ats/doc/api/template__util.html#template::util::get_opts"
+TARGET="_top"
+>template::util::get_opts</A
+> $args
+    
+      set html [eval <A
+HREF="/ats/doc/api/publish.html#publish::handle_binary_file"
+TARGET="_top"
+>publish::handle_binary_file</A
+> \
+       $item_id revision_id url error_msg $args]
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		Attempt to handle the image automatically.
+		After the <TT
+CLASS="computeroutput"
+>eval</TT
+> returns, the following variables will exist
+		in the calling frame: 
+
+		<UL
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>revision_id</TT
+> - The revision which was used to render
+		      the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>url</TT
+> - The URL of the item, including the correct
+		      extension. The item's blob was written to the filesystem at this
+		      URL.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>error_msg</TT
+> - An error message. If this variable
+		      contains the empty string, then no error has ocurred.</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     if { ![<A
+HREF="/ats/doc/api/template__util.html#template::util::is_nil"
+TARGET="_top"
+>template::util::is_nil</A
+> error_msg] } {
+        ns_log notice "WARNING: $error_msg"
+        return ""
+      }
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		If some kind of error has occurred, log the
+		error and fail silently. Currently, <TT
+CLASS="computeroutput"
+>handle_binary_file</TT
+>
+		fails under any of the following conditions: 
+
+		<UL
+><LI
+><P
+CLASS="listitem"
+>The item or its revision could not be found</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>The <TT
+CLASS="computeroutput"
+>-embed</TT
+> option was not specified</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     if { ![<A
+HREF="/ats/doc/api/template__util.html#template::util::is_nil"
+TARGET="_top"
+>template::util::is_nil</A
+> html] } {
+        return $html
+      }
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		If the item was successfully merged with its
+		template, return the resulting HTML. It is possible, however, that
+		<TT
+CLASS="computeroutput"
+>-no_merge</TT
+> flag was specified, or the item has no
+		associated template. This is not an error condition, since the item
+		can still be rendered in some way.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     template::query image_info onerow "
+        select 
+          im.width, im.height, r.title as image_alt
+        from 
+          images im, cr_revisions r
+        where 
+          im.image_id = :revision_id
+        and
+          r.revision_id = :revision_id
+      " -cache "image_info $revision_id"
+      
+      <A
+HREF="/ats/doc/api/template__util.html#template::util::array_to_vars"
+TARGET="_top"
+>template::util::array_to_vars</A
+> image_info 
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		The item could not be merged with its
+		template. Read the image width, height and title, and output a
+		custom &#60;img&#62; tag.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     if { [info exists opts(html)] } {
+        set extra_html [<A
+HREF="/ats/doc/api/publish.html#publish::html_args"
+TARGET="_top"
+>publish::html_args</A
+> $opts(html)]
+        set have_alt [expr [lsearch \
+          [string tolower $opts(html)] "alt"] &#62;= 0]
+      } else {
+        set extra_html ""
+        set have_alt 0
+      }
+    
+      set html "&#60;img src=$url"
+    
+      if { ![<A
+HREF="/ats/doc/api/template__util.html#template::util::is_nil"
+TARGET="_top"
+>template::util::is_nil</A
+> width] } {
+        append html " width=\"$width\""
+      }
+    
+      if { ![<A
+HREF="/ats/doc/api/template__util.html#template::util::is_nil"
+TARGET="_top"
+>template::util::is_nil</A
+> height] } {
+        append html " height=\"$height\""
+      }
+    
+      append html " $extra_html"
+      
+      if { !$have_alt } {
+        append html " alt=\"$image_alt\""
+      }
+      
+      append html "&#62;"
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		Create an &#60;img&#62; tag which references
+		the URL where the image was written to the filesystem. Use the
+		image attributes for the width and height; use the image title for
+		the <TT
+CLASS="computeroutput"
+>alt</TT
+> text, unless an alternate <TT
+CLASS="computeroutput"
+>alt</TT
+> text string
+		was passed in to the handler. Append any other HTML arguments at
+		the end of the &#60;img&#62; tag.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+     return $html 
+    		</PRE
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		All done - return the resulting HTML.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>While the default mime-type handlers are not very sophisticated,
+	they are flexible. Mime-type handlers for handling streaming video,
+	audio, Flash, etc., could be easily written by using the publishing
+	API, and by following the design patterns shown above.</P
+><P
+>Note that, as with any CMS extensions, custom mime-type handlers
+	should probably placed in a separate TCL file. This way, if and
+	when <TT
+CLASS="computeroutput"
+>publish-procs.tcl</TT
+> is updated, the upgrade process
+	will be painless.</P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="publishing-filesystem-publishing-to-the-filesystem"
+>3.4.3. Publishing to the filesystem</A
+></H2
+><P
+>&#13;    Since it is possible to generate static HTML for the entire item in
+    CMS, it is also possible to write the resulting HTML to the
+    filesystem, producing a static page which requires no special
+    parsing and no database hits. Such a page could be served much
+    faster than the dynamic ACS template for the item.
+  </P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-publishrevision"
+>3.4.3.1. <TT
+CLASS="computeroutput"
+>publish_revision</TT
+></A
+></H3
+><P
+>&#13;
+      The <A
+HREF="/ats/doc/api/publish.html#publish::publish_revision"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>publish::publish_revision</TT
+></A
+>
+      proc could be used to accomplish this. The proc takes an
+      <TT
+CLASS="computeroutput"
+>revision_id</TT
+> as an argument, and writes the specified
+      revision to the filesystem. The filename of the resulting file
+      consists of three parts: 
+
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>/</B
+><I
+CLASS="emphasis"
+>root_path</I
+><B
+CLASS="phrase"
+>/</B
+><I
+CLASS="emphasis"
+>item_url</I
+><B
+CLASS="phrase"
+>.</B
+><I
+CLASS="emphasis"
+>file_extension</I
+>
+        </PRE
+><UL
+><LI
+><A
+NAME="publish_roots"
+></A
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>root_path</I
+> - The file will be
+	    written to each path returned by <A
+HREF="/ats/doc/api/publish.html#publish::get_publish_roots"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>publish::get_publish_roots</TT
+></A
+>
+	    proc. The proc attempts to retrieve the list of publish roots as
+	    follows:
+
+	<OL
+TYPE="1"
+><LI
+><P
+CLASS="listitem"
+>From the <TT
+CLASS="computeroutput"
+>PublishRoots</TT
+> parameter in the server's INI
+	      file, under the section <TT
+CLASS="computeroutput"
+>[ns/server/your_server_name/cms]</TT
+>.
+	      The value of this parameter should be a space-separated list of
+	      directories. For example: 
+
+	      <PRE
+CLASS="programlisting"
+>    
+    [ns/server/my-cms-server/cms]
+    PublishRoots=/web/my-cms-server/www /web/my-public-server/www /home/my-files
+    	      </PRE
+>
+
+	    </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>If the <TT
+CLASS="computeroutput"
+>PublishRoots</TT
+> parameter does not exist, the proc
+	      attempts to publish to the page root specified under the
+	      <TT
+CLASS="computeroutput"
+>PageRoot</TT
+> parameter in the same config section.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>If the <TT
+CLASS="computeroutput"
+>PageRoot</TT
+> parameter does not exist, the proc use
+	      the page root of the server as returned by <TT
+CLASS="computeroutput"
+>[ns_info
+		pageroot]</TT
+>.
+
+	  </P
+></LI
+></OL
+>
+      </P
+></LI
+><LI
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>item_url</I
+><B
+CLASS="phrase"
+>.</B
+><I
+CLASS="emphasis"
+>file_extension</I
+> - The value
+	  returned by <A
+HREF="/ats/doc/api/item.html#item::get_extended_url"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>item::get_extended_url</TT
+></A
+>.
+	  The value combines the relative URL of the item as returned by <A
+HREF="/ats/doc/api/item.html#item::get_url"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>item::get_url</TT
+></A
+>,
+	  and a file extension based on the template which is registered to
+	  the item. Note that, by default, <TT
+CLASS="computeroutput"
+>get_extended_url</TT
+> uses the
+	  <B
+CLASS="phrase"
+>item's</B
+> mime-type to determine the extension; however,
+	  <TT
+CLASS="computeroutput"
+>publish_revision</TT
+> overrides this behavior by specifying the
+	  <TT
+CLASS="computeroutput"
+>-template_url</TT
+> option. If there is no template registered
+	  to render the item, the file extension is assumed to be
+	  ".html"</P
+></LI
+></UL
+><P
+>&#13;
+      For example, assume that the following template is registered as
+      the default template for the <TT
+CLASS="computeroutput"
+>image</TT
+> content type: 
+
+    </P
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-imagetemplatetcl"
+>3.4.3.1.1. <TT
+CLASS="computeroutput"
+>image_template.tcl</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    content::get_content
+    template::util::array_to_vars content
+          </PRE
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-imagetemplateadp"
+>3.4.3.1.2. <TT
+CLASS="computeroutput"
+>image_template.adp</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    &#60;html&#62;
+    &#60;head&#62;&#60;title&#62;@title@&#60;/title&#62;&#60;/head&#62;
+    &#60;body&#62;
+    
+    &#60;h2&#62;@title@&#60;/h2&#62;
+    @publish_date@ : @mime_type@
+    &#60;p&#62;
+    @description@
+    &#60;p&#62;
+    &#60;content&#62;
+    
+    &#60;/body&#62;
+    &#60;/html&#62;
+          </PRE
+><P
+>&#13;	In addition, assume that an <TT
+CLASS="computeroutput"
+>image</TT
+> item exists in CMS under
+	"Sitemap/images/my_snail"; that the server is called "myserver";
+	and that the <I
+CLASS="emphasis"
+>PublishRoots</I
+> parameter is set to
+	"<TT
+CLASS="computeroutput"
+>/web/my-cms-server/www /web/my-public-server/www</TT
+>". When
+	the item is published to the filesystem, the following four files
+	will be created: 
+
+      </P
+><UL
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>/web/my-cms-server/www/images/my_snail.jpg</TT
+> - written
+	    by the image handler</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>/web/my-public-server/www/images/my_snail.jpg</TT
+> -
+	    written by the image handler</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>/web/my-cms-server/www/images/my_snail.html</TT
+> - written
+	    by <TT
+CLASS="computeroutput"
+>publish_revision</TT
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>/web/my-public-server/www/images/my_snail.html</TT
+> -
+	    written by <TT
+CLASS="computeroutput"
+>publish_revision</TT
+></P
+></LI
+></UL
+><P
+>&#13;
+	The <TT
+CLASS="computeroutput"
+>my_snail.jpg</TT
+> file will contain the actual JPEG image
+	(presumably, an image of a snail), and the <TT
+CLASS="computeroutput"
+>my_snail.html</TT
+>
+	image will contain HTML code similar to the following: 
+
+      </P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="publishing-filesystem-mysnailhtml"
+>3.4.3.1.3. <TT
+CLASS="computeroutput"
+>my_snail.html</TT
+></A
+></H4
+><PRE
+CLASS="programlisting"
+>    
+    &#60;html&#62;
+    &#60;head&#62;&#60;title&#62;My Snail&#60;/title&#62;&#60;/head&#62;
+    &#60;body&#62;
+    
+    &#60;h2&#62;My Snail&#60;/h2&#62;
+    12/15/2000 : image/jpeg
+    &#60;p&#62;
+    Watch my snail frolick happily !
+    &#60;p&#62;
+    &#60;img src=/images/my_snail.jpg width="640" height="480" alt="My Snail"&#62;
+    
+    &#60;/body&#62;
+    &#60;/html&#62;
+          </PRE
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-cms-ui"
+>3.4.3.2. CMS UI</A
+></H3
+><P
+>&#13;
+      In CMS, the <TT
+CLASS="computeroutput"
+>publish_revision</TT
+> proc is called each time the
+      item's publish status is changed to "Live". In order to be
+      published, the item must satisfy the following requirements: 
+
+    </P
+><UL
+><LI
+><P
+CLASS="listitem"
+>A live revision exists for the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>If a workflow exists on the item, the workflow must be in the
+	  Finished state.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>If there are any child or item relationships registered to the
+	  item, the <TT
+CLASS="computeroutput"
+>min_n</TT
+> and <TT
+CLASS="computeroutput"
+>max_n</TT
+> constraints of these
+	  relationships must be satisified.</P
+></LI
+></UL
+><P
+>&#13;
+      Assuming that these constraints are satisfied, the following panel
+      will appear under the Publishing tab for the item: 
+
+    </P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/pub_filesystem1.gif"
+></IMG
+></P
+></DIV
+><P
+>The Edit link in the upper-right corner links to the Edit
+      Publishing Status dialog:</P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/pub_filesystem2.gif"
+></IMG
+></P
+></DIV
+><P
+>If the user changes the status to "Live" and clicks Submit, the
+      item will be published to the filesystem. Note that any further
+      changes to the item will not be automatically reflected in the
+      filesystem; the user must set the status to "Live" each time he/she
+      wishes to re-publish the item.</P
+><P
+>If the status is already "Live", and the user changes it to
+      "Production", "Ready" or "Expired", the item will be unpublished
+      using the <A
+HREF="/ats/doc/api/publish.html#publish::unpublish_item"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>publish::unpublish_item</TT
+></A
+>
+      proc, which will remove any files that were written when the item
+      was published. Note that this proc is not recursive; the
+      child/related items of the unpublished item will remain live.</P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="publishing-filesystem-scheduling-items-for-release"
+>3.4.3.3. Scheduling items for release</A
+></H3
+><P
+>&#13;
+      The Edit Publishing Status dialog also contains two additional
+      fields, "Start Date" and "End Date". These fields may be used to
+      schedule the item for future publication and expiration (the
+      default expiration date is one year in the future). The <A
+HREF="/ats/doc/api/publish.html#publish::schedule_status_sweep"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>publish::schedule_status_sweep</TT
+></A
+>
+      proc can be used to schedule regular sweeps of the entire content
+      repository for items which must be published or expired. The proc
+      accepts an optional <TT
+CLASS="computeroutput"
+>interval</TT
+> parameter, which sets the
+      time interval between sweeps in seconds. This interval can also be
+      controlled by the <TT
+CLASS="computeroutput"
+>StatusSweepInterval</TT
+> in the server's INI
+      file; the default value is 3600 (one hour). The last line of
+      <TT
+CLASS="computeroutput"
+>publish-procs.tcl</TT
+> is in fact 
+
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    publish::schedule_status_sweep
+        </PRE
+><P
+>&#13;      Thus, the status sweep is always scheduled at server startup, using
+      the time interval specified in the INI file. Use caution when
+      specifying the time interval: the status sweep may potentially
+      examine <B
+CLASS="phrase"
+>all</B
+> items in the content repository, thus consuming
+      most of your server's CPU time. While lower values of
+      <TT
+CLASS="computeroutput"
+>StatusSweepInterval</TT
+> provide more precise control over the
+      publishing and expiration dates of the item, they run the risk of
+      slowing the server down to a crawl. 
+
+    </P
+><P
+>The <A
+HREF="/ats/doc/api/publish.html#publish::unschedule_status_sweep"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>publish::unschedule_status_sweep</TT
+></A
+>
+      proc (no parameters) may be used to unschedule the regular status
+      sweeps.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="publishing-filesystem-conclusion"
+>3.4.4. Conclusion</A
+></H2
+><P
+>&#13;
+    The <TT
+CLASS="computeroutput"
+>child</TT
+>, <TT
+CLASS="computeroutput"
+>relation</TT
+> and <TT
+CLASS="computeroutput"
+>content</TT
+> tags
+    (defined in <TT
+CLASS="computeroutput"
+>publish-procs.tcl</TT
+> provide a mechanism for
+    embedding child/related items directly in the HTML body of the
+    parent item. While textual and image items are automatically
+    handled by CMS, custom handlers should be used to render other mime
+    types. Content items can be published to the filesystem in order to
+    maximize performance; in addition, items can be scheduled for
+    publication and expiration using the CMS UI.
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="dev-permissions.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="tutorials.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Using Permissions</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="dev-guide.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Tutorials</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

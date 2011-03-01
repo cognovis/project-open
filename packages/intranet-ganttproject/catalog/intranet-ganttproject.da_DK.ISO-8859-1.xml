@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="da_DK" charset="ISO-8859-1">
+
+  <msg key="Dim_day_of_month">Dag</msg>
+  <msg key="Dim_month_of_year">Måned</msg>
+  <msg key="Dim_quarter_of_year">Kvartal</msg>
+  <msg key="Dim_week_of_year">Uge</msg>
+  <msg key="Dim_year">År</msg>
+  <msg key="Download_Gantt_File">Download Ganttprojekt fil</msg>
+  <msg key="Gantt_Resources">Gantt ressourcer</msg>
+  <msg key="No_Gantt_preview_available">Ingen Gant prewiev mulig</msg>
+  <msg key="OK">OK</msg>
+  <msg key="Project_Gantt_Resource_Assignations">Gantt ressourcer tilknyttet</msg>
+  <msg key="Project_Gantt_View">Gantt View</msg>
+  <msg key="Scheduling">Planlægning</msg>
+</message_catalog>

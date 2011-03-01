@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <link rel="STYLESHEET" type="text/css" href="../local.css">
+    <title>Writing a good bug report</title>
+  </head>
+
+  <body>
+    <h1>Writing a good bug report</h1>
+
+There are some simple guidelines to writing ticket which will make
+prioritizing, tracking, and resolving problems more efficient.  
+    <p>
+    <UL>
+      <LI> Each ticket should relate to a single problem or feature.
+      <LI> Provide a descriptive subject.
+      <LI> Be as specific as possible about what is wrong.
+      <LI> Put the URL to the offending page in the ticket.
+      <LI> Describe the steps you took to produce the problem.
+      <LI> Provide sensible priorities and deadlines.
+    </UL>
+    <h2>Justification</h2>
+    
+    <h3>Each ticket should relate to a single problem or feature</h3>
+    In order to easily prioritize and track tasks we need to have a
+    state associated with each issue.  The problem with "laundry list"
+    tickets is that some tasks get done, some get defered, and some
+    cancelled.  It is never clear when the ticket is done and
+    individual fixes can't be approved so even if it nominally is done
+    things are likely to fall through the cracks.
+
+      <h3> Provide a descriptive subject </h3>
+    We look at summaries of tickets with subjects only and it is
+    much easier to find the relevant ticket with a descriptive subject.
+
+      <h3> Be as specific as possible about what is wrong </h3>
+
+    Problem descriptions that are too short or ambiguous are less
+    likely to get fixed than those that can be easily interpreted.
+    
+      <h3> Put the URL to the offending page in the ticket </h3>
+
+    Having the URL in the problem description will streamline finding,
+fixing, and
+    verifying the ticket.  You do not have to enter it as an HTML
+    href, simply including the full url ( including the http:// and
+    the trailing variables ) is sufficient.
+
+      <h3> Describe the steps you took to produce the problem </h3>
+
+  If we cannot reproduce your problem it will be much harder to find.
+  The problem can be related to the page visited proir to the page on
+  which the error occurs or may be related to the specific data you
+  input to a form.
+
+      <h3> Provide sensible priorities and deadlines </h3>
+
+    <p>    
+    We make an effort to meet deadlines and fix things in priority
+    order but if all tickets are critical with a short deadline
+    we will not necessarily fix them in the order you would really
+    like. Here is an explanation of what the priority and severety
+    codes mean:
+    </p>
+
+    <p>
+    Severity
+      <ol>
+        <li> Critical. System crash, security violation, or data loss.</li>
+        <li> No Workaround. Because of this bug, a function cannot be made to work.</li>
+        <li> Workaround. The bug interferes with functionality but an alternative</li>
+        <li> Cosmetic. The bug does not interfere with functionality.</li>
+      </ol>
+    </p>
+
+    <p>
+    Priority
+      <ol>
+        <li>Must be fixed by next release</li>
+        <li>Should be fixed by next release</li>
+        <li>Might be fixed</li>
+      </ol>
+    </p>
+
+    <hr>
+    <address><a href="mailto:davis@xarg.net">Jeff
+Davis</a></address>
+<!-- Created: Wed Feb 21 08:26:26 EST 2001 -->
+<!-- hhmts start -->
+Last modified: Fri Dec 13 06:36:53 EST 2002
+<!-- hhmts end -->
+  </body>
+</html>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-bug-tracker" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="BT_Component">Bug Tracker Komponente</msg>
+  <msg key="BT_Product">Bug Tracker Produkt</msg>
+  <msg key="BT_Version">Bug Tracker Version</msg>
+  <msg key="Bug_Tracker">Bug Tracker</msg>
+</message_catalog>

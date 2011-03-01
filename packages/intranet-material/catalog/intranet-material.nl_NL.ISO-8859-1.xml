@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Bill">Facturabel?</msg>
+  <msg key="Description">Omschrijving</msg>
+  <msg key="Filter_Materials">Filter Materialen</msg>
+  <msg key="Material">Materiaal</msg>
+  <msg key="Name">Naam</msg>
+  <msg key="Nr">Nr</msg>
+  <msg key="Status">Status</msg>
+  <msg key="There_are_no_active_materials">Er zijn geen materialen die overeenkomen met uw selectie criteria</msg>
+  <msg key="Type">Type</msg>
+  <msg key="UoM">Eenheid</msg>
+</message_catalog>

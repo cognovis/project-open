@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="_Previous">Page</msg>
+  <msg key="Add_New">Add New</msg>
+  <msg key="Add_payment">Add payment</msg>
+  <msg key="Amount">Amount</msg>
+  <msg key="Amount_Paid">Amount Paid</msg>
+  <msg key="Client">Client</msg>
+  <msg key="Cost_Name">Cost Name</msg>
+  <msg key="Cost_Nr">Cost Nr</msg>
+  <msg key="Del">Del</msg>
+  <msg key="Delete_payment">Delete payment</msg>
+  <msg key="Edit_payment">Edit payment</msg>
+  <msg key="Filter_Payments">Filter Payments</msg>
+  <msg key="Go">Go</msg>
+  <msg key="Invoice">Invoice</msg>
+  <msg key="Invoice_Amount">Invoice Amount</msg>
+  <msg key="lt_Confirm_payment_delet">Confirm payment deletion</msg>
+  <msg key="lt_Do_you_really_want_to">Do you really want to delete the %fee_type% payment of %fee_str% for %project_name%?</msg>
+  <msg key="lt_Insufficient_Privileg">Insufficient Privileges</msg>
+  <msg key="lt_No_costinvoice_item_s">No cost/invoice item specified</msg>
+  <msg key="lt_The_intranet_start_bl">The intranet start blocks are either undefined or we do not have a start block for this week or later into the future.</msg>
+  <msg key="lt_There_are_currently_n">There are currently no payments matching the selected criteria</msg>
+  <msg key="lt_You_dont_have_suffici">You don't have sufficient privileges to see this page.</msg>
+  <msg key="Mark_invoice_as_paid">Mark invoice as paid</msg>
+  <msg key="New_payment">New payment</msg>
+  <msg key="Next_Page">Next Page</msg>
+  <msg key="Note">Note</msg>
+  <msg key="One_project">One project</msg>
+  <msg key="Payment">Payment</msg>
+  <msg key="Payment_Details">Payment Details</msg>
+  <msg key="Payment_hash_simbol">Payment #</msg>
+  <msg key="Payment_Status">Payment Status:</msg>
+  <msg key="Payment_Type">Payment Type</msg>
+  <msg key="Payments">Payments</msg>
+  <msg key="Projects">Projects</msg>
+  <msg key="Provider">Provider</msg>
+  <msg key="Received">Received</msg>
+  <msg key="Start_block_error">Start block error</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Update">Update</msg>
+</message_catalog>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="faq" locale="sv_SE" charset="ISO-8859-1">
+
+  <msg key="A">Svar:</msg>
+  <msg key="Add_QA_for_faq_name">Lägg till frågor och svar i %faq_name%</msg>
+  <msg key="administer">administrera</msg>
+  <msg key="Answer">Svar</msg>
+  <msg key="Back_to_FAQs">Tillbaka till FAQerna</msg>
+  <msg key="Create_a_new_FAQ">Skapa en ny FAQ</msg>
+  <msg key="Create_an_FAQ">Skapa en FAQ</msg>
+  <msg key="Create_FAQ">Skapa FAQ</msg>
+  <msg key="Create_New_QA">Skapa ny fråga/svar</msg>
+  <msg key="Create_new_QA">Skapa ny fråga/svar</msg>
+  <msg key="Create_QA">Skapa fråga/svar</msg>
+  <msg key="Delete">Ta bort</msg>
+  <msg key="delete">ta bort</msg>
+  <msg key="Delete_This_QA">Ta bort denna fråga/svar</msg>
+  <msg key="Edit">Redigera</msg>
+  <msg key="edit">redigera</msg>
+  <msg key="Edit_an_FAQ">Redigera en FAQ</msg>
+  <msg key="FAQ_Admin">Administration av FAQ</msg>
+  <msg key="faq_name_Admin">%faq_name% Admin</msg>
+  <msg key="FAQs">FAQer</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">infoga efter</msg>
+  <msg key="lt_Are_you_sure_you_want">Är du säker på att du vill ta bort denna FAQ?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Är du säker på att du vill ta bort denna fråga?</msg>
+  <msg key="lt_no_FAQs">Det finns inga FAQ tillgängliga</msg>
+  <msg key="lt_no_questions">Det finns inga frågor tillgängliga</msg>
+  <msg key="Name">Namn:</msg>
+  <msg key="New">Ny</msg>
+  <msg key="No">Nej</msg>
+  <msg key="One_Question">En fråga</msg>
+  <msg key="Plain">Oformatterad</msg>
+  <msg key="Preformatted">Förformatterad</msg>
+  <msg key="preview">förhandsgranska</msg>
+  <msg key="Q">Fråga:</msg>
+  <msg key="QA_On_Separate_Pages">Frågor/Svar på separata sidor?</msg>
+  <msg key="QA_on_Separate_Pages">Frågor/Svar på separata sidor?</msg>
+  <msg key="Question">Fråga</msg>
+  <msg key="swap_with_next">byt plats med nästa</msg>
+  <msg key="Text_type">Texttyp?</msg>
+  <msg key="Title">Titel:</msg>
+  <msg key="Update_FAQ">Uppdatera FAQ</msg>
+  <msg key="Update_This_QA">Uppdatera denna fråga/svar</msg>
+  <msg key="View_All_FAQs">Visa alla FAQer</msg>
+  <msg key="Yes">Ja</msg>
+</message_catalog>

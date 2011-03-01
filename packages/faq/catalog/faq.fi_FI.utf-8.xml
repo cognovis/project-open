@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="fi_FI" charset="utf-8">
+
+  <msg key="A">V:</msg>
+  <msg key="Add_QA_for_faq_name">Lisää K&amp;V faqille %faq_name%</msg>
+  <msg key="administer">Hallinnoi</msg>
+  <msg key="Answer">Vastaus</msg>
+  <msg key="Back_to_FAQs">Takaisin FAQeihin</msg>
+  <msg key="Create_a_new_FAQ">Luo uusi FAQ</msg>
+  <msg key="Create_an_FAQ">Luo FAQ</msg>
+  <msg key="Create_FAQ">Luo FAQ</msg>
+  <msg key="Create_New_QA">Lisää uusi kysymys ja vastaus</msg>
+  <msg key="Create_new_QA">Luo uusi Kysymys&amp;Vastaus-palsta</msg>
+  <msg key="Create_QA">Lisää K&amp;V</msg>
+  <msg key="Delete">Poista</msg>
+  <msg key="delete">poista</msg>
+  <msg key="Delete_This_QA">Poista kysymys&amp;vastaus</msg>
+  <msg key="Edit">Muokkaa</msg>
+  <msg key="edit">muokkaa</msg>
+  <msg key="Edit_an_FAQ">Muokkaa FAQia</msg>
+  <msg key="FAQ_Admin">FAQ Hallinta</msg>
+  <msg key="faq_name_Admin">%faq_name% hallinta</msg>
+  <msg key="FAQs">FAQit</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">lisää uusi K&amp;V tämän kysymyksen perään</msg>
+  <msg key="lt_Are_you_sure_you_want">Haluatko varmasti poistaa tämän FAQin?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Haluatko varmasti poistaa kysymyksen?</msg>
+  <msg key="lt_no_FAQs">Yhtään FAQia ei ole nähtävänä.</msg>
+  <msg key="lt_no_questions">Yhtään kysymystä ei ole nähtävänä</msg>
+  <msg key="Name">Nimi:</msg>
+  <msg key="New">Uusi</msg>
+  <msg key="No">Ei</msg>
+  <msg key="One_Question">Kysymys</msg>
+  <msg key="Plain">Pelkkä teksti</msg>
+  <msg key="Preformatted">Muotoiltu</msg>
+  <msg key="preview">esikatselu</msg>
+  <msg key="Q">K:</msg>
+  <msg key="QA_On_Separate_Pages">K&amp;V erillisillä sivuilla?</msg>
+  <msg key="QA_on_Separate_Pages">Kysymykset ja vastaukset eri sivuilla?</msg>
+  <msg key="Question">Kysymys</msg>
+  <msg key="swap_with_next">vaihda seuraavan kanssa</msg>
+  <msg key="Text_type">Tekstityyppi?</msg>
+  <msg key="Title">Otsikko:</msg>
+  <msg key="Update_FAQ">Päivitä FAQ</msg>
+  <msg key="Update_This_QA">Päivitä tämä K&amp;V</msg>
+  <msg key="View_All_FAQs">Näytä kaikki FAQit</msg>
+  <msg key="Yes">Kyllä</msg>
+</message_catalog>

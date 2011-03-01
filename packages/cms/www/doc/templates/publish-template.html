@@ -1,0 +1,52 @@
+<html>
+<head>
+  <title>Publish Templates in CMS</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2>Publish Templates in CMS</h2>
+
+<a href="template.html">Templates Tutorial</a> : Publish Templates in CMS
+<hr>
+
+<h4>Overview</h4>
+
+Developers can publish a template (.adp file) created in CMS to the filesystem.
+The datasource files (.tcl files) associated with the templates (.adp files) 
+should be maintained locally in the filesystem and ideally placed under 
+version control.  <em>Currently, there is no way to edit datasources 
+(.tcl files) using CMS although CMS can ascertain important information 
+from the datasource files.</em> 
+
+
+<h4>Step by Step</h4>
+
+<ol>
+  <li><p>Browse to the folder that contains the template to be published.</p>
+
+  <li><p>Click the name of the template to bring up a page that displays
+    the template's version history (see Figure 1). The History page contains
+    a listing of revisions associated with the current template ordered from
+    most recent to least recent.  The last revision to be published (if any) 
+    is highlighted in yellow.  Note that if changes have been made to the last 
+    published revision, then that version must be re-published in order 
+    for those changes to be written to the filesystem.  This is why it is 
+    always a good idea to save changes to the template as a new revision.</p>
+
+    <p>Click the <img src="publish.gif" alt="Publish Template"> icon to 
+    publish the template (.adp file) to the <tt>Template Root</tt> within the 
+    filesystem.  Additionally, a version of the template can be re-published by
+    clicking on the <img src="publish.gif" alt="Publish Template"> icon
+    again.</p>
+
+    <p><center><img src="template-history.gif" alt="Template Version History">
+    <br><b>Figure 1.  Template Version History.</b></center></p>
+
+</ol>
+
+
+<hr>
+
+</body>
+</html>

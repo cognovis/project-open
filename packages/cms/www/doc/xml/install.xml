@@ -1,0 +1,110 @@
+<sect1 id="install-installation" xreflabel="Installation">
+  <title>Installation</title>
+
+  <para>This document describes how to install the Content Management
+    System in conjunction with ACS 4.x.</para>
+
+  <sect2 id="install-install-acs-4x" xreflabel="Install ACS 4.x">
+    <title>Install ACS 4.x</title>
+
+    <para>
+<!-- This should be displayed on the right side of the page with text
+     flowing around it.  DSSSL won't cooperate, though.  Instead we must
+     use the old <graphic> tag. -->
+<!--
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata align="right" format="GIF" width="247" depth="176" fileref="images/cms-acs-relationship.gif"/>
+	</imageobject>
+      </inlinemediaobject>
+-->
+
+      <graphic align="right" format="GIF" width="247" depth="176" fileref="images/cms-acs-relationship.gif"/>
+
+
+CMS is essentially an administrative interface built on the ACS
+      4.x data model and stored procedure API. You must <ulink url="http://www.arsdigita.com/download">download</ulink> and install ACS
+      4.x prior to installing CMS. The ACS 4.x documentation includes an
+      excellent guide to the entire process of configuring Oracle and
+      AOLserver in addition to installing ACS itself.</para>
+
+    <para>CMS depends on a variety of core ACS packages, which are included
+      in the standard ACS 4.x distribution.</para>
+
+    <para>CMS is typically deployed in conjunction with a public web
+      service built on ACS. CMS can either run on the public web server or
+      on a dedicated server, using either a separate domain name or port
+      number from the public server. The production staff uses CMS to
+      create, manage and deploy content for the public web service. In
+      either scenario, the public server(s) access the published content in
+      one of two ways:
+    </para>
+
+    <para><phrase>SQL and the Content Repository API</phrase>. Provided
+      your public servers have access to the same database schema as CMS,
+      you can use SQL queries in conjunction with the Content Repository
+      API to access content objects and attributes dynamically on a
+      per-request basis.
+    </para>
+
+    <para><phrase>Publish to File System</phrase>. CMS can merge published
+      content with a template chosen by the publisher and write the output
+      to the file system. The output files may be static HTML, or may
+      themselves have dynamic includes appropriate for your public web
+      server(s) (i.e. ADP, PHP, JSP, ASP, SSI, etc.).
+    </para>
+
+    <para>Note that although you must install ACS 4.x for CMS, you are not
+      required to use ACS 4.x as part of your public server architecture.
+      If you choose to publish all content to the file system, a
+      connection between your public web server(s) and the database is
+      likewise optional.
+    </para>
+
+  </sect2>
+
+  <sect2 id="install-downloading-and-installing-cms" xreflabel="Downloading and Installing CMS">
+    <title>Downloading and Installing CMS</title>
+    
+    <para>The latest release of CMS is always available from the <ulink url="http://cms.arsdigita.com/download.html">CMS download page</ulink> or
+      from the <ulink url="http://www.arsdigita.com/download">ArsDigita
+	download page</ulink>.
+    </para>
+
+    <para> The Arsdigita Package Manager takes care of all the nitty-gritty
+      details of installing a package such as CMS. After you have installed
+      ACS 4.x, it is available at <ulink
+      url="/acs-admin/apm/"><filename>/acs-admin/apm/</filename></ulink> on
+      your server.
+    </para>
+
+  </sect2>
+
+  <sect2 id="install-getting-started" xreflabel="Getting Started">
+    <title>Getting Started</title>
+    
+    <para> After installation, you need to mount CMS using the ACS' site
+      map. It is available on your server at 
+      <ulink url="/admin/site-map/">
+	<filename>/admin/site-map</filename></ulink>. CMS uses a few
+	parameters which you can modify from the same page once you have
+	mounted it.
+    </para>
+
+    <para>
+      <ulink url="mailto:karlg@arsdigita.com">karlg@arsdigita.com</ulink>
+    </para>
+    <para>
+      Last revised: $Id: install.xml,v 1.1 2005/04/18 19:19:25 cvs Exp $
+    </para>
+  </sect2>
+</sect1>
+
+
+
+<!--
+ Local Variables:
+ mode: sgml
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

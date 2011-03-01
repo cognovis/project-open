@@ -1,0 +1,151 @@
+<!-- $Id: ui-content-type.html,v 1.1 2005/04/18 19:19:25 cvs Exp $ -->
+<!-- slater@arsdigita.com -->
+
+<html>
+<head>
+<title>Content Type Documentation</title>
+</head>
+<h2>Content Type</h2>
+Subject and action documentation<br>
+$Id: ui-content-type.html,v 1.1 2005/04/18 19:19:25 cvs Exp $
+<hr>
+
+<i>Under the <a href="http://dev0103-003.arsdigita.com:8089/content-management/">'getting started'</a> section of the master doc outline
+
+<li>Attributes 
+<li>File Types 
+<li>Data Entry Methods 
+<li>Containment Relationships </i>
+
+
+<h3>Use  Content Types to  manage the site's content structure </h3>
+Content Types hierchically organize all content in the repository through child and container relationships.  The repository originates with the fundamental element, "Basic Content Type."  The content type defines  all the characteristics of an item of its class -- storage location (folders), attributes unique to itself (attributes), attributes inherited from 'supertype' content types (inheritance),  methods of viewing the content types (templates), and MIME types which can display items of this content type (MIME Type).
+<p>
+Content Types are created at the database level, not in the UI.  Their supertype/inheritance relationships are also defined at that level only.  Generally these will already be defined for the system and you'll have no need to add or modify them.
+
+<h4>Designating children of content_items</h4>
+Content types are defined as a children of another content type when the former universally belongs to the latter or when you want to create a container to hold multiple content items in one discrete bundle to be presented as content itself.  All content types are children of the fundamental content type 'Basic Item.'  
+<p>
+A television episode always belongs to a television program, so identify it as a child type of television  program.  
+<p>
+As a second example, the publisher wants to start a series of "Musican Retrospectives" that are composed of bits of content from days past.  The musician's interviews, music clips, and photos are already in the system as individual content items.  These can be linked and bundled into a container of the content type 'Musician Retrospective' and that item can be put onto the web site as content.  The components of this container or compound item retain their individuality, but are also known as being linked to a particular parent item.  At the sqlplus level the administrator can define rules which restrict the types and quanities of content types that can be children of another.  There is no limit to the levels of children allowed.  
+
+
+
+
+<h4>Mapping acs_objects to content_items</h4>
+
+The Admin UI allows you to map acs_objects (a superset of content items, includes lots of other things, like users, bboards, content_items, etc) to content_items.  This allows you to link content_items without forcing one to always belong to the other. <i>need to describe why/when this is used</i>
+<p>
+
+
+<h3>Functional Instructions</h3>
+<h4>Inheritance</h4>
+This shows the content type's hierarchic family of content_items.   Select any of them to view their details.  Left items are supertypes of items to their right. 
+
+
+<p>
+<h4>Attributes</h4>
+Attributes are characteristics of an item_type.  All item types share  five standard attributes: 'description', 'mime type', 'nls language', publish date', and 'title'.  They inherit these from the basic content type.     Mime Type defines how the attribute will be displayed in the system.  Oracle uses the NLS Language code to search the item te depending on the source language.   Publish date is the date  the content becomes live on the system.  Description and title are self-explanatory.  Additionally, content types may have other attributes in addition to the five standard.  These are defined at the sqlplus level already.   <p>
+
+Each attribute is described by name, description, from what object type is the attribubute defined, and the type of data stored in it (text, integer, date, keyword, etc).
+
+<h4>Registered Templates</h4>
+to follow. 
+
+<h4>Register Mime Types</h4>
+You must select at least one Mime Type for the items of a given content type. This describes the valid formats for content of this type. 
+<p>
+
+
+
+
+<hr>
+<h3>Use Site Map to navigate through and store  content items </h3>
+The site map files all the content items in the repository.  Admin users create  folders to store content items, copies of content items, and symbolic links to items.  The root folder is created at the sqlplus level and holds all the other subfolders.  Subfolders can be created from the UI interface at any time.  <p>
+
+<h4>Folder attributes</h4>
+This is where you control the folder's attributes. 
+
+A content item cannot be stored in a folder until the item's content type has been registered as an allowable type of that folder.  The 'Registered Content Types' section allows you to control  content types permitted in the folder.  <p>
+Under 'Folder Options' control whether sub folders to the folder you're working on may be added.  Permit/deny symbolic links being added in the folder in this section also.  Symbolic links are comparable to 'Dynamic Links' in Windows, a link to another, real, item is created, but can be treated as if it were a real content item.  When the referred-to item is changed, those changes are seen in the symbolic link item also.  This might be used when you temporarily want an item stored in a folder, but don't want to remove it from its original home folder.
+<p>
+<i>Describe Permissions here</i>
+<h4>Creating folder</h4>
+Simply give it a 'name' keyword (no spaces or punctuation) to include in the folder sitemap, a 'title' to show in the folder's drilldown pages, and a 'description' for the drilldown.  The folder will become a subfolder of whatever folder you are currently in, or of the root folder if you're at the top level.  You cannot create other root folders.
+
+
+<h4>Adding new items  to the folder</h4>
+You can 'add' an item of any type registered to that folder.  There are four methods to add the content to the new item, 'No Content', 'File Upload', 'Text Entry', and 'XML Import.'  Use 'no content' when the item you are creating is simply a container for other items.  It has no original content of its own, simply a title and description.  'File Upload' allows you to browse for and upload files of whatever types the system has filters for.  Types might include MS-Word documents, MP3s, or JPEG Images.  'Text Entry' is the simplest method, where you enter the content directly via a text box in the ui.  Finally, 'XML Import' is a way to formally structure records in a text format, similar to HTML tagging.  This might be used to import data from an external database or a script file that generates content.  
+<p>
+
+In all cases but XML Import, you'll have to enter a title and description for the content item.  Depending on the import method, you'll then type in, or browse to upload the content.  XML Import doesn't need title and description typed in because that data will already be stored inside the XML information.  <i>probably need to discuss XML format</i>
+
+
+<h4>Bring existing items to the folder</h4>
+There are three distinct ways to bring over items to the folder: 'moving', 'copying', '(symbolic) linking.'   All three actions are applied to whatever content items have been marked to the Clipboard/Sitemap.
+<p>
+'Moving' an item moves the item and its revisions to the new location, and all traces vanish from the old location.  'Copying' an item only brings the item itself and none of its revisions.  Linking an item creates a symbolic link to the item and revisions in its original folder.  Any changes to the item or its link are reflected in the other immediately.
+
+  
+<h4> Rename and Delete Folder</h4>
+These are straightforward.  You cannot delete a non-empty folder.
+<hr>
+
+
+<h2>Search</h2>
+<h3>Use search to retrieve content items from folders</h3>
+
+To search supply the menu with any number of criteria along with the keyword you are searching for.  CMS will return a list of all content items that match the query.
+
+The optional criteria are:
+<ul>
+<li>Content Type
+<li>Search In: In what parts of the content item to search
+<li>Mime Type:  Search in content items restricted to a certain mime type.
+<li>Which Revisions:  To restrict the searches to only the live revision material
+<li>Date Range: Restrict according to the publishing date of the item
+</ul>
+
+<hr>
+
+<h2> Use Workflow to systematically manage the creation, approval, and publishing of content </h2>
+
+This is the life cycle of content:
+<ul>
+<b>
+<li> the content is only an idea</b>
+<i><ul> one or more people are assigned to author it by a deadline</ul></i>
+<b><li> the draft is prepared</b>
+<i><ul> one or more people are  assigned to edit it by a deadline</ul></i>
+<b><li> any appointed editor edits, rejects, or approves it</b>
+<i><ul> if it's edited, ...</ul></i>
+<i><ul> if it's rejected, ....</ul></i>
+<i><ul> once it is approved, one or more people are assigned to ok it for publciation</ul></i>
+<b><li> a publisher decides if it's acceptable for publication</b>
+<i><ul> if it's acceptable, it can be published on the server</ul></i>
+<i><ul> if it's unacceptable,...</ul></i>
+
+</ul>
+<hr>
+
+<h2>Use templates to display content</h2>
+
+The CMS maintains the knowledge of how to display a content item to administrators or public users.
+  Templates can be asssigned to content types and specific content items.  The content repository will display the item with the most specific scope specified:  if not item-specific then type-specific or then the general template.  When the url for an item is submitted, the content-repository identifies what item it's referring to, figures out the appropriate template, and then generates an .html page for the user.
+<p>
+ The templates' two component files (.adp [for display formatting] and .tcl [for datasources]) are stored in the server filesystem under pageroot/templates.  There can be subdirectories under templates to better organize them.  Users can navigate its contents from the Templates section of the left frame.  Use it like the content item Site Map.  
+<p>
+To add a new template to a content type or item, move the .adp and .tcl files to chosen /templates subdirectory on the filesystem.  Then goto the CMS/Templates/appropriate_folder and select 'Add Template.' Enter the extensionless name of the new template.  Now the CMS will have a notion of this template.  Updates to either  file will be immediately reflected the next time the template is used.  When you send the template to the clipboard, you can assign items or content-types to that template from the item or type's details page.  
+<p>
+You may register multiple templates to the same content type or item.  Only one may be default for public and one default for administrator.  Control which ones are the default under the details page of the item or content type.  From that page you may also unregister that template from the item or type so that it is no longer affilitated at all.  The CMS only uses default templates to generate the .html.  Non-default templates are only stored, not used, until set as default.
+
+ 
+
+<body>
+</body>
+</html>
+
+
+
+

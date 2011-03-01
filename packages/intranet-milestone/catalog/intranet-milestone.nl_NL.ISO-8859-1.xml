@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-milestone" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Milestone">Nieuwe mijlpaal</msg>
+  <msg key="Current_Milestones">Huidige mijlpaal</msg>
+  <msg key="Deadline">Uiterste termijn</msg>
+  <msg key="Filter_Milestones">Filter mijlpalen</msg>
+  <msg key="Future_Milestones">Toekomstige mijlpalen</msg>
+  <msg key="Late_Milestones">Laatste mijlpalen</msg>
+  <msg key="Member">Lid</msg>
+  <msg key="Milestone_Name">Naam</msg>
+  <msg key="Milestone_Status">Status</msg>
+  <msg key="Milestone_Type">Type</msg>
+  <msg key="Milestones">Mijlpalen</msg>
+  <msg key="On_track_status">OK?</msg>
+  <msg key="Time_Interval">Tijdinterval</msg>
+</message_catalog>

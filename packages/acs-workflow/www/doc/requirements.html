@@ -1,0 +1,757 @@
+<html>
+<head>
+<title>Workflow Requirements</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Requirements</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on November 8, 2000. <br>
+By <a href="mailto:khy@arsdigita.com">Khy Huang </a> on April 13, 2001
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> :
+Workflow Requirements
+
+<hr>
+
+<h3>I. Introduction</h3>
+
+This document is the requirements document for the Workflow Package to
+be released with ACS 4.0.
+
+
+
+<h3>II. Vision Statement</h3>
+
+Many web sites define non-trivial processes for creating and
+manipulating classes of objects that represent some higher level
+concept, like a task to be performed, or a document or something.
+
+<p>
+
+In the ACS, we have several modules that define such processes,
+including:
+
+<ul>
+
+<li>The ticket tracker has issues that transition from
+open to closed through various states.
+
+<li>The bboard system allows content to be moderated in various ways.
+
+<li>The user registration system allows site administrators to control
+registration in various ways.
+
+<li>The content management system must allow users to add content, and
+for editors to approve or update content before, say, the content is
+made "live".
+
+</ul>
+
+These processes all have the following form:
+
+<ul>
+
+<li>The process acts upon objects of a certain type. 
+
+<li>The process is the same for every objects of this type. Currently 
+this feature is not supported. 
+
+<li>For each instance of the object type, the process can be
+characterized as a series of possibly conditional and otherwise
+complex transitions that move the object from some initial state to
+one or more final states, after which the process is over. In this
+way, we can think of processes as types related to the object type,
+and we can think of a single *instance* of a process being implicitly
+created whenever an object of the related type is created.
+
+</ul>
+
+For example, the ticket tracker defines a process for handling each
+ticket. When a new ticket is inserted into the system, in the
+abstract, a new instance of this process is created. The ticket starts
+in the "open" state, or whatever, and can transition into various
+intermediate states before becoming "closed". As long as the ticket
+exists, the process instance connected to that ticket also
+exists. But, the process instance is a purely abstract object, it has
+no concrete representation outside the ticket itself.
+
+<p>
+
+In the current system, the rules for the state transitions are encoded
+in the logic of the pages that make up the module that defines both
+the object type and the process. 
+
+<p>
+
+The motivation for the workflow module is to define a more abstract
+and reusable mechanism for describing these processes.
+
+
+<h3>Glossary</h3>
+
+Given this, and the above examples, we will use the following
+terminology:
+
+<dl>
+
+<dt>Workflow
+
+<dd>a formal definition of a type of process for handling all objects
+of a certain type, e.g. the process for dealing with a ticket in the
+ticket-tracker.
+
+<dt>Case
+
+<dd>a single instance of a workflow, operating on a single object of a
+given type. For example, a ticket is a case.
+
+<dt>Task
+
+<dd>a single atomic step in a workflow, for example the tasks "fix
+bug" and "acknowledge fix" in the ticket-tracker workflow.
+
+<dt>Worklist
+
+<dd>a list of tasks that have been assigned to a given user in the
+system. For example, the list of "fix"-tasks for the tickets you're
+assigned to fix, and the "approve fix"-tasks for the tickets you've
+opened and that have been fixed in the meantime.
+
+</dl>
+
+<h3>III. System Overview</h3>
+
+The workflow package consists of three separate parts. 
+
+<ol>
+
+<li>The <b>engine</b> is the subsystem that stores the workflow
+definitions and manages the workflow of individual cases. It should be
+defined in a way that is independent of the user interface parts of
+the system, so other modules don't have to buy into the workflow
+package UI in order to employ the engine.
+
+<p>
+
+<li>The <b>end-user interface</b> which will let the users see their
+work list and provide mechanisms for the user to give feedback on
+their actions to the system.
+
+<p>
+
+<li>The <b>administrative user interface</b>, which will let an
+administrator design and maintain workflow definitions and their
+application to different types of cases.
+
+</ol>
+
+<h3>IV. Related Links</h3>
+
+<ul>
+
+<li><a
+href="http://www.aiim.org/wfmc/standards/docs/glossy3.pdf">Workflow
+Management Coalition's <i>Terminology and Glossary</i> document</a>
+(<a
+href="http://www.srdc.metu.edu.tr/metuflow/WfMC/WfMC_glossary.html">an
+older version is available in HTML here</a>).
+
+</ul>
+
+
+<h3>V. User-Scenarios</h3>
+
+There are two classes of users for the Workflow package:
+
+<ol>
+
+<li><b>Normal users</b> use the workflow package to see what tasks
+they should perform and give feedback on their progress.
+
+<li><b>Administrators</b> define and maintain the workflow definitions
+that governs the tasks executed by normal users.
+
+</ol>
+
+<b>Annie Administrator</b> is the administrator of a technical support
+knowledge library. For each item in the library, a moderator needs to
+figure out the subject and designate two qualified reviewers to review
+the item. Those reviewers will independently review the item, which
+may then have to go back to the original author for revision. After
+both reviewers are satisfied, it goes to the
+uber-categorization-meister, which will determine what categories and
+keywords to attach to it.
+
+<p>
+
+Annie Administrator uses the administrative user interface to formally
+define her workflow, and she defines that objects in the technical
+support knowledge library will be processed according to this
+workflow.
+
+<p>
+
+<b>Tracy Techsupporter</b> submits a new item to be included in the
+library. The workflow package (triggered by a hook in ACS Core) will
+start a new workflow case around the item.  This in turn will trigger
+an email notification to <b>Mike Moderator</b> (and other moderators,
+if there is more than one person capable of performing the moderator
+task), informing him that he now has a new item on his work list. The
+email will contain the URLs for both his work list and the new item.
+
+<p>
+
+When Mike Moderator visits his work list, he'll see the list of tasks
+that he has reported to be currently working on, and a list of tasks
+he is capable of performing, ordered by priority. When he clicks on
+one of these tasks, he'll get to a page with information about the
+task to perform like this:
+
+<a name="startform">
+<form action=#startform method=get>
+
+<table border=1 align=center>
+
+<tr>
+<th colspan=3>Task #: Task Name</th>
+</tr>
+
+<tr>
+<th>Input (Required Items)</th>
+<th>Logic or Aids</th>
+<th>Output or Action</th>
+</tr>
+
+<tr>
+<td><ul><li><a href="#">Tracy's Item</a></ul></td> <td><ul><li>Skim
+the item<li>Assess the subject area<li>Pick two reviewers that are experienced
+in that area</ul></td>
+<td>
+Comment:<br>
+<textarea rows=5 cols=30></textarea>
+
+<ul><li><input type=submit value="Start task"><p>
+<li><input type=submit value="Comment only"></ul></td>
+</tr>
+
+<!--
+
+<tr>
+<th colspan=3>Resources assigned to task</th>
+</tr>
+
+<tr>
+<td colspan=3><ul><li>Resource<li>Resouce</ul></td>
+</tr>
+
+-->
+
+<tr>
+<th colspan=3>Journal</th>
+</tr>
+
+<tr>
+<td colspan=3><ul><li>Case started on MM/DD/YYYY</ul></td>
+</tr>
+
+<tr>
+<th colspan=3>Extreme Actions</th>
+</tr>
+
+<tr>
+<td colspan=3><ul><li><input type=submit value="Discontinue this case"></ul></td>
+</tr>
+
+</table>
+
+</form>
+</a>
+
+Mike Moderator decides to work on this task and clicks the Start task
+button. The output pane now changes to look like this:
+
+<a name="finishform">
+<form action=#finishform method=get>
+<table border=1 align=center>
+<th>Output or Action</th>
+</tr>
+
+<tr>
+<td>
+Comment:<br>
+<textarea rows=5 cols=30></textarea>
+<p>
+Reviewer 1: <select name=a><option>-- Please select --</option></select>
+<p>
+Reviewer 2: <select name=b><option>-- Please select --</option></select>
+
+<ul><li><input type=submit value="Finish task"><p>
+<li><input type=submit value="Comment only">
+<p>
+<hr>
+<p>
+<li><input type=submit value="Cancel task">
+</ul></td>
+</tr>
+</table>
+</form>
+</a>
+
+
+<p>
+
+At the same time, the task dissappears from the other moderators' work
+lists. Mike Moderator does his work and picks two reviewers, then hits
+"Finish task". This pushes the case to the next step, which will add
+two tasks, one for each reviewer, to review the item.
+
+<p>
+
+Randy Reviewer and Rick Reviewer will do essentially the same thing as
+Mike Moderator: They'll receive an email that there's stuff for them
+to review, go to the task page info page to see what to do, and do
+their jobs. Their "action" pane will look like this:
+
+<a name="finishform2">
+<form action=#finishform2 method=get>
+<table border=1 align=center>
+<th>Output or Action</th>
+</tr>
+
+<tr>
+<td>
+Comment:<br>
+<textarea rows=5 cols=30></textarea>
+<p>
+Review:<br>
+<textarea rows=5 cols=30></textarea>
+<p>
+Conclusion: <select name=b>
+<option>-- Please select --</option>
+<option>Author must revise item</option>
+<option>Ready for library</option>
+<option>Should not be part of library at all</option>
+</select>
+
+<ul><li><input type=submit value="Finish task"><p>
+<li><input type=submit value="Comment only">
+<p>
+<hr>
+<p>
+<li><input type=submit value="Cancel task">
+</ul></td>
+</tr>
+</table>
+</form>
+</a>
+
+
+The reviewer chooses "Author must revise item", which causes a new
+task to be created for Tracy Techsupporter to revise her item. She
+does, and when she says she's finished, new tasks are created for the
+reviewers to re-review the item. This time, they're happy, and a task
+is created for Charlie Categorizer to categorize the item. He does,
+and the workflow ends with the item being included in the library.
+
+
+<h3>VI.A Requirements: Engine and Model</h3>
+
+There should be a <b>well-defined mathematical model</b> underlying
+the workflows. Why? Because that's the best way we can ensure that the
+workflow engine will have clear semantics. We will inevitably come to
+face a situation where we're not certain how to interpret and act on a
+given situation. The mathematical model will tell us.
+
+<p>
+
+
+
+<h4>Workflow</h4>
+
+<ul>
+
+<li><b>10.0 Routing Constructs</b>
+<p>
+The system must support the following forms of routing
+<p>
+
+<ul>
+
+<li><b>10.1 Sequential Routing</b>
+<p>
+Two tasks are to be performed one after the other. This is the most
+common routing construct in real-world workflows.
+<p>
+
+
+<li><b>10.2 Parallel Routing</b>
+<p>
+Two tasks are to be performed simultaneously or in no particular
+order. This is essential for improving the throughput of a
+workflow, since performing two tasks in parallel are likely to be
+faster than performing them sequentially.
+
+<p>
+
+<li><b>10.3 Iterative Routing</b>
+<p>
+A set of tasks can be performed one or more times. The ticket-tracker
+has an example of this routing, in that the ticket can go to "fixed,
+awaiting approval" and back to "open" as many times as is necessary to
+finally reolve and close the ticket.
+<p>
+
+<li><b>10.4 Conditional Routing</b>
+<p>
+One or another task is to be performed, depending on some
+condition. This is often used to implement iterative routing, in that
+the condition determines whether we should perform one more iteration
+or not. Also, take approval of expenses as an example. It would be
+common to make the approval process different, depending on the amount
+in question, e.g. if it's a small amount, the applicant's supervisor
+can approve the expense, or if it's a very large amount, both the CEO
+and the chairman must approve it.
+<p>
+
+<li><b>10.4.1 Explicit and Implicit Condition Routing</b> 
+<p>
+The decision can be made either as we're finishing the prior task, or as we 
+execute one of the two conditional tasks. The above example is one of explicit
+conditional routing.  An example of Implicit conditioning, is a restaurant 
+owner purchases perishable goods, such as meat and vegatables.  The food items 
+sit in a queue waiting to be processed into meals or wait for 15 days (meat 
+and vegatables tastes change after 15 days).  If the task "wait for 15 days"
+ is completed, then the food item is thrown away.  The routing is determined by 
+the first task to execute.
+</ul>
+</ul>
+<p>
+
+<h4>Tasks</h4>
+
+<ul>
+<li><b>40.0 Inputs</b>
+<p>
+The item that the workflow is about will always be part of the input,
+but there should be the option of presenting other information. Static
+text will do for now.
+<p>
+
+<li><b>50.0 Algorithms and work aids</b>
+<p>
+Each task will contain more detailed information on what is expected
+to be done and instructions to the person executing the task on how to
+go about executing it. Static text will do for now.
+<p>
+
+<li><b>60.0 Outputs</b>
+<p>
+A task can have a number of values as output. Examples include
+"review_comments", "review_conclusions" as above. We should be able to
+use these values in conditions for conditional routing.
+<p>
+
+<li><b>70.0 Transactional execution</b>
+<p>
+The execution of a task must be atomic to the system. Either the task
+completes or it doesn't do anything. But in the real world, a task
+takes time, so we must have a "start", "commit", "rollback"
+meachanism.
+<p>
+<li>
+<b>70.1</b> There should be a date, such that, if the user has stared,
+but not committed or rolled back the task before that timeout date,
+the task is automatically rolled back and the task is created again.
+There should be a callback to calculate that date.
+<p>
+
+
+<li><b>80.0 Assignments</b>
+<p>
+Tasks are not assigned directly to users, instead we associate roles
+with a task.  A role is granted to a single or a group of users.
+Users belonging to that role have execute privileges on the task 
+associated with role.
+<p>
+<ol>
+<li><b>Static assignment:</b> while defining the workflow
+
+<li><b>Manual assignment:</b> assignment of tasks to users is part of the
+workflow process, as in the user-scenario above.  Only users with the 
+role associated with task are available for selection. 
+
+<li><b>Programmatic assignment:</b> The assignment is made
+automatically based on some condition, e.g. a category. It should be
+done with a call-back in the RDBMS layer, so another package that uses
+the workflow package can provide their own logic, without having to
+use the same webserver as the workflow package might.
+</ol>
+<p>
+
+<li><b>90.0 Prioritizing</b>
+<p>
+There should be some mechanism of prioritizing tasks in the work
+list. How to do this is yet undefined. A call-back seems desirable,
+but we need to determine when or how often the call-back should be
+executed (i.e. how often will we allow priorities to change).
+<p>
+<b>90.1 Deadline</b>
+<p>
+Each task can have a deadline, a date by which is must be
+performed. This is determined by a call-back as the task is created.
+<p>
+<b>90.5 Completion time </b> A task has an entry to estimate how long 
+it will take for completion.
+
+<p>
+
+<b>Note: Defintion of deadline is unclear: is it per case or per task?
+I.e., if a task is entered twice, will it have the same deadline both
+times, or will it have a new deadline the second time around? Or
+option of both?</b>
+<p>
+
+
+<li><b>100.0 Email notification</b>
+<p>
+The users should automatically be alerted when there's a new task for
+them to perform.
+<p>
+<b>100.1</b> <b>Not fully specified: It should also alert them when the
+deadline is nearing, when the priority changes, and possibly on other
+conditions.</b>
+<p>
+
+<li><b>110.0 Side-effects</b>
+<p>
+There should be a callback mechanism allowing for side-effects at
+certain points in time. 
+
+<ol>
+
+<h5>Required:</h5>
+
+<li>When a new task arrives
+<li>When a task is finished.
+<li>When a task gets unassigned
+<li>When a task is started
+<li>When a task is finished (committed)
+<li>When a task is canceled (rolled back)
+<li>When a task times out and is canceled.
+
+</ol>
+
+<li><b>120.0 Automatic tasks</b>
+<p>
+A task can be "automatic" in the sense, that it is only there for the
+side-effects. It is automatically finished as soon as it is created.
+<p><b>120.1 Timed automatic tasks</b>
+<p>
+Alternatively, we can specify a
+specific point in time, the automatic task should finish. This is
+useful for timeouts, e.g. when waiting for a client to return a form,
+we may cancel the case if we don't hear back within a month. The point
+in time is determined via a call-back.
+
+<p><b>120.5 Message tasks </b>
+<p>A message from an external source can be passed to the task.  The task
+is executed upon receiving the message and all the criteria placed on
+the message are satisfied.
+
+<li><b>125.0 Commentability</b>
+<p>
+The user can post a comment on a task at any time during
+the life-cycle of the case . The comments are shown to the users,
+so they can use them as a guidance in processing the case.
+<p>
+</ul>
+</ul>
+<h4>Contexts</h4>
+
+<ul>
+
+<li><b>130.0 Workflow Contexts</b>
+<p>
+The same workflow definition may be applied in several different
+departments of the same company. In this case, the department will be
+the <i>context</i> of the workflow. In other situations, the same
+workflow definition may be applied within separate companies running
+on the same site. In this case, the company is the context.
+
+
+<p>
+
+The things that are dependent on the context are:
+
+<p>
+
+<ul>
+<li>Static assignment
+<li>The number of minutes estimated to complete the task
+<li>The side effect events that trigger a callback
+<li>Roles associated with a task. 
+</ul>
+
+<p>
+
+<b>Note! It may or may not be the case that a <i>context</i> will
+always also be a <i>subsite</i>, in which case we don't need any
+additional concept to model this situation. </b>
+</ul>
+
+
+<h3>VI.B Requirements: API</h3>
+
+<h4>Controlling the Workflow Process</h4>
+
+<ul>
+
+<li><b>200.0 Start workflow</b>
+<p>
+Start a new instance of the workflow around an object. Currently 
+it is not possible to have a callback in the kernel upon new 
+object creation.  This requires programmically calling the
+method to start a new case. 
+<p>
+
+<li><b>210.0 Cancel/Suspend/Resume workflow</b>
+<p>
+Cancel/suspend/resume the overall workflow process, e.g. if an
+applicant backs out of the process, or the administrator decides the
+processing must wait a while before continuing.
+<p>
+
+<li><b>220.0 Start/Finish/Cancel task</b>
+<p>
+The API must provide for starting/finishing/canceling tasks.
+<p>
+<b>220.1</b> Finishing
+the task includes storing the output of the task in attributes
+attached to the workflow instance.
+<p>
+
+<li><b>230.0 Workflow Attributes</b>
+<p>
+Attributes for a process to use for branching and keeping state
+properties. 
+<br><br><b>230.10 </b> Add and Edit attributes attributes per case
+<br><br><b>230.20 </b> Access to those attributes values in the callback
+ procedures
+</ul>
+
+
+<h4>Creating Workflows</h4>
+
+<ul>
+
+<li>API for defining workflows would be nice.
+
+</ul>
+
+<h3>VI.C Requirements: Web Interface for Interacting with the Workflow Process</h3>
+
+<ul>
+
+<li><b>300.0 Work list</b>
+<p>
+The user should have a work list page showing all the tasks he's
+supposed to perform. It should be ordered by priority/deadline. 
+
+<p>
+
+<li><b>310.0 Task information and management</b>
+<p>
+See the user-scenario for a sample page.
+<p>
+
+
+<li><b>320.0 Workflow overview</b>
+<p>
+A page where you can get an overview of how a particular workflow is
+going overall, i.e., how all the workflow instances are doing. It's
+tough to come up with a good visual design of this that will give the
+quick overview. <b>Needs to be thought more about. Probably not a
+first version thing</b>.
+
+<p>
+
+</ul>
+
+
+<h3>VI.D Requirements: Web Interface for Defining Workflows</h3>
+
+
+<ul>
+
+<li><b>400.0 Simple Process Wizard</b> <br><br>
+Step by step directions for creating a new workflow process. 
+Do not expose process designer to more advance features such
+as addition parallel routing. 
+<p>
+<li><b>410.0 Advanced Process Builder</b><br>
+Exposes all the glory details of each entity within the workflow. 
+</ul>
+
+
+<h3>VII. Revision History</h3>
+
+<table cellpadding=2 cellspacing=2 width=90% bgcolor=#efefef>
+<tr bgcolor=#e0e0e0>
+    <th width=10%>Document Revision #</th>
+    <th width=50%>Action Taken, Notes</th>
+    <th>When?</th>
+    <th>By Whom?</th>
+</tr>
+<tr>
+   <td>2.3</td>
+   <td>Minor edits</td>
+   <td>04/13/2001</td>
+   <td>Khy Huang</td>
+</tr>
+</tr>
+   <td>2.0</td>
+   <td>Added information on permissions and versioning.</td>
+   <td>11/8/2000</td>
+   <td>Lars Pind</td>
+</tr>
+<tr>
+   <td>0.3</td>
+   <td>Reviewed, revised, and updated - conforms to requirements template.</td>
+   <td>8/22/2000</td>
+   <td>Bryan Quinn</td>
+</tr>
+<tr>
+   <td>0.2</td>
+   <td>Revised and updated</td>
+   <td>8/12/2000</td>
+   <td>Lars Pind
+</tr>
+<tr>
+   <td>&nbsp;</td>
+   <td>Reviewed</td>
+   <td>8/11/2000</td>
+   <td>John Prevost, Mark Thomas, and Pete Su</td>
+</tr>
+<tr>
+   <td>0.1</td>
+   <td>Creation</td>
+   <td>8/10/2000</td>
+   <td>Lars Pind
+</tr>
+
+
+</table>
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+
+</body>
+</html>

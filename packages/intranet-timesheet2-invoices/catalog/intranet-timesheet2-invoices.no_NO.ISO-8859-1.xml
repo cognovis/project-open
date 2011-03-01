@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.7.0" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="Add_New">Legg til ny</msg>
+  <msg key="Amount">Antall</msg>
+  <msg key="Currency">Valuta</msg>
+  <msg key="Del">Slett</msg>
+  <msg key="New_Price">Ny pris</msg>
+  <msg key="No_prices_found">Ingen priser funnet</msg>
+  <msg key="Price_List">Prisliste</msg>
+  <msg key="Rate">Sats</msg>
+  <msg key="Task_Type">Oppgavetype</msg>
+  <msg key="Unit_of_Measure">Måleenhet</msg>
+  <msg key="UoM">Måleenhet</msg>
+</message_catalog>

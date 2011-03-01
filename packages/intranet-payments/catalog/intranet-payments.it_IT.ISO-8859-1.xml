@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="_Previous">Pagina</msg>
+  <msg key="Add_New">Nuovo</msg>
+  <msg key="Add_payment">Nuovo pagamento</msg>
+  <msg key="Amount">Importo</msg>
+  <msg key="Amount_Paid">Importo pagato</msg>
+  <msg key="Client">Cliente</msg>
+  <msg key="Cost_Name">Nome del costo</msg>
+  <msg key="Cost_Nr">N. di costo</msg>
+  <msg key="Del">Canc</msg>
+  <msg key="Delete_payment">Elimina pagamento</msg>
+  <msg key="Edit_payment">Modifica pagamento</msg>
+  <msg key="Filter_Payments">Filtra pagamenti</msg>
+  <msg key="Go">Vai</msg>
+  <msg key="Invoice">Fattura</msg>
+  <msg key="Invoice_Amount">Importo fattura</msg>
+  <msg key="lt_Confirm_payment_delet">Conferma eliminazione pagamento</msg>
+  <msg key="lt_Do_you_really_want_to">Si è certi di voler eliminare il pagamento %fee_type% di %fee_str% per %project_name%?</msg>
+  <msg key="lt_Insufficient_Privileg">Privilegi insufficienti</msg>
+  <msg key="lt_No_costinvoice_item_s">Elemento di costo/fattura non specificati</msg>
+  <msg key="lt_The_intranet_start_bl">I blocchi d'inizio della Intranet non sono stati definiti oppure non è disponibile un blocco d'inizio per la settimana in corso o per un periodo successivo.</msg>
+  <msg key="lt_There_are_currently_n">Non esistono pagamenti corrispondenti ai criteri introdotti</msg>
+  <msg key="lt_You_dont_have_suffici">Non si dispone dei privilegi sufficienti per visualizzare questa pagina</msg>
+  <msg key="Mark_invoice_as_paid">Contrassegna fattura come pagata</msg>
+  <msg key="New_payment">Nuovo pagamento</msg>
+  <msg key="Next_Page">Pagina successiva</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="One_project">Un progetto</msg>
+  <msg key="Payment">Pagamento</msg>
+  <msg key="Payment_Details">Dettagli pagamento</msg>
+  <msg key="Payment_hash_simbol">Pagamento n.</msg>
+  <msg key="Payment_Status">Stato del pagamento:</msg>
+  <msg key="Payment_Type">Tipo di pagamento</msg>
+  <msg key="Payments">Pagamenti</msg>
+  <msg key="Projects">Progetti</msg>
+  <msg key="Provider">Fornitore</msg>
+  <msg key="Received">Ricevuto</msg>
+  <msg key="Start_block_error">Errore blocco d'inizio</msg>
+  <msg key="Status">Stato</msg>
+  <msg key="Update">Aggiorna</msg>
+</message_catalog>

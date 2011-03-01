@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Ad_hoc_Fraber_Test_group_id">Gruppen-ID</msg>
+  <msg key="Ad_hoc_Fraber_Test_group_name">Gruppenname</msg>
+  <msg key="Add_new_Report">Neuen Bericht hinzufügen</msg>
+  <msg key="Admin_Reports">Admin Berichte</msg>
+  <msg key="Available_Reports">Verfügbare Berichte</msg>
+  <msg key="Edit_Report">Bericht bearbeiten</msg>
+  <msg key="Finance">Finanzen</msg>
+  <msg key="Finance_Cube">Pivot-Tabelle Finanzen</msg>
+  <msg key="Finance_Documents_and_their_Projects">Finanzen Dokumente &amp; Projekte</msg>
+  <msg key="Forum">Forum</msg>
+  <msg key="Gantt_Diagram">Gantt-Diagramm</msg>
+  <msg key="Indicators">Indikatoren</msg>
+  <msg key="Manage_Reports">Berichte verwalten</msg>
+  <msg key="New_Report">Neuer Bericht</msg>
+  <msg key="No_customer">Kunde nicht definiert</msg>
+  <msg key="No_project">Projekt nicht definiert</msg>
+  <msg key="Report_Id">ID</msg>
+  <msg key="Report_Name">Name</msg>
+  <msg key="Report_Translation_Tasks">Übersetzungsaufgaben</msg>
+  <msg key="Report_Users___Contact_Information">Benutzer- &amp;amp; Kontaktinformationen</msg>
+  <msg key="Reports">Berichte</msg>
+  <msg key="Timesheet">Zeiterfassung</msg>
+  <msg key="Timesheet_Customers_and_Projects">Zeiterfassung Kunden &amp;amp; Projekte</msg>
+  <msg key="Timesheet_Productivity">Zeiterfassung Produktivität</msg>
+  <msg key="Timesheet_Project_Hierarchy___Finance">Zeiterfassung Projekthierarchie &amp;amp; Finanzen</msg>
+  <msg key="Translation">Übersetzung</msg>
+  <msg key="Translation_PM_Productivity">Zeiterfassung PM-Produktivität</msg>
+  <msg key="Translation_Tasks">Übersetzungsaufgaben</msg>
+  <msg key="Users___Contact_Information">Benutzer- &amp;amp; Kontaktinformation</msg>
+  <msg key="You_dont_have_permissions">Sie haben nicht die notwendigen Rechte, um diese Seite anzusehen.</msg>
+</message_catalog>

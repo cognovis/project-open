@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="workflow" package_version="2.1.1" locale="zh_CN" charset="utf-8">
+
+  <msg key="Case">案例</msg>
+  <msg key="lt_Please_click_here_to_">请单击%object_type.pretty_name%访问:</msg>
+  <msg key="lt_You_are_a_participant">你是%object_type.pretty_name%的参加者。</msg>
+  <msg key="lt_You_are_assigned_to_t">你被分配到下一个活动。</msg>
+  <msg key="lt_You_have_a_watch_on_t">你可以看到%object_type.pretty_name%。</msg>
+  <msg key="lt_You_have_requested_to">你已在%workflow_object.name%订阅所有%object_type.pretty_plural%活动。</msg>
+  <msg key="notification_email_latest_action_chunk">按%user_name%(%user_email%)进行%action_past_tense%</msg>
+</message_catalog>

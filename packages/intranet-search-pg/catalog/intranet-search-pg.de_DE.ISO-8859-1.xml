@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Advanced_Search">Fortgeschrittene Suche</msg>
+  <msg key="Bad_Query_Msg">Die &amp;amp;#93;po&amp;amp;#91; Suchmaschine kann komplexe Abfragen, die mehr als ein Wort enthalten, bearbeiten. &amp;lt;br&amp;gt;
+Sie müssen der Suchemaschine jedoch sagen, wie sie suchen soll:
+&amp;lt;p&amp;gt;
+&amp;lt;ul&amp;gt;
+&amp;lt;li&amp;gt;Suchbegriff1 &amp;lt;b&amp;gt;&amp;amp;&amp;lt;/b&amp;gt; Suchbegriff2:&amp;lt;br&amp;gt;Es werden alle Objekte gesucht, die beide Suchbegriffe enthalten.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;li&amp;gt;Suchbegriff1 &amp;lt;b&amp;gt;|&amp;lt;/b&amp;gt; Suchbegriff2:&amp;lt;br&amp;gt;Es werden alle Objekte gesucht, die einen der beiden Suchbegriffe enthalten.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;li&amp;gt;&amp;lt;b&amp;gt;!&amp;lt;/b&amp;gt;Suchbegriff:&amp;lt;br&amp;gt;Es werden alle Objekte gesucht, die den Suchbegriff NICHT enthalten.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;li&amp;gt;&amp;lt;b&amp;gt;(&amp;lt;/b&amp;gt;Abfrage&amp;lt;b&amp;gt;)&amp;lt;/b&amp;gt;:&amp;lt;br&amp;gt;Sie können Klammern verwenden, um Abragen zu unterteilen.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;/ul&amp;gt;
+
+&amp;lt;H3&amp;gt;Beispiele&amp;lt;/h3&amp;gt;
+&amp;lt;ul&amp;gt;
+&amp;lt;li&amp;gt;&amp;lt;b&amp;gt;'Projekt &amp;amp; offen'&amp;lt;/b&amp;gt;:&amp;lt;br&amp;gt;Es werden alle Objekte gesucht, die 'Projekt' und 'offen' enthalten.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;li&amp;gt;&amp;lt;b&amp;gt;'Projekt | offen'&amp;lt;/b&amp;gt;:&amp;lt;br&amp;gt;Es werden alle Objekte gesucht, die entweder 'Projekt' oder 'offen' enthalten.&amp;lt;br&amp;gt;&amp;amp;nbsp;
+&amp;lt;/ul&amp;gt;
+
+</msg>
+  <msg key="Include_Deleted">Einschließlich gelöschter Einträge</msg>
+  <msg key="lt_Make_sure_all_words_a">Stellen Sie sicher, daß alle Wörter richtig geschrieben wurden</msg>
+  <msg key="lt_No_pages_were_found_c">Keine passenden Einträge gefunden</msg>
+  <msg key="lt_Try_different_keyword">Probieren Sie andere Suchbegriffe</msg>
+  <msg key="lt_Try_more_general_keyw">Probieren Sie weniger spezifische Suchbegriffe</msg>
+  <msg key="Next">Nächste</msg>
+  <msg key="of_about">von ungefähr</msg>
+  <msg key="of_more_then">von mehr als</msg>
+  <msg key="Previous">Vorherige</msg>
+  <msg key="Result_page">Ergebnisseite</msg>
+  <msg key="Results">Ergebnisse</msg>
+  <msg key="Search">Suche</msg>
+  <msg key="Search_Engine">Suchmaschine</msg>
+  <msg key="Search_for_sepcific_object_types">Es werden bestimmte Objekttypen gesucht:</msg>
+  <msg key="Search_Results_for_query">Suchergebnisse für '%q%'</msg>
+  <msg key="Search_took">Die Suche dauerte</msg>
+  <msg key="seconds">Sekunden</msg>
+  <msg key="Suggestions">Vorschläge</msg>
+  <msg key="Try_fewer_keywords">Verwenden Sie weniger Schlüsselwörter</msg>
+</message_catalog>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Action">Azione</msg>
+  <msg key="Admin_workflows">Gestione workflow</msg>
+  <msg key="All_Tasks">Tutte le attività</msg>
+  <msg key="Approve">Approvare</msg>
+  <msg key="Assign_somebody_else">Assegnare a qualcun altro</msg>
+  <msg key="Assign_yourself">Assegnare a sé stessi</msg>
+  <msg key="Assignee">Assegnatario</msg>
+  <msg key="assignment_group">gruppo di assegnazione</msg>
+  <msg key="Automatic_trigger">Attivazione automatica</msg>
+  <msg key="Confirm_Quote">Confermare preventivo</msg>
+  <msg key="Currrent_assignees">Assegnatari attuali</msg>
+  <msg key="Debug_Case">Caso di debug</msg>
+  <msg key="Execute">Eseguire</msg>
+  <msg key="Holding_user">Utente trattenuto</msg>
+  <msg key="Modify">Modificare</msg>
+  <msg key="my_object">mio oggetto</msg>
+  <msg key="Next_step_details">Dettagli next step</msg>
+  <msg key="none">nessuno</msg>
+  <msg key="Object_Name">Nome dell'oggetto</msg>
+  <msg key="Object_Owner">Proprietario dell'oggetto</msg>
+  <msg key="Owner">Proprietario</msg>
+  <msg key="Past_actions">Azioni passate</msg>
+  <msg key="Quote">Preventivo</msg>
+  <msg key="Relationship">Relazione</msg>
+  <msg key="Reset_Case">Resettare caso</msg>
+  <msg key="Status">Stato</msg>
+  <msg key="Task_name">Nome dell'attività</msg>
+  <msg key="Task_state">Stato dell'attività</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="Unassigned_Tasks">Attività non assegnate</msg>
+  <msg key="What">Che cosa?</msg>
+  <msg key="When">Quando?</msg>
+  <msg key="Who">Chi?</msg>
+  <msg key="Workflow_Home">Home Workflow</msg>
+  <msg key="Your_Tasks">RFC personali</msg>
+</message_catalog>

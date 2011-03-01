@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="ms_MY" charset="utf-8">
+
+  <msg key="A">J:</msg>
+  <msg key="Add_QA_for_faq_name">Tambah Soal-Jawab untuk %faq_name%</msg>
+  <msg key="administer">tadbir</msg>
+  <msg key="Answer">Jawapan</msg>
+  <msg key="Back_to_FAQs">Kembali ke FAQ</msg>
+  <msg key="Create_a_new_FAQ">Hasilkan FAQ baru</msg>
+  <msg key="Create_an_FAQ">Hasilkan satu FAQ</msg>
+  <msg key="Create_FAQ">Hasilkan FAQ</msg>
+  <msg key="Create_New_QA">Hasilkan Soal-Jawab Baru</msg>
+  <msg key="Create_new_QA">Hasilkan Soal-Jawab baru</msg>
+  <msg key="Create_QA">Hasilkan Soal-Jawab</msg>
+  <msg key="Delete">Padam</msg>
+  <msg key="delete">padam</msg>
+  <msg key="Delete_This_QA">buang Soal-Jawab ini</msg>
+  <msg key="Edit">Edit</msg>
+  <msg key="edit">edit</msg>
+  <msg key="Edit_an_FAQ">Edit satu FAQ</msg>
+  <msg key="FAQ_Admin">Penyeliaan FAQ</msg>
+  <msg key="faq_name_Admin">Pentadbir %faq_name%</msg>
+  <msg key="FAQs">Senarai FAQ</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">masukkan selepas</msg>
+  <msg key="lt_Are_you_sure_you_want">Adakah anda pasti ingin buang faq ini?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Adakah anda pasti ingin buang soalan ini?</msg>
+  <msg key="lt_no_FAQs">Tiada FAQ tersedia.</msg>
+  <msg key="lt_no_questions">Tiada soalan-soalan tersedia.</msg>
+  <msg key="Name">Nama:</msg>
+  <msg key="New">Baru</msg>
+  <msg key="No">Tidak</msg>
+  <msg key="One_Question">Satu Soalan</msg>
+  <msg key="Plain">Biasa</msg>
+  <msg key="Preformatted">Siap Diaturkan</msg>
+  <msg key="preview">paparan</msg>
+  <msg key="Q">S:</msg>
+  <msg key="QA_On_Separate_Pages">Soalan Dan Jawapan pada mukasurat berlainan</msg>
+  <msg key="QA_on_Separate_Pages">Soalan dan Jawapan pada mukasurat berlainan</msg>
+  <msg key="Question">Soalan</msg>
+  <msg key="swap_with_next">Tukar tempat dengan seterusnya</msg>
+  <msg key="Text_type">Jenis abjad?</msg>
+  <msg key="Title">Tajuk:</msg>
+  <msg key="Update_FAQ">Kemaskini FAQ</msg>
+  <msg key="Update_This_QA">Kemaskini Soal-Jawab Ini</msg>
+  <msg key="View_All_FAQs">Tunjukkan Semua FAQ</msg>
+  <msg key="Yes">Ya</msg>
+</message_catalog>

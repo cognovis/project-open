@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-notes" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Address">Адрес</msg>
+  <msg key="Create_new_Note">Создать примечание</msg>
+  <msg key="Delete_Notes">Удалить примечания</msg>
+  <msg key="Email">Эл. почта</msg>
+  <msg key="Fax">Факс</msg>
+  <msg key="Ftp">FTP</msg>
+  <msg key="Http">HTTP</msg>
+  <msg key="Mobile">Мобильный</msg>
+  <msg key="No_Notes_Available">Нет примечаний</msg>
+  <msg key="Notes_creation">Создать примечание</msg>
+  <msg key="Notes_Note">Примечание</msg>
+  <msg key="Notes_Type">Тип примечания</msg>
+  <msg key="Other">Другое</msg>
+  <msg key="Phone">Телефон</msg>
+  <msg key="Project_Notes">Примечания по проекту</msg>
+  <msg key="User_Notes">Примечания по пользователю</msg>
+</message_catalog>

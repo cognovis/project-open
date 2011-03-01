@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="Dim_day_of_month">Dia</msg>
+  <msg key="Dim_month_of_year">Mês</msg>
+  <msg key="Dim_quarter_of_year">Quarter</msg>
+  <msg key="Dim_week_of_year">Semana</msg>
+  <msg key="Dim_year">Ano</msg>
+  <msg key="Download_Gantt_File">Fazer Download do arquivo GanttProject</msg>
+  <msg key="No_Gantt_preview_available">Sem preview do gráfico de Gantt</msg>
+  <msg key="OK">OK</msg>
+</message_catalog>

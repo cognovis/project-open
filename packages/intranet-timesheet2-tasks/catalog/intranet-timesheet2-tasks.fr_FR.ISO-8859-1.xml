@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-tasks" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Add_Dependency">Ajouter une dependance</msg>
+  <msg key="Admin_Tasks">Tâches admin</msg>
+  <msg key="Apply">Appliquer</msg>
+  <msg key="Bill">Facture</msg>
+  <msg key="Billable_Units">Unités facturables</msg>
+  <msg key="Cost_Center">Centre de coût</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Dependent_Objects_Exist">Des &quot;Objets dépendants&quot; (comme les heures consommées ...) existent pour au moins une des tâches: &lt;br&gt; &lt;ul&gt; &lt;li&gt; %task_names% &lt;/ul&gt;</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Done">Effectué</msg>
+  <msg key="End">Fin</msg>
+  <msg key="Filter_Tasks">Filtrer les tâches</msg>
+  <msg key="form_billable_units_help">Combien d'heures vont être facturées au client?</msg>
+  <msg key="form_percentage_completed_help">Combien avez déjà réalisé sur cette tache? par defaut '0'.</msg>
+  <msg key="form_planned_units_help">Combien d'heures avez vous planifier pour cette tache(meilleure estimation)?</msg>
+  <msg key="form_project_help">A quel projet appartient cette tache?</msg>
+  <msg key="Log">Se connecter</msg>
+  <msg key="Material">Matériel</msg>
+  <msg key="Name">Nom</msg>
+  <msg key="New_Timesheet_Task">Nouvelle Tâche </msg>
+  <msg key="No_permission_to_delete_a_task">Vous n'avez pas la permission de supprimer cette tache.</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Percentage_completed">Terminé</msg>
+  <msg key="Plan">Plan</msg>
+  <msg key="Planned_Units">Unité planifiées</msg>
+  <msg key="Save_Changes">Enregistrer Modifications</msg>
+  <msg key="Short_Name">Nom court</msg>
+  <msg key="Start">Démarrer</msg>
+  <msg key="Status">Statut</msg>
+  <msg key="Task_Code">Code de la tâche</msg>
+  <msg key="Task_Name">Nom de tâche</msg>
+  <msg key="There_are_no_active_tasks">Il n'existe aucune tâche active pour vos paramètres</msg>
+  <msg key="Timesheet_Task">Tâches</msg>
+  <msg key="Timesheet_Tasks">Tâches pour la saisie des temps</msg>
+  <msg key="Type">Type</msg>
+  <msg key="Unable_to_delete_tasks">Impossible de supprimer des tâches</msg>
+  <msg key="Unit_of_Measure">Unité de mesure</msg>
+  <msg key="UoM">Unité</msg>
+</message_catalog>

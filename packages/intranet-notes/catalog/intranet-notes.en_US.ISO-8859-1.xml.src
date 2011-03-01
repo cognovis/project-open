@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-notes" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Address">Address</msg>
+  <msg key="Create_new_Note">New Note</msg>
+  <msg key="Delete_Notes">Delete Notes</msg>
+  <msg key="Email">Email</msg>
+  <msg key="Fax">Fax</msg>
+  <msg key="Ftp">Ftp</msg>
+  <msg key="Http">Http</msg>
+  <msg key="Mobile">Mobile</msg>
+  <msg key="No_Notes_Available">No notes available</msg>
+  <msg key="Notes_creation">New Note</msg>
+  <msg key="Notes_Note">Note</msg>
+  <msg key="Notes_Type">Notes Type</msg>
+  <msg key="Other">Other</msg>
+  <msg key="Phone">Phone</msg>
+  <msg key="Project_Notes">Project Notes</msg>
+  <msg key="User_Notes">User Notes</msg>
+</message_catalog>

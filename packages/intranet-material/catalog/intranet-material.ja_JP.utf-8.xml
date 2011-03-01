@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Description">概要</msg>
+  <msg key="Filter_Materials">マテリアルの絞込み</msg>
+  <msg key="Nr">NO</msg>
+  <msg key="There_are_no_active_materials">あなたの選択基準に適合する資材がありません。</msg>
+</message_catalog>

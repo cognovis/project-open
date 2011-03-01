@@ -1,0 +1,51 @@
+@import url("style.default.css");
+
+.filter-list {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+}
+
+.fullwidth-list {
+   margin-left: 260px;
+   margin-right: 0px;
+}
+
+.filter {
+   position: absolute;
+   left: 0px;
+}
+
+.filter-button {
+   position: absolute;
+   right: 2px;
+}
+
+
+.footer_hack {
+	border-top:3px solid #FFFFFF;
+	display:none;
+	height:3px;
+	position:relative;
+	top:-3px;
+	width:100%;
+	z-index:101;
+}
+
+#footer {
+	margin-top:1em;
+	position:relative;
+	text-align:center;
+	width: 100%;
+}
+
+
+#main_header {
+	height: 35px;
+}
+
+#header_settings_tab {
+	width: auto;
+}
+

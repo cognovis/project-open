@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="_Previous">Sayfa</msg>
+  <msg key="Add_New">yeni ekle</msg>
+  <msg key="Add_payment">Ödeme ekle</msg>
+  <msg key="Amount">Miktar</msg>
+  <msg key="Amount_Paid">Ödenen Miktar</msg>
+  <msg key="Client">Müşteri</msg>
+  <msg key="Cost_Name">Maliyet ismi</msg>
+  <msg key="Cost_Nr">Maliyet Nr.</msg>
+  <msg key="Del">Sil</msg>
+  <msg key="Delete_payment">Ödemeyi Sil</msg>
+  <msg key="Edit_payment">Ödemeyi Düzelt</msg>
+  <msg key="Filter_Payments">Ödemeleri Süz</msg>
+  <msg key="Go">Git</msg>
+  <msg key="Invoice">Fatura</msg>
+  <msg key="Invoice_Amount">Fatura Miktarı</msg>
+  <msg key="lt_Confirm_payment_delet">Ödeme Silmeyi onayla</msg>
+  <msg key="lt_Do_you_really_want_to">Gerçekten bu ödemeyi%fee_type%  %fee_str% for %project_name% silmek istiyor musunuz?</msg>
+  <msg key="lt_Insufficient_Privileg">Bu işlem için izinleriniz yetersiz</msg>
+  <msg key="lt_No_costinvoice_item_s">Maliyet/fatura bilgisi belirtilmedi</msg>
+  <msg key="lt_There_are_currently_n">Bu kriterlere uygun ödeme bulunamadı</msg>
+  <msg key="lt_You_dont_have_suffici">Bu sayfayı görme izniniz yok</msg>
+  <msg key="New_payment">Yeni Ödeme</msg>
+  <msg key="Next_Page">Sonraki Sayfa</msg>
+  <msg key="Note">Not</msg>
+  <msg key="One_project">Bir Proje</msg>
+  <msg key="Payment">Ödeme</msg>
+  <msg key="Payment_Details">Ödeme Detayları</msg>
+  <msg key="Payment_hash_simbol">Ödeme #</msg>
+  <msg key="Payment_Status">Ödeme Durumu:</msg>
+  <msg key="Payment_Type">Ödeme Türü</msg>
+  <msg key="Payments">Ödemeler</msg>
+  <msg key="Projects">Projeler</msg>
+  <msg key="Provider">Tedarikçi</msg>
+  <msg key="Received">Alındı</msg>
+  <msg key="Status">Durum</msg>
+  <msg key="Update">Güncelle</msg>
+</message_catalog>

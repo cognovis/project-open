@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="HomeWiki">Wiki-Sözlük Anasayfa</msg>
+  <msg key="User_Wiki">Wiki</msg>
+</message_catalog>

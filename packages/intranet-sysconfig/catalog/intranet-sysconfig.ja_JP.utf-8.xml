@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="profiles_project_managers">プロジェクト管理者</msg>
+  <msg key="SysConfig">システム構成</msg>
+</message_catalog>

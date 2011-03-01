@@ -1,0 +1,92 @@
+<html>
+<head><title>Template Assets Pane</title></head>
+<body bgcolor=#ffffff>
+
+<h2>Templaet Assets Pane</h2>
+
+<a href="template.html">Templates Tutorial</a> : Template Assets Pane
+<hr>
+
+<h3>Overview</h3>
+
+The Assets pane in the Template UI parses the template's ADP file 
+and displays statistics about each image.
+
+<h3>Step by Step</h4>
+
+<ol>
+  <li><p>Browse to the folder that contains the template in question.
+    </p>
+  </li>
+
+  <li><p>Click on the Assets pane. The Assets summary appears,
+    as shown in Figure 1:</p>
+  
+    <p align=center><center><img src="template-assets.gif">
+    <br><b>Figure 1. The Assets summary</b></center></p>
+  </li>
+
+  <li><p>The Summary displays the following information about
+    each asset:</p>
+
+    <table border=0 cellpadding=0 cellspacing=4>
+      <tr bgcolor=#eeeeee><th>Column</th><td>Explanation</td></tr>
+      <tr>
+        <th>Source Filename</th>
+        <td>The filename of the image, as specified in the 
+           <tt>&lt;img src=...&gt;</tt> tag.
+        </td>
+      </tr>
+      <tr>
+        <th>Width</th>
+        <td>The width of the image, if it was specified</td>
+      </tr>
+      <tr>
+        <th>Height</th>
+        <td>The height of the image, if it was specified</td>
+      </tr>
+      <tr>
+        <th>Alt Text</th>
+        <td>The alternate text that will appear if the user's browser
+          is unable to display the image</td>
+      </tr>
+      <tr>
+        <th>Width</th>
+        <td>The width of the image, if it was specified</td>
+      </tr>
+      <tr>
+        <th>Exists ?</th>
+        <td>Shows <b><font color=green>Yes</font></b> if the image
+          can be accessed in the filesystem at the specified
+          path; otherwise, shows <b><font color=red>No</font></b>
+      </tr>
+      <tr>
+        <th>Title, Publish Status</th>
+        <td>If an item exists in CMS with the same URL as the image,
+          shows the title and publish status of the image. The title
+          is a link that leads to the CMS content item which holds the
+          image. If the item does not exist in CMS, these columns
+          are blank.
+        </td>
+      </tr>
+     </table>
+
+     </p>
+
+  </li>
+
+  <li><p>Image titles in the Title column are links that can be followed
+   to access the content item representing the image (if any). For
+   example, the "Computer Design Chart" link shown above will lead
+   to the following item (See Figure 2):</p>
+
+    <p align=center><center><img src="template-asset-item.gif">
+    <br><b>Figure 1. The item associated with the image (fragment)</b></center></p>
+
+
+  </li>
+  
+</ol>
+
+</body>
+</html>

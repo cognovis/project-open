@@ -1,0 +1,116 @@
+Attachments
+~~~~~~~~~~~
+
+* Basics
+~~~~~~~~
+
+** What does attachments do?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  <<<attachments>>> is a service package that allows you to attach one or more
+  file-storage files to any <<<acs_object>>>. <<<attachments>>> is mounted below
+  a package that uses it, and the application provides links into the attachments
+  package's UI.
+  
+
+
+** At a high level, how does attachments work?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Before you can use the attachments package, each instance of your package must be
+  mapped to a <<<file-storage root folder>>>.
+  
+  The root folder is a "super folder" for all the files in that specific instance of
+  file-storage, and it is created automatically when the file-storage
+  package is instanciated.
+
+  When a user wants to make an attachment to an object in your package,
+  she is shown the contents of the file-storage root folder mapped to your
+  package instance. The user is also given the option to upload a new file
+  into file-storage to attach.
+
+
+* Using attachments
+~~~~~~~~~~~~~~~~~~~
+
+** Mount attachments under your package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The first step is to mount the attachments package <<under>> your
+  package. In the <<<site-map>>>, you should create a new site-node
+  (sub-folder) under your package called "attach". 
+
+  "attach" is the standard URL, however URL this can be changed on a
+  site-wide basis by changing the "RelativeUrl" parameter of <<any>> of
+  the attachments packages (this works since there's only one instance
+  of attachments in the entire system. The same instance is just
+  re-mounted)
+
+
+** Map an file-storage root folder to your package instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  First, you must select a file-storage instance that will provide
+  the files you can attach. If you do not already have an instance of file-storage
+  that you want to use for your package instance, you must create one using the
+  site-map.
+
+  Once you have a file-storage instance you wish to use, you must map the
+  root folder of that file-storage instance with the package_id of the
+  instance of your package. 
+
+  Two utility procs to help you do this:
+
+  <<<fs::get_root_folder>>> and <<<attachments::map_root_folder>>>
+
+
+** Attaching files to your objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*** Have your package check if attachments is mounted properly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Most likely, you want your package to work even if the attachments
+  package is not installed on the system or if attachments is not
+  properly mounted. To do this, add the following proc to your package's
+  API and wrap all calls to the attachments package with it:
+
++-------------------------------------------------------------------------------
+    ad_proc -private attachments_enabled_p {} {
+        set package_id [site_node_apm_integration::child_package_exists_p \
+            -package_key attachments
+        ]
+    }
++-------------------------------------------------------------------------------
+
+*** Get the attachment Url
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  When you want to set up the link that the user can click on to attach something
+  to an object, use the attachments::add_attachment_url proc, which will return
+  the correct Url into the attachments package mounted under your package.
+
++-------------------------------------------------------------------------------
+    if {$attachments_enabled_p} {
+        if {$attach_p} {
+            set redirect_url [attachments::add_attachment_url \
+                                  -object_id $message_id \
+                                  -return_url $redirect_url \
+                                  -pretty_name "$subject"]
+        }
+    }
++-------------------------------------------------------------------------------
+
+  forums redirects the user to the redirect_url, if the user chose to add an
+  attachment to their posting.
+
+
+** Viewing attached files
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  You can use the "attachments::get_attachments" proc to see the list of attachments
+  to a given object.
+
+
+~~ $Id: attachments.apt,v 1.2 2005/04/20 11:48:57 eduardop Exp $
+

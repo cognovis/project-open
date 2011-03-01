@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-milestone" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Add_a_new_Milestone">Создать веху</msg>
+  <msg key="Current_Milestones">Текущие вехи</msg>
+  <msg key="Deadline">Крайний срок</msg>
+  <msg key="Filter_Milestones">Фильтр вех</msg>
+  <msg key="Future_Milestones">Будущие вехи</msg>
+  <msg key="Late_Milestones">Последние вехи</msg>
+  <msg key="Member">Участник</msg>
+  <msg key="Milestone_Name">Имя</msg>
+  <msg key="Milestone_Status">Состояние</msg>
+  <msg key="Milestone_Type">Тип</msg>
+  <msg key="Milestones">Вехи</msg>
+  <msg key="On_track_status">ОК?</msg>
+  <msg key="Time_Interval">Временной интервал</msg>
+</message_catalog>

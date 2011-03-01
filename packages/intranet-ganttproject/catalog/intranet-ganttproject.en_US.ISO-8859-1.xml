@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Dim_day_of_month">Day</msg>
+  <msg key="Dim_month_of_year">Month</msg>
+  <msg key="Dim_quarter_of_year">Quarter</msg>
+  <msg key="Dim_week_of_year">Week</msg>
+  <msg key="Dim_year">Year</msg>
+  <msg key="Download_Gantt_File">Download GanttProject File</msg>
+  <msg key="Download_OpenProj_File">Download OpenProj Schedule</msg>
+  <msg key="Gantt_Resources">Gantt Resources</msg>
+  <msg key="No_Gantt_preview_available">No Gantt Preview Available</msg>
+  <msg key="OK">OK</msg>
+  <msg key="Project_Gantt_Resource">Project Gantt Resources</msg>
+  <msg key="Project_Gantt_Resource_Assignations">Gantt Resource Assignations</msg>
+  <msg key="Project_Gantt_Schedule">Project Gantt Schedule</msg>
+  <msg key="Project_Gantt_View">Gantt View</msg>
+  <msg key="Scheduling">Scheduling</msg>
+  <msg key="Upload_Gantt_File">Upload Gantt File</msg>
+</message_catalog>

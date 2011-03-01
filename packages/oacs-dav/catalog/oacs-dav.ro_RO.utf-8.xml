@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="oacs-dav" locale="ro_RO" charset="utf-8">
+
+  <msg key="Disable">Dezactivează</msg>
+  <msg key="Disable_Folders">Dezactivează Folderele Selectate</msg>
+  <msg key="Disabled">Dezactivat</msg>
+  <msg key="Enable">Activează</msg>
+  <msg key="Enable_Folders">Activează Folderele Selectate</msg>
+  <msg key="Enabled">Activează</msg>
+  <msg key="Folder_Name">Numele Folder-ului</msg>
+  <msg key="Folder_URL">URL pentru Folder</msg>
+  <msg key="Folders_Disabled">Folderele Selectate au fost deactivate pentru WebDAV support</msg>
+  <msg key="Folders_Enabled">Foldere Selectate activate pentru support WebDAV</msg>
+  <msg key="Package_Name">Numele Programului</msg>
+  <msg key="Package_Type">Tipul de Program</msg>
+  <msg key="Status">Statut</msg>
+  <msg key="WebDAV_Folder_Administration">Administrarea Folderului WebDAV</msg>
+</message_catalog>

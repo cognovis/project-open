@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="ko_KR" charset="utf-8">
+
+  <msg key="A">응답:</msg>
+  <msg key="Add_QA_for_faq_name">%faq_name%에 대한 질의응답 추가</msg>
+  <msg key="administer">관리자</msg>
+  <msg key="Answer">응답</msg>
+  <msg key="Back_to_FAQs">FAQ로 돌아가기</msg>
+  <msg key="Create_a_new_FAQ">새로운 FAQ 생성</msg>
+  <msg key="Create_an_FAQ">FAQ 생성</msg>
+  <msg key="Create_FAQ">FAQ 생성</msg>
+  <msg key="Create_New_QA">새로운 질의응답 생성</msg>
+  <msg key="Create_new_QA">새로운 질의응답 생성</msg>
+  <msg key="Create_QA">질의응답 생성</msg>
+  <msg key="Delete">삭제</msg>
+  <msg key="delete">삭제</msg>
+  <msg key="Delete_This_QA">이 질의응답 삭제</msg>
+  <msg key="Edit">수정</msg>
+  <msg key="edit">수정</msg>
+  <msg key="Edit_an_FAQ">FAQ 수정</msg>
+  <msg key="FAQ_Admin">FAQ 관리</msg>
+  <msg key="faq_name_Admin">%faq_name% 관리</msg>
+  <msg key="FAQs">FAQ</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">추가</msg>
+  <msg key="lt_Are_you_sure_you_want">이 faq를 삭제하시겠습니까?
+</msg>
+  <msg key="lt_Are_you_sure_you_want_1">이 질문을 삭제하시겠습니까?</msg>
+  <msg key="lt_no_FAQs">유효한 FAQ가 없습니다. </msg>
+  <msg key="lt_no_questions">유효한 질문이 없습니다.</msg>
+  <msg key="Name">이름:</msg>
+  <msg key="New">새로운</msg>
+  <msg key="No">아니요</msg>
+  <msg key="One_Question">한개의 질문</msg>
+  <msg key="Plain">보통의</msg>
+  <msg key="Preformatted">미리 포맷된</msg>
+  <msg key="preview">미리보기</msg>
+  <msg key="Q">질문:</msg>
+  <msg key="QA_On_Separate_Pages">분리된 페이지에 질의응답을 원합니까?</msg>
+  <msg key="QA_on_Separate_Pages">분리된 페이지에 질의응답을 원합니까?</msg>
+  <msg key="Question">질문</msg>
+  <msg key="swap_with_next">다음과 교환</msg>
+  <msg key="Text_type">문서 타입은?</msg>
+  <msg key="Title">제목:</msg>
+  <msg key="Update_FAQ">FAQ ????</msg>
+  <msg key="Update_This_QA">? ???? ????</msg>
+  <msg key="View_All_FAQs">?? FAQ ??</msg>
+  <msg key="Yes">?</msg>
+</message_catalog>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-workflow" package_version="4.5.3" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="As_part_of">Del av</msg>
+  <msg key="On_what">På hva?</msg>
+  <msg key="To_Do">Oppgaver</msg>
+</message_catalog>

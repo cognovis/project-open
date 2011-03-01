@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-notes" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Address">Adres</msg>
+  <msg key="Company_Notes">Bedrijf aantekeningen</msg>
+  <msg key="Create_new_Note">Nieuwe aantekening</msg>
+  <msg key="Delete_Notes">Aantekening verwijderen</msg>
+  <msg key="Email">Email</msg>
+  <msg key="Fax">Fax</msg>
+  <msg key="Ftp">FTP</msg>
+  <msg key="Http">HTTP</msg>
+  <msg key="Mobile">Mobiel</msg>
+  <msg key="No_Notes_Available">Geen aantekeningen beschikbaar</msg>
+  <msg key="Notes_creation">Nieuwe aantekening</msg>
+  <msg key="Notes_Note">Aantekening</msg>
+  <msg key="Notes_Type">Type aantekening</msg>
+  <msg key="Other">Overig</msg>
+  <msg key="Phone">Telefoon</msg>
+  <msg key="Project_Notes">Project aantekeningen</msg>
+  <msg key="User_Notes">Gebruiker aantekeningen</msg>
+</message_catalog>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="bug-tracker" package_version="1.3a9" locale="zh_CN" charset="utf-8">
+
+  <msg key="Related_Files">相关文件</msg>
+</message_catalog>

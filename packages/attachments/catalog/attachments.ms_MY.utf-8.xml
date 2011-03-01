@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="ms_MY" charset="utf-8">
+
+  <msg key="Action">Tindakan</msg>
+  <msg key="Add_File">Tambah Fail</msg>
+  <msg key="Add_folder_Link">Tambah folder Pepaut</msg>
+  <msg key="Add_pretty_name">Tambah %pretty_name%</msg>
+  <msg key="Attach">Lampirkan</msg>
+  <msg key="attach_new">Lampirkan &lt;b&gt;baru&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Lampirkan URL</msg>
+  <msg key="Choose">Pilih</msg>
+  <msg key="Description">Perihal:</msg>
+  <msg key="File">Fail</msg>
+  <msg key="Last_Modified">Terakhir Diubahsuai</msg>
+  <msg key="lt_Add_Attachment_Folder">Tambah Lampiran Folder Pepaut</msg>
+  <msg key="lt_Attach_a_File_to_pret">Lampirkan Fail kepada %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% butiran</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% bait</msg>
+  <msg key="lt_Created_by_the_attach">Direka oleh pakej lampiran-lampiran</msg>
+  <msg key="lt_dont_know_how_to_deal">Tidak tahu bagaimana untuk mengendalikan jenis lampiran %content_type%</msg>
+  <msg key="lt_Error_Attachment_root">Ralat: Punca folder lampiran  dan punca folder simpanan fail adalah berlainan!</msg>
+  <msg key="lt_Error_empty_folder_id">Ralat: folder_id kosong!</msg>
+  <msg key="lt_Folder_folder_name_is">Folder %folder_name% adalah kosong</msg>
+  <msg key="lt_Found_file-storage_fo">Terjumpa simpanan-fail folder XXX folder_name XXX ... mahukah anda berpaut kepada folder tersebut?</msg>
+  <msg key="lt_No_file-storage_folde">Tiada simpanan-fail folder-folder dijumpai yang boleh dipautkan. Mahukah anda membuatnya?</msg>
+  <msg key="lt_No_such_attachment_fo">Tiada lampiran untuk objek ini</msg>
+  <msg key="lt_The_specified_parent_">Folder induk yang ditentukan tidak sah.</msg>
+  <msg key="lt_To_attach_a_file_alre">Untuk melampirkan fail yang sudah berada dalam folder, buka folder dengan klik pada nama folder tersebut, kemudian klik &amp;quot;[ Choose ]&amp;quot; paut di sebelah fail. Untuk memuat naik fail baru ke dalam folder, buka folder dengan klik pada nama folder tersebut, kemudian klik &amp;quot berkenaan;Lampirkan baru: Fail | URL&amp;quot; pepaut </msg>
+  <msg key="lt_Upload_New_Attachment">Muat Naik Lampiran Baru</msg>
+  <msg key="lt_Use_the_Browse_button">Gunakan butang &quot;Browse...&quot; untuk melokasi fail anda, kemudian klik &quot;Open&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Anda sendang melampirkan suatu dokumen kepada %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Kemungkinan anda telah klik pada butang Tambah lebih dari sekali. Semak sama ada fail tersebut telah dimuatkan betul pada &lt;a href=&quot;%folder_url%&quot;&gt;folder&lt;/a&gt; yang anda hendaki, atau anda boleh gunakan butang Back untuk kembali semula ke laman yang sebelumnya dan masuk semula versi fail.</msg>
+  <msg key="lt_Your_file_is_larger_t">Fail anda adalah lebih besar daripada saiz maksimum fail yang dibenarkan pada sistem ini (%max_number_of_bytes% bytes)</msg>
+  <msg key="Name">Nama</msg>
+  <msg key="No_such_type">Tiada jenis yang dikehendaki</msg>
+  <msg key="Object">Objek</msg>
+  <msg key="Size">Saiz</msg>
+  <msg key="Title">Tajuk:</msg>
+  <msg key="Top">Atas</msg>
+  <msg key="Type">Jenis</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Versi Nama Fail:</msg>
+  <msg key="you_are_attaching_document_to_object">Anda sedang melampirkan suatu dokumen baru kepada %pretty_object_name%.</msg>
+  <msg key="you_are_attaching_url_to_object">Anda sedang melampirkan url baru kepada %pretty_object_name%.</msg>
+</message_catalog>

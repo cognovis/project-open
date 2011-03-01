@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="pl_PL" charset="utf-8">
+
+  <msg key="Action">Czynność</msg>
+  <msg key="Add_File">Dodaj Plik</msg>
+  <msg key="Add_folder_Link">Dodaj Folder z Linkami</msg>
+  <msg key="Add_pretty_name">Dodaj %pretty_name%</msg>
+  <msg key="Attach">Załącz</msg>
+  <msg key="attach_new">Dołącz &lt;b&gt;nowy&lt;/b&gt;: </msg>
+  <msg key="Attach_URL">Załącz URL</msg>
+  <msg key="Choose">Wybierz</msg>
+  <msg key="Description">Opis:</msg>
+  <msg key="File">Plik</msg>
+  <msg key="Last_Modified">Ostatnio Zmieniane</msg>
+  <msg key="lt_Add_Attachment_Folder">Dodaj Załącznik Folder Link</msg>
+  <msg key="lt_Attach_a_File_to_pret">Załącz Plik do %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% obiekt /?/</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% bajt</msg>
+  <msg key="lt_Created_by_the_attach">Utworzony przez pakiet Załączniki</msg>
+  <msg key="lt_dont_know_how_to_deal">nie wiem co zrobić z tym typem załącznika</msg>
+  <msg key="lt_Error_Attachment_root">Błąd: Różne katalogi główne dla Załączników i Systemu Plików!</msg>
+  <msg key="lt_Error_empty_folder_id">Błąd: pusty folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">Folder %folder_name% jest pusty</msg>
+  <msg key="lt_Found_file-storage_fo">Znaleziono folder XXX folder_name XXX ... czy chcesz połączyć go?</msg>
+  <msg key="lt_No_file-storage_folde">Nie znaleziono żadnego foldera do połącznia. Czy chcesz utworzyć nowy folder?</msg>
+  <msg key="lt_No_such_attachment_fo">Brak załącznika dla tego obiektu</msg>
+  <msg key="lt_The_specified_parent_">Ten folder nadrzędny jest błędny. </msg>
+  <msg key="lt_To_attach_a_file_alre">By załączyć plik, który jest już w folderze, otwórz folder klikając jego nazwę, potem kliknij link &amp;quot;[ Wybierz ]&amp;quot; obok pliku. By wgrać nowy plik do foldera, otwórz folder klikając jego nazwę, potem kliknij odpowiedni link: &amp;quot;Załącz nowy: Plik | URL&amp;quot;</msg>
+  <msg key="lt_Upload_New_Attachment">Wgraj Nowy Załącznik</msg>
+  <msg key="lt_Use_the_Browse_button">Wybierz plik używając przycisku &quot;Przeglądaj...&quot; lub &quot;Browse...&quot;, następnie kliknij &quot;Otwórz&quot; lub &quot;Open&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Załączasz dokument do %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Prawdopodobnie dwukrotnie kliknięto przycisk Dodaj. Sprawdź czy plik został prawidłowo wgrany do &lt;a href=&quot;%folder_url%&quot;&gt;żądanego foldera&lt;/a&gt; albo cofnij przeglądarkę i wprowadź nową wersję pliku. </msg>
+  <msg key="lt_Your_file_is_larger_t">Twój plik jest zbyt duży. Maksymalna wielkość to %max_number_of_bytes% bajtów.</msg>
+  <msg key="Name">Nazwa</msg>
+  <msg key="No_such_type">Brak takiego typu</msg>
+  <msg key="Object">Obiekt</msg>
+  <msg key="Size">Rozmiar</msg>
+  <msg key="Title">Tytuł:</msg>
+  <msg key="Top">Najwyższy</msg>
+  <msg key="Type">Typ</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Nazwa Pliku Wersji:</msg>
+  <msg key="you_are_attaching_document_to_object">Dołączasz nowy dokument do %pretty_object_name%.</msg>
+  <msg key="you_are_attaching_url_to_object">Dołączasz nowy url do %pretty_object_name%.</msg>
+</message_catalog>

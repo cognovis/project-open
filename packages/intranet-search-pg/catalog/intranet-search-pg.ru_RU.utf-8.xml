@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Advanced_Search">Расширенный поиск</msg>
+  <msg key="lt_Make_sure_all_words_a">Убедитесь, что в тексте нет опечаток.</msg>
+  <msg key="lt_No_pages_were_found_c">Не найдено результатов для следующего запроса: &quot;</msg>
+  <msg key="lt_Try_different_keyword">Попробуйте другие ключевые слова.</msg>
+  <msg key="lt_Try_more_general_keyw">Попробуйте более общие ключевые слова.</msg>
+  <msg key="Next">Далее</msg>
+  <msg key="of_about">из приблизительно</msg>
+  <msg key="Result_page">Страница результатов</msg>
+  <msg key="Results">Результаты</msg>
+  <msg key="Search">Поиск</msg>
+  <msg key="Search_Engine">Поисковая система</msg>
+  <msg key="seconds">с</msg>
+  <msg key="Suggestions">Предложения</msg>
+  <msg key="Try_fewer_keywords">Попробуйте задать меньше ключевых слов</msg>
+</message_catalog>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="tr_TR" charset="utf-8">
+
+  <msg key="A">C:</msg>
+  <msg key="administer">yönet</msg>
+  <msg key="Answer">Cevap</msg>
+  <msg key="Back_to_FAQs">SSS'lere geri</msg>
+  <msg key="Create_a_new_FAQ">Yeni SSS yarat</msg>
+  <msg key="Create_an_FAQ">Bir SSS yarat</msg>
+  <msg key="Create_FAQ">SSS yarat</msg>
+  <msg key="Delete">Sil</msg>
+  <msg key="delete">sil</msg>
+  <msg key="Edit">Düzenle</msg>
+  <msg key="edit">düzenle</msg>
+  <msg key="Edit_an_FAQ">Bir SSS'yi düzenle</msg>
+  <msg key="FAQ_Admin">SSS Yönetimi</msg>
+  <msg key="FAQs">SSS'ler</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="Name">İsim:</msg>
+  <msg key="New">Yeni</msg>
+  <msg key="No">Hayır</msg>
+  <msg key="One_Question">Bir Soru</msg>
+  <msg key="Plain">Sade</msg>
+  <msg key="preview">önizleme</msg>
+  <msg key="Q">S:</msg>
+  <msg key="Question">Soru</msg>
+  <msg key="Title">Başlık:</msg>
+  <msg key="Update_FAQ">SSS'yi Güncelle</msg>
+  <msg key="View_All_FAQs">Bütün SSS'leri görüntüleri</msg>
+  <msg key="Yes">Evet</msg>
+</message_catalog>

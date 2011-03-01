@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="calendar" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="_You_may_choose_to">. Puede optar por:</msg>
+  <msg key="Add">Añadir</msg>
+  <msg key="add">añadir</msg>
+  <msg key="Add_a_new_Audience">Añadir una nueva audiencia</msg>
+  <msg key="Add_all_day_event">Añadir un evento para todo el día</msg>
+  <msg key="add_an_event">Añadir un evento</msg>
+  <msg key="Add_an_item">Añadir un evento</msg>
+  <msg key="Add_an_Item_Type">Añadir un tipo</msg>
+  <msg key="Add_Item">Añadir evento</msg>
+  <msg key="Add_item_beginning_at">Añadir un evento que empiece a esta hora</msg>
+  <msg key="Add_Recurrence">Añadir evento periódico</msg>
+  <msg key="All_Day_Event">Evento para todo el día</msg>
+  <msg key="all_events">Todos los eventos</msg>
+  <msg key="and_Time">y hora</msg>
+  <msg key="Apply_to_all">Aplicar a todos los eventos</msg>
+  <msg key="Attachments">Archivos adjuntos:</msg>
+  <msg key="Audiences_for_item">Audiencia para el evento</msg>
+  <msg key="Calendar">Calendario</msg>
+  <msg key="Calendar_Add_Item">Calendario: Añadir evento</msg>
+  <msg key="Calendar_Edit_Item">Calendario: Editar evento</msg>
+  <msg key="calendar_event_details">Detalles del evento</msg>
+  <msg key="Calendar_Item">Evento</msg>
+  <msg key="Calendar_Item_Delete">Borrar evento</msg>
+  <msg key="Calendar_Item_Types">Tipos de eventos</msg>
+  <msg key="Calendar_Name">Nombre del calendario</msg>
+  <msg key="Calendar_Permissions">Permisos para el calendario</msg>
+  <msg key="Calendar_Permissions_1">Permisos para el calendario</msg>
+  <msg key="Calendar_Preferences">Preferencias del calendario</msg>
+  <msg key="Calendars">Calendarios</msg>
+  <msg key="Choose">Elegir</msg>
+  <msg key="Close_Window">Cerrar ventana</msg>
+  <msg key="Current_Permissions">Permisos actuales</msg>
+  <msg key="Date">Fecha:</msg>
+  <msg key="Date_1">Fecha</msg>
+  <msg key="Day">Día</msg>
+  <msg key="day">día</msg>
+  <msg key="day_rolling_period">días</msg>
+  <msg key="day_s">día(s)</msg>
+  <msg key="days">días</msg>
+  <msg key="Delete">Borrar</msg>
+  <msg key="delete">borrar</msg>
+  <msg key="Description">Descripción</msg>
+  <msg key="Details">Detalles:</msg>
+  <msg key="developer_note_calendar_add">Nota del desarrollador: El proceso de creación del Calendario incluye los siguientes pasos: &lt;ol&gt; &lt;li&gt; Crear el Calendario,y cambiar los permisos otorgados por defecto, si fuera necesario &lt;li&gt; Seleccionar grupos y/o usuarios que serán la audiencia del calendario &lt;li&gt; Aplicar si fuera necesario permisos al usuario/grupo.</msg>
+  <msg key="Edit">Editar</msg>
+  <msg key="edit">editar</msg>
+  <msg key="End_Time">Fin</msg>
+  <msg key="Event">Evento</msg>
+  <msg key="Events">Eventos</msg>
+  <msg key="events_over_1d">Mostrar les eventos para hoy</msg>
+  <msg key="events_over_7d">Mostrar los eventos de los próximos 7 días</msg>
+  <msg key="events_over_14d">Mostrar los eventos de los próximos 14 días</msg>
+  <msg key="events_over_21d">Mostrar los eventos de los próximos 21 días</msg>
+  <msg key="events_over_30d">Mostrar los eventos de los próximos 30 días</msg>
+  <msg key="events_over_60d">Mostrar los eventos de los próximos 60 días</msg>
+  <msg key="Events_over_a">Eventos en un período de</msg>
+  <msg key="Friday">Viernes</msg>
+  <msg key="from">de</msg>
+  <msg key="Go_to_date">Ir a la fecha introducida</msg>
+  <msg key="Go_to_monthsname">Ir a %months.name%</msg>
+  <msg key="Go_to_year_next_year">Ir al año %next_year%</msg>
+  <msg key="Go_to_year_prev_year">Ir al año %prev_year%</msg>
+  <msg key="goto_cal_item_start_date">Ir a %cal_item.pretty_short_start_date%</msg>
+  <msg key="goto_day_items_day_number">Ir al día %items.day_number%</msg>
+  <msg key="goto_day_items_pretty_date">Ir a %items.pretty_date%</msg>
+  <msg key="goto_days_day_number">Ir al día %days.day_number%</msg>
+  <msg key="goto_days_pretty_date">Ir a %days.pretty_date%</msg>
+  <msg key="goto_items_event_name">Ir a %items.event_name%</msg>
+  <msg key="goto_items_without_time_event_name">Ir a %items_without_time.event_name%</msg>
+  <msg key="goto_months_name">Ir a %months.name%</msg>
+  <msg key="goto_today">Ir a hoy</msg>
+  <msg key="goto_weekday">Ir a %days_of_week.day_short% %days_of_week.monthday%</msg>
+  <msg key="Grant">Otorgar</msg>
+  <msg key="Grant_Permissions">Autorizar</msg>
+  <msg key="Hours">Horas</msg>
+  <msg key="is_recurring">El evento se repite</msg>
+  <msg key="Item">Evento</msg>
+  <msg key="last_week">semana anterior</msg>
+  <msg key="List">Lista</msg>
+  <msg key="lt_Are_you_sure_you_want">¿Desea realmente borrar este calendario? Todos los eventos y permisos asociados serán borrados también.</msg>
+  <msg key="lt_Are_you_sure_you_want_1">¿Desea realmente borrar este evento?</msg>
+  <msg key="lt_Audiences_for_calenda">Audiencias del calendario</msg>
+  <msg key="lt_Calendar_Administrati">Administración del calendario</msg>
+  <msg key="lt_Calendar_Administrati_1">Administración del calendario para el usuario</msg>
+  <msg key="lt_Calendar_Choose_Calen">Calendario: elegir calendario</msg>
+  <msg key="lt_Calendar_detail_listi">Detalles del calendario: mostrando toda la información del calendario personal</msg>
+  <msg key="lt_Calendar_Item_Adminis">Administración de eventos</msg>
+  <msg key="lt_Calendar_Item_Permiss">&quot;Permisos sobre eventos del calendario&quot;</msg>
+  <msg key="lt_Calendars_Repeating_E">Calendarios: eventos periódicos</msg>
+  <msg key="lt_Create_a_new_calendar">Crear un nuevo calendario</msg>
+  <msg key="lt_delete_all_occurrence">borrar todas las ocurrencias</msg>
+  <msg key="lt_delete_only_this_inst">borrar solamente esta instancia</msg>
+  <msg key="lt_Edit_your_Calendar_Pr">Editar sus preferencias del calendario</msg>
+  <msg key="lt_everyone_have_read_pe">todo el mundo tiene permisos de lectura y puede ver los eventos, tanto los usuarios registrados como los no registrados.</msg>
+  <msg key="lt_Go_to_month_name_days">Ir al %days.day_number% de %month_name% del %year%</msg>
+  <msg key="lt_Go_to_monthsname_curr">Ir a %months.name% del %curr_year%</msg>
+  <msg key="lt_Go_to_monthsname_curr_1">Ir a %months.name% %curr_year%&amp;gt;%months.name%&amp;lt;/a&amp;gt;&amp;lt;/td&amp;gt;
+            &amp;lt;/else&amp;gt;         
+           &amp;lt;/multiple&amp;gt;
+        &amp;lt;/if&amp;gt;
+
+        &amp;lt;else&amp;gt;
+          &amp;lt;tr class=&amp;quot;days&amp;quot;&amp;gt;
+            &amp;lt;multiple name=&amp;quot;days_of_week&amp;quot;&amp;gt;
+              &amp;lt;td&amp;gt;%days_of_week.day_short%&amp;lt;/td&amp;gt;
+            &amp;lt;/multiple&amp;gt;
+          &amp;lt;/tr&amp;gt;
+      
+          &amp;lt;multiple name=&amp;quot;days&amp;quot;&amp;gt;
+            &amp;lt;if %days.beginning_of_week_p% true&amp;gt;
+              &amp;lt;tr&amp;gt;
+            &amp;lt;/if&amp;gt;
+        
+            &amp;lt;if %days.active_p% true&amp;gt;
+              &amp;lt;if %days.today_p% true&amp;gt;
+                &amp;lt;td class=&amp;quot;today&amp;quot; onclick=&amp;quot;javascript:location.href='%days.url%';&amp;quot;&amp;gt;
+                  &amp;lt;a href=&amp;quot;%days.url%&amp;quot; title=&amp;quot;&amp;lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
+  <msg key="lt_Hide_Checked_Calendar">Ocultar los calendarios seleccionados</msg>
+  <msg key="lt_Manage_Calendar_Audie">Administrar las Audiencias del Calendario</msg>
+  <msg key="lt_no_parties_exist_cont">no existen reuniones, pongase en contacto con el administrador del sistema</msg>
+  <msg key="lt_no_privilege_exist_co">no existen privilegios, pongase en contacto con el administrador del sistema</msg>
+  <msg key="lt_no_privilege_has_been">ningún privilegio ha sido otorgado</msg>
+  <msg key="lt_only_those_you_choose">sólo la audiencia del Calendario podrá ver los eventos.</msg>
+  <msg key="lt_Repeat_this_event_unt">Repetir este evento hasta:</msg>
+  <msg key="lt_The_following_is_a__l">A continuación, la lista de los calendarios a los cuales tiene acceso. Dicha lista será mostrada en su calendario como opción para ver los eventos de esos calendarios. Puede elegir los calendarios que aparecerán en dicha lista.</msg>
+  <msg key="lt_There_are_no_audience">No hay audiencias para este calendario</msg>
+  <msg key="lt_This_is_a_repeating_e">Este evento es periódico</msg>
+  <msg key="lt_You_are_choosing_to_m">Ha marcado este evento como periódico, de forma que aparecerá más de una vez en su calendario. Detalles del evento:</msg>
+  <msg key="lt_You_can_manage_the_fo">Puede administrar los calendarios siguientes:</msg>
+  <msg key="lt_You_have_no_party_wid">No tiene acceso a calendarios algunos</msg>
+  <msg key="Manage_Item_Types">Administrar los tipos de eventos</msg>
+  <msg key="Monday">Lunes</msg>
+  <msg key="Month">Mes</msg>
+  <msg key="New_Type">Tipo nuevo:</msg>
+  <msg key="next_day">Día siguiente</msg>
+  <msg key="next_month">Mes siguiente</msg>
+  <msg key="next_week">Semana siguiente</msg>
+  <msg key="next_year">Año siguiente</msg>
+  <msg key="No">No</msg>
+  <msg key="No_Calendars">Ningún calendario</msg>
+  <msg key="No_Items">Sin eventos</msg>
+  <msg key="no_keep_it">no, conservarlo</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="of_the_month">del mes</msg>
+  <msg key="of_the_week">de la semana</msg>
+  <msg key="prev_day">Día anterior</msg>
+  <msg key="prev_month">Mes anterior</msg>
+  <msg key="prev_week">Semana anterior</msg>
+  <msg key="prev_year">Año anterior</msg>
+  <msg key="Print">Imprimir</msg>
+  <msg key="Private">Privado:</msg>
+  <msg key="private">privado</msg>
+  <msg key="Public">Público:</msg>
+  <msg key="public">público</msg>
+  <msg key="RelatedLink">Enlace asociado</msg>
+  <msg key="Repeat">Repetir</msg>
+  <msg key="Repeat_1">¿Evento periódico?</msg>
+  <msg key="Repeat_every">Repetir cada</msg>
+  <msg key="revoke">revocar</msg>
+  <msg key="same">cada</msg>
+  <msg key="Saturday">Sábado</msg>
+  <msg key="Select_Calendars">Elegir calendarios</msg>
+  <msg key="select_views_name">Seleccionar la vista %views.name%</msg>
+  <msg key="Sharing">Compartida</msg>
+  <msg key="skip_day_calendar">Omitir calendario diario</msg>
+  <msg key="skip_month_calendar">Omitir calendario mensual</msg>
+  <msg key="sort_by_date">Ordenar por fecha</msg>
+  <msg key="sort_by_type">Ordenar por tipo</msg>
+  <msg key="Start_Time">Inicio</msg>
+  <msg key="start_time_before_end_time">La hora inicial es anterior a la final</msg>
+  <msg key="Submit_query">Enviar solicitud</msg>
+  <msg key="Sunday">Domingo</msg>
+  <msg key="sync_with_Outlook">sincronizar con Outlook:</msg>
+  <msg key="Thursday">Jueves</msg>
+  <msg key="Time">Hora:</msg>
+  <msg key="Time_1">Hora</msg>
+  <msg key="Title">Título:</msg>
+  <msg key="Title_1">Título</msg>
+  <msg key="to">a</msg>
+  <msg key="Tuesday">Martes</msg>
+  <msg key="Type">Tipo:</msg>
+  <msg key="Type_1">Tipo</msg>
+  <msg key="Type_Help">Su evento puede ser clasificado. Elija un tipo de la lista.</msg>
+  <msg key="Use_Hours_Below">Horario:</msg>
+  <msg key="view">Vista</msg>
+  <msg key="Wednesday">Miércoles</msg>
+  <msg key="Week">Semana</msg>
+  <msg key="Week_of">Semana</msg>
+  <msg key="y-m-d">aaaa-mm-dd</msg>
+  <msg key="year">año</msg>
+  <msg key="Yes">Sí</msg>
+  <msg key="yes_delete_it">sí, borrarlo</msg>
+  <msg key="Yes_I_am_sure">Sí, estoy seguro.</msg>
+</message_catalog>

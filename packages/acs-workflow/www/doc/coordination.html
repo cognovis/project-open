@@ -1,0 +1,255 @@
+<html>
+<head>
+<title>Workflow Coordination Central</title>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Coordination Central</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on August 17, 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> :
+Coordination Central
+
+<hr>
+
+<h3>Mini-Tasks and Work Plan</h3>
+
+<em>This list will be updated as we go along</em>
+
+<h4>Must-haves</h4>
+
+<ul>
+
+<li>60. Email notifications from the engine. Stas has written a simple
+notification package: packages/notification (depends on
+packages/acs-util). Talk to <a
+href="http://www.arsdigita.com/shared/community-member?user_id=26556">Stas</a>
+about how to use it.
+
+<p>
+
+<li>200. A pilot application package to build on top of the workflow
+package. We can't really get everything right until that happens.
+
+<p>
+
+<li>240. Integrate with permissions. Permissions applicable to
+workflows are: (a) administer a workflow definition, (b) view a
+workflow definition and summary, (c) administer cases for a workflow,
+(d) view cases for the workflow.
+
+<p>
+
+<li>320. We must have a UI for setting the static (context-based)
+assignments, so a manager can install a workflow definition and then
+fit it with his own user-base.
+
+<p>
+
+<li>350. We currently have a problem with unassigned tasks and manual
+task assignments. Manual task assignments used to use attributes, but
+this was changed, because attributes can only hold one value each. And
+there's currently no way to assign users to unassigned tasks.
+
+<p>
+
+<li>360. Implement a function to check for soundness of the
+workflow-net: <a
+href="http://wwwis.win.tue.nl/~wsinwa/jcsc/node16.html#SECTION00052000000000000000">here's
+how</a>.
+
+</ul>
+
+<h4>Nice-to-haves</h4>
+
+<ul>
+
+<li>260. Allow users to add random single tasks to their work
+list. That would help adoption, and it would help users by keeping
+everything in one place.
+
+<p>
+
+<li>290. Add the usual callback mechanisms for setting
+estimated_minutes for a specific task (including adding the column to
+wf_user_tasks), so the estimate can depend on conditions in the
+environment.
+
+<p>
+
+<li>300. The act of setting attributes should be separate from the
+act of finishing the task. The user should be able to set the
+attributes incrementally, have the value stored for her, and the
+finish the task when she's ready.
+
+<p>
+
+<li>310. We need to be able to generate better UI for setting
+outputs. Currently we only really know what to do with short strings
+and booleans. This borders to the problem of automatically generating
+forms from metadata.
+
+<p>
+
+<li>330. In order to make distribution of workflow definitions easier,
+we should probably have the callbacks stored in the workflow
+definition and not in the context info, or perhaps in both
+places. This is a trivial change and one of the things that we
+probably won't finally decide on until we have a pilot application.
+
+<p>
+
+
+</ul>
+
+
+<h3>Bigger Tasks</h3>
+
+<em>This list will be updated as we go along</em>
+
+<ul>
+
+<li>800. Maintainer's Guide.
+
+<li>900. Advanced Workflow Builder's Guide.
+
+<p>
+
+</ul>
+
+
+<h3>People</h3>
+
+<table border=1>
+<tr><th>Name</th><th>AIM handle</th><th>Email</th><th>Allocation Level</th><th>Task</th></tr>
+
+<tr><td>Lars</td><td>aD larspind</td><td><a href="mailto:lars@pinds.com">lars@pinds.com</a></td>
+<td>80%</td><td>100.</td></tr>
+
+<tr><td>Kevin Scaldeferri</td><td>kscaldef</td><td><a href="mailto:kevin@theory.caltech.edu">kevin@theory.caltech.edu</a></td>
+<td>50%</td><td>700.</td></tr>
+
+<tr><td>Matthew Burke</td><td>kscaldef</td><td><a href="mailto:mburke@arsdigita.com">mburke@arsdigita.com</a></td>
+<td>50%</td><td>600.</td></tr>
+
+</table>
+
+[ <a href="mailto:lars@pinds.com,mburke@arsdigita.com,kevin@theory.caltech.edu">email all</a> ]
+
+
+
+
+<h3>Stuff that's done</h3>
+
+<ul>
+
+<li>50. Test all callbacks (guards, assignments, enable, fire, etc.). Use
+and modify the <code>sql/sample-expenses.sql</code> sample workflow as
+needed. (they seem to work pretty well)
+
+<li>70. Modify workflow-package to use Michael Yoon's PL/SQL
+conventions, i.e. arguments shouldn't be named "v_foo", but just foo.
+
+<li>80. Modify workflow-create and workflow-package, so workflow_key,
+transition_key, place_key, context_key, etc., are called just that
+(and not workflow, transition, place, context) throughout the model
+
+<li>90. Currently, the <code>wf_user_tasks</code> view doesn't
+actually traverse the parties hierarchy. It should, using
+<code>org_member_map</code> in some way, but I'm not sure how. Talk to
+Rafi (rhs@mit.edu) about this. <code>group_distinct_member_map</code>
+seems to be the trick.
+
+<li>100. Neither UI nor engine currently enforces that only the
+assigned users are allowed to perform actions on tasks. This check
+should be added, and it sounds reasonable to involve permissions to do
+this in one way or another (doesn't it?). (Depends on 90)
+
+<li>110. Add workflow attributes to the task page and actually set the values.
+
+<li>120. Figure out how to use the metadata capabilities of the core
+for workflow attributes.
+
+<li>130. Integrate workflow with acs-kernel. We want every row in
+wf_workflows to be an acs_object_type, and every row in wf_cases to be
+an acs_object of that type. Should we discard the varchar primary
+keys, then? The point of varchar primary keys was to make it easy to
+move a workflow definition from one ACS-installation to another, and
+to make it easy to write a SQL-script that'll create your workflow,
+without having to store all the generated primary keys in SQL*Plus
+variables.
+
+<li>140. Move the journal stuff into acs-kernel. Journals make sense
+for all objects. The journal is about keeping track of actions on the
+object.
+
+<li>150. Modify workflow-create and workflow-package to work with the
+journal table that's been moved into the core.
+
+<li>160. Modify callbacks to take one varchar2 parameter that can be
+set in the context or wherever you specify the name of the callback
+proc/func. How? The signature for guard_callback will be
+<code>(case_id, workflow_key, transition_key, place_key, direction,
+custom_arg)</code>, where <code>custom_arg</code> is a
+<code>varchar2</code>. In <code>wf_arcs</code> where you specify the
+<code>guard_callback</code> function name, you also specify the
+<em>value</em> passed to the <code>custom_arg</code> parameter. That
+way, the same callback function can be reused for similar purposes,
+and we can provide a small library of standard supplied callbacks to
+perform standard things, e.g., a guard-callback
+<code>attribute_true</code>, which takes the name of an attribute as
+the <code>custom_arg</code>, or a <code>sysdate_plus_x</code>
+timeout-callback that takes a value to add to sysdate as the
+<code>custom_arg</code>.
+
+<li>170. Manual task assignments: there should be a way to say "this
+task involves naming the party that should be responsible for this
+task and that task". The way I propose to do it is to kill the
+wf_case_assignments table and make them attributes with a certain name
+that is set as usual. Same goes for manual case deadlines.
+
+<li>180. Make task.tcl actually look like the mock-up in the requirements doc.
+
+<li>190. Suspend/resume/cancel workflow.
+
+<li>210. Work deadlines into the UI somehow.
+
+<li>220. Tie case attribute values to journal id's again, so we can
+see what values were the output of each task.
+
+<li>230. Add comments to a case.
+
+<li>280. Remove start_place_key and end_place_key and make it
+'reserved words', so we just look for a place named 'start' and a
+place named 'end'. That would get rid of the annoying cyclical
+dependencies. The worst thing about them is that it makes it harder to
+create workflows, because you have to (1) insert into wf_workflows,
+(2) insert into wf_places, and then (3) update wf_workflows.
+
+<li>270. Add a column to hold estimated execution time for a task, to
+aid the user in planning his work. 
+
+<li>340. Clean up, remove hacks, restructure pages under www.
+
+<li>600. workflow-definition UI (see below)
+
+<li>700. workflow process overview UI (see below) - this work has already
+been started, see www/admin.tcl and related pages.
+
+<li>250. Starting and managing the DBMS_JOBS that are supposed to be
+run. This is fairly trivial, but since no-body are using the features
+right now, we figured we wouldn't start jobs in the database.
+
+</ul>
+
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2005/04/27 22:50:59 $</td></tr></table>
+
+</body>
+</html>

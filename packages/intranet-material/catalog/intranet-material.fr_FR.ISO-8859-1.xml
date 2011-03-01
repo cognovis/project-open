@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Description">Description</msg>
+  <msg key="Filter_Materials">Filtrer les Matériels</msg>
+  <msg key="Material">Matériel</msg>
+  <msg key="Name">Nom</msg>
+  <msg key="Nr">No</msg>
+  <msg key="Status">Statut</msg>
+  <msg key="There_are_no_active_materials">Aucun matériel ne répond à vos critères de recherche</msg>
+  <msg key="Type">Type</msg>
+  <msg key="UoM">UoM</msg>
+</message_catalog>

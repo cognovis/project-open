@@ -1,0 +1,42 @@
+<html>
+<head><title>Setting Template Root</title></head>
+<body bgcolor=#ffffff>
+
+<h2>Setting Template Root</h2>
+
+<a href="template.html">Templates Tutorial</a> : Setting Template Root
+<hr>
+
+<h3>Overview</h3>
+
+The Template Root parameter controls the location of the templates
+in the filesystem. The directory specified by the Template Root 
+corresponds to the root of the Templates tree in the CMS UI. Templates
+are published to and parsed from this location.
+
+<h3>Setting Template Root in standalone CMS</h4>
+
+In the standalone CMS, the TemplateRoot is controlled by the 
+<tt>TemplateRoot</tt> parameter under the <tt>cms</tt> section of 
+the server's INI file. For Example:
+
+<blockquote><pre><tt>[ns/server/cms-simple/cms]
+TemplateRoot=/web/cms-simple/templates</tt></pre></blockquote>
+
+The syntax is similar if your server uses a TCL file for initialization:
+
+<blockquote><pre><tt>ns_section "ns/server/${servername}/cms"
+ns_param TemplateRoot $rundir/templates</tt></pre></blockquote>
+
+The TemplateRoot parameter, if absent, defaults to the <tt>templates</tt>
+directory under the run directory of your server. For example,
+if the pageroot for your server is <tt>/web/fooserver/www</tt>, the
+TemplateRoot parameter will default to <tt>/web/fooserver/templates</tt>.
+
+<h3>Setting Template Root in CMS-package</h4>
+
+The Template Root is controlled by the TemplateRoot parameter of the package.
+
+
+</body>
+</html>

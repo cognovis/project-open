@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Adicionar nova despesa</msg>
+  <msg key="Amount">Quantia</msg>
+  <msg key="Create_Travel_Cost">Criar custo de viagem</msg>
+  <msg key="Currency">Moeda</msg>
+  <msg key="Delete">Apagar</msg>
+  <msg key="Expense_Date">Data da Despesa</msg>
+  <msg key="Expense_Payment_Type">Pagamento</msg>
+  <msg key="Expense_Type">Tipo da Despesa</msg>
+  <msg key="Expenses">Despesas</msg>
+  <msg key="Expenses_Items">Despesas</msg>
+  <msg key="Filter_Expenses">Filtrar Despesas</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice_Items">Custos de Viagem</msg>
+  <msg key="New_Expense">Nova Despesa</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="Project">Projeto</msg>
+  <msg key="Project_Name">Nome do Projeto</msg>
+  <msg key="reibursable">Reembolso %</msg>
+  <msg key="reimbursable">Reembolso %%</msg>
+  <msg key="Remove_checked_items">Remover itens marcados</msg>
+  <msg key="Unassigned">Não assimilado</msg>
+  <msg key="Unassigned_Expenses">Despesas não assimiladas</msg>
+</message_catalog>

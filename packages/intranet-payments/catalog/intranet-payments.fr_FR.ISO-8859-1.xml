@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="_Previous">Page</msg>
+  <msg key="Add_New">Ajouter Nouveau</msg>
+  <msg key="Add_payment">Ajouter réglement</msg>
+  <msg key="Amount">Montant</msg>
+  <msg key="Amount_Paid">Montant réglé</msg>
+  <msg key="Client">Client</msg>
+  <msg key="Cost_Name">Coût</msg>
+  <msg key="Cost_Nr">Coût No</msg>
+  <msg key="Del">Suppr</msg>
+  <msg key="Delete_payment">Supprimer réglement</msg>
+  <msg key="Edit_payment">Modifier réglement</msg>
+  <msg key="Filter_Payments">Filtrer les Réglements</msg>
+  <msg key="Go">Go</msg>
+  <msg key="Invoice">Facture</msg>
+  <msg key="Invoice_Amount">Montant de la facture</msg>
+  <msg key="lt_Confirm_payment_delet">Confirmer la suppression du réglement</msg>
+  <msg key="lt_Do_you_really_want_to">Souhaitez-vous réellement supprimer le réglement %fee_type% de %fee_str% pour %project_name%?</msg>
+  <msg key="lt_Insufficient_Privileg">Droits d'accès insuffisants</msg>
+  <msg key="lt_No_costinvoice_item_s">Aucun élément de coût/facture précisé</msg>
+  <msg key="lt_There_are_currently_n">Aucun réglement ne correspond aux critères de sélection</msg>
+  <msg key="lt_You_dont_have_suffici">Vos droits d'accès sont insuffisants pour visualiser cette page.</msg>
+  <msg key="New_payment">Nouveau réglement</msg>
+  <msg key="Next_Page">Page suivante</msg>
+  <msg key="Note">Note</msg>
+  <msg key="One_project">Un projet</msg>
+  <msg key="Payment">Réglement</msg>
+  <msg key="Payment_Details">Détails du réglement</msg>
+  <msg key="Payment_hash_simbol">Réglement #</msg>
+  <msg key="Payment_Status">Statut du réglement:</msg>
+  <msg key="Payment_Type">Type de réglement</msg>
+  <msg key="Payments">Réglements</msg>
+  <msg key="Projects">Projets</msg>
+  <msg key="Provider">Fournisseur</msg>
+  <msg key="Received">Reçu</msg>
+  <msg key="Start_block_error">Erreur début de bloc</msg>
+  <msg key="Status">Statut</msg>
+  <msg key="Update">Mettre à jour</msg>
+</message_catalog>

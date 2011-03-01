@@ -1,0 +1,83 @@
+uom;company;task_type;target_language;source_language;subject_area;valid_from;valid_through;price;currency
+
+# The system ignores empty lines and lines starting with a '#' (comments);;;;;;;;;
+# Please save this file to your local disc an replace 'company_path' by the...;;;;;;;;;
+# ... path of your company;;;;;;;;;
+
+# Default prices for EUR;;;;;;;;;
+S-Word;company_path;;;;;;;0,15;EUR
+T-Word;company_path;;;;;;;0,15;EUR
+S-Line;company_path;;;;;;;1,5;EUR
+Hour;company_path;;;;;;;70;EUR
+Day;company_path;;;;;;;500;EUR
+
+# Default prices for USD;;;;;;;;;
+S-Word;company_path;;;;;;;0,15;USD
+T-Word;company_path;;;;;;;0,15;USD
+S-Line;company_path;;;;;;;1,5;USD
+Hour;company_path;;;;;;;70;USD
+Day;company_path;;;;;;;500;USD
+
+# Default prices for GBP;;;;;;;;;
+S-Word;company_path;;;;;;;0,4;GBP
+T-Word;company_path;;;;;;;0,4;GBP
+S-Line;company_path;;;;;;;2,5;GBP
+Hour;company_path;;;;;;;70;GBP
+Day;company_path;;;;;;;560;GBP
+
+# Default prices with translation task EUR;;;;;;;;;
+S-Word;company_path;Trans Only;;;;;;0,15;EUR
+T-Word;company_path;Trans Only;;;;;;0,15;EUR
+S-Line;company_path;Trans Only;;;;;;1,5;EUR
+Hour;company_path;Trans Only;;;;;;70;EUR
+S-Word;company_path;Trans + Int. Spotcheck;;;;;;0,15;EUR
+T-Word;company_path;Trans + Int. Spotcheck;;;;;;0,15;EUR
+S-Line;company_path;Trans + Int. Spotcheck;;;;;;1,5;EUR
+Hour;company_path;Trans + Int. Spotcheck;;;;;;70;EUR
+S-Word;company_path;Trans + Edit;;;;;;0,22;EUR
+T-Word;company_path;Trans + Edit;;;;;;0,22;EUR
+S-Line;company_path;Trans + Edit;;;;;;1,2;EUR
+Hour;company_path;Trans + Edit;;;;;;70;EUR
+S-Word;company_path;Trans + Edit + Proof;;;;;;0,22;EUR
+T-Word;company_path;Trans + Edit + Proof;;;;;;0,22;EUR
+S-Line;company_path;Trans + Edit + Proof;;;;;;1,2;EUR
+Hour;company_path;Trans + Edit + Proof;;;;;;70;EUR
+Hour;company_path;Edit Only;;;;;;70;EUR
+
+# Default prices with translation task USD;;;;;;;;;
+S-Word;company_path;Trans Only;;;;;;0,15;USD
+T-Word;company_path;Trans Only;;;;;;0,15;USD
+S-Line;company_path;Trans Only;;;;;;1,5;USD
+Hour;company_path;Trans Only;;;;;;70;USD
+S-Word;company_path;Trans + Int. Spotcheck;;;;;;0,15;USD
+T-Word;company_path;Trans + Int. Spotcheck;;;;;;0,15;USD
+S-Line;company_path;Trans + Int. Spotcheck;;;;;;1,5;USD
+Hour;company_path;Trans + Int. Spotcheck;;;;;;70;USD
+S-Word;company_path;Trans + Edit;;;;;;0,22;USD
+T-Word;company_path;Trans + Edit;;;;;;0,22;USD
+S-Line;company_path;Trans + Edit;;;;;;1,2;USD
+Hour;company_path;Trans + Edit;;;;;;70;USD
+S-Word;company_path;Trans + Edit + Proof;;;;;;0,22;USD
+T-Word;company_path;Trans + Edit + Proof;;;;;;0,22;USD
+S-Line;company_path;Trans + Edit + Proof;;;;;;1,2;USD
+Hour;company_path;Trans + Edit + Proof;;;;;;70;USD
+Hour;company_path;Edit Only;;;;;;70;USD
+
+# Prices for Japanese are twice the normal rate. We only consider EUR;;;;;;;;;
+S-Word;company_path;Trans Only;jp;;;;;0,3;EUR
+T-Word;company_path;Trans Only;jp;;;;;0,3;EUR
+S-Line;company_path;Trans Only;jp;;;;;3;EUR
+Hour;company_path;Trans Only;jp;;;;;140;EUR
+S-Word;company_path;Trans + Int. Spotcheck;jp;;;;;0,3;EUR
+T-Word;company_path;Trans + Int. Spotcheck;jp;;;;;0,3;EUR
+S-Line;company_path;Trans + Int. Spotcheck;jp;;;;;3;EUR
+Hour;company_path;Trans + Int. Spotcheck;jp;;;;;140;EUR
+S-Word;company_path;Trans + Edit;jp;;;;;0,44;EUR
+T-Word;company_path;Trans + Edit;jp;;;;;0,44;EUR
+S-Line;company_path;Trans + Edit;jp;;;;;2,4;EUR
+Hour;company_path;Trans + Edit;jp;;;;;140;EUR
+S-Word;company_path;Trans + Edit + Proof;jp;;;;;0,44;EUR
+T-Word;company_path;Trans + Edit + Proof;jp;;;;;0,44;EUR
+S-Line;company_path;Trans + Edit + Proof;jp;;;;;2,4;EUR
+Hour;company_path;Trans + Edit + Proof;jp;;;;;140;EUR
+Hour;company_path;Edit Only;jp;;;;;140;EUR

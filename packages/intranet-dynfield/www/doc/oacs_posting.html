@@ -1,0 +1,218 @@
+<html>
+<head>
+<title>DynField Initial OpenACS Posting</title>
+<style type="text/css">
+pre {
+      border: 1px solid #CCC;
+      background-color: #EEE;
+      padding: 10px;
+      font-size: 0.9em;
+}
+code {
+      background-color: #EEE;
+      font-size: 0.9em;
+      padding-top: 0.05em;
+      padding-bottom: 0.05em;
+      padding-left: 2em;
+      padding-right: 2em;
+}
+</style>
+</head>
+<body>
+
+<a href="/api-doc/proc-view?proc="></a>
+<h1>DynField - Initial OpenACS Posting</h1>
+<p>By <A href="http://www.project-open.com">Frank Bergmann</a></P>
+
+<hr>
+
+<p>The following posting is a kind of high-level requirements document explaining 
+  the business that finally lead to the creation of DynField.</p>
+<hr>
+<p>Hi,</p>
+<p>We're currently facing an old question again: How can you build a sizy OpenACS 
+  application (composed by several modules) that can be customized so that it 
+  suits more then one customer? Sounds easy, but it isn't if you want to avoid 
+  a copy-paste-modify approach.</p>
+<p>Let's take a simple example to explain the requirements: Let's consider user 
+  management. OpenACS provides several standard user management screens with the 
+  fields &quot;first_names&quot; and &quot;second name&quot;. However, people 
+  in Spain have two first names and two second names, such as &quot;Juan Jos&eacute; 
+  Ruiz Mart&iacute;nez&quot;. And this time we are working for a demanding customer 
+  who requires us to do it &quot;their way&quot; and to use their design standards. 
+  So we actually have to include the four pieces of the name in one line so that 
+  the users screen needs to look like:</p>
+<pre>Name: 	[First1] [First2] [Second1] [Second2]
+Username:	[Username]
+Email:	[Email]
+Password: [Password]
+URL:		[Url]</pre>
+<p>However, another customer from the US may requires us to add a field for a 
+  middle name such as in &quot;Frank W. Bergmann&quot; and a third customer requires 
+  us to add a second email address for the private email (just to put an example).</p>
+<h2>Option 1: The Current Copy-Past-Modify Approach</h2>
+<p> The standard approach in the OpenACS community (and also in many other Web-based 
+  content &amp; community tools) for such a situation is to take the OpenACS code 
+  as a base and to extend it, adding the necessary fields &quot;manually&quot;.</p>
+<p>This works pretty well for the first and maybe for the second customer, but 
+  after that you're getting a holy mess of different versions that are difficult 
+  to maintain. Imagine that you need to upgrade to the next version of OpenACS 
+  or that you have developed an improvement for one of the customers that might 
+  be useful for the others as well.</p>
+<h3>Extensible Architecture Requirements</h3>
+<p> But if you start thinking about how to unify the user management code for 
+  all customers, you immediately get to the question of how to extend the unified 
+  code to accommodate the different requirement and you get to a list of quite 
+  ugly requirements:</p>
+<ul>
+  <li> <strong>Adding new fields to a business object</strong>:<br>
+    We want to be able to add any number of new fields to a user or another object 
+    without touching the &quot;core&quot; code. These new fields should support 
+    validation and referential integrity such as all other fields.</li>
+  <li> <strong>Integrating new packages</strong>:<br>
+    We want to be able to add new packages to the system, so that they are integrated 
+    with the rest of the system. Let's consider adding a &quot;bookmark list&quot;. 
+    We may want to be able to show a list of bookmarks on the users main page, 
+    even though the users page didn't &quot;know&quot; about bookmarks before. 
+    And please remember, we don't want to touch the TCL or ADP code, because they 
+    are common to all of our customers.<br>
+    Also, we want to add a link &quot;add a bookmark&quot; in another part of 
+    the page and we want to add a new item in the global site menu such as &quot;Bookmark 
+    Management&quot;.</li>
+  <li> <strong>Customized layout and design</strong>:<br>
+    Customers are picky, so we want to be able to adapt to all of their design 
+    preferences, particular in terms of form layout. Colors and stuff are covered 
+    by CSS stylesheets anyway. </li>
+</ul>
+<p>Taking into account the overall TCL/ADP structure of OpenACS pages, we can 
+  translate these requirements into technical issues that we have to tackle:</p>
+<ul>
+  <li> <strong>Customizing ADPs</strong>:<br>
+    How can we add dynamicallynew pieces of code to an ADP page to display new 
+    contents or links?<br>
+    How do we dynamically add new fields to a form or new columns to a list view?</li>
+  <li> <strong>Customizing TCLs</strong>:<br>
+    How can we dynamically add business logic to TCLs?</li>
+  <li> <strong>Customizing SQLs</strong>:<br>
+    How can we patch SQL statements to include new fields from new &quot;extension 
+    tables&quot; or dynamic attributes? How do we sort the results according to 
+    an extension field that didn't exist at the time when we wrote the SQL?</li>
+  <li> <strong>Menus and Navigation</strong>:<br>
+    How can we dynamically adapt the navigation to reflect the presence of new 
+    packages?</li>
+  <li> <strong>Links and References</strong>:<br>
+    How do we link from &quot;core&quot; pages to pages in new add-on packages 
+    that didn't exist at the time of writing the &quot;core&quot; pages? </li>
+</ul>
+<h2>Option 2: Extensibility Using User Exits</h2>
+<p> So let's come back to our user registration example in order to explore how 
+  &quot;User Exits&quot; could help us to build a single page that would serve 
+  all of our fictitious customers.</p>
+<h3> The ADP Page</h3>
+<p> Here we could add several &quot;user exits&quot; to the ADP page that would 
+  look like this:</p>
+<pre>&lt;%=[ad_call_proc_if_exists TCL_library_routine] %&gt;</pre>
+<p>We could then write a TCL_library_routine implementation for a specific customer 
+  that would add the right HTML code in order to create the new fields. Also, 
+  we could call ADP includes on an similar &quot;if exists&quot; base to include 
+  pieces of content.</p>
+<h3>The TCL Page</h3>
+<p> The TCL page has to provide the ADP page with additional business logic for 
+  the new fields. So we could use same &quot;user exits&quot; trick and call a 
+  TCL library routine at the end of the TCL if it exists.</p>
+<h3>The SQL</h3>
+<p> This is more complicated. Let's imagine that the new user name fields are 
+  implemented via a &quot;user_extension_table&quot;. How do we &quot;join&quot; 
+  the contents of this table into our exiting SQL?</p>
+<p>One option is to use SQL &quot;views&quot;. The TCL page would do a &quot;select 
+  * from my_users&quot; where &quot;my_users&quot; is an SQL view that by default 
+  only performs a &quot;select * from cc_users&quot;. However, our extension module 
+  could now overwrite this view with a new version that joins cc_users with the 
+  user_extension_table. This approach may cause problems when there is more then 
+  one package adding fields to a user, but it's simple and straight-forward.</p>
+<h3>Menus, Navigation, Links and References</h3>
+<p> We could again use the &quot;user exits&quot; to implement flexible menus 
+  and references.</p>
+<h3>Pros &amp; Cons</h3>
+<p> The advantage of this &quot;architecture&quot; is that it's quite simple, 
+  transparent and easy to understand. It is actually already being used in the 
+  request processor using the ad_call_proc_if_exists routine. Also, it provides 
+  a simple &quot;migration path&quot; to migrate an existing hard-coded system 
+  towards a more flexible one without rewriting the whole code. However, there 
+  may be &quot;extension conflicts&quot; between different modules that extend 
+  the same business object, and the code may become very ugly (&quot;spaghetti&quot;) 
+  with the time.</p>
+<h2> Option 3: Store Everything in the Database</h2>
+<p> The current ]project-open[ architecture stores all variable elements in the 
+  database, such as menus, links, &quot;components&quot; (ADP includes), table 
+  columns and form fields. Table columns include the TCL code to render a table 
+  cell content and they include the &quot;order by&quot; clause if a user wants 
+  to sort a list by a specific column. Here is the comlete documentation: http://www.project-open.org/doc/intranet-core/</p>
+<h3>Pros &amp; Cons</h3>
+<p> This is a very straight-forward approach that allows for great flexibility 
+  and performance. An extension module can just add a new column to a table and 
+  define some extra_select, extra_from and extra_where pieces for the SQL clause. 
+  However, the approach requires a considerable initial effort and storing TCL 
+  code in the database isn't really an elegant solution. So this is why we are 
+  considering alternatives in a project that is not related to ]project-open[.</p>
+<h2>Option 4: Extending ad_form and Templating</h2>
+<p> The last option that we explored is based on the OpenACS templating system 
+  and ad_forms. These modules use a list of fields in order to control the rendering 
+  of forms and tables. Normally, these lists of fields are defined statically 
+  as part of the TCL page as in the following example:</p>
+<pre>ad_form -form {
+   menu_id:key
+   {name:text(text) {label Name} {html {size 40}}}
+   {label:text(text) {label Label} {html {size 30}}}
+   {url:text(text) {label URL} {html {size 100}}}
+   {sort_order:text(text) {label &quot;Sort Order&quot;} {html {size 10}}}
+   } [...]</pre>
+<p>However, the definition of these fields could be moved out of the ad_form procedure 
+  call into a variable. And once it is within a variable, we could overwrite this 
+  variable in the case that an exension module has added more fields in a database 
+  table:</p>
+<pre>set field_list {
+   menu_id:key
+   {name:text(text) {label Name} {html {size 40}}}
+   {label:text(text) {label Label} {html {size 30}}}
+   {url:text(text) {label URL} {html {size 100}}}
+   {sort_order:text(text) {label &quot;Sort Order&quot;} {html {size 10}}}
+}
+if {[check_the_database]} {
+   set field_list [get_field_list_from_the_database]
+}
+ad_form -form $field_list [...]</pre>
+<p>This &quot;architecture&quot; would allow for a simple and convenient default 
+  configuration defined in the TCL page, while allowing for full extensibility 
+  by extension modules.</p>
+<p>Another shortcoming of ad_form is its current HTML layout inflexibility. ad_form 
+  renders the form fields as a vertical list by default. There is no easy way 
+  to say that first_name and second_name should go together into the first line 
+  of the form. However, ad_form allows for custom rendering &quot;form templates&quot;, 
+  so that we could tackle this issue by introducing new field parameters for field 
+  positioning (absolute horizontal/vertical or relative line/column) and by creating 
+  a customized version of a form template to implement something similar to a 
+  &quot;layout manager&quot; in Java.</p>
+<p>Also, there are facilities in ad_form to handle dynamic fields via acs_attributes 
+  and the OpenACS SQL metadata system. However, the implementation of the acs_attributes 
+  feature is not very &quot;transparent&quot; (you don't understand easily what 
+  it happening) and doesn't seem to be commonly used. The only place that I have 
+  seen is group_type maintenance, and this is an incomplete implementation error 
+  with an error when trying to use default values.</p>
+<h3>Pros &amp; Cons</h3>
+<p> ad_form and templating could allow for a flexible architecture without storing 
+  TCL code in the database. It would provide a very elegant solution if the integration 
+  with acs_attributes would work in real-world applications.</p>
+<p>However, I personally don't like the &quot;hide as much as possible&quot; philosophy 
+  of ad_form, and I have lost many hours debugging relatively simple issues due 
+  to the lack of transparency and documentation.</p>
+<h2>How to Proceed?</h2>
+<p> How should we go forward? I currently believe that the third option (extending 
+  ad_forms with or without acs_attributes) is the most promising one, but I see 
+  a lot of risks related to it. Is there an interest from the community and the 
+  package maintainers to support our efforts? How should we organize the development 
+  so that our modifications could be incorporated into OpenACS?</p>
+<p> We are exposed to a certain pressure in order to come up with a viable plan 
+  within a few days...</p>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Advanced_Search">Detaylı Arama</msg>
+  <msg key="lt_Make_sure_all_words_a">Bütün sözcüklerin doğru yazıldığından emin olun</msg>
+  <msg key="lt_No_pages_were_found_c">Bu arama için bir sayfa bulunamadı</msg>
+  <msg key="lt_Try_different_keyword">başka anahtar sözcükler dene</msg>
+  <msg key="lt_Try_more_general_keyw">Daha genel anahtar sözcükler dene--Bulamıyorum</msg>
+  <msg key="Next">Sonraki</msg>
+  <msg key="of_about">Hakkında</msg>
+  <msg key="Result_page">Sonuç Sayfası</msg>
+  <msg key="Results">İşte sonuçlar bunlarımı aradın?</msg>
+  <msg key="Search">Ara</msg>
+  <msg key="seconds">saniye</msg>
+  <msg key="Suggestions">tavsiyeler</msg>
+  <msg key="Try_fewer_keywords">daha az sözcük dene</msg>
+</message_catalog>

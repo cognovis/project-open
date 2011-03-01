@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-material" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Bill">¿Facturable?</msg>
+  <msg key="Description">Descripción</msg>
+  <msg key="Filter_Materials">Filtrar materiales</msg>
+  <msg key="Material">Material</msg>
+  <msg key="Name">Nombre</msg>
+  <msg key="Nr">Nº</msg>
+  <msg key="Status">Estado</msg>
+  <msg key="There_are_no_active_materials">No hay materiales que coincidan con sus criterios de selección</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="UoM">UdM</msg>
+</message_catalog>

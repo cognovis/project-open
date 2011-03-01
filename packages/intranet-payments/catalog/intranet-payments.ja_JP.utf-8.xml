@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="Invoice">請求書</msg>
+  <msg key="Invoice_Amount">請求書の総計</msg>
+  <msg key="lt_No_costinvoice_item_s">指定されるコスト/請求書アイテムでない</msg>
+  <msg key="lt_There_are_currently_n">選択された基準に適合する支払いはありません。</msg>
+  <msg key="Provider">業者</msg>
+</message_catalog>

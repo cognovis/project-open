@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" locale="ro_RO" charset="utf-8">
+
+  <msg key="A">R:</msg>
+  <msg key="Add_QA_for_faq_name">Adaugă Q&amp;A (întrebare şi răspuns) pentru %faq_name% </msg>
+  <msg key="administer">administrează</msg>
+  <msg key="Answer">Răspuns</msg>
+  <msg key="Back_to_FAQs">Înapoi la FAQs</msg>
+  <msg key="Create_a_new_FAQ">Creează un nou FAQ</msg>
+  <msg key="Create_an_FAQ">Creează un FAQ</msg>
+  <msg key="Create_FAQ">Creează FAQ</msg>
+  <msg key="Create_New_QA">Creează un Nou Q&amp;A</msg>
+  <msg key="Create_new_QA">Creează un nou Q&amp;A</msg>
+  <msg key="Create_QA">Creează Q&amp;A</msg>
+  <msg key="Delete">Şterge</msg>
+  <msg key="delete">şterge</msg>
+  <msg key="Delete_This_QA">Şterge Acest Q&amp;A</msg>
+  <msg key="Edit">Modifică</msg>
+  <msg key="edit">modifică</msg>
+  <msg key="Edit_an_FAQ">Modifică un FAQ</msg>
+  <msg key="FAQ_Admin">Administrare pentru FAQ</msg>
+  <msg key="faq_name_Admin">Administrare pentru %faq_name% </msg>
+  <msg key="FAQs">FAQ's</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">introduceţi după</msg>
+  <msg key="lt_Are_you_sure_you_want">Sunteţi sigur/ă că doriţi să ştergeţi acest faq ?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Sunteţi sigur/ă că doriţi să ştergeţi această întrebare ?</msg>
+  <msg key="lt_no_FAQs">Nu există FAQs disponibile</msg>
+  <msg key="lt_no_questions">Nu există întrebări disponibile</msg>
+  <msg key="Name">Nume:</msg>
+  <msg key="New">Nou</msg>
+  <msg key="No">Nu</msg>
+  <msg key="One_Question">O întrebare</msg>
+  <msg key="Plain">Simplu</msg>
+  <msg key="Preformatted">Preformatat</msg>
+  <msg key="preview">Ciornă</msg>
+  <msg key="Q">Î:</msg>
+  <msg key="QA_On_Separate_Pages">Q&amp;A În Pagini Separate?</msg>
+  <msg key="QA_on_Separate_Pages">Q&amp;A în Pagini Separate?</msg>
+  <msg key="Question">Întrebare</msg>
+  <msg key="swap_with_next">schimbă cu următoarea</msg>
+  <msg key="Text_type">Tipul textului?</msg>
+  <msg key="Title">Titlu:</msg>
+  <msg key="Update_FAQ">Actualizează FAQ</msg>
+  <msg key="Update_This_QA">Actualizează acest Q&amp;A</msg>
+  <msg key="View_All_FAQs">Vezi toate FAQs</msg>
+  <msg key="Yes">Da</msg>
+</message_catalog>
