@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="el_GR" charset="utf-8">
+
+  <msg key="advanced">(&lt;font=red&gt;Προχωρημένο&lt;/font&gt;) 
+</msg>
+  <msg key="byte">byte</msg>
+  <msg key="bytes">bytes</msg>
+  <msg key="create_new_folder">Δημιουργία νέου φακέλου</msg>
+  <msg key="create_url">Δημιουργία URL</msg>
+  <msg key="edit_fs_parameters">Επεξεργασία των παραμέτρων αποθήκευσης (ΠΡΟΧΩΡΗΜΕΝΟ)</msg>
+  <msg key="edit_upload_size_limit">Επεξεργασία ορίου μεγέθους ανεβάσματος</msg>
+  <msg key="item">αντικείμενο</msg>
+  <msg key="items">στοιχεία</msg>
+  <msg key="lt_File_Storage_Administ">Διαχείριση αποθήκευσης αρχείων</msg>
+  <msg key="open_folder_folders_name">Άνοιγμα φακέλου %folders.name%</msg>
+  <msg key="pretty_name">Έγγραφα</msg>
+  <msg key="upload_file">Ανέβασμα αρχείου</msg>
+  <msg key="view_details">προβολή λεπτομερειών</msg>
+</message_catalog>

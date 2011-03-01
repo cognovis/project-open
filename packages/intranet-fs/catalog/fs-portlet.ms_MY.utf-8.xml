@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ms_MY" charset="utf-8">
+
+  <msg key="byte">bait</msg>
+  <msg key="bytes">bait</msg>
+  <msg key="create_new_folder">Tambah folder baru</msg>
+  <msg key="create_url">Tambah URL</msg>
+  <msg key="item">butiran </msg>
+  <msg key="items">butiran-butiran </msg>
+  <msg key="pretty_name">Dokumen</msg>
+  <msg key="upload_file">Muat naik fail</msg>
+  <msg key="view_details">paparkan keterangan lanjut</msg>
+</message_catalog>

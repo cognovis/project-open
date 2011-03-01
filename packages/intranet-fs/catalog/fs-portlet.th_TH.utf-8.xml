@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="th_TH" charset="utf-8">
+
+  <msg key="create_new_folder">สร้างแฟ้มใหม่</msg>
+  <msg key="create_url">สร้าง URL</msg>
+  <msg key="items">รายการ</msg>
+  <msg key="pretty_name">เอกสาร</msg>
+  <msg key="upload_file">Upload เอกสาร</msg>
+</message_catalog>

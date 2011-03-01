@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="tr_TR" charset="utf-8">
+
+  <msg key="create_new_folder">Yeni bir dizin yarat</msg>
+  <msg key="create_url">Bir URL yarat</msg>
+  <msg key="pretty_name">Dökümanlar</msg>
+  <msg key="upload_file">Bir dosya yükle</msg>
+</message_catalog>

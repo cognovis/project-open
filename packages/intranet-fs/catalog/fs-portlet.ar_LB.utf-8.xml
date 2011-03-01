@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ar_LB" charset="utf-8">
+
+  <msg key="advanced">(&amp;lt;font=red&amp;gt;Advanced&amp;lt;/font&amp;gt;)</msg>
+  <msg key="byte">بايت</msg>
+  <msg key="bytes">بايتس</msg>
+  <msg key="create_new_folder">إخلقْ ملفّ جديداً</msg>
+  <msg key="create_url">أخلقْ موقعاً</msg>
+  <msg key="edit_fs_parameters">Edit file storage parameters (ADVANCED)</msg>
+  <msg key="edit_upload_size_limit">Edit Upload Size Limit</msg>
+  <msg key="item">بند</msg>
+  <msg key="items">بنود</msg>
+  <msg key="lt_File_Storage_Administ">File Storage Administration</msg>
+  <msg key="pretty_name">المُسْتَنَدات</msg>
+  <msg key="upload_file">أرسلْ ملفاً</msg>
+  <msg key="view_details">شاهدْ التفاصيل</msg>
+</message_catalog>

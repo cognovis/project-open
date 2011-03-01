@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="fi_FI" charset="utf-8">
+
+  <msg key="byte">tavu</msg>
+  <msg key="bytes">tavua</msg>
+  <msg key="create_new_folder">Luo uusi kansio</msg>
+  <msg key="create_url">Lisää www-linkki</msg>
+  <msg key="item">nimike</msg>
+  <msg key="items">kpl</msg>
+  <msg key="pretty_name">Dokumentit</msg>
+  <msg key="upload_file">Tallenna tiedosto</msg>
+  <msg key="view_details">näytä tiedot</msg>
+</message_catalog>

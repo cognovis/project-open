@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="hi_IN" charset="utf-8">
+
+  <msg key="advanced">(&lt;फ़ोन्ट=लाल&gt; प्रगतिशील &lt;/फ़ोन्ट&gt;</msg>
+  <msg key="byte">बाईट</msg>
+  <msg key="bytes">बाईटस </msg>
+  <msg key="create_new_folder">एक नया फ़ोल्डर बनाओ</msg>
+  <msg key="create_url">नया यू आर एल बनाओ</msg>
+  <msg key="edit_fs_parameters">फ़ाईल सन्चयन का सम्पादन (एड्वान्सड)</msg>
+  <msg key="edit_upload_size_limit">अपलोड कर आकार सीमा निधारित करे</msg>
+  <msg key="item">वस्तु</msg>
+  <msg key="items">वस्तुए </msg>
+  <msg key="lt_File_Storage_Administ">फ़ाईल सन्चयन प्रशासन</msg>
+  <msg key="pretty_name">दस्तावेज</msg>
+  <msg key="upload_file">फ़ाईल अपलोड करे</msg>
+  <msg key="view_details">विवरण देखो</msg>
+</message_catalog>

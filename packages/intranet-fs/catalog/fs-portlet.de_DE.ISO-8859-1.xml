@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="fs-portlet" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="advanced">(&lt;font=red&gt;Fortgeschritten&lt;/font&gt;)</msg>
+  <msg key="byte">Byte</msg>
+  <msg key="bytes">Bytes</msg>
+  <msg key="create_new_folder">Neuen Ordner erstellen</msg>
+  <msg key="create_url">Neue URL hinzufügen</msg>
+  <msg key="edit_fs_parameters">Parameter für Dateiablage editieren (FORTGESCHRITTEN)</msg>
+  <msg key="edit_upload_size_limit">Größenbeschränkung für das Hochladen bearbeiten</msg>
+  <msg key="item">Element</msg>
+  <msg key="items">Elemente</msg>
+  <msg key="lt_File_Storage_Administ">Dateiablage verwalten</msg>
+  <msg key="pretty_name">Dateien</msg>
+  <msg key="upload_file">Neue Datei hochladen</msg>
+  <msg key="view_details">Details anzeigen</msg>
+</message_catalog>
