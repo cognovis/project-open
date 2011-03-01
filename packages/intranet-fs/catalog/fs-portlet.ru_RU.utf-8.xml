@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ru_RU" charset="utf-8">
+
+  <msg key="advanced">(&lt;font=red&gt;Дополнительно&lt;/font&gt;)</msg>
+  <msg key="byte">байт</msg>
+  <msg key="bytes">байт(а)</msg>
+  <msg key="create_new_folder">Создать новую папку</msg>
+  <msg key="create_url">Добавить URL</msg>
+  <msg key="edit_fs_parameters">Редактировать параметры хранилища файлов (ДОПОЛНИТЕЛЬНО)</msg>
+  <msg key="edit_upload_size_limit">Изменить ограничение на размер загружаемых данных</msg>
+  <msg key="item">док.</msg>
+  <msg key="items">документов</msg>
+  <msg key="lt_File_Storage_Administ">Управление хранилищем файлов</msg>
+  <msg key="pretty_name">Документы</msg>
+  <msg key="upload_file">Добавить файл</msg>
+  <msg key="view_details">детали</msg>
+</message_catalog>

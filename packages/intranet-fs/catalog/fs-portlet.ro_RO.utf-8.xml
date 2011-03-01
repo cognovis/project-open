@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ro_RO" charset="utf-8">
+
+  <msg key="advanced"> (&lt;font=red&gt;Avansat&lt;/font&gt;)</msg>
+  <msg key="byte">byte</msg>
+  <msg key="bytes">bytes</msg>
+  <msg key="create_new_folder">Creează un director nou</msg>
+  <msg key="create_url">Creează un URL</msg>
+  <msg key="edit_fs_parameters">Modifică parametrii pentru stocarea de fişiere (AVANSAT)</msg>
+  <msg key="edit_upload_size_limit">Modifică Limita Superioară pentru Încărcarea de Fişiere</msg>
+  <msg key="item">obiect</msg>
+  <msg key="items">elemente</msg>
+  <msg key="lt_File_Storage_Administ">Administrare pentru Stocare de Fişiere</msg>
+  <msg key="pretty_name">Documente</msg>
+  <msg key="upload_file">Încarcă un fişier</msg>
+  <msg key="view_details">vezi detaliile</msg>
+</message_catalog>

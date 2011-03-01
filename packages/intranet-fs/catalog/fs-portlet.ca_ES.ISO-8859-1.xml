@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="fs-portlet" locale="ca_ES" charset="ISO-8859-1">
+
+  <msg key="byte">byte </msg>
+  <msg key="bytes">bytes </msg>
+  <msg key="create_new_folder">Crear una carpeta nova </msg>
+  <msg key="create_url">Crear una URL </msg>
+  <msg key="edit_upload_size_limit">Editar el límit de grandària de càrregues</msg>
+  <msg key="item">arxiu </msg>
+  <msg key="items">arxius </msg>
+  <msg key="lt_File_Storage_Administ">Gestió de l'emmagatzemament d'arxius</msg>
+  <msg key="pretty_name">Documents </msg>
+  <msg key="upload_file">Carregar un arxiu </msg>
+  <msg key="view_details">Veure detalls </msg>
+</message_catalog>

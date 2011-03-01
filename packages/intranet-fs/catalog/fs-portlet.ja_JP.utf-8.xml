@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ja_JP" charset="utf-8">
+
+  <msg key="create_new_folder">新規フォルダ</msg>
+  <msg key="upload_file">ファイルをアップロード</msg>
+</message_catalog>

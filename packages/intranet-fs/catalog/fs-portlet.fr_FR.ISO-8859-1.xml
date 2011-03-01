@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="fs-portlet" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="byte">octet</msg>
+  <msg key="bytes">octets</msg>
+  <msg key="create_new_folder">Créer un dossier</msg>
+  <msg key="create_url">Créer un lien</msg>
+  <msg key="item">élément</msg>
+  <msg key="items">éléments</msg>
+  <msg key="pretty_name">Dossiers</msg>
+  <msg key="upload_file">Envoyer un fichier</msg>
+  <msg key="view_details">voir détails</msg>
+</message_catalog>

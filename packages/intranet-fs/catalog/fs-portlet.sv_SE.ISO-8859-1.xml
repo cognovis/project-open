@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="fs-portlet" locale="sv_SE" charset="ISO-8859-1">
+
+  <msg key="byte">byte</msg>
+  <msg key="bytes">bytes</msg>
+  <msg key="create_new_folder">Skapa ny mapp</msg>
+  <msg key="create_url">Skapa URL</msg>
+  <msg key="item">objekt</msg>
+  <msg key="items">objekt</msg>
+  <msg key="pretty_name">Dokument</msg>
+  <msg key="upload_file">Ladda upp fil</msg>
+  <msg key="view_details">se detaljer</msg>
+</message_catalog>

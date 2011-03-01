@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="ko_KR" charset="utf-8">
+
+  <msg key="byte">바이트</msg>
+  <msg key="bytes">바이트</msg>
+  <msg key="create_new_folder">새 폴더 생성</msg>
+  <msg key="create_url">URL 생성</msg>
+  <msg key="item">항목</msg>
+  <msg key="items">항목</msg>
+  <msg key="pretty_name">문서</msg>
+  <msg key="upload_file">파일 업로드</msg>
+  <msg key="view_details">상세보기</msg>
+</message_catalog>

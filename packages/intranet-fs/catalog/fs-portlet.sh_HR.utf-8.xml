@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="fs-portlet" locale="sh_HR" charset="utf-8">
+
+  <msg key="create_new_folder">Dodaj novi katalog</msg>
+  <msg key="create_url">Dodaj novi URL</msg>
+  <msg key="item">clan</msg>
+  <msg key="items">stavke</msg>
+  <msg key="pretty_name">Dokumenti</msg>
+  <msg key="upload_file">Dodaj fajl</msg>
+</message_catalog>
