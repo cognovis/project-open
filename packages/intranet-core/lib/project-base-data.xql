@@ -11,7 +11,8 @@
   <fullquery name="column_list_sql">
     <querytext>
       select	w.deref_plpgsql_function,
-      		aa.attribute_name
+      			aa.attribute_name,
+				aa.table_name
       from    	im_dynfield_widgets w,
       		im_dynfield_attributes a,
       		acs_attributes aa
@@ -25,25 +26,25 @@
   <fullquery name="project_info_query">
     <querytext>
 	select
-		ip.*,
-		ic.*,
-		to_char(ip.end_date, 'HH24:MI') as end_date_time,
-		to_char(ip.start_date, 'YYYY-MM-DD') as start_date_formatted,
-		to_char(ip.end_date, 'YYYY-MM-DD') as end_date_formatted,
-		to_char(ip.percent_completed, '999990.9%') as percent_completed_formatted,
-		ic.primary_contact_id as company_contact_id,
-		im_name_from_user_id(ic.primary_contact_id) as company_contact,
-		im_email_from_user_id(ic.primary_contact_id) as company_contact_email,
-		im_name_from_user_id(ip.project_lead_id) as project_lead,
-		im_name_from_user_id(ip.supervisor_id) as supervisor,
-		im_name_from_user_id(ic.manager_id) as manager,
+		im_projects.*,
+		im_companies.*,
+		to_char(im_projects.end_date, 'HH24:MI') as end_date_time,
+		to_char(im_projects.start_date, 'YYYY-MM-DD') as start_date_formatted,
+		to_char(im_projects.end_date, 'YYYY-MM-DD') as end_date_formatted,
+		to_char(im_projects.percent_completed, '999990.9%') as percent_completed_formatted,
+		im_companies.primary_contact_id as company_contact_id,
+		im_name_from_user_id(im_companies.primary_contact_id) as company_contact,
+		im_email_from_user_id(im_companies.primary_contact_id) as company_contact_email,
+		im_name_from_user_id(im_projects.project_lead_id) as project_lead,
+		im_name_from_user_id(im_projects.supervisor_id) as supervisor,
+		im_name_from_user_id(im_companies.manager_id) as manager,
 		$extra_select
 	from
-		im_projects ip, 
-		im_companies ic
+		im_projects, 
+		im_companies
 	where 
-		ip.project_id=:project_id
-		and ip.company_id = ic.company_id
+		im_projects.project_id=:project_id
+		and im_projects.company_id = im_companies.company_id
       
     </querytext>
   </fullquery>
