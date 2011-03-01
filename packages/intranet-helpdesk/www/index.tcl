@@ -121,7 +121,7 @@ db_foreach column_list_sql $column_sql {
 	    append col_url "&$attribute_name=[im_opt_val $attribute_name]"
 	}
 
-	set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}]>[im_gif wrench]</a>"
+	set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode display}}]>[im_gif wrench]</a>"
 
 	if {!$user_is_admin_p} { set admin_link "" }
 	set checkbox_p [regexp {<input} $column_name match]

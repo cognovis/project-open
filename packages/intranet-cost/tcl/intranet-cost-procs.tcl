@@ -2335,7 +2335,9 @@ ad_proc -public im_cost_update_project_cost_cache {
     set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
 
     # Expense Planned
-    set subtotals([im_cost_type_expense_planned]) 0
+    if {![info exists subtotals([im_cost_type_expense_planned])]} {
+	set subtotals([im_cost_type_expense_planned]) 0
+    }
     
 
     # We can update the profit & loss because all financial documents

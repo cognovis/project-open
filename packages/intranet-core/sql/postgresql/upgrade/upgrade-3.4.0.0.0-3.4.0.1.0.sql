@@ -1346,7 +1346,7 @@ select define_function_args('im_cost_center__new','cost_center_id,object_type,cr
 select define_function_args('im_dynfield_attribute__del','attribute_id');
 select define_function_args('im_dynfield_attribute__name','attribute_id');
 select define_function_args('im_dynfield_attribute__new','attribute_id,object_type,creation_date,creation_user,creation_ip,context_id,attribute_object_type,attribute_name,min_n_values,max_n_values,default_value,datatype,pretty_name,pretty_plural,widget_name,deprecated_p,already_existed_p');
-select define_function_args('im_dynfield_widget__del','widget_id');
+select define_function_args('im_dynfield_widget__delete','widget_id');
 select define_function_args('im_dynfield_widget__name','widget_id');
 select define_function_args('im_dynfield_widget__new','widget_id,object_type,creation_date,creation_user,creation_ip,context_id,widget_name,pretty_name,pretty_plural,storage_type_id,acs_datatype,widget,sql_datatype,parameters');
 select define_function_args('im_expense__delete','expense_id');

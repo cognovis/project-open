@@ -57,6 +57,7 @@ set main_navbar_label "reporting"
 set show_context_help_p 0
 
 regsub -all {%20} $top_vars " " top_vars
+regsub -all {\+} $top_vars " " top_vars
 
 # ------------------------------------------------------------
 # Start and End-Dat as min/max of selected projects.

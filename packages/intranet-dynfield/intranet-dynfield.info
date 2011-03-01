@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-dynfield</auto-mount>
 
-    <version name="4.0.0.0.0" url="http://www.project-open.org/download/apm/intranet-dynfield-4.0.0.0.0.apm">
+    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-dynfield-4.0.1.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Allows to add new fields to business objects during system runtime.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -20,7 +20,6 @@
 
         <callbacks>
 	    <callback type="after-install"  proc="im_dynfield::package_install"/>
-            <callback type="after-upgrade"  proc="im_dynfield::after_upgrade"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="form_style"  default="aims-form" description="This is the default file we use to render form templates that do not use layout manager. Do not add the .adp extension to the filename."/>
