@@ -160,12 +160,19 @@ set ctr 1
 set table ""
 db_foreach all_component_of_type $component_select_sql {
 
+    if {"t" == $enabled_p} { 
+	set toggle_link [export_vars -base "toggle" {plugin_id {return_url [ad_return_url]} {action "disable"}}] 
+    } else {
+	set toggle_link [export_vars -base "toggle" {plugin_id {return_url [ad_return_url]} {action "enable"}}] 
+    } 
+
+
     append table "
 <tr $bgcolor([expr $ctr % 2])>
   <td>
     <nobr><a href=\"[export_vars -base "edit" {{return_url $current_url} plugin_id}]\">$plugin_name</a></nobr>
   </td>
-  <td>$enabled_p</td>
+  <td><a href='$toggle_link'>$enabled_p</a></td>
   <td>$package_name</td>
   <td>$location</td>
   <td>$page_url</td>
