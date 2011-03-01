@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-budget" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Budget">Budget</msg>
+  <msg key="budget_estimation">Budget Estimation</msg>
+  <msg key="Cost_Estimates">Cost Estimates</msg>
+  <msg key="Cost_Type">Cost Type</msg>
+  <msg key="Department_Planner">Department Planner</msg>
+  <msg key="filter_year">Year</msg>
+  <msg key="Hours">Hours</msg>
+  <msg key="include_reamining_effort">Include Remaining Effort</msg>
+  <msg key="include_remaining_effort">Include Remaining Effort</msg>
+  <msg key="Investment_Costs">Investment Costs</msg>
+  <msg key="Logged_Hours">Logged Hours</msg>
+  <msg key="New_Budget_Estimate">New Budget Estimation</msg>
+  <msg key="New_Provider_Estimation">New Provider Estimation</msg>
+  <msg key="One_Time_Costs">One Time Costs</msg>
+  <msg key="Recurring_Costs">Recurring Costs</msg>
+  <msg key="Remaining_Budget">Remaining Budget</msg>
+  <msg key="Remaining_Budget_Hours">Remaining Budget Hours</msg>
+  <msg key="Remaining_Hours">Remaining Hours</msg>
+</message_catalog>

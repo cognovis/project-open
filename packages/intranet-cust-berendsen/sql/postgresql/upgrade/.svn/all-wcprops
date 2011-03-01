@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/cognovis/berendsen/svn/!svn/ver/40/packages/intranet-cust-berendsen/sql/postgresql/upgrade
+END
+upgrade-0.1d-0.2d1.sql
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/cognovis/berendsen/svn/!svn/ver/40/packages/intranet-cust-berendsen/sql/postgresql/upgrade/upgrade-0.1d-0.2d1.sql
+END
