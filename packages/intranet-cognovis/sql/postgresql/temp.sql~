@@ -1,0 +1,20 @@
+
+
+-- Remove components from packages intranet-trans* 
+CREATE OR REPLACE FUNCTION inline_0 () 
+RETURNS integer AS '
+DECLARE
+	row		record;
+
+BEGIN
+	FOR row IN
+	SELECT plugin_id FROM im_component_plugins WHERE package_name = ''intranet-intranet-trans-project-wizard''
+	LOOP
+		PERFORM im_component_plugin__delete(row.plugin_id);
+	END LOOP;
+	
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
