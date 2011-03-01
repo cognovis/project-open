@@ -217,10 +217,8 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     or via a join in order to limit the number of object_ids
     to the ones that fit to the filter criteria.
 
-    @param form_id:
-   	    search form id
-    @return:
-		An array consisting of:
+    @param form_id: search form id
+    @return:	An array consisting of:
 		where: A SQL phrase and
 		bind_vars: a key-value paired list carrying the bind
 			vars for the SQL phrase
@@ -230,13 +228,10 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 
     # Get the main table for the data type
     db_1row main_table "
-	select
-		table_name as main_table_name,
+	select	table_name as main_table_name,
 		id_column as main_id_column
-	from
-		acs_object_types
-	where
-		object_type = :object_type
+	from	acs_object_types
+	where	object_type = :object_type
     "
 
     set attributes_sql "
@@ -291,7 +286,9 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	# Check whether the attribute is part of the form
 	if {[lsearch $form_elements $attribute_name] >= 0} {
 	    set value [template::element::get_value $form_id $attribute_name]
+	    ns_log Notice "search_sql_criteria_from_form: value='$value'"
 	    if {"" == $value} { continue }
+	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
 	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 	}
