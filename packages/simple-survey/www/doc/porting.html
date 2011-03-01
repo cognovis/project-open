@@ -1,0 +1,487 @@
+<html>
+<head>
+<title>Porting to ACS 4.0</title>
+</head>
+<body bgcolor=white>
+<h2>Porting to ACS 4.0 - A Case Study</h2>
+
+by <a href="mailto:nstrug@arsdigita.com">Nick Strugnell</a>
+
+<hr>
+
+<p>
+This document describes  the steps required  to port a single  ACS 3.x
+module, <em>simple survey</em> to ACS  4.0. The total  time to do  the
+port, or at   least bring the  module into  a useable  and  reasonably
+bug-free state, was 54.5 programmer hours. Note that the programmer in
+question had no prior knowledge of  ACS 4.0, nor  of the Oracle object
+model used  extensively in ACS 4.0, but   <em>did</em> have some prior
+knowledge of  the internal workings  of the simple survey module. Your
+mileage may vary.
+</p>
+
+<h3>Why?</h3>
+
+<p>
+Why would you want to port a module to  ACS 4.0? The new system offers
+significant     advantages     over      3.x,       notably         <a
+href="http://acs40.arsdigita.com/doc/developer-guide/packages.html">packaging</a>,
+a                              unified                              <a
+href="http://acs40.arsdigita.com/doc/acs-kernel/permissions/design.html">permissions</a>
+model                  and                       an                 <a
+href="http://acs40.arsdigita.com/doc/acs-kernel/object-model/design.html">object
+model</a> that simplifies some aspects of implementation.
+</p>
+
+<h3>How?</h3>
+
+<p>
+In the case of the simple survey module I performed the tasks required 
+      for the port in the following order:
+<ol>
+<li>Reorganised files in accordance with the <a
+	    href="http://acs40.arsdigita.com/doc/developer-guide/packages.html">packaging conventions</a></li>
+<li>Registered the new package on a running ACS 4.0 server</li>
+<li>Redesigned the data model to use the <a
+	    href="http://acs40.arsdigita.com/doc/acs-kernel/object-model/design.html">object model</a></li>
+<li>Edited pages to use the new
+<a href="http://acs40.arsdigita.com/doc/acs-kernel/permissions/design.html">permissions</a> 
+and
+<a href="http://acs40.arsdigita.com/doc/acs-kernel/groups/design.html">party</a> 
+models</li>
+</ol>
+
+<h3>Packaging</h3>
+
+<p>
+The  ACS 4.0 packaging  systems replaces  the sometimes haphazard file
+layout used in earlier versions. Complete instructions can be found at
+<a
+href="http://acs40.arsdigita.com/doc/developer-guide/packages.html">http://acs40.arsdigita.com/doc/developer-guide/packages.html</a>
+but in essence your file layout should be as follows:
+</p>
+<ul>
+<li>All files related to a particular package go into
+	packages/package-key (where package-key is survey-simple in
+	this case)</li>
+<li>TCL stored procedures go into packages/survey-simple/tcl</li>
+<li>SQL files go into packages/survey-simple/sql</li>
+<li>User pages go into packages/survey-simple/www</li>
+<li>Admin pages go into packages/survey-simple/admin</li>
+<li>Docs go into packages/survey-simple/doc</li>
+</ul>
+
+<p>
+The packages directory itself is in the server root directory, usually 
+      /web/<em>server-name</em>.
+</p>
+
+<h3>Registering the Package</h3>
+
+<p>
+ACS 4.0 provides easy to use package management facilites to associate
+files, watch TCL libraries for changes and mount packages at arbitrary
+URLs on the client  site. This is  managed through the admin interface
+provided at  acs-admin/apm   under a standard   ACS   4.0 install. The
+process is self-explanatory: simply  click on  'Create a new  package'
+and fill in the resulting form. You will then be presented with a list
+of  files  to  become  part  of the    package,  if extraneous   files
+(e.g.  editor backup files)    have  been selected, simply    deselect
+them.  Providing naming conventions have been  adhered to, TCL library
+files should be so identified and you will  have the option of setting
+up  a watch on   them so  that they  are  automatically reloaded  when
+changed. This is useful  during the development  process as it negates
+the need to restart AOLserver every time  a change is  made in the TCL
+library.
+</p>
+
+<h3>Mounting the Package</h3>
+
+<p>
+Once a package has been installed it needs to be  mounted before it is
+visible to  users.   This is done   using the  site administration  at
+acs-admin. First, select  the subsite on  which you  want to mount  an
+instance of the package and then select Site Map. In a default ACS 4.0
+installation there is only one subsite, Main Site  and its site map is
+available at admin/site-map.
+</p>
+
+<p>
+We then need to  create  a new  URL under an  existing  URL - for  the
+infoshare site I created  a  URL, investor_profiling_tool, under   the
+root. Do this by clicking on the 'new sub folder' option alongisde and
+existing URL and entering the  name for the  URL - note that this does
+<em>not</em> have to be the same as the package key.
+</p>
+
+<p>
+Next, we  must  mount the package.  If   the package has  been mounted
+before, you may simply select the 'mount' option alongside the new URL
+and select the  package.  However, if this is  the first time you have
+mounted the package, select 'new application'.   You can then name the
+application  (give it a  pretty name rather than  the package key) and
+select the package from a  select box. This  way, you can have several
+instances  of   a package,  perhaps  some  unmounted and some mounted,
+simultaneously at different URLs on the same site.
+</p>
+
+<h3>Data Model</h3>
+
+<p>
+Rewriting the data  model is possibly  the hardest part of  performing
+the  port, as the  object  system employed may seem counter-intuitive to
+programmers who have cut their OOP teeth on C++ or Java.
+The principal decision to be  made is which objects in your
+module should  be  converted to  the  object  model,  and which should
+remain as simple tables. There is no clear answer  to this, but a rule
+of  thumb is  that any table  that contains  a reference to  the users
+table in  ACS   3.x, <i>i.e.</i> any   table  that  you  will  perform
+permissions tests on, should be converted  to the object model. Additionally, any table which is to be included in the site-wide search should be made on object. In the
+case of simple survey,  I  converted the <tt>survsimp_surveys</tt>  (individual
+surveys), <tt>survsimp_questions</tt> (questions  which  make up a survey)  and
+<tt>survsimp_responses</tt> (collections  of   answers forming a  single  users
+response to a survey) tables to the object model.
+</p>
+
+<p>
+All object types are derived from the <tt>acs_object</tt> type, so we declare a 
+      <tt>survsimp_survey</tt> type using the following PL/SQL block:
+<p>
+<blockquote>
+<pre>
+begin
+    acs_object_type.create_type (
+	    	supertype => 'acs_object',
+		object_type => 'survsimp_survey',
+		pretty_name => 'Simple Survey',
+		pretty_plural => 'Simple Surveys',
+		table_name => 'SURVSIMP_SURVEYS',
+		id_column => 'SURVEY_ID'
+    );
+end;
+</pre>
+</blockquote>
+
+<p>
+The new object type, <tt>survsimp_survey</tt>, is associated with a table,
+      <tt>survsimp_surveys</tt> (note the pluralisation), each row of which
+      will be an instance of the <tt>survsimp_survey</tt> type:
+</p>
+<blockquote>
+<pre>
+create table survsimp_surveys (
+	survey_id		constraint survsimp_surveys_survey_id_fk
+				references acs_objects (object_id)
+                                constraint survsimp_surveys_pk
+				primary key,
+	name			varchar(100)
+				constraint survsimp_surveys_name_nn
+				not null,
+	-- short, non-editable name we can identify this survey by
+	short_name		varchar(20)
+				constraint survsimp_surveys_short_name_u
+				unique
+				constraint survsimp_surveys_short_name_nn
+				not null,
+	description		varchar(4000)
+				constraint survsimp_surveys_desc_nn
+				not null,
+        description_html_p      char(1)
+                                constraint survsimp_surv_desc_html_p_ck
+				check(description_html_p in ('t','f')),
+	enabled_p               char(1)
+				constraint survsimp_surveys_enabled_p_ck
+				check(enabled_p in ('t','f')),
+	-- limit to one response per user
+	single_response_p	char(1)
+				constraint survsimp_sur_single_resp_p_ck
+				check(single_response_p in ('t','f')),
+	single_editable_p	char(1)
+				constraint survsimp_surv_single_edit_p_ck
+				check(single_editable_p in ('t','f')),
+	type                    varchar(20)
+);
+</pre>
+</blockquote>
+<p>
+Compare this with the <tt>survsimp_surveys</tt> table in 3.x (items missing in
+      the 4.0 version highlighted):
+</p>
+<blockquote>
+<pre>
+<font color=red>create sequence survsimp_survey_id_sequence start with 1;</font>
+
+create table survsimp_surveys (
+        survey_id               integer primary key,
+        name                    varchar(100) not null,
+        -- short, non-editable name we can identify this survey by
+        short_name              varchar(20) unique not null,
+        description             varchar(4000) not null,
+        description_html_p      char(1) default 'f'
+                                constraint survsimp_sur_desc_html_p_ck
+                                check(description_html_p in ('t','f')),
+        <font color=red>creation_user           not null references users(user_id),</font>
+        <font color=red>creation_date           date default sysdate,</font>
+        enabled_p               char(1) default 'f' check(enabled_p in ('t','f')),
+        -- limit to one response per user       
+        single_response_p       char(1) default 'f' check(single_response_p in ('t','f')),
+        single_editable_p       char(1) default 't' check(single_editable_p in ('t','f')),
+        type                    varchar2(20) default 'general'
+); 
+</pre>
+</blockquote>
+
+<p>
+Notice that  the ACS 4.0 version  has  fewer columns.  This is because
+<tt>creation_user</tt>   and  <tt>creation_date</tt>   are   inherited
+(kinda) from the acs_object  type, and do not   need to be included  in the
+survsimp_surveys table.  Additionally, the <tt>survey_id</tt> is now a
+reference to the <tt>object_id</tt> column of the <tt>acs_objects</tt>
+table and  no longer  has  a sequence associated  with  it. In fact an
+instantiation of the <tt>survsimp_survey</tt> type should always use a
+<tt>survey_id</tt>    generated   by  the   <tt>acs_object_id_seq</tt>
+sequence,  as should any type    derived from the  <tt>acs_object</tt>
+type.
+</p>
+
+<p>
+Finally a constructor and  destructor for the <tt>survsimp_survey</tt>
+type are required. These are PL/SQL procedures stored inside a package:
+</p>
+<blockquote>
+<pre>
+create or replace package survsimp_survey
+as
+	function new (
+		survey_id	in survsimp_surveys.survey_id%TYPE			default null,
+		name		in survsimp_surveys.name%TYPE,
+		short_name	in survsimp_surveys.short_name%TYPE,
+		description	in survsimp_surveys.description%TYPE,
+		description_html_p	in survsimp_surveys.description_html_p%TYPE	default 'f',
+		single_response_p	in survsimp_surveys.single_response_p%TYPE	default 'f',
+		single_editable_p	in survsimp_surveys.single_editable_p%TYPE	default 't',
+		enabled_p	in survsimp_surveys.enabled_p%TYPE			default 'f',
+		type		in survsimp_surveys.type%TYPE				default 'general',
+		object_type	in acs_objects.object_type%TYPE				default 'survsimp_survey',
+		creation_date	in acs_objects.creation_date%TYPE			default sysdate,
+		creation_user	in acs_objects.creation_user%TYPE			default null,
+		creation_ip	in acs_objects.creation_ip%TYPE				default null,
+		context_id	in acs_objects.context_id%TYPE				default null
+	) return acs_objects.object_id%TYPE;
+
+	procedure delete (
+		survey_id in survsimp_surveys.survey_id%TYPE
+	);
+end survsimp_survey;
+/
+show errors
+
+create or replace package body survsimp_survey
+as
+	function new (
+		survey_id	in survsimp_surveys.survey_id%TYPE			default null,
+		name		in survsimp_surveys.name%TYPE,
+		short_name	in survsimp_surveys.short_name%TYPE,
+		description	in survsimp_surveys.description%TYPE,
+		description_html_p	in survsimp_surveys.description_html_p%TYPE	default 'f',
+		single_response_p	in survsimp_surveys.single_response_p%TYPE	default 'f',
+		single_editable_p	in survsimp_surveys.single_editable_p%TYPE	default 't',
+		enabled_p	in survsimp_surveys.enabled_p%TYPE			default 'f',
+		type		in survsimp_surveys.type%TYPE				default 'general',
+		object_type	in acs_objects.object_type%TYPE				default 'survsimp_survey',
+		creation_date	in acs_objects.creation_date%TYPE			default sysdate,
+		creation_user	in acs_objects.creation_user%TYPE			default null,
+		creation_ip	in acs_objects.creation_ip%TYPE				default null,
+		context_id	in acs_objects.context_id%TYPE				default null
+	) return acs_objects.object_id%TYPE
+	is
+		v_survey_id survsimp_surveys.survey_id%TYPE;
+	begin
+		v_survey_id := acs_object.new (
+			object_id => survey_id,
+			object_type => object_type,
+			creation_date => creation_date,
+			creation_user => creation_user,
+			creation_ip => creation_ip,
+			context_id => context_id
+		);   
+		insert into survsimp_surveys
+			(survey_id, name, short_name, description, description_html_p,
+			single_response_p, single_editable_p, enabled_p, type)
+			values
+			(v_survey_id, new.name, new.short_name, new.description, new.description_html_p,
+			new.single_response_p, new.single_editable_p, new.enabled_p, new.type);
+
+		return v_survey_id;
+	end new;
+
+	procedure delete (
+		survey_id survsimp_surveys.survey_id%TYPE
+	)
+	is
+	begin
+		delete from survsimp_surveys
+			where survey_id = survsimp_survey.delete.survey_id;
+		acs_object.delete(survey_id);
+	end delete;
+end survsimp_survey;
+/
+show errors
+</pre>
+</blockquote>
+
+<p>
+The  constructor,   <tt>survsimp_survey.new</tt>,     and  destructor,
+<tt>survsimp_survey.delete</tt>,   are  declared   in   the <tt>create
+package</tt>  statement and  defined in   the the  <tt>create  package
+body</tt> statement.  The function of the constructor  is to create an
+instance of <tt>acs_object</tt>   and  insert a row   referencing that
+instance   to the  <tt>survsimp_surveys</tt>  table.   The  destructor
+deletes    both       the       <tt>acs_object</tt>     and        the
+<tt>survsimp_surveys</tt>.
+</p>
+
+<h3>Permissions</h3>
+
+<p>
+Permissions checking under ACS 4.0 has been much simplified and is one
+of the most compelling reasons to migrate from 3.x.  Under ACS 4.0 all
+permissions checks boil down to the question <i>Can x perform action y
+on object z?</i>. The actions are defined by the module writer.
+</p>
+
+<p>
+The following PL/SQL statements define self explanatory actions on the 
+      simple survey package:
+<p>
+<blockquote>
+<pre>
+begin
+
+	acs_privilege.create_privilege('survsimp_create_survey');
+	acs_privilege.create_privilege('survsimp_delete_survey');
+        acs_privilege.create_privilege('survsimp_modify_survey');
+	acs_privilege.create_privilege('survsimp_create_question');
+	acs_privilege.create_privilege('survsimp_delete_question');
+        acs_privilege.create_privilege('survsimp_modify_question');
+	acs_privilege.create_privilege('survsimp_take_survey');
+end;
+</pre>
+</blockquote>
+
+<p>
+When the package is registered with the ACS 4.0 package manager, these
+permissions   become   available   to  the   permissions   manager  at
+/permissions,  which can be used  assign  these permissions to various
+users.         I      also     created        a       super-privilege,
+<tt>survsimp_admin_survey</tt>:
+</p>
+
+<blockquote>
+<pre>
+begin
+	acs_privilege.create_privilege('survsimp_admin_survey');
+
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_create_survey');
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_delete_survey');
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_modify_survey');
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_create_question');
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_delete_question');
+	acs_privilege.add_child('survsimp_admin_survey','survsimp_modify_question');
+end;
+</pre>
+</blockquote>
+
+<p>
+The <tt>acs_privilege.add_child</tt> function  adds the  privilege  in
+the second argument to that in the first, so  in this case anyone with
+the  <tt>survsimp_admin_survey</tt> privilege  has  full privileges to
+create, modify and delete surveys and questions.
+</p>
+
+<p>
+How  are  the new permissions  used?  The simplest  way  is to use the
+<tt>ad_require_permission</tt>     TCL  procedure.    This  takes  two
+arguments,  an <tt>object_id</tt> and the   privilege required. If the
+current   user does not have  the  required privilege,  he   or she is
+presented   with  an   error    message.   For    example, the    page
+survey-simple/www/one.tcl,  which  presents  a survey   to  a user who
+wishes to take it, contains the single line:
+</p>
+
+<blockquote>
+<pre>
+ad_require_permission $survey_id survsimp_take_survey
+</pre>
+</blockquote>
+
+<p>
+If the user has not been assigned the <tt>survsimp_take_survey</tt>
+	  privilege, he or she will not be able to proceed. A slightly 
+	  more complicated case is seen in
+	  survey-simple/www/admin/question-modify-text.tcl:
+</p>
+
+<blockquote>
+<pre>
+ad_require_permission $question_id survsimp_modify_question
+</pre>
+</blockquote>
+
+<p>
+Here, the user  will not be able to  proceed unless he  or she has the
+survsimp_modify_question granted on  this  particular question. Rather
+than  grant privileges  on  every  single  question in  a survey,  the
+<tt>context_id</tt>  parameter  of  the <tt>survsimp_question.new</tt>
+parameter is used to allow privileges granted to  a user regarding the
+survey, to also apply to the questions. When a  question is created by
+a  call to  <tt>survsimp_question.new</tt> the <tt>context_id</tt>  is
+set to the <tt>survey_id</tt> of the survey of which the question is a
+member. Any user who has privileges over the survey, automatically has
+the same privileges over the questions. Thus, if a user is granted the
+<tt>survsimp_admin_survey</tt>  privilege over  the survey, he  or she
+will  have  <tt>survsimp_admin_survey</tt>  privilege,   and hence the
+<tt>survsimp_modify_question</tt>  privilege over all the questions of
+which that survey is comprised.
+</p>
+
+<p>
+Another case is when we simply want to control access to a page rather
+than    a  particular  object. For   example,    only  users with  the
+<tt>survsimp_admin_survey</tt> privilege should be permitted to access
+survey-simple/www/admin/index.tcl. In this case, we use:
+</p>
+<blockquote>
+<pre>
+ad_require_permission [ad_conn package_id] survsimp_admin_survey
+</pre>
+</blockquote>
+
+<p>
+This  checks  if the user has  the  correct privilege for the package,
+which itself is simply and instance of the <tt>acs_object</tt> type.
+</p>
+
+<p>
+Finally, privileges can be used in SQL statements to restrict the rows 
+	  retrieved. For example, not all users have permission to
+	  take all surveys. In survey-simple/www/index.tcl, we present 
+	  the user with a list of the surveys he or she is permitted
+	  to take using the following:
+<blockquote>
+<pre>
+db_multirow surveys survey_select {
+    select survey_id, name
+    from survsimp_surveys, acs_objects
+    where object_id = survey_id
+    and context_id = :package_id
+    and acs_permission.permission_p(object_id, :user_id, 'survsimp_take_survey') = 't'
+    and enabled_p = 't'
+    order by upper(name)
+}
+</pre>
+</blockquote>
+
+<hr>
+<a href="mailto:nstrug@arsdigita.com">nstrug@arsdigita.com</a>
+</html>
