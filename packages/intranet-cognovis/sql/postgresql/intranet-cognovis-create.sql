@@ -343,49 +343,31 @@ SELECT im_component_plugin__new (
 -- Create im_view for timesheet_tasks
 insert into im_views (view_id, view_name, visible_for) values (950, 'im_timesheet_task_home_list', 'view_projects');
 
--- Create view columns
--- Priority
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92100,950,NULL, 'Prio','@task_prio;noquote@','','',00,'');
+
+-- Task_id
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92100,950,NULL, 'TaskID','@tasks.task_id;noquote@','','',0,'');
 
 -- Task Name
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92101,950,NULL,'Name','"<nobr>$indent_html$gif_html<a href=$object_url>$task_name</a></nobr>"','','',2,'');
-
--- Project
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92102,950,NULL,'Project','<a href=/intranet/projects/view?form_mode=display&project_id=$parent_id>$project_name</a>','','',03,'');
-
--- Cost Center
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92103,950,NULL,'CC','"<a href=/intranet-cost/cost-centers/new?[export_url_vars cost_center_id return_url]>$cost_center_code</a>"',
-'','',6,'');
-
--- Start Date
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92104,950,NULL,'Start', '"<nobr>[string range $start_date 0 9]</nobr>"','','',7,'');
-
--- End Date 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92105,950,NULL,'End', '"[if {[string equal t $red_p]} { set t "<nobr><font color=red>[string range $end_date 0 9]</font></nobr>" } else { set t "<nobr>[string range $end_date 0 9]</nobr>" }]"','(child.end_date < now() and coalesce(child.percent_completed,0) < 100) as red_p','',8,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92101,950,NULL,'Name','<nobr>@tasks.gif_html;noquote@<a href=@tasks.object_url;noquote@>@tasks.task_name;noquote@</a></nobr>','','',1,'');
 
 -- Planned Units
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92106,950,NULL,'Plan','"<input type=textbox size=3 name=planned_units.$task_id value=$planned_units>"','','',10,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92102,950,NULL,'PLN','<a href=@tasks.object_url;noquote@>@tasks.planned_units;noquote@</a>','','',2,'');
 
--- Billable Units
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92107,950,NULL,'Bill','"<input type=textbox size=3 name=billable_units.$task_id value=$billable_units>"','','',12,'');
+-- Start Date
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92103,950,NULL,'Start', '@tasks.start_date;noquote@','','',3,'');
+
+-- End Date
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92104,950,NULL,'End', '@tasks.end_date;noquote@','','',4,'');
 
 -- Log Hours
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92108,950,NULL,'Log','"<p align=right><a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
-$reported_units_cache</a></p>"','','',14,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92105,950,NULL,'Log','<p align=right><a href=@tasks.timesheet_report_url;noquote@">@tasks.planned_unit;noquote@</a></p>','','',5,'');
 
--- UoM
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92109,950,NULL,'UoM','$uom','','',16,'');
-
--- Status 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92110,950,NULL,'Status','"[im_category_select {Intranet Project Status} task_status_id.$task_id $task_status_id]"','','',12,'');
-
--- Percent Completed
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92111,950,NULL, 'Done','"<input type=textbox size=3 name=percent_completed.$task_id value=$percent_completed>"', 
-'','',21,'');
+-- Task Prio
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92106,950,NULL, 'Prio','@tasks.task_prio;noquote@','','',6,'');
 
 
--- Checkbox 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92112,950,NULL,'"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''tasks'',this.checked)>"','"<input type=checkbox name=task_id.$task_id id=tasks,$task_id>"', '', '', 22, '');
+-- Checkbox
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92107,950,NULL,'<input type=checkbox name=_dummy onclick=acs_ListCheckAll(\"tasks\",this.checked)>','<input type=checkbox name=task_id.@tasks.task_id@ id=tasks,@tasks.task_id@>', '', '', 7, '');
 
 
 
