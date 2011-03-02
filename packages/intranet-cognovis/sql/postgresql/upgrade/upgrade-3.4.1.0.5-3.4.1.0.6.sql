@@ -1,6 +1,6 @@
 -- upgrade-3.4.1.0.5-3.4.1.0.6.sql
 
-SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.1.0.5-3.4.1.0.6.sql','');
+SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-3.4.1.0.5-3.4.1.0.6.sql','');
 
 create or replace function inline_0() 
 returns integer as '
