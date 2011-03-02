@@ -155,12 +155,23 @@ end;' language 'plpgsql';
 -- insert into im_employee_customer_price_list (id, )
 
 
-        select im_employee_customer_price__new (
-                null, ''im_employee_customer_price'', now()::date,
-                0, ''0.0.0.0'', null,
-                v_organisation_name,
-                v_organisation_name,
-                v_office_id,
-                57,
-                46
-        ) into v_company_id;
+-- Create a plugin for the ProjectViewPage.
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'im_component_plugin',          -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Employee Customer Price List', -- plugin_name
+        'intranet-cust-koernigweber',   -- package_name
+        'right',                        -- location
+        '/intranet/companies/view',     -- page_url
+        null,                           -- view_name
+        90,                             -- sort_order
+        'im_group_member_component_employee_customer_price_list -object_id $company_id'     -- component_tcl
+);
+
+update im_component_plugins
+set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee Customer Price List"'
+where plugin_name = 'Employee Customer Price List';
