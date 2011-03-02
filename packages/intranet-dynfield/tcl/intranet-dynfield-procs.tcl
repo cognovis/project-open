@@ -7,29 +7,13 @@ ad_library {
   @author Juanjo Ruiz juanjoruizx@yahoo.es
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.70 $ $Date: 2011/01/14 17:25:41 $
+  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.72 $ $Date: 2011/03/01 16:04:20 $
 
 }
 
 
+namespace eval im_dynfield:: {}
 namespace eval im_dynfield::util {}
-
-# Add render_label element to get element labels in dynamic forms (works with flextag-init)
-namespace eval template::element {}
-
-ad_proc -private template::element::render_label { form_id element_id tag_attributes } {
-    Render the -label text
-
-    @param form_id	The identifier of the form containing the element.
-    @param element_id     The unique identifier of the element within the form.
-    @param tag_attributes Reserved for future use.
-} {
-  get_reference
-
-  return $element(label)
-}
-
-
 
 ad_proc im_dynfield::type_categories_for_object_type {
     -object_type:required
@@ -70,32 +54,158 @@ ad_proc -public im_dynfield::status_category_for_object_type {
     return [db_string ocat "select status_category_type from acs_object_types where object_type = :object_type" -default ""]
 }
 
-namespace eval im_dynfield::util {}
 
 
 
-ad_proc -public im_dynfield::util::sqlify_list {
-    -list:required
+
+
+ad_proc -public im_dynfield::datatype_options {
 } {
-    eeerror
-    set output_list {}
-    foreach item $list {
-	if { [exists_and_not_null output_list] } {
-	    append output_list ", "
-	}
-	regsub -all {'} $item {''} item
-	append output_list "'$item'"
+    Return the default list of datatypes cached
+} {
+    return [util_memoize [list im_dynfield::datatype_options_not_cached]]
+}
+
+ad_proc -public im_dynfield::datatype_options_not_cached {
+} {
+    Return the default list of datatypes not cached
+} {
+    set datatype_options [list]
+
+    if {[apm_package_installed_p acs-templating]} {
+        #acs-templating package
+        append datatype_options [list \
+				     [list "Boolean" boolean] \
+				     [list "Checkbox Text" checkbox_text] \
+				     [list "Currency" currency] \
+				     [list "Date" date] \
+				     [list "Email" email] \
+				     [list "File" file] \
+				     [list "Filename" filename] \
+				     [list "Float" float] \
+				     [list "Integer" integer] \
+				     [list "Keyword" keyword] \
+				     [list "Natural Number" naturalnum] \
+				     [list "Party Search" party_search] \
+				     [list "Radio Text" radio_text] \
+				     [list "Rich Text" richtext] \
+				     [list "Richtext or File" richtext_or_file] \
+				     [list "Search" search] \
+				     [list "Select Text" select_text] \
+				     [list "String" string] \
+				     [list "Text" text] \
+				     [list "URL" url] \
+				     [list "URL Element" url_element] \
+				     ]
     }
-    return $output_list
+
+    if {[apm_package_installed_p category]} {
+        #categories package
+        lappend datatype_options [list "Category" category]
+    }
+
+    if {[apm_package_installed_p intranet-dynfield]} {
+        #intranet-dynfield package
+        lappend datatype_options [list "Mobile Number" mobile_number]
+        lappend datatype_options [list "Recurrence" recurrence]
+        lappend datatype_options [list "Telecom Number" telecom_number]
+    }
+
+    return $datatype_options
 }
 
 
-######
+
+
+ad_proc -public im_dynfield::widget_options {
+} {
+    Return the default list of widgets cached
+} {
+    return [util_memoize [list im_dynfield::widget_options_not_cached]]
+}
+
+ad_proc -public im_dynfield::widget_options_not_cached {
+} {
+    set widget_options [list]
+
+    #check also for package version?
+    #apm_version_id_from_package_key
+
+    if {[apm_package_installed_p acs-templating]} {
+        #acs-templating package
+        append widget_options [list \
+				   [list "ampmFragment" ampmFragment] \
+				   [list "Attachment" attachment] \
+				   [list "Block" block] \
+				   [list "Button" button] \
+				   [list "Checkbox" checkbox] \
+				   [list "Checkbox Text" checkbox_text] \
+				   [list "Comment" comment] \
+				   [list "Cost Center Tree" im_cost_center_tree] \
+				   [list "Currency" im_currencies] \
+				   [list "Date" date] \
+				   [list "Date Fragment" dateFragment] \
+				   [list "File" file] \
+				   [list "Hidden" hidden] \
+				   [list "Inform" inform] \
+				   [list "Input Type" input type] \
+				   [list "Menu Widget Name" menu widget_name] \
+				   [list "Month Fragment" monthFragment] \
+				   [list "Multiselect" multiselect] \
+				   [list "Numeric Range" numericrange] \
+				   [list "Party Search" party_search] \
+				   [list "Password" password] \
+				   [list "Radio" radio] \
+				   [list "Radio" radio_text] \
+				   [list "Rich Text" richtext] \
+				   [list "Richtext or File" richtext_or_file] \
+				   [list "Search" search] \
+				   [list "Select" select] \
+				   [list "Select Text" select_text] \
+				   [list "Submit" submit] \
+				   [list "Tab" tab] \
+				   [list "Text" text] \
+				   [list "Textarea" textarea] \
+				   [list "Text Date" textdate] \
+				   ]
+    }
+
+    if {[apm_package_installed_p intranet-dynfield]} {
+        #intranet-dynfield package
+        lappend widget_options [list "Calculated SQL" calculated_sql]
+	lappend widget_options [list "Dynfield Hidden" dynfield_hidden]
+	lappend widget_options [list "Generic SQL" generic_sql]
+	lappend widget_options [list "Generic TCL" generic_tcl]
+	lappend widget_options [list "Mobile Number" mobile_number]
+	lappend widget_options [list "Recurrence" recurrence]
+	lappend widget_options [list "Telecom Number" telecom_number]
+    }
+
+    if {[apm_package_installed_p category]} {
+        #categories package
+	lappend widget_options [list "Category" category]
+	lappend widget_options [list "OpenACS Category" category_tree]
+
+    }
+
+    if {[apm_package_installed_p intranet-core]} {
+        #intranet-core package
+	lappend widget_options [list "P/O Category" im_category_tree]
+	lappend widget_options [list "\]po\[ Checkbox" im_checkbox]
+    }
+
+    if {[apm_package_installed_p acs-lang]} {
+        #acs-lang package
+	lappend widget_options [list "Select Locales" select_locales]
+    }
+
+    return $widget_options
+}
 
 
 
 
-namespace eval im_dynfield:: {}
+
 
 ad_proc -public im_dynfield::search_sql_criteria_from_form {
     -form_id:required
@@ -107,10 +217,8 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     or via a join in order to limit the number of object_ids
     to the ones that fit to the filter criteria.
 
-    @param form_id:
-   	    search form id
-    @return:
-		An array consisting of:
+    @param form_id: search form id
+    @return:	An array consisting of:
 		where: A SQL phrase and
 		bind_vars: a key-value paired list carrying the bind
 			vars for the SQL phrase
@@ -120,13 +228,10 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 
     # Get the main table for the data type
     db_1row main_table "
-	select
-		table_name as main_table_name,
+	select	table_name as main_table_name,
 		id_column as main_id_column
-	from
-		acs_object_types
-	where
-		object_type = :object_type
+	from	acs_object_types
+	where	object_type = :object_type
     "
 
     set attributes_sql "
@@ -181,7 +286,9 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	# Check whether the attribute is part of the form
 	if {[lsearch $form_elements $attribute_name] >= 0} {
 	    set value [template::element::get_value $form_id $attribute_name]
+	    ns_log Notice "search_sql_criteria_from_form: value='$value'"
 	    if {"" == $value} { continue }
+	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
 	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 	}
@@ -479,344 +586,6 @@ ad_proc -public im_dynfield::attribute_store {
 }
 
 
-
-
-
-ad_proc -public im_dynfield::search_query {
-    -object_type:required
-    -form_id:required
-    {-select_part ""}
-    {-from_part ""}
-    {-where_clause ""}
-    {-debug 0 }
-} {
-    generate the search query using intranet-dynfield attributes for object_type
-    
-    @param object_type: the object type that you want to include attributes
-    @param form_id: search form id
-    @param select_part: string, comma separated, of NON intranet-dynfield attributes that you want to get from DB.
-    	Format: the same as in sql query
-    @param from_part string, comma separated, containing from tables for de query search. 
-    	Format: the same as in sql query
-    @param where_clause: Non intranet-dynfield search conditions
-    
-    @return: list of lists ready to convert in array <br/>
-    	array elements:
-    	<ul>
-    	   <li><b>select</b>: string, comma separated, ready to use in sql query after SELECT</li>
-    	   <li><b>from</b>: string, comma separated, ready to use in sql query after FROM</li>
-    	   <li><b>where</b>: string, ready to use in sql query after WHERE</li>
-    	   <li><b>list_elements</b>: intranet-dynfield attributes to append to list result elements </li>
-    	   <li><b>list_orderby</b>: intranet-dynfield attributes to append to orderby result elements </li>
-    	</ul>
-} {
-    eeerror
-
-    # ------------------------------------------
-    # Get the list of all variables of the last form
-    # ------------------------------------------
-
-    #set form_vars [ns_conn form]
-    #template::form get_values $form_id
-    
-    # ------------------------------------------
-    # proces from_list tables
-    # ------------------------------------------
-    
-    
-    set query_select_list [list]    
-    set query_from_tables [list]
-    
-    set from_list [split $from_part ","]
-    
-    foreach from_table_item $from_list {
-    	set table_name [string tolower [lindex $from_table_item 0]]
-    	set table_alias [lindex $from_table_item 1]
-    	if {[empty_string_p $table_alias]} {
-    		set alias($table_name) $table_name
-    	} else {
-    		set alias($table_name) $table_alias
-    	}
-    	
-    	# ------------------------------------------
-	# add the table in
-    	# ------------------------------------------
-    	
-    	lappend query_from_tables "$table_name $table_alias"
-    	
-    }
-    
-    # ------------------------------------------
-    # get object_type main table and column id
-    # ------------------------------------------
-    
-    db_1row "get main object_type table" "select table_name as main_table_name, \
-	    id_column as main_id_column \
-	    from acs_object_types \
-	    where object_type = :object_type"
-    set object_type_tables [list [list $main_table_name $main_id_column]]
-    
-    # ------------------------------------------
-    # get object_type extension tables
-    # ------------------------------------------
-    
-    set ext_object_type_tables [db_list_of_lists "get ext object_type tables" "select \
-	    table_name,\
-	    id_column \
-	    from \
-	    acs_object_type_tables\
-	    where \
-	    object_type = :object_type\
-	    "]
-    if {[llength $ext_object_type_tables] > 0} {
-	set object_type_tables [concat $object_type_tables $ext_object_type_tables]
-    }    
-    
-    # ------------------------------------------
-    # for all tables related to object_type
-    # create new row if not exists
-    # ------------------------------------------
-    if {[exists_and_not_null alias($main_table_name)]} {
-    	set main_table_alias $alias($main_table_name)
-    } else {
-    	set main_table_alias "$main_table_name"
-    }
-    foreach table_pair $object_type_tables {
-	set table_n [lindex $table_pair 0]
-	set column_i [lindex $table_pair 1]
-
-	# ------------------------------------------
-	# add to from tables list if table_n not exists
-	# ------------------------------------------
-	if {![info exists alias($table_n)]} {
-		set alias($table_n) "$table_n"
-		set table_alias "$table_n"
-		lappend query_from_tables "$table_n"
-	} else {
-		set table_alias $alias($table_n)
-	}
-		
-	set pk($table_n) "$column_i"
-	
-	# ------------------------------------------
-	# Join the current table to the query
-	# ------------------------------------------
-	if {$table_alias != $main_table_alias} {
-		append where_clause " \n AND $table_alias.$column_i = $main_table_alias.$main_id_column"
-	}
-    }	
-    
-    set select_list [split $select_part ","]
-    foreach select_item $select_list {
-    	set attr [lindex $select_item 0]
-    	set table_alias [lindex $select_item 1]
-    	
-    	lappend query_select_list "$attr"
-    	
-    	# ---------------------------------------------
-    	# create this element to the result list
-    	# ---------------------------------------------
-    	
-    	# its nescessary ???? maybe not
-    	# if we must create element list we need to split attr in alias and attribute (alias.attribute)
-    }
-
-    set attrib_list [db_list_of_lists get_page_attributes {
-	select attr.attribute_id,
-	attr.attribute_name,
-	attr.table_name as attribute_table,
-	attr.pretty_name,
-	wdgt.widget,
-	wdgt.parameters,
-	wdgt.storage_type
-	from acs_attributes attr,
-	im_dynfield_attributes flex,
-	im_dynfield_widgets wdgt
-	where attr.object_type = :object_type
-	AND attr.attribute_id = flex.acs_attribute_id
-	AND flex.widget_name = wdgt.widget_name
-    }]
-    
-    # ------------------------------------------
-    # Build the search query and the result list for all attributes 
-    # ------------------------------------------
-    
-    foreach attrib $attrib_list {
-	set attribute_id [lindex $attrib 0]
-	set attribute_name [lindex $attrib 1]
-	set attribute_table [lindex $attrib 2]
-	set pretty_name [lindex $attrib 3]
-	set widget [lindex $attrib 4]
-	set parameters [lindex $attrib 5]
-	
-	if {[empty_string_p $attribute_table]} {
-	    set attribute_table $main_table_name
-	}
-	
-	set table_alias $alias($attribute_table)
-	set column_i $pk($attribute_table)
-	
-	#-------------------------------------------
-	# skip attributes that does not exists in form
-	# maybe it's not present in this page
-	#-------------------------------------------
-	set multiple_p 0
-	if {[template::element::exists $form_id $attribute_name]} { 
-
-		set widget_element [template::element::get_property $form_id $attribute_name widget]
-		set $attribute_name [template::element::get_value $form_id $attribute_name]
-		if {$debug} { ns_log notice "widget element -----> $widget_element" }
-		switch $widget_element {
-			"checkbox" - "multiselect" - "category_tree"  - "im_category_tree" {
-
-			    if {$debug} { ns_log notice "$widget_element -----> values [set $attribute_name]" }
-				set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
-				if {[empty_string_p $multiple_p]} {
-					set multiple_p 0
-				}
-				if {$multiple_p} {
-					# -------------------------
-					# get intranet-dynfield attribute_id
-					# -------------------------
-					db_1row "get flex attribute" "select attribute_id 
-						from im_dynfield_attributes
-						where acs_attribute_id = (select attribute_id
-								  from acs_attributes 
-								  where object_type = :object_type
-								  and attribute_name = :attribute_name)"
-					
-					if {$debug} { ns_log Notice "before search multi values [set $attribute_name]" }
-					append where_clause "\n\t AND ("
-					set i 0
-					foreach val [template::element::get_values $form_id $attribute_name] {
-						if {![empty_string_p $val]} {
-							if {$i>0} {
-								append where_clause "\n\t OR "
-							}
-							append where_clause " $table_alias.$column_i in (select object_id
-								from im_dynfield_attr_multi_value
-								where attribute_id = '$attribute_id'
-								and value = '$val')"
-							incr i
-						}	
-					}
-					# ---------------------------
-					# if no value selected 
-					# ---------------------------
-					if {$i == 0} {
-						append where_clause " 1=1 "
-					}
-					append where_clause "\n\t)"
-					
-	
-				} else {
-					if {![empty_string_p [set $attribute_name]]} {
-						#set $attribute_name $value
-						append where_clause "\n\t AND $table_alias.$attribute_name like '%[set $attribute_name]%' "
-					}
-				}
-			    }
-			"date" {
-				set value_str [template::util::date::get_property sql_date [set $attribute_name]]
-				if {$value_str != "NULL"} {
-					append where_clause "\n\t AND $table_alias.$attribute_name = $value_str"	
-				}
-			}
-			default {
-				# ------------------------------------------
-				# Get the value of the form variable from the HTTP form
-				# ------------------------------------------
-	
-				#set value [ns_set get $form_vars $attribute_name]
-				set value [set $attribute_name]
-				# ------------------------------------------
-				# Store the attribute into the local variable frame
-				# We take the detour through the local variable frame
-				# (form ns_set -> local var frame -> sql statement)
-				# in order to be able to use the ":var_name" notation
-				# in the dynamically created SQL update statement.
-				# ------------------------------------------
-				if {![empty_string_p [set $attribute_name]]} {
-					#set $attribute_name $value
-					append where_clause "\n\t AND $table_alias.$attribute_name like '%[set $attribute_name]%' "
-				}
-			} 	
-		}
-	
-		#################################################
-		
-	} else {
-	    if {$debug} { ns_log notice "***************** $attribute_name NOT EXISTS in $form_id ***********************"  }
-	}
-	
-	# ------------------------------------------
-	# append this attriubute to the result list
-	# ------------------------------------------
-	
-	
-	switch $widget {
-		"category_tree" {
-			if {$multiple_p} {
-				lappend query_select_list "im_dynfield_attribute.multimap_val_to_str($attribute_id, $table_alias.$column_i,'$widget') as $attribute_name"
-			} else {
-				lappend query_select_list "category.name($table_alias.$attribute_name) as $attribute_name"
-			}
-		}
-		"generic_sql" {
-			# -------------------------------------------
-			# return default value
-			# -------------------------------------------
-			
-			set generic_sql_return "$table_alias.$attribute_name"
-			
-			# -------------------------------------------
-			# try to return pretty name of key
-			# -------------------------------------------
-			
-			set custom_pos [lsearch $parameters "custom"]
-			if {$custom_pos > -1} {
-			    	set custom_value [lindex $parameters [expr $custom_pos + 1]]
-			    	set sql_query [lindex $custom_value 1]
-			    	
-			    	set result [regexp -nocase {select ([^ , \" \"]+), ([^ \" \"]+) from ([^ \" \"]+)} $sql_query match key key_name table_key]
-			    	if {$result} {
-			    		# -------------------------------------------
-			    		# create query to return pretty key name
-			    		# -------------------------------------------
-			    		set generic_sql_return " (SELECT $key_name 
-			    					  FROM $table_key 
-			    					  WHERE $key = $table_alias.$attribute_name) as $attribute_name "
-			    	}
-    			}
-    			
-    			lappend query_select_list $generic_sql_return
-		}
-		default {
-			lappend query_select_list "$table_alias.$attribute_name"
-		}
-	}
-
-	# -----------------------------------------------------------------
-	# avila 20050405 disable add intranet-dynfield attributes to result screen
-	# -----------------------------------------------------------------
-	
-	append elements_list  " $attribute_name { 
-					label \"$pretty_name\"
-					}"
-	append orderby_list " $attribute_name {orderby $table_alias.$attribute_name}"
-	
-	
-    }
-      
-    
-    return [list [list "select" "[join $query_select_list ","]"] [list "from" "[join $query_from_tables ", \n"]"] \
-	 [list "where" "$where_clause"] [list "list_elements" "$elements_list"] [list "list_orderby" "$orderby_list"]]
-    
-}
-
-
-
-
 # ------------------------------------------------------------------
 # DynFields per Subtype
 # ------------------------------------------------------------------
@@ -1095,6 +864,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 } {
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
     set user_id [ad_get_user_id]
+    set return_url [im_url_with_query]
 
     # Does the specified layout page exist? Otherwise use "default".
     set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
@@ -1125,7 +895,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set sql "
        select	m.attribute_id,
                 m.object_type_id as ot,
-                m.display_mode as dm
+                m.display_mode as dm,
+		m.help_text as ht
         from
                 im_dynfield_type_attribute_map m,
                 im_dynfield_attributes a,
@@ -1136,12 +907,15 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                 and aa.object_type = :object_type
     "
 
+    if {!$include_also_hard_coded_p} { append sql "\t\tand also_hard_coded_p = 'f'\n" }
+
     # Default: Set all field to form's display mode
     set default_display_mode $form_display_mode
 
     db_foreach attribute_table_map $sql {
 	set key "$attribute_id.$ot"
 	set display_mode_hash($key) $dm
+	set help_text($attribute_id) $ht
 
 	# Now we've got atleast one display mode configured:
 	# Set the default to "none", so that no field is shown
@@ -1259,9 +1033,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-#        set key "$dynfield_attribute_id.$object_subtype_id"
-#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
-
 	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
@@ -1287,8 +1058,21 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	# set optional all attributes if search mode
 	if {$search_p} { set required_p "f" }
 
-	# No help yet...
-	set help ""
+	# Show "wrench" for administrators
+	set admin_p [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]]
+	set admin_html ""
+	if {$admin_p} {
+	    set admin_help ""
+	    set dynfield_admin_url [export_vars -base "/intranet-dynfield/attribute-new" {{attribute_id $dynfield_attribute_id} return_url}]
+	    set admin_html "<a href='$dynfield_admin_url'>[im_gif wrench $admin_help]</a>"
+	}
+    
+	# Help
+        if {[info exists help_text($dynfield_attribute_id)]} {
+            set help_message $help_text($dynfield_attribute_id)
+        } else {
+            set help_message ""
+        }
 
 	im_dynfield::append_attribute_to_form \
 	    -attribute_name $attribute_name \
@@ -1299,7 +1083,14 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    -parameters $parameters \
 	    -required_p $required_p \
 	    -pretty_name $pretty_name \
-	    -help $help
+	    -help_text $help_message \
+	    -admin_html $admin_html
+
+        # set the value
+        upvar $attribute_name x
+        if {[info exists x]} {
+            template::element::set_value $form_id $attribute_name $x
+        }
 
 	incr field_cnt
 
@@ -1336,15 +1127,11 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-#        set key "$dynfield_attribute_id.$object_subtype_id"
-#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
-
 	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }
 
 	switch $storage_type {
 	    multimap {
-
 		# "MultiMaps" (select with multiple values) are stored in a separate
 		# "im_dynfield_attr_multi_value", because we can't store it like the
 		# other attributes directly inside the object's table.
@@ -1357,21 +1144,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 				and object_id = :object_id
 		"]
 		template::element::set_values $form_id $attribute_name $value_list
-
 	    }
-
-	    date {
-
-		# ToDo: Remove this part. It's not used anymore. Dates are stored as
-		# values in YYYY-MM-DD format
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: date storage" }
-		set value [template::util::date::get_property ansi [set $attribute_name]]
-		set value_list [split $value "-"]			
-		set value "[lindex $value_list 0] [lindex $value_list 1] [lindex $value_list 2]"
-		template::element::set_value $form_id $attribute_name $value
-
-	    }
-
 	    value - default {
 
 		# ToDo: slow. This piece issues N SQL statements, instead of constructing
@@ -1382,8 +1155,20 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		    from	$attribute_table_name
 		    where	$attribute_id_column = :object_id
 		" -default ""]
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
-		template::element::set_value $form_id $attribute_name $value
+
+                switch $widget {
+                    date {
+                        set date [template::util::date::create]
+                        set value [template::util::date::set_property ansi $date $value]
+                    }
+                    default { }
+                }
+
+		# Don't overwrite values with default value if the value is there already
+                if {$value ne ""} {
+                    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
+                    template::element::set_value $form_id $attribute_name $value
+                }
 
 	    }
 
@@ -1414,7 +1199,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 
 
-
 ad_proc -public im_dynfield::append_attribute_to_form {
     -widget:required
     -form_id:required
@@ -1424,7 +1208,8 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     -required_p:required
     -attribute_name:required
     -pretty_name:required
-    -help:required
+    -help_text:required
+    {-admin_html "" }
     {-debug 0}
 } {
     Append a single attribute to a form
@@ -1433,75 +1218,87 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     # validator (e.g. a string datatype would change into text).
     set translated_datatype [attribute::translate_datatype $datatype]
     if {$datatype == "number"} {
-	set translated_datatype "float"
+        set translated_datatype "float"
     } elseif {$datatype == "date"} {
-	set translated_datatype "date"
+        set translated_datatype "date"
     }
-    
-    set parameter_list [lindex $parameters 0]
-    
-    # Find out if there is a "custom" parameter and extract its value
-    # "Custom" is the parameter to pass-on widget parameters from the
-    # DynField Maintenance page to certain form Widgets.
-    # Example: "custom {sql {select ...}}" in the "generic_sql" widget.
+
     set custom_parameters ""
-    set custom_pos [lsearch $parameter_list "custom"]
-    if {$custom_pos >= 0} {
-	set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
-    }
-    
     set html_parameters ""
-    set html_pos [lsearch $parameter_list "html"]
-    if {$html_pos >= 0} {
-	set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
+    set after_html_parameters ""
+    foreach parameter_list $parameters {
+        # Find out if there is a "custom" parameter and extract its value
+        # "Custom" is the parameter to pass-on widget parameters from the
+        # DynField Maintenance page to certain form Widgets.
+        # Example: "custom {sql {select ...}}" in the "generic_sql" widget.
+
+        set custom_pos [lsearch $parameter_list "custom"]
+        if {$custom_pos >= 0} {
+            set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
+        }
+
+        set html_pos [lsearch $parameter_list "html"]
+        if {$html_pos >= 0} {
+            set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
+        }
+
+        set after_html_pos [lsearch $parameter_list "after_html"]
+        if {$after_html_pos >= 0} {
+            set after_html_parameters [subst [lindex $parameter_list [expr $after_html_pos + 1]]]
+        }
     }
-    
+
     # Localization - use the intranet-core L10n space for translation.
     set package_key "intranet-core"
     set pretty_name_key "$package_key.[lang::util::suggest_key $pretty_name]"
     set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
 
+    # Show help text as part of a help GIF
+    if {$help_text ne ""} {
+        set after_html [im_gif help $help_text]
+    } else {
+        set after_html ""
+    }
+
+    append after_html $admin_html
 
     switch $widget {
-	checkbox - radio - select - multiselect - im_category_tree - category_tree {
-	    
-	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
-	    set option_list ""
-	    set options_pos [lsearch $parameter_list "options"]
-	    if {$options_pos >= 0} {
-		set option_list [lindex $parameter_list [expr $options_pos + 1]]
-	    }
-	    
-	    if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-		set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
-	    }
-	    if {![template::element::exists $form_id "$attribute_name"]} {
-		template::element create $form_id "$attribute_name" \
-		    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
-		    -widget $widget \
-		    -label "$pretty_name" \
-		    -options $option_list \
-		    -custom $custom_parameters \
-		    -html $html_parameters \
-		    -help_text $help \
-		    -mode $display_mode
-	    }
-	}
-	
-	default {
-	    
-	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
-	    if {![template::element::exists $form_id "$attribute_name"]} {
-		template::element create $form_id "$attribute_name" \
-		    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
-		    -widget $widget \
-		    -label $pretty_name \
-		    -html $html_parameters \
-		    -custom $custom_parameters\
-		    -help_text $help \
-		    -mode $display_mode
-	    }
-	}
+        checkbox - radio - select - multiselect - im_category_tree - category_tree {
+            if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
+            set option_list ""
+            set options_pos [lsearch $parameter_list "options"]
+            if {$options_pos >= 0} {
+                set option_list [lindex $parameter_list [expr $options_pos + 1]]
+            }
+
+            if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
+                set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
+            }
+            if {![template::element::exists $form_id "$attribute_name"]} {
+                template::element create $form_id "$attribute_name" \
+                    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
+                    -widget $widget \
+                    -label "$pretty_name" \
+                    -options $option_list \
+                    -custom $custom_parameters \
+                    -html $html_parameters \
+                    -after_html "$after_html $after_html_parameters" \
+                    -mode $display_mode
+            }
+        }
+        default {
+            if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
+            if {![template::element::exists $form_id "$attribute_name"]} {
+                template::element create $form_id "$attribute_name" \
+                    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
+                    -widget $widget \
+                    -label $pretty_name \
+                    -html $html_parameters \
+                    -custom $custom_parameters\
+                    -after_html "$after_html $after_html_parameters" \
+                    -mode $display_mode
+            }
+        }
     }
 }
 
@@ -1510,7 +1307,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
     -object_type:required
     {-table_prefix "" }
 } {
-    Returns a list with two elements:
+    Returns a list with three elements:
 
     Element 0: A list of PrettyNames, suitable to be appended to the
     "column_headers" list of a project-open im_view type of ListPage
@@ -1542,6 +1339,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		aw.widget,
 		aw.parameters,
 		aw.storage_type_id,
+		aw.deref_plpgsql_function,
 		im_category_from_id(aw.storage_type_id) as storage_type
 	from
 		im_dynfield_attributes aa,
@@ -1563,367 +1361,19 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
     set column_vars [list]
     set column_select [list]
     db_foreach dynfield_attributes $attributes_sql {
-	lappend column_headers $pretty_name
-	lappend column_vars "\$$attribute_name"
-	lappend column_select "$table_prefix$attribute_name,"
+
+	# Apply the dereferencing function in order to convert catgory_ids into text etc.
+        set deref "$table_prefix$attribute_name"
+        if {"" != $deref_plpgsql_function} {
+            set deref "${deref_plpgsql_function}($deref)"
+        }
+
+        lappend column_headers $pretty_name
+        lappend column_derefs "\$${attribute_name}_deref"
+        lappend column_select "$deref as ${attribute_name}_deref,"
     }
 
     return [list $column_headers $column_vars $column_select]
-}
-
-
-ad_proc -public im_dynfield::form {
-    -object_type:required
-    -form_id:required
-    -object_id:required
-    -return_url:required
-    {-page_url ""}
-} {
-    Returns a fully formatted template, similar to ad_form.
-    As a difference to ad_form, you don't need to specify the
-    fields of the object, because they are defined dynamically
-    in the intranet-dynfield database.
-    Please see the Intranet-Dynfield documentation for more details.
-} {
-    eeerror
-    if { [empty_string_p $page_url] } {
-	# get default page_url
-	set page_url [db_string get_default_page {
-	    select page_url
-	    from im_dynfield_layout_pages
-	    where object_type = :object_type
-	    and default_p = 't'
-	} -default ""]
-    }
-
-    
-    # verify correctness of page_url if something wrong just ignore dynamic position
-    if { [db_0or1row exists_page_url_p "select 1 from im_dynfield_layout_pages
-	where object_type = :object_type and page_url = :page_url"]
-    } {
-	set layout_page_p 1
-    } else {
-	set layout_page_p 0
-    }
-
-    db_1row object_type_info "
-	select 
-		pretty_name as object_type_pretty_name,
-		table_name,
-		id_column
-	from 
-		acs_object_types 
-	where 
-		object_type = :object_type
-	"
-    
-    # check if this object_type involve more tables
-    # get object_type tables tree
-    set obj_type $object_type
-    set object_type_tables [list]
-    while {$obj_type != "acs_object"} {
-
-	set obj_type_tables [db_list "get tables related to object_type" "
-		select distinct table_name 
-		from acs_attributes 
-		where object_type = :obj_type 
-		and table_name is not null
-	"]
-	db_1row "get obj_type table" "select table_name as t, supertype as obj_type \
-	    from acs_object_types \
-	    where object_type = :obj_type"
-	lappend obj_type_tables $t
-	foreach table $obj_type_tables {
-
-	    if {[lsearch -exact $object_type_tables $table] == -1} {
-		lappend object_type_tables $table
-	    }
-	}
-
-    }
-
-    foreach t_name $object_type_tables {
-	# get the primary key for all tables related to object type
-    
-	db_1row "get table pk" "
-	select COLUMN_NAME as c_id
-	FROM ALL_CONS_COLUMNS \
-	WHERE 
-		TABLE_NAME = UPPER(:t_name) \
-		AND CONSTRAINT_NAME = ( SELECT CONSTRAINT_NAME \
-		FROM ALL_CONSTRAINTS \
-		WHERE TABLE_NAME = UPPER(:t_name) \
-		AND CONSTRAINT_TYPE = 'P')"
-    
-	lappend object_type_tables_colid_list [list $t_name $c_id]
-    }
-
-    # ------------------------------------------------------
-    # Create the form
-    # ------------------------------------------------------
-    
-    # Create a new blank form.
-    #
-    template::form create $form_id
-
-
-    # ------------------------------------------------------
-    # Retreive object information 
-    # OR:
-    # Setup form to create a new object
-    # ------------------------------------------------------
-
-    if { [template::form is_request $form_id] } {
-
-	if {[info exists object_id]} {
-	    # get values from all tables related to object_type
-	    foreach table_pair $object_type_tables_colid_list {
-		set table_n [lindex $table_pair 0]
-		set column_i [lindex $table_pair 1]
-
-		# We can use a wildcard ("p.*") to select all columns from 
-		# the object or from its extension table in order to get
-		# values that might be added for a specific customer
-		db_1row info "
-			select 	o.*
-			from	$table_n o
-			where	o.$column_i = :object_id
-		"
-	    }
-
-
-	} else {
-	    
-	    # Setup the form with an id_column field in order to
-	    # create a new object of the given type
-
-	    set object_id [db_nextval "acs_object_id_seq"]
-	}
-    }
-
-
-    # ------------------------------------------------------
-    # Create form elements from the "im_dynfield_attributes" 
-    # table
-    # ------------------------------------------------------
-
-    # The table "im_dynfield_attributes" contains the list of
-    # "attributes" (= fields or columns) of an object.
-    # We are going to add these fields to the current view/
-    # edit template.
-    #
-    # There is a special treatment for attribute "parameters".
-    # These parameters are are passed on to the TCL widget
-    # that renders the specific attribute value.
-
-
-    # Pull out all the attributes up the hierarchy from this object_type
-    # to the $object_type object type
-    set attributes_sql "
-	select a.attribute_id,
-	       a.table_name as attribute_table_name,
-	       a.attribute_name,
-	       at.pretty_name,
-	       a.datatype, 
-	       case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
-	       a.default_value, 
-	       t.table_name as object_type_table_name, 
-	       t.id_column as object_type_id_column,
-	       aw.widget,
-	       aw.parameters,
-	       at.table_name as attribute_table,
-	       at.object_type as attr_object_type
-	  from
-	  	acs_object_type_attributes a, 
-	  	im_dynfield_attributes aa,
-	  	im_dynfield_widgets aw,
-	  	acs_attributes at,
-		acs_object_types t
-	 where 
-	 	a.object_type = :object_type
-	 	and t.object_type = a.ancestor_type 
-	 	and a.attribute_id = aa.acs_attribute_id
-	 	and a.attribute_id = at.attribute_id
-	 	and aa.widget_name = aw.widget_name
-	 order by 
-	 	attribute_id
-    "
-
-    db_foreach attributes $attributes_sql {
-	# Might translate the datatype into one for which we have a
-	# validator (e.g. a string datatype would change into text).
-	set translated_datatype [attribute::translate_datatype $datatype]
-	    
-	set parameter_list [lindex $parameters 0]
-
-	# Find out if there is a "custom" parameter and extract its value
-	set custom_parameters ""
-	set custom_pos [lsearch $parameter_list "custom"]
-	if {$custom_pos >= 0} {
-	    set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
-	}
-
-	set html_parameters ""
-	if {[string equal [lindex $parameter_list 0] "html"]} {
-	    set html_parameters [lindex $parameter_list 1]
-	}
-
-
-	set value $default_value
-	if {[info exists $attribute_name]} {
-	    set value [expr "\$$attribute_name"]
-	}
-
-	if { [string eq $widget "radio"] || [string eq $widget "select"] || [string eq $widget "multiselect"]} {
-
-	    # For enumerations, we generate a list all the possible values
-	    set option_list [db_list_of_lists select_enum_values {
-		select enum.pretty_name, enum.enum_value
-		from acs_enum_values enum
-		where enum.attribute_id = :attribute_id 
-		order by enum.sort_order
-	    }]
-	    	    
-	    if { [string eq $required_p "f"] } {
-		# This is not a required option list... offer a default
-		lappend option_list [list " (no value) " ""]
-	    }
-	    template::element create $form_id "$attribute_name" \
-		    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
-		    -widget $widget \
-		    -options $option_list \
-		    -label "$pretty_name" \
-		    -value $value \
-		    -custom $custom_parameters
-	} else {
-	
-	    # ToDo: Catch errors when the variable doesn't exist
-	    # in order to create reasonable error messages with
-	    # object, object_type, expected variable name and the
-	    # list of currently existing variables.
-		
-	    template::element create $form_id "$attribute_name" \
-		    -datatype $translated_datatype [ad_decode $required_p "f" "-optional" ""] \
-		    -widget $widget \
-		    -label $pretty_name \
-		    -value  $value\
-		    -html $html_parameters \
-		    -custom $custom_parameters
-	}
-    }
-    
-
-    # ------------------------------------------------------
-    # Execute this for a "request" (= this page creates a HTML form)
-    # In this case we pass some more parameters on to the form
-    # ------------------------------------------------------
-
-    if { [template::form is_request $form_id] } {
-	
-	# A list of additional variables to export
-	set export_var_list [list object_id object_type]
-
-	foreach var $export_var_list {
-	    template::element create $form_id $var \
-		    -value [set $var] \
-		    -datatype text \
-		    -widget hidden
-	}
-    }
-
-
-    # ------------------------------------------------------
-    # Store values if the form was valid
-    # ------------------------------------------------------
-
-    if { [template::form is_valid $form_id] } {
-
-	set object_exists [db_string object_exists "select count(*) from $table_name where $id_column=:object_id"]
-
-	if {!$object_exists} {
-	    # We would have to insert a new object - 
-	    # not implmeneted yet
-	    ad_return_complaint 1 "Creating new objects not implmented yet<br>
-	    Please create the object first via an existing maintenance screen
-	    before using the Intranet-Dynfield generic architecture to modify its fields"
-	    return
-	}
-
-	# check if exist entry in all relates object_type tables
-	foreach table_pair $object_type_tables_colid_list {
-	    set table_n [lindex $table_pair 0]
-	    set column_i [lindex $table_pair 1]
-	    if {$table_n != $table_name} {
-		set extension_exist [db_string object_exists "select count(*) from $table_n where $column_i=:object_id"]
-		if {!$extension_exist} {
-		    # todo : create it
-		    # mandatory fields!!!!!!!
-		}
-
-	    }
-	}
-
-
-	# Build the update_list for all attributes except $id_column
-	#
-	# for all tables related to object_type
-	foreach table_pair $object_type_tables_colid_list {
-	    set table_n [lindex $table_pair 0]
-	    set column_i [lindex $table_pair 1]
-	    set update_sql($table_n) "update $table_n set"
-	    set first($table_n) 1
-	    set pk($table_n) "$column_i"
-	}
-
-	# Get the list of all variables of the last form
-	set form_vars [ns_conn form]
-
-	db_foreach attributes $attributes_sql {
-
-	    if {[empty_string_p $attribute_table]} {
-		db_1row "get attr object type table" "
-		    select table_name as attribute_table \
-		    from acs_object_types \
-		    where object_type = :attr_object_type"
-	    }
-	    # Skip the index column - it doesn't need to be
-	    # stored.
-	    if {[string equal $attribute_name $pk($attribute_table)]} { continue }
-	    if {!$first($attribute_table)} { append update_sql($attribute_table) "," }
-
-	    # Get the value of the form variable from the HTTP form
-	    set value [ns_set get $form_vars $attribute_name]
-
-	    # Store the attribute into the local variable frame
-	    # We take the detour through the local variable frame
-	    # (form ns_set -> local var frame -> sql statement)
-	    # in order to be able to use the ":var_name" notation
-	    # in the dynamically created SQL update statement.
-	    set $attribute_name $value
-
-	    append update_sql($attribute_table) "\n\t$attribute_name = :$attribute_name"
-	    set first($attribute_table) 0
-	}
-
-	foreach table_pair $object_type_tables_colid_list {
-	    set table_n [lindex $table_pair 0]
-	    append update_sql($table_n) "\nwhere $pk($table_n) = :object_id\n"
-	    
-	    db_transaction {
-		if {$first($table_n) == 0} {
-		    db_dml update_object $update_sql($table_n)
-		}
-	    }
-	}
-
-	# Add the original return_url as the last one in the list
-	lappend return_url_list $return_url
-	
-	set return_url_stacked [subsite::util::return_url_stack $return_url_list]
-
-	ad_returnredirect $return_url_stacked
-	ad_script_abort
-    }
 }
 
 
