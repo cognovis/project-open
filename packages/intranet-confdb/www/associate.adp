@@ -22,7 +22,7 @@
 	<tr>
 	<td>	<input type=radio name=target_object_type value=user></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Object_Type_User "User"] %></td>
-	<td>	<%= [im_user_select user_id ""] %><br>
+	<td>	<%= [im_user_select -group_id [im_customer_group_id] user_id ""] %><br>
 		<%= [lang::message::lookup "" intranet-confdb.Associate_As "as"] %>&nbsp;
 		<%= [im_biz_object_roles_select role_id $first_conf_item_id [im_biz_object_role_full_member]] %>
 	</td>
