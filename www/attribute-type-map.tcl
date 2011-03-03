@@ -20,7 +20,7 @@ set context [list [list "index" "DynFields"] $page_title]
 
 if {![info exists nomaster_p]} { set nomaster_p 0 }
 if {![info exists object_type]} { set object_type "" }
-if {"" != $attribute_id} {
+if {[info exists attribute_id] && "" != $attribute_id} {
     set object_type [db_string otype "
 	select	object_type
 	from	acs_attributes
