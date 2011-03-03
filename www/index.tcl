@@ -27,7 +27,12 @@ if {!$user_is_admin_p} {
 # ------------------------------------------------------------------
 
 set bulk_action_list [list \
-	"[lang::message::lookup {} intranet-dynfield.Full_CVS_Import {Full CVS Import}]" "action-full-import" "" \
+	"[lang::message::lookup {} intranet-cvs-integration.Full_CVS_Import {Full CVS Import}]" "action-full-import" "" \
+]
+
+
+set action_list [list \
+	"[lang::message::lookup {} intranet-cvs-integration.Create_New_Repository "Create New Repository"]" "action-new-repository" "" \
 ]
 
 
@@ -41,8 +46,8 @@ list::create \
     -class "list" \
     -main_class "list" \
     -sub_class "narrow" \
-    -actions {
-    } -bulk_actions $bulk_action_list \
+    -actions $action_list \
+    -bulk_actions $bulk_action_list \
     -bulk_action_export_vars {
         repository_id
     } -elements {
