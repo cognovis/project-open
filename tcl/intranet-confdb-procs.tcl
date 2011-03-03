@@ -44,6 +44,9 @@ ad_proc -public im_conf_item_type_postgresql_process {} { return 12302 }
 ad_proc -public im_conf_item_type_postfix_process {} { return 12304 }
 ad_proc -public im_conf_item_type_pound_process {} { return 12306 }
 
+# Types of Services
+ad_proc -public im_conf_item_type_cvs_repository {} { return 12400 }
+
 
 
 # ----------------------------------------------------------------------
