@@ -10,14 +10,13 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     task_id:integer,optional
-    { project_type_id:integer 9500}
     { parent_id:integer 0 }
     { project_id "" }
     { project_nr "" }
     { return_url "" }
     { edit_p "" }
     { message "" }
-    { project_status_id 9600}
+    { project_status_id 76}
 }
 
 # Debug form! This chunk must be erased later                                                                                                                
@@ -198,8 +197,7 @@ if {[info exists task_id]} { set my_task_id $task_id }
 im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
-    -object_id $my_task_id \
-    -object_subtype_id $project_type_id
+    -object_id $my_task_id
 
 
 ad_form -extend -name task -on_request {

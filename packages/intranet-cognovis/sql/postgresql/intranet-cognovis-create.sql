@@ -275,12 +275,12 @@ SELECT im_dynfield_attribute_new (
        'im_project',
        'description',
        '#intranet-core.Description#',
-       'textarea_small',
+       'richtext',
        'text',
        'f',
        17,
        'f',
-       'im_project'
+       'im_projects'
 );
 
 
@@ -1000,14 +1000,14 @@ SELECT inline_13 ();
 DROP FUNCTION inline_13 ();
 
 
--- note
+-- description
 CREATE OR REPLACE FUNCTION inline_15 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''note'';
+      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''description'';
 
       IF v_attribute_id > 0 THEN
 
@@ -1020,8 +1020,8 @@ BEGIN
 
       PERFORM im_dynfield_attribute_new (
        ''im_timesheet_task'',
-       ''note'',
-       ''Description'',
+       ''description'',
+       ''Task Description'',
        ''richtext'',
        ''text'',
        ''f'',
@@ -1036,7 +1036,6 @@ END;' language 'plpgsql';
 
 SELECT inline_15 ();
 DROP FUNCTION inline_15 ();
-
 
 
 -- User Components
