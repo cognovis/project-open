@@ -81,7 +81,8 @@ ad_form \
 template::element::set_value $form_id select_category_type $select_category_type
 
 
-
+set workflows [db_list workflows "select workflow_key from wf_workflows"]
+ds_comment "$workflows"
 # ---------------------------------------------------------------
 # Render Category List
 # ---------------------------------------------------------------
@@ -145,6 +146,12 @@ if {$show_add_new_category_p} {
 	    continue
 	}
 	
+	# Set the aux_string1 to a link if it is a workflow
+	if {[lsearch $workflows $aux_string1]>-1} {
+	    set workflow_url [export_vars -base "/acs-workflow/admin/workflow" -url {{workflow_key $aux_string1}}]
+	    set aux_string1 "<a href='$workflow_url'>$aux_string1</a>"
+	}
+
 	append category_list_html "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$category_id</td>
