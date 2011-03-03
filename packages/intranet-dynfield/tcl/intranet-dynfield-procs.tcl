@@ -526,21 +526,21 @@ ad_proc -public im_dynfield::attribute_store {
 
 	    # Special treatment for certain types of widgets
 	    set widget_element [template::element::get_property $form_id $attribute_name widget]
+	    set ulines [list]
+	    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
 	    switch $widget_element {
 		date {
-		    set ulines [list]
-		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
 		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_date [set $attribute_name]]"
-		    set update_lines($table_name) $ulines
 		}
-		default {
-		    set ulines [list]
-		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
+		richtext {
+		    set $attribute_name [template::util::richtext::create [set $attribute_name] text/html]
 		    lappend ulines "\n\t\t\t$attribute_name = :$attribute_name"
-		    set update_lines($table_name) $ulines
+		}		    
+		default {
+		    lappend ulines "\n\t\t\t$attribute_name = :$attribute_name"
 		}
 	    }
-
+	    set update_lines($table_name) $ulines
 	} else {
 
 	    # Multi-value field. This must be a field with widget multi-select...
