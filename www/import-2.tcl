@@ -76,6 +76,8 @@ if {[catch {
 
 # Extract the header line from the file
 set lines [split $lines_content "\n"]
+if {"" == $lines} { ad_return_complaint 1 "<b>You didn't select a file in the screen before.</b>" }
+
 set separator [im_csv_guess_separator $lines]
 # ad_return_complaint 1 $separator
 set lines_len [llength $lines]
