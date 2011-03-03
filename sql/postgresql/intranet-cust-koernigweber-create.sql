@@ -85,7 +85,7 @@ create table im_emp_cust_price_list (
         company_id              integer not null
                                 constraint im_employee_customer_price_list_company_fk 
 				references im_companies,
-        amount                  numeric(12,3),
+        amount                  numeric(12,2),
         currency                char(3)
                                 constraint im_costs_currency_fk
                                 references currency_codes(iso),
@@ -168,10 +168,10 @@ SELECT im_component_plugin__new (
         'right',                        -- location
         '/intranet/companies/view',     -- page_url
         null,                           -- view_name
-        90,                             -- sort_order
-        'im_group_member_component_employee_customer_price_list -object_id $company_id'     -- component_tcl
+        15,                             -- sort_order
+        'im_group_member_component_employee_customer_price_list $company_id $user_id 0 $return_url "" "" $also_add_to_group' -- component_tcl
 );
 
 update im_component_plugins
-set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee Customer Price List"'
-where plugin_name = 'Employee Customer Price List';
+set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
+where plugin_name = 'Employee/Customer Price List';
