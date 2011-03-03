@@ -15,7 +15,7 @@ set list_ids [$project list_ids]
 set old_section ""
 
 
-template::multirow create company_info heading field value
+template::multirow create project_info heading field value
 
 foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $list_ids -privilege "read"] {
     
@@ -42,7 +42,7 @@ foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $li
 	
     }   
 
-    template::multirow append company_info $heading $field $value
+    template::multirow append project_info $heading $field $value
     
 }
 
