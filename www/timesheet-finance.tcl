@@ -317,6 +317,11 @@ lappend elements {
 	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
     }
 
+	lappend elements sum_hours_matrix
+	lappend elements {
+        	label "Total <br>Hours based on Price Matrix"
+	display_template { <b><div align=right>@project_list.sum_hours_matrix@</div></b> }
+	}
 
 
 # Extend the "elements" list definition by the number of users who logged hours
@@ -416,6 +421,7 @@ multirow_sort_tree project_list child_id parent_id project_name
 set i 1
 
 set sum_hours_matrix 0
+set x_hours 0
 
 template::multirow foreach project_list {
     foreach user_id [array names users] {
@@ -424,17 +430,10 @@ template::multirow foreach project_list {
       } else {
           set hours ""
       }
-      template::multirow set project_list $i "user_$user_id" $hours
+      template::multirow set project_list $i "sum_hours_matrix" $x_hours
     }
     incr i
 }
-
-
-#     lappend elements sum_hours_matrix
-#     lappend elements {
-#         label "Total <br>Hours based on Price Matrix"
-#     display_template { <b><div align=right>@project_list.sum_hours_matrix@</div></b> }
-
 
 # template::multirow foreach project_list {
 #     foreach user_id [array names users] {
