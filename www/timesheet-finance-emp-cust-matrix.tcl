@@ -109,7 +109,7 @@ if {"" == $end_date} {
 set customer_url "/intranet/companies/view?customer_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-cust-koernigweber/timesheet-finance" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-cust-koernigweber/timesheet-finance-emp-cust-matrix.tcl" {start_date end_date} ]
 set current_url [im_url_with_query]
 
 
@@ -332,10 +332,15 @@ lappend elements {
 #     lappend elements [list label $users($user_id) html "align right"]
 # }
 
-
 # ------------------------------------------------------------
 
 db_multirow -extend {level_spacer open_gif} project_list project_list "
+
+
+select 
+	main_sql.*,
+	emp_cust_price_sum.*
+from (
 	select	
 		child.project_id as child_id,
 		child.project_name,
@@ -370,6 +375,41 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		)
 		and p.company_id = c.company_id
 		$where_clause
+	) main_sql, 
+
+        (
+	        select
+        	        sum((sub.hours * sub.rate)) as total_amount
+       		 from
+        	 (
+ 	           select
+        	        sum(hours) as hours,
+                	ho.user_id,
+	                (select company_id from im_projects where project_id = main_sql.child_id) as company_id,
+        	        (select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) as rate
+	            from
+        	        im_hours ho,
+                	im_emp_cust_price_list p
+	            where
+        	        ho.project_id in (
+                	        select  children.project_id
+                        	from    im_projects parent,
+                                	im_projects children
+	                        where
+        	                        children.tree_sortkey between
+                	                        parent.tree_sortkey
+                        	                and tree_right(parent.tree_sortkey)
+                                	and parent.project_id = main_sql.child_id
+	                              UNION
+        	                select main_sql.child_id as project_id
+                	        )
+	                and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+        	        and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+          	  group by
+            	  ho.user_id,
+                  hours
+        	) sub
+        ) emp_cust_price_sum
 " {
     set project_name "	 $project_name"
 
@@ -447,11 +487,7 @@ template::multirow foreach project_list {
 #     incr i
 # }
 
-
 template::list::create \
     -name project_list \
     -elements $elements
-
-
-
 
