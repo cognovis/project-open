@@ -176,6 +176,9 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
     set found 0
     set count 0
     set body_html ""
+
+    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+  
     db_foreach users_in_group $sql_query {
 
 	set show_user [im_show_user_style $user_id $current_user_id $object_id]
@@ -186,27 +189,20 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 		<tr $td_class([expr $count % 2])>
 		  <input type=hidden name=member_id value=$user_id>
   		<td>"
-			if {$show_user > 0} {
-				append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
-			} else {
-				append body_html $name
-			}
-
+	if {$show_user > 0} {
+		append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
+	} else {
+		append body_html $name
+	}
+	
 	append body_html "</td>"
 
-            append body_html "
+        append body_html "
                   <td align=middle>
-                    <input type=input size=4 maxlength=4 name=\"amount.$user_id\" value=\"$amount\">
+                    <input type=input size=4 maxlength=4 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
                   </td>
             "
         append body_html "</td>"
-        if {$show_percentage_p} {
-            append body_html "
-                  <td align=middle>
-                    <input type=input size=4 maxlength=4 name=\"amount.$user_id\" value=\"$amount\">
-                  </td>
-            "
-        }
 
 	if {$add_admin_links} {
 	    append body_html "
@@ -233,7 +229,7 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 	    "
     # ------------------ Join table header, body and footer ----------------
     set html "
-	<form method=POST action=/intranet/member-update>
+	<form method=POST action=/intranet-cust-koernigweber/set-emp-cust-price>
 	[export_form_vars object_id return_url]
 	    <table bgcolor=white cellpadding=1 cellspacing=1 border=0>
 	      $header_html
@@ -246,20 +242,20 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 }
 
 
-ad_proc -public im_employee_customer_price_list_new {
-    user_id:integer,notnull
-    company_id:integer,notnull
-    amount
-    currency 
-} {
-        select im_employee_customer_price__new (
-                null, ''im_employee_customer_price'', now()::date,
-                [ad_conn user_id], ''0.0.0.0'', 0,
-                user_id,
-		company_id,
-		amount,
-		currency 
-		) into id;
-    	return id; 
-}
+# ad_proc -public im_employee_customer_price_list_new {
+#     user_id:integer,notnull
+#     company_id:integer,notnull
+#     amount
+#     currency 
+# } {
+#         select im_employee_customer_price__new (
+#                 null, ''im_employee_customer_price'', now()::date,
+#                 [ad_conn user_id], ''0.0.0.0'', 0,
+#                 user_id,
+# 		company_id,
+# 		amount,
+# 		currency 
+# 		) into id;
+#     	return id; 
+# }
 
