@@ -59,7 +59,7 @@ db_foreach select_headers {} {
 	}
 	append elements " \
           $name { 
-            label {$label<a href=$admin_link>$image_admin_link</a><a href=$hide_link>$image_hide_link</a>}
+            label {$label<a href=$admin_link>$image_admin_link</a>}
             display_template {$column_render_tcl}           
         } \ "
     }
@@ -115,7 +115,7 @@ ns_log Notice "$extra_where"
 ns_log Notice "$restriction_clauses"
 
 
-set  extend_list {gif_html object_url start_date end_date timesheet_report_url checkbox}
+set  extend_list {gif_html object_url start_date end_date timesheet_report_url}
 ns_log Notice "$extend_list"
 
 db_multirow -extend $extend_list tasks select_task "
@@ -132,17 +132,18 @@ SELECT
         t.billable_units,
         p.parent_id project_id,
         im_name_from_id(p.parent_id) as project_name,
-        p.percent_completed
+        p.percent_completed,
+        p.reported_hours_cache as logged_hours
         FROM
         im_projects p,
         im_timesheet_tasks t
         WHERE t.task_id = p.project_id
+        $restriction_clauses
+        ORDER BY $order_by_clause
 " {
-    ns_log Notice "BKREA"
    
-    set checkobx "<input type=checkbox name=tasks.$task_id id=tasks.$task_id>"
     set timesheet_report_url [export_vars -base "/intranet-reporting/timesheet-customer-project" { end_date return_url {level_of_detail 99} task_id project_id start_date }]
-
+    
 
     ns_log Notice "$task_prio - $task_name - $task_id - $project_type_id - $start_date - $end_date - "
 
@@ -173,3 +174,8 @@ SELECT
 	}
     }
 }
+
+
+
+
+
