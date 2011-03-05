@@ -117,7 +117,7 @@ values ('im_employee_customer_price', 'im_emp_cust_price_list', 'id');
 --        type_column = 'project_type_id'
 -- where object_type = 'im_project';
 
-create function im_employee_customer_price__new(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar) returns int4 as '
+create or replace function im_employee_customer_price__new(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar) returns int4 as '
         DECLARE
         	p_id 		  alias for $1;
         	p_object_type     alias for $2;
@@ -126,10 +126,10 @@ create function im_employee_customer_price__new(int4,varchar,timestamptz,int4,va
         	p_creation_ip     alias for $5;
         	p_context_id      alias for $6;
         
-        	p_user_id	  alias for $1;
-        	p_company_id      alias for $2;
-        	p_amount          alias for $3;
-        	p_currency	  alias for $4;
+        	p_user_id	  alias for $7;
+        	p_company_id      alias for $8;
+        	p_amount          alias for $9;
+        	p_currency	  alias for $10;
 		v_id		  integer;
 
         BEGIN
