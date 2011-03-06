@@ -123,6 +123,9 @@ if {"" != $project_id && 0 != $project_id} {
 if {"" != $customer_id && 0 != $customer_id} {
     lappend criteria "p.company_id = :customer_id"
 }
+
+lappend criteria "p.project_status_id in ([join [im_sub_categories 76] ,]) "
+
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
 
@@ -152,7 +155,7 @@ db_foreach project_superprojs $project_superprojs_sql {
     # Determine if a project has children
     set project_has_children_p($parent_id) 1
 
-    # Setup the list of direct children of a project
+    # Setup the list of direc<t children of a project
     if {"" != $parent_id} { 
 	set l [list]
 	if {[info exists project_direct_children($parent_id)] } { set l $project_direct_children($parent_id) }
@@ -283,9 +286,24 @@ db_foreach hours $hours_sql {
 set elements [list]
 
 
-lappend elements project_name 
+lappend elements company_name
+
 lappend elements {
-    label "Project Name"
+    label "Kunde"
+    display_template {
+                <a href="/intranet/companies/view?company_id=@project_list.company_id@"
+                        >@project_list.company_name@
+                </a>
+                </nobr>
+    }
+}
+
+
+
+lappend elements project_name 
+
+lappend elements {
+    label "Projekt Name"
     display_template { 
 		<nobr>@project_list.level_spacer;noquote@ 
 		@project_list.open_gif;noquote@
@@ -296,30 +314,29 @@ lappend elements {
     }
 }
 
-
     lappend elements cost_timesheet_logged_cache 
     lappend elements {
-	label "TimeS" 
+	label "Interne <br>Kosten (&euro;)<br>" 
 	html "align right"
     }
 
 
     lappend elements direct_hours
     lappend elements {
-	label "Direct<br>Hours" 
+	label "Erfasste<br>Stunden" 
 	display_template { <b><div align=right>@project_list.direct_hours@</div></b> }
     }
 
 
-    lappend elements reported_hours_cache
-    lappend elements {
-	label "Total <br>Hours" 
-	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
-    }
+#    lappend elements reported_hours_cache
+#    lappend elements {
+#	label "Total <br>Hours" 
+#	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
+#    }
 
 	lappend elements sum_hours_matrix
 	lappend elements {
-        	label "Total <br>Hours based on Price Matrix"
+        	label "Total Hours <br>based on<br> Price Matrix"
 	display_template { <b><div align=right>@project_list.sum_hours_matrix@</div></b> }
 	}
 
@@ -334,13 +351,10 @@ lappend elements {
 
 # ------------------------------------------------------------
 
+set company_name_saved ""
+
+
 db_multirow -extend {level_spacer open_gif} project_list project_list "
-
-
-select 
-	main_sql.*,
-	emp_cust_price_sum.*
-from (
 	select	
 		child.project_id as child_id,
 		child.project_name,
@@ -349,7 +363,6 @@ from (
 		child.start_date::date as child_start_date,
 		child.end_date::date as child_end_date,
 		child.cost_invoices_cache,
-		child.cost_delivery_notes_cache,
 		child.cost_timesheet_logged_cache,
 		child.reported_hours_cache,
 		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
@@ -375,41 +388,6 @@ from (
 		)
 		and p.company_id = c.company_id
 		$where_clause
-	) main_sql, 
-
-        (
-	        select
-        	        sum((sub.hours * sub.rate)) as total_amount
-       		 from
-        	 (
- 	           select
-        	        sum(hours) as hours,
-                	ho.user_id,
-	                (select company_id from im_projects where project_id = main_sql.child_id) as company_id,
-        	        (select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) as rate
-	            from
-        	        im_hours ho,
-                	im_emp_cust_price_list p
-	            where
-        	        ho.project_id in (
-                	        select  children.project_id
-                        	from    im_projects parent,
-                                	im_projects children
-	                        where
-        	                        children.tree_sortkey between
-                	                        parent.tree_sortkey
-                        	                and tree_right(parent.tree_sortkey)
-                                	and parent.project_id = main_sql.child_id
-	                              UNION
-        	                select main_sql.child_id as project_id
-                	        )
-	                and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-        	        and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-          	  group by
-            	  ho.user_id,
-                  hours
-        	) sub
-        ) emp_cust_price_sum
 " {
     set project_name "	 $project_name"
 
@@ -463,17 +441,55 @@ set i 1
 set sum_hours_matrix 0
 set x_hours 0
 
-template::multirow foreach project_list {
-    foreach user_id [array names users] {
-      if { [info exists projects($child_id,$user_id)] } {
-          set hours $projects($child_id,$user_id)
-      } else {
-          set hours ""
-      }
-      template::multirow set project_list $i "sum_hours_matrix" $x_hours
-    }
+template::multirow foreach project_list {    
+	set sql_str "
+		select 
+			sum(sub.hours) as total_invoiceable
+		from 
+			(
+ 	        	   select
+	        	        sum(hours) as hours,
+        	        	ho.user_id,
+	        	        (select company_id from im_projects where project_id = $child_id) as company_id,
+        	        	(select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) as rate
+		            from
+        		        im_hours ho,
+                		im_emp_cust_price_list p
+	            where
+	        	        ho.project_id in (
+        	        	        select  
+						children.project_id as sub_project_id
+                        		from    
+						im_projects parents,
+	                                	im_projects children
+		                        where
+        		                        children.tree_sortkey between
+							parents.tree_sortkey
+							and tree_right(parents.tree_sortkey)
+							and parents.project_id = $child_id
+		                              UNION
+							select $child_id as sub_project_id
+                		        )
+	                	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+	        	        and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+        	  	  group by
+            		  ho.user_id,
+        	          hours
+	     ) sub
+	"
+    template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
+
+	if {$company_name_saved == $company_name } {
+		set company_name ""
+	} else {
+	    set company_name_saved $company_name
+	}
+
+    template::multirow set project_list $i "company_name" $company_name
     incr i
 }
+
+
 
 # template::multirow foreach project_list {
 #     foreach user_id [array names users] {
