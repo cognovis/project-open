@@ -336,39 +336,8 @@ SELECT im_component_plugin__new (
        '/intranet/index', 		-- page_url
        null,				-- view_name
        16,				-- sort_order
-       'im_timesheet_task_home_component -max_entries_per_page 20 -view_name "im_timesheet_task_home_list" -restrict_to_status_id 9600 -restrict_to_mine_p 1 -order_by "priority" -page $page -return_url $return_url' --component_tcl
+       'im_timesheet_task_home_component -page_size 20 -restrict_to_status_id 76 -return_url $return_url' --component_tcl
 );
-
-
--- Create im_view for timesheet_tasks
-insert into im_views (view_id, view_name, visible_for) values (950, 'im_timesheet_task_home_list', 'view_projects');
-
-
--- Task_id
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92100,950,NULL, 'TaskID','<center>@tasks.task_id;noquote@</center>','','',0,'');
-
--- Task Name
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92101,950,NULL,'Name','<nobr>@tasks.gif_html;noquote@<a href=@tasks.object_url;noquote@>@tasks.task_name;noquote@</a></nobr>','','',1,'');
-
--- Planned Units
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92102,950,NULL,'PLN','<center><a href=@tasks.object_url;noquote@>@tasks.planned_units;noquote@</a></center>','','',2,'');
-
--- Start Date
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92103,950,NULL,'Start', '<center>@tasks.start_date;noquote@</center>','','',3,'');
-
--- End Date
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92104,950,NULL,'End', '<center>@tasks.end_date;noquote@</center>','','',4,'');
-
--- Log Hours
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92105,950,NULL,'Log','<center><a href=@tasks.timesheet_report_url;noquote@">@tasks.logged_hours;noquote@</a></center>','','',5,'');
-
--- Task Prio
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92106,950,NULL, 'Prio','<center>@tasks.task_prio;noquote@</center>','','',6,'');
-
--- Checkbox
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92107,950,NULL,'<input type=checkbox name=_dummy onclick=acs_ListCheckAll(\"tasks\",this.checked)>','<input type=checkbox name=task_id.@tasks.task_id@ id=tasks,@tasks.task_id@>', '', '', 7, '');
-
-
 
 -- Right Side Components
 
