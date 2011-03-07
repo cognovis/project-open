@@ -299,7 +299,6 @@ lappend elements {
 }
 
 
-
 lappend elements project_name 
 
 lappend elements {
@@ -321,11 +320,11 @@ lappend elements {
     }
 
 
-    lappend elements direct_hours
-    lappend elements {
-	label "Erfasste<br>Stunden" 
-	display_template { <b><div align=right>@project_list.direct_hours@</div></b> }
-    }
+#    lappend elements direct_hours
+#    lappend elements {
+#	label "Erfasste<br>Stunden" 
+#	display_template { <b><div align=right>@project_list.direct_hours@</div></b> }
+#    }
 
 
 #    lappend elements reported_hours_cache
@@ -334,10 +333,17 @@ lappend elements {
 #	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
 #    }
 
+
 	lappend elements sum_hours_matrix
 	lappend elements {
         	label "Total Hours <br>based on<br> Price Matrix"
 	display_template { <b><div align=right>@project_list.sum_hours_matrix@</div></b> }
+	}
+
+	lappend elements sum_invoices
+	lappend elements {
+        label "Fakturiert"
+	display_template { <b><div align=right>@project_list.sum_invoices@</div></b> }
 	}
 
 
@@ -444,7 +450,7 @@ set x_hours 0
 template::multirow foreach project_list {    
 	set sql_str "
 		select 
-			sum(sub.hours) as total_invoiceable
+			to_char(sum(sub.hours),'999.999,99') as total_invoiceable
 		from 
 			(
  	        	   select
@@ -452,10 +458,11 @@ template::multirow foreach project_list {
         	        	ho.user_id,
 	        	        (select company_id from im_projects where project_id = $child_id) as company_id,
         	        	(select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) as rate
+				
 		            from
         		        im_hours ho,
                 		im_emp_cust_price_list p
-	            where
+		            where
 	        	        ho.project_id in (
         	        	        select  
 						children.project_id as sub_project_id
@@ -477,7 +484,32 @@ template::multirow foreach project_list {
         	          hours
 	     ) sub
 	"
-    template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
+	template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
+
+	set sql_str "
+		select 
+			-- to_char(round(sum(c.amount) :: numeric, 2),'999.999,99') as sum_invoices
+			round(sum(c.amount) :: numeric, 2) as sum_invoices
+		from
+			im_costs c 
+		where 
+			c.cost_type_id = 3700
+                        and c.project_id in (
+				select
+					children.project_id as sub_project_id
+				from
+					im_projects parents,
+                                        im_projects children
+                                where
+                                        children.tree_sortkey between
+                                        parents.tree_sortkey
+                                        and tree_right(parents.tree_sortkey)
+                                        and parents.project_id = $child_id
+                                        UNION
+                                        select $child_id as sub_project_id
+                                 )
+	"
+        template::multirow set project_list $i "sum_invoices" [db_string sum_invoices "$sql_str" -default 0]
 
 	if {$company_name_saved == $company_name } {
 		set company_name ""
