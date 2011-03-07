@@ -14,10 +14,10 @@ ad_library {
 # Category Constants
 # ----------------------------------------------------------------------
 
-ad_proc -public im_timesheet_task_status_active { } { return 9600 }
-ad_proc -public im_timesheet_task_status_inactive { } { return 9602 }
+ad_proc -public im_timesheet_task_status_active { } { return 76 }
+ad_proc -public im_timesheet_task_status_inactive { } { return 81 }
 
-ad_proc -public im_timesheet_task_type_standard { } { return 9500 }
+ad_proc -public im_timesheet_task_type_standard { } { return 100 }
 
 
 # Relationship between tasks:
