@@ -200,7 +200,8 @@ if {[info exists task_id]} { set my_task_id $task_id }
 im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
-    -object_id $my_task_id
+    -object_id $my_task_id \
+    -object_subtype_id 100
 
 
 ad_form -extend -name task -on_request {
