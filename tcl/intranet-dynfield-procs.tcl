@@ -1346,9 +1346,15 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		aw.parameters,
 		aw.storage_type_id,
 		aw.deref_plpgsql_function,
-		im_category_from_id(aw.storage_type_id) as storage_type
+		im_category_from_id(aw.storage_type_id) as storage_type,
+		coalesce(dl.pos_y, 9999) as layout_sort_order
 	from
-		im_dynfield_attributes aa,
+		im_dynfield_attributes aa
+		LEFT OUTER JOIN (
+			select	*
+			from	im_dynfield_layout
+			where	page_url = 'default'
+		) dl ON (dl.attribute_id = aa.attribute_id),
 		im_dynfield_widgets aw,
 		acs_object_types t,
 		acs_attributes a
@@ -1362,6 +1368,8 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :current_user_id, 'read') = 't'
 		$also_hard_coded_p_sql
+	order by
+		layout_sort_order
     "
 
     set column_headers [list]
