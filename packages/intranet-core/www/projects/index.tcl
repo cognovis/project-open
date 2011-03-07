@@ -608,7 +608,7 @@ ns_log Notice "/intranet/project/index: Before admin links"
 set admin_html "<ul>"
 
 if {[im_permission $current_user_id "add_projects"]} {
-    append admin_html "<li><a href=\"/intranet/projects/new\">Add [_ intranet-core.Add_a_new_project]</a></li>\n"
+    append admin_html "<li><a href=\"/intranet/projects/new\">[_ intranet-core.Add_a_new_project]</a></li>\n"
 
     set new_from_template_p [ad_parameter -package_id [im_package_core_id] EnableNewFromTemplateLinkP "" 0]
     if {$new_from_template_p} {
