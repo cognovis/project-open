@@ -1305,6 +1305,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
 ad_proc -public im_dynfield::append_attributes_to_im_view {
     -object_type:required
+    {-include_also_hard_coded_p 0 }
     {-table_prefix "" }
 } {
     Returns a list with three elements:
@@ -1329,6 +1330,11 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
     im_invoices.
 } {
     set current_user_id [ad_get_user_id]
+
+    set also_hard_coded_p_sql ""
+    if {!$include_also_hard_coded_p} { 
+	set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
+    } 
 
     set attributes_sql "
 	select	a.*,
@@ -1355,6 +1361,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :current_user_id, 'read') = 't'
+		$also_hard_coded_p_sql
     "
 
     set column_headers [list]
@@ -1369,7 +1376,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
         }
 
         lappend column_headers $pretty_name
-        lappend column_derefs "\$${attribute_name}_deref"
+        lappend column_vars "\$${attribute_name}_deref"
         lappend column_select "$deref as ${attribute_name}_deref,"
     }
 
