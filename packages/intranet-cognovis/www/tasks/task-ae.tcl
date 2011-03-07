@@ -19,6 +19,9 @@ ad_page_contract {
     { project_status_id 76}
 }
 
+# This is a task !
+set project_type_id [im_timesheet_task_type_standard]
+
 # Debug form! This chunk must be erased later                                                                                                                
 set myform [ns_getform]
 if {[string equal "" $myform]} {
@@ -217,10 +220,7 @@ ad_form -extend -name task -on_request {
 	ad_script_abort
     }
 
-    ns_log Notice "NEW DATA"
     set project_nr [string tolower $project_nr]
-    ds_comment "$parent_id :: $project_nr"
-    
 
     if {![exists_and_not_null uom_id]} {
 	# Set default UoM to Hour
@@ -248,6 +248,7 @@ ad_form -extend -name task -on_request {
 	set material_id $default_material_id
     }
 
+    ds_comment "material:: $material_id"
     db_string task_insert {}
 
     if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
