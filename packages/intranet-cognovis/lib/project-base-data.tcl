@@ -21,7 +21,6 @@ set old_section ""
 foreach dynfield_id $dynfield_ids {
     
     # Initialize the Attribute                                                 
-    ds_comment "Dynfield:: $dynfield_id"
     set element [im::dynfield::Element get_instance_from_db -id $dynfield_id]
     
     set field [$element pretty_name]  
