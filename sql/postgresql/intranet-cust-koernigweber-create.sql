@@ -53,9 +53,13 @@ create or replace function im_workflow__assign_to_project_manager(int4, text) re
                 and t.workflow_key = tr.workflow_key
                 and t.transition_key = tr.transition_key;
 
-        select  project_lead_id into v_project_manager_id from im_projects
-        where   project_id = v_object_id;
-
+	IF v_object_type = ''timesheet_approval_wf'' THEN
+ 		select  project_lead_id into v_project_manager_id from im_projects
+		where   project_id in (select conf_project_id from im_timesheet_conf_objects where conf_id = v_object_id);		
+	ELSE 
+		select  project_lead_id into v_project_manager_id from im_projects
+		where   project_id = v_object_id;
+        END IF;
         select im_name_from_id(v_project_manager_id) into v_project_manager_name;
 
         IF v_project_manager_id is not null THEN
