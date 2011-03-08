@@ -53,6 +53,7 @@ db_multirow -extend {project_url task_url timesheet_report_url} tasks select_tas
    
     set timesheet_report_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {return_url {level_of_detail 99} task_id project_id }]
     set project_url [export_vars -base "/intranet-timesheet2-tasks/index" {{project_id $project_id} {view_name "im_timehseet_task_list"} {task_status_id $restrict_to_status_id}}]
+    set task_url [export_vars -base "/intranet-cognovis/tasks/view" {task_id}]
 
     if {[string equal t $parent_red_p]} { 
 	set project_name "<font color=red>$project_name</font>" 
