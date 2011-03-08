@@ -26,7 +26,7 @@ select acs_object_type__create_type (
 insert into acs_object_type_tables (object_type,table_name,id_column) values ('project_approval2_wf', 'project_approval2_wf_cases', 'case_id');
 
 
-create function im_workflow__assign_to_project_manager(int4, text) returns int4 as '
+create or replace function im_workflow__assign_to_project_manager(int4, text) returns int4 as '
  declare
         p_task_id               alias for $1;
         p_custom_arg            alias for $2;
