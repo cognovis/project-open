@@ -16,7 +16,7 @@
         <maturity>0</maturity>
 
         <provides url="intranet-budget" version="0.2d4"/>
-        <requires url="intranet-core" version="3.4.1.0.8"/>
+        <requires url="intranet-core" version="4.0.1.0.0"/>
 
         <callbacks>
         </callbacks>
