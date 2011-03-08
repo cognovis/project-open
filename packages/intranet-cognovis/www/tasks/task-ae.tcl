@@ -10,15 +10,17 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     task_id:integer,optional
-    { project_type_id:integer 9500}
     { parent_id:integer 0 }
     { project_id "" }
     { project_nr "" }
     { return_url "" }
     { edit_p "" }
     { message "" }
-    { project_status_id 9600}
+    { project_status_id 76}
 }
+
+# This is a task !
+set project_type_id [im_timesheet_task_type_standard]
 
 # Debug form! This chunk must be erased later                                                                                                                
 set myform [ns_getform]
@@ -199,7 +201,7 @@ im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
     -object_id $my_task_id \
-    -object_subtype_id $project_type_id
+    -object_subtype_id 100
 
 
 ad_form -extend -name task -on_request {
@@ -219,10 +221,7 @@ ad_form -extend -name task -on_request {
 	ad_script_abort
     }
 
-    ns_log Notice "NEW DATA"
     set project_nr [string tolower $project_nr]
-    ds_comment "$parent_id :: $project_nr"
-    
 
     if {![exists_and_not_null uom_id]} {
 	# Set default UoM to Hour
@@ -250,6 +249,7 @@ ad_form -extend -name task -on_request {
 	set material_id $default_material_id
     }
 
+    ds_comment "material:: $material_id"
     db_string task_insert {}
 
     if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}

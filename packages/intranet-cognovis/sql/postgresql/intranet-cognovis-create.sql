@@ -275,12 +275,12 @@ SELECT im_dynfield_attribute_new (
        'im_project',
        'description',
        '#intranet-core.Description#',
-       'textarea_small',
+       'richtext',
        'text',
        'f',
        17,
        'f',
-       'im_project'
+       'im_projects'
 );
 
 
@@ -336,58 +336,8 @@ SELECT im_component_plugin__new (
        '/intranet/index', 		-- page_url
        null,				-- view_name
        16,				-- sort_order
-       'im_timesheet_task_home_component -max_entries_per_page 20 -view_name "im_timesheet_task_home_list" -restrict_to_status_id 9600 -restrict_to_mine_p 1 -order_by "priority" -page $page -return_url $return_url' --component_tcl
+       'im_timesheet_task_home_component -page_size 20 -restrict_to_status_id 76 -return_url $return_url' --component_tcl
 );
-
-
--- Create im_view for timesheet_tasks
-insert into im_views (view_id, view_name, visible_for) values (950, 'im_timesheet_task_home_list', 'view_projects');
-
--- Create view columns
--- Priority
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92100,950,NULL, 'Prio','@task_prio;noquote@','','',00,'');
-
--- Task Name
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92101,950,NULL,'Name','"<nobr>$indent_html$gif_html<a href=$object_url>$task_name</a></nobr>"','','',2,'');
-
--- Project
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92102,950,NULL,'Project','<a href=/intranet/projects/view?form_mode=display&project_id=$parent_id>$project_name</a>','','',03,'');
-
--- Cost Center
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92103,950,NULL,'CC','"<a href=/intranet-cost/cost-centers/new?[export_url_vars cost_center_id return_url]>$cost_center_code</a>"',
-'','',6,'');
-
--- Start Date
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92104,950,NULL,'Start', '"<nobr>[string range $start_date 0 9]</nobr>"','','',7,'');
-
--- End Date 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92105,950,NULL,'End', '"[if {[string equal t $red_p]} { set t "<nobr><font color=red>[string range $end_date 0 9]</font></nobr>" } else { set t "<nobr>[string range $end_date 0 9]</nobr>" }]"','(child.end_date < now() and coalesce(child.percent_completed,0) < 100) as red_p','',8,'');
-
--- Planned Units
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92106,950,NULL,'Plan','"<input type=textbox size=3 name=planned_units.$task_id value=$planned_units>"','','',10,'');
-
--- Billable Units
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92107,950,NULL,'Bill','"<input type=textbox size=3 name=billable_units.$task_id value=$billable_units>"','','',12,'');
-
--- Log Hours
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92108,950,NULL,'Log','"<p align=right><a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
-$reported_units_cache</a></p>"','','',14,'');
-
--- UoM
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92109,950,NULL,'UoM','$uom','','',16,'');
-
--- Status 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92110,950,NULL,'Status','"[im_category_select {Intranet Project Status} task_status_id.$task_id $task_status_id]"','','',12,'');
-
--- Percent Completed
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92111,950,NULL, 'Done','"<input type=textbox size=3 name=percent_completed.$task_id value=$percent_completed>"', 
-'','',21,'');
-
-
--- Checkbox 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for) values (92112,950,NULL,'"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''tasks'',this.checked)>"','"<input type=checkbox name=task_id.$task_id id=tasks,$task_id>"', '', '', 22, '');
-
-
 
 -- Right Side Components
 
@@ -1000,14 +950,14 @@ SELECT inline_13 ();
 DROP FUNCTION inline_13 ();
 
 
--- note
+-- description
 CREATE OR REPLACE FUNCTION inline_15 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''note'';
+      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''description'';
 
       IF v_attribute_id > 0 THEN
 
@@ -1020,8 +970,8 @@ BEGIN
 
       PERFORM im_dynfield_attribute_new (
        ''im_timesheet_task'',
-       ''note'',
-       ''Description'',
+       ''description'',
+       ''Task Description'',
        ''richtext'',
        ''text'',
        ''f'',
@@ -1036,7 +986,6 @@ END;' language 'plpgsql';
 
 SELECT inline_15 ();
 DROP FUNCTION inline_15 ();
-
 
 
 -- User Components

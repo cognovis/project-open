@@ -1730,7 +1730,7 @@ function showCalendarWithDateWidget(id,fmt) {
     // first-time call, create the calendar
     var cal = new Calendar(true, null, selectwidget, closeHandler);
     calendar = cal;             // remember the calendar in the global
-    cal.setRange(2000, 2010);   // min/max year allowed
+    cal.setRange(2000, 2070);   // min/max year allowed
     calendar.create();          // create a popup calendar
     calendar.parseDate(calval,fmt); // set it to a new date
   }

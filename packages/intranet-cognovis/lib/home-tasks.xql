@@ -7,50 +7,64 @@
     <type>postgresql</type>
     <version>8.4</version>
   </rdbms>
-  <fullquery name="select_headers">
-    <querytext>
-      SELECT 
-      column_id,
-      view_id,
-      column_name as label,
-      lower(column_name) as name,
-      column_render_tcl,
-      extra_select,
-      extra_from,
-      extra_where,
-      visible_for
-      FROM im_view_columns
-      WHERE view_id = (
-        SELECT view_id FROM im_views WHERE view_name = :view_name)
-      AND group_id is null
-      ORDER BY sort_order
-
-    </querytext>
-  </fullquery>
 
   <fullquery name="select_tasks">
     <querytext>
-      SELECT 
-      p.project_id as task_id,
-      t.priority as task_prio,
-      p.project_name as task_name,
-      t.planned_units as units,
-      p.parent_id,
-      im_name_from_id(p.parent_id) as project_name,
-      p.percent_completed
-      $extra_select
-      FROM 
-      im_projects p, 
-      im_timesheet_tasks t
-      $extra_from
-      WHERE 
-      t.task_id = p.project_id
-      $restriction_clauses
-      $extra_where
-      ORDER BY $order_by_clause
+        SELECT
+        p.project_id as task_id,
+        coalesce(t.priority,0) as priority,
+        p.project_name as task_name,
+        (p.end_date < now() and coalesce(p.percent_completed,0) < 100) as red_p,
+        (parent.end_date < now()) as parent_red_p,
+        p.start_date,
+        p.end_date,
+        p.project_type_id,
+        t.planned_units,
+        p.parent_id project_id,
+        im_name_from_id(p.parent_id) as project_name,
+        p.percent_completed,
+        p.reported_hours_cache as logged_hours
+        FROM
+        im_projects p,
+        im_projects parent,
+        im_timesheet_tasks t
+        WHERE t.task_id = p.project_id
+        AND p.parent_id = parent.project_id
+        AND p.project_id in (select object_id_one from acs_rels where object_id_two = [ad_conn user_id])
+        AND p.project_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])
+        AND [template::list::page_where_clause -name "tasks"]
+	[template::list::orderby_clause -orderby -name "tasks"]
     </querytext>
   </fullquery>
 
+
+  <fullquery name="tasks_pagination">
+    <querytext>
+        SELECT
+        p.project_id as task_id,
+        coalesce(t.priority,0) as priority,
+        p.project_name as task_name,
+        (p.end_date < now() and coalesce(p.percent_completed,0) < 100) as red_p,
+        (parent.end_date < now()) as parent_red_p,
+        p.start_date,
+        p.end_date,
+        p.project_type_id,
+        t.planned_units,
+        p.parent_id project_id,
+        im_name_from_id(p.parent_id) as project_name,
+	coalesce(p.percent_completed,0) as percent_completed,
+        p.reported_hours_cache as logged_hours
+        FROM
+        im_projects p,
+        im_projects parent,
+        im_timesheet_tasks t
+        WHERE t.task_id = p.project_id
+        AND p.parent_id = parent.project_id
+        AND p.project_id in (select object_id_one from acs_rels where object_id_two = [ad_conn user_id])
+        AND p.project_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])
+	[template::list::orderby_clause -orderby -name "tasks"]
+    </querytext>
+  </fullquery>
 
 
 </queryset>
