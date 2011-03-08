@@ -117,42 +117,43 @@ values ('im_employee_customer_price', 'im_emp_cust_price_list', 'id');
 --        type_column = 'project_type_id'
 -- where object_type = 'im_project';
 
-create or replace function im_employee_customer_price__new(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar) returns int4 as '
+create or replace function im_employee_customer_price__update(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar) returns int4 as '
         DECLARE
-        	p_id 		  alias for $1;
-        	p_object_type     alias for $2;
-        	p_creation_date   alias for $3;
-        	p_creation_user   alias for $4;
-        	p_creation_ip     alias for $5;
-        	p_context_id      alias for $6;
-        
-        	p_user_id	  alias for $7;
-        	p_company_id      alias for $8;
-        	p_amount          alias for $9;
-        	p_currency	  alias for $10;
-		v_id		  integer;
+                p_id              alias for $1;
+                p_object_type     alias for $2;
+                p_creation_date   alias for $3;
+                p_creation_user   alias for $4;
+                p_creation_ip     alias for $5;
+                p_context_id      alias for $6;
 
+                p_user_id         alias for $7;
+                p_company_id      alias for $8;
+                p_amount          alias for $9;
+                p_currency        alias for $10;
+                v_id              integer;
+                v_count           integer;
         BEGIN
-        	v_id := acs_object__new (
-        		p_id,
-        		p_object_type,
-        		p_creation_date,
-        		p_creation_user,
-        		p_creation_ip,
-        		p_context_id
-        	);
-        
-        	insert into im_emp_cust_price_list (
-        		id, user_id, company_id, amount, currency 
-        	) values (
-        		v_id, p_user_id, p_company_id, p_amount, p_currency
-        	);
-        
-        	return v_id;
+                select count(*) into v_count from im_emp_cust_price_list where user_id = p_user_id and company_id = p_company_id;
+                IF v_count > 0 THEN
+                        update im_emp_cust_price_list set amount = p_amount where company_id = p_company_id and user_id = p_user_id;
+                ELSE
+                        v_id := acs_object__new (
+                                p_id,
+                                p_object_type,
+                                p_creation_date,
+                                p_creation_user,
+                                p_creation_ip,
+                                p_context_id
+                        );
 
+                        insert into im_emp_cust_price_list (
+                                id, user_id, company_id, amount, currency
+                        ) values (
+                                v_id, p_user_id, p_company_id, p_amount, p_currency
+                        );
+                END IF;
+                return v_id;
 end;' language 'plpgsql';
-
--- insert into im_employee_customer_price_list (id, )
 
 
 -- Create a plugin for the ProjectViewPage.
@@ -175,3 +176,6 @@ SELECT im_component_plugin__new (
 update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
 where plugin_name = 'Employee/Customer Price List';
+
+
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours','Erinnerung:\n Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n Mit freundlichen Gr&uumlssen;\n %current_user_name%');
