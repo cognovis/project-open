@@ -69,8 +69,12 @@ ns_log Notice "member-update: submit=$submit"
 		"
 		ad_script_abort
 	    }
-	    # update employee/customer price matrix 
-	    set ttt [db_string get_view_id "select im_employee_customer_price__update(NULL, 'im_employee_customer_price', now()::date, NULL, '', NULL, $user_id, $object_id, $rate_amount, '$rate_currency')" -default 0]
+
+	    if { "" != $rate_amount} { 
+		ns_log NOTICE "ERR_ NULL, 'im_employee_customer_price', now()::date, NULL, '', NULL, $user_id, $object_id, $rate_amount, '$rate_currency' [string length $rate_amount]"
+		# update employee/customer price matrix 
+		set ttt [db_string get_view_id "select im_employee_customer_price__update(NULL, 'im_employee_customer_price', now()::date, NULL, '', NULL, $user_id, $object_id, $rate_amount, '$rate_currency')" -default 0]
+	    }
 	}
 	ad_returnredirect $return_url
 
