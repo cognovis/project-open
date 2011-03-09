@@ -227,6 +227,28 @@ ad_proc -callback im_ticket_after_create -impl im_sla_management {
 
 }
 
+ad_proc -callback im_ticket_after_update -impl im_sla_management {
+    -object_id
+    -status_id 
+    -type_id
+} {
+    Callback to be executed after the update of any ticket.
+    The callback resets the "ticket_resolution_time_dirty"
+    field, indicating to the resolution time sweeper that
+    this ticket needs to be recalculated.
+} {
+    ns_log Notice "im_ticket_after_update -impl im_sla_management: Entering callback code"
+
+    # tell the resolution time sweeper to recalculate this ticket    
+    db_dml reset_restime_dirty "
+	update im_tickets
+	set ticket_resolution_time_dirty = null
+	where ticket_id = :object_id
+    "
+
+}
+
+
 
 
 ad_proc -public im_sla_day_of_week_list {
@@ -355,10 +377,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 			select	*
 			from	im_tickets t,
 				im_projects tp
-			where	
-				t.ticket_id = tp.project_id and
+			where	t.ticket_id = tp.project_id and
 				tp.parent_id = p.project_id and
-				ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])
+				(	ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])
+				OR 	ticket_resolution_time_dirty is NULL
+				)
 		)
     "]
 
@@ -386,10 +409,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	if {$debug_p} { ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id, service_hours=$service_hours_list" }
 
 	# ----------------------------------------------------------------
-	# Get the list of all selected ticket (either all open ones or one
-	# ticket in particular.
+	# Get the list of all selected ticket
+	# (open tickets or dirty ones)
 	#
-	set extra_where "and t.ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])"
+	set extra_where "and (
+		t.ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])
+		OR t.ticket_resolution_time_dirty is NULL
+		)
+	"
 	if {"" != $ticket_id} { 
 	    set extra_where "and t.ticket_id = :ticket_id"
 	}
@@ -402,11 +429,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 			to_char(now(), 'J') as now_julian
 		from	im_tickets t,
 			im_projects p
-		where
-			t.ticket_id = p.project_id
+		where	t.ticket_id = p.project_id
 			$extra_where
-		order by
-			t.ticket_id
+		order by t.ticket_id
 	"
     
 	db_foreach tickets $ticket_sql {
@@ -428,9 +453,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	    set julian_{$ticket_id}($now_julian) "now"
 	    
 	    if {$debug_p} { append time_html "<li>Ticket: $ticket_id, ticket_creation_epoch=$ticket_creation_epoch" }
-	    
-	    #	ad_return_complaint 1 "ticket_id=$ticket_id, [array get epoch_{$ticket_id}]"
-
 	    
 	    # Loop through all days between start and end and add the start
 	    # and end of the business hours this day.
@@ -635,8 +657,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	
 	    # Update the resolution time of the ticket
 	    db_dml update_resolution_time "
-		update im_tickets
-		set ticket_resolution_time = [expr $resolution_seconds / 3600.0]
+		update im_tickets set 
+			ticket_resolution_time = [expr $resolution_seconds / 3600.0],
+			ticket_resolution_time_dirty = now()
 		where ticket_id = :ticket_id
 	    "
 

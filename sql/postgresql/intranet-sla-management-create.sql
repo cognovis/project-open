@@ -44,6 +44,9 @@ BEGIN
 	alter table im_tickets
 	add ticket_resolution_time numeric(12,2);
 
+	alter table im_tickets
+	add ticket_resolution_time_dirty timestamptz;
+
 	SELECT im_dynfield_attribute_new (
 		'im_ticket', 'ticket_resolution_time', 'Resolution Time', 'numeric', 'integer', 'f', 9000, 'f', 'im_tickets'
 	) INTO 	v_attribute_id;
