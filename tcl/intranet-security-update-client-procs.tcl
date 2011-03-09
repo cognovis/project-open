@@ -44,8 +44,6 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 	return
     }
 
-set last_update_julian 0
-
     set days_since_update [expr $now_julian - $last_update_julian]
     ns_log Notice "im_security_update_exchange_rate_sweeper: Days since last update: $days_since_update"
     if {$days_since_update > $max_days_since_update} {
