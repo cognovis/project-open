@@ -30,6 +30,7 @@ if {![info exists panel_p]} {
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set user_id $current_user_id
 set page_title [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
 set context_bar [im_context_bar $page_title]
 
@@ -65,6 +66,7 @@ if {$printer_friendly_p} { set enable_master_p 0 }
 # ---------------------------------------------------------------
 
 set bundle_project_id 0
+set expense_name ""
 if {[info exists bundle_id]} {
 
     set exists_p [db_string exists "select count(*) from im_costs where cost_id = :bundle_id"]
@@ -75,7 +77,14 @@ if {[info exists bundle_id]} {
 	"]"
 	ad_script_abort
     }
-    set bundle_project_id [db_string bpid "select project_id from im_costs where cost_id = :bundle_id" -default 0]
+
+    db_0or1row bundle_info "
+	select	project_id as bundle_project_id,
+		cost_name as bundle_name
+	from	im_costs
+	where	cost_id = :bundle_id
+    "
+
 }
 set project_options [im_project_options -include_project_ids $bundle_project_id]
 
