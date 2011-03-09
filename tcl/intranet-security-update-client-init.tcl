@@ -20,5 +20,8 @@ ad_library {
 nsv_set intranet_security_update_client sweeper_p 0
 
 # Check for changed files every X minutes
-ad_schedule_proc -thread t [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateSweeperIntervalSeconds -default 61] im_security_update_exchange_rate_sweeper
-
+set enabled_p [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateSweeperEnabledP -default 0]
+ns_log Notice "intranet-security-update-client-init: enabled_p = $enabled_p"
+if {$enabled_p} {
+    ad_schedule_proc -thread t [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateSweeperIntervalSeconds -default 61] im_security_update_exchange_rate_sweeper
+}

@@ -40,11 +40,11 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 
     if {"" == $last_update_julian} { 
 	ns_log Error "im_security_update_exchange_rate_sweeper: Didn't find last exchange rate update"
-	return 
+	db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Did not find last exchange rate update. Please perform at least one update manually.')"
+	return
     }
 
-    # Debug: Always on
-    set last_update_julian 0
+set last_update_julian 0
 
     set days_since_update [expr $now_julian - $last_update_julian]
     ns_log Notice "im_security_update_exchange_rate_sweeper: Days since last update: $days_since_update"
@@ -57,6 +57,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 	    set update_xml [ns_httpget $currency_update_url]
 	} err_msg] } {
 	    ns_log Error "im_security_update_exchange_rate_sweeper: Error retreiving file: $err_msg"
+	    db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Error retreiving currency file: [ns_quotehtml $err_msg].')"
 	    return
 	}
 
@@ -65,8 +66,8 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 
     }
     ns_log Notice "im_security_update_exchange_rate_sweeper: Finished"
+    db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Successfully updated exchange rates'"
 }
-
 
 
 # ------------------------------------------------------------
@@ -132,7 +133,7 @@ ad_proc im_security_update_update_currencies {
     foreach root_node $root_nodes {
 	
 	set root_node_name [xml_node_get_name $root_node]
-	ns_log Notice "load-update-xml-2: node_name=$root_node_name"
+	ns_log Notice "im_security_update_update_currencies: node_name=$root_node_name"
 	
 	switch $root_node_name {
 	    
@@ -448,9 +449,49 @@ ad_proc im_exchange_rate_update_component { } {
 	"]
 	<form action='/intranet-security-update-client/get-exchange-rates'>
 	[export_form_vars return_url]
-	<input type=submit value='[lang::message::lookup "" intranet-exchange-rate.Button_Get_Exchange_Rates "Get Exchange Rates"]'>
+	<input type=submit value='[lang::message::lookup "" intranet-exchange-rate.Button_Get_Exchange_Rates_Now "Get Exchange Rates Now"]'>
 	</form>
         "
+
+	set return_url [im_url_with_query]
+	set package_key "intranet-security-update-client"
+	set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+	set enabled_p [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateSweeperEnabledP -default 0]
+	set days_before_update [parameter::get_from_package_key -package_key intranet-exchange-rate -parameter ExchangeRateDaysBeforeUpdate -default 0]
+	set last_update [db_string last_update "select max(day::date) from im_exchange_rates where manual_p = 't'" -default "never"]
+	# append content "<br>\n"
+	append content "<h2>[lang::message::lookup "" intranet-exchange-rate.Automatic_Updates_Status "Automatic Update Status"]</h2>\n"
+	append content "
+		<table>
+		<tr>	<td>[lang::message::lookup "" intranet-exchange-rate.Last_Update "Last Update:"]</td>
+			<td>$last_update</td>
+		</tr>
+		<tr>	<td>[lang::message::lookup "" intranet-exchange-rate.Automatic_Updates_Enabled_p "Automatic Update Enabled?"]</td>
+			<td>$enabled_p</td>
+		</tr>
+		<tr>	<td>[lang::message::lookup "" intranet-exchange-rate.Automatic_Updates_Days "Automatic Update Every N Days:"]</td>
+			<td>$days_before_update</td>
+		</tr>
+		</table>
+	<form action='/shared/parameters' method=GET>
+	[export_form_vars return_url package_id]
+	<input type=submit value='[lang::message::lookup "" intranet-exchange-rate.Edit_Parameters "Edit Parameters"]'>
+	</form>
+	"
+
+	append content "<h2>[lang::message::lookup "" intranet-exchange-rate.Automatic_Update_History "Automatic Update History"]</h2>\n"
+	append content "<ul>\n"
+	set log_sql "
+		select	log_date::date || ': ' || message as message
+		from	acs_logs
+		where	log_key = 'im_security_update_exchange_rate_sweeper'
+		order by log_date DESC
+		LIMIT 10
+	"
+	db_foreach last_logs $log_sql {
+	    append content "<li>$message</li>\n"
+	}
+	append content "</ul>"
     }
 
     return $content
