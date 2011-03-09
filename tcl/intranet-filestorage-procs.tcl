@@ -26,6 +26,7 @@ ad_register_proc GET /intranet/download/ticket/* intranet_ticket_download
 ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_download
 ad_register_proc GET /intranet/download/company/* intranet_company_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
+ad_register_proc GET /intranet/download/cost/* intranet_expense_cost_download
 ad_register_proc GET /intranet/download/home/* intranet_home_download
 ad_register_proc GET /intranet/download/zip/* intranet_zip_download
 
@@ -38,6 +39,7 @@ ad_proc intranet_ticket_download {} { intranet_download "ticket" }
 ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_company_download {} { intranet_download "company" }
 ad_proc intranet_user_download {} { intranet_download "user" }
+ad_proc intranet_cost_download {} { intranet_download "cost" }
 ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
@@ -328,6 +330,7 @@ ad_proc -private im_filestorage_base_path_helper {
 	home {return [im_filestorage_home_path]}
 	zip {return [im_filestorage_zip_path]}
 	bt_fs {return [im_filestorage_bug_path $object_id]}
+	cost {return [im_filestorage_cost_path $object_id]}
     }
     return ""
 }
@@ -427,6 +430,16 @@ ad_proc im_filestorage_bug_component { user_id bug_id user_name return_url} {
     set folder_type "bt_fs"
     set folder_name [lang::message::lookup "" intranet-filestorage.Bug_number "Bug \#%bug_number%"]
     return [im_filestorage_base_component $user_id $bug_id $folder_name $bug_path $folder_type]
+}
+
+
+
+ad_proc im_filestorage_cost_component { user_id cost_id cost_name return_url} {
+    Filestorage for cost items
+} {
+    set cost_path [im_filestorage_cost_path $cost_id]
+    set folder_type "cost"
+    return [im_filestorage_base_component $user_id $cost_id $cost_name $cost_path $folder_type]
 }
 
 
@@ -780,6 +793,38 @@ ad_proc im_filestorage_bug_path { bug_id } {
     
     return "$base_path_unix/$bug_id"
 }
+
+
+
+ad_proc im_filestorage_cost_path { cost_id } {
+    Determine the location where the cost files
+    are stored on the hard disk
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "CostBasePathUnix" -default "/tmp/costs"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
+    # Return a demo path for all project, clients etc.
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevCostPath" "" "costs"]
+	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
+	return "$base_path_unix/$path"
+    }
+    
+    return "$base_path_unix/$cost_id"
+}
+
 
 
 
@@ -1397,6 +1442,7 @@ ad_proc -public im_filestorage_folder_permissions {
 	
 	# Permissions for all usual projects, companies etc.
 	set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+#	ad_return_complaint 1 "$object_type - $object_id"
 	set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
 	
 	eval $perm_cmd
