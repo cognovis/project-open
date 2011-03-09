@@ -181,5 +181,9 @@ update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
 where plugin_name = 'Employee/Customer Price List';
 
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n\nMit freundlichen Gruessen\n%current_user_name%');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Erinnerung: Stundenerfassung');
 
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours','Erinnerung:\n Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n Mit freundlichen Gr&uumlssen;\n %current_user_name%');
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Please log your hours\nBest regards\n%current_user_name%');
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Reminder: Time sheet ');
+
