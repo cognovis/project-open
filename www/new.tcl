@@ -18,6 +18,7 @@ ad_page_contract {
     {return_url ""}
     {form_mode ""}
     {view_name ""}
+    conf_item_type_id:integer,optional
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -107,16 +108,14 @@ if {![info exists conf_item_type_id]} {
 }
 
 # Add DynField attributes.
-if {[info exists conf_item_id]} { 
+if {[info exists conf_item_type_id]} { 
 
-    # ad_return_complaint 1 "im_dynfield::append_attributes_to_form -form_display_mode $form_mode -object_subtype_id $conf_item_type_id -object_type im_conf_item -form_id $form_id -object_id $conf_item_id"
-
+    template::element::set_value $form_id conf_item_type_id $conf_item_type_id
     set field_cnt [im_dynfield::append_attributes_to_form \
 		       -form_display_mode $form_mode \
 		       -object_subtype_id $conf_item_type_id \
 		       -object_type "im_conf_item" \
-		       -form_id $form_id \
-		       -object_id $conf_item_id \
+		       -form_id $form_id
     ]
 }
 
