@@ -29,7 +29,6 @@ if {!$user_is_admin_p} {
     return
 }
 
-
 # Check the arguments: Either object_type or attribute_id
 # need to be specified
 if {$acs_attribute_id ne ""} {
@@ -76,6 +75,7 @@ if {[exists_and_not_null attribute_id]} {
 } else {
     set element_mode "edit"
 }
+
 
 if {"" eq $label_style} { set label_style "plain" }
 
@@ -143,6 +143,7 @@ set id_columns {}
 set main_table_name $object_info(table_name)
 set main_id_column $object_info(id_column)
 set extension_table_options [list]
+
 
 # Show the list of extension tables
 # plus the main object's table
@@ -259,7 +260,8 @@ lappend form_fields {
 }
 
 # fraber 110223: Disabled
-# lappend form_fields {object_type:text(hidden)}
+# fraber 110303: Re-Enabled. We need this to provide a context for creating a _new_ attribute
+lappend form_fields {object_type:text(hidden)}
 
 lappend form_fields {list_id:text(hidden),optional}
 
@@ -324,6 +326,7 @@ lappend form_fields {
 	{options {{Yes t}}} 
 	{value $required_p}
 }
+
 
 
 # ******************************************************
@@ -502,25 +505,36 @@ ad_form \
 
 
 
-
 # ------------------------------------------------------------------
 # Includelet for permissions
 # ------------------------------------------------------------------
 
-set perm_params [list \
+#		     [list object_type $object_type] \
+
+set perm_html ""
+set map_html ""
+
+if {[info exists attribute_id]} {
+    set perm_params [list \
+		     [list attribute_id $attribute_id] \
+		     [list nomaster_p 1] \
+    ]
+    set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
+
+
+    set map_params [list \
 		     [list object_type $object_type] \
 		     [list nomaster_p 1] \
-]
-set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
+    ]
+    set map_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/attribute-type-map"]
+}
 
 
 
 
-set map_params [list \
-		     [list object_type $object_type] \
-		     [list nomaster_p 1] \
-]
-set map_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/attribute-type-map"]
+
+
+
 
 
 

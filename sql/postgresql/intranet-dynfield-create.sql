@@ -1424,6 +1424,30 @@ end;' language 'plpgsql';
 
 
 
+create or replace function im_dynfield_attribute__delete (integer) returns integer as '
+DECLARE
+	p_attribute_id		alias for $1;
+BEGIN
+	-- Erase the mapping of im_dynfield_attributes to object sub-types
+	delete from im_dynfield_type_attribute_map
+	where attribute_id = p_attribute_id;
+
+	-- Erase all the privileges
+	delete from acs_permissions
+	where object_id = p_attribute_id;
+
+	-- Erase im_dynfield_layout
+	delete from im_dynfield_layout
+	where attribute_id = p_attribute_id;
+
+	delete from im_dynfield_attributes
+	where attribute_id = p_attribute_id;
+
+	PERFORM acs_object__delete(p_attribute_id);
+	return 0;
+end;' language 'plpgsql';
+
+
 
 
 -- Shortcut function

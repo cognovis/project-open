@@ -26,7 +26,6 @@ set return_url "[ad_conn url]?[ad_conn query]"
 set return_url_encoded [ns_urlencode $return_url]
 
 acs_object_type::get -object_type $object_type -array "object_info"
-
 set object_type_pretty_name $object_info(pretty_name)
 
 set title "Dynfield Attributes of $object_type_pretty_name"
