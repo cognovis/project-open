@@ -413,15 +413,20 @@ ad_proc -public im_gp_save_tasks {
     root_node 
     super_project_id 
 } {
+    Parse the XML tree of a MS-Project or OpenProj file and
+    start the recursive iteration through all sub-tasks.
     The top task entries should actually be projects, otherwise
     we return an "incorrect structure" error.
 } {
     ns_log Notice "im_gp_save_tasks: format=$format"
 
+    # The /project/tasks node of the XML contains the list
+    # of projects and sub-projects
     set tasks_node [$root_node selectNodes /project/tasks]
 
     if {$tasks_node == ""} {
-	# Probably ms project format
+	# Probably MS-Project format.
+	# MS-Project stores the actual tasks in /project/tasks/task.
 
 	# Check that we've got the newer version of tDom...
 	if {[ns_info version] < 4} {
@@ -442,11 +447,12 @@ ad_proc -public im_gp_save_tasks {
 	}
 
 	# Store the information of the main project in the super_project's im_gantt_project entry.
+	# This is not recursive. It's just the information about the main project.
 	set xml_elements {}
 	foreach child [$root_node childNodes] {
 	    set nodeName [$child nodeName]
 	    set nodeText [$child text]
-	    ns_log Notice "im_gp_save_tasks: nodeName=$nodeName, nodeText=$nodeText"
+	    # ns_log Notice "im_gp_save_tasks: nodeName=$nodeName, nodeText=$nodeText"
 
 	    lappend xml_elements $nodeName
 
@@ -531,7 +537,8 @@ ad_proc -public im_gp_save_tasks2 {
     sort_order_name
     task_hash_array
 } {
-    Stores a single task into the database
+    Stores a single task into the database.
+    Recursively descenses the XML tree with tasks and sub-tasks.
 } {
     upvar 1 $sort_order_name sort_order
     incr sort_order
@@ -683,7 +690,11 @@ ad_proc -public im_gp_save_tasks2 {
 
     # MS-Project creates a task with ID=0 and an empty name,
     # probably to represent the top-project. Let's ignore this one:
-    if {"" == $task_name && 0 == $gantt_project_id} { return }
+    ns_log Notice "im_gp_save_tasks2: Found task with task_name='$task_name', uid='$gantt_project_id'"
+    if {"" == $task_name || 0 == $gantt_project_id} { 
+	ns_log Notice "im_gp_save_tasks2: Ignoring task with task_name='$task_name', uid=$gantt_project_id"
+	return 
+    }
 
     # Normalize task_id from "" to 0
     if {"" == $task_id} { set task_id 0 }
