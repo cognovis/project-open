@@ -64,7 +64,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 
     }
     ns_log Notice "im_security_update_exchange_rate_sweeper: Finished"
-    db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Successfully updated exchange rates'"
+    db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Successfully updated exchange rates')"
 }
 
 
