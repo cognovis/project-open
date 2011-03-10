@@ -45,7 +45,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
     }
 
     set days_since_update [expr $now_julian - $last_update_julian]
-    ns_log Notice "im_security_update_exchange_rate_sweeper: Days since last update: $days_since_update, max_days_since_update=$max_days_since_update"
+    ns_log Notice "im_security_update_exchange_rate_sweeper: days_since_update=$days_since_update, max_days_since_update=$max_days_since_update"
     if {$days_since_update > $max_days_since_update} {
 
 	set currency_update_url [im_security_update_get_currency_update_url]
@@ -62,9 +62,11 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
 	# Parse the file and update exchange rates
 	im_security_update_update_currencies -update_xml $update_xml
 
+	# Write out a log message
+	db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Successfully updated exchange rates')"
+
     }
     ns_log Notice "im_security_update_exchange_rate_sweeper: Finished"
-    db_string log "select acs_log__debug('im_security_update_exchange_rate_sweeper', 'Successfully updated exchange rates')"
 }
 
 
