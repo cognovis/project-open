@@ -25,7 +25,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
     ns_log Notice "im_security_update_exchange_rate_sweeper: Starting"
 
     # Determine every how many days we want to update
-    set max_days_since_update [parameter::get_from_package_key -package_key intranet-exchange-rate -parameter ExchangeRateDaysBeforeUpdate -default 0]
+    set max_days_since_update [parameter::get_from_package_key -package_key intranet-exchange-rate -parameter ExchangeRateDaysBeforeUpdate -default 1]
 
     # Check for the last update
     set last_update_julian ""
@@ -45,7 +45,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
     }
 
     set days_since_update [expr $now_julian - $last_update_julian]
-    ns_log Notice "im_security_update_exchange_rate_sweeper: Days since last update: $days_since_update"
+    ns_log Notice "im_security_update_exchange_rate_sweeper: Days since last update: $days_since_update, max_days_since_update=$max_days_since_update"
     if {$days_since_update > $max_days_since_update} {
 
 	set currency_update_url [im_security_update_get_currency_update_url]
@@ -480,14 +480,15 @@ ad_proc im_exchange_rate_update_component { } {
 	append content "<h2>[lang::message::lookup "" intranet-exchange-rate.Automatic_Update_History "Automatic Update History"]</h2>\n"
 	append content "<ul>\n"
 	set log_sql "
-		select	log_date::date || ': ' || message as message
+		select	*,
+			to_char(log_date, 'YYYY-MM-DD HH24:MI') as log_date_pretty
 		from	acs_logs
 		where	log_key = 'im_security_update_exchange_rate_sweeper'
 		order by log_date DESC
 		LIMIT 10
 	"
 	db_foreach last_logs $log_sql {
-	    append content "<li>$message</li>\n"
+	    append content "<li>$log_date_pretty: $message</li>\n"
 	}
 	append content "</ul>"
     }
