@@ -308,7 +308,7 @@ lappend form_fields {
 	{label {Default Value}} 
 	{html {size 60 maxlength 200}}
 	{help_text "
-		Default Value for this attribute.
+		Default Value for this attribute. If you start the default value with 'tcl' and put a command in {} behind it, the tcl code will be executed and the return value taken as the default value. To get the current user_id for example use 'tcl {ad_conn user_id}'
 	"}
 }
 

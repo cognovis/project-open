@@ -1270,6 +1270,14 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
     append after_html $admin_html
 
+    # Check if we need to parse the default_value
+    set tcl_pos [lsearch $default_value "tcl"]
+    if {$tcl_pos == 0} {
+        set tcl_code [lindex $default_value 1]
+        set default_value [eval $tcl_code]
+    }
+
+
     switch $widget {
         checkbox - radio - select - multiselect - im_category_tree - category_tree {
             if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
@@ -1297,7 +1305,6 @@ ad_proc -public im_dynfield::append_attribute_to_form {
         }
         default {
             if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
-            ds_comment "$attribute_name :: $default_value"
             if {![template::element::exists $form_id "$attribute_name"]} {
                 template::element create $form_id "$attribute_name" \
                     -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
