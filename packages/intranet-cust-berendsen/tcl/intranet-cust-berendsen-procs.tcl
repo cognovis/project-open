@@ -66,3 +66,17 @@ ad_proc -public -callback intranet_fs::after_project_folder_create -impl berends
     }
 }
 
+ad_proc -public im_project_base_data_berendsen_component {
+    {-project_id}
+    {-return_url}
+} {
+    returns basic project info with dynfields and hard coded
+} { 
+
+    set params [list  [list base_url "/intranet-cust-berendsen/"]  [list project_id $project_id] [list return_url $return_url]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cust-berendsen/lib/project-base-data"]
+    return [string trim $result]
+
+}
+
