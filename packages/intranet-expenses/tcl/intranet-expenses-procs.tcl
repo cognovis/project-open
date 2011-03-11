@@ -35,6 +35,24 @@ ad_proc -private im_package_expenses_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Expenses Permissions
+# ----------------------------------------------------------------------
+
+
+ad_proc -public im_expense_bundle_permissions {user_id bundle_id view_var read_var write_var admin_var} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $bundle_id.<br>
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    # Just call general cost permissions
+    im_cost_permissions $user_id $bundle_id view read write admin
+}
+
+# ----------------------------------------------------------------------
 # Sum up multiple Expense Items for a single Bundle
 # ----------------------------------------------------------------------
 

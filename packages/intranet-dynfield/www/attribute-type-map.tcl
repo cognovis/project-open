@@ -5,15 +5,33 @@ ad_page_contract {
     (as opposed to the OpenACS type)
 
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @cvs-id $Id: attribute-type-map.tcl,v 1.10 2009/11/17 07:39:43 cvs Exp $
+    @cvs-id $Id: attribute-type-map.tcl,v 1.12 2011/03/03 12:55:30 po34demo Exp $
 } {
-    { object_type "im_project" }
+    object_type:optional
+    nomaster_p:optional
+    attribute_id:optional
     { object_subtype_id 0 }
 }
 
 # --------------------------------------------------------------
+
 set page_title "Attribute-Type-Map"
 set context [list [list "index" "DynFields"] $page_title]
+
+if {![info exists nomaster_p]} { set nomaster_p 0 }
+if {![info exists object_type]} { set object_type "" }
+if {[info exists attribute_id] && "" != $attribute_id} {
+    set object_type [db_string otype "
+	select	object_type
+	from	acs_attributes
+	where	attribute_id in (
+			select	acs_attribute_id
+			from	im_dynfield_attributes
+			where	attribute_id = :attribute_id
+		)
+    " -default ""]
+}
+
 
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
@@ -92,16 +110,23 @@ db_foreach top_scale_map "
 # --------------------------------------------------------------
 # Vertical Dimension - The list of DynField Attributes
 # The "dimension" is a list of values to be displayed on left.
+
+set attribute_where ""
+if {[info exists attribute_id] && "" != $attribute_id && 0 != $attribute_id} { set attribute_where "and a.attribute_id = :attribute_id" }
+
 set left_scale [db_list left_dim "
-	select	a.attribute_id
-	from
-		im_dynfield_attributes a,
-		acs_attributes aa
-	where
-		a.acs_attribute_id = aa.attribute_id
-		and aa.object_type = :acs_object_type
-	order by
-		aa.sort_order, aa.pretty_name
+        select  a.attribute_id
+        from
+                im_dynfield_attributes a,
+                acs_attributes aa,
+                im_dynfield_layout idl
+        where
+                a.acs_attribute_id = aa.attribute_id
+                and aa.object_type = :acs_object_type
+                and idl.attribute_id = a.attribute_id
+		$attribute_where
+        order by
+                aa.sort_order, idl.pos_y, aa.pretty_name
 "]
 
 # The array maps category_id into "attribute_id category" - a pretty

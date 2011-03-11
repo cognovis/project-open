@@ -127,7 +127,7 @@ if { ![empty_string_p $logo_file]
 # Profile Configuration
 # ---------------------------------------------------------------
 
-ns_write "<br>&nbsp;<h2>Configuring Truse Model</h2>\n";
+ns_write "<br>&nbsp;<h2>Configuring Trust Model</h2>\n";
 
 set subsite_id [ad_conn subsite_id]
 
