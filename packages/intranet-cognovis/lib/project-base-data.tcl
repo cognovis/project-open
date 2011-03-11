@@ -26,10 +26,6 @@ foreach dynfield_id $dynfield_ids {
     set field [$element pretty_name]  
     set value [$project value $element]
     
-    if {[string equal [lindex $value 1] "text/html"]} {
-	set value [lindex $value 0]
-    }
-    
     if {[$element multiple_p] && $value ne ""} {
 	set value "<ul><li>[join $value "</li><li>"]</li></ul>"
     }
