@@ -21,6 +21,7 @@ SELECT im_component_plugin__new (
 );
 
 update im_component_plugins set enabled_p = 'f' where plugin_name = 'Project Base Data';
+update im_component_plugins set enabled_p = 'f' where plugin_name = 'Project Base Data Cognovis';
 update im_component_plugins set sort_order = 5 where plugin_name = 'Project Hierarchy';
 	
 -- Enable the component for the correct users

@@ -18,7 +18,7 @@
         <requires url="intranet-core" version="4.0.1.0.0"/>
         <requires url="xotcl-core" version="0.118"/>
         <requires url="intranet-xotcl-dynfield" version="0.1d1"/>
-
+        <requires url="intranet-cognovis" version="0.4"/>
 
         <callbacks>
         </callbacks>
