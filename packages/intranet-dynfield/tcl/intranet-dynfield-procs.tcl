@@ -242,7 +242,6 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		at.pretty_name,
 		a.datatype,
 		case when a.min_n_values = 0 then 'f' else 't' end as required_p,
-		a.default_value,
 		t.table_name as object_type_table_name,
 		t.id_column as object_type_id_column,
 		at.table_name as attribute_table,
@@ -350,7 +349,6 @@ ad_proc -public im_dynfield::create_clone_update_sql {
 		at.pretty_name,
 		a.datatype,
 		case when a.min_n_values = 0 then 'f' else 't' end as required_p,
-		a.default_value,
 		t.table_name as object_type_table_name,
 		t.id_column as object_type_id_column,
 		at.table_name as attribute_table,
@@ -883,20 +881,21 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # add a hidden object_id field to the form
     if {[exists_and_not_null object_id]} {
     	if {![template::element::exists $form_id "object_id"]} {
-	    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_id=$object_id" }
-	    template::element create $form_id "object_id" \
-		-datatype integer \
-		-widget hidden \
-		-value  $object_id
+            if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_id=$object_id" }
+            template::element create $form_id "object_id" \
+                -datatype integer \
+                -widget hidden \
+                -value  $object_id
     	}
     }
-
+    
     # Get display mode per attribute and object_type_id
     set sql "
        select	m.attribute_id,
                 m.object_type_id as ot,
                 m.display_mode as dm,
-		m.help_text as ht
+		        m.help_text as ht,
+                m.default_value as dv
         from
                 im_dynfield_type_attribute_map m,
                 im_dynfield_attributes a,
@@ -908,27 +907,28 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     "
 
     if {!$include_also_hard_coded_p} { append sql "\t\tand also_hard_coded_p = 'f'\n" }
-
+    
     # Default: Set all field to form's display mode
     set default_display_mode $form_display_mode
-
+    
     db_foreach attribute_table_map $sql {
-	set key "$attribute_id.$ot"
-	set display_mode_hash($key) $dm
-	set help_text($attribute_id) $ht
-
-	# Now we've got atleast one display mode configured:
-	# Set the default to "none", so that no field is shown
-	# except for the configured fields.
-	set default_display_mode "none"
-
-	if {$debug} { ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm" }
+        set key "$attribute_id.$ot"
+        set display_mode_hash($key) $dm
+        set help_text($attribute_id) $ht
+        set default_value($attribute_id) $dv
+        
+        # Now we've got atleast one display mode configured:
+        # Set the default to "none", so that no field is shown
+        # except for the configured fields.
+        set default_display_mode "none"
+        
+        if {$debug} { ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm" }
     }
-
+    
     # Disable the mechanism if the object_type_id hasn't been specified
     # (compatibility mode)
     if {"" == $object_subtype_id} { set default_display_mode "edit" }
-
+    
     db_1row object_type_info "
         select
                 t.table_name as object_type_table_name,
@@ -941,7 +941,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     set extra_wheres [list "1=1"]
     if {$advanced_filter_p} {
-	lappend extra_wheres "aw.widget in (
+        lappend extra_wheres "aw.widget in (
 		'select', 'generic_sql', 
 		'im_category_tree', 'im_cost_center_tree',
 		'checkbox'
@@ -955,7 +955,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # Otherwise object creation will fail for most objects.
     set also_hard_coded_p_sql ""
     if {!$include_also_hard_coded_p} { 
-	set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
+        set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
     } 
 
     set attributes_sql "
@@ -972,7 +972,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			a.pretty_name,
 			a.datatype, 
 			case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
-			a.default_value, 
 			aw.widget,
 			aw.parameters,
 			aw.storage_type_id,
@@ -1003,158 +1002,166 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set field_cnt 0
     db_foreach attributes $attributes_sql {
 
-	# Check if the elements as disabled in the layout page
-	if {$page_url_exists_p && "" == $page_url} { continue }
+        # Check if the elements as disabled in the layout page
+        if {$page_url_exists_p && "" == $page_url} { continue }
+        
+        # Check if the current user has the right to read and write on the dynfield
+        set read_p [im_object_permission \
+                        -object_id $dynfield_attribute_id \
+                        -user_id $user_id \
+                        -privilege "read" \
+                       ]
+        set write_p [im_object_permission \
+                         -object_id $dynfield_attribute_id \
+                         -user_id $user_id \
+                         -privilege "write" \
+                        ]
+        if {!$read_p} { continue }
+        
+        set display_mode $default_display_mode
+        
+        # object_subtype_id can be a list, so go through the list
+        # and take the highest one (none - display - edit).
+        foreach subtype_id $object_subtype_id {
+            set key "$dynfield_attribute_id.$subtype_id"
+            if {[info exists display_mode_hash($key)]} { 
+                switch $display_mode_hash($key) {
+                    edit { set display_mode "edit" }
+                    display { if {$display_mode == "none"} { set display_mode "display" } }
+                }
+            }
+        }
 
-	# Check if the current user has the right to read and write on the dynfield
-	set read_p [im_object_permission \
-			-object_id $dynfield_attribute_id \
-			-user_id $user_id \
-			-privilege "read" \
-	]
-	set write_p [im_object_permission \
-			-object_id $dynfield_attribute_id \
-			-user_id $user_id \
-			-privilege "write" \
-	]
-	if {!$read_p} { continue }
-
-	set display_mode $default_display_mode
-
-	# object_subtype_id can be a list, so go through the list
-	# and take the highest one (none - display - edit).
-	foreach subtype_id $object_subtype_id {
-	    set key "$dynfield_attribute_id.$subtype_id"
-	    if {[info exists display_mode_hash($key)]} { 
-		switch $display_mode_hash($key) {
-		    edit { set display_mode "edit" }
-		    display { if {$display_mode == "none"} { set display_mode "display" } }
-		}
-	    }
-	}
-
-	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
-
-	if {"edit" == $display_mode && "display" == $form_display_mode}  {
+        if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+        
+        if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
         }
-	if {"edit" == $display_mode && !$write_p}  {
+        if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
-
-	if {$debug} { ns_log Notice "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
-
-	if {"none" == $display_mode} { continue }
-
-	# Don't show a read-only mode in an "edit" form
-	# Doesn't work yet, because the field is expected later
-#	if {"display" == $display_mode && "edit" == $form_display_mode}  {
-#	    continue
-#        }
-
-
-	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
-
-	# set optional all attributes if search mode
-	if {$search_p} { set required_p "f" }
-
-	# Show "wrench" for administrators
-	set admin_p [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]]
-	set admin_html ""
-	if {$admin_p} {
-	    set admin_help ""
-	    set dynfield_admin_url [export_vars -base "/intranet-dynfield/attribute-new" {{attribute_id $dynfield_attribute_id} return_url}]
-	    set admin_html "<a href='$dynfield_admin_url'>[im_gif wrench $admin_help]</a>"
-	}
-    
-	# Help
+        
+        if {$debug} { ns_log Notice "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
+        
+        if {"none" == $display_mode} { continue }
+        
+        # Don't show a read-only mode in an "edit" form
+        # Doesn't work yet, because the field is expected later
+        #	if {"display" == $display_mode && "edit" == $form_display_mode}  {
+        #	    continue
+        #        }
+        
+        
+        if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
+        
+        # set optional all attributes if search mode
+        if {$search_p} { set required_p "f" }
+        
+        # Show "wrench" for administrators
+        set admin_p [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]]
+        set admin_html ""
+        if {$admin_p} {
+            set admin_help ""
+            set dynfield_admin_url [export_vars -base "/intranet-dynfield/attribute-new" {{attribute_id $dynfield_attribute_id} return_url}]
+            set admin_html "<a href='$dynfield_admin_url'>[im_gif wrench $admin_help]</a>"
+        }
+        
+        # Help
         if {[info exists help_text($dynfield_attribute_id)]} {
             set help_message $help_text($dynfield_attribute_id)
         } else {
             set help_message ""
         }
 
-	im_dynfield::append_attribute_to_form \
-	    -attribute_name $attribute_name \
-	    -widget $widget \
-	    -form_id $form_id \
-	    -datatype $datatype \
-	    -display_mode $display_mode \
-	    -parameters $parameters \
-	    -required_p $required_p \
-	    -pretty_name $pretty_name \
-	    -help_text $help_message \
-	    -admin_html $admin_html
-
+        if {[info exists default_value($dynfield_attribute_id)]} {
+            set default_message $default_value($dynfield_attribute_id)
+        } else {
+            set default_message ""
+        }
+        
+        
+        im_dynfield::append_attribute_to_form \
+            -attribute_name $attribute_name \
+            -widget $widget \
+            -form_id $form_id \
+            -datatype $datatype \
+            -display_mode $display_mode \
+            -parameters $parameters \
+            -required_p $required_p \
+            -pretty_name $pretty_name \
+            -help_text $help_message \
+            -default_value $default_message \
+            -admin_html $admin_html
+        
         # set the value
         upvar $attribute_name x
         if {[info exists x]} {
             template::element::set_value $form_id $attribute_name $x
         }
-
-	incr field_cnt
-
+        
+        incr field_cnt
+        
     }	
-
+    
     # That's all until here IF this is a new object. Otherwise, we'll need 
     # to retreive the object's values from several tables and from the multi-fields...
     #
     if { ![template::form is_request $form_id] } { return }
     if { ![info exists object_id]} { return }
-
+    
 
     # Same loop as before...
     db_foreach attributes $attributes_sql {
-
-	# Check if the elements is disabled in the layout page
-	if {$page_url_exists_p && "" == $page_url} { continue }
-
-	# Check if the current user has the right to read the dynfield
-	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
-	
-	# Default display mode
-	set display_mode $default_display_mode
-
-	# object_subtype_id can be a list, so go through the list
-	# and take the highest one (none - display - edit).
-	foreach subtype_id $object_subtype_id {
-	    set key "$dynfield_attribute_id.$subtype_id"
-	    if {[info exists display_mode_hash($key)]} { 
-		switch $display_mode_hash($key) {
-		    edit { set display_mode "edit" }
-		    display { if {$display_mode == "none"} { set display_mode "display" } }
-		}
-	    }
-	}
-
-	# Don't show "none" fields...
-	if {"none" == $display_mode} { continue }
-
-	switch $storage_type {
-	    multimap {
-		# "MultiMaps" (select with multiple values) are stored in a separate
-		# "im_dynfield_attr_multi_value", because we can't store it like the
-		# other attributes directly inside the object's table.
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage" }
-		template::element set_properties $form_id $attribute_name "multiple_p" "1"
-		set value_list [db_list get_multiple_values "
-			select	value 
-			from	im_dynfield_attr_multi_value
-			where	attribute_id = :dynfield_attribute_id
-				and object_id = :object_id
-		"]
-		template::element::set_values $form_id $attribute_name $value_list
-	    }
-	    value - default {
-
-		# ToDo: slow. This piece issues N SQL statements, instead of constructing
-		# a single SQL and issuing it once. Causes performance problems at BaselKB
-		# for example.
-		set value [db_string get_single_value "
-		    select	$attribute_name
-		    from	$attribute_table_name
-		    where	$attribute_id_column = :object_id
-		" -default ""]
+        
+        # Check if the elements is disabled in the layout page
+        if {$page_url_exists_p && "" == $page_url} { continue }
+        
+        # Check if the current user has the right to read the dynfield
+        if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
+        
+        # Default display mode
+        set display_mode $default_display_mode
+        
+        # object_subtype_id can be a list, so go through the list
+        # and take the highest one (none - display - edit).
+        foreach subtype_id $object_subtype_id {
+            set key "$dynfield_attribute_id.$subtype_id"
+            if {[info exists display_mode_hash($key)]} { 
+                switch $display_mode_hash($key) {
+                    edit { set display_mode "edit" }
+                    display { if {$display_mode == "none"} { set display_mode "display" } }
+                }
+            }
+        }
+        
+        # Don't show "none" fields...
+        if {"none" == $display_mode} { continue }
+        
+        switch $storage_type {
+            multimap {
+                # "MultiMaps" (select with multiple values) are stored in a separate
+                # "im_dynfield_attr_multi_value", because we can't store it like the
+                # other attributes directly inside the object's table.
+                if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage" }
+                template::element set_properties $form_id $attribute_name "multiple_p" "1"
+                set value_list [db_list get_multiple_values "     
+               			       select	value               
+			                   from	im_dynfield_attr_multi_value
+			                   where	attribute_id = :dynfield_attribute_id
+				               and object_id = :object_id
+		                       "]
+                template::element::set_values $form_id $attribute_name $value_list
+            }
+            value - default {
+                
+                # ToDo: slow. This piece issues N SQL statements, instead of constructing
+                # a single SQL and issuing it once. Causes performance problems at BaselKB
+                # for example.
+                set value [db_string get_single_value "
+            		      select	$attribute_name
+                          from	$attribute_table_name
+                          where	$attribute_id_column = :object_id
+                          " -default ""]
 
                 switch $widget {
                     date {
@@ -1163,34 +1170,34 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                     }
                     default { }
                 }
-
-		# Don't overwrite values with default value if the value is there already
+                
+                # Don't overwrite values with default value if the value is there already
                 if {$value ne ""} {
                     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
                     template::element::set_value $form_id $attribute_name $value
                 }
-
-	    }
-
-	}
+                
+            }
+            
+        }
     }
-
+    
     # Callback to allow external functions to modify the values in the form
-
+    
     if {[catch {
-	callback ${object_type}_form_fill \
-	    -form_id $form_id \
-	    -object_type $object_type \
-	    -object_id $object_id \
-	    -type_id $object_subtype_id \
-	    -page_url $page_url \
-	    -advanced_filter_p $advanced_filter_p \
-	    -include_also_hard_coded_p $include_also_hard_coded_p
+        callback ${object_type}_form_fill \
+            -form_id $form_id \
+            -object_type $object_type \
+            -object_id $object_id \
+            -type_id $object_subtype_id \
+            -page_url $page_url \
+            -advanced_filter_p $advanced_filter_p \
+            -include_also_hard_coded_p $include_also_hard_coded_p
     } err_msg]} {
-	ad_return_complaint 1 "<b>Error with callback '${object_type}_form_fill'</b>:<br>
+        ad_return_complaint 1 "<b>Error with callback '${object_type}_form_fill'</b>:<br>
 		Please check your callback code and make sure that your object type '$object_type'
 		is part of the list 'object_types' in ~/packages/intranet-core/tcl/intranet-core-init.tcl"
-	ad_script_abort
+        ad_script_abort
     }
     
     return $field_cnt
@@ -1209,6 +1216,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     -attribute_name:required
     -pretty_name:required
     -help_text:required
+    -default_value:required
     {-admin_html "" }
     {-debug 0}
 } {
@@ -1262,6 +1270,14 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
     append after_html $admin_html
 
+    # Check if we need to parse the default_value
+    set tcl_pos [lsearch $default_value "tcl"]
+    if {$tcl_pos == 0} {
+        set tcl_code [lindex $default_value 1]
+        set default_value [eval $tcl_code]
+    }
+
+
     switch $widget {
         checkbox - radio - select - multiselect - im_category_tree - category_tree {
             if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
@@ -1283,7 +1299,8 @@ ad_proc -public im_dynfield::append_attribute_to_form {
                     -custom $custom_parameters \
                     -html $html_parameters \
                     -after_html "$after_html $after_html_parameters" \
-                    -mode $display_mode
+                    -mode $display_mode \
+                    -values $default_value
             }
         }
         default {
@@ -1296,7 +1313,8 @@ ad_proc -public im_dynfield::append_attribute_to_form {
                     -html $html_parameters \
                     -custom $custom_parameters\
                     -after_html "$after_html $after_html_parameters" \
-                    -mode $display_mode
+                    -mode $display_mode \
+                    -value $default_value
             }
         }
     }
