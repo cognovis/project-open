@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2009-09-04
-    @cvs-id $Id: index.tcl,v 1.6 2009/09/26 00:45:36 cvs Exp $
+    @cvs-id $Id: index.tcl,v 1.8 2011/03/09 12:42:10 po34demo Exp $
 
 } {
     {orderby "name"}
@@ -22,12 +22,20 @@ if {!$user_is_admin_p} {
     return
 }
 
+set return_url [im_url_with_query]
+
 # ------------------------------------------------------------------
 # 
 # ------------------------------------------------------------------
 
 set bulk_action_list [list \
-	"[lang::message::lookup {} intranet-dynfield.Full_CVS_Import {Full CVS Import}]" "action-full-import" "" \
+	"[lang::message::lookup {} intranet-cvs-integration.Full_CVS_Import {Full CVS Import}]" "action-full-import" "" \
+]
+
+set cvs_repository_type_id [im_conf_item_type_cvs_repository]
+set new_repository_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {conf_item_type_id $cvs_repository_type_id} {return_url}}]
+set action_list [list \
+	"[lang::message::lookup {} intranet-cvs-integration.Create_New_Repository "Create New Repository"]" $new_repository_url "" \
 ]
 
 
@@ -41,20 +49,23 @@ list::create \
     -class "list" \
     -main_class "list" \
     -sub_class "narrow" \
-    -actions {
-    } -bulk_actions $bulk_action_list \
+    -actions $action_list \
+    -bulk_actions $bulk_action_list \
     -bulk_action_export_vars {
         repository_id
     } -elements {
         repository_name {
-            label "[lang::message::lookup {} intranet-cvs-integration.Repository {Repository}]"
+            label "[lang::message::lookup {} intranet-cvs-integration.Repository {Conf Item Name}]"
             link_url_eval $repository_url
         }
-        cvs_system {
-            label "[lang::message::lookup {} intranet-cvs-integration.CVS_System {Type}]"
+        cvs_protocol {
+            label "[lang::message::lookup {} intranet-cvs-integration.CVS_Protocol {Protocol}]"
         }
         cvs_user {
             label "[lang::message::lookup {} intranet-cvs-integration.CVS_User {User}]"
+        }
+        cvs_password {
+            label "[lang::message::lookup {} intranet-cvs-integration.CVS_Password {Password}]"
         }
         cvs_hostname {
             label "[lang::message::lookup {} intranet-cvs-integration.CVS_Hostname {Hostname}]"
@@ -65,8 +76,8 @@ list::create \
         cvs_path {
             label "[lang::message::lookup {} intranet-cvs-integration.CVS_Path {Path}]"
         }
-        cvs_password {
-            label "[lang::message::lookup {} intranet-cvs-integration.CVS_Password {Password}]"
+        cvs_repository {
+            label "[lang::message::lookup {} intranet-cvs-integration.CVS_Repository {Repository}]"
         }
         num_commits {
             label "[lang::message::lookup {} intranet-cvs-integration.Num_Commits Commits]"
@@ -77,7 +88,8 @@ list::create \
 db_multirow -extend { repository_url } cvs_repositories select_cvs_repositories {
 	select	conf_item_id as repository_id,
 		conf_item_name as repository_name,
-		cvs_system,
+		cvs_protocol,
+		cvs_repository,
 		cvs_user,
 		cvs_password,
 		cvs_hostname,

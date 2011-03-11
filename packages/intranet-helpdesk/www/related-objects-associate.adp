@@ -10,7 +10,7 @@
 </p>
 <br>
 
-<form action=associate-2 method=GET>
+<form action=related-objects-associate-2 method=GET>
 <%= [export_form_vars tid return_url] %>
 <table>
 	<tr>

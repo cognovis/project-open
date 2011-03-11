@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: object-type.tcl,v 1.9 2008/03/24 22:35:57 cvs Exp $
+    @cvs-id $Id: object-type.tcl,v 1.10 2011/03/09 12:42:11 po34demo Exp $
 
 } {
     {object_type:notnull}
@@ -26,7 +26,6 @@ set return_url "[ad_conn url]?[ad_conn query]"
 set return_url_encoded [ns_urlencode $return_url]
 
 acs_object_type::get -object_type $object_type -array "object_info"
-
 set object_type_pretty_name $object_info(pretty_name)
 
 set title "Dynfield Attributes of $object_type_pretty_name"

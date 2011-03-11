@@ -468,8 +468,13 @@ SELECT im_category_hierarchy_new('Project Open Server','Process','Intranet Conf 
 SELECT im_category_hierarchy_new('PostgreSQL Process','Process','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Postfix Process','Process','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Pound Process','Process','Intranet Conf Item Type');
-
 -- reserved to 12399
+
+
+-- Types of Services
+SELECT im_category_new(12400, 'CVS Repository', 'Intranet Conf Item Type'); 
+SELECT im_category_hierarchy_new('CVS Repository','Service','Intranet Conf Item Type');
+-- reserved to 12499
 
 
 

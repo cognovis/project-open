@@ -2,11 +2,11 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: attribute-new.tcl,v 1.16 2009/10/01 18:10:12 cvs Exp $
 } {
     {object_type ""}
     attribute_id:integer,optional
     attribute_name:optional
+    {form_mode "display"}
     {acs_attribute_id ""}
     {required_p "f"}
     {also_hard_coded_p "f"}
@@ -27,7 +27,6 @@ if {!$user_is_admin_p} {
     ad_return_complaint 1 "[_ intranet-dynfield.You_have_insufficient_privileges_to_use_this_page]"
     return
 }
-
 
 # Check the arguments: Either object_type or attribute_id
 # need to be specified
@@ -143,6 +142,7 @@ set main_table_name $object_info(table_name)
 set main_id_column $object_info(id_column)
 set extension_table_options [list]
 
+
 # Show the list of extension tables
 # plus the main object's table
 set extension_tables_sql "
@@ -257,6 +257,8 @@ lappend form_fields {
 	{help_text "Should the user be required to specifiy this field?"}
 }
 
+# fraber 110223: Disabled
+# fraber 110303: Re-Enabled. We need this to provide a context for creating a _new_ attribute
 lappend form_fields {object_type:text(hidden)}
 
 lappend form_fields {list_id:text(hidden),optional}
@@ -333,6 +335,7 @@ lappend form_fields {
 }
 
 
+
 # ******************************************************
 # Build the form
 # ******************************************************
@@ -351,7 +354,11 @@ set widget_options " [db_list_of_lists select_widgets {
 # lappend widget_options [list [lang::util::localize $pretty_name] $widget_name]
 
 
-ad_form -name attribute_form -form $form_fields -new_request {
+ad_form \
+    -name attribute_form \
+    -form $form_fields \
+    -mode $form_mode \
+    -new_request {
 } -edit_request {
 } -validate {
     # Validation that the attribute isn't already in the database
@@ -389,7 +396,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
 			  -label_style $label_style \
 			  -pos_y $pos_y \
 			  -help_text $help_text \
-              -default_value $default_value \
+			  -default_value $default_value \
 			  -section_heading $section_heading \
 			 ]
     
@@ -504,4 +511,39 @@ ad_form -name attribute_form -form $form_fields -new_request {
     
     ad_script_abort
 }
+
+
+
+# ------------------------------------------------------------------
+# Includelet for permissions
+# ------------------------------------------------------------------
+
+#		     [list object_type $object_type] \
+
+set perm_html ""
+set map_html ""
+
+if {[info exists attribute_id]} {
+    set perm_params [list \
+		     [list attribute_id $attribute_id] \
+		     [list nomaster_p 1] \
+    ]
+    set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
+
+
+    set map_params [list \
+		     [list object_type $object_type] \
+		     [list nomaster_p 1] \
+    ]
+    set map_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/attribute-type-map"]
+}
+
+
+
+
+
+
+
+
+
 

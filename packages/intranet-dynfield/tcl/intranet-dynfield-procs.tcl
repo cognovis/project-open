@@ -7,7 +7,7 @@ ad_library {
   @author Juanjo Ruiz juanjoruizx@yahoo.es
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.72 $ $Date: 2011/03/01 16:04:20 $
+  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
 
 }
 
@@ -1323,6 +1323,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
 ad_proc -public im_dynfield::append_attributes_to_im_view {
     -object_type:required
+    {-include_also_hard_coded_p 0 }
     {-table_prefix "" }
 } {
     Returns a list with three elements:
@@ -1348,6 +1349,11 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 } {
     set current_user_id [ad_get_user_id]
 
+    set also_hard_coded_p_sql ""
+    if {!$include_also_hard_coded_p} { 
+	set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
+    } 
+
     set attributes_sql "
 	select	a.*,
 		aa.attribute_id as dynfield_attribute_id,
@@ -1358,9 +1364,15 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		aw.parameters,
 		aw.storage_type_id,
 		aw.deref_plpgsql_function,
-		im_category_from_id(aw.storage_type_id) as storage_type
+		im_category_from_id(aw.storage_type_id) as storage_type,
+		coalesce(dl.pos_y, 9999) as layout_sort_order
 	from
-		im_dynfield_attributes aa,
+		im_dynfield_attributes aa
+		LEFT OUTER JOIN (
+			select	*
+			from	im_dynfield_layout
+			where	page_url = 'default'
+		) dl ON (dl.attribute_id = aa.attribute_id),
 		im_dynfield_widgets aw,
 		acs_object_types t,
 		acs_attributes a
@@ -1373,6 +1385,9 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :current_user_id, 'read') = 't'
+		$also_hard_coded_p_sql
+	order by
+		layout_sort_order
     "
 
     set column_headers [list]
@@ -1387,7 +1402,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
         }
 
         lappend column_headers $pretty_name
-        lappend column_derefs "\$${attribute_name}_deref"
+        lappend column_vars "\$${attribute_name}_deref"
         lappend column_select "$deref as ${attribute_name}_deref,"
     }
 

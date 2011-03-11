@@ -3,8 +3,7 @@
 <property name="title">@title@</property>
 <property name="context">@context@</property>
 
-
-<h1>#intranet-dynfield.Dynfield_Attributes#</h1>
+<h1>@title@</h1>
 
 <form method=post action=attribute-delete>
 <input type=hidden name=return_url value="@return_url@">
@@ -69,8 +68,8 @@
     <td colspan=8 align=left>
 
 <ul>
-<li><a href="attribute-new?object_type=@object_type@&action=completely_new">#intranet-dynfield.lt_Add_a_completely_new_#</a></li>
-<li><a href="attribute-new?object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a></li>
+<li><a href="attribute-new?form_mode=edit&object_type=@object_type@&action=completely_new">#intranet-dynfield.lt_Add_a_completely_new_#</a></li>
+<li><a href="attribute-new?form_mode=edit&object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a></li>
 </ul>
 
     </td>
