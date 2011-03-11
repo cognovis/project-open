@@ -137,6 +137,15 @@ set filter_form_html "
 "
 set admin_html ""
 
+set left_navbar_html "
+        <div class='filter-block'>
+                <div class='filter-title'>
+                   \#intranet-core.Filter_Projects\#
+                </div>
+		$filter_form_html                
+        </div>
+      <hr/>
+"
 
 # ---------------------------------------------------------------
 # Get Column Header & Data 
@@ -174,7 +183,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 }
 
 set inner_sql [join $inner_sql_list ", "]
-append table_header_html "<td class=rowtitle>Reminder</td><td class=rowtitle >Confirm WF</td></tr>"
+append table_header_html "<td class=rowtitle>[lang::message::lookup "" intranet-cust-koernigweber.TS_WF_Remind "Remind"]</td><td class='rowtitle'>[lang::message::lookup "" intranet-core.Confirm "Confirm"]</td></tr>"
 
 # delete last comma
 set inner_sql [string range $inner_sql 0 [expr [string length $inner_sql]-2]]
@@ -205,7 +214,7 @@ set sql "
 
 set old_owner [list]
 set do_user_init 1
-set table_body_html ""
+set table_body_html "<tbody>"
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
@@ -216,14 +225,14 @@ set project_name_saved ""
 
 
 set project_url "/intranet/projects/view?project_id="
-set user_url "intranet/users/view?user_id="
+set user_url "/intranet/users/view?user_id="
 
 db_foreach get_hours $sql {
     if { ![string equal $project_name_saved $project_name] } {
-	    append table_body_html "<tr><td><strong><a href='$project_url$project_id'>$project_name</a></strong></td>"
+	    append table_body_html "<tr class='roweven'><td><strong><a href='$project_url$project_id'>$project_name</a></strong></td>"
 	    set project_name_saved $project_name
     } else {
-            append table_body_html "<tr><td></td>"
+            append table_body_html "<tr class='roweven'><td></td>"
     }
     append table_body_html "<td><a href='$user_url$user_id'>$user_name</a></td>"
     for { set i 1 } { $i < $duration + 1 } { incr i } {
@@ -250,9 +259,12 @@ db_foreach get_hours $sql {
     "
     set ctr_unconfirmed_hrs [db_string get_ctr_unconfirmed_hrs $sql -default 0]
     if { 0 != $ctr_unconfirmed_hrs } {
-	append table_body_html "<td><a href='/intranet-cust-koernigweber/notify-logged-hours?report_year_month=$report_year_month&user_id=$user_id&project_id=$project_id' class='button'>Erinnern</a></td>"	
+	append table_body_html "<td><a href='/intranet-cust-koernigweber/notify-logged-hours"
+	append table_body_html "?report_year_month=$report_year_month&user_id=$user_id&project_id=$project_id&return_url="
+	append table_body_html "/intranet-cust-koernigweber/monthly-report-wf-extended.tcl' class='button'>Erinnern</a></td>"	
     } else {
-	append table_body_html "<td>&nbsp</td>"
+	# append table_body_html "<td>[lang::message::lookup "" intranet-timesheet2.No_hours_logged "No hours logged"]</td>"
+	append table_body_html "<td>&nbsp;</td>"
     }    
 
     set wf_tasks_sql "
@@ -265,15 +277,64 @@ db_foreach get_hours $sql {
 			select case_id 
 			from wf_cases 
 			where object_id in 
-				(select conf_object_id from im_hours where project_id = :project_id and user_id=:user_id and day like '%$report_year-$report_month-%')
-		)
+				(select conf_object_id from im_hours where project_id in (
+			                select distinct
+		                        children.project_id as subproject_id
+                			from
+		                        im_projects parent,
+                		        im_projects children
+			                where
+		                        children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+                		        and parent.project_id = :project_id
+				) 
+			  	and user_id=:user_id 
+				and day like '%$report_year-$report_month-%')
+		) 
+		and state = 'enabled'
+		and transition_key = 'approve'
     "
     set task_id_string ""
     db_foreach  wf_tasks_list_sql $wf_tasks_sql {
 	#result should be always one record 
 	append task_id_string "task_id=$task_id&"  
     }
-    append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&task_id=$task_id_string/' class='button'>Best&auml;tigen</a></td>"	
+    if { ![empty_string_p $task_id_string] } {
+    	append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&task_id=$task_id_string/' class='button'>Best&auml;tigen</a></td>"	
+    } else {
+	    set wf_tasks_sql "
+        	select 
+	                count(*)
+        	from
+                	wf_tasks
+	        where
+        	        case_id in (
+                	        select case_id
+                        	from wf_cases
+	                        where object_id in
+        	                        (select conf_object_id from im_hours where project_id in (
+                	                        select distinct
+                        	                children.project_id as subproject_id
+                                	        from
+                                        	im_projects parent,
+	                                        im_projects children
+        	                                where
+                	                        children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+                        	                and parent.project_id = :project_id
+                                	)
+	                                and user_id=:user_id
+        	                        and day like '%$report_year-$report_month-%')
+                	)
+	                and state = 'finished'
+        	        and transition_key = 'approved'
+	    "
+	set hours_approved [db_string get_view_id $wf_tasks_sql -default 0]
+	
+	if { $hours_approved } {
+	    	append table_body_html "<td>[lang::message::lookup "" intranet-cust-koernigweber.TS_WF_Approved "Approved"]</td>"	
+	} else {
+	    	append table_body_html "<td>[lang::message::lookup "" intranet-cust-koernigweber.TS_WF_Not_Yet_Confirmed "Waiting to be confirmed"]</td>"	
+	}
+    }
 }
 
 # set colspan [expr [llength $days]+1]
@@ -289,6 +350,7 @@ if { [empty_string_p $table_body_html] } {
 set page_title "[_ intranet-timesheet2.Timesheet_Summary]"
 set context_bar [im_context_bar $page_title]
 
+append table_body_html </tbody>
 
 ad_proc im_do_row {
     { bgcolorl }

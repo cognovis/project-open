@@ -181,9 +181,84 @@ update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
 where plugin_name = 'Employee/Customer Price List';
 
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n\nMit freundlichen Gruessen\n%current_user_name%');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Erinnerung: Stundenerfassung');
 
 SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Please log your hours\nBest regards\n%current_user_name%');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n\nMit freundlichen Gruessen\n%current_user_name%');
+
 SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Reminder: Time sheet ');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Erinnerung: Stundenerfassung');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','To be confirmed');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','Zu best&auml;tigen');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Approved','Confirmed');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Approved','Best&auml;tigt');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Remind','Remind');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Remind','Erinnern');
+
+
+-- create menu item for managing timesheet confirmation workflow
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_menu                  integer;
+        v_parent_menu     	integer;
+        v_project_managers      integer;
+begin
+        select group_id into v_project_managers from groups where group_name = ''Project Managers'';
+
+        -- select menu_id into v_parent_menu from im_menus where label = ''timesheet2_timesheet'';
+        select menu_id into v_parent_menu from im_menus where label = ''timesheet_hours_new_admin'';
+
+        v_menu := im_menu__new (
+                null,                                   -- p_menu_id
+                ''im_menu'',                            -- object_type
+                now(),                                  -- creation_date
+                null,                                   -- creation_user
+                null,                                   -- creation_ip
+                null,                                   -- context_id
+                ''intranet-cust-koernigweber'',   -- package_name
+                ''timesheet_workflow_reminder_confirmation'', -- label
+                ''Confirm Hours / Send Reminder'',      -- name
+                ''/intranet-cust-koernigweber/monthly-report-wf-extended'',   -- url
+                40,                                    -- sort_order
+                v_parent_menu,                          -- parent_menu_id
+                null                                    -- p_visible_tcl
+        );
+
+        PERFORM acs_permission__grant_permission(v_menu, v_project_managers, ''read'');
+        return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+-- Accountants shouldn't be allowed to re-assign tasks 
+-- privilige is set in /intranet-workflow/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql
+
+create or replace function inline_1 ()
+returns integer as '
+       DECLARE
+        	v_object_id		integer;
+        	v_count			integer;
+        BEGIN
+        	-- Get the Main Site id, used as the global identified for permissions
+        	select package_id into v_object_id from apm_packages
+        	where package_key='acs-subsite';
+        
+        	select count(*) into v_count from acs_permissions
+        	where object_id = v_object_id and grantee_id = 771 and privilege = ''wf_reassign_tasks'';
+        	IF v_count = 0 THEN return 0; end if;
+        
+        	PERFORM acs_permission__revoke_permission(v_object_id, 471, ''wf_reassign_tasks'');
+       
+        	return 0;
+	END;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+
 
