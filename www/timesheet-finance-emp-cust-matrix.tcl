@@ -285,11 +285,15 @@ db_foreach hours $hours_sql {
 
 set elements [list]
 
+set label_client [lang::message::lookup "" intranet-core.Client "Client"]
+set label_internal_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Internal_costs "Internal Costs"]
+set label_invoiced [lang::message::lookup "" intranet-core.Invoiced "Invoiced"]
+set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Costs based<br>on Price Matrix"]
 
 lappend elements company_name
 
 lappend elements {
-    label "Kunde"
+    label $label_client
     display_template {
                 <a href="/intranet/companies/view?company_id=@project_list.company_id@"
                         >@project_list.company_name@
@@ -315,7 +319,7 @@ lappend elements {
 
     lappend elements cost_timesheet_logged_cache 
     lappend elements {
-	label "Interne <br>Kosten (&euro;)<br>" 
+	label $label_internal_costs 
 	html "align right"
     }
 
@@ -336,16 +340,17 @@ lappend elements {
 
 	lappend elements sum_hours_matrix
 	lappend elements {
-        	label "Total Hours <br>based on<br> Price Matrix"
+       	label $label_costs_based_on_matrix
+        html "align right"
 	display_template { <b><div align=right>@project_list.sum_hours_matrix@</div></b> }
 	}
 
 	lappend elements sum_invoices
 	lappend elements {
-        label "Fakturiert"
+        label $label_invoiced 
+        html "align right"
 	display_template { <b><div align=right>@project_list.sum_invoices@</div></b> }
 	}
-
 
 # Extend the "elements" list definition by the number of users who logged hours
 
