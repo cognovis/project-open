@@ -106,12 +106,8 @@ ad_proc -public im_timesheet_task_info_cognovis_component {
 # Home Tasks Component
 # ---------------------------------------------------------------------
 ad_proc -public im_timesheet_task_home_component {
-    {-max_entries_per_page 20}
-    {-view_name "im_timesheet_task_home_list"}
-    {-restrict_to_status_id 9600}
-    {-restrict_to_mine_p 1}
-    {-order_by "priority"}
-    {-page 1}
+    {-page_size 20}
+    {-restrict_to_status_id 76}
     {-return_url ""}
 } {
 
@@ -119,9 +115,10 @@ ad_proc -public im_timesheet_task_home_component {
     @creation-date 2011-01-12
 } {
 
-    ns_log Notice "Running API im_timesheet_task_home_component"
-
-    set params [list [list base_url "/intranet-cognovis/"] [list max_entries_per_page $max_entries_per_page] [list view_name $view_name] [list restrict_to_status_id $restrict_to_status_id] [list restrict_to_mine_p $restrict_to_mine_p] [list order_by $order_by] [list page $page] [list return_url $return_url]]
+    # set the page variable (hopefully)
+    set page [ns_queryget page 1]
+    set orderby [ns_queryget orderby priority]
+    set params [list [list base_url "/intranet-cognovis/"] [list page_size $page_size] [list restrict_to_status_id $restrict_to_status_id] [list orderby $orderby] [list page $page] [list return_url $return_url]]
 
     set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/home-tasks"]
     return [string trim $result]

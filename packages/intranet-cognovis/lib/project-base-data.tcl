@@ -1,6 +1,7 @@
 ad_page_contract {
     The display for the project base data 
     @author iuri sampaio (iuri.sampaio@gmail.com)
+    @author malte sussdorff (malte.sussdorff@cognovis.de)
     @date 2010-10-07
 
 } 
@@ -10,25 +11,20 @@ ad_page_contract {
 # Instantiate the project object
 set project [::im::dynfield::Class get_instance_from_db -id $project_id]
 
-set list_ids [$project list_ids]
+# Get the list of dynfields for this project based on the project_type_id
+set dynfield_ids [db_list dynfields "select m.attribute_id from im_dynfield_type_attribute_map m, im_dynfield_layout d  where object_type_id = [$project project_type_id] and m.attribute_id = d.attribute_id order by pos_y"]
 
+# Initialize project information 
+template::multirow create project_info heading field value
 set old_section ""
 
-
-template::multirow create company_info heading field value
-
-foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $list_ids -privilege "read"] {
+foreach dynfield_id $dynfield_ids {
     
     # Initialize the Attribute                                                 
-    
-    set element [im::dynfield::Element get_instance_from_db -id [lindex $dynfield_id 0] -list_id [lindex $dynfield_id 1]]
+    set element [im::dynfield::Element get_instance_from_db -id $dynfield_id]
     
     set field [$element pretty_name]  
     set value [$project value $element]
-    
-    if {[string equal [lindex $value 1] "text/html"]} {
-	set value [lindex $value 0]
-    }
     
     if {[$element multiple_p] && $value ne ""} {
 	set value "<ul><li>[join $value "</li><li>"]</li></ul>"
@@ -42,7 +38,7 @@ foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $li
 	
     }   
 
-    template::multirow append company_info $heading $field $value
+    template::multirow append project_info $heading $field $value
     
 }
 

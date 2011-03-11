@@ -18,8 +18,8 @@
 select
 	c.*,
 	to_char(c.amount * (1 + coalesce(c.vat,0)/100 + coalesce(c.tax,0)/100), :cur_format) as amount_formatted,
-	to_date(c.start_block, :date_format) as start_block_formatted,
-	to_date(c.effective_date, :date_format) as effective_date_formatted,
+	to_char(c.start_block, :date_format) as start_block_formatted,
+	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	c.effective_date::date + c.payment_days as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,

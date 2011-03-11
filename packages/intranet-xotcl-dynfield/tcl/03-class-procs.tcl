@@ -564,6 +564,9 @@ ad_proc -public -callback im_dynfield_attribute_after_update -impl xotcl_dynfiel
     {-object_type}
     {-attribute_name}
 } {
+    Relaod the classe when a dynfield is changed
+} {
+
     # ------------------------------------------------------------------
     # Reload the class
     # ------------------------------------------------------------------

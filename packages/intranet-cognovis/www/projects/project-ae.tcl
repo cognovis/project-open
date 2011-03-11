@@ -1,4 +1,3 @@
-
 # /packages/intranet-cogonovis/www/projects/project-ae.tcl
 #
 
@@ -15,41 +14,15 @@ ad_page_contract {
 
 }
 
-# Debug form! This chunk must be erased later                                                                                                                
-set myform [ns_getform]
-if {[string equal "" $myform]} {
-    ns_log Notice "No Form was submited"
-} else {
-    ns_log Notice "FORM"
-    ns_set print $myform
-    for {set i 0} {$i < [ns_set size $myform]} {incr i} {
-	set varname [ns_set key $myform $i]
-	set $varname [ns_set value $myform $i]
-    }
-}
-
-
-
-ad_proc var_contains_quotes { var } {
-    if {[regexp {\"} $var]} { return 1 }
-    if {[regexp {\'} $var]} { return 1 }
-    return 0
-}
-
 # -----------------------------------------------------------
 # Defaults
 # -----------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-set required_field "<font color=red size=+1><B>*</B></font>"
 set current_url [im_url_with_query]
 set org_project_type_id [im_opt_val project_type_id]
 set sub_navbar ""
-
-
-
 
 if { ![exists_and_not_null return_url] && [exists_and_not_null project_id]} {
     set return_url "[im_url_stub]/projects/view?[export_url_vars project_id]"

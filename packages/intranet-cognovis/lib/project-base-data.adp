@@ -1,15 +1,15 @@
 <table valign="top" align="center" width="350px">
-  <multiple name=company_info>
-    <if @company_info.heading@ not nil>
+  <multiple name=project_info>
+    <if @project_info.heading@ not nil>
       <tr>
         <td colspan="2" align="left">
-          <h3 class="contact-title">@company_info.heading@</h3>
+          <h3 class="contact-title">@project_info.heading@</h3>
         </td>
       </tr>
     </if>
     <tr>
-      <td align="right" valign="top" class="attribute">@company_info.field@:</td>                                                         
-      <td align="left" valign="top" class="value">@company_info.value@</td>                                                                                    
+      <td align="right" valign="top" class="attribute">@project_info.field;noquote@:</td>
+      <td align="left" valign="top" class="value">@project_info.value;noquote@</td>
     </tr>
   </multiple>    
   <if @write@ and @edit_project_base_data_p@>

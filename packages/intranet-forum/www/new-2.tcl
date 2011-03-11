@@ -42,6 +42,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set current_user_id $user_id
 
 set topic_type [db_string topic_type "select im_category_from_id(:topic_type_id)" -default ""]
 set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :object_id" -default ""]
@@ -626,6 +627,7 @@ db_multirow -extend {checked} stakeholders stakeholder_query $stakeholder_sql {
     set checked ""
     if {$user_id == $asignee_id} { set checked "checked" }
     if {$user_id == $owner_id} { set checked "checked" }
+    if {$user_id == $current_user_id} { set checked "" }
     incr num_stakeholders
 }
 

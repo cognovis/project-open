@@ -883,7 +883,7 @@ append admin_html "</ul>"
 # ----------------------------------------------------------
 
 # Compile and execute the formtemplate if advanced filtering is enabled.
-eval [template::adp_compile -string {<formtemplate id="ticket_filter"></formtemplate>}]
+eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="ticket_filter"></formtemplate>}]
 set form_html $__adp_output
 
 set left_navbar_html "
