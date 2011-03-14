@@ -81,4 +81,4 @@ ad_proc -public im_budget_summary_component {
     return [string trim $result]
     
 }
-
+    
