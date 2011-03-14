@@ -1489,6 +1489,7 @@ ad_proc im_costs_project_finance_component {
     {-show_details_p 1}
     {-show_summary_p 1}
     {-show_admin_links_p 0}
+    {-no_timesheet_p 0}
     user_id 
     project_id 
 } {
@@ -1614,6 +1615,12 @@ ad_proc im_costs_project_finance_component {
 	set limit_to_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice] ) "
 		}
 
+    set cost_type_excludes [list [im_cost_type_employee] [im_cost_type_repeating] [im_cost_type_expense_item]]
+
+    if {$no_timesheet_p} {
+        lappend cost_type_excludes [im_cost_type_timesheet]
+    }
+
     set costs_sql "
 	select
 		ci.*,
@@ -1643,11 +1650,7 @@ ad_proc im_costs_project_finance_component {
 		and ci.cost_id in (
 			$project_cost_ids_sql
 		)
-	      	and ci.cost_type_id not in (
-	                [im_cost_type_employee],
-	                [im_cost_type_repeating],
-	                [im_cost_type_expense_item]
-	        )
+        and ci.cost_type_id not in ([template::util::tcl_to_sql_list $cost_type_excludes])
 		$limit_to_freelancers
 		$limit_to_inco_customers
 		$limit_to_customers
