@@ -10,6 +10,29 @@
 
 -------------------------------------------------------------
 
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Please log your hours\nBest regards\n%current_user_name%');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n\nMit freundlichen Gruessen\n%current_user_name%');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Reminder: Time sheet ');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Erinnerung: Stundenerfassung');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','To be confirmed');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','Zu best&auml;tigen');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Approved','Confirmed');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Approved','Best&auml;tigt');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Remind','Remind');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Remind','Erinnern');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Emp_Cust_Internal_costs','Internal Costs');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Emp_Cust_Internal_costs','Interne Kosten');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Emp_Cust_Costs_Based_On_Price_Matrix','Invoicable<br>according to<br>Price Matrix');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Emp_Cust_Costs_Based_On_Price_Matrix','Abrechenbar<br>lt. E/C Preis-Matrix');
+
+
 select acs_object_type__create_type (
         'project_approval2_wf',           -- object_type
         'Project Close Approval',              -- pretty_name
@@ -182,22 +205,6 @@ set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortle
 where plugin_name = 'Employee/Customer Price List';
 
 
-SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Please log your hours\nBest regards\n%current_user_name%');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Text','Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe\n\nMit freundlichen Gruessen\n%current_user_name%');
-
-SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Reminder: Time sheet ');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Mail_Reminder_Log_Hours_Subject','Erinnerung: Stundenerfassung');
-
-SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','To be confirmed');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Not_Yet_Confirmed','Zu best&auml;tigen');
-
-SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Approved','Confirmed');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Approved','Best&auml;tigt');
-
-SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','TS_WF_Remind','Remind');
-SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','TS_WF_Remind','Erinnern');
-
-
 -- create menu item for managing timesheet confirmation workflow
 
 create or replace function inline_1 ()
@@ -219,11 +226,11 @@ begin
                 null,                                   -- creation_user
                 null,                                   -- creation_ip
                 null,                                   -- context_id
-                ''intranet-cust-koernigweber'',   -- package_name
+                ''intranet-cust-koernigweber'',   	-- package_name
                 ''timesheet_workflow_reminder_confirmation'', -- label
-                ''Confirm Hours / Send Reminder'',      -- name
+                ''Confirm Hours/Send Reminder'',      -- name
                 ''/intranet-cust-koernigweber/monthly-report-wf-extended'',   -- url
-                40,                                    -- sort_order
+                40,                                    	-- sort_order
                 v_parent_menu,                          -- parent_menu_id
                 null                                    -- p_visible_tcl
         );
@@ -233,6 +240,44 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_menu                  integer;
+        v_parent_menu           integer;
+        v_senior_managers       integer;
+        v_project_managers      integer;
+begin
+        select group_id into v_project_managers from groups where group_name = ''Project Managers'';
+        select group_id into v_senior_managers from groups where group_name = ''Senior Managers'';
+
+        select menu_id into v_parent_menu from im_menus where label = ''reporting-finance'';
+
+        v_menu := im_menu__new (
+                null,                                   	-- p_menu_id
+                ''im_menu'',                            	-- object_type
+                now(),                                  	-- creation_date
+                null,                                   	-- creation_user
+                null,                                   	-- creation_ip
+                null,                                   	-- context_id
+                ''intranet-cust-koernigweber'',   		-- package_name
+                ''project_profit_ratio_employee_customer_price_matrix'',		-- label
+                ''Project Profit Ratio Employee/Customer Price Matrix'',      		-- name
+                ''/intranet-cust-koernigweber/timesheet-finance-emp-cust-matrix'',   	-- url
+                500,                                   		-- sort_order
+                v_parent_menu,                          	-- parent_menu_id
+                null                                    	-- p_visible_tcl
+        );
+
+        PERFORM acs_permission__grant_permission(v_menu, v_project_managers, ''read'');
+        PERFORM acs_permission__grant_permission(v_menu, v_senior_managers, ''read'');
+
+        return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
 
 
 -- Accountants shouldn't be allowed to re-assign tasks 
