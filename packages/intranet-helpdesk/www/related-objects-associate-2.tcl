@@ -40,6 +40,7 @@ foreach t $tid {
     if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 }
 
+
 # ---------------------------------------------------------------
 # 
 # ---------------------------------------------------------------
@@ -104,16 +105,17 @@ switch $target_object_type {
     }
     ticket {
 	# release_project_id contains the project to associate
-
 	foreach pid $tid {
+
+	    if {$pid == $ticket_id} { ad_return_complaint 1 "You can't associate a ticket with itself." }
 
 	    set exists_p [db_string count "
 		select	count(*)
 		from	im_ticket_ticket_rels ttr,
 			acs_rels r
 		where	ttr.rel_id = r.rel_id
-			and r.object_id_one = :ticket_id
-			and r.object_id_two = :pid
+			and r.object_id_one = :pid
+			and r.object_id_two = :ticket_id
 	    "]
 
 	    if {!$exists_p} {

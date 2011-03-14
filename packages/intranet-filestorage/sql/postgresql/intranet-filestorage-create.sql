@@ -263,49 +263,49 @@ select	im_menu__del_module('intranet-filestorage');
 -- create components
 
 SELECT im_component_plugin__new (
-	null,			-- plugin_id
-	'acs_object',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
 	'Home Filestorage Component',   -- plugin_name
-	'intranet-filestorage',	-- package_name
+	'intranet-filestorage',		-- package_name
 	'bottom',			-- location
 	'/intranet/index',		-- page_url
-	null,			-- view_name
+	null,				-- view_name
 	90,				-- sort_order
 	'im_filestorage_home_component $user_id' -- component_tcl
 );
 
 SELECT im_component_plugin__new (
-	null,			-- plugin_id
-	'acs_object',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
 	'Users Filestorage Component',  -- plugin_name
-	'intranet-filestorage',	-- package_name
+	'intranet-filestorage',		-- package_name
 	'right',			-- location
-	'/intranet/users/view',	-- page_url
-	null,			-- view_name
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
 	90,				-- sort_order
 	'im_filestorage_user_component $current_user_id $user_id $name $return_url' -- component_tcl
 );
 
 SELECT im_component_plugin__new (
-	null,			-- plugin_id
-	'acs_object',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
 	'Companies Filestorage Component',  -- plugin_name
-	'intranet-filestorage',	-- package_name
+	'intranet-filestorage',		-- package_name
 	'right',			-- location
 	'/intranet/companies/view',     -- page_url
-	null,			-- view_name
+	null,				-- view_name
 	50,				-- sort_order
 	'im_filestorage_company_component $user_id $company_id $company_name $return_url' -- component_tcl
 );
@@ -320,36 +320,53 @@ select acs_privilege__add_child('admin', 'view_filestorage_sales');
 
 
 SELECT im_component_plugin__new (
-	null,			-- plugin_id
-	'acs_object',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
 	'Project Sales Filestorage Component',  -- plugin_name
-	'intranet-filestorage',	-- package_name
+	'intranet-filestorage',		-- package_name
 	'files',			-- location
 	'/intranet/projects/view',	-- page_url
-	null,			-- view_name
+	null,				-- view_name
 	89,				-- sort_order
 	'im_filestorage_project_sales_component $user_id $project_id $project_name $return_url' -- component_tcl
 );
 
 
 SELECT im_component_plugin__new (
-	null,			-- plugin_id
-	'acs_object',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
 	'Project Filestorage Component',  -- plugin_name
-	'intranet-filestorage',	-- package_name
+	'intranet-filestorage',		-- package_name
 	'files',			-- location
 	'/intranet/projects/view',	-- page_url
-	null,			-- view_name
+	null,				-- view_name
 	90,				-- sort_order
 	'im_filestorage_project_component $user_id $project_id $project_name $return_url' -- component_tcl
+);
+
+
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Expense Bundle Filestorage',		-- plugin_name
+	'intranet-filestorage',			-- package_name
+	'bottom',				-- location
+	'/intranet-expenses/bundle-new',	-- page_url
+	null,					-- view_name
+	30,					-- sort_order
+	'im_filestorage_cost_component $user_id $bundle_id $bundle_name $return_url' -- component_tcl
 );
 
 

@@ -24,7 +24,7 @@ if {!$user_is_admin_p} {
     return
 }
 
-set title [lang::message::lookup "" intranet-cvs-integration.Full_Import "Full Import"]
+set title [lang::message::lookup "" intranet-cvs-integration.Full_Import "Full Import of CVS Logs"]
 set context [list [list "$return_url" "CVS Repositories"] $title]
 
 
@@ -38,6 +38,8 @@ im_report_write_http_headers -output_format html
 ns_write "
 	[im_header]
 	[im_navbar]
+
+	<h1>$title</h1>
 "
 
 ns_write "<ul>\n"
@@ -99,7 +101,10 @@ foreach repo_id $repository_id {
     set cvs_read [acs_root_dir]/packages/intranet-cvs-integration/perl/cvs_read.pl
     set command [list exec $cvs_read -cvsdir :pserver:${cvs_user}:${cvs_password}@${cvs_hostname}:${cvs_path} -rlog $repo_name]
 
-    ns_write "<li>Command: $command\n"
+    ns_write "</ul>\n"
+    ns_write "<h3>Importing from $cvs_repository</h3>\n"
+    ns_write "<ul>\n"
+    ns_write "<li>Import Script: '$cvs_read' (this script comes as part of 
     set csv ""
     if {[catch {
 	set csv [eval $command]

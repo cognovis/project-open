@@ -51,7 +51,7 @@ create table im_cvs_logs (
 alter table persons add cvs_user text;
 
 
-alter table im_conf_items add cvs_system text;
+alter table im_conf_items add cvs_repository text;
 alter table im_conf_items add cvs_protocol text;
 alter table im_conf_items add cvs_user text;
 alter table im_conf_items add cvs_password text;
@@ -60,13 +60,42 @@ alter table im_conf_items add cvs_port integer;
 alter table im_conf_items add cvs_path text;
 
 
-SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_system', 'CVS System', 'textbox_medium', 'string', 'f');
+SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_repository', 'CVS Repository', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_protocol', 'CVS Protocol', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_user', 'CVS User', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_password', 'CVS Password', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_hostname', 'CVS Hostname', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_port', 'CVS Port', 'integer', 'integer', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_path', 'CVS Path', 'textbox_medium', 'string', 'f');
+
+
+
+-----------------------------------------------------------------------
+-- Set visibility for all cvs_* field to CVS repositories only
+
+-- Delete any visibility of cvs_* fields
+delete from im_dynfield_type_attribute_map
+where attribute_id in (
+	select	da.attribute_id
+	from	im_dynfield_attributes da,
+		acs_attributes aa
+	where	da.acs_attribute_id = aa.attribute_id and
+		aa.object_type = 'im_conf_item' and
+		aa.attribute_name like 'cvs_%'
+);
+
+-- Selectively add the visibility "edit" to the ConfItem type "CVS Repository"
+insert into im_dynfield_type_attribute_map (
+	select	da.attribute_id,
+		12400 as object_type_id,
+		'edit' as display_mode
+	from	im_dynfield_attributes da,
+		acs_attributes aa
+	where	da.acs_attribute_id = aa.attribute_id and
+		aa.object_type = 'im_conf_item' and
+		aa.attribute_name like 'cvs_%'
+);
+
 
 
 

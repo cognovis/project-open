@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-security-update-client</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-security-update-client-4.0.1.0.0.apm">
+    <version name="4.0.1.0.1" url="http://www.project-open.org/download/apm/intranet-security-update-client-4.0.1.0.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Retreives security update messages from the security update server</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -24,6 +24,8 @@
 
 	<parameter datatype="string" min_n_values="1" max_n_values="1"  name="SecurityUpdateServerUrl"  default="http://projop.dnsalias.com:/intranet-security-update-server/index" description="Url to reach a ]project-open[ security update server"/>
 	<parameter datatype="number" min_n_values="1" max_n_values="1"  name="SecurityUpdateVerboseP"  default="1" description="Should verbose information be transmitted to the update server? -1 means the user needs to confirm using the service, 0 means anonymous and 1 means detailed information."/>
+	<parameter datatype="number" min_n_values="1" max_n_values="1"  name="ExchangeRateSweeperEnabledP" default="0" description="Should the system automatially get exchange rate information in the background? Set this parameter to '1' to enable automatic updates. Set this parameter to '0' if you want manual control over exchange rates. Default is '0' in order to disable automatic updates."/>
+	<parameter datatype="number" min_n_values="1" max_n_values="1" name="ExchangeRateDaysBeforeUpdate" default="1" description="How many days should we wait for the next exchange rate update? Default is '1' = every day."/>
         </parameters>
 
     </version>
