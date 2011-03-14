@@ -204,9 +204,6 @@ while {[llength $incomplete_projects] > 0} {
     if {$cnt > 100} { ad_return_complaint 1 "<b>Timesheet Finance Report</b>:<br>Infinite loop: $cnt" }
 }
 
-
-
-
 # ------------------------------------------------------------
 # Calculate the transitive closures of sub-projects
 # That's easy, because we have already the transitive closure of
@@ -223,9 +220,6 @@ foreach project [array names project_parents] {
 	set project_children($parent) $all_children
     }
 }
-
-
-
 
 # ------------------------------------------------------------
 # Calculate the sum of hours per project and user
@@ -286,9 +280,9 @@ db_foreach hours $hours_sql {
 set elements [list]
 
 set label_client [lang::message::lookup "" intranet-core.Client "Client"]
-set label_internal_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Internal_costs "Internal Costs"]
+set label_internal_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Internal_costs "Internal<br>Costs"]
 set label_invoiced [lang::message::lookup "" intranet-core.Invoiced "Invoiced"]
-set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Costs based<br>on Price Matrix"]
+set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Invoicable<br>according to<br>Price Matrix"]
 
 lappend elements company_name
 
@@ -410,7 +404,6 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
     set level_spacer ""
     for {set i 0} {$i < $tree_level} {incr i} { append level_spacer "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 
-
     # Open/Close Logic
     set open_p [expr [lsearch $opened_projects $child_id] >= 0]
     if {$open_p} {
@@ -450,20 +443,17 @@ multirow_sort_tree project_list child_id parent_id project_name
 set i 1
 
 set sum_hours_matrix 0
-set x_hours 0
 
 template::multirow foreach project_list {    
 	set sql_str "
 		select 
-			to_char(sum(sub.hours),'999.999,99') as total_invoiceable
+			round(sum(sub.sum_amount) :: numeric, 2) as total_invoiceable
 		from 
 			(
  	        	   select
 	        	        sum(hours) as hours,
         	        	ho.user_id,
-	        	        (select company_id from im_projects where project_id = $child_id) as company_id,
-        	        	(select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) as rate
-				
+			        (select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) * hours as sum_amount
 		            from
         		        im_hours ho,
                 		im_emp_cust_price_list p
@@ -484,10 +474,10 @@ template::multirow foreach project_list {
                 		        )
 	                	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
 	        	        and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-        	  	  group by
-            		  ho.user_id,
-        	          hours
-	     ) sub
+        	  	   group by
+            		  	ho.user_id,
+        	          	hours
+	     		) sub
 	"
 	template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
 
