@@ -182,7 +182,7 @@ ad_proc -public im_material_select {
 } {
     set options [im_material_options -include_empty $include_empty_p -restrict_to_status_id $restrict_to_status_id -restrict_to_type_id $restrict_to_type_id -show_material_codes_p $show_material_codes_p -max_option_len $max_option_len]
 
-    return [im_options_to_select_box $select_name $options $default]
+    return [im_options_to_select_box $select_name $options $default [list id $select_name]]
 }
 
 

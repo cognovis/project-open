@@ -421,6 +421,3 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for,ajax_configuration) values (92027,921,NULL,'Strategic Priority',
 '"[im_category_from_id $project_priority_st_id]"','','',10,'','	dropdown project_priority_st_id { [im_department_planner_priority_list] } 1 1
 ');
-
-
-

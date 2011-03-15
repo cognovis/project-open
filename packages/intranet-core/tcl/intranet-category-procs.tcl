@@ -104,6 +104,7 @@ ad_proc im_category_select {
     {-super_category_id 0}
     {-cache_interval 3600}
     {-locale "" }
+    {-id ""}
     category_type
     select_name
     { default "" }
@@ -117,9 +118,9 @@ ad_proc im_category_select {
     if {"" == $locale} { set locale [lang::user::locale -user_id [ad_get_user_id]] }
 
     if {$no_cache_p} {
-	return [im_category_select_helper -multiple_p $multiple_p -translate_p $translate_p -package_key $package_key -locale $locale -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -super_category_id $super_category_id $category_type $select_name $default]
+	return [im_category_select_helper -multiple_p $multiple_p -translate_p $translate_p -package_key $package_key -locale $locale -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -super_category_id $super_category_id -id $id $category_type $select_name $default]
     } else {
-	return [util_memoize [list im_category_select_helper -multiple_p $multiple_p -translate_p $translate_p -package_key $package_key -locale $locale -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -super_category_id $super_category_id $category_type $select_name $default] $cache_interval ]
+	return [util_memoize [list im_category_select_helper -multiple_p $multiple_p -translate_p $translate_p -package_key $package_key -locale $locale -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -super_category_id $super_category_id -id $id $category_type $select_name $default] $cache_interval ]
     }
 }
 
@@ -133,6 +134,7 @@ ad_proc im_category_select_helper {
     {-plain_p 0}
     {-super_category_id 0}
     {-cache_interval 3600}
+    {-id ""}
     category_type
     select_name
     { default "" }
@@ -271,11 +273,14 @@ ad_proc im_category_select_helper {
         }
     }
 
+    set select_html "<select name=\"$select_name\" "
     if {$multiple_p} {
-	set select_html "<select name=\"$select_name\" multiple=\"multiple\">"
-    } else {
-	set select_html "<select name=\"$select_name\">"
+        append select_html "multiple=\"multiple\""
+    } 
+    if {$id != ""} {
+        append select_html "id=\"$id\""
     }
+    append select_html ">"
 	return "
 $select_html
 $html
