@@ -1,6 +1,6 @@
 -- upgrade-4.0.0.0.0-4.0.1.0.0.sql
 
-SELECT acs_log__debug('/packages/intranet-notes/sql/postgresql/upgrade/upgrade-4.0.0.0.0-4.0.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cvs-integration/sql/postgresql/upgrade/upgrade-4.0.0.0.0-4.0.1.0.0.sql','');
 
 
 -----------------------------------------------------------------------
