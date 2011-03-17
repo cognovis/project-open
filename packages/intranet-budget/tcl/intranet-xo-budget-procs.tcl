@@ -16,14 +16,16 @@ namespace eval ::im_budget {
       -table_name "im_budgets" -id_column "budget_id" \
       -mime_type text/html \
       -slots {
-          ::xo::db::CrAttribute create BudgetedHours -sqltype integer \
+          ::xo::db::CrAttribute create budget_hours -sqltype integer \
               -pretty_name "#intranet-budget.Hours#"
-          ::xo::db::CrAttribute create BudgetedHoursExplanation -sqltype text \
+          ::xo::db::CrAttribute create budget_hours_explanation -sqltype text \
               -pretty_name "#intranet-budget.HoursExplanation#"
-          ::xo::db::CrAttribute create Savings -sqltype integer \
+          ::xo::db::CrAttribute create savings -sqltype integer \
               -pretty_name "#intranet-budget.Savings#"
-          ::xo::db::CrAttribute create SavingsExplanation -sqltype text \
+          ::xo::db::CrAttribute create savings_explanation -sqltype text \
               -pretty_name "#intranet-budget.SavingsExplanation#"
+          ::xo::db::CrAttribute create budget_item_revisions -sqltype text \
+              -pretty_name "Budget Item Revisions"
       }
 
   ::xo::db::CrClass create BudgetElement -superclass ::xo::db::CrItem \
@@ -31,17 +33,16 @@ namespace eval ::im_budget {
       -table_name "im_budget_elements" -id_column "element_id" \
       -mime_type text/html \
       -slots {
-          ::xo::db::CrAttribute cost_type_id -sqltype integer \
+          ::xo::db::CrAttribute type_id -sqltype integer \
               -references "im_categories(category_id)"
           ::xo::db::CrAttribute create amount -sqltype float
       }
   
-  ::xo::db::CrClass create Hour -superclass ::xo::db::CrItem \
+  ::xo::db::CrClass create Hour -superclass ::im_budget::BudgetElement \
       -pretty_name "Budget Hours" -pretty_plural "Budget Hours" \
       -table_name "im_budget_hours" -id_column "hour_id" \
       -mime_type text/html \
       -slots {
-          ::xo::db::CrAttribute create hours -sqltype float
           ::xo::db::CrAttribute department_id -sqltype integer \
               -references "im_cost_centers(cost_center_id)"
       }
@@ -56,46 +57,5 @@ namespace eval ::im_budget {
       -table_name "im_budget_funds" -id_column "fund_id" \
       -mime_type text/html 
   
-  ad_proc -public upgrade {
-  } {
-      upgrade procedure
-  } {
-      db_foreach project_info "select distinct project_id, im_name_from_id(project_id) as project_name,invoice_id from im_invoice_items where project_id is not null" {
-          
-          #get the project
-          set budget_id [content::item::get_id_by_name -name "budget_${project_id}_${invoice_id}" -parent_id $project_id]
-          
-          if {$budget_id eq ""} {
-              set budget [::im_budget::Budget create $project_id -parent_id $project_id -name "budget_${project_id}_${invoice_id}" -title "Budget für $project_name"]
-              $budget save_new
-          }
-      }
-      
-      db_foreach invoice_item "select item_name, item_id, item_units*price_per_unit as amount, project_id, invoice_id, item_material_id from im_invoice_items where item_material_id is not null and project_id is not null" {
-          set budget_id [content::item::get_id_by_name -name "budget_${project_id}_${invoice_id}" -parent_id $project_id]
-          switch $item_material_id {
-              33361 {set cost_type_id 3751}
-              33362 {set cost_type_id 3753}
-              33359 {set cost_type_id 3752}
-          }
-
-          if {$budget_id ne ""} {
-              set budget_item [::im_budget::Cost create $item_id -parent_id $budget_id -name "budget_costs_${item_id}" -title "$item_name" \
-                               -amount "$amount" -cost_type_id cost_type_id]
-              $budget_item save_new
-          } else {
-              ds_comment "error::: $item_id"
-          } 
-
-      }
-
-      db_foreach budgets "select item_id as budget_id, parent_id as project_id from cr_items where content_type  = '::im_budget::Budget'" {
-          # Get the tasks
-          db_foreach task {select cost_center_id as department_id, task_id, planned_units, project_name from im_timesheet_tasks, im_projects where project_id = task_id and parent_id = :project_id} {
-              set budget_item [::im_budget::BudgetHours create $task_id -parent_id $budget_id -name "budget_hours_${task_id}" -title "$project_name" -amount "$planned_units" -department_id $department_id]
-              $budget_item save_new
-          }
-      }
-  }
 }
 

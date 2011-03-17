@@ -17,6 +17,7 @@
 
         <provides url="intranet-budget" version="0.2d4"/>
         <requires url="intranet-core" version="4.0.1.0.0"/>
+        <requires url="xotcl-core" version="0.118"/>
 
         <callbacks>
         </callbacks>

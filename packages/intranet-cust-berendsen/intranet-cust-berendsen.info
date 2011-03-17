@@ -10,18 +10,21 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-cust-berendsen</auto-mount>
     
-    <version name="0.2d1" url="http://openacs.org/repository/download/apm/intranet-cust-berendsen-0.2d1.apm">
+    <version name="0.3d1" url="http://openacs.org/repository/download/apm/intranet-cust-berendsen-0.3d1.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <maturity>0</maturity>
 
-        <provides url="intranet-cust-berendsen" version="0.2d1"/>
+        <provides url="intranet-cust-berendsen" version="0.3d1"/>
         <requires url="intranet-core" version="4.0.1.0.0"/>
+        <requires url="intranet-budget" version="0.1d1"/>
         <requires url="xotcl-core" version="0.118"/>
         <requires url="intranet-xotcl-dynfield" version="0.1d1"/>
         <requires url="intranet-cognovis" version="0.4"/>
 
         <callbacks>
+            <callback type="after-upgrade"  proc="im_cust_berendsen::after_upgrade"/>
         </callbacks>
+
         <parameters>
         <!-- No version parameters -->
         </parameters>
