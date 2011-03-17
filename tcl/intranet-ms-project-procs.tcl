@@ -39,16 +39,15 @@ ad_proc -public im_ms_project_write_subtasks {
 	select	p.project_id as object_id,
 		o.object_type,
 		p.sort_order
-	from	im_projects p,
-		acs_objects o
+	from	acs_objects o,
+		im_projects p
+		LEFT OUTER JOIN im_gantt_projects gp ON (p.project_id = gp.project_id)
 	where	p.project_id = o.object_id
 		and parent_id = :project_id
-		and p.project_type_id = [im_project_type_task]
-		and p.project_status_id not in (
-			[im_project_status_deleted], 
-			[im_project_status_closed]
-		)
-	order by sort_order
+		and p.project_status_id not in ([im_project_status_deleted])
+	order by 
+		coalesce(gp.xml_id::integer, 0),
+		p.sort_order
     "]
 
     incr outline_level
@@ -154,7 +153,8 @@ ad_proc -public im_ms_project_write_task {
 		OutlineNumber OutlineLevel Priority 
 		Start Finish 
 		Work RemainingWork
-		Duration RemainingDuration
+		Duration 
+		RemainingDuration
 		DurationFormat
 		CalendarUID 
 		PredecessorLink
@@ -165,36 +165,36 @@ ad_proc -public im_ms_project_write_task {
 
     set predecessors_done 0
     foreach element $xml_elements { 
+
+	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
-		"Name"			{ set value $project_name }
-		"Type"			{   if {[info exists xml_type] && $xml_type!=""} {
+		Name			{ set value $project_name }
+		Type			{   if {[info exists xml_type] && $xml_type!=""} {
 						set value $xml_type
 					    } else {
 						set value 0 
 					    }
 					}
-		"OutlineNumber"		{ set value $outline_number }
-		"OutlineLevel"		{ set value $outline_level }
-		"Priority"		{ set value 500 }
-		"Start"			{ set value $start_date }
-		"Finish"		{ set value $end_date }
-		"Duration" {
+		OutlineNumber		{ set value $outline_number }
+		OutlineLevel		{ set value $outline_level }
+		Priority		{ set value 500 }
+		Start			{ set value $start_date }
+		Finish			{ set value $end_date }
+		Duration {
 			# Check if we've got a duration defined in the xml_elements.
 			# Otherwise (export without import...) generate a duration.
 			set value "PT$duration_hours\H0M0S" 
-                        set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-                        if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
+			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
 		}
-		"RemainingDuration" {
-			# Check if we've got a duration defined in the xml_elements.
-			# Otherwise (export without import...) generate a duration.
-			set value "PT$duration_hours\H0M0S" 
-                        set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-                        if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
+		DurationFormat		{ set value 5 }
+		RemainingDuration {
+			set remaining_duration_hours [expr $duration_hours * (100.0 - $percent_completed)]
+			set value "PT$remaining_duration_hours\H0M0S" 
+			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
 		}
-		"CalendarUID"		{ set value -1 }
-		"Notes"			{ set value $note }
-		"PredecessorLink"	{ 
+		Notes			{ set value $note }
+		PercentComplete		{ set value $percent_completed }
+		PredecessorLink	{ 
 			if {$predecessors_done} { continue }
 			set predecessors_done 1
 
@@ -231,7 +231,6 @@ ad_proc -public im_ms_project_write_task {
 		BCWP - \
 		BCWS - \
 		CV - \
-		CalendarUID - \
 		CommitmentType - \
 		ConstraintType - \
 		Cost - \
@@ -239,7 +238,6 @@ ad_proc -public im_ms_project_write_task {
 		Critical - \
 		CustomProperty - \
 		Depend - \
-		Duration - \
 		EarlyFinish - \
 		EarlyStart - \
 		EarnedValueMethod - \
@@ -270,7 +268,6 @@ ad_proc -public im_ms_project_write_task {
 		Recurring - \
 		RegularWork - \
 		RemainingCost - \
-		RemainingDuration - \
 		RemainingOvertimeCost - \
 		RemainingOvertimeWork - \
 		RemainingWork - \
@@ -287,7 +284,6 @@ ad_proc -public im_ms_project_write_task {
 		    continue 
 		}
 		default {
-			set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 			if {[info exists $attribute_name ] } {
 			    set value [expr $$attribute_name]
 			} else {
@@ -303,7 +299,6 @@ ad_proc -public im_ms_project_write_task {
 		UID					{ set value $org_project_id }
 		ID					{ set value $org_project_id }
 		Duration - RemainingDuration - Work - RemainingWork	{ set value "PT24H0M0S" }
-		DurationFormat				{ set value 5 }
 		PercentComplete - PercentWorkComplete	{ set value $percent_completed }
 		FixedCostAccrual			{ set value 3 }
 	    }
