@@ -116,7 +116,8 @@ ad_proc -public extjs::RowEditor::ColumnModel {
 
 ad_proc -public extjs::RowEditor::ComboBox {
     {-combo_name:required}
-    {-optionDef:required}
+    {-optionDef ""}
+    {-sql ""}
     {-form_name:required}
 } {
     Return a combo box javascript definintion so the combo box can be called in the columns rendering
@@ -125,10 +126,21 @@ ad_proc -public extjs::RowEditor::ComboBox {
     @param form_name Name of the form (of the grid?) which should include this combobox.
     @param optionDef List of key value pairs with the id / value and the display name. So use it like list category_id category_name category_id category_name and not the other way round. First the Value, then the displayed name
 } {
-    
-    set data [list]
-    foreach {value name} $optionDef {
-        lappend data "\[$value, '$name'\]"
+
+    set data [list]    
+    if {$optionDef eq ""} {
+        if {$sql eq ""} {
+            ad_return_error "Missing parameter" "we Need either SQL or optiondef"
+        } else {
+            set option_list [db_list_of_lists sql $sql]
+            foreach option $option_list {
+                lappend data "\['[lindex $option 0]', '[lindex $option 1]'\]"  
+            }
+        }
+    } else {
+        foreach {value name} $optionDef {
+            lappend data "\['$value', '$name'\]"
+        }
     }
     
     return "

@@ -96,7 +96,7 @@ set hour_columnDef [list item_id "string" title "string" hours "float" departmen
 
 set combo_name "department"
 set department_combobox [extjs::RowEditor::ComboBox -combo_name "$combo_name" -form_name "hour_fm" \
-                                  -optionDef [list 3751 "Investment Cost Budget" 3752 "One Time Cost Budget" 3753 "Repeating Cost Budget"]]
+                             -sql "select cost_center_id, cost_center_name from im_cost_centers order by cost_center_id"]
 
 # set the column_defs
 
@@ -119,7 +119,7 @@ set column_defs "
             \}, \{
                 header: '#intranet-core.Department#',
                 dataIndex: 'department_id',
-                width: 130,
+                width: 200,
                 editor: $combo_name,
                 renderer: Ext.util.Format.comboRenderer($combo_name) // pass combo instance to reusable renderer
             \},  \{

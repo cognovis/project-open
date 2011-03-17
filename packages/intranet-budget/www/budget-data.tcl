@@ -137,7 +137,7 @@ switch $action {
             set Hour [::im_budget::BudgetHours get_instance_from_db -item_id $item_id]
 
             # Now update the fields
-            $Hour set title $$title
+            $Hour set title $title
             $Hour set hours $hours
             $Hour set department_id $department_id
 
