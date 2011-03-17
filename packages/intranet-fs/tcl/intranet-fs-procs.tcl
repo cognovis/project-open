@@ -153,6 +153,7 @@ ad_proc -public intranet_fs::create_project_folder {
 }
 
 
+
 ad_proc -public im_fs_component { 
     -project_id
     -user_id
@@ -181,4 +182,35 @@ ad_proc -public im_fs_component {
     set result [ad_parse_template -params $params "/packages/intranet-fs/lib/intranet-fs"]
     return [string trim $result]
     
+}
+
+
+# Deleting the project folder 
+ad_proc -public -callback im_project_after_delete -impl fs_folder {
+	{-object_id:required}
+    {-status_id}
+    {-type_id}
+} {
+    
+	Delete the folders from the project
+
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2010-09-27
+    
+	@param project_id Project_id of the project
+    @return             nothing
+    @error
+} {
+
+    if {[db_0or1row select_folder_id "
+	select object_id_two, rel_id
+	from acs_rels 
+	where object_id_one = :object_id
+	and rel_type = 'project_folder'
+    "]} {
+    
+        db_string del_rel "select acs_rel__delete(:rel_id) from dual"
+        
+        content::folder::delete -folder_id $object_id_two -cascade_p 1
+    }
 }

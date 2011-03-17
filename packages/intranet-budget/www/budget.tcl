@@ -8,11 +8,18 @@ ad_page_contract {
 
 
 set user_id [ad_maybe_redirect_for_registration]
+set page_title "[_ intranet-budget.Edit_Budget]"
 
+# Create the budget if it is not already there
 if {![exists_and_not_null budget_id]} {
-    set page_title "[_ intranet-budget.New_Budget]"
-} else {
-    set page_title "[_ intranet-budget.Edit_Budget]"
+    if {[exists_and_not_null project_id]} {
+        set page_title "[_ intranet-budget.New_Budget]"
+        set budget [::im_budget::Budget create $project_id -parent_id $project_id -name "budget_${project_id}_${invoice_id}" -title "Budget für $project_name"]
+        $budget save_new
+        set budget_id [$budget item_id]
+    } else {
+        ad_return_error "Missing variable" "You need to provide either budget_id or project_id"
+    }
 }
 
 set sub_navbar [im_costs_navbar "none" "/intranet-budget/" "" "" [list]] 

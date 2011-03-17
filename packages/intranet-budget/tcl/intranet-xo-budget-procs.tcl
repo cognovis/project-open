@@ -16,28 +16,29 @@ namespace eval ::im_budget {
       -table_name "im_budgets" -id_column "budget_id" \
       -mime_type text/html \
       -slots {
-          ::xo::db::CrAttribute create approver_id -sqltype integer \
-              -references "users(user_id)" -pretty_name "#intranet-budget.Approver#"
-          ::xo::db::CrAttribute create budget_status_id \
-              -references "im_categories(category_id)" -sqltype integer \
-              -help_text "" -pretty_name "#intranet-core.Status#"
-          ::xo::db::CrAttribute create budget_type_id \
-              -references "im_categories(category_id)" -sqltype integer \
-              -help_text "" -pretty_name "#intranet-core.Type#"
-          ::xo::Attribute create name \
-              -required false ;#true 
-          ::xo::Attribute create title \
-              -required false ;#true
+          ::xo::db::CrAttribute create BudgetedHours -sqltype integer \
+              -pretty_name "#intranet-budget.Hours#"
+          ::xo::db::CrAttribute create BudgetedHoursExplanation -sqltype text \
+              -pretty_name "#intranet-budget.HoursExplanation#"
+          ::xo::db::CrAttribute create Savings -sqltype integer \
+              -pretty_name "#intranet-budget.Savings#"
+          ::xo::db::CrAttribute create SavingsExplanation -sqltype text \
+              -pretty_name "#intranet-budget.SavingsExplanation#"
       }
 
   ::xo::db::CrClass create BudgetElement -superclass ::xo::db::CrItem \
       -pretty_name "Budget Element" -pretty_plural "Budget Elements" \
       -table_name "im_budget_elements" -id_column "element_id" \
-      -mime_type text/html
-
-  ::xo::db::CrClass create BudgetHours -superclass ::im_budget::BudgetElement \
+      -mime_type text/html \
+      -slots {
+          ::xo::db::CrAttribute cost_type_id -sqltype integer \
+              -references "im_categories(category_id)"
+          ::xo::db::CrAttribute create amount -sqltype float
+      }
+  
+  ::xo::db::CrClass create Hour -superclass ::xo::db::CrItem \
       -pretty_name "Budget Hours" -pretty_plural "Budget Hours" \
-      -table_name "im_budget_hours" -id_column "hours_id" \
+      -table_name "im_budget_hours" -id_column "hour_id" \
       -mime_type text/html \
       -slots {
           ::xo::db::CrAttribute create hours -sqltype float
@@ -45,15 +46,15 @@ namespace eval ::im_budget {
               -references "im_cost_centers(cost_center_id)"
       }
   
-  ::xo::db::CrClass create BudgetCosts -superclass ::im_budget::BudgetElement \
-      -pretty_name "Budget Costs" -pretty_plural "Budget Costs" \
-      -table_name "im_budget_costs" -id_column "costs_id" \
-      -mime_type text/html \
-      -slots {
-          ::xo::db::CrAttribute create amount -sqltype float
-          ::xo::db::CrAttribute cost_type_id -sqltype integer \
-              -references "im_categories(category_id)"
-      }
+  ::xo::db::CrClass create Cost -superclass ::im_budget::BudgetElement \
+      -pretty_name "Budget Cost" -pretty_plural "Budget Costs" \
+      -table_name "im_budget_costs" -id_column "fund_id" \
+      -mime_type text/html 
+
+  ::xo::db::CrClass create Fund -superclass ::im_budget::BudgetElement \
+      -pretty_name "Budget Fund" -pretty_plural "Budget Funds" \
+      -table_name "im_budget_funds" -id_column "fund_id" \
+      -mime_type text/html 
   
   ad_proc -public upgrade {
   } {
@@ -79,7 +80,7 @@ namespace eval ::im_budget {
           }
 
           if {$budget_id ne ""} {
-              set budget_item [::im_budget::BudgetCosts create $item_id -parent_id $budget_id -name "budget_costs_${item_id}" -title "$item_name" \
+              set budget_item [::im_budget::Cost create $item_id -parent_id $budget_id -name "budget_costs_${item_id}" -title "$item_name" \
                                -amount "$amount" -cost_type_id cost_type_id]
               $budget_item save_new
           } else {
