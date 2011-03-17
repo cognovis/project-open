@@ -14,6 +14,8 @@ namespace eval ::im::dynfield::widgets {}
 ad_proc -public -callback im_dynfield_widget_after_update -impl xotcl_dynfields_reload_class {
     {-widget_name}
 } {
+    Reload the class
+} {
     # ------------------------------------------------------------------
     # Reload the class
     # ------------------------------------------------------------------
