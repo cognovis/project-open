@@ -54,7 +54,7 @@ namespace eval ::im_budget {
           ::xo::db::CrAttribute cost_type_id -sqltype integer \
               -references "im_categories(category_id)"
       }
-
+  
   ad_proc -public upgrade {
   } {
       upgrade procedure
@@ -88,7 +88,13 @@ namespace eval ::im_budget {
 
       }
 
-      
+      db_foreach budgets "select item_id as budget_id, parent_id as project_id from cr_items where content_type  = '::im_budget::Budget'" {
+          # Get the tasks
+          db_foreach task {select cost_center_id as department_id, task_id, planned_units, project_name from im_timesheet_tasks, im_projects where project_id = task_id and parent_id = :project_id} {
+              set budget_item [::im_budget::BudgetHours create $task_id -parent_id $budget_id -name "budget_hours_${task_id}" -title "$project_name" -amount "$planned_units" -department_id $department_id]
+              $budget_item save_new
+          }
+      }
   }
 }
 
