@@ -4,36 +4,72 @@
   <property name="sub_navbar">@sub_navbar;noquote@</property>
 
    <script type="text/javascript">
-
-    Ext.util.Format.comboRenderer = function(combo){
-        return function(value){
-            var record = combo.findRecord(combo.valueField, value);
-            return record ? record.get(combo.displayField) : combo.valueNotFoundText;
-        }
-    }
-
-
-
-Ext.util.Format.Currency = function(v)
-{
-    v = Ext.num(String(v).replace(/\,/, '.'));
-    v = (Math.round((v-0)*100))/100;
-    v = (v == Math.floor(v)) ? v + ".00" : ((v*10 == Math.floor(v*10)) ? v + "0" : v);
-    if (v==0)
-    {
-        v = '-';
-        return (v);
-    }
-    else
-    {
-        return (v + ' &euro;').replace(/\./, ',');
-    }
-};
-
+    
 
 Ext.onReady(function(){
-    var amount_fm = Ext.form;
 
+    //  Top Form....
+    var budget_form = new Ext.form.FormPanel({
+        id: 'budget_form',
+        frame:true,
+        title: 'Budgetantrag',
+        bodyStyle:'padding:5px 5px 0',
+        width: '1000',
+        renderTo: 'malte',
+        items: [{
+            layout:'column',
+            labelAlign: 'top',
+            items:[{
+                columnWidth:.5,
+                layout: 'form',
+                items: [@budget_js;noquote@,
+                        @invest_js;noquote@,
+                        @invest_exp_js;noquote@,
+                        @annual_js;noquote@,
+                        @annual_exp_js;noquote@]
+            },{
+                columnWidth:.5,
+                layout: 'form',
+                items: [@budget_hours_js;noquote@,
+                        @single_js;noquote@,
+                        @single_exp_js;noquote@,
+                        @gain_js;noquote@,
+                        @gain_exp_js;noquote@]
+            }]
+        }],
+        buttons: [{
+            text: 'Save',
+            handler:function(){
+                budget_form.getForm().submit({
+                    method:'GET',
+                    waitTitle:'Connecting',
+                    waitMsg:'Sending data...',
+                    url:'budget-data',
+                    params: { action: 'save_budget',
+                              budget_id: '52083' },
+                    success: function(response){
+                        var result=eval(response.responseText);
+                        switch(result){
+                        case 1:
+                            amount_store.commitChanges();
+                            amount_store.reload();
+                            break;
+                        default:
+                            Ext.MessageBox.alert('Uh uh..', 'Probleme beim Speichern....');
+                            break;
+                        }
+                    },
+                    failure: function(response){
+                        var result=response.responseText;
+                        Ext.MessageBox.alert(result,'could not connect to database');
+                    }
+                });
+            }
+        }]
+    });
+ 
+        
+    var amount_fm = Ext.form;
     @amount_category_combobox;noquote@
     @amount_editor;noquote@
     @amount_cm;noquote@
@@ -54,6 +90,7 @@ Ext.onReady(function(){
 
 });
 </script>
+    <div id="malte" style="margin-left: 1em"></div>
     <div id="amount_grid" style="margin-left: 1em"></div>
     <p />
     <div id="hour_grid" style="margin-left: 1em"></div>    

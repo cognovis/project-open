@@ -7,6 +7,18 @@
     @author Malte Sussdorff
 }
 
+::xo::db::CrItem instproc json_object {} {
+    set class_name [my info class]
+    set slots [$class_name info slots]
+    set json_list [list]
+    foreach slot $slots {
+        set attribute_name [$slot name]
+        lappend json_list $attribute_name
+        lappend json_list [my set $attribute_name]
+    }
+    return [util::json::object::create $json_list]
+}
+
 namespace eval ::im_budget {
   #
   # create classes
@@ -16,16 +28,31 @@ namespace eval ::im_budget {
       -table_name "im_budgets" -id_column "budget_id" \
       -mime_type text/html \
       -slots {
+          ::xo::db::CrAttribute create budget -sqltype integer \
+              -pretty_name "#intranet-budget.Budget#"
           ::xo::db::CrAttribute create budget_hours -sqltype integer \
               -pretty_name "#intranet-budget.Hours#"
           ::xo::db::CrAttribute create budget_hours_explanation -sqltype text \
               -pretty_name "#intranet-budget.HoursExplanation#"
-          ::xo::db::CrAttribute create savings -sqltype integer \
-              -pretty_name "#intranet-budget.Savings#"
-          ::xo::db::CrAttribute create savings_explanation -sqltype text \
-              -pretty_name "#intranet-budget.SavingsExplanation#"
+          ::xo::db::CrAttribute create economic_gain -sqltype integer \
+              -pretty_name "#intranet-budget.EconomicGain#"
+          ::xo::db::CrAttribute create economic_gain_explanation -sqltype text \
+              -pretty_name "#intranet-budget.EconomicGainExplanation#"
           ::xo::db::CrAttribute create budget_item_revisions -sqltype text \
               -pretty_name "Budget Item Revisions"
+          ::xo::db::CrAttribute create single_costs -sqltype integer \
+              -pretty_name "#intranet-budget.SingleCosts#"
+          ::xo::db::CrAttribute create single_costs_explanation -sqltype text \
+              -pretty_name "#intranet-budget.SingleCostsExplanation#"
+          ::xo::db::CrAttribute create investment_costs -sqltype integer \
+              -pretty_name "#intranet-budget.InvestmentCosts#"
+          ::xo::db::CrAttribute create investment_costs_explanation -sqltype text \
+              -pretty_name "#intranet-budget.InvestmentCostsExplanation#"
+          ::xo::db::CrAttribute create annual_costs -sqltype integer \
+              -pretty_name "#intranet-budget.AnnualCosts#"
+          ::xo::db::CrAttribute create annual_costs_explanation -sqltype text \
+              -pretty_name "#intranet-budget.AnnualCostsExplanation#"
+
       }
 
   ::xo::db::CrClass create BudgetElement -superclass ::xo::db::CrItem \
@@ -52,10 +79,5 @@ namespace eval ::im_budget {
       -table_name "im_budget_costs" -id_column "fund_id" \
       -mime_type text/html 
 
-  ::xo::db::CrClass create Fund -superclass ::im_budget::BudgetElement \
-      -pretty_name "Budget Fund" -pretty_plural "Budget Funds" \
-      -table_name "im_budget_funds" -id_column "fund_id" \
-      -mime_type text/html 
-  
 }
 

@@ -26,15 +26,113 @@ ad_proc -private extjs::init {
 
 namespace eval extjs::RowEditor {}
 namespace eval extjs::DataStore {}
+namespace eval extjs::Form {}
+namespace eval extjs::Form::Attribute {}
+
+ad_proc -public extjs::Form::Attribute::Currency {
+    {-name:required}
+    {-label ""}
+    {-default ""}
+    {-anchor ""}
+} {
+    Return the item definition for a currency field
+} { 
+    if {$default ne ""} {
+        set default "emptyText: '\u20AC $default',"
+    }
+
+    if {$label ne ""} {
+        set label "fieldLabel: '$label',"
+    }
+
+    if {$anchor ne ""} {
+        set anchor "anchor: '$anchor'"
+    }
+    return "\{
+                    xtype:'numericfield',
+                    currencySymbol: '\u20AC',
+                    useThousandSeparator: true,
+                    thousandSeparator: '.',
+                    setDecimalPrecision: 2,
+                    decimalSeparator: ',',
+                    alwaysDisplayDecimals: true,
+                    $label
+                    $default
+                    name: '$name',
+                    $anchor
+    \}"
+}
+
+ad_proc -public extjs::Form::Attribute::Htmleditor {
+    {-name:required}
+    {-label ""}
+    {-default ""}
+    {-anchor ""}
+} {
+    Return the item definition for a numeric field
+} { 
+    if {$default ne ""} {
+        set default "emptyText: '$default',"
+    }
+
+    if {$label ne ""} {
+        set label "fieldLabel: '$label',"
+    }
+
+    if {$anchor ne ""} {
+        set anchor "anchor: '$anchor'"
+    }
+    return "\{
+                    xtype:'htmleditor',
+                    $label
+                    $default
+                    name: '$name',
+                    $anchor
+    \}"
+}
+
+ad_proc -public extjs::Form::Attribute::Numeric {
+    {-name:required}
+    {-label ""}
+    {-default ""}
+    {-anchor ""}
+} {
+    Return the item definition for a numeric field
+} { 
+    if {$default ne ""} {
+        set default "emptyText: '$default',"
+    }
+
+    if {$label ne ""} {
+        set label "fieldLabel: '$label',"
+    }
+
+    if {$anchor ne ""} {
+        set anchor "anchor: '$anchor'"
+    }
+    return "\{
+                    xtype:'numericfield',
+                    useThousandSeparator: true,
+                    thousandSeparator: '.',
+                    decimalSeparator: ',',
+                    alwaysDisplayDecimals: true,
+                    $label
+                    $default
+                    name: '$name',
+                    $anchor
+    \}"
+}
+
+
 
 ad_proc -public extjs::DataStore::Json {
     {-url:required}
     {-prefix:required}
     {-baseParams:required}
-    {-root:required}
-    {-id_column:required}
+    {-root ""}
+    {-id_column ""}
     {-columnDef:required}
-    {-sortInfo_json:required}
+    {-sortInfo_json ""}
 } {
     This procedure returns the Javascript for initializing a remote JSON Data Store.
     
@@ -52,12 +150,22 @@ ad_proc -public extjs::DataStore::Json {
     foreach {attribute datatype} $columnDef {
         lappend column_def_list "\{name: '$attribute', type: '$datatype'\}"
     }
+
+    if {$root ne ""} {
+        set root "root: '$root',"
+    }
+    if {$id_column ne ""} {
+        set id_column "id: '$id_column',"
+    }
+    if {$sortInfo_json ne ""} {
+        set sortInfo_json "sortInfo: $sortInfo_json"
+    }
     
     return "
     // create the Data Store
     var ${prefix}store = new Ext.data.Store(\{
         // destroy the store if the grid is destroyed
-        autoDestroy: true,
+        //autoDestroy: true,
         
         // load remote data using HTTP
         proxy: new Ext.data.HttpProxy(\{
@@ -68,12 +176,11 @@ ad_proc -public extjs::DataStore::Json {
 
         // Now really fill the store with the data from 
         reader: new Ext.data.JsonReader(\{
-            root: '$root',
-            id: '$id_column' // id is important for identification
+            $root
+            $id_column
         \},\[ [join $column_def_list ",\n"] \]
         ),
-        
-        sortInfo: $sortInfo_json
+        $sortInfo_json
     \});
     ${prefix}store.load(); // We need to load the store before the grid is rendered.
    "
@@ -247,8 +354,8 @@ ad_proc -public extjs::RowEditor::GridPanel {
         store: ${prefix}store,
         cm: ${prefix}cm,
         renderTo: '${prefix}grid', // Name of the div
-        width: $width,
-        height: $height,
+        width: '$width',
+        height: '$height',
         region: 'center',
         autoExpandColumn: '$autoExpandColumn', // column with this id will be expanded
         plugins: \[editor\], // The editor plugin for row level editing
