@@ -59,119 +59,120 @@ ad_proc -public intranet_oo::import_oo_pdf {
     set jodconverter_bin [parameter::get -parameter "jodconverterBin" -default "/usr/bin/jodconverter"]
     set status [catch {eval exec $jodconverter_bin $oo_file $pdf_filename} result]
     if { $status == 0 } {
-
+        
         # The command succeeded, and wrote nothing to stderr.
         # $result contains what it wrote to stdout, unless you
         # redirected it
-
+        
     } elseif { [string equal $::errorCode NONE] } {
 	
         # The command exited with a normal status, but wrote something
         # to stderr, which is included in $result.
-
+        
     } else {
-
+        
         switch -exact -- [lindex $::errorCode 0] {
-
+            
             CHILDKILLED {
                 foreach { - pid sigName msg } $::errorCode break
-
+                
                 # A child process, whose process ID was $pid,
                 # died on a signal named $sigName.  A human-
                 # readable message appears in $msg.
-
+                
             }
-
+            
             CHILDSTATUS {
-
+                
                 foreach { - pid code } $::errorCode break
-
+                
                 # A child process, whose process ID was $pid,
                 # exited with a non-zero exit status, $code.
-
+                
             }
-
+            
             CHILDSUSP {
-
+                
                 foreach { - pid sigName msg } $::errorCode break
-
+                
                 # A child process, whose process ID was $pid,
                 # has been suspended because of a signal named
                 # $sigName.  A human-readable description of the
                 # signal appears in $msg.
-		
+                
             }
-	    
+            
             POSIX {
-
+                
                 foreach { - errName msg } $::errorCode break
-		
+                
                 # One of the kernel calls to launch the command
                 # failed.  The error code is in $errName, and a
                 # human-readable message is in $msg.
-
+                
             }
-
+            
         }
     }
     
     set mime_type "application/pdf"
     if {![file exists $pdf_filename]} {
-	###############
-	# this is a fix to use the oo file if pdf file could not be generated
-	###############
-	set pdf_filename $oo_file
-	set mime_type "application/odt"
+        ###############
+        # this is a fix to use the oo file if pdf file could not be generated
+        ###############
+        set pdf_filename $oo_file
+        ns_log Notice "NO PDF"
+        set mime_type "application/odt"
     } else {
-#	ns_unlink $oo_file
-	ds_comment $oo_file
+        #	ns_unlink $oo_file
+        ds_comment $oo_file
     }
-
+    
     if {$no_import_p} {
-	return [list $mime_type $pdf_filename]
+        return [list $mime_type $pdf_filename]
     }
     
     set pdf_filesize [file size $pdf_filename]
     
     set file_name [file tail $pdf_filename]
     if {$title eq ""} {
-	set title $file_name
+        set title $file_name
     }
     
     if {[exists_and_not_null $item_id]} {
-	set parent_id [get_parent -item_id $item_id]
-	
-	set revision_id [cr_import_content \
-			     -title $title \
-			     -item_id $item_id \
-			     $parent_id \
-			     $pdf_filename \
-			     $pdf_filesize \
-			     $mime_type \
-			     $file_name ]
+        set parent_id [get_parent -item_id $item_id]
+        
+        set revision_id [cr_import_content \
+                             -title $title \
+                             -item_id $item_id \
+                             $parent_id \
+                             $pdf_filename \
+                             $pdf_filesize \
+                             $mime_type \
+                             $file_name ]
     } else {
-	set revision_id [cr_import_content \
-			     -title $title \
-			     $parent_id \
-			     $pdf_filename \
-			     $pdf_filesize \
-			     $mime_type \
-			     $file_name ]
+        set revision_id [cr_import_content \
+                             -title $title \
+                             $parent_id \
+                             $pdf_filename \
+                             $pdf_filesize \
+                             $mime_type \
+                             $file_name ]
     }	
     
     
     
     content::item::set_live_revision -revision_id $revision_id
     if {$return_pdf_p} {
-	return [list $mime_type $pdf_filename]
+        return [list $mime_type $pdf_filename]
     } elseif {$return_pdf_with_id_p} {
-	return [list [content::revision::item_id -revision_id $revision_id] $mime_type $pdf_filename]
+        return [list [content::revision::item_id -revision_id $revision_id] $mime_type $pdf_filename]
     } else  {
-	ns_unlink $pdf_filename
-	return [content::revision::item_id -revision_id $revision_id]
+        ns_unlink $pdf_filename
+        return [content::revision::item_id -revision_id $revision_id]
     }
 }
-    
+
 ad_proc -public intranet_oo::join_pdf {
     -filenames:required
     {-title ""}
@@ -338,7 +339,7 @@ ad_proc -public intranet_oo::parse_content {
 	    set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import]
 	    set return_file [lindex $import_doc 1]
 	    set mime_type [lindex $import_doc 2]
-	    ns_log Notice "RETURN_FILE $return_file"
+	    ns_log Notice "RETURN_FILE $return_file :: mime_type"
 	} else {
 	    set return_file $odt_zip
 	    set mime_type "application/odt"
