@@ -3,7 +3,7 @@ ad_page_contract {
 } {
     {return_url ""}
     {budget_id ""}
-    project_id:integer,optional
+    {project_id ""}
 }
 
 
@@ -13,16 +13,38 @@ set page_title "[_ intranet-budget.Edit_Budget]"
 # Create the budget if it is not already there
 if {![exists_and_not_null budget_id]} {
     if {[exists_and_not_null project_id]} {
-        set page_title "[_ intranet-budget.New_Budget]"
-        set budget [::im_budget::Budget create $project_id -parent_id $project_id -name "budget_${project_id}_${invoice_id}" -title "Budget für $project_name"]
-        $budget save_new
-        set budget_id [$budget item_id]
+        # Search the budget_id
+        set budget_id [db_string budget_id "select item_id from cr_items where parent_id = :project_id and content_type = 'im_budget' limit 1" -default ""]
+        if {$budget_id eq ""} {
+            set page_title "[_ intranet-budget.New_Budget]"
+            set budget [::im::dynfield::CrClass::im_budget create $project_id -parent_id $project_id -name "budget_${project_id}" -title "Budget für $project_name"]
+            $budget save_new
+            set budget_id [$budget item_id]
+        }
     } else {
         ad_return_error "Missing variable" "You need to provide either budget_id or project_id"
     }
 }
 
-set sub_navbar [im_costs_navbar "none" "/intranet-budget/" "" "" [list]] 
+if {$project_id eq ""} {
+    set project_id [db_string project_id "select parent_id from cr_items where item_id = :budget_id"]
+}
+
+# ---------------------------------------------------------------
+# Project Menu Navbar
+# ---------------------------------------------------------------
+
+# Setup the subnavbar
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+
+set sub_navbar [im_sub_navbar \
+    -components \
+    -base_url "/intranet/projects/view?project_id=$project_id" \
+    $project_menu_id \
+    $bind_vars "" "pagedesriptionbar" "project_budget"] 
+
 
 ##################################
 #  
@@ -83,7 +105,7 @@ set amount_store [extjs::DataStore::Json -url "budget-data" -baseParams "$amount
 set amount_editor [extjs::RowEditor::Editor -prefix "amount_" -url "budget-data" -columnDef "$amount_columnDef" \
                        -baseParams [list action "save_costs" budget_id $budget_id]]
 
-set amount_grid [extjs::RowEditor::GridPanel -prefix "amount_"  -new_title "Add Cost" -new_json "$amount_new_json" -autoExpandColumn "title" -title "Kosten" -height "400"]
+set amount_grid [extjs::RowEditor::GridPanel -prefix "amount_"  -new_title "Add Cost" -new_json "$amount_new_json" -autoExpandColumn "title" -title "Kosten"]
 set amount_cm [extjs::RowEditor::ColumnModel -prefix "amount_" -column_defs_json $column_defs]
 
 
@@ -99,7 +121,7 @@ set hour_new_json [util::json::gen [util::json::object::create [list title "New 
 
 set hour_baseParams [list action "get_hours" budget_id $budget_id]
 set hour_sortInfo  [util::json::gen [util::json::object::create [list field "title" direction "ASC"]]]
-set hour_columnDef [list item_id "string" title "string" amount "float" department_id "integer"]
+set hour_columnDef [list item_id "string" title "string" hours "float" department_id "integer"]
 
 set combo_name "department"
 set department_combobox [extjs::RowEditor::ComboBox -combo_name "$combo_name" -form_name "hour_fm" \
@@ -131,7 +153,7 @@ set column_defs "
                 renderer: Ext.util.Format.comboRenderer($combo_name) // pass combo instance to reusable renderer
             \},  \{
                 header: '#intranet-timesheet2.Hours#',
-                dataIndex: 'amount',
+                dataIndex: 'hours',
                 width: 70,
                 align: 'right',
                 editor: new hour_fm.NumberField(\{
@@ -151,35 +173,18 @@ set hour_grid [extjs::RowEditor::GridPanel -prefix "hour_"  -new_title "Neue Stu
 set hour_cm [extjs::RowEditor::ColumnModel -prefix "hour_" -column_defs_json $column_defs]
 
 
-set Budget [::im_budget::Budget get_instance_from_db -item_id $budget_id]
-
 # Setup the items for the form
+set budget_js [extjs::Form::Attribute::Currency -name "budget" -anchor "95%" -label "Budgetsumme"]
+set invest_js [extjs::Form::Attribute::Currency -name "investment_costs" -anchor "95%" -label "Investitionskosten"]
+set single_js [extjs::Form::Attribute::Currency -name "single_costs" -anchor "95%" -label "Einmalkosten"]
+set annual_js [extjs::Form::Attribute::Currency -name "annual_costs" -anchor "95%" -label "Jährliche Kosten"]
+set gain_js [extjs::Form::Attribute::Currency -name "economic_gain" -anchor "95%" -label "Wirtschaftlicher Nutzen"]
+set invest_exp_js [extjs::Form::Attribute::Htmleditor -name "investment_costs_explanation" -anchor "95%"]
+set single_exp_js [extjs::Form::Attribute::Htmleditor -name "single_costs_explanation" -anchor "95%"]
+set annual_exp_js [extjs::Form::Attribute::Htmleditor -name "annual_costs_explanation" -anchor "95%"]
+set gain_exp_js [extjs::Form::Attribute::Htmleditor -name "economic_gain_explanation" -anchor "95%"]
+set budget_hours_js [extjs::Form::Attribute::Number -name "budget_hours" -label "Stundensumme"]
 
-ad_form -name budget_form -form {
-    budget_id:key
-    budget:float(currency)
-    investment_costs:float(currency)
-}
-
-
-set budget_js [extjs::Form::Attribute::Currency -name "budget" -anchor "95%" -label "Budgetsumme" -default "[$Budget budget]"]
-set invest_js [extjs::Form::Attribute::Currency -name "investment_costs" -anchor "95%" -label "Investitionskosten" -default "[$Budget investment_costs]"]
-set single_js [extjs::Form::Attribute::Currency -name "single_costs" -anchor "95%" -label "Einmalkosten" -default "[$Budget single_costs]"]
-set annual_js [extjs::Form::Attribute::Currency -name "annual_costs" -anchor "95%" -label "Jährliche Kosten" -default "[$Budget annual_costs]"]
-set gain_js [extjs::Form::Attribute::Currency -name "economic_gain" -anchor "95%" -label "Wirtschaftlicher Nutzen" -default "[$Budget economic_gain]"]
-set invest_exp_js [extjs::Form::Attribute::Htmleditor -name "investment_costs_explanation" -anchor "95%" -default "[$Budget investment_costs_explanation]"]
-set single_exp_js [extjs::Form::Attribute::Htmleditor -name "single_costs_explanation" -anchor "95%" -default "[$Budget single_costs_explanation]"]
-set annual_exp_js [extjs::Form::Attribute::Htmleditor -name "annual_costs_explanation" -anchor "95%" -default "[$Budget annual_costs_explanation]"]
-set gain_exp_js [extjs::Form::Attribute::Htmleditor -name "economic_gain" -anchor "95%" -default "[$Budget economic_gain_explanation]"]
-set budget_hours_js [extjs::Form::Attribute::Numeric -name "budget_hours" -label "Stundensumme" -default "[$Budget budget_hours]"]
-
-if {0} {
-# Columndef for the form
-set form_columnDef [list budget float investment_costs float investment_costs_explanation string annual_costs float annual_costs_explanation string \
-                        budget_hours float single_costs float single_costs_explanation string economic_gain float economic_gain_explanation string]
-set form_store [extjs::DataStore::Json -url "budget-data" -baseParams [list action "get_budget" budget_id $budget_id] \
-                    -columnDef "$form_columnDef" -prefix "fm_"]
-}
 # Drive the javascript
 extjs::init
 template::head::add_javascript -src "/extjs/examples/ux/RowEditor.js" -order 10

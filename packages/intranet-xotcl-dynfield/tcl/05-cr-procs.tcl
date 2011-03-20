@@ -1,14 +1,13 @@
+# 
+
 ad_library {
-
-	Class procedures
-	
-    @creation-date 2008-08-09
-    @author  (malte.sussdorff@cognovis.de)
-    @cvs-id 
+    
+    Interface for CR enabled Dynfields.
+    
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-03-18
+    @cvs-id $Id$
 }
-
-namespace eval ::im {}
-namespace eval ::im::dynfield {}
 
 
 #############################
@@ -18,18 +17,110 @@ namespace eval ::im::dynfield {}
 # 
 ##############################
 
-
-::xotcl::Class create ::im::dynfield::Class \
-    -superclass ::xo::db::Class \
+::xotcl::MetaSlot create ::im::dynfield::CrAttribute \
+    -superclass ::xo::db::Attribute \
     -parameter {
-        status_column
-        status_type_table
-        type_column
-        type_category_type
+	{widget_name}
+	{already_existed_p f}
+	{deprecated_p f}
+	{include_in_search_p t}
+	{also_hard_coded_p t}
+	{storage_type_id}
+	{widget}
+	{widget_parameters}
+	{sql_datatype}
+	{deref_plpgsql_function "im_name_from_id"}
+	{table_name}
+	{pos_y 0}
+	{label_style "plain"}
+	{default_value ""}
+	{dynfield_attribute_id ""}
+    }    
+
+
+::im::dynfield::CrAttribute instproc create_attribute {} {
+    if {![my create_acs_attribute]} return
+    
+    my instvar datatype pretty_name min_n_values max_n_values domain column_name table_name required name
+    my instvar widget_name already_existed_p deprecated_p include_in_search_p also_hard_coded_p default_value
+    my instvar storage_type_id widget widget_parameters sql_datatype deref_plpgsql_function pos_y label_style
+    
+    set object_type [$domain object_type]
+    
+    # Create the class if it does not exist (albeit unlikely)
+    if {![::xo::db::Class object_type_exists_in_db -object_type $object_type]} {
+        $domain create_object_type
+    }
+
+    # do nothing, if create_acs_attribute is set to false
+    if {![my create_acs_attribute]} return
+    
+    my instvar name column_name datatype pretty_name domain
+    set object_type [$domain object_type]
+    
+    if {$object_type eq "content_folder"} {
+        # content_folder does NOT allow to use create_attribute etc.
+        return
+    }
+
+    #my log "check attribute $column_name ot=$object_type, domain=$domain"
+    if {[db_string dbqd..check_att {select 0 from acs_attributes where 
+        attribute_name = :column_name and object_type = :object_type} -default 1]} {
+                
+        ::xo::db::sql::content_type create_attribute \
+            -content_type $object_type \
+            -attribute_name $column_name \
+            -datatype $datatype \
+            -pretty_name $pretty_name \
+            -column_spec [my column_spec]
+    }
+    
+    if {$required == "false"} {
+        set required_p 0
+    } else {
+        set required_p 1
+    }
+    
+    # Create the acs_attribute along with the im_dynfield one.
+    # If the acs_attribute already exists we just create the dynfield attribute
+    
+    set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $name]
+    
+    if {![exists_and_not_null table_name]} {
+        set table_name [::xo::db::Class get_table_name -object_type $object_type]
+    }
+    
+    if {!$im_dynfield_attribute_exists} {
+         im_dynfield::attribute::add \
+            -object_type $object_type \
+            -widget_name $widget_name \
+            -attribute_name $name \
+            -pretty_name $pretty_name \
+            -pretty_plural $pretty_name \
+            -table_name $table_name \
+            -required_p $required_p \
+            -modify_sql_p "t" \
+            -deprecated_p $deprecated_p \
+            -datatype $datatype \
+            -default_value $default_value \
+            -include_in_search_p $include_in_search_p \
+            -also_hard_coded_p $also_hard_coded_p \
+            -label_style $label_style \
+            -pos_y $pos_y
+    }
+}
+
+::xotcl::Class create ::im::dynfield::CrClass \
+    -superclass ::xo::db::CrClass \
+    -parameter {
+        {status_column ""}
+        {status_type_table ""}
+        {type_column ""}
+        {type_category_type ""}
         multival_attr_ids
     } -ad_doc {
         ::im::dynfield::Class is a meta class for interfacing with dynfield enabled acs_object_types.
-        acs_object_types are instances of this meta class. The meta class defines the bahvior common to 
+        acs_object_types are instances of this meta class. The meta class defines the behavior common to 
         all acs_object_types.
         
         @param status_columns Column where the status_id is stored
@@ -40,37 +131,72 @@ namespace eval ::im::dynfield {}
     }
 
 
-::im::dynfield::Class ad_instproc save_new {} {
-    Save the new class
+::im::dynfield::CrClass ad_instproc create_object_type {} {
+    We need to save additional stuff when we create an object_type for dynfields.
 } {    
-    # First generate the object_type
-    next    
+    # First generate the normal ::xo::db::CrClass
+    next
 
-    foreach attribute [list object_type] {
+    # Set the needed attributes so we can insert them
+    foreach attribute [list object_type type_category_type status_type_table status_column type_column] {
         set $attribute [my $attribute]
     }
-    set pretty_name [db_string pretty "select pretty_name from acs_object_types where object_type = :object_type" -default $object_type]
-    set object_type_category "$pretty_name"
-
-    # Then update the type_category
-    db_dml update "update acs_object_types set type_category_type = :object_type_category where object_type = :object_type"	
-
+    
+    if {$status_type_table eq ""} {
+        set status_type_table [my table_name]
+    }
+    
+    # Then update the acs_object_type
+    db_dml update "update acs_object_types set type_category_type = :type_category_type, status_column = :status_column, type_column = :type_column, status_type_table = :status_type_table where object_type = :object_type"	
     # Create a new category for this list with the same name
-    db_string newcat "select im_category_new(nextval('im_categories_seq')::integer,:object_type, :object_type_category)"
-
+    if {$type_category_type ne ""} {
+        db_string newcat "select im_category_new(nextval('im_categories_seq')::integer,:object_type, :type_category_type)"
+    }
 }
 
-::im::dynfield::Class proc object_type_to_class {name} {
+
+::im::dynfield::CrClass ad_instproc save_new {} {
+    Additional stuff if we save an instance of this class, e.g. if we change it on the fly.
+} {    
+    # First generate the normal ::xo::db::CrClass
+    next
+
+    # Set the needed attributes so we can insert them
+    foreach attribute [list object_type type_category_type status_type_table status_column type_column] {
+        set $attribute [my $attribute]
+    }
+
+    if {$status_type_table eq ""} {
+        set status_type_table [my table_name]
+    }
+
+    set pretty_name [db_string pretty "select pretty_name from acs_object_types where object_type = :object_type" -default $object_type]
+    
+    if {$type_category_type eq ""} {
+        set type_category_type "$pretty_name Type"
+    }
+    
+    set status_category_type "$pretty_name Status"
+    
+    # Then update the acs_object_type
+    db_dml update "update acs_object_types set type_category_type = :object_type_category, status_column = :status_column, type_column = :type_column, status_type_table = :status_type_table where object_type = :object_type"	
+
+    # Create a new category for this list with the same name
+    db_string newcat "select im_category_new(nextval('im_categories_seq')::integer,:object_type, :type_category_type)"
+    db_string newcat "select im_category_new(nextval('im_categories_seq')::integer,:object_type, :status_category_type)"
+}
+
+::im::dynfield::CrClass proc object_type_to_class {name} {
   switch -glob -- $name {
     acs_object       {return ::im::dynfield::Object}
     content_revision {return ::xo::db::CrItem}
-    ::*              {return ::im::dynfield::Class::[namespace tail $name]}
-    default          {return ::im::dynfield::Class::$name}
+    ::*              {return ::im::dynfield::CrClass::[namespace tail $name]}
+    default          {return ::im::dynfield::CrClass::$name}
   }
 }
 
 
-::im::dynfield::Class ad_proc object_supertypes {
+::im::dynfield::CrClass ad_proc object_supertypes {
     -object_type
     {-exclude_list ""}
 } {
@@ -80,10 +206,10 @@ namespace eval ::im::dynfield {}
     @param object_type object_type from which we start
     @param exclude_list List of object_types which we don't want returned. Useful e.g. to exclude acs_objects
 } {
-    return [util_memoize [list ::im::dynfield::Class object_supertypes_not_cached -object_type $object_type -exclude_list $exclude_list]]
+    return [util_memoize [list ::im::dynfield::CrClass object_supertypes_not_cached -object_type $object_type -exclude_list $exclude_list]]
 }
 
-::im::dynfield::Class ad_proc object_supertypes_not_cached {
+::im::dynfield::CrClass ad_proc object_supertypes_not_cached {
     -object_type
     -exclude_list
 } {
@@ -97,7 +223,7 @@ namespace eval ::im::dynfield {}
     } else {
         set supertype_list ""
     }
-
+    
     set supertype ""
      
     while {$supertype ne "acs_object"} {
@@ -113,7 +239,7 @@ namespace eval ::im::dynfield {}
     return $supertype_list
 }
 
-::im::dynfield::Class ad_instproc object_type_ids {
+::im::dynfield::CrClass ad_instproc object_type_ids {
 } {
     Returns a list of object_type_ids which are applicable to this Class
     
@@ -126,7 +252,7 @@ namespace eval ::im::dynfield {}
     return [db_list lists "select category_id from im_categories c, acs_object_types ot where c.category_type= ot.type_category_type and object_type in ([template::util::tcl_to_sql_list $object_types])"]
 }
 
-::im::dynfield::Class ad_instproc default_object_type_id {} {
+::im::dynfield::CrClass ad_instproc default_object_type_id {} {
     Returns the default object_type_id for the class
 } {
     set object_type [my object_type]
@@ -155,7 +281,7 @@ namespace eval ::im::dynfield {}
 #
 #########################################
 
-::im::dynfield::Class ad_instproc mk_save_method {} {
+::im::dynfield::CrClass ad_instproc mk_save_method {} {
     This mk_save_method differs from the normal one as it takes extension tables into account
     
     
@@ -267,7 +393,7 @@ namespace eval ::im::dynfield {}
     }]
 }
 
-::im::dynfield::Class ad_instproc mk_insert_method {} {
+::im::dynfield::CrClass ad_instproc mk_insert_method {} {
     create method 'insert' for the application class
     The caller (e.g. method new) should care about db_transaction
     
@@ -376,7 +502,7 @@ namespace eval ::im::dynfield {}
     }]
 }
 
-::im::dynfield::Class ad_proc get_class_from_db {
+::im::dynfield::CrClass ad_proc get_class_from_db {
     -object_type
 } {
    Fetch an acs_object_type from the database and create
@@ -560,17 +686,234 @@ ObjectCache instproc flush {-id:required} {
 }
 
 
-ad_proc -public -callback im_dynfield_attribute_after_update -impl xotcl_dynfields_reload_class {
-    {-object_type}
-    {-attribute_name}
+
+##################################
+#
+# Retrieve an IM Dynfield Object
+#
+##################################
+::im::dynfield::CrClass ad_instproc fetch_query {id} {
+    Returns the full SQL statement to get all non multivalue values for an object_id.
+    The object should be of a dynfield enable object though
 } {
-    Relaod the classe when a dynfield is changed
+    set tables [list]
+    set extra_tables [list]
+    set attributes [list]
+    set id_column [my id_column]
+    set left_joins ""
+    set join_expressions [list "[my table_name].$id_column = $id"]
+    set ref_column "[my table_name].${id_column}"
+    foreach cl [concat [self] [my info heritage]] {
+	if {$cl eq "::xotcl::Object"} break
+	set tn [$cl table_name]
+	if {$tn ne "" && [lsearch $tables $tn] < 0} {
+	    lappend tables $tn
+	    
+	    #my log "--db_slots of $cl = [$cl array get db_slot]"
+	    foreach {slot_name slot} [$cl array get db_slot] {
+		# avoid duplicate output names
+		set name [$slot name]
+		if {[lsearch [im_dynfield_multimap_tables] [$slot set table_name]] <0  && ![info exists names($name)]} {
+		    lappend attributes [$slot attribute_reference $tn]
+		}
+		set names($name) 1
+	    }
+	    
+	    if {$cl ne [self]} {
+		lappend join_expressions "$tn.[$cl id_column] = $ref_column"
+	    }
+	    
+	    # Deal with the extra tables
+	    db_foreach table "select table_name, id_column from acs_object_type_tables where object_type = '[$cl object_type]' and table_name not in ([template::util::tcl_to_sql_list $tables])" {
+		lappend extra_tables [list $table_name $id_column]
+	    }
+	}
+    }
+    foreach extra_table $extra_tables {
+	set table_name [lindex $extra_table 0]
+	set id_column [lindex $extra_table 1]
+	if {[lsearch $tables $table_name] <0 } {
+	    # Extra table, join_expression needed
+	    lappend left_joins "left outer join $table_name on (acs_objects.object_id = ${table_name}.${id_column})"
+	}
+    }
+    return "SELECT [join $attributes ",\n"]\nFROM [join $tables ",\n"] [join $left_joins " "] \nWHERE [join $join_expressions " \n and "] limit 1"
+}
+
+
+######################################
+# Deal with Objects
+#
+######################################
+
+::im::dynfield::CrClass create ::im::dynfield::CrItem \
+    -superclass ::xo::db::CrItem \
+    -table_name cr_revisions -id_column revision_id \
+    -object_type content_revision
+
+
+::im::dynfield::CrItem instproc insert {} {my log no-insert;}
+
+
+::im::dynfield::CrItem proc get_context {package_id_var user_id_var ip_var} {
+  my upvar \
+      $package_id_var package_id \
+      $user_id_var user_id \
+      $ip_var ip
+
+  if {![info exists package_id]} {
+    if {[info command ::xo::cc] ne ""} {
+      set package_id    [::xo::cc package_id]
+    } elseif {[ns_conn isconnected]} {
+      set package_id    [ad_conn package_id]
+    } else {
+      set package_id ""
+    }
+  }
+  if {![info exists user_id]} {
+    if {[info command ::xo::cc] ne ""} {
+      set user_id    [::xo::cc user_id]
+    } elseif {[ns_conn isconnected]} {
+      set user_id    [ad_conn user_id]
+    } else {
+      set user_id 0
+    }
+  }
+  if {![info exists ip]} {
+    if {[ns_conn isconnected]} {
+      set ip [ns_conn peeraddr]
+    } else {
+      set ip [ns_info address]
+    }
+  }
+}
+
+if {0} {
+    ::im::dynfield::CrItem ad_instproc save_new {
+	-package_id -creation_user -creation_ip
+    } {
+	Save the XOTcl Object with a fresh acs_object
+	in the database.
+	
+	@return new object id
+    } {
+	if {![info exists package_id] && [my exists package_id]} {
+	    set package_id [my package_id]
+	}
+	
+	::im::dynfield::CrItem get_context package_id creation_user creation_ip
+	db_transaction {
+	    set id [::im::dynfield::CrItem new_acs_object \
+			-package_id $package_id \
+			-creation_user $creation_user \
+			-creation_ip $creation_ip \
+			-object_type [my object_type] \
+			-object_id [my object_id] \
+			""]
+	    [my info class] initialize_acs_object [self] $id
+	    
+	    
+	    my insert
+	}
+	return $id
+    }
+    
+    ::im::dynfield::CrItem proc new_acs_object {
+						-package_id
+						-creation_user
+						-creation_ip
+						-object_type
+						-object_id
+						{object_title ""}
+    } {
+	my get_context package_id creation_user creation_ip
+	
+	set id [::xo::db::sql::acs_object new \
+		    -object_type $object_type \
+		    -title $object_title \
+		    -package_id $package_id \
+		    -creation_user $creation_user \
+		    -object_id $object_id \
+		    -creation_ip $creation_ip \
+		    -security_inherit_p [my security_inherit_p]]
+	return $id
+    }
+}
+
+
+
+::im::dynfield::CrItem ad_instproc object_type_ids {
+} {
+    Returns a list of object_type_ids which are applicable to this object
+    
+    Each class should define their own version of this as it depends on group_ids for persons
+    and company_status type for im_companies and you know what for other dynfield objects.
+    
+    Default gives back all the lists for the object_type of the object.
+} {
+    my instvar object_type
+    return [db_list lists "select category_id from im_categories c, acs_object_types ot where c.category_type= ot.type_category_type and object_type = '$object_type'"]
+}
+
+::im::dynfield::CrItem ad_instproc lists {} {
+    Return the list_names for the object
+} {
+    return [my object_type]
+}
+
+::im::dynfield::CrItem instproc save {} {
+    my instvar object_id
+    ::xo::clusterwide ns_cache flush xotcl_object_cache ::$object_id
+}
+
+::im::dynfield::CrItem ad_instproc rel_options {} {
+    Return a list of possible relationship_types this object can have
+} {    
+    return [db_list rel_types "select rel_type from acs_rel_types where object_type_one in ([template::util::tcl_to_sql_list [my object_types]]) or object_type_two in ([template::util::tcl_to_sql_list [my object_types]])"]
+}
+
+::im::dynfield::CrItem ad_instproc value {element} {
+        Returns the value of the attribute_name derefed
+        @param element Element object we need the value for
 } {
 
-    # ------------------------------------------------------------------
-    # Reload the class
-    # ------------------------------------------------------------------
-    set class [::im::dynfield::Class object_type_to_class $object_type]
-    $class destroy
-    ::im::dynfield::Class get_class_from_db -object_type $object_type
-} 
+    set attribute_name [$element attribute_name]
+
+    switch [$element widget] {
+        date {
+            set value [my set $attribute_name]
+            if {$value ne ""} {
+                set value [template::util::date::get_property display_date $value]
+            }
+        }
+	richtext {
+            set value [my set $attribute_name]
+            if {$value ne ""} {
+                set value [template::util::richtext::get_property contents $value]
+            }
+	}
+	im_category_tree {
+            set value [my set $attribute_name]
+            if {$value ne ""} {
+                set value [im_category_from_id $value]
+            }
+	}
+	generic_sql {
+            set value [my set $attribute_name]
+            if {$value ne ""} {
+                set value [im_dynfield::generic_sql_option_name -widget_name [$element widget_name] -object_id $value]
+            }
+	}
+	default {
+	    set value [my set ${attribute_name}_deref]
+	}
+    }
+}    
+
+::im::dynfield::CrItem ad_instproc full_name {} {
+    Returns the fully formatted name as intended by the name_method
+    of acs_object_types table
+} {
+    set name_method [db_string name_method "select name_method from acs_object_types where object_type = '[my object_type]'"]
+    return [db_string name "select ${name_method}([my object_id]) from dual"]
+}

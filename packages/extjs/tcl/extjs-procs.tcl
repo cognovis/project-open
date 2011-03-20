@@ -124,6 +124,34 @@ ad_proc -public extjs::Form::Attribute::Numeric {
 }
 
 
+ad_proc -public extjs::Form::Attribute::Number {
+    {-name:required}
+    {-label ""}
+    {-default ""}
+    {-anchor ""}
+} {
+    Return the item definition for a number field
+} { 
+    if {$default ne ""} {
+        set default "emptyText: '$default',"
+    }
+
+    if {$label ne ""} {
+        set label "fieldLabel: '$label',"
+    }
+
+    if {$anchor ne ""} {
+        set anchor "anchor: '$anchor'"
+    }
+    return "\{
+                    xtype:'numberfield',
+                    $label
+                    $default
+                    name: '$name',
+                    $anchor
+    \}"
+}
+
 
 ad_proc -public extjs::DataStore::Json {
     {-url:required}
@@ -295,9 +323,25 @@ ad_proc -public extjs::RowEditor::Editor {
     
     return "
     // Editor for row Level editing
-    var editor = new Ext.ux.grid.RowEditor(\{
+    var ${prefix}editor = new Ext.ux.grid.RowEditor(\{
         saveText: '$saveText',
+        resize: function() \{
+            var row = Ext.fly(this.grid.getView().getRow(this.rowIndex)).getBottom();
+            var lastRow = Ext.fly(this.grid.getView().getRow(this.grid.getStore().getCount()-1)).getBottom();
+            var mainBody = this.grid.getView().mainBody;
+            var h = Ext.max(\[row + this.btns.getHeight() + 10, lastRow\]) - mainBody.getTop();
+            mainBody.setHeight(h,true);
+        \},
         listeners: \{
+            move: function(p)\{ this.resize(); \},
+            hide: function(p)\{
+                var mainBody = this.grid.getView().mainBody;
+                var lastRow = Ext.fly(this.grid.getView().getRow(this.grid.getStore().getCount()-1));
+                mainBody.setHeight(lastRow.getBottom() - mainBody.getTop(),\{
+                    callback: function()\{ mainBody.setHeight('auto'); \}
+                \});
+            \},
+            afterlayout: function(container, layout) \{ this.resize(); \},
             afteredit: \{
                 fn:function(roweditor, changes, record, rowIndex)\{
                     Ext.Ajax.request(\{
@@ -336,7 +380,6 @@ ad_proc -public extjs::RowEditor::GridPanel {
     {-new_title ""}
     {-new_json ""}
     {-width "1000"}
-    {-height "600"}
 } {
     Thid procedure returns the code for creating a GridPanel callen $prefix_grid. You need to add a div called ${prefix}_grid to your .adp file to show the Grid Panel on your page.
     
@@ -355,10 +398,11 @@ ad_proc -public extjs::RowEditor::GridPanel {
         cm: ${prefix}cm,
         renderTo: '${prefix}grid', // Name of the div
         width: '$width',
-        height: '$height',
         region: 'center',
         autoExpandColumn: '$autoExpandColumn', // column with this id will be expanded
-        plugins: \[editor\], // The editor plugin for row level editing
+        autoScroll: true,
+        autoHeight: true,
+        plugins: \[${prefix}editor\], // The editor plugin for row level editing
         title: '$title',
         clicksToEdit: 1"
 

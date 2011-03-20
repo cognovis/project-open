@@ -207,9 +207,9 @@ if {0} {
 
 
 
-::im::dynfield::Object ad_instproc list_ids {
+::im::dynfield::Object ad_instproc object_type_ids {
 } {
-    Returns a list of list_ids which are applicable to this object
+    Returns a list of object_type_ids which are applicable to this object
     
     Each class should define their own version of this as it depends on group_ids for persons
     and company_status type for im_companies and you know what for other dynfield objects.
@@ -243,7 +243,7 @@ if {0} {
 } {
 
     set attribute_name [$element attribute_name]
-
+    
     switch [$element widget] {
         date {
             set value [my set $attribute_name]
@@ -251,27 +251,27 @@ if {0} {
                 set value [template::util::date::get_property display_date $value]
             }
         }
-	richtext {
+        richtext {
             set value [my set $attribute_name]
             if {$value ne ""} {
                 set value [template::util::richtext::get_property contents $value]
             }
-	}
-	im_category_tree {
+        }
+        im_category_tree {
             set value [my set $attribute_name]
             if {$value ne ""} {
                 set value [im_category_from_id $value]
             }
-	}
-	generic_sql {
+        }
+        generic_sql {
             set value [my set $attribute_name]
             if {$value ne ""} {
                 set value [im_dynfield::generic_sql_option_name -widget_name [$element widget_name] -object_id $value]
             }
-	}
-	default {
-	    set value [my set ${attribute_name}_deref]
-	}
+        }
+        default {
+            set value [my set ${attribute_name}_deref]
+        }
     }
 }    
 
@@ -283,9 +283,41 @@ if {0} {
     return [db_string name "select ${name_method}([my object_id]) from dual"]
 }
 
-::im::dynfield::Object ad_instproc full_name {} {
-    Return the full name along with salutation
+::im::dynfield::Object ad_instproc dynfield_ids {
+    {-display_mode "display"}
 } {
-    return "[my salutation] [my name]"
-}
+    Returns an ordered list of dynfield attribute ids for the display_mode for this object.
+} {
+    # We make the not so far fetched assumption, that the name of the
+    # attribute is the same a the column name when looking for the
+    # type_column value. If someone ever changes that by overriding
+    # this classes procedure, you are out of luck !
 
+    set type_column [[my class] type_column]
+
+    # display_mode "display" inherits "edit", so when you want to
+    # display, you also want the edit attributes
+    if {$display_mode eq "display"} {
+        set display_sql "display_mode != 'none'"
+    } else {
+        set display_sql "display_mode = :display_mode"
+    }
+
+    # Get the list of dynfields for this object based on the
+    # object_type_id (the value in the type_column
+  
+    set dynfield_ids [db_list dynfields "select m.attribute_id from im_dynfield_type_attribute_map m, im_dynfield_layout d 
+                                         where object_type_id = [my $type_column] 
+                                         and $display_sql and m.attribute_id = d.attribute_id 
+                                         order by pos_y"]
+    
+    # The list might be empty if there does not exist an entry for
+    # the type column yet. In this case, display all attributes
+
+    if {$dynfield_ids eq ""} {
+        set dynfield_ids [db_list dynfields "select attribute_id from im_dynfields d, im_dynfield_layout l 
+                                             where d.attribute_id = l.attribute_id order by pos_y"]
+    }
+    
+    return $dynfield_ids
+}

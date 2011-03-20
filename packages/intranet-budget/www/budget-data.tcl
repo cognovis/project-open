@@ -14,6 +14,7 @@ ad_page_contract {
     {amount ""}
     {title ""}
     {type_id ""}
+    {hours ""}
     {department_id ""}
 } -properties {
 } -validate {
@@ -22,19 +23,27 @@ ad_page_contract {
 
 switch $action {
     get_budget {
-        # Return the budget as a json
-        
+
+        # Return the budget as a json        
         if {![exists_and_not_null budget_id]} {
             ad_return_error "Missing budget_id" "You need to provide a budget_id if you want to get the budget with get_budget"
         }
         
-        set Budget [::im_budget::Budget get_instance_from_db -item_id $budget_id]
-        
-        set json [util::json::gen [$Budget json_object]]
+        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
+        set json [util::json::gen [util::json::object::create [list success true data [$Budget json_object]]]]
         ns_return 200 text/text $json
     }
     save_budget {
-            ns_return 200 text/text "1"
+        
+        # Get the budget from the database
+        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
+        
+        $Budget update_from_form
+        $Budget save
+
+        set json [util::json::gen [util::json::object::create [list success true]]]
+
+        ns_return 200 text/text $json
     }        
     get_costs {
         if {![exists_and_not_null budget_id]} {
@@ -43,21 +52,14 @@ switch $action {
         
         set json_lists [list]
         set counter 0
-
         # Get the data from the database
-        set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = '::im_budget::Cost'}]
+        set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
         
         foreach item_id $cost_ids {
             incr counter
-            set Cost [::im_budget::Cost get_instance_from_db -item_id $item_id]            
+            set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]            
             # Append one entry to the json_lists for the array
-            lappend json_lists [util::json::object::create [subst \
-                                                                {item_id "$item_id"
-                                                                    title "[$Cost title]"
-                                                                    amount "[$Cost amount]"
-                                                                    type_id "[$Cost type_id]"}
-                                                           ]
-                                                ]
+            lappend json_lists [$Cost json_object]
         }
         
         # Generate the array of items
@@ -70,7 +72,7 @@ switch $action {
             
             # We are editing a cost row, because we have an item_id,
             # first get the Cost object for the row
-            set Cost [::im_budget::Cost get_instance_from_db -item_id $item_id]
+            set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]
 
             # Now update the fields
             $Cost set title $title
@@ -91,7 +93,7 @@ switch $action {
                 ns_return 200 text/text "0"
             } else {
 
-                set Cost [::im_budget::Cost create cost \
+                set Cost [::im::dynfield::CrClass::im_budget_cost create cost \
                               -parent_id $budget_id \
                               -title $title \
                               -amount $amount \
@@ -112,19 +114,12 @@ switch $action {
         set counter 0
 
         # Get the data from the database
-        set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = '::im_budget::Hour'}]
+        set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
         
         foreach item_id $hour_ids {
             incr counter
-            set Hour [::im_budget::Hour get_instance_from_db -item_id $item_id]            
-            # Append one entry to the json_lists for the array
-            lappend json_lists [util::json::object::create [subst \
-                                                                {item_id "$item_id"
-                                                                    title "[$Hour title]"
-                                                                    amount "[$Hour amount]"
-                                                                    department_id "[$Hour department_id]"}
-                                                           ]
-                                                ]
+            set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]            
+            lappend json_lists [$Hour json_object]
         }
         
         # Generate the array of items
@@ -137,11 +132,11 @@ switch $action {
             
             # We are editing a cost row, because we have an item_id,
             # first get the Hour object for the row
-            set Hour [::im_budget::Hour get_instance_from_db -item_id $item_id]
+            set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]
 
             # Now update the fields
             $Hour set title $title
-            $Hour set amount $amount
+            $Hour set hours $hours
             $Hour set department_id $department_id
 
             # Save and destro
@@ -158,10 +153,10 @@ switch $action {
                 ns_return 200 text/text "0"
             } else {
 
-                set Hour [::im_budget::Hour create cost \
+                set Hour [::im::dynfield::CrClass::im_budget_hour create cost \
                               -parent_id $budget_id \
                               -title $title \
-                              -amount $amount \
+                              -hours $hours \
                               -department_id $department_id]
                 
                 $Hour save_new

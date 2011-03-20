@@ -33,3 +33,12 @@ foreach object_type $object_types {
     ns_log Notice "intranet-dynfield/tcl/99-create-class-procs.tcl: ::im::dynfield::Class get_class_from_db -object_type $object_type"
     ::im::dynfield::Class get_class_from_db -object_type $object_type
 } 
+
+# Initialize the Cr classes
+
+set object_types [db_list object_types "select object_type from acs_object_types where supertype ='::im::dynfield::CrItem'"]
+foreach object_type $object_types {
+    ns_log Notice "intranet-dynfield/tcl/99-create-class-procs.tcl: ::im::dynfield::CrClass get_class_from_db -object_type $object_type"
+    ::im::dynfield::CrClass get_class_from_db -object_type $object_type
+} 
+
