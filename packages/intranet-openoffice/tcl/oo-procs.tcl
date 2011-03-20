@@ -57,75 +57,75 @@ ad_proc -public intranet_oo::import_oo_pdf {
 } {
     set pdf_filename "[file rootname $oo_file].pdf"
     set jodconverter_bin [parameter::get -parameter "jodconverterBin" -default "/usr/bin/jodconverter"]
-    set status [catch {eval exec $jodconverter_bin $oo_file $pdf_filename} result]
+    if {[file exists $jodconverter_bin]} { 
+        set status [catch {eval exec $jodconverter_bin $oo_file $pdf_filename} result]
+        ns_log Debug "Using jodconverter"
+    } else {
+        set status [catch {exec -- /usr/bin/java -jar [acs_package_root_dir intranet-openoffice]/jodconverter/lib/jodconverter-cli-2.2.2.jar $oo_file $pdf_filename} result]
+    }
     if { $status == 0 } {
-        
+
         # The command succeeded, and wrote nothing to stderr.
         # $result contains what it wrote to stdout, unless you
         # redirected it
-        
+
     } elseif { [string equal $::errorCode NONE] } {
 	
         # The command exited with a normal status, but wrote something
         # to stderr, which is included in $result.
-        
+
     } else {
-        
+
         switch -exact -- [lindex $::errorCode 0] {
-            
+
             CHILDKILLED {
                 foreach { - pid sigName msg } $::errorCode break
-                
+
                 # A child process, whose process ID was $pid,
                 # died on a signal named $sigName.  A human-
                 # readable message appears in $msg.
-                
+
             }
-            
+
             CHILDSTATUS {
-                
+
                 foreach { - pid code } $::errorCode break
-                
+
                 # A child process, whose process ID was $pid,
                 # exited with a non-zero exit status, $code.
-                
+
             }
-            
+
             CHILDSUSP {
-                
+
                 foreach { - pid sigName msg } $::errorCode break
-                
+
                 # A child process, whose process ID was $pid,
                 # has been suspended because of a signal named
                 # $sigName.  A human-readable description of the
                 # signal appears in $msg.
-                
+		
             }
-            
+	    
             POSIX {
-                
+
                 foreach { - errName msg } $::errorCode break
-                
+		
                 # One of the kernel calls to launch the command
                 # failed.  The error code is in $errName, and a
                 # human-readable message is in $msg.
-                
+
             }
-            
+
         }
     }
     
     set mime_type "application/pdf"
     if {![file exists $pdf_filename]} {
-        ###############
-        # this is a fix to use the oo file if pdf file could not be generated
-        ###############
-        set pdf_filename $oo_file
-        ns_log Notice "NO PDF"
-        set mime_type "application/odt"
+        # We could not generate the PDF, abort
+        ad_return_error "Could not generate PDF" "We could not generate the PDF file. Please make sure that you have OpenOffice correctly setup and that the OpenOffice server is running. Contact your system administrator if in doubt"
     } else {
-        #	ns_unlink $oo_file
-        ds_comment $oo_file
+        ns_unlink $oo_file
     }
     
     if {$no_import_p} {
@@ -140,7 +140,7 @@ ad_proc -public intranet_oo::import_oo_pdf {
     }
     
     if {[exists_and_not_null $item_id]} {
-        set parent_id [get_parent -item_id $item_id]
+	set parent_id [get_parent -item_id $item_id]
         
         set revision_id [cr_import_content \
                              -title $title \
@@ -168,11 +168,11 @@ ad_proc -public intranet_oo::import_oo_pdf {
     } elseif {$return_pdf_with_id_p} {
         return [list [content::revision::item_id -revision_id $revision_id] $mime_type $pdf_filename]
     } else  {
-        ns_unlink $pdf_filename
+        # ns_unlink $pdf_filename
         return [content::revision::item_id -revision_id $revision_id]
     }
 }
-
+    
 ad_proc -public intranet_oo::join_pdf {
     -filenames:required
     {-title ""}
@@ -201,48 +201,48 @@ ad_proc -public intranet_oo::join_pdf {
     set mime_type "application/pdf"
 
     if {![file exists $pdf_filename]} {
-	error "$result - couldn't join pdfs"
-	return
+        error "$result - couldn't join pdfs"
+        return
     }
 
     if {$no_import_p} {
-	return [list $mime_type $pdf_filename]
+        return [list $mime_type $pdf_filename]
     }
 
     set pdf_filesize [file size $pdf_filename]
     
     set file_name [file tail $pdf_filename]
     if {$title eq ""} {
-	set title $file_name
+        set title $file_name
     }
     
     if {[exists_and_not_null $item_id]} {
-	set parent_id [get_parent -item_id $item_id]
-	
-	set revision_id [cr_import_content \
-			     -title $title \
-			     -item_id $item_id \
-			     $parent_id \
-			     $pdf_filename \
-			     $pdf_filesize \
-			     $mime_type \
-			     $file_name ]
+        set parent_id [get_parent -item_id $item_id]
+        
+        set revision_id [cr_import_content \
+                             -title $title \
+                             -item_id $item_id \
+                             $parent_id \
+                             $pdf_filename \
+                             $pdf_filesize \
+                             $mime_type \
+                             $file_name ]
     } else {
-	set revision_id [cr_import_content \
-			     -title $title \
-			     $parent_id \
-			     $pdf_filename \
-			     $pdf_filesize \
-			     $mime_type \
-			     $file_name ]
+        set revision_id [cr_import_content \
+                             -title $title \
+                             $parent_id \
+                             $pdf_filename \
+                             $pdf_filesize \
+                             $mime_type \
+                             $file_name ]
     }	
-
+    
     content::item::set_live_revision -revision_id $revision_id
     if {$return_pdf_p} {
-	return [list $mime_type $pdf_filename]
+        return [list $mime_type $pdf_filename]
     } else {
-	ns_unlink $pdf_filename
-	return [content::revision::item_id -revision_id $revision_id]
+        #ns_unlink $pdf_filename
+        return [content::revision::item_id -revision_id $revision_id]
     }
 }
     
@@ -270,7 +270,7 @@ ad_proc -public intranet_oo::parse_content {
     # ------------------------------------------------
     # Create a temporary directory for our contents
     set odt_tmp_path [ns_tmpnam]
-    ns_log Notice "view.tcl: odt_tmp_path=$odt_tmp_path"
+    ns_log Debug "view.tcl: odt_tmp_path=$odt_tmp_path"
     ns_mkdir $odt_tmp_path
     
     # The document 
@@ -283,7 +283,7 @@ ad_proc -public intranet_oo::parse_content {
     
     # Unzip the odt into the temorary directory
     exec unzip -d $odt_tmp_path $odt_zip 
-
+    
     # ------------------------------------------------
     # Read the content.xml file
     set file [open $odt_content]
@@ -330,16 +330,13 @@ ad_proc -public intranet_oo::parse_content {
     
     # The zip -j command replaces the specified file in the zipfile 
     # which happens to be the OpenOffice File. 
-    ns_log Notice "view.tcl: before zipping"
     exec zip -j $odt_zip $odt_content
     exec zip -j $odt_zip $odt_styles
     
-	ns_log Notice "target_type $target_type"
 	if {$target_type eq ".pdf"} {
 	    set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import]
 	    set return_file [lindex $import_doc 1]
 	    set mime_type [lindex $import_doc 2]
-	    ns_log Notice "RETURN_FILE $return_file :: mime_type"
 	} else {
 	    set return_file $odt_zip
 	    set mime_type "application/odt"
@@ -348,7 +345,7 @@ ad_proc -public intranet_oo::parse_content {
     
     # ------------------------------------------------
     # Return the file
-    ns_log Notice "view.tcl: before returning file"
+    ns_log Debug "view.tcl: before returning file"
     set outputheaders [ns_conn outputheaders]
     ns_set cput $outputheaders "Content-Disposition" "attachment; filename=$output_filename"
     ns_returnfile 200 $mime_type $return_file
@@ -357,11 +354,8 @@ ad_proc -public intranet_oo::parse_content {
     # Delete the temporary files
     
     # delete other tmpfiles
-    # ns_unlink "${dir}/$document_filename"
-    # ns_unlink "${dir}/$content.xml"
-    # ns_unlink "${dir}/$style.xml"
-    # ns_unlink "${dir}/document.odf"
-    # ns_rmdir $dir
+    file delete -force $odt_tmp_path
+    # ns_unlink "$return_file"
     ad_script_abort
 }
 
