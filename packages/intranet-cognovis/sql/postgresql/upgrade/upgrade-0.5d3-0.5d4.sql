@@ -1,4 +1,6 @@
--- upgrade tasks link from /new to /view 
+-- upgrade-0.5d3-0.5d4.sql
+
+SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d3-0.5d4.sql','');
 
 delete from im_biz_object_urls
 where object_type = 'im_timesheet_task';

@@ -319,3 +319,38 @@ ad_proc -public -callback im_dynfield_widget_after_update {
     Callback to be executed after a widget has been changed
 } -
 
+
+ad_proc -public -callback im_forum_new_redirect {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-topic_id ""}
+    {-topic_type_id ""}
+    {-parent_id ""}
+    {-return_url:required}
+} {
+	This is mainly a callback to redirect from the original new.tcl page to somewhere else
+	
+        @param topic_id ID of the forum topic
+	@param topic_type_id ID of type of topic  
+} -
+
+
+ad_proc -public -callback im_timesheet_hours_new_redirect {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-project_id ""}
+    {-julian_date ""}
+    {-gregorian_date ""}
+    {-show_week_p ""}
+    {-user_id_from_search ""}
+    {-return_url ""}
+} {
+	This is mainly a callback to redirect from the original new.tcl page to somewhere else
+	
+        @param topic_id ID of the forum topic
+	@param topic_type_id ID of type of topic  
+} -
+
+

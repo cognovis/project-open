@@ -1,3 +1,7 @@
+-- upgrade-0.4d-0.5d1.sql
+
+SELECT acs_log__debug('packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.4d-0.5d1.sql','');
+
 create or replace function im_link_from_id (integer) returns varchar as '
 DECLARE
 	p_object_id	alias for $1;

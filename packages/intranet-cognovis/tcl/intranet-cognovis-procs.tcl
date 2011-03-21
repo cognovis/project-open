@@ -299,3 +299,27 @@ ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
 	company_id company_type_id company_status_id company_name return_url 
     }] 
 } 
+
+
+
+
+
+
+ad_proc -public -callback im_forum_new_redirect -impl intranet-cognovis {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-topic_id ""}
+    {-topic_type_id ""}
+    {-parent_id ""}
+    {-return_url:required}
+} {
+    This is mainly a callback to redirect from the original new.tcl page to somewhere else
+    
+} {
+    
+    
+    ad_returnredirect [export_vars -base "/intranet-cognovis/forums/forum-ae" {
+	topic_id topic_type_id parent_id return_url 
+    }] 
+} 

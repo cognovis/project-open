@@ -32,9 +32,6 @@ ad_page_contract {
     {return_url ""}
 } 
 
-callback im_forum_new_redirect -object_id $object_id \
-    -status_id "" -type_id "" -topic_id "" -parent_id $parent_id \
-    -topic_type_id $topic_type_id -return_url $return_url 
 # ------------------------------------------------------------------
 # Default
 # ------------------------------------------------------------------
