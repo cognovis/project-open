@@ -13,9 +13,6 @@ ad_library {
 #
 ##############################
 
-set openacs54_p [im_openacs54_p]
-if {$openacs54_p} {
-
 xotcl::Class create ::im::dynfield::Element \
     -slots {
         xo::Attribute create attribute_name
@@ -42,7 +39,7 @@ xotcl::Class create ::im::dynfield::Element \
         xo::Attribute create label_style -default "plain"
         xo::Attribute create sort_order -default "0"
         xo::Attribute create help_text -default ""
-        xo::Attribute create list_id
+        xo::Attribute create object_type_id
         xo::Attribute create widget_id
         xo::Attribute create storage_type_id
         xo::Attribute create multiple_p
@@ -54,15 +51,15 @@ xotcl::Class create ::im::dynfield::Element \
 
 ::im::dynfield::Element ad_proc get_instance_from_db {
     -id:required 
-    {-list_id ""}
+    {-object_type_id ""}
     {-page_url "default"}
 } {
     Initialize a new Element object for an attribute. 
     
     @param id Dynfield Attribute ID
 } {
-    if {$list_id == ""} {
-        set list_id [ams::list::get_id -attribute_id $id]
+    if {$object_type_id == ""} {
+        set object_type_id 0
     }
 	
     set sql "
@@ -89,7 +86,7 @@ xotcl::Class create ::im::dynfield::Element \
            ida.widget_name,
            idw.widget,
            tam.help_text,
-           tam.object_type_id as list_id,
+           tam.object_type_id as object_type_id,
            tam.default_value,
            idw.widget_id,
            idw.storage_type_id
@@ -97,7 +94,7 @@ xotcl::Class create ::im::dynfield::Element \
            acs_attributes aa,
            im_dynfield_widgets idw,
            im_dynfield_attributes ida
-           left outer join (select * from im_dynfield_type_attribute_map where object_type_id = $list_id) tam on (tam.attribute_id = ida.attribute_id)
+           left outer join (select * from im_dynfield_type_attribute_map where object_type_id = $object_type_id) tam on (tam.attribute_id = ida.attribute_id)
            left outer join (select * from im_dynfield_layout where page_url = '$page_url') idl on (ida.attribute_id = idl.attribute_id)
      where
            ida.acs_attribute_id = aa.attribute_id
@@ -105,7 +102,7 @@ xotcl::Class create ::im::dynfield::Element \
            and ida.attribute_id = $id
      "
     
-    set r [::im::dynfield::Element create ::${id}__$list_id]
+    set r [::im::dynfield::Element create ::${id}__$object_type_id]
     $r db_1row dbq..get_element $sql
      
     if {[lsearch [im_dynfield_multimap_ids] [$r storage_type_id]] <0} {
@@ -122,7 +119,7 @@ xotcl::Class create ::im::dynfield::Element \
 } {
     my instvar attribute_id dynfield_attribute_id required_p section_heading pretty_name pretty_plural default_value 
     my instvar max_n_values include_in_search_p also_hard_coded_p deprecated_p label_style sort_order widget_name widget
-    my instvar min_n_values help_text list_id default_value
+    my instvar min_n_values help_text object_type_id default_value
     
     db_dml up_acs_attributes "update acs_attributes set pretty_name = :pretty_name, pretty_plural=:pretty_plural default_value = :default_value, min_n_values = :min_n_values, max_n_values = :max_n_values where attribute_id = :attribute_id"
     
@@ -130,7 +127,7 @@ xotcl::Class create ::im::dynfield::Element \
     
     db_dml up_idl "update im_dynfield_layout set label_style = :label_style, pos_y = :sort_order where attribute_id = :dynfield_attribute_id"
     
-    db_dml up_tam "update im_dynfield_type_attribute_map set required_p = :required_p, section_heading = :section_heading, help_text = :help_text, default_value = :default_value where attribute_id = :dynfield_attribute_id and object_type_id = :list_id"
+    db_dml up_tam "update im_dynfield_type_attribute_map set required_p = :required_p, section_heading = :section_heading, help_text = :help_text, default_value = :default_value where attribute_id = :dynfield_attribute_id and object_type_id = :object_type_id"
 }
 
 ::im::dynfield::Element instproc initialize_loaded_object {} {
@@ -206,16 +203,11 @@ xotcl::Class create ::im::dynfield::Element \
 	return $form_elements
 }
 
-}
-
-
 #############################
 # 
 # Dynfield Widgets
 #
 #############################
-
-if {$openacs54_p} {
 
 ::xotcl::Class create ::im::dynfield::Widget \
     -slots {
@@ -442,8 +434,6 @@ if {$openacs54_p} {
 }
 
 
-}
-
 
 ##############################
 # Object Cache
@@ -451,53 +441,49 @@ if {$openacs54_p} {
 # Kudos to Stefan Soberning
 ##############################
 
-if {$openacs54_p} {
-
-    ::xotcl::Class create ::im::dynfield::ElementCache
+::xotcl::Class create ::im::dynfield::ElementCache
 
 
 ::im::dynfield::ElementCache instproc get_instance_from_db {
     -id:required
-    {-list_id ""}
- } {
-     if {$list_id == ""} {
-         # Apparently the list is not important, might be the case if the help_text is not needed or the default value
-         set list_id [ams::list::get_id -attribute_id $id]
-     }
-     set object ::${id}__$list_id
-     set code [ns_cache eval xotcl_object_cache $object {
-          set created 1
-          set o [next]
-          return [::Serializer deepSerialize $o]
-        }]
+    {-object_type_id ""}
+} {
+    if {$object_type_id == ""} {
+        # Apparently the list is not important, might be the case if the help_text is not needed or the default value
+        set object_type_id 0
+    }
+    set object ::${id}__$object_type_id
+    set code [ns_cache eval xotcl_object_cache $object {
+        set created 1
+        set o [next]
+        return [::Serializer deepSerialize $o]
+    }]
     if {![info exists created]} {
-      if {[my isobject $object]} {
-      } else {
+        if {[my isobject $object]} {
+        } else {
             set o [eval $code]
             $object initialize_loaded_object
-      }
+        }
     }
     
     return $object
 }
 
-::im::dynfield::ElementCache instproc delete {-id:required -list_id:required} {
+::im::dynfield::ElementCache instproc delete {-id:required -object_type_id:required} {
       next
-      my flush -id $id -list_id $list_id
+    my flush -id $id -object_type_id $object_type_id
 }
 
-::im::dynfield::ElementCache ad_proc flush {-id:required -list_id:required} {
+::im::dynfield::ElementCache ad_proc flush {-id:required -object_type_id:required} {
     Flush
 } {
-    ::xo::clusterwide ns_cache flush xotcl_object_cache ::${id}__$list_id
+    ::xo::clusterwide ns_cache flush xotcl_object_cache ::${id}__$object_type_id
     ds_comment "Flushing ::$id"
 }
 
-::im::dynfield::ElementCache instproc flush {-id:required -list_id:required} {
-      ::xo::clusterwide ns_cache flush xotcl_object_cache ::${id}__$list_id
-      ds_comment "Flushing ::$id"
+::im::dynfield::ElementCache instproc flush {-id:required -object_type_id:required} {
+      ::xo::clusterwide ns_cache flush xotcl_object_cache ::${id}__$object_type_id
+    ds_comment "Flushing ::$id"
 }
 
 ::im::dynfield::Element mixin ::im::dynfield::ElementCache
-
-}

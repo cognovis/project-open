@@ -28,11 +28,11 @@ ad_proc -private intranet_fs::install::after_install {} {
     
     # Get File Storage's package_id mounted under Main Site
     set file_storage_package_id [db_list qry "
-	select package_id 
-	from acs_objects o, site_nodes s 
-	where o.object_id = s.object_id 
-	and parent_id = :parent_node_id 
-	and name = 'file-storage'
+	    select package_id 
+    	       from acs_objects o, site_nodes s 
+               	where o.object_id = s.object_id 
+                and parent_id = :parent_node_id 
+                and name = 'file-storage'
     "]
 
     if {![exists_and_not_null file_storage_package_id]} {

@@ -243,3 +243,23 @@ ad_proc im_survsimp_component { object_id } {
     return "${survsimp_html}${survsimp_response_html}"
 }
 
+
+# Deleting the project folder 
+ad_proc -public -callback im_project_after_delete -impl simple_survey {
+	{-object_id:required}
+    {-status_id}
+    {-type_id}
+} {
+    
+	Delete the surveys from the project
+
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2010-09-27
+    
+	@param project_id Project_id of the project
+    @return             nothing
+    @error
+} {
+    ns_log Notice "deleting survey_response for project_id $object_id"
+    db_dml del_responses "delete from survsimp_responses where related_object_id = :object_id"
+}

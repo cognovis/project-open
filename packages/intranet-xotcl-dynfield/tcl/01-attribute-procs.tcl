@@ -19,10 +19,10 @@ ad_library {
     -superclass ::xo::db::Attribute \
     -parameter {
 	{widget_name}
-	{already_existed_p false}
-	{deprecated_p false}
-	{include_in_search_p true}
-	{also_hard_coded_p true}
+	{already_existed_p f}
+	{deprecated_p f}
+	{include_in_search_p t}
+	{also_hard_coded_p t}
 	{storage_type_id}
 	{widget}
 	{widget_parameters}
@@ -47,19 +47,29 @@ ad_library {
     
     # Create the class if it does not exist (albeit unlikely)
     if {![::xo::db::Class object_type_exists_in_db -object_type $object_type]} {
-	$domain create_object_type
+        $domain create_object_type
     }
     
     if {$required == "false"} {
-	set required_p 0
+        set required_p 0
     } else {
-	set required_p 1
+        set required_p 1
+    }
+
+    if {$required == "false"} {
+        set required_p 0
+    } else {
+        set required_p 1
     }
     
     # Create the acs_attribute along with the im_dynfield one.
     # If the acs_attribute already exists we just create the dynfield attribute
     
     set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $name]
+    
+    if {![exists_and_not_null table_name]} {
+        set table_name [::xo::db::Class get_table_name -object_type $object_type]
+    }
     
     if {!$im_dynfield_attribute_exists} {
 	ns_log Notice "WE HAVE TO CALL attribute::add ??????"
@@ -112,41 +122,43 @@ ad_library {
     return "$att_ref as $name"
 }
 
+if {0} {
 ::im::dynfield::Attribute ad_proc dynfield_attributes {
-    {-list_ids:required}
+    {-object_type_ids:required}
     {-privilege ""}
     {-user_id ""}
 } {
-    Returns a list of dynfield_attributes with list_id of the attributes to display. This means we return a list of (attribute_id list_id) pairs.
+    Returns a list of dynfield_attributes with object_type_id of the attributes to display. This means we return a list of (attribute_id object_type_id) pairs.
     
-    The list is sorted in order of how the attributes should appear according to the list_id order
+    The list is sorted in order of how the attributes should appear according to the object_type_id order
     
-    @param list_ids This is a list of list_ids. Note that the order is important
+    @param object_type_ids This is a list of object_type_ids. Note that the order is important
     @param user_id User ID for whom to check the privilege
     @param privilege Check that the user has this privilege. Empty string does mean no permission check
 } {
     set dynfield_attribute_ids [list]
     set attribute_ids [list]
     db_foreach attributes "
-	select dl.attribute_id, object_type_id as list_id
+	select dl.attribute_id, object_type_id as object_type_id
 	from im_dynfield_type_attribute_map tam, im_dynfield_layout dl
 	where tam.attribute_id = dl.attribute_id
-	and object_type_id in ([template::util::tcl_to_sql_list $list_ids])
+	and object_type_id in ([template::util::tcl_to_sql_list $object_type_ids])
 	order by pos_y
     " {
 	if {[lsearch $attribute_ids $attribute_id] < 0} {
 	    lappend attribute_ids $attribute_id
 	    if {$privilege == ""} {
-		lappend dynfield_attribute_ids [list $attribute_id $list_id]
+		lappend dynfield_attribute_ids [list $attribute_id $object_type_id]
 	    } else {
 		if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
-		    lappend dynfield_attribute_ids [list $attribute_id $list_id]
+		    lappend dynfield_attribute_ids [list $attribute_id $object_type_id]
 		}
 	    }
 	}
     }
     return $dynfield_attribute_ids
 }
+
 
 ::im::dynfield::Attribute ad_instproc save {} {
     This will save a dynfield attribute in the respective tables
@@ -172,8 +184,8 @@ ad_library {
 ##########################################
 
 ad_proc im_dynfield::attribute::map {
-    {-list_id ""}
-    {-list_ids ""}
+    {-object_type_id ""}
+    {-object_type_ids ""}
     -attribute_id:required
     {-sort_order ""}
     {-required_p ""}
@@ -186,11 +198,11 @@ ad_proc im_dynfield::attribute::map {
     @return option_map_id
 } {
     
-    foreach list_id [concat $list_id $list_ids] {
+    foreach object_type_id [concat $object_type_id $object_type_ids] {
 
 	    db_dml delmap "
 		    delete from im_dynfield_type_attribute_map
-		    where attribute_id = :attribute_id and object_type_id = :list_id
+		    where attribute_id = :attribute_id and object_type_id = :object_type_id
 	    "
         
         if {$required_p == ""} {
@@ -207,7 +219,7 @@ ad_proc im_dynfield::attribute::map {
 			section_heading
 		) values (
 			:attribute_id,
-			:list_id,
+			:object_type_id,
 			'edit',
 			:required_p,
 			:section_heading
@@ -224,7 +236,7 @@ ad_proc im_dynfield::attribute::map {
 }
 
 ad_proc im_dynfield::attribute::unmap {
-    -list_id:required
+    -object_type_id:required
     -attribute_id:required
 } {
     Unmap an ams option from an ams list
@@ -232,7 +244,7 @@ ad_proc im_dynfield::attribute::unmap {
  
     db_dml delmap "
 	    delete from im_dynfield_type_attribute_map
-	    where attribute_id = :attribute_id and object_type_id = :list_id
+	    where attribute_id = :attribute_id and object_type_id = :object_type_id
     "
     
     db_dml delsort "
@@ -242,7 +254,7 @@ ad_proc im_dynfield::attribute::unmap {
 }
 
 ad_proc im_dynfield::attribute::required {
-    -list_id:required
+    -object_type_id:required
     -attribute_id:required
 } {
     Specify and ams_attribute as required in an ams list
@@ -250,13 +262,13 @@ ad_proc im_dynfield::attribute::required {
     db_dml ams_list_attribute_required {
         update im_dynfield_type_attribute_map
         set required_p = 't'
-        where object_type_id = :list_id
+        where object_type_id = :object_type_id
         and attribute_id = :attribute_id
     }
 }
 
 ad_proc im_dynfield::attribute::optional {
-    -list_id:required
+    -object_type_id:required
     -attribute_id:required
 } {
     Specify and ams_attribute as optional in an ams list
@@ -264,10 +276,10 @@ ad_proc im_dynfield::attribute::optional {
     db_dml ams_list_attribute_optional {
         update im_dynfield_type_attribute_map
         set required_p = 'f'
-        where object_type_id = :list_id
+        where object_type_id = :object_type_id
         and attribute_id = :attribute_id
     }
 }
 
-
+}
 

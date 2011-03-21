@@ -12,7 +12,7 @@ namespace eval ::im::dynfield {
         {data ""}
         {name {[namespace tail [self]]}}
         class
-        list_ids
+        object_type_ids
         {fields ""}
         {key "object_id"}
         add_page_title
@@ -41,17 +41,17 @@ namespace eval ::im::dynfield {
         set level [template::adp_level]
         my forward var uplevel #$level set 
 
-        my instvar data folder_id key class list_ids export object_type
+        my instvar data folder_id key class object_type_ids export object_type
 
         if {![exists_and_not_null class]} {return}
-        if {![exists_and_not_null list_ids]} {
-            set list_ids [$class default_list_id]
+        if {![exists_and_not_null object_type_ids]} {
+            set object_type_ids [$class default_object_type_id]
         }
 
         set form_elements [list [list ${key}:key]]
    
-        foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $list_ids] {
-            set element [im::dynfield::Element get_instance_from_db -id [lindex $dynfield_id 0] -list_id [lindex $dynfield_id 1]]
+        foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -object_type_ids $object_type_ids] {
+            set element [im::dynfield::Element get_instance_from_db -id [lindex $dynfield_id 0] -object_type_id [lindex $dynfield_id 1]]
             set form_elements [concat $form_elements [$element form_element]]
             set datatype([$element attribute_name]) [$element datatype]
             set defaults([$element attribute_name]) [$element default_value]
@@ -84,7 +84,7 @@ namespace eval ::im::dynfield {
         }
         
         set object_types [list]
-        db_foreach object_types "select distinct object_type from acs_attributes aa, im_dynfield_attributes ida, im_dynfield_type_attribute_map tam where aa.attribute_id = ida.acs_attribute_id and ida.attribute_id = tam.attribute_id and tam.object_type_id in ([template::util::tcl_to_sql_list $list_ids])" {
+        db_foreach object_types "select distinct object_type from acs_attributes aa, im_dynfield_attributes ida, im_dynfield_type_attribute_map tam where aa.attribute_id = ida.acs_attribute_id and ida.attribute_id = tam.attribute_id and tam.object_type_id in ([template::util::tcl_to_sql_list $object_type_ids])" {
             lappend object_types $object_type
             my mixin "[::im::dynfield::Form object_type_to_class $object_type]"
         }

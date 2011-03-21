@@ -113,9 +113,9 @@ namespace eval ::im::dynfield {}
     return $supertype_list
 }
 
-::im::dynfield::Class ad_instproc list_ids {
+::im::dynfield::Class ad_instproc object_type_ids {
 } {
-    Returns a list of list_ids which are applicable to this Class
+    Returns a list of object_type_ids which are applicable to this Class
     
     Each class should define their own version of this as it depends on group_ids for persons
     and company_status type for im_companies and you know what for other dynfield objects.
@@ -126,8 +126,8 @@ namespace eval ::im::dynfield {}
     return [db_list lists "select category_id from im_categories c, acs_object_types ot where c.category_type= ot.type_category_type and object_type in ([template::util::tcl_to_sql_list $object_types])"]
 }
 
-::im::dynfield::Class ad_instproc default_list_id {} {
-    Returns the default list_id for the class
+::im::dynfield::Class ad_instproc default_object_type_id {} {
+    Returns the default object_type_id for the class
 } {
     set object_type [my object_type]
 
