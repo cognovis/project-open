@@ -1591,3 +1591,18 @@ ad_proc -private fs::category_links {
     }
     return [join $categories $joinwith]
 }
+
+
+ad_proc -public -callback file_storage_file_add_redirect {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-file_id ""}
+    {-folder_id ""}
+    {-return_url ""}
+} {
+	This is mainly a callback to redirect from the original file-add.tcl page to somewhere else
+
+    
+	
+} -
