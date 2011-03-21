@@ -535,7 +535,7 @@ if {[info exists attribute_id]} {
 		     [list object_type $object_type] \
 		     [list nomaster_p 1] \
     ]
-    set map_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/attribute-type-map"]
+    set map_html [ad_parse_template "/packages/intranet-dynfield/www/attribute-type-map"]
 }
 
 
