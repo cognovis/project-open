@@ -27,27 +27,20 @@ ad_page_contract {
     { response_id:integer 0}
 }
 
-
-
 if {0 == $project_id} {
     ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_specify_a] "
     return
 }
 
-# ---------------------------------------------------------------------
-# Get Everything about the project
-# ---------------------------------------------------------------------
-if {0} {
-    set project [::im::dynfield::Class get_instance_from_db -id $project_id]
-    set company_name [db_string company_name "select im_company__name([$project company_id])"]
-    ns_log Notice "[$project serialize]"
-    foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids [$project list_ids] -privilege "read"] {
-	
-	# Initialize the Attribute
-	set element [im::dynfield::Element get_instance_from_db -id [lindex $dynfield_id 0] -list_id [lindex $dynfield_id 1]]
-	set [$element attribute_name] [$project value $element]
-    }
+# First check if the report is already generated, then just return the
+# generated PDF
 
+# Use the highest (latest) item_id, just in case.. we have more from
+# somewhere else, altough this should not happen, to be honest.....
+set item_id [db_string get_item "select max(item_id) from cr_items where parent_id = :response_id and content_type = 'content_revision'" -default ""]
+
+if {$item_id ne ""} {
+    ad_returnredirect "/file/$item_id"
 }
 
 set extra_selects [list "0 as zero"]
@@ -136,34 +129,39 @@ db_foreach response $questions_sql {
 
 foreach question_id [list 27931 27932 27933 27934] {
 
-
+    
     set answer [string trim [set ${question_id}_response]]
-    ds_comment "$question_id :: $answer"
-
+    set answer [lang::util::localize $answer en_US]
+    ns_log Notice "$question_id :: $answer"
     switch $answer {
         Yellow {
-	    set ${question_id}_response {
-		<draw:frame draw:style-name="fr2" draw:name="graphics1" text:anchor-type="paragraph" svg:x="0.026cm" svg:y="0.291cm" svg:width="0.753cm" svg:height="1.991cm" draw:z-index="7">
-		<draw:image xlink:href="Pictures/100000000000001900000042228976F0.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-		</draw:frame>
-	    }
-	}
-	Red {
-	    set ${question_id}_response {<draw:frame draw:style-name="fr2" draw:name="graphics2" text:anchor-type="paragraph" svg:x="0.053cm" svg:y="0.291cm" svg:width="0.753cm" svg:height="1.967cm" draw:z-index="8">
-		<draw:image xlink:href="Pictures/100000000000001A0000004453137B0D.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-		</draw:frame>}
-	}
-	Green {
-	    set ${question_id}_response {<draw:frame draw:style-name="fr2" draw:name="graphics3" text:anchor-type="paragraph" svg:x="0.026cm" svg:y="0.265cm" svg:width="0.753cm" svg:height="1.997cm" draw:z-index="9">
-		<draw:image xlink:href="Pictures/100000000000001A000000450BAEE698.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-		</draw:frame>}
-	}
-	default {
-	    set ${question_id}_response ""
-	}
-    }
+            set ${question_id}_response {
+                <draw:frame draw:style-name="fr2" draw:name="Grafik2" text:anchor-type="as-char" svg:width="0.681cm" svg:height="1.799cm" draw:z-index="5">
+                <draw:image xlink:href="Pictures/10000000000000190000004208AE16B6.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+                </draw:frame>
+            }
+        }
+        Red {
+            set ${question_id}_response {
+                <draw:frame draw:style-name="fr2" draw:name="Grafik1" text:anchor-type="as-char" svg:width="0.681cm" svg:height="1.739cm" draw:z-index="2">
+                <draw:image xlink:href="Pictures/100000000000001A0000004408B1848C.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+                </draw:frame>
+            }
+        }
+        Green {
+            set ${question_id}_response {
+                <draw:frame draw:style-name="fr2" draw:name="Grafik3" text:anchor-type="as-char" svg:width="0.681cm" svg:height="1.739cm" draw:z-index="3">
+                <draw:image xlink:href="Pictures/100000000000001A0000004558E63332.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+                </draw:frame>
+            }
+        }
+        default {
+            set ${question_id}_response ""
+        }
+    }   
 }
 
+set 51640_response "malte"
 set aufwand_xml ""
 
 #    select im_cost_center__name(cost_center_id) as cost_center, coalesce(sum(planned_units),0) as planned, coalesce(sum(hours),0) as logged from (select cost_center_id, planned_units, hours from im_projects p, im_timesheet_tasks t left outer join im_hours h on (t.task_id = h.project_id) where parent_id = :project_id and t.task_id = p.project_id) as hours group by cost_center_id;
@@ -211,24 +209,24 @@ db_foreach cost_centers "
     set abweichung [expr $planned - $logged_hours($cost_center_id)]
 	ds_comment "percent $percent_completed :: $remaining_hours :: $planned"
 	append aufwand_xml "
-	<table:table-row table:style-name=\"Table6.1\">
-	<table:table-cell table:style-name=\"Table6.A2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$cost_center</text:p>
+	<table:table-row table:style-name=\"Tabelle4.1\">
+	<table:table-cell table:style-name=\"Tabelle4.A2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$cost_center</text:p>
 	</table:table-cell>
-	<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$planned</text:p>
+	<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$planned</text:p>
 	</table:table-cell>
-	<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$logged_hours($cost_center_id)</text:p>
+	<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$logged_hours($cost_center_id)</text:p>
 	</table:table-cell>
-	<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$percent_completed</text:p>
+	<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$percent_completed</text:p>
 	</table:table-cell>
-	<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$abweichung</text:p>
+	<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$abweichung</text:p>
 	</table:table-cell>
-	<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-	<text:p text:style-name=\"P22\">$remaining_hours</text:p>
+	<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+	<text:p text:style-name=\"P33\">$remaining_hours</text:p>
 	</table:table-cell>
 	</table:table-row>
     "
@@ -242,24 +240,24 @@ foreach cost_center_id $logged_cost_centers {
 	# Check if we inserted the cost center already
 	if {[lsearch $created_cost_centers $cost_center_id] < 0} {
 		append aufwand_xml "
-		<table:table-row table:style-name=\"Table6.1\">
-		<table:table-cell table:style-name=\"Table6.A2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\">$cost_center_name($cost_center_id)</text:p>
+		<table:table-row table:style-name=\"Tabelle4.1\">
+		<table:table-cell table:style-name=\"Tabelle4.A2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\">$cost_center_name($cost_center_id)</text:p>
 		</table:table-cell>
-		<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\"></text:p>
+		<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\"></text:p>
 		</table:table-cell>
-		<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\">$logged_hours($cost_center_id)</text:p>
+		<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\">$logged_hours($cost_center_id)</text:p>
 		</table:table-cell>
-		<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\"></text:p>
+		<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\"></text:p>
 		</table:table-cell>
-		<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\"></text:p>
+		<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\"></text:p>
 		</table:table-cell>
-		<table:table-cell table:style-name=\"Table6.B2\" office:value-type=\"string\">
-		<text:p text:style-name=\"P22\"></text:p>
+		<table:table-cell table:style-name=\"Tabelle4.B2\" office:value-type=\"string\">
+		<text:p text:style-name=\"P33\"></text:p>
 		</table:table-cell>
 		</table:table-row>
 	    "
@@ -308,4 +306,6 @@ set gesamt_obligo [expr $invest_obligo + $single_obligo]
 set gesamt_estimate [expr $invest_estimate + $single_estimate]
 set gesamt_delta2 [expr $invest_delta2 + $single_delta2]
 
-intranet_oo::parse_content -template_file_path "[acs_package_root_dir "intranet-cust-berendsen"]/templates/statusbericht.odt" -output_filename ${project_name}.pdf
+# Save the Generated Statusbericht along with this response as a
+# content item.
+intranet_oo::parse_content -template_file_path "[acs_package_root_dir "intranet-cust-berendsen"]/templates/statusbericht.odt" -output_filename ${project_name}.pdf -parent_id $response_id

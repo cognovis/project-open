@@ -257,9 +257,10 @@ ad_proc im_cust_berendsen_survsimp_component { object_id } {
 	"
 	db_foreach q $questions_sql {
 	    if {[string length $clob_answer] == $max_clob_len} { append clob_answer " ..." }
+        ds_comment "choice:: $choice"
 	    append survsimp_response_html "
 		<td $bgcolor([expr $response_ctr % 2])>
-		$choice $boolean_answer $clob_answer $number_answer $varchar_answer $date_answer
+		[lang::util::localize $choice] $boolean_answer $clob_answer $number_answer $varchar_answer $date_answer
 		</td>
 	    "
 	}

@@ -17,8 +17,7 @@ ad_proc -private extjs::init {
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
 } {
     
-    template::head::add_css -href "/resources/extjs/css/ext-all.css"
-    
+    template::head::add_css -href "/resources/extjs/css/ext-all.css" -order 5
     template::head::add_javascript -src "/extjs/adapter/ext/ext-base.js"
     template::head::add_javascript -src "/extjs/ext-all.js"
 #    template::head::add_javascript -src "/extjs/extjs-util.js"
@@ -415,7 +414,7 @@ ad_proc -public extjs::RowEditor::GridPanel {
                     // access the Record constructor through the grid's store
                     var Cost = ${prefix}grid.getStore().recordType;
                     var p = new Cost($new_json);
-                    editor.stopEditing();
+                    ${prefix}editor.stopEditing();
     
                     // add the new record as the top row, select it
                     ${prefix}store.insert(0, p);
@@ -423,7 +422,7 @@ ad_proc -public extjs::RowEditor::GridPanel {
                     ${prefix}grid.getSelectionModel().selectRow(0);
 
                     // Start editing again. Update should send it to the server
-                    editor.startEditing(0, 0);
+                    ${prefix}editor.startEditing(0, 0);
                 \}
             \}
         \]

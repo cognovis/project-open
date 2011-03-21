@@ -138,7 +138,7 @@ ad_proc -public intranet_oo::import_oo_pdf {
     if {$title eq ""} {
         set title $file_name
     }
-    
+
     if {[exists_and_not_null $item_id]} {
 	set parent_id [get_parent -item_id $item_id]
         
@@ -151,6 +151,7 @@ ad_proc -public intranet_oo::import_oo_pdf {
                              $mime_type \
                              $file_name ]
     } else {
+
         set revision_id [cr_import_content \
                              -title $title \
                              $parent_id \
@@ -251,11 +252,14 @@ ad_proc -public intranet_oo::join_pdf {
 ad_proc -public intranet_oo::parse_content {
     -template_file_path:required
     {-output_filename ""}
+    {-parent_id ""}
 } {
     Extracts the provided document file template, parses it with variables found in the callers context and writes it back
     
     @param template_file_path The open-office file whose contents will be changed. This is the full path
     @param output_filename The output filename.
+    @param parent_id The object_id of the parent where this file will be imported to. A new content revision will be created for this.
+
     @return The path to the new file.
 } {
     # Deduct the filetype and output name
@@ -332,9 +336,13 @@ ad_proc -public intranet_oo::parse_content {
     # which happens to be the OpenOffice File. 
     exec zip -j $odt_zip $odt_content
     exec zip -j $odt_zip $odt_styles
-    
+
 	if {$target_type eq ".pdf"} {
-	    set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import]
+        if {$parent_id eq ""} {
+            set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import -return_pdf]
+        } else {
+            set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -parent_id $parent_id -return_pdf]
+        }
 	    set return_file [lindex $import_doc 1]
 	    set mime_type [lindex $import_doc 2]
 	} else {
