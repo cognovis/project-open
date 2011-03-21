@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 13 July 2000
-    @cvs-id $Id: task.tcl,v 1.11 2011/02/22 15:59:49 po35devklaus Exp $
+    @cvs-id $Id: task.tcl,v 1.12 2011/03/11 13:15:25 cvs Exp $
 } {
     task_id:integer,notnull
     {action:array {}}
@@ -132,24 +132,25 @@ if {$show_action_panel_p} {
     }
 }
 
-
 set panel_width [expr {100/(${panels:rowcount})}]
 set case_id $task(case_id)
 set case_state [db_string case_state "select state from wf_cases where case_id = :case_id"]
-
-
 
 # ---------------------------------------------------------
 # "Extreme Actions" - cancel and/or suspend the case
 
 set extreme_p 0
-if {[string compare $case_state "active"] == 0} {
+
+set wf_suspend_case_p [permission::permission_p -party_id $user_id -object_id [ad_conn subsite_id] -privilege "wf_suspend_case"]
+set wf_cancel_case_p [permission::permission_p -party_id $user_id -object_id [ad_conn subsite_id] -privilege "wf_cancel_case"]
+
+if { [string compare $case_state "active"] == 0 && ($wf_suspend_case_p || $wf_cancel_case_p) } {
     set extreme_p 1
     template::multirow create extreme_actions url title
-    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=suspend" [lang::message::lookup "" intranet-workflow.Suspend_Case "Suspend Case"]
-    template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=cancel" [lang::message::lookup "" intranet-workflow.Cancel_Case "Cancel Case"]
+    if { $wf_suspend_case_p } { template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=suspend" [lang::message::lookup "" intranet-workflow.Suspend_Case "Suspend Case"]}
+    if { $wf_cancel_case_p } { template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=cancel" [lang::message::lookup "" intranet-workflow.Cancel_Case "Cancel Case"]}
 }
-
+ 
 # ---------------------------------------------------------
 # Fire all message transitions after the action:
 

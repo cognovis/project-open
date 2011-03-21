@@ -422,7 +422,6 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 '"[im_category_from_id $project_priority_st_id]"','','',10,'','	dropdown project_priority_st_id { [im_department_planner_priority_list] } 1 1
 ');
 
-
 ---------------------------------------------------------
 -- Setup the "Budget" menu entry in "Projects"
 --

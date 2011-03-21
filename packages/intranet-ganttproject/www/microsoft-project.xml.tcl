@@ -23,7 +23,10 @@ ad_page_contract {
 
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
 set user_id [ad_maybe_redirect_for_registration]
+set main_project_id $project_id
 
+
+set default_hourly_cost [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" 30]
 
 # ---------------------------------------------------------------
 # Get information about the project
@@ -48,8 +51,44 @@ if {![db_0or1row project_info "
 
 
 # ---------------------------------------------------------------
-# Create the XML
+# Check if all sub-projects and tasks have a im_gantt_project entry.
+# Update the "xml_id" field of gp to have a consecutive number.
 # ---------------------------------------------------------------
+
+set sub_project_without_gp_sql "
+	select	child.project_id,
+		gp.project_id as gantt_project_id
+	from	im_projects p, 
+		im_projects child 
+		LEFT OUTER JOIN im_gantt_projects gp ON (child.project_id = gp.project_id)
+	where	p.project_id = :main_project_id and 
+		child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey) and
+		child.project_id != :main_project_id
+	order by
+		child.tree_sortkey
+"
+# ToDo: Sort this list using a multirow sort according to sorting parameter
+set xml_id_cnt 1
+db_foreach sub_project_without_gp $sub_project_without_gp_sql {
+    if {"" == $gantt_project_id} {
+  	db_dml insert_gp "insert into im_gantt_projects (project_id, xml_elements) VALUES (:project_id, '')"
+    }
+    db_dml sub_project_update "
+	update im_gantt_projects
+	set xml_id = :xml_id_cnt
+	where project_id = :project_id
+    "
+    incr xml_id_cnt
+}
+
+
+# ---------------------------------------------------------------
+# Calculate a consecutive sequence for "xml_id"
+# MS-Project needs a "ID" field for all tasks starting with 1.
+# ---------------------------------------------------------------
+
+
+
 
 # ---------------------------------------------------------------
 # Project node
@@ -64,7 +103,6 @@ if {![info exists xml_elements] || [llength $xml_elements] == 0} {
     set xml_elements {Name Title Manager ScheduleFromStart StartDate FinishDate}
 }
 
-
 foreach element $xml_elements { 
     switch $element {
 	"Name" - "Title"	{ set value "${project_name}.xml" }
@@ -73,7 +111,64 @@ foreach element $xml_elements {
 	"StartDate"		{ set value $project_start_date }
 	"FinishDate"		{ set value $project_end_date }
 	"CalendarUID"		{ set value 1 }
-	"Calendars" - "Tasks" - "Resources" - "Assignments"	{ continue }
+	Assignments - \
+	Calendars - \
+	Resources - \
+	Tasks - \
+        ActualsInSync - \
+        AdminProject - \
+        AutoAddNewResourcesAndTasks - \
+        Autolink - \
+        BaselineForEarnedValue - \
+        CreationDate - \
+        CriticalSlackLimit - \
+        CurrencyCode - \
+        CurrencyDigits - \
+        CurrencySymbol - \
+        CurrencySymbolPosition - \
+        CurrentDate - \
+        DaysPerMonth - \
+        DefaultFinishTime - \
+        DefaultFixedCostAccrual - \
+        DefaultOvertimeRate - \
+        DefaultStandardRate - \
+        DefaultStartTime - \
+        DefaultTaskEVMethod - \
+        DefaultTaskType - \
+        DurationFormat - \
+        EditableActualCosts - \
+        ExtendedAttributes/ - \
+        ExtendedCreationDate - \
+        FYStartDate - \
+        FinishDate - \
+        FiscalYearStart - \
+        HonorConstraints - \
+        InsertedProjectsLikeSummary - \
+        LastSaved - \
+        MicrosoftProjectServerURL - \
+        MinutesPerDay - \
+        MinutesPerWeek - \
+        MoveCompletedEndsBack - \
+        MoveCompletedEndsForward - \
+        MoveRemainingStartsBack - \
+        MoveRemainingStartsForward - \
+        MultipleCriticalPaths - \
+        NewTaskStartDate - \
+        NewTasksEffortDriven - \
+        NewTasksEstimated - \
+        OutlineCodes/ - \
+        ProjectExternallyEdited - \
+        RemoveFileProperties - \
+        ScheduleFromStart - \
+        SplitsInProgressTasks - \
+        SpreadActualCost - \
+        SpreadPercentComplete - \
+        StartDate - \
+        TaskUpdatesResource - \
+        WBSMasks/ - \
+        WeekStartDay - \
+        WorkFormat - \
+	Xxx { continue }
 	default {
 	    set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	    set value [expr $$attribute_name]
@@ -100,87 +195,16 @@ $calendars_node appendXML "
 	<Calendar>
 		<UID>1</UID>
 		<Name>Standard</Name>
-		<IsBaseCalendar>1</IsBaseCalendar>
-		<BaseCalendarUID>-1</BaseCalendarUID>
+		<IsBaseCalendar>true</IsBaseCalendar>
 		<WeekDays>
-		<WeekDay>
-			<DayType>1</DayType>
-			<DayWorking>0</DayWorking>
-		</WeekDay>
-		<WeekDay>
-			<DayType>2</DayType>
-			<DayWorking>1</DayWorking>
-			<WorkingTimes>
-			<WorkingTime>
-				<FromTime>$start_morning</FromTime>
-				<ToTime>$end_morning</ToTime>
-			</WorkingTime>
-			<WorkingTime>
-				<FromTime>$start_after</FromTime>
-				<ToTime>$end_after</ToTime>
-			</WorkingTime>
-			</WorkingTimes>
-		</WeekDay>
-		<WeekDay>
-			<DayType>3</DayType>
-			<DayWorking>1</DayWorking>
-			<WorkingTimes>
-			<WorkingTime>
-				<FromTime>$start_morning</FromTime>
-				<ToTime>$end_morning</ToTime>
-			</WorkingTime>
-			<WorkingTime>
-				<FromTime>$start_after</FromTime>
-				<ToTime>$end_after</ToTime>
-			</WorkingTime>
-			</WorkingTimes>
-		</WeekDay>
-		<WeekDay>
-			<DayType>4</DayType>
-			<DayWorking>1</DayWorking>
-			<WorkingTimes>
-			<WorkingTime>
-				<FromTime>$start_morning</FromTime>
-				<ToTime>$end_morning</ToTime>
-			</WorkingTime>
-			<WorkingTime>
-				<FromTime>$start_after</FromTime>
-				<ToTime>$end_after</ToTime>
-			</WorkingTime>
-			</WorkingTimes>
-		</WeekDay>
-		<WeekDay>
-			<DayType>5</DayType>
-			<DayWorking>1</DayWorking>
-			<WorkingTimes>
-			<WorkingTime>
-				<FromTime>$start_morning</FromTime>
-				<ToTime>$end_morning</ToTime>
-			</WorkingTime>
-			<WorkingTime>
-				<FromTime>$start_after</FromTime>
-				<ToTime>$end_after</ToTime>
-			</WorkingTime>
-			</WorkingTimes>
-		</WeekDay>
-		<WeekDay>
-			<DayType>6</DayType>
-			<DayWorking>1</DayWorking>
-			<WorkingTimes>
-			<WorkingTime>
-				<FromTime>$start_morning</FromTime>
-				<ToTime>$end_morning</ToTime>
-			</WorkingTime>
-			<WorkingTime>
-				<FromTime>$start_after</FromTime>
-				<ToTime>$end_after</ToTime>
-			</WorkingTime>
-			</WorkingTimes>
-		</WeekDay>
-		<WeekDay>
-			<DayType>7</DayType>
-			<DayWorking>0</DayWorking>
-		</WeekDay>
+			<WeekDay>
+				<DayType>1</DayType>
+				<DayWorking>0</DayWorking>
+			</WeekDay>
+			<WeekDay>
+				<DayType>7</DayType>
+				<DayWorking>0</DayWorking>
+			</WeekDay>
 		</WeekDays>
 	</Calendar>
 "
@@ -194,18 +218,21 @@ set project_resources_sql "
 	select distinct
 		gp.*,
 		p.*,
+		e.*,
 		pa.email,
 		uc.home_phone,
 		uc.work_phone,
 		uc.cell_phone,
 		uc.user_id AS user_id,
 		im_name_from_user_id(p.person_id) as user_name
-	from 	users_contact uc,
-		acs_rels r,
-		im_biz_object_members bom,
+	from 	
+		parties pa,
 		persons p
-		left join im_gantt_persons gp ON (p.person_id = gp.person_id),
-		parties pa
+		LEFT OUTER JOIN users_contact uc ON (p.person_id = uc.user_id)
+		LEFT OUTER JOIN im_employees e ON (p.person_id = e.employee_id)
+		LEFT OUTER JOIN im_gantt_persons gp ON (p.person_id = gp.person_id),
+		acs_rels r,
+		im_biz_object_members bom
 	where
 		r.rel_id = bom.rel_id
 		and r.object_id_two = uc.user_id
@@ -222,12 +249,13 @@ set project_resources_sql "
 				and children.tree_sortkey between
 					parent.tree_sortkey and
 					tree_right(parent.tree_sortkey)
-				and parent.project_id = :project_id
+				and parent.project_id = :main_project_id
 		UNION
-			select  :project_id
+			select  :main_project_id
 		)
 "
 
+set ttt {
 # Loop through all resources and add them to the XML structure
 db_foreach project_resources $project_resources_sql {
     set calendar_node [$doc createElement Calendar]
@@ -236,7 +264,7 @@ db_foreach project_resources $project_resources_sql {
     $calendar_node appendFromList [list UID {} [list [list \#text $user_id]]]
     $calendar_node appendFromList [list Name {} [list [list \#text $user_name]]]
 
-    $calendar_node appendXML "<IsBaseCalendar>0</IsBaseCalendar>"
+    $calendar_node appendXML "<IsBaseCalendar>false</IsBaseCalendar>"
     $calendar_node appendXML "<BaseCalendarUID>1</BaseCalendarUID>"
 
     set weekdays_node [$doc createElement WeekDays]
@@ -266,345 +294,20 @@ set ttt {
     }
 
 }
-
+}
 }
  
 # ---------------------------------------------------------------
 # Tasks
 
-ad_proc -public im_ms_project_write_subtasks { 
-    { -default_start_date "" }
-    { -default_duration "" }
-    project_id
-    doc
-    tree_node 
-    outline_level
-    outline_number
-    id_name
-} {
-    Write out all the specific subtasks of a task or project.
-    This procedure asumes that the current task has already 
-    been written out and now deals with the subtasks.
-} {
-    # Why is id_name passed by reference?
-    upvar 1 $id_name id
-
-    # Get sub-tasks in the right sort_order
-    set object_list_list [db_list_of_lists sorted_query "
-	select
-		p.project_id as object_id,
-		o.object_type,
-		p.sort_order
-	from	
-		im_projects p,
-		acs_objects o
-	where
-		p.project_id = o.object_id
-		and parent_id = :project_id
-		and p.project_type_id = [im_project_type_task]
-		and p.project_status_id not in (
-			[im_project_status_deleted], 
-			[im_project_status_closed]
-		)
-	order by sort_order
-    "]
-
-    incr outline_level
-    set outline_sub 0
-    foreach object_record $object_list_list {
-	incr outline_sub
-	set object_id [lindex $object_record 0]
-
-	if {$outline_level==1} {
-	    set oln "$outline_sub"
-	} else {
-	    set oln "$outline_number.$outline_sub"
-	}
-
-	incr id
-
-	im_ms_project_write_task  \
-		-default_start_date $default_start_date  \
-		-default_duration $default_duration  \
-		$object_id  \
-		$doc \
-		$tree_node \
-		$outline_level \
-		$oln \
-		id
-    }
-}
-
-ad_proc -public im_ms_project_write_task { 
-    { -default_start_date "" }
-    { -default_duration "" }
-    project_id
-    doc
-    tree_node 
-    outline_level
-    outline_number
-    id_name
-} {
-    Write out the information about one specific task and then call
-    a recursive routine to write out the stuff below the task.
-} {
-    upvar 1 $id_name id
-
-    if { [security::secure_conn_p] } {
-	set base_url "https://[ad_host][ad_port]"
-    } else {
-	set base_url "http://[ad_host][ad_port]"
-    }
-    set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
-    set project_view_url "$base_url/intranet/projects/view?project_id="
-
-    # ------------ Get everything about the project -------------
-    if {![db_0or1row project_info "
-	select  p.*,
-		t.*,
-		o.object_type,
-		p.start_date::date || 'T' || p.start_date::time as start_date,
-		p.end_date::date || 'T' || p.end_date::time as end_date,
-		(p.end_date::date 
-			- p.start_date::date 
-			- 2*(next_day(p.end_date::date-1,'FRI') 
-			- next_day(p.start_date::date-1,'FRI'))/7
-			+ round((extract(hour from p.end_date) - extract(hour from p.start_date)) / 8.0)
-		) * 8 AS duration_hours,
-		c.company_name,
-		g.*
-	from    im_projects p
-		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id)
-		left join im_gantt_projects g on (p.project_id = g.project_id),
-		acs_objects o,
-		im_companies c
-	where   p.project_id = :project_id
-		and p.project_id = o.object_id
-		and p.company_id = c.company_id
-    "]} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-ganttproject.Project_Not_Found "Didn't find project \#%project_id%"]
-	return
-    }
-
-    # Make sure some important variables are set to default values
-    # because empty values are not accepted by Microsoft Project:
-    #
-    if {"" == $percent_completed} { set percent_completed "0" }
-    if {"" == $priority} { set priority "1" }
-    if {"" == $start_date} { set start_date $default_start_date }
-    if {"" == $start_date} { set start_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
-    if {"" == $duration_hours} { 
-	set duration_hours $default_duration
-    }
-    if {"" == $duration_hours || [string equal $start_date $end_date] } { 
-	set duration_hours 0 
-    }
-
-    set task_node [$doc createElement Task]
-    $tree_node appendChild $task_node
-
-    # minimal set of elements in case this hasn't been imported before
-    if {[llength $xml_elements]==0} {
-	set xml_elements {UID ID Name Type OutlineNumber OutlineLevel Priority 
-		Start Finish Duration RemainingDuration CalendarUID PredecessorLink}
-    }
-
-    set predecessors_done 0
-
-#		"UID"			{ set value $project_id }
-#		"ID"			{ set value $id }
-
-
-    foreach element $xml_elements { 
-	switch $element {
-		"Name"			{ set value $project_name }
-		"Type"			{   if {[info exists xml_type] && $xml_type!=""} {
-						set value $xml_type
-					    } else {
-						set value 0 
-					    }
-					}
-		"OutlineNumber"		{ set value $outline_number }
-		"OutlineLevel"		{ set value $outline_level }
-		"Priority"		{ set value 500 }
-		"Start"			{ set value $start_date }
-		"Finish"		{ set value $end_date }
-		"Duration" {
-			# Check if we've got a duration defined in the xml_elements.
-			# Otherwise (export without import...) generate a duration.
-			set value "PT$duration_hours\H0M0S" 
-                        set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-                        if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
-		}
-		"RemainingDuration" {
-			# Check if we've got a duration defined in the xml_elements.
-			# Otherwise (export without import...) generate a duration.
-			set value "PT$duration_hours\H0M0S" 
-                        set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-                        if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
-		}
-		"CalendarUID"		{ set value -1 }
-		"Notes"			{ set value $note }
-		"PredecessorLink"	{ 
-			if {$predecessors_done} { continue }
-			set predecessors_done 1
-
-			# Add dependencies to predecessors 
-			set dependency_sql "
-				SELECT DISTINCT
-					gp.xml_uid
-				FROM	im_timesheet_task_dependencies ttd
-					LEFT OUTER JOIN im_gantt_projects gp ON (ttd.task_id_two = gp.project_id)
-				WHERE	ttd.task_id_one = :task_id and
-					ttd.dependency_type_id = [im_timesheet_task_dependency_type_depends] and
-					ttd.task_id_two <> :task_id
-			"
-
-			db_foreach dependency $dependency_sql {
-			    $task_node appendXML "
-				<PredecessorLink>
-					<PredecessorUID>$xml_uid</PredecessorUID>
-					<Type>1</Type>
-					<CrossProject>0</CrossProject>
-					<LinkLag>0</LinkLag>
-					<LagFormat>7</LagFormat>
-				</PredecessorLink>
-			    "
-			}
-			continue
-		}
-		"customproperty" - "task" - "depend" - "ExtendedAttribute" { continue }
-		default {
-			set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-			if {[info exists $attribute_name ] } {
-				set value [expr $$attribute_name]
-			} else {
-				set value 0
-			}
-		}
-	}
-	
-	$task_node appendFromList [list $element {} [list [list \#text $value]]]
-    }
-
-    # Disabled storing the ]po[ task IDs.
-    # Instead, we can use the UID of MS-Project, which survives updates of the project
-    set ttt {    
-	    $task_node appendXML "
-			<ExtendedAttribute>
-			<UID>$project_id</UID>
-			<FieldID>188744006</FieldID>
-			<Value>$project_nr</Value>
-			</ExtendedAttribute>
-		"
-	    $task_node appendXML "
-			<ExtendedAttribute>
-			<UID>$project_id</UID>
-			<FieldID>188744007</FieldID>
-			<Value>$project_id</Value>
-			</ExtendedAttribute>
-		"
-    }
-
-    im_ms_project_write_subtasks \
-	-default_start_date $start_date \
-	-default_duration $duration_hours \
-	$project_id \
-	$doc \
-	$tree_node \
-	$outline_level \
-	$outline_number \
-	id
-}
-
-
-
 set tasks_node [$doc createElement Tasks]
 $project_node appendChild $tasks_node
-
-
-# Add a dummy node #0 for the project iself.
-$tasks_node appendXML "
-		<Task>
-			<UID>0</UID>
-			<ID>0</ID>
-			<Type>1</Type>
-			<IsNull>0</IsNull>
-			<CreateDate>2010-08-30T12:32:00</CreateDate>
-			<WBS>0</WBS>
-			<OutlineNumber>0</OutlineNumber>
-			<OutlineLevel>0</OutlineLevel>
-			<Priority>500</Priority>
-			<Start>2010-09-02T09:00:00</Start>
-			<Finish>2010-12-28T09:47:00</Finish>
-			<Duration>PT664H47M0S</Duration>
-			<DurationFormat>53</DurationFormat>
-			<Work>PT994H24M0S</Work>
-			<ResumeValid>0</ResumeValid>
-			<EffortDriven>0</EffortDriven>
-			<Recurring>0</Recurring>
-			<OverAllocated>0</OverAllocated>
-			<Estimated>1</Estimated>
-			<Milestone>0</Milestone>
-			<Summary>1</Summary>
-			<Critical>1</Critical>
-			<IsSubproject>0</IsSubproject>
-			<IsSubprojectReadOnly>0</IsSubprojectReadOnly>
-			<ExternalTask>0</ExternalTask>
-			<EarlyStart>2010-09-02T09:00:00</EarlyStart>
-			<EarlyFinish>2010-12-28T09:47:00</EarlyFinish>
-			<LateStart>2010-09-02T09:00:00</LateStart>
-			<LateFinish>2010-12-28T09:47:00</LateFinish>
-			<StartVariance>0</StartVariance>
-			<FinishVariance>0</FinishVariance>
-			<WorkVariance>59664000</WorkVariance>
-			<FreeSlack>0</FreeSlack>
-			<TotalSlack>0</TotalSlack>
-			<FixedCost>0</FixedCost>
-			<FixedCostAccrual>3</FixedCostAccrual>
-			<PercentComplete>0</PercentComplete>
-			<PercentWorkComplete>0</PercentWorkComplete>
-			<Cost>3992000</Cost>
-			<OvertimeCost>0</OvertimeCost>
-			<OvertimeWork>PT0H0M0S</OvertimeWork>
-			<ActualDuration>PT0H0M0S</ActualDuration>
-			<ActualCost>0</ActualCost>
-			<ActualOvertimeCost>0</ActualOvertimeCost>
-			<ActualWork>PT0H0M0S</ActualWork>
-			<ActualOvertimeWork>PT0H0M0S</ActualOvertimeWork>
-			<RegularWork>PT994H24M0S</RegularWork>
-			<RemainingDuration>PT664H47M0S</RemainingDuration>
-			<RemainingCost>3992000</RemainingCost>
-			<RemainingWork>PT994H24M0S</RemainingWork>
-			<RemainingOvertimeCost>0</RemainingOvertimeCost>
-			<RemainingOvertimeWork>PT0H0M0S</RemainingOvertimeWork>
-			<ACWP>0</ACWP>
-			<CV>0</CV>
-			<ConstraintType>0</ConstraintType>
-			<CalendarUID>-1</CalendarUID>
-			<LevelAssignments>1</LevelAssignments>
-			<LevelingCanSplit>1</LevelingCanSplit>
-			<LevelingDelay>0</LevelingDelay>
-			<LevelingDelayFormat>8</LevelingDelayFormat>
-			<IgnoreResourceCalendar>0</IgnoreResourceCalendar>
-			<HideBar>0</HideBar>
-			<Rollup>0</Rollup>
-			<BCWS>0</BCWS>
-			<BCWP>0</BCWP>
-			<PhysicalPercentComplete>0</PhysicalPercentComplete>
-			<EarnedValueMethod>0</EarnedValueMethod>
-			<IsPublished>1</IsPublished>
-			<CommitmentType>0</CommitmentType>
-		</Task>
-"
-
-
 
 set id 0
 im_ms_project_write_subtasks \
     -default_start_date $project_start_date \
    -default_duration $project_duration \
-    $project_id \
+    $main_project_id \
     $doc \
     $tasks_node \
     "0" "1" id
@@ -619,64 +322,64 @@ im_ms_project_write_subtasks \
 set resources_node [$doc createElement Resources]
 $project_node appendChild $resources_node
 
-# standard "unassigned" resource
-$resources_node appendXML "
-	<Resource>
-		<UID>0</UID>
-		<ID>0</ID>
-		<Name>Unassigned</Name>
-		<IsNull>0</IsNull>
-		<Initials>U</Initials>
-		<MaxUnits>1</MaxUnits>
-		<PeakUnits>1</PeakUnits>
-		<OverAllocated>0</OverAllocated>
-		<CanLevel>0</CanLevel>
-		<AccrueAt>3</AccrueAt>
-	</Resource>
-"
-
 set id 0
 set xml_elements {}
 set temp temp
 
 db_foreach project_resources $project_resources_sql {
     incr id
-    
-    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2} temp]
+
+    # First letter of first and last name    
+    set initials [string range $first_names 0 1][string range $last_name 0 1]
+
+    if {"" == $hourly_cost || 0 == $hourly_cost} {
+	set hourly_cost $default_hourly_cost
+    }
 
     set resource_node [$doc createElement Resource]
     $resources_node appendChild $resource_node
     
     # minimal set of elements in case this hasn't been imported before
     if {[llength $xml_elements]==0} {
-	set xml_elements {UID ID Name EmailAddress AccrueAt StandardRate 
-		Cost OvertimeRate CostPerUse CalendarUID}
+	set xml_elements {
+		UID ID 
+		Name 
+		Initials
+		EmailAddress 
+		Type
+		Cost 
+		AccrueAt 
+		StandardRate 
+		OvertimeRate 
+		CostPerUse 
+		CalendarUID
+	}
     }
     
     foreach element $xml_elements { 
 	switch $element {
-		"UID"		{ set value $user_id }
-		"ID"			{ set value $id }
-		"Name"		{ set value $user_name }
-		"EmailAddress"	{ set value $email } 
-		"AccrueAt"		{ set value 3 }
-		"StandardRate" - "Cost" -
-		"OvertimeRate" - "CostPerUse" { set value 0 }
-		"CalendarUID"	{ set value $user_id }
-		"Initials"		{ set value $initials }
-		"MaxUnits" - "OverAllocated" - 
-		"CanLevel" - "PeakUnits" { continue }
+		UID			{ set value $user_id }
+		ID			{ set value $id }
+		Type			{ set value 1 }
+		Name			{ set value $user_name }
+		EmailAddress		{ set value $email } 
+		AccrueAt		{ set value 3 }
+		StandardRate		{ set value $hourly_cost }
+		Cost - OvertimeRate - CostPerUse { set value 0 }
+		CalendarUID		{ set value $user_id }
+		Initials		{ set value $initials }
+		MaxUnits - OverAllocated - CanLevel - PeakUnits { continue }
 		default {
-		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-		if {[info exists $attribute_name ] } {
+		    set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
+		    if {[info exists $attribute_name ] } {
 			set value [expr $$attribute_name]
-		} else {
+		    } else {
 			set value 0
-		}
+		    }
 		}
 	}
 	
-		$resource_node appendFromList [list $element {} [list [list \#text $value]]]
+	$resource_node appendFromList [list $element {} [list [list \#text $value]]]
     }
 }
 
@@ -685,12 +388,19 @@ $project_node appendChild $allocations_node
 
 set project_allocations_sql "
 	select	
+		p.project_id as task_id,
 		gp.xml_uid::integer as xml_uid,
 		object_id_one AS task_id,
 		object_id_two AS user_id,
-		percentage
-	from	acs_rels r,
-		im_timesheet_tasks tt
+		coalesce(bom.percentage, 0.0) as percentage_assigned,
+		p.percent_completed,
+		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
+		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
+		tt.planned_units
+	from
+		acs_rels r,
+		im_projects p
+		LEFT OUTER JOIN im_timesheet_tasks tt ON (p.project_id = tt.task_id)
 		LEFT OUTER JOIN im_gantt_projects gp ON (tt.task_id = gp.project_id),
 		im_biz_object_members bom
 	where
@@ -710,9 +420,9 @@ set project_allocations_sql "
 					and children.tree_sortkey between
 						parent.tree_sortkey and
 						tree_right(parent.tree_sortkey)
-					and parent.project_id = :project_id
+					and parent.project_id = :main_project_id
 			UNION
-				select  :project_id
+				select  :main_project_id
 			)
 		)
 "
@@ -724,9 +434,16 @@ db_foreach project_allocations $project_allocations_sql {
     $allocations_node appendXML "
 	<Assignment>
 		<UID>$assignment_ctr</UID>
-		<TaskUID>$xml_uid</TaskUID>
+		<TaskUID>$task_id</TaskUID>
 		<ResourceUID>$user_id</ResourceUID>
-		<Units>1</Units>
+		<Units>[expr $percentage_assigned / 100.0]</Units>
+		<PercentWorkComplete>$percent_completed</PercentWorkComplete>
+		<Start>${start_date_date}T00:00:00</Start>
+		<Finish>${end_date_date}T23:00:00</Finish>
+		<OvertimeWork>PT0H0M0S</OvertimeWork>
+		<RegularWork>PT${planned_units}H0M0S</RegularWork>
+		<RemainingWork>PT${planned_units}H0M0S</RemainingWork>
+		<Work>PT${planned_units}H0M0S</Work>
 	</Assignment>
     "
     incr assignment_ctr
