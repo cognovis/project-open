@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-sc-procs.tcl,v 1.32 2011/01/14 10:36:21 gustafn Exp $
+    @cvs-id $Id: xowiki-sc-procs.tcl,v 1.33 2011/03/11 17:49:48 gustafn Exp $
 }
 
 namespace eval ::xowiki {}
@@ -47,7 +47,7 @@ ad_proc -private ::xowiki::datasource { revision_id } {
   }
   #::xowiki::notification::do_notifications -page $page -html $(html) -text $text
 
-  ns_log notice "--sc INDEXING $revision_id -> $text keywords $(keywords)"
+  #ns_log notice "--sc INDEXING $revision_id -> $text keywords $(keywords)"
   #$page set unresolved_references 0
   $page instvar item_id
   # cleanup old stuff. This might run into an error, when search is not

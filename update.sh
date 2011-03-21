@@ -2,119 +2,118 @@
 
 
 # Main directories
-./git-update etc master
-./git-update tcl master
-./git-update www master
-./git-update bin master
+./git-update etc master >update.log 2>&1
+./git-update tcl master >>update.log 2>&1
+./git-update www master >>update.log 2>&1
+./git-update bin master >>update.log 2>&1
 
 # ACS Core 5.6 version
-./git-update acs-content-repository oacs-5-6
-./git-update acs-reference oacs-5-6
-./git-update intermedia-driver oacs-5-6
-./git-update search oacs-5-6
-./git-update acs-admin oacs-5-6
-./git-update acs-core-docs oacs-5-6
-./git-update acs-service-contract oacs-5-6
-./git-update notifications oacs-5-6
-./git-update tsearch2-driver oacs-5-6
-./git-update acs-api-browser oacs-5-6
-./git-update acs-kernel oacs-5-6
-./git-update acs-subsite oacs-5-6
-./git-update openacs-default-theme oacs-5-6
-./git-update acs-authentication oacs-5-6
-./git-update acs-lang oacs-5-6
-./git-update acs-tcl oacs-5-6
-./git-update ref-countries oacs-5-6
-./git-update acs-automated-testing oacs-5-6
-./git-update acs-mail-lite oacs-5-6
-./git-update acs-templating oacs-5-6
-./git-update ref-language oacs-5-6
-./git-update acs-bootstrap-installer oacs-5-6
-./git-update acs-messaging oacs-5-6
-./git-update acs-translations oacs-5-6
-./git-update ref-timezones oacs-5-6
+./git-update acs-content-repository oacs-5-6 >>update.log 2>&1
+./git-update acs-reference oacs-5-6 >>update.log 2>&1
+./git-update intermedia-driver oacs-5-6 >>update.log 2>&1
+./git-update search oacs-5-6 >>update.log 2>&1
+./git-update acs-admin oacs-5-6 >>update.log 2>&1
+./git-update acs-core-docs oacs-5-6 >>update.log 2>&1
+./git-update acs-service-contract oacs-5-6 >>update.log 2>&1
+./git-update notifications oacs-5-6 >>update.log 2>&1
+./git-update tsearch2-driver oacs-5-6 >>update.log 2>&1
+./git-update acs-api-browser oacs-5-6 >>update.log 2>&1
+./git-update acs-kernel oacs-5-6 >>update.log 2>&1
+./git-update acs-subsite oacs-5-6 >>update.log 2>&1
+./git-update openacs-default-theme oacs-5-6 >>update.log 2>&1
+./git-update acs-authentication oacs-5-6 >>update.log 2>&1
+./git-update acs-lang oacs-5-6 >>update.log 2>&1
+./git-update acs-tcl oacs-5-6 >>update.log 2>&1
+./git-update ref-countries oacs-5-6 >>update.log 2>&1
+./git-update acs-automated-testing oacs-5-6 >>update.log 2>&1
+./git-update acs-mail-lite oacs-5-6 >>update.log 2>&1
+./git-update acs-templating oacs-5-6 >>update.log 2>&1
+./git-update ref-language oacs-5-6 >>update.log 2>&1
+./git-update acs-bootstrap-installer oacs-5-6 >>update.log 2>&1
+./git-update acs-messaging oacs-5-6 >>update.log 2>&1
+./git-update acs-translations oacs-5-6 >>update.log 2>&1
+./git-update ref-timezones oacs-5-6 >>update.log 2>&1
 
-
-# Additional packages from openacs
-./git-update acs-datetime master
-./git-update acs-developer-support master
-./git-update acs-events master
-./git-update attachments master
-./git-update file-storage master
-./git-update calendar master
-./git-update categories master
-./git-update faq master
-./git-update general-comments master
-./git-update mail-tracking master
-./git-update xowiki master
-./git-update oacs-dav master
-./git-update rss-support master
-./git-update xml-rpc master
-./git-update xotcl-core master
+# Additional packages from openacs >>update.log 2>&1
+./git-update acs-datetime master >>update.log 2>&1
+./git-update acs-developer-support master >>update.log 2>&1
+./git-update acs-events master >>update.log 2>&1
+./git-update attachments master >>update.log 2>&1
+./git-update file-storage master >>update.log 2>&1
+./git-update calendar master >>update.log 2>&1
+./git-update categories master >>update.log 2>&1
+./git-update faq master >>update.log 2>&1
+./git-update general-comments master >>update.log 2>&1
+./git-update mail-tracking master >>update.log 2>&1
+./git-update xowiki master >>update.log 2>&1
+./git-update oacs-dav master >>update.log 2>&1
+./git-update rss-support master >>update.log 2>&1
+./git-update xml-rpc master >>update.log 2>&1
+./git-update xotcl-core master >>update.log 2>&1
 
 # ]project-open[ repository
-./git-update acs-workflow master
-./git-update auth-ldap-adldapsearch master
-./git-update wiki master
-./git-update workflow master
-./git-update acs-mail master
-./git-update bug-tracker master
-./git-update cms master
-./git-update diagram master
-./git-update intranet-big-brother master
-./git-update intranet-bug-tracker master
-./git-update intranet-calendar master
-./git-update intranet-calendar-holidays master
-./git-update intranet-confdb master
-./git-update intranet-contacts master
-./git-update intranet-core master
-./git-update intranet-cost master
-./git-update intranet-cvs-integration master
-./git-update intranet-dw-light master
-./git-update intranet-dynfield master
-./git-update intranet-exchange-rate master
-./git-update intranet-expenses master
-./git-update intranet-expenses-workflow master
-./git-update intranet-filestorage master
-./git-update intranet-forum master
-./git-update intranet-ganttproject master
-./git-update intranet-helpdesk master
-./git-update intranet-hr master
-./git-update intranet-idea-management master
-./git-update intranet-invoices master
-./git-update intranet-invoices-templates master
-./git-update intranet-mail-import master
-./git-update intranet-material master
-./git-update intranet-milestone master
-./git-update intranet-nagios master
-./git-update intranet-notes master
-./git-update intranet-notes-tutorial master
-./git-update intranet-payments master
-./git-update intranet-release-mgmt master
-./git-update intranet-reporting master
-./git-update intranet-reporting-indicators master
-./git-update intranet-reporting-tutorial master
-./git-update intranet-resource-management master
-./git-update intranet-rest master
-./git-update intranet-riskmanagement master
-./git-update intranet-rss-reader master
-./git-update intranet-search-pg master
-./git-update intranet-search-pg-files master
-./git-update intranet-security-update-client master
-./git-update intranet-soap-lite-server master
-./git-update intranet-sysconfig master
-./git-update intranet-simple-survey master
-./git-update intranet-timesheet2 master
-./git-update intranet-timesheet2-invoices master
-./git-update intranet-timesheet2-task-popup master
-./git-update intranet-timesheet2-tasks master
-./git-update intranet-timesheet2-workflow master
-./git-update intranet-tinytm master
-./git-update intranet-trans-invoices master
-./git-update intranet-trans-project-wizard master
-./git-update intranet-translation master
-./git-update intranet-ubl master
-./git-update intranet-update-client master
-./git-update intranet-wiki master
-./git-update intranet-workflow master
-./git-update intranet-xmlrpc master
+./git-update acs-workflow master >>update.log 2>&1
+./git-update auth-ldap-adldapsearch master >>update.log 2>&1
+./git-update wiki master >>update.log 2>&1
+./git-update workflow master >>update.log 2>&1
+./git-update acs-mail master >>update.log 2>&1
+./git-update bug-tracker master >>update.log 2>&1
+./git-update cms master >>update.log 2>&1
+./git-update diagram master >>update.log 2>&1
+./git-update intranet-big-brother master >>update.log 2>&1
+./git-update intranet-bug-tracker master >>update.log 2>&1
+./git-update intranet-calendar master >>update.log 2>&1
+./git-update intranet-calendar-holidays master >>update.log 2>&1
+./git-update intranet-confdb master >>update.log 2>&1
+./git-update intranet-contacts master >>update.log 2>&1
+./git-update intranet-core master >>update.log 2>&1
+./git-update intranet-cost master >>update.log 2>&1
+./git-update intranet-cvs-integration master >>update.log 2>&1
+./git-update intranet-dw-light master >>update.log 2>&1
+./git-update intranet-dynfield master >>update.log 2>&1
+./git-update intranet-exchange-rate master >>update.log 2>&1
+./git-update intranet-expenses master >>update.log 2>&1
+./git-update intranet-expenses-workflow master >>update.log 2>&1
+./git-update intranet-filestorage master >>update.log 2>&1
+./git-update intranet-forum master >>update.log 2>&1
+./git-update intranet-ganttproject master >>update.log 2>&1
+./git-update intranet-helpdesk master >>update.log 2>&1
+./git-update intranet-hr master >>update.log 2>&1
+./git-update intranet-idea-management master >>update.log 2>&1
+./git-update intranet-invoices master >>update.log 2>&1
+./git-update intranet-invoices-templates master >>update.log 2>&1
+./git-update intranet-mail-import master >>update.log 2>&1
+./git-update intranet-material master >>update.log 2>&1
+./git-update intranet-milestone master >>update.log 2>&1
+./git-update intranet-nagios master >>update.log 2>&1
+./git-update intranet-notes master >>update.log 2>&1
+./git-update intranet-notes-tutorial master >>update.log 2>&1
+./git-update intranet-payments master >>update.log 2>&1
+./git-update intranet-release-mgmt master >>update.log 2>&1
+./git-update intranet-reporting master >>update.log 2>&1
+./git-update intranet-reporting-indicators master >>update.log 2>&1
+./git-update intranet-reporting-tutorial master >>update.log 2>&1
+./git-update intranet-resource-management master >>update.log 2>&1
+./git-update intranet-rest master >>update.log 2>&1
+./git-update intranet-riskmanagement master >>update.log 2>&1
+./git-update intranet-rss-reader master >>update.log 2>&1
+./git-update intranet-search-pg master >>update.log 2>&1
+./git-update intranet-search-pg-files master >>update.log 2>&1
+./git-update intranet-security-update-client master >>update.log 2>&1
+./git-update intranet-soap-lite-server master >>update.log 2>&1
+./git-update intranet-sysconfig master >>update.log 2>&1
+./git-update intranet-simple-survey master >>update.log 2>&1
+./git-update intranet-timesheet2 master >>update.log 2>&1
+./git-update intranet-timesheet2-invoices master >>update.log 2>&1
+./git-update intranet-timesheet2-task-popup master >>update.log 2>&1
+./git-update intranet-timesheet2-tasks master >>update.log 2>&1
+./git-update intranet-timesheet2-workflow master >>update.log 2>&1
+./git-update intranet-tinytm master >>update.log 2>&1
+./git-update intranet-trans-invoices master >>update.log 2>&1
+./git-update intranet-trans-project-wizard master >>update.log 2>&1
+./git-update intranet-translation master >>update.log 2>&1
+./git-update intranet-ubl master >>update.log 2>&1
+./git-update intranet-update-client master >>update.log 2>&1
+./git-update intranet-wiki master >>update.log 2>&1
+./git-update intranet-workflow master >>update.log 2>&1
+./git-update intranet-xmlrpc master >>update.log 2>&1
