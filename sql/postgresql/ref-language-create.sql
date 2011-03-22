@@ -7,14 +7,34 @@
 
 
 -- ISO 639
-create table language_codes (
-    language_id char(2)
-        constraint language_codes_language_id_pk
-        primary key,
-    name varchar(100)
-        constraint language_codes_name_nn
-        not null
-);
+
+-- fraber 110322: language_codes already existed in ]po[ V3.4,
+-- so we have to put a "v_count" around this creation here.
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''language_codes'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	create table language_codes (
+	    language_id char(2)
+	        constraint language_codes_language_id_pk
+	        primary key,
+	    name varchar(100)
+	        constraint language_codes_name_nn
+	        not null
+	);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 comment on table language_codes is '
     This is data from the ISO 639-1 standard on language codes.
