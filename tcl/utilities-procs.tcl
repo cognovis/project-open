@@ -2400,7 +2400,7 @@ ad_proc -public util_current_location {{}} {
     # suppress the configured http port when server is behind a proxy, to keep connection behind proxy
     # fraber 101118: looking for parameter in the wrong package...
 #    set suppress_port [parameter::get -package_key "acs-tcl" -parameter SuppressHttpPort -default 0]
-    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default "0"]
+    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default 1]
 
     if { $suppress_port } {
         ns_log Debug "util_current_location: suppressing http port $Host_port"
