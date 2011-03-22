@@ -116,8 +116,8 @@ ad_proc -public im_ms_project_write_task {
 		c.company_name,
 		g.*
 	from    im_projects p
-		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id)
-		left join im_gantt_projects g on (p.project_id = g.project_id),
+		LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id)
+		LEFT OUTER JOIN im_gantt_projects g ON (p.project_id = g.project_id),
 		acs_objects o,
 		im_companies c
 	where   p.project_id = :project_id
@@ -222,6 +222,7 @@ ad_proc -public im_ms_project_write_task {
 			}
 			continue
 		}
+		UID			{ set value $org_project_id }
 		ACWP - \
 		ActualCost - \
 		ActualDuration - \
