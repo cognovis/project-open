@@ -60,7 +60,7 @@ SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'U
 SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'User Admin Information', 'intranet-core', 'left', '/intranet/users/view', null, 0, 'im_user_admin_info_component $user_id $return_url');
 
 -- User Localization Component
-SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'User Admin Information', 'intranet-core', 'left', '/intranet/users/view', null, 0, 'im_user_localizaton_component $user_id $return_url');
+SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'User Localization Information', 'intranet-core', 'left', '/intranet/users/view', null, 0, 'im_user_localizaton_component $user_id $return_url');
 
 -- User Portrait Component
 SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'User Portrait', 'intranet-core', 'right', '/intranet/users/view', null, 0, 'im_portrait_component $user_id_from_search $return_url $read $write $admin');
