@@ -1,3 +1,5 @@
+1;2600;0c
+
 # packages/intranet-dynfield/tcl/intranet-dynfield-procs.tcl
 ad_library {
 
@@ -1514,41 +1516,31 @@ ad_proc -public -callback im_category_after_create -impl intranet-dynfield {
     {-category_type ""}
     {-return_url ""}
 } {
-    ns_log Notice "Running API im_category_after_create"
-
-    ns_log Notice "CATEGORY $category_id | $category_type"
-      
-    set category_type "Intranet Cost Center Type"	
-    # example of existent object_type_id with valid attribute_id
-    #set category_type "Intranet Ticket Type"	
-    
     set object_type [im_category_object_type -category_type $category_type]
    
-    ns_log Notice "OBJECT TYPE: $object_type"
-        
     if {[exists_and_not_null object_type] && [exists_and_not_null category_id]} {
 	
-	set lowest_object_type_id [db_list select_min_object_type_id {
+	set lowest_object_type_id [db_string select_min_object_type_id {
 	    select min(object_type_id) from im_dynfield_type_attribute_map tam, im_categories ic where tam.object_type_id = ic.category_id and category_type = :category_type
-	}]
+	} -default ""]
 	
-	ns_log Notice "LOWEST OBJECT TYPE ID: $lowest_object_type_id"
-	if {[exists_and_not_null lowest_object_type_id]} {
-	    
+	if {![string equal $lowest_object_type_id ""]} {
 	    set attribute_ids [db_list select_attribute_ids {
 		select attribute_id from im_dynfield_type_attribute_map WHERE object_type_id = :lowest_object_type_id
 	    }]
 	    
-	    ns_log Notice "ATTRIBUTE IDS: $attribute_ids"
-	    ns_log Notice "[llength $attribute_ids]"
-	    
 	    foreach attribute_id $attribute_ids {
-		ns_log Notice "$attribute_id"
+		db_1row select_attribute_info {
+		    select display_mode, help_text, section_heading, default_value, required_p from im_dynfield_type_attribute_map where attribute_id = :attribute_id and object_type_id = :lowest_object_type_id
+		}
+		
 		db_dml insert_attribute_category_map {
-		    insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode) VALUES (:attribute_id, :category_id, 'edit')
+		    INSERT INTO im_dynfield_type_attribute_map 
+		    (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p) 
+		    VALUES 
+		    (:attribute_id, :category_id, :display_mode, :help_text, :section_heading, :default_value, :required_p)
 		}
 	    }
 	}
-    } 
+    }
 }
-
