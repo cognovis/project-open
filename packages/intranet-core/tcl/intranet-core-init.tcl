@@ -359,6 +359,7 @@ ad_proc -public -callback im_project_index_redirect {
     {-company_id ""}
     {-user_id_from_search ""}
     {-mine_p ""}
+    {-view_name ""}
 } {
 	This is mainly a callback to redirect from the original project table page to somewhere else
 	
