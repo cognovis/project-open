@@ -53,6 +53,11 @@ ad_page_contract {
     { filter_advanced_p:integer 0 }
 }
 
+# Redirect to custom new page if necessary
+callback im_project_index_redirect -status_id $project_status_id -type_id $project_type_id \
+    -company_id $company_id -return_url $return_url -user_id_from_search $user_id_from_search \
+    -mine_p $mine_p
+
 # ---------------------------------------------------------------
 # Project List Page
 #
