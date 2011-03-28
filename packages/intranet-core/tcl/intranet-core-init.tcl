@@ -353,4 +353,16 @@ ad_proc -public -callback im_timesheet_hours_new_redirect {
 	@param topic_type_id ID of type of topic  
 } -
 
-
+ad_proc -public -callback im_project_index_redirect {
+    {-status_id ""}
+    {-type_id ""}
+    {-company_id ""}
+    {-user_id_from_search ""}
+    {-mine_p ""}
+    {-view_name ""}
+} {
+	This is mainly a callback to redirect from the original project table page to somewhere else
+	
+        @param topic_id ID of the forum topic
+	@param topic_type_id ID of type of topic  
+} -

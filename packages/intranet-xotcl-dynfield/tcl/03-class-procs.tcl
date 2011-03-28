@@ -26,35 +26,6 @@ namespace eval ::im {}
 namespace eval ::im::dynfield {}
 
 
-#############################
-#
-# Meta Class for the creation
-# Of other classes
-# 
-##############################
-
-
-::xotcl::Class create ::im::dynfield::Class \
-    -superclass ::xo::db::Class \
-    -parameter {
-        status_column
-        status_type_table
-        type_column
-        type_category_type
-        multival_attr_ids
-    } -ad_doc {
-        ::im::dynfield::Class is a meta class for interfacing with dynfield enabled acs_object_types.
-        acs_object_types are instances of this meta class. The meta class defines the bahvior common to 
-        all acs_object_types.
-        
-        @param status_columns Column where the status_id is stored
-        @param status_type_table Tablename where the status type is stored
-        @param type_column Which column stores the type_id of the object
-        @param type_category_type Which is the defaul im_category_type for this object_type
-        @param multival_attr_ids Storage slot for the list of multivalued attribute_ids so we can quickly access them
-    }
-
-
 ::im::dynfield::Class ad_instproc save_new {} {
     Save the new class
 } {    
@@ -528,6 +499,208 @@ namespace eval ::im::dynfield {}
    return $classname
 }
 
+
+##################################
+#
+# Retrieve an IM Dynfield Object
+#
+##################################
+
+::im::dynfield::Class ad_instproc instance_select_query {
+    {-id ""}
+    {-type_id ""}
+    {-status_id ""}
+    {-orderby ""}
+    {-cond ""}
+    {-extra_tables ""}
+    {-with_subtypes:boolean true}
+    {-with_substatus:boolean true}
+    {-parent_id ""}
+    {-parent_id_column ""}
+    {-page_size 20}
+    {-page_number ""}
+} {
+    returns the SQL-query to select the CrItems of the specified object_type
+    The object should be of a dynfield enable object though
+    @param id if we only want to retrieve a single object with this query
+    
+    @param orderby for ordering the solution set
+    @param cond a list of where_clauses clause for restricting the answer set
+    @param with_subtypes return subtypes as well
+    @param with_children return immediate child objects of all objects as well
+    @param extra_tables a list of table_name and id_column pairs where the id_column matches the id_column of the class (e.g. im_timesheet_tasks and task_id when matching im_projects as the task_id = project_id).
+    @param parent_id parent_id for this query
+    @param parent_id_column name of the parent_id column. Use full table_name like im_projects.parent_id
+    @param publish_status one of 'live', 'ready', or 'production'
+    @param base_table typically automatic view, must contain title and revision_id
+    @return sql query
+} {
+    set tables [list]
+    set attributes [list]
+    set id_column [my id_column]
+    set left_joins ""
+
+    if {$id ne ""} {
+	lappend cond "[my table_name].$id_column = $id"
+    }
+    
+    if {$parent_id ne "" && $parent_id_column ne ""} {
+	lappend cond "$parent_id_column = $parent_id"
+    }
+
+    if {$type_id ne ""} {
+	set type_column [my type_column]
+	if {$with_subtypes} {
+	    lappend cond "$type_column in ([template::util::tcl_to_sql_list [im_sub_categories $type_id]])"
+	} else {
+	    lappend cond "$type_column = $type_id"
+	}
+    }
+
+    if {$status_id ne ""} {
+	set status_column [my status_column]
+	if {$with_substatus} {
+	    lappend cond "$status_column in ([template::util::tcl_to_sql_list [im_sub_categories $status_id]])"
+	} else {
+	    lappend cond "$status_column = $status_id"
+	}
+    }
+    
+    if {$page_number ne ""} {
+      set limit $page_size
+      set offset [expr {$page_size*($page_number-1)}]
+    } else {
+      set limit ""
+      set offset ""
+    }
+
+    set ref_column "[my table_name].${id_column}"
+    foreach cl [concat [self] [my info heritage]] {
+	if {$cl eq "::xotcl::Object"} break
+	set tn [$cl table_name]
+	if {$tn ne "" && [lsearch $tables $tn] < 0} {
+	    lappend tables $tn
+	    
+	    #my log "--db_slots of $cl = [$cl array get db_slot]"
+	    foreach {slot_name slot} [$cl array get db_slot] {
+		# avoid duplicate output names
+		set name [$slot name]
+		if {[lsearch [im_dynfield_multimap_tables] [$slot set table_name]] <0  && ![info exists names($name)]} {
+		    lappend attributes [$slot attribute_reference $tn]
+		}
+		set names($name) 1
+	    }
+	    
+	    if {$cl ne [self]} {
+		lappend cond "$tn.[$cl id_column] = $ref_column"
+	    }
+	    
+	    # Deal with the extra tables
+	    db_foreach table "select table_name, id_column from acs_object_type_tables where object_type = '[$cl object_type]' and table_name not in ([template::util::tcl_to_sql_list $tables])" {
+		lappend extra_tables [list $table_name $id_column]
+	    }
+	}
+    }
+    foreach extra_table $extra_tables {
+	set table_name [lindex $extra_table 0]
+	set id_column [lindex $extra_table 1]
+	if {[lsearch $tables $table_name] <0 } {
+	    # Extra table, join_expression needed
+	    lappend left_joins "left outer join $table_name on (acs_objects.object_id = ${table_name}.${id_column})"
+	}
+    }
+
+    set sql [::xo::db::sql select \
+                -vars [join $attributes ",\n"] \
+                -from [join $tables ",\n"] \
+                -where [join $cond " and "] \
+                -orderby $orderby \
+                -limit $limit -offset $offset]
+    #my log "--sql=$sql"
+    return $sql
+}
+
+::im::dynfield::Class ad_proc get_instance_from_db {
+    -id:required
+} {
+    Create an XOTcl object from an acs_object_id. This method detemines the type and initializes the object
+    from the information stored in the database. The object is automatically destroyed on cleanup.
+    
+    It requires the class ::im::dynfield::${type} to exist. Will work on this soon :-).
+    
+    It differs from ::xo::db::Class in the way that it can deref the values
+} {
+    ns_log Notice "Getting instance for ID : $id"
+    set type  [::xo::db::Class get_object_type -id $id]
+    if {$type eq "user"} {
+        set type "person"
+    }
+    set class [my object_type_to_class "$type"]
+    if {![my isclass $class]} {
+      error "no class $class defined"
+    }
+
+    set r [$class create ::$id]
+    $r db_1row dbq..get_instance [$class instance_select_query -id $id]
+
+    # Now set the multivalues
+    foreach attribute_name [$class set multival_attrs] {
+        set slot "${class}::slot::${attribute_name}"
+        switch [$slot table_name] {
+            im_dynfield_cat_multi_value {
+                $r set $attribute_name [db_list ids "select category_id from im_dynfield_cat_multi_value where object_id = :id and attribute_id = [$slot dynfield_attribute_id]"]
+                $r set ${attribute_name}_deref [db_list values "select im_category_from_id(category_id) from im_dynfield_cat_multi_value where object_id = :id and attribute_id = [$slot dynfield_attribute_id]"]
+            }
+            im_dynfield_attr_multi_value {
+                $r set $attribute_name [db_list values "select value from im_dynfield_attr_multi_value where object_id = :id and attribute_id = [$slot dynfield_attribute_id]"]
+                $r set ${attribute_name}_deref [$r $attribute_name]
+            }
+        }
+    }
+    $r set object_type $type
+    $r set object_types [::im::dynfield::Class object_supertypes -object_type person]
+    $r set object_id $id
+    $r destroy_on_cleanup
+    $r initialize_loaded_object
+    return $r
+}
+
+
+::im::dynfield::Class ad_instproc get_instances_from_db {
+    {-type_id ""}
+    {-status_id ""}
+    {-orderby ""}
+    {-cond ""}
+    {-extra_tables ""}
+    {-with_subtypes:boolean true}
+    {-with_substatus:boolean true}
+    {-parent_id ""}
+    {-parent_id_column ""}
+    {-page_size 20}
+    {-page_number ""}
+} {
+    Returns a set (ordered composite) of the answer tuples of 
+    an 'instance_select_query' with the same attributes.
+    The tuples are instances of the class, on which the 
+    method was called.
+    
+} {
+    set s [my instantiate_objects -sql \
+	       [my instance_select_query \
+		    -type_id $type_id \
+		    -cond $cond \
+		    -extra_tables $extra_tables \
+		    -orderby $orderby \
+		    -with_subtypes $with_subtypes \
+		    -status_id $status_id \
+		    -with_substatus $with_substatus \
+		    -parent_id $parent_id \
+		    -parent_id_column $parent_id_column \
+		    -page_size $page_size \
+		    -page_number $page_number
+		   ]]
+    return $s
+}
 
 ##############################
 # Object Cache

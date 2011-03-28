@@ -298,3 +298,33 @@ ad_proc im_dynfield::attribute::optional {
 
 }
 
+#############################
+#
+# Meta Class for the creation
+# Of other classes
+# 
+##############################
+
+
+::xotcl::Class create ::im::dynfield::Class \
+    -superclass ::xo::db::Class \
+    -parameter {
+        status_column
+        status_type_table
+        type_column
+        type_category_type
+        multival_attr_ids
+    } -ad_doc {
+        ::im::dynfield::Class is a meta class for interfacing with dynfield enabled acs_object_types.
+        acs_object_types are instances of this meta class. The meta class defines the bahvior common to 
+        all acs_object_types.
+        
+        @param status_columns Column where the status_id is stored
+        @param status_type_table Tablename where the status type is stored
+        @param type_column Which column stores the type_id of the object
+        @param type_category_type Which is the defaul im_category_type for this object_type
+        @param multival_attr_ids Storage slot for the list of multivalued attribute_ids so we can quickly access them
+    }
+
+
+

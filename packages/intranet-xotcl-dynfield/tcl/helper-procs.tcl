@@ -33,7 +33,7 @@ ad_library {
     }
 }
 
-::xo::db::CrItem instproc json_object {} {
+::xo::db::Object instproc json_object {} {
     foreach var [my info vars] {
         lappend json_list $var
         lappend json_list [my set $var]
