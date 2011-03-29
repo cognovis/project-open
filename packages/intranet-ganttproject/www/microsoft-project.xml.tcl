@@ -467,6 +467,7 @@ foreach line [split $xml_org "\n"] {
     }
 }
 
+
 if {"html" == $format} {
     ad_return_complaint 1 "<pre>[ns_quotehtml $xml]</pre>"
 } else {
