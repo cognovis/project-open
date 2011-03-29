@@ -13,6 +13,22 @@ select acs_privilege__add_child('admin', 'edit_timesheet_task_estimates');
 select im_priv_create('edit_timesheet_task_estimates', 'Employees');
 
 
+select acs_privilege__create_privilege(
+        'view_timesheet_task_estimates',
+        'View Timesheet Task',
+        'View Timesheet Task'
+);
+select acs_privilege__add_child('admin', 'view_timesheet_task_estimates');
+select im_priv_create('view_timesheet_task_estimates', 'Employees');
+
+
+select acs_privilege__create_privilege(
+        'view_timesheet_task_billables',
+        'View Timesheet Task',
+        'View Timesheet Task'
+);
+select acs_privilege__add_child('admin', 'view_timesheet_task_billables');
+select im_priv_create('view_timesheet_task_billables', 'Employees');
 
 
 -- The new version of the delete also cleans up relationships etc.
