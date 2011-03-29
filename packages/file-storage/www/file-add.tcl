@@ -5,8 +5,8 @@ ad_page_contract {
     @creation-date 6 Nov 2000
     @cvs-id $Id: file-add.tcl,v 1.16 2007/06/15 17:40:28 matthewg Exp $
 } {
-    {-file_id ""}
-    {-folder_id ""}
+    file_id:integer,optional,notnull
+    folder_id:integer,optional,notnull
     upload_file:trim,optional
     return_url:optional
     upload_file.tmpfile:tmpfile,optional
@@ -14,7 +14,6 @@ ad_page_contract {
     {title ""}
     {lock_title_p 0}
     {name ""}
-
 } -properties {
     folder_id:onevalue
     context:onevalue
@@ -39,10 +38,17 @@ ad_page_contract {
     }
 }
 
-file_storage_file_add_redirect -object_id $file_id \
-    -status_id "" -type_id "" file_id $file_id \
-    -folder_id $folder_id -return_url $return_url
 
+if {[info exists file_id]} {
+    callback file_storage_file_add_redirect -object_id $file_id \
+        -status_id "" -type_id "" -file_id $file_id \
+        -folder_id $folder_id -return_url [im_opt_val return_url]
+} else {
+    callback file_storage_file_add_redirect -object_id "" \
+        -status_id "" -type_id "" -file_id "" \
+        -folder_id $folder_id -return_url [im_opt_val return_url]
+    
+}
 
 set user_id [ad_conn user_id]
 set package_id [ad_conn package_id]
