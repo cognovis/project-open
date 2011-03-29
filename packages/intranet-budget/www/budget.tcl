@@ -187,9 +187,5 @@ set budget_hours_js [extjs::Form::Attribute::Number -name "budget_hours" -label 
 
 # Drive the javascript
 extjs::init
-template::head::add_javascript -src "/extjs/examples/ux/RowEditor.js" -order 10
-template::head::add_javascript -src "/extjs/Exporter-all.js" -order 20
-template::head::add_javascript -src "/extjs/gistfile1.js" -order 40
-
-
-
+template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/RowEditor.js" -order 9
+template::head::add_javascript -src "/extjs/ux-numeric.js" -order 20

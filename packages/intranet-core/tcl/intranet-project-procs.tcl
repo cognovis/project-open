@@ -727,8 +727,8 @@ ad_proc -public im_project_options {
 
     # Disable the restriction to "my projects" if the user can see all projects.
     if {[im_permission $current_user_id "view_projects_all"]} { 
-	set member_user_id 0
-    }
+        set member_user_id 0
+    } 
 
     if {0 != $member_user_id && "" != $member_user_id} {
 	lappend p_criteria "p.project_id in (

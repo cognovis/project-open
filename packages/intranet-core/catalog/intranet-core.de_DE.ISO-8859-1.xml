@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-core" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-core" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="--_Please_select_--">-- Bitte wählen --</msg>
   <msg key="1111">1111</msg>
@@ -61,7 +61,7 @@
   <msg key="Add_office">Neuer Firmensitz</msg>
   <msg key="Add_primary_contact">Neuer Hauptkontakt</msg>
   <msg key="Add_Stuff">Hinzufügen</msg>
-  <msg key="Add_subproject">Neues Unterprojekt</msg>
+  <msg key="Add_subproject">Neues Teilprojekt</msg>
   <msg key="Add_to_Page">Hinzufügen</msg>
   <msg key="Add_user">Neuer Benutzer</msg>
   <msg key="Additional_Line">Zusätzliche Zeile</msg>
@@ -194,7 +194,7 @@
   <msg key="City">Stadt</msg>
   <msg key="Cleanup_All_Demo_Users">Alle Demouser löschen</msg>
   <msg key="Cleanup_Demo_Users">Demouser löschen</msg>
-  <msg key="Client">Kunde</msg>
+  <msg key="Client">Niederlassung</msg>
   <msg key="Client_Contacts">Kundenkontakte</msg>
   <msg key="Client_Details">Kundendetails</msg>
   <msg key="Client_Main_Office">Kundensitz</msg>
@@ -216,13 +216,13 @@
   <msg key="Comments">Kommentare?</msg>
   <msg key="Companies">Firmen</msg>
   <msg key="Companies_Admin">Firmen administrieren</msg>
-  <msg key="Company">Firma</msg>
+  <msg key="Company">Niederlassung</msg>
   <msg key="Company_Documents">Firmendokumente</msg>
   <msg key="company_employee">Mitarbeiter</msg>
   <msg key="Company_Information">Unternehmensstammdaten</msg>
   <msg key="Company_Invoice">Kundenrechnung</msg>
   <msg key="Company_Name">Firmenname</msg>
-  <msg key="Company_Project_Nr">Kundenprojekt-Nummer</msg>
+  <msg key="Company_Project_Nr">SAP Nummer</msg>
   <msg key="Company_Short_Name">Firmenkurzname</msg>
   <msg key="Company_Status">Firmenstatus</msg>
   <msg key="Company_Status_1">Firmenstatus</msg>
@@ -262,7 +262,7 @@
   <msg key="Country">Land</msg>
   <msg key="Create">Erstellen</msg>
   <msg key="Create_a_new_Project">Neues Projekt</msg>
-  <msg key="Create_a_Subproject">Neues Unterprojekt</msg>
+  <msg key="Create_a_Subproject">Neues Teilprojekt</msg>
   <msg key="Create_Category">Neue Kategorie</msg>
   <msg key="Create_New_Company_for_User">Neue Firma erstellen für diesen Benutzer</msg>
   <msg key="Create_new_Incident">Neuer Zwischenfall</msg>
@@ -280,7 +280,7 @@
   <msg key="Croatia">Kroatien</msg>
   <msg key="cs">cs</msg>
   <msg key="Cuba">Kuba</msg>
-  <msg key="Customer">Kunde</msg>
+  <msg key="Customer">Niederlassung</msg>
   <msg key="Customer_Contact">Kundenkontakt</msg>
   <msg key="Customer_Documents">Kundendokumente</msg>
   <msg key="Customer_Info">Kundeninfo</msg>
@@ -304,6 +304,7 @@
   <msg key="Dangerous">Vorsicht!!</msg>
   <msg key="Dashboard">Dashboard</msg>
   <msg key="Data_Access_1">Datenzugriff</msg>
+  <msg key="Datatype">Datentyp</msg>
   <msg key="Date">Datum</msg>
   <msg key="Day">Tag</msg>
   <msg key="de">de</msg>
@@ -332,7 +333,7 @@
   <msg key="Delinquent_Update">Aktualisierung Säumige Benutzer</msg>
   <msg key="Deliver">Ausliefern</msg>
   <msg key="Delivered">Ausgeliefert</msg>
-  <msg key="Delivery_Date">Auslieferungsdatum</msg>
+  <msg key="Delivery_Date">geplantes Projektende</msg>
   <msg key="Delivery_Note">Liefereschein</msg>
   <msg key="deliverynoteenadp">deliverynote.en.adp</msg>
   <msg key="deliverynoteesadp">deliverynote.es.adp</msg>
@@ -450,11 +451,12 @@
   <msg key="Freelance_Provider">Freiberuflicher Zulieferer</msg>
   <msg key="Freelancers">Freiberufler</msg>
   <msg key="freelancers">Freiberufler</msg>
-  <msg key="Full_Member">Vollmitglied</msg>
+  <msg key="Full_Member">Projektmitarbeiter</msg>
   <msg key="Functionality">Funktionstest</msg>
   <msg key="Future">Zukunft</msg>
   <msg key="g">G</msg>
   <msg key="Gantt">Gantt</msg>
+  <msg key="gelscht">gelöscht</msg>
   <msg key="Gen">Gen</msg>
   <msg key="Generic_PM">Generic PM</msg>
   <msg key="Generic_Table_Header_ocs_inputs">Eingabegeräte</msg>
@@ -541,6 +543,7 @@
   <msg key="Green">Grün</msg>
   <msg key="Group_administration">Benutzergruppen Administration</msg>
   <msg key="Group_Id">Gruppennummer</msg>
+  <msg key="group_key">Gruppe</msg>
   <msg key="Group_Membership">Gruppenmitgliedschaft</msg>
   <msg key="Guatemala">Guatemala</msg>
   <msg key="Gx">Gx</msg>
@@ -559,6 +562,7 @@
   <msg key="Home_address">Privat Adresse</msg>
   <msg key="Home_City">Privat Stadt</msg>
   <msg key="Home_Country">Privat Land</msg>
+  <msg key="Home_General_Help">Home General Help</msg>
   <msg key="Home_Line_1">Privat Zeile</msg>
   <msg key="Home_Line_2">Privat Zeile</msg>
   <msg key="Home_Page">Webseite</msg>
@@ -731,6 +735,7 @@
   <msg key="lt_Change_the_system_par">Ändern von Systemparameter wie z.B. Verzeichnissen, URLs usw.</msg>
   <msg key="lt_Choose_this_option_fo">Wähle diese Option für detaillierte Sicherheitsinformationen. Mit dieser Option überträgt die Sicherheitsupdate-Service Informationen über Ihre Konfiguration, die uns helfen Ihre ]project-open[ Systemkonfiguration inklusive Informationen über Paketversionen und Betriebssystemversion festzustellen.</msg>
   <msg key="lt_Choose_this_option_if">Wählen Sie diese Option, wenn Sie keine Informationen an ]project-open[ übermitteln wollen, die Sie oder Ihr Unternehmen identifizieren.  </msg>
+  <msg key="lt_Click_here_to_configu">Hier klicken um zu konfigurieren</msg>
   <msg key="lt_Click_right_and_choos">Mit der rechten Maustaste anklicken und &quot;Speichern als&quot; wählen, um die Datei herunterzuladen.</msg>
   <msg key="lt_Clientesintranet-file">Kunden</msg>
   <msg key="lt_Configure_site-wide_d">Konfiguration von Voreinstellungen für Benutzerprofile</msg>
@@ -1075,7 +1080,7 @@ Passwort: %password%
   <msg key="mk">mk</msg>
   <msg key="Mkt">Mkt</msg>
   <msg key="mo">mo</msg>
-  <msg key="Month">Month</msg>
+  <msg key="Month">Monat</msg>
   <msg key="more">weitere...</msg>
   <msg key="more_">weitere...</msg>
   <msg key="more_companies">mehr Firmen...</msg>
@@ -1204,7 +1209,7 @@ Passwort: %password%
   <msg key="Password_Updated">Password Änderung</msg>
   <msg key="Past">Vergangen</msg>
   <msg key="Past_Due">Übefällig</msg>
-  <msg key="Past_Projects">Vergangene Projekt</msg>
+  <msg key="Past_Projects">Projektmitglied in:</msg>
   <msg key="Patagon_EUR">Patagon EUR</msg>
   <msg key="Path">Pfad</msg>
   <msg key="Payed">Bezahlt</msg>
@@ -1223,6 +1228,8 @@ Passwort: %password%
   <msg key="pl">pl</msg>
   <msg key="PL_Fachbereich">PL Fachbereich</msg>
   <msg key="Please_Select">Bitte wählen</msg>
+  <msg key="Please_Select_Type_for_Object">Bitte wählen sie einen Typ aus für %object_type_l10n%</msg>
+  <msg key="PM_Help">PM Hilfe</msg>
   <msg key="PO_Admins">P/O Admins</msg>
   <msg key="po_admins">Systemadministrator</msg>
   <msg key="poenadp">po.en.adp</msg>
@@ -1265,20 +1272,19 @@ Passwort: %password%
   <msg key="Profiles">Profile</msg>
   <msg key="Profit">Ertrag</msg>
   <msg key="Profit_and_Loss">GuV</msg>
-  <msg key="Program_Enhan_BKB">Program Erweiterung (PE)</msg>
   <msg key="Program_Enhan_K">Kleinauftrag Konzern</msg>
   <msg key="Program_Enhancement">Programmerweiterung</msg>
-  <msg key="Project">Projektnr.</msg>
+  <msg key="Project">Projekt</msg>
   <msg key="Project_">Projekt #</msg>
   <msg key="Project_Base_Data">Basisdaten</msg>
-  <msg key="Project_Budget">Projekt Budget</msg>
+  <msg key="Project_Budget">Projektbudget (?)</msg>
   <msg key="Project_Budget_Currency">Projekt Etat Währung</msg>
-  <msg key="Project_Budget_Hours">Projekt Stundenbudget</msg>
+  <msg key="Project_Budget_Hours">Interner Aufwand in Stunden</msg>
   <msg key="Project_Ch">Project</msg>
   <msg key="Project_CR">Project CR</msg>
   <msg key="Project_Hierarchy">Projekthierarchie</msg>
   <msg key="Project_Management">Projektmanagement</msg>
-  <msg key="Project_Manager">Projektleiter IT</msg>
+  <msg key="Project_Manager">(Teil-)Projektleiter</msg>
   <msg key="Project_Managers">Projektmanager</msg>
   <msg key="project_managers">Projektleiter</msg>
   <msg key="Project_Members">Projektteam</msg>
@@ -1287,9 +1293,10 @@ Passwort: %password%
   <msg key="Project_Nr">Projektnr.</msg>
   <msg key="Project_nr">Projektnr.</msg>
   <msg key="Project_project_name">Projekt: %project_name% </msg>
+  <msg key="Project_Reports">Projekt Reports</msg>
   <msg key="Project_Resource_Planning">Ressourcenplanung</msg>
   <msg key="Project_Status">Projektstatus</msg>
-  <msg key="Project_Survey_Component">Projektumfragen</msg>
+  <msg key="Project_Survey_Component">Statusberichte</msg>
   <msg key="Project_Task">Projekt Aufgabe</msg>
   <msg key="Project_Type">Projekttyp</msg>
   <msg key="Project_type_Consulting_Project">Consultingprojekt</msg>
@@ -1308,7 +1315,7 @@ Passwort: %password%
   <msg key="Proof_Only">Nur korrekturlesen</msg>
   <msg key="Proofing">Korrekturlesen</msg>
   <msg key="Provider">Zulieferer</msg>
-  <msg key="Provider_Bill">Zulieferer Rechnung</msg>
+  <msg key="Provider_Bill">SAP-Rechnungen</msg>
   <msg key="Provider_Documents">Zulieferer Dokumente</msg>
   <msg key="Provider_Management">Lieferantenmanagement</msg>
   <msg key="Providers">Zulieferer</msg>
@@ -1318,7 +1325,7 @@ Passwort: %password%
   <msg key="publicly_searchable">für öffentliche Suche</msg>
   <msg key="Puerto Rico">Puerto Rico</msg>
   <msg key="Puerto_Rico">Puerto Rico</msg>
-  <msg key="Purchase_Order">Auftrag</msg>
+  <msg key="Purchase_Order">Obligo (externe Aufträge)</msg>
   <msg key="Purchasing_Req_K">Beschaffung Konzern</msg>
   <msg key="Purchasing_Request">Beschaffung</msg>
   <msg key="q">Q</msg>
@@ -1434,7 +1441,7 @@ Passwort: %password%
   <msg key="Star_Transit_27">Star Transit 2.7</msg>
   <msg key="Star_Transit_30">Star Transit 3.0</msg>
   <msg key="Star_Transit_XV">Star Transit XV</msg>
-  <msg key="Start_Date">Startdatum</msg>
+  <msg key="Start_Date">geplanter Projektstart</msg>
   <msg key="State">Staat</msg>
   <msg key="Status">Status</msg>
   <msg key="Strategic_Consulting">Strategische Beratung</msg>
@@ -1580,6 +1587,7 @@ Passwort: %password%
   <msg key="v">V</msg>
   <msg key="Vacation">Urlaub</msg>
   <msg key="value">%value% </msg>
+  <msg key="Variable_Name">Name der Variablen</msg>
   <msg key="VAS">VAS</msg>
   <msg key="VAS_5051">VAS 5051</msg>
   <msg key="VAT_Number">MwSt. Nummer</msg>

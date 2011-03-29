@@ -138,42 +138,6 @@ ad_library {
 }
 
 if {0} {
-::im::dynfield::Attribute ad_proc dynfield_attributes {
-    {-object_type_ids:required}
-    {-privilege ""}
-    {-user_id ""}
-} {
-    Returns a list of dynfield_attributes with object_type_id of the attributes to display. This means we return a list of (attribute_id object_type_id) pairs.
-    
-    The list is sorted in order of how the attributes should appear according to the object_type_id order
-    
-    @param object_type_ids This is a list of object_type_ids. Note that the order is important
-    @param user_id User ID for whom to check the privilege
-    @param privilege Check that the user has this privilege. Empty string does mean no permission check
-} {
-    set dynfield_attribute_ids [list]
-    set attribute_ids [list]
-    db_foreach attributes "
-	select dl.attribute_id, object_type_id as object_type_id
-	from im_dynfield_type_attribute_map tam, im_dynfield_layout dl
-	where tam.attribute_id = dl.attribute_id
-	and object_type_id in ([template::util::tcl_to_sql_list $object_type_ids])
-	order by pos_y
-    " {
-	if {[lsearch $attribute_ids $attribute_id] < 0} {
-	    lappend attribute_ids $attribute_id
-	    if {$privilege == ""} {
-		lappend dynfield_attribute_ids [list $attribute_id $object_type_id]
-	    } else {
-		if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
-		    lappend dynfield_attribute_ids [list $attribute_id $object_type_id]
-		}
-	    }
-	}
-    }
-    return $dynfield_attribute_ids
-}
-
 
 ::im::dynfield::Attribute ad_instproc save {} {
     This will save a dynfield attribute in the respective tables

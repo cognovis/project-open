@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-core" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-core" locale="en_US" charset="ISO-8859-1">
 
   <msg key="--_Please_select_--">-- Please select --</msg>
   <msg key="1111">1111</msg>
@@ -310,6 +310,7 @@
   <msg key="Dangerous">Dangerous!!</msg>
   <msg key="Dashboard">Dashboard</msg>
   <msg key="Data_Access_1">Data Access</msg>
+  <msg key="Datatype">Datatype</msg>
   <msg key="Date">Date</msg>
   <msg key="Day">Day</msg>
   <msg key="de">de</msg>
@@ -472,6 +473,7 @@
   <msg key="Future">Future</msg>
   <msg key="g">g</msg>
   <msg key="Gantt">Gantt</msg>
+  <msg key="gelscht">deleted</msg>
   <msg key="Gen">Gen</msg>
   <msg key="General_Home">Home</msg>
   <msg key="Generic_PM">Generic PM</msg>
@@ -787,6 +789,7 @@
   <msg key="lt_Change_the_system_par">Change the system parametrization such as directories, URLs, etc...</msg>
   <msg key="lt_Choose_this_option_fo">Choose this option for detailed security information. With this option the security update service transmits information about your configuration that might help us to assess your ]project-open[ system configuration including package versions and operating system version information. It also includes your email address so that we can alert your in special situations.</msg>
   <msg key="lt_Choose_this_option_if">Choose this option if you prefer not to reveal any information to ]project-open[ that might identify you or your organization.</msg>
+  <msg key="lt_Click_here_to_configu">Click here to configure</msg>
   <msg key="lt_Click_here_to_get_hel">Click here to get help for this page</msg>
   <msg key="lt_Click_right_and_choos">Click right and choose 'Save target as' to download the file</msg>
   <msg key="lt_Clientesintranet-file">Clients</msg>
@@ -1721,6 +1724,7 @@ other way for the user to find out.</msg>
   <msg key="Vacation">Vacation</msg>
   <msg key="Value">Value</msg>
   <msg key="value">%value%</msg>
+  <msg key="Variable_Name">Variable Name</msg>
   <msg key="VAS">VAS</msg>
   <msg key="VAS_5051">VAS 5051</msg>
   <msg key="VAT_Number">VAT Number</msg>

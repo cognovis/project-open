@@ -812,6 +812,7 @@ ad_proc -public fs::add_file {
 			    ]
 	}
 	
+	#Here it is the chunk of code to comment ou and replace with 
 	if {[string is true $do_notify_here_p]} {
 	    fs::do_notifications -folder_id $parent_id -filename $title -item_id $revision_id -action "new_file" -package_id $package_id
 	    if {!$no_callback_p} {
@@ -1602,7 +1603,4 @@ ad_proc -public -callback file_storage_file_add_redirect {
     {-return_url ""}
 } {
 	This is mainly a callback to redirect from the original file-add.tcl page to somewhere else
-
-    
-	
 } -

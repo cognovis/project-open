@@ -139,6 +139,7 @@ ad_proc -private im_timesheet_task_status_options { {-include_empty 1} } {
 ad_proc -public im_timesheet_task_list_component {
     {-debug 0}
     {-view_name "im_timesheet_task_list"} 
+    {-view_type ""}
     {-order_by ""} 
     {-restrict_to_type_id 0} 
     {-restrict_to_status_id 0} 
@@ -211,9 +212,8 @@ ad_proc -public im_timesheet_task_list_component {
     # Get the "view" (=list of columns to show)
     set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
     if {0 == $view_id} {
-	ns_log Error "im_timesheet_task_component: we didn't find view_name=$view_name"
-	set view_name "im_timesheet_task_list"
-	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+        ns_log Error "im_timesheet_task_component: we didn't find view_name=$view_name"
+        set view_id [db_string get_view_id "select view_id from im_views where view_name='im_timesheet_task_list'"]
     }
     if {$debug} { ns_log Notice "im_timesheet_task_component: view_id=$view_id" }
 
@@ -436,6 +436,7 @@ ad_proc -public im_timesheet_task_list_component {
 		child.project_nr as task_nr,
 		child.project_name as task_name,
 		child.project_status_id as task_status_id,
+        im_name_from_id(child.project_status_id) as task_status,
 		child.project_type_id as task_type_id,
 		child.project_id as child_project_id,
 		child.parent_id as child_parent_id,
@@ -460,13 +461,19 @@ ad_proc -public im_timesheet_task_list_component {
 		left outer join im_cost_centers cc on (t.cost_center_id = cc.cost_center_id)
 		$extra_from
 	where
-		parent.project_id = :restrict_to_project_id and
+		parent.project_id = $restrict_to_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
 		child.project_status_id not in ([im_project_status_deleted])
 		$extra_where
 	order by
 		child.tree_sortkey
     "
+
+    if {$view_type ne ""} {
+        upvar page_title page_title
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "tasks.$view_type" -table_name "$page_title"
+        ad_script_abort
+    }
 
     db_multirow task_list_multirow task_list_sql $sql {
 

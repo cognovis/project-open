@@ -34,34 +34,19 @@ ad_proc -public intranet_oo::convert {
     return [string trim $content]
 }
 
-ad_proc -public intranet_oo::import_oo_pdf {
-    -oo_file:required
-    {-title ""}
-    {-item_id ""}
-    {-parent_id ""}
-    {-no_import:boolean}
-    {-return_pdf:boolean}
-    {-return_pdf_with_id:boolean}
+ad_proc -public intranet_oo::jodconvert {
+    {-oo_file:required}
+    {-output_file:required}
 } {
-    Imports an OpenOffice file (.sxw / .odt) as a PDF file into the content repository. If item_id is specified a new revision of that item is created, else a new item is created.
-    
-    @param oo_file The full path to the OpenOffice file that contains the data to be exported as PDF.
-    @param title Title which will be used for the resulting content item and file name if none was given in the item
-    @param item_id The item_id of the content item to which the content should be associated.
-    @param parent_id Needed to set the parent of this object
-    @param no_import If this flag is specified the location of the generated PDF will be returned, but the pdf will not be stored in the content repository
-    @param return_pdf If this flag is specified the location of the generated PDF will be returned and the PDF will be stored in the content repository (in contrast to "no_import"
-    @param return_pdf_with_id Same as return_pdf but it will return a list with three elements: file_item_id, file_mime_type and pdf_filename
-    @return item_id of the revision that contains the file
-    @return file location of the file if "no_import" has been specified.
+    Converts a file using jodconvert
 } {
-    set pdf_filename "[file rootname $oo_file].pdf"
+
     set jodconverter_bin [parameter::get -parameter "jodconverterBin" -default "/usr/bin/jodconverter"]
     if {[file exists $jodconverter_bin]} { 
-        set status [catch {eval exec $jodconverter_bin $oo_file $pdf_filename} result]
+        set status [catch {eval exec $jodconverter_bin $oo_file $output_file} result]
         ns_log Debug "Using jodconverter"
     } else {
-        set status [catch {exec -- /usr/bin/java -jar [acs_package_root_dir intranet-openoffice]/jodconverter/lib/jodconverter-cli-2.2.2.jar $oo_file $pdf_filename} result]
+        set status [catch {exec -- /usr/bin/java -jar [acs_package_root_dir intranet-openoffice]/jodconverter/lib/jodconverter-cli-2.2.2.jar $oo_file $output_file} result]
     }
     if { $status == 0 } {
 
@@ -120,6 +105,34 @@ ad_proc -public intranet_oo::import_oo_pdf {
         }
     }
     
+}
+
+ad_proc -public intranet_oo::import_oo_pdf {
+    -oo_file:required
+    {-title ""}
+    {-item_id ""}
+    {-parent_id ""}
+    {-no_import:boolean}
+    {-return_pdf:boolean}
+    {-return_pdf_with_id:boolean}
+} {
+    Imports an OpenOffice file (.sxw / .odt) as a PDF file into the content repository. If item_id is specified a new revision of that item is created, else a new item is created.
+    
+    @param oo_file The full path to the OpenOffice file that contains the data to be exported as PDF.
+    @param title Title which will be used for the resulting content item and file name if none was given in the item
+    @param item_id The item_id of the content item to which the content should be associated.
+    @param parent_id Needed to set the parent of this object
+    @param no_import If this flag is specified the location of the generated PDF will be returned, but the pdf will not be stored in the content repository
+    @param return_pdf If this flag is specified the location of the generated PDF will be returned and the PDF will be stored in the content repository (in contrast to "no_import"
+    @param return_pdf_with_id Same as return_pdf but it will return a list with three elements: file_item_id, file_mime_type and pdf_filename
+    @return item_id of the revision that contains the file
+    @return file location of the file if "no_import" has been specified.
+} {
+    set pdf_filename "[file rootname $oo_file].pdf"
+
+    # Do the conversion using jodconvert
+    intranet_oo::jodconvert -oo_file $oo_file -output_file $pdf_filename
+
     set mime_type "application/pdf"
     if {![file exists $pdf_filename]} {
         # We could not generate the PDF, abort
@@ -263,11 +276,12 @@ ad_proc -public intranet_oo::parse_content {
     @return The path to the new file.
 } {
     # Deduct the filetype and output name
+    set source_type [file extension $template_file_path]
 
     if {$output_filename ne ""} {
 		set target_type [file extension $output_filename]
     } else {
-		set target_type [file extension $template_file_path]
+		set target_type $source_type
 		set output_filename [file tail $template_file_path]
     }
 	
@@ -278,7 +292,7 @@ ad_proc -public intranet_oo::parse_content {
     ns_mkdir $odt_tmp_path
     
     # The document 
-    set odt_zip "${odt_tmp_path}.odt"
+    set odt_zip "${odt_tmp_path}${source_type}"
     set odt_content "${odt_tmp_path}/content.xml"
     set odt_styles "${odt_tmp_path}/styles.xml"
 
@@ -336,19 +350,31 @@ ad_proc -public intranet_oo::parse_content {
     # which happens to be the OpenOffice File. 
     exec zip -j $odt_zip $odt_content
     exec zip -j $odt_zip $odt_styles
-
-	if {$target_type eq ".pdf"} {
-        if {$parent_id eq ""} {
-            set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import -return_pdf]
-        } else {
-            set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -parent_id $parent_id -return_pdf]
+    switch $target_type {
+        .pdf {
+            if {$parent_id eq ""} {
+                set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -no_import -return_pdf]
+            } else {
+                set import_doc [intranet_oo::import_oo_pdf -oo_file $odt_zip -parent_id $parent_id -return_pdf]
+            }
+            set return_file [lindex $import_doc 1]
+            set mime_type "application/pdf"
         }
-	    set return_file [lindex $import_doc 1]
-	    set mime_type [lindex $import_doc 2]
-	} else {
-	    set return_file $odt_zip
-	    set mime_type "application/odt"
-	}
+        .odt {
+            set return_file $odt_zip
+            set mime_type "application/odt"
+        }
+        .ods {
+            set return_file $odt_zip
+            set mime_type "application/ods"
+        }
+        .xls {
+            set return_file "[file rootname $odt_zip].xls"
+            intranet_oo::jodconvert -oo_file $odt_zip -output_file $return_file
+            set mime_type "application/vnd.ms-excel"
+        }
+    }
+
     db_release_unused_handles
     
     # ------------------------------------------------
@@ -356,6 +382,7 @@ ad_proc -public intranet_oo::parse_content {
     ns_log Debug "view.tcl: before returning file"
     set outputheaders [ns_conn outputheaders]
     ns_set cput $outputheaders "Content-Disposition" "attachment; filename=$output_filename"
+
     ns_returnfile 200 $mime_type $return_file
     
     # ------------------------------------------------

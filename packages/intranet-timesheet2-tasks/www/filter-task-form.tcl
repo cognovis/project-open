@@ -58,9 +58,10 @@ ad_form \
     -export {project_id return_url } \
     -form {
     	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
-	{task_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Project Status" translate_p 1}} }
-	{with_member_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.With_Member {With Member}]"} {options $task_member_options} }
-	{cost_center_id:text(select),optional {label "[lang::message::lookup {} intranet-cost.Cost_Center {Cost Center}]"} {options $cost_center_options} }
+        {task_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Project Status" translate_p 1}} }
+        {with_member_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.With_Member {With Member}]"} {options $task_member_options} }
+        {cost_center_id:text(select),optional {label "[lang::message::lookup {} intranet-cost.Cost_Center {Cost Center}]"} {options $cost_center_options} }
+        {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
     }
 		
 template::element::set_value $form_id task_status_id $task_status_id

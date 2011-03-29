@@ -312,16 +312,13 @@ ad_proc -public -callback file_storage_file_add_redirect -impl intranet-cognovis
 	This is mainly a callback to redirect from the original file-add.tcl page to somewhere else  
 	
 } {
-
-
     if {[exists_and_not_null file_id]} {
-	ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
-	    file_id folder_id return_url
-	}]
+        ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
+            file_id folder_id return_url
+        }]
     } else {
-	ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
-	    folder_id return_url
-	}]
+        ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
+            folder_id return_url
+        }]
     }
 }
->>>>>>> 4c4acb2... finshed task# 34472: cleaned callback im_forum_new_redirect implementation

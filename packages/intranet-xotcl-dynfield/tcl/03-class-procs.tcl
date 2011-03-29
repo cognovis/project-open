@@ -512,7 +512,8 @@ namespace eval ::im::dynfield {}
     {-status_id ""}
     {-orderby ""}
     {-cond ""}
-    {-extra_tables ""}
+    {-outer_tables ""}
+    {-inner_tables ""}
     {-with_subtypes:boolean true}
     {-with_substatus:boolean true}
     {-parent_id ""}
@@ -528,7 +529,8 @@ namespace eval ::im::dynfield {}
     @param cond a list of where_clauses clause for restricting the answer set
     @param with_subtypes return subtypes as well
     @param with_children return immediate child objects of all objects as well
-    @param extra_tables a list of table_name and id_column pairs where the id_column matches the id_column of the class (e.g. im_timesheet_tasks and task_id when matching im_projects as the task_id = project_id).
+    @param outer_tables a list of table_name and id_column pairs where the id_column matches the id_column of the class (e.g. im_timesheet_tasks and task_id when matching im_projects as the task_id = project_id). Used in an OUTER join.
+    @param inner_tables  a list of table_name and id_column pairs where the id_column matches the id_column of the class (e.g. im_timesheet_tasks and task_id when matching im_projects as the task_id = project_id). Used in a normal (INNER) join.
     @param parent_id parent_id for this query
     @param parent_id_column name of the parent_id column. Use full table_name like im_projects.parent_id
     @param publish_status one of 'live', 'ready', or 'production'
@@ -597,22 +599,29 @@ namespace eval ::im::dynfield {}
 	    
 	    # Deal with the extra tables
 	    db_foreach table "select table_name, id_column from acs_object_type_tables where object_type = '[$cl object_type]' and table_name not in ([template::util::tcl_to_sql_list $tables])" {
-		lappend extra_tables [list $table_name $id_column]
+		lappend outer_tables [list $table_name $id_column]
 	    }
 	}
     }
-    foreach extra_table $extra_tables {
-	set table_name [lindex $extra_table 0]
-	set id_column [lindex $extra_table 1]
+    foreach outer_table $outer_tables {
+	set table_name [lindex $outer_table 0]
+	set id_column [lindex $outer_table 1]
 	if {[lsearch $tables $table_name] <0 } {
 	    # Extra table, join_expression needed
 	    lappend left_joins "left outer join $table_name on (acs_objects.object_id = ${table_name}.${id_column})"
 	}
     }
 
+    foreach inner_table $inner_tables {
+	set table_name [lindex $inner_table 0]
+	set id_column [lindex $inner_table 1]
+	lappend tables $table_name
+	lappend cond "${table_name}.${id_column} = acs_objects.object_id"
+    }
+
     set sql [::xo::db::sql select \
                 -vars [join $attributes ",\n"] \
-                -from [join $tables ",\n"] \
+                -from "[join $tables ",\n"] [join $left_joins " "]"\
                 -where [join $cond " and "] \
                 -orderby $orderby \
                 -limit $limit -offset $offset]
@@ -671,7 +680,8 @@ namespace eval ::im::dynfield {}
     {-status_id ""}
     {-orderby ""}
     {-cond ""}
-    {-extra_tables ""}
+    {-outer_tables ""}
+    {-inner_tables ""}
     {-with_subtypes:boolean true}
     {-with_substatus:boolean true}
     {-parent_id ""}
@@ -683,13 +693,17 @@ namespace eval ::im::dynfield {}
     an 'instance_select_query' with the same attributes.
     The tuples are instances of the class, on which the 
     method was called.
+
+    
     
 } {
+    ns_log Notice "instantiate [self]"
     set s [my instantiate_objects -sql \
 	       [my instance_select_query \
 		    -type_id $type_id \
 		    -cond $cond \
-		    -extra_tables $extra_tables \
+		    -outer_tables $outer_tables \
+		    -inner_tables $inner_tables \
 		    -orderby $orderby \
 		    -with_subtypes $with_subtypes \
 		    -status_id $status_id \
@@ -698,9 +712,267 @@ namespace eval ::im::dynfield {}
 		    -parent_id_column $parent_id_column \
 		    -page_size $page_size \
 		    -page_number $page_number
-		   ]]
+		   ] \
+	       -object_class "[self]"
+	  ]
     return $s
 }
+
+
+#################################
+#
+# Element handling for the class
+#
+#################################
+
+::im::dynfield::Class ad_proc elements {
+    {-object_type_id ""}
+    {-object_type ""}
+    {-order_by "pos_y"}
+    {-attribute_names ""}
+} {
+    Returns an xotcl composite of all the elements of this class for the given object_type_id or object_type.
+    
+    The list is sorted in order of how the attributes should appear according to the object_type_id order
+    
+    @param object_type_id The object_type_if for the which to get the elements
+    @param object_type Alternatively get all the elements of an object_type
+    @param order_by Sorting of the elements. This is especially needed in the spreadsheet functions as the sort_order of the elements will define in which orders the columns in the spreadsheet show up
+    @param attribute_names A list of attribute names for which we want to the the elements.
+} {
+
+    if {$object_type_id eq ""} {
+        if {$object_type eq ""} {
+            ad_return_error "Missing object_type" "You need to specify an object_type or an object_type_id"
+        } else {
+            set tam_clause "and aa.object_type = '$object_type'"
+        }
+    } else {
+        set tam_clause "and tam.object_type_id = $object_type_id and tam.display_mode != 'none'"
+    }
+
+    if {$attribute_names ne ""} {
+        set attribute_clause "and aa.attribute_name in ([template::util::tcl_to_sql_list $attribute_names])"
+    } else {
+        set attribute_clause ""
+    }
+
+    set sql "
+    select 
+           ida.attribute_id as dynfield_attribute_id,
+           tam.section_heading,
+           aa.attribute_id,
+           aa.object_type,
+           aa.attribute_name,
+           aa.pretty_name,
+           aa.pretty_plural,
+           aa.datatype,
+           aa.default_value,
+           aa.min_n_values,
+           aa.max_n_values,
+           aa.column_name,
+           aa.table_name,
+           tam.required_p,
+           ida.include_in_search_p,
+           ida.also_hard_coded_p,
+           ida.deprecated_p,
+           idl.label_style,
+           idl.pos_y as sort_order,
+           ida.widget_name,
+           idw.widget,
+           tam.help_text,
+           tam.object_type_id as object_type_id,
+           tam.default_value,
+           idw.widget_id,
+           idw.storage_type_id
+     from
+           acs_attributes aa,
+           im_dynfield_widgets idw,
+           im_dynfield_attributes ida,
+           im_dynfield_type_attribute_map tam,
+           im_dynfield_layout idl
+     where
+           ida.acs_attribute_id = aa.attribute_id
+           and ida.widget_name = idw.widget_name
+           and tam.attribute_id = ida.attribute_id
+           and ida.attribute_id = idl.attribute_id
+           $tam_clause
+           $attribute_clause
+    order by $order_by
+     "
+
+    set object_class "::im::dynfield::Element"
+    set __result [::xo::OrderedComposite new]
+    $__result destroy_on_cleanup
+
+    db_with_handle -dbn "" db {
+        
+        set selection [db_exec select $db elements $sql]
+        while {1} {
+            set continue [ns_db getrow $db $selection]
+            if {!$continue} break
+            set o [$object_class new]
+            $__result add $o
+            
+            foreach {att val} [ns_set array $selection] {$o set $att $val}
+            if {[$o exists object_type]} {
+                # set the object type if it looks like managed from XOTcl
+                if {[string match "::*" [set ot [$o set object_type]] ]} {
+                    $o class $ot
+                }
+            }
+            if {[$o istype ::xo::db::Object]} {
+                $o initialize_loaded_object
+            }
+            #my log "--DB more = $continue [$o serialize]" 
+        }
+    }
+    ds_comment "sql ::: $sql"    
+    return $__result
+}
+
+::im::dynfield::Class ad_proc generate_csv {
+    {-Objects:required}
+} {
+    Returns a CSV of all the Dynfield Objects 
+    
+    The list is sorted in order of how the attributes should appear according to the object_type_id order
+    
+    @param Objects xotcl composite with all the Objects
+} {
+
+    # Set the header
+    set __csv_cols [list]
+    set __csv_labels [list]
+    set Object [lindex [$Objects children] 0]
+    set object_type [[$Object class] object_type]
+    set Elements [::im::dynfield::Class elements -object_type "$object_type"]
+    foreach Element [$Elements children] {
+        set attribute_name [$Element attribute_name]
+        
+        # Make sure we only append the attribute once!
+        if {[lsearch $__csv_cols $attribute_name] <0} {
+            lappend __csv_cols $attribute_name
+            lappend __csv_labels [template::list::csv_quote [$Element pretty_name]]
+        }
+    }
+    append __output "\"[join $__csv_labels "\",\""]\"\n"
+    
+    foreach Object [$Objects children] {
+        set __cols [list]
+        foreach __element_name $__csv_cols {
+            lappend __cols [template::list::csv_quote [$Object set ${__element_name}_deref]]
+        }
+        append __output "\"[join $__cols "\",\""]\"\n"
+    }
+    
+    return $__output
+}
+
+
+::im::dynfield::Class ad_proc generate_spreadsheet {
+    {-Objects:required}
+    {-Elements ""}
+    {-ods_file ""}
+    {-output_filename ""}
+    {-attribute_names ""}
+} {
+    Returns an ODS of all the Dynfield Objects 
+    
+    The list is sorted in order of how the attributes should appear according to the object_type_id order
+    
+    @param object_type_ids This is a list of object_type_ids. Note that the order is important
+} {
+
+    # Check if we have the table.ods file in the proper place
+    if {$ods_file eq ""} {
+        set ods_file "[acs_package_root_dir "intranet-openoffice"]/templates/table.ods"
+    }
+    if {![file exists $ods_file]} {
+        ad_return_error "Missing ODS" "We are missing your ODS file $ods_file . Please make sure it exists"
+    }
+
+    if {$Elements eq ""} {
+        # get the Elements definition from the object_type
+        set Object [lindex [$Objects children] 0]
+        set object_type [[$Object class] object_type]
+        set Elements [::im::dynfield::Class elements -object_type "$object_type" -attribute_names $attribute_names]
+    }
+
+    # This will become the list of elements (NOT Elements), which is a
+    # trimmed down list where we only take the first element which we
+    # find in Elements 
+    set elements [list]
+    set attributes [list]
+    foreach Element [$Elements children] {
+        set attribute_name [$Element attribute_name]
+        # Make sure we only append the element once!
+        if {[lsearch $attributes $attribute_name] <0} {
+            lappend attributes $attribute_name
+            lappend elements $Element
+        }
+    }
+    
+    # Now we can loop through the Elements
+    # Set the column definitions and the first row with the header
+    set __column_defs ""
+    set __header_defs ""
+    foreach Element $elements {
+        switch [$Element widget] {
+            date {
+                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce1\"/>\n"
+            }
+            currency {
+                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce2\"/>\n"
+            }
+            textarea {
+                # Don't shrink to fit textareas. But Autobreak them
+                # this is done using style ce4
+                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce4\"/>\n"
+            }
+            default {
+                # style ce3 is set to "shrink to fit", so the size of
+                # the font automatically decreases if needed
+                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce3\"/>\n"
+            }
+        }
+        append __header_defs " <table:table-cell office:value-type=\"string\"><text:p>[$Element pretty_name]</text:p></table:table-cell>\n"
+    } 
+    
+    set __output $__column_defs
+
+    # Set the first row
+    append __output "<table:table-row table:style-name=\"ro1\">\n$__header_defs</table:table-row>\n"
+
+    # No create the single rows for each Object
+    foreach Object [$Objects children] {
+        append __output "<table:table-row table:style-name=\"ro1\">\n"
+        
+        foreach Element $elements {
+            set attribute_name [$Element attribute_name]
+            switch [$Element widget] {
+                date {
+                    append __output " <table:table-cell office:value-type=\"date\" office:date-value=\"[$Object set ${attribute_name}_deref]\"></table:table-cell>\n"
+                }
+                currency {
+                    append __output " <table:table-cell office:value-type=\"currency\" office:currency=\"EUR\" office:value=\"[$Object set ${attribute_name}_deref]\"></table:table-cell>\n"
+                }
+                default {
+                    append __output " <table:table-cell office:value-type=\"string\"><text:p>[$Object set ${attribute_name}_deref]</text:p></table:table-cell>\n"
+                }
+            }
+        }
+        append __output "</table:table-row>\n"
+    }
+    
+    # Parse and return the file
+    if {$output_filename eq ""} {
+        set output_filename "${object_type}.ods"
+    }
+    intranet_oo::parse_content -template_file_path $ods_file -output_filename $output_filename
+}
+
+
 
 ##############################
 # Object Cache
