@@ -77,7 +77,6 @@ set duration [db_string get_number_days_month "SELECT date_part('day','$first_da
 if { $owner_id != $user_id && ![im_permission $user_id "view_hours_all"] } {
     ad_return_complaint 1 "<li>[_ intranet-timesheet2.lt_You_have_no_rights_to]"
     return
-
 }
 
 set hours_start_date [db_string get_new_start_at "
@@ -174,9 +173,9 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 			)
             and h.day like '%$report_year-$report_month-$day_double_digit%') as h$report_year$report_month$day_double_digit
     "
-    set h_date [db_string get_view_id "select to_char(to_date('$report_year-$report_month-$day_double_digit', :date_format)-$i, 'DY') as h_date from dual" -default 0]
-    if { $h_date == "SAT" || $h_date == "SUN" } {
-            append table_header_html "<td class=rowtitle>$day_double_digit</td>"
+    set h_date [db_string get_view_id "select to_char(to_date('$report_year-$report_month-$day_double_digit', :date_format), 'DY') as h_date from dual" -default 0]
+    if { [string equal $h_date "SAT"] || [string equal $h_date "SUN"] } {
+            append table_header_html "<td  class=rowtitle style='background-color:#AF8383'>$day_double_digit</td>"
     } else {
             append table_header_html "<td class=rowtitle>$day_double_digit</td>"
     }
@@ -204,9 +203,14 @@ set sql "
 		and p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
 		and p.project_status_id IN ([im_project_status_open])
 		and p.project_lead_id = $current_user_id
+		and r.object_id_two in (
+			select distinct user_id from im_hours where day like '%$report_year-$report_month-%'
+		)
 	order by 
-		project_id
+		project_name
 "
+
+#ad_return_complaint 1 $sql
 
 # ---------------------------------------------------------------
 # Get Column Header & Data
@@ -261,7 +265,7 @@ db_foreach get_hours $sql {
     if { 0 != $ctr_unconfirmed_hrs } {
 	append table_body_html "<td><a href='/intranet-cust-koernigweber/notify-logged-hours"
 	append table_body_html "?report_year_month=$report_year_month&user_id=$user_id&project_id=$project_id&return_url="
-	append table_body_html "/intranet-cust-koernigweber/monthly-report-wf-extended.tcl' class='button'>Erinnern</a></td>"	
+	append table_body_html "/intranet-cust-koernigweber/monthly-report-wf-extended.tcl' class='button'>[lang::message::lookup "" intranet-cust-koernigweber.TS_WF_Remind "Remind"]</a></td>"	
     } else {
 	# append table_body_html "<td>[lang::message::lookup "" intranet-timesheet2.No_hours_logged "No hours logged"]</td>"
 	append table_body_html "<td>&nbsp;</td>"
@@ -299,7 +303,7 @@ db_foreach get_hours $sql {
 	append task_id_string "task_id=$task_id&"  
     }
     if { ![empty_string_p $task_id_string] } {
-    	append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&task_id=$task_id_string/' class='button'>Best&auml;tigen</a></td>"	
+    	append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&task_id=$task_id_string/' class='button'>[lang::message::lookup "" intranet-core.Confirm "Confirm"]</a></td>"	
     } else {
 	    set wf_tasks_sql "
         	select 
@@ -351,65 +355,3 @@ set page_title "[_ intranet-timesheet2.Timesheet_Summary]"
 set context_bar [im_context_bar $page_title]
 
 append table_body_html </tbody>
-
-ad_proc im_do_row {
-    { bgcolorl }
-    { ctr }
-    { curr_owner_id }
-    { owner_name }
-    { days }
-    { user_daysl }
-    { absencel }
-    { holydays }
-    { today_date }
-    { descrl }
-} {
-    Returns a row with the hours loged of one user
-} {
-    set user_view_page "/intranet/users/view"
-    set absence_view_page "/intranet-timesheet2/absences/view"
-
-    set date_format "YYYY-MM-DD"
-
-    array set bgcolor $bgcolorl
-    array set user_days $user_daysl
-    array set absence $absencel
-    array set descr $descrl
-    set html ""
-    append html "
-        <tr$bgcolor([expr $ctr % 2])>
-            <td>
-                <a href=\"$user_view_page?user_id=$curr_owner_id\">$owner_name</a>
-            </td>
-    "
-
-    for { set i 0 } { $i < [llength $days] } { incr i } {
-        if { [lsearch -exact $holydays [lindex $days $i]] >= 0 } {
-            set holy_html " style=\"background-color=\\#DDDDDD;\" "
-        } else {
-            set holy_html ""
-        }
-        set cell_text [list]
-        set cell_param [list]
-        set absent_p "f"
-        if { [info exists absence([lindex $days $i])] } {
-            set abs_id $absence([lindex $days $i])
-            lappend cell_text "<a href=\"$absence_view_page?absence_id=$abs_id\" style=\"color:\\\\#FF0000;\">[_ intranet-timesheet2.Absent]</a> ($descr($abs_id))"
-            set absent_p "t"
-        }
-        if { [info exists user_days([lindex $days $i])] } {
-            lappend cell_text "$user_days([lindex $days $i]) [_ intranet-timesheet2.hours]"
-        } elseif { [lindex $days $i] < $today_date && $holy_html == "" && [im_permission $curr_owner_id "add_hours"] } {
-            if { $absent_p == "f" } {
-                lappend cell_text "[_ intranet-timesheet2.No_hours_logged]"
-                lappend cell_param "class=rowyellow"
-            }
-        }
-	if { [lsearch -exact $holydays [lindex $days $i]] >= 0 } {
-            set cell_param "style=\"background-color=\\\\#DDDDDD;\""
-        }
-        append html "<td [join $cell_param " "]>[join $cell_text "<br>"]</td>\n"
-    }
-    append html "</tr>\n"
-    return $html
-}
