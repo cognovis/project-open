@@ -232,7 +232,6 @@ if {[im_permission $current_user_id "view_projects_all"]} {
 			    [list [lang::message::lookup "" intranet-core.Mine "Mine"] "t"] \
 			   ]
     ad_form -extend -name $form_id -form {
-        {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
         {mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
         {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {value $project_status_id} {custom {category_type "Intranet Project Status" translate_p 1}} }
     }
@@ -255,6 +254,7 @@ set user_options [im_profile::user_options -profile_ids $user_select_groups]
 set user_options [linsert $user_options 0 [list "All" ""]]
 
 ad_form -extend -name $form_id -form {
+    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
     {company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options}}
     {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}

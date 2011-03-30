@@ -22,18 +22,6 @@ ad_page_contract {
 # This is a task !
 set project_type_id [im_timesheet_task_type_standard]
 
-# Debug form! This chunk must be erased later                                                                                                                
-set myform [ns_getform]
-if {[string equal "" $myform]} {
-    ns_log Notice "No Form was submited"
-} else {
-    ns_log Notice "FORM"
-    ns_set print $myform
-    for {set i 0} {$i < [ns_set size $myform]} {incr i} {
-	set varname [ns_set key $myform $i]
-	set $varname [ns_set value $myform $i]
-    }
-}
 
 # ------------------------------------------------------------------
 # Default & Security
@@ -80,6 +68,7 @@ if {[info exists task_id]} {
 if {0 == $parent_id} {
     if {[info exists task_id]} {
 	set project_id [db_string project_from_task "select project_id from im_timesheet_tasks_view where task_id = :task_id" -default 0]
+	set parent_id $project_id
 	set return_url [export_vars -base "/intranet-cognovis/tasks/view" {task_id}]
     } else {
 	ad_return_complaint 1 "You need to specify atleast a task or a project"
