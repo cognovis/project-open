@@ -228,7 +228,7 @@ begin
                 null,                                   -- context_id
                 ''intranet-cust-koernigweber'',   	-- package_name
                 ''timesheet_workflow_reminder_confirmation'', -- label
-                ''Confirm Hours/Send Reminder'',      -- name
+                ''Erinnern/Genehmigen von Stunden'',   -- name
                 ''/intranet-cust-koernigweber/monthly-report-wf-extended'',   -- url
                 40,                                    	-- sort_order
                 v_parent_menu,                          -- parent_menu_id
@@ -240,6 +240,49 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+
+
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_menu                  integer;
+        v_parent_menu           integer;
+        v_project_managers      integer;
+        v_employees 		integer;
+begin
+        select group_id into v_project_managers from groups where group_name = ''Project Managers'';
+        select group_id into v_employees from groups where group_name = ''Employees'';
+
+        select menu_id into v_parent_menu from im_menus where label = ''timesheet2_timesheet'';
+
+        v_menu := im_menu__new (
+                null,                                   -- p_menu_id
+                ''im_menu'',                            -- object_type
+                now(),                                  -- creation_date
+                null,                                   -- creation_user
+                null,                                   -- creation_ip
+                null,                                   -- context_id
+                ''intranet-timesheet2-workflow'',       -- package_name
+                ''timesheet_workflow_confirm'', -- label
+                ''Freigabe geloggter Stunden f&uuml;r diesen Monat'',		-- name
+                ''/intranet-timesheet2-workflow/conf-objects/new-timesheet-workflow?'',   -- url
+                40,                                     -- sort_order
+                v_parent_menu,                          -- parent_menu_id
+                null                                    -- p_visible_tcl
+        );
+
+        PERFORM acs_permission__grant_permission(v_menu, v_project_managers, ''read'');
+        PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+        return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+
 
 create or replace function inline_1 ()
 returns integer as '
