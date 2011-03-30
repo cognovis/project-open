@@ -87,3 +87,4 @@ update im_view_columns set variable_name = 'planned_units', datatype = 'float' w
 update im_view_columns set variable_name = 'reported_hours_cache', datatype = 'float' where column_id = 91014;
 update im_view_columns set variable_name = 'task_status', datatype = 'string' where column_id = 91018;
 update im_view_columns set variable_name = 'percent_completed', datatype = 'percentage' where column_id = 91021;
+

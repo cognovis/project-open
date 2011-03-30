@@ -2,11 +2,12 @@
   <property name="title">@page_title;noquote@</property>
   <property name="main_navbar_label">projects</property>
   <property name="sub_navbar">@sub_navbar;noquote@</property>
-
+  <property name="show_left_navbar_p">0</property>
    <script type="text/javascript">
     
 
 Ext.onReady(function(){
+
     //  Top Form....
     var budget_form = new Ext.form.FormPanel({
         id: 'budget_form',

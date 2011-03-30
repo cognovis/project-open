@@ -34,6 +34,7 @@ ad_page_contract {
     { how_many:integer "" }
     { letter:trim "all" }
     { view_name "" }
+    { view_type "" }
     { filter_advanced_p:integer 0 }
 }
 
@@ -315,8 +316,8 @@ set user_status_types [im_memoize_list select_user_status_types \
           order by lower(company_status)"]
 set user_status_types [linsert $user_status_types 0 0 All]
 
-set user_types [list 0 All]
-# set user_types [list [list All all]]
+
+set user_types [list [list All all]]
 db_foreach select_user_types "
 	select
 		group_id,
@@ -325,11 +326,11 @@ db_foreach select_user_types "
 		groups,
 		im_profiles
 	where
-		group_id = profile_id" {
-		
-	lappend user_types [im_mangle_user_group_name $group_name]
-	lappend user_types $group_name
-}
+		group_id = profile_id" \
+    {
+        set option [list $group_name [im_mangle_user_group_name $group_name]]
+        lappend user_types $option
+    }
 
 # company_types will be a list of pairs of (company_type_id, company_type)
 #set user_types [im_memoize_list select_companies_types \
@@ -354,6 +355,7 @@ ad_form \
     -mode $form_mode \
     -export {start_idx order_by how_many letter view_name filter_advanced_p} \
     -form {
+        {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
         {user_group_name:text(select),optional {label "\#intranet-core.User_Types\#"} {options $user_types} {value $user_group_name}}
     }
 
@@ -570,6 +572,11 @@ set bgcolor(1) " class=rowodd "
 set ctr 1
 set idx $start_idx
 
+if {$view_type ne ""} {
+    intranet_openoffice::spreadsheet -view_name $view_name -sql $query -output_filename "users.$view_type" -table_name "$page_title" -variable_set $form_vars
+    ad_script_abort
+}
+
 db_foreach projects_info_query $query -bind $form_vars {
 
     ns_log Notice "users/index: user_id=$user_id"
@@ -647,26 +654,16 @@ if {"" != $admin_html && [im_table_exists spam_messages]} {
 
 set sub_navbar [im_user_navbar $letter "/intranet/users/index" $next_page_url $previous_page_url [list user_group_name] $menu_select_label]
 
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<formtemplate id="$form_id" style="tiny-plain"></formtemplate>}]
+set filter_html $__adp_output
 
 set left_navbar_html "
       <div class='filter-block'>
         <div class='filter-title'>
 	    #intranet-core.Filter_Users#
         </div>
-
-	<form method=get action='/intranet/users/index' name=filter_form>
-	[export_form_vars start_idx order_by how_many letter]
-	<input type=hidden name=view_name value='user_list'>
-	<table>
-	<tr>
-	  <td class='form-label'>#intranet-core.User_Types#  &nbsp;</td>
-	  <td class='form-widget'>
-	    [im_select user_group_name $user_types ""]
-	    <input type=submit value='[lang::message::lookup "" intranet-core.Action_Go Go]' name=submit>
-	  </td>
-	</tr>
-	</table>
-	</form>
+            	$filter_html
       </div>
 "
 

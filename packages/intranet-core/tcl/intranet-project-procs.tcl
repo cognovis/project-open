@@ -35,6 +35,7 @@ ad_proc -public im_project_type_unknown {} { return 85 }
 ad_proc -public im_project_type_other {} { return 86 }
 ad_proc -public im_project_type_task {} { return 100 }
 ad_proc -public im_project_type_ticket {} { return 101 }
+ad_proc -public im_project_type_consulting {} { return 2501 }
 ad_proc -public im_project_type_sla {} { return 2502 }
 ad_proc -public im_project_type_milestone {} { return 2504 }
 ad_proc -public im_project_type_program {} { return 2510 }
@@ -727,8 +728,8 @@ ad_proc -public im_project_options {
 
     # Disable the restriction to "my projects" if the user can see all projects.
     if {[im_permission $current_user_id "view_projects_all"]} { 
-	set member_user_id 0
-    }
+        set member_user_id 0
+    } 
 
     if {0 != $member_user_id && "" != $member_user_id} {
 	lappend p_criteria "p.project_id in (

@@ -18,6 +18,10 @@
 	  <td align=right>- @logged_hours_total@</td>
 	</tr>
 	<tr>
+	  <td>#intranet-budget.Budgeted_Hours#</td>
+	  <td align=right>- @budgeted_hours@</td>
+	</tr>
+	<tr>
 	  <td>#intranet-budget.Remaining_Hours#</td>
 	  <td align=right>- @remaining_hours_total@</td>
 	</tr>

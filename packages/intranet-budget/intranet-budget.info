@@ -9,13 +9,13 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
-    <version name="0.2d5" url="http://openacs.org/repository/download/apm/intranet-budget-0.2d5.apm">
+    <version name="0.2d6" url="http://openacs.org/repository/download/apm/intranet-budget-0.2d6.apm">
         <owner url="mailto:sysadmin@tigerpond.com">System Administrator</owner>
         <summary>intranet budget package</summary>
         <description format="text/html">intranet budget package</description>
         <maturity>0</maturity>
 
-        <provides url="intranet-budget" version="0.2d5"/>
+        <provides url="intranet-budget" version="0.2d6"/>
         <requires url="intranet-core" version="4.0.1.0.0"/>
         <requires url="xotcl-core" version="0.118"/>
         <requires url="extjs" version="0.1d1"/>

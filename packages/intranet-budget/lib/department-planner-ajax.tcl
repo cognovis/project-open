@@ -138,11 +138,11 @@ db_foreach query_name $sql {
 	    append column_defs ", editor:ddEditor_[lindex $ajax_configuration 1]"
 	    # sortable?	
 	    if { "1" == [lindex $ajax_configuration 4] } {
-		append column_defs ", sortable:true"
+            append column_defs ", sortable:true"
 	    }
 	    # resizeable
 	    if { "1" == [lindex $ajax_configuration 5] } {
-		append column_defs ", resizeable:true"
+            append column_defs ", resizeable:true"
 	    }
 	    
 	    append editors_init "var ddEditor_[lindex $ajax_configuration 1] = new YAHOO.widget.DropdownCellEditor();\n"
@@ -151,7 +151,7 @@ db_foreach query_name $sql {
 	    set key_value_list "[expr [lindex $ajax_configuration 2]]"
 	    
 	    foreach x $key_value_list {
-		append editors_conf "\{value:[lindex $x 0], label:'[lindex $x 1]'\},\n"
+            append editors_conf "\{value:[lindex $x 0], label:'[lindex $x 1]'\},\n"
 	    }
 	    set editors_conf [string range $editors_conf 0 [expr [string length $editors_conf]-3]]
 	    append editors_conf "\n\];\n ddEditor_[lindex $ajax_configuration 1].render();\n\n" 
@@ -159,11 +159,11 @@ db_foreach query_name $sql {
 	link {
 	    # sortable?
 	    if { "1" == [lindex $ajax_configuration 4] } {
-		append column_defs ", sortable:true"
+            append column_defs ", sortable:true"
 	    }
 	    # resizeable
 	    if { "1" == [lindex $ajax_configuration 5] } {
-		append column_defs ", resizeable:true"
+            append column_defs ", resizeable:true"
 	    }				
 	} hidden {
 	    # works only using function ??
@@ -171,11 +171,11 @@ db_foreach query_name $sql {
 	}
 	zerovalue {
 	    if { "1" == [lindex $ajax_configuration 4] } {
-		append column_defs ", sortable:true"
+            append column_defs ", sortable:true"
 	    }
 	    # resizeable
 	    if { "1" == [lindex $ajax_configuration 5] } {
-		append column_defs ", resizeable:true"
+            append column_defs ", resizeable:true"
 	    }
 	}
 	
@@ -188,8 +188,8 @@ set days_planned_arr "var days_planned_arr=\[\];\n"
 template::multirow foreach cost_centers {
     if {$available_days eq ""} { set available_days 0}
     if {$department_remaining_days eq ""} { set department_remaining_days 0}
-
-    append column_defs "{key:\"key_cc_$cost_center_id\", label:\"$cost_center_name<br>$available_days => $department_remaining_days\", sortable:true},\n"
+    
+    append column_defs "{key:\"key_cc_$cost_center_id\", label:\"$cost_center_name<br>$available_days => $department_remaining_days\", sortable:true, formatter:\"myCustom\"},\n"
     append days_planned_arr "days_planned_arr\[$cost_center_id\]=$department_remaining_days;\n"
     append response_schema "\"key_cc_$cost_center_id\","
     lappend column_names "\"key_cc_$cost_center_id\""
@@ -211,50 +211,51 @@ set ctr 0
 template::multirow foreach department_planner {
     append data_source "\{"
     template::multirow foreach dynview_columns {
-	switch [lindex $column_types $ctr] {
-	    dropdown {
-		# add column_name of dynview field
-		append data_source "[lindex $column_names $ctr]: "
-		
-		# ...
-		set dynview_var "col_$column_ctr"
-		
-		# get current value   					
-		set dynview_val [expr $$dynview_var] 
-		if { "" != $dynview_val } {
-		    append data_source "\"$dynview_val\", "
-		} else {
-		    append data_source "\"Not set\", "
-		}
-	    }
-	    link {
-		append data_source "[lindex $column_names $ctr]: "
-		set dynview_var "col_$column_ctr"
-		set dynview_val [expr $$dynview_var]
-		append data_source "\"$dynview_val\", "
-	    } 
-	    hidden {
-		append data_source "[lindex $column_names $ctr]: "
-		set dynview_var "col_$column_ctr"
-		set dynview_val [expr $$dynview_var]
-		append data_source "\"$dynview_val\", "
-	    }
-	    zerovalue {
-		append data_source "[lindex $column_names $ctr]: "
-		append data_source "\"0\", " 
-	    }
-	}
-	incr ctr 
+        switch [lindex $column_types $ctr] {
+            dropdown {
+                # add column_name of dynview field
+                append data_source "[lindex $column_names $ctr]: "
+                
+                # ...
+                set dynview_var "col_$column_ctr"
+                
+                # get current value   					
+                set dynview_val [expr $$dynview_var] 
+                if { "" != $dynview_val } {
+                    append data_source "\"$dynview_val\", "
+                } else {
+                    append data_source "\"Not set\", "
+                }
+            }
+            link {
+                append data_source "[lindex $column_names $ctr]: "
+                set dynview_var "col_$column_ctr"
+                set dynview_val [expr $$dynview_var]
+                append data_source "\"$dynview_val\", "
+            } 
+            hidden {
+                append data_source "[lindex $column_names $ctr]: "
+                set dynview_var "col_$column_ctr"
+                set dynview_val [expr $$dynview_var]
+                append data_source "\"$dynview_val\", "
+            }
+            zerovalue {
+                append data_source "[lindex $column_names $ctr]: "
+                append data_source "\"0\", " 
+            }
+        }
+        incr ctr 
     }
-
+    
     template::multirow foreach cost_centers {
-	append data_source "[lindex $column_names $ctr]: "
-	set cc_var "cc_$cost_center_id"
-	set rem_days [expr $remaining_days($cost_center_id) - $$cc_var]
-	append available_days_cc_arr "var available_days_cc_arr_" $cost_center_id "_" $project_id "= \"[expr  $$cc_var]\";\n"
-	set remaining_days($cost_center_id) $rem_days
-	append data_source "\"$rem_days\", "
-	incr ctr
+        append data_source "[lindex $column_names $ctr]: "
+        set cc_var "cc_$cost_center_id"
+        set rem_days [round -number [expr $remaining_days($cost_center_id) - $$cc_var] -digits 1]
+        ds_comment "rem_days $cost_center_id :: $rem_days"
+        append available_days_cc_arr "var available_days_cc_arr_" $cost_center_id "_" $project_id "= \"[expr  $$cc_var]\";\n"
+        set remaining_days($cost_center_id) $rem_days
+        append data_source "\"$rem_days\", "
+        incr ctr
     }
     set data_source [string range $data_source 0 [expr [string length $data_source]-3]]
     append data_source "\},\n"

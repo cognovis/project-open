@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="file-storage" locale="en_US" charset="ISO-8859-1">
+  <msg key="Send_to">Send to</msg>
+  <msg key="Email_to">Email to</msg>
+  <msg key="Attach_file">Attach File</msg>
+  <msg key="Use_spaces">Use spaces to separate emails</msg>
+</message_catalog>

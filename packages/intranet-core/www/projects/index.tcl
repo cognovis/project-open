@@ -50,13 +50,9 @@ ad_page_contract {
     { start_idx:integer 0 }
     { how_many "" }
     { view_name "project_list" }
+    { view_type "" }
     { filter_advanced_p:integer 0 }
 }
-
-# Redirect to custom new page if necessary
-callback im_project_index_redirect -status_id $project_status_id -type_id $project_type_id \
-    -company_id $company_id -view_name $view_name -user_id_from_search $user_id_from_search \
-    -mine_p $mine_p
 
 # ---------------------------------------------------------------
 # Project List Page
@@ -236,9 +232,10 @@ if {[im_permission $current_user_id "view_projects_all"]} {
 			    [list [lang::message::lookup "" intranet-core.Mine "Mine"] "t"] \
 			   ]
     ad_form -extend -name $form_id -form {
+        {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
         {mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
         {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {value $project_status_id} {custom {category_type "Intranet Project Status" translate_p 1}} }
-    } 
+    }
 }
 
 if { [empty_string_p $company_id] } {
@@ -691,31 +688,44 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
+
+if {$view_type ne ""} {
+    switch $view_type {
+        json {
+            ns_return 200 text/text [intranet_extjs::json -sql $selection -view_name $view_name -variable_set $form_vars]
+        }
+        default {
+            intranet_openoffice::spreadsheet -view_name $view_name -sql $selection -output_filename "projects.$view_type" -table_name "$page_title" -variable_set $form_vars
+        }
+    }
+    ad_script_abort
+}
+
 db_foreach projects_info_query $selection -bind $form_vars {
 
-#    if {"" == $project_id} { continue }
-
+    #    if {"" == $project_id} { continue }
+    
     set url [im_maybe_prepend_http $url]
     if { [empty_string_p $url] } {
-	set url_string "&nbsp;"
+        set url_string "&nbsp;"
     } else {
-	set url_string "<a href=\"$url\">$url</a>"
+        set url_string "<a href=\"$url\">$url</a>"
     }
-
+    
     # Append together a line of data based on the "column_vars" parameter list
     set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
     foreach column_var $column_vars {
-	append row_html "\t<td valign=top>"
-	set cmd "append row_html $column_var"
-	eval "$cmd"
-	append row_html "</td>\n"
+        append row_html "\t<td valign=top>"
+        set cmd "append row_html $column_var"
+        eval "$cmd"
+        append row_html "</td>\n"
     }
     append row_html "</tr>\n"
     append table_body_html $row_html
-
+    
     incr ctr
     if { $how_many > 0 && $ctr > $how_many } {
-	break
+        break
     }
     incr idx
 }

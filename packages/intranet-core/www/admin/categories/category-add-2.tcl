@@ -31,15 +31,16 @@ ad_page_contract {
   @author michael@yoon.org
   @author frank.bergmann@project-open.com
 } {
-  category_id:naturalnum,notnull
-  parent_category_id:naturalnum,optional
-  category:notnull
-  category_description
-  mailing_list_info
-  enabled_p:notnull
-  profiling_weight:naturalnum,notnull
-  category_type
-  new_category_type:optional
+    category_id:naturalnum,notnull
+    parent_category_id:naturalnum,optional
+    category:notnull
+    category_description
+    mailing_list_info
+    enabled_p:notnull
+    profiling_weight:naturalnum,notnull
+    category_type
+    new_category_type:optional
+    {return_url ""}
 }
 
 set user_id [ad_maybe_redirect_for_registration]
@@ -128,6 +129,10 @@ where category_id = :category_id" ]
       return
     }
 }
+
+callback im_category_after_create -object_id $category_id \
+    -type "" -status "" -category_id $category_id \
+    -category_type $category_type -return_url $return_url
 
 
 # Remove all permission related entries in the system cache

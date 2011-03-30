@@ -14,6 +14,7 @@ ad_page_contract {
 } {
     { task_order_by "" }
     { view_name "im_timesheet_task_list" }
+    { view_type "" }
     { material_id:integer 0 }
     { project_id }
     { task_status_id 0 }
@@ -87,13 +88,14 @@ if {"" != $admin_links} {
 # Variables of this page to pass through im_task_component to maintain the
 # current selection and view of the current project
 
-set export_var_list [list task_order_by task_how_many view_name]
+set export_var_list [list task_order_by task_how_many view_name view_type]
 
 set task_content [im_timesheet_task_list_component \
 	-current_page_url		$current_url \
 	-return_url			$return_url \
 	-export_var_list		$export_var_list \
 	-view_name 			$view_name \
+	-view_type 			$view_type \
 	-order_by			$task_order_by \
 	-max_entries_per_page		$task_max_entries_per_page \
 	-restrict_to_type_id		$task_type_id \

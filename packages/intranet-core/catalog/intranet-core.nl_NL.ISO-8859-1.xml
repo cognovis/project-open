@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-core" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-core" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="--_Please_select_--">-- Selecteer --</msg>
   <msg key="1111">1111</msg>
@@ -331,7 +331,7 @@
   <msg key="Delete_Menu">Verwijder menu</msg>
   <msg key="Delete_portrait">Foto verwijderen</msg>
   <msg key="Delete_the_Task">Verwijder de taak</msg>
-  <msg key="Deleted">Verwijderd </msg>
+  <msg key="Deleted">Verwijderd</msg>
   <msg key="Delinquent_Update">Bijwerken zwarte lijst</msg>
   <msg key="Deliver">Aflever</msg>
   <msg key="Delivered">Afgeleverd</msg>

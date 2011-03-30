@@ -5,6 +5,7 @@ ad_library {
 
   @author Matthew Geddert openacs@geddert.com
   @author Juanjo Ruiz juanjoruizx@yahoo.es
+  @author Malte Sussdorff (malte.sussdorff@cognovis.de)
   @creation-date 2004-09-28
 
   @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
@@ -1504,4 +1505,43 @@ ad_proc -public im_dynfield::util::missing_attributes_from_table {
                   )
                   and attname not in (select attribute_name from acs_attributes aa, acs_object_types ot where aa.object_type = ot.object_type and ot.table_name = :table_name)
     }]
+}
+
+ad_proc -public -callback im_category_after_create -impl intranet-dynfield {
+    {-object_id:required}
+    {-type ""}
+    {-status ""}
+    {-category_id ""}
+    {-category_type ""}
+    {-return_url ""}
+} {
+    Add the attribute to the attribute type map after a dynfield has been created
+} {
+    set object_type [im_category_object_type -category_type $category_type]
+   
+    if {[exists_and_not_null object_type] && [exists_and_not_null category_id]} {
+	
+	set lowest_object_type_id [db_string select_min_object_type_id {
+	    select min(object_type_id) from im_dynfield_type_attribute_map tam, im_categories ic where tam.object_type_id = ic.category_id and category_type = :category_type
+	} -default ""]
+	
+	if {![string equal $lowest_object_type_id ""]} {
+	    set attribute_ids [db_list select_attribute_ids {
+		select attribute_id from im_dynfield_type_attribute_map WHERE object_type_id = :lowest_object_type_id
+	    }]
+	    
+	    foreach attribute_id $attribute_ids {
+		db_1row select_attribute_info {
+		    select display_mode, help_text, section_heading, default_value, required_p from im_dynfield_type_attribute_map where attribute_id = :attribute_id and object_type_id = :lowest_object_type_id
+		}
+		
+		db_dml insert_attribute_category_map {
+		    INSERT INTO im_dynfield_type_attribute_map 
+		    (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p) 
+		    VALUES 
+		    (:attribute_id, :category_id, :display_mode, :help_text, :section_heading, :default_value, :required_p)
+		}
+	    }
+	}
+    }
 }

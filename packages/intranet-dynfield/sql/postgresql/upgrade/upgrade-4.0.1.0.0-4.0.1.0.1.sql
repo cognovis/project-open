@@ -12,7 +12,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -- 
 
-SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-4.0.0.0.0-4.0.1.0.0.sql','');
+
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-4.0.1.0.0-4.0.1.0.1.sql','');
 
 comment on table im_dynfield_attributes is 'Contains additional information for an acs_attribute like the widget to be used. The other attributes are mainly for backwards compatibility. Note that dynfield_attributes are acs_objects in contrast to acs_attributes which are NOT acs_objects (see acs_attributes for this)';
 

@@ -353,16 +353,18 @@ ad_proc -public -callback im_timesheet_hours_new_redirect {
 	@param topic_type_id ID of type of topic  
 } -
 
-ad_proc -public -callback im_project_index_redirect {
-    {-status_id ""}
-    {-type_id ""}
-    {-company_id ""}
-    {-user_id_from_search ""}
-    {-mine_p ""}
-    {-view_name ""}
+
+ad_proc -public -callback im_category_after_create {
+    {-object_id:required}
+    {-type ""}
+    {-status ""}
+    {-category_id ""}
+    {-category_type ""}
+    {-return_url ""}
 } {
-	This is mainly a callback to redirect from the original project table page to somewhere else
-	
-        @param topic_id ID of the forum topic
-	@param topic_type_id ID of type of topic  
+    This is a callback to map attributes and categories using respectively attribute_id and category_id
+
+    @param category_id ID of the category
+    @param category_type Type of the category
 } -
+			       

@@ -32,11 +32,29 @@ ad_proc -private extjs::init {
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
 } {
     
-    template::head::add_css -href "/resources/extjs/css/ext-all.css" -order 5
-    template::head::add_javascript -src "/extjs/adapter/ext/ext-base.js"
-    template::head::add_javascript -src "/extjs/ext-all.js"
-#    template::head::add_javascript -src "/extjs/extjs-util.js"
+    template::head::add_css -href "/extjs/ExtJS3/resources/css/ext-all.css"
+    template::head::add_javascript -src "/extjs/ExtJS3/adapter/ext/ext-base.js" -order 1
+    template::head::add_javascript -src "/extjs/ExtJS3/ext-all-debug.js" -order 2
+    template::head::add_javascript -src "/extjs/extjs-util.js" -order 23
 }
+
+ad_proc -private extjs::filter_init {
+} {
+    Accepts a tcl list of sources to load.
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+} {
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/menu/RangeMenu.js" -order 23
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/menu/ListMenu.js" -order 23
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/GridFilters.js" -order 24
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/Filter.js" -order 31
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/StringFilter.js" -order 31
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/DateFilter.js" -order 31
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/ListFilter.js" -order 31
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/NumericFilter.js" -order 31
+    template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/gridfilters/filter/BooleanFilter.js" -order 31
+}
+
+
 
 namespace eval extjs::RowEditor {}
 namespace eval extjs::DataStore {}
@@ -100,6 +118,40 @@ ad_proc -public extjs::Form::Attribute::Htmleditor {
                     xtype:'htmleditor',
                     $label
                     $default
+                    name: '$name',
+                    $anchor
+    \}"
+}
+
+ad_proc -public extjs::Form::Attribute::Textarea {
+    {-name:required}
+    {-label ""}
+    {-default ""}
+    {-maxlength ""}
+    {-anchor ""}
+} {
+    Return the item definition for a numeric field
+} { 
+    if {$default ne ""} {
+        set default "emptyText: '$default',"
+    }
+    if {$maxlength ne ""} {
+        set maxlength "maxLength: '$maxlength',"
+    }
+
+    if {$label ne ""} {
+        set label "fieldLabel: '$label',"
+    }
+
+    if {$anchor ne ""} {
+        set anchor "anchor: '$anchor'"
+    }
+    return "\{
+                    xtype:'textarea',
+                    $label
+                    height: 150,
+                    $default
+                    $maxlength
                     name: '$name',
                     $anchor
     \}"

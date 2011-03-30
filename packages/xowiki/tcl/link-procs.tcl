@@ -3,7 +3,7 @@
 
     @creation-date 2006-04-15
     @author Gustaf Neumann
-    @cvs-id $Id: link-procs.tcl,v 1.83 2011/01/26 13:05:20 gustafn Exp $
+    @cvs-id $Id: link-procs.tcl,v 1.84 2011/03/29 15:02:31 gustafn Exp $
 }
   
 namespace eval ::xowiki {
@@ -316,9 +316,14 @@ namespace eval ::xowiki {
   #
 
   Class create ::xowiki::Link::css -superclass ::xowiki::Link::file -parameter {
+    order
   }
   ::xowiki::Link::css instproc render_found {href label} {
-    ::xo::Page requireCSS $href
+    if {[my exists order]} {
+      ::xo::Page requireCSS -order [my order] $href
+    } else {
+      ::xo::Page requireCSS $href
+    }
     return ""
   }
 

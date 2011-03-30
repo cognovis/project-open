@@ -5,27 +5,21 @@ ad_page_contract {
 }
 
 
-
+set budget_id [db_string budget_id "select item_id from cr_items where parent_id = :project_id and content_type = 'im_budget' limit 1" -default ""]
+set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]            
 
 # ----------------- 1 Table Budget Costs HTML
 set budget_cost_html "
-    <table with=\"100%\">                                                                                                                                
-      <tr class=rowtitle>                                                                                                                                
+    <table with=\"100%\">
+      <tr class=rowtitle>
         <td class=rowtitle colspan=2 align=center>[_ intranet-budget.Budget]</td>"
 
 # get the project list
-
-
-	set project_ids_sql [im_project_subproject_ids -project_id $project_id -sql]
-
-db_1row select_project_budget_info {
-    select project_budget, project_budget_hours, project_budget_currency
-    from im_projects 
-    where project_id = :project_id
-} 
+set project_budget [$Budget budget]
+set project_budget_hours [$Budget budget_hours]
+set project_budget_currency "EUR"
 
 array set subtotals [im_cost_update_project_cost_cache $project_id]
-ns_log Notice "[parray subtotals]"
 
 append budget_cost_html "</tr>\n<tr>\n<td>[_ intranet-core.Project_Budget]</td>\n"
 append budget_cost_html "<td align=right>+ $project_budget $project_budget_currency</td>\n"
@@ -34,23 +28,21 @@ append budget_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Provider_Bills]</td>\
 set provider_bills $subtotals([im_cost_type_bill])
 append budget_cost_html "<td align=right>- $provider_bills $project_budget_currency</td>\n"
 
-append budget_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Purchase_Orders]</td>\n"
-set purchase_orders $subtotals([im_cost_type_po])
-append budget_cost_html "<td align=right>- $purchase_orders $project_budget_currency</td>\n"
-
 append budget_cost_html "</tr>\n<tr>\n<td>[_ intranet-budget.Cost_Estimates]</td>\n"
 
-if {[exists_and_not_null subtotals([im_cost_type_estimation])]} {
-    set cost_estimates $subtotals([im_cost_type_estimation])
-} else {
-    set cost_estimates 0
-}
 
-#set cost_estimates 0
+# Set Cost Estimates
+set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
+set cost_estimates 0
+foreach item_id $cost_ids {
+    set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]            
+    incr cost_estimates [$Cost amount]
+}
+set cost_estimates [expr $cost_estimates - $provider_bills]
 append budget_cost_html "<td align=right>- $cost_estimates $project_budget_currency</td>\n"
 
 
-set remaining_budget [expr $project_budget - $provider_bills - $purchase_orders - $cost_estimates]
+set remaining_budget [expr $project_budget - $provider_bills - $cost_estimates]
 append budget_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-budget.Remaining_Budget]</b></td>\n"
 append budget_cost_html "<td align=right><b>$remaining_budget $project_budget_currency</b></td>\n"
 append budget_cost_html "</tr>\n</table>\n"
@@ -80,7 +72,7 @@ if {[im_permission $current_user_id "view_projects_all"]} {
 
 # Get the tasks
 set task_ids_sql [im_project_subproject_ids -project_id $project_id -type "task" -sql]
-
+set project_ids_sql [im_project_subproject_ids -project_id $project_id -sql]
 
 # get the logged hours per cost center
 set logged_hours_total [db_string logged_hours "
@@ -98,5 +90,17 @@ db_1row hours "select coalesce(sum(remaining_hours),0) as remaining_hours_total,
 	  where   p.parent_id in ($project_ids_sql) and t.task_id = p.project_id) as hours 
 "
 
+# Get the budgeted_hours
+set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
+set budgeted_hours 0
+foreach item_id $hour_ids {
+    set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]            
+    incr budgeted_hours [$Hour hours]
+}
+
+# We reduce the budgeted_hours if they are already showing up in the
+# planned tasks.
+set budgeted_hours [expr $budgeted_hours - $planned]
+
 set logged_hours_total [im_timesheet_hours_sum -project_id $project_id]
-set remaining_budget_hours [expr $project_budget_hours - $logged_hours_total - $remaining_hours_total]
+set remaining_budget_hours [expr $project_budget_hours - $logged_hours_total - $remaining_hours_total - $budgeted_hours]

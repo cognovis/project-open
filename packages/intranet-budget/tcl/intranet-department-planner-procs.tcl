@@ -8,7 +8,16 @@
 ad_library {
     @author frank.bergmann@project-open.com
 }
-
+                    
+ad_proc -public round {
+    {-number:required} 
+    {-digits 0}
+} {
+    Round the number
+} {
+    if {$number eq ""} {set number 0}
+    return [expr {round(pow(10,$digits)*$number)/pow(10,$digits)}]
+}
 
 # ----------------------------------------------------------------------
 # Constants
@@ -45,7 +54,6 @@ ad_proc -public im_department_planner_get_list_multirow {
     - A ListBuilder list configured to show the calculated
       report multirow.
 } {
-		ds_comment "$start_date :: $end_date"
 
     # ---------------------------------------------------------------
     # Constants
@@ -155,7 +163,14 @@ ad_proc -public im_department_planner_get_list_multirow {
 				continue
 	    	}
 		}
-	
+
+        # Set the total planned days for this project
+        if {[exists_and_not_null planned_${cost_center_id}($main_project_id)]} {
+            incr planned_${cost_center_id}($main_project_id) $task_planned_days
+        } else {
+            set planned_${cost_center_id}($main_project_id) $task_planned_days
+        }
+
 		# Adjust planned days by the the already completed part.
 		set task_planned_days [expr 1.0 * $task_planned_days * (100.0 - $percent_completed) / 100.0]
 	
@@ -216,7 +231,7 @@ ad_proc -public im_department_planner_get_list_multirow {
 		
 		set available_days ""
 		if {[info exists department_planner_days_per_year] && "" != $department_planner_days_per_year} {
-	    	set available_days [expr round(10 * $department_planner_days_per_year * $report_duration_days / 365.0) / 10.0]
+	    	set available_days [round -number [expr ($department_planner_days_per_year * $report_duration_days / 365.0)] -digits 1]
 		}
 
 		# If there are no department_planner_days the check if employee_available_percent is set:
@@ -236,6 +251,7 @@ ad_proc -public im_department_planner_get_list_multirow {
 		}
 		lappend cost_center_ids $cost_center_id
 		
+        set remaining_days [round -number $remaining_days -digits 1]
 		# Append to Cost Centers multirow
 		template::multirow append cost_centers $cost_center_id $cost_center_name $cost_center_label $cost_center_code $available_days $remaining_days
     }
@@ -247,7 +263,7 @@ ad_proc -public im_department_planner_get_list_multirow {
     
     set extension_vars $col_vars
     foreach ccid $cost_center_ids {
-	lappend extension_vars "cc_$ccid"
+        lappend extension_vars "cc_$ccid"
     }
 
     db_multirow -extend $extension_vars department_planner left_dimension_projects {} {
@@ -263,18 +279,52 @@ ad_proc -public im_department_planner_get_list_multirow {
 	    	eval "$cmd"
 	    	incr row_ctr
 		}
-	
+        
 		# Append Columns per cost_center
 		array unset planned_days_hash
 		set planned_days_pairs {}
 		if {[info exists planned_days_pairs_hash($project_id)]} { set planned_days_pairs $planned_days_pairs_hash($project_id) }
 		array set planned_days_hash $planned_days_pairs
 	
+        # Get the hash of hours for this project per department_id
+        db_foreach budgeted_hours {
+            select sum(hours) as hours, department_id from im_budget_hoursx bh, cr_items ci
+            where ci.live_revision = bh.revision_id 
+            and ci.parent_id = (select item_id from cr_items where parent_id = :main_project_id and content_type = 'im_budget' limit 1)
+            group by department_id
+        } {
+            set budgeted($department_id) $hours
+        }
+                
+
 		foreach dept_id $cost_center_ids {
 	    	set planned_days 0.0
 	    	if {[info exists planned_days_hash($dept_id)]} { set planned_days $planned_days_hash($dept_id) }
 	    	set dept_task_url [export_vars -base "/intranet-timesheet2-tasks/index" {{project_id $main_project_id} {cost_center_id $dept_id}}]
-	    	set "cc_$dept_id" [expr round(10.0 * $planned_days) / 10.0]
+	    	set "cc_$dept_id" $planned_days
+           
+            # Calculate the difference between budget_hours and
+            # planned_hours. Reduce the budgeted_hours by the
+            # planned_hours to get the remaining hours which have not
+            # been planned from the budget.
+            set unplanned_hours 0
+            if {[exists_and_not_null budgeted($dept_id)]} {
+                set unplanned_hours $budgeted($dept_id)
+                if {[exists_and_not_null planned_${dept_id}($main_project_id)]} {
+                    set unplanned_hours [expr $unplanned_hours - [set planned_${dept_id}($main_project_id)]]
+                }
+            }
+
+            # Substract the unplanned hours from the planned DAYS.
+            if {$unplanned_hours >0 } {
+				set unplanned_hours [expr $unplanned_hours / $hours_per_day]
+                set cc_$dept_id [expr [set cc_$dept_id] + $unplanned_hours]
+                ds_comment "Unplanned:: $unplanned_hours :: $dept_id"
+            }
+
+            # Reset the budgeted hours for this department
+            set budgeted($dept_id) 0
+	    	set "cc_$dept_id" [expr round(10.0 * [set cc_$dept_id]) / 10.0]
 		}
     }
     
