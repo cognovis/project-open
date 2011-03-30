@@ -152,6 +152,42 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
         order by lower(im_name_from_user_id(u.user_id))
     "
 
+
+  	  set sql_query "
+		select 
+			r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as name,
+		 	(select amount from im_emp_cust_price_list where company_id=object_id_one and user_id = u.user_id) as amount
+		from 
+		    acs_rels r 
+		where 
+		    object_id_one = :object_id
+		    and rel_type = 'im_biz_object_member';
+	"
+
+  set sql_query "
+	select distinct
+		r.object_id_two as user_id,
+		im_name_from_user_id(r.object_id_two) as name,
+                (select amount from im_emp_cust_price_list where company_id=:object_id and user_id = r.object_id_two) as amount
+	from 
+		acs_rels r 
+	where 
+		object_id_one in 
+	
+	(select 
+		project_id 
+	from 
+		im_projects 
+	where 
+		company_id = :object_id
+	)
+		and rel_type = 'im_biz_object_member'
+
+"
+
+
+
     # ------------------ Format the table header ------------------------
     set colspan 2
     set header_html "
@@ -199,7 +235,7 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 
         append body_html "
                   <td align=middle>
-                    <input type=input size=4 maxlength=4 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
+                    <input type=input size=6 maxlength=6 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
                   </td>
             "
         append body_html "</td>"
