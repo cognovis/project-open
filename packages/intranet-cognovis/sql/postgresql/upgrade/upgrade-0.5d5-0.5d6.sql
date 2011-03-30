@@ -2,6 +2,22 @@
 
 SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d5-0.5d6.sql','');
 
+-- User Localization Component
+SELECT im_component_plugin__new (
+       null,
+       'acs_object',
+       now(),
+       null,
+       null,
+       null,
+       'User Locale',
+       'intranet-core',
+       'left',
+       '/intranet/users/view',
+       null,
+       0,
+       'im_user_localization_component $user_id $return_url');
+
 -- Make sure User Locale Component is readable for anybody
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
