@@ -1,5 +1,3 @@
-1;2600;0c
-
 # packages/intranet-dynfield/tcl/intranet-dynfield-procs.tcl
 ad_library {
 
@@ -7,6 +5,7 @@ ad_library {
 
   @author Matthew Geddert openacs@geddert.com
   @author Juanjo Ruiz juanjoruizx@yahoo.es
+  @author Malte Sussdorff (malte.sussdorff@cognovis.de)
   @creation-date 2004-09-28
 
   @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
@@ -1515,6 +1514,8 @@ ad_proc -public -callback im_category_after_create -impl intranet-dynfield {
     {-category_id ""}
     {-category_type ""}
     {-return_url ""}
+} {
+    Add the attribute to the attribute type map after a dynfield has been created
 } {
     set object_type [im_category_object_type -category_type $category_type]
    
