@@ -334,7 +334,7 @@ returns integer as '
         BEGIN
         	-- Get the Main Site id, used as the global identified for permissions
         	select package_id into v_object_id from apm_packages
-        	where package_key='acs-subsite';
+        	where package_key=''acs-subsite'';
         
         	select count(*) into v_count from acs_permissions
         	where object_id = v_object_id and grantee_id = 771 and privilege = ''wf_reassign_tasks'';
