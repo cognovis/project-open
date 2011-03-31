@@ -874,6 +874,7 @@ namespace eval ::im::dynfield {}
     {-Objects:required}
     {-Elements ""}
     {-ods_file ""}
+    {-table_name ""}
     {-output_filename ""}
     {-attribute_names ""}
 } {

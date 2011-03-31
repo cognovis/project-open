@@ -301,24 +301,3 @@ ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
 } 
 
 
-ad_proc -public -callback file_storage_file_add_redirect -impl intranet-cognovis {
-    {-object_id:required}
-    {-status_id ""}
-    {-type_id ""}
-    {-file_id ""}
-    {-folder_id ""}
-    {-return_url ""}
-} {
-	This is mainly a callback to redirect from the original file-add.tcl page to somewhere else  
-	
-} {
-    if {[exists_and_not_null file_id]} {
-        ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
-            file_id folder_id return_url
-        }]
-    } else {
-        ad_returnredirect [export_vars -base "/intranet-cognovis/file-storage/file-add" {
-            folder_id return_url
-        }]
-    }
-}

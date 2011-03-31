@@ -29,6 +29,7 @@ ad_proc -public intranet_openoffice::spreadsheet {
     {-ods_file ""}
     {-table_name ""}
     {-variable_set ""}
+    {-code ""}
     {-output_filename:required}
 } {
     Takes a SQL statement and a view_name to create a Spreadsheet for each column in the view with all the rows from the SQL
@@ -37,6 +38,7 @@ ad_proc -public intranet_openoffice::spreadsheet {
     @param view_name Name of the dynfield view for which to generate the Spreadsheet
     @param object_type If the object_type is provided we can try to figure out which widget to use for including the column. Only works if there is no extra select involved.
     @param variable_set ns_set of variables we need locally.
+    @param code Code which is executed to set or ammend variables.
 } {
 
     # Check if we have the table.ods file in the proper place
@@ -124,6 +126,7 @@ ad_proc -public intranet_openoffice::spreadsheet {
         
         foreach variable $variables {
             set value [set $variable]
+            eval $code
             switch $datatype_arr($variable) {
                 date {
                     append __output " <table:table-cell office:value-type=\"date\" office:date-value=\"[lc_time_fmt $value %F]\"></table:table-cell>\n"
