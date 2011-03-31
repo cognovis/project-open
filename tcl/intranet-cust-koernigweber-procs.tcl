@@ -278,20 +278,115 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 }
 
 
-# ad_proc -public im_employee_customer_price_list_new {
-#     user_id:integer,notnull
-#     company_id:integer,notnull
-#     amount
-#     currency 
-# } {
-#         select im_employee_customer_price__new (
-#                 null, ''im_employee_customer_price'', now()::date,
-#                 [ad_conn user_id], ''0.0.0.0'', 0,
-#                 user_id,
-# 		company_id,
-# 		amount,
-# 		currency 
-# 		) into id;
-#     	return id; 
-# }
+
+ad_proc -public im_koernigweber_next_project_nr {
+    {-customer_id 0 }
+    {-nr_digits {}}
+    {-date_format {}}
+} {
+    Returns "" if there was an error calculating the number.
+    koernigweber project_nr look like: cccc-xx-xxxx with the first 4 digits being
+    the customer, four digits indicating the year the project starts and a 4 digit 
+    consecutive number 
+} {
+
+    set date_format "YY"
+  set customer_id 54735
+
+    ns_log Notice "im_koernig_weber_next_project_nr: customer_id=$customer_id, nr_digits=$nr_digits, date_format=$date_format"
+
+    if {"none" == $date_format} { set date_format "" }
+
+    set koernigweber_customer_code ""
+
+    catch {
+            db_1row koernigweber_cust_code "
+                select  company_code,
+			company_name
+                from    im_companies
+                where   company_id = :customer_id
+            "
+    } errmsg
+    ns_log Notice "im_koernigweber_next_project_nr: koernigweber_customer_code=$koernigweber_customer_code"
+
+    if {[string length $company_code] != 4} {
+        ad_return_complaint 1 "<b>Unable to find 'Customer Code'</b>:
+        <p>
+        The customer <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
+        does not have a valid 4 digit 'Customer Code' field. <br>
+        Please follow the link and setup a customer code with four digits.<br>
+        Please contact your System Adninistrator in case of doubt.
+        </p>
+        <pre>$errmsg</pre>
+        "
+        ad_script_abort
+    }
+
+    # ----------------------------------------------------
+    # Calculate the next project nr by finding out the last
+    # one +1
+
+    set sql "
+                select  project_nr as last_project_nr
+                from    im_projects
+                where   project_nr like '$company_code%' and 
+			company_id = :customer_id
+		order by project_nr ASC
+		limit 1
+    "
+
+    if { 0==[db_0or1row max_project_nr $sql] } {
+	set last_project_nr 1
+    } else {
+	set last_project_nr_length [string length $last_project_nr]
+	set last_project_nr [string range $last_project_nr [expr $last_project_nr_length-4] $last_project_nr_length]
+	set last_project_nr [expr $last_project_nr + 1]
+    }
+
+    # fill up with zeros 
+    set zeros ""
+    for {set i 0} {$i < [expr 4-[string length $last_project_nr]]} {incr i} {
+		append zeros "0"
+    }
+    set last_project_nr [append zeros $last_project_nr]        
+
+    # code + year code
+    set year [db_string today "select to_char(now(), :date_format)"]
+
+    # put everything together
+    set project_number ""
+    return [append project_number $company_code "_" $year "_" $last_project_nr]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
