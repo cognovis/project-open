@@ -1560,6 +1560,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values ('im_timeshee
 
 
 
-update im_view_columns set column_render_tcl = '"<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a>"' where column_id = 91101;
+update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 91101;
 
-update im_view_columns set column_render_tcl = '"<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a>"' where column_id = 91002;
+update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 91002;
+
