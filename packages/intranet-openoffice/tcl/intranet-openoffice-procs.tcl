@@ -153,3 +153,21 @@ ad_proc -public intranet_openoffice::spreadsheet {
 
     intranet_oo::parse_content -template_file_path $ods_file -output_filename $output_filename
 }
+
+
+ad_proc -public -callback im_timesheet_task_list_before_render -impl intranet-openoffice-spreadsheet {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+} {
+    Depending on the view_type return a spreadsheet in Excel / Openoffice or PDF
+} {
+ 
+    # Only execute for view types which are supported
+    if {[lsearch [list xls pdf ods] $view_type] > -1} {
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "tasks.$view_type" -table_name "$table_header"
+        ad_script_abort
+    }
+}
+

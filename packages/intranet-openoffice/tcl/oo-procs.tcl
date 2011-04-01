@@ -20,6 +20,7 @@ ad_proc -public intranet_oo::convert {
     links and paragraphs. 
 } {
     regsub -all -nocase "<br>" $content "<text:line-break/>" content
+    regsub -all -nocase "<br >" $content "<text:line-break/>" content
     regsub -all -nocase "<p>" $content "<text:line-break/>" content
     regsub -all -nocase "&nbsp;" $content " " content
     regsub -all -nocase "</p>" $content "<text:line-break/>" content

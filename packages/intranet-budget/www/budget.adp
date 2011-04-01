@@ -5,7 +5,6 @@
   <property name="show_left_navbar_p">0</property>
    <script type="text/javascript">
     
-
 Ext.onReady(function(){
 
     //  Top Form....

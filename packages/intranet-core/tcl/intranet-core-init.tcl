@@ -368,3 +368,19 @@ ad_proc -public -callback im_category_after_create {
     @param category_type Type of the category
 } -
 			       
+
+ad_proc -public -callback im_timesheet_task_list_before_render {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+} {
+    This callback is executed before im_timesheet_task_list_component is rendered / the sql command actually executed.
+
+    The callback implementation needs to run ad_script_abort in the uplevel, so you don't execute the SQL statement and try to render the component.
+
+    @param view_name view_name used to render the columns.
+    @param view_type The view_type. This can be anything, empty string usually means you want to render the component
+    @param sql The SQL string which im_timesheet_task_list_component prepares
+    @param table_header Name of the table in the spreadsheet (e.g. in Excel).
+} -

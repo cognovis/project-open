@@ -7,8 +7,8 @@
 
 ad_library {
     @author frank.bergmann@project-open.com
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
 }
-
 
 # ----------------------------------------------------------------------
 # Category Constants
@@ -482,12 +482,12 @@ ad_proc -public im_timesheet_task_list_component {
 		child.tree_sortkey
     "
 
-    if {$view_type ne ""} {
-        upvar page_title page_title
-        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "tasks.$view_type" -table_name "$page_title"
-        ad_script_abort
-    }
-
+    # Callback before rendering
+    upvar page_title page_title
+    callback im_timesheet_task_list_before_render -view_name $view_name \
+        -view_type $view_type -sql $sql -table_header $page_title
+    
+    ns_log Notice "Running the renderere for timesheet tasks"
     db_multirow task_list_multirow task_list_sql $sql {
 
 	# Perform the following steps in addition to calculating the multirow:

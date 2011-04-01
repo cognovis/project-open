@@ -69,29 +69,28 @@ ad_proc -public extjs::Form::Attribute::Currency {
 } {
     Return the item definition for a currency field
 } { 
+    set js_tmp ""
     if {$default ne ""} {
-        set default "emptyText: '\u20AC $default',"
+        append js_tmp "emptyText: '\u20AC $default', \n"
     }
 
     if {$label ne ""} {
-        set label "fieldLabel: '$label',"
+        append js_tmp "fieldLabel: '$label', \n"
     }
 
     if {$anchor ne ""} {
-        set anchor "anchor: '$anchor'"
+        append js_tmp "anchor: '$anchor', \n"
     }
+    
     return "\{
-                    xtype:'numericfield',
+                    $js_tmp xtype:'numericfield',
                     currencySymbol: '\u20AC',
                     useThousandSeparator: true,
                     thousandSeparator: '.',
                     setDecimalPrecision: 2,
                     decimalSeparator: ',',
                     alwaysDisplayDecimals: true,
-                    $label
-                    $default
-                    name: '$name',
-                    $anchor
+                    name: '$name'
     \}"
 }
 
@@ -103,23 +102,21 @@ ad_proc -public extjs::Form::Attribute::Htmleditor {
 } {
     Return the item definition for a numeric field
 } { 
+    set js_tmp ""
     if {$default ne ""} {
-        set default "emptyText: '$default',"
+        append js_tmp "emptyText: '$default', \n"
     }
 
     if {$label ne ""} {
-        set label "fieldLabel: '$label',"
+        append js_tmp "fieldLabel: '$label', \n"
     }
 
     if {$anchor ne ""} {
-        set anchor "anchor: '$anchor'"
+        append js_tmp "anchor: '$anchor', \n"
     }
     return "\{
-                    xtype:'htmleditor',
-                    $label
-                    $default
-                    name: '$name',
-                    $anchor
+                    $js_tmp xtype:'htmleditor',
+                    name: '$name'
     \}"
 }
 
@@ -132,28 +129,25 @@ ad_proc -public extjs::Form::Attribute::Textarea {
 } {
     Return the item definition for a numeric field
 } { 
+    set js_tmp ""
     if {$default ne ""} {
-        set default "emptyText: '$default',"
+        append js_tmp "emptyText: '$default',"
     }
     if {$maxlength ne ""} {
-        set maxlength "maxLength: '$maxlength',"
+        append js_tmp "maxLength: '$maxlength',"
     }
 
     if {$label ne ""} {
-        set label "fieldLabel: '$label',"
+        append js_tmp "fieldLabel: '$label',"
     }
 
     if {$anchor ne ""} {
-        set anchor "anchor: '$anchor'"
+        append js_tmp "anchor: '$anchor',"
     }
     return "\{
-                    xtype:'textarea',
-                    $label
+                    $js_tmp xtype:'textarea',
                     height: 150,
-                    $default
-                    $maxlength
-                    name: '$name',
-                    $anchor
+                    name: '$name'
     \}"
 }
 
@@ -165,27 +159,25 @@ ad_proc -public extjs::Form::Attribute::Numeric {
 } {
     Return the item definition for a numeric field
 } { 
+    set js_tmp ""
     if {$default ne ""} {
-        set default "emptyText: '$default',"
+        append js_tmp "emptyText: '$default', \n"
     }
 
     if {$label ne ""} {
-        set label "fieldLabel: '$label',"
+        append js_tmp "fieldLabel: '$label', \n"
     }
 
     if {$anchor ne ""} {
-        set anchor "anchor: '$anchor'"
+        append js_tmp "anchor: '$anchor', \n"
     }
     return "\{
-                    xtype:'numericfield',
+                    $js_tmp xtype:'numericfield',
                     useThousandSeparator: true,
                     thousandSeparator: '.',
                     decimalSeparator: ',',
                     alwaysDisplayDecimals: true,
-                    $label
-                    $default
-                    name: '$name',
-                    $anchor
+                    name: '$name'
     \}"
 }
 
@@ -198,23 +190,21 @@ ad_proc -public extjs::Form::Attribute::Number {
 } {
     Return the item definition for a number field
 } { 
+    set js_tmp ""
     if {$default ne ""} {
-        set default "emptyText: '$default',"
+        append js_tmp "emptyText: '$default', \n"
     }
 
     if {$label ne ""} {
-        set label "fieldLabel: '$label',"
+        append js_tmp "fieldLabel: '$label', \n"
     }
 
     if {$anchor ne ""} {
-        set anchor "anchor: '$anchor'"
+        append js_tmp "anchor: '$anchor', \n"
     }
     return "\{
-                    xtype:'numberfield',
-                    $label
-                    $default
-                    name: '$name',
-                    $anchor
+                    $js_tmp xtype:'numberfield',
+                    name: '$name'
     \}"
 }
 
@@ -249,7 +239,7 @@ ad_proc -public extjs::DataStore::Json {
         set root "root: '$root',"
     }
     if {$id_column ne ""} {
-        set id_column "id: '$id_column',"
+        set id_column "id: '$id_column'"
     }
     if {$sortInfo_json ne ""} {
         set sortInfo_json "sortInfo: $sortInfo_json"
@@ -272,8 +262,9 @@ ad_proc -public extjs::DataStore::Json {
         reader: new Ext.data.JsonReader(\{
             $root
             $id_column
-        \},\[ [join $column_def_list ",\n"] \]
-        ),
+        \}, \[ 
+           [join $column_def_list ",\n"] 
+        \]),
         $sortInfo_json
     \});
     ${prefix}store.load(); // We need to load the store before the grid is rendered.
