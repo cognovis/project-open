@@ -2,6 +2,8 @@
 
 SELECT acs_log__debug('/packages/intranet-reporting-indicators/sql/postgresql/upgrade/upgrade-3.5.9.9.9-4.0.0.0.0.sql','');
 
+delete from im_biz_object_urls where object_type = 'im_indicator' and url_type = 'view';
+delete from im_biz_object_urls where object_type = 'im_indicator' and url_type = 'edit';
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_indicator','view','/intranet-reporting-indicators/view?indicator_id=');
