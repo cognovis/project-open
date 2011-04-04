@@ -38,6 +38,45 @@ ad_page_contract {
    
 }
 
+set user_id [ad_conn user_id]
+
+# Check and grant permissions for the project folder
+
+im_project_permissions $user_id $project_id project_view_p project_read_p project_write_p project_admin_p
+
+
+permission::require_permission -party_id $user_id -object_id $folder_id -privilege "read"
+set read_p [permission::permission_p -party_id $user_id -object_id $folder_id -privilege "read"]
+set admin_p [permission::permission_p -party_id $user_id -object_id $folder_id -privilege "admin"]
+
+set write_p $admin_p
+
+if {!$write_p} {
+    set write_p [permission::permission_p -party_id $user_id -object_id $folder_id -privilege "write"]
+}
+
+set delete_p $admin_p
+
+if {!$delete_p} {
+    set delete_p [permission::permission_p -party_id $user_id -object_id $folder_id -privilege "delete"]
+}
+
+if {$read_p ne $project_read_p} {
+    ns_log Notice "GRANT READ PERMISSION"
+    permission::grant -party_id $user_id -object_id $folder_id -privilege read
+}
+
+if {$write_p ne $project_write_p} {
+    ns_log Notice "GRANT WRITE RELATED PERMISSIONS"
+    permission::grant -party_id $user_id -object_id $folder_id -privilege create
+    permission::grant -party_id $user_id -object_id $folder_id -privilege write
+    permission::grant -party_id $user_id -object_id $folder_id -privilege delete
+}
+
+if {$admin_p ne $project_admin_p} {
+    ns_log Notice "GRANT ADMIN PERMISSION"
+    permission::grant -party_id $user_id -object_id $folder_id -privilege admin
+}
 
 set user_id [ad_conn user_id]
 set list_of_folder_ids $folder_id
