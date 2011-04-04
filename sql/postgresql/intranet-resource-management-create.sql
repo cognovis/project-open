@@ -24,6 +24,16 @@ SELECT im_menu__new (
 );
 
 
+-- Delete the old menu
+SELECT im_menu__delete(
+	(select	menu_id
+	from	im_menus
+	where	label = 'projects_gantt_resources'
+	)
+);
+
+
+
 ---------------------------------------------------------
 -- Report Menu
 ---------------------------------------------------------
