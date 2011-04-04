@@ -2,9 +2,6 @@
 
 SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.5.9.9.9-4.0.0.0.0.sql','');
 
-
-
-
 create or replace function im_dynfield_widget__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, varchar, integer, varchar, varchar,
@@ -77,7 +74,10 @@ DECLARE
 	p_also_hard_coded_p	alias for $13;
 	p_include_in_search_p	alias for $14;
 
-	v_attribute_id	integer;
+	v_count			integer;
+        v_attribute_id          integer;
+	v_type_category 	varchar;
+
 	row			RECORD;
 BEGIN
 	v_attribute_id := acs_object__new (
@@ -132,10 +132,6 @@ BEGIN
 
 	return v_attribute_id;
 end;' language 'plpgsql';
-
-
-
-
 
 
 CREATE OR REPLACE VIEW ams_attributes as
@@ -198,12 +194,9 @@ SET parameters = '{format "YYYY-MM-DD"} {after_html {<input type="button" style=
 WHERE widget_name = 'date';
 
 
-
 -- Fix acs_attributes tablename
 update acs_attributes set table_name = 'im_projects'
 where object_type = 'im_project' and table_name is null;
-
-
 
 
 create or replace function im_dynfield_widget__delete (integer) returns integer as '
