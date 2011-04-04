@@ -1564,3 +1564,19 @@ update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a h
 
 update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 91002;
 
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE 
+
+	v_plugin_id	integer;
+BEGIN
+	SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE plugin_name = ''Project Translation Wizard'' AND page_url = ''/intranet/projects/view'';
+
+	SELECT im_component_plugin__delete(v_plugin_id);
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
