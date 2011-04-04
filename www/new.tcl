@@ -500,6 +500,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
     # Populate elements from local variables
     if {![info exists ticket_name] || "" == $ticket_name} { 
 	set next_ticket_nr [im_ticket::next_ticket_nr] 
+	set ticket_nr $next_ticket_nr
 	set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
     }
 
