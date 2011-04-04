@@ -110,7 +110,7 @@ create table im_tickets (
 	-- Provider says ticket is done
 	ticket_done_date		timestamptz,
 	-- Customer confirms ticket is done
-	ticket_signoff_date		timestamptz
+	ticket_signoff_date		timestamptz,
 
 	ticket_description		text,
 	ticket_customer_deadline	timestamptz,
