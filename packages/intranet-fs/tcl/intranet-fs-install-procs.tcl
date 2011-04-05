@@ -17,7 +17,7 @@ ad_proc -private intranet_fs::install::after_install {} {
 } {
 
     # Get Main Site's node_id 
-    set parent_node_id [db_1row qry "
+    set parent_node_id [db_string qry "
 	select node_id 
 	from site_nodes s, apm_packages p, acs_objects o 
 	where p.package_key = 'acs-subsite' 

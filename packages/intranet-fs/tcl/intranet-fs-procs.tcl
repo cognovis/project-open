@@ -142,14 +142,22 @@ ad_proc -public intranet_fs::create_project_folder {
     
     set project_name [db_string project_name "select project_name from im_projects where project_id = $project_id" -default ""]
     set folder_name [string tolower [util_text_to_url -text $project_name]]
-    set folder_id [fs::new_folder \
-		   -name $folder_name \
-		   -pretty_name $project_name \
-		   -parent_id $parent_folder_id
-		]
-	
-	set rel_id [relation_add "project_folder" $project_id $folder_id]
-	return $folder_id
+
+    # If the parend_folder_id is empty then we usually us -100 for parent
+    if {$parent_folder_id ne ""} {
+	set folder_id [db_string folder_id "select item_id from cr_items where name = :folder_name and parent_id = :parent_folder_id" -default ""]
+    } else {
+	set folder_id [db_string folder_id "select item_id from cr_items where name = :folder_name and parent_id = -100" -default ""]
+    }
+    if {$folder_id eq ""} {
+	set folder_id [fs::new_folder \
+			   -name $folder_name \
+			   -pretty_name $project_name \
+			   -parent_id $parent_folder_id
+		      ]
+    }	
+    set rel_id [relation_add "project_folder" $project_id $folder_id]
+    return $folder_id
 }
 
 
@@ -177,7 +185,7 @@ ad_proc -public im_fs_component {
 		set folder_id [intranet_fs::create_project_folder -project_id $project_id]
     }
     
-    set params [list  [list base_url "/intranet-fs/"]  [list folder_id $folder_id] [list return_url [im_biz_object_url $project_id]]]
+    set params [list  [list base_url "/intranet-fs/"]  [list folder_id $folder_id] [list project_id $project_id] [list return_url [im_biz_object_url $project_id]]]
     
     set result [ad_parse_template -params $params "/packages/intranet-fs/lib/intranet-fs"]
     return [string trim $result]
