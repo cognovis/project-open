@@ -191,6 +191,9 @@ db_foreach creator_option "
 	order by creator_name
 " { lappend ticket_creator_options [list $creator_name $creator_id] }
 
+set ticket_creator_options [linsert $ticket_creator_options 0 [list [_ intranet-core.All] ""]]
+
+
 # No SLA defined for this user?
 # Allow the user to request a new SLA
 if {!$sla_exists_p} {
