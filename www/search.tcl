@@ -449,12 +449,7 @@ set sql "
 		(	select	*
 			from	im_search_object_types 
 			where	$object_type_where
-		) sot
-		left outer join (
-			select	*
-			from	im_biz_object_urls
-			where	url_type = 'view'
-		) bou on (sot.object_type = bou.object_type),
+		) sot,
 		(
 			select	project_id as object_id,
 				'im_project' as object_type
@@ -485,9 +480,16 @@ set sql "
                                 'content_item' as object_type
                         from    cr_items c
                         where   1=1
-		) readable_biz_objs
+		) readable_biz_objs,
+		acs_objects o
+		LEFT OUTER JOIN (
+			select	*
+			from	im_biz_object_urls
+			where	url_type = 'view'
+		) bou ON (o.object_type = bou.object_type)
 	where
-		so.object_type_id = sot.object_type_id
+		readable_biz_objs.object_id = o.object_id 
+		and so.object_type_id = sot.object_type_id
 		and sot.object_type = aot.object_type
 		and so.biz_object_id = readable_biz_objs.object_id
 		and so.fti @@ to_tsquery('default',:q)
