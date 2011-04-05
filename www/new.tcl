@@ -612,10 +612,6 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
 } -edit_data {
 
-    template::form get_values helpdesk_ticket
-    ad_return_complaint 1 "new.tcl: test_date=$test_date, ticket_description=$ticket_description, ticket_note=$ticket_note, ticket_prio_id=$ticket_prio_id"
-
-
     set ticket_nr [string trim [string tolower $ticket_nr]]
     if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
     if {![exists_and_not_null project_name]} { set project_name $ticket_name}
