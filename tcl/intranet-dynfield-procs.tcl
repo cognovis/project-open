@@ -1013,8 +1013,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		pos_y_coalesce
     "
 
-#   ad_return_complaint 1 "<pre>$sql</pre>"
-
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
@@ -1090,8 +1088,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             set help_message ""
         }
 
-set help ""
-
 	im_dynfield::append_attribute_to_form \
 	    -attribute_name $attribute_name \
 	    -widget $widget \
@@ -1101,7 +1097,15 @@ set help ""
 	    -parameters $parameters \
 	    -required_p $required_p \
 	    -pretty_name $pretty_name \
-	    -help $help
+	    -help_text $help_message \
+	    -admin_html $admin_html
+
+        # set the value
+	# fraber 110405: doesn't work!!!
+	#        upvar $attribute_name x
+        #	if {[info exists x]} {
+        #	    template::element::set_value $form_id $attribute_name $x
+        #	}
 
 	incr field_cnt
 
@@ -1162,18 +1166,6 @@ set help ""
 
 	    }
 
-	    date {
-
-		# ToDo: Remove this part. It's not used anymore. Dates are stored as
-		# values in YYYY-MM-DD format
-		ns_log Notice "im_dynfield::append_attributes_to_form: date storage"
-		set value [template::util::date::get_property ansi [set $attribute_name]]
-		set value_list [split $value "-"]			
-		set value "[lindex $value_list 0] [lindex $value_list 1] [lindex $value_list 2]"
-		template::element::set_value $form_id $attribute_name $value
-
-	    }
-
 	    value - default {
 
 		# ToDo: slow. This piece issues N SQL statements, instead of constructing
@@ -1185,17 +1177,47 @@ set help ""
 		    from	$attribute_table_name
 		    where	$attribute_id_column = :object_id
 		" -default ""]
-		template::element::set_value $form_id $attribute_name $value
+
+                switch $widget {
+                    date {
+                        set date [template::util::date::create]
+                        set value [template::util::date::set_property ansi $date $value]
+                    }
+                    default { }
+                }
+
+                # Don't overwrite values with default value if the value is there already
+                if {$value ne ""} {
+                    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
+                    template::element::set_value $form_id $attribute_name $value
+                }
+
 
 	    }
 
 	}
     }
+
+    # Callback to allow external functions to modify the values in the form
+
+    if {[catch {
+	callback ${object_type}_form_fill \
+	    -form_id $form_id \
+	    -object_type $object_type \
+	    -object_id $object_id \
+	    -type_id $object_subtype_id \
+	    -page_url $page_url \
+	    -advanced_filter_p $advanced_filter_p \
+	    -include_also_hard_coded_p $include_also_hard_coded_p
+    } err_msg]} {
+	ad_return_complaint 1 "<b>Error with callback '${object_type}_form_fill'</b>:<br>
+		Please check your callback code and make sure that your object type '$object_type'
+		is part of the list 'object_types' in ~/packages/intranet-core/tcl/intranet-core-init.tcl"
+	ad_script_abort
+    }
     
     return $field_cnt
 }
-
-
 
 
 
@@ -1208,7 +1230,9 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     -required_p:required
     -attribute_name:required
     -pretty_name:required
-    -help:required
+    -help_text:required
+    {-admin_html "" }
+    {-debug 0}
 } {
     Append a single attribute to a form
 } {
@@ -1220,23 +1244,30 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     } elseif {$datatype == "date"} {
 	set translated_datatype "date"
     }
-    
-    set parameter_list [lindex $parameters 0]
-    
-    # Find out if there is a "custom" parameter and extract its value
-    # "Custom" is the parameter to pass-on widget parameters from the
-    # DynField Maintenance page to certain form Widgets.
-    # Example: "custom {sql {select ...}}" in the "generic_sql" widget.
+
     set custom_parameters ""
-    set custom_pos [lsearch $parameter_list "custom"]
-    if {$custom_pos >= 0} {
-	set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
-    }
-    
     set html_parameters ""
-    set html_pos [lsearch $parameter_list "html"]
-    if {$html_pos >= 0} {
-	set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
+    set after_html_parameters ""
+    foreach parameter_list $parameters {
+        # Find out if there is a "custom" parameter and extract its value
+        # "Custom" is the parameter to pass-on widget parameters from the
+        # DynField Maintenance page to certain form Widgets.
+        # Example: "custom {sql {select ...}}" in the "generic_sql" widget.
+
+        set custom_pos [lsearch $parameter_list "custom"]
+        if {$custom_pos >= 0} {
+            set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
+        }
+
+        set html_pos [lsearch $parameter_list "html"]
+        if {$html_pos >= 0} {
+            set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
+        }
+
+        set after_html_pos [lsearch $parameter_list "after_html"]
+        if {$after_html_pos >= 0} {
+            set after_html_parameters [subst [lindex $parameter_list [expr $after_html_pos + 1]]]
+        }
     }
     
     # Localization - use the intranet-core L10n space for translation.
@@ -1244,11 +1275,18 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     set pretty_name_key "$package_key.[lang::util::suggest_key $pretty_name]"
     set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
 
+    # Show help text as part of a help GIF
+    if {$help_text ne ""} {
+        set after_html [im_gif help $help_text]
+    } else {
+        set after_html ""
+    }
+
+    append after_html $admin_html
 
     switch $widget {
 	checkbox - radio - select - multiselect - im_category_tree - category_tree {
-	    
-	    ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options"
+	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
 	    set option_list ""
 	    set options_pos [lsearch $parameter_list "options"]
 	    if {$options_pos >= 0} {
@@ -1266,14 +1304,13 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 		    -options $option_list \
 		    -custom $custom_parameters \
 		    -html $html_parameters \
-		    -help_text $help \
+		    -after_html "$after_html $after_html_parameters" \
 		    -mode $display_mode
 	    }
 	}
 	
 	default {
-	    
-	    ns_log Notice "im_dynfield::append_attribute_to_form: default: no options"
+	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
 	    if {![template::element::exists $form_id "$attribute_name"]} {
 		template::element create $form_id "$attribute_name" \
 		    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
@@ -1281,7 +1318,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 		    -label $pretty_name \
 		    -html $html_parameters \
 		    -custom $custom_parameters\
-		    -help_text $help \
+		    -after_html "$after_html $after_html_parameters" \
 		    -mode $display_mode
 	    }
 	}
@@ -1289,11 +1326,13 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 }
 
 
+
 ad_proc -public im_dynfield::append_attributes_to_im_view {
     -object_type:required
+    {-include_also_hard_coded_p 0 }
     {-table_prefix "" }
 } {
-    Returns a list with two elements:
+    Returns a list with three elements:
 
     Element 0: A list of PrettyNames, suitable to be appended to the
     "column_headers" list of a project-open im_view type of ListPage
@@ -1316,6 +1355,11 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 } {
     set current_user_id [ad_get_user_id]
 
+    set also_hard_coded_p_sql ""
+    if {!$include_also_hard_coded_p} { 
+	set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
+    } 
+
     set attributes_sql "
 	select	a.*,
 		aa.attribute_id as dynfield_attribute_id,
@@ -1325,9 +1369,16 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		aw.widget,
 		aw.parameters,
 		aw.storage_type_id,
-		im_category_from_id(aw.storage_type_id) as storage_type
+		aw.deref_plpgsql_function,
+		im_category_from_id(aw.storage_type_id) as storage_type,
+		coalesce(dl.pos_y, 9999) as layout_sort_order
 	from
-		im_dynfield_attributes aa,
+		im_dynfield_attributes aa
+		LEFT OUTER JOIN (
+			select	*
+			from	im_dynfield_layout
+			where	page_url = 'default'
+		) dl ON (dl.attribute_id = aa.attribute_id),
 		im_dynfield_widgets aw,
 		acs_object_types t,
 		acs_attributes a
@@ -1340,6 +1391,9 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :current_user_id, 'read') = 't'
+		$also_hard_coded_p_sql
+	order by
+		layout_sort_order
     "
 
     set column_headers [list]
@@ -1360,7 +1414,6 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 
     return [list $column_headers $column_vars $column_select]
 }
-
 
 ad_proc -public im_dynfield::package_id {} {
 
