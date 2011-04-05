@@ -22,7 +22,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
     @author mai-bee@gmx.net
 } {
-    plugin_id:naturalnum
+    { plugin_id ""}
     { return_url "" }
 }
 
@@ -40,7 +40,8 @@ if {!$user_is_admin_p} {
 set page_title "Component Edit"
 set context_bar [im_context_bar $page_title]
 
-if [catch {db_1row category_properties "
+if {$plugin_id ne ""} {
+    if [catch {db_1row category_properties "
 	select
 		c.*
 	from
@@ -48,10 +49,48 @@ if [catch {db_1row category_properties "
 	where
 		c.plugin_id = :plugin_id
 " } errmsg] {
-    ad_return_complaint 1 "<li>Internal Error<br>
+	ad_return_complaint 1 "<li>Internal Error<br>
         Component \#$plugin_id does not exist (anymore)"
-    return
+	return
+    }
+
+    set submit_buttons "
+     <input type=submit name=submit value=Update>
+     <input type=submit name=submit value=Delete>
+"
+
+
+} else {
+    set plugin_id "" 
+    set plugin_name ""
+    set location ""
+    set page_url ""
+    set title_tcl ""
+    set component_tcl ""
+    set menu_name ""
+    set enabled_p "t"
+    set sort_order ""
+    set menu_sort_order ""
+
+    set package_name "<select name=\"package_name\">\n"
+    set package_list  [db_list select_packages { 
+	select DISTINCT package_key from apm_packages order by package_key
+    }]
+
+    foreach package_key $package_list {
+	append package_name "<option value=\"$package_key\">$package_key</option>\n"
+    }
+    append package_name "</select>"
+
+   set submit_buttons "
+     <input type=submit name=submit value=Save>
+     <input type=submit name=cancel value=Cancel>
+"
+
+
 }
+
+
 
 set left_selected ""
 set right_selected ""
@@ -84,7 +123,8 @@ if {$enabled_p} {
 
 set page_body "
 <form action=\"edit-2.tcl\" method=GET>
-[export_form_vars plugin_id return_url]
+<input type=hidden name=plugin_id value=$plugin_id>
+<input type=hidden name=return_url value=$return_url>
 
 <TABLE border=0>
 <TBODY>
@@ -136,11 +176,9 @@ set page_body "
   <TR class=rowodd>
     <TD>Menu Sort Order</TD>
     <TD><input type=text name=menu_sort_order value=$menu_sort_order></TD></TR>
-
 </TBODY>
 </TABLE>
-<input type=submit name=submit value=Update>
-<input type=submit name=submit value=Delete>
+$submit_buttons
 </form>
 "
 

@@ -208,6 +208,13 @@ append table "
 # ------------------------------------------------------
 # Filters & Navbar
 # ------------------------------------------------------
+set current_user_id [ad_conn user_id]
+set admin_html "<ul>"
+if {![im_permission $current_user_id "add_components"]} {
+    append admin_html "<li><a href='/intranet/admin/components/edit?return_url=$return_url'>[_ intranet-core.Add_a_new_component]</a></li>\n"
+}
+
+append admin_html "</ul>"
 
 set package_select [im_select -ad_form_option_list_style_p 1 package_key $package_options $package_key]
 
@@ -240,6 +247,11 @@ set left_navbar_html "
 	           [lang::message::lookup "" intranet-core.Filter_Components "Filter Components"]
                 </div>
                 $left_navbar_html
+               <br>
+                <div class='filter-title'>
+	           [lang::message::lookup "" intranet-core.Admin_Components "Admin Components"]
+                </div>
+                $admin_html
         </div>
       <hr/>
 "

@@ -8,3 +8,8 @@
 <property name="admin_navbar_label">admin_components</property>
 
 @page_body;noquote@
+
+
+
+
+
