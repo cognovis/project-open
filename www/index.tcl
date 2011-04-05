@@ -224,8 +224,8 @@ ad_form \
 
 if {$view_tickets_all_p} {  
     ad_form -extend -name $form_id -form {
-	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-helpdesk"}} }
-	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-helpdesk"} } }
+	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-core"}} }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-core"} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
 	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
 	{ticket_creator_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Creator Creator]"} {options $ticket_creator_options}}
