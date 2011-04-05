@@ -42,6 +42,7 @@ ad_page_contract {
     category_type
     { parents:multiple "" }
     translation:trim,array
+    {return_url ""}
 }
 
 # ---------------------------------------------------------------
@@ -124,6 +125,14 @@ WHERE
     return
 
 }
+
+
+callback im_category_after_update -object_id $category_id \
+    -status "" -type "" -category_id $category_id \
+    -category_type $category_type
+
+
+
 
 # ---------------------------------------------------------------
 # Update Translations

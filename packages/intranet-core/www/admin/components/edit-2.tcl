@@ -110,13 +110,10 @@ switch $submit {
 				      :component_tcl,
 				      :title_tcl
 				      );
-
 		UPDATE im_component_plugins SET menu_sort_order = :menu_sort_order, enabled_p = :enabled_p, menu_name = :menu_name WHERE plugin_id = v_plugin_id;
 
 		RETURN 0;
 		END;
-		
-
 	    }
 	}	
     }

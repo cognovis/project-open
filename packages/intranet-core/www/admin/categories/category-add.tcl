@@ -41,6 +41,8 @@ ad_page_contract {
     aux_int2
     aux_string1
     aux_string2
+    { return_url ""}
+    
 }
 
 # ---------------------------------------------------------------
@@ -110,6 +112,11 @@ if [catch {
     ad_return_complaint "Argument Error" "<pre>$errmsg</pre>"
     return
 }
+
+
+callback im_category_after_create -object_id $category_id \
+    -status "" -type "" -category_id $category_id \
+    -category_type $category_type
 
 
 # ---------------------------------------------------------------
