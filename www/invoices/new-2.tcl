@@ -203,7 +203,7 @@ template::element::set_value $form_id end_date $end_date
 # Get the list of tasks
 # ---------------------------------------------------------------
 
-set task_table_rows [im_timesheet_invoicing_project_hierarchy \
+set task_table_rows [im_timesheet_invoicing_project_hierarchy_kw \
 			 -select_project $select_project \
 			 -start_date $start_date \
 			 -end_date $end_date \
