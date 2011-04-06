@@ -38,7 +38,7 @@ ad_page_contract {
 } {
     { owner_id:integer "" }
     { project_id:integer 0 }
-    { report_year_month:integer "" }
+    { report_year_month "" }
     { report_month:integer "" }
     { report_year:integer "" }
 }
@@ -50,8 +50,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set subsite_id [ad_conn subsite_id]
-set site_url "/intranet-timesheet2"
-set return_url "$site_url/weekly_report"
+set return_url "/intranet-cust-koernigweber/monthly-report-wf-extended"
 set date_format "YYYY-MM-DD"
 set current_user_id [ad_maybe_redirect_for_registration]
 
@@ -117,7 +116,7 @@ set filter_form_html "
                 <tr>
                   <td class=form-label>User</td>
                   <td class=form-widget>
-                    [im_user_select -include_empty_p 1 user_id $user_id]
+                    [im_user_select -include_empty_p 1 owner_id $owner_id]
                   </td>
                 </tr>
                 <tr>
