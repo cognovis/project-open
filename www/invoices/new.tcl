@@ -117,7 +117,7 @@ set end_idx [expr $start_idx + $how_many - 1]
 if { ![empty_string_p $project_id] && $project_id != 0 } {
 
     set invoice_currency $default_currency
-    ad_returnredirect "/intranet-timesheet2-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
+    ad_returnredirect "/intranet-cust-koernigweber/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
     set page_body ""
     return
 }
