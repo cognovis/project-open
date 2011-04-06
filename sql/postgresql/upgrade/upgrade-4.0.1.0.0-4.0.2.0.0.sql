@@ -26,3 +26,26 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (2630,26,NULL,'Prio',
 '$priority</nobr>','','',30,'');
 
+
+
+
+
+-- Localization
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+
+	'User Localization',		-- plugin_name
+	'intranet-core',		-- package_name
+	'left',				-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	55,				-- sort_order
+	'im_user_localization_component $user_id $return_url'	-- component_tcl
+);
+
+
