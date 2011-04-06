@@ -117,7 +117,6 @@ ad_proc -public im_dynfield::datatype_options_not_cached {
 
 
 
-
 ad_proc -public im_dynfield::widget_options {
 } {
     Return the default list of widgets cached
@@ -219,10 +218,10 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     to the ones that fit to the filter criteria.
 
     @param form_id: search form id
-    @return:    An array consisting of:
-                where: A SQL phrase and
-                bind_vars: a key-value paired list carrying the bind
-                        vars for the SQL phrase
+    @return:	An array consisting of:
+		where: A SQL phrase and
+		bind_vars: a key-value paired list carrying the bind
+			vars for the SQL phrase
 } {
     # Get the list of all elements in the form
     set form_elements [template::form::get_elements $form_id]
@@ -287,11 +286,11 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	# Check whether the attribute is part of the form
 	if {[lsearch $form_elements $attribute_name] >= 0} {
 	    set value [template::element::get_value $form_id $attribute_name]
-            ns_log Notice "search_sql_criteria_from_form: value='$value'"
-            if {"" == $value} { continue }
-            if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
-            ns_set put $bind_vars $attribute_name $value
-            lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+	    ns_log Notice "search_sql_criteria_from_form: value='$value'"
+	    if {"" == $value} { continue }
+	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
+	    ns_set put $bind_vars $attribute_name $value
+	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 	}
     }
 
@@ -398,8 +397,6 @@ ad_proc -public im_dynfield::set_form_values_from_http {
 		nothing
 
 } {
-    ns_log Notice "im_dynfield::set_form_values_from_form: form_id=$form_id"
-    
     set form_elements [template::form::get_elements $form_id]
     set form_vars [ns_conn form]
     
@@ -417,8 +414,6 @@ ad_proc -public im_dynfield::set_form_values_from_http {
 	if {$pos >= 0} {
 	   set value [ns_set get $form_vars $element]
 	   template::element::set_value $form_id $element $value
-	
-	   ns_log Notice "set_form_values_from_http: request_form: $element = $value"
 	}
     }
 }
@@ -433,8 +428,6 @@ ad_proc -public im_dynfield::set_local_form_vars_from_http {
     @return:	Form_vars that are also in the HTTP are set to the
 		calling variable frame
 } {
-    ns_log Notice "im_dynfield::set_local_form_vars_form_http: form_id=$form_id"
-    
     set form_elements [template::form::get_elements $form_id]
     set form_vars [ns_conn form]
     
@@ -483,7 +476,6 @@ ad_proc -public im_dynfield::attribute_store {
 
     set object_id_org $object_id
     set object_type_org $object_type
-    ns_log Notice "im_dynfield::attribute_store: object_type=$object_type_org, object_id=$object_id_org, form_id=$form_id"
 
     # Get the list of all variables of the form
     template::form get_values $form_id
@@ -517,11 +509,8 @@ ad_proc -public im_dynfield::attribute_store {
     array set update_lines {}
     db_foreach attributes $attribute_sql {
 
-	ns_log Notice "im_dynfield::attribute_store: storing attribute '$attribute_name'"
-
 	# Skip attributes that do not exists in (the partial) form.
 	if {![template::element::exists $form_id $attribute_name]} { 
-	    ns_log Notice "im_dynfield::attribute_store: skipping attribute '$attribute_name' because it is not part of the form '$form_id'"
 	    continue 
 	}
 
@@ -570,10 +559,7 @@ ad_proc -public im_dynfield::attribute_store {
 	}
     }
 
-    ns_log Notice "im_dynfield::attribute_store: before stoing values into the different object's tables"
     foreach table_name [array names update_lines] {
-
-	ns_log Notice "im_dynfield::attribute_store: storing values for table '$table_name'"
 
 	# Get the index column for the table_name
 	set table_index_column [util_memoize [list db_string icol "
@@ -598,6 +584,7 @@ ad_proc -public im_dynfield::attribute_store {
 	
     }
 }
+
 
 # ------------------------------------------------------------------
 # DynFields per Subtype
@@ -716,7 +703,7 @@ ad_proc -public im_dynfield::widget_request {
 
 	        switch $widget {
 		        checkbox - radio - select - multiselect - im_category_tree - category_tree {
-		            ns_log Notice "im_dynfield::widget_request: select-widgets: with options"
+		            if {$debug} { ns_log Notice "im_dynfield::widget_request: select-widgets: with options" }
 		            set option_list ""
 		            set options_pos [lsearch $parameter_list "options"]
 		            if {$options_pos >= 0} {
@@ -852,7 +839,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     {-advanced_filter_p 0}
     {-include_also_hard_coded_p 0 }
     {-page_url "default" }
-    {-debug 1}
+    {-debug 0}
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
@@ -1013,7 +1000,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		pos_y_coalesce
     "
 
-
     set field_cnt 0
     db_foreach attributes $attributes_sql {
 
@@ -1047,7 +1033,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-        if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
@@ -1060,14 +1046,14 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	if {"none" == $display_mode} { continue }
 
-        # Don't show a read-only mode in an "edit" form
-        # Doesn't work yet, because the field is expected later
-#       if {"display" == $display_mode && "edit" == $form_display_mode}  {
-#           continue
+	# Don't show a read-only mode in an "edit" form
+	# Doesn't work yet, because the field is expected later
+#	if {"display" == $display_mode && "edit" == $form_display_mode}  {
+#	    continue
 #        }
 
-	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
 
+	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
 
 	# set optional all attributes if search mode
 	if {$search_p} { set required_p "f" }
@@ -1100,12 +1086,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    -help_text $help_message \
 	    -admin_html $admin_html
 
-        # set the value
-	# fraber 110405: doesn't work!!!
-	#        upvar $attribute_name x
-        #	if {[info exists x]} {
-        #	    template::element::set_value $form_id $attribute_name $x
-        #	}
+	# fraber 110405: doesn't work.
+	# Doesn't save form values when editing
+	#     upvar $attribute_name x
+	#     if {[info exists x]} {
+	#         template::element::set_value $form_id $attribute_name $x
+	#     }
 
 	incr field_cnt
 
@@ -1142,19 +1128,15 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-#        set key "$dynfield_attribute_id.$object_subtype_id"
-#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
-
 	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }
 
 	switch $storage_type {
 	    multimap {
-
 		# "MultiMaps" (select with multiple values) are stored in a separate
 		# "im_dynfield_attr_multi_value", because we can't store it like the
 		# other attributes directly inside the object's table.
-		ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage"
+		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage" }
 		template::element set_properties $form_id $attribute_name "multiple_p" "1"
 		set value_list [db_list get_multiple_values "
 			select	value 
@@ -1163,15 +1145,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 				and object_id = :object_id
 		"]
 		template::element::set_values $form_id $attribute_name $value_list
-
 	    }
-
 	    value - default {
 
 		# ToDo: slow. This piece issues N SQL statements, instead of constructing
 		# a single SQL and issuing it once. Causes performance problems at BaselKB
 		# for example.
-		ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage"
 		set value [db_string get_single_value "
 		    select	$attribute_name
 		    from	$attribute_table_name
@@ -1186,12 +1165,11 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                     default { }
                 }
 
-                # Don't overwrite values with default value if the value is there already
+		# Don't overwrite values with default value if the value is there already
                 if {$value ne ""} {
                     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
                     template::element::set_value $form_id $attribute_name $value
                 }
-
 
 	    }
 
@@ -1221,6 +1199,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 
 
+
 ad_proc -public im_dynfield::append_attribute_to_form {
     -widget:required
     -form_id:required
@@ -1232,7 +1211,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     -pretty_name:required
     -help_text:required
     {-admin_html "" }
-    {-debug 0}
+    {-debug 1}
 } {
     Append a single attribute to a form
 } {
@@ -1240,14 +1219,16 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     # validator (e.g. a string datatype would change into text).
     set translated_datatype [attribute::translate_datatype $datatype]
     if {$datatype == "number"} {
-	set translated_datatype "float"
+        set translated_datatype "float"
     } elseif {$datatype == "date"} {
-	set translated_datatype "date"
+        set translated_datatype "date"
     }
 
     set custom_parameters ""
     set html_parameters ""
     set after_html_parameters ""
+    set format_parameters ""
+    set option_parameters ""
     foreach parameter_list $parameters {
         # Find out if there is a "custom" parameter and extract its value
         # "Custom" is the parameter to pass-on widget parameters from the
@@ -1264,12 +1245,22 @@ ad_proc -public im_dynfield::append_attribute_to_form {
             set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
         }
 
+        set format_pos [lsearch $parameter_list "format"]
+        if {$format_pos >= 0} {
+            set format_parameters [lindex $parameter_list [expr $format_pos + 1]]
+        }
+
         set after_html_pos [lsearch $parameter_list "after_html"]
         if {$after_html_pos >= 0} {
             set after_html_parameters [subst [lindex $parameter_list [expr $after_html_pos + 1]]]
         }
+
+	set options_pos [lsearch $parameter_list "options"]
+	if {$options_pos >= 0} {
+	    set option_parameters [lindex $parameter_list [expr $options_pos + 1]]
+	}
     }
-    
+
     # Localization - use the intranet-core L10n space for translation.
     set package_key "intranet-core"
     set pretty_name_key "$package_key.[lang::util::suggest_key $pretty_name]"
@@ -1284,47 +1275,55 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
     append after_html $admin_html
 
+    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: form_id=$form_id, attribute_name=$attribute_name, widget=$widget" }
+
+    # ToDo: Can we unify this switch?
+    # Is there a problem to pass an "options" parameter to a date widget?
     switch $widget {
-	checkbox - radio - select - multiselect - im_category_tree - category_tree {
-	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
-	    set option_list ""
-	    set options_pos [lsearch $parameter_list "options"]
-	    if {$options_pos >= 0} {
-		set option_list [lindex $parameter_list [expr $options_pos + 1]]
-	    }
-	    
-	    if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-		set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
-	    }
-	    if {![template::element::exists $form_id "$attribute_name"]} {
-		template::element create $form_id "$attribute_name" \
-		    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
-		    -widget $widget \
-		    -label "$pretty_name" \
-		    -options $option_list \
-		    -custom $custom_parameters \
-		    -html $html_parameters \
-		    -after_html "$after_html $after_html_parameters" \
-		    -mode $display_mode
-	    }
-	}
-	
-	default {
-	    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
-	    if {![template::element::exists $form_id "$attribute_name"]} {
-		template::element create $form_id "$attribute_name" \
-		    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
-		    -widget $widget \
-		    -label $pretty_name \
-		    -html $html_parameters \
-		    -custom $custom_parameters\
-		    -after_html "$after_html $after_html_parameters" \
-		    -mode $display_mode
-	    }
-	}
+        checkbox - radio - select - multiselect - im_category_tree - category_tree {
+	    # These widgets need an additional -options parameter
+            if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
+                set option_parameters [linsert $option_parameters -1 [list " [_ intranet-dynfield.no_value] " ""]]
+            }
+            if {![template::element::exists $form_id "$attribute_name"]} {
+                template::element create $form_id "$attribute_name" \
+                    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
+                    -widget $widget \
+                    -label "$pretty_name" \
+                    -options $option_parameters \
+                    -custom $custom_parameters \
+                    -html $html_parameters \
+                    -after_html "$after_html $after_html_parameters" \
+                    -mode $display_mode
+            }
+        }
+        date {
+            if {![template::element::exists $form_id "$attribute_name"]} {
+                template::element create $form_id "$attribute_name" \
+                    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
+                    -widget $widget \
+                    -label $pretty_name \
+                    -html $html_parameters \
+                    -custom $custom_parameters\
+                    -after_html "$after_html $after_html_parameters" \
+                    -mode $display_mode \
+		    -format $format_parameters
+            }
+        }
+        default {
+            if {![template::element::exists $form_id "$attribute_name"]} {
+                template::element create $form_id "$attribute_name" \
+                    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
+                    -widget $widget \
+                    -label $pretty_name \
+                    -html $html_parameters \
+                    -custom $custom_parameters\
+                    -after_html "$after_html $after_html_parameters" \
+                    -mode $display_mode
+            }
+        }
     }
 }
-
 
 
 ad_proc -public im_dynfield::append_attributes_to_im_view {
@@ -1414,6 +1413,7 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
 
     return [list $column_headers $column_vars $column_select]
 }
+
 
 ad_proc -public im_dynfield::package_id {} {
 
