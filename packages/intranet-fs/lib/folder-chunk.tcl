@@ -161,16 +161,16 @@ set elements [list \
 		       display_template {
 			   <table><tr>
 			     <if @contents.approve_url@ not nil>
-			       <td><a href='@contents.approve_url@' class='button'>#file-storage.Approve#</a></td> 
+			       <td><a href='@contents.approve_url@' class='button'>#intranet-fs.Approve#</a></td> 
 			     </if>
 			     <if @contents.disapprove_url@ not nil>
-			       <td><a href='@contents.disapprove_url@' class='button'>#file-storage.Disapprove#</a></td>
-			     </if>
+			       <td><a href='@contents.disapprove_url@' class='button'>#intranet-fs.Disapprove#</a></td>
+			     </if></tr><tr>
   			     <if @contents.publish_url@ not nil>
-			       <td><a href='@contents.publish_url@' class='button'>#file-storage.Publish#</a></td>
+			       <td><a href='@contents.publish_url@' class='button'>#intranet-fs.Publish#</a></td>
 			     </if>
 		             <if @contents.unpublish_url@ not nil>
-			       <td><a href='@contents.unpublish_url@' class='button'>#file-storage.Unpublish#</a></td>
+			       <td><a href='@contents.unpublish_url@' class='button'>#intranet-fs.Unpublish#</a></td>
 			     </if>
 			   </tr></table>
 		       }] \

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-fs" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Disapprove">Disapprove</msg>
+  <msg key="Publish">Publish</msg>
+  <msg key="Unpublish">Unpublish</msg>
+</message_catalog>
