@@ -185,8 +185,8 @@ set edit_p [im_permission $current_user_id add_tickets_for_customers]
 set delete_p $edit_p
 
 set actions {}
-if {$edit_p} { lappend actions {"Edit" edit} }
-# if {$delete_p} { lappend actions {"Delete" delete} }
+if {$edit_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk.Edit Edit] edit] }
+#if {$delete_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk.Delete Delete] delete] }
 
 ad_form \
     -name helpdesk_ticket \
@@ -205,7 +205,7 @@ ad_form \
     }
 
 # ------------------------------------------------------------------
-# Ticket Action
+# User Extensible Ticket Actions
 # ------------------------------------------------------------------
 
 set tid [value_if_exists ticket_id]
@@ -232,18 +232,21 @@ if {!$edit_ticket_status_p} { set ticket_action_html "" }
 # Delete pressed?
 # ------------------------------------------------------------------
 
-set button_pressed [template::form get_action helpdesk_ticket]
-if {"delete" == $button_pressed} {
-     db_dml mark_ticket_deleted "
+# Delete button disable. Now there is a "Nuke" action available
+set ttt {
+    set button_pressed [template::form get_action helpdesk_ticket]
+    if {"delete" == $button_pressed} {
+	db_dml mark_ticket_deleted "
 	update	im_tickets
 	set	ticket_status_id = [im_ticket_status_deleted]
 	where	ticket_id = :ticket_id
-     "
-
-    # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action delete
-
-    ad_returnredirect $return_url
+        "
+	
+	# Write Audit Trail
+	im_project_audit -project_id $ticket_id -action delete
+	
+	ad_returnredirect $return_url
+    }
 }
 
 
@@ -276,21 +279,17 @@ if {"edit" == $form_mode} {
 # ------------------------------------------------------------------
 
 if {$ticket_exists_p} {
-
     db_1row ticket_info "
-	select
-		t.*, p.*,
+	select	t.*, p.*,
 		t.ticket_customer_deadline::date as ticket_customer_deadline,
 		p.company_id as ticket_customer_id
-	from
-		im_projects p,
+	from	im_projects p,
 		im_tickets t
-	where
-		p.project_id = t.ticket_id
+	where	p.project_id = t.ticket_id
 		and p.project_id = :ticket_id
     "
-
 }
+
 
 # Check if we can get the ticket_customer_id.
 # We need this field in order to limit the customer contacts to show.
@@ -397,25 +396,17 @@ if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contac
 if {[exists_and_not_null ticket_customer_id]} {
     set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
     set customer_contact_options [db_list_of_lists customer_contact_options "
-	select
-		im_name_from_user_id(u.user_id) as name,
+	select	im_name_from_user_id(u.user_id) as name,
 		u.user_id
-	from
-		cc_users u
-	where
-		u.user_id in (
+	from	cc_users u
+	where	u.user_id in (
 			-- Members of group helpdesk
 			select member_id from group_distinct_member_map where group_id = [im_profile_helpdesk]
-		UNION
-			select object_id_two from acs_rels where object_id_one = :ticket_customer_id
-		UNION
-			select object_id_two from acs_rels where object_id_one = :ticket_sla_id
+		UNION	select object_id_two from acs_rels where object_id_one = :ticket_customer_id
+		UNION	select object_id_two from acs_rels where object_id_one = :ticket_sla_id
 		)
 		order by name
     "]
-
-
-
 } else {
     set customer_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1]
     set customer_contact_options [im_user_options -include_empty_p 0]
@@ -500,6 +491,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
     # Populate elements from local variables
     if {![info exists ticket_name] || "" == $ticket_name} { 
 	set next_ticket_nr [im_ticket::next_ticket_nr] 
+	set ticket_nr $next_ticket_nr
 	set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
     }
 
@@ -788,6 +780,7 @@ if {!$sla_exists_p} {
 	ad_returnredirect request-sla
     }
 }
+
 
 ad_form \
     -name $form_id \

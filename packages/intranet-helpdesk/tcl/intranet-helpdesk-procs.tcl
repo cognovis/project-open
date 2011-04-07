@@ -262,25 +262,35 @@ namespace eval im_ticket {
     ad_proc -public next_ticket_nr {
     } {
         Create a new ticket_nr. Calculates the max() of current
-	ticket_nrs and add +1
+	ticket_nrs and add +1, or just use a sequence for the next value.
 
         @author frank.bergmann@project-open.com
-	@return ticket_nr +1
+	@return next ticket_nr
     } {
-#	return [db_nextval im_ticket_seq]
+	set next_ticket_nr_method [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "NextTicketNrMethod" -default "sequence"]
 
-	set last_ticket_nr [db_string last_pnr "
+	switch $next_ticket_nr_method {
+	    sequence {
+		# Make sure everybody _really_ gets a different NR!
+		return [db_nextval im_ticket_seq]
+	    }
+	    default {
+		# Try to avoid any "holes" in the list of ticket NRs
+		set last_ticket_nr [db_string last_pnr "
 		select	max(project_nr::integer)
 		from	im_projects
 		where	project_type_id = [im_project_type_ticket]
 			and project_nr ~ '^\[0-9\]+$'
-	" -default 0]
+	        " -default 0]
 
-	# Make sure the counter is not behind the current value
-	while {[db_string lv "select im_ticket_seq.last_value"] < $last_ticket_nr} {
-	    set ttt [db_string update "select nextval('im_ticket_seq')"]
+		# Make sure the counter is not behind the current value
+		while {[db_string lv "select im_ticket_seq.last_value"] < $last_ticket_nr} {
+		    set ttt [db_string update "select nextval('im_ticket_seq')"]
+		}
+		return [expr $last_ticket_nr + 1]
+		
+	    }
 	}
-	return [expr $last_ticket_nr + 1]
     }
 
 

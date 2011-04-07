@@ -28,6 +28,7 @@ ad_page_contract {
     { customer_id:integer 0 }
     { project_status_id:integer 0 }
     { project_type_id:integer 0 }
+    { employee_cost_center_id 0 }
     { program_id 0 }
     { zoom "" }
     { max_col 20 }
@@ -40,8 +41,7 @@ ad_page_contract {
 
 im_permission_flush
 
-#set user_id [ad_maybe_redirect_for_registration]
-set user_id 624
+set user_id [ad_maybe_redirect_for_registration]
 if {![im_permission $user_id "view_projects_all"]} {
     ad_return_complaint 1 "You don't have permissions to see this page"
     ad_script_abort
@@ -59,16 +59,30 @@ set show_context_help_p 0
 regsub -all {%20} $top_vars " " top_vars
 regsub -all {\+} $top_vars " " top_vars
 
+set restrict_to_user_department_by_default_p [parameter::get_from_package_key -package_key "intranet-resource-management" -parameter RestrictToUserDepartmentByDefaultP -default 0]
+
+
 # ------------------------------------------------------------
 # Start and End-Dat as min/max of selected projects.
 # Note that the sub-projects might "stick out" before and after
 # the main/parent project.
 
-if {"" == $start_date} {
+
+if {$restrict_to_user_department_by_default_p} {
+    if {0 == $employee_cost_center_id && "" == $start_date && "" == $end_date} {
+        set employee_cost_center_id [db_string current_user_cc "
+		select	department_id
+		from	im_employees
+		where	employee_id = :user_id
+        " -default ""]
+    }
+}
+
+if {0 == $start_date || "" == $start_date} {
     set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
 }
 
-if {"" == $end_date} {
+if {0 == $end_date || "" == $end_date} {
     set end_date [db_string end_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
 }
 
@@ -81,7 +95,10 @@ set html [im_resource_mgmt_resource_planning \
 	-end_date $end_date \
 	-top_vars $top_vars \
 	-project_id $project_id \
+	-project_status_id $project_status_id \
+	-project_type_id $project_type_id \
 	-customer_id $customer_id \
+	-employee_cost_center_id $employee_cost_center_id \
 	-zoom $zoom \
 	-max_col $max_col \
 	-max_row $max_row \
@@ -105,26 +122,6 @@ set filter_html "
 [export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
 <table border=0 cellpadding=0 cellspacing=1>
 "
-
-if {0} {
-    append filter_html "
-  <tr>
-    <td class=form-label>[_ intranet-core.Project_Status]:</td>
-    <td class=form-widget>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
-  </tr>
-    "
-}
-
-if {0} {
-append filter_html "
-  <tr>
-    <td class=form-label>[_ intranet-core.Project_Type]:</td>
-    <td class=form-widget>
-      [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
-    </td>
-  </tr>
-"
-}
 
 if {0} {
     append filter_html "
@@ -171,8 +168,6 @@ if {1} {
     "
 }
 
-
-
 append filter_html "
   <tr>
 	<td class=form-label>[_ intranet-core.Start_Date]</td>
@@ -187,6 +182,38 @@ append filter_html "
 	</td>
   </tr>
 "
+
+
+if {1} {
+    append filter_html "
+  <tr>
+    <td class=form-label>[_ intranet-core.Department]:</td>
+    <td class=form-widget>[im_cost_center_select -include_empty 1 -include_empty_name "All" -department_only_p 1 employee_cost_center_id $employee_cost_center_id]</td>
+  </tr>
+    "
+}
+
+if {1} {
+    append filter_html "
+  <tr>
+    <td class=form-label>[_ intranet-core.Project_Status]:</td>
+    <td class=form-widget>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
+  </tr>
+    "
+}
+
+if {1} {
+append filter_html "
+  <tr>
+    <td class=form-label>[_ intranet-core.Project_Type]:</td>
+    <td class=form-widget>
+      [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
+    </td>
+  </tr>
+"
+}
+
+
 
 set show_all_employees_checked ""
 if {1 == $show_all_employees_p} { set show_all_employees_checked "checked" }

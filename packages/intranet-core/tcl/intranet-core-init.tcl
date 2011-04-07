@@ -3,7 +3,7 @@ ad_library {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 16 August, 2007
-    @cvs-id $Id: intranet-core-init.tcl,v 1.12 2011/02/28 11:38:29 po34demo Exp $
+    @cvs-id $Id: intranet-core-init.tcl,v 1.13 2011/04/04 09:59:12 po34demo Exp $
 }
 
 # Create a global cache for im_profile entries.
@@ -49,6 +49,7 @@ set object_types {
     im_project
     im_repeating_cost
     im_report
+    im_risk
     im_sla_parameter
     im_ticket
     im_ticket_queue

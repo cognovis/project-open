@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: attribute-new.tcl,v 1.19 2011/03/09 12:42:11 po34demo Exp $
+    @cvs-id $Id: attribute-new.tcl,v 1.20 2011/04/06 10:42:50 po34demo Exp $
 } {
     {object_type ""}
     attribute_id:integer,optional
@@ -125,6 +125,8 @@ foreach table_n $all_tables {
     }
 }
 
+set all_attributes [lsort $all_attributes]
+
 set existing_attributes [db_list existing_attributes "
 	select
 		attribute_name 
@@ -193,6 +195,7 @@ foreach attr $all_attributes {
 set form_fields {
     {attribute_id:key}
 }
+
 
 # Completely new attribute or
 # modify an already existing attribute?
@@ -515,21 +518,19 @@ set perm_html ""
 set map_html ""
 
 if {[info exists attribute_id]} {
+
     set perm_params [list \
-		     [list attribute_id $attribute_id] \
 		     [list nomaster_p 1] \
     ]
     set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
 
 
+
     set map_params [list \
-		     [list object_type $object_type] \
 		     [list nomaster_p 1] \
     ]
-    set map_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/attribute-type-map"]
+    set map_html [ad_parse_template -params $map_params "/packages/intranet-dynfield/www/attribute-type-map"]
 }
-
-
 
 
 

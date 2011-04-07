@@ -110,7 +110,7 @@ create table im_tickets (
 	-- Provider says ticket is done
 	ticket_done_date		timestamptz,
 	-- Customer confirms ticket is done
-	ticket_signoff_date		timestamptz
+	ticket_signoff_date		timestamptz,
 
 	ticket_description		text,
 	ticket_customer_deadline	timestamptz,
@@ -627,7 +627,7 @@ SELECT im_category_hierarchy_new(30011, 30000);
 
 SELECT im_category_new(30012, 'Customer review', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30012, 30000);
--
+
 SELECT im_category_new(30014, 'Quoting', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30014, 30000);
 
@@ -1588,7 +1588,7 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_dept_id', 'Department', '
 -- Unused fields
 --
 
--- ticket_service_id                | integer                  |
+	-- ticket_service_id                | integer                  |
 -- ticket_hardware_id               | integer                  |
 -- ticket_application_id            | integer                  |
 -- ticket_queue_id                  | integer                  |
