@@ -598,6 +598,7 @@ ad_proc -public im_project_options {
     {-member_user_id 0}
     {-company_id 0}
     {-project_id 0}
+    {-no_conn_p 0}
 } { 
     Get a list of projects
 } {
@@ -608,7 +609,10 @@ ad_proc -public im_project_options {
 
     set current_project_id $project_id
     set super_project_id $project_id
-    set current_user_id [ad_get_user_id]
+
+    if {!$no_conn_p} {
+	set current_user_id [ad_get_user_id]
+    }
     set max_project_name_len 50
 
     # Make sure we don't get a syntax error in the query
@@ -640,19 +644,24 @@ ad_proc -public im_project_options {
 	    incr ctr
 	}
 
-	# Check permissions for showing subprojects
-	set perm_sql "
+	if {$no_conn_p} {
+	    set perm_sql "im_projects" 
+	} else {
+
+	    # Check permissions for showing subprojects
+	    set perm_sql "
 		(select p.*
 		from    im_projects p,
 			acs_rels r
 		where   r.object_id_one = p.project_id
 			and r.object_id_two = :current_user_id
 		)
-	"
-	if {[im_permission $current_user_id "view_projects_all"]} {
-	    set perm_sql "im_projects" 
-	}
+	    "
 
+	    if {[im_permission $current_user_id "view_projects_all"]} {
+		set perm_sql "im_projects" 
+	    }
+	}
 
 	set subprojects [db_list subprojects "
 		select	children.project_id
@@ -727,9 +736,14 @@ ad_proc -public im_project_options {
     }
 
     # Disable the restriction to "my projects" if the user can see all projects.
-    if {[im_permission $current_user_id "view_projects_all"]} { 
-        set member_user_id 0
-    } 
+    if {!$no_conn_p} { 
+	if {[im_permission $current_user_id "view_projects_all"]} { 
+	    set member_user_id 0
+	} 
+    } else {
+	set member_user_id 0
+	
+    }
 
     if {0 != $member_user_id && "" != $member_user_id} {
 	lappend p_criteria "p.project_id in (
@@ -742,17 +756,18 @@ ad_proc -public im_project_options {
     }
 
     # Unprivileged members can only see the projects they're participating
-    if {![im_permission $current_user_id view_projects_all]} {
-	lappend p_criteria "p.project_id in (
+    if {!$no_conn_p} {
+	if {![im_permission $current_user_id view_projects_all]} {
+	    lappend p_criteria "p.project_id in (
 					select	object_id_one
 					from	acs_rels
 					where	object_id_two = :current_user_id
 	)"
-	# No restriction on parent project membership, because parent
-	# projects always have the same members as sub-projects.
+	    # No restriction on parent project membership, because parent
+	    # projects always have the same members as sub-projects.
+	}
     }
-
-
+    
     # -----------------------------------------------------------------
     # Compose the SQL
 
@@ -825,10 +840,15 @@ ad_proc -public im_project_options {
 			p.tree_sortkey
     "
 
-    db_multirow multirow hours_timesheet $sql
-#   multirow_sort_tree multirow project_id parent_id sort_order
+    if {$no_conn_p} {
+	db_multirow -local multirow hours_timesheet $sql
+    } else {
+	db_multirow multirow hours_timesheet $sql
+    }
+
     multirow_sort_tree -nosort multirow project_id parent_id sort_order
     set options [list]
+
     template::multirow foreach multirow {
 
 	set indent ""

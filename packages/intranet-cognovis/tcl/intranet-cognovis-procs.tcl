@@ -14,48 +14,103 @@ ad_library {
 }
 
 
+namespace eval intranet_cognovis {}
 
-ad_proc -public im_project_member_options {
-    {-include_empty 1}
-    project_id
+ad_proc -public intranet_cognovis::get_all_open_project_members {
+} {
+    returns a [list] of all the users who are in projects with an OPEN status (or subcategories of open).
+} {
+
+    set project_list [im_project_options -include_empty 0 -project_status_id [im_project_status_open] -exclude_tasks_p 1 -no_conn_p 1]
     
-} {
-    Return members related to a group or task 
-    @author iuri sampaio iuri.sampaio@gmail.com
-    @date 2010-10-11
-} {
-
-#    ns_log Notice "Running API im_project_member_options $project_id"
-
-    set options [db_list_of_lists select_members {
-	select
-	im_name_from_user_id(u.user_id) as name,
-	u.user_id
-	from
-	users u,
-	acs_rels rels
-	LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
-	LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
-	group_member_map m,
-	membership_rels mr
-	where
-	rels.object_id_one = :project_id
-	and rels.object_id_two = u.user_id
-	and mr.member_state = 'approved'
-	and u.user_id = m.member_id
-	and mr.member_state = 'approved'
-	and m.group_id = acs__magic_object_id('registered_users'::character varying)
-	and m.rel_id = mr.rel_id
-	and m.container_id = m.group_id
-	and m.rel_type = 'membership_rel'	
-	order by lower(im_name_from_user_id(u.user_id))
-    }]
-
-    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
-    return $options
+    set user_ids [list]
+    
+    foreach element $project_list {
+	set project_id [lindex $element 1]
+	
+	set members [db_list_of_lists select_members {
+	    select
+	    im_name_from_user_id(u.user_id) as name,
+	    u.user_id
+	    from
+	    users u,
+	    acs_rels rels
+	    LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
+	    LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
+	    group_member_map m,
+	    membership_rels mr
+	    where
+	    rels.object_id_one = :project_id
+	    and rels.object_id_two = u.user_id
+	    and mr.member_state = 'approved'
+	    and u.user_id = m.member_id
+	    and mr.member_state = 'approved'
+	    and m.group_id = acs__magic_object_id('registered_users'::character varying)
+	    and m.rel_id = mr.rel_id
+	    and m.container_id = m.group_id
+	    and m.rel_type = 'membership_rel'	
+	    order by lower(im_name_from_user_id(u.user_id))
+	}]
+	
+	foreach element $members {
+	    set user_id_exists_p 0
+	    foreach id $user_ids {
+		if {$id eq [lindex $element 1]} {
+		    set user_id_exists_p 1
+		}
+	    }
+	    
+	    if {$user_id_exists_p eq 0} {
+		lappend user_ids [lindex $element 1]
+	    }
+	}
+    }
+    
+    return $user_ids
 }
 
 
+ad_proc -public intranet_cognovis::remind_members {
+} {
+    Goes through the list of members in members_list and check if they have logged their hours within the last week.
+} {
+
+    set member_list [intranet_cognovis::get_all_open_project_members]
+   
+    set interval [db_string select_interval { select now() - interval '7 days' from dual; }]
+    
+    foreach member_id $member_list {
+	set logged_hours_p [db_string select_hours {
+	    select count(*) from im_hours where day > now() -interval '7 days' and user_id = :member_id
+	}]
+		
+	if {$logged_hours_p eq 0} {
+	    
+	    set member_email [im_email_from_user_id $member_id]
+	    
+	    set from_addr [ad_admin_owner]
+	    
+	    db_1row select_system_url {
+		select attr_value as system_url from apm_parameter_values where parameter_id = (
+		       select parameter_id from apm_parameters where package_key = 'acs-kernel' and parameter_name = 'SystemURL' );
+	    }
+	    
+	    set hour_logging_url "${system_url}/intranet-timesheet2/hours/index"
+	    db_1row select_package_id { 
+		select package_id from apm_packages where package_key = 'intranet-core'
+	    }
+
+	    acs_mail_lite::send -send_immediately \
+		-to_addr $member_email \
+		-from_addr $from_addr \
+		-subject "[lang::util::localize "#intranet-cognovis.You_did_not_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" \
+		-body "[lang::util::localize "#intranet-cognovis.Please_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" 
+	}
+    }
+    
+
+
+}
 
 
 ad_proc -public im_project_base_data_cognovis_component {
@@ -299,5 +354,3 @@ ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
 	company_id company_type_id company_status_id company_name return_url 
     }] 
 } 
-
-

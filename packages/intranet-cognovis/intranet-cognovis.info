@@ -25,6 +25,7 @@
 	<callbacks>
         </callbacks>
         <parameters>
+            <parameter datatype="number" min_n_values="1" max_n_values="1" name="RemindMembersToLogHoursP" default="0" description="Remind people to log their hours, if they have not done so. The default is 0. To enable it set 1 as value. To disable it set 0 as value." />
         <!-- No version parameters -->
         </parameters>
 
