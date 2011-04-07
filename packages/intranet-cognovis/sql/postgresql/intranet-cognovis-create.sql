@@ -1,8 +1,6 @@
--- intranet-cognovis-create.sql                                                                                                                           
+-- intranet-cognovis-create.sql
 
 SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/intranet-cognovis-create.sql','');
-
-
 
 -- Project Base Data Component                                                                                                                              
 SELECT im_component_plugin__new (
@@ -276,21 +274,26 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_name'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
-	       null,					-- attribute_id
-	       ''im_dynfield_attribute'',		-- object_type
-	       now(),					-- creation_date
-	       null,					-- creation_user
-	       null,					-- creation_ip
-	       null,					-- context_id				
-	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
-	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
-	 );
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+
+	IF v_count = 0 THEN 
+		PERFORM im_dynfield_attribute__new_only_dynfield (
+			null,					-- attribute_id
+			''im_dynfield_attribute'',		-- object_type
+			now(),					-- creation_date
+			null,					-- creation_user
+			null,					-- creation_ip
+			null,					-- context_id
+			v_acs_attribute_id,			-- acs_attribute_id
+			''textbox_medium'',			-- widget
+			''f'',					-- deprecated_p
+			''t''					-- already_existed_p
+		);
+	END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -315,21 +318,26 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_nr'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
-	       null,					-- attribute_id
-	       ''im_dynfield_attribute'',		-- object_type
-	       now(),					-- creation_date
-	       null,					-- creation_user
-	       null,					-- creation_ip
-	       null,					-- context_id				
-	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
-	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
-	 );
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
+	   	   null,					-- attribute_id
+		   ''im_dynfield_attribute'',		-- object_type
+		   now(),					-- creation_date
+		   null,					-- creation_user
+		   null,					-- creation_ip
+		   null,					-- context_id
+		   v_acs_attribute_id,			-- acs_attribute_id
+		   ''textbox_medium'',			-- widget
+		   ''f'',					-- deprecated_p
+		   ''t''					-- already_existed_p
+            );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -368,21 +376,26 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_path'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
-	       null,					-- attribute_id
-	       ''im_dynfield_attribute'',		-- object_type
-	       now(),					-- creation_date
-	       null,					-- creation_user
-	       null,					-- creation_ip
-	       null,					-- context_id				
-	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
-	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
-	 );
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
+	   	   null,					-- attribute_id
+		   ''im_dynfield_attribute'',		-- object_type
+		   now(),					-- creation_date
+		   null,					-- creation_user
+		   null,					-- creation_ip
+		   null,					-- context_id				
+		   v_acs_attribute_id,			-- acs_attribute_id
+		   ''textbox_medium'',			-- widget
+		   ''f'',					-- deprecated_p
+		   ''t''					-- already_existed_p
+	    );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -407,21 +420,26 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_id'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
-	       null,					-- attribute_id
-	       ''im_dynfield_attribute'',		-- object_type
-	       now(),					-- creation_date
-	       null,					-- creation_user
-	       null,					-- creation_ip
-	       null,					-- context_id				
-	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
-	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
-	 );
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
+	   	   null,					-- attribute_id
+		   ''im_dynfield_attribute'',		-- object_type
+		   now(),					-- creation_date
+		   null,					-- creation_user
+		   null,					-- creation_ip
+		   null,					-- context_id				
+		   v_acs_attribute_id,			-- acs_attribute_id
+		   ''textbox_medium'',			-- widget
+		   ''f'',					-- deprecated_p
+		   ''t''					-- already_existed_p
+	    );
+	END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -460,10 +478,14 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_type_id'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
@@ -474,7 +496,8 @@ BEGIN
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	    );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -512,21 +535,26 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''start_date'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	    );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -602,10 +630,14 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_budget'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
@@ -616,7 +648,8 @@ BEGIN
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	   );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -654,10 +687,14 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_project_nr'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
@@ -668,7 +705,8 @@ BEGIN
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	    );
+	 END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -692,10 +730,14 @@ CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_count			integer;
 BEGIN
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''description'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	SELECT count(*) INTO v_count FROM im_dynfield_attributes WHERE acs_attribute_id = v_acs_attribute_id;
+	
+	IF v_count = 0 THEN
+	   PERFORM im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
@@ -706,7 +748,8 @@ BEGIN
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	    );
+	END IF;
 
 	 RETURN 0;
 END;' language 'plpgsql';
@@ -879,7 +922,7 @@ SELECT im_component_plugin__new (
        null,
        null,
        'Timesheet Task Info Component',
-       'intranet-timesheet2-tasks',
+       'intranet-cognovis',
        'left', 
        '/intranet-cognovis/tasks/view', 
        null,
@@ -1786,10 +1829,10 @@ END;' language 'plpgsql';
 
 create or replace function im_numeric_from_id(float)
 returns varchar as '
-DECLARE                                                                                                                                                      
-        v_result        alias for $1;
-BEGIN                                                                                                                                                        
-        return v_result::varchar;
+DECLARE
+	v_result        alias for $1;
+BEGIN
+	return v_result::varchar;
 END;' language 'plpgsql';
 
 update im_dynfield_widgets set deref_plpgsql_function = 'im_numeric_from_id' where widget_name ='numeric';
