@@ -435,6 +435,7 @@ db_multirow -extend {label alt_icon icon last_modified_pretty content_size_prett
                 set download_url "/file/$object_id/[ad_urlencode $title][file extension $name]"
             } else {
                 set download_url "/file/$object_id/[ad_urlencode $name]"
+		set file_url $download_url
             }
         }
 
