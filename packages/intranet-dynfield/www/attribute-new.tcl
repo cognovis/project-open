@@ -1,6 +1,7 @@
 ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2004-07-28
 } {
     {object_type ""}
@@ -123,6 +124,8 @@ foreach table_n $all_tables {
     }
 }
 
+set all_attributes [lsort $all_attributes]
+
 set existing_attributes [db_list existing_attributes "
 	select
 		attribute_name 
@@ -191,6 +194,7 @@ foreach attr $all_attributes {
 set form_fields {
     {attribute_id:key}
 }
+
 
 # Completely new attribute or
 # modify an already existing attribute?
@@ -524,21 +528,20 @@ set perm_html ""
 set map_html ""
 
 if {[info exists attribute_id]} {
+
     set perm_params [list \
-		     [list attribute_id $attribute_id] \
 		     [list nomaster_p 1] \
     ]
     set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
 
 
+
     set map_params [list \
-		     [list object_type $object_type] \
 		     [list nomaster_p 1] \
     ]
-    set map_html [ad_parse_template "/packages/intranet-dynfield/www/attribute-type-map"]
+
+    set map_html [ad_parse_template -params $map_params "/packages/intranet-dynfield/www/attribute-type-map"]
 }
-
-
 
 
 

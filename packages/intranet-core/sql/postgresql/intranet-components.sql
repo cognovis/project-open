@@ -444,13 +444,29 @@ SELECT	im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Home Project Component',	-- plugin_name
+	'Home Project Portlet',		-- plugin_name
 	'intranet-core',		-- package_name
 	'left',				-- location
 	'/intranet/index',		-- page_url
 	null,				-- view_name
 	15,				-- sort_order
 	'im_project_personal_active_projects_component'	-- component_tcl
+);
+
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Home ToDo Portlet',		-- plugin_name
+	'intranet-core',		-- package_name
+	'left',				-- location
+	'/intranet/index',		-- page_url
+	null,				-- view_name
+	14,				-- sort_order
+	'im_personal_todo_component'	-- component_tcl
 );
 
 
@@ -469,6 +485,25 @@ SELECT	im_component_plugin__new (
 	null,				-- view_name
 	85,				-- sort_order
 	'im_notification_user_component -user_id $user_id'	-- component_tcl
+);
+
+
+-- Localization
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+
+	'User Localization',		-- plugin_name
+	'intranet-core',		-- package_name
+	'left',				-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	55,				-- sort_order
+	'im_user_localization_component $user_id $return_url'	-- component_tcl
 );
 
 

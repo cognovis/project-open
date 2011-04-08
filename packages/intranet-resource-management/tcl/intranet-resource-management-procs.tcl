@@ -161,6 +161,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
     {-top_vars "year week_of_year day"}
     {-left_vars "cell"}
     {-project_id ""}
+    {-project_status_id ""}
+    {-project_type_id ""}
+    {-employee_cost_center_id "" }
     {-user_id ""}
     {-customer_id 0}
     {-return_url ""}
@@ -238,7 +241,21 @@ ad_proc -public im_resource_mgmt_resource_planning {
     set criteria [list]
     if {"" != $customer_id && 0 != $customer_id} { lappend criteria "parent.company_id = :customer_id" }
     if {"" != $project_id && 0 != $project_id} { lappend criteria "parent.project_id in ([join $project_id ", "])" }
+    if {"" != $project_status_id && 0 != $project_status_id} { 
+	lappend criteria "parent.project_status_id in ([join [im_sub_categories $project_status_id] ", "])" 
+    }
+    if {"" != $project_type_id && 0 != $project_type_id} { 
+	lappend criteria "parent.project_type_id in ([join [im_sub_categories $project_type_id] ", "])" 
+    }
     if {"" != $user_id && 0 != $user_id} { lappend criteria "u.user_id in ([join $user_id ","])" }
+    if {"" != $employee_cost_center_id && 0 != $employee_cost_center_id} { 
+	lappend criteria "u.user_id in (
+		select	employee_id
+		from	im_employees
+		where	department_id = :employee_cost_center_id
+	)"
+    }
+
 
     set where_clause [join $criteria " and\n\t\t\t"]
     if { ![empty_string_p $where_clause] } {

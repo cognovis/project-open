@@ -75,12 +75,13 @@ if {$ticket_count <= 1} {
 
 
 
+set ticket_urls [join $ticket_url_list "\n"]
 
 set message [lang::message::lookup "" intranet-helpdesk.Closed_ticket_msg "
 Dear {first_names},
 
 We have closed the following ticket(s):
-[join $ticket_url_list "\n"]
+%ticket_urls%
 
 Best regards
 {sender_first_names}
@@ -100,19 +101,14 @@ set actions [list]
 # set assoc_msg [lang::message::lookup {} intranet-helpdesk.New_Association {Associated with new Object}]
 # lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {return_url {tid $ticket_id}}] ""
 
-set stakeholder_sql "
-	select	s.*,
-		im_email_from_user_id(s.user_id) as email
-	from	(
+set stakeholder_inner_sql "
 		-- customer contacts of the tickets
-		select	ticket_customer_contact_id as user_id,
-			im_name_from_user_id(ticket_customer_contact_id) as user_name
+		select	ticket_customer_contact_id as user_id
 		from	im_tickets t
-		where	 t.ticket_id in ([join $tid ","])
+		where	t.ticket_id in ([join $tid ","])
 		UNION
 		-- direct members of the tickets
-		select	u.user_id,
-			im_name_from_user_id(user_id) as user_name
+		select	u.user_id
 		from	acs_rels r,
 			im_tickets t,
 			users u
@@ -121,11 +117,27 @@ set stakeholder_sql "
 			t.ticket_id in ([join $tid ","])
 		UNION
 		-- authors of the forum topics related to the tickets
-		select	ft.owner_id as user_id,
-			im_name_from_user_id(ft.owner_id) as user_name
+		select	ft.owner_id as user_id
 		from	im_forum_topics ft
 		where	ft.object_id in ([join $tid ","])
-		) s
+"
+
+set stakeholder_sql "
+	select	*
+	from	(
+		select	s.user_id,
+			im_email_from_user_id(s.user_id) as email,
+			im_name_from_user_id(s.user_id) as user_name
+		from	($stakeholder_inner_sql) s
+	UNION
+		select	note_id as user_id,
+			n.note as email,
+			n.note as user_name
+		from	($stakeholder_inner_sql) s,
+			im_notes n
+		where	s.user_id = n.object_id and
+			n.note_type_id = [im_note_type_email]
+		) u
 	where
 		user_id != 0
 	order by

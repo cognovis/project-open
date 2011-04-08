@@ -103,10 +103,12 @@ db_foreach column_list_sql $column_sql {
 	set col_url [export_vars -base "index" {{order_by $column_name}}]
 
 	append col_url "&ticket_sla_id=$ticket_sla_id"
-	append col_url "&ticket_status_id=$ticket_status_id"
-	append col_url "&ticket_type_id=$ticket_type_id"
 	append col_url "&ticket_queue_id=$ticket_queue_id"
 	append col_url "&assignee_id=$assignee_id"
+
+#       fraber 110404: These variables are now DynFields
+#	append col_url "&ticket_status_id=$ticket_status_id"
+#	append col_url "&ticket_type_id=$ticket_type_id"
 
 	# Append the DynField values from the Filter as pass-through variables
 	# so that sorting won't alter the selected tickets
@@ -189,6 +191,9 @@ db_foreach creator_option "
 	order by creator_name
 " { lappend ticket_creator_options [list $creator_name $creator_id] }
 
+set ticket_creator_options [linsert $ticket_creator_options 0 [list "" ""]]
+
+
 # No SLA defined for this user?
 # Allow the user to request a new SLA
 if {!$sla_exists_p} {
@@ -222,8 +227,8 @@ ad_form \
 
 if {$view_tickets_all_p} {  
     ad_form -extend -name $form_id -form {
-	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-helpdesk"}} }
-	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-helpdesk"} } }
+	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-core"}} }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-core"} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
 	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
 	{ticket_creator_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Creator Creator]"} {options $ticket_creator_options}}

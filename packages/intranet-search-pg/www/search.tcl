@@ -17,7 +17,7 @@ ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @author Frank Bergmann <frank.bergmann@project-open.com>
     @creation-date May 20th, 2005
-    @cvs-id $Id: search.tcl,v 1.28 2009/07/23 13:58:23 l10n Exp $
+    @cvs-id $Id: search.tcl,v 1.29 2011/04/05 14:24:34 po34demo Exp $
 
     This search page uses the "TSearch2" full text index (FTI)
     and the P/O permission system to locate suitable business
@@ -449,12 +449,7 @@ set sql "
 		(	select	*
 			from	im_search_object_types 
 			where	$object_type_where
-		) sot
-		left outer join (
-			select	*
-			from	im_biz_object_urls
-			where	url_type = 'view'
-		) bou on (sot.object_type = bou.object_type),
+		) sot,
 		(
 			select	project_id as object_id,
 				'im_project' as object_type
@@ -485,9 +480,16 @@ set sql "
                                 'content_item' as object_type
                         from    cr_items c
                         where   1=1
-		) readable_biz_objs
+		) readable_biz_objs,
+		acs_objects o
+		LEFT OUTER JOIN (
+			select	*
+			from	im_biz_object_urls
+			where	url_type = 'view'
+		) bou ON (o.object_type = bou.object_type)
 	where
-		so.object_type_id = sot.object_type_id
+		readable_biz_objs.object_id = o.object_id 
+		and so.object_type_id = sot.object_type_id
 		and sot.object_type = aot.object_type
 		and so.biz_object_id = readable_biz_objs.object_id
 		and so.fti @@ to_tsquery('default',:q)
