@@ -11,7 +11,7 @@ ad_page_contract {
     {project_name ""}
     {workflow_key ""}
     {return_url ""}
-
+    {project_id:integer}
 }
 
 # -----------------------------------------------------------
@@ -199,6 +199,7 @@ if {[exists_and_not_null project_id]} {
 
 ns_log Notice "/intranet-cognovis/www/projects/project-ae: im_dynfield::append_attributes_to_form -object_subtype_id $dynfield_project_type_id -object_type $object_type -form_id $form_id -object_id $dynfield_project_id"
 
+ds_comment "calling append attributes to form"
 im_dynfield::append_attributes_to_form \
     -object_subtype_id $dynfield_project_type_id \
     -object_type $object_type \
@@ -245,7 +246,7 @@ ad_form -extend -name $form_id -new_request {
 	{"Parent Project = Project"}
     }
     {end_date
-	{[expr {$end_date > $start_date}]}
+	{[expr {[template::util::date get_property sql_date $end_date] > [template::util::date get_property sql_date $start_date]}]}
 	{[_ intranet-core.lt_End_date_must_be_afte]}
     }
     {percent_completed
@@ -376,7 +377,7 @@ ad_form -extend -name $form_id -new_request {
 	# -----------------------------------------------------------------
 	# -----------------------------------------------------------------
 	# Store dynamic fields
-	
+
 	ns_log Notice "/intranet-cognovis/projects/project-ae: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
 	if {[info exists start_date]} {
 	    set start_date [template::util::date get_property sql_date $start_date]
@@ -433,12 +434,13 @@ ad_form -extend -name $form_id -new_request {
     # Store dynamic fields
     
     ns_log Notice "/intranet/projects/new: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
+
+
     im_dynfield::attribute_store \
 	-object_type $object_type \
 	-object_id $project_id \
 	-form_id $form_id
     
-
     # Write Audit Trail
     im_project_audit -project_id $project_id
 
