@@ -55,6 +55,8 @@ set param_hash(PasswordHash) ""
 set param_hash(ServerType) $ldap_type
 set param_hash(GroupMap) $group_map
 
+#ad_return_complaint 1 "im_sysconfig_create_edit_authority -authority_name $authority_name -parameters [array get param_hash]"
+
 array set result_hash [im_sysconfig_create_edit_authority \
 		 -authority_name $authority_name \
 		 -parameters [array get param_hash] \
