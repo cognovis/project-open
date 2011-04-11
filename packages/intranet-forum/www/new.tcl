@@ -19,6 +19,7 @@ ad_page_contract {
     <li>In order to reply to an existing message you have to specify parent_id!=0
     </ul>
     @author frank.bergmann@project-open.com
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
 } {
     {topic_id:integer 0}
     {parent_id:integer 0}
@@ -414,6 +415,7 @@ if {[string equal $action_type "new_message"]} {
 
 set html_p "f"
 
+if {0} {
 append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$topic_type [_ intranet-forum.Body]</td>
@@ -421,7 +423,32 @@ append table_body "
 	    <textarea name=message rows=5 cols=50 wrap=[im_html_textarea_wrap]>$message</textarea>
 	  </td>
 	</tr>\n"
+} else {
 
+    if {[template::util::richtext::get_property format $message] eq "text/html"} {
+	set message [template::util::richtext::get_property html_value $message]
+    }
+
+    append table_body "
+	<tr $bgcolor([expr $ctr % 2])>
+	  <td>$topic_type [_ intranet-forum.Body]</td>
+	  <td>
+           <textarea name=\"message\" id=\"message\">$message</textarea></span>
+           <script type='text/javascript'>document.write(\"<input name='message.format' value='text/html' type='hidden'>\");</script>
+           <noscript><div><label for=\"message.format\"><span class=\"form-widget\">Format: <select name=\"message.format\" id=\"message.format\" >
+             <option value=\"text/enhanced\">Enhanced Text</option>
+             <option value=\"text/plain\">Plain Text</option>
+             <option value=\"text/fixed-width\">Fixed-width Text</option>
+             <option value=\"text/html\" selected=\"selected\">HTML</option>
+           </select></span></label></div></noscript>"
+
+    # Tell the blank-master to include the special stuff
+    # for the richtext widget in the page header
+    set ::acs_blank_master(xinha) 1
+    set ::acs_blank_master(xinha.plugins) ""
+    set ::acs_blank_master(xinha.options) "xinha_config.package_id = '[ad_conn package_id]';\n"
+    lappend ::acs_blank_master__htmlareas message
+}
 incr ctr
 
 
