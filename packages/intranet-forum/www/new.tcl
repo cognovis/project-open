@@ -427,6 +427,9 @@ append table_body "
 
     if {[template::util::richtext::get_property format $message] eq "text/html"} {
 	set message [template::util::richtext::get_property html_value $message]
+    } else {
+	set html_p "f"
+	set message [ad_convert_to_html -html_p $html_p -- $message]
     }
 
     append table_body "

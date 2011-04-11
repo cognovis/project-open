@@ -545,7 +545,6 @@ ad_proc -public im_forum_render_tind {
     }
 
     # Only allow plain text messages
-
     if {[template::util::richtext::get_property format $message] eq "text/html"} {
 	set message_text [template::util::richtext::get_property html_value $message]
     } else {
