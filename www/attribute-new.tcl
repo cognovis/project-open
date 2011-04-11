@@ -354,6 +354,7 @@ ad_form \
     -name attribute_form \
     -form $form_fields \
     -mode $form_mode \
+    -method POST \
     -new_request {
 } -edit_request {
 } -validate {
