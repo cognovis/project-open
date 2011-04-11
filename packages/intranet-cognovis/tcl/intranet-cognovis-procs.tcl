@@ -76,40 +76,37 @@ ad_proc -public intranet_cognovis::remind_members {
 } {
 
     set member_list [intranet_cognovis::get_all_open_project_members]
-   
+    
     set interval [db_string select_interval { select now() - interval '7 days' from dual; }]
     
     foreach member_id $member_list {
-	set logged_hours_p [db_string select_hours {
-	    select count(*) from im_hours where day > now() -interval '7 days' and user_id = :member_id
-	}]
+        set logged_hours_p [db_string select_hours {
+	        select count(*) from im_hours where day > now() -interval '7 days' and user_id = :member_id
+        }]
 		
-	if {$logged_hours_p eq 0} {
+        if {$logged_hours_p eq 0} {
+            
+            set member_email [im_email_from_user_id $member_id]
+            
+            set from_addr [ad_admin_owner]
+            
+            db_1row select_system_url {
+                select attr_value as system_url from apm_parameter_values where parameter_id = (
+		           select parameter_id from apm_parameters where package_key = 'acs-kernel' and parameter_name = 'SystemURL' );
+            }
 	    
-	    set member_email [im_email_from_user_id $member_id]
-	    
-	    set from_addr [ad_admin_owner]
-	    
-	    db_1row select_system_url {
-		select attr_value as system_url from apm_parameter_values where parameter_id = (
-		       select parameter_id from apm_parameters where package_key = 'acs-kernel' and parameter_name = 'SystemURL' );
-	    }
-	    
-	    set hour_logging_url "${system_url}/intranet-timesheet2/hours/index"
-	    db_1row select_package_id { 
-		select package_id from apm_packages where package_key = 'intranet-core'
-	    }
+            set hour_logging_url "${system_url}/intranet-timesheet2/hours/index"
+            db_1row select_package_id { 
+               		select package_id from apm_packages where package_key = 'intranet-core'
+            }
 
-	    acs_mail_lite::send -send_immediately \
-		-to_addr $member_email \
-		-from_addr $from_addr \
-		-subject "[lang::util::localize "#intranet-cognovis.You_did_not_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" \
-		-body "[lang::util::localize "#intranet-cognovis.Please_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" 
-	}
+            acs_mail_lite::send -send_immediately \
+                -to_addr $member_email \
+                -from_addr $from_addr \
+                -subject "[lang::util::localize "#intranet-cognovis.You_did_not_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" \
+                -body "[lang::util::localize "#intranet-cognovis.Please_log_hours#" [lang::user::locale -user_id $member_id -package_id $package_id -site_wide]]" 
+        }
     }
-    
-
-
 }
 
 

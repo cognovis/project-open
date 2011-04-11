@@ -7,6 +7,7 @@ ad_library {
     @creation-date 2011-04-06
 }
 
-ad_schedule_proc -thread t -schedule_proc ns_schedule_weekly [list 1 7 0] intranet_cognovis::remind_members
-
+if {[parameter::get_from_package_key -package_key "intranet-cognovis" -parameter "RemindMembersToLogHoursP" -default 0 ]} {
+     ad_schedule_proc -thread t -schedule_proc ns_schedule_weekly [list 1 7 0] intranet_cognovis::remind_members
+}
 #ad_schedule_proc -thread t 10 intranet_cognovis::remind_members
