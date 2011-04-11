@@ -131,9 +131,6 @@ callback im_category_after_update -object_id $category_id \
     -status "" -type "" -category_id $category_id \
     -category_type $category_type
 
-
-
-
 # ---------------------------------------------------------------
 # Update Translations
 # ---------------------------------------------------------------

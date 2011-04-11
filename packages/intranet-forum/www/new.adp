@@ -7,7 +7,6 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">forum</property>
 
-
 <form action=new-2 method=POST>
 <%= [eval "export_form_vars [join $export_var_list " "]"] %>
 

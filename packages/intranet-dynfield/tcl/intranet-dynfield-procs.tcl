@@ -1229,7 +1229,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     set translated_datatype [attribute::translate_datatype $datatype]
     if {$datatype == "number"} {
         set translated_datatype "float"
-    } elseif {$datatype == "date"} {
+    } elseif {$datatype == "timestamp"} {
         set translated_datatype "date"
     }
 

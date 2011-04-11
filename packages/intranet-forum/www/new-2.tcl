@@ -1,4 +1,4 @@
-# /packages/intranet-forum/www/intranet-forum/forum/new-2.tcl
+ # /packages/intranet-forum/www/intranet-forum/forum/new-2.tcl
 #
 # Copyright (C) 2003-2009 ]project-open[
 #
@@ -29,6 +29,7 @@ ad_page_contract {
     {scope "pm"}
     {subject:trim ""}
     {message:trim,html ""}
+    {message.format "text/plain"}
     {priority "5"}
     {asignee_id:integer 0}
     {due_date:array,date ""}
@@ -181,6 +182,12 @@ if {[string equal $actions "save"]} {
 
     set today [db_string get_sysdate "select sysdate from dual"]
 
+    set org_message ""
+    if {$include_topic_message_p} { set org_message "$message\n\n" }
+
+    if {${message.format} eq "text/html"} {
+	set message [list $message "text/html"]
+    }
     # update the information
     db_transaction {
 	db_dml topic_update "
@@ -497,10 +504,6 @@ while {"" != $parent_id && 0 != $parent_id && $ctr < 10} {
 # 0=none, 1=non-important, 2=important
 #
 
-set org_message ""
-if {$include_topic_message_p} { set org_message "$message\n\n" }
-
-
 set action_type_found 0
 switch $action_type {
     "new_message" { 
@@ -508,8 +511,9 @@ switch $action_type {
 	set importance 2
 	set subject [lang::message::lookup "" intranet-forum.New_topic_in_object2 "New $topic_type in $object_name: $subject"]
 	set message "
-$org_message
-[_ intranet-forum.lt_A_new_topic_type_has_]\n"
+<p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
+<hr />
+<p>$org_message</p>"
     }
 
     "reply_message" { 
@@ -517,8 +521,9 @@ $org_message
 	set importance 1
 	set subject [lang::message::lookup "" intranet-forum.Reply_to_topic2 "Reply to $topic_type in $object_name: $subject"]
 	set message "
-$org_message
-[_ intranet-forum.lt_A_new_topic_type_has_]\n"
+<p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
+<hr />
+<p>$org_message</p>"
     }
 }
 
@@ -529,51 +534,58 @@ if {!$action_type_found} {
 	    set importance 1
 	    set subject "[_ intranet-forum.Accepted] $topic_type in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_A_new_topic_type_has_]\n"
+<p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
+<hr />
+<p>$org_message</p>"
 	}
 	"reject" { 
 	    set importance 2
 	    set subject "[_ intranet-forum.Rejected] $topic_type in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_A_new_topic_type_has_]\n"
+<p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
+<hr />
+<p>$org_message</p>"
 	}
 	"clarify" { 
 	    set importance 2
 	    set subject "$topic_type [_ intranet-forum.needs_clarification] in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_The_asignee_of_the_to]\n"
+<p>[_ intranet-forum.lt_The_asignee_of_the_to]</p>
+<hr />
+<p>$org_message</p>"
 	}
 	"save" { 
 	    set importance 1
 	    set subject "[_ intranet-forum.Modified] $topic_type in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_The_topic_type_has_be]"
+<p>[_ intranet-forum.lt_The_topic_type_has_be]</p>
+<hr />
+<p>$org_message</p>"
 	}
 	"close" { 
 	    set importance 2
 	    set subject "[_ intranet-forum.Closed] $topic_type in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_The_topic_type_has_be_1]"
+<p>[_ intranet-forum.lt_The_topic_type_has_be_1]</p>
+<hr />
+<p>$org_message</p>"
 	}
 	"assign" { 
 	    set importance 1
 	    set subject "[_ intranet-forum.Assigned] $topic_type in $object_name: $subject"
 	    set message "
-$org_message
-[_ intranet-forum.lt_The_topic_type_has_be_2]"
+<p>[_ intranet-forum.lt_The_topic_type_has_be_2]</p>
+<hr />
+<p>$org_message</p>"
 	}
         default {
 	    #  probably mistake with a unknown action type in "edit_message"
 	    set importance 1
 	    set subject [lang::message::lookup "" intranet-forum.Changed_topic_in_object "Changed $topic_type in $object_name: $subject"]
 	    set message "
-$org_message
-[_ intranet-forum.lt_A_new_topic_type_has_]"
+<p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
+<hr />
+<p>$org_message</p>"
         }
     }
 }

@@ -167,7 +167,8 @@ db_foreach update_stakeholders $stakeholder_sql {
 		-to_addr $stakeholder_email \
 		-from_addr $sender_email \
 		-subject $subject \
-		-body "$msg_url\n\n$message"
+		-body "$msg_url<p />$message" \
+		-mime_type "text/html"
 	} errmsg]} {
 	    ad_return_error $subject "<p>Error sending out mail:</p><div><code>[ad_quotehtml $errmsg]</code></div>"
 	    ad_script_abort

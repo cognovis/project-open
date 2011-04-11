@@ -91,6 +91,7 @@ switch $submit {
     "Save" { 
 	db_transaction {
 	    db_exec_plsql new_component_plug {
+		SELECT 	im_component_plugin__new (
 		DECLARE
 		v_plugin_id integer;
 		BEGIN

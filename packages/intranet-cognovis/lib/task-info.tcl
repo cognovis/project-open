@@ -9,7 +9,7 @@ ad_page_contract {
 set task [::im::dynfield::Class get_instance_from_db -id $task_id]
 
 # Get the list of dynfields for this task based on the task_type_id
-set dynfield_ids [db_list dynfields "select m.attribute_id from im_dynfield_type_attribute_map m, im_dynfield_layout d  where object_type_id = 100 and m.attribute_id = d.attribute_id order by pos_y"]
+set dynfield_ids [db_list dynfields "select m.attribute_id from acs_attributes aa, im_dynfield_attributes a, im_dynfield_type_attribute_map m, im_dynfield_layout d  where object_type_id = 100 and m.attribute_id = d.attribute_id and aa.attribute_id = a.acs_attribute_id and a.attribute_id = m.attribute_id and aa.object_type = 'im_timesheet_task' order by pos_y"]
 
 # Initialize task information 
 template::multirow create task_info heading field value

@@ -545,8 +545,13 @@ ad_proc -public im_forum_render_tind {
     }
 
     # Only allow plain text messages
-    set html_p "f"
-    set message_text [ad_convert_to_html -html_p $html_p -- $message]
+    if {[template::util::richtext::get_property format $message] eq "text/html"} {
+	set message_text [template::util::richtext::get_property html_value $message]
+    } else {
+	set html_p "f"
+	set message_text [ad_convert_to_html -html_p $html_p -- $message]
+    }
+
     append tind_html "
 		<tr class=rowplain><td colspan=2>
 		  <table cellspacing=2 cellpadding=2 border=0><tr><td>

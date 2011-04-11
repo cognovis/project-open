@@ -16,7 +16,7 @@
     <tr> 
       <td>&nbsp; </td>
       <td> 
-        <form action=/intranet/projects/new method=POST>
+        <form action=/intranet-cognovis/projects/project-ae method=POST>
 	  <input type="hidden" name="project_id" value="@project_id@">
 	  <input type="hidden" name="return_url" value="@return_url@">
 	  <input type=submit value="#intranet-core.Edit#" name=submit3>

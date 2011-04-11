@@ -130,11 +130,6 @@ where category_id = :category_id" ]
     }
 }
 
-callback im_category_after_create -object_id $category_id \
-    -type "" -status "" -category_id $category_id \
-    -category_type $category_type -return_url $return_url
-
-
 # Remove all permission related entries in the system cache
 im_permission_flush
 
