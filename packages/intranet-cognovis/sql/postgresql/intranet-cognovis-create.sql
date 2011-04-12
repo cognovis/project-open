@@ -33,6 +33,7 @@ BEGIN
 END;' language 'plpgsql';
 
 SELECT inline_0();
+
 DROP FUNCTION inline_0();
 
 
@@ -258,30 +259,85 @@ SELECT im_dynfield_widget__new (
 
 -- create dynfield attributes
 -- project_name 
-SELECT im_dynfield_attribute_new (
-       'im_project',			-- object_type
-       'project_name',			-- column_name
-       '#intranet-core.Project_Name#',	-- pretty_name
-       'textbox_medium',		-- widget_name
-       'string',			-- acs_datatype
-       't',				-- required_p
-       1,				-- pos y
-       'f',				-- also_hard_coded
-       'im_projects'  			-- table_name
-      );
+-- SELECT im_dynfield_attribute__new (
+--       'im_project',			-- object_type
+--       'project_name',			-- column_name
+--       '#intranet-core.Project_Name#',	-- pretty_name
+--       'textbox_medium',		-- widget_name
+--       'string',			-- acs_datatype
+--       't',				-- required_p
+--       1,				-- pos y
+--       'f',				-- also_hard_coded
+--       'im_projects'  			-- table_name
+--      );
 
 
-SELECT im_dynfield_attribute_new (
-       'im_project',			-- object_type
-       'project_nr',			-- column_name
-       '#intranet-core.Project_Nr#',	-- pretty_name
-       'textbox_medium',		-- widget_name
-       'string',			-- acs_datatype
-       't',				-- required_p
-       2,				-- pos y
-       'f',				-- also_hard_coded
-       'im_projects'  			-- table_name
-);
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_name'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',			-- object_type
+--       'project_nr',			-- column_name
+--       '#intranet-core.Project_Nr#',	-- pretty_name
+--       'textbox_medium',		-- widget_name
+--       'string',			-- acs_datatype
+--       't',				-- required_p
+--       2,				-- pos y
+--       'f',				-- also_hard_coded
+--       'im_projects'  			-- table_name
+--);
+
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_nr'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
 
 SELECT im_dynfield_attribute_new (
        'im_project',			-- object_type
@@ -296,29 +352,83 @@ SELECT im_dynfield_attribute_new (
 );
 
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_path',
-       '#intranet-core.Project_Path#',
-       'textbox_medium',
-       'string',
-       't',
-       4,
-       'f',
-       'im_projects'
-);
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'company_id',
-       '#intranet-core.Company#',
-       'customers',
-       'integer',
-       't',
-       5,
-       'f',
-       'im_projects'
-      );
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'project_path',
+--       '#intranet-core.Project_Path#',
+--       'textbox_medium',
+--       'string',
+--       't',
+--       4,
+--       'f',
+--       'im_projects'
+-- );
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_path'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
+
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'company_id',
+--       '#intranet-core.Company#',
+--       'customers',
+--       'integer',
+--       't',
+--       5,
+--       'f',
+--       'im_projects'
+--      );
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_id'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
 
 
 SELECT im_dynfield_attribute_new (
@@ -333,17 +443,48 @@ SELECT im_dynfield_attribute_new (
        'im_projects'
 );
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_type_id',
-       '#intranet-core.Project_Type#',
-       'project_type',
-       'integer',
-       't',
-       7,
-       'f',
-       'im_projects'
-);
+
+
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'project_type_id',
+--       '#intranet-core.Project_Type#',
+--       'project_type',
+--       'integer',
+--       't',
+--       7,
+--       'f',
+--       'im_projects'
+--);
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_type_id'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
+
+
 
 SELECT im_dynfield_attribute_new (
        'im_project',
@@ -357,17 +498,42 @@ SELECT im_dynfield_attribute_new (
        'im_projects'
 );
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'start_date',
-       '#intranet-core.Start_Date#',
-       'date',
-       'timestamp',
-       't',
-       9,
-       'f',
-       'im_projects'
-);
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'start_date',
+--       '#intranet-core.Start_Date#',
+--       'date',
+--       'timestamp',
+--       't',
+--       9,
+--       'f',
+--       'im_projects'
+--);
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''start_date'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
 
 
 -- Add javascript calendar buton on date widget
@@ -421,17 +587,45 @@ SELECT im_dynfield_attribute_new (
        'im_projects'
 );
        
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_budget',
-       '#intranet-core.Project_Budget#',
-       'numeric',
-       'float',
-       'f',
-       14,
-       'f',
-       'im_projects'
-);
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'project_budget',
+--       '#intranet-core.Project_Budget#',
+--       'numeric',
+--       'float',
+--       'f',
+--       14,
+--       'f',
+--      'im_projects'
+--);
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_budget'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
+
 
 SELECT im_dynfield_attribute_new (
        'im_project',
@@ -445,31 +639,81 @@ SELECT im_dynfield_attribute_new (
        'im_projects'
 );
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'company_project_nr',
-       '#intranet-core.Company_Project_Nr#',
-       'textbox_small',
-       'string',
-       'f',
-       16,
-       'f',
-       'im_projects'
-);
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'company_project_nr',
+--       '#intranet-core.Company_Project_Nr#',
+--      'textbox_small',
+--       'string',
+--       'f',
+--       16,
+--       'f',
+--       'im_projects'
+--);
 
-       
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'description',
-       '#intranet-core.Description#',
-       'richtext',
-       'text',
-       'f',
-       17,
-       'f',
-       'im_projects'
-);
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_project_nr'';
 
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
+
+-- SELECT im_dynfield_attribute_new (
+--       'im_project',
+--       'description',
+--       '#intranet-core.Description#',
+--       'richtext',
+--       'text',
+--       'f',
+--       17,
+--       'f',
+--       'im_projects'
+--);
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+BEGIN
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''description'';
+
+	PERFORM im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id				
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''textbox_medium'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	 );
+
+	 RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
 
 
 
@@ -653,18 +897,21 @@ CREATE OR REPLACE FUNCTION inline_1 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
+
 BEGIN
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''project_name'';
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_name'';
      
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task'', min_n_values = 1, sort_order = 1 WHERE attribute_id = v_attribute_id;
-	 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-	 
-	 RETURN 0;
-      END IF;
 
-      PERFORM im_dynfield_attribute_new (
+      	 UPDATE acs_attributes SET pretty_name = ''Task'', min_n_values = 1, sort_order = 1 
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
+
+	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+
+      ELSE
+	 v_attribute_id :=  im_dynfield_attribute_new (
 	''im_timesheet_task'',
 	''project_name'',
 	''Task'',
@@ -675,9 +922,19 @@ BEGIN
 	''f'',
 	''im_projects''
 	);
-  
+      END IF;
 
-      RETURN 1;
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 SELECT inline_1 ();
@@ -689,31 +946,43 @@ CREATE OR REPLACE FUNCTION inline_2 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''project_nr'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_nr'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task Nr.'', min_n_values = 1, sort_order = 2 WHERE attribute_id = v_attribute_id;
-
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+      	 UPDATE acs_attributes SET pretty_name = ''Task Nr.'', min_n_values = 1, sort_order = 2 
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
+	 
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+	v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''project_nr'',
+        ''Task Nr.'', 
+        ''textbox_medium'',
+        ''string'',
+        ''t'',
+        2,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''project_nr'',
-       ''Task Nr.'', 
-       ''textbox_medium'',
-       ''string'',
-       ''t'',
-       2,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 SELECT inline_2 ();
@@ -725,31 +994,45 @@ CREATE OR REPLACE FUNCTION inline_3 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
-BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''parent_id'';
+	v_count	       integer;
 
+BEGIN
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''parent_id'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Project'', min_n_values = 0, sort_order = 3 WHERE attribute_id = v_attribute_id;
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET pretty_name = ''Project'', min_n_values = 0, sort_order = 3
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 RETURN 0;
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''parent_id'',
+        ''Project ID'',
+        ''open_projects'',
+        ''integer'',
+        ''t'',
+        3,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''parent_id'',
-       ''Project ID'',
-       ''open_projects'',
-       ''integer'',
-       ''t'',
-       3,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -762,6 +1045,7 @@ CREATE OR REPLACE FUNCTION inline_4 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 	
 BEGIN 
       PERFORM im_dynfield_widget__new (
@@ -783,30 +1067,40 @@ BEGIN
        );
 
 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''project_status_id'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_status_id'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task Status'', pretty_plural = ''Task Status'', min_n_values = 1, sort_order = 4 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET pretty_name = ''Task Status'', pretty_plural = ''Task Status'', min_n_values = 1, sort_order = 4 
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET widget_name = ''task_status'', also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+      	 UPDATE im_dynfield_attributes SET widget_name = ''task_status'', also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''project_status_id'',
+        ''Status'',
+        ''task_status'',
+        ''integer'',
+        ''t'',
+        4,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-       PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''project_status_id'',
-       ''Status'',
-       ''task_status'',
-       ''integer'',
-       ''t'',
-       4,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
 
-      RETURN 1;
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -818,6 +1112,7 @@ CREATE OR REPLACE FUNCTION inline_5 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 		
 BEGIN 
       PERFORM im_dynfield_widget__new (
@@ -838,29 +1133,41 @@ BEGIN
        ''im_name_from_id''
        );
 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''project_type_id'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_type_id'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task Type'', pretty_plural = ''Task Type'', min_n_values = 1, sort_order = 5 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET pretty_name = ''Task Type'', pretty_plural = ''Task Type'', min_n_values = 1, sort_order = 5
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET widget_name = ''task_type'', also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
+      	 UPDATE im_dynfield_attributes SET widget_name = ''task_type'', also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
 
-	 RETURN 0;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''project_type_id'',
+        ''Type'',
+        ''task_type'',
+        ''integer'',
+        ''f'',
+        5,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-       PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''project_type_id'',
-       ''Type'',
-       ''task_type'',
-       ''integer'',
-       ''f'',
-       5,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -873,20 +1180,20 @@ CREATE OR REPLACE FUNCTION inline_6 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''uom_id'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''uom_id'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 6 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 6
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
-      END IF;
-
-      PERFORM im_dynfield_attribute_new (
-	''im_timesheet_task'',
+     	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+ 	''im_timesheet_task'',
 	''uom_id'',
 	''Unit of Measures'',
 	''units_of_measure'',
@@ -896,8 +1203,20 @@ BEGIN
 	''f'',
 	''im_timesheet_tasks''
 	);
+      END IF;
 
-      RETURN 1;
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
+
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -910,32 +1229,44 @@ CREATE OR REPLACE FUNCTION inline_7 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''cost_center_id'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''cost_center_id'';
+     
       IF v_attribute_id > 0 THEN
+      	 UPDATE acs_attributes SET min_n_values = 1, sort_order = 7
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-     	 UPDATE acs_attributes SET min_n_values = 1, sort_order = 7 WHERE attribute_id = v_attribute_id;
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+     	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''cost_center_id'',
+        ''Cost Center'',
+        ''cost_centers'',
+        ''integer'',
+        ''t'',
+        7,
+        ''f'',
+        ''im_timesheet_tasks''       
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''cost_center_id'',
-       ''Cost Center'',
-       ''cost_centers'',
-       ''integer'',
-       ''t'',
-       7,
-       ''f'',
-       ''im_timesheet_tasks''       
-       );
-      
-      RETURN 1;
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
+
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -949,31 +1280,42 @@ CREATE OR REPLACE FUNCTION inline_8 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''material_id'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''material_id'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 8 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 8
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE 
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''material_id'',
+        ''Material'',
+        ''select_material_id'',
+        ''integer'',
+        ''f'',
+        8,
+        ''f'',
+        ''im_timesheet_tasks''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''material_id'',
-       ''Material'',
-       ''select_material_id'',
-       ''integer'',
-       ''f'',
-       8,
-       ''f'',
-       ''im_timesheet_tasks''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -986,31 +1328,44 @@ CREATE OR REPLACE FUNCTION inline_9 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
+	v_count	       integer;
 	
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''planned_units'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''planned_units'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 9 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 9
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+     	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''planned_units'',
+        ''Planned Units'',
+        ''numeric'',
+        ''float'',
+        ''f'',
+        9,
+        ''f'',
+        ''im_timesheet_tasks''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''planned_units'',
-       ''Planned Units'',
-       ''numeric'',
-       ''float'',
-       ''f'',
-       9,
-       ''f'',
-       ''im_timesheet_tasks''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1022,31 +1377,44 @@ CREATE OR REPLACE FUNCTION inline_10 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
+		
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''billable_units'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''billable_units'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 10 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 10
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
 
-	 RETURN 0;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''billable_units'',
+        ''Billable Units'',
+        ''numeric'',
+        ''float'',
+        ''f'',
+        10,
+        ''f'',
+        ''im_timesheet_tasks''
+        );
+      END IF;
+      
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''billable_units'',
-       ''Billable Units'',
-       ''numeric'',
-       ''float'',
-       ''f'',
-       10,
-       ''f'',
-       ''im_timesheet_tasks''
-       );
 
-      RETURN 1;
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1059,31 +1427,43 @@ CREATE OR REPLACE FUNCTION inline_11 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
+
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''percent_completed'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''percent_completed'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 11 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 11
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+    	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''percent_completed'',
+        ''Percent Completed'',
+        ''numeric'',
+        ''float'',
+        ''f'',
+        11,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''percent_completed'',
-       ''Percent Completed'',
-       ''numeric'',
-       ''float'',
-       ''f'',
-       11,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1096,31 +1476,44 @@ CREATE OR REPLACE FUNCTION inline_12 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
+
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''start_date'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''start_date'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 12 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 12
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
 
-	 RETURN 0;
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''start_date'',
+        ''Start Date'',
+        ''date'',
+        ''timestamp'',
+        ''f'',
+        12,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''start_date'',
-       ''Start Date'',
-       ''date'',
-       ''timestamp'',
-       ''f'',
-       12,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1135,31 +1528,43 @@ CREATE OR REPLACE FUNCTION inline_13 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
+
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''end_date'';
-
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''end_date'';
+     
       IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 13 WHERE attribute_id = v_attribute_id;
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 13 
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+      	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''end_date'',
+        ''End Date'',
+        ''date'',
+        ''timestamp'',
+        ''f'',
+        13,
+        ''f'',
+        ''im_projects''
+        );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''end_date'',
-       ''End Date'',
-       ''date'',
-       ''timestamp'',
-       ''f'',
-       13,
-       ''f'',
-       ''im_projects''
-       );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''display'',null,null,null,''t'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1172,32 +1577,43 @@ CREATE OR REPLACE FUNCTION inline_15 ()
 RETURNS integer AS '
 DECLARE 
 	v_attribute_id integer;
-	
+	v_count	       integer;
+
 BEGIN 
-      SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_timesheet_task'' AND attribute_name = ''description'';
+      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
+      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''description'';
+     
+      IF v_attribute_id IS NOT NULL THEN
+      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 14 
+	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
 
-      IF v_attribute_id > 0 THEN
-
-      	 UPDATE acs_attributes SET min_n_values = 0, sort_order = 15 WHERE attribute_id = v_attribute_id;
-
-	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE acs_attribute_id = v_attribute_id;
-
-	 RETURN 0;
+     	 UPDATE im_dynfield_attributes SET also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
+      ELSE
+        v_attribute_id := im_dynfield_attribute_new (
+        ''im_timesheet_task'',
+        ''description'',
+        ''Task Description'',
+        ''richtext'',
+        ''text'',
+        ''f'',
+        15,
+        ''f'',
+        ''im_projects''
+       );
       END IF;
 
-      PERFORM im_dynfield_attribute_new (
-       ''im_timesheet_task'',
-       ''description'',
-       ''Task Description'',
-       ''richtext'',
-       ''text'',
-       ''f'',
-       15,
-       ''f'',
-       ''im_projects''
-      );
+      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      IF v_count = 0 THEN
+      	 INSERT INTO im_dynfield_type_attribute_map
+	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+	 VALUES
+		(v_attribute_id, 100,''edit'',null,null,null,''f'');
+      ELSE
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+      END IF;
 
-      RETURN 1;
+
+      RETURN 0;
 END;' language 'plpgsql';
 
 
@@ -1573,8 +1989,8 @@ DECLARE
 BEGIN
 	SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE plugin_name = ''Project Translation Wizard'' AND page_url = ''/intranet/projects/view'';
 
-	SELECT im_component_plugin__delete(v_plugin_id);
-
+	PERFORM im_component_plugin__delete(v_plugin_id);
+	
 	RETURN 0;
 END;' language 'plpgsql';
 
