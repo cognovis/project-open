@@ -8,7 +8,7 @@ ad_library {
   @author Malte Sussdorff (malte.sussdorff@cognovis.de)
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.77 $ $Date: 2011/04/06 10:42:49 $
+  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
 
 }
 
@@ -838,7 +838,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     {-advanced_filter_p 0}
     {-include_also_hard_coded_p 0 }
     {-page_url "default" }
-    {-debug 0}
+    {-debug 1}
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
@@ -1074,7 +1074,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             set help_message ""
         }
 
-
         if {[info exists default_value($dynfield_attribute_id)]} {
             set default_message $default_value($dynfield_attribute_id)
         } else {
@@ -1220,7 +1219,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     -help_text:required
     -default_value:required
     {-admin_html "" }
-    {-debug 1}
+    {-debug 0}
 } {
     Append a single attribute to a form
 } {
@@ -1229,15 +1228,13 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     set translated_datatype [attribute::translate_datatype $datatype]
     if {$datatype == "number"} {
         set translated_datatype "float"
-    } elseif {$datatype == "timestamp"} {
+    } elseif {$datatype == "date"} {
         set translated_datatype "date"
     }
 
     set custom_parameters ""
     set html_parameters ""
     set after_html_parameters ""
-    set format_parameters ""
-    set option_parameters ""
     foreach parameter_list $parameters {
         # Find out if there is a "custom" parameter and extract its value
         # "Custom" is the parameter to pass-on widget parameters from the
@@ -1254,20 +1251,10 @@ ad_proc -public im_dynfield::append_attribute_to_form {
             set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
         }
 
-        set format_pos [lsearch $parameter_list "format"]
-        if {$format_pos >= 0} {
-            set format_parameters [lindex $parameter_list [expr $format_pos + 1]]
-        }
-
         set after_html_pos [lsearch $parameter_list "after_html"]
         if {$after_html_pos >= 0} {
             set after_html_parameters [subst [lindex $parameter_list [expr $after_html_pos + 1]]]
         }
-
-	set options_pos [lsearch $parameter_list "options"]
-	if {$options_pos >= 0} {
-	    set option_parameters [lindex $parameter_list [expr $options_pos + 1]]
-	}
     }
 
     # Localization - use the intranet-core L10n space for translation.
@@ -1292,22 +1279,24 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     }
 
 
-    if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: form_id=$form_id, attribute_name=$attribute_name, widget=$widget" }
-
-    # ToDo: Can we unify this switch?
-    # Is there a problem to pass an "options" parameter to a date widget?
     switch $widget {
         checkbox - radio - select - multiselect - im_category_tree - category_tree {
-	    # These widgets need an additional -options parameter
+            if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options" }
+            set option_list ""
+            set options_pos [lsearch $parameter_list "options"]
+            if {$options_pos >= 0} {
+                set option_list [lindex $parameter_list [expr $options_pos + 1]]
+            }
+
             if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-                set option_parameters [linsert $option_parameters -1 [list " [_ intranet-dynfield.no_value] " ""]]
+                set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
             }
             if {![template::element::exists $form_id "$attribute_name"]} {
                 template::element create $form_id "$attribute_name" \
                     -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
                     -widget $widget \
                     -label "$pretty_name" \
-                    -options $option_parameters \
+                    -options $option_list \
                     -custom $custom_parameters \
                     -html $html_parameters \
                     -after_html "$after_html $after_html_parameters" \
@@ -1315,20 +1304,8 @@ ad_proc -public im_dynfield::append_attribute_to_form {
                     -values $default_value
             }
         }
-        date {
-            if {![template::element::exists $form_id "$attribute_name"]} {
-                template::element create $form_id "$attribute_name" \
-                    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
-                    -widget $widget \
-                    -label $pretty_name \
-                    -html $html_parameters \
-                    -custom $custom_parameters\
-                    -after_html "$after_html $after_html_parameters" \
-                    -mode $display_mode \
-		    -format $format_parameters
-            }
-        }
         default {
+            if {$debug} { ns_log Notice "im_dynfield::append_attribute_to_form: default: no options" }
             if {![template::element::exists $form_id "$attribute_name"]} {
                 template::element create $form_id "$attribute_name" \
                     -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
