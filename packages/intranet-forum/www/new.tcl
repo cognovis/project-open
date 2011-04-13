@@ -448,8 +448,53 @@ append table_body "
     # Tell the blank-master to include the special stuff
     # for the richtext widget in the page header
     set ::acs_blank_master(xinha) 1
-    set ::acs_blank_master(xinha.plugins) ""
-    set ::acs_blank_master(xinha.options) "xinha_config.package_id = '[ad_conn package_id]';\n"
+        set package_id_templating [apm_package_id_from_key "acs-templating"]
+    if {[info exists options(plugins)]} {
+	set plugins $options(plugins)
+    } else {
+	set plugins [parameter::get \
+			 -package_id $package_id_templating \
+			 -parameter "XinhaDefaultPlugins" \
+			 -default ""]
+
+	# GetHtml CharacterMap ContextMenu FullScreen
+	# ListType TableOperations EditTag LangMarks Abbreviation
+    }
+    set quoted [list]
+    foreach e $plugins {lappend quoted '$e'}
+
+
+    # OPTIONS for XINHA
+    set xinha_options ""
+
+    # Support for uploading of files using the intranet-fs package
+    if {[apm_package_installed_p "intranet-fs"]} {
+	# Figure out the fs_folder_id, which might be tricky...
+	set object_type  [acs_object_type $object_id]
+	switch $object_type {
+	    im_timesheet_task {
+		# Figure out the project to find the folder
+		set fs_folder_id [db_string folder "select r.object_id_two from acs_rels r, im_projects p
+                                             where r.object_id_one = p.parent_id and p.project_id = :object_id
+                                             and rel_type = 'project_folder'"]
+	    }
+	    im_project {
+		set fs_folder_id [intranet_fs::get_project_folder_id -project_id $object_id]
+	    }
+	    default {
+		set fs_folder_id ""
+	    }
+	}
+
+	if {$fs_folder_id ne ""} {
+	    lappend quoted 'OacsFs'
+	    append xinha_options "xinha_config.folder_id = '$fs_folder_id';\n"
+	}
+    }
+
+    append xinha_options "xinha_config.package_id = '[ad_conn package_id]';\n"
+    set ::acs_blank_master(xinha.options) $xinha_options
+    set ::acs_blank_master(xinha.plugins) [join $quoted ", "]
     lappend ::acs_blank_master__htmlareas message
 }
 incr ctr
