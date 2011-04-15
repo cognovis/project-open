@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="fs-portlet" locale="zh_TW" charset="utf-8">
-
-  <msg key="create_new_folder">建立新的資料夾</msg>
-  <msg key="create_url">新增URL</msg>
-  <msg key="items">項目</msg>
-  <msg key="pretty_name">文件</msg>
-  <msg key="upload_file">上傳檔案</msg>
-</message_catalog>

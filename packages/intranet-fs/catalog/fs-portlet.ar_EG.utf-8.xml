@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="fs-portlet" locale="ar_EG" charset="utf-8">
-
-  <msg key="create_new_folder">إخلقْ ملفّ جديدً</msg>
-  <msg key="pretty_name">المُسْتَنَدات</msg>
-  <msg key="upload_file">أرسلْ ملفاً</msg>
-</message_catalog>

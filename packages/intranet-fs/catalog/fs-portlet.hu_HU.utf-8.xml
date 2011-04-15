@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="fs-portlet" locale="hu_HU" charset="utf-8">
-
-  <msg key="create_new_folder">Új mappa készítése</msg>
-  <msg key="create_url">Új URL készítése</msg>
-  <msg key="items">darab</msg>
-  <msg key="pretty_name">Dokumentumok</msg>
-  <msg key="upload_file">File feltöltése</msg>
-</message_catalog>

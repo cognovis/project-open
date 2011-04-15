@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="fs-portlet" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-fs" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="advanced">(&lt;font=red&gt;Fortgeschritten&lt;/font&gt;)</msg>
   <msg key="byte">Byte</msg>
