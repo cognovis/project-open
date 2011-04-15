@@ -53,4 +53,5 @@
   <msg key="Unable_to_delete_tasks">Unable to delete tasks</msg>
   <msg key="Unit_of_Measure">Unit of Measure</msg>
   <msg key="UoM">UoM</msg>
+  <msg key="Task_Nr">Task Nr.</msg>
 </message_catalog>
