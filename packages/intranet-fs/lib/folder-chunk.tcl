@@ -142,7 +142,7 @@ set elements [list \
                        orderby_desc {last_modified_ansi desc} \
                        orderby_asc {last_modified_ansi asc}] \
 		  file_state \
-		  [list label [_ file-storage.State] \
+		  [list label [_ intranet-fs.State] \
 		       display_template { @contents.file_state_pretty;noquote@}] \
                   download_link \
                   [list label "" \

@@ -12,6 +12,7 @@
   <msg key="items">Elemente</msg>
   <msg key="lt_File_Storage_Administ">Dateiablage verwalten</msg>
   <msg key="pretty_name">Dateien</msg>
+  <msg key="State">Status</msg>
   <msg key="upload_file">Neue Datei hochladen</msg>
   <msg key="view_details">Details anzeigen</msg>
 </message_catalog>

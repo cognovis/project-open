@@ -6,6 +6,7 @@
   <msg key="bytes">bytes</msg>
   <msg key="create_new_folder">Create a new folder</msg>
   <msg key="create_url">Create a URL</msg>
+  <msg key="Disapprove">Disapprove</msg>
   <msg key="edit_fs_parameters">Edit file storage parameters (ADVANCED)</msg>
   <msg key="edit_upload_size_limit">Edit Upload Size Limit</msg>
   <msg key="item">item</msg>
@@ -13,9 +14,9 @@
   <msg key="lt_File_Storage_Administ">File Storage Administration</msg>
   <msg key="open_folder_folders_name">Open folder %folders.name%</msg>
   <msg key="pretty_name">Documents</msg>
+  <msg key="Publish">Publish</msg>
+  <msg key="State">State</msg>
+  <msg key="Unpublish">Unpublish</msg>
   <msg key="upload_file">Upload a file</msg>
   <msg key="view_details">view details</msg>
-  <msg key="Disapprove">Disapprove</msg>
-  <msg key="Publish">Publish</msg>
-  <msg key="Unpublish">Unpublish</msg>
 </message_catalog>
