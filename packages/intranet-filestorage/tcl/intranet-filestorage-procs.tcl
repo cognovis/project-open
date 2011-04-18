@@ -42,7 +42,7 @@ ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_cost_download {} { intranet_download "cost" }
 ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
-
+ad_proc intranet_expense_cost_download {} { intranet_download "cost" }
 
 # -------------------------------------------------------
 # 

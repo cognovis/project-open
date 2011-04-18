@@ -394,6 +394,7 @@ if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contac
 # ------------------------------------------------------------------
 
 if {[exists_and_not_null ticket_customer_id]} {
+
     set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
     set customer_contact_options [db_list_of_lists customer_contact_options "
 	select	im_name_from_user_id(u.user_id) as name,
@@ -412,6 +413,15 @@ if {[exists_and_not_null ticket_customer_id]} {
     set customer_contact_options [im_user_options -include_empty_p 0]
 }
 
+set ttt {
+			-- Customers of the SLA's customer
+			-- Member of the SLA
+
+			-- The previous customer_contact from this ticket.
+			-- This way we will not loose the stored value
+		UNION	select customer_contact_id from im_tickets where ticket_id = :ticket_id
+
+}
 # customer_contact_options
 #
 if {$user_can_create_new_customer_p} {
@@ -741,7 +751,7 @@ set mine_p_options {}
 if {[im_permission $current_user_id "view_tickets_all"]} { 
     lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
 }
-lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
+lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_group "My Group"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
 
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {

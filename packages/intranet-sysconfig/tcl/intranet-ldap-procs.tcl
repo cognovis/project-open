@@ -179,6 +179,8 @@ ad_proc -public im_sysconfig_create_edit_authority {
 	from	auth_authorities
 	where	pretty_name = :authority_name
     " -default 0]
+    if {"" == $authority_id} { set authority_id 0 }
+
 
     if {0 != $authority_id} {
 	# Authority already exists with this name

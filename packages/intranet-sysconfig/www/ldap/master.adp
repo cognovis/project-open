@@ -18,7 +18,7 @@
 
 </td></tr>
 </thead>
-<form name="wizard" method="GET">
+<form name="wizard" method="POST">
 @export_vars;noquote@
 <tbody>
 <tr><td class=tablebody colspan=3><font size=-1>

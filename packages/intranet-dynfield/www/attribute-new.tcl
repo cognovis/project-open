@@ -3,6 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2004-07-28
+    @cvs-id $Id: attribute-new.tcl,v 1.21 2011/04/11 16:58:34 po34demo Exp $
 } {
     {object_type ""}
     attribute_id:integer,optional
@@ -362,6 +363,7 @@ ad_form \
     -name attribute_form \
     -form $form_fields \
     -mode $form_mode \
+    -method POST \
     -new_request {
 } -edit_request {
 } -validate {
