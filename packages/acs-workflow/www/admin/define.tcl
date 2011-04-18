@@ -3,7 +3,7 @@ ad_page_contract {
         
     @author Lars Pind (lars@pinds.com)
     @creation-date 22 August 2000
-    @cvs-id $Id: define.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+    @cvs-id $Id: define.tcl,v 1.2 2011/05/13 12:42:07 po35devklaus Exp $
 } {
     workflow_key:notnull
     {format ""}
@@ -50,6 +50,9 @@ ad_page_contract {
     consuming_transitions:multirow
     modifiable_p
 }
+
+
+# ad_return_complaint 1 $workflow_key
 
 
 #####
@@ -194,12 +197,11 @@ template::multirow append edit_links "place-add?[export_url_vars workflow_key]" 
 
 template::multirow create format_links url title selected_p
 template::multirow append format_links "define?[export_ns_set_vars "url" {format}]&format=html" \
-	"HTML" [string equal $format "html"]
+"HTML" [string equal $format "html"]
 template::multirow append format_links "define?[export_ns_set_vars "url" {format}]&format=graph" \
 	"Graphical" [string equal $format "graph"]
 
-
-
+set wf_name [db_string wf_name "select pretty_name from acs_object_types where object_type=:workflow_key" -default ""]
 
 ad_return_template
 

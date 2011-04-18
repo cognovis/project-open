@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-procs.tcl,v 1.428 2011/02/07 22:28:45 gustafn Exp $
+    @cvs-id $Id: xowiki-procs.tcl,v 1.431 2011/05/16 12:27:53 gustafn Exp $
 }
 
 namespace eval ::xowiki {
@@ -24,6 +24,7 @@ namespace eval ::xowiki {
 	::xo::Attribute create name \
 	    -help_text #xowiki.Page-name-help_text# \
 	    -validator name \
+	    -spec "maxlength=400" \
 	    -required false ;#true 
 	::xo::Attribute create title \
 	    -required false ;#true
@@ -1707,7 +1708,7 @@ namespace eval ::xowiki {
   }
 
   Page instproc render_content {} {
-    #my msg "-- '[my set text]'"
+    #my log "-- '[my set text]'"
     set html ""; set mime ""
     foreach {html mime} [my set text] break
     if {[my render_adp]} {
@@ -2411,17 +2412,18 @@ namespace eval ::xowiki {
     my instvar package_id
     foreach {s widget_spec} [$package_id get_parameter WidgetSpecs] {
       foreach {template_name var_name} [split $s ,] break
-      #ns_log notice "--w T.title = '$given_template_name' var=$name"
+      #ns_log notice "--w template_name $template_name, given '$given_template_name' varname=$var_name name=$name"
       if {([string match $template_name $given_template_name] || $given_template_name eq "") &&
           [string match $var_name $name]} {
+        #ns_log notice "--w using $widget_spec for $name"
         return $widget_spec
-        #ns_log notice "--w using $widget for $name"
       }
     }
     return ""
   }
 
   PageInstance instproc get_field_type {name default_spec} {
+    #my log "--w"
     my instvar page_template
     # get widget spec from folder (highest priority)
     set spec [my widget_spec_from_folder_object $name [$page_template set name]]
@@ -2460,6 +2462,11 @@ namespace eval ::xowiki {
   #  my log "IA=[my set instance_attributes]"
   #  next
   #}
+
+  FormPage instproc get_anon_instances {} {
+    # maybe overloaded from WorkFlow
+    my get_from_template anon_instances f
+  }
 
   FormPage instproc get_form_constraints {{-trylocal false}} {
     # We define it as a method to ease overloading.
@@ -2511,7 +2518,7 @@ namespace eval ::xowiki {
     # which might not contain it, if e.g. the first form is a plain
     # wiki page.
     #
-    #my msg "resolve property $var=>[my exists_property $var]"
+    #my msg "resolve local property $var=>[my exists_property $var]"
     if {[my istype ::xowiki::FormPage] && [my exists_property $var]} {
       #my msg "returning local property [my property $var]"
       return [my property $var]
@@ -2519,7 +2526,7 @@ namespace eval ::xowiki {
     #
     # if everything fails, return the default.
     #
-    #my msg "returning the default, parent is of type [$form_obj info class]"
+    #my msg "returning the default <$default>, parent is of type [$form_obj info class]"
     return $default
   }
 
@@ -2946,7 +2953,7 @@ namespace eval ::xowiki {
       set filter_clause " and '$wc(h)' <@ bt.hkey"
     }
     #my msg "exists sql=[info exists wc(sql)]"
-    if {$wc(sql) ne ""} {
+    if {$wc(sql) ne "" && $wc(h) ne ""} {
       foreach filter $wc(sql) {
         append filter_clause "and $filter"
       }

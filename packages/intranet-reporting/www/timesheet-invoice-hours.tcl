@@ -50,6 +50,7 @@ set edit_timesheet_p [im_permission $current_user_id "edit_hours_all"]
 
 set date_format "YYYY-MM-DD"
 set number_format "999,999.99"
+set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
 
 # ------------------------------------------------------------
 
@@ -92,14 +93,14 @@ set rowclass(1) "rowodd"
 if {$level_of_detail > 5} { set level_of_detail 5 }
 
 
-set company_url "/intranet/companies/view?company_id="
-set project_url "/intranet/projects/view?project_id="
-set user_url "/intranet/users/view?user_id="
-set hours_url "/intranet-timesheet2/hours/one"
-set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {level_of_detail project_id task_id company_id user_id} ]
+set company_url "$system_url/intranet/companies/view?company_id="
+set project_url "$system_url/intranet/projects/view?project_id="
+set user_url "$system_url/intranet/users/view?user_id="
+set hours_url "$system_url/intranet-timesheet2/hours/one"
+set this_url [export_vars -base "$system_url/intranet-reporting/timesheet-customer-project" {level_of_detail project_id task_id company_id user_id} ]
 
 # BaseURL for drill-down. Needs company_id, project_id, user_id, level_of_detail
-set base_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {task_id} ]
+set base_url [export_vars -base "$system_url/intranet-reporting/timesheet-customer-project" {task_id} ]
 
 
 # ------------------------------------------------------------
@@ -345,7 +346,7 @@ switch $output_template {
 		 <head>
 		  <meta http-equiv='content-type' content='text/html;charset=UTF-8'>
 		  <title>$timesheet_customer_l10n</title>
-		  <link rel='stylesheet' type='text/css' href='/intranet-reporting/timesheet-invoice-hours.css'>
+		  <link rel='stylesheet' type='text/css' href='$system_url/intranet-reporting/timesheet-invoice-hours.css'>
 		 </head>
 		 <body>
 		  <div id=header>

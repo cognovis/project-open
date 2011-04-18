@@ -329,16 +329,17 @@ ad_proc -public im_conf_item_update_sql {
 } {
     set update_sql "
 	update im_conf_items set
-		conf_item_name =	:conf_item_name,
-		conf_item_nr =		:conf_item_nr,
-		conf_item_code =	:conf_item_code,
-		conf_item_version =	:conf_item_version,
-		conf_item_parent_id =	:conf_item_parent_id,
-		conf_item_type_id =	:conf_item_type_id,
-		conf_item_status_id =	:conf_item_status_id,
-		conf_item_owner_id =	:conf_item_owner_id,
-		description = 		:description,
-		note = 			:note
+		conf_item_name =		:conf_item_name,
+		conf_item_nr =			:conf_item_nr,
+		conf_item_code =		:conf_item_code,
+		conf_item_version =		:conf_item_version,
+		conf_item_parent_id =		:conf_item_parent_id,
+		conf_item_type_id =		:conf_item_type_id,
+		conf_item_status_id =		:conf_item_status_id,
+		conf_item_owner_id =		:conf_item_owner_id,
+		conf_item_cost_center_id =      :conf_item_cost_center_id,
+		description = 			:description,
+		note = 				:note
 	where conf_item_id = :conf_item_id
     "
 }

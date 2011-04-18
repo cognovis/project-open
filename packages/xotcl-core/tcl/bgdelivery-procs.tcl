@@ -4,7 +4,7 @@ ad_library {
 
     @author Gustaf Neumann (neumann@wu-wien.ac.at)
     @creation-date 19 Nov 2005
-    @cvs-id $Id: bgdelivery-procs.tcl,v 1.34 2011/03/17 08:21:19 gustafn Exp $
+    @cvs-id $Id: bgdelivery-procs.tcl,v 1.35 2011/05/09 09:06:25 gustafn Exp $
 }
 
 if {[info command ::thread::mutex] eq ""} {
@@ -448,6 +448,8 @@ bgdelivery ad_proc returnfile {
     # Tcl behaves different, when one tries to send 0 bytes via
     # file_copy. So, we handle this special case here...
     # There is actualy nothing to deliver....
+    ns_set put [ns_conn outputheaders] "Content-Length" 0
+    ns_return 200 text/plain {}
     return
   }
 

@@ -25,6 +25,7 @@
 <td class=rowtitle>#intranet-expenses.Expense_Type#</td>
 <td class=rowtitle>#intranet-expenses.Billable_p#</td>
 <td class=rowtitle>#intranet-expenses.Expense_Payment_Type#</td>
+<td class=rowtitle>#intranet-expenses.Receipt_reference#</td>
 <td class=rowtitle>#intranet-expenses.Note#</td>
 </tr>
 @form_html;noquote@

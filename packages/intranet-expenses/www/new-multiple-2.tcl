@@ -23,6 +23,7 @@ ad_page_contract {
     billable_p:array,optional
     reimbursable:array,optional,optional
     expense_payment_type_id:integer,optional
+    receipt_reference:array,optional
     note:array,optional
     return_url
 }
@@ -76,8 +77,9 @@ for {set i 0} {$i < 20} {incr i} {
     set item_billable_p "f"
     set item_reimbursable 100
     set item_expense_payment_type_id [im_expense_payment_type_cash]
+    set item_receipt_reference ""
     set item_note ""
-
+    
 
     if {[info exists project_id($i)] && "" != $project_id($i)} { 
 	set item_project_id $project_id($i)
@@ -123,6 +125,12 @@ for {set i 0} {$i < 20} {incr i} {
     if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i)} { 
 	set item_expense_payment_type_id $expense_payment_type_id($i)
 	set set_p 1
+    }
+
+
+    if {[info exists receipt_reference($i)] && "" != $receipt_reference($i)} {
+        set item_receipt_reference $receipt_reference($i)
+        set set_p 1
     }
 
     if {[info exists note($i)] && "" != $note($i)} { 
@@ -194,6 +202,7 @@ db_transaction {
 	set item_billable_p "f"
 	set item_reimbursable 100
 	set item_expense_payment_type_id [im_expense_payment_type_cash]
+	set item_receipt_reference
 	set item_note ""
 	
 	set item_external_company_vat_number ""
@@ -245,6 +254,11 @@ db_transaction {
 	    set set_p 1
 	}
 
+        if {[info exists receipt_reference($i)] && "" != $receipt_reference($i)} {
+            set item_receipt_reference $receipt_reference($i)
+            set set_p 1
+        }
+
 	if {[info exists note($i)] && "" != $note($i)} { 
 	    set item_note $note($i)
 	    set set_p 1
@@ -279,7 +293,7 @@ db_transaction {
 				:item_note,			-- note
 				:item_external_company_name,	-- hotel name, taxi, ...
 				:item_external_company_vat_number,	-- vat number
-				:item_receipt_reference,	-- receip reference
+				:item_receipt_reference,	-- receipt refergence
 				:item_expense_type_id,		-- expense type default null
 				:item_billable_p,		-- is billable to client 
 				:item_reimbursable,		-- % reibursable from amount value

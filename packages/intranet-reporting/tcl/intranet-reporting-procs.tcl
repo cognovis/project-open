@@ -901,3 +901,47 @@ ad_proc -public im_reporting_sub_project_name_path_helper {
     }
     return $name
 }
+
+
+ad_proc -public im_reporting_tree_sortkey_pretty {
+    tree_sortkey
+} {
+    Returns a shortened tree_sortkey
+} {
+    set result ""
+    while {[regexp {^(........)(.*)$} $tree_sortkey match bits rest]} {
+	
+	set bits_list [split $bits ""]
+	set factor 128
+	set dec 0
+	for {set i 0} {$i < [llength $bits_list]} {incr i} {
+	    set dec [expr $dec + $factor * [lindex $bits_list $i]]
+	    set factor [expr $factor / 2]
+	}
+	append result " ."
+	set tree_sortkey $rest
+    }
+    return $result
+}
+
+
+ad_proc -public im_reporting_tree_sortkey_spacers {
+    tree_sortkey
+} {
+    Returns spacers for a tree_sortkey to indent a subproject or task
+} {
+    set result ""
+    set skip_spacers 4
+    while {[regexp {^(........)(.*)$} $tree_sortkey match bits rest]} {
+
+	# Skip the first x digits because they are the same for all tree_sortkeys
+	if {$skip_spacers > 0} {
+	    incr skip_spacers -1
+	} else {
+	    append result "[im_gif cleardot "" 0 9 9]&nbsp;"
+	}
+	set tree_sortkey $rest
+    }
+    return $result
+}
+

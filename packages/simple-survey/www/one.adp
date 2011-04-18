@@ -16,9 +16,9 @@
 	</p>
 </if>
 
+<form enctype=multipart/form-data method="post" action="@package_url;noquote@/process-response">
+<%= [export_form_vars survey_id related_object_id related_context_id task_id return_url] %>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <form enctype=multipart/form-data method="post" action="@package_url;noquote@/process-response">
-	<%= [export_form_vars survey_id related_object_id related_context_id task_id return_url] %>
     <tr>
       <td class="tabledata">
         <include src=one_@display_type;noquote@ questions=@questions;noquote@>
@@ -26,6 +26,5 @@
           <input type=submit value="Continue">
       </td>
     </tr>
-    
-  </form>
 </table>
+</form>

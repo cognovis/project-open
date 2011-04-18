@@ -12,7 +12,7 @@
 
 ad_page_contract {
     Show the results of a single "dynamic" report or indicator
-    @param format One of {html|csv|xml}
+    @param format One of {html|csv|xml|json}
 
     @author frank.bergmann@project-open.com
 } {
@@ -43,7 +43,7 @@ set no_redirect_p 0
 if {"xml" == $format} { set no_redirect_p 1 }
 set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
 
-if {"xml" == $format && 0 == $current_user_id} {
+if {("xml" == $format || "json" == $format) && 0 == $current_user_id} {
     # Return a XML authentication error
     im_rest_error -http_status 401 -message "Not authenticated"
     ad_script_abort
@@ -64,7 +64,12 @@ if {![string equal "t" $read_p]} {
 	xml {
 	    # Return a reasonable XML message indicating
 	    # permission issues
-	    im_rest_error -http_status 403 -message "The current user doesn't have the right to see this report.'"
+	    im_rest_error -http_status 403 -message "The current user doesn't have the right to see this report."
+	}
+	json {
+	    # Return a reasonable XML message indicating permission issues
+	    set result "{\"success\": false,\n\"message\": \"The current user doesn't have the right to see this report.\"\n}"
+            doc_return 200 "text/plain" $result
 	}
 	default {
 	    ad_return_complaint 1 "<li>
@@ -133,6 +138,11 @@ switch $format {
     "xml" {
 	# Return plain file
 	doc_return 200 "application/xml" $page_body
+	ad_script_abort
+    }
+    "json" {
+	set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[$page_body\n\]\n}"
+	doc_return 200 "text/plain" $result
 	ad_script_abort
     }
     "plain" {
