@@ -251,7 +251,6 @@ template::multirow foreach department_planner {
         append data_source "[lindex $column_names $ctr]: "
         set cc_var "cc_$cost_center_id"
         set rem_days [round -number [expr $remaining_days($cost_center_id) - $$cc_var] -digits 1]
-        ds_comment "rem_days $cost_center_id :: $rem_days"
         append available_days_cc_arr "var available_days_cc_arr_" $cost_center_id "_" $project_id "= \"[expr  $$cc_var]\";\n"
         set remaining_days($cost_center_id) $rem_days
         append data_source "\"$rem_days\", "

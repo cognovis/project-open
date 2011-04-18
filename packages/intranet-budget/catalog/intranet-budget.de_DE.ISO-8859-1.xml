@@ -2,16 +2,23 @@
 <message_catalog package_key="intranet-budget" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Budget">Budget</msg>
-  <msg key="Cost_Estimates">Budgetplanung</msg>
+  <msg key="budget_estimation">Budgetplanung</msg>
+  <msg key="Budgeted_Hours">Geplante (budget) Stunden</msg>
+  <msg key="Cost_Estimates">verbleibendes Budget</msg>
   <msg key="Cost_Type">Kostenart</msg>
+  <msg key="Edit_Budget">Budget ändern</msg>
   <msg key="Hours">Aufwand</msg>
   <msg key="Investment_Costs">Investitionskosten</msg>
   <msg key="Logged_Hours">Erfasste Stunden</msg>
   <msg key="New_Budget_Estimate">Neue Budgetplanung</msg>
   <msg key="New_Provider_Estimation">Neue Budget Kalkulation</msg>
   <msg key="One_Time_Costs">Einmalkosten</msg>
+  <msg key="Operational_Priority">Operative Priorität</msg>
+  <msg key="Priority">Priorität</msg>
+  <msg key="Project_ID">Projekt ID</msg>
   <msg key="Recurring_Costs">Laufende Kosten</msg>
-  <msg key="Remaining_Budget">Verbleibendes Budget</msg>
+  <msg key="Remaining_Budget">Budgetüber-/ unterdeckung</msg>
   <msg key="Remaining_Budget_Hours">Verbleibender Aufwand</msg>
-  <msg key="Remaining_Hours">Verbleibende Stunden</msg>
+  <msg key="Remaining_Hours">Verplante Stunden</msg>
+  <msg key="Strategic_Priority">Strategische Priorität</msg>
 </message_catalog>

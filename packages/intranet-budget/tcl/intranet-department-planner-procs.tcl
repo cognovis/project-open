@@ -128,7 +128,7 @@ ad_proc -public im_department_planner_get_list_multirow {
    set col_ctr 0
    foreach col $column_headers {
 		regsub -all " " $col "_" col_txt
-		set col_txt [lang::message::lookup "" intranet-portfolio-management.$col_txt $col]
+		set col_txt [lang::message::lookup "" intranet-budget.$col_txt $col]
 	
 		# Append to DynView Columns multirow
 		template::multirow append dynview_columns $column_id $col_ctr $col_txt
@@ -319,7 +319,6 @@ ad_proc -public im_department_planner_get_list_multirow {
             if {$unplanned_hours >0 } {
 				set unplanned_hours [expr $unplanned_hours / $hours_per_day]
                 set cc_$dept_id [expr [set cc_$dept_id] + $unplanned_hours]
-                ds_comment "Unplanned:: $unplanned_hours :: $dept_id"
             }
 
             # Reset the budgeted hours for this department
