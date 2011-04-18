@@ -25,6 +25,8 @@ namespace eval auth::ldap::batch_import {}
 
 
 ad_proc -private auth::ldap::batch_import::read_ldif_file {
+    {-object_class "*" }
+    {-attributes ""}
     {parameters {}}
     {authority_id {}}
 } {
@@ -36,7 +38,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     <li>ldif: The contents of the LDIF file
     </ul>
 } {
-    ns_log Notice "auth::ldap::batch_import::get_ldif_file $parameters $authority_id"
+    ns_log Notice "auth::ldap::batch_import::read_ldif_file $parameters $authority_id"
 
     # Parameters
     array set params $parameters
@@ -55,29 +57,36 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	ad {
 	    # ------------------------------------------------------------------------------
 	    # Active Directory
-	    ns_log Notice "auth::ldap::batch_import::get_ldif_file Active Directory"
-	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=*)'"
-	    set return_code [catch {
-		# Bind as "Adminstrator" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=*)"
-	    } err_msg]
-	    ns_log Notice "auth::ldap::batch_import::read_ldif_file return_code=$return_code, msg=$err_msg"
+	    ns_log Notice "auth::ldap::batch_import::read_ldif_file Active Directory"
 
-	    if {1 == $return_code} {
+	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (objectClass=$object_class) $attributes"
+	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
+
+	    # Bind as "Adminstrator" and retreive the userPassword field for
+	    set fl [open "| $cmd"]
+	    set data ""
+	    if {[catch {
+		set data [read $fl]
+		close $fl
+	    } err_msg]} {
+		ns_log Notice "auth::ldap::batch_import::read_ldif_file: Error executing cmd: $err_msg"
+	    }
+
+	    if {"" == $data} {
 		return [list result 0 debug $err_msg ldif ""]
 	    } else {
-		return [list result 1 debug "" ldif $err_msg]
+		return [list result 1 debug "" ldif $data]
 	    }
 	}
 	ol {
 	    # ------------------------------------------------------------------------------
 	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
 	    # check if we can construct the same hash
-	    ns_log Notice "auth::ldap::batch_import::get_ldif_file OpenLDAP"
-	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=*)'"
+	    ns_log Notice "auth::ldap::batch_import::read_ldif_file OpenLDAP"
+	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=$object_class)' $attributes"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=*)"
+		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=$object_class) $attributes"
 	    } err_msg]
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file return_code=$return_code, msg=$err_msg"
 
@@ -111,21 +120,32 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     Two "objects" are separated by an empty line.
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects"
-    array set result_hash [auth::ldap::batch_import::read_ldif_file $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class "group" $parameters $authority_id]
+    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result_hash(result)"
+
     if {0 == $result_hash(result)} {
 	return [list result 0 debug $result_hash(debug) objects {}]
     }
 
     # Parse the LDIF
-    set cnt 0
     set debug ""
     set lines [split $result_hash(ldif) "\n"]
+    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: [llength $lines] lines"
 
     set dn ""
     set object_keys_values {}
     array set objects_hash {}
-    foreach line $lines {
-	set line [string trim $line]
+    set line_ctr 0
+    set max_lines [llength $lines]
+
+    while {$line_ctr < $max_lines} {
+	
+	# Get the current line
+	set line [lindex $lines $line_ctr]
+	set next_line [lindex $lines [expr $line_ctr + 1]]
+	ns_log Notice "auth::ldap::batch_import::read_ldif_objects: line \#$line_ctr=$line"
+	incr line_ctr
+
 	if {"#" == [string range $line 0 0]} { 
 	    # A hash starts a comment line
 	    continue 
@@ -138,8 +158,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # start off a new object
 	    if {"" != $dn} {
 		set objects_hash($dn) $object_keys_values
-		incr cnt
-		if {$cnt > 15000} { return [list result 1 debug $debug objects [array get objects_hash]] }
+		if {$line_ctr > 15000} { return [list result 1 debug $debug objects [array get objects_hash]] }
 	    }
 	    # Reset variables for the next object
 	    set object_keys_values {}
@@ -148,11 +167,33 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	} else {
 	    
 	    # Process one line of LDAP information.
+
+	    # Check if the next line starts with a space (" ").
+	    # In this case we need to append the next line to the current one.
+	    set first_char [string range $next_line 0 0]
+	    while {" " == $first_char} {
+		ns_log Notice "auth::ldap::batch_import::read_ldif_objects: Cont. at \#$line_ctr: $next_line"
+		append line [string trim $next_line]
+		incr line_ctr
+		set next_line [lindex $lines [expr $line_ctr + 1]]
+		set first_char [string range $next_line 0 0]
+	    }
+	    
 	    # A single colon means unquoted value, double colon means base64 encoded
-	    if {[regexp {^dn: (.*)$} $line match dn_var]} { set dn $dn_var }
+	    if {[regexp {^dn: (.*)$} $line match dn_var]} { 
+		set dn $dn_var 
+	    }
+
+	    # Base64 encoded DN:
 	    if {[regexp {^dn:: (.*)$} $line match dn_var_base64]} { 
-		
-		set dn [::base64::decode $dn_var_base64]
+
+		ns_log Notice "auth::ldap::batch_import::read_ldif_objects: base64 encoded dn: $line"
+		if {[catch {
+		    set dn [::base64::decode $dn_var_base64]
+		    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: dn=$dn"
+		} err_msg]} {
+		    ad_return_complaint 1 "Error:<pre>$err_msg</pre><br><pre>$dn_var_base64"
+		}
 	    }
 		
 	    # Convert all other lines into a hash
@@ -189,7 +230,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
     array set result_hash [auth::ldap::batch_import::read_ldif_objects $parameters $authority_id]
     if {0 == $result_hash(result)} {
         # Found some errors
-        return [list result 0 debug $result_hash(debug) groups {}]
+        return [list result 0 debug $result_hash(debug) objects {}]
     }
 
     # Loop through the list of objects and extract the ones that are some
@@ -199,6 +240,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 
     foreach group_dn [array names objects_hash] {
 	
+	ns_log Notice "auth::ldap::batch_import::read_ldif_groups: group_dn=$group_dn"
 	set group_p 0
 	set group_name ""
 	array unset attributes_hash
@@ -236,7 +278,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 	if {$group_p} { lappend groups $group_name $objects_hash($group_dn) }
     }
 
-    return [list result 1 debug $debug objects $groups]
+    return [list result 1 debug [string range $debug 0 1000] objects $groups]
 }
 
 

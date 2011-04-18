@@ -262,6 +262,7 @@ ad_proc -private auth::ldap::set_password {
 
 
 ad_proc -private auth::ldap::authentication::Authenticate {
+    {-disable_password_check_p 1}
     username
     password
     {parameters {}}
@@ -280,7 +281,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     </ul>
 
 } {
-    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Authenticate $username $password $parameters $authority_id"
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Authenticate: username=$username, pwd=$password, auth_id=$authority_id, params='$parameters'"
 
     # Default setting for auth_info return hash: Bad Password
     set auth_info(auth_status) "bad_password"
@@ -340,6 +341,11 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	    } err_msg]
 	    ns_log Notice "auth::ldap::authentication::Authenticate: return_code=$return_code, msg=$err_msg"
 
+	    if {$disable_password_check_p} {
+		set return_code 0
+		set err_msg ""
+	    }
+
 	    # Extract the first line - it contains the error message if there is an issue.
 	    set err_msg_first_line ""
 	    if {"" == $err_msg_first_line} { regexp {^(.*)\n} $err_msg match err_msg_first_line }
@@ -354,7 +360,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		set auth_info(auth_message) "Login Successful"
 		
 		# Sync the user with the LDAP information, with username as primary key
-		set auth_info_array [auth::ldap::authentication::Authenticate $username $parameters $authority_id]
+		set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
 		array set auth_info $auth_info_array
 		return [array get auth_info]
 	    }
@@ -517,7 +523,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     Creates a new ]po[ user from LDAP information.
     Returns 0 if the user can't be created
 } {
-    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync $username $parameters $authority_id"
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync username=$username, auth=$authority_id, params='$parameters'"
 
     # Parameters
     array set params $parameters
@@ -528,15 +534,18 @@ ad_proc -public auth::ldap::authentication::Sync {
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
     set bind_dn $params(BindDN)
+    set bind_pw $params(BindPW)
+    set server_type $params(ServerType)
+    set group_map $params(GroupMap)
+    # Write the group map into a Hash and normalize group names
+    array set group_map_hash $group_map
 
-    foreach var { username } {
-        regsub -all "{$var}" $base_dn [set $var] base_dn
-        regsub -all "{$var}" $bind_dn [set $var] bind_dn
-    }
-
+    # -------------------------------------------------------------------
+    # Get the LDAP user information
+    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
     set return_code [catch {
-        ns_log Notice "auth::ldap::authentication::Sync: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
-	exec ldapsearch -x -H $uri -b dc=genedata,dc=win (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+        ns_log Notice "auth::ldap::authentication::Sync: cmd='$cmd'"
+	eval "exec $cmd"
     } msg]
 
     # Extract the first line - it contains the error message if there is an issue.
@@ -544,6 +553,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
+    ns_log Notice "auth::ldap::authentication::Sync: return_code=$return_code, msg_first_line=$msg_first_line"
     if {0 != $return_code} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
@@ -553,9 +563,9 @@ ad_proc -public auth::ldap::authentication::Sync {
 	return [array get auth_info]
     }
 
-    # -----------------------------------------
-    # Successfully retreived user information
-    # Extract variables from AD output
+    # ------------------------------------------------------------------------
+    # Successfully retreived user information.
+    # Now extract variables from AD output
 
     set email ""
     set name ""
@@ -565,6 +575,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     set manager_name ""
     set disabled ""
     set department ""
+    set member_groups [list]
 
     # Extract fields from lines
     foreach line [split $msg "\n"] {
@@ -574,12 +585,16 @@ ad_proc -public auth::ldap::authentication::Sync {
 	if {[regexp {^manager\: (.*)} $line match value]} { set manager $value }
 	if {[regexp {^department\: (.*)} $line match value]} { set department $value }
 	if {[regexp {^userAccountControl\: (.*)} $line match value]} { set disabled $value }
+	if {[regexp {^memberOf\: (.*)} $line match value]} { lappend member_groups $value }
     }
     
     set name_pieces [split $name " "]
     set len [llength $name_pieces]
     set last_name [lrange $name_pieces [expr $len-1] $len]
     set first_names [lrange $name_pieces 0 [expr $len-1]]
+
+    ns_log Notice "auth::ldap::authentication::Sync: first_name=$first_names"
+    ns_log Notice "auth::ldap::authentication::Sync: last_name=$last_name"
 
     if {[regexp {^(.*)\ ([^\ ]*)$} $name match fn ln]} {
 	set first_names $fn
@@ -615,7 +630,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     ns_log Notice "auth::ldap::authentication::Sync: Synchronizing user: username=$username, email=$email, first_names=$first_names, last_name=$last_name, manager_name=$manager_name"
 
 
-    # -----------------------------------------
+    # ---------------------------------------------------------------
     # Check if the user already exists
 
     set uid [db_string uid "select user_id from users where username=:username" -default 0]
@@ -624,7 +639,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     if {0 == $uid} {
 
-	ns_log Notice "auth::ldap::authentication::Sync: before create_user"
+	ns_log Notice "auth::ldap::authentication::Sync: Creating a new user"
 	array set creation_info [auth::create_user \
 				     -username $username \
 				     -email $email \
@@ -662,24 +677,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     set auth [auth::get_register_authority]
     set user_data [list]
 
-    # Set the manager if exists
-    if {0 != $manager_id} {
-	db_dml set_manager "update im_employees set supervisor_id = :manager_id where employee_id = :user_id"
-    }
-
-    # Department
-    if {"" != [string trim $department]} {
-
-	# Check if we find the department in the cost centers
-	set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_code) = lower(:department)" -default 0]
-	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_label) = lower(:department)" -default 0] }
-	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_name) = lower(:department)" -default 0] }
-
-	if {0 != $department_id} { 
-	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id" 
-	}
-    }
-
+    # ---------------------------------------------------------------------
     # Make sure the "person" exists.
     # This may be not the case when creating a user from a party.
     set person_exists_p [db_string person_exists "select count(*) from persons where person_id = :user_id"]
@@ -718,6 +716,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     "
 
 
+    # ---------------------------------------------------------------------
     ns_log Notice "/users/new: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
     person::update \
 	-person_id $user_id \
@@ -743,6 +742,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 	db_dml add_users_contact "insert into users_contact (user_id) values (:user_id)" 
     }
 
+    # ---------------------------------------------------------------------
     # Add the user to the "Registered Users" group, because he would get strange problems otherwise
     set registered_users [db_string registered_users "select object_id from acs_magic_objects where name='registered_users'"]
     set reg_users_rel_exists_p [db_string member_of_reg_users "
@@ -758,14 +758,76 @@ ad_proc -public auth::ldap::authentication::Sync {
 	relation_add -member_state $member_state "membership_rel" $registered_users $user_id
     }
 
-    # Make the user member of the group employees if not already
-    catch {
-	set rel_id [relation_add -member_state $member_state "membership_rel" [im_profile_employees] $user_id]
-    }
-    set rel_id [db_string auth "select rel_id from acs_rels where object_id_one = :registered_users and object_id_two = :user_id" -default 0]
+    set rel_id [db_string auth "
+	select	rel_id
+	from	acs_rels
+	where	object_id_one = :registered_users and object_id_two = :user_id
+    " -default 0]
     db_dml update_relation "update membership_rels set member_state= :member_state where rel_id=:rel_id"
 
 
+
+
+    # ---------------------------------------------------------------------
+    # Make the user a member of the mapped groups.
+    # ToDo: Implement removing groups from a user as well.
+    foreach member_group $member_groups {
+	
+	# Try to remove lengthy group specs.
+	# Check for "CN=GroupName,..."
+	if {[regexp {^CN=([^,]+),} $member_group match gname]} { 
+	    ns_log Notice "auth::ldap::authentication::Sync: Reducing '$member_group' to '$gname'"
+	    set member_group $gname 
+	}
+
+	ns_log Notice "auth::ldap::authentication::Sync: Checking for group: $member_group"
+	if {[info exists group_map_hash($member_group)]} {
+	    set gid $group_map_hash($member_group)
+	    ns_log Notice "auth::ldap::authentication::Sync: Found group: $member_group: $gid"
+
+	    # Add the user to the group.
+	    ns_log Notice "auth::ldap::authentication::Sync: Adding user=$user_id to group_id=$gid"
+	    set member_state "approved"
+	    catch {
+		im_profile::add_member -profile_id $gid -user_id $user_id
+	    } err
+	}	
+    }
+
+    # ---------------------------------------------------------------------
+    # Set the manager if exists
+    if {0 != $manager_id} {
+	db_dml set_manager "update im_employees set supervisor_id = :manager_id where employee_id = :user_id"
+    }
+
+    # Department
+    if {"" != [string trim $department]} {
+
+	# Check if we find the department in the cost centers
+	set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_code) = lower(:department)" -default 0]
+	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_label) = lower(:department)" -default 0] }
+	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_name) = lower(:department)" -default 0] }
+	if {0 != $department_id} { 
+	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id" 
+	}
+
+	# Check if we can find the "department" in one of the im_companies
+	if {0 == $department_id} { 
+	    set company_id [db_string dept "
+		select	company_id
+		from	im_companies
+		where	(lower(company_path) = lower(:department)
+			OR lower(company_name) = lower(:department))
+	    " -default 0] 
+
+	    if {0 != $company_id} {
+		# Make the dude a full member of this company
+		im_biz_object_add_role $user_id $company_id [im_biz_object_role_full_member]
+	    }
+	}
+    }
+
+    # ---------------------------------------------------------------------
     # TSearch2: We need to update "persons" in order to trigger the TSearch2 triggers
     db_dml update_persons "
 		update persons

@@ -80,14 +80,9 @@ array set groups_hash $result_hash(objects)
 # Get the list of LDAP groups
 set ldap_group_names [array names groups_hash]
 
-# ad_return_complaint 1 "<pre>[join [array get groups_hash] "\n"]</pre>"
-
-
 # Define the list of ]po[ "profiles" (=high-level user groups)
 set profile_options [im_profile::profile_options_all -translate_p 0]    
 set profile_options [linsert $profile_options 0 [list "-- Don't map --" ""]]
-
-#	ad_return_complaint 1 $group_map
 
 set groups_select_html ""
 array set group_map_hash $group_map
