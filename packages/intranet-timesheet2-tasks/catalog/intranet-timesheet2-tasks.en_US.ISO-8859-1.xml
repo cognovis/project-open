@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-tasks" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-tasks" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Add_Dependency">Add Dependency</msg>
   <msg key="Admin_Tasks">Admin Tasks</msg>
@@ -46,6 +46,7 @@
   <msg key="Status">Status</msg>
   <msg key="Task_Code">Task Code</msg>
   <msg key="Task_Name">Task Name</msg>
+  <msg key="Task_Nr">Task Nr.</msg>
   <msg key="There_are_no_active_tasks">There are no active tasks for your parameters</msg>
   <msg key="Timesheet_Task">Timesheet Tasks</msg>
   <msg key="Timesheet_Tasks">Timesheet Tasks</msg>
@@ -53,5 +54,4 @@
   <msg key="Unable_to_delete_tasks">Unable to delete tasks</msg>
   <msg key="Unit_of_Measure">Unit of Measure</msg>
   <msg key="UoM">UoM</msg>
-  <msg key="Task_Nr">Task Nr.</msg>
 </message_catalog>

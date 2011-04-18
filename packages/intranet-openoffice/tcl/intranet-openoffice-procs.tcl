@@ -108,6 +108,11 @@ ad_proc -public intranet_openoffice::spreadsheet {
                         append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce3\"/>\n"
                     }
                 }
+
+                # Localize the string
+                set key [lang::util::suggest_key $column_name]
+                set column_name [lang::message::lookup "" intranet-core.$key $column_name]
+
                 append __header_defs " <table:table-cell office:value-type=\"string\"><text:p>$column_name</text:p></table:table-cell>\n"
                 set datatype_arr($variable_name) $datatype
                 lappend variables $variable_name

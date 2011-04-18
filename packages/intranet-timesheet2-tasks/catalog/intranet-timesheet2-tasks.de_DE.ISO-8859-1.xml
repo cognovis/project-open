@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-tasks" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-tasks" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Admin_Tasks">Aufgabenverwaltung</msg>
   <msg key="Apply">Anwenden</msg>
   <msg key="Bill">Abrechnungsfähig</msg>
-  <msg key="Billable_Units">Gebührenpflichtige Einheiten</msg>
-  <msg key="Cost_Center">Kostenstelle</msg>
+  <msg key="Billable_Units">Genehmigte Einheiten</msg>
+  <msg key="Bll">genehmigte h</msg>
+  <msg key="Cost_Center">Abteilung</msg>
   <msg key="Delete">löschen</msg>
   <msg key="Dependent_Objects_Exist">&amp;quot;Abhängige Objekte&amp;quot; (z.B. Zeiterfassungseinträge, ...) existieren für mindestens einer der Aufgaben: &amp;lt;br&amp;gt;
 
@@ -19,18 +20,26 @@
 
 </msg>
   <msg key="Description">Beschreibung</msg>
-  <msg key="Done">Erledigt</msg>
+  <msg key="Done">Prozent fertig</msg>
   <msg key="End">Ende</msg>
   <msg key="Filter_Tasks">Aufgabenfilter</msg>
-  <msg key="Log">Kontiert</msg>
+  <msg key="form_cost_center_help">Hier haben Sie die Möglichkeit der Aufgabe eine Abteilung zuzuordnen.</msg>
+  <msg key="form_full_name_help">Bitte geben Sie hier den Namen der Aufgabe an.</msg>
+  <msg key="form_percentage_completed_help">Bitte geben Sie hier nach eigener Einschätzung den Fertigstellungsgrad der Aufgabe ein.</msg>
+  <msg key="form_planned_units_help">Bitte geben Sie hier den geschätzten Aufwand für die Aufgabe ein.</msg>
+  <msg key="form_project_help">Bitte wählen Sie hier aus, zu welchem (Teil-) Projekt die Aufgabe gehört.</msg>
+  <msg key="form_short_name_help">Bitte geben Sie ein Kurzwort für die Aufgabe an.</msg>
+  <msg key="Lg">erfasste h</msg>
+  <msg key="Log">Kontierter Aufwand (h)</msg>
   <msg key="Material">Material</msg>
   <msg key="Name">Name</msg>
   <msg key="New_Timesheet_Task">Neue Zeiterfassungsaufgabe</msg>
   <msg key="No_permission_to_delete_a_task">Sie haben keine ausreichende Berechtigung, um eine Aufgabe zu löschen.</msg>
-  <msg key="Note">Hinweiß</msg>
+  <msg key="Note">Bemerkung</msg>
   <msg key="Percentage_completed">Prozentsatz abgeschlossen</msg>
-  <msg key="Plan">Geplant</msg>
-  <msg key="Planned_Units">geplante Einheiten</msg>
+  <msg key="Plan">Geplanter Aufwand (h)</msg>
+  <msg key="Planned_Units">geplanter Aufwand in Stunden</msg>
+  <msg key="Pln">geplante h</msg>
   <msg key="Save_Changes">Änderungen speichern</msg>
   <msg key="Short_Name">Kurzwort</msg>
   <msg key="Start">Start</msg>

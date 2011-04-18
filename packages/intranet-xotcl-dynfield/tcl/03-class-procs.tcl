@@ -520,6 +520,7 @@ namespace eval ::im::dynfield {}
     {-parent_id_column ""}
     {-page_size 20}
     {-page_number ""}
+    {-attributes ""}
 } {
     returns the SQL-query to select the CrItems of the specified object_type
     The object should be of a dynfield enable object though
@@ -535,10 +536,10 @@ namespace eval ::im::dynfield {}
     @param parent_id_column name of the parent_id column. Use full table_name like im_projects.parent_id
     @param publish_status one of 'live', 'ready', or 'production'
     @param base_table typically automatic view, must contain title and revision_id
+    @param attributes List of column names in the tables which we want to have as Attributes in the Object.
     @return sql query
 } {
     set tables [list]
-    set attributes [list]
     set id_column [my id_column]
     set left_joins ""
 
@@ -688,6 +689,7 @@ namespace eval ::im::dynfield {}
     {-parent_id_column ""}
     {-page_size 20}
     {-page_number ""}
+    {-attributes ""}
 } {
     Returns a set (ordered composite) of the answer tuples of 
     an 'instance_select_query' with the same attributes.
@@ -695,7 +697,8 @@ namespace eval ::im::dynfield {}
     method was called.
 
     
-    
+    @param attributes List of column names in the tables which we want to have as Attributes in the Object.
+    @see instance_select_query
 } {
     ns_log Notice "instantiate [self]"
     set s [my instantiate_objects -sql \
@@ -711,7 +714,8 @@ namespace eval ::im::dynfield {}
 		    -parent_id $parent_id \
 		    -parent_id_column $parent_id_column \
 		    -page_size $page_size \
-		    -page_number $page_number
+		    -page_number $page_number \
+            -attributes $attributes
 		   ] \
 	       -object_class "[self]"
 	  ]
@@ -873,6 +877,7 @@ namespace eval ::im::dynfield {}
 ::im::dynfield::Class ad_proc generate_spreadsheet {
     {-Objects:required}
     {-Elements ""}
+    {-view_name ""}
     {-ods_file ""}
     {-table_name ""}
     {-output_filename ""}
@@ -882,6 +887,8 @@ namespace eval ::im::dynfield {}
     
     The list is sorted in order of how the attributes should appear according to the object_type_id order
     
+    @param view_name Name of the view which will be used generate the columns
+    @param attribute_name List of attributes to limit the Elements in case we don't have a view_name
     @param object_type_ids This is a list of object_type_ids. Note that the order is important
 } {
 
@@ -893,82 +900,145 @@ namespace eval ::im::dynfield {}
         ad_return_error "Missing ODS" "We are missing your ODS file $ods_file . Please make sure it exists"
     }
 
-    if {$Elements eq ""} {
-        # get the Elements definition from the object_type
-        set Object [lindex [$Objects children] 0]
-        set object_type [[$Object class] object_type]
-        set Elements [::im::dynfield::Class elements -object_type "$object_type" -attribute_names $attribute_names]
-    }
+    # The table_name is not allowed to contain any quotes
+    regsub -all {\"} table_name {'} table_name
+    
+    template::multirow create columns visible_for variable_name datatype column_name
 
-    # This will become the list of elements (NOT Elements), which is a
-    # trimmed down list where we only take the first element which we
-    # find in Elements 
-    set elements [list]
-    set attributes [list]
-    foreach Element [$Elements children] {
-        set attribute_name [$Element attribute_name]
-        # Make sure we only append the element once!
-        if {[lsearch $attributes $attribute_name] <0} {
-            lappend attributes $attribute_name
-            lappend elements $Element
+    if {$view_name ne ""} {
+        # Get the "view" (=list of columns to show)
+        set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
+        if {0 == $view_id} {
+            ad_return_error Error "intranet_openoffice::spreadsheet: We didn't find view_name = $view_name"
+        }
+
+        # ---------------------- Get Columns ----------------------------------
+        # Define the column headers and column contents that
+        # we want to show:
+        #
+        
+        set variables [list]
+        set column_sql "
+         	select	*
+         	from	im_view_columns
+        	where	view_id=:view_id
+		    and group_id is null
+         	order by sort_order"
+        
+        
+        db_foreach column_list_sql $column_sql {
+            template::multirow append columns $visible_for $variable_name $datatype $column_name
+        }
+    } else {
+        
+        if {$Elements eq ""} {
+            # get the Elements definition from the object_type
+            set Object [lindex [$Objects children] 0]
+            set object_type [[$Object class] object_type]
+            set Elements [::im::dynfield::Class elements -object_type "$object_type" -attribute_names $attribute_names]
+        }
+        
+        # This will become the list of elements (NOT Elements), which is a
+        # trimmed down list where we only take the first element which we
+        # find in Elements 
+        set elements [list]
+        set attributes [list]
+        foreach Element [$Elements children] {
+            set attribute_name [$Element attribute_name]
+            # Make sure we only append the element once!
+            if {[lsearch $attributes $attribute_name] <0} {
+                lappend attributes $attribute_name
+                lappend elements $Element
+            }
+        }
+        
+        foreach Element $elements {
+            template::multirow append columns "" "[$Element attribute_name]_deref" [$Element widget] [$Element pretty_name]
         }
     }
-    
-    # Now we can loop through the Elements
+
+    # Now we can loop through the Column
     # Set the column definitions and the first row with the header
     set __column_defs ""
     set __header_defs ""
-    foreach Element $elements {
-        switch [$Element widget] {
-            date {
-                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce1\"/>\n"
-            }
-            currency {
-                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce2\"/>\n"
-            }
-            textarea {
-                # Don't shrink to fit textareas. But Autobreak them
-                # this is done using style ce4
-                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce4\"/>\n"
-            }
-            default {
-                # style ce3 is set to "shrink to fit", so the size of
-                # the font automatically decreases if needed
-                append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce3\"/>\n"
+    
+    template::multirow foreach columns {
+
+        # We need to check the visibility on the calling procedure....
+        if {"" == $visible_for || [eval $visible_for]} {
+            if {$variable_name ne ""} {
+                switch $datatype {
+                    date {
+                        append __column_defs "<table:table-column table:style-name=\"co2\" table:default-cell-style-name=\"ce4\"/>\n"
+                    }
+                    currency {
+                        append __column_defs "<table:table-column table:style-name=\"co2\" table:default-cell-style-name=\"ce7\"/>\n"
+                    }
+                    float {
+                        append __column_defs "<table:table-column table:style-name=\"co2\" table:default-cell-style-name=\"ce1\"/>\n"
+                    }
+                    percentage {
+                        append __column_defs "<table:table-column table:style-name=\"co2\" table:default-cell-style-name=\"ce5\"/>\n"
+                    }
+                    integer {
+                        append __column_defs "<table:table-column table:style-name=\"co2\" table:default-cell-style-name=\"ce2\"/>\n"
+                    }
+                    textarea {
+                        # Don't shrink to fit textareas. But Autobreak them
+                        # this is done using style ce4
+                        append __column_defs "<table:table-column table:style-name=\"co3\" table:default-cell-style-name=\"ce8\"/>\n"
+                    }
+                    default {
+                        # style ce3 is set to "shrink to fit", so the size of
+                        # the font automatically decreases if needed
+                        append __column_defs "<table:table-column table:style-name=\"co1\" table:default-cell-style-name=\"ce3\"/>\n"
+                    }
+                }
+
+                # Localize the string
+                set key [lang::util::suggest_key $column_name]
+                set column_name [lang::message::lookup "" intranet-core.$key $column_name]
+
+                append __header_defs " <table:table-cell office:value-type=\"string\"><text:p>$column_name</text:p></table:table-cell>\n"
+                set datatype_arr($variable_name) $datatype
+                lappend variables $variable_name
             }
         }
-        append __header_defs " <table:table-cell office:value-type=\"string\"><text:p>[$Element pretty_name]</text:p></table:table-cell>\n"
-    } 
+    }
     
     set __output $__column_defs
-
+    
     # Set the first row
     append __output "<table:table-row table:style-name=\"ro1\">\n$__header_defs</table:table-row>\n"
-
+    
     # No create the single rows for each Object
     foreach Object [$Objects children] {
         append __output "<table:table-row table:style-name=\"ro1\">\n"
-        
-        foreach Element $elements {
-            set attribute_name [$Element attribute_name]
-            switch [$Element widget] {
+
+        foreach variable $variables {        
+            set value [$Object set $variable]
+            switch $datatype_arr($variable) {
                 date {
-                    append __output " <table:table-cell office:value-type=\"date\" office:date-value=\"[$Object set ${attribute_name}_deref]\"></table:table-cell>\n"
+                    append __output " <table:table-cell office:value-type=\"date\" office:date-value=\"[lc_time_fmt $value %F]\"></table:table-cell>\n"
                 }
                 currency {
-                    append __output " <table:table-cell office:value-type=\"currency\" office:currency=\"EUR\" office:value=\"[$Object set ${attribute_name}_deref]\"></table:table-cell>\n"
+                    append __output " <table:table-cell office:value-type=\"currency\" office:currency=\"EUR\" office:value=\"$value\"></table:table-cell>\n"
+                }
+                percentage {
+                    if {$value ne ""} {
+                        set value [expr $value / 100]
+                    }
+                    append __output "<table:table-cell office:value-type=\"percentage\" office:value=\"$value\"></table:table-cell>"
+                }
+                float {
+                    append __output "<table:table-cell office:value-type=\"float\" office:value=\"$value\"></table:table-cell>"
                 }
                 default {
-                    append __output " <table:table-cell office:value-type=\"string\"><text:p>[$Object set ${attribute_name}_deref]</text:p></table:table-cell>\n"
+                    append __output " <table:table-cell office:value-type=\"string\"><text:p>$value</text:p></table:table-cell>\n"
                 }
             }
         }
         append __output "</table:table-row>\n"
-    }
-    
-    # Parse and return the file
-    if {$output_filename eq ""} {
-        set output_filename "${object_type}.ods"
     }
     intranet_oo::parse_content -template_file_path $ods_file -output_filename $output_filename
 }
