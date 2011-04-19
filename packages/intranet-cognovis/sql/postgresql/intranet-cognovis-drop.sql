@@ -742,3 +742,55 @@ END;' language 'plpgsql';
 
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
+
+
+
+-- Disable components
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer AS '
+DECLARE
+	v_plugin_id	integer;
+	row		record;
+
+BEGIN
+    -- Disable the project wiki component (for projects)
+
+    SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Wiki Component'';
+
+    UPDATE im_component_plugins SET enabled_p = ''t'' WHERE plugin_id = v_plugin_id
+
+    -- Disable the project conf component (for projects)
+
+    SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Configuration Items'';
+
+    UPDATE im_component_plugins SET enabled_p = ''t'' WHERE plugin_id = v_plugin_id
+
+    -- Disable the ]project-open[ news component from the home screen.
+    FOR row IN 
+        SELECT plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/index'' AND plugin_name = ''Home &#93;po&#91; News''
+    LOOP
+        UPDATE im_component_plugins SET enabled_p = ''t'' WHERE plugin_id = row.plugin_id;
+    END LOOP;
+
+    -- Disable the intranet-filestorage components
+    FOR row IN
+        SELECT plugin_id FROM im_component_plugins WHERE package_name = ''intranet-filestorage''
+    LOOP
+        UPDATE im_component_plugins SET enabled_p = ''t'' WHERE plugin_id = row.plugin_id;
+    END LOOP;
+
+    -- Disable the project note component.
+
+    SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Notes'';
+
+    UPDATE im_component_plugins SET enabled_p = ''t'' WHERE plugin_id = v_plugin_id
+
+    -- Disable the Translation Workflow Rating Survey (it is one of two surveys for each project)
+    SELECT survey_id INTO v_plugin_id FROM survsimp_surveys WHERE name = ''Translation Workflow Rating: Translator'' AND short_name = ''Translation Workflow'';
+    UPDATE survsimp_surveys SET enabled_p = ''f'' WHERE survey_id = v_plugin_id;
+
+    
+END;' language 'plpgsql';
+
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
