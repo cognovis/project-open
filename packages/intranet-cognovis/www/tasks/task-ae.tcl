@@ -20,7 +20,7 @@ ad_page_contract {
 }
 
 # This is a task !
-set project_type_id [im_timesheet_task_type_standard]
+set project_type_id 100
 
 
 # ------------------------------------------------------------------

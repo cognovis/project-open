@@ -5,4 +5,3 @@ ad_page_contract {
 }
 
 
-set url "/xowiki/index"

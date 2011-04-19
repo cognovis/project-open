@@ -1,3 +1,1 @@
-
-
-<include src="/packages/xowiki/lib/view" url="@url@" template_file="view-links">
+<include src="/packages/xowiki/lib/view" url="@url;noquote@" return_url="@return_url;noquote@">
