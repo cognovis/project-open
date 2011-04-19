@@ -235,3 +235,17 @@ if {0} {
     
     return $dynfield_ids
 }
+
+::xo::db::Object ad_instproc get_integer {
+    {-attribute_name}
+} {
+    returns the value of attribute_name as an integer, with 0 being the default
+} {
+    set value [my set $attribute_name]
+    if {$value eq ""} {set value 0}
+    if {[string is integer -strict $value]} {
+        return $value
+    } else {
+        return ""
+    }
+}

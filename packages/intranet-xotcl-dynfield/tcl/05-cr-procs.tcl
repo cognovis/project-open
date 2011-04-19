@@ -148,10 +148,9 @@ ad_library {
 
 ::im::dynfield::CrClass ad_instproc create_object_type {} {
     We need to save additional stuff when we create an object_type for dynfields.
-} {    
-    # First generate the normal ::xo::db::CrClass
+} { 
     next
-
+    
     # Set the needed attributes so we can insert them
     foreach attribute [list object_type type_category_type status_type_table status_column type_column] {
         set $attribute [my $attribute]
@@ -763,8 +762,7 @@ ObjectCache instproc flush {-id:required} {
 
 ::im::dynfield::CrClass create ::im::dynfield::CrItem \
     -superclass ::xo::db::CrItem \
-    -table_name cr_revisions -id_column revision_id \
-    -object_type content_revision
+    -table_name im_xo_items -id_column critem_id
 
 
 ::im::dynfield::CrItem instproc insert {} {my log no-insert;}

@@ -1980,7 +1980,6 @@ update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a h
 
 update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 91002;
 
-
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE 
@@ -1996,3 +1995,4 @@ END;' language 'plpgsql';
 
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
+

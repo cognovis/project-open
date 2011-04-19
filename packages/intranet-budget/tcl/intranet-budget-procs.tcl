@@ -87,11 +87,15 @@ ad_proc -public im_budget_summary_component {
     -return_url
 } { 
 } {
+    set budget_id [db_string budget_id "select item_id from cr_items where parent_id = :project_id and content_type = 'im_budget' limit 1" -default ""]
     
-    set params [list  [list base_url "/intranet-budget/"]  [list user_id $user_id] [list project_id $project_id] [list return_url [im_biz_object_url $project_id]]]
-    
-    set result [ad_parse_template -params $params "/packages/intranet-budget/lib/budget-summary"]
-    return [string trim $result]
-    
+    if {$budget_id ne ""} {
+        set params [list  [list base_url "/intranet-budget/"]  [list user_id $user_id] [list project_id $project_id] [list return_url [im_biz_object_url $project_id]]]
+        
+        set result [ad_parse_template -params $params "/packages/intranet-budget/lib/budget-summary"]
+        return [string trim $result]
+    } else {
+        return ""
+    }
 }
     

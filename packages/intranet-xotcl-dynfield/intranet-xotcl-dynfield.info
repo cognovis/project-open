@@ -14,7 +14,7 @@
         <maturity>0</maturity>
 
         <provides url="intranet-xotcl-dynfield" version="0.1d1"/>
-
+        <requires url="intranet-dynfield" version="4.0.2.0.1"/>
         <callbacks>
         </callbacks>
         <parameters>

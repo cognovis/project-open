@@ -36,7 +36,7 @@ set cost_ids [db_list costs {select item_id from cr_items where parent_id = :bud
 set cost_estimates 0
 foreach item_id $cost_ids {
     set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]            
-    incr cost_estimates [$Cost amount]
+    incr cost_estimates [$Cost get_integer -attribute_name amount]
 }
 set cost_estimates [expr $cost_estimates - $provider_bills]
 append budget_cost_html "<td align=right>- $cost_estimates $project_budget_currency</td>\n"
@@ -95,7 +95,7 @@ set hour_ids [db_list hours {select item_id from cr_items where parent_id = :bud
 set budgeted_hours 0
 foreach item_id $hour_ids {
     set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]            
-    incr budgeted_hours [$Hour hours]
+    incr budgeted_hours [$Hour get_integer -attribute_name hours]
 }
 
 # We reduce the budgeted_hours if they are already showing up in the
