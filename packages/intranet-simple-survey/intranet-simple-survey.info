@@ -8,20 +8,21 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-simple-survey</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-simple-survey-4.0.1.0.0.apm">
+    <version name="4.0.1.0.1" url="http://www.project-open.org/download/apm/intranet-simple-survey-4.0.1.0.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Allows to associated &quot;Simple Surveys&quot; with business objects such as users, projects and companies.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">&quot;Simple Surveys&quot; are able to capture semi-structured information such as project reports, provider evaluations, ... This module allows to associate recurring surveys for objects and to track their completion</description>
 
-        <provides url="intranet-simple-survey" version="3.4.1.0.3"/>
-        <requires url="intranet-core" version="3.2"/>
-        <requires url="simple-survey" version="0.2"/>
+        <provides url="intranet-simple-survey" version="4.0.1.0.1"/>
+        <requires url="intranet-core" version="4.0.1.0.0"/>
+        <requires url="simple-survey" version="0.4"/>
 
         <callbacks>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultProjectReportSurveyName"  default="Project Status Report" description="Name of the survey that should be shown by default in the /intranet-simple-survey/reporting/project-reports project reports page. The default is 'Project Status Report'."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ValidColors"  default="white gray black green yellow red purple blue cyan clear" description="Valid choices for colors."/>
         </parameters>
 
     </version>

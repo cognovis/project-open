@@ -68,7 +68,7 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 
 # Valid colors for color coding
-set valid_colors {white gray black green yellow red purple blue cyan clear}
+set valid_colors [split [parameter::get_from_package_key -package_key "intranet-simple-survey" -parameter "ValidColors" -default "white gray black green yellow red purple blue cyan clear"] " "]
 
 
 # ---------------------------------------------------------------
@@ -133,17 +133,24 @@ set color_question_sql "
 		survsimp_question_choices sqc, 
 		survsimp_questions sq
 	where 
-		sqc.question_id = sq.question_id and
-		lower(trim(sqc.label)) in ('[join $valid_colors "', '"]')
+		sqc.question_id = sq.question_id
 	order by 
 		sq.question_id, sq.question_text
 "
 db_foreach color_question $color_question_sql {
+    
+    # Run I18N through the colors and use the english term
+    set label [lang::util::localize $label "en_US"]
+
     # First ocurrence? Set to question_id to indicate that it's OK.
     if {![info exists color_question($question_id)]} { set color_question($question_id) $question_id }
-    if {[lsearch $valid_colors $label] < 0} {
-	# Not a valid color. Set to "" to mark as bad.
-	set color_question($question_id) ""
+
+    # Only use the questions which have a label which matches a color
+    # Make this match case insensitive
+
+    if {[lsearch -regexp $valid_colors (?i)$label]<0} {
+        # Not a valid color. Set to "" to mark as bad.
+        set color_question($question_id) ""
     }
 }
 
@@ -153,6 +160,7 @@ foreach qid [array names color_question] {
     set question_id $color_question($qid)
     if {"" != $question_id} { lappend color_question_list $question_id }
 }
+
 
 # Extract the surveys of the "pure color questions" and store
 # in hash array for faster access
@@ -232,7 +240,7 @@ set date_sql "
 			select distinct 
 				to_char(im_day_enumerator, 'J') as monday_julian 
 			from	im_day_enumerator (:start_date::date, :end_date::date)
-			where	to_char(im_day_enumerator, 'D') = 2
+			where	to_char(im_day_enumerator, 'D') = '2'
 			order by monday_julian
 		) e
 "
@@ -245,42 +253,43 @@ set date_sql "
 set border 0
 set gif_size 16
 if {[info exists color_survey($survey_id)]} {
-
+    
     # A "color survey" with at least one "color question" consisting of know color codes
     db_foreach inner $inner_sql {
-	set key "$project_id-$monday_julian"
-	
-	set color_question_p [info exists color_question($question_id)]
-	if {$color_question_p && "" == $color_question($question_id)} { set color_question_p 0 }
-	if {!$color_question_p} { continue }
-	
-	# Convert Green/Yellow/Red responses into BB images
-	set color [string tolower $response]
-	set alt_text $question_text
-	set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
-	set html "<a href='$one_response_url$response_id'>$gif</a>\n"
-	
-	# Append html to the cell
-	set val ""
-	if {[info exists report_hash($key)]} { set val $report_hash($key) }
-	if {"" != $val} { append val "<br>" }
-	append val $html
-	set report_hash($key) $val
+        set key "$project_id-$monday_julian"
+        
+        set color_question_p [info exists color_question($question_id)]
+        if {$color_question_p && "" == $color_question($question_id)} { set color_question_p 0 }
+        if {!$color_question_p} { continue }
+        
+        # Convert Green/Yellow/Red responses into BB images
+        set color [string tolower [lang::util::localize $response "en_US"]]
+        
+        set alt_text $question_text
+        set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
+        set html "<a href='$one_response_url$response_id'>$gif</a>\n"
+        
+        # Append html to the cell
+        set val ""
+        if {[info exists report_hash($key)]} { set val $report_hash($key) }
+        if {"" != $val} { append val "<br>" }
+        append val $html
+        set report_hash($key) $val
     }
     
 } else {
-
+    
     db_foreach inner $inner_sql {
-	set key "$project_id-$monday_julian"
-	
-	set alt_text $survey_name
-	set gif [im_gif "bb_green" $alt_text $border $gif_size $gif_size]
-	set html "<a href='$one_response_url$response_id'>$gif</a>\n"
-	
-	# Write to HTML cell (no append!)
-	set report_hash($key) $html
+        set key "$project_id-$monday_julian"
+        
+        set alt_text $survey_name
+        set gif [im_gif "bb_green" $alt_text $border $gif_size $gif_size]
+        set html "<a href='$one_response_url$response_id'>$gif</a>\n"
+        
+        # Write to HTML cell (no append!)
+        set report_hash($key) $html
     }
-
+    
 }
 
 
@@ -317,20 +326,20 @@ foreach project_tuple $left_dim {
     set status [lindex $project_tuple 3]
     set type_id [lindex $project_tuple 4]
     set type [lindex $project_tuple 5]
-
+    
     set row_html "<tr$bgcolor([expr $ctr % 2])><td><a href='$project_url$project_id'>$project_name</a></td>\n"
-
+    
     foreach date_tuple $top_dim {
-	set monday_julian [lindex $date_tuple 0]
-	set year [lindex $date_tuple 1]
-	set week [lindex $date_tuple 2]
-
-	set key "$project_id-$monday_julian"
-	set val ""
-	if {[info exists report_hash($key)]} { set val $report_hash($key) }
-	append row_html "<td>$val</td>\n"
+        set monday_julian [lindex $date_tuple 0]
+        set year [lindex $date_tuple 1]
+        set week [lindex $date_tuple 2]
+        
+        set key "$project_id-$monday_julian"
+        set val ""
+        if {[info exists report_hash($key)]} { set val $report_hash($key) }
+        append row_html "<td>$val</td>\n"
     }
-
+    
     append row_html "</tr>\n"
     append body_html $row_html
     incr ctr
