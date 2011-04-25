@@ -183,7 +183,7 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
 end;' language 'plpgsql';
 
 
--- Create a plugin for the ProjectViewPage.
+-- Create a plugin for the Company View Page.
 SELECT im_component_plugin__new (
         null,                           -- plugin_id
         'im_component_plugin',          -- object_type
@@ -347,6 +347,8 @@ returns integer as '
 select inline_1 ();
 drop function inline_1();
 
+
+# create menu "Rechnung auf Basis Kunden/Mitarbeiter Preisliste anlegen"
 create or replace function inline_1 ()
 returns integer as '
 declare
@@ -383,6 +385,15 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+
+
+select acs_privilege__create_privilege('admin_company_price_matrix','Admin Company Price Matrix','Admin Company Price Matrix');
+select acs_privilege__add_child('admin', 'admin_company_price_matrix');
+
+select im_priv_create('admin_company_price_matrix', 'Accounting');
+select im_priv_create('admin_company_price_matrix', 'P/O Admins');
+select im_priv_create('admin_company_price_matrix', 'Senior Managers');
 
 
 
