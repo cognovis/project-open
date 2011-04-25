@@ -203,9 +203,10 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
                   </td>
             "
 	} else {
+	    if { ""==$amount } {set amount "-"}
             append body_html "
                   <td align=middle>
-                    $amount [im_currency_select currency.$user_id $currency]
+                    $amount $currency
                   </td>
             "
 	}     
@@ -372,7 +373,7 @@ from
 	im_companies c
 where 
 	p.company_id=:company_id
-	and p.company_id=c.company_id(+)
+	and p.company_id=c.company_id
 order by
 	currency,
 	uom_id,
