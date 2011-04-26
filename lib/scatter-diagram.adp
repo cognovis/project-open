@@ -6,7 +6,7 @@
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 
     window.store1 = Ext.create('Ext.data.JsonStore', {
-        fields: ['x_axis', 'y_axis'],
+        fields: ['x_axis', 'y_axis', 'color', 'diameter'],
         data: @data_json;noquote@
     });
 
