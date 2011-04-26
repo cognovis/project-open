@@ -35,7 +35,7 @@ set data_list {}
 set i 0
 db_foreach scatter_sql $sql {
     if {$i > 10} { continue }
-    lappend data_list "{x_axis: $x_axis, y_axis: $y_axis}"
+    lappend data_list "{x_axis: $x_axis, y_axis: $y_axis, color: '$color', diameter: $diameter}"
     incr i
     
 }
