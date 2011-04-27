@@ -28,6 +28,7 @@ ad_library {
 
 namespace eval imap {}
 
+
 ad_proc -public imap::start_session {
     {-mailbox ""}
 } {
@@ -56,6 +57,56 @@ ad_proc -public imap::start_session {
 
     return $session
 }    
+
+ad_proc -public imap::start_channel {
+} {
+    Returns a channel to the server using the IMAP4 pure TCL implementation
+} {
+
+    set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
+    if {$mailbox ne ""} {
+        set root_mailbox "${root_mailbox}.${mailbox}"
+    }
+
+    # Get the IMAP Information
+    set imap_server [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPServer"]
+    set imap_user [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPUser"]
+    set imap_password [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPPassword"]
+    set imap_ssl_p [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPSSLP" -default 1]
+    
+    # Open a session
+    if {$imap_ssl_p} {
+        set session [ns_imap open -mailbox "\{$imap_server/ssl\}$root_mailbox" -user $imap_user -password $imap_password -expunge]
+    } else {
+        set session [ns_imap open -mailbox "\{$imap_server\}$root_mailbox" -user $imap_user -password $imap_password -expunge]
+    }
+
+    return $session
+}    
+
+ad_proc -public imap::full_mbox_name {
+    {-mailbox}
+} {
+    Returns the fully qualified mailbox name
+
+    @param mailbox Mailbox relative to the root_mailbox
+} {
+    set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
+    if {$mailbox ne ""} {
+        set root_mailbox "${root_mailbox}.${mailbox}"
+    }
+
+    # Get the IMAP Information
+    set imap_server [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPServer"]
+    set imap_ssl_p [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPSSLP" -default 1]
+    
+    # Open a session
+    if {$imap_ssl_p} {
+        return "\{$imap_server/ssl\}$root_mailbox"
+    } else {
+        return "\{$imap_server\}$root_mailbox"
+    }
+}
 
 ad_proc -public imap::end_session {
     {-session_id:required}
