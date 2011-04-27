@@ -52,7 +52,7 @@ if {![exists_and_not_null n_past_days]} {
 }
 
 if {![exists_and_not_null fs_url]} {
-    set fs_url [ad_conn package_url]
+    set fs_url "/file-storage/"
 }
 
 set folder_name [lang::util::localize [fs::get_object_name -object_id  $folder_id]]
@@ -345,7 +345,7 @@ db_multirow -extend {label alt_icon icon last_modified_pretty content_size_prett
             set new_version_url {}
             set icon "/resources/file-storage/folder.gif"
             set alt_icon #file-storage.folder#
-            set file_url [export_vars -base "${fs_url}index" {{folder_id $object_id} return_url}]
+            set file_url [export_vars -base "/intranet-fs/index" {{folder_id $object_id} {project_id $project_id} return_url}]
             set download_link [_ file-storage.Download]
             set download_url "[export_vars -base "${fs_url}download-zip" -url {object_id}]"
         }
