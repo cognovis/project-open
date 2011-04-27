@@ -21,6 +21,9 @@ declare
 	v_str			text;
 	row			RECORD;
 begin
+
+	RAISE NOTICE ''In: im_workflow__assign_to_group(integer, text) p_task_id: %'', p_task_id;
+
 	-- Get information about the transition and the "environment"
 	select	tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
 	into	v_transition_key, v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
@@ -33,6 +36,8 @@ begin
 
 	select	group_id, group_name into v_group_id, v_group_name from groups
 	where	trim(lower(group_name)) = trim(lower(p_custom_arg));
+
+	RAISE NOTICE ''In: im_workflow__assign_to_group(integer, text) group_id: %'', v_group_id;
 
 	IF v_group_id is not null THEN
 		v_journal_id := journal_entry__new(
