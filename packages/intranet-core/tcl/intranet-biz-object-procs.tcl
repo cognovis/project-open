@@ -139,6 +139,7 @@ ad_proc -public im_biz_object_member_ids { object_id } {
 		acs_rels r
 	where
 		r.object_id_one=:object_id
+    and r.rel_type = 'im_biz_object_member'
     "
     set result [db_list im_biz_object_member_ids $sql]
     return $result
