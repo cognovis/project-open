@@ -35,7 +35,6 @@ ad_page_contract {
     url:onevalue
     folders:multirow
     n_folders:onevalue
-   
 }
 
 set user_id [ad_conn user_id]

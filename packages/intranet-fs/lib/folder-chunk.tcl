@@ -7,11 +7,16 @@ ad_page_contract {
 } -query {
     {orderby:optional}
 } -properties {
+    project_id:onevalue
     folder_name:onevalue
     contents:multirow
     content_size_total:onevalue
     page_num
 }
+
+
+ns_log Notice "PAGE FOLDER-CHUNK.TCL"
+ns_log Notice "$project_id"
 
 set return_url [util_get_current_url]
 if {![exists_and_not_null folder_id]} {
@@ -232,6 +237,7 @@ template::list::create \
     } \
     -pass_properties [list target_attr] \
     -filters {
+	project_id {}
         folder_id {hide_p 1}
         page_num
     } \
