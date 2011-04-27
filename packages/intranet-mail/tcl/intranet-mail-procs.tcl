@@ -182,7 +182,13 @@ ad_proc -public im_mail_project_component {
         set return_url [im_biz_object_url $project_id]
     }
     
-    set params [list  [list object $project_id] [list return_url $return_url]]
+    set object [ns_queryget object]
+    set page [ns_queryget page]
+    set messages_orderby [ns_queryget messages_orderby]
+    set params [list  [list return_url $return_url] [list project_id $project_id] [list pass_through_vars [list project_id]] [list page $page] [list messages_orderby $messages_orderby]]
+    if {$object eq ""} {
+        lappend params [list object $project_id] 
+    }
     set result [ad_parse_template -params $params "/packages/intranet-mail/lib/messages"]
     return [string trim $result]
     

@@ -49,8 +49,8 @@ set page_title [ad_conn instance_name]
 set context [list "index"]
 
 set required_param_list [list]
-set optional_param_list [list party]
-set optional_unset_list [list pkg_id object recipient sender]
+set optional_param_list [list party pass_through_vars]
+set optional_unset_list [list pkg_id object recipient sender messages_orderby page]
 
 foreach required_param $required_param_list {
     if {![info exists $required_param]} {
@@ -103,6 +103,10 @@ set filters [list \
 		 } 
 	    ]
 
+foreach pass_through_var $pass_through_vars {
+    lappend filters $pass_through_var {}
+}
+
 # If we query for an organization (company)
 if { [apm_package_installed_p contacts] && [exists_and_not_null recipient]} {
     set org_p [organization::organization_p -party_id $recipient] 
@@ -133,6 +137,7 @@ template::list::create \
     -selected_format normal \
     -multirow messages \
     -key acs_mail_log.log_id \
+    -orderby_name "messages_orderby" \
     -page_size $page_size \
     -page_flush_p 1 \
     -page_query_name "messages_pagination" \
@@ -184,7 +189,7 @@ template::list::create \
 	sent_date {
 	    orderby sent_date
 	    label "[_ intranet-mail.Sent_Date]"
-	}
+	} 
     } -formats {
         normal {
             label "Table"
@@ -192,7 +197,6 @@ template::list::create \
             row $rows_list
         }
     } -filters $filters \
-
 
 db_multirow -extend { file_ids object_url sender_name message_url recipient package_name package_url url_message_id download_files} messages select_messages { } {
 
