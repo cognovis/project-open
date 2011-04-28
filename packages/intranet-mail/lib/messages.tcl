@@ -37,7 +37,7 @@ ad_page_contract {
     {emp_mail_f:optional 1}
     sender:optional
     object:optional
-    {orderby:optional "sent_date,desc"}
+    {messages_orderby:optional "sent_date,desc"}
 } -properties {
     show_filter_p
     acs_mail_log:multirow 
@@ -50,7 +50,7 @@ set context [list "index"]
 
 set required_param_list [list]
 set optional_param_list [list party pass_through_vars]
-set optional_unset_list [list pkg_id object recipient sender messages_orderby page]
+set optional_unset_list [list pkg_id object recipient sender page]
 
 foreach required_param $required_param_list {
     if {![info exists $required_param]} {
@@ -79,6 +79,7 @@ if { ![exists_and_not_null show_filter_p] } {
 if { ![exists_and_not_null page_size] } {
     set page_size 5
 }
+
 
 set tracking_url [apm_package_url_from_key "intranet-mail"]
 # Wich elements will be shown on the list template
@@ -246,6 +247,9 @@ db_multirow -extend { file_ids object_url sender_name message_url recipient pack
     set object_url "/o/$object_id"
 }
 
-
- 
+if {[exists_and_not_null object]} {
+    set mail_url [export_vars -base "${tracking_url}mail" -url {{object_id $object} return_url}]
+} else {
+    set mail_url ""
+}
 ad_return_template

@@ -19,6 +19,7 @@
         <requires url="acs-mail-lite" version="5.6.0"/>
 
         <callbacks>
+            <callback type="after-install"  proc="intranet-mail::package_install"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPServer"  description="DNS name for your IMAP Server"/>

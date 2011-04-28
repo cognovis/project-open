@@ -59,7 +59,7 @@ ad_proc -public -callback imap::incoming_email -impl intranet-mail-link_mails {
 
     # Figure out the object_id from the subject
     set object_ids [intranet-mail::extract_object_ids -subject $email(subject)]
-    
+    ns_log Notice "Loading imap mails:: $object_ids"
     if {$object_ids eq ""} {
         # We did not find an object_id in the subject. 
         # Check if the from_addr has a valid SLA
@@ -68,18 +68,25 @@ ad_proc -public -callback imap::incoming_email -impl intranet-mail-link_mails {
             # a sender, keep it unprocessed.
             set unprocessed_p 1
         } else {
-            # Find out the company
-            set company_id [db_string get_company_id "select object_id_one from acs_rels ar, registered_users ru where ar.object_id_two = ru.user_id and ru.user_id = :from_party_id" -default ""]
-            if {$company_id ne ""} {
-                # Find the SLA
-                set object_ids [db_string get_sla_project_id "select project_id from im_projects where company_id = :company_id and project_type_id = [im_project_type_sla] order by project_id asc limit 1" -default ""]
-            } else {
-                set object_ids ""
-            }
-            if {$object_ids eq ""} {
-                set unprocessed_p 1
-            }
-        }
+
+	    # Check if the sender is an employee. If he is, move to unprocessed directly.
+	    if {[im_user_is_employee_p $from_party_id]} {
+		set unprocessed_p 1
+	    } else {
+
+		# Find out the company
+		set company_id [db_string get_company_id "select object_id_one from acs_rels ar, registered_users ru, im_companies ic where ar.object_id_one = ic.company_id and ar.object_id_two = ru.user_id and ru.user_id = :from_party_id" -default ""]
+		if {$company_id ne ""} {
+		    # Find the SLA
+		    set object_ids [db_string get_sla_project_id "select project_id from im_projects where company_id = :company_id and project_type_id = [im_project_type_sla] order by project_id asc limit 1" -default ""]
+		} else {
+		    set object_ids ""
+		}
+		if {$object_ids eq ""} {
+		    set unprocessed_p 1
+		}
+	    }
+	}
     }
 
     # Get some defaults
@@ -325,18 +332,15 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
 
     # Deal with the recipients and find out the ids, so we can
     # correctly map them
-    set to_recipients [split $to_addr ","]
-    set cc_recipients [split $cc_addr ","]
-    set bcc_recipients [split $bcc_addr ","]
-    set recipients [concat $to_recipients cc_recipients bcc_recipients]
+    set recipients [concat $to_addr $cc_addr $bcc_addr]
     db_foreach party "select party_id, email from parties where email in ([template::util::tcl_to_sql_list $recipients])" {
         set party($email) $party_id
     }
     
-    # First the to_recipients
+    # First the to_addr
     set to_addr_list [list]
     set recipient_ids [list]
-    foreach email $to_recipients {
+    foreach email $to_addr {
         # If we have a party_id we should link it up and not put it in
         # the to_addr list
         if {[info exists party($email)]} {
@@ -347,10 +351,10 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
     }
 
 
-    # cc_recipients
+    # cc_addr
     set cc_addr_list [list]
     set cc_ids [list]
-    foreach email $cc_recipients {
+    foreach email $cc_addr {
         if {[info exists party($email)]} {
             lappend cc_ids $party($email)
         } else {
@@ -358,10 +362,9 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
         }
     }
 
-    # First the to_recipients
     set bcc_addr_list [list]
     set bcc_ids [list]
-    foreach email $bcc_recipients {
+    foreach email $bcc_addr {
         # If we have a party_id we should link it up and not put it in
         # the to_addr list
         if {[info exists party($email)]} {

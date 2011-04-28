@@ -275,3 +275,22 @@ ad_proc -public intranet-mail::log_add {
 
     return $log_id
 }	       
+
+ad_proc -public intranet-mail::load_mails {} {
+    Scheduled procedure that will scan for mails
+} {
+    # SemP: Only allow one process to process...
+    if {[nsv_incr intranet-mail_load_mails check_mails_p] > 1} {
+	nsv_incr intranet-mail_load_mails check_mails_p -1
+	return
+    }
+	
+    catch {
+	ns_log Notice "intranet-mail_load_mails.scan_mails: about to load qmail queue"
+	imap::load_mails
+    } err_msg
+
+    # SemV: Release Semaphore
+    nsv_incr intranet-mail_load_mails check_mails_p -1
+}
+

@@ -441,8 +441,7 @@ namespace eval acs_mail_lite {
 
         # Set the subject
         if { $subject ne "" } {
-            set subject [acs_mail_lite::utils::build_subject $subject]
-            mime::setheader $tokens Subject $subject
+            mime::setheader $tokens Subject [acs_mail_lite::utils::build_subject $subject]
         }
 
         # Add extra headers
