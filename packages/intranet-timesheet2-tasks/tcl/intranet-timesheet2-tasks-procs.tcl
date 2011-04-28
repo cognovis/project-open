@@ -215,7 +215,7 @@ ad_proc -public im_timesheet_task_list_component {
         ns_log Error "im_timesheet_task_component: we didn't find view_name=$view_name"
         set view_id [db_string get_view_id "select view_id from im_views where view_name='im_timesheet_task_list'"]
     }
-    if {$debug} { ns_log Notice "im_timesheet_task_component: view_id=$view_id" }
+    if {$debug} { ns_log Debug "im_timesheet_task_component: view_id=$view_id" }
 
 
     # ---------------------- Get Columns ----------------------------------
@@ -249,7 +249,7 @@ ad_proc -public im_timesheet_task_list_component {
 	}
 	incr col_span
     }
-    if {$debug} { ns_log Notice "im_timesheet_task_component: column_headers=$column_headers" }
+    if {$debug} { ns_log Debug "im_timesheet_task_component: column_headers=$column_headers" }
 
 
     if {[string is integer $restrict_to_cost_center_id] && $restrict_to_cost_center_id > 0} {
@@ -266,12 +266,12 @@ ad_proc -public im_timesheet_task_list_component {
 	upvar 1 $var value
 	if { [info exists value] } {
 	    ns_set put $bind_vars $var $value
-	    if {$debug} { ns_log Notice "im_timesheet_task_component: $var <- $value" }
+	    if {$debug} { ns_log Debug "im_timesheet_task_component: $var <- $value" }
 	} else {
 	    set value [ns_set get $form_vars $var]
 	    if {![string equal "" $value]} {
  		ns_set put $bind_vars $var $value
- 		if {$debug} { ns_log Notice "im_timesheet_task_component: $var <- $value" }
+ 		if {$debug} { ns_log Debug "im_timesheet_task_component: $var <- $value" }
 	    }
 	}
     }
@@ -302,7 +302,7 @@ ad_proc -public im_timesheet_task_list_component {
     set table_header_html ""
     foreach col $column_headers {
 	set cmd_eval ""
-	if {$debug} { ns_log Notice "im_timesheet_task_component: eval=$cmd_eval $col" }
+	if {$debug} { ns_log Debug "im_timesheet_task_component: eval=$cmd_eval $col" }
 	set cmd "set cmd_eval $col"
 	eval $cmd
 	regsub -all " " $cmd_eval "_" cmd_eval_subs
@@ -487,7 +487,7 @@ ad_proc -public im_timesheet_task_list_component {
     callback im_timesheet_task_list_before_render -view_name $view_name \
         -view_type $view_type -sql $sql -table_header $page_title
     
-    ns_log Notice "Running the renderere for timesheet tasks"
+    ns_log Debug "Running the renderere for timesheet tasks"
     db_multirow task_list_multirow task_list_sql $sql {
 
 	# Perform the following steps in addition to calculating the multirow:
@@ -496,7 +496,7 @@ ad_proc -public im_timesheet_task_list_component {
 	# The list of projects that have a sub-project
         set parents_hash($child_parent_id) 1
 
-	ns_log Notice 1 "im_timesheet_task_list_component: id=$project_id, nr=$project_nr, o=$order_by_value"
+	ns_log Debug 1 "im_timesheet_task_list_component: id=$project_id, nr=$project_nr, o=$order_by_value"
     }
 
     # Sort the tree according to the specified sort order
@@ -536,11 +536,11 @@ ad_proc -public im_timesheet_task_list_component {
     foreach leaf_id $leafs_list { set leafs_hash($leaf_id) 1 }
 
     if {$debug} { 
-	ns_log Notice "timesheet-tree: all_projects_list=$all_projects_list"
-	ns_log Notice "timesheet-tree: parents_list=$parents_list"
-	ns_log Notice "timesheet-tree: leafs_list=$leafs_list"
-	ns_log Notice "timesheet-tree: closed_projects_list=[array get closed_projects_hash]"
-	ns_log Notice "timesheet-tree: "
+	ns_log Debug "timesheet-tree: all_projects_list=$all_projects_list"
+	ns_log Debug "timesheet-tree: parents_list=$parents_list"
+	ns_log Debug "timesheet-tree: leafs_list=$leafs_list"
+	ns_log Debug "timesheet-tree: closed_projects_list=[array get closed_projects_hash]"
+	ns_log Debug "timesheet-tree: "
     }
 
     # Render the multirow
@@ -568,7 +568,7 @@ ad_proc -public im_timesheet_task_list_component {
 	    321 { set reported_units_cache $reported_days_cache }
 	    default { set reported_units_cache "-" }
 	}
-	if {$debug} { ns_log Notice "im_timesheet_task_list_component: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache" }
+	if {$debug} { ns_log Debug "im_timesheet_task_list_component: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache" }
 
 	set indent_html ""
 	set indent_short_html ""
@@ -577,7 +577,7 @@ ad_proc -public im_timesheet_task_list_component {
 	    append indent_short_html "&nbsp;&nbsp;&nbsp;"
 	}
 
-	if {$debug} { ns_log Notice "timesheet-tree: child_project_id=$child_project_id" }
+	if {$debug} { ns_log Debug "timesheet-tree: child_project_id=$child_project_id" }
 	if {[info exists closed_projects_hash($child_project_id)]} {
 	    # Closed project
 	    set gif_html "<a href='[export_vars -base $open_close_url {user_id {page_url "default"} {object_id $child_project_id} {open_p "o"} return_url}]'>[im_gif "plus_9"]</a>"

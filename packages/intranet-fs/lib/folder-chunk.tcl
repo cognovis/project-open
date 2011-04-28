@@ -15,9 +15,6 @@ ad_page_contract {
 }
 
 
-ns_log Notice "PAGE FOLDER-CHUNK.TCL"
-ns_log Notice "$project_id"
-
 set return_url [util_get_current_url]
 if {![exists_and_not_null folder_id]} {
     ad_return_complaint 1 [_ file-storage.lt_bad_folder_id_folder_]
@@ -289,7 +286,6 @@ db_multirow -extend {label alt_icon icon last_modified_pretty content_size_prett
     #Error SWA has no actions buttons
     set po_admin_p [group::party_member_p -party_id [ad_conn user_id -group_name "P/O Admin"]]
     set admin_p [acs_user::site_wide_admin_p -user_id [ad_conn user_id]]
-    ns_log Notice "ADMIN $po_admin_p | $admin_p"
     if {!$admin_p && !$po_admin_p} {
 	set approve_url ""
 	set disapprove_url ""
@@ -299,7 +295,6 @@ db_multirow -extend {label alt_icon icon last_modified_pretty content_size_prett
 
     #if user is project manager and not po admin grant publish privilege
     set p_manager_p [group::party_member_p -party_id [ad_conn user_id] -group_name "Project Managers"]
-    ns_log Notice "PRJ MANAGER: $p_manager_p"
     if {$p_manager_p && !$po_admin_p} {
 	set publish_url [export_vars -base "$change_item_url" {{item_id} {live_revision} {status live} {return_url}}]
     }
