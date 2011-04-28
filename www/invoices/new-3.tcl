@@ -25,7 +25,7 @@ ad_page_contract {
     include_task:multiple
     company_id:integer
     invoice_currency
-    invoice_hour_type
+    { invoice_hour_type "reported" }
     select_project
     start_date
     end_date
@@ -108,7 +108,7 @@ set in_clause_list [list]
 foreach selected_task $include_task {
     lappend in_clause_list $selected_task
 }
-set tasks_where_clause "p.project_id in ([join $in_clause_list ","])"
+set tasks_where_clause [join $in_clause_list ","]
 
 # We already know that all tasks are from the same company,
 # and we asume that the company_id is set from new-2.tcl.
@@ -137,14 +137,14 @@ set default_uom_id [db_string default_uom "select material_uom_id from im_materi
 # ---------------------------------------------------------------
 # Determine the contact for the invoice
 
-set contact_ids [db_list contact_ids "
-        select distinct
-		company_contact_id
-	from	im_timesheet_tasks t,
-		im_projects p
-	where	t.task_id = p.project_id and 
-		$tasks_where_clause
-"]
+ set contact_ids [db_list contact_ids "
+         select distinct
+ 		company_contact_id
+ 	from	im_timesheet_tasks t,
+ 		im_projects p
+ 	where	t.task_id = p.project_id and 
+ 		p.project_id in ($tasks_where_clause)
+ "]
 
 if {[llength $contact_ids] > 0} {
     set company_contact_id [lindex $contact_ids 0]
@@ -235,6 +235,7 @@ set task_sum_html "
 if {$project_type_enabled_p} {
     append task_sum_html "<td class=rowtitle>[lang::message::lookup "" intranet-invoices.Type "Type"]</td>"
 }
+
 append task_sum_html "
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Units]</td>
           <!--<td class=rowtitle>[_ intranet-timesheet2-invoices.UOM]</td>-->
@@ -246,283 +247,51 @@ append task_sum_html "
 # to be shown at the very bottom of the page.
 #
 set price_colspan 11
+set ctr 1
+set old_project_id 0
+set colspan 6
 
-if {$aggregate_tasks_p} {
+# ad_return_complaint 1 [concat $invoicing_start_date "" $invoicing_end_date ]
+# ad_return_complaint 1 $in_clause_list
 
-    # Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
-    # and determine the price of each line using a custom definable
-    # function.
-    set task_sum_inner_sql "
+foreach project_id $in_clause_list {	
+
+	set project_name [db_string get_project_name "select project_name from im_projects where project_id=$project_id"]
+        append task_sum_html "
+	        <tr>\n
+		  <td class=rowtitle colspan=$price_colspan>
+                  <a href=/intranet/projects/view?project_id=$project_id>$project_name</a>
+                </td></tr>\n
+	"
+	set user_sql "
 		select
-			sum(t.planned_units) as planned_sum,
-			sum(t.billable_units) as billable_sum,
-			sum(t.reported_units) as reported_sum,
-			sum(t.units_in_interval) as interval_sum,
-			sum(t.unbilled_units) as unbilled_sum,
-			parent.project_id as project_id,	
-			t.task_id,
-			im_material_name_from_id(t.task_material_id) as task_name,
-			t.task_type_id,
-			t.uom_id,
-			t.company_id,
-			t.task_material_id as material_id
-		from
-			(select
-				t.planned_units,
-				t.billable_units,
-				t.task_id,
-				CASE WHEN t.uom_id = 321 THEN
-					(select sum(h.days) from im_hours h where h.project_id = p.project_id)
-				ELSE
-					(select sum(h.hours) from im_hours h where h.project_id = p.project_id)
-				END as reported_units,
-				CASE WHEN t.uom_id = 321 THEN
-					(select sum(h.days) from im_hours h where
-						h.project_id = p.project_id
-						and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-						and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-					)
-				ELSE
-					(select sum(h.hours) from im_hours h where
-						h.project_id = p.project_id
-						and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-						and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-					) 
-				END as units_in_interval,
-				CASE WHEN t.uom_id = 321 THEN
-					(select sum(h.days) from im_hours h where 
-						h.project_id = p.project_id
-						and h.invoice_id is null
-					) 
-				ELSE
-					(select sum(h.hours) from im_hours h where 
-						h.project_id = p.project_id
-						and h.invoice_id is null
-					)
-				END as unbilled_units,
-				parent.project_id as project_id,	
-				coalesce(t.material_id, :default_material_id) as task_material_id,
-				coalesce(t.uom_id, :default_uom_id) as uom_id,
-				p.project_type_id as task_type_id,
-				p.company_id
-			from 
-				im_projects parent,
-				im_projects p
-				LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id)
-			where 
-				$tasks_where_clause
-				and parent.parent_id is null
-				and p.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-			) t,
-			im_projects parent
-		where
-			t.project_id = parent.project_id
-		group by
-			t.task_material_id,
-			t.task_type_id,
-			t.uom_id,
-			t.company_id,
-			parent.project_id,
-			t.task_id
-    "
+               		sum(h.hours) as sum_hours,
+			h.user_id,
+        		(select im_name_from_id(h.user_id)) as user_name,
+                	(select amount from im_emp_cust_price_list where user_id = h.user_id and company_id in (select company_id from im_projects where project_id=$project_id)) as hourly_rate
+	        from
+        	        im_hours h
+	        where
+        	        h.project_id = $project_id
+                	and h.day >= to_timestamp('$invoicing_start_date', 'YYYY-MM-DD')
+	                and h.day < to_timestamp('$invoicing_end_date', 'YYYY-MM-DD')
+        	group by
+                	h.user_id
+	"
 
-} else {
-
-    # Don't aggregate - just show the list of tasks
-    #
-    set task_sum_inner_sql "
-	select
-		t.task_id,
-		CASE WHEN t.uom_id = 321 THEN
-			(select sum(h.days) from im_hours h where h.project_id = p.project_id)
-		ELSE
-			(select sum(h.hours) from im_hours h where h.project_id = p.project_id)
-		END as reported_sum,
-		CASE WHEN t.uom_id = 321 THEN
-			(select sum(h.days) from im_hours h where
-				h.project_id = p.project_id
-				and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-				and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-			)
-		ELSE
-			(select sum(h.hours) from im_hours h where
-				h.project_id = p.project_id
-				and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-				and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-			)
-		END as interval_sum,
-		CASE WHEN t.uom_id = 321 THEN
-			(select sum(h.days) from im_hours h where 
-				h.project_id = p.project_id
-				and h.invoice_id is null
-			)
-		ELSE
-			(select sum(h.hours) from im_hours h where 
-				h.project_id = p.project_id
-				and h.invoice_id is null
-			)
-		END as unbilled_sum,
-
-		p.company_id,
-		parent.project_id,
-		p.project_name as task_name,
-		p.project_type_id as task_type_id,
-		coalesce(t.uom_id, :default_uom_id) as uom_id,
-		coalesce(t.material_id, :default_material_id) as material_id
-	from
-		im_projects parent,
-		im_projects p
-		LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id)
-	where
-		$tasks_where_clause
-		and parent.parent_id is null
-		and p.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-    "
-}
-
-    set task_sum_sql "
-	select
-		trim(both ' ' from to_char(s.reported_sum, :number_format)) as reported_sum,
-		trim(both ' ' from to_char(s.interval_sum, :number_format)) as interval_sum,
-		trim(both ' ' from to_char(s.unbilled_sum, :number_format)) as unbilled_sum,
-		s.task_type_id,
-		s.material_id,
-		s.task_name,
-		s.uom_id,
-		im_category_from_id(s.uom_id) as task_uom,
-		im_category_from_id(s.task_type_id) as task_type,
-		s.company_id,
-		s.project_id,
-		s.task_id,
-		p.project_name,
-		p.project_path,
-		p.project_path as project_short_name,
-		p.project_nr
-	from
-		($task_sum_inner_sql) s
-		LEFT JOIN im_projects p ON (s.project_id = p.project_id)
-	order by
-		p.project_id
-
-    "
-       switch $invoice_hour_type {
-            reported { 
-		    set task_sum_sql "
-		        select
-        		        sum(h.hours) as sum_hours,
-                		h.user_id,
-				(select im_name_from_id(h.user_id)) as user_name,
-				(select amount from im_emp_cust_price_list where user_id = h.user_id and company_id in (select company_id from im_projects where project_id=:project_id)) as hourly_rate
-		        from
-        		        im_hours h
-	        	where	
-        	        	h.project_id = :project_id
-	                	and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-        		        and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-	        	group by
-                		h.user_id;
-    		    "
-            }
-            interval { 
-
-	    }
-            unbilled { 
-
-	    }
-            default {
-                ad_return_complaint 1 "<b>Internal Error</b>:<br>Unknown invoice_hour_type='$invoice_hour_type'"
-            }
-        }
-
-
-    set ctr 1
-    set old_project_id 0
-    set colspan 6
-
-    db_foreach tasks $task_sum_sql {
-
-	set task_sum 0
-#	switch $invoice_hour_type {
-#	    reported { set task_sum $reported_sum }
-#	    interval { set task_sum $interval_sum }
-#	    unbilled { set task_sum $unbilled_sum }
-#	    default {
-#		ad_return_complaint 1 "<b>Internal Error</b>:<br>Unknown invoice_hour_type='$invoice_hour_type'"
-#	    }
-#	}
-
-	if { ![info exists sum_hours] } { continue }
-	if {"" == $sum_hours} { continue }
-	if {0 == $sum_hours} { continue }
-
-	# insert intermediate headers for every project
-
-	# ToDo
-	set project_short_name ""
-	set project_nr ""
-	if {$old_project_id != $project_id} {
-	    append task_sum_html "
-		<tr><td class=rowtitle colspan=$price_colspan>
-		  <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-		  $project_nr
-		</td></tr>\n"
-
-	    set old_project_id $project_id
+	 db_foreach users_in_group $user_sql {
+	     append task_sum_html "
+                <tr>\n
+			<td class=rowtitle colspan=$price_colspan><A href=/intranet/users/view?user_id=$user_id>$user_name</A></td>\n
+			<td class=rowtitle colspan=$price_colspan>$hourly_rate</td>\n
+			<td class=rowtitle colspan=$price_colspan>$sum_hours</td>\n
+		</tr>\n
+	     "
 	}
-
-	# Determine the price from a ranked list of "price list hits"
-	# and render the "reference price list"
-	set price_list_ctr 1
-	set best_match_price 0
-
-	# Add an empty line to the price list to separate prices form item to item
-
-	append task_sum_html "
-	<tr $bgcolor([expr $ctr % 2])> 
-	  <td>
-	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
-	  </td>
-	  <td>
-	    <input type=text name=item_name.$ctr size=40 value='$user_name'>
-	  </td>
-	"
-
-	append task_sum_html "
-	  <td align=right>
-	    <input type=text name=item_units.$ctr size=4 value='$sum_hours'>
-	  </td>
-	  <td align=right>
-	    <input type=text name=item_rate.$ctr size=3 value='$hourly_rate'>
-	    <input type=hidden name=item_currency.$ctr value='$invoice_currency'>
-	    $invoice_currency
-	  </td>
-	</tr>
-	"
-	incr ctr
-    }
-
-    append task_sum_html "
-	<input type=hidden name=project_id value='$project_id'>
-	<input type=hidden name=uom_id value='320'>
-    "
-
-if {1 == $ctr} {
-    set no_invoice_lines_title [lang::message::lookup "" intranet-timesheet2-invoices.No_invoice_lines_selected "No Invoice Lines Selected"]
-    set no_invoice_lines_msg [lang::message::lookup "" intranet-timesheet2-invoices.No_invoice_lines_check_column "Please go back to the last page and make sure that you have selected the right column."]
-    ad_return_complaint 1 "<b>$no_invoice_lines_title</b>:<br>
-	$no_invoice_lines_msg
-    "
-    ad_script_abort
 }
 
-# ---------------------------------------------------------------
-# Join all parts together
-# ---------------------------------------------------------------
 
 set include_task_html ""
-foreach task_id $in_clause_list {
-    append include_task_html "<input type=hidden name=include_task value=$task_id>\n"
-}
 
 set start_date $invoicing_start_date
 set end_date $invoicing_end_date
