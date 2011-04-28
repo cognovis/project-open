@@ -30,18 +30,11 @@ namespace eval imap {}
 
 
 ad_proc -public imap::start_session {
-    {-mailbox ""}
 } {
     Returns a session_id for the Mailbox on the server
 
     @param mailbox Name of the mailbox, defaults to INBOX
 } {
-
-    set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
-    if {$mailbox ne ""} {
-        set root_mailbox "${root_mailbox}.${mailbox}"
-    }
-
     # Get the IMAP Information
     set imap_server [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPServer"]
     set imap_user [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPUser"]
@@ -50,9 +43,9 @@ ad_proc -public imap::start_session {
     
     # Open a session
     if {$imap_ssl_p} {
-        set session [ns_imap open -mailbox "\{$imap_server/ssl\}$root_mailbox" -user $imap_user -password $imap_password -expunge]
+        set session [ns_imap open -mailbox "\{$imap_server/ssl\}" -user $imap_user -password $imap_password -expunge]
     } else {
-        set session [ns_imap open -mailbox "\{$imap_server\}$root_mailbox" -user $imap_user -password $imap_password -expunge]
+        set session [ns_imap open -mailbox "\{$imap_server\}" -user $imap_user -password $imap_password -expunge]
     }
 
     return $session
@@ -62,10 +55,10 @@ ad_proc -public imap::start_channel {
 } {
     Returns a channel to the server using the IMAP4 pure TCL implementation
 } {
-
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
     if {$mailbox ne ""} {
-        set root_mailbox "${root_mailbox}.${mailbox}"
+        set root_mailbox "${root_mailbox}${delimiter}${mailbox}"
     }
 
     # Get the IMAP Information
@@ -91,9 +84,10 @@ ad_proc -public imap::full_mbox_name {
 
     @param mailbox Mailbox relative to the root_mailbox
 } {
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
     if {$mailbox ne ""} {
-        set root_mailbox "${root_mailbox}.${mailbox}"
+        set root_mailbox "${root_mailbox}${delimiter}${mailbox}"
     }
 
     # Get the IMAP Information
@@ -127,9 +121,10 @@ ad_proc -public imap::mailboxes {
     @param parent_mailbox Name of parent mailbox for which to display the mailboxes, relative to IMAPRootFolder.
     @param pattern Pattern for which we should search. May contain a wildcard * at the end to search for subfolders or incomplete patterns. May contain % for a single character wildcard
 } {
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
     if {$parent_mailbox ne ""} {
-        set root_mailbox "${root_mailbox}.$parent_mailbox"
+        set root_mailbox "${root_mailbox}${delimiter}$parent_mailbox"
     } 
     set end_p 0
     if {$session_id eq ""} {
@@ -145,11 +140,12 @@ ad_proc -public imap::mailboxes {
         set mailbox_list [ns_imap list $session_id \{$imap_server\} ${root_mailbox}*${pattern}]
     }    
     set mailboxes [list]
+
     # ns_imap list returns key value pairs, hence we filter this out.
     foreach mailbox $mailbox_list {
         set mailbox [string trim $mailbox $root_mailbox]
-        set mailbox [string trimleft $mailbox "."]
-        if {$mailbox ne ""} {
+        set mailbox [string trimleft $mailbox "$delimiter"]
+        if {$mailbox ne "" && $mailbox ne "noselect"} {
             lappend mailboxes $mailbox
         }
     }
@@ -182,6 +178,7 @@ ad_proc -public imap::mailbox_exists_p_not_cached {
     @see imap::mailbox_exists_p
 } {
     set mailboxes [imap::mailboxes -parent_mailbox $parent_mailbox -session_id $session_id]
+    ds_comment "Mailboxes:: $mailboxes :: mailbox $mailbox" 
     if {[lsearch $mailboxes $mailbox] <0} {
         return 0
     } else {
@@ -199,9 +196,10 @@ ad_proc -public imap::copy_mail {
     
     @destination_mailbox Mailbox relative to the IMAPRootFolder
 } {
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     #check the destination_mailbox exists
     if {[imap::mailbox_exists_p -session_id $session_id -mailbox $destination_mailbox]} {
-        ns_imap copy $session_id $sequence_nr "[parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"].$destination_mailbox"
+        ns_imap copy $session_id $sequence_nr "[parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]${delimiter}$destination_mailbox"
     } else {
         ns_log Error "Folder $destination_mailbox does not exist"
     }
@@ -214,9 +212,10 @@ ad_proc -public imap::move_mail {
 } { 
     Move the mail defined by the sequence_nr in the current session
 } {
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     #check the destination_mailbox exists
     if {[imap::mailbox_exists_p -session_id $session_id -mailbox $destination_mailbox]} {
-        ns_imap move $session_id $sequence_nr "[parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"].$destination_mailbox"
+        ns_imap move $session_id $sequence_nr "[parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]${delimiter}$destination_mailbox"
         ns_imap expunge $session_id
     } else {
         ns_log Error "Folder $destination_mailbox does not exist"
@@ -268,7 +267,8 @@ ad_proc -public imap::load_mails {
     
 } {
     set session_id [imap::start_session -mailbox $mailbox]
-    ns_imap check $session_id
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
+
     # Get all the E-Mails, oldest first (hence the 0)
     
     set message_list [ns_imap sort $session_id date 0]
@@ -325,7 +325,7 @@ ad_proc -public imap::load_mails {
                 set max_parts $email_body(part.count)
                 set counter 1
                 while {$counter <= $max_parts} {
-                    lappend parts "${structpart}.$counter"
+                    lappend parts "${structpart}${delimiter}$counter"
                     incr counter
                 }
             } else {

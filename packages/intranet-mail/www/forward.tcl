@@ -20,11 +20,17 @@ ad_page_contract {
 set title [_ intranet-mail.Forward_message]
 set context [list [list "one-message?log_id=$log_id" [_ intranet-mail.One_message]] $title]
 
-set return_url "one-message?log_id=$log_id"
+if {$return_url eq ""} {
+    set return_url "one-message?log_id=$log_id"
+}
 
 # Get the information of the message
 db_1row get_message_info { }
-set sender [party::name -party_id $sender_id]
+if {$sender_id ne ""} {
+    set sender [party::name -party_id $sender_id]
+} else {
+    set sender $from_addr
+}
 
 set reciever_list [list]
 db_foreach reciever_id {select recipient_id from acs_mail_log_recipient_map where type ='to' and log_id = :log_id and recipient_id is not null} {
@@ -36,6 +42,7 @@ if {![string eq "" $to_addr]} {
 set recipient [join $reciever_list ","]
 
 set export_vars {log_id}
+
 # Now the CC users
 set reciever_list [list]
 db_foreach reciever_id {select recipient_id from acs_mail_log_recipient_map where type ='cc' and log_id = :log_id and recipient_id is not null} {
@@ -89,3 +96,11 @@ $body
 "
 
 set subject "FW: $subject"
+
+# Set the cc_ids to all related object members
+set cc_ids [list]
+foreach member_id [im_biz_object_member_ids $object_id] {
+    if {$member_id ne $sender_id} {
+        lappend cc_ids $member_id
+    }
+}

@@ -32,6 +32,12 @@ db_1row get_message_info { }
 
 set page_title "[_ intranet-mail.Reply_To]"
 
+# Check if we have a sender_id to whom to reply to.
+if {$sender_id eq ""} {
+    set sender_addr $from_addr
+} else {
+    set sender_addr ""
+}
 
 # Set the cc_ids to all related object members
 set cc_ids [list]

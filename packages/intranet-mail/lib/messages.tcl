@@ -208,7 +208,7 @@ db_multirow -extend { file_ids object_url sender_name message_url recipient pack
     }
     
     set message_url [export_vars -base "${tracking_url}one-message" -url {log_id return_url}]
-    set reciever_list [list]
+    set reciever_list $to_addr
     set reciever_list2 [db_list get_recievers {select recipient_id from acs_mail_log_recipient_map where type ='to' and log_id = :log_id and recipient_id is not null}] 
     
     foreach recipient_id $reciever_list2 {

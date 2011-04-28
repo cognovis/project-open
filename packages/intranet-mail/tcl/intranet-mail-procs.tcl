@@ -26,6 +26,50 @@ ad_library {
 
 namespace eval intranet-mail {}
 
+
+ad_proc -public intranet-mail::setup_imap {} {
+    Once the package is correctly configured you can use this procedure to set things up with regards to imap.
+} {
+    # Star the session
+    set session_id [imap::start_session]
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
+
+    # Check if the root folder is there
+    set imap_server [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPServer"]    
+    set root_mailbox [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPRootFolder"]
+    set unprocessed_folder [parameter::get_from_package_key -package_key "intranet-mail" -parameter "UnprocessedFolder"]
+
+    set mailbox_list [ns_imap list $session_id \{$imap_server\} ${root_mailbox}]
+    ds_comment $mailbox_list
+    if {$mailbox_list eq ""} {
+	# Create the mailbox
+	ns_imap m_create $session_id \{$imap_server\}${root_mailbox}
+    }
+
+    # Check the project folder
+    set project_imap_root_folder [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPProjectRootFolder"]
+    set mailbox_list [ns_imap list $session_id \{$imap_server\} ${root_mailbox}${delimiter}${project_imap_root_folder}]
+    if {$mailbox_list eq ""} {
+	# Create the mailbox
+	ns_imap m_create $session_id [imap::full_mbox_name -mailbox "$project_imap_root_folder"]
+    }
+
+    # Check the unprocessed folder
+    set unprocessed_folder [parameter::get_from_package_key -package_key "intranet-mail" -parameter "UnprocessedFolder"]
+    set mailbox_list [ns_imap list $session_id \{$imap_server\} ${root_mailbox}${delimiter}${unprocessed_folder}]
+    if {$mailbox_list eq ""} {
+	# Create the mailbox
+	ns_imap m_create $session_id [imap::full_mbox_name -mailbox "$unprocessed_folder"]
+    }
+
+
+    # Create the imap folder for each project
+    db_foreach project "select project_id,project_nr,project_name from im_projects where project_type_id not in ('[im_project_type_task]', '[im_project_type_ticket]','100','9500')" {
+	intranet-mail::project_imap_folder_create -project_id $project_id
+	ns_log Notice "Created IMAP Folder for $project_nr: $project_name"
+    }
+}
+
 ad_proc -public intranet-mail::extract_project_nrs { 
     {-subject:required}
 } {
@@ -106,23 +150,25 @@ ad_proc -public intranet-mail::valid_object_types {
 
 ad_proc -public intranet-mail::project_imap_folder {
     {-project_id:required}
+    {-session_id ""}
+    {-check_imap:boolean}
 } {
     returns the IMAP Project folder, relative to IMAPRootFolder
     
     @param project_id ProjectID of the Project
+    @param check_imap if passed, check that the folder exists in IMAP, otherwise return ""
 } {
-
-    set super_project_id $project_id 
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
     set loop 1
     set ctr 0
     set project_imap_root_folder [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPProjectRootFolder"]
-    set project_folder "$project_id"
+    set project_folder ""
     while {$loop} {
         set loop 0
-        set parent_id [db_string parent_id "select parent_id from im_projects where project_id=:super_project_id" -default ""]
+        db_1row project "select parent_id,project_nr from im_projects where project_id=:project_id"
+	set project_folder "${project_nr}${delimiter}${project_folder}"
         if {$parent_id ne ""} {
-            set project_folder "$parent_id.$project_folder"
-            set super_project_id $parent_id
+            set project_id $parent_id
             set loop 1
         }
         
@@ -132,7 +178,12 @@ ad_proc -public intranet-mail::project_imap_folder {
         }
         incr ctr
     }
-    set project_folder "${project_imap_root_folder}.$project_folder"
+    set project_folder [string trimright "${project_imap_root_folder}${delimiter}$project_folder" "$delimiter"]
+    if {$check_imap_p} {
+	if {![imap::mailbox_exists_p -mailbox $project_folder]} {
+	    set project_folder ""
+	}
+    }
     return $project_folder
 }
 
@@ -145,6 +196,7 @@ ad_proc -public intranet-mail::project_imap_folder_create {
 } {
 
     set project_imap_folder [intranet-mail::project_imap_folder -project_id $project_id]
+    set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
 
     # Start the IMAP Session
     set session_id [imap::start_session]
@@ -154,12 +206,12 @@ ad_proc -public intranet-mail::project_imap_folder_create {
         set project_folder ""
         # Go through the folder components and check if this folder
         # exists. If not, create it
-        foreach project_id [split $project_imap_folder "."] {
+        foreach project_nr [split $project_imap_folder "$delimiter"] {
             
             if {$project_folder eq ""} {
-                set project_folder $project_id
+                set project_folder $project_nr
             } else {
-                set project_folder "${project_folder}.$project_id"
+                set project_folder "${project_folder}${delimiter}$project_nr"
             }
             if {![imap::mailbox_exists_p -mailbox $project_folder -session_id $session_id]} {
                 ns_log Notice "Project_folder $project_folder"

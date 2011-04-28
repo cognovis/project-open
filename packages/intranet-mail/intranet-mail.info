@@ -10,21 +10,21 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-mail</auto-mount>
 
-    <version name="0.1d8" url="http://openacs.org/repository/download/apm/intranet-mail-0.1d8.apm">
+    <version name="0.1d9" url="http://openacs.org/repository/download/apm/intranet-mail-0.1d9.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <release-date>2011-04-21</release-date>
         <maturity>0</maturity>
 
-        <provides url="intranet-mail" version="0.1d8"/>
+        <provides url="intranet-mail" version="0.1d9"/>
         <requires url="acs-mail-lite" version="5.6.0"/>
 
         <callbacks>
-            <callback type="after-install"  proc="intranet-mail::package_install"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPServer"  description="DNS name for your IMAP Server"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPUser"  description="Username being used for accessing the IMAP Server"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPPassword"  description="Password for the user to access IMAP"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPDelimiter"  description="Delimiter used for the IMAP Folders. Use / for googlemail" default="."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPRootFolder"  description="Root Folder to use, which also contains the E-Mails to be parsed. This means, if your root folder is e.g. INBOX.service, then make sure that all to be processed messages will go to INBOX.service. " default="INBOX" />
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="IMAPProjectRootFolder"  description="Root Folder to use for projects, located relative to IMAPRootFolder" default="projects" />
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="IMAPSSLP"  default="1" description="Should we use SSL to connect to the IMAP server"/>

@@ -16,13 +16,13 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-14
 
-foreach required_param {party_ids} {
+foreach required_param {} {
     if {![info exists $required_param]} {
         return -code error "$required_param is a required parameter."
     }
 }
 
-foreach optional_param {return_url content export_vars file_ids object_id cc item_id cc_ids} {
+foreach optional_param {return_url content export_vars file_ids object_id cc item_id cc_ids to to_addr party_ids} {
     if {![info exists $optional_param]} {
         set $optional_param {}
     }
@@ -63,10 +63,28 @@ set form_elements {
     title:text(hidden),optional
     {message_type:text(hidden) {value "email"}}
     {-section "recipients" {legendtext "[_ acs-mail-lite.Recipients]"}}
-    {to:text(checkbox),multiple 
-        {label "[_ acs-mail-lite.Recipients]"} 
-        {options  $recipients }
-        {html {checked 1}}
+}
+
+if {$recipients eq ""} {
+    append form_elements {
+	{to_addr:text(text)
+	    {label "[_ acs-mail-lite.Recipients]:"} 
+	    {html {size 56}}
+	    {help_text "[_ acs-mail-lite.cc_help]"}
+	}
+    }
+} else {
+    append form_elements {
+	{to:text(checkbox),multiple
+	    {label "[_ acs-mail-lite.Recipients]:"} 
+	    {options  $recipients }
+	    {html {checked 1}}
+	}
+	{to_addr:text(text),optional
+	    {label "[_ acs-mail-lite.Recipients]:"} 
+	    {html {size 56}}
+	    {help_text "[_ acs-mail-lite.cc_help]"}
+	}
     }
 }
 
@@ -81,7 +99,7 @@ if {$cc_recipients ne ""} {
 }
 
 append form_elements {
-    {cc:text(text),optional
+    {cc_addr:text(text),optional
         {label "[_ acs-mail-lite.CC]:"} 
         {html {size 56}}
         {help_text "[_ acs-mail-lite.cc_help]"}
@@ -173,10 +191,11 @@ ad_form -action $action \
         set from_addr [cc_email_from_party $from]
         
         # Remove all spaces in cc
-        regsub -all " " $cc "" cc
+        regsub -all " " $cc_addr "" cc_addr
         
-        set cc_list [split $cc ";"]
-        
+        set cc_addr [split $cc_addr ";"]
+        set to_addr [split $to_addr ";"]
+
         # Insert the uploaded file linked under the package_id
         set package_id [ad_conn package_id]
         
@@ -196,22 +215,25 @@ ad_form -action $action \
         }
 
         
-        set to_addr [list]
         foreach party_id $to {
-            lappend to_addr [cc_email_from_party $party_id]
+            set email [cc_email_from_party $party_id]
+            # Check if the cc_ids is already there
+            if {[lsearch $to_addr $email]<0} {
+                lappend tp_addr $email
+            }
         }
 
         foreach party_id $cc_ids {
             set email [cc_email_from_party $party_id]
             # Check if the cc_ids is already there
-            if {[lsearch $cc_list $email]<0} {
-                lappend cc_list $email
+            if {[lsearch $cc_addr $email]<0} {
+                lappend cc_addr $email
             }
         }
 
         acs_mail_lite::send_immediately \
             -to_addr $to_addr \
-            -cc_addr $cc_list \
+            -cc_addr $cc_addr \
             -from_addr "$from_addr" \
             -subject "$subject" \
             -body "$content_body" \

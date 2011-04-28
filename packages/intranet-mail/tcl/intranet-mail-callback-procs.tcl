@@ -131,7 +131,7 @@ ad_proc -public -callback imap::incoming_email -impl intranet-mail-link_mails {
         set project_id $object_id
     }
 
-    set imap_folder [imap::mailboxes -session_id $session_id -pattern $project_id]
+    set imap_folder [intranet-mail::project_imap_folder -project_id $project_id -check_imap]
     if {$imap_folder eq ""} {
         # Throw an error
         ns_log error "No IMAP Folder for object $object_id"
@@ -254,7 +254,7 @@ ad_proc -public -callback im_project_after_create -impl intranet-mail_create_fol
     set project_id $object_id
 
     # Check if the IMAP folder exists (how ever this is possible)
-    set imap_folder [imap::mailboxes -pattern $project_id]
+    set imap_folder [intranet-mail::project_imap_folder -project_id $project_id -check_imap]
     if {$imap_folder eq ""} {
         intranet-mail::project_imap_folder_create -project_id $project_id
     }
@@ -287,23 +287,24 @@ ad_proc -public -callback im_project_after_update -impl intranet-mail_rename_ima
     
 } {
     set project_id $object_id
-    set parent_id [db_string parent_id "select parent_id from im_projects where project_id=:project_id" -default ""]
+    set project_nr [db_string parent_id "select project_nr from im_projects where project_id=:project_id" -default ""]
 
     # Check if the IMAP folder exists (how ever this is possible)
-    set imap_folder [imap::mailboxes -pattern "${parent_id}.$project_id"]
+    set imap_folder [intranet-mail::project_imap_folder -project_id $project_id -check_imap]
     if {$imap_folder eq ""} {
         # We need to move the folder.... yikes ....
         # First find out the old folder
-        set old_imap_folder [imap::full_mbox_name -mailbox [imap::mailboxes -pattern $project_id]]
+        set old_imap_folder [imap::full_mbox_name -mailbox [imap::mailboxes -pattern $project_nr]]
 
         # Set the new folder
         set new_folder [intranet-mail::project_imap_folder -project_id $project_id]
         set new_imap_folder [imap::full_mbox_name -mailbox $new_folder]
-
-        ns_log Notice "From $old_imap_folder to $new_imap_folder"
+        ns_log Notice "From $old_imap_folder to $new_imap_folder :: $new_folder"
         set session_id [imap::start_session]
         ns_imap m_rename $session_id $old_imap_folder $new_imap_folder
         imap::end_session -session_id $session_id
+    } else {
+	ns_log Error "ERROR... $imap_folder already exists so we can't move the old folder over. Fix this manually !!!"
     }
 }
 
@@ -349,8 +350,7 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
             lappend to_addr_list $email
         }
     }
-
-
+    
     # cc_addr
     set cc_addr_list [list]
     set cc_ids [list]
@@ -374,16 +374,15 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
         }
     }
     
-    
     set log_id [intranet-mail::log_add -package_id $package_id \
                     -sender_id $sender_id \
                     -from_addr $from_addr \
                     -recipient_ids $recipient_ids \
                     -cc_ids $cc_ids \
                     -bcc_ids $bcc_ids \
-                    -to_addr [join $to_addr_list ","] \
-                    -cc_addr [join $cc_addr_list ","] \
-                    -bcc_addr [join $bcc_addr_list ","] \
+                    -to_addr $to_addr_list \
+                    -cc_addr $cc_addr_list \
+                    -bcc_addr $bcc_addr_list \
                     -body $body \
                     -subject $subject \
                     -object_id $object_id \

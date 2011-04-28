@@ -13,7 +13,8 @@
 		sent_date, 
 		body, 
 		subject, 
-		object_id, 
+		object_id,
+	        to_addr,
 		log_id
         from 
 		acs_mail_log
