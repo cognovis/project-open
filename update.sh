@@ -48,8 +48,10 @@
 ./git-update xowiki master >>update.log 2>&1
 ./git-update oacs-dav master >>update.log 2>&1
 ./git-update rss-support master >>update.log 2>&1
+./git-update views >>update.log 2>&1
 ./git-update xml-rpc master >>update.log 2>&1
 ./git-update xotcl-core master >>update.log 2>&1
+
 
 # ]project-open[ repository
 ./git-update acs-workflow master >>update.log 2>&1
@@ -97,6 +99,7 @@
 ./git-update intranet-rest master >>update.log 2>&1
 ./git-update intranet-riskmanagement master >>update.log 2>&1
 ./git-update intranet-rss-reader master >>update.log 2>&1
+./git-update intranet-sencha master >>update.log 2>&1
 ./git-update intranet-search-pg master >>update.log 2>&1
 ./git-update intranet-search-pg-files master >>update.log 2>&1
 ./git-update intranet-security-update-client master >>update.log 2>&1
@@ -117,3 +120,4 @@
 ./git-update intranet-wiki master >>update.log 2>&1
 ./git-update intranet-workflow master >>update.log 2>&1
 ./git-update intranet-xmlrpc master >>update.log 2>&1
+./git-update simple-survey master >>update.log 2>&1

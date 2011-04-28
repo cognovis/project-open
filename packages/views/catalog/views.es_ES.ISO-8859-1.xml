@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="views" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Last viewed">Ultima visita</msg>
+  <msg key="Unique_views">Visita única</msg>
+  <msg key="Views">Visitas</msg>
+</message_catalog>
