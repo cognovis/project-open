@@ -30,12 +30,13 @@ set x_axis 0
 set y_axis 0
 set color "yellow"
 set diameter 5
+set title ""
 
 set data_list {}
 set i 0
 db_foreach scatter_sql $sql {
     if {$i > 10} { continue }
-    lappend data_list "{x_axis: $x_axis, y_axis: $y_axis, color: '$color', diameter: $diameter}"
+    lappend data_list "{x_axis: $x_axis, y_axis: $y_axis, color: '$color', diameter: $diameter, caption: '$title'}"
     incr i
     
 }
@@ -44,3 +45,6 @@ db_foreach scatter_sql $sql {
 set data_json "\[\n"
 append data_json [join $data_list ",\n"]
 append data_json "\]\n"
+
+
+# ad_return_complaint 1 "<pre>$data_json</pre>"
