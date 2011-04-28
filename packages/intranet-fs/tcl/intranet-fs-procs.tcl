@@ -210,30 +210,73 @@ ad_proc -public im_fs_component {
 
 # Deleting the project folder 
 ad_proc -public -callback im_project_after_delete -impl fs_folder {
-	{-object_id:required}
+    {-object_id:required}
     {-status_id}
     {-type_id}
 } {
     
-	Delete the folders from the project
-
+    Delete the folders from the project
+    
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2010-09-27
     
-	@param project_id Project_id of the project
+    @param project_id Project_id of the project
     @return             nothing
     @error
 } {
-
+    
     if {[db_0or1row select_folder_id "
 	select object_id_two, rel_id
 	from acs_rels 
 	where object_id_one = :object_id
 	and rel_type = 'project_folder'
     "]} {
-    
+	
         db_string del_rel "select acs_rel__delete(:rel_id) from dual"
         
         content::folder::delete -folder_id $object_id_two -cascade_p 1
     }
+}
+
+
+ad_proc -public -callback im_project_after_update -impl intranet-fs_update_parent_folder {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+} {
+    Move the imap folder to the new parent project
+} {
+
+    set project_id $object_id
+    
+    set project_folder_id [db_string project_folder_id {
+	SELECT object_id_two FROM acs_rels WHERE object_id_one = :project_id AND rel_type = 'project_folder'
+    } -default ""]
+    
+    
+    set new_parent_id [db_string parent_id {
+	SELECT parent_id FROM im_projects WHERE project_id = :project_id
+    } -default ""]
+    
+    if {[exists_and_not_null new_parent_id]} {
+	set new_parent_folder_id [db_string select_folder_id {
+	    SELECT object_id_two FROM acs_rels WHERE object_id_one = :new_parent_id AND rel_type = 'project_folder'
+	} -default ""]
+    } else {
+	#in case it is a root project the parent folder is the main folder "projects", which is retrieved from intranet-core package instance
+	set new_parent_id  [db_string select_package_id {
+	    SELECT package_id FROM apm_packages WHERE package_key = 'intranet-core'
+	} -default ""]
+	
+	if {[exists_and_not_null new_parent_id]} {
+	    set new_parent_folder_id [db_string select_folder_id {
+		SELECT object_id_two FROM acs_rels WHERE object_id_one = :new_parent_id AND rel_type = 'package_folder'
+	    } -default ""]
+	}
+    }
+
+    # Check this out! API content::item::move later
+    db_exec_plsql update_folder_parent_id {
+	SELECT content_folder__move(:project_folder_id,:new_parent_folder_id)
+    }  
 }
