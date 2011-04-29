@@ -110,62 +110,6 @@ if {$project_exists_p} {
     }
 }
 
-
-
-# -------------------------------------------
-# Set Defaut Values
-# -------------------------------------------
-    if { ![exists_and_not_null parent_id] } {
-	
-
-	# A brand new project (not a subproject)
-	set requires_report_p "f"
-	if { ![exists_and_not_null company_id] } {
-	    set company_id [im_company_internal]
-	}
-	if {![exists_and_not_null project_type_id]} { set project_type_id 85 }
-	if {![exists_and_not_null project_status_id]} { set project_status_id 76 }
-	set page_title "[_ intranet-core.Add_New_Project]"
-	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] $page_title]
-	
-    } else {
-       
-	# This means we are adding a subproject.
-	# Let's select out some defaults for this page
-	db_1row projects_by_parent_id_query {}
-	
-	set requires_report_p "f"
-	set page_title "[_ intranet-core.Add_subproject]"
-	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
-    }
-    
-
-if {![info exists on_track_status_id]} {
-    set on_track_status_id [im_project_on_track_status_green]
-}
-
-if {![info exists percent_completed]} {
-    set percent_completed 0
-}
-
-if {![info exists project_budget_currency]} {
-    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-    set project_budget_currency $default_currency
-}
-
-
-
-# A completely new project or a subproject
-  
-if {![exists_and_not_null project_id]} {
-    # Calculate the next project number by calculating the maximum of
-    # the "reasonably build numbers" currently available
-    
-    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
-}
-
-
-
 # --------------------------------------------
 # Create Form
 # --------------------------------------------
@@ -208,8 +152,45 @@ im_dynfield::append_attributes_to_form \
 
 
 
-
+set requires_report_p "f"
 ad_form -extend -name $form_id -new_request { 
+
+    # -------------------------------------------
+    # Set Defaut Values
+    # -------------------------------------------
+    if { ![exists_and_not_null parent_id] } {
+    
+    
+	# A brand new project (not a subproject)
+	if { ![exists_and_not_null company_id] } {
+	    set company_id [im_company_internal]
+	}
+	set page_title "[_ intranet-core.Add_New_Project]"
+	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] $page_title]
+	set parent_id ""
+
+    } else {
+	
+	# This means we are adding a subproject.
+	# Let's select out some defaults for this page
+	db_1row projects_by_parent_id_query {}
+	
+	# Now set the values for status and type
+	template::element::set_value $form_id project_status_id $project_status_id
+	template::element::set_value $form_id project_type_id $project_type_id
+
+	set page_title "[_ intranet-core.Add_subproject]"
+	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
+    }
+
+    # Calculate the next project number by calculating the maximum of
+    # the "reasonably build numbers" currently available
+    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+
+    # Now set the values
+    template::element::set_value $form_id project_nr $project_nr
+    template::element::set_value $form_id company_id $company_id
+    
 } -edit_request { 
     
 	set page_title "[_ intranet-core.Edit_project]"
@@ -391,7 +372,6 @@ ad_form -extend -name $form_id -new_request {
 	    -object_id $project_id \
 	    -form_id $form_id
 	
-	
 	set requires_report_p t
 	
 	
@@ -434,8 +414,7 @@ ad_form -extend -name $form_id -new_request {
     # Store dynamic fields
     
     ns_log Notice "/intranet/projects/new: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
-
-
+    ds_comment "status :: $project_status_id"
     im_dynfield::attribute_store \
 	-object_type $object_type \
 	-object_id $project_id \
