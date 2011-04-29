@@ -1940,12 +1940,16 @@ ad_proc im_costs_project_finance_component {
 	set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
 	set provider_id [im_company_internal]
 	set bind_vars [list project_id $project_id customer_id $customer_id provider_id $provider_id]
-	set html_customer_links [im_menu_ul_list -package_key intranet-invoices "invoices_customers" $bind_vars]
+
+	# set html_customer_links [im_menu_ul_list -package_key intranet-invoices "invoices_customers" $bind_vars]
+	set html_customer_links [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	# Provider invoices: customer = Internal, no provider yet defined
 	set customer_id [im_company_internal]
 	set bind_vars [list customer_id $customer_id project_id $project_id]	
-	set html_provider_links [im_menu_ul_list -package_key intranet-invoices "invoices_providers" $bind_vars]
+
+	# set html_provider_links [im_menu_ul_list -package_key intranet-invoices "invoices_providers" $bind_vars]
+	set html_provider_links [im_menu_ul_list "invoices_providers" $bind_vars]
 
 	if { ![empty_string_p $html_customer_links] || ![empty_string_p $html_provider_links] } {
 		set admin_html "
@@ -1975,6 +1979,7 @@ ad_proc im_costs_project_finance_component {
 
     # ----------------- Assemble the "Summary" component ---------------------------
     # With preliminary and hard costs
+
 
     set summary_html ""
     if {$show_details_p} {
@@ -2033,6 +2038,7 @@ ad_proc im_costs_project_finance_component {
     "
 
     return $result_html
+
 }
 
 
