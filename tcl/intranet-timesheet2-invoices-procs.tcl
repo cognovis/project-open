@@ -237,6 +237,9 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		children.tree_sortkey
     "
 
+
+#    ad_return_complaint 1 "<pre>$sql</pre>"
+
     set ctr 0
     set colspan 11
     set old_parent_id 0
@@ -280,14 +283,16 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	    }
 	    set task_disabled "disabled"
 	}
-
+	if {"" == $uom_id} { set uom_id [im_uom_hour] }
 	switch $uom_id {
 	    321 {
+		# Day
 		set all_reported_units $all_reported_days
 		set units_in_interval $days_in_interval
 		set unbilled_units $unbilled_days
 	    }
 	    320 {
+		# Hour
 		set all_reported_units $all_reported_hours
 		set units_in_interval $hours_in_interval
 		set unbilled_units $unbilled_hours
