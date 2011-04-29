@@ -219,7 +219,7 @@ ad_form -action $action \
             set email [cc_email_from_party $party_id]
             # Check if the cc_ids is already there
             if {[lsearch $to_addr $email]<0} {
-                lappend tp_addr $email
+                lappend to_addr $email
             }
         }
 
@@ -231,6 +231,7 @@ ad_form -action $action \
             }
         }
 
+	
         acs_mail_lite::send_immediately \
             -to_addr $to_addr \
             -cc_addr $cc_addr \
