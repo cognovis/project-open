@@ -121,6 +121,11 @@ create table im_tickets (
 	ticket_telephony_new_number 	text,
 );
 
+-- Create indices on type and status to speedup queries
+create index im_ticket_type_id_idx on im_tickets(ticket_type_id);
+create index im_ticket_status_id_idx on im_tickets(ticket_status_id);
+
+
 
 -----------------------------------------------------------
 -- Permissions & Privileges

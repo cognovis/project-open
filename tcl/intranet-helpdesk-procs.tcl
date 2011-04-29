@@ -50,6 +50,8 @@ ad_proc -public im_ticket_type_incident_ticket {} { return 30150 }
 ad_proc -public im_ticket_type_problem_ticket {} { return 30152 }
 ad_proc -public im_ticket_type_change_ticket {} { return 30154 }
 
+ad_proc -public im_ticket_type_idea {} { return 30180 }
+
 ad_proc -public im_ticket_action_close {} { return 30500 }
 ad_proc -public im_ticket_action_close_notify {} { return 30510 }
 ad_proc -public im_ticket_action_duplicated {} { return 30520 }
@@ -443,7 +445,7 @@ namespace eval im_ticket {
 	    im_project_audit -project_id $ticket_id -action create
 
 	    # Create a new forum topic of type "Note"
-	    set topic_type_id [im_topic_type_id_task]
+	    set topic_type_id [im_topic_type_id_discussion]
 	    set topic_status_id [im_topic_status_id_open]
 	    set message ""
 
