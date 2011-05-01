@@ -112,3 +112,11 @@ end;' language 'plpgsql';
 create trigger im_projects_calendar_update_tr after insert or update
 on im_projects for each row
 execute procedure im_projects_calendar_update_tr ();
+
+-- Set the defaults for project dynfields
+update im_dynfield_type_attribute_map set default_value = 76 where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'project_status_id' and object_type ='im_project');
+update im_dynfield_type_attribute_map set default_value = 85 where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'project_type_id' and object_type ='im_project');
+update im_dynfield_type_attribute_map set default_value = 'tcl im_project_on_track_status_green' where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'on_track_status_id' and object_type ='im_project');
+update im_dynfield_type_attribute_map set default_value = 0 where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'percent_completed' and object_type ='im_project');
+update im_dynfield_type_attribute_map set default_value = 'tcl {ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"}' where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'project_budget_currency' and object_type ='im_project');
+update im_dynfield_type_attribute_map set default_value = 'tcl {ad_conn user_id}' where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'project_lead_id' and object_type ='im_project');
