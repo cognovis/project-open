@@ -1667,7 +1667,7 @@ BEGIN
         ''im_timesheet_task'',
         ''parent_id'',
         ''Project ID'',
-        ''open_projects'',
+        ''project_parent_options'',
         ''integer'',
         ''t'',
         3,

@@ -76,7 +76,7 @@ if {0 == $parent_id} {
     }
 }
 
-set ::project_id $parent_id
+set ::super_project_id $parent_id
 
 set project_name_title [db_string project_name "select project_name from im_projects where project_id=:parent_id" -default "Unknown"]
 
