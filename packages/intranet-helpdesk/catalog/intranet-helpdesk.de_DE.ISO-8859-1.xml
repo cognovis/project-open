@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-helpdesk" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Action">Aktion</msg>
   <msg key="Add_a_new_ticket">Neues Ticket</msg>
@@ -41,6 +41,19 @@
   <msg key="Ticket_Members">Ticketmitglieder</msg>
   <msg key="Ticket_Name">Ticketname</msg>
   <msg key="Ticket_Nr">Ticketnr.</msg>
+  <msg key="Ticket_type_Bug_Request">Fehlermeldung</msg>
+  <msg key="Ticket_type_Change_Ticket">Änderungsticket</msg>
+  <msg key="Ticket_type_Feature_Request">Anforderungsänderung</msg>
+  <msg key="Ticket_type_Incident_Ticket">Incident Ticket</msg>
+  <msg key="Ticket_type_Nagios_Alert">Nagios Alert</msg>
+  <msg key="Ticket_type_Permission_Request">Berechtigungsanfrage</msg>
+  <msg key="Ticket_type_Problem_Ticket">Problem Ticket</msg>
+  <msg key="Ticket_type_Project_Request">Project Anfrage</msg>
+  <msg key="Ticket_type_Purchasing_Request">Beschaffungsanfrage</msg>
+  <msg key="Ticket_type_Report_Request">Report Request</msg>
+  <msg key="Ticket_type_SLA_Request">SLA Anfrage</msg>
+  <msg key="Ticket_type_Telephony_Request">Telefon Anfrage</msg>
+  <msg key="Ticket_type_Training_Request">Trainingsanfrage</msg>
   <msg key="Ticket_Types">Ticketarten</msg>
   <msg key="Tickets">Tickets</msg>
   <msg key="Title_Help">Hilfe</msg>

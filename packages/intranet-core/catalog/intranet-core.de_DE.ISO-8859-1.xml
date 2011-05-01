@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-core" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-core" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="--_Please_select_--">-- Bitte wählen --</msg>
   <msg key="1111">1111</msg>
@@ -59,6 +59,7 @@
   <msg key="Add_New_User">Neuer Benutzer</msg>
   <msg key="Add_new_View">Neue Ansicht</msg>
   <msg key="Add_office">Neuer Firmensitz</msg>
+  <msg key="Add_Portlet">Portlet hinzufügen</msg>
   <msg key="Add_primary_contact">Neuer Hauptkontakt</msg>
   <msg key="Add_Stuff">Hinzufügen</msg>
   <msg key="Add_subproject">Neues Unterprojekt</msg>
@@ -405,6 +406,7 @@
   <msg key="Expense_Bundle">Spesenpaket</msg>
   <msg key="Expense_Item">kostenaufwendiger Artikel</msg>
   <msg key="Expense_Report">Ausgaben-Report</msg>
+  <msg key="Expense_Types">Ausgabentyp</msg>
   <msg key="Export_Companies_CSV">Firmen-CSV exportieren</msg>
   <msg key="Export_Customers_to_CSV">Kunden nach CSV exportieren</msg>
   <msg key="Export_Projects_CSV">Projekt-CSV exportieren</msg>
@@ -570,8 +572,10 @@
   <msg key="Honduras">Honduras</msg>
   <msg key="Hour">Stunde</msg>
   <msg key="hr">Personal</msg>
+  <msg key="HR_Help">HR Hilfe</msg>
   <msg key="HR_Managers">Personalchefs</msg>
   <msg key="hr_managers">Personalleiter</msg>
+  <msg key="HR_Reporting">HR Reporting</msg>
   <msg key="hu">hu</msg>
   <msg key="Human_Resources">Personalabteilung</msg>
   <msg key="Hungary">Ungarn</msg>
@@ -598,6 +602,7 @@
   <msg key="Indonesia">Indonesien</msg>
   <msg key="Inquiries">Anfragen</msg>
   <msg key="Inquiring">Anfragend</msg>
+  <msg key="Interactive_Shell">Interaktive Shell</msg>
   <msg key="Internal">Intern</msg>
   <msg key="Intranet">Intranet</msg>
   <msg key="intranet-core.Menu_Backup_Restore">Wiederherstellen</msg>
@@ -634,6 +639,7 @@
   <msg key="IT_System_1">IT System</msg>
   <msg key="IT_System_2">IT System</msg>
   <msg key="Italy">Italien</msg>
+  <msg key="ITSM_Help">ITSM Hilfe</msg>
   <msg key="iw">iw</msg>
   <msg key="j">J</msg>
   <msg key="ja">ja</msg>
@@ -673,6 +679,7 @@
   <msg key="Loc">Loc</msg>
   <msg key="LOC_Tools">Lokalisierungstools</msg>
   <msg key="Localization">Lokalisierung</msg>
+  <msg key="Localization_Home">Lokalisierung Home</msg>
   <msg key="Localization_Project">Lokalisierungsprojekt</msg>
   <msg key="Locate_user_by">Nach Benutzer suchen</msg>
   <msg key="Location">Standort</msg>
@@ -1069,6 +1076,7 @@ Passwort: %password%
   <msg key="Menus">Menüs</msg>
   <msg key="Message">Nachricht</msg>
   <msg key="Mexico">Mexico</msg>
+  <msg key="Milestone">Meilenstein</msg>
   <msg key="milestone_p">Meilenstein?</msg>
   <msg key="Milestones">Meilensteine</msg>
   <msg key="Mine">Meine</msg>
@@ -1103,6 +1111,7 @@ Passwort: %password%
   <msg key="New_Provider_Contact">Neuer Zuliefererkontakt</msg>
   <msg key="New_Quote">Neues Angebot</msg>
   <msg key="New_Trans_Invoice">Neue Übersetzungsrechnung</msg>
+  <msg key="New_Travel_Expense">Neuer Reisekostenbeleg</msg>
   <msg key="New_User">Neuer Benutzer</msg>
   <msg key="New_view">Neue Sicht</msg>
   <msg key="New_Zealand">Neuseeland</msg>
@@ -1185,6 +1194,7 @@ Passwort: %password%
   <msg key="Outstanding">Offene Forderung</msg>
   <msg key="p">P</msg>
   <msg key="Package">Paket</msg>
+  <msg key="Package_Manager">Paketmanager</msg>
   <msg key="Page">Seite</msg>
   <msg key="Pager">Page</msg>
   <msg key="Paid">Bezahlt</msg>
@@ -1229,6 +1239,7 @@ Passwort: %password%
   <msg key="poesadp">po.es.adp</msg>
   <msg key="poessadp">po.es.adp</msg>
   <msg key="Poland">Polen</msg>
+  <msg key="Portlet_Components">Portlet Komponenten</msg>
   <msg key="Portrait">Porträt</msg>
   <msg key="Portugal">Portugal</msg>
   <msg key="POs">Aufträge</msg>
@@ -1246,6 +1257,8 @@ Passwort: %password%
   <msg key="Prio">Prio.</msg>
   <msg key="Prio_1">Prio</msg>
   <msg key="Prio_HJ_1">Prio HJ</msg>
+  <msg key="private_customer">Privatkunde</msg>
+  <msg key="Privatkunde">Privatkunde</msg>
   <msg key="Profile">Profil</msg>
   <msg key="Profile_Accounting">Buchhaltung</msg>
   <msg key="Profile_Consulting_Vertical">Consulting Vertical</msg>
@@ -1264,12 +1277,15 @@ Passwort: %password%
   <msg key="Profile_Translation_Vertical">Translation Vertical</msg>
   <msg key="Profiles">Profile</msg>
   <msg key="Profit">Ertrag</msg>
+  <msg key="Profit_amp_Loss">Gewinn und Verlust</msg>
   <msg key="Profit_and_Loss">GuV</msg>
+  <msg key="Program">Programm</msg>
   <msg key="Program_Enhan_BKB">Program Erweiterung (PE)</msg>
   <msg key="Program_Enhan_K">Kleinauftrag Konzern</msg>
   <msg key="Program_Enhancement">Programmerweiterung</msg>
   <msg key="Project">Projektnr.</msg>
   <msg key="Project_">Projekt #</msg>
+  <msg key="Project_Advanced_Filtering">Erweiterte Filterung</msg>
   <msg key="Project_Base_Data">Basisdaten</msg>
   <msg key="Project_Budget">Projekt Budget</msg>
   <msg key="Project_Budget_Currency">Projekt Etat Währung</msg>
@@ -1287,18 +1303,29 @@ Passwort: %password%
   <msg key="Project_Nr">Projektnr.</msg>
   <msg key="Project_nr">Projektnr.</msg>
   <msg key="Project_project_name">Projekt: %project_name% </msg>
+  <msg key="Project_Proposals">Projektvorschläge</msg>
   <msg key="Project_Resource_Planning">Ressourcenplanung</msg>
   <msg key="Project_Status">Projektstatus</msg>
+  <msg key="Project_status_Closed">Geschlossen</msg>
+  <msg key="Project_status_Inquiring">Anfragend</msg>
+  <msg key="Project_status_Open">Offen</msg>
+  <msg key="Project_status_Potential">Potentiell</msg>
+  <msg key="Project_status_Qualifying">Qualifizierend</msg>
+  <msg key="Project_status_Quote_Out">Angebot versendet</msg>
+  <msg key="Project_status_Quoting">In der Angebotsphase</msg>
   <msg key="Project_Survey_Component">Projektumfragen</msg>
   <msg key="Project_Task">Projekt Aufgabe</msg>
   <msg key="Project_Type">Projekttyp</msg>
   <msg key="Project_type_Consulting_Project">Consultingprojekt</msg>
   <msg key="Project_type_Milestone">Meilenstein</msg>
+  <msg key="Project_type_Other">Anderer</msg>
   <msg key="Project_type_Service_Level_Agreement">Service Level Agreement</msg>
   <msg key="Project_type_Software_Release">Software Release</msg>
+  <msg key="Project_type_Software_Release_Item">Software Release Item</msg>
   <msg key="Project_type_Task">Aufgabe</msg>
   <msg key="Project_type_Ticket">Ticket</msg>
   <msg key="Project_type_Translation_Project">Übersetzungsprojekt</msg>
+  <msg key="Project_type_Unknown">Unbekannt</msg>
   <msg key="Project_Types">Projekttypen</msg>
   <msg key="ProjectOpen_News">]project-open[ News</msg>
   <msg key="Projects">Projekte</msg>
@@ -1310,7 +1337,9 @@ Passwort: %password%
   <msg key="Provider">Zulieferer</msg>
   <msg key="Provider_Bill">Zulieferer Rechnung</msg>
   <msg key="Provider_Documents">Zulieferer Dokumente</msg>
+  <msg key="Provider_Help">Lieferanten Hilfe</msg>
   <msg key="Provider_Management">Lieferantenmanagement</msg>
+  <msg key="Provider_Reporting">Lieferanten Reporting</msg>
   <msg key="Providers">Zulieferer</msg>
   <msg key="pt">pt</msg>
   <msg key="pt_BR">pt_BR</msg>
@@ -1348,9 +1377,12 @@ Passwort: %password%
   <msg key="Request_Error">Fehler in der Anfrage</msg>
   <msg key="Request_For_Change">Request For Change</msg>
   <msg key="Requested">Angefordert</msg>
+  <msg key="Reset_Portlets">Portlets zurücksetzen</msg>
   <msg key="Reset_Stuff">Zurücksetzen</msg>
+  <msg key="Resource_Planning">Ressourcen Planung</msg>
   <msg key="Resources">Resourcen</msg>
   <msg key="Ressource_Group_1">Ressourcen Gruppe</msg>
+  <msg key="Restart_Server">Server neu starten</msg>
   <msg key="Return_to">Zurück zu</msg>
   <msg key="Return_To_Previous_Page">Zurück zur letzten Seite</msg>
   <msg key="RFC">RFC</msg>
@@ -1428,6 +1460,7 @@ Passwort: %password%
   <msg key="Spam_Members">Spam Mitglied</msg>
   <msg key="Spam_Users">Spam Benutzer</msg>
   <msg key="sq">sq</msg>
+  <msg key="SQL_Profiling">SQL Profiling</msg>
   <msg key="sr">sr</msg>
   <msg key="Standard">Standard</msg>
   <msg key="Standard_Quality">Standard Qualität</msg>
@@ -1472,14 +1505,17 @@ Passwort: %password%
   <msg key="Telefonie">Telefonie</msg>
   <msg key="Telephony_Request">Telephony Request</msg>
   <msg key="Telephony_request">Telefon</msg>
+  <msg key="templatedeodt">template.de.odt</msg>
   <msg key="templateenadp">template.en.adp</msg>
   <msg key="templateesadp">template.es.adp</msg>
+  <msg key="Templates">Vorlagen</msg>
   <msg key="Test_evaluated">Test bewerted</msg>
   <msg key="Test_received">Test empfangen</msg>
   <msg key="Test_sent">Test gesendet</msg>
   <msg key="th">th</msg>
   <msg key="The_web_with_Google">Das Internet mit Google</msg>
   <msg key="Ticket">Ticket</msg>
+  <msg key="Tickets">Tickets</msg>
   <msg key="Time_plan">Zeitplan</msg>
   <msg key="Time_sheet">Zeiterfassung</msg>
   <msg key="Timesheet">Zeiterfassung</msg>
@@ -1504,6 +1540,7 @@ Passwort: %password%
   <msg key="Trados_60_LSP">Trados 6.0 LSP</msg>
   <msg key="Trados_65_Freelance">Trados 6.5 Freelance</msg>
   <msg key="Trados_MultiTerm_Ix">Trados MultiTerm lx</msg>
+  <msg key="Training">Training</msg>
   <msg key="Trans-ing">wird übersetzt</msg>
   <msg key="Trans__Edit">TransCheck+Revision</msg>
   <msg key="Trans__Edit__Proof">Übersetzung Edit Proof</msg>

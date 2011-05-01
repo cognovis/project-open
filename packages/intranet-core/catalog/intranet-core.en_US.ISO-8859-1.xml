@@ -1358,6 +1358,8 @@ other way for the user to find out.</msg>
   <msg key="Prio">Prio</msg>
   <msg key="Prio_1">Prio</msg>
   <msg key="Prio_HJ_1">Prio HJ</msg>
+  <msg key="private_customer">private customer</msg>
+  <msg key="Privatkunde">private customer</msg>
   <msg key="Problem_Ticket">Problem Ticket</msg>
   <msg key="Profile">Profile</msg>
   <msg key="Profile_Accounting">Accounting</msg>
@@ -1400,6 +1402,7 @@ other way for the user to find out.</msg>
   <msg key="Project_name">Project name</msg>
   <msg key="Project_Nr">Project Nr</msg>
   <msg key="Project_nr">Project nr</msg>
+  <msg key="Project_Path">Project Path</msg>
   <msg key="Project_project_name">Project: %project_name%</msg>
   <msg key="Project_Proposals">Project Proposals</msg>
   <msg key="Project_Quality_Component">Übersetzungsqualität</msg>
@@ -1611,6 +1614,7 @@ other way for the user to find out.</msg>
   <msg key="Telefonie">Telephony Request</msg>
   <msg key="Telephony_Request">Telephony Request</msg>
   <msg key="Telephony_request">Telephony request</msg>
+  <msg key="templatedeodt">template.de.odt</msg>
   <msg key="templateenadp">template.en.adp</msg>
   <msg key="templateesadp">template.es.adp</msg>
   <msg key="Test_evaluated">Test evaluated</msg>
@@ -1620,6 +1624,7 @@ other way for the user to find out.</msg>
   <msg key="The_web_with_Google">The web with Google</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_Members">Ticket Members</msg>
+  <msg key="Tickets">Tickets</msg>
   <msg key="Time_plan">Time plan</msg>
   <msg key="Time_sheet">Time sheet</msg>
   <msg key="Timesheet">Timesheet</msg>
