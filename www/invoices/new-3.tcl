@@ -238,7 +238,7 @@ if {$project_type_enabled_p} {
 
 append task_sum_html "
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Units]</td>
-          <!--<td class=rowtitle>[_ intranet-timesheet2-invoices.UOM]</td>-->
+          <td class=rowtitle>[_ intranet-timesheet2-invoices.UOM]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
         </tr>
 "
@@ -282,21 +282,30 @@ foreach project_id $in_clause_list {
 	 db_foreach users_in_group $user_sql {
 	     append task_sum_html "
                 <tr>\n
-			<td class=rowtitle colspan=$price_colspan><A href=/intranet/users/view?user_id=$user_id>$user_name</A></td>\n
-			<td class=rowtitle colspan=$price_colspan>$hourly_rate</td>\n
-			<td class=rowtitle colspan=$price_colspan>$sum_hours</td>\n
+          		<td colspan='1'><input type=text name=item_sort_order.$ctr size=2 value='$ctr'></td>
+			<td colspan='1'><A href=/intranet/users/view?user_id=$user_id>$user_name</A></td>\n
+			<td colspan='1'><input size=3 type=text name='sum_hours.$ctr' value='$sum_hours'></td>\n
+			<td colspan='1'>Stunden</td>\n
+			<td colspan='1'><input size=3 type=text name='hourly_rate.$ctr' value='$hourly_rate'>\n
+			<input type=hidden name='item_name.$ctr' value='$user_name'>\n
+			<input type=hidden name='item_units.$ctr' value='$sum_hours'>\n
+			<input type=hidden name='item_rate.$ctr' value='$hourly_rate'>\n
+			<input type=hidden name='item_currency.$ctr' value='EUR'>\n
+			</td>\n
 		</tr>\n
 	     "
 	}
+	incr ctr
 }
 
+append task_sum_html "<input type=hidden name='project_id' value='$select_project'><input type=hidden name='uom_id' value='320'>"
+foreach task_id $in_clause_list {
+    append task_sum_html "<input type=hidden name=include_task value=$task_id>\n"
+}
 
 set include_task_html ""
-
 set start_date $invoicing_start_date
 set end_date $invoicing_end_date
-
 set reference_price_html ""
-
 ad_return_template
 
