@@ -44,17 +44,11 @@
 
 <table cellpadding=1 cellspacing=1 border=0>
     @task_table_rows;noquote@
-
     <tr>
 	<td colspan=10 align=right>
-		<input type=checkbox name=aggregate_tasks_p value=1 checked>
-		<%= [lang::message::lookup "" intranet-timesheet2-invoices.Aggregate_tasks_of_the_same_material "Aggregate tasks of the same Material"] %>
-
 		<input type=submit name=submit value='<%= [lang::message::lookup "" intranet-timesheet2-invoices.lt_Select_Tasks_for_Invo "Select Tasks for Invoicing"] %>'>
-
         </td>
     </tr>
     <tr><td>&nbsp;</td></tr>
-
 </table>
 </form>
