@@ -32,6 +32,15 @@ SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Emp_Cust_Intern
 SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Emp_Cust_Costs_Based_On_Price_Matrix','Invoicable<br>according to<br>Price Matrix');
 SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Emp_Cust_Costs_Based_On_Price_Matrix','Abrechenbar<br>lt. E/C Preis-Matrix');
 
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Day','Day');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Day','Tag');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','Hour','Hour');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','Hour','Stunden');
+
+SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','AbsenceTimeframe','Timeframe');
+SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','AbsenceTimeframe','Zeitraum');
+
 
 select acs_object_type__create_type (
         'project_approval2_wf',           -- object_type
@@ -394,6 +403,15 @@ select acs_privilege__add_child('admin', 'admin_company_price_matrix');
 select im_priv_create('admin_company_price_matrix', 'Accounting');
 select im_priv_create('admin_company_price_matrix', 'P/O Admins');
 select im_priv_create('admin_company_price_matrix', 'Senior Managers');
+
+
+-- Absences 
+alter table im_user_absences add column absence_day_p  char(1); 
+alter table im_user_absences add column duration_hours numeric(12,1);
+
+
+ 
+
 
 
 
