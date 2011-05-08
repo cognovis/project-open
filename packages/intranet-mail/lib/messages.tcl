@@ -48,9 +48,14 @@ set show_filter_p 0
 set page_title [ad_conn instance_name]
 set context [list "index"]
 
+#Only to make the code more legible
+if {[info exists object]} {
+    set project $object
+}
+
 set required_param_list [list]
 set optional_param_list [list party pass_through_vars]
-set optional_unset_list [list pkg_id object recipient sender page]
+set optional_unset_list [list pkg_id project recipient sender page]
 
 foreach required_param $required_param_list {
     if {![info exists $required_param]} {
@@ -85,7 +90,7 @@ set tracking_url [apm_package_url_from_key "intranet-mail"]
 # Wich elements will be shown on the list template
 set rows_list [list]
 if {![exists_and_not_null elements] } {
-    set rows_list [list sender {} recipient {} subject {} object {} file_ids {} body {} sent_date {}]
+    set rows_list [list status {} sender {} recipient {} subject {} project {} file_ids {} body {} sent_date {}]
 } else {
     foreach element $elements {
 	lappend rows_list $element
@@ -98,9 +103,9 @@ set filters [list \
 		     label "[_ intranet-mail.Sender]"
 		     where_clause "sender_id = :sender"
 		 } \
-		 object {
-		     label "[_ intranet-mail.Object_id]"
-		     where_clause "object_id = :object"
+		 project {
+		     label "[_ intranet-mail.Context_id]"
+		     where_clause "context_id = :project"
 		 } 
 	    ]
 
@@ -159,10 +164,10 @@ template::list::create \
 	subject {
 	    label "[_ intranet-mail.Subject]"
 	}
-	object {
-	    label "[_ intranet-mail.Object_id]"
+	project {
+	    label "[_ intranet-mail.Context_id]"
 	    display_template {
-		<a href="@messages.object_url@">@messages.object_id@</a>
+		<a href="@messages.context_url@">@messages.context_id@</a>
 	    }
 	}
 	file_ids {
@@ -199,7 +204,13 @@ template::list::create \
         }
     } -filters $filters \
 
-db_multirow -extend { file_ids object_url sender_name message_url recipient package_name package_url url_message_id download_files} messages select_messages { } {
+db_multirow -extend { status file_ids context_url sender_name message_url recipient package_name package_url url_message_id download_files} messages select_messages { } {
+
+    if {[views::viewed_p -object_id $log_id]} {
+        set status ""
+    } else {
+        set status "NEW"
+    }
 
     if {[exists_and_not_null sender_id]} { 
         set sender_name "[party::name -party_id $sender_id]"
@@ -244,11 +255,11 @@ db_multirow -extend { file_ids object_url sender_name message_url recipient pack
         append download_files "<a href=\"[export_vars -base "${tracking_url}download/$title" -url {version_id}]\">$title</a><br>"
     }
 
-    set object_url "/o/$object_id"
+    set context_url "/o/$context_id"
 }
 
 if {[exists_and_not_null object]} {
-    set mail_url [export_vars -base "${tracking_url}mail" -url {{object_id $object} return_url}]
+    set mail_url [export_vars -base "${tracking_url}mail" -url {{object_id $project} return_url}]
 } else {
     set mail_url ""
 }

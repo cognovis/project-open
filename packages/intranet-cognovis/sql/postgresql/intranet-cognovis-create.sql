@@ -1859,6 +1859,7 @@ END;' language 'plpgsql';
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
 
+
 -- Disable components
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '

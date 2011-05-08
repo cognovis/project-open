@@ -67,7 +67,6 @@ BEGIN
 	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');
 
 
-
 	-- User Basic Information
 	SELECT plugin_id INTO v_object_id FROM im_component_plugins WHERE plugin_name = ''User Basic Information'' AND page_url = ''/intranet/users/view'';
 
@@ -108,7 +107,6 @@ BEGIN
 
 	PERFORM im_grant_permission(v_object_id,v_employees,''read'');
 	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');
-
 	
 	
 	-- Company Info
@@ -137,16 +135,11 @@ BEGIN
 	PERFORM im_grant_permission(v_object_id,v_employees,''read'');
 	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');
 
-	
-
-
-	
 	RETURN 0;
 END;' language 'plpgsql';
 
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
-	
 
 	
 	

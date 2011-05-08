@@ -13,7 +13,7 @@
 		sent_date, 
 		body, 
 		subject, 
-		object_id,
+		context_id,
 	        to_addr,
 		log_id
         from 
