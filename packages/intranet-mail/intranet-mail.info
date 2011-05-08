@@ -10,12 +10,12 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-mail</auto-mount>
 
-    <version name="0.1d9" url="http://openacs.org/repository/download/apm/intranet-mail-0.1d9.apm">
+    <version name="0.1d11" url="http://openacs.org/repository/download/apm/intranet-mail-0.1d11.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <release-date>2011-04-21</release-date>
         <maturity>0</maturity>
 
-        <provides url="intranet-mail" version="0.1d9"/>
+        <provides url="intranet-mail" version="0.1d11"/>
         <requires url="acs-mail-lite" version="5.6.0"/>
 
         <callbacks>

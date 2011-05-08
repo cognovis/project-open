@@ -9,13 +9,13 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-xowiki-0.1d.apm">
-        <owner url="mailto:sysadmin@tigerpond.com">System Administrator</owner>
+     <version name="0.1d3" url="http://openacs.org/repository/download/apm/intranet-xowiki-0.1d3.apm">
+>        <owner url="mailto:sysadmin@tigerpond.com">System Administrator</owner>
         <summary>Includes xowiki pages with projects</summary>
         <description format="text/html">This package will allow us to correctly include xowiki pages with projects and other project-open business objects</description>
         <maturity>0</maturity>
 
-        <provides url="intranet-xowiki" version="0.1d"/>
+        <provides url="intranet-xowiki" version="0.1d3"/>
         <requires url="xowiki" version="0.136"/>
 
         <callbacks>

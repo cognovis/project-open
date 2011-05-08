@@ -212,7 +212,7 @@ ad_proc -public -callback imap::incoming_email -impl intranet-mail-link_mails {
     # Check if we already logged this mail for this object_id
     set message_id $email(message-id)
     if {![db_string logged_p "select 1 from acs_mail_log where object_id = :object_id and message_id = :message_id" -default 0]} {
-        
+        	
         set package_id [apm_package_id_from_key "intranet-mail"]
         set log_id [intranet-mail::log_add -package_id $package_id \
                         -sender_id $from_party_id \
@@ -227,7 +227,7 @@ ad_proc -public -callback imap::incoming_email -impl intranet-mail-link_mails {
                         -message_id $message_id \
                         -subject $email(subject) \
                         -file_ids $file_ids \
-                        -object_id $object_id]
+                        -context_id $object_id]
 
         # Execute the callback for logged E-Mails. This is great for
         # custom callbacks triggering workflows etc.
@@ -385,7 +385,7 @@ ad_proc -public -callback acs_mail_lite::send -impl intranet-mail_tracking {
                     -bcc_addr $bcc_addr_list \
                     -body $body \
                     -subject $subject \
-                    -object_id $object_id \
+                    -context_id $object_id \
                     -message_id $message_id \
                     -file_ids $file_ids
                    ]

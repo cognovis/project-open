@@ -9,13 +9,13 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>t</inherit-templates-p>
     
-    <version name="4.0.0.0.1" url="http://openacs.org/repository/download/apm/intranet-fs-4.0.0.0.1.apm">
+    <version name="4.0.0.0.2" url="http://openacs.org/repository/download/apm/intranet-fs-4.0.0.0.2.apm">
         <owner url="http://openacs.org">OpenACS</owner>
         <release-date>2010-07-08</release-date>
         <vendor url="http://openacs.org">OpenACS</vendor>
         <maturity>0</maturity>
 
-        <provides url="intranet-fs" version="4.0.0.0.1"/>
+        <provides url="intranet-fs" version="4.0.0.0.2"/>
         <requires url="file-storage" version="5.4.0d7"/>
 
         <callbacks>

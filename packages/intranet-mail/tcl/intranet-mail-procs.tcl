@@ -267,7 +267,6 @@ ad_proc -public intranet-mail::log_add {
     {-body ""}
     {-message_id:required}
     {-subject ""}
-    {-object_id ""}
     {-context_id ""}
     {-file_ids ""}
 } {
@@ -284,25 +283,35 @@ ad_proc -public intranet-mail::log_add {
     @param body Text of the message
     @param message_id Message_id of the email
     @param subject Subject of the email
-    @param object_id Object for which this message was sent
     @param context_id Context in which this message was send. Will replace object_id
     @param file_ids Files send with this e-mail
 } {
-    set creation_ip "127.0.0.1"
-    if {![string eq "" $context_id]} {
-	set object_id $context_id
-    }
+    set creation_ip [ad_conn peeraddr]
+    set creation_user [ad_conn user_id]
     
-    set log_id [db_nextval "acs_object_id_seq"]
-    # First create the message entry 
-    db_dml insert_mail_log {
-	insert into acs_mail_log
-	(log_id, message_id, sender_id, package_id, subject, body, sent_date, object_id, cc, bcc, to_addr, from_addr)
-	values
-	(:log_id, :message_id, :sender_id, :package_id, :subject, :body, now(), :object_id, :cc_addr, :bcc_addr, :to_addr, :from_addr)
+    # the object_id passed in the API parameters is the project_id. Moreover we must assign it as context_id.
+    set log_id [db_nextval "acs_object_id_seq"]	
+
+    db_exec_plsql insert_acs_mail_log {
+	SELECT acs_mail_log__new (
+                                  :log_id,
+                                  :message_id,
+                                  :sender_id,
+                                  :package_id,
+                                  :subject,
+                                  :body,
+                                  :creation_user,
+                                  :creation_ip,
+                                  :context_id,
+                                  :cc_addr,
+                                  :bcc_addr,
+                                  :to_addr,
+                                  :from_addr
+                                  )
     }
 
-    ns_log Debug "Mail Traking OBJECT $object_id  CONTEXT $context_id FILES $file_ids LOGS $log_id"
+
+
     foreach file_id $file_ids {
 	set item_id [content::revision::item_id -revision_id $file_id]
 	if {$item_id eq ""} {
