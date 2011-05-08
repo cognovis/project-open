@@ -281,6 +281,9 @@ ad_form -extend -name task -on_request {
     # Write Audit Trail
     im_project_audit -project_id $task_id -action update
 
+    # Check closed task
+    
+    
     # Update percent_completed
     #im_timesheet_project_advance $parent_id
 
@@ -288,9 +291,11 @@ ad_form -extend -name task -on_request {
 
 } -after_submit {
 
-	ad_returnredirect $return_url
-	ad_script_abort
+    callback im_timesheet_task_after_update -object_id $task_id
 
+    ad_returnredirect $return_url
+    ad_script_abort
+    
 }
 
 # ---------------------------------------------------------------

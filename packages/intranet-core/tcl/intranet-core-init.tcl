@@ -412,3 +412,11 @@ ad_proc -public -callback im_timesheet_task_list_before_render {
     @param sql The SQL string which im_timesheet_task_list_component prepares
     @param table_header Name of the table in the spreadsheet (e.g. in Excel).
 } -
+
+
+
+ad_proc -public -callback im_timesheet_task_after_update {
+    {-object_id:required}
+} {
+    Updates tasks status on im_projects table according with im_timesheet_tasks table.
+} -

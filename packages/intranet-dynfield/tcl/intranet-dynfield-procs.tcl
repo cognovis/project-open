@@ -916,7 +916,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         set display_mode_hash($key) $dm
         set help_text($attribute_id) $ht
         set default_value($attribute_id) $dv
-        
+
         # Now we've got atleast one display mode configured:
         # Set the default to "none", so that no field is shown
         # except for the configured fields.
@@ -1001,7 +1001,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
-
         # Check if the elements as disabled in the layout page
         if {$page_url_exists_p && "" == $page_url} { continue }
         
@@ -1096,6 +1095,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         # set the value
         upvar $attribute_name x
         if {[info exists x]} {
+	    ns_log Notice "$attribute_id | $attribute_name"
+
             template::element::set_value $form_id $attribute_name $x
         }
         

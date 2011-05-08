@@ -19,6 +19,7 @@ ad_library {
 #
 ad_proc -public im_timesheet_task_status_active { } { return 9600 }
 ad_proc -public im_timesheet_task_status_inactive { } { return 9602 }
+ad_proc -public im_timesheet_task_status_closed { } { return 9601 }
 
 # Task Type
 # 9500-9549    Timesheet Task Type
@@ -1122,3 +1123,18 @@ ad_proc -public im_timesheet_next_task_nr {
 }
 
 
+ad_proc -public -callback im_timesheet_task_after_update -impl im_timesheet_tasks {
+    {-object_id:required}
+} {
+    Updates tasks status on im_projects table according with im_timesheet_tasks table.
+} {
+    set task_status [db_string select_task_status {
+	SELECT task_status_id FROM im_timesheet_tasks WHERE task_id = :object_id
+    } -default ""]
+    
+    if {[exists_and_not_null task_status]} {
+	if {$task_status eq [im_timeshee_task_status_closed]} {
+	    UPDATE im_projects SET project_status_id = [im_project_status_closed] WHERE project_id = :object_id
+	}
+    }
+}

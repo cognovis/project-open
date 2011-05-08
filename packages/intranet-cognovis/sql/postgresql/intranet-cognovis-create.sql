@@ -929,9 +929,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
+		(v_attribute_id, 100,''edit'',null,null,null,''t'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
       RETURN 0;
@@ -976,9 +976,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
+		(v_attribute_id, 100,''edit'',null,null,null,''t'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1025,9 +1025,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''edit'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1038,141 +1038,6 @@ END;' language 'plpgsql';
 
 SELECT inline_3 ();
 DROP FUNCTION inline_3 ();
-
-
---task_status
-CREATE OR REPLACE FUNCTION inline_4 ()
-RETURNS integer AS '
-DECLARE 
-	v_attribute_id integer;
-	v_count	       integer;
-	
-BEGIN 
-      PERFORM im_dynfield_widget__new (
-       null,
-       ''im_dynfield_widget'', 
-       now(), 
-       null,
-       null, 
-       null, 
-       ''task_status'',
-       ''Task Status'',
-       ''Task Status'',
-       10007,
-       ''integer'',
-       ''generic_tcl'',
-       ''integer'',
-       ''{custom {tcl {im_timesheet_task_status_options -include_empty 1}}}'',
-       ''im_name_from_id''
-       );
-
-
-      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
-      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_status_id'';
-     
-      IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task Status'', pretty_plural = ''Task Status'', min_n_values = 1, sort_order = 4 
-	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
-
-      	 UPDATE im_dynfield_attributes SET widget_name = ''task_status'', also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
-      ELSE
-        v_attribute_id := im_dynfield_attribute_new (
-        ''im_timesheet_task'',
-        ''project_status_id'',
-        ''Status'',
-        ''task_status'',
-        ''integer'',
-        ''t'',
-        4,
-        ''f'',
-        ''im_projects''
-        );
-      END IF;
-
-      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
-      IF v_count = 0 THEN
-      	 INSERT INTO im_dynfield_type_attribute_map
-	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
-	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
-      ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
-      END IF;
-
-
-      RETURN 0;
-END;' language 'plpgsql';
-
-
-SELECT inline_4 ();
-DROP FUNCTION inline_4 ();
-
--- task_type_id
-CREATE OR REPLACE FUNCTION inline_5 ()
-RETURNS integer AS '
-DECLARE 
-	v_attribute_id integer;
-	v_count	       integer;
-		
-BEGIN 
-      PERFORM im_dynfield_widget__new (
-       null,
-      ''im_dynfield_widget'', 
-       now(),
-       null,
-       null,
-       null,
-       ''task_type'',
-       ''Task Type'',
-       ''Task Types'',
-       10007,
-       ''integer'',
-       ''generic_tcl'',
-       ''integer'',
-       ''{custom {tcl {im_timesheet_task_type_options -include_empty 1}}}'',
-       ''im_name_from_id''
-       );
-
-      SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa 
-      WHERE ida.acs_attribute_id = aa.attribute_id AND aa.object_type = ''im_timesheet_task'' AND aa.attribute_name = ''project_type_id'';
-     
-      IF v_attribute_id > 0 THEN
-      	 UPDATE acs_attributes SET pretty_name = ''Task Type'', pretty_plural = ''Task Type'', min_n_values = 1, sort_order = 5
-	 WHERE attribute_id = (SELECT acs_attribute_id FROM im_dynfield_attributes WHERE attribute_id = v_attribute_id);
-
-      	 UPDATE im_dynfield_attributes SET widget_name = ''task_type'', also_hard_coded_p = ''f'' WHERE attribute_id = v_attribute_id;
-
-      ELSE
-        v_attribute_id := im_dynfield_attribute_new (
-        ''im_timesheet_task'',
-        ''project_type_id'',
-        ''Type'',
-        ''task_type'',
-        ''integer'',
-        ''f'',
-        5,
-        ''f'',
-        ''im_projects''
-        );
-      END IF;
-
-      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = 100;
-      IF v_count = 0 THEN
-      	 INSERT INTO im_dynfield_type_attribute_map
-	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
-	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
-      ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
-      END IF;
-
-
-      RETURN 0;
-END;' language 'plpgsql';
-
-
-SELECT inline_5 ();
-DROP FUNCTION inline_5 ();
 
 
 -- uom_id
@@ -1210,9 +1075,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''none'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1260,9 +1125,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
+		(v_attribute_id, 100,''none'',null,null,null,''t'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1309,9 +1174,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''none'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1358,12 +1223,10 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''edit'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
-
-
 
       RETURN 0;
 END;' language 'plpgsql';
@@ -1408,9 +1271,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''edit'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1457,9 +1320,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''f'');
+		(v_attribute_id, 100,''edit'',null,null,null,''f'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1507,9 +1370,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
+		(v_attribute_id, 100,''edit'',null,null,null,''t'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -1558,9 +1421,9 @@ BEGIN
       	 INSERT INTO im_dynfield_type_attribute_map
 	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	 VALUES
-		(v_attribute_id, 100,''display'',null,null,null,''t'');
+		(v_attribute_id, 100,''edit'',null,null,null,''t'');
       ELSE
-	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	 UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
 
@@ -2039,6 +1902,7 @@ BEGIN
     -- Disable the Translation Workflow Rating Survey (it is one of two surveys for each project)
     SELECT survey_id INTO v_plugin_id FROM survsimp_surveys WHERE name = ''Translation Workflow Rating: Translator'' AND short_name = ''Translation Workflow'';
     UPDATE survsimp_surveys SET enabled_p = ''f'' WHERE survey_id = v_plugin_id;
+    RETURN 0;
     
 END;' language 'plpgsql';
 
@@ -2304,9 +2168,6 @@ BEGIN
 
 	PERFORM im_grant_permission(v_object_id,v_employees,''read'');
 	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');
-
-	
-
 
 	
 	RETURN 0;

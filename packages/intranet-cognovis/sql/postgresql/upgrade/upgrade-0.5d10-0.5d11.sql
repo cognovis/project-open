@@ -30,9 +30,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -55,15 +55,15 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
 
 	-- Project
-	SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa WHERE aa.attribute_id = ida.acs_attribute_id AND object_type = ''im_timesheet_task'' AND aa.attribute_name = ''parent_id'';
+	SELECT ida.attribute_id INTO v_attribute_id FROM im_dynfield_attributes ida, acs_attributes aa WHERE aa.attribute_id = ida.acs_attribute_id AND object_type = ''im_timesheet_task'' AND aa.attribute_name = ''parent_id''; 
 
 	SELECT aa.min_n_values INTO v_min_n_values FROM acs_attributes aa, im_dynfield_attributes ida WHERE ida.attribute_id = v_attribute_id AND aa.attribute_id = ida.acs_attribute_id;
 
@@ -80,9 +80,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -104,9 +104,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''none'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -128,9 +128,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''none'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -152,9 +152,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''none'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -176,9 +176,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''none'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -200,9 +200,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''none'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''none'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -224,9 +224,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -249,9 +249,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -273,9 +273,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
@@ -321,9 +321,9 @@ BEGIN
 	      INSERT INTO im_dynfield_type_attribute_map
 	      	     (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 	      VALUES
-		     (v_attribute_id, 100,''display'',null,null,null,v_required_p);
+		     (v_attribute_id, 100,''edit'',null,null,null,v_required_p);
 	   ELSE
-	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''display'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
+	      UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
            END IF;
 	END IF;
 
