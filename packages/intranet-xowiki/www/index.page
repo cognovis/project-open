@@ -1,0 +1,9 @@
+::xowiki::Page new -title "Index Page" -text {
+
+{{recent -max_entries 25}}
+
+}
+
+
+
+
