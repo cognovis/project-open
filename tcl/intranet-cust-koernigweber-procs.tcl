@@ -196,8 +196,8 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 	
 	append body_html "</td>"
 
-	if { [im_permission $current_user_id "admin_company_price_matrix"]} {
-	    append body_html "
+        if { [im_permission $current_user_id "admin_company_price_matrix"]} {
+            append body_html "
                   <td align=middle>
                     <input type=input size=6 maxlength=6 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
                   </td>
@@ -209,7 +209,7 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
                     $amount $currency
                   </td>
             "
-	}     
+        }
 
 	append body_html "</td>"
 
@@ -627,6 +627,50 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
     }
 
     return $task_table_rows
+}
+
+proc filter_conncontext { conn arg why } {
+    set headers_string ""
+    for { set i 0 } { $i < [ns_set size [ns_conn headers]] } { incr i } {
+	append headers_string "[ns_set key [ns_conn headers] $i]: [ns_set value [ns_conn headers] $i]"
+    }
+
+    set white_listed_base_urls "
+        /intranet/js
+        /intranet/images
+        /intranet/style
+        /resources/acs-subsite
+        /resources/diagram
+        /resources/acs-templating
+        /calendar/resources
+        /resources/acs-developer-support
+        /images
+    "
+    set white_listed_urls "
+        /intranet-timesheet2/hours/index
+        /intranet-timesheet2/hours/new
+        /intranet-timesheet2/hours/new-2
+        /http-block.html
+        /register/logout
+        /register/recover-password
+        /images/logo.kw.gif
+        /lock.jpg
+    "
+    # Is this a HTTP request?
+    set http_p [ns_set iget [ns_conn headers] "HTTP"]
+    if { [string equal "1" $http_p] } {
+        regexp {(/.*)?(/.*)} [ns_conn url] match link
+        if { [string first [string tolower [ns_conn url]] $white_listed_urls] != -1 || [string first $link $white_listed_base_urls] != -1 } {
+            return filter_ok
+        } else {
+	    if { "/intranet/"== [ns_conn url]} {
+                 ad_returnredirect "/intranet-timesheet2/hours/index"
+	    } else {
+                    ad_returnredirect "/http-block.html"
+	    }
+        }
+    }
+    return filter_ok
 }
 
 
