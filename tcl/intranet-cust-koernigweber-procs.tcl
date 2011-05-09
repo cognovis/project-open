@@ -630,6 +630,10 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 }
 
 proc filter_conncontext { conn arg why } {
+
+    set filter_active_p [parameter::get -package_id [apm_package_id_from_key intranet-cust-koernigweber] -parameter "HTTPSFilter" -default 1]
+    if { !$filter_active_p } { return filter_ok }
+    
     set headers_string ""
     for { set i 0 } { $i < [ns_set size [ns_conn headers]] } { incr i } {
 	append headers_string "[ns_set key [ns_conn headers] $i]: [ns_set value [ns_conn headers] $i]"
