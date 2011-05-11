@@ -310,7 +310,7 @@ db_foreach get_hours $sql {
 	append task_id_string "task_id=$task_id&"  
     }
     if { ![empty_string_p $task_id_string] } {
-    	append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&task_id=$task_id_string/' class='button'>[lang::message::lookup "" intranet-core.Confirm "Confirm"]</a></td>"	
+    	append table_body_html "<td><a href='/acs-workflow/task?return_url=/intranet-cust-koernigweber/monthly-report-wf-extended&$task_id_string/' class='button'>[lang::message::lookup "" intranet-core.Confirm "Confirm"]</a></td>"	
     } else {
 	    set wf_tasks_sql "
         	select 
