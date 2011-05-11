@@ -1,8 +1,5 @@
-
 <div id=@diagram_id@></div>
-
 <script type='text/javascript'>
-
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 
     window.store1 = Ext.create('Ext.data.JsonStore', {
@@ -56,7 +53,5 @@ Ext.onReady(function () {
 	}]
     }
 )});
-
-	    
 </script>
 
