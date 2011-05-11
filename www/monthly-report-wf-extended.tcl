@@ -71,8 +71,6 @@ if { ([empty_string_p $report_year] && [empty_string_p $report_month]) || [empty
 set first_day_of_month "$report_year-$report_month-01"
 set duration [db_string get_number_days_month "SELECT date_part('day','$first_day_of_month'::date + '1 month'::interval - '1 day'::interval)" -default 0]
 
-# set duration 2
-
 if { $owner_id != $user_id && ![im_permission $user_id "view_hours_all"] } {
     ad_return_complaint 1 "<li>[_ intranet-timesheet2.lt_You_have_no_rights_to]"
     return
@@ -151,6 +149,7 @@ set left_navbar_html "
 
 set table_header_html "<tr><td class=rowtitle>Projekt</td><td class=rowtitle>Mitarbeiter</td>"
 set inner_sql_list [list]
+# set duration 2
 
 for { set i 1 } { $i < $duration + 1 } { incr i } {
     if { 1 == [string length $i]} { 
@@ -169,6 +168,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 		where
 			children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
 			and parent.project_id = h.project_id
+			and parent.project_id = p.project_id
 			)
             and h.day like '%$report_year-$report_month-$day_double_digit%') as h$report_year$report_month$day_double_digit
     "
@@ -202,14 +202,14 @@ set sql "
 		and p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
 		and p.project_status_id IN ([im_project_status_open])
 		and p.project_lead_id = $current_user_id
-		and r.object_id_two in (
-			select distinct user_id from im_hours where day like '%$report_year-$report_month-%'
-		)
+		--  and r.object_id_two in (
+			-- select distinct user_id from im_hours where day like '%$report_year-$report_month-%'
+		-- )
 	order by 
 		project_name
 "
 
-#ad_return_complaint 1 $sql
+# ad_return_complaint 1 $sql
 
 # ---------------------------------------------------------------
 # Get Column Header & Data
@@ -231,6 +231,9 @@ set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
 
 db_foreach get_hours $sql {
+
+    if { ![info exists user_name] || ""==$user_name } { continue }
+
     if { ![string equal $project_name_saved $project_name] } {
 	    append table_body_html "<tr class='roweven'><td><strong><a href='$project_url$project_id'>$project_name</a></strong></td>"
 	    set project_name_saved $project_name
@@ -239,10 +242,15 @@ db_foreach get_hours $sql {
     }
     append table_body_html "<td><a href='$user_url$user_id'>$user_name</a></td>"
     for { set i 1 } { $i < $duration + 1 } { incr i } {
-	if { 1 == [string length $i]} { set day_double_digit 0$i }
+	if { 1 == [string length $i]} { 
+	    set day_double_digit 0$i 
+	} else {
+	    set day_double_digit $i
+	}
 	set varname h 
 	append varname $report_year$report_month$day_double_digit
 	set value [expr "\$$varname"]
+        ns_log NOTICE "KHD: Username: $user_name, Varname: $varname, Value: $value"
 	append table_body_html "<td>$value</td>"
     }
     # are there any unconfirmed hours for this user?  
@@ -261,14 +269,14 @@ db_foreach get_hours $sql {
 	) and user_id=:user_id and day like '%$report_year-$report_month-%'
     "
     set ctr_unconfirmed_hrs [db_string get_ctr_unconfirmed_hrs $sql -default 0]
-    if { 0 != $ctr_unconfirmed_hrs } {
-	append table_body_html "<td><a href='/intranet-cust-koernigweber/notify-logged-hours"
+    # if { 0 != $ctr_unconfirmed_hrs } {
+   	append table_body_html "<td><a href='/intranet-cust-koernigweber/notify-logged-hours"
 	append table_body_html "?report_year_month=$report_year_month&user_id=$user_id&project_id=$project_id&return_url="
 	append table_body_html "/intranet-cust-koernigweber/monthly-report-wf-extended.tcl' class='button'>[lang::message::lookup "" intranet-cust-koernigweber.TS_WF_Remind "Remind"]</a></td>"	
-    } else {
+    # } else {
 	# append table_body_html "<td>[lang::message::lookup "" intranet-timesheet2.No_hours_logged "No hours logged"]</td>"
-	append table_body_html "<td>&nbsp;</td>"
-    }    
+    #	append table_body_html "<td>&nbsp;</td>"
+    # }    
 
     set wf_tasks_sql "
 	select distinct
