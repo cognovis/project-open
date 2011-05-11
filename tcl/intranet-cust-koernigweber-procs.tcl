@@ -146,11 +146,7 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
 		company_id = :object_id
 	)
 		and rel_type = 'im_biz_object_member'
-
-"
-
-
-
+	"
     # ------------------ Format the table header ------------------------
     set colspan 2
     set header_html "
@@ -263,9 +259,9 @@ ad_proc -public im_koernigweber_next_project_nr {
     consecutive number 
 } {
 
-    set date_format "YY"
-  set customer_id 54735
+   # set customer_id 54735
 
+    set date_format "YY"
     ns_log Notice "im_koernig_weber_next_project_nr: customer_id=$customer_id, nr_digits=$nr_digits, date_format=$date_format"
 
     if {"none" == $date_format} { set date_format "" }
