@@ -1,4 +1,5 @@
 /**
+ * Sencha V4.0.0
  * Load the library located at the same path with this file
  *
  * Will automatically load ext-all-debug.js if any of these conditions is true:
