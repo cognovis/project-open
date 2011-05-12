@@ -23,10 +23,13 @@ ad_register_proc POST /intranet-rest/* im_rest_call_post
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/documentation/rest_version_history
+    <li>1.5.2 (2010-12-21): Fixed bug of not applying where_query
+    <li>1.5.1 (2010-12-01): Fixed bug with generic objects, improved rendering of some fields
+    <li>1.5 (2010-11-03): Added rest_object_permissions and rest_group_memberships reports
     <li>1.4 (2010-06-11): Added /intranet-rest/dynfield-widget-values
     <li>1.3 - Base version
 } {
-    return "1.4"
+    return "1.5.2"
 }
 
 # -------------------------------------------------------
@@ -787,19 +790,22 @@ ad_proc -private im_rest_get_object_type {
     # Select SQL: Pull out objects where the acs_objects.object_type 
     # is correct AND the object exists in the object type's primary table.
     # This way we avoid "dangling objects" in acs_objects and sub-types.
-    set sql "
-	select	t.$id_column as rest_oid,
-		${name_method}(t.$id_column) as object_name
-	from	$table_name t,
-		acs_objects o
-	where	t.$id_column = o.object_id and
-		o.object_type = :rest_otype
+    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype -no_where_clause_p 1]
+    append sql "
+	where	o.object_type = :rest_otype and
+		o.object_id in (
+			select  t.$id_column as rest_oid
+			from    $table_name t
+		)
 		$where_clause
 	LIMIT $limit
     "
 
     set result ""
     db_foreach objects $sql {
+
+	# Skip objects with empty object name
+	if {"" == $object_name} { continue }
 
 	# Check permissions
 	set read_p $rest_otype_read_all_p
@@ -1386,15 +1392,13 @@ ad_proc -private im_rest_authenticate {
     # Check for token authentication
     set token_user_id ""
     set token_token ""
-    set expiry_date ""
     if {[info exists query_hash(user_id)]} { set token_user_id $query_hash(user_id)}
     if {[info exists query_hash(auth_token)]} { set token_token $query_hash(auth_token)}
     if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
-    if {[info exists query_hash(expiry_date)]} { set expiry_date $query_hash(expiry_date)}
 
     # Check if the token fits the user
     if {"" != $token_user_id && "" != $token_token} {
-	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token -expiry_date $expiry_date]} {
+	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
 	    set token_user_id ""
 	}
     }
@@ -1479,21 +1483,21 @@ ad_proc -private im_rest_format_line {
     set href ""
     switch "${rest_otype}.${column}" {
 	im_project.company_id - im_timesheet_task.company_id - im_invoice.customer_id - im_timesheet_invoice.customer_id - im_trans_invoice.customer_id - im_invoice.provider_id - im_timesheet_invoice.provider_id - im_trans_invoice.provider_id - im_expense.customer_id - im_office.company_id - im_ticket.company_id {
-	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$rest_oid" -default $value]]
+	    set company_name [util_memoize [list db_string cname1 "select company_name from im_companies where company_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_company/$value?format=html\">$company_name</a>" }
 		xml { set href "$base_url/im_company/$value" }
 	    }
 	}
 	im_company.main_office_id - im_invoice.invoice_office_id - im_timesheet_invoice.invoice_office_id - im_trans_invoice.invoice_office_id {
-	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$rest_oid" -default $value]]
+	    set office_name [util_memoize [list db_string cname2 "select office_name from im_offices where office_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_office/$value?format=html\">$office_name</a>" }
 		xml { set href "$base_url/im_office/$value" }
 	    }
 	}
-	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id - im_invoice_item.project_id {
-	    set project_name [util_memoize [list db_string cname "select project_name from im_projects where project_id=$rest_oid" -default $value]]
+	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_project.program_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id - im_invoice_item.project_id {
+	    set project_name [util_memoize [list db_string cname3 "select project_name from im_projects where project_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_project/$value?format=html\">$project_name</a>" }
 		xml { set href "$base_url/im_project/$value" }
@@ -1515,21 +1519,24 @@ ad_proc -private im_rest_format_line {
 
 	}
 	im_invoice.cost_center_id - im_timesheet_invoice.cost_center_id - im_trans_invoice.cost_center_id - im_expense.cost_center_id - im_timesheet_task.cost_center_id {
-	    set cc_name [util_memoize [list db_string cname "select im_cost_center_name_from_id($value)" -default $value]]
+	    if {"" == $value} { set value 0 }
+	    set cc_name [util_memoize [list db_string cname4 "select im_cost_center_name_from_id($value)" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_cost_center/$value?format=html\">$cc_name</a>" }
 		xml { set href "$base_url/im_cost_center/$value" }
 	    }
 	}
 	im_timesheet_task.material_id {
-	    set material_name [util_memoize [list db_string cname "select im_material_name_from_id($value)" -default $value]]
+	    if {"" == $value} { set value 0 }
+	    set material_name [util_memoize [list db_string cname5 "select im_material_name_from_id($value)" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_material/$value?format=html\">$material_name</a>" }
 		xml { set href "$base_url/im_material/$value" }
 	    }
 	}
-	im_invoice_item.invoice_id  {
-	    set invoice_name [util_memoize [list db_string cname "select cost_name from im_costs where cost_id = $value" -default $value]]
+	im_invoice_item.invoice_id - im_timesheet_task.invoice_id {
+	    if {"" == $value} { set value 0 }
+	    set invoice_name [util_memoize [list db_string cname5 "select cost_name from im_costs where cost_id = $value" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_invoice/$value?format=html\">$invoice_name</a>" }
 		xml { set href "$base_url/im_invoice/$value" }
@@ -1557,6 +1564,7 @@ ad_proc -private im_rest_format_line {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_rest_object_type_select_sql { 
+    {-no_where_clause_p 0}
     -rest_otype:required
 } {
     Calculates the SQL statement to extract the value for an object
@@ -1637,11 +1645,15 @@ ad_proc -public im_rest_object_type_select_sql {
     set sql "
 	select	o.*,
 		o.object_id as rest_oid,
+		acs_object__name(o.object_id) as object_name,
 		[join $selects ",\n\t\t"]
 	from	acs_objects o
 		[join $froms "\n\t\t"]
-	where	o.object_id = :rest_oid
     "
+    if {!$no_where_clause_p} { append sql "
+	where	o.object_id = :rest_oid
+    "}
+
     return $sql
 }
 
@@ -1854,6 +1866,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {val is not null}
 	cond {val in \( val \)}
 	val  {val , val}
 	val {[0-9]+}
