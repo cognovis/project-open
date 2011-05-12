@@ -44,7 +44,7 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
 	</form>
 
         <if @task_assigned_users:rowcount@ gt 1>
-            <h4>Other assignees:</h4>
+            <h4><%=[lang::message::lookup "" Other_Assignees "Other assignees:"]%></h4>
             <ul>
                 <multiple name="task_assigned_users">
                     <if @task_assigned_users.user_id@ ne @user_id@>
@@ -54,14 +54,13 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
 	    </ul>
 	</if>
         <else>
-            You're the only person assigned to this task.
+	   <%=[lang::message::lookup "" acs-workflow.You_Are_The_Only_Person "You're the only person assigned to this task."]%> 
         </else>
     </if>
     <else>
-        This task has not been started yet.
-
+	<%=[lang::message::lookup "" acs-workflow.Task_Has_Not_Been_Started_Yet "This task has not been started yet."]%>	        
         <if @task_assigned_users:rowcount@ gt 0>
-            <h4>Assignees:</h4>
+            <h4><%=[lang::message::lookup "" intranet-workflow.Currrent_assignees "Current Assignees"]%></h4>
             <ul>
                 <multiple name="task_assigned_users">
                     <li><a href="/shared/community-member?user_id=@task_assigned_users.user_id@">@task_assigned_users.name@</a></li>
@@ -73,9 +72,9 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
     <p>
     <ul class="admin_links">
     <if @task.this_user_is_assigned_p@ ne 1>
-        <li><a href="@task.assign_yourself_url@">assign yourself</a></li>
+        <li><a href="@task.assign_yourself_url@"><%=[lang::message::lookup "" acs-workflow.Assign_Yourself "assign yourself"]%></a></li>
     </if>
-    <li><a href="@task.manage_assignments_url@">reassign</a></li>
+    <li><a href="@task.manage_assignments_url@"><%=[lang::message::lookup "" acs-workflow.Reassign "reassign"]%></a></li>
     </ul>
     <if @task.deadline_pretty@ not nil>
         <p>
