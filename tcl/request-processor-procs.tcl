@@ -207,7 +207,7 @@ ad_proc -public ad_register_proc {
 } {
 
   Registers a procedure (see ns_register_proc for syntax). Use a
-  method of "*" to register GET, POST, and HEAD filters. If debug is
+  method of "*" to register GET, POST, DELETE and HEAD filters. If debug is
   set to "t", all invocations of the procedure will be logged in the
   server log.
 
@@ -218,14 +218,14 @@ ad_proc -public ad_register_proc {
     if {$method eq "*"} {
         # Shortcut to allow registering filter for all methods. Just
         # call ad_register_proc again, with each of the three methods.
-        foreach method { GET POST HEAD } {
+        foreach method { GET POST PUT DELETE HEAD } {
             ad_register_proc -debug $debug -noinherit $noinherit $method $path $proc $arg
         }
         return
     }
 
-    if { [lsearch -exact { GET POST HEAD } $method] == -1 } {
-        error "Method passed to ad_register_proc must be one of GET, POST, or HEAD"
+    if { [lsearch -exact { GET POST PUT DELETE HEAD } $method] == -1 } {
+        error "Method passed to ad_register_proc must be one of GET, POST, PUT, DELETE or HEAD"
     }
 
     set proc_info [list $method $path $proc $arg $debug $noinherit $description [info script]]
@@ -302,31 +302,34 @@ ad_proc -private rp_invoke_proc { conn argv } {
 
     rp_debug -debug $debug_p "Invoking registered procedure $proc"
 
+    ns_log Notice "rp_invoke_proc: $arg_count=$arg_count"
+
     switch $arg_count {
         0 { set errno [catch $proc error] }
         1 { set errno [catch "$proc $arg" error] }
         default { set errno [catch {
-          ad_try {
-            $proc [list $conn] $arg
-          } ad_script_abort val {
-            # do nothing
-          }
+	    ad_try {
+		$proc [list $conn] $arg
+	    } ad_script_abort val {
+		# do nothing
+	    }
         } error] }
     }
-
+    
     global errorCode
     if { $errno } {
-      # Uh-oh - an error occurred.
-      global errorInfo
-      ds_add rp [list registered_proc [list $proc $arg] $startclicks [clock clicks -milliseconds] "error" $errorInfo]
-      rp_debug "error in $proc for [ns_conn method] [ns_conn url]?[ns_conn query] errno is $errno message is $errorInfo"
-      rp_report_error
+	# Uh-oh - an error occurred.
+	global errorInfo
+	ds_add rp [list registered_proc [list $proc $arg] $startclicks [clock clicks -milliseconds] "error" $errorInfo]
+	rp_debug "error in $proc for [ns_conn method] [ns_conn url]?[ns_conn query] errno is $errno message is $errorInfo"
+        ns_log Error "rp_invoke_proc: error in $proc for [ns_conn method] [ns_conn url]?[ns_conn query] errno is $errno message is $errorInfo"
+	catch { rp_report_error }
     } else {
-      ds_add rp [list registered_proc [list $proc $arg] $startclicks [clock clicks -milliseconds]]
+	ds_add rp [list registered_proc [list $proc $arg] $startclicks [clock clicks -milliseconds]]
     }
-
+    
     rp_debug -debug $debug_p "Done Invoking registered procedure $proc"
-
+    
     rp_finish_serving_page
 }
 
@@ -361,7 +364,7 @@ ad_proc -public ad_register_filter {
 
   @param kind Specify preauth, postauth or trace.
 
-  @param method Use a method of "*" to register GET, POST, and HEAD
+  @param method Use a method of "*" to register GET, POST, PUT, DELETE, and HEAD
   filters.
 
   @param priority Priority is an integer; lower numbers indicate
@@ -379,14 +382,14 @@ ad_proc -public ad_register_filter {
 } {
     if {$method eq "*"} {
         # Shortcut to allow registering filter for all methods.
-        foreach method { GET POST HEAD } {
+        foreach method { GET POST PUT DELETE HEAD } {
             ad_register_filter -debug $debug -priority $priority -critical $critical $kind $method $path $proc $arg
         }
         return
     }
 
-    if { [lsearch -exact { GET POST HEAD } $method] == -1 } {
-        error "Method passed to ad_register_filter must be one of GET, POST, or HEAD"
+    if { [lsearch -exact { GET POST PUT DELETE HEAD } $method] == -1 } {
+        error "Method passed to ad_register_filter must be one of GET, POST, PUT, DELETE, or HEAD"
     }
 
     # Append the filter to the list. The list will be sorted according to priority 
@@ -447,7 +450,7 @@ ad_proc -private rp_html_directory_listing { dir } {
 #
 # NSV arrays used by the request processor:
 #
-#   - rp_filters($method,$kind), where $method in (GET, POST, HEAD)
+#   - rp_filters($method,$kind), where $method in (GET, POST, PUT, DELETE, HEAD)
 #       and kind in (preauth, postauth, trace) A list of $kind filters
 #       to be considered for HTTP requests with method $method. The
 #       value is of the form
@@ -455,7 +458,7 @@ ad_proc -private rp_html_directory_listing { dir } {
 #             [list $priority $kind $method $path $proc $args $debug \
 #                 $critical $description $script]
 #
-#   - rp_registered_procs($method), where $method in (GET, POST, HEAD)
+#   - rp_registered_procs($method), where $method in (GET, POST, PUT, DELETE, HEAD)
 #         A list of registered procs to be considered for HTTP requests with
 #         method $method. The value is of the form
 #
@@ -758,13 +761,22 @@ ad_proc rp_report_error {
         set message $errorInfo
     }
     set error_url "[ad_url][ad_conn url]?[export_entire_form_as_url_vars]"
-    #    set error_file [template::util::url_to_file $error_url]
-    set error_file [ad_conn file]
+
+    # fraber 110524: re-enabling template::util::url_to_file.
+    # AOLserver 4.5 doesn't seem to have the ad-conn file.
+    set error_file [template::util::url_to_file $error_url]
+#    set error_file [ad_conn file]
+
     set package_key []
     set prev_url [get_referrer]
     set feedback_id [db_nextval acs_object_id_seq]
-    set user_id [ad_conn user_id]
-    set bug_package_id [ad_conn package_id]
+
+    # fraber 110524: doesn't work here for some reason...
+#    set user_id [ad_conn user_id]
+    set user_id 0
+
+    set bug_package_id 0
+    catch { set bug_package_id [ad_conn package_id] }
     set error_info $message
     set vars_to_export [export_vars -form { error_url error_info user_id prev_url error_file feedback_id bug_package_id }]
     
@@ -1379,7 +1391,7 @@ if { [apm_first_time_loading_p] } {
     # since we want it done really really early in the startup process. Don't
     # try this at home!
 
-    foreach method { GET POST HEAD } {
+    foreach method { GET POST PUT DELETE HEAD } {
         nsv_set rp_registered_procs $method [list]
     }
 }
