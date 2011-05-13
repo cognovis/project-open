@@ -52,6 +52,9 @@ ad_page_contract {
 }
 
 
+# ad_return_complaint 1 $workflow_key
+
+
 #####
 #
 # Slurp up the workflow definition and release DB handles
@@ -194,12 +197,11 @@ template::multirow append edit_links "place-add?[export_url_vars workflow_key]" 
 
 template::multirow create format_links url title selected_p
 template::multirow append format_links "define?[export_ns_set_vars "url" {format}]&format=html" \
-	"HTML" [string equal $format "html"]
+"HTML" [string equal $format "html"]
 template::multirow append format_links "define?[export_ns_set_vars "url" {format}]&format=graph" \
 	"Graphical" [string equal $format "graph"]
 
-
-
+set wf_name [db_string wf_name "select pretty_name from acs_object_types where object_type=:workflow_key" -default ""]
 
 ad_return_template
 
