@@ -3,8 +3,8 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name='generator' lang='en' content='OpenACS version 5.6.0'>
 	<link rel='stylesheet' href='/intranet-sencha/css/example.css' type='text/css' media='screen'>
-	<script type="text/javascript" src="http://dev.sencha.com/deploy/ext-4.0.0/bootstrap.js"></script> 
-	<link rel='stylesheet' href='http://dev.sencha.com/deploy/ext-4.0.0/resources/css/ext-all.css' type='text/css' media='screen'>
+	<script type="text/javascript" src="/intranet-sencha/js/bootstrap.js"></script> 
+	<link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
 </head> 
 <body id="docbody"> 
 <h1>REST Proxy Example</h1> 
