@@ -17,7 +17,9 @@ set user_id [ad_maybe_redirect_for_registration]
 
 
 
-set debug ""
+set debug "\n"
+append debug "method: [ns_conn method]\n"
+
 set header_vars [ns_conn headers]
 foreach var [ad_ns_set_keys $header_vars] {
     set value [ns_set get $header_vars $var]

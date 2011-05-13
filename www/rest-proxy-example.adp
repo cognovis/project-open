@@ -10,12 +10,16 @@
 <h1>REST Proxy Example</h1> 
 <script type="text/javascript">
 
+<%
+set user_id [ad_maybe_redirect_for_registration]
+%>
+
 Ext.require(['Ext.data.*', 'Ext.grid.*']);
 
 Ext.define('Person', {
 	extend: 'Ext.data.Model',
 	fields: [
-		{name: 'user_id', type: 'int', useNull: true}, 
+		{name: 'id', type: 'int', useNull: true}, 
 		'email',
 		'first_names', 
 		'last_name'
@@ -44,6 +48,7 @@ Ext.onReady(function(){
 		proxy: {
 			type: 'rest',
 			url: '/intranet-rest/user',
+			appendId: true,
 			extraParams: {format: 'json', format_variant: 'sencha'},
 			reader: {
 				type: 'json',
@@ -85,7 +90,7 @@ Ext.onReady(function(){
 			text: 'ID',
 			width: 40,
 			sortable: true,
-			dataIndex: 'user_id',
+			dataIndex: 'id',
 			renderer: function(v){
 				if (Ext.isEmpty(v)) {
 					v = '&#160;';
