@@ -10,14 +10,6 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
-# Register handler procedures for the various HTTP methods
-#
-ad_register_proc GET /intranet-rest/* im_rest_call_get
-ad_register_proc POST /intranet-rest/* im_rest_call_post
-ad_register_proc PUT /intranet-rest/* im_rest_call_put
-# ad_register_proc DELETE /intranet-rest/* im_rest_call_delete
-
-
 # -------------------------------------------------------
 # REST Version
 # -------------------------------------------------------
@@ -25,8 +17,7 @@ ad_register_proc PUT /intranet-rest/* im_rest_call_put
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/documentation/rest_version_history
-    <li>2.0	(2011-05-12):	Now returning "dereferenced" objects by default &
-				added support for JSON.
+    <li>2.0	(2011-05-12):	Added support for JSOn and Sencha format variants
 				ToDo: Always return "id" instead of "object_id"
     <li>1.5.2	(2010-12-21):	Fixed bug of not applying where_query
     <li>1.5.1	(2010-12-01):	Fixed bug with generic objects, improved rendering of some fields
@@ -52,6 +43,8 @@ ad_proc -private im_rest_call_post {} {
 ad_proc -private im_rest_call_put {} {
     Handler for PUT rest calls
 } {
+    set user_id [im_rest_cookie_auth_user_id]
+    ns_log Notice "im_rest_call_put: user_id=$user_id"
     return [im_rest_call_get -http_method PUT]
 }
 
@@ -116,14 +109,6 @@ ad_proc -private im_rest_call_get {
     set valid_formats {xml html json}
     if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
 
-
-    # "Dereference" parameter set?
-    set dereference_p 1
-    if {[info exists query_hash(dereference_p)]} { set dereference_p $query_hash(dereference_p) }
-    set valid_dereference_p_formats {0 1}
-    if {[lsearch $valid_dereference_p_formats $dereference_p] < 0} { return [im_rest_error -http_status 406 -message "Invalid dereferencing option '$dereference_p'. Valid formats include {0|1}."] }
- 
-
     # Should we return Sencha or YUI specific status messages?
     set format_variant ""
     if {[info exists query_hash(format_variant)]} { set format_variant $query_hash(format_variant) }
@@ -141,7 +126,6 @@ ad_proc -private im_rest_call_get {
 	    -user_id $auth_user_id \
 	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
-	    -dereference_p $dereference_p \
 	    -query_hash_pairs [array get query_hash]
 
     } err_msg]} {
@@ -161,13 +145,12 @@ ad_proc -private im_rest_call_get {
 ad_proc -private im_rest_call {
     { -method GET }
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
     { -debug 0 }
-    { -dereference_p 1 }
 } {
     Handler for all REST calls
 } {
@@ -184,7 +167,6 @@ ad_proc -private im_rest_call {
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
-		    -dereference_p $dereference_p \
 		    -query_hash_pairs $query_hash_pairs \
 		   ]
     }
@@ -214,7 +196,6 @@ ad_proc -private im_rest_call {
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -225,7 +206,6 @@ ad_proc -private im_rest_call {
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -236,7 +216,6 @@ ad_proc -private im_rest_call {
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -247,7 +226,6 @@ ad_proc -private im_rest_call {
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -259,7 +237,6 @@ ad_proc -private im_rest_call {
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -276,7 +253,6 @@ ad_proc -private im_rest_call {
 				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -286,7 +262,6 @@ ad_proc -private im_rest_call {
 				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -296,7 +271,6 @@ ad_proc -private im_rest_call {
 				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -306,7 +280,6 @@ ad_proc -private im_rest_call {
 				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
@@ -317,7 +290,6 @@ ad_proc -private im_rest_call {
 				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
-				    -dereference_p $dereference_p \
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 			
@@ -325,8 +297,7 @@ ad_proc -private im_rest_call {
 		}
 	    }
 	}
-
-	POST {
+	POST - PUT {
 	    # Is the post operation performed on a particular object or on the object_type?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
 
@@ -338,7 +309,6 @@ ad_proc -private im_rest_call {
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
-		    -dereference_p $dereference_p \
 		    -query_hash_pairs $query_hash_pairs \
 		]
 		
@@ -351,14 +321,12 @@ ad_proc -private im_rest_call {
 			    -format_variant $format_variant \
 			    -user_id $user_id \
 			    -rest_otype $rest_otype \
-			    -dereference_p $dereference_p \
 			    -query_hash_pairs $query_hash_pairs \
 		]
 	    }
 	}
-
 	default {
-	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."]
+	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
 	}
     }
 }
@@ -367,12 +335,11 @@ ad_proc -private im_rest_call {
 ad_proc -private im_rest_page {
     { -rest_otype "index" }
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
     { -debug 0 }
-    { -dereference_p 1 }
 } {
     The user has requested /intranet-rest/ or /intranet-rest/index
 } {
@@ -399,13 +366,12 @@ ad_proc -private im_rest_page {
 
 ad_proc -private im_rest_get_object {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
     { -debug 0 }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls
 } {
@@ -486,12 +452,11 @@ ad_proc -private im_rest_get_object {
 
 ad_proc -private im_rest_get_im_category {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls
 } {
@@ -567,12 +532,11 @@ ad_proc -private im_rest_get_im_category {
 
 ad_proc -private im_rest_get_im_dynfield_attribute {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls
 } {
@@ -652,12 +616,11 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 
 ad_proc -private im_rest_get_im_invoice_item {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls to retreive invoice items
 } {
@@ -732,12 +695,11 @@ ad_proc -private im_rest_get_im_invoice_item {
 
 ad_proc -private im_rest_get_im_hour {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls to retreive timesheet hours
 } {
@@ -812,14 +774,13 @@ ad_proc -private im_rest_get_im_hour {
 
 ad_proc -private im_rest_get_object_type {
     { -format "xml" }
-    { -format_variant 0 }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
     { -limit 100 }
     { -debug 0 }
-    { -dereference_p 1 }
 } {
     Handler for GET rest calls on a whole object type -
     mapped to queries on the specified object type
@@ -961,7 +922,7 @@ ad_proc -private im_rest_get_object_type {
 		set komma ",\n"
 		if {0 == $obj_ctr} { set komma "" }
 		set dereferenced_result ""
-		if {$dereference_p} {
+		if {"sencha" == $format_variant} {
 		    foreach v $valid_vars {
 			eval "set a $$v"
 			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
@@ -1012,6 +973,7 @@ ad_proc -private im_rest_get_object_type {
 
 ad_proc -private im_rest_get_im_invoice_items {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1111,6 +1073,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 
 ad_proc -private im_rest_get_im_hours {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1214,6 +1177,7 @@ ad_proc -private im_rest_get_im_hours {
 
 ad_proc -private im_rest_get_im_categories {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1308,6 +1272,7 @@ ad_proc -private im_rest_get_im_categories {
 
 ad_proc -private im_rest_get_im_dynfield_attributes {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1411,6 +1376,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 
 ad_proc -private im_rest_post_object_type {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1464,6 +1430,7 @@ ad_proc -private im_rest_post_object_type {
 
 ad_proc -private im_rest_post_object {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1473,10 +1440,11 @@ ad_proc -private im_rest_post_object {
     Handler for POST rest calls to an individual object:
     Update the specific object using a generic update procedure
 } {
-    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, query_hash=$query_hash_pairs"
+    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', format_variant='$format_variant', query_hash=$query_hash_pairs"
 
     # Get the content of the HTTP POST request
     set content [im_rest_get_content]
+    ns_log Notice "im_rest_post_object: content=$content"
 
     # Check if there is a customized version of this post handler
     if {0 != [llength [info commands im_rest_post_object_$rest_otype]]} {
@@ -1494,18 +1462,34 @@ ad_proc -private im_rest_post_object {
 	return
     }
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+	}
+	default {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
     }
 
-    set root_node [$doc documentElement]
-    array unset hash_array
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-       	set hash_array($nodeName) $nodeText
-    }
+    ns_log Notice "im_rest_post_object: hash_array=[array get hash_array]"
+
 
     # Update the object. This routine will return a HTTP error in case 
     # of a database constraint violation
@@ -1534,6 +1518,79 @@ ad_proc -private im_rest_post_object {
 # --------------------------------------------------------
 # Auxillary functions
 # --------------------------------------------------------
+
+
+ad_proc -private im_rest_cookie_auth_user_id {
+    {-debug 1}
+} {
+    Determine the user_id even if ns_conn doesn't work
+    in a HTTP PUT call
+} {
+    # Get the user_id from the ad_user_login cookie
+    set header_vars [ns_conn headers]
+    set cookie_string [ns_set get $header_vars Cookie]
+    set cookie_list [split $cookie_string ";"]
+    # ns_log Notice "im_rest_cookie_auth_user_id: cookie=$cookie_string\n"
+    # ns_log Notice "im_rest_cookie_auth_user_id: cookie_list=$cookie_list\n"
+    
+    array set cookie_hash {}
+    foreach l $cookie_list {
+	if {[regexp {([^ =]+)\=(.+)} $l match key value]} {
+	    set key [ns_urldecode [string trim $key]]
+	    set value [ns_urldecode [string trim $value]]
+	    ns_log Notice "im_rest_cookie_auth_user_id: key=$key, value=$value"
+	    set cookie_hash($key) $value
+	}
+    }
+    set user_id ""
+    if {[info exists cookie_hash(ad_user_login)]} { 
+
+	set ad_user_login $cookie_hash(ad_user_login)
+        ns_log Notice "im_rest_cookie_auth_user_id: ad_user_login=$ad_user_login"
+
+	set user_id ""
+	catch { set user_id [ad_get_user_id] }
+	if {"" != $user_id} {
+	    ns_log Notice "im_rest_cookie_auth_user_id: found autenticated user_id: storing into cache"
+	    ns_cache set im_rest $ad_user_login $user_id    
+	    return $user_id
+	}
+	
+	if {[ns_cache get im_rest $ad_user_login value]} { 
+	    ns_log Notice "im_rest_cookie_auth_user_id: Didn't find autenticated user_id: returning cached value"
+	    return $value 
+	}
+    }
+    ns_log Notice "im_rest_cookie_auth_user_id: Didn't find any information, returning {}"
+    return ""
+}
+
+
+ad_proc -private im_rest_debug_headers {
+    {-debug 1}
+} {
+    Show REST call headers
+} {
+    set debug "\n"
+    append debug "method: [ns_conn method]\n"
+    
+    set header_vars [ns_conn headers]
+    foreach var [ad_ns_set_keys $header_vars] {
+	set value [ns_set get $header_vars $var]
+	append debug "header: $var=$value\n"
+    }
+    
+    set form_vars [ns_conn form]
+    foreach var [ad_ns_set_keys $form_vars] {
+	set value [ns_set get $form_vars $var]
+	append debug "form: $var=$value\n"
+    }
+    
+    append debug "content: [ns_conn content]\n"
+    
+    ns_log Notice "im_rest_debug_headers: $debug"
+    return $debug
+}
 
 
 
@@ -1585,12 +1642,9 @@ ad_proc -private im_rest_authenticate {
 
 
     # --------------------------------------------------------
-    # Check for OpenACS "Cookie" auth
-
-    # fraber 110511: Doesn't work with PUT
-    set cookie_auth_user_id 0
-    catch { set cookie_auth_user_id [ad_get_user_id] }
-    if {0 == $cookie_auth_user_id} { set cookie_auth_user_id [ns_conn authuser] }
+    # Determine the user_id from cookie.
+    # Work around missing ns_conn user_id values in PUT and DELETE calls 
+    set cookie_auth_user_id [im_rest_cookie_auth_user_id]
 
     # Determine authentication method used
     set auth_method ""
