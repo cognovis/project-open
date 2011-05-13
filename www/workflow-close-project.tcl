@@ -22,7 +22,7 @@ ad_page_contract {
 
 set context_key ""
 set case_id [wf_case_new \
-                     project_approval2_wf \
+                     project_approval32_wf \
                      $context_key \
                      $project_id \
 		 ]
