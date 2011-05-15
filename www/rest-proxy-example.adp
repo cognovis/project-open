@@ -8,12 +8,8 @@
 </head> 
 <body id="docbody"> 
 <h1>REST Proxy Example</h1> 
+
 <script type="text/javascript">
-
-<%
-set user_id [ad_maybe_redirect_for_registration]
-%>
-
 Ext.require(['Ext.data.*', 'Ext.grid.*']);
 
 Ext.define('Person', {
