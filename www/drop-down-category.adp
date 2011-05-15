@@ -9,7 +9,12 @@
 <body id="docbody"> 
 <h1>Drop-Down</h1> 
 
+
+<form method=GET>
 <div id="simpleCombo"></div> 
+<input type=submit>
+</form>
+
 
 <script type="text/javascript">
 
@@ -20,43 +25,45 @@ Ext.require([
     'Ext.data.*'
 ]);
 
-
-// Define the model for a State
-Ext.regModel('State', {
+// A category basically consists of an ID and a string.
+Ext.regModel('Category', {
     fields: [
-        {type: 'string', name: 'abbr'},
-        {type: 'string', name: 'name'},
-        {type: 'string', name: 'slogan'}
+        {type: 'int', name: 'id', useNull: true},
+        {type: 'string', name: 'category'}
     ]
 });
 
-// The data for all states
-var states = [
-        {"abbr":"AL","name":"Alabama","slogan":"The Heart of Dixie"},
-        {"abbr":"AK","name":"Alaska","slogan":"The Land of the Midnight Sun"},
-        {"abbr":"AZ","name":"Arizona","slogan":"The Grand Canyon State"},
-        {"abbr":"WY","name":"Wyoming","slogan":"Like No Place on Earth"}
-];
-
-// The data store holding the states
 var store = Ext.create('Ext.data.Store', {
-    model: 'State',
-    data: states
+	autoLoad: true,
+	model: 'Category',
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json', 
+			format_variant: 'sencha',
+			query: 'category_type = \'Intranet Project Type\''
+		},
+		reader: {
+			type: 'json',
+			root: 'data'
+		}
+	}
 });
 
 // Simple ComboBox using the data store
 var simpleCombo = Ext.create('Ext.form.field.ComboBox', {
     fieldLabel: 'Select a single state',
     renderTo: 'simpleCombo',
-    displayField: 'name',
+    displayField: 'category',
+    valueField: 'id',
     width: 500,
     labelWidth: 130,
     store: store,
     queryMode: 'local',
     typeAhead: true
 });
-
-
 
 
 </script>
