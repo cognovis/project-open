@@ -1251,6 +1251,8 @@ ad_proc -private im_rest_get_im_categories {
 		if {"sencha" == $format_variant} {
 		    foreach v $valid_vars {
 			eval "set a $$v"
+			regsub -all {\n} $a {\n} a
+			regsub -all {\r} $a {\r} a
 			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
 		    }
 		}
