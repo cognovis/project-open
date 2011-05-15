@@ -786,7 +786,6 @@ ad_proc -private im_rest_get_object_type {
     mapped to queries on the specified object type
 } {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
-
     array set query_hash $query_hash_pairs
 
     # Deal with "limit" max. number of objects to show
@@ -938,9 +937,8 @@ ad_proc -private im_rest_get_object_type {
 	    }
 	}
 	incr obj_ctr
-	if {$obj_ctr > 10} { break }
     }
-	
+
     switch $format {
 	html {
 	    set page_title "object_type: $rest_otype"
@@ -1200,11 +1198,14 @@ ad_proc -private im_rest_get_im_categories {
 
 
     # -------------------------------------------------------
+    # Valid variables to return for im_category
+    set valid_vars {category_id category category_description category_type category_gif enabled_p parent_only_p aux_int1 aux_int2 aux_string1 aux_string2 sort_order}
+
+    # -------------------------------------------------------
     # Check if there is a where clause specified in the URL and validate the clause.
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
-    # Determine the list of valid columns for the object type
-    set valid_vars {item_id item_name project_id invoice_id item_units item_uom_id price_per_unit currency sort_order item_type_id item_status_id description item_material_id}
+
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -1216,7 +1217,8 @@ ad_proc -private im_rest_get_im_categories {
     # Select SQL: Pull out categories.
     set sql "
 	select	c.category_id as rest_oid,
-		c.category as object_name
+		c.category as object_name,
+		c.*
 	from	im_categories c
 	where	1=1
 		$where_clause
@@ -1225,6 +1227,7 @@ ad_proc -private im_rest_get_im_categories {
     "
 
     set result ""
+    set obj_ctr 0
     db_foreach objects $sql {
 
 	# Check permissions
@@ -1241,9 +1244,21 @@ ad_proc -private im_rest_get_im_categories {
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
-	    json { append result "{object_id: $rest_oid, object_name: \"[ns_quotehtml $object_name]\"}\n" }
+	    json {
+		set komma ",\n"
+		if {0 == $obj_ctr} { set komma "" }
+		set dereferenced_result ""
+		if {"sencha" == $format_variant} {
+		    foreach v $valid_vars {
+			eval "set a $$v"
+			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
+		    }
+		}
+		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
+	    }
 	    default {}
 	}
+	incr obj_ctr
     }
 	
     switch $format {
@@ -1261,11 +1276,15 @@ ad_proc -private im_rest_get_im_categories {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "\[\n$result\n\]\n"
+	    # Deal with different JSON variants for different AJAX frameworks
+	    switch $format_variant {
+		sencha { set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}" }
+		default { }
+	    }
+	    doc_return 200 "text/plain" $result
 	    return
 	}
     }
-
     return
 }
 
@@ -1695,10 +1714,6 @@ ad_proc -private im_rest_system_url { } {
     suitable to prefix all hrefs used for the XML format.
 } {
     return [util_current_location]
-
-#    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
-#    if {[regexp {^(.*)/$} $system_url match system_url_without]} { set system_url $system_url_without }
-#    return $system_url
 }
 
 
