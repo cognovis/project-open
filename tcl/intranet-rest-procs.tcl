@@ -429,7 +429,7 @@ ad_proc -private im_rest_get_object {
 	html { 
 	    set page_title "object_type: [db_string n "select acs_object__name(:rest_oid)"]"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -505,7 +505,7 @@ ad_proc -private im_rest_get_im_category {
 	html { 
 	    set page_title "$rest_otype: [im_category_from_id $rest_oid]"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -591,7 +591,7 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 	html { 
 	    set page_title "$rest_otype: $result_hash(table_name).$result_hash(column_name)"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -669,7 +669,7 @@ ad_proc -private im_rest_get_im_invoice_item {
 	html { 
 	    set page_title "$rest_otype: $rest_oid"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -748,7 +748,7 @@ ad_proc -private im_rest_get_im_hour {
 	html { 
 	    set page_title "$rest_otype: $rest_oid"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -942,10 +942,10 @@ ad_proc -private im_rest_get_object_type {
     }
 	
     switch $format {
-	html { 
+	html {
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1051,7 +1051,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1154,7 +1154,7 @@ ad_proc -private im_rest_get_im_hours {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1250,7 +1250,7 @@ ad_proc -private im_rest_get_im_categories {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1349,7 +1349,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1409,7 +1409,7 @@ ad_proc -private im_rest_post_object_type {
 	    html { 
 		set page_title "object_type: $rest_otype"
 		doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
 		<tr<td>$rest_oid</td></tr>
 		</table>[im_footer]
@@ -1503,7 +1503,7 @@ ad_proc -private im_rest_post_object {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
 		<tr<td>$rest_oid</td></tr>
 		</table>[im_footer]
@@ -1518,6 +1518,25 @@ ad_proc -private im_rest_post_object {
 # --------------------------------------------------------
 # Auxillary functions
 # --------------------------------------------------------
+
+
+
+ad_proc -private im_rest_header_extra_stuff {
+    {-debug 1}
+} {
+    Returns a number of HTML header code in order to make the 
+    REST interface create reasonable HTML pages.
+} {
+    set extra_stuff "
+	<link rel='stylesheet' href='/resources/acs-subsite/default-master.css' type='text/css' media='all'>
+	<link rel='stylesheet' href='/intranet/style/style.saltnpepper.css' type='text/css' media='screen'>
+	<link rel='stylesheet' href='/resources/acs-developer-support/acs-developer-support.css' type='text/css' media='all'> 
+	<script type='text/javascript' src='/intranet/js/showhide.js'></script>
+	<script type='text/javascript' src='/intranet/js/rounded_corners.inc.js'></script>
+	<script type='text/javascript' src='/resources/acs-subsite/core.js'></script>
+	<script type='text/javascript' src='/intranet/js/style.saltnpepper.js'></script>
+    "
+}
 
 
 ad_proc -private im_rest_cookie_auth_user_id {
