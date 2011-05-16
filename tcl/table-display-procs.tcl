@@ -453,6 +453,9 @@ ad_proc -deprecated ad_table {
 
 	    append Thtml [subst $Trow_code]
 	    
+	    # fixing /acs-admin/apm/version-parameters
+	    set scope ""
+
 	    foreach Ti $Tcolumn_list {
 		set Tcol [lindex $Tdatadef $Ti]
 		# If we got some special formatting code we handle it
