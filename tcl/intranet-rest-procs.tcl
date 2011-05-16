@@ -1196,10 +1196,12 @@ ad_proc -private im_rest_get_im_categories {
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_category'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
 
+    # Get locate for translation
+    set locale [lang::user::locale -user_id $user_id]
 
     # -------------------------------------------------------
     # Valid variables to return for im_category
-    set valid_vars {category_id category category_description category_type category_gif enabled_p parent_only_p aux_int1 aux_int2 aux_string1 aux_string2 sort_order}
+    set valid_vars {category_id tree_sortkey category category_translated category_description category_type category_gif enabled_p parent_only_p aux_int1 aux_int2 aux_string1 aux_string2 sort_order}
 
     # -------------------------------------------------------
     # Check if there is a where clause specified in the URL and validate the clause.
@@ -1218,9 +1220,10 @@ ad_proc -private im_rest_get_im_categories {
     set sql "
 	select	c.category_id as rest_oid,
 		c.category as object_name,
+		im_category_path_to_category(c.category_id) as tree_sortkey,
 		c.*
 	from	im_categories c
-	where	1=1
+	where	(c.enabled_p is null OR c.enabled_p = 't')
 		$where_clause
 	order by category_id
 	LIMIT $limit
@@ -1229,6 +1232,9 @@ ad_proc -private im_rest_get_im_categories {
     set result ""
     set obj_ctr 0
     db_foreach objects $sql {
+
+	set category_key "intranet-core.[lang::util::suggest_key $category]"
+        set category_translated [lang::message::lookup $locale $category_key $category]
 
 	# Check permissions
 	set read_p $rest_otype_read_all_p
@@ -1248,13 +1254,11 @@ ad_proc -private im_rest_get_im_categories {
 		set komma ",\n"
 		if {0 == $obj_ctr} { set komma "" }
 		set dereferenced_result ""
-		if {"sencha" == $format_variant} {
-		    foreach v $valid_vars {
+		foreach v $valid_vars {
 			eval "set a $$v"
 			regsub -all {\n} $a {\n} a
-			regsub -all {\r} $a {\r} a
+			regsub -all {\r} $a {} a
 			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
-		    }
 		}
 		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
 	    }
@@ -1279,10 +1283,7 @@ ad_proc -private im_rest_get_im_categories {
 	}
 	json {  
 	    # Deal with different JSON variants for different AJAX frameworks
-	    switch $format_variant {
-		sencha { set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}" }
-		default { }
-	    }
+	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/plain" $result
 	    return
 	}
