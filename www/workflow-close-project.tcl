@@ -22,7 +22,7 @@ ad_page_contract {
 
 set context_key ""
 set case_id [wf_case_new \
-                     project_approval32_wf \
+		     [parameter::get -package_id [apm_package_id_from_key intranet-cust-koernigweber] -parameter "WorkflowCloseProject" -default "project_approval2_wf"] \
                      $context_key \
                      $project_id \
 		 ]
