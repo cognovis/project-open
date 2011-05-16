@@ -28,8 +28,23 @@ Ext.require([
 // A category basically consists of an ID and a string.
 Ext.regModel('Category', {
     fields: [
-        {type: 'int', name: 'id', useNull: true},
-        {type: 'string', name: 'category'}
+        {type: 'int', name: 'category_id'},
+        {type: 'string', name: 'tree_sortkey'},
+        {type: 'string', name: 'category'},
+        {	name: 'pretty_name',
+		convert: function(value, record) {
+			var	category = record.get('category'),
+				indent = record.get('tree_sortkey').length - 8,
+				result = '',
+				i=0;
+
+			for (i=0; i<indent; i++){
+				result = result + '&nbsp;';
+			}
+			result = result + category;
+			return result;
+		}
+        }
     ]
 });
 
@@ -38,12 +53,12 @@ var store = Ext.create('Ext.data.Store', {
 	model: 'Category',
 	proxy: {
 		type: 'rest',
-		url: '/intranet-rest/im_category',
+		url: '/intranet-reporting/view',
 		appendId: true,
 		extraParams: {
-			format: 'json', 
-			format_variant: 'sencha',
-			query: 'category_type = \'Intranet Project Type\''
+			report_code: 'rest_category_type',
+			format: 'json',
+			category_type: '\'Intranet Project Type\''
 		},
 		reader: {
 			type: 'json',
@@ -53,14 +68,14 @@ var store = Ext.create('Ext.data.Store', {
 });
 
 // Sort by ...
-store.sort('category');
+store.sort('tree_sortkey');
 
 // Simple ComboBox using the data store
 var simpleCombo = Ext.create('Ext.form.field.ComboBox', {
     fieldLabel: 'Select a single state',
     renderTo: 'simpleCombo',
-    displayField: 'category',
-    valueField: 'id',
+    displayField: 'pretty_name',
+    valueField: 'category_id',
     width: 500,
     labelWidth: 130,
     store: store,
