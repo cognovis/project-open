@@ -31,9 +31,10 @@ Ext.regModel('Category', {
         {type: 'int', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
+        {type: 'string', name: 'category_translated'},
         {	name: 'pretty_name',
 		convert: function(value, record) {
-			var	category = record.get('category'),
+			var	category = record.get('category_translated'),
 				indent = record.get('tree_sortkey').length - 8,
 				result = '',
 				i=0;
@@ -53,12 +54,11 @@ var store = Ext.create('Ext.data.Store', {
 	model: 'Category',
 	proxy: {
 		type: 'rest',
-		url: '/intranet-reporting/view',
+		url: '/intranet-rest/im_category',
 		appendId: true,
 		extraParams: {
-			report_code: 'rest_category_type',
 			format: 'json',
-			category_type: '\'Intranet Project Type\''
+			query: 'category_type=\'Intranet Project Type\''
 		},
 		reader: {
 			type: 'json',
