@@ -52,6 +52,9 @@ var store = Ext.create('Ext.data.Store', {
 	}
 });
 
+// Sort by ...
+store.sort('category');
+
 // Simple ComboBox using the data store
 var simpleCombo = Ext.create('Ext.form.field.ComboBox', {
     fieldLabel: 'Select a single state',
