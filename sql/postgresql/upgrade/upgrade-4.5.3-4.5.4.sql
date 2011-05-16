@@ -6,7 +6,7 @@ SELECT im_lang_add_message('en_US','acs-workflow','Task_Has_Not_Been_Started_Yet
 SELECT im_lang_add_message('de_DE','acs-workflow','Task_Has_Not_Been_Started_Yet','Workflow Aufgabe noch nicht gestarted');
 
 SELECT im_lang_add_message('en_US','acs-workflow','You_Are_The_Only_Person','You are the only person assigned to this task.');
-SELECT im_lang_add_message('de_DE','acs-workflow','You_Are_The_Only_Person','Sie sind alleiniger Aufgabentr@auml;ger ');
+SELECT im_lang_add_message('de_DE','acs-workflow','You_Are_The_Only_Person','Sie sind alleiniger Aufgabentr&auml;ger ');
 
 SELECT im_lang_add_message('en_US','acs-workflow','Other_Assignees','Other assignees:');
 SELECT im_lang_add_message('de_DE','acs-workflow','Other_Assignees','Weitere Aufgabentr@auml;ger:');
