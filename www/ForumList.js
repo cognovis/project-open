@@ -1,13 +1,30 @@
-Ext.define('ForumBrowser.ForumList', {
 
+var forumStore = Ext.create('Ext.data.TreeStore', {
+    root: {
+        expanded: true, 
+        text:"",
+        user:"",
+        status:"", 
+        children: [
+            { text:"detention", leaf: true },
+            { text:"homework", expanded: true, 
+                children: [
+                    { text:"book report", leaf: true },
+                    { text:"alegrbra", leaf: true}
+                ]
+            },
+            { text: "buy lottery tickets", leaf:true }
+        ]
+    }
+});
+
+Ext.define('ForumBrowser.ForumList', {
     extend: 'Ext.tree.Panel',
-    
     alias: 'widget.forumlist',
     
     rootVisible: false,
     lines: false,
     defaultForum: 40,
-    
     minWidth: 200,
     
     initComponent: function(){
@@ -19,25 +36,7 @@ Ext.define('ForumBrowser.ForumList', {
                     }
                 }
             },
-            store: Ext.create('Ext.data.TreeStore', {
-                model: 'ForumBrowser.Forum',
-                root: {
-                    expanded: true
-                },
-                proxy: {
-                    type: 'jsonp',
-                    url: 'http://sencha.com/forum/forums-remote.php',
-                    reader: {
-                        type: 'json',
-                        root: 'children'
-                    }
-                },
-                listeners: {
-                    single: true,
-                    scope: this,
-                    load: this.onFirstLoad
-                }
-            })
+            store: forumStore
         });
         this.callParent();
         this.getSelectionModel().on({

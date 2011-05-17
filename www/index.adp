@@ -18,7 +18,6 @@
 	<script type="text/javascript"> 
 		Ext.Loader.setConfig({enabled: true});
 		Ext.Loader.setPath('Ext', '/intranet-sencha/');
-//		Ext.Loader.setPath('Ext.ux', '/intranet-ticket-tracker/ux/');
 		Ext.require([
 			'Ext.grid.*',
 			'Ext.tree.*',
