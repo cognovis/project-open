@@ -853,6 +853,17 @@ ad_proc -private im_rest_get_object_type {
     # Determine the list of valid columns for the object type
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
 
+
+    # -------------------------------------------------------
+    # Check if there are "valid_vars" specified in the HTTP header
+    # and add these vars to the SQL clause
+    set where_clause_list [list]
+    foreach v $valid_vars {
+	if {[info exists query_hash($v)]} { lappend where_clause_list [list $v = $query_hash($v)] }
+    }
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+ 
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -924,6 +935,8 @@ ad_proc -private im_rest_get_object_type {
 		if {"sencha" == $format_variant} {
 		    foreach v $valid_vars {
 			eval "set a $$v"
+			regsub -all {\n} $a {\n} a
+			regsub -all {\r} $a {} a
 			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
 		    }
 		}
@@ -937,6 +950,7 @@ ad_proc -private im_rest_get_object_type {
 	    }
 	}
 	incr obj_ctr
+#	if {$obj_ctr > 17} { break }
     }
 
     switch $format {
