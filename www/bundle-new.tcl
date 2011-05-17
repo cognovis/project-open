@@ -77,14 +77,14 @@ if {[info exists bundle_id]} {
 	"]"
 	ad_script_abort
     }
+    set bundle_project_id [db_string bpid "select project_id from im_costs where cost_id = :bundle_id" -default 0]
 
     db_0or1row bundle_info "
-	select	project_id as bundle_project_id,
-		cost_name as bundle_name
-	from	im_costs
-	where	cost_id = :bundle_id
+    	select project_id as bundle_project_id,
+	       cost_name as bundle_name
+	from im_costs
+	where cost_id = :bundle_id
     "
-
 }
 set project_options [im_project_options -include_project_ids $bundle_project_id]
 
@@ -406,6 +406,7 @@ template::list::create \
 	}
     }
 
+set def_currency [parameter::get -package_id [apm_package_id_from_key intranet-cost] -parameter "DefaultCurrency" -default 'EUR']
 
 set expense_lines_sql "
 	select
@@ -413,6 +414,9 @@ set expense_lines_sql "
 		e.*,
 		acs_object__name(provider_id) as provider_name,
 		to_char(effective_date, :date_format) as effective_date,
+		to_char(((c.amount * c.vat/100) + c.amount)*e.reimbursable/100,:cur_format) as amount_reimbursable,
+		round(((c.amount * c.vat/100) + c.amount) * (e.reimbursable/100) * 
+			im_exchange_rate(c.effective_date::date, c.currency, '$def_currency') :: numeric, 2) as amount_reimbursable_converted,
 		im_category_from_id(expense_type_id) as expense_type,
 		im_category_from_id(expense_payment_type_id) as expense_payment_type,
 		p.project_name
@@ -426,8 +430,34 @@ set expense_lines_sql "
 	order by
 		c.effective_date
 "
+set first_loop_p 1
+set currency list
+array set curr_hash {}
+set tmp_output ""
+set cur_format [im_l10n_sql_currency_format]
+set amount_reimbursable_converted_sum 0
 
 db_multirow -extend {project_url expense_new_url provider_url} expense_lines expenses_lines $expense_lines_sql {
+    # -- create summaries for each currency
+    if { 1 == $first_loop_p } {
+            lappend currency_list $currency
+            set curr_idx 0
+            set first_loop_p 0
+    } else {
+        set curr_idx [lsearch $currency_list $currency]
+        if { -1 == $curr_idx } {
+            lappend currency_list $currency
+            set curr_idx [lsearch $currency_list $currency]
+        }
+    }
+
+    if { [info exists curr_hash($provider_id,$curr_idx) ] } {
+        set curr_hash($provider_id,$curr_idx) [expr $curr_hash($provider_id,$curr_idx) + $amount_reimbursable]
+    } else {
+        set curr_hash($provider_id,$curr_idx) $amount_reimbursable
+    }
+    # -- end summary currencies
+    
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
     set reimbursable "[format %.1f $reimbursable] %"
@@ -440,10 +470,29 @@ db_multirow -extend {project_url expense_new_url provider_url} expense_lines exp
     set expense_new_url [export_vars -base "/intranet-expenses/new" {expense_id return_url}]
     set provider_url [export_vars -base "/intranet/companies/view" {{company_id $provider_id} return_url}]
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
+
+    if { "" == $amount_reimbursable_converted } {set amount_reimbursable_converted 0}
+    set amount_reimbursable_converted_sum [expr $amount_reimbursable_converted_sum + $amount_reimbursable_converted]
 }
 
+set reimbursement_output_table "<br><hr width='640px'><br><table cellpadding='3px' cellspacing='3px' border='0'><tr><td colspan='2'><h2>Reimbursement Employee/Currency<h2></td></tr>"
 
-
+set bak_key ""
+foreach key [array names curr_hash] {
+    #get current value with $curr_hash($key)
+    if {$bak_key == $key} {
+        set employee_id ""
+    } else {
+	set employee_id [string range $key 0 [expr [string first "," $key]-1]]
+    }
+    set employee_name [im_name_from_user_id $employee_id]
+    set reimburse_amount $curr_hash($key)
+    if { ".00" != $reimburse_amount } {
+        append reimbursement_output_table "<tr><td>$employee_name</td><td align='right'>[lindex $currency_list [string range $key [expr [string first "," $key]+1] [string length $key]]]&nbsp;$reimburse_amount</td></tr><br>"
+    }
+    set bak_key $key
+}
+append reimbursement_output_table "</table><br><br><br>"
 
 # ---------------------------------------------------------------
 # Special Output: Format using a template
