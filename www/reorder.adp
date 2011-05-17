@@ -6,7 +6,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name='generator' lang='en' content='OpenACS version 5.6.0'>
 	<link rel='stylesheet' href='/intranet-sencha/css/example.css' type='text/css' media='screen'>
-	<script type="text/javascript" src="/intranet-sencha/js/bootstrap.js"></script> 
+	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
 
 	<script type="text/javascript" src="reorder.js"></script> 

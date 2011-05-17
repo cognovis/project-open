@@ -6,13 +6,17 @@ Ext.require([
 
 Ext.onReady(function() {
     Ext.QuickTips.init();
+
+    var model = Ext.define('Project', {
+	    extend: 'Ext.data.Model',
+	    fields: ['id', 'text']
+    });
     
     var store = Ext.create('Ext.data.TreeStore', {
-	nodeParam: 'parent_id',
+	model: model,
         proxy: {
 		type: 'rest',
-		url: '/intranet-rest/im_project',
-		appendId: true,
+		url: '/intranet-sencha-ticket-tracker/sla-projects',
 		extraParams: {
 			format: 'json',
 			format_variant: 'sencha'
@@ -24,7 +28,7 @@ Ext.onReady(function() {
         },
         root: {
             text: 'Ext JS',
-            id: '',
+            id: 'all',
             expanded: true
         },
         folderSort: true,
