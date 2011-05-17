@@ -2,7 +2,13 @@
 ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
-    { node 0}
+    { sla_id:integer ""}
+}
+
+# Select topics only for an SLA
+set sla_where ""
+if {"" != $sla_id} { 
+    set sla_where "and p.parent_id = :sla_id" 
 }
 
 set ticket_sql "
@@ -14,40 +20,9 @@ set ticket_sql "
 		acs_objects o
 	where	t.ticket_id = p.project_id and
 		t.ticket_id = o.object_id
+		$sla_where
 	LIMIT 10
 "
-
-set valid_vars {
- ticket_alarm_action              
- ticket_alarm_date                
- ticket_application_id            
- ticket_assignee_id               
- ticket_closed_in_1st_contact_p   
- ticket_component_id              
- ticket_conf_item_id              
- ticket_confirmation_date         
- ticket_creation_date             
- ticket_customer_contact_id       
- ticket_customer_deadline         
- ticket_dept_id                   
- ticket_description               
- ticket_done_date                 
- ticket_hardware_id               
- ticket_id                        
- ticket_note                      
- ticket_prio_id                   
- ticket_queue_id                  
- ticket_quote_comment             
- ticket_quoted_days               
- ticket_reaction_date             
- ticket_resolution_time           
- ticket_resolution_time_dirty     
- ticket_service_id                
- ticket_signoff_date              
- ticket_sla_id                    
- ticket_status_id                 
- ticket_type_id                   
-}
 
 set valid_vars {excerpt}
 
