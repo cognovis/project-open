@@ -14,11 +14,28 @@ Ext.define('ForumBrowser.TopicGrid', {
             proxy: {
                 type: 'rest',
                 url: '/intranet-sencha-ticket-tracker/tickets',
+		extraParams: {
+                        format: 'json',
+			sla_id: 0		// overwritten when loading forum
+                },
                 reader: {
                     type: 'json',
                     root: 'data',
                     totalProperty: 'total'
-                }
+                },
+		buildUrl: function(request) {
+		    var	me        = this,
+		    	operation = request.operation,
+		    	records   = operation.records || [],
+		    	record    = records[0],
+		    	format    = me.format,
+		    	url       = me.getUrl(request),
+		    	id        = record ? record.getId() : operation.id;
+		    
+		    request.url = url;		    
+		    return url;
+		}
+		
             }
         });
         
@@ -106,7 +123,7 @@ Ext.define('ForumBrowser.TopicGrid', {
     
     loadForum: function(id){
         var store = this.store;
-        store.getProxy().extraParams.forumId = id;
+        store.getProxy().extraParams.sla_id = id;
         store.loadPage(1);
     },
     
