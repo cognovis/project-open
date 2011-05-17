@@ -1,30 +1,10 @@
-
-var forumStore = Ext.create('Ext.data.TreeStore', {
-    root: {
-        expanded: true, 
-        text:"",
-        user:"",
-        status:"", 
-        children: [
-            { text:"detention", leaf: true },
-            { text:"homework", expanded: true, 
-                children: [
-                    { text:"book report", leaf: true },
-                    { text:"alegrbra", leaf: true}
-                ]
-            },
-            { text: "buy lottery tickets", leaf:true }
-        ]
-    }
-});
-
 Ext.define('ForumBrowser.ForumList', {
-    extend: 'Ext.tree.Panel',
+
+    extend: 'Ext.tree.Panel',   
     alias: 'widget.forumlist',
-    
-    rootVisible: false,
+    rootVisible: true,
     lines: false,
-    defaultForum: 40,
+    defaultForum: 53349,
     minWidth: 200,
     
     initComponent: function(){
@@ -36,7 +16,28 @@ Ext.define('ForumBrowser.ForumList', {
                     }
                 }
             },
-            store: forumStore
+            store: Ext.create('Ext.data.TreeStore', {
+                model: 'ForumBrowser.Forum',
+                proxy: {
+                    type: 'rest',
+                    url: '/intranet-sencha-ticket-tracker/sla-projects',
+		    appendId: true,
+                    reader: {
+                        type: 'json',
+                        root: 'data'
+                    }
+                },
+                root: {
+		    text: 'All',
+		    id: '',
+                    expanded: true
+                },
+                listeners: {
+                    single: true,
+                    scope: this,
+                    load: this.onFirstLoad
+                }
+            })
         });
         this.callParent();
         this.getSelectionModel().on({
@@ -51,8 +52,8 @@ Ext.define('ForumBrowser.ForumList', {
     },
     
     onSelect: function(selModel, rec){
-        if (rec.get('leaf')) {
-            this.ownerCt.loadForum(rec);
-        }
+
+        this.ownerCt.loadForum(rec);
+//        if (rec.get('leaf')) {        }
     }
 });

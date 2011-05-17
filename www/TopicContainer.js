@@ -1,11 +1,8 @@
 Ext.define('ForumBrowser.TopicContainer', {
-    
     extend: 'Ext.container.Container',
-    
     alias: 'widget.topiccontainer',
-    
     title: 'Loading...',
-    
+
     initComponent: function(){
         Ext.apply(this, {
             layout: 'border',

@@ -6,13 +6,7 @@ Ext.define('ForumBrowser.Forum', {
 Ext.define('ForumBrowser.Topic', {
     extend: 'Ext.data.Model',
     idProperty: 'threadid',
-    fields: ['title', 'forumtitle', 'forumid', 'author', {
-        name: 'replycount',
-        type: 'int'
-    }, {
-        name: 'lastpost',
-        mapping: 'lastpost',
-        type: 'date',
-        dateFormat: 'timestamp'
-    }, 'lastposter', 'excerpt']
+    fields: ['title', 'forumtitle', 'forumid', 'author', 'lastpost',
+    {   name: 'replycount', type: 'int' }, 
+    'lastposter', 'excerpt']
 });

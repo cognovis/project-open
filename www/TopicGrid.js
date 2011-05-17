@@ -1,7 +1,6 @@
 Ext.define('ForumBrowser.TopicGrid', {
 
-    extend: 'Ext.grid.Panel',
-    
+    extend: 'Ext.grid.Panel',    
     alias: 'widget.topicgrid',
     
     initComponent: function(){
@@ -13,13 +12,12 @@ Ext.define('ForumBrowser.TopicGrid', {
                 direction: 'DESC'
             }],
             proxy: {
-                simpleSortMode: true,
-                type: 'jsonp',
-                url: 'http://sencha.com/forum/topics-browse-remote.php',
+                type: 'rest',
+                url: '/intranet-sencha-ticket-tracker/tickets',
                 reader: {
                     type: 'json',
-                    root: 'topics',
-                    totalProperty: 'totalCount'
+                    root: 'data',
+                    totalProperty: 'total'
                 }
             }
         });
@@ -63,10 +61,7 @@ Ext.define('ForumBrowser.TopicGrid', {
             }, {
                 header: 'Last Post',
                 dataIndex: 'lastpost',
-                width: 150,
-                renderer: function(value, o, rec){
-                    return Ext.String.format('<span class="post-date">{0}</span><br/>by {1}', Ext.Date.format(value, 'M j, Y, g:i a'), rec.get('lastposter'));
-                }
+                width: 150
             }
             ],
             dockedItems: [{
