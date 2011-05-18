@@ -859,7 +859,7 @@ ad_proc -private im_rest_get_object_type {
     # and add these vars to the SQL clause
     set where_clause_list [list]
     foreach v $valid_vars {
-	if {[info exists query_hash($v)]} { lappend where_clause_list [list $v = $query_hash($v)] }
+	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
     }
     if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
     append where_clause [join $where_clause_list " and "]
@@ -950,7 +950,6 @@ ad_proc -private im_rest_get_object_type {
 	    }
 	}
 	incr obj_ctr
-#	if {$obj_ctr > 17} { break }
     }
 
     switch $format {
@@ -1221,6 +1220,18 @@ ad_proc -private im_rest_get_im_categories {
     # Check if there is a where clause specified in the URL and validate the clause.
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+
+
+    # -------------------------------------------------------
+    # Check if there are "valid_vars" specified in the HTTP header
+    # and add these vars to the SQL clause
+    set where_clause_list [list]
+    foreach v $valid_vars {
+        if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
+    }
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+
 
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
