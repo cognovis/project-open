@@ -1,4 +1,8 @@
-Ext.define('ForumBrowser.PreviewPlugin', {
+/**
+ * Shows the ticket_description in the ticket grid
+ * if the "Summary" button is selected.
+ */
+Ext.define('TicketBrowser.PreviewPlugin', {
     extend: 'Ext.AbstractPlugin',
     alias: 'plugin.preview',
     requires: ['Ext.grid.feature.RowBody', 'Ext.grid.feature.RowWrap'],

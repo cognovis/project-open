@@ -1,12 +1,25 @@
-Ext.define('ForumBrowser.Forum', {
+Ext.define('TicketBrowser.Sla', {
     extend: 'Ext.data.Model',
-    fields: ['id', 'text']
+    idProperty: 'project_id',		// The primary key of object_id of the SLA project
+    fields: [
+	'project_id',			// The primary key of object_id of the SLA project
+	'project_name'			// The name of the SLA
+    ]
 });
 
-Ext.define('ForumBrowser.Topic', {
+Ext.define('TicketBrowser.Ticket', {
     extend: 'Ext.data.Model',
-    idProperty: 'threadid',
-    fields: ['title', 'forumtitle', 'forumid', 'author', 'lastpost',
-    {   name: 'replycount', type: 'int' }, 
-    'lastposter', 'excerpt']
+    idProperty: 'ticket_id',		// The primary key or object_id of the ticket
+    fields: [
+	'ticket_id',			// The primary key or object_id of the ticket
+	'project_name',			// The name of the ticket. Ticket is as sub-type of Project, 
+					// so the ticket name is stored as project_name.
+	'ticket_sla_id',		// Every ticket is associated with a Service Level Agreement (SLA)
+					// project that handles the financials of the ticket.
+	'creation_user',		// User_id of the guy creating the ticket
+	'creation_date',		// Creation date of the ticket
+	'replycount',			// Number of ticket replies
+	'ticket_description'		// Initial description of the ticket
+    ]
 });
+
