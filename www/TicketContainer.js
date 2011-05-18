@@ -28,7 +28,7 @@ Ext.define('TicketBrowser.TicketContainer', {
     },
     
     loadSla: function(rec) {
-        this.tab.setText(rec.get('text'));
+        this.tab.setText(rec.get('project_name'));
         this.child('#grid').loadSla(rec.getId());
     },
     

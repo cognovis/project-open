@@ -71,3 +71,25 @@ var customerContactStore = Ext.create('Ext.data.Store', {
 		        }
 		});
 
+
+var employeeStore = Ext.create('Ext.data.Store', {
+		        autoLoad: true,
+		        fields: ['user_id', 'first_names', 'last_name',
+				{ name: 'name',
+				  convert: function(value, record) {
+					return record.get('first_names') + ' ' + record.get('last_name');
+				  }
+				}
+			],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/user',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					format_variant: 'sencha'
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+

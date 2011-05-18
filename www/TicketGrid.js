@@ -49,9 +49,22 @@ Ext.define('TicketBrowser.TicketGrid', {
 			  dataIndex: 'project_name',
 			  flex: 1,
 			  renderer: function(value, o, record) {
+			      var	user_id = record.get('creation_user'),
+					creation_user_idx = customerContactStore.find('user_id',user_id),
+					user_record = customerContactStore.getAt(creation_user_idx),
+					user_name = 'User #' + user_id;
+
+				if (typeof user_record != "undefined") {
+					user_name = user_record.get('name');
+				}
+
 			      return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',
-						       value, record.get('creation_user'));
+						       value, user_name);
 			  }
+		      }, {
+			  header: 'Prio',
+			  dataIndex: 'ticket_prio_id',
+			  width: 50
 		      }, {
 			  header: 'Creator',
 			  dataIndex: 'creation_user',

@@ -3,7 +3,8 @@ Ext.define('TicketBrowser.Sla', {
     idProperty: 'project_id',		// The primary key of object_id of the SLA project
     fields: [
 	'project_id',			// The primary key of object_id of the SLA project
-	'project_name'			// The name of the SLA
+	'project_name',			// The name of the SLA
+	{ name: 'leaf', convert: function(value, record) { return true; } }
     ]
 });
 
