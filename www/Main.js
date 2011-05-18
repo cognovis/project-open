@@ -9,7 +9,7 @@ Ext.define('TicketBrowser.Main', {
                 xtype: 'slalist',
                 region: 'west',
                 width: 300,
-                title: 'Slas',
+                title: 'Service Level Agreements',
                 split: true,
                 margins: '5 0 5 5'
             }, {

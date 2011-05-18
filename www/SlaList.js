@@ -2,7 +2,7 @@ Ext.define('TicketBrowser.SlaList', {
 
     extend: 'Ext.tree.Panel',   
     alias: 'widget.slalist',
-    rootVisible: true,
+    rootVisible: false,
     lines: false,
     defaultSla: 53349,
     minWidth: 200,
@@ -54,8 +54,9 @@ Ext.define('TicketBrowser.SlaList', {
     },
     
     onSelect: function(selModel, rec){
-	// if (rec.get('leaf')) { }		// Disable the check for leaf elements only
-        this.ownerCt.loadSla(rec);		// In the list of SLAs every SLA is a leaf...
+	if (rec.get('leaf')) { 		
+            this.ownerCt.loadSla(rec);
+	}
     }
 });
 
