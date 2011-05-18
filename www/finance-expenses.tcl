@@ -325,10 +325,10 @@ switch $group_style {
 						"$expense_type"
 						"$external_company_name"
 						"$expense_payment_type"
-						"$vat_formatted"
-						"<nobr>$amount_formatted $currency</nobr>"
-						"<nobr>$amount_converted_formatted</nobr>"
-						"$billable_p"
+						"\#align='center' $vat_formatted"
+						"\#align='right' $amount_formatted $currency"
+						"\#align='right' $amount_converted_formatted $default_currency"
+						"\#align='center' $billable_p"
 					        "$receipt_reference"
 						"$note"
 					} \
@@ -336,12 +336,12 @@ switch $group_style {
 				] \
 				footer {
 					"\#colspan=10"
-					"\#colspan=4 <nobr><i>$employee_subtotal</i></nobr>"
+					"\#colspan=4 <nobr><i>$employee_subtotal $default_currency</i></nobr>"
 				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=4 <nobr><b>$project_subtotal</b></nobr>"
+				"\#colspan=4 <nobr><b>$project_subtotal $default_currency</b></nobr>"
 			} \
 		] \
 		footer {  } \
@@ -419,10 +419,10 @@ switch $group_style {
 						"<a href=$user_url$employee_id>$employee_name</a>"
 						"$external_company_name"
 						"$expense_payment_type"
-						"$vat_formatted"
-						"<nobr>$amount_formatted $currency</nobr>"
-						"<nobr>$amount_converted_formatted</nobr>"
-						"$billable_p"
+						"\#align='center' $vat_formatted"
+						"\#align='right' $amount_formatted $currency"
+						"\#align='right' $amount_converted_formatted $default_currency"
+						"\#align='center' $billable_p"
 						"$receipt_reference"
 						"$note"
 					} \
@@ -430,12 +430,12 @@ switch $group_style {
 				] \
 				footer {
 					"\#colspan=10"
-					"\#colspan=4 <nobr><i>$exptype_subtotal</i></nobr>"
+					"\#colspan=4 <nobr><i>$exptype_subtotal $default_currency</i></nobr>"
 				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=4 <nobr><b>$project_subtotal</b></nobr>"
+				"\#colspan=4 <nobr><b>$project_subtotal $default_currency</b></nobr>"
 			} \
 		] \
 		footer {  } \
@@ -515,10 +515,10 @@ switch $group_style {
 						"$expense_type"
 						"$external_company_name"
 						"$expense_payment_type"
-						"$vat_formatted"
-						"<nobr>$amount_formatted $currency</nobr>"
-						"<nobr>$amount_converted_formatted</nobr>"
-						"$billable_p"
+						"\#align='center' $vat_formatted"
+						"\#align='right' $amount_formatted $currency"
+						"\#align='right' $amount_converted_formatted $default_currency"
+						"\#align='center' $billable_p"
 					        "$receipt_reference"
 						"$note"
 					} \
@@ -526,17 +526,17 @@ switch $group_style {
 				] \
 				footer {
 					"\#colspan=10"
-					"\#colspan=3 <nobr>Proj: <i>$project_subtotal</i></nobr>"
+					"\#colspan=3 <nobr>Proj: <i>$project_subtotal $default_currency</i></nobr>"
 				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=4 <nobr>Cust: <b>$customer_subtotal</b></nobr>"
+				"\#colspan=4 <nobr>Cust: <b>$customer_subtotal $default_currency</b></nobr>"
 			} \
 		] \
 		footer {  
 			"\#colspan=10"
-			"\#colspan=4 <nobr>Emp: <b>$employee_subtotal</b></nobr>"
+			"\#colspan=4 <nobr>Emp: <b>$employee_subtotal $default_currency</b></nobr>"
 		} \
 	]
 
@@ -656,7 +656,7 @@ switch $output_format {
 	</tr>
 	</table>
 	<br>
-	<table border=0 cellspacing=2 cellpadding=2>\n"
+	<table border=0 cellspacing=3 cellpadding=3>\n"
     }
 }
 	
