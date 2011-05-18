@@ -5,14 +5,13 @@
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
-
 ad_page_contract {
 	testing reports	
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
 } {
-    { start_date "2006-01-01" }
-    { end_date "2007-01-01" }
+    { start_date "2010-01-01" }
+    { end_date "2012-01-01" }
     { level_of_detail 4 }
     { output_format "html" }
     { group_style "cust_proj_emp" }
