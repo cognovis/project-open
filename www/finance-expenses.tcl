@@ -16,6 +16,7 @@ ad_page_contract {
     { level_of_detail 4 }
     { output_format "html" }
     { group_style "cust_proj_emp" }
+    { show_complete_note 0 }
     project_id:integer,optional
     customer_id:integer,optional
 }
@@ -49,6 +50,14 @@ if {[catch {
     return
 }
 
+# Preselect show_complete_note
+if { 0==$show_complete_note } {
+        set show_complete_note_checked_no "checked"
+        set show_complete_note_checked_yes ""
+} else {
+        set show_complete_note_checked_no ""
+        set show_complete_note_checked_yes "checked"
+}
 
 # Check that Start & End-Date have correct format
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
@@ -230,6 +239,7 @@ set sql "
 select
 	cc.*,
 	e.*,
+        round(c.amount,2) as amount,
 	im_category_from_id(e.expense_type_id) as expense_type,
 	im_category_from_id(e.expense_payment_type_id) as expense_payment_type,
 	to_char(cc.effective_date, :date_format) as effective_date_formatted,
@@ -280,7 +290,7 @@ switch $group_style {
 	set report_def [list \
 		group_by project_customer_id \
 		header {
-			"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+			"\#colspan=14 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
 			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 			<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 		} \
@@ -288,7 +298,7 @@ switch $group_style {
 			group_by project_id \
 			header {
 				""
-				"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
+				"\#colspan=11 <a href=$this_url&project_id=$project_id&level_of_detail=4
 				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 				<b><a href=$project_url$project_id>$project_name</a></b>"
 				""
@@ -299,7 +309,7 @@ switch $group_style {
 				header {
 					""
 					""
-					"\#colspan=9 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+					"\#colspan=10 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
 					target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 					<b><a href=$user_url$employee_id>$employee_name</a></b>"
 					""
@@ -319,45 +329,46 @@ switch $group_style {
 						"<nobr>$amount_formatted $currency</nobr>"
 						"<nobr>$amount_converted_formatted</nobr>"
 						"$billable_p"
+					        "$receipt_reference"
 						"$note"
 					} \
 					content {} \
 				] \
 				footer {
 					"\#colspan=10"
-					"\#colspan=3 <nobr><i>$employee_subtotal</i></nobr>"
+					"\#colspan=4 <nobr><i>$employee_subtotal</i></nobr>"
 				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=3 <nobr><b>$project_subtotal</b></nobr>"
+				"\#colspan=4 <nobr><b>$project_subtotal</b></nobr>"
 			} \
 		] \
 		footer {  } \
 	]
 		
 	# Global header/footer
-	set header0 {"Cust" "Proj" "Emp" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set header0 {"Cust" "Proj" "Emp" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Ref." "Note"}
 	set footer0 { }
 
 	set project_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var project_subtotal \
 	        reset "\$customer_id+\$project_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	
 	set employee_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var employee_subtotal \
 	        reset "\$customer_id+\$project_id+\$employee_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	set project_grand_total_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var project_total \
 	        reset 0 \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	
 	set counters [list \
@@ -375,7 +386,7 @@ switch $group_style {
 	set report_def [list \
 		group_by project_customer_id \
 		header {
-			"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+			"\#colspan=14 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
 			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 			<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 		} \
@@ -383,7 +394,7 @@ switch $group_style {
 			group_by project_id \
 			header {
 				""
-				"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
+				"\#colspan=11 <a href=$this_url&project_id=$project_id&level_of_detail=4
 				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 				<b><a href=$project_url$project_id>$project_name</a></b>"
 				""
@@ -394,7 +405,7 @@ switch $group_style {
 				header {
 					""
 					""
-					"\#colspan=9 $expense_type"
+					"\#colspan=10 $expense_type"
 					""
 					""
 				} \
@@ -412,45 +423,46 @@ switch $group_style {
 						"<nobr>$amount_formatted $currency</nobr>"
 						"<nobr>$amount_converted_formatted</nobr>"
 						"$billable_p"
+						"$receipt_reference"
 						"$note"
 					} \
 					content {} \
 				] \
 				footer {
 					"\#colspan=10"
-					"\#colspan=3 <nobr><i>$exptype_subtotal</i></nobr>"
+					"\#colspan=4 <nobr><i>$exptype_subtotal</i></nobr>"
 				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=3 <nobr><b>$project_subtotal</b></nobr>"
+				"\#colspan=4 <nobr><b>$project_subtotal</b></nobr>"
 			} \
 		] \
 		footer {  } \
 	]
 		
 	# Global header/footer
-	set header0 {"Cust" "Proj" "Type" "Expense<br>Date" "Enter<br>Date" "Emp" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set header0 {"Cust" "Proj" "Type" "Expense<br>Date" "Enter<br>Date" "Emp" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Ref." "Note"}
 	set footer0 { }
 	
 	set project_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var project_subtotal \
 	        reset \$project_id \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	
 	set exptype_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var exptype_subtotal \
 	        reset "\$project_id+\$expense_type_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	set project_grand_total_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var project_total \
 	        reset 0 \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	
 	set counters [list \
@@ -468,7 +480,7 @@ switch $group_style {
 	set report_def [list \
 		group_by employee_id \
 		header {
-			"\#colspan=13 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+			"\#colspan=14 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
 			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 			<b><a href=$user_url$employee_id>$employee_name</a></b>"
 		} \
@@ -476,7 +488,7 @@ switch $group_style {
 			group_by customer_id \
 			header {
 				""
-				"\#colspan=10 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+				"\#colspan=11 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
 				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 				<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 				""
@@ -487,7 +499,7 @@ switch $group_style {
 				header {
 					""
 					""
-					"\#colspan=9 <a href=$this_url&project_id=$project_id&level_of_detail=4
+					"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
 					target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 					<b><a href=$project_url$project_id>$project_name</a></b>"
 					""
@@ -507,6 +519,7 @@ switch $group_style {
 						"<nobr>$amount_formatted $currency</nobr>"
 						"<nobr>$amount_converted_formatted</nobr>"
 						"$billable_p"
+					        "$receipt_reference"
 						"$note"
 					} \
 					content {} \
@@ -518,51 +531,44 @@ switch $group_style {
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=3 <nobr>Cust: <b>$customer_subtotal</b></nobr>"
+				"\#colspan=4 <nobr>Cust: <b>$customer_subtotal</b></nobr>"
 			} \
 		] \
 		footer {  
 			"\#colspan=10"
-			"\#colspan=3 <nobr>Emp: <b>$employee_subtotal</b></nobr>"
+			"\#colspan=4 <nobr>Emp: <b>$employee_subtotal</b></nobr>"
 		} \
 	]
 
 	# Global header/footer
-	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Ref." "Note"}
 	set footer0 { }
 	
 	set employee_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var employee_subtotal \
 	        reset "\$employee_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	set customer_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var customer_subtotal \
 	        reset "\$employee_id+\$customer_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	set project_subtotal_counter [list \
 	        pretty_name "Invoice Amount" \
 	        var project_subtotal \
 	        reset "\$employee_id+\$customer_id+\$project_id" \
-	        expr "\$amount+0" \
+	        expr "\$amount_converted+0" \
 	]
 	set counters [list \
 		$project_subtotal_counter \
 		$customer_subtotal_counter \
 		$employee_subtotal_counter \
 	]
-
-
     }
-
 }
-
-
-	
-
 
 
 # ------------------------------------------------------------
@@ -626,6 +632,15 @@ switch $output_format {
                     [im_report_output_format_select output_format "" $output_format]
                   </td>
                 </tr>
+                <tr>
+                  <td class=form-label>Show complete note</td>
+                  <td class=form-widget>
+                        <nobr>
+                                <input name='show_complete_note' value='0' $show_complete_note_checked_no type='radio'>No&nbsp;
+                                <input name='show_complete_note' value='1' $show_complete_note_checked_yes type='radio'>Yes
+                        </nobr>
+                  </td>
+                </tr>
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -666,9 +681,9 @@ db_foreach sql $sql {
 	    set expense_payment_type "[string range $expense_payment_type 0 $expense_payment_type_length] ..."
 	}
 
-	if {[string length $note] > $note_length} {
-	    set note "[string range $note 0 $note_length] ..."
-	}
+        if { !$show_complete_note && [string length $note] > $note_length } {
+            set note "[string range $note 0 $note_length] ..."
+        }
 
 	if {"" == $project_id} {
 	    set project_id 0
