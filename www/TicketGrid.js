@@ -67,6 +67,7 @@ Ext.define('TicketBrowser.TicketGrid', {
 			  width: 150
 		      }
 		     ],
+
             dockedItems: [{
                 xtype: 'toolbar',
                 cls: 'x-docked-noborder-top',
