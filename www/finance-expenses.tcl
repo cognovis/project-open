@@ -655,8 +655,8 @@ switch $output_format {
 	</td>
 	</tr>
 	</table>
-	
-	<table border=0 cellspacing=1 cellpadding=1>\n"
+	<br>
+	<table border=0 cellspacing=2 cellpadding=2>\n"
     }
 }
 	
