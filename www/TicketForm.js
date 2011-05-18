@@ -1,12 +1,31 @@
+
+var ticketTypeStore = Ext.create('Ext.data.Store', {
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Ticket Type\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
+
 Ext.define('TicketBrowser.TicketForm', {
 	extend: 'Ext.form.Panel',	
 	alias: 'widget.ticketform',
 	minHeight: 200,
 
-	url:'simple-form-save',
+	url:'ticket-save',
 	stanardsubmit:false,
 	frame:true,
-	title: 'Simple Form',
+	title: 'Ticket',
 	bodyStyle:'padding:5px 5px 0',
 	width: 350,
 	fieldDefaults: {
@@ -14,24 +33,34 @@ Ext.define('TicketBrowser.TicketForm', {
 		labelWidth: 75
 	},
 	defaultType: 'textfield',
-	defaults: {
-		anchor: '100%'
-	},
+	defaults: { anchor: '100%' },
 
 	items: [{
-		fieldLabel: 'First Name',
-		name: 'first',
+		fieldLabel: 'Name',
+		name: 'project_name',
 		allowBlank:false
 	},{
-		fieldLabel: 'Last Name',
-		name: 'last'
+		fieldLabel: 'SLA',
+		name: 'parent_id',
+		allowBlank:false
 	},{
-		fieldLabel: 'Company',
-		name: 'company'
+		fieldLabel: 'Contact',
+		name: 'ticket_customer_contact_id'
 	}, {
-		fieldLabel: 'Email',
-		name: 'email',
-		vtype:'email'
+		fieldLabel: 'Type',
+		name: 'ticket_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: false,
+		queryMode: 'remote',
+		store: ticketTypeStore
+	}, {
+		fieldLabel: 'Status',
+		name: 'ticket_status_id'
+	}, {
+		fieldLabel: 'Prio',
+		name: 'ticket_prio_id'
 	}, {
 		xtype: 'timefield',
 		fieldLabel: 'Time',
@@ -39,6 +68,11 @@ Ext.define('TicketBrowser.TicketForm', {
 		minValue: '8:00am',
 		maxValue: '6:00pm'
 	}],
+
+	loadTicket: function(rec){
+		this.loadRecord(rec);
+		var comp = this.getComponent('ticket_type_id');
+	},
 
 	buttons: [{
 		text: 'Save'
