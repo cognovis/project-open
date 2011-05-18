@@ -1,22 +1,4 @@
 
-var ticketTypeStore = Ext.create('Ext.data.Store', {
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Ticket Type\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
-
-
-
 Ext.define('TicketBrowser.TicketForm', {
 	extend: 'Ext.form.Panel',	
 	alias: 'widget.ticketform',
@@ -44,23 +26,41 @@ Ext.define('TicketBrowser.TicketForm', {
 		name: 'parent_id',
 		allowBlank:false
 	},{
-		fieldLabel: 'Contact',
-		name: 'ticket_customer_contact_id'
+		fieldLabel: 'Customer Contact',
+		name: 'ticket_customer_contact_id',
+		xtype: 'combobox',
+                valueField: 'user_id',
+                displayField: 'name',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: customerContactStore
 	}, {
 		fieldLabel: 'Type',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
                 displayField: 'category',
-		forceSelection: false,
+		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketTypeStore
 	}, {
 		fieldLabel: 'Status',
-		name: 'ticket_status_id'
+		name: 'ticket_status_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketStatusStore
 	}, {
 		fieldLabel: 'Prio',
-		name: 'ticket_prio_id'
+		name: 'ticket_prio_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketPriorityStore
 	}, {
 		xtype: 'timefield',
 		fieldLabel: 'Time',
