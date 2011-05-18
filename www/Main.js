@@ -1,4 +1,4 @@
-Ext.define('ForumBrowser.Main', {
+Ext.define('TicketBrowser.Main', {
     extend: 'Ext.container.Viewport',
     
     initComponent: function(){
@@ -6,10 +6,10 @@ Ext.define('ForumBrowser.Main', {
             layout: 'border',
             itemId: 'main',
             items: [{
-                xtype: 'forumlist',
+                xtype: 'slalist',
                 region: 'west',
                 width: 300,
-                title: 'Forums',
+                title: 'Slas',
                 split: true,
                 margins: '5 0 5 5'
             }, {
@@ -22,15 +22,15 @@ Ext.define('ForumBrowser.Main', {
                     border: true
                 },
                 items: {
-                    itemId: 'topic',
-                    xtype: 'topiccontainer'
+                    itemId: 'ticket',
+                    xtype: 'ticketcontainer'
                 }
             }]
         });
         this.callParent();
     },
     
-    loadForum: function(rec){
-        this.down('#topic').loadForum(rec);
+    loadSla: function(rec){
+        this.down('#ticket').loadSla(rec);
     }  
 });

@@ -5,17 +5,18 @@
 	<title>]project-open[ AJAX Ticket Tracker</title> 
 
 	<link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
-	<link rel="stylesheet" type="text/css" href="forum.css" /> 
+	<link rel="stylesheet" type="text/css" href="ticketbrowser.css" /> 
 
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
-	<script type="text/javascript" src="ForumList.js"></script> 
-	<script type="text/javascript" src="TopicContainer.js"></script> 
-	<script type="text/javascript" src="TopicGrid.js"></script> 
+	<script type="text/javascript" src="SlaList.js"></script> 
+	<script type="text/javascript" src="TicketContainer.js"></script> 
+	<script type="text/javascript" src="TicketGrid.js"></script> 
+	<script type="text/javascript" src="TicketForm.js"></script> 
 	<script type="text/javascript" src="PreviewPlugin.js"></script> 
 	<script type="text/javascript" src="Main.js"></script> 
 
-	<script type="text/javascript"> 
+	<script type="text/javascript">
 		Ext.Loader.setConfig({enabled: true});
 		Ext.Loader.setPath('Ext', '/intranet-sencha/');
 		Ext.require([
@@ -28,7 +29,7 @@
 		]);
 		Ext.onReady(function(){
 			Ext.QuickTips.init();
-			new ForumBrowser.Main();
+			new TicketBrowser.Main();
 		});
 	</script> 
 </head> 
