@@ -58,7 +58,7 @@ var store = Ext.create('Ext.data.Store', {
 		appendId: true,
 		extraParams: {
 			format: 'json',
-			query: 'category_type=\'Intranet Project Type\''
+			query: 'category_type=\'Intranet Ticket Type\''
 		},
 		reader: {
 			type: 'json',
