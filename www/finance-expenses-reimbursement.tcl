@@ -341,9 +341,7 @@ set employee_subtotal_vat_reimburse 0
 		footer {  
 
                          "<nobr><b>Total Employee</b></nobr>"
-			 "\#colspan=6"
-                         "\#align='right' <nobr><b>$employee_subtotal $default_currency</b></nobr><br><br>"
-                         "\#colspan=2"
+			 "\#colspan=9"
                          "\#align='right' <nobr><b>$employee_subtotal_vat_reimburse $default_currency</b></nobr>"
                          "\#colspan=1"
 		} \
