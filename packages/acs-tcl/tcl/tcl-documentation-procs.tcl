@@ -8,7 +8,7 @@ ad_library {
     @author Bryan Quinn (bquinn@arsdigita.com)
 
     @creation-date 16 June 2000
-    @cvs-id $Id: tcl-documentation-procs.tcl,v 1.26 2009/02/12 15:38:41 jeffd Exp $
+    @cvs-id $Id: tcl-documentation-procs.tcl,v 1.4 2010/10/19 20:12:58 po34demo Exp $
 }
 
 ####################

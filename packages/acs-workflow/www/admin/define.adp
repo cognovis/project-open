@@ -2,6 +2,22 @@
 <property name="title">@workflow.pretty_name;noquote@ - Process Builder</property>
 <property name="context">@context;noquote@</property>
 
+
+
+
+<form action="workflow">
+<input type="hidden" name="workflow_key" value="@workflow_key@">
+<table width="100%">
+<tr>
+<td align='left'>
+<h1>@wf_name@</h1>
+</td>
+<td align='right'>
+<input type=submit value="Back" >
+</td></tr>
+</table>
+</form>
+
 <table width="100%">
 <tr>
 <td>
@@ -53,14 +69,5 @@
 
 
 <p>
-
-<form action="workflow">
-<input type="hidden" name="workflow_key" value="@workflow_key@">
-<table width="100%">
-<tr bgcolor=#dddddd><td align=right>
-<input type=submit value="Done">
-</td></tr>
-</table>
-</form>
 
 </master>

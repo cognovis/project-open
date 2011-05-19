@@ -10,12 +10,6 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
-# Register handler procedures for the various HTTP methods
-#
-ad_register_proc GET /intranet-rest/* im_rest_call_get
-ad_register_proc POST /intranet-rest/* im_rest_call_post
-
-
 # -------------------------------------------------------
 # REST Version
 # -------------------------------------------------------
@@ -23,10 +17,15 @@ ad_register_proc POST /intranet-rest/* im_rest_call_post
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/documentation/rest_version_history
-    <li>1.4 (2010-06-11): Added /intranet-rest/dynfield-widget-values
-    <li>1.3 - Base version
+    <li>2.0	(2011-05-12):	Added support for JSOn and Sencha format variants
+				ToDo: Always return "id" instead of "object_id"
+    <li>1.5.2	(2010-12-21):	Fixed bug of not applying where_query
+    <li>1.5.1	(2010-12-01):	Fixed bug with generic objects, improved rendering of some fields
+    <li>1.5	(2010-11-03):	Added rest_object_permissions and rest_group_memberships reports
+    <li>1.4	(2010-06-11):	Added /intranet-rest/dynfield-widget-values
+    <li>1.3	(2010-04-01):	First public version
 } {
-    return "1.4"
+    return "1.6"
 }
 
 # -------------------------------------------------------
@@ -41,6 +40,19 @@ ad_proc -private im_rest_call_post {} {
     return [im_rest_call_get -http_method POST]
 }
 
+ad_proc -private im_rest_call_put {} {
+    Handler for PUT rest calls
+} {
+    set user_id [im_rest_cookie_auth_user_id]
+    ns_log Notice "im_rest_call_put: user_id=$user_id"
+    return [im_rest_call_get -http_method PUT]
+}
+
+ad_proc -private im_rest_call_delete {} {
+    Handler for DELETE rest calls
+} {
+    return [im_rest_call_get -http_method DELETE]
+}
 
 ad_proc -private im_rest_call_get {
     {-http_method GET }
@@ -94,8 +106,15 @@ ad_proc -private im_rest_call_get {
     }
     # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
-    set valid_formats {xml html}
-    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html}."] }
+    set valid_formats {xml html json}
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
+
+    # Should we return Sencha or YUI specific status messages?
+    set format_variant ""
+    if {[info exists query_hash(format_variant)]} { set format_variant $query_hash(format_variant) }
+    set valid_format_variants {{} sencha yui}
+    if {[lsearch $valid_format_variants $format_variant] < 0} { return [im_rest_error -http_status 406 -message "Invalid format_variant option '$format_variant'. Valid formats include $valid_format_variants."] }
+
 
     # Call the main request processing routine
     if {[catch {
@@ -103,6 +122,7 @@ ad_proc -private im_rest_call_get {
 	im_rest_call \
 	    -method $http_method \
 	    -format $format \
+	    -format_variant $format_variant \
 	    -user_id $auth_user_id \
 	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
@@ -125,6 +145,7 @@ ad_proc -private im_rest_call_get {
 ad_proc -private im_rest_call {
     { -method GET }
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -142,6 +163,7 @@ ad_proc -private im_rest_call {
     if {[lsearch $pages $rest_otype] >= 0} {
 	return [im_rest_page \
 		    -format $format \
+		    -format_variant $format_variant \
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
@@ -170,6 +192,7 @@ ad_proc -private im_rest_call {
 		    im_category {
 			return [im_rest_get_im_category \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -179,6 +202,7 @@ ad_proc -private im_rest_call {
 		    im_dynfield_attribute {
 			return [im_rest_get_im_dynfield_attribute \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -188,6 +212,7 @@ ad_proc -private im_rest_call {
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_item \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -197,6 +222,7 @@ ad_proc -private im_rest_call {
 		    im_hour {
 			return [im_rest_get_im_hour \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -207,6 +233,7 @@ ad_proc -private im_rest_call {
 			# Return generic object information
 			return [im_rest_get_object \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -223,6 +250,7 @@ ad_proc -private im_rest_call {
 		    im_category {
 			return [im_rest_get_im_categories \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -231,6 +259,7 @@ ad_proc -private im_rest_call {
 		    im_dynfield_attribute {
 			return [im_rest_get_im_dynfield_attributes \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -239,6 +268,7 @@ ad_proc -private im_rest_call {
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_items \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -247,6 +277,7 @@ ad_proc -private im_rest_call {
 		    im_hour {
 			return [im_rest_get_im_hours \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -256,6 +287,7 @@ ad_proc -private im_rest_call {
 			# Return query from the object rest_otype
 			return [im_rest_get_object_type \
 				    -format $format \
+				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -265,8 +297,7 @@ ad_proc -private im_rest_call {
 		}
 	    }
 	}
-
-	POST {
+	POST - PUT {
 	    # Is the post operation performed on a particular object or on the object_type?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
 
@@ -274,6 +305,7 @@ ad_proc -private im_rest_call {
 		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
 		return [im_rest_post_object \
 		    -format $format \
+		    -format_variant $format_variant \
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
@@ -286,26 +318,24 @@ ad_proc -private im_rest_call {
 		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
 		return [im_rest_post_object_type \
 			    -format $format \
+			    -format_variant $format_variant \
 			    -user_id $user_id \
 			    -rest_otype $rest_otype \
 			    -query_hash_pairs $query_hash_pairs \
 		]
 	    }
 	}
-
 	default {
-	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."]
+	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
 	}
     }
-
-
-
 }
 
 
 ad_proc -private im_rest_page {
     { -rest_otype "index" }
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
@@ -330,14 +360,13 @@ ad_proc -private im_rest_page {
 	set mime_type "text/html"
     }
 
-#    ad_return_complaint 1 [ns_quotehtml $result]
-
     doc_return 200 $mime_type $result
     return
 }
 
 ad_proc -private im_rest_get_object {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -370,10 +399,10 @@ ad_proc -private im_rest_get_object {
 	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
 		set var [lindex $col_names $i]
 		set val [ns_set value $selection $i]
-# fraber 100519: I don't remember why index columns shouldn't be part of the
-# returned fields in the first place. But now we need them in the Timesheet
-# REST application.
-#		if {[lsearch $index_columns $var] >= 0} { continue }
+		# fraber 100519: I don't remember why index columns shouldn't be part of the
+		# returned fields in the first place. But now we need them in the Timesheet
+		# REST application.
+		# if {[lsearch $index_columns $var] >= 0} { continue }
 
 		set result_hash($var) $val
 	    }
@@ -400,12 +429,17 @@ ad_proc -private im_rest_get_object {
 	html { 
 	    set page_title "object_type: [db_string n "select acs_object__name(:rest_oid)"]"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    " 
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<$rest_otype>\n$result</$rest_otype>" }
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<$rest_otype>\n$result</$rest_otype>" 
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}" 
+	}
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
 	}
@@ -418,6 +452,7 @@ ad_proc -private im_rest_get_object {
 
 ad_proc -private im_rest_get_im_category {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -470,7 +505,7 @@ ad_proc -private im_rest_get_im_category {
 	html { 
 	    set page_title "$rest_otype: [im_category_from_id $rest_oid]"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -478,6 +513,10 @@ ad_proc -private im_rest_get_im_category {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
@@ -493,6 +532,7 @@ ad_proc -private im_rest_get_im_category {
 
 ad_proc -private im_rest_get_im_dynfield_attribute {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -551,7 +591,7 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 	html { 
 	    set page_title "$rest_otype: $result_hash(table_name).$result_hash(column_name)"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -559,6 +599,10 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
@@ -572,6 +616,7 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 
 ad_proc -private im_rest_get_im_invoice_item {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -624,7 +669,7 @@ ad_proc -private im_rest_get_im_invoice_item {
 	html { 
 	    set page_title "$rest_otype: $rest_oid"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -632,6 +677,10 @@ ad_proc -private im_rest_get_im_invoice_item {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
@@ -646,6 +695,7 @@ ad_proc -private im_rest_get_im_invoice_item {
 
 ad_proc -private im_rest_get_im_hour {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -698,7 +748,7 @@ ad_proc -private im_rest_get_im_hour {
 	html { 
 	    set page_title "$rest_otype: $rest_oid"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
 	    "
@@ -706,6 +756,10 @@ ad_proc -private im_rest_get_im_hour {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
@@ -720,6 +774,7 @@ ad_proc -private im_rest_get_im_hour {
 
 ad_proc -private im_rest_get_object_type {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -731,7 +786,6 @@ ad_proc -private im_rest_get_object_type {
     mapped to queries on the specified object type
 } {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
-
     array set query_hash $query_hash_pairs
 
     # Deal with "limit" max. number of objects to show
@@ -740,8 +794,10 @@ ad_proc -private im_rest_get_object_type {
     im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
 
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
-    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
 
+
+    # -------------------------------------------------------
+    # Get some more information about the current object type
     db_1row rest_otype_info "
 	select	*
 	from	acs_object_types
@@ -750,6 +806,39 @@ ad_proc -private im_rest_get_object_type {
 
     set base_url "[im_rest_system_url]/intranet-rest"
 
+
+    # -------------------------------------------------------
+    # Check for generic permissions to read all objects of this type
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+
+    # Deny completely access to the object type?
+    set rest_otype_read_none_p 0
+
+    if {!$rest_otype_read_all_p} {
+	# There are "view_xxx_all" permissions allowing a user to see all objects:
+	switch $rest_otype {
+	    bt_bug		{ }
+	    im_company		{ set rest_otype_read_all_p [im_permission $user_id "view_companies_all"] }
+	    im_cost		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_conf_item	{ set rest_otype_read_all_p [im_permission $user_id "view_conf_items_all"] }
+	    im_invoices		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_project		{ set rest_otype_read_all_p [im_permission $user_id "view_projects_all"] }
+	    im_user_absence	{ set rest_otype_read_all_p [im_permission $user_id "view_absences_all"] }
+	    im_office		{ set rest_otype_read_all_p [im_permission $user_id "view_offices_all"] }
+	    im_ticket		{ set rest_otype_read_all_p [im_permission $user_id "view_tickets_all"] }
+	    im_timesheet_task	{ set rest_otype_read_all_p [im_permission $user_id "view_timesheet_tasks_all"] }
+	    im_timesheet_invoices { set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_trans_invoices	{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_translation_task	{ }
+	    user		{ }
+	    default { 
+		# No read permissions? 
+		# Well, no object type except the ones above has a custom procedure,
+		# so we can deny access here:
+		set rest_otype_read_none_p 1
+	    }
+	}
+    }
 
     # -------------------------------------------------------
     # Check if there is a where clause specified in the URL
@@ -764,6 +853,17 @@ ad_proc -private im_rest_get_object_type {
     # Determine the list of valid columns for the object type
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
 
+
+    # -------------------------------------------------------
+    # Check if there are "valid_vars" specified in the HTTP header
+    # and add these vars to the SQL clause
+    set where_clause_list [list]
+    foreach v $valid_vars {
+	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
+    }
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+ 
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -787,48 +887,35 @@ ad_proc -private im_rest_get_object_type {
     # Select SQL: Pull out objects where the acs_objects.object_type 
     # is correct AND the object exists in the object type's primary table.
     # This way we avoid "dangling objects" in acs_objects and sub-types.
-    set sql "
-	select	t.$id_column as rest_oid,
-		${name_method}(t.$id_column) as object_name
-	from	$table_name t,
-		acs_objects o
-	where	t.$id_column = o.object_id and
-		o.object_type = :rest_otype
+    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype -no_where_clause_p 1]
+    append sql "
+	where	o.object_type = :rest_otype and
+		o.object_id in (
+			select  t.$id_column as rest_oid
+			from    $table_name t
+		)
 		$where_clause
 	LIMIT $limit
     "
 
+    # -------------------------------------------------------
+    # Loop through all objects of the specified type
+
+    set obj_ctr 0
     set result ""
     db_foreach objects $sql {
 
+	# Skip objects with empty object name
+	if {"" == $object_name} { continue }
+
+	# -------------------------------------------------------
+	# Permissions
+
+	# Denied access?
+	if {$rest_otype_read_none_p} { continue }
+
 	# Check permissions
 	set read_p $rest_otype_read_all_p
-
-	if {!$read_p} {
-	    # There are "view_xxx_all" permissions allowing a user to see all objects:
-	    switch $rest_otype {
-		bt_bug { }
-		im_company { set read_p [im_permission $user_id "view_companies_all"] }
-		im_cost { set read_p [im_permission $user_id "view_finance"] }
-		im_conf_item { set read_p [im_permission $user_id "view_conf_items_all"] }
-		im_invoices { set read_p [im_permission $user_id "view_finance"] }
-		im_project { set read_p [im_permission $user_id "view_projects_all"] }
-		im_user_absence { set read_p [im_permission $user_id "view_absences_all"] }
-		im_office { set read_p [im_permission $user_id "view_offices_all"] }
-		im_ticket { set read_p [im_permission $user_id "view_tickets_all"] }
-		im_timesheet_task { set read_p [im_permission $user_id "view_timesheet_tasks_all"] }
-		im_timesheet_invoices { set read_p [im_permission $user_id "view_finance"] }
-		im_trans_invoices { set read_p [im_permission $user_id "view_finance"] }
-		im_translation_task { }
-		user { }
-		default { 
-		    # No read permissions? Well, all object types except the ones above
-		    # have no custom permission procedure...
-		    continue 
-		}
-	    }
-	}
-
 	if {!$read_p} {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
@@ -838,7 +925,23 @@ ad_proc -private im_rest_get_object_type {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" }
+	    xml { 
+		append result "<object_id id=\"$rest_oid\" href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" 
+	    }
+	    json {
+		set komma ",\n"
+		if {0 == $obj_ctr} { set komma "" }
+		set dereferenced_result ""
+		if {"sencha" == $format_variant} {
+		    foreach v $valid_vars {
+			eval "set a $$v"
+			regsub -all {\n} $a {\n} a
+			regsub -all {\r} $a {} a
+			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
+		    }
+		}
+		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
+	    }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
@@ -846,30 +949,42 @@ ad_proc -private im_rest_get_object_type {
 		</tr>\n" 
 	    }
 	}
+	incr obj_ctr
     }
-	
+
     switch $format {
-	html { 
+	html {
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" }
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+	json {  
+	    # Deal with different JSON variants for different AJAX frameworks
+	    switch $format_variant {
+		sencha { set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}" }
+		default { }
+	    }
+	    doc_return 200 "text/plain" $result
+	    return
+	}
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
+	     return
 	}
     }
-  
-    ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
-
 }
 
 
 ad_proc -private im_rest_get_im_invoice_items {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -936,7 +1051,10 @@ ad_proc -private im_rest_get_im_invoice_items {
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
-	    xml {}
+	    json { 
+		append result "{object_id: $rest_oid}\n" 
+	    }
+	    default {}
 	}
     }
 	
@@ -944,7 +1062,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -952,6 +1070,10 @@ ad_proc -private im_rest_get_im_invoice_items {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
     }
@@ -962,6 +1084,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 
 ad_proc -private im_rest_get_im_hours {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1033,7 +1156,8 @@ ad_proc -private im_rest_get_im_hours {
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
-	    xml {}
+	    json { append result "{object_id: $rest_oid}\n" }
+	    default {}
 	}
     }
 	
@@ -1041,7 +1165,7 @@ ad_proc -private im_rest_get_im_hours {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1049,6 +1173,10 @@ ad_proc -private im_rest_get_im_hours {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "\[$result\]\n"
 	    return
 	}
     }
@@ -1060,6 +1188,7 @@ ad_proc -private im_rest_get_im_hours {
 
 ad_proc -private im_rest_get_im_categories {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1080,13 +1209,30 @@ ad_proc -private im_rest_get_im_categories {
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_category'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
 
+    # Get locate for translation
+    set locale [lang::user::locale -user_id $user_id]
+
+    # -------------------------------------------------------
+    # Valid variables to return for im_category
+    set valid_vars {category_id tree_sortkey category category_translated category_description category_type category_gif enabled_p parent_only_p aux_int1 aux_int2 aux_string1 aux_string2 sort_order}
 
     # -------------------------------------------------------
     # Check if there is a where clause specified in the URL and validate the clause.
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
-    # Determine the list of valid columns for the object type
-    set valid_vars {item_id item_name project_id invoice_id item_units item_uom_id price_per_unit currency sort_order item_type_id item_status_id description item_material_id}
+
+
+    # -------------------------------------------------------
+    # Check if there are "valid_vars" specified in the HTTP header
+    # and add these vars to the SQL clause
+    set where_clause_list [list]
+    foreach v $valid_vars {
+        if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
+    }
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+
+
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -1098,16 +1244,22 @@ ad_proc -private im_rest_get_im_categories {
     # Select SQL: Pull out categories.
     set sql "
 	select	c.category_id as rest_oid,
-		c.category as object_name
+		c.category as object_name,
+		im_category_path_to_category(c.category_id) as tree_sortkey,
+		c.*
 	from	im_categories c
-	where	1=1
+	where	(c.enabled_p is null OR c.enabled_p = 't')
 		$where_clause
 	order by category_id
 	LIMIT $limit
     "
 
     set result ""
+    set obj_ctr 0
     db_foreach objects $sql {
+
+	set category_key "intranet-core.[lang::util::suggest_key $category]"
+        set category_translated [lang::message::lookup $locale $category_key $category]
 
 	# Check permissions
 	set read_p $rest_otype_read_all_p
@@ -1123,15 +1275,28 @@ ad_proc -private im_rest_get_im_categories {
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
-	    xml {}
+	    json {
+		set komma ",\n"
+		if {0 == $obj_ctr} { set komma "" }
+		set dereferenced_result ""
+		foreach v $valid_vars {
+			eval "set a $$v"
+			regsub -all {\n} $a {\n} a
+			regsub -all {\r} $a {} a
+			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
+		}
+		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
+	    }
+	    default {}
 	}
+	incr obj_ctr
     }
 	
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1141,14 +1306,20 @@ ad_proc -private im_rest_get_im_categories {
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	    return
 	}
+	json {  
+	    # Deal with different JSON variants for different AJAX frameworks
+	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    doc_return 200 "text/plain" $result
+	    return
+	}
     }
-
     return
 }
 
 
 ad_proc -private im_rest_get_im_dynfield_attributes {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1216,7 +1387,8 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 			<td><a href=\"$url?format=html\">$rest_object_name</a>
 		</tr>\n" 
 	    }
-	    xml {}
+	    json { append result "{object_id: $rest_oid, object_name: \"[ns_quotehtml $rest_object_name\"}\n" }
+	    default {}
 	}
     }
 	
@@ -1224,7 +1396,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
@@ -1232,6 +1404,10 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+	json {  
+	    doc_return 200 "text/plain" "\[\n$result\n\]\n"
 	    return
 	}
     }
@@ -1247,6 +1423,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 
 ad_proc -private im_rest_post_object_type {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1279,7 +1456,7 @@ ad_proc -private im_rest_post_object_type {
 	    html { 
 		set page_title "object_type: $rest_otype"
 		doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
 		<tr<td>$rest_oid</td></tr>
 		</table>[im_footer]
@@ -1300,6 +1477,7 @@ ad_proc -private im_rest_post_object_type {
 
 ad_proc -private im_rest_post_object {
     { -format "xml" }
+    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1309,10 +1487,11 @@ ad_proc -private im_rest_post_object {
     Handler for POST rest calls to an individual object:
     Update the specific object using a generic update procedure
 } {
-    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, query_hash=$query_hash_pairs"
+    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', format_variant='$format_variant', query_hash=$query_hash_pairs"
 
     # Get the content of the HTTP POST request
     set content [im_rest_get_content]
+    ns_log Notice "im_rest_post_object: content=$content"
 
     # Check if there is a customized version of this post handler
     if {0 != [llength [info commands im_rest_post_object_$rest_otype]]} {
@@ -1330,18 +1509,34 @@ ad_proc -private im_rest_post_object {
 	return
     }
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+	}
+	default {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
     }
 
-    set root_node [$doc documentElement]
-    array unset hash_array
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-       	set hash_array($nodeName) $nodeText
-    }
+    ns_log Notice "im_rest_post_object: hash_array=[array get hash_array]"
+
 
     # Update the object. This routine will return a HTTP error in case 
     # of a database constraint violation
@@ -1355,7 +1550,7 @@ ad_proc -private im_rest_post_object {
 	html { 
 	    set page_title "object_type: $rest_otype"
 	    doc_return 200 "text/html" "
-		[im_header $page_title][im_navbar]<table>
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
 		<tr<td>$rest_oid</td></tr>
 		</table>[im_footer]
@@ -1373,6 +1568,98 @@ ad_proc -private im_rest_post_object {
 
 
 
+ad_proc -private im_rest_header_extra_stuff {
+    {-debug 1}
+} {
+    Returns a number of HTML header code in order to make the 
+    REST interface create reasonable HTML pages.
+} {
+    set extra_stuff "
+	<link rel='stylesheet' href='/resources/acs-subsite/default-master.css' type='text/css' media='all'>
+	<link rel='stylesheet' href='/intranet/style/style.saltnpepper.css' type='text/css' media='screen'>
+	<link rel='stylesheet' href='/resources/acs-developer-support/acs-developer-support.css' type='text/css' media='all'> 
+	<script type='text/javascript' src='/intranet/js/showhide.js'></script>
+	<script type='text/javascript' src='/intranet/js/rounded_corners.inc.js'></script>
+	<script type='text/javascript' src='/resources/acs-subsite/core.js'></script>
+	<script type='text/javascript' src='/intranet/js/style.saltnpepper.js'></script>
+    "
+}
+
+
+ad_proc -private im_rest_cookie_auth_user_id {
+    {-debug 1}
+} {
+    Determine the user_id even if ns_conn doesn't work
+    in a HTTP PUT call
+} {
+    # Get the user_id from the ad_user_login cookie
+    set header_vars [ns_conn headers]
+    set cookie_string [ns_set get $header_vars Cookie]
+    set cookie_list [split $cookie_string ";"]
+    # ns_log Notice "im_rest_cookie_auth_user_id: cookie=$cookie_string\n"
+    # ns_log Notice "im_rest_cookie_auth_user_id: cookie_list=$cookie_list\n"
+    
+    array set cookie_hash {}
+    foreach l $cookie_list {
+	if {[regexp {([^ =]+)\=(.+)} $l match key value]} {
+	    set key [ns_urldecode [string trim $key]]
+	    set value [ns_urldecode [string trim $value]]
+	    ns_log Notice "im_rest_cookie_auth_user_id: key=$key, value=$value"
+	    set cookie_hash($key) $value
+	}
+    }
+    set user_id ""
+    if {[info exists cookie_hash(ad_user_login)]} { 
+
+	set ad_user_login $cookie_hash(ad_user_login)
+        ns_log Notice "im_rest_cookie_auth_user_id: ad_user_login=$ad_user_login"
+
+	set user_id ""
+	catch { set user_id [ad_get_user_id] }
+	if {"" != $user_id} {
+	    ns_log Notice "im_rest_cookie_auth_user_id: found autenticated user_id: storing into cache"
+	    ns_cache set im_rest $ad_user_login $user_id    
+	    return $user_id
+	}
+	
+	if {[ns_cache get im_rest $ad_user_login value]} { 
+	    ns_log Notice "im_rest_cookie_auth_user_id: Didn't find autenticated user_id: returning cached value"
+	    return $value 
+	}
+    }
+    ns_log Notice "im_rest_cookie_auth_user_id: Didn't find any information, returning {}"
+    return ""
+}
+
+
+ad_proc -private im_rest_debug_headers {
+    {-debug 1}
+} {
+    Show REST call headers
+} {
+    set debug "\n"
+    append debug "method: [ns_conn method]\n"
+    
+    set header_vars [ns_conn headers]
+    foreach var [ad_ns_set_keys $header_vars] {
+	set value [ns_set get $header_vars $var]
+	append debug "header: $var=$value\n"
+    }
+    
+    set form_vars [ns_conn form]
+    foreach var [ad_ns_set_keys $form_vars] {
+	set value [ns_set get $form_vars $var]
+	append debug "form: $var=$value\n"
+    }
+    
+    append debug "content: [ns_conn content]\n"
+    
+    ns_log Notice "im_rest_debug_headers: $debug"
+    return $debug
+}
+
+
+
 ad_proc -private im_rest_authenticate {
     {-debug 1}
     -query_hash_pairs:required
@@ -1386,15 +1673,13 @@ ad_proc -private im_rest_authenticate {
     # Check for token authentication
     set token_user_id ""
     set token_token ""
-    set expiry_date ""
     if {[info exists query_hash(user_id)]} { set token_user_id $query_hash(user_id)}
     if {[info exists query_hash(auth_token)]} { set token_token $query_hash(auth_token)}
     if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
-    if {[info exists query_hash(expiry_date)]} { set expiry_date $query_hash(expiry_date)}
 
     # Check if the token fits the user
     if {"" != $token_user_id && "" != $token_token} {
-	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token -expiry_date $expiry_date]} {
+	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
 	    set token_user_id ""
 	}
     }
@@ -1423,8 +1708,9 @@ ad_proc -private im_rest_authenticate {
 
 
     # --------------------------------------------------------
-    # Check for OpenACS "Cookie" auth
-    set cookie_auth_user_id [ad_get_user_id]
+    # Determine the user_id from cookie.
+    # Work around missing ns_conn user_id values in PUT and DELETE calls 
+    set cookie_auth_user_id [im_rest_cookie_auth_user_id]
 
     # Determine authentication method used
     set auth_method ""
@@ -1456,10 +1742,6 @@ ad_proc -private im_rest_system_url { } {
     suitable to prefix all hrefs used for the XML format.
 } {
     return [util_current_location]
-
-#    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
-#    if {[regexp {^(.*)/$} $system_url match system_url_without]} { set system_url $system_url_without }
-#    return $system_url
 }
 
 
@@ -1479,21 +1761,21 @@ ad_proc -private im_rest_format_line {
     set href ""
     switch "${rest_otype}.${column}" {
 	im_project.company_id - im_timesheet_task.company_id - im_invoice.customer_id - im_timesheet_invoice.customer_id - im_trans_invoice.customer_id - im_invoice.provider_id - im_timesheet_invoice.provider_id - im_trans_invoice.provider_id - im_expense.customer_id - im_office.company_id - im_ticket.company_id {
-	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$rest_oid" -default $value]]
+	    set company_name [util_memoize [list db_string cname1 "select company_name from im_companies where company_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_company/$value?format=html\">$company_name</a>" }
 		xml { set href "$base_url/im_company/$value" }
 	    }
 	}
 	im_company.main_office_id - im_invoice.invoice_office_id - im_timesheet_invoice.invoice_office_id - im_trans_invoice.invoice_office_id {
-	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$rest_oid" -default $value]]
+	    set office_name [util_memoize [list db_string cname2 "select office_name from im_offices where office_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_office/$value?format=html\">$office_name</a>" }
 		xml { set href "$base_url/im_office/$value" }
 	    }
 	}
-	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id - im_invoice_item.project_id {
-	    set project_name [util_memoize [list db_string cname "select project_name from im_projects where project_id=$rest_oid" -default $value]]
+	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_project.program_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id - im_invoice_item.project_id {
+	    set project_name [util_memoize [list db_string cname3 "select project_name from im_projects where project_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_project/$value?format=html\">$project_name</a>" }
 		xml { set href "$base_url/im_project/$value" }
@@ -1515,21 +1797,24 @@ ad_proc -private im_rest_format_line {
 
 	}
 	im_invoice.cost_center_id - im_timesheet_invoice.cost_center_id - im_trans_invoice.cost_center_id - im_expense.cost_center_id - im_timesheet_task.cost_center_id {
-	    set cc_name [util_memoize [list db_string cname "select im_cost_center_name_from_id($value)" -default $value]]
+	    if {"" == $value} { set value 0 }
+	    set cc_name [util_memoize [list db_string cname4 "select im_cost_center_name_from_id($value)" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_cost_center/$value?format=html\">$cc_name</a>" }
 		xml { set href "$base_url/im_cost_center/$value" }
 	    }
 	}
 	im_timesheet_task.material_id {
-	    set material_name [util_memoize [list db_string cname "select im_material_name_from_id($value)" -default $value]]
+	    if {"" == $value} { set value 0 }
+	    set material_name [util_memoize [list db_string cname5 "select im_material_name_from_id($value)" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_material/$value?format=html\">$material_name</a>" }
 		xml { set href "$base_url/im_material/$value" }
 	    }
 	}
-	im_invoice_item.invoice_id  {
-	    set invoice_name [util_memoize [list db_string cname "select cost_name from im_costs where cost_id = $value" -default $value]]
+	im_invoice_item.invoice_id - im_timesheet_task.invoice_id {
+	    if {"" == $value} { set value 0 }
+	    set invoice_name [util_memoize [list db_string cname5 "select cost_name from im_costs where cost_id = $value" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_invoice/$value?format=html\">$invoice_name</a>" }
 		xml { set href "$base_url/im_invoice/$value" }
@@ -1557,6 +1842,7 @@ ad_proc -private im_rest_format_line {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_rest_object_type_select_sql { 
+    {-no_where_clause_p 0}
     -rest_otype:required
 } {
     Calculates the SQL statement to extract the value for an object
@@ -1637,11 +1923,15 @@ ad_proc -public im_rest_object_type_select_sql {
     set sql "
 	select	o.*,
 		o.object_id as rest_oid,
+		acs_object__name(o.object_id) as object_name,
 		[join $selects ",\n\t\t"]
 	from	acs_objects o
 		[join $froms "\n\t\t"]
-	where	o.object_id = :rest_oid
     "
+    if {!$no_where_clause_p} { append sql "
+	where	o.object_id = :rest_oid
+    "}
+
     return $sql
 }
 
@@ -1854,6 +2144,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {val is not null}
 	cond {val in \( val \)}
 	val  {val , val}
 	val {[0-9]+}

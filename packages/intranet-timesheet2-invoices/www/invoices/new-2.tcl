@@ -141,7 +141,7 @@ if {"" == $start_date} {
     set start_date "$start_year-$start_month-01"
 }
 
-set days_in_future "1 month"
+set days_in_future "45 days"
 db_1row end_date "
     select
         to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_future::interval, 'YYYY') as end_year,

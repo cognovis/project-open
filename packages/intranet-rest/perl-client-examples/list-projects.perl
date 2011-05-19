@@ -100,8 +100,9 @@ sub format_message {
     my $atts = shift;
     $atts->{'_str'} =~ s/\n//g;
 
-    $str = $atts->{'_str'};
-    print "list-projects.perl: project_id=$str\n";
+    $project_name = $atts->{'_str'};
+    $project_id = $atts->{'id'};
+    print "list-projects.perl: project_id=$project_id, project_name=$project_name\n";
 
 #    while ( my ($key, $value) = each(%$atts) ) { print "$key => $value\n";  }
 

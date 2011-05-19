@@ -367,6 +367,8 @@ ad_proc -public im_user_navbar { default_letter base_url next_page_url prev_page
 
 ad_proc -public im_project_navbar { 
     {-navbar_menu_label "projects"}
+    {-current_plugin_id 0}
+    {-plugin_url "/intranet/projects/index"}
     default_letter 
     base_url 
     next_page_url 
@@ -408,7 +410,7 @@ ad_proc -public im_project_navbar {
     ns_set put $bind_vars letter $default_letter
     ns_set delkey $bind_vars project_status_id
 
-    set navbar [im_sub_navbar $parent_menu_id $bind_vars $alpha_bar "tabnotsel" $select_label]
+    set navbar [im_sub_navbar -components -current_plugin_id $current_plugin_id -plugin_url $plugin_url $parent_menu_id $bind_vars $alpha_bar "tabnotsel" $select_label]
 
     return $navbar
 }
@@ -625,6 +627,8 @@ ad_proc -public im_sub_navbar {
     set found_selected 0
     set selected 0
 
+
+
     if {"" == $current_plugin_id} { set current_plugin_id 0 }
 
     # Replaced the db_foreach by this construct to save
@@ -700,7 +704,7 @@ ad_proc -public im_sub_navbar {
 
     if {$components_p} {
 	if {[string equal $base_url ""]} {
-	    set base_url $stub_url
+	    set base_url $plugin_url
 	}
 
 	set components_sql "
@@ -1261,9 +1265,6 @@ ad_proc -public im_header {
 	# Extract multirows for header META, CSS, STYLE & SCRIPT etc. from global variables
 	template::head::prepare_multirows
 	set event_handlers [template::get_body_event_handlers]
-	# Retrieve headers and footers
-#    set header [template::get_header_html]
-#    set footer [template::get_footer_html]
 
 	template::multirow foreach meta {
 	    set row "<meta"
@@ -1619,17 +1620,18 @@ ad_proc -public im_stylesheet {} {
 ad_proc -public im_logo {} {
     Intranet System Logo
 } {
+    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
     set system_logo [ad_parameter -package_id [im_package_core_id] SystemLogo "" ""]
     set system_logo_link [ad_parameter -package_id [im_package_core_id] SystemLogoLink "" "http://www.project-open.com/"]
-    
+
     if {[string equal $system_logo ""]} {
 	set user_id [ad_get_user_id]
 	set skin_name [im_user_skin $user_id]
 	
 	if {[file exists "[acs_root_dir]/packages/intranet-core/www/images/logo.$skin_name.gif"]} {
-	    set system_logo "/intranet/images/logo.$skin_name.gif"
+	    set system_logo "$system_url/intranet/images/logo.$skin_name.gif"
 	} else {
-	    set system_logo "/intranet/images/logo.default.gif"
+	    set system_logo "$system_url/intranet/images/logo.default.gif"
 	}
     }
     return "\n<a href=\"$system_logo_link\"><img id='intranetlogo' src=\"$system_logo\" alt=\"logo\" border='0'></a>\n"

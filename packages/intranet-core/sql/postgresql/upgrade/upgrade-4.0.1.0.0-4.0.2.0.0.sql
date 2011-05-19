@@ -4,6 +4,33 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.
 
 
 
+
+-------------------------------------------------------------
+-- Fix extension tables for user
+
+delete from acs_object_type_tables where object_type = 'user';
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('user', 'persons', 'person_id');
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('user','users_contact','user_id');
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('user','parties','party_id');
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('user','im_employees','employee_id');
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('user', 'users', 'user_id');
+
+
+
+
+
+
+
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (26, 'personal_todo_list', 'view_projects', 1400);
 

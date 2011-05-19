@@ -90,6 +90,9 @@ create table im_tickets (
 	ticket_conf_item_id		integer
 					constraint im_ticket_conf_item_fk
 					references im_conf_items,
+	ticket_component_id		integer
+					constraint im_ticket_conf_item_fk
+					references im_conf_items,
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
 					references groups,
@@ -120,6 +123,11 @@ create table im_tickets (
 	ticket_telephony_old_number 	text,
 	ticket_telephony_new_number 	text,
 );
+
+-- Create indices on type and status to speedup queries
+create index im_ticket_type_id_idx on im_tickets(ticket_type_id);
+create index im_ticket_status_id_idx on im_tickets(ticket_status_id);
+
 
 
 -----------------------------------------------------------

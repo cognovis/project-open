@@ -176,8 +176,8 @@ for {set i 0} {$i < 20} {incr i} {
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 -package_key intranet-expenses expense_type_id.$i $expense_type_options ""]</td>
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 -package_key intranet-expenses billable_p.$i $expense_billable_options "f"]</td>
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 -package_key intranet-expenses expense_payment_type_id.$i $expense_payment_type_options ""]</td>
+        <td><input type=input name=receipt_reference.$i size=20 value=''></td>
 	<td><input type=input name=note.$i size=20 value=''></td>
 	</tr>
     "
-
 }

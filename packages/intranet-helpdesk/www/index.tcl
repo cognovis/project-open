@@ -182,14 +182,16 @@ set sla_exists_p 1
 if {[llength $ticket_sla_options] < 2 && !$view_tickets_all_p} { set sla_exists_p 0}
 
 set ticket_creator_options [list]
-db_foreach creator_option "
+set ticket_creator_options [db_list_of_lists ticket_creators "
 	select	distinct
 		im_name_from_user_id(creation_user) as creator_name,
 		creation_user as creator_id
 	from	acs_objects
 	where	object_type = 'im_ticket'
 	order by creator_name
-" { lappend ticket_creator_options [list $creator_name $creator_id] }
+"]
+set ticket_creator_options [linsert $ticket_creator_options 0 [list "" ""]]
+
 
 set ticket_creator_options [linsert $ticket_creator_options 0 [list "" ""]]
 
