@@ -7,7 +7,7 @@ ad_library {
     @author Cesar Hernandez (cesarhj@galileo.edu)
     @creation-date 2006-08-10
     @arch-tag: 0AA7362F-83FF-4067-B391-A2F8D6918F3E
-    @cvs-id $Id: test-set-cookie-procs.tcl,v 1.2 2010/10/19 20:41:47 po34demo Exp $
+    @cvs-id $Id: test-set-cookie-procs.tcl,v 1.1 2006/08/12 20:47:33 cesarh Exp $
 }
 
 aa_register_case \

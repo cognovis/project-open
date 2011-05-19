@@ -5,7 +5,7 @@ ad_library {
 
     @author Ben Adida (ben@openforce.net)
     @creation-date May 29th, 2002
-    @cvs-id $Id: community-core-2-procs.tcl,v 1.2 2010/10/19 20:12:54 po34demo Exp $
+    @cvs-id $Id: community-core-2-procs.tcl,v 1.2 2002/09/10 22:22:14 jeffd Exp $
 
 }
 

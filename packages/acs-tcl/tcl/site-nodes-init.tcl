@@ -2,7 +2,7 @@ ad_library {
 
   @author rhs@mit.edu
   @creation-date 2000-09-07
-  @cvs-id $Id: site-nodes-init.tcl,v 1.2 2010/10/19 20:12:58 po34demo Exp $
+  @cvs-id $Id: site-nodes-init.tcl,v 1.5 2008/10/10 11:30:35 gustafn Exp $
 
 }
 

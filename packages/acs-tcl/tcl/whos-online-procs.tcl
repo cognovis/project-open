@@ -5,7 +5,7 @@ ad_library {
     @author Peter Marklund
     @author Lars Pind
     @creation-date 03 October 2003
-    @cvs-id $Id: whos-online-procs.tcl,v 1.2 2010/10/19 20:12:59 po34demo Exp $
+    @cvs-id $Id: whos-online-procs.tcl,v 1.4 2007/01/10 21:22:12 gustafn Exp $
 }
 
 # TODO: Count anonymous users based on their IP, just to have the number

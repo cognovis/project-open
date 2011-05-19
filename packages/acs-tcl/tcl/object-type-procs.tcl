@@ -4,7 +4,7 @@ ad_library {
 
     @author Yonatan Feldman (yon@arsdigita.com)
     @creation-date August 13, 2000
-    @cvs-id $Id: object-type-procs.tcl,v 1.2 2010/10/19 20:12:56 po34demo Exp $
+    @cvs-id $Id: object-type-procs.tcl,v 1.8 2005/07/22 05:07:13 skaufman Exp $
 
 }
 

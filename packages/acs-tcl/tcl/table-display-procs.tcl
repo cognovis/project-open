@@ -1,7 +1,7 @@
 ad_library {
     This is the table, dimensional bar and sort tools.
     an example of their use can be found in /acs-examples
-    @cvs-id $Id: table-display-procs.tcl,v 1.3 2011/05/16 06:10:04 khofeditz Exp $
+    @cvs-id $Id: table-display-procs.tcl,v 1.20 2009/02/13 20:28:08 jeffd Exp $
 }
     
 # Dimensional selection bars.
@@ -452,9 +452,8 @@ ad_proc -deprecated ad_table {
             set Trow_default "<tr$Trow_default>"
 
 	    append Thtml [subst $Trow_code]
-	    
-	    # fixing /acs-admin/apm/version-parameters
-	    set scope ""
+        # fixing /acs-admin/apm/version-parameters
+        set scope ""	    
 
 	    foreach Ti $Tcolumn_list {
 		set Tcol [lindex $Tdatadef $Ti]

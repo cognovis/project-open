@@ -4,7 +4,7 @@
 <!-- @author Victor Guerra (guerra@galileo.edu) -->
 <!-- @creation-date 2005-02-06 -->
 <!-- @arch-tag: d0117c72-fd55-4faa-b2cb-89ec5ce0c0ef -->
-<!-- @cvs-id $Id: page-error.xql,v 1.2 2010/10/19 20:42:55 po34demo Exp $ -->
+<!-- @cvs-id $Id: page-error.xql,v 1.1 2005/02/25 16:30:59 victorg Exp $ -->
 
 <queryset>
   <fullquery name="get_user_info">

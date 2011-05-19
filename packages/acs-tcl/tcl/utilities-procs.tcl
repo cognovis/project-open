@@ -5,7 +5,7 @@ ad_library {
 
     @author Various (acs@arsdigita.com)
     @creation-date 13 April 2000
-    @cvs-id $Id: utilities-procs.tcl,v 1.13 2011/03/22 15:37:28 po34demo Exp $
+    @cvs-id $Id: utilities-procs.tcl,v 1.122.2.1 2010/10/30 21:45:51 gustafn Exp $
 }
 
 namespace eval util {}
@@ -1758,7 +1758,7 @@ ad_proc -public ad_return_top_of_page {first_part_of_page {content_type text/htm
     }
 }
 
-ad_proc -public apply {func arglist} {
+ad_proc -public ad_apply {func arglist} {
     Evaluates the first argument with ARGLIST as its arguments, in the
     environment of its caller. Analogous to the Lisp function of the same name.
 } {
@@ -1775,7 +1775,7 @@ ad_proc -public safe_eval args {
 	    return -code error "Unsafe argument to safe_eval: $arg"
 	}
     }
-    return [apply uplevel $args]
+    return [ad_apply uplevel $args]
 }
 
 ad_proc -public lmap {list proc_name} {
@@ -2223,9 +2223,6 @@ ad_proc -public ad_returnredirect {
             set url [util_current_location][util_current_directory]$target_url
         }
     }
-
-#ad_return_complaint 1 "ad_returnredirect: $url"
-
     #Ugly workaround to deal with IE5.0 bug handling multipart/form-data using 
     #Meta Refresh page instead of a redirect. 
     # jbank@arsdigita.com 6/7/2000
@@ -2397,18 +2394,14 @@ ad_proc -public util_current_location {{}} {
     set Host_hostname [lindex $Hostv 0]
     set Host_port [lindex $Hostv 1]
 
-    # suppress the configured http port when server is behind a proxy, to keep connection behind proxy
-    # fraber 101118: looking for parameter in the wrong package...
-#    set suppress_port [parameter::get -package_key "acs-tcl" -parameter SuppressHttpPort -default 0]
-    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default 1]
-
+    # suppress the configured http port when server is behind a proxy,
+    # to keep connection behind proxy
+    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default "1"]
     if { $suppress_port } {
         ns_log Debug "util_current_location: suppressing http port $Host_port"
         set Host_port ""
         set port ""
     }
-
-    ns_log Notice "util_current_location: suppress_port=$suppress_port, port=$port, Host_port=$Host_port"
 
     # Server config location
     if { ![regexp {^([a-z]+://)?([^:]+)(:[0-9]*)?$} [ad_conn location] match location_proto location_hostname location_port] } {

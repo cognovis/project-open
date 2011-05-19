@@ -33,7 +33,7 @@ ad_library {
 # liability for all claims, expenses, losses, damages and costs any user may
 # incur as a result of using, copying or modifying the Software.
 #
-    @cvs-id $Id: xml-0-sgml-procs.tcl,v 1.2 2010/10/19 20:12:59 po34demo Exp $
+    @cvs-id $Id: xml-0-sgml-procs.tcl,v 1.3 2007/01/10 21:22:12 gustafn Exp $
 }
 
 package provide sgml 1.7
