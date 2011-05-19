@@ -257,466 +257,1122 @@ SELECT im_dynfield_widget__new (
 		'im_percent_from_number'
 );
 
--- create dynfield attributes
--- project_name 
--- SELECT im_dynfield_attribute__new (
---       'im_project',			-- object_type
---       'project_name',			-- column_name
---       '#intranet-core.Project_Name#',	-- pretty_name
---       'textbox_medium',		-- widget_name
---       'string',			-- acs_datatype
---       't',				-- required_p
---       1,				-- pos y
---       'f',				-- also_hard_coded
---       'im_projects'  			-- table_name
---      );
 
-
-
+-- create dynfield attributes of object_type im_project
+-- project_name
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_name'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_name'',			-- column_name
+		 ''#intranet-core.Project_Name#'',	-- pretty_name
+		 ''textbox_medium'',			-- widget_name
+		 ''string'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 1,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
 
--- SELECT im_dynfield_attribute_new (
---       'im_project',			-- object_type
---       'project_nr',			-- column_name
---       '#intranet-core.Project_Nr#',	-- pretty_name
---       'textbox_medium',		-- widget_name
---       'string',			-- acs_datatype
---       't',				-- required_p
---       2,				-- pos y
---       'f',				-- also_hard_coded
---       'im_projects'  			-- table_name
---);
-
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- project_nr
+CREATE OR REPLACE FUNCTION inline_1 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_nr'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_nr'',			-- column_name
+		 ''#intranet-core.Project_Nr#'',	-- pretty_name
+		 ''textbox_medium'',			-- widget_name
+		 ''string'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 2,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_1 ();
+DROP FUNCTION inline_1 ();
 
 
-SELECT im_dynfield_attribute_new (
-       'im_project',			-- object_type
-       'parent_id',		 	-- column_name
-       '#intranet-core.Parent_Project#',-- pretty_name
-       'project_parent_options',	-- widget_name
-       'integer',			-- acs_datatype
-       'f',				-- required_p   
-       3,				-- pos y
-       'f',				-- also_hard_coded
-       'im_projects'			-- table_name
-);
-
-
-
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'project_path',
---       '#intranet-core.Project_Path#',
---       'textbox_medium',
---       'string',
---       't',
---       4,
---       'f',
---       'im_projects'
--- );
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- parent_id
+CREATE OR REPLACE FUNCTION inline_2 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''parent_id'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''project_parent_options'',		-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''parent_id'',				-- column_name
+		 ''#intranet-core.Parent_Project#'',	-- pretty_name
+		 ''project_parent_options'',		-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 3,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_2 ();
+DROP FUNCTION inline_2 ();
+
+-- project_path
+CREATE OR REPLACE FUNCTION inline_3 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_path'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_path'',			-- column_name
+		 ''#intranet-core.Project_Path#'',	-- pretty_name
+		 ''textbox_medium'',			-- widget_name
+		 ''string'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 4,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_3 ();
+DROP FUNCTION inline_3 ();
 
 
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'company_id',
---       '#intranet-core.Company#',
---       'customers',
---       'integer',
---       't',
---       5,
---       'f',
---       'im_projects'
---      );
 
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- company_id
+CREATE OR REPLACE FUNCTION inline_4 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_id'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
+	       ''customers'',				-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''company_id'',			-- column_name
+		 ''#intranet-core.Company#'',		-- pretty_name
+		 ''customers'',				-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 5,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_4 ();
+DROP FUNCTION inline_4 ();
 
-
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_lead_id',
-       '#intranet-core.Project_Manager#',
-       'project_leads',
-       'integer',
-       't',
-       6,
-       'f',
-       'im_projects'
-);
-
-
-
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'project_type_id',
---       '#intranet-core.Project_Type#',
---       'project_type',
---       'integer',
---       't',
---       7,
---       'f',
---       'im_projects'
---);
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- project_lead_id
+CREATE OR REPLACE FUNCTION inline_5 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_lead_id'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''project_leads'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_lead_id'',			-- column_name
+		 ''#intranet-core.Project_Manager#'',	-- pretty_name
+		 ''project_leads'',			-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 6,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_5 ();
+DROP FUNCTION inline_5 ();
+
+
+-- project_type_id
+CREATE OR REPLACE FUNCTION inline_6 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_type_id'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
+	       ''project_type'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_type_id'',			-- column_name
+		 ''#intranet-core.Project_Type#'',	-- pretty_name
+		 ''project_type'',			-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 7,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_6 ();
+DROP FUNCTION inline_6 ();
 
 
-
-
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_status_id',
-       '#intranet-core.Project_Status#',
-       'project_status',
-       'integer',
-       't',
-       8,
-       'f',
-       'im_projects'
-);
-
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'start_date',
---       '#intranet-core.Start_Date#',
---       'date',
---       'timestamp',
---       't',
---       9,
---       'f',
---       'im_projects'
---);
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- project_status_id
+CREATE OR REPLACE FUNCTION inline_7 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
-	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''start_date'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_status_id'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
+	       ''project_status'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_status_id'',			-- column_name
+		 ''#intranet-core.Project_Status#'',	-- pretty_name
+		 ''project_status'',			-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 8,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_7 ();
+DROP FUNCTION inline_7 ();
 
+-- start_date
+CREATE OR REPLACE FUNCTION inline_8 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''start_date'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''date'',				-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''start_date'',			-- column_name
+		 ''#intranet-core.Start_Date#'',	-- pretty_name
+		 ''date'',				-- widget_name
+		 ''timestamp'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 9,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_8 ();
+DROP FUNCTION inline_8 ();
 
 -- Add javascript calendar buton on date widget
 UPDATE im_dynfield_widgets set parameters = '{format "YYYY-MM-DD"} {after_html {<input type="button" style="height:23px; width:23px; background: url(''/resources/acs-templating/calendar.gif'');" onclick ="return showCalendarWithDateWidget(''$attribute_name'', ''y-m-d'');" ></b>}}' where widget_name = 'date';
 
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'end_date',
-       '#intranet-core.End_Date#',
-       'date',
-       'date',
-       't',
-       10,
-       'f',
-       'im_projects'
-);
-
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'on_track_status_id',
-       '#intranet-core.On_Track_Status#',
-       'on_track_status',
-       'integer',
-       'f',
-       11,
-       'f',
-       'im_projects'
-);
-
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'percent_completed',
-       '#intranet-core.Percent_Completed#',
-       'numeric',
-       'float',
-       'f',
-       12,
-       'f',
-       'im_projects'
-);
-   
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_budget_hours',
-       '#intranet-core.Project_Budget_Hours#',
-       'numeric',
-       'float',
-       'f',
-       13,
-       'f',
-       'im_projects'
-);
-       
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'project_budget',
---       '#intranet-core.Project_Budget#',
---       'numeric',
---       'float',
---       'f',
---       14,
---       'f',
---      'im_projects'
---);
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- end_date
+CREATE OR REPLACE FUNCTION inline_9 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''end_date'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''date'',				-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''end_date'',				-- column_name
+		 ''#intranet-core.End_Date#'',		-- pretty_name
+		 ''date'',				-- widget_name
+		 ''timestamp'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 10,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_9 ();
+DROP FUNCTION inline_9 ();
+
+
+-- on_track_status_id
+CREATE OR REPLACE FUNCTION inline_10 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''on_track_status_id'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''on_track_status'',			-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''on_track_status_id'',		-- column_name
+		 ''#intranet-core.On_Track_Status#'',	-- pretty_name
+		 ''on_track_status'',			-- widget_name
+		 ''integer'',				-- acs_datatype
+		 ''t'',					-- required_p   
+		 11,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_10 ();
+DROP FUNCTION inline_10 ();
+
+-- percent_completed
+CREATE OR REPLACE FUNCTION inline_11 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''percent_completed'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''numeric'',				-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''percent_completed'',			-- column_name
+		 ''#intranet-core.Percent_Completed#'',	-- pretty_name
+		 ''numeric'',				-- widget_name
+		 ''float'',				-- acs_datatype
+		 ''f'',					-- required_p   
+		 12,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_11 ();
+DROP FUNCTION inline_11 ();
+
+
+-- project_budget_hours
+CREATE OR REPLACE FUNCTION inline_12 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_budget_hours'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''numeric'',				-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',				-- object_type
+		 ''project_budget_hours'',		   	-- column_name
+		 ''#intranet-core.Project_Budget_Hours#'', 	-- pretty_name
+		 ''numeric'',					-- widget_name
+		 ''float'',					-- acs_datatype
+		 ''f'',						-- required_p   
+		 13,					   	-- pos y
+		 ''f'',						-- also_hard_coded
+		 ''im_projects''				-- table_name
+	  );
+
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_12 ();
+DROP FUNCTION inline_12 ();
+
+
+-- project_budget
+CREATE OR REPLACE FUNCTION inline_13 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_budget'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
+	       ''numeric'',				-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''project_budget'',			-- column_name
+		 ''#intranet-core.Project_Budget#'',	-- pretty_name
+		 ''numeric'',				-- widget_name
+		 ''float'',				-- acs_datatype
+		 ''f'',					-- required_p   
+		 14,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_13 ();
+DROP FUNCTION inline_13 ();
 
-
-
-SELECT im_dynfield_attribute_new (
-       'im_project',
-       'project_budget_currency',
-       '#intranet-core.Project_Budget_Currency#',
-       'currencies',
-       'string',
-       'f',
-       15,
-       'f',
-       'im_projects'
-);
-
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'company_project_nr',
---       '#intranet-core.Company_Project_Nr#',
---      'textbox_small',
---       'string',
---       'f',
---       16,
---       'f',
---       'im_projects'
---);
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+--project_budget_currency
+CREATE OR REPLACE FUNCTION inline_14 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
+
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''project_budget_currency'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
+	       null,					-- attribute_id
+	       ''im_dynfield_attribute'',		-- object_type
+	       now(),					-- creation_date
+	       null,					-- creation_user
+	       null,					-- creation_ip
+	       null,					-- context_id	
+	       v_acs_attribute_id,			-- acs_attribute_id
+	       ''currencies'',				-- widget
+	       ''f'',					-- deprecated_p
+	       ''t''					-- already_existed_p
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',				-- object_type
+		 ''project_budget_currency'',			-- column_name
+		 ''#intranet-core.Project_Budget_Currency#'',	-- pretty_name
+		 ''currencies'',				-- widget_name
+		 ''string'',					-- acs_datatype
+		 ''f'',						-- required_p   
+		 15,						-- pos y
+		 ''f'',						-- also_hard_coded
+		 ''im_projects''				-- table_name
+	  );
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
+END;' language 'plpgsql';
+
+SELECT inline_14 ();
+DROP FUNCTION inline_14 ();
+
+-- company_project_nr
+CREATE OR REPLACE FUNCTION inline_15 ()
+RETURNS integer AS '
+DECLARE
+	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
+BEGIN
+
+
 	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''company_project_nr'';
-
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',				-- object_type
+		 ''company_project_nr'',			-- column_name
+		 ''#intranet-core.Company_Project_Nr#'',	-- pretty_name
+		 ''textbox_medium'',				-- widget_name
+		 ''string'',					-- acs_datatype
+		 ''f'',						-- required_p   
+		 16,						-- pos y
+		 ''f'',						-- also_hard_coded
+		 ''im_projects''				-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
+SELECT inline_15 ();
+DROP FUNCTION inline_15 ();
 
--- SELECT im_dynfield_attribute_new (
---       'im_project',
---       'description',
---       '#intranet-core.Description#',
---       'richtext',
---       'text',
---       'f',
---       17,
---       'f',
---       'im_projects'
---);
-
-CREATE OR REPLACE FUNCTION inline_0 ()
+-- description
+CREATE OR REPLACE FUNCTION inline_16 ()
 RETURNS integer AS '
 DECLARE
 	v_acs_attribute_id	integer;
+	v_attribute_id		integer;
+	v_count			integer;
+	row			record;
 BEGIN
-	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''description'';
 
-	PERFORM im_dynfield_attribute__new_only_dynfield (
+
+	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''description'';
+	
+	IF v_acs_attribute_id IS NOT NULL THEN
+	   v_attribute_id := im_dynfield_attribute__new_only_dynfield (
 	       null,					-- attribute_id
 	       ''im_dynfield_attribute'',		-- object_type
 	       now(),					-- creation_date
 	       null,					-- creation_user
 	       null,					-- creation_ip
-	       null,					-- context_id				
+	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''textbox_medium'',			-- widget
+	       ''richtext'',				-- widget
 	       ''f'',					-- deprecated_p
 	       ''t''					-- already_existed_p
-	 );
+	  );
+	ELSE
+	  v_attribute_id := im_dynfield_attribute_new (
+	  	 ''im_project'',			-- object_type
+		 ''description'',			-- column_name
+		 ''#intranet-core.Description#'',	-- pretty_name
+		 ''richtext'',				-- widget_name
+		 ''text'',				-- acs_datatype
+		 ''f'',					-- required_p   
+		 17,					-- pos y
+		 ''f'',					-- also_hard_coded
+		 ''im_projects''			-- table_name
+	  );
 
-	 RETURN 0;
+	END IF;
+
+
+	FOR row IN 
+		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Project Type''
+	LOOP
+			
+		SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		IF v_count = 0 THEN
+		   INSERT INTO im_dynfield_type_attribute_map
+		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
+		   VALUES
+			  (v_attribute_id, row.category_id,''edit'',null,null,null,''f'');
+		ELSE
+		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.category_id;
+		END IF;
+
+	END LOOP;
+
+
+	RETURN 0;
 END;' language 'plpgsql';
 
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
-
-
-
+SELECT inline_16 ();
+DROP FUNCTION inline_16 ();
 
 
 
@@ -1843,21 +2499,6 @@ update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a h
 
 update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 91002;
 
-CREATE OR REPLACE FUNCTION inline_0 ()
-RETURNS integer AS '
-DECLARE 
-
-	v_plugin_id	integer;
-BEGIN
-	SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE plugin_name = ''Project Translation Wizard'' AND page_url = ''/intranet/projects/view'';
-
-	PERFORM im_component_plugin__delete(v_plugin_id);
-	
-	RETURN 0;
-END;' language 'plpgsql';
-
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
 
 -- Disable components
 CREATE OR REPLACE FUNCTION inline_0 ()
@@ -1871,13 +2512,13 @@ BEGIN
 
     SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Wiki Component'';
 
-    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id
+    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id;
 
     -- Disable the project conf component (for projects)
 
     SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Configuration Items'';
 
-    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id
+    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id;
 
     -- Disable the ]project-open[ news component from the home screen.
     FOR row IN 
@@ -1894,14 +2535,10 @@ BEGIN
     END LOOP;
 
     -- Disable the project note component.
-
     SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE page_url = ''/intranet/projects/view'' AND plugin_name = ''Project Notes'';
 
-    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id
+    UPDATE im_component_plugins SET enabled_p = ''f'' WHERE plugin_id = v_plugin_id;
 
-    -- Disable the Translation Workflow Rating Survey (it is one of two surveys for each project)
-    SELECT survey_id INTO v_plugin_id FROM survsimp_surveys WHERE name = ''Translation Workflow Rating: Translator'' AND short_name = ''Translation Workflow'';
-    UPDATE survsimp_surveys SET enabled_p = ''f'' WHERE survey_id = v_plugin_id;
     RETURN 0;
     
 END;' language 'plpgsql';

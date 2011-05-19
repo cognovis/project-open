@@ -273,8 +273,17 @@ ad_form -extend -name $form_id -new_request {
 
  
     if {![exists_and_not_null project_path]} {
-	set project_path [string tolower [string trim $project_name]]
+        set project_path [string tolower [string trim $project_name]]
     }
+
+    # Check if the project_nr already exists, if yes, create a new one
+    set project_nr_p [db_0or1row select_project_nr {
+        SELECT project_id FROM im_projects WHERE project_nr = :project_nr
+    }]
+    if {$project_nr_p} {
+        set project_nr [im_next_project_nr]
+    }
+    
     db_transaction {
 	set project_id [project::new \
 			    -project_name $project_name \
