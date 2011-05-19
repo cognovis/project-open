@@ -247,7 +247,11 @@ begin
         PERFORM acs_permission__grant_permission(v_menu, v_project_managers, ''read'');
         return 0;
 end;' language 'plpgsql';
-select inline_1 ();
+
+# ### evaluating - will probably need to be added with business logic 
+# select inline_1 ();
+# ### 
+
 drop function inline_1();
 
 
