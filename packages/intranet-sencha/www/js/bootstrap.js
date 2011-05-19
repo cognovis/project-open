@@ -56,8 +56,5 @@
     document.write('<script type="text/javascript" src="' + path + 'ext-all' + ((isDevelopment) ? '-debug' : '') + '.js"></script>');
 
 })();
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 3ff7b47febb02854ac55d5d749ef6932e7997661
