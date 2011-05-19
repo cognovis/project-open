@@ -14,6 +14,7 @@ ad_page_contract {
     { end_date "2011-01-01" }
     { level_of_detail 4 }
     { output_format "html" }
+    { show_complete_note 0 }
     project_id:integer,optional
     company_id:integer,optional
     user_id:integer,optional,multiple    
@@ -48,6 +49,14 @@ if {[catch {
     return
 }
 
+# Preselect show_complete_note
+if { 0==$show_complete_note } {
+        set show_complete_note_checked_no "checked"
+        set show_complete_note_checked_yes ""
+} else {
+        set show_complete_note_checked_no ""
+        set show_complete_note_checked_yes "checked"
+}
 
 # Check that Start & End-Date have correct format
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
@@ -320,6 +329,7 @@ set employee_subtotal_vat_reimburse 0
 						"\#align='center' $reimbursable"
 					        "\#align='right' $amount_reimbursable $currency"
                                                 "\#align='right' $amount_reimbursable_converted $default_currency"
+					    	"$receipt_reference"
 						"$note"
 					} \
 					content {} \
@@ -328,14 +338,14 @@ set employee_subtotal_vat_reimburse 0
 					"\#colspan=3"
 				        "\#colspan=7 <nobr><b>Total Project</b>"
 					"\#align='right' <b>$project_subtotal $default_currency</b></nobr><br><br>"
-				        "\#colspan=2"
+				        "\#colspan=3"
 				} \
 			] \
 			footer {
                                         "\#colspan=1"
                                         "\#colspan=9 <nobr><b>Total Customer</b></nobr>"
                                         "\#align='right' <nobr><b>$customer_subtotal $default_currency</b></nobr><br><br>"
-			                "\#colspan=2"
+			                "\#colspan=3"
 			} \
 		] \
 		footer {  
@@ -343,13 +353,13 @@ set employee_subtotal_vat_reimburse 0
                          "<nobr><b>Total Employee</b></nobr>"
 			 "\#colspan=9"
                          "\#align='right' <nobr><b>$employee_subtotal_vat_reimburse $default_currency</b></nobr>"
-                         "\#colspan=1"
+                         "\#colspan=2"
 		} \
 	]
 
 	# Global header/footer
 	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Type" "Ext<br>Company" \
-			 "Pay<br>Type" "Amount incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted" "Note"}
+			 "Pay<br>Type" "Amount incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted" "Ref." "Note"}
 	set footer0 { }
 	
         set employee_subtotal_vat_reimburse_counter [list \
@@ -464,6 +474,15 @@ switch $output_format {
                     [im_report_output_format_select output_format "" $output_format]
                   </td>
                 </tr>
+                <tr>
+                  <td class=form-label>Show complete note</td>
+                  <td class=form-widget>
+                        <nobr>
+                                <input name='show_complete_note' value='0' $show_complete_note_checked_no type='radio'>No&nbsp;
+                                <input name='show_complete_note' value='1' $show_complete_note_checked_yes type='radio'>Yes
+                        </nobr>
+                  </td>
+                </tr>
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -510,9 +529,9 @@ db_foreach sql $sql {
 	    set expense_payment_type "[string range $expense_payment_type 0 $expense_payment_type_length] ..."
 	}
 
-	if {[string length $note] > $note_length} {
-	    set note "[string range $note 0 $note_length] ..."
-	}
+        if { !$show_complete_note && [string length $note] > $note_length } {
+            set note "[string range $note 0 $note_length] ..."
+        }
 
 	if {"" == $project_id} {
 	    set project_id 0
