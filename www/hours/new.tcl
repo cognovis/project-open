@@ -960,6 +960,7 @@ template::multirow foreach hours_multirow {
     append results "</tr>\n"
     incr ctr
     set log_project_status_id_p "f"
+    set log_active_wf_p 0
 }
 
 if { [empty_string_p results] } {
