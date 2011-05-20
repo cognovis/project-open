@@ -392,7 +392,9 @@ ad_library {
 	set name_method "ACS_OBJECT__DEFAULT_NAME"
     }
     set documentation "This is the save procedure for <b>[my object_type]</b>. It updates the following attributes:<ul><li>[join "$attributes" "</li><li>"] </li></ul>"
-    my ad_instproc save {} [subst { $documentation } ] [subst {
+    my ad_instproc save {
+        {-live_p:boolean true} 
+    } [subst { $documentation } ] [subst {
         db_transaction {
             # Create the elements in the superclass first
             next
@@ -667,16 +669,16 @@ ObjectCache instproc get_instance_from_db {
 } {
     set object ::$id
     set code [ns_cache eval xotcl_object_cache $object {
-	set created 1
-	set o [next]
-	return [::Serializer deepSerialize $o]
+        set created 1
+        set o [next]
+        return [::Serializer deepSerialize $o]
     }]
     if {![info exists created]} {
-	if {[my isobject $object]} {
-	} else {
-	    set o [eval $code]
-	    $object initialize_loaded_object
-	}
+        if {[my isobject $object]} {
+        } else {
+            set o [eval $code]
+            $object initialize_loaded_object
+        }
     }
     
     return $object

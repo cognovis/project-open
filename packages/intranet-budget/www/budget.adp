@@ -37,7 +37,46 @@ Ext.onReady(function(){
             }]
         }],
         buttons: [{
-            text: 'Save',
+            text: '#acs-kernel.common_Reset#',
+            handler:function(){
+                budget_form.getForm().load({
+                    url:'budget-data',
+                    params: {
+                        action: 'get_budget', budget_id: @budget_id@},
+                    failure: function(response){
+                        var result=response.responseText;
+                        Ext.MessageBox.alert(result,'could not connect to database');
+                    }
+                });
+            }
+        },{
+            text: '#intranet-budget.Approved#',
+            handler:function(){
+                budget_form.getForm().load({
+                    url:'budget-data',
+                    params: {
+                        action: 'get_live_budget', budget_id: @budget_id@},
+                    failure: function(response){
+                        var result=response.responseText;
+                        Ext.MessageBox.alert(result,'could not connect to database');
+                    }
+                });
+            }
+        },{
+            text: '#intranet-budget.Calculated#',
+            handler:function(){
+                budget_form.getForm().load({
+                    url:'budget-data',
+                    params: {
+                        action: 'get_calculated_budget', budget_id: @budget_id@},
+                    failure: function(response){
+                        var result=response.responseText;
+                        Ext.MessageBox.alert(result,'could not connect to database');
+                    }
+                });
+            }
+        },{
+            text: '#acs-kernel.common_Save#',
             handler:function(){
                 budget_form.getForm().submit({
                     method:'GET',
@@ -55,7 +94,7 @@ Ext.onReady(function(){
                     }
                 });
             }
-        }]
+        }@mpk_approve_js;noquote@]
     });
 
     budget_form.getForm().load({
@@ -68,13 +107,14 @@ Ext.onReady(function(){
         }
     });
 
+
+    // Form for the Cost elements
     var amount_fm = Ext.form;
     @amount_category_combobox;noquote@
     @amount_editor;noquote@
     @amount_cm;noquote@
     @amount_store;noquote@
     @amount_grid;noquote@
-
 
     // Form for the hourly data
     
@@ -86,6 +126,12 @@ Ext.onReady(function(){
     @hour_grid;noquote@
 
 
+    // Form for the Cost elements
+    var benefit_fm = Ext.form;
+    @benefit_editor;noquote@
+    @benefit_cm;noquote@
+    @benefit_store;noquote@
+    @benefit_grid;noquote@
 
 });
 </script>
@@ -93,3 +139,5 @@ Ext.onReady(function(){
     <div id="amount_grid" style="margin-left: 1em"></div>
     <p />
     <div id="hour_grid" style="margin-left: 1em"></div>    
+    <p />
+    <div id="benefit_grid" style="margin-left: 1em"></div>    

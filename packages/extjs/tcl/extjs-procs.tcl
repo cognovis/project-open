@@ -337,7 +337,7 @@ ad_proc -public extjs::RowEditor::ComboBox {
     
     return "
     // This is the combo box for retrieving the values from a select. This should be wrapped into a function.
-    var $combo_name =  new amount_fm.ComboBox(\{
+    var $combo_name =  new ${form_name}.ComboBox(\{
         typeAhead: true,
         triggerAction: 'all',
         lazyRender: true,
@@ -362,12 +362,14 @@ ad_proc -public extjs::RowEditor::Editor {
     {-url:required}
     {-columnDef:required}
     {-baseParams:required}
+    {-after_success ""}
 } {
-    Get the js for the editor plugin for the row editor. This also takes care of saving things back
+    Get the js for the editor plugin for the row editor. This also takes care of saving things back.
     
     @param url URL which handles the saving of the parameters. Each row entry field will be sent back to the URL as form attributes
     @param column_def Column Definition as a key value list {attribute_name datatype attribute_name datatype}. Usually it is a good thing to make the JS names match the JSON names match the acs_attribute_names.
     @param baseParams The base parameters you send to your -data.tcl. Usually this is at least the action (e.g. "get_json") and some ID or object_type. Example: [list action "get_json" object_id $object_id]    
+    @param after_success This is JS code which is executed after the row has been successfully saved. This allows for code injection in additon to the standard saving
 } {
     set params [list]
     foreach {attribute datatype} $columnDef {
@@ -411,6 +413,7 @@ ad_proc -public extjs::RowEditor::Editor {
                             case 1:
                                 ${prefix}store.commitChanges();
                                 ${prefix}store.reload();
+                                $after_success
                                 break;
                             default:
                                 Ext.MessageBox.alert('Uh uh..', 'Probleme beim Speichern....');

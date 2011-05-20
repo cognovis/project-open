@@ -86,7 +86,7 @@ select inline_0 ();
 drop function inline_0 ();
 
 
-SELECT im_category_new (3750,'Budget Estimation','Intranet Cost Type');
+SELECT im_category_new (3750,'Budget Cost Estimation','Intranet Cost Type');
 SELECT im_category_new (3751,'Investment Cost Budget','Intranet Cost Type');
 SELECT im_category_new (3752,'One Time Cost Budget ','Intranet Cost Type');
 SELECT im_category_new (3753,'Repeating Cost Budget','Intranet Cost Type');
@@ -94,6 +94,8 @@ SELECT im_category_new (3753,'Repeating Cost Budget','Intranet Cost Type');
 SELECT im_category_hierarchy_new(3751,3750);
 SELECT im_category_hierarchy_new(3752,3750);
 SELECT im_category_hierarchy_new(3753,3750);
+
+SELECT im_category_new (3760,'Budget Benefit Estimation','Intranet Cost Type');
 
 SELECT im_category_new (9015,'Budget','Intranet Material Type');
 

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-budget" locale="en_US" charset="ISO-8859-1">
-
+  <msg key="Add_Benefit">Add Benefit</msg>
+  <msg key="Approved">Approved</msg>
+  <msg key="Benefits">Benefits</msg>
   <msg key="Budget">Budget</msg>
   <msg key="budget_estimation">Budget Estimation</msg>
   <msg key="Budgeted_Hours">Budgeted Hours</msg>
+  <msg key="Calculated">Calculated</msg>
   <msg key="Cost_Estimates">Cost Estimates</msg>
   <msg key="Cost_Type">Cost Type</msg>
   <msg key="Department_Planner">Department Planner</msg>

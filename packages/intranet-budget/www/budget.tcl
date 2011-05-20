@@ -46,6 +46,15 @@ set sub_navbar [im_sub_navbar \
     $bind_vars "" "pagedesriptionbar" "project_budget"] 
 
 
+# Dirty Trick to reload the form after we changed a row
+# The After success part will be executed as part of the row editor
+# for each Grid once a row has been successfully saved.
+set after_success "budget_form.getForm().load(\{
+        url:'budget-data',
+        params: \{
+            action: 'get_calculated_budget', budget_id: $budget_id \}
+    \});"
+
 ##################################
 #  
 # Financial Budget
@@ -60,8 +69,7 @@ set amount_sortInfo  [util::json::gen [util::json::object::create [list field "t
 set amount_columnDef [list item_id "string" title "string" amount "float" type_id "integer"]
 
 set combo_name "cost_type"
-set amount_category_combobox [extjs::RowEditor::ComboBox -combo_name "$combo_name" -form_name "amount_fm" \
-                                  -optionDef [list 3751 "Investment Cost Budget" 3752 "One Time Cost Budget" 3753 "Repeating Cost Budget"]]
+set amount_category_combobox [intranet_extjs::combobox::categories -parent_id 3750 -combo_name $combo_name -form_name "amount_fm"]
 
 # set the column_defs
 
@@ -103,10 +111,67 @@ set amount_store [extjs::DataStore::Json -url "budget-data" -baseParams "$amount
                       -columnDef "$amount_columnDef" -sortInfo_json "$amount_sortInfo" -prefix "amount_"]
 
 set amount_editor [extjs::RowEditor::Editor -prefix "amount_" -url "budget-data" -columnDef "$amount_columnDef" \
-                       -baseParams [list action "save_costs" budget_id $budget_id]]
+                       -baseParams [list action "save_costs" budget_id $budget_id] \
+                       -after_success $after_success]
 
 set amount_grid [extjs::RowEditor::GridPanel -prefix "amount_"  -new_title "Add Cost" -new_json "$amount_new_json" -autoExpandColumn "title" -title "Kosten"]
 set amount_cm [extjs::RowEditor::ColumnModel -prefix "amount_" -column_defs_json $column_defs]
+
+
+
+
+##################################
+#  
+# Economic Benefit
+#
+##################################
+
+set benefit_new_json [util::json::gen [util::json::object::create [list title "New Budget" benefit 0 type_id 3760]]]
+
+set benefit_baseParams [list action "get_benefits" budget_id $budget_id]
+set benefit_sortInfo  [util::json::gen [util::json::object::create [list field "title" direction "ASC"]]]
+set benefit_columnDef [list item_id "string" title "string" amount "float"]
+
+
+# set the column_defs
+
+set column_defs "
+            \{ // Not Sure yet if we actually need this or if it is already implicit in the grid....
+                header:'#',
+                readOnly: true,
+                dataIndex: 'item_id',
+                width: 50,
+                hidden: true
+            \}, \{
+                id: 'title',
+                header: '#intranet-core.Description#',
+                dataIndex: 'title',
+                width: 220,
+                // use shorthand alias defined above
+                editor: new benefit_fm.TextField(\{
+                    allowBlank: false
+                \})
+            \},  \{
+                header: '#intranet-budget.Benefits#',
+                dataIndex: 'amount',
+                width: 70,
+                align: 'right',
+                renderer: Ext.util.Format.Currency,
+                editor: new benefit_fm.NumberField(\{
+                    decimalSeparator: ','
+                \})
+            \}
+"
+
+set benefit_store [extjs::DataStore::Json -url "budget-data" -baseParams "$benefit_baseParams" -root "items" -id_column "item_id" \
+                      -columnDef "$benefit_columnDef" -sortInfo_json "$benefit_sortInfo" -prefix "benefit_"]
+
+set benefit_editor [extjs::RowEditor::Editor -prefix "benefit_" -url "budget-data" -columnDef "$benefit_columnDef" \
+                       -baseParams [list action "save_benefits" budget_id $budget_id] \
+                        -after_success $after_success]
+
+set benefit_grid [extjs::RowEditor::GridPanel -prefix "benefit_"  -new_title "[_ intranet-budget.Add_Benefit]" -new_json "$benefit_new_json" -autoExpandColumn "title" -title "[_ intranet-budget.Benefits]"]
+set benefit_cm [extjs::RowEditor::ColumnModel -prefix "benefit_" -column_defs_json $column_defs]
 
 
 
@@ -167,7 +232,9 @@ set hour_store [extjs::DataStore::Json -url "budget-data" -baseParams "$hour_bas
                       -columnDef "$hour_columnDef" -sortInfo_json "$hour_sortInfo" -prefix "hour_"]
 
 set hour_editor [extjs::RowEditor::Editor -prefix "hour_" -url "budget-data" -columnDef "$hour_columnDef" \
-                       -baseParams [list action "save_hours" budget_id $budget_id]]
+                     -baseParams [list action "save_hours" budget_id $budget_id] \
+                     -after_success $after_success
+                    ]
 
 set hour_grid [extjs::RowEditor::GridPanel -prefix "hour_"  -new_title "Neue Stundenschätzung" -new_json "$hour_new_json" -autoExpandColumn "title" -title "Stunden"]
 set hour_cm [extjs::RowEditor::ColumnModel -prefix "hour_" -column_defs_json $column_defs]
@@ -189,3 +256,14 @@ set budget_hours_js [extjs::Form::Attribute::Number -name "budget_hours" -label 
 extjs::init
 template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/RowEditor.js" -order 9
 template::head::add_javascript -src "/extjs/ux-numeric.js" -order 20
+
+# Approve button for the MPK
+set mpk_approve_js ",{
+            text: 'Approve',
+            handler:function(){
+                budget_form.getForm().load({
+                    url:'budget-data',
+                    params: {action: 'approve_budget', budget_id: '$budget_id'}
+                });
+            }
+        }"

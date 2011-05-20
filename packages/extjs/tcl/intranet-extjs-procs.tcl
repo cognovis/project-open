@@ -25,6 +25,29 @@ ad_library {
 }
 
 namespace eval intranet_extjs {}
+namespace eval intranet_extjs::combobox {}
+
+ad_proc -public intranet_extjs::combobox::categories {
+    {-category_type ""}
+    {-parent_id ""}
+    {-combo_name:required}
+    {-form_name:required}
+} {
+    Generates the combobox code for an ExtJS categories combobox with all the categories of the category type
+    in hierarchical order
+
+    @param category_type the CATEGORY Type
+    @param combo_name name of the combobox element
+    @param form_name name of the form
+    @param parent_id Parent Category_id
+} {
+    if {$parent_id ne ""} {
+        set sql "select category_id, category from im_categories c left outer join im_category_hierarchy h on (c.category_id = h.child_id) where parent_id = $parent_id"
+    } else {
+        set sql "select category_id, category from im_categories where category_type = '$category_type'"
+    }
+    set benefit_category_combobox [extjs::RowEditor::ComboBox -combo_name "$combo_name" -form_name "$form_name" -sql $sql]
+}
 
 ad_proc -public intranet_extjs::json {
     {-sql:required}
