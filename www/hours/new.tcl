@@ -692,7 +692,9 @@ set old_project_id 0
 set closed_level 0
 set closed_status [im_project_status_open]
 set old_parent_project_nr ""
-set log_project_status_id_p "f"
+set log_project_status_id_p 0
+set wf_case_assigned_p 0
+
 
 template::multirow foreach hours_multirow {
 
@@ -837,7 +839,7 @@ template::multirow foreach hours_multirow {
     if {![string eq "t" $edit_hours_p]} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_edit_hours_p "The time period has been closed for editing. "] }
     if {!$log_on_parent_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_parent_p "This project has sub-projects or tasks. "] }
     if {$solitary_main_project_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_solitary_main_project_p "This is a 'solitary' main project. Your system is configured in such a way, that you can't log hours on it. "] }
-    if { "f"==$log_project_status_id_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
+    if { !$log_project_status_id_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
 
     # Not a member: This isn't relevant in all modes:
     switch $task_visibility_scope {
@@ -861,11 +863,16 @@ template::multirow foreach hours_multirow {
 
     if {$show_member_p && !$user_is_project_member_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Not_member_of_project "You are not a member of this project. "] }
 
+    # ns_log NOTICE [concat "KHD " "log_project_status_id_p - before: " $log_project_status_id_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
+    if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
+	set log_project_status_id_p 1
+	append help_text [lang::message::lookup "" intranet-timesheet2.Logging_blocked "Logging blocked, please contact your Project Manager. "] 
+    }	
+    # ns_log NOTICE [concat "KHD " "log_project_status_id_p - after: " $log_project_status_id_p ]
 
     # -----------------------------------------------
     # Write out help and debug information
     set help_gif ""
-    if {"" != $help_text} { set help_gif [im_gif help $help_text] }
 
     set debug_html ""
     if {$debug} {
@@ -878,12 +885,13 @@ template::multirow foreach hours_multirow {
 	</nobr>
 	"
     }
-    append results "<td>$help_gif $debug_html</td>\n"
-
     set ttt {
 	chi=$project_has_children_p,
 	par=$project_has_parents_p,
     }
+
+    if {"" != $help_text} { set help_gif [im_gif help $help_text] }
+    append results "<td>$help_gif $debug_html</td>\n"
 
 
     # -----------------------------------------------
@@ -896,14 +904,8 @@ template::multirow foreach hours_multirow {
 	set internal_note ""
 	set material_id $default_material_id
 	set material "Default"
-	set key "$project_id-$julian_day_offset"
-
-	# set par [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]]
-	# ns_log NOTICE [concat "KHD " "log_project_status_id_p - before: " $log_project_status_id_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
-        if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] != -1 } {
-           set log_project_status_id_p "t"
-    	}	
-	# ns_log NOTICE [concat "KHD " "log_project_status_id_p - after: " $log_project_status_id_p ]
+	set key "$project_id-$julian_day_offset"	
+	set log_active_wf_p 0
 
 	if {[info exists hours_hours($key)]} { set hours $hours_hours($key) }
 	if {[info exists hours_note($key)]} { set note $hours_note($key) }
@@ -911,6 +913,22 @@ template::multirow foreach hours_multirow {
 
 	if {[info exists hours_material_id($key)]} { set material_id $hours_material_id($key) }
 	if {[info exists hours_material($key)]} { set material $hours_material($key) }
+
+
+	# ###
+	# Determine if wf case exists
+	# ###
+
+	set wf_actice_case_sql "
+		select count(*)
+		from im_hours h, wf_cases c
+	        where 	c.object_id = h.conf_object_id and 
+			h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
+			c.state = 'finished' and
+			h.user_id = $user_id_from_search
+    	"
+	set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
+	if { $no_wf_cases > 0 } { set log_active_wf_p 1 } 
 
 	# Determine whether the hours have already been included in a timesheet invoice
 	set invoice_id 0
@@ -920,7 +938,7 @@ template::multirow foreach hours_multirow {
 	ns_log NOTICE [concat "KHD:: " "project_id:" $project_id "edit_hours_p: " $edit_hours_p "log_on_parent_p: " $log_on_parent_p "invoice_id: " $invoice_id  "solitary_main_project_p: " $solitary_main_project_p \
                               "closed_p: " $closed_p  "log_project_status_id_p (sub/task): " $log_project_status_id_p ]
 
-	if { "t" == $edit_hours_p && $log_on_parent_p && !$invoice_id && !$solitary_main_project_p && !$closed_p && "t"==$log_project_status_id_p} {
+	if { "t" == $edit_hours_p && $log_on_parent_p && !$invoice_id && !$solitary_main_project_p && !$closed_p && !$log_project_status_id_p && !$log_active_wf_p } {
 	    # Write editable entries.
 	    append results "<td><INPUT NAME=hours${i}.$project_id size=5 MAXLENGTH=5 value=\"$hours\"></td>\n"
 	    if {!$show_week_p} {
