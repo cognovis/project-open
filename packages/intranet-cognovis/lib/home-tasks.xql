@@ -5,7 +5,7 @@
 <queryset>
   <rdbms>
     <type>postgresql</type>
-    <version>8.4</version>
+    <version>8.3</version>
   </rdbms>
 
   <fullquery name="select_tasks">
@@ -20,7 +20,7 @@
         p.end_date,
         p.project_type_id,
         t.planned_units,
-        p.parent_id project_id,
+        p.parent_id as project_id,
         im_name_from_id(p.parent_id) as project_name,
         p.percent_completed,
         p.reported_hours_cache as logged_hours
@@ -50,7 +50,7 @@
         p.end_date,
         p.project_type_id,
         t.planned_units,
-        p.parent_id project_id,
+        p.parent_id as project_id,
         im_name_from_id(p.parent_id) as project_name,
 	coalesce(p.percent_completed,0) as percent_completed,
         p.reported_hours_cache as logged_hours

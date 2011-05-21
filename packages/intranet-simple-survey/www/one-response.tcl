@@ -122,10 +122,10 @@ proc survey_specific_html { type response_id } {
 # Format responses
 
 set html "
-	<b>Filled out by</b><br>
+	<b>#intranet-simple-survey.Filled_out_by#</b><br>
 	<a href='$user_url$creation_user'>$creation_user_pretty</a><br>
 
-	<b>Date</b><br>
+	<b>#intranet-core.Date#</b><br>
 	$creation_date_pretty<br>
 
 	[survey_specific_html $type $response_id]
