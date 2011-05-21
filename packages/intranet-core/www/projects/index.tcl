@@ -264,12 +264,20 @@ set user_options [im_profile::user_options -profile_ids $user_select_groups]
 set user_options [linsert $user_options 0 [list "All" ""]]
 
 ad_form -extend -name $form_id -form {
-    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
     {company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options}}
     {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
     {start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
     {end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+}
+
+# List to store the view_type_options
+set view_type_options [list [list Tabelle ""]]
+
+# Run callback to extend the filter and/or add items to the view_type_options
+callback im_projects_index_filter -form_id $form_id
+ad_form -extend -name $form_id -form {
+    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options $view_type_options}}
 }
 
 if {$filter_advanced_p} {
@@ -699,17 +707,8 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 
-if {$view_type ne ""} {
-    switch $view_type {
-        json {
-            ns_return 200 text/text [intranet_extjs::json -sql $selection -view_name $view_name -variable_set $form_vars]
-        }
-        default {
-            intranet_openoffice::spreadsheet -view_name $view_name -sql $selection -output_filename "projects.$view_type" -table_name "$page_title" -variable_set $form_vars
-        }
-    }
-    ad_script_abort
-}
+callback im_projects_index_before_render -view_name $view_name \
+    -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach projects_info_query $selection -bind $form_vars {
 
