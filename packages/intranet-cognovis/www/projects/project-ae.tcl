@@ -386,8 +386,7 @@ ad_form -extend -name $form_id -new_request {
 	
 	# Write Audit Trail
 	im_project_audit -project_id $project_id -action after_create
-	
-	
+
 	
 	# -----------------------------------------------------------------
 	# add the creating current_user to the group
