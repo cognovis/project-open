@@ -2081,6 +2081,8 @@ ad_proc -public im_rest_object_type_update_sql {
     # Add the rest_oid to the hash
     set hash(rest_oid) $rest_oid
 
+    ns_log Notice "im_rest_object_type_update_sql: [array get sql_hash]"
+
     foreach table [array names sql_hash] {
 	set sqls $sql_hash($table)
 	set update_sql "update $table set [join $sqls ", "] where $index_column($table) = :rest_oid"
@@ -2091,6 +2093,7 @@ ad_proc -public im_rest_object_type_update_sql {
 	    return [im_rest_error -http_status 404 -message "Error updating $rest_otype: '$err_msg'"]
 	}
     }
+
     return
 }
 
