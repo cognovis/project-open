@@ -779,7 +779,6 @@ ad_proc -private im_rest_get_object_type {
     { -rest_otype "" }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
-    { -limit 100 }
     { -debug 0 }
 } {
     Handler for GET rest calls on a whole object type -
@@ -787,14 +786,7 @@ ad_proc -private im_rest_get_object_type {
 } {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
-
-    # Deal with "limit" max. number of objects to show
-    # and check that it's a valid integer
-    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
-    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
-
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
-
 
     # -------------------------------------------------------
     # Get some more information about the current object type
@@ -895,8 +887,11 @@ ad_proc -private im_rest_get_object_type {
 			from    $table_name t
 		)
 		$where_clause
-	LIMIT $limit
     "
+
+    # Append pagination "LIMIT $limit OFFSET $start" to the sql.
+    set unlimited_sql $sql
+    append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
     # -------------------------------------------------------
     # Loop through all objects of the specified type
@@ -966,11 +961,9 @@ ad_proc -private im_rest_get_object_type {
 	    return
 	}
 	json {  
-	    # Deal with different JSON variants for different AJAX frameworks
-	    switch $format_variant {
-		sencha { set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}" }
-		default { }
-	    }
+	    # Calculate the total number of objects
+	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
+	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/plain" $result
 	    return
 	}
@@ -988,7 +981,6 @@ ad_proc -private im_rest_get_im_invoice_items {
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
-    { -limit 100 }
     { -debug 0 }
 } {
     Handler for GET rest calls on invoice items.
@@ -996,14 +988,7 @@ ad_proc -private im_rest_get_im_invoice_items {
     ns_log Notice "im_rest_get_invoice_items: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
 
     array set query_hash $query_hash_pairs
-
     set base_url "[im_rest_system_url]/intranet-rest"
-
-    # Deal with "limit" max. number of objects to show
-    # and check that it's a valid integer
-    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
-    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
-
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_invoice'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
 
@@ -1030,8 +1015,12 @@ ad_proc -private im_rest_get_im_invoice_items {
 	from	im_invoice_items ii
 	where	1=1
 		$where_clause
-	LIMIT $limit
     "
+
+    # Append pagination "LIMIT $limit OFFSET $start" to the sql.
+    set unlimited_sql $sql
+    append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
+
 
     set result ""
     db_foreach objects $sql {
@@ -1088,7 +1077,6 @@ ad_proc -private im_rest_get_im_hours {
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
-    { -limit 100 }
     { -debug 0 }
 } {
     Handler for GET rest calls on timesheet hours
@@ -1097,11 +1085,6 @@ ad_proc -private im_rest_get_im_hours {
 
     array set query_hash $query_hash_pairs
     set base_url "[im_rest_system_url]/intranet-rest"
-
-    # Deal with "limit" max. number of objects to show
-    # and check that it's a valid integer
-    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
-    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
 
     # Permissions:
     # A user can normally read only his own hours,
@@ -1142,8 +1125,12 @@ ad_proc -private im_rest_get_im_hours {
 	where	1=1
 		$owner_perm_sql
 		$where_clause
-	LIMIT $limit
     "
+
+    # Append pagination "LIMIT $limit OFFSET $start" to the sql.
+    set unlimited_sql $sql
+    append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
+
 
     set result ""
     db_foreach objects $sql {
@@ -1192,7 +1179,6 @@ ad_proc -private im_rest_get_im_categories {
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
-    { -limit 100 }
     { -debug 0 }
 } {
     Handler for GET rest calls on invoice items.
@@ -1200,11 +1186,6 @@ ad_proc -private im_rest_get_im_categories {
     ns_log Notice "im_rest_get_categories: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set base_url "[im_rest_system_url]/intranet-rest"
-
-    # Deal with "limit" max. number of objects to show
-    # and check that it's a valid integer
-    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
-    im_security_alert_check_integer -location "im_rest_get_im_categories" -value $limit
 
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_category'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
@@ -1251,8 +1232,11 @@ ad_proc -private im_rest_get_im_categories {
 	where	(c.enabled_p is null OR c.enabled_p = 't')
 		$where_clause
 	order by category_id
-	LIMIT $limit
     "
+
+    # Append pagination "LIMIT $limit OFFSET $start" to the sql.
+    set unlimited_sql $sql
+    append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
     set result ""
     set obj_ctr 0
@@ -1323,7 +1307,6 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
-    { -limit 100 }
     { -debug 0 }
 } {
     Handler for GET rest calls on dynfield attributes
@@ -1331,11 +1314,6 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
     ns_log Notice "im_rest_get_im_dynfield_attributes: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set base_url "[im_rest_system_url]/intranet-rest"
-
-    # Deal with "limit" max. number of objects to show
-    # and check that it's a valid integer
-    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
-    im_security_alert_check_integer -location "im_rest_get_im_dynfield_attributes" -value $limit
 
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_dynfield_attribute'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
@@ -1368,8 +1346,12 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 	order by
 		aa.object_type, 
 		aa.attribute_name
-	LIMIT $limit
     "
+
+    # Append pagination "LIMIT $limit OFFSET $start" to the sql.
+    set unlimited_sql $sql
+    append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
+
 
     set result ""
     db_foreach objects $sql {
@@ -1840,6 +1822,31 @@ ad_proc -private im_rest_format_line {
 # ----------------------------------------------------------------------
 # Extract all fields from an object type's tables
 # ----------------------------------------------------------------------
+
+ad_proc -public im_rest_object_type_pagination_sql { 
+    -query_hash_pairs:required
+} {
+    Appends pagination information to a SQL statement depending on
+    URL parameters: "LIMIT $limit OFFSET $start".
+} {
+    set pagination_sql ""
+    array set query_hash $query_hash_pairs
+
+    if {[info exists query_hash(limit)]} { 
+	set limit $query_hash(limit) 
+	im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
+	append pagination_sql "LIMIT $limit\n"
+    }
+
+    if {[info exists query_hash(start)]} { 
+	set start $query_hash(start) 
+	im_security_alert_check_integer -location "im_rest_get_object_type" -value $start
+	append pagination_sql "OFFSET $start\n"
+    }
+
+    return $pagination_sql
+}
+
 
 ad_proc -public im_rest_object_type_select_sql { 
     {-no_where_clause_p 0}
