@@ -8,7 +8,8 @@ Ext.define('TicketBrowser.TicketGrid', {
         var store = Ext.create('Ext.data.Store', {
             model: 'TicketBrowser.Ticket',
             remoteSort: true,
-	    pageSize: 5,
+	    pageSize: 10,			// Enable pagination
+	    autoSync: true,			// Write changes to the REST server ASAP
             sorters: [{
                 property: 'creation_date',
                 direction: 'DESC'
