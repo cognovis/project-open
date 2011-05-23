@@ -57,9 +57,10 @@ select acs_object_type__create_type (
 
 insert into acs_object_type_tables (object_type,table_name,id_column) values ('project_approval2_wf', 'project_approval2_wf_cases', 'case_id');
 
-
-create or replace function im_workflow__assign_to_project_manager(int4, text) returns int4 as '
- declare
+CREATE OR REPLACE FUNCTION im_workflow__assign_to_project_manager(integer, text)
+  RETURNS integer AS
+'
+declare
         p_task_id               alias for $1;
         p_custom_arg            alias for $2;
 
@@ -73,6 +74,7 @@ create or replace function im_workflow__assign_to_project_manager(int4, text) re
         v_project_manager_name  varchar;
 
         v_journal_id            integer;
+        v_workflow_key          varchar;
 
  begin
         -- Get information about the transition and the ''environment''
@@ -85,12 +87,23 @@ create or replace function im_workflow__assign_to_project_manager(int4, text) re
                 and t.workflow_key = tr.workflow_key
                 and t.transition_key = tr.transition_key;
 
-	IF v_object_type = ''timesheet_approval_wf'' THEN
- 		select  project_lead_id into v_project_manager_id from im_projects
-		where   project_id in (select conf_project_id from im_timesheet_conf_objects where conf_id = v_object_id);		
-	ELSE 
-		select  project_lead_id into v_project_manager_id from im_projects
-		where   project_id = v_object_id;
+        select attr_value into v_workflow_key from apm_parameter_values where parameter_id in
+                (select parameter_id from apm_parameters where package_key like ''intranet-timesheet2-workflow'' and  parameter_name = ''DefaultWorkflowKey'');
+
+        RAISE NOTICE ''im_workflow__assign_to_project_manager: Found workflow: %: '', v_workflow_key;
+
+        IF v_workflow_key = '''' THEN
+                v_workflow_key := ''timesheet_approval_wf'';
+                RAISE NOTICE ''im_workflow__assign_to_project_manager: No parameter found, set workflow_key to: %: '', v_workflow_key;
+        END IF;
+
+        IF v_object_type = v_workflow_key THEN
+                select  project_lead_id into v_project_manager_id from im_projects
+                where   project_id in (select conf_project_id from im_timesheet_conf_objects where conf_id = v_object_id);
+                RAISE NOTICE ''im_workflow__assign_to_project_manager: Project Manager ID: %: '', v_project_manager_id;
+        ELSE
+                select  project_lead_id into v_project_manager_id from im_projects
+                where   project_id = v_object_id;
         END IF;
         select im_name_from_id(v_project_manager_id) into v_project_manager_name;
 
@@ -107,7 +120,8 @@ create or replace function im_workflow__assign_to_project_manager(int4, text) re
                         ''wf_'' || v_object_type || ''_assignment_notif'');
         END IF;
         return 0;
-end;' language 'plpgsql';
+end;'
+  LANGUAGE 'plpgsql' VOLATILE;
 
 
 -- create table to manage Employee/Customer Price Matrix 
