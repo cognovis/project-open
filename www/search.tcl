@@ -419,12 +419,25 @@ set forum_perm_sql ""
 # Build a suitable select for object types
 # -----------------------------------------------------------
 
-foreach t $type { lappend types "'$t'"} 
+foreach t $type {
+
+    # Security check for cross site scripting
+    if {![regexp {^[a-zA-Z0-9_]*$} $t]} {
+	im_security_alert \
+	    -location "/intranet-search-pg/www/search.tcl" \
+	    -message "Invalid search object type - SQL injection attempt" \
+	    -value [ns_quotehtml $t]
+	# Quote the harmful var
+	regsub -all {[^a-zA-Z0-9_]} $t "_" t
+    }
+    
+    lappend types "'$t'"
+} 
+
 set object_type_where "object_type in ([join $types ","])"
 if {[string equal "all" $type]} {
     set object_type_where "1=1"
 }
-
 
 # -----------------------------------------------------------
 # Main SQL
