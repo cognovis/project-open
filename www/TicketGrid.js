@@ -8,6 +8,7 @@ Ext.define('TicketBrowser.TicketGrid', {
         var store = Ext.create('Ext.data.Store', {
             model: 'TicketBrowser.Ticket',
             remoteSort: true,
+	    pageSize: 5,
             sorters: [{
                 property: 'creation_date',
                 direction: 'DESC'
@@ -21,7 +22,8 @@ Ext.define('TicketBrowser.TicketGrid', {
                 },
                 reader: {
                     type: 'json',		// Tell the Proxy Reader to parse JSON
-                    root: 'data'		// Where do the data start in the JSON file?
+                    root: 'data',		// Where do the data start in the JSON file?
+		    totalProperty: 'total'
                 },
                 writer: {
                     type: 'json'
