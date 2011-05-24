@@ -56,6 +56,7 @@ if {$current_user_id == $user_id_from_search} {
 }
 
 set page_title [lang::message::lookup "" intranet-timesheet2.Timesheet_for_user_name "Timesheet for %user_name%"]
+
 set context_bar [im_context_bar "[_ intranet-timesheet2.Hours]"]
 set show_link_weekly_timesheet_p [parameter::get_from_package_key -package_key "intranet-timesheet2" -parameter "ShowLinkToWeeklyTimesheetP" -default 1]
 
@@ -401,7 +402,7 @@ set hours_to_confirm_p [db_string hours_to_confirm_p $hours_to_confirm_sql -defa
 
 if { $hours_to_confirm_p } { 
 	append ul_links "<li><a href='/intranet-timesheet2-workflow/conf-objects/new-timesheet-workflow?"
-	append ul_links "&start_date_julian=$first_julian_date_of_month&return_url=%2fintranet-timesheet2%2fhours%2findex&end_date_julian=[expr $first_julian_date_of_month+$num_days_in_month]&user_id=$current_user_id"
+	append ul_links "&start_date_julian=$first_julian_date_of_month&return_url=%2fintranet-timesheet2%2fhours%2findex&end_date_julian=[expr $first_julian_date_of_month+$num_days_in_month-1]&user_id=$current_user_id"
 	append ul_links "&workflow_key=timesheet_approval2_wf"
 	append ul_links "'>Freigabe geloggter Stunden f&uuml;r diesen Monat</a></li>"
 } else {
