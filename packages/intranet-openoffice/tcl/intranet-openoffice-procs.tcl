@@ -60,7 +60,7 @@ ad_proc -public intranet_openoffice::spreadsheet {
     }
 
     # The table_name is not allowed to contain any quotes
-    regsub -all {\"} table_name {'} table_name
+    regsub -all {\"} $table_name {'} table_name
 
     # ---------------------- Get Columns ----------------------------------
     # Define the column headers and column contents that

@@ -71,6 +71,7 @@ set widget_options [list \
 	[list "OpenACS Category" category_tree] \
 	[list "\]po\[ Category" im_category_tree] \
 	[list "\]po\[ Generic SQL" generic_sql] \
+	[list "\]po\[ Generic TCL" generic_tcl] \
 	[list "Hidden" hidden] \
 ]
 

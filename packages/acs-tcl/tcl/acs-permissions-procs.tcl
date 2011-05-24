@@ -315,3 +315,37 @@ ad_proc -private ad_user_filter {} {
     permission::require_permission -object_id [ad_conn object_id] -privilege "read"
     return filter_ok
 }
+
+ad_proc permission::copy {
+    -from_object_id
+    -to_object_id
+    -clean_inheritance:boolean
+    -overwrite:boolean
+} {
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    
+    Copy the permissions from one object to another.
+
+    @param from_object_id Source object_id for the permissions
+    @param to_object_id Destination object_id which will get the new permissions
+    @param clean_inheritance Clean the inheritance of the destination object_id. Useful for items / folders which would usually inherit from the parent_object_id regardless of what the permissions are on the object itself
+    @param overwrite Overwrite existing permissions. In this case we would first clean up the permissions for this item
+} {
+    if {$overwrite_p} {
+	# Clean the permissions
+	set object_id $to_object_id
+	db_foreach select_permissions {} {
+	    permission::revoke -object_id $object_id -party_id $grantee_id -privilege $privilege
+	}
+    }
+    
+    if {$clean_inheritance_p} {
+	# Unset inheritance
+	permission::set_not_inherit -object_id $to_object_id
+    }
+    
+    set object_id $from_object_id
+    db_foreach select_permissions {} {
+	permission::grant -object_id $to_object_id -party_id $grantee_id -privilege $privilege	
+    }
+}

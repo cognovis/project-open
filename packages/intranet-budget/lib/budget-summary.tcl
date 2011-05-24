@@ -6,7 +6,8 @@ ad_page_contract {
 
 
 set budget_id [db_string budget_id "select item_id from cr_items where parent_id = :project_id and content_type = 'im_budget' limit 1" -default ""]
-set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]            
+set revision_id [content::item::get_live_revision -item_id $budget_id]
+set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -revision_id $revision_id]
 
 # ----------------- 1 Table Budget Costs HTML
 set budget_cost_html "
@@ -35,8 +36,12 @@ append budget_cost_html "</tr>\n<tr>\n<td>[_ intranet-budget.Cost_Estimates]</td
 set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
 set cost_estimates 0
 foreach item_id $cost_ids {
-    set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]            
-    incr cost_estimates [$Cost get_integer -attribute_name amount]
+    set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]
+
+    # We need to exclude repeating costs here
+    if {[$Cost type_id] ne "3753"} {
+        incr cost_estimates [$Cost get_integer -attribute_name amount]
+    }
 }
 set cost_estimates [expr $cost_estimates - $provider_bills]
 append budget_cost_html "<td align=right>- $cost_estimates $project_budget_currency</td>\n"
@@ -46,9 +51,6 @@ set remaining_budget [expr $project_budget - $provider_bills - $cost_estimates]
 append budget_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-budget.Remaining_Budget]</b></td>\n"
 append budget_cost_html "<td align=right><b>$remaining_budget $project_budget_currency</b></td>\n"
 append budget_cost_html "</tr>\n</table>\n"
-
-
-
 
 
 

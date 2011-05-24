@@ -95,7 +95,6 @@ ad_proc -private im_budget::after_upgrade {
                 #
                 # create classes
                 # 
-                apm_load_packages -force_reload -packages intranet-xotcl-dynfield
                 ::im::dynfield::CrClass create Budget -superclass ::im::dynfield::CrItem \
                     -pretty_name "Budget" -pretty_plural "Budgets" \
                     -table_name "im_budgets" -id_column "budget_id" \
@@ -142,6 +141,16 @@ ad_proc -private im_budget::after_upgrade {
                     -table_name "im_budget_costs" -id_column "fund_id" \
                     -type_column "type_id" -type_category_type "Intranet Cost Type" \
                     -mime_type text/html -object_type "im_budget_cost" \
+                    -slots {
+                        ::im::dynfield::CrAttribute create amount -sqltype float -widget_name "currency"
+                        ::im::dynfield::CrAttribute type_id -sqltype integer \
+                            -references "im_categories(category_id)" -widget_name "numeric"
+                    }
+                ::im::dynfield::CrClass create Benefit -superclass ::im::dynfield::CrItem \
+                    -pretty_name "Budget Benefit" -pretty_plural "Budget Benefits" \
+                    -table_name "im_budget_benefits" -id_column "fund_id" \
+                    -type_column "type_id" -type_category_type "Intranet Benefit Type" \
+                    -mime_type text/html -object_type "im_budget_benefit" \
                     -slots {
                         ::im::dynfield::CrAttribute create amount -sqltype float -widget_name "currency"
                         ::im::dynfield::CrAttribute type_id -sqltype integer \

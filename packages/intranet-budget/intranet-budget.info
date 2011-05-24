@@ -9,13 +9,21 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
+<<<<<<< HEAD
     <version name="0.2d9" url="http://openacs.org/repository/download/apm/intranet-budget-0.2d9.apm">
+=======
+    <version name="0.2d11" url="http://openacs.org/repository/download/apm/intranet-budget-0.2d11.apm">
+>>>>>>> b3699e3... Merged
         <owner url="mailto:sysadmin@tigerpond.com">System Administrator</owner>
         <summary>intranet budget package</summary>
         <description format="text/html">intranet budget package</description>
         <maturity>0</maturity>
 
+<<<<<<< HEAD
         <provides url="intranet-budget" version="0.2d9"/>
+=======
+        <provides url="intranet-budget" version="0.2d11"/>
+>>>>>>> b3699e3... Merged
         <requires url="intranet-core" version="4.0.1.0.0"/>
         <requires url="intranet-xotcl-dynfield" version="0.1d1"/>
         <requires url="xotcl-core" version="0.118"/>

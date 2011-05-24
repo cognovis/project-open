@@ -44,4 +44,12 @@
         </querytext>
     </fullquery>
 
+    <fullquery name="permission::copy.select_permissions">
+        <querytext>
+            select grantee_id,privilege
+	    from acs_permissions 
+	    where object_id = :object_id
+        </querytext>
+    </fullquery>
+
 </queryset>

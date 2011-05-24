@@ -171,6 +171,8 @@ ad_proc -public intranet_fs::create_project_folder {
                       ]
     }	
     set rel_id [relation_add "project_folder" $project_id $folder_id]
+    callback intranet_fs::after_project_folder_create -project_id $project_id -folder_id $folder_id
+
     return $folder_id
 }
 
@@ -280,3 +282,93 @@ ad_proc -public -callback im_project_after_update -impl intranet-fs_update_paren
 	SELECT content_folder__move(:project_folder_id,:new_parent_folder_id)
     }  
 }
+
+
+ad_proc intranet_fs::copy_folder {
+    -source_folder_id
+    -destination_folder_id
+} {
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2010-09-24
+    
+    Copies the folder to another parent folder
+    Makes sure to copy the permissions as well
+	It does not work correctly if you have folder_names in the orignal folder which are the same.
+
+    @param destination_folder_id Folder ID of the destination folder below which the folder will be copied
+    @param source_folder_id Folder ID of the folder to be copied
+} {
+    set user_id [ad_conn user_id]
+    set peer_addr [ad_conn peeraddr]
+
+    # Make sure we have write permission on the destination folder
+    permission::require_permission \
+ 	-party_id $user_id \
+ 	-object_id $destination_folder_id \
+ 	-privilege "write"
+    
+    permission::require_permission \
+ 	-party_id $user_id \
+ 	-object_id $source_folder_id \
+ 	-privilege "read"
+    
+    # Make sure both are actually folders
+    if {![content::folder::is_folder -item_id $source_folder_id] || ![content::folder::is_folder -item_id $destination_folder_id]} {
+	return 0
+    }
+    
+    set new_parent_folder_id [db_string copy_folder {
+        select content_folder__copy (
+           :source_folder_id,
+           :destination_folder_id,
+           :user_id,
+           :peer_addr
+      )}]
+    
+
+	# This folder compare does not work if the original folder has folders with the same name!
+    db_multirow folders folder_compare {
+	select source.item_id as old_folder_id, target.item_id as new_folder_id, security_inherit_p
+	from (select children.item_id, children.name, security_inherit_p 
+	      from cr_items children, cr_items parent, acs_objects o
+	      where children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) 
+	      and parent.tree_sortkey <> children.tree_sortkey 
+	      and parent.item_id = :source_folder_id
+	      and children.item_id = o.object_id
+	      order by children.tree_sortkey) source,
+	(select children.item_id, children.name 
+	 from cr_items children, cr_items parent 
+	 where children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) 
+	 and parent.tree_sortkey <> children.tree_sortkey 
+	 and parent.item_id = :new_parent_folder_id
+	 order by children.tree_sortkey) target
+	where source.name = target.name
+    } {
+    }
+
+    template::multirow foreach folders {
+		if {$security_inherit_p eq "t"} {
+		    permission::copy -from_object_id $old_folder_id -to_object_id $new_folder_id -overwrite
+		} else {
+		    permission::copy -from_object_id $old_folder_id -to_object_id $new_folder_id -overwrite -clean_inheritance
+		}
+	}
+	
+	
+    if {[permission::inherit_p -object_id $source_folder_id]} {
+		permission::copy -from_object_id [content::item::get_parent_folder -item_id $source_folder_id] -to_object_id $new_parent_folder_id -clean_inheritance -overwrite
+    } else {
+		permission::copy -from_object_id $source_folder_id -to_object_id $new_parent_folder_id -clean_inheritance -overwrite
+    }
+}
+
+
+ad_proc -public -callback intranet_fs::after_project_folder_create {
+	{-project_id:required}
+	{-folder_id:required}
+} {
+	After the project folder has been created, you can do additional things like copying a preset of folders from a template directory to the newly created folder. Very useful for translation folders
+	
+	@param project_id ID of the project in which the project folder resides
+	@param folder_id New folder_id of the created folder for the project
+} -

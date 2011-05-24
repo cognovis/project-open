@@ -659,7 +659,7 @@ ad_proc -public im_project_options {
 	    "
 
 	    if {[im_permission $current_user_id "view_projects_all"]} {
-		set perm_sql "im_projects" 
+            set perm_sql "im_projects" 
 	    }
 	}
 

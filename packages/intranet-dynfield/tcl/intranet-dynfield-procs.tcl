@@ -1543,30 +1543,73 @@ ad_proc -public -callback im_category_after_create -impl intranet-dynfield {
     Add the attribute to the attribute type map after a dynfield has been created
 } {
     set object_type [im_category_object_type -category_type $category_type]
-   
+    
     if {[exists_and_not_null object_type] && [exists_and_not_null category_id]} {
+        set lowest_object_type_id [db_string select_min_object_type_id {
+	        select min(object_type_id) from im_dynfield_type_attribute_map tam, im_categories ic where tam.object_type_id = ic.category_id and category_type = :category_type
+        } -default ""]
 	
-	set lowest_object_type_id [db_string select_min_object_type_id {
-	    select min(object_type_id) from im_dynfield_type_attribute_map tam, im_categories ic where tam.object_type_id = ic.category_id and category_type = :category_type
-	} -default ""]
-	
-	if {![string equal $lowest_object_type_id ""]} {
-	    set attribute_ids [db_list select_attribute_ids {
-		select attribute_id from im_dynfield_type_attribute_map WHERE object_type_id = :lowest_object_type_id
-	    }]
+        if {![string equal $lowest_object_type_id ""]} {
+            set attribute_ids [db_list select_attribute_ids {
+            		select attribute_id from im_dynfield_type_attribute_map WHERE object_type_id = :lowest_object_type_id
+            }]
 	    
-	    foreach attribute_id $attribute_ids {
-		db_1row select_attribute_info {
-		    select display_mode, help_text, section_heading, default_value, required_p from im_dynfield_type_attribute_map where attribute_id = :attribute_id and object_type_id = :lowest_object_type_id
-		}
+            foreach attribute_id $attribute_ids {
+                db_1row select_attribute_info {
+                		    select display_mode, help_text, section_heading, default_value, required_p from im_dynfield_type_attribute_map where attribute_id = :attribute_id and object_type_id = :lowest_object_type_id
+                }
 		
-		db_dml insert_attribute_category_map {
-		    INSERT INTO im_dynfield_type_attribute_map 
-		    (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p) 
-		    VALUES 
-		    (:attribute_id, :category_id, :display_mode, :help_text, :section_heading, :default_value, :required_p)
-		}
-	    }
-	}
+               db_dml insert_attribute_category_map {
+                    INSERT INTO im_dynfield_type_attribute_map 
+                    (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p) 
+                    VALUES 
+         		    (:attribute_id, :category_id, :display_mode, :help_text, :section_heading, :default_value, :required_p)
+                }
+            }
+        }
     }
+}
+
+
+
+
+ad_proc -public im_dynfield::dynfields {
+    -object_type:required
+    {-object_type_id ""}
+    {-privilege ""}
+    {-user_id ""}
+} {
+    Returns the list of dynfield_attributes for an object_type
+    
+    @param object_type Object Type for which we return the attributes
+    @param object_type_id Category ID of the subtype for which we want the dynfield attributes
+    @param privilege Privilege for which we need to check. Default to "" which means we return all privileges
+} {
+    if {$object_type_id eq ""} {
+        set attribute_sql "
+         	select distinct da.attribute_id
+        	from im_dynfield_attributes da, acs_attributes aa
+            where da.acs_attribute_id = aa.attribute_id
+            and object_type = :object_type"
+    } else {
+        set attribute_sql "
+            select distinct attribute_id 
+            from im_dynfield_type_attribute_map  
+            where object_type_id = :object_type_id"
+    }
+    
+    if {$user_id eq ""} {
+        set user_id [ad_conn user_id]
+    }
+    set dynfield_attributes [list]
+    db_foreach dynfield $attribute_sql {
+        if {$privilege ne ""} {
+            if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
+                lappend dynfield_attributes $attribute_id
+            }
+        } else {
+            lappend dynfield_attributes $attribute_id
+        }
+    }
+    return $dynfield_attributes
 }

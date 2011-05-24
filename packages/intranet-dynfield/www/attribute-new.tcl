@@ -518,37 +518,3 @@ ad_form \
     ad_script_abort
 }
 
-
-
-# ------------------------------------------------------------------
-# Includelet for permissions
-# ------------------------------------------------------------------
-
-#		     [list object_type $object_type] \
-
-set perm_html ""
-set map_html ""
-
-if {[info exists attribute_id]} {
-
-    set perm_params [list \
-		     [list nomaster_p 1] \
-    ]
-    set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
-
-
-
-    set map_params [list \
-		     [list nomaster_p 1] \
-    ]
-
-    set map_html [ad_parse_template -params $map_params "/packages/intranet-dynfield/www/attribute-type-map"]
-}
-
-
-
-
-
-
-
-

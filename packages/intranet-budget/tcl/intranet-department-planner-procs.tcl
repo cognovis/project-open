@@ -289,7 +289,7 @@ ad_proc -public im_department_planner_get_list_multirow {
         # Get the hash of hours for this project per department_id
         db_foreach budgeted_hours {
             select sum(hours) as hours, department_id from im_budget_hoursx bh, cr_items ci
-            where ci.live_revision = bh.revision_id 
+            where ci.latest_revision = bh.revision_id 
             and ci.parent_id = (select item_id from cr_items where parent_id = :main_project_id and content_type = 'im_budget' limit 1)
             group by department_id
         } {
