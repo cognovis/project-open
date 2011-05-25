@@ -1072,22 +1072,33 @@ ad_proc -public ad_form {
         }
     }
 
+    ns_log Notice "new: ad_form: before template::form is_submission"
+
     if { [template::form is_submission $form_name] } {
+
+	ns_log Notice "new: ad_form: is_submission:"
+
         if { [uplevel #$level {set __refreshing_p}] } {
+
+	    ns_log Notice "new: ad_form: refreshing:"
             uplevel array unset ${form_name}:error
 
             if { [info exists on_refresh] } {
                 ad_page_contract_eval uplevel #$level $on_refresh
             }
         } else {
+
             # Not __refreshing_p 
+	    ns_log Notice "new: ad_form: refreshing:"
 
             if { [template::form is_valid $form_name] } {
 
+		ns_log Notice "new: ad_form: valid:"
                 # Run confirm and preview templates before we do final processing of the form
 
                 if { [info exists confirm_template] && ![uplevel #$level {set __confirmed_p}] } {
 
+		    ns_log Notice "new: ad_form: confirmed:"
                     # Pass the form variables to the confirm template, applying the to_html filter if present
 
                     set args [list]
@@ -1107,6 +1118,7 @@ ad_proc -public ad_form {
 
                 }
 
+		ns_log Notice "new: ad_form: before three ways"
                 # We have three possible ways to handle the form
 
                 # 1. an on_submit block (useful for forms that don't touch the database or can share smart Tcl API
@@ -1137,6 +1149,8 @@ ad_proc -public ad_form {
                 # In order to make this work, I had to eliminate the ad_page_contract_eval's below
                 # and replace them with simple uplevel's. Otherwise, we'd get an error saying
                 # 'break used outside of a loop'.
+		ns_log Notice "new: ad_form: before new or edit"
+
                 set errno [catch {
                     if { [info exists on_submit] } {
                         uplevel #$level $on_submit

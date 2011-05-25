@@ -2329,6 +2329,12 @@ ad_proc -public util_exploit_url_p {{} string} {
 	ns_log Notice "util_exploit_url_p: Did not find an optional host name"
     }
 
+    # Check for URL with only a path and no variables
+    if {[regexp -nocase {^([\/a-z0-9_\.\-])+$} $string match path]} {
+	# No variables to be checked...
+	return 0
+    }
+
     # Check for page path
     # (/intranet/projects/index)?(var=value&var=value)
     if {[regexp -nocase {^([\/a-z0-9_\.\-])+\?(.*)$} $string match path string]} {
@@ -2343,11 +2349,20 @@ ad_proc -public util_exploit_url_p {{} string} {
     ns_log Notice "util_exploit_url_p: Found variable pairs: '$tuples'"
 
     foreach tuple $tuples {
+	ns_log Notice "util_exploit_url_p: Checking tuple: '$tuple'"
 	if {[regexp -nocase {^([a-z0-9_\.\-]+)=(.*)$} $tuple match var value]} {
 	    ns_log Notice "util_exploit_url_p: Found a valid var=value pair: '$var'='$value'"
 	} else {
-	    ns_log Notice "util_exploit_url_p: Found invalid var=value pair: '$tuple'"
-	    return 1
+
+	    # Try to decode URL and try again
+	    set tuple [ns_urldecode $tuple]
+	    
+	    if {[regexp -nocase {^([a-z0-9_\.\-]+)=(.*)$} $tuple match var value]} {
+		ns_log Notice "util_exploit_url_p: Found a valid var=value pair: '$var'='$value'"
+	    } else {
+		ns_log Notice "util_exploit_url_p: Found invalid var=value pair: '$tuple'"
+		return 1
+	    }
 	}
     }
 
