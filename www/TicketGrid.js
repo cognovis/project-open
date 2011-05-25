@@ -1,3 +1,27 @@
+/**
+ * intranet-sencha-ticket-tracker/www/TicketGrid.js
+ * Grid table for ]po[ tickets
+ *
+ * @author Frank Bergmann (frank.bergmann@project-open.com)
+ * @creation-date 2011-05
+ * @cvs-id $Id: TicketGrid.js,v 1.7 2011/05/25 20:39:39 po34demo Exp $
+ *
+ * Copyright (C) 2011, ]project-open[
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 
 Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
@@ -107,8 +131,35 @@ Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Creation Date',
 			dataIndex: 'creation_date',
 			width: 150
+		}, {
+			header: 'Assignee',
+			dataIndex: 'ticket_assignee_id'
+		}, {
+			header: 'Queue',
+			dataIndex: 'ticket_queue_id'
 		}
 	    ],
+
+/**
+        { name: 'ticket_dept_id',               xtype: 'hiddenfield'},
+        { name: 'ticket_service_id',            xtype: 'hiddenfield'},
+        { name: 'ticket_hardware_id',           xtype: 'hiddenfield'},
+        { name: 'ticket_application_id',        xtype: 'hiddenfield'},
+        { name: 'ticket_alarm_date',            xtype: 'hiddenfield'},
+        { name: 'ticket_alarm_action',          xtype: 'hiddenfield'},
+        { name: 'ticket_note',                  xtype: 'hiddenfield'},
+        { name: 'ticket_conf_item_id',          xtype: 'hiddenfield'},
+        { name: 'ticket_component_id',          xtype: 'hiddenfield'},
+        { name: 'ticket_description',           xtype: 'hiddenfield'},
+        { name: 'ticket_customer_deadline',     xtype: 'hiddenfield'},
+        { name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'},
+        { name: 'project_name', fieldLabel: 'Name', allowBlank:false},
+        { name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
+        { name: 'ticket_customer_contact_id',   xtype: 'combobox',
+ */
+
+
+
 	    dockedItems: [{
 		xtype: 'toolbar',
 		cls: 'x-docked-noborder-top',
