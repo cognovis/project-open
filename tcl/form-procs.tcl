@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
 
-# $Id: form-procs.tcl,v 1.2 2010/10/19 20:13:06 po34demo Exp $
+# $Id: form-procs.tcl,v 1.3 2011/05/25 20:49:13 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -715,7 +715,8 @@ ad_proc -public template::form::is_valid { id } {
   upvar #$level $id:submission submission
 
   if { ! $submission } { 
-    return 0 
+      ns_log Notice "new: template::form::is_valid: did not find submission"
+      return 0 
   }
 
   upvar #$level $id:error formerror
