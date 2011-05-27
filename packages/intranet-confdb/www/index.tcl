@@ -247,7 +247,7 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 
 
 
-eval [template::adp_compile -string {<formtemplate id="conf_item_filter"></formtemplate>}]
+eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="conf_item_filter"></formtemplate>}]
 set filter_html $__adp_output
 
 set left_navbar_html "
