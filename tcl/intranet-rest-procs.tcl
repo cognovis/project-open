@@ -2142,11 +2142,16 @@ ad_proc -public im_rest_valid_sql {
     # ------------------------------------------------------
     # Rules have a format LHS <- RHS (Left Hand Side <- Right Hand Side)
     set rules {
+	query {select [a-z_]+}
+	query {from [a-z_]+}
+	query {where cond}
+	query {query query}
 	cond {cond and cond}
 	cond {cond or cond}
 	cond {\( cond \)}
 	cond {val = val}
 	cond {val like val}
+	cond {[a-z_]+ like val}
 	cond {val > val}
 	cond {val >= val}
 	cond {val < val}
@@ -2156,9 +2161,10 @@ ad_proc -public im_rest_valid_sql {
 	cond {val is null}
 	cond {val is not null}
 	cond {val in \( val \)}
+	cond {val in \( query \)}
 	val  {val , val}
 	val {[0-9]+}
-	val {\'[^\']*\'}
+	val {\'[a-z0-9_\ \-\%]*\'}
     }
 
     # Add rules for every variable saying that it's a var.
@@ -2184,12 +2190,17 @@ ad_proc -public im_rest_valid_sql {
 	}
     }
 
-    # Show the application of rules for debugging
-    if {$debug} { return $debug_result }
-
     set string [string trim $string]
-    if {"" == $string || "cond" == $string} { return 1 }
-    return 0
+    set result 0
+    if {"" == $string || "cond" == $string} { set result 1 }
+
+    # Show the application of rules for debugging
+    if {$debug} { 
+	append debug_result "result=$result\n"
+	return $debug_result 
+    }
+
+    return $result
 }
 
 # ----------------------------------------------------------------------
