@@ -257,14 +257,9 @@ extjs::init
 template::head::add_javascript -src "/extjs/ExtJS3/examples/ux/RowEditor.js" -order 9
 template::head::add_javascript -src "/extjs/ux-numeric.js" -order 20
 
-<<<<<<< HEAD
-# Approve button for the MPK
-set mpk_approve_js ",{
-=======
 # Approve button for the PMO
 if {[im_permission $user_id "approve_budgets"]} {
     set pmo_approve_js ",{
->>>>>>> b3699e3... Merged
             text: 'Approve',
             handler:function(){
                 budget_form.getForm().load({
@@ -272,12 +267,7 @@ if {[im_permission $user_id "approve_budgets"]} {
                     params: {action: 'approve_budget', budget_id: '$budget_id'}
                 });
             }
-<<<<<<< HEAD
-        }"
-=======
         }"
 } else {
     set pmo_approve_js ""
 }
-
->>>>>>> b3699e3... Merged

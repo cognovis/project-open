@@ -94,11 +94,7 @@ Ext.onReady(function(){
                     }
                 });
             }
-<<<<<<< HEAD
-        }@mpk_approve_js;noquote@]
-=======
         }@pmo_approve_js;noquote@]
->>>>>>> b3699e3... Merged
     });
 
     budget_form.getForm().load({
