@@ -6,6 +6,7 @@ ad_page_contract {
     @cvs-id $Id: permissions.tcl,v 1.2 2005/05/26 08:28:46 maltes Exp $
 } {
     {object_id:integer}
+    {return_url ""}
 }
 set user_id [ad_conn user_id]
 
@@ -23,3 +24,4 @@ if {[fs_file_p $object_id]} {
     set page_title [fs_get_folder_name $object_id]
     set context [fs_context_bar_list -final [_ acs-subsite.Permissions] -root_folder_id $root_folder_id $object_id]
 }
+

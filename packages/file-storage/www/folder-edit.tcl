@@ -56,7 +56,7 @@ ad_form -extend -form {
     callback fs::folder_edit -package_id [ad_conn package_id] -folder_id $folder_id
 
 } -after_submit {
-    ad_returnredirect "?folder_id=$folder_id"
+    ad_returnredirect "index?folder_id=$folder_id"
 }
 
 ad_return_template
