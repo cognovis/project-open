@@ -30,10 +30,10 @@ Ext.define('TicketBrowser.Main', {
             layout: 'border',
             itemId: 'main',
             items: [{
-                xtype: 'slalist',
+                xtype: 'ticketfilteraccordion',
                 region: 'west',
                 width: 300,
-                title: 'Service Level Agreements',
+                title: 'Ticket Filters',
                 split: true,
                 margins: '5 0 5 5'
             }, {
@@ -56,5 +56,9 @@ Ext.define('TicketBrowser.Main', {
     
     loadSla: function(rec){
         this.down('#ticket').loadSla(rec);
+    },
+
+    filterTickets: function(filterValues){
+        this.down('#ticket').filterTickets(filterValues);
     }  
 });

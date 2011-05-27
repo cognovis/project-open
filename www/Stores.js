@@ -23,6 +23,7 @@
  */
 
 var ticketTypeStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketTypeStore',
 		        autoLoad: true,
 		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
 		        fields: ['category_id', 'category'],
@@ -40,6 +41,7 @@ var ticketTypeStore = Ext.create('Ext.data.Store', {
 
 
 var ticketStatusStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketStatusStore',
 		        autoLoad: true,
 		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
 		        fields: ['category_id', 'category'],
@@ -55,8 +57,26 @@ var ticketStatusStore = Ext.create('Ext.data.Store', {
 		        }
 		});
 
+var companyTypeStore = Ext.create('Ext.data.Store', {
+			storeId: 'companyTypeStore',
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Company Type\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
 
 var ticketPriorityStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketPriorityStore',
 		        autoLoad: true,
 		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
 		        fields: ['category_id', 'category'],
@@ -73,6 +93,7 @@ var ticketPriorityStore = Ext.create('Ext.data.Store', {
 		});
 
 
+
 var ticketPriorityData = [
 {"id": "30201", "object_name": "1", "category_id": "30201", "tree_sortkey": "00030201", "category": "1", "category_translated": "1", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
 {"id": "30202", "object_name": "2", "category_id": "30202", "tree_sortkey": "00030202", "category": "2", "category_translated": "2", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
@@ -86,6 +107,7 @@ var ticketPriorityData = [
 ];
 
 var customerContactStore = Ext.create('Ext.data.Store', {
+			storeId: 'customerContactStore',
 		        autoLoad: true,
 		        fields: ['user_id', 'first_names', 'last_name',
 				{ name: 'name',
@@ -108,6 +130,7 @@ var customerContactStore = Ext.create('Ext.data.Store', {
 
 
 var employeeStore = Ext.create('Ext.data.Store', {
+			storeId: 'employeeStore',
 		        autoLoad: true,
 		        fields: ['user_id', 'first_names', 'last_name',
 				{ name: 'name',
@@ -123,6 +146,42 @@ var employeeStore = Ext.create('Ext.data.Store', {
 		                extraParams: {
 		                        format: 'json',
 					format_variant: 'sencha'
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+var programStore = Ext.create('Ext.data.Store', {
+			storeId: 'programStore',
+		        autoLoad: true,
+		        fields: ['project_id', 'project_name'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_project',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					format_variant: 'sencha',
+					project_type_id: '2510'		// project_type_id = "Program"
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
+
+var ticketSlaStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketSlaStore',
+		        autoLoad: true,
+		        fields: ['project_id', 'project_name'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_project',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					format_variant: 'sencha',
+					project_type_id: '2502'		// project_type_id = "Service Level Agreement"
 		                },
 		                reader: { type: 'json', root: 'data' }
 		        }

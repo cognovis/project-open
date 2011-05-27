@@ -57,6 +57,11 @@ Ext.define('TicketBrowser.TicketContainer', {
         this.child('#grid').loadSla(rec.getId());
     },
     
+    filterTickets: function(filterValues) {
+        this.tab.setText('Filtered Tickets');
+        this.child('#grid').filterTickets(filterValues);
+    },
+    
     onSelect: function(rec) {
         this.child('#preview').update({
             title: rec.get('project_name')

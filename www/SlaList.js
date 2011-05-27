@@ -21,10 +21,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-Ext.define('TicketBrowser.SlaList', {
+var slaList = Ext.define('TicketBrowser.SlaList', {
 
     extend: 'Ext.tree.Panel',   
     alias: 'widget.slalist',
+    title: 'Service Level Agreements',
+
     rootVisible: false,
     lines: false,
     defaultSla: 53349,
@@ -63,6 +65,7 @@ Ext.define('TicketBrowser.SlaList', {
                     load: this.onFirstLoad
                 }
             })
+
         });
         this.callParent();
         this.getSelectionModel().on({
@@ -78,7 +81,7 @@ Ext.define('TicketBrowser.SlaList', {
     
     onSelect: function(selModel, rec){
 	if (rec.get('leaf')) { 		
-            this.ownerCt.loadSla(rec);
+            this.ownerCt.ownerCt.loadSla(rec);
 	}
     }
 });
