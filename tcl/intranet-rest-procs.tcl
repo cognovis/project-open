@@ -2106,7 +2106,7 @@ ad_proc -public im_rest_object_type_update_sql {
 ad_proc -public im_rest_valid_sql {
     -string:required
     {-variables {} }
-    {-debug 0}
+    {-debug 1}
 } {
     Returns 1 if "where_clause" is a valid where_clause or 0 otherwise.
     The validator is based on applying a number of rules using a rule engine.
@@ -2185,7 +2185,8 @@ ad_proc -public im_rest_valid_sql {
 	    set org_string $string
 	    incr fired [regsub -all " $rhs " $string " $lhs " string]
 	    if {$string != $org_string} {
-		append debug_result "$lhs -> rhs=$rhs: '$string'\n"
+		append debug_result "$lhs -> $rhs: '$string'\n"
+		ns_log Notice "im_rest_valid_sql: $lhs -> $rhs: '$string'\n"
 	    }
 	}
     }
@@ -2197,7 +2198,8 @@ ad_proc -public im_rest_valid_sql {
     # Show the application of rules for debugging
     if {$debug} { 
 	append debug_result "result=$result\n"
-	return $debug_result 
+	ns_log Notice "im_rest_valid_sql: result=$result"
+	# return $debug_result 
     }
 
     return $result
