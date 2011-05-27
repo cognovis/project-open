@@ -183,6 +183,9 @@ template::list::create \
 	sent_date {
 	    label "[_ intranet-mail.Sent_Date]"
 	}            
+	status {
+	    label "[_ intranet-mail.Status]"
+	}
     } -orderby {
 	sender {
 	    orderby sender_id

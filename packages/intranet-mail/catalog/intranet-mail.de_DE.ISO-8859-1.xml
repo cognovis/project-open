@@ -20,6 +20,7 @@
   <msg key="Reply_To">Antworten</msg>
   <msg key="Request_mail_tracking_for_instance_name">Mail Tracking für %instance_name% einrichten</msg>
   <msg key="Request_Notification_for_instance_name">Benachrichtigung für %instance_name% beantragen</msg>
+  <msg key="Send_Mail">Mail senden</msg>
   <msg key="Sender">Absender</msg>
   <msg key="Sent_Date">Versanddatum</msg>
   <msg key="Subject">Betreff</msg>

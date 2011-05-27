@@ -5,6 +5,7 @@
   <msg key="BCC">BCC</msg>
   <msg key="Body">Body</msg>
   <msg key="CC">CC</msg>
+  <msg key="Context_id">Context</msg>
   <msg key="Emails_to">Watch Emails to:</msg>
   <msg key="Employees">Employees</msg>
   <msg key="Files">Files</msg>
@@ -22,8 +23,10 @@
   <msg key="Reply_To">Reply to</msg>
   <msg key="Request_mail_tracking_for_instance_name">Request mail tracking for %instance_name%</msg>
   <msg key="Request_Notification_for_instance_name">Request Notification for %instance_name%</msg>
+  <msg key="Send_Mail">Send Mail</msg>
   <msg key="Sender">Sender</msg>
   <msg key="Sent_Date">Sent Date</msg>
+  <msg key="Status">Status</msg>
   <msg key="Subject">Subject</msg>
   <msg key="The_specified_message_does_not_exist">The specified message does not exist</msg>
   <msg key="View">View</msg>
