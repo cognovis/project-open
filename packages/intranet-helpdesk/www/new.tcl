@@ -429,9 +429,9 @@ set ttt {
 }
 # customer_contact_options
 #
-if {$user_can_create_new_customer_p} {
-    set customer_contact_options [linsert $customer_contact_options 0 [list "Create New Customer Contact" "new"]]
-}
+#if {$user_can_create_new_customer_p} {
+#    set customer_contact_options [linsert $customer_contact_options 0 [list "Create New Customer Contact" "new"]]
+#}
 set customer_contact_options [linsert $customer_contact_options 0 [list "" ""]]
 
 
