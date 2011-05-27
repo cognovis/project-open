@@ -17,7 +17,7 @@ ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @author Frank Bergmann <frank.bergmann@project-open.com>
     @creation-date May 20th, 2005
-    @cvs-id $Id: search.tcl,v 1.29 2011/04/05 14:24:34 po34demo Exp $
+    @cvs-id $Id: search.tcl,v 1.30 2011/05/23 14:28:31 po34demo Exp $
 
     This search page uses the "TSearch2" full text index (FTI)
     and the P/O permission system to locate suitable business
@@ -419,12 +419,25 @@ set forum_perm_sql ""
 # Build a suitable select for object types
 # -----------------------------------------------------------
 
-foreach t $type { lappend types "'$t'"} 
+foreach t $type {
+
+    # Security check for cross site scripting
+    if {![regexp {^[a-zA-Z0-9_]*$} $t]} {
+	im_security_alert \
+	    -location "/intranet-search-pg/www/search.tcl" \
+	    -message "Invalid search object type - SQL injection attempt" \
+	    -value [ns_quotehtml $t]
+	# Quote the harmful var
+	regsub -all {[^a-zA-Z0-9_]} $t "_" t
+    }
+    
+    lappend types "'$t'"
+} 
+
 set object_type_where "object_type in ([join $types ","])"
 if {[string equal "all" $type]} {
     set object_type_where "1=1"
 }
-
 
 # -----------------------------------------------------------
 # Main SQL

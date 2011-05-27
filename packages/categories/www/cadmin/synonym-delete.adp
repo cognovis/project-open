@@ -4,13 +4,14 @@
 <property name="locale">@locale;noquote@</property>
 
 <p>
-  <b>Are you sure you want to delete these synonyms:</b>
+  <b>#categories.lt_Are_you_sure_you_want_2#</b>
 </p>
 
 <listtemplate name="synonyms"></listtemplate>
 
 <p>
-  <a href="@delete_url@" class="button">Delete</a>
+  <a href="@delete_url@" class="button">#categories.Delete#</a>
   &nbsp;&nbsp;&nbsp;
-  <a href="@cancel_url@" class="button">No, Cancel</a>
+  <a href="@cancel_url@" class="button">#categories.No_Cancel#</a>
 </p>
+

@@ -1,5 +1,5 @@
 # regression test for xowiki
-# $Id: test.tcl,v 1.30 2011/02/14 11:22:40 gustafn Exp $
+# $Id: test.tcl,v 1.31 2011/05/20 17:10:52 gustafn Exp $
 Object test
 test set passed 0
 test set failed 0
@@ -1368,7 +1368,7 @@ $o package_id $info(package_id)
 
 set f0 [$o create_raw_form_field -name test -slot ::xowiki::Page::slot::name]
 ? {$f0 asWidgetSpec} \
-    {text,optional {label {#xowiki.Page-name#}}  {html {id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
+    {text,optional {label {#xowiki.Page-name#}}  {html {maxlength 400 id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
     "name with help_text"
 
 set f0 [$o create_raw_form_field -name test \
@@ -1380,7 +1380,7 @@ set f0 [$o create_raw_form_field -name test \
 set f0 [$o create_raw_form_field -name test \
 	    -slot ::xowiki::Page::slot::name -spec optional]
 ? {$f0 asWidgetSpec} \
-    {text,optional {label {#xowiki.Page-name#}}  {html {id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
+    {text,optional {label {#xowiki.Page-name#}}  {html {maxlength 400 id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
     "name with help_text + optional"
 
 set f1 [$o create_raw_form_field -name test \

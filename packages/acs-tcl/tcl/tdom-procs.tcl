@@ -8,7 +8,7 @@ ad_library {
 
     @author avni@ucla.edu (AK)
     @creation-date 2004/10/19
-    @cvs-id $Id: tdom-procs.tcl,v 1.1 2010/10/19 20:37:04 po34demo Exp $
+    @cvs-id $Id: tdom-procs.tcl,v 1.3 2008/03/22 18:31:32 gustafn Exp $
 
     @tdom::get_node_object
     @tdom::get_parent_node_object

@@ -1147,6 +1147,17 @@ ad_proc export_url_bind_vars { bind_vars } {
     set vars ""
     set ctr 0
     foreach var [ad_ns_set_keys $bind_vars] {
+
+	# Security check for cross site scripting
+	if {![regexp {^[a-zA-Z0-9_\-]*$} $var]} {
+	    im_security_alert \
+		-location export_url_bind_vars \
+		-message "Invalid URL var characters" \
+		-value [ns_quotehtml $var]
+	    # Quote the harmful vars
+	    regsub -all {[^a-zA-Z0-9_\-]} $var "_" var
+	}
+
 	set value [ns_set get $bind_vars $var]
 	if {$ctr > 0} { append vars "&" }
 	append vars "$var=[ns_urlencode $value]"
@@ -1509,13 +1520,16 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set bind_vars [ns_conn form]
     if {"" == $bind_vars} { set bind_vars [ns_set create] }
 
+
     # Remove return_url from current vars, because it's too long
     # to be incorporated into the local return_url
     ns_set delkey $bind_vars return_url
     set return_url "$current_url_without_vars?[export_url_bind_vars $bind_vars]"
+
     if {"" == $bread_crum_path} {
         set bread_crum_path [ns_set get $bind_vars bread_crum_path]
     }
+
     set base_path_depth [llength [split $base_path "/"]]
     ns_set delkey $bind_vars bread_crum_path
 
@@ -1526,7 +1540,6 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     if {[string equal "customer" $folder_type] || [string equal "user" $folder_type]} {
 	if {!$user_is_employee_p} { return "" }
     }
-
 
     # ------------------------------------------------------------------
     # Start initializing the tree algrorithm
@@ -1584,18 +1597,18 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     # Extract the folder status from the DB table.
     # ------------------------------------------------------------------
     set query "
-select 
-	f.folder_id, 
-	f.path, 
-	s.open_p 
-from 
-	im_fs_folders f,
-	im_fs_folder_status s
-where 
-	s.user_id = :user_id
-	and f.object_id = :object_id
-	and f.folder_id = s.folder_id
-"
+	select 
+		f.folder_id, 
+		f.path, 
+		s.open_p 
+	from 
+		im_fs_folders f,
+		im_fs_folder_status s
+	where 
+		s.user_id = :user_id
+		and f.object_id = :object_id
+		and f.folder_id = s.folder_id
+    "
  
     set last_folder_id 0
     set folder_id_hash() 0

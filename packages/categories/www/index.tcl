@@ -12,7 +12,7 @@ ad_page_contract {
     trees:multirow
 }
 
-set page_title "Categories"
+set page_title "#categories.Categories#"
 set context_bar ""
 
 set user_id [auth::require_login]
@@ -35,17 +35,17 @@ template::multirow sort trees -dictionary tree_name
 template::list::create \
     -name trees \
     -key tree_ids \
-    -no_data "None" \
+    -no_data "#categories.None#" \
     -bulk_actions {
-	"Browse" "categories-browse" "Browse through selected category trees"
+	"#categories.Browse#" "categories-browse" "#categories.Browse_link_title#"
     } -elements {
 	tree_name {
-	    label "Name"
+	    label "#acs-subsite.Name#"
 	}
     }
 
 ad_form -name search_form -action . -form {
-    {search_text:text {label "Search String"} {value $search_text} {html {size 50 maxlength 200}}}
+    {search_text:text {label "#categories.Search_string#"} {value $search_text} {html {size 50 maxlength 200}}}
 } -on_submit {
     set query_id [category_synonym::search -search_text [string trim $search_text] -locale $locale]
 } -after_submit {

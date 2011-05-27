@@ -77,8 +77,6 @@ ad_proc http_auth::register_filter {
     
     ad_register_filter preauth GET $url_pattern http_auth::authorize $proc
     ad_register_filter preauth POST $url_pattern http_auth::authorize $proc
-    ad_register_filter preauth PUT $url_pattern http_auth::authorize $proc
-    ad_register_filter preauth DELETE $url_pattern http_auth::authorize $proc
     ad_register_filter preauth HEAD $url_pattern http_auth::authorize $proc
 
 }

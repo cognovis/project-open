@@ -3,7 +3,7 @@ ad_library {
 
     @author Jeff Davis
     @creation-date 2005-02-28
-    @cvs-id $Id: file-test-procs.tcl,v 1.2 2010/10/19 20:41:45 po34demo Exp $
+    @cvs-id $Id: file-test-procs.tcl,v 1.8.4.1 2010/05/23 14:02:58 gustafn Exp $
 }
 
 aa_register_case -cats {smoke production_safe} files__tcl_file_syntax_errors {

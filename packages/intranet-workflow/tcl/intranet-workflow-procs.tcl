@@ -1073,6 +1073,17 @@ ad_proc -public im_workflow_home_inbox_component {
     for { set i 0 } { $i < $form_vars_size } { incr i } {
 	set key [ns_set key $form_vars $i]
 	if {"" == $key} { continue }
+
+	# Security check for cross site scripting
+        if {![regexp {^[a-zA-Z0-9_\-]*$} $key]} {
+            im_security_alert \
+		-location im_workflow_home_inbox_component \
+                -message "Invalid URL var characters" \
+                -value [ns_quotehtml $key]
+            # Quote the harmful keys
+            regsub -all {[^a-zA-Z0-9_\-]} $key "_" key
+        }
+
 	set value [ns_set get $form_vars $key]
 	append current_url "$key=[ns_urlencode $value]"
 	ns_log Notice "im_workflow_home_inbox_component: i=$i, key=$key, value=$value"

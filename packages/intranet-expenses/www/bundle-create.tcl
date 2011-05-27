@@ -108,8 +108,8 @@ im_audit -object_type im_expense_bundle -action after_create -object_id $expense
 
 set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }
-if {$wf_installed_p && !$add_expense_bundles_p} {
 
+if {$wf_installed_p && $add_expense_bundles_p} {
     im_expenses_workflow_spawn_workflow \
 	-expense_bundle_id $expense_bundle_id \
 	-user_id $current_user_id
@@ -120,9 +120,7 @@ if {$wf_installed_p && !$add_expense_bundles_p} {
     	A new workflow has been created for your request.
     "]
     ad_return_template
-    
 }
-
 
 # ---------------------------------------------------------------
 # Where to go now?

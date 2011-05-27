@@ -22,7 +22,7 @@ ad_page_contract {
     expense_type_id:array,integer,optional
     billable_p:array,optional
     reimbursable:array,optional,optional
-    expense_payment_type_id:integer,optional
+    expense_payment_type_id:array,integer,optional
     receipt_reference:array,optional
     note:array,optional
     return_url
@@ -96,7 +96,7 @@ for {set i 0} {$i < 20} {incr i} {
 
     if {[info exists vat($i)] && "" != $vat($i)} { 
 	set item_vat $vat($i)
-	set set_p 1
+	set set_p 2
     }
 
     if {[info exists expense_date($i)] && "" != $expense_date($i)} { 
@@ -105,12 +105,12 @@ for {set i 0} {$i < 20} {incr i} {
 
     if {[info exists external_company_name($i)] && "" != $external_company_name($i)} { 
 	set item_external_company_name $external_company_name($i)
-	set set_p 1
+	set set_p 3
     }
 
     if {[info exists expense_type_id($i)] && "" != $expense_type_id($i) && 0 != $expense_type_id($i)} { 
 	set item_expense_type_id $expense_type_id($i)
-	set set_p 1
+	set set_p 4
     }
 
     if {[info exists billable_p($i)] && "" != $billable_p($i)} { 
@@ -119,26 +119,27 @@ for {set i 0} {$i < 20} {incr i} {
 
     if {[info exists reimbursable($i)] && "" != $reimbursable($i)} { 
 	set item_reimbursable $reimbursable($i)
-	set set_p 1
+	set set_p 5
     }
 
-    if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i)} { 
+    if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i) && 0 != $expense_payment_type_id($i)} { 
 	set item_expense_payment_type_id $expense_payment_type_id($i)
-	set set_p 1
+	set set_p 6
     }
 
 
     if {[info exists receipt_reference($i)] && "" != $receipt_reference($i)} {
         set item_receipt_reference $receipt_reference($i)
-        set set_p 1
+        set set_p 7
     }
 
     if {[info exists note($i)] && "" != $note($i)} { 
 	set item_note $note($i)
-	set set_p 1
+	set set_p 8
     }
 
-    if {$set_p} {
+
+    if {$set_p != 0} {
 
 	# Check the format of the expense date
 	if {![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $item_expense_date]} {
@@ -249,7 +250,7 @@ db_transaction {
 	    set set_p 1
 	}
 	
-	if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i)} { 
+	if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i) && 0 != $expense_payment_type_id($i)} { 
 	    set item_expense_payment_type_id $expense_payment_type_id($i)
 	    set set_p 1
 	}
@@ -264,8 +265,9 @@ db_transaction {
 	    set set_p 1
 	}
 	
+
 	if {$set_p} {
-	    
+
 	    # Get the user's department as default CC
 	    set cost_center_id [db_string user_cc "select department_id from im_employees where employee_id = :user_id" -default ""]
 	    # Choose a name for the expense without incrementing the object pointer
@@ -322,7 +324,6 @@ db_transaction {
 
 	    # Audit the action
 	    im_audit -object_type im_expense -action after_create -object_id $expense_id -status_id $item_cost_status -type_id $item_cost_type_id
-	    
 	}
 	
     }

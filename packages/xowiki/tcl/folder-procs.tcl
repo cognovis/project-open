@@ -429,6 +429,13 @@ namespace eval ::xowiki::includelet {
     my get_parameters
 
     set current_folder [my set __including_page]
+    if {![$current_folder istype ::xowiki::FormPage]} {
+      # current folder has to be a FormPage
+      set current_folder [$current_folder parent_id]
+      if {![$current_folder istype ::xowiki::FormPage]} {
+	error "child-resources not included from a FormPage"
+      }
+    }
     set current_folder_id [$current_folder item_id]
 
     if {[::xo::cc query_parameter m] ne "list"} {
@@ -501,10 +508,22 @@ namespace eval ::xowiki::includelet {
 	set name [$c name]
         set page_link [::$package_id pretty_link -parent_id $logical_folder_id $name]
 	array set icon [$c render_icon]
-        
+
+	if {[catch {set prettyName [$c pretty_name]} errorMsg]} {
+	  my msg "can't obtain pretty name of [$c item_id] [$c name]: $errorMsg"
+	  set prettyName $name
+	}
+
+	#set delete_link [export_vars -base  [$package_id package_url] \
+	#		      [list {delete 1} \
+	#			   [list item_id [$c item_id]] \
+	#			   [list name [$c pretty_link]] return_url]]
+
+	set delete_link [export_vars -base $page_link {{m delete} return_url}]
+	
         $t add \
             -ID [$c name] \
-            -name [$c pretty_name] \
+            -name $prettyName \
 	    -name.href [export_vars -base $page_link {template_file}] \
             -name.title [$c set title] \
             -object_type $icon(text) \
@@ -514,10 +533,7 @@ namespace eval ::xowiki::includelet {
             -edit.href [export_vars -base $page_link {{m edit} return_url}] \
             -edit.title #xowiki.edit# \
             -delete "" \
-            -delete.href [export_vars -base  [$package_id package_url] \
-			      [list {delete 1} \
-				   [list item_id [$c item_id]] \
-				   [list name [$c pretty_link]] return_url]] \
+            -delete.href $delete_link \
             -delete.title #xowiki.delete#
       }
     }

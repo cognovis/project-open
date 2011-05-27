@@ -25,7 +25,7 @@ ad_library {
 
     @author Jon Salz (jsalz@mit.edu)
     @creation-date 26 June 2000
-    @cvs-id $Id: adp-parser-procs.tcl,v 1.2 2010/10/19 20:12:52 po34demo Exp $
+    @cvs-id $Id: adp-parser-procs.tcl,v 1.2 2007/01/10 21:22:11 gustafn Exp $
 
 }
 
