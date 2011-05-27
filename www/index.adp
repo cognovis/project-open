@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="TicketContainer.js"></script> 
 	<script type="text/javascript" src="TicketGrid.js"></script> 
 	<script type="text/javascript" src="TicketForm.js"></script> 
+	<script type="text/javascript" src="TicketFilterForm.js"></script> 
+	<script type="text/javascript" src="TicketFilterAccordion.js"></script> 
 	<script type="text/javascript" src="PreviewPlugin.js"></script> 
 	<script type="text/javascript" src="Main.js"></script> 
 

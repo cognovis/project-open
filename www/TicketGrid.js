@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js,v 1.7 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js,v 1.8 2011/05/27 20:18:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,7 +23,7 @@
  */
 
 
-Ext.define('TicketBrowser.TicketGrid', {
+var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.ticketgrid',
     minHeight: 200,
@@ -203,6 +203,61 @@ Ext.define('TicketBrowser.TicketGrid', {
     loadSla: function(id){
 	var store = this.store;
 	store.getProxy().extraParams.parent_id = id;
+	store.loadPage(1);
+    },
+    
+    // Called from TicketFilterForm in order to limit the list of
+    // tickets according to filter variables.
+    // filterValues is a key-value list (object).
+    filterTickets: function(filterValues){
+	var store = this.store;
+	var proxy = store.getProxy();
+	var value = '';
+
+	// delete filters added by other accordion filters
+	delete proxy.extraParams['query'];
+	delete proxy.extraParams['parent_id'];
+
+	// Apply the filter values directly to the proxy.
+	// This only works if the filters are named according
+	// to the REST interface specs.
+	for(var key in filterValues) {
+	    if (filterValues.hasOwnProperty(key)) {
+
+		value = filterValues[key];
+
+		// special treatment for special filter variables
+		switch (key) {
+			case 'vat_number':
+				// The customer's VAT number is not part of the REST
+				// ticket fields. So translate into a query:
+				var query = 'company_id in (select company_id from im_companies where vat_number like \'%'+value+'%\')';
+				key = 'query';
+				filterValues['query'] = query;
+				break;
+			case 'company_name':
+				// The customer's company name is not part of the REST
+				// ticket fields. So translate into a query:
+				var query = 'company_id in (select company_id from im_companies where company_name like \'%'+value+'%\')';
+				key = 'query';
+				filterValues['query'] = query;
+				break;
+		}
+
+
+		if (value != '' && value != undefined) {
+		    // Add the filter to the "extraParams" of the proxy.
+		    // The proxy will pass these parameters right to the
+		    // REST server.
+		    proxy.extraParams[key] = filterValues[key];
+		} else {
+		    // Delete the filter if undefined
+		    if (proxy.hasOwnProperty(key)) {
+			delete proxy.extraParams[key];
+		    }
+		}
+	    }
+	}
 	store.loadPage(1);
     },
     

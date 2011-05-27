@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js,v 1.4 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: Main.js,v 1.5 2011/05/27 20:18:45 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,10 +30,10 @@ Ext.define('TicketBrowser.Main', {
             layout: 'border',
             itemId: 'main',
             items: [{
-                xtype: 'slalist',
+                xtype: 'ticketfilteraccordion',
                 region: 'west',
                 width: 300,
-                title: 'Service Level Agreements',
+                title: 'Ticket Filters',
                 split: true,
                 margins: '5 0 5 5'
             }, {
@@ -56,5 +56,9 @@ Ext.define('TicketBrowser.Main', {
     
     loadSla: function(rec){
         this.down('#ticket').loadSla(rec);
+    },
+
+    filterTickets: function(filterValues){
+        this.down('#ticket').filterTickets(filterValues);
     }  
 });

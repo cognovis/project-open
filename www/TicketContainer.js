@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js,v 1.4 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js,v 1.5 2011/05/27 20:18:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -55,6 +55,11 @@ Ext.define('TicketBrowser.TicketContainer', {
     loadSla: function(rec) {
         this.tab.setText(rec.get('project_name'));
         this.child('#grid').loadSla(rec.getId());
+    },
+    
+    filterTickets: function(filterValues) {
+        this.tab.setText('Filtered Tickets');
+        this.child('#grid').filterTickets(filterValues);
     },
     
     onSelect: function(rec) {
