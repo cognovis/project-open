@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: package-procs.tcl,v 1.244 2011/05/15 12:04:33 gustafn Exp $
+    @cvs-id $Id: package-procs.tcl,v 1.245 2011/05/23 10:47:59 gustafn Exp $
 }
 
 namespace eval ::xowiki {
@@ -1979,7 +1979,7 @@ namespace eval ::xowiki {
       #my log "--D item_id from query parameter $item_id"
     }
     #
-    # if name given, take it from the query parameter
+    # if no name is given, take it from the query parameter
     #
     if {![info exists name]} {
       set name [my query_parameter name]

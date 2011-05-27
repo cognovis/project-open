@@ -5,14 +5,15 @@
 
 <p>
 <if @sw_tree_p@ eq 1>
-  This is a site wide category tree<p>
+  #categories.lt_This_is_a_site_wide_c#<p>
   <if @admin_p@ eq 1>
-    <a href="site-wide-status-change?action=0&@url_vars@" class="button">Make it Local</a>
+    <a href="site-wide-status-change?action=0&@url_vars@" class="button">#categories.Make_it_Local#</a>
   </if>
 </if>
 <else>
-  This tree is local<p>
+  #categories.This_tree_is_local#<p>
   <if @admin_p@ eq 1>
-    <a href="site-wide-status-change?action=1&@url_vars@" class="button">Make it Site-Wide</a>
+    <a href="site-wide-status-change?action=1&@url_vars@" class="button">#categories.Make_it_Site-Wide#</a>
   </if>
 </else>  
+

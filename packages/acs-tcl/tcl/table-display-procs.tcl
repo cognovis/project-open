@@ -452,6 +452,7 @@ ad_proc -deprecated ad_table {
             set Trow_default "<tr$Trow_default>"
 
 	    append Thtml [subst $Trow_code]
+
         # fixing /acs-admin/apm/version-parameters
         set scope ""	    
 

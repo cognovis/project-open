@@ -16,9 +16,9 @@ ad_page_contract {
 auth::require_login
 
 if { ![ad_form_new_p -key tree_id] } {
-    set page_title "Edit tree"
+    set page_title "#categories.Edit_tree#"
 } else {
-    set page_title "Add tree"
+    set page_title "#categories.Add_tree#"
 }
 
 if { [info exists object_id] } {

@@ -89,6 +89,10 @@ returns integer as '
 declare
   p_authority_id            alias for $1;
 begin
+
+  delete from auth_driver_params
+  where authority_id = p_authority_id;
+
   perform acs_object__delete(p_authority_id);
 
   return 0; 

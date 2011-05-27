@@ -2205,6 +2205,10 @@ ad_proc -public ad_returnredirect {
       	util_user_message -message $message -html
     }
 
+    if { [util_exploit_url_p $target_url] } {
+	error "Redirection to invalid URL: '[ns_quotehtml $target_url]'"
+    }
+
     if { [util_complete_url_p $target_url] } {
         # http://myserver.com/foo/bar.tcl style - just pass to ns_returnredirect
         # check if the hostname matches the current host
@@ -2223,6 +2227,7 @@ ad_proc -public ad_returnredirect {
             set url [util_current_location][util_current_directory]$target_url
         }
     }
+
     #Ugly workaround to deal with IE5.0 bug handling multipart/form-data using 
     #Meta Refresh page instead of a redirect. 
     # jbank@arsdigita.com 6/7/2000
@@ -2300,6 +2305,71 @@ ad_proc -public util_get_user_messages {
         template::multirow append $multirow $message
     }
 }
+
+ad_proc -public util_exploit_url_p {{} string} {
+  Determine whether string is an exploit URL, i.e.
+  wheteher it contains strange or forbidden characters.
+} {
+    set string [ns_urldecode $string]
+    ns_log Notice "util_exploit_url_p: Checking URL for exploit attemts: '$string'"
+
+    # Check for optional "http://" protocol header
+    # (http)://(demo.project-open.net/intranet/projects/index?var=value&var=value)
+    if {[regexp -nocase {^([a-z]):(\/*)(.*)$} $string match proto slashes string]} {
+	ns_log Notice "util_exploit_url_p: Found a protocol string: '$proto'"
+    } else {
+	ns_log Notice "util_exploit_url_p: Did not find an optional protocol"
+    }
+
+    # Check for optional "demo.project-open.net" host name
+    # (demo.project-open.net)/intranet/projects/index?var=value&var=value
+    if {[regexp -nocase {^([a-z0-9_\.\-]):(.*)$} $string match host string]} {
+	ns_log Notice "util_exploit_url_p: Found a host name: '$host'"
+    } else {
+	ns_log Notice "util_exploit_url_p: Did not find an optional host name"
+    }
+
+    # Check for URL with only a path and no variables
+    if {[regexp -nocase {^([\/a-z0-9_\.\-])+$} $string match path]} {
+	# No variables to be checked...
+	return 0
+    }
+
+    # Check for page path
+    # (/intranet/projects/index)?(var=value&var=value)
+    if {[regexp -nocase {^([\/a-z0-9_\.\-])+\?(.*)$} $string match path string]} {
+	ns_log Notice "util_exploit_url_p: Found a valid path: '$path'"
+    } else {
+	ns_log Notice "util_exploit_url_p: Did not find a valid path in: '$string'"
+	return 1
+    }
+
+    # The rest are var=value pairs now, separated by a "&"
+    set tuples [split $string "&"]
+    ns_log Notice "util_exploit_url_p: Found variable pairs: '$tuples'"
+
+    foreach tuple $tuples {
+	ns_log Notice "util_exploit_url_p: Checking tuple: '$tuple'"
+	if {[regexp -nocase {^([a-z0-9_\.\-]+)=(.*)$} $tuple match var value]} {
+	    ns_log Notice "util_exploit_url_p: Found a valid var=value pair: '$var'='$value'"
+	} else {
+
+	    # Try to decode URL and try again
+	    set tuple [ns_urldecode $tuple]
+	    
+	    if {[regexp -nocase {^([a-z0-9_\.\-]+)=(.*)$} $tuple match var value]} {
+		ns_log Notice "util_exploit_url_p: Found a valid var=value pair: '$var'='$value'"
+	    } else {
+		ns_log Notice "util_exploit_url_p: Found invalid var=value pair: '$tuple'"
+		return 1
+	    }
+	}
+    }
+
+    # Apparent NOT an exploit URL
+    return 0
+}
+
 
 ad_proc -public util_complete_url_p {{} string} {
   Determine whether string is a complete URL, i.e.

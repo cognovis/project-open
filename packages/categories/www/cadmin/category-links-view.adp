@@ -4,5 +4,5 @@
 <property name="locale">@locale;noquote@</property>
 
 <listtemplate name="category_links"></listtemplate>
-Explanation: Any categorization made to the source category will
-also be made to the target category.
+#categories.lt_Explanation_Any_categ#
+

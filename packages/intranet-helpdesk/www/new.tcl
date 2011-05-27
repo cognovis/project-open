@@ -36,6 +36,7 @@ if {![info exists task]} {
 	{ form_mode "edit" }
         { render_template_id:integer 0 }
 	{ escalate_from_ticket_id 0 }
+	{ format "html" }
     }
 
     set show_components_p 1
@@ -65,6 +66,7 @@ if {![info exists task]} {
 
     set render_template_id 0
     set escalate_from_ticket_id 0
+    set format "html"
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -81,6 +83,8 @@ if {![info exists task]} {
 # ------------------------------------------------------------------
 # Default & Security
 # ------------------------------------------------------------------
+
+ns_log Notice "new: after ad_page_contract"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_id $current_user_id
@@ -188,6 +192,7 @@ set actions {}
 if {$edit_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk.Edit Edit] edit] }
 #if {$delete_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk.Delete Delete] delete] }
 
+ns_log Notice "new: ad_form: Setup fields"
 ad_form \
     -name helpdesk_ticket \
     -cancel_url $return_url \
@@ -465,6 +470,7 @@ if {$edit_ticket_status_p} {
 
 
 # Extend the form with new fields
+ns_log Notice "new: ad_form: extend with ticket_elements"
 ad_form -extend -name helpdesk_ticket -form $ticket_elements
 
 
@@ -491,13 +497,16 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 # 
 # ------------------------------------------------------------------
 
+
 # Fix for problem changing to "edit" form_mode
 set form_action [template::form::get_action "helpdesk_ticket"]
 if {"" != $form_action} { set form_mode "edit" }
 set next_ticket_nr ""
 
+ns_log Notice "new: before ad_form on_request"
 ad_form -extend -name helpdesk_ticket -on_request {
 
+    ns_log Notice "new: on_request"
     # Populate elements from local variables
     if {![info exists ticket_name] || "" == $ticket_name} { 
 	set next_ticket_nr [im_ticket::next_ticket_nr] 
@@ -563,6 +572,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
 } -new_data {
 
+    ns_log Notice "new: new_data"
     set message ""
     if {[info exists ticket_note]} { append message $ticket_note }
     if {[info exists ticket_description]} { append message $ticket_description }
@@ -617,11 +627,16 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
     # fraber 100928: Disabling return_url.
     # For a new ticket it makes sense to be sent to the new ticket page...
+    if {"json" == $format} { 
+	doc_return 200 "application/json" "{\"success\": true}" 
+	ad_script_abort
+    }
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id {form_mode display}}]
     ad_script_abort
 
 } -edit_data {
 
+    ns_log Notice "new: edit_data"
     set ticket_nr [string trim [string tolower $ticket_nr]]
     if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
     if {![exists_and_not_null project_name]} { set project_name $ticket_name}
@@ -652,8 +667,13 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
 } -after_submit {
 
-	ad_returnredirect $return_url
+    ns_log Notice "new: after_submit"
+    if {"json" == $format} { 
+	doc_return 200 "application/json" "{\"success\": true}" 
 	ad_script_abort
+    }
+    ad_returnredirect $return_url
+    ad_script_abort
 
 } -validate {
     {ticket_name
@@ -843,7 +863,7 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 # Do we have to show administration links?
 # ----------------------------------------------------------
 
-ns_log Notice "/intranet/ticket/index: Before admin links"
+ns_log Notice "new: Before admin links"
 set admin_html "<ul>"
 
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]

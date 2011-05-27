@@ -3,7 +3,7 @@
 
     @creation-date 2007-06-22
     @author Gustaf Neumann
-    @cvs-id $Id: form-field-procs.tcl,v 1.191 2011/02/24 09:40:34 gustafn Exp $
+    @cvs-id $Id: form-field-procs.tcl,v 1.193 2011/05/23 11:48:45 gustafn Exp $
 }
 
 namespace eval ::xowiki::formfield {
@@ -429,9 +429,22 @@ namespace eval ::xowiki::formfield {
       ::xo::Page requireJS  "YAHOO.xo_form_field_validate.add('[my id]','$package_url');"
     }
 
-    ::html::input [my get_attributes type size maxlength id name value disabled {CSSclass class} \
-		       autocomplete autofocus formnovalidate multiple pattern placeholder readonly required] {}
-
+    set pairs [list [list CSSclass class]]
+    # Special handling of HTML boolean attributes, since they require a
+    # different coding; it would be nice, if tdom would care for this.
+    set booleanAtts [list required readonly disabled multiple formnovalidate autofocus]
+    foreach att $booleanAtts {
+      if {[my exists $att] && [my set $att]} {
+	my set __#$att $att
+	lappend pairs [list __#$att $att]
+      }
+    }
+    ::html::input [eval my get_attributes type size maxlength id name value \
+		       pattern placeholder $pairs] {}
+    foreach att $booleanAtts {
+      if {[my exists __#$att]} {my unset __#$att}
+    }
+    
     #
     # Disabled fieds are not returned by the browsers. For some
     # fields, we require to be sent. therefore we include in these
@@ -1400,7 +1413,7 @@ namespace eval ::xowiki::formfield {
     if {![my istype ::xowiki::formfield::richtext] || $disabled } {
       my render_richtext_as_div
     } else {
-      ::xo::Page requireJS "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
+      ::xo::Page requireJS "/resources/xowiki/jquery/jquery.min.js"
       ::xo::Page requireJS "/resources/xowiki/ckeditor/ckeditor.js"
       ::xo::Page requireJS "/resources/xowiki/ckeditor/adapters/jquery.js"
 
@@ -1453,7 +1466,7 @@ namespace eval ::xowiki::formfield {
       my render_richtext_as_div
     } else {
       ::xo::Page requireCSS "/resources/xowiki/wymeditor/skins/default/screen.css"
-      ::xo::Page requireJS  "/resources/xowiki/jquery/jquery.js"
+      ::xo::Page requireJS "/resources/xowiki/jquery/jquery.min.js"
       ::xo::Page requireJS  "/resources/xowiki/wymeditor/jquery.wymeditor.pack.js"
       set postinit ""
       foreach plugin {hovertools resizable fullscreen embed} {
@@ -2259,7 +2272,12 @@ namespace eval ::xowiki::formfield {
       # file exists already
       return 1
     }
-    if {[catch {
+    if {[regexp {^file://(.*)$} $value _ path]} {
+      set f [open $path r]
+      fconfigure $f translation binary
+      set img [read $f] 
+      close $f
+    } elseif {[catch {
       set r [::xo::HttpRequest new -url $value -volatile]
       set img [$r set data]
     } errorMsg]} {

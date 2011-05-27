@@ -61,47 +61,47 @@ template::multirow sort unmapped_trees -dictionary tree_name
 
 template::list::create \
     -name mapped_trees \
-    -no_data "None" \
+    -no_data "#categories.None#" \
     -elements {
 	tree_name {
-	    label "Name"
+	    label "#acs-subsite.Name#"
 	    link_url_col view_url
 	}
         flags {
 	    display_template {
-		(<if @mapped_trees.site_wide_p@ eq t>Site-Wide Tree, </if>
+		(<if @mapped_trees.site_wide_p@ eq t>#categories.#SiteWide_tree#, </if>
                  <if @mapped_trees.widget@>@mapped_trees.widget@, </if>
-		 <if @mapped_trees.assign_single_p@ eq t>single, </if><else>multiple, </else>
-		 <if @mapped_trees.require_category_p@ eq t>required) </if><else>optional) </else>
+		 <if @mapped_trees.assign_single_p@ eq t>#categories.single#, </if><else>#categories.multiple#, </else>
+		 <if @mapped_trees.require_category_p@ eq t>#categories.required#) </if><else>#categories.optional#) </else>
 	    }
 	}
 	action {
-	    label "Action"
+	    label "#categories.Action#"
 	    display_template {
-		<a href="@mapped_trees.unmap_url@">Unmap</a> &nbsp; &nbsp;
-		<a href="@mapped_trees.edit_url@">Edit parameters</a>
+		<a href="@mapped_trees.unmap_url@">#categories.Unmap#</a> &nbsp; &nbsp;
+		<a href="@mapped_trees.edit_url@">#categories.Edit_parameters#</a>
 	    }
 	}
     }
 
 template::list::create \
     -name unmapped_trees \
-    -no_data "None" \
+    -no_data "#categories.None#" \
     -elements {
 	tree_name {
-	    label "Name"
+	    label "#acs-subsite.Name#"
 	    link_url_col view_url
 	}
 	site_wide_p {
 	    display_template {
-		<if @unmapped_trees.site_wide_p@ eq t> (Site-Wide Tree) </if>
+		<if @unmapped_trees.site_wide_p@ eq t> (#categories.SiteWide_tree#) </if>
 	    }
 	}
 	action {
-	    label "Action"
+	    label "#categories.Action#"
 	    display_template {
-		<a href="@unmapped_trees.map_url@">Map tree</a> &nbsp; &nbsp;
-		<a href="@unmapped_trees.subtree_url@">Map a subtree</a>
+		<a href="@unmapped_trees.map_url@">#categories.Map_tree#</a> &nbsp; &nbsp;
+		<a href="@unmapped_trees.subtree_url@">#categories.Map_subtree#</a>
 	    }
 	}
     }

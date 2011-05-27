@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-procs.tcl,v 1.431 2011/05/16 12:27:53 gustafn Exp $
+    @cvs-id $Id: xowiki-procs.tcl,v 1.436 2011/05/26 18:29:27 gustafn Exp $
 }
 
 namespace eval ::xowiki {
@@ -11,7 +11,7 @@ namespace eval ::xowiki {
   # create classes for different kind of pages
   #
   ::xo::db::CrClass create Page -superclass ::xo::db::CrItem \
-      -pretty_name "XoWiki Page" -pretty_plural "XoWiki Pages" \
+      -pretty_name "#xowiki.Page_pretty_name#" -pretty_plural "#xowiki.Page_pretty_plural#" \
       -table_name "xowiki_page" -id_column "page_id" \
       -mime_type text/html \
       -slots {
@@ -55,19 +55,19 @@ namespace eval ::xowiki {
   }
 
   ::xo::db::CrClass create PlainPage -superclass Page \
-      -pretty_name "XoWiki Plain Page" -pretty_plural "XoWiki Plain Pages" \
+      -pretty_name "#xowiki.PlainPage_pretty_name#" -pretty_plural "#xowiki.PlainPage_pretty_plural#" \
       -table_name "xowiki_plain_page" -id_column "ppage_id" \
       -mime_type text/plain \
       -form ::xowiki::PlainWikiForm
 
   ::xo::db::CrClass create File -superclass Page \
-      -pretty_name "XoWiki File" -pretty_plural "XoWiki Files" \
+      -pretty_name "#xowiki.File_pretty_name#" -pretty_plural "#xowiki.File_pretty_plural#" \
       -table_name "xowiki_file" -id_column "file_id" \
       -storage_type file \
       -form ::xowiki::FileForm
 
   ::xo::db::CrClass create PodcastItem -superclass File \
-      -pretty_name "Podcast Item" -pretty_plural "Podcast Items" \
+      -pretty_name "#xowiki.PodcastItem_pretty_name#" -pretty_plural "#xowiki.PodcastItem_pretty_plural#" \
       -table_name "xowiki_podcast_item" -id_column "podcast_item_id" \
       -slots {
 	::xo::db::CrAttribute create pub_date \
@@ -84,7 +84,7 @@ namespace eval ::xowiki {
       -form ::xowiki::PodcastForm
   
   ::xo::db::CrClass create PageTemplate -superclass Page \
-      -pretty_name "XoWiki Page Template" -pretty_plural "XoWiki Page Templates" \
+      -pretty_name "#xowiki.PageTemplate_pretty_name#" -pretty_plural "#xowiki.PageTemplate_pretty_plural#" \
       -table_name "xowiki_page_template" -id_column "page_template_id" \
       -slots {
         ::xo::db::CrAttribute create anon_instances \
@@ -94,7 +94,7 @@ namespace eval ::xowiki {
       -form ::xowiki::PageTemplateForm
 
   ::xo::db::CrClass create PageInstance -superclass Page \
-      -pretty_name "XoWiki Page Instance" -pretty_plural "XoWiki Page Instances" \
+      -pretty_name "#xowiki.PageInstance_pretty_name#" -pretty_plural "#xowiki.PageInstance_pretty_plural#" \
       -table_name "xowiki_page_instance"  -id_column "page_instance_id" \
       -slots {
         ::xo::db::CrAttribute create page_template \
@@ -108,13 +108,13 @@ namespace eval ::xowiki {
       -edit_form ::xowiki::PageInstanceEditForm
 
   ::xo::db::CrClass create Object -superclass PlainPage \
-      -pretty_name "XoWiki Object" -pretty_plural "XoWiki Objects" \
+      -pretty_name "#xowiki.Object_pretty_name#" -pretty_plural "#xowiki.Object_pretty_plural#" \
       -table_name "xowiki_object"  -id_column "xowiki_object_id" \
       -mime_type text/plain \
       -form ::xowiki::ObjectForm
 
   ::xo::db::CrClass create Form -superclass PageTemplate \
-      -pretty_name "XoWiki Form" -pretty_plural "XoWiki Forms" \
+      -pretty_name "#xowiki.Form_pretty_name#" -pretty_plural "#xowiki.Form_pretty_name#" \
       -table_name "xowiki_form"  -id_column "xowiki_form_id" \
       -slots {
         ::xo::db::CrAttribute create form \
@@ -129,7 +129,7 @@ namespace eval ::xowiki {
       -form ::xowiki::FormForm
 
   ::xo::db::CrClass create FormPage -superclass PageInstance \
-      -pretty_name "XoWiki FormPage" -pretty_plural "XoWiki FormPages" \
+      -pretty_name "#xowiki.FormPage_pretty_name#" -pretty_plural "#xowiki.FormPage_pretty_name#" \
       -table_name "xowiki_form_page" -id_column "xowiki_form_page_id" \
       -slots {
         ::xo::db::CrAttribute create assignee \
@@ -2132,6 +2132,7 @@ namespace eval ::xowiki {
 
     # Finally provide base for auto-titles
     $f set __title_prefix [my title]
+
     return $f
   }
 
@@ -2235,10 +2236,10 @@ namespace eval ::xowiki {
     set t [TableWidget new -volatile \
                -columns {
                  AnchorField name -label [_ xowiki.Page-name]
-                 Field mime_type -label "Content Type"
-                 Field last_modified -label "Last Modified"
-                 Field mod_user -label "By User"
-                 Field size -label "Size"
+                 Field mime_type -label "#xowiki.content_type#"
+                 Field last_modified -label "#xowiki.Page-last_modified#"
+                 Field mod_user -label "#xowiki.By_user#"
+                 Field size -label "#xowiki.Size# (Bytes)"
                }]
 
     regsub {[.][0-9]+([^0-9])} [my set last_modified] {\1} last_modified
@@ -2331,14 +2332,20 @@ namespace eval ::xowiki {
   }
 
   Page instproc css_class_name {{-margin_form:boolean true}} {
-    # Determine the CSS class name for an HTML-form.
+    # Determine the CSS class name for xowiki forms
     #
     # We need this acually only for PageTemplate and FormPage, but
     # aliases will require XOTcl 2.0.... so we define it for the time
     # being on ::xowiki::Page
     set name [expr {$margin_form ? "margin-form " : ""}]
     set CSSname [my name]
+
+    # Remove language prefix, if used.
     regexp {^..:(.*)$} $CSSname _ CSSname
+
+    # Remove "file extension", since dot's in CSS class names do not
+    # make much sense.
+    regsub {[.].*$} $CSSname "" CSSname
     return [append name "Form-$CSSname"]
   }
 
@@ -2499,8 +2506,8 @@ namespace eval ::xowiki {
     # template does not know about the logic with "_" (just "property" does). 
     #
     if {[$form_obj istype ::xowiki::PageInstance]} {
-      #my msg "returning property $var from parent formpage $form_obj => '[$form_obj property $var]'"
-      return [$form_obj property $var]
+      #my msg "returning property $var from parent formpage $form_obj => '[$form_obj property $var $default]'"
+      return [$form_obj property $var $default]
     }
 
     #
@@ -3056,6 +3063,7 @@ namespace eval ::xowiki {
         you might use flag '-new 1' for set_property to create new properties\n[lsort [my info vars]]"
     }
     my set $key $value
+    #my msg "[self] set $key $value"
     if {$instance_attributes_refresh} {
       my instance_attributes [my array get __ia]
     }
@@ -3220,9 +3228,32 @@ namespace eval ::xowiki {
     return $name
   }
 
+  FormPage instproc include_header_info {{-prefix ""} {-js ""} {-css ""}} {
+    if {$css eq ""} {set css [my get_from_template ${prefix}_css]}
+    if {$js eq ""}  {set js [my get_from_template ${prefix}_js]}
+    foreach line [split $js \n] {::xo::Page requireJS $line}
+    foreach line [split $css \n] {
+      set order 1
+      if {[llength $line]>1} {
+	set e1 [lindex $line 0]
+	if {[string is integer -strict $e1]} {
+	  set order $e1
+	  set line [lindex $line 1]
+	}
+      }
+      ::xo::Page requireCSS -order $order $line
+    }
+  }
+
   FormPage instproc render_content {} {
     my instvar doc root package_id page_template
-    set text [lindex [my get_from_template text] 0]
+    my include_header_info -prefix form_view
+    if {[::xo::cc mobile]} {my include_header_info -prefix mobile}
+
+    set text [my get_from_template text]
+    if {$text ne ""} {
+      catch {set text [lindex $text 0]}
+    }
     if {$text ne ""} {
       #my msg "we have a template text='$text'"
       # we have a template
