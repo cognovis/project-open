@@ -93,6 +93,42 @@ var ticketPriorityStore = Ext.create('Ext.data.Store', {
 		});
 
 
+var ticketOriginStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketOriginStore',
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Ticket Origin\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
+var requestAreaStore = Ext.create('Ext.data.Store', {
+			storeId: 'requestAreaStore',
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Request Area\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
 
 var ticketPriorityData = [
 {"id": "30201", "object_name": "1", "category_id": "30201", "tree_sortkey": "00030201", "category": "1", "category_translated": "1", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},

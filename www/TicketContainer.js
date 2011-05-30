@@ -28,21 +28,21 @@ Ext.define('TicketBrowser.TicketContainer', {
     alias: 'widget.ticketcontainer',
     title: 'Loading...',
 
+    layout: 'border',
+
+    items: [{
+	itemId: 'grid',
+	xtype: 'ticketgrid',
+	region: 'center'
+    }, {
+	itemId: 'preview',
+	xtype: 'ticketInfo',
+	region: 'south',
+	split: true,
+	title: 'View Ticket'
+    }],
+
     initComponent: function(){
-        Ext.apply(this, {
-            layout: 'border',
-            items: [{
-                itemId: 'grid',
-                xtype: 'ticketgrid',
-                region: 'center'
-            }, {
-                itemId: 'preview',
-		xtype: 'ticketform',
-                region: 'south',
-                split: true,
-                title: 'View Ticket'
-            }]
-        });
         this.callParent();
     },
 

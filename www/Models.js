@@ -102,8 +102,19 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_done_date',		// 
 	'ticket_signoff_date',		// 
 
+        'service_type',                 // tipo de Servicio
+        'intranet_request_area',        // Area y programa
+
+        'ticket_file',                  // expediente
+        'ticket_origin',                // canal
+        'ticket_sex',                   // genero hombre/mujer
+        'ticket_language',              // idioma
+        'ticket_province',              // Provincia
+
+        'ticket_answer',                // Respuesta
+        'ticket_observations',           // Observaciones
+
 	'replycount'			// Number of ticket replies - not supported at the moment
     ]
 });
-
 
