@@ -27,7 +27,7 @@ Ext.define('TicketBrowser.TicketInfo', {
 
     items: [{
         xtype:      'textfield',
-        fieldLabel: 'Número ticket',
+        fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
         name:       'ticket_id',
         valueField: 'id',
         msgTarget:  'side',
@@ -53,23 +53,44 @@ Ext.define('TicketBrowser.TicketInfo', {
         fieldLabel: 'Area',
         name:       'ticket_area'
     }, {
+        xtype:          'combobox',
+        valueField:     'category_id',
+        displayField:   'category',
         mode:           'local',
         triggerAction:  'all',
         forceSelection: true,
         editable:       false,
-        fieldLabel:     'Programa',
+        fieldLabel:     '#intranet-core.Program#',
         name:           'TEC.store.TicketPrograms',
-        displayField:   'pretty_name',
         valueField:     'id',
-        value:          '21 Sarea', // :TODO: get ticket value
         queryMode:      'local',
-        store:          'TEC.store.TicketPrograms'
+        store:          'requestAreaStore'
     }],
 
     loadTicket: function(rec){
 	this.loadRecord(rec);
 	var comp = this.getComponent('ticket_type_id');
-    }
+    },
+
+    buttons: [{
+        text: '#intranet-core.Save_Changes#',
+        disabled: false,
+        formBind: true,
+        handler: function(){
+        var form = this.up('form').getForm();
+
+        var ticket_name_field = form.findField('ticket_name');
+        var project_name_field = form.findField('project_name');
+        ticket_name_field.setValue(project_name_field.getValue());
+
+        form.submit({
+            url: '/intranet-helpdesk/new',
+            method: 'GET',
+            submitEmptyText: false,
+            waitMsg: 'Saving Data...'
+        });
+        }
+    }]
 
 });
 
