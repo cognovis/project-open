@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js,v 1.5 2011/05/27 20:18:45 po34demo Exp $
+ * @cvs-id $Id: Stores.js,v 1.6 2011/05/30 15:58:32 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -87,6 +87,42 @@ var ticketPriorityStore = Ext.create('Ext.data.Store', {
 		                extraParams: {
 		                        format: 'json',
 					category_type: '\'Intranet Ticket Priority\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
+var ticketOriginStore = Ext.create('Ext.data.Store', {
+			storeId: 'ticketOriginStore',
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Ticket Origin\''
+		                },
+		                reader: { type: 'json', root: 'data' }
+		        }
+		});
+
+
+var requestAreaStore = Ext.create('Ext.data.Store', {
+			storeId: 'requestAreaStore',
+		        autoLoad: true,
+		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load!!!
+		        fields: ['category_id', 'category'],
+		        proxy: {
+		                type: 'rest',
+		                url: '/intranet-rest/im_category',
+		                appendId: true,
+		                extraParams: {
+		                        format: 'json',
+					category_type: '\'Intranet Request Area\''
 		                },
 		                reader: { type: 'json', root: 'data' }
 		        }

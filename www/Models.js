@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js,v 1.6 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: Models.js,v 1.7 2011/05/30 15:58:32 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -102,8 +102,19 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_done_date',		// 
 	'ticket_signoff_date',		// 
 
+        'service_type',                 // tipo de Servicio
+        'intranet_request_area',        // Area y programa
+
+        'ticket_file',                  // expediente
+        'ticket_origin',                // canal
+        'ticket_sex',                   // genero hombre/mujer
+        'ticket_language',              // idioma
+        'ticket_province',              // Provincia
+
+        'ticket_answer',                // Respuesta
+        'ticket_observations',           // Observaciones
+
 	'replycount'			// Number of ticket replies - not supported at the moment
     ]
 });
-
 
