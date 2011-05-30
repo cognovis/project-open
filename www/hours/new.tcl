@@ -839,7 +839,7 @@ template::multirow foreach hours_multirow {
     if {![string eq "t" $edit_hours_p]} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_edit_hours_p "The time period has been closed for editing. "] }
     if {!$log_on_parent_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_parent_p "This project has sub-projects or tasks. "] }
     if {$solitary_main_project_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_solitary_main_project_p "This is a 'solitary' main project. Your system is configured in such a way, that you can't log hours on it. "] }
-    if { !$log_project_status_id_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
+    # if { !$log_project_status_id_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
 
     # Not a member: This isn't relevant in all modes:
     switch $task_visibility_scope {
@@ -866,7 +866,7 @@ template::multirow foreach hours_multirow {
     # ns_log NOTICE [concat "KHD " "log_project_status_id_p - before: " $log_project_status_id_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
     if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
 	set log_project_status_id_p 1
-	append help_text [lang::message::lookup "" intranet-timesheet2.Logging_blocked "Logging blocked, please contact your Project Manager. "] 
+	append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"]
     }	
     # ns_log NOTICE [concat "KHD " "log_project_status_id_p - after: " $log_project_status_id_p ]
 
@@ -890,9 +890,8 @@ template::multirow foreach hours_multirow {
 	par=$project_has_parents_p,
     }
 
-    if {"" != $help_text} { set help_gif [im_gif help $help_text] }
-    append results "<td>$help_gif $debug_html</td>\n"
-
+    # if {"" != $help_text} { set help_gif [im_gif help $help_text] }
+    # append results "<td>$help_gif $debug_html</td>\n"
 
     # -----------------------------------------------
     # Write out logging INPUT fields - either for Daily View (1 field) or Weekly View (7 fields)
@@ -914,21 +913,40 @@ template::multirow foreach hours_multirow {
 	if {[info exists hours_material_id($key)]} { set material_id $hours_material_id($key) }
 	if {[info exists hours_material($key)]} { set material $hours_material($key) }
 
-
 	# ###
-	# Determine if wf case exists
+	# Do not allow editing when 
+	#  a) Hours have been approved already  
+	# 
 	# ###
 
-	set wf_actice_case_sql "
-		select count(*)
-		from im_hours h, wf_cases c
-	        where 	c.object_id = h.conf_object_id and 
-			h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
-			c.state = 'finished' and
-			h.user_id = $user_id_from_search
-    	"
-	set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
-	if { $no_wf_cases > 0 } { set log_active_wf_p 1 } 
+	# set wf_actice_case_sql "
+	#	select count(*)
+	#	from im_hours h, wf_cases c
+	#        where 	c.object_id = h.conf_object_id and 
+	#		h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
+	#		c.state = 'finished' and
+	#		h.user_id = $user_id_from_search
+    	# "
+	# set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
+	# if { $no_wf_cases > 0 } { set log_active_wf_p 1 } 
+
+
+        set wf_actice_case_sql "
+               	select count(*)
+               	from im_hours h
+               	where   h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
+                       	h.user_id = $user_id_from_search and 
+			h.project_id = $project_id and 
+			h.conf_object_id is not null
+        "
+        set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
+        if { $no_wf_cases > 0 } { 
+		set log_active_wf_p 1 
+		append help_text [lang::message::lookup "" intranet-timesheet2.Approval_Made_Or_In_Progress "Entry already approved or approval in progress"]
+	}
+
+    if {"" != $help_text} { set help_gif [im_gif help $help_text] }
+    append results "<td>$help_gif $debug_html</td>\n"
 
 	# Determine whether the hours have already been included in a timesheet invoice
 	set invoice_id 0
@@ -959,7 +977,7 @@ template::multirow foreach hours_multirow {
     }
     append results "</tr>\n"
     incr ctr
-    set log_project_status_id_p "f"
+    set log_project_status_id_p 0
     set log_active_wf_p 0
 }
 
