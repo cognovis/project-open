@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js,v 1.5 2011/05/27 20:18:45 po34demo Exp $
+ * @cvs-id $Id: Main.js,v 1.6 2011/05/30 16:12:24 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,7 +24,7 @@
 
 Ext.define('TicketBrowser.Main', {
     extend: 'Ext.container.Viewport',
-    
+
     initComponent: function(){
         Ext.apply(this, {
             layout: 'border',
@@ -53,12 +53,12 @@ Ext.define('TicketBrowser.Main', {
         });
         this.callParent();
     },
-    
+
     loadSla: function(rec){
         this.down('#ticket').loadSla(rec);
     },
 
     filterTickets: function(filterValues){
         this.down('#ticket').filterTickets(filterValues);
-    }  
+    }
 });
