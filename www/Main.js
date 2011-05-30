@@ -24,7 +24,7 @@
 
 Ext.define('TicketBrowser.Main', {
     extend: 'Ext.container.Viewport',
-    
+
     initComponent: function(){
         Ext.apply(this, {
             layout: 'border',
@@ -53,12 +53,12 @@ Ext.define('TicketBrowser.Main', {
         });
         this.callParent();
     },
-    
+
     loadSla: function(rec){
         this.down('#ticket').loadSla(rec);
     },
 
     filterTickets: function(filterValues){
         this.down('#ticket').filterTickets(filterValues);
-    }  
+    }
 });
