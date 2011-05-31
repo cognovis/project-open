@@ -1,6 +1,6 @@
 <if @roles:rowcount@ eq 0>
   <blockquote>
-    <em>No roles defined</em>
+    <em>#acs-workflow.No_roles_defined#</em>
   </blockquote>
 </if>
 <else>
@@ -11,10 +11,10 @@
 	  <tr valign="middle" bgcolor="#ffffe4">
             <th>&nbsp;</th>
             <th>&nbsp;</th>
-            <th>No.</th>
-            <th>Role</th>
-	    <th>Action</th>
-            <th>Transitions</th>
+            <th>#acs-workflow.No#</th>
+            <th>#acs-workflow.Role#</th>
+	    <th>#acs-workflow.Action#</th>
+            <th>#acs-workflow.Transitions#</th>
 	  </tr>
    
 	  <multiple name="roles">
@@ -35,7 +35,7 @@
               <td><a href="@roles.edit_url@">@roles.role_name@</a></td>
 	      <td>
 		<if @roles.delete_url@ not nil>
-                  <small>(<a href="@roles.delete_url@">delete</a>)</small>
+                  <small>(<a href="@roles.delete_url@">#acs-workflow.delete#</a>)</small>
 		</if>
 		<else>&nbsp;</else>
 	      </td>
@@ -46,7 +46,7 @@
 		  </group>
                 </if>
                 <else>
-                  <em>No transitions belong to this role</em>
+                  <em>#acs-workflow.lt_No_transitions_belong#</em>
                 </else>
               </td>
 	    </tr>
@@ -56,4 +56,5 @@
     </tr>
   </table>
 </else>
-(<a href="@role_add_url@">add role</a>)
+(<a href="@role_add_url@">#acs-workflow.add_role#</a>)
+

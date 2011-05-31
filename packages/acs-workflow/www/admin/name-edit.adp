@@ -1,5 +1,5 @@
 <master>
-<property name="title">Edit Process Name</property>
+<property name="title">#acs-workflow.Edit_Process_Name#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">workflow.workflow_name</property>
 
@@ -9,12 +9,12 @@
 <table>
 
 <tr>
-<th align="right">Process Name</th>
+<th align="right">#acs-workflow.Process_Name#</th>
 <td><input type="text" size="80" name="workflow_name" value="@workflow_name@" /></td>
 </tr>
 
 <tr>
-<th align="right">Description</th>
+<th align="right">#acs-workflow.Description#</th>
 <td><textarea name="description" cols="60" rows="8">@description@</textarea>
 </td>
 </tr>

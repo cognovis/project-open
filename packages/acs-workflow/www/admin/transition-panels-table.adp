@@ -1,6 +1,6 @@
 <if @panels:rowcount@ eq 0>
   <blockquote>
-    <em>No transitions defined</em>
+    <em>#acs-workflow.lt_No_transitions_define#</em>
   </blockquote>
 </if>
 <else>
@@ -9,15 +9,15 @@
       <td bgcolor="#cccccc">
         <table cellspacing="1" cellpadding="4" border="0">
           <tr valign=middle bgcolor="#ffffe4">
-            <th>Transition</th>
-            <th>Add</th>
-            <th>No.</th>
-            <th>Header</th>
+            <th>#acs-workflow.Transition#</th>
+            <th>#acs-workflow.Add#</th>
+            <th>#acs-workflow.No_#</th>
+            <th>#acs-workflow.Header#</th>
 <!--
-            <th>Template URL</th>
-            <th>Options</th>
+            <th>#acs-workflow.Template_URL#</th>
+            <th>#acs-workflow.Options#</th>
 -->
-            <th>Action</th>
+            <th>#acs-workflow.Action#</th>
           </tr>
    
           <multiple name="panels">
@@ -30,7 +30,7 @@
                   <a href="@panels.transition_edit_url@">@panels.transition_name@</a>
                 </td>
                 <td rowspan="@panels.rowspan@" valign="middle">
-                  (<a href="@panels.panel_add_url@">add panel</a>)
+                  (<a href="@panels.panel_add_url@">#acs-workflow.add_panel#</a>)
                 </td>
               </if>
               <td align="right">
@@ -54,13 +54,13 @@
               </td>
               <td>
                 <if @panels.template_url@ not nil>
-                  override=@panels.overrides_action_p@; whenstarted=@panels.only_display_when_started_p@
+                  #acs-workflow.lt_overridepanelsoverrid#
                 </if>
                 <else>&nbsp;</else>
               </td>
 -->
               <td>
-                (<a href="@panels.panel_delete_url@">delete</a>)
+                (<a href="@panels.panel_delete_url@">#acs-workflow.delete#</a>)
               </td>
             </tr>
           </multiple>
@@ -69,6 +69,7 @@
     </tr>
   </table>
 </else>
+
 
 
 

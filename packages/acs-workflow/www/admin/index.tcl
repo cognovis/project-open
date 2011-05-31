@@ -46,7 +46,7 @@ db_multirow  -extend {row_even_p} workflows all_workflows {
 }
 
 template::multirow create actions url title
-template::multirow append actions "wizard/" "New Simple Process"
-template::multirow append actions "workflow-add" "New Advanced Process"
+template::multirow append actions "wizard/" "[_ acs-workflow.New]"
+template::multirow append actions "workflow-add" "[_ acs-workflow.New_1]"
 
 ad_return_template 

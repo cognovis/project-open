@@ -25,9 +25,9 @@ create function inline_0 () returns integer as '
 begin
     PERFORM workflow__create_workflow (
         ''timesheet_approval_wf'', 
-        ''Timesheet Approval'', 
-        ''Timesheet Approval'', 
-        ''Approval WF to ask a user''''s project manager to approve the user''''s hour for a specific project. The WF refers to a im_timesheet_conf_object for variables and status.'', 
+        ''#intranet-workflow.Timesheet#'', 
+        ''#intranet-workflow.Timesheet#'', 
+        ''#intranet-workflow.Approval#'', 
         ''timesheet_approval_workf_cases'',
         ''case_id''
     );
@@ -50,7 +50,7 @@ drop function inline_0 ();
     select workflow__add_place(
         'timesheet_approval_wf',
         'start', 
-        'Ready to Enter Hours', 
+        '#intranet-workflow.Ready#', 
         1
     );
 
@@ -59,7 +59,7 @@ drop function inline_0 ();
     select workflow__add_place(
         'timesheet_approval_wf',
         'before_confirm_hours', 
-        'Ready to Confirm Hours', 
+        '#intranet-workflow.Ready_1#', 
         null
     );
 
@@ -68,7 +68,7 @@ drop function inline_0 ();
     select workflow__add_place(
         'timesheet_approval_wf',
         'before_confirmed', 
-        'Ready to Confirmed', 
+        '#intranet-workflow.Ready_2#', 
         null
     );
 
@@ -77,7 +77,7 @@ drop function inline_0 ();
     select workflow__add_place(
         'timesheet_approval_wf',
         'before_deleted', 
-        'Ready to Deleted', 
+        '#intranet-workflow.Ready_3#', 
         null
     );
 
@@ -86,7 +86,7 @@ drop function inline_0 ();
     select workflow__add_place(
         'timesheet_approval_wf',
         'end', 
-        'Process finished', 
+        '#intranet-workflow.Process_1#', 
         null
     );
 
@@ -100,7 +100,7 @@ drop function inline_0 ();
 	select workflow__add_role (
          'timesheet_approval_wf',
          'deleted',
-         'Deleted',
+         '#intranet-workflow.Deleted#',
          4
     );
 
@@ -109,7 +109,7 @@ drop function inline_0 ();
 	select workflow__add_role (
          'timesheet_approval_wf',
          'approve',
-         'Approve',
+         '#intranet-workflow.Approve#',
          2
     );
 
@@ -118,7 +118,7 @@ drop function inline_0 ();
 	select workflow__add_role (
          'timesheet_approval_wf',
          'approved',
-         'Approved',
+         '#intranet-workflow.Approved#',
          3
     );
 
@@ -127,7 +127,7 @@ drop function inline_0 ();
 	select workflow__add_role (
          'timesheet_approval_wf',
          'modify',
-         'Modify',
+         '#intranet-workflow.Modify#',
          1
     );
 
@@ -142,7 +142,7 @@ drop function inline_0 ();
 	select workflow__add_transition (
          'timesheet_approval_wf',
          'modify',
-         'Modify',
+         '#intranet-workflow.Modify#',
          'modify',
          1,
          'user'
@@ -153,7 +153,7 @@ drop function inline_0 ();
 	select workflow__add_transition (
          'timesheet_approval_wf',
          'approve',
-         'Approve',
+         '#intranet-workflow.Approve#',
          'approve',
          2,
          'user'
@@ -164,7 +164,7 @@ drop function inline_0 ();
 	select workflow__add_transition (
          'timesheet_approval_wf',
          'approved',
-         'Approved',
+         '#intranet-workflow.Approved#',
          'approved',
          3,
          'automatic'
@@ -175,7 +175,7 @@ drop function inline_0 ();
 	select workflow__add_transition (
          'timesheet_approval_wf',
          'deleted',
-         'Deleted',
+         '#intranet-workflow.Deleted#',
          'deleted',
          4,
          'automatic'
@@ -196,7 +196,7 @@ drop function inline_0 ();
          'out',
          '#',
          '',
-         'Timesheet Not OK'
+         '#intranet-workflow.Timesheet_1#'
 	);
 
         
@@ -208,7 +208,7 @@ drop function inline_0 ();
          'out',
          'wf_callback__guard_attribute_true',
          'confirm_hours_are_the_logged_hours_ok_p',
-         'Timesheet OK'
+         '#intranet-workflow.Timesheet_2#'
 	);
 
         
@@ -307,7 +307,7 @@ drop function inline_0 ();
         'timesheet_approval_wf',
         'confirm_hours_are_the_logged_hours_ok_p',
         'boolean',
-        'Approve the logged hours?',
+        '#intranet-workflow.Approve_1#',
 	null,
 	null,
 	null,
@@ -540,7 +540,7 @@ values
  'timesheet_approval_wf',
  'approve',
  1,
- 'Review Hours',
+ '#intranet-workflow.Review#',
  '/packages/intranet-timesheet2-workflow/www/conf-objects/conf-obj-panel',
  'f',
  'f',
@@ -561,7 +561,7 @@ values
  'timesheet_approval_wf',
  'modify',
  1,
- 'Modify Logged Hours',
+ '#intranet-workflow.Modify_1#',
  '/packages/intranet-timesheet2-workflow/www/conf-objects/conf-obj-panel',
  'f',
  't',

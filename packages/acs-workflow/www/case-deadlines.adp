@@ -1,5 +1,5 @@
 <master>
-<property name="title">@case.object_name;noquote@ Deadlines</property>
+<property name="title">#acs-workflow.lt_caseobject_namenoquot#</property>
 <property name="context">@context;noquote@</property>
 
 <blockquote>
@@ -18,5 +18,6 @@
 </table>
 
 </master>
+
 
 

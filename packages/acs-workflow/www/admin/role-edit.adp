@@ -1,5 +1,5 @@
 <master>
-<property name="title">Edit @role_name;noquote@ role</property>
+<property name="title">#acs-workflow.lt_Edit_role_namenoquote#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">role.role_name</property>
 
@@ -8,7 +8,7 @@
 <table>
   <tr>
     <th align="right">
-      Role name
+      #acs-workflow.Role_name#
     </th>
     <td>
       <input name="role_name" type="text" value="@role_name@" size="50" />

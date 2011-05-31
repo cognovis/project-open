@@ -1,5 +1,5 @@
 <master>
-<property name="title">Export Business Process</property>
+<property name="title">#acs-workflow.lt_Export_Business_Proce#</property>
 <property name="context">@context;noquote@</property>
 
 <if @message@ not nil>

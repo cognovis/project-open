@@ -1,10 +1,10 @@
 <master>
-<property name="title">Unassigned Tasks</property>
+<property name="title">#acs-workflow.Unassigned_Tasks#</property>
 <property name="context">@context;noquote@</property>
 
 
 <if @tasks:rowcount@ eq 0>
-    <em>No unassigned tasks</em>
+    <em>#acs-workflow.No_unassigned_tasks#</em>
 </if>
 <else>
     <table cellspacing="0" cellpadding="0" border="0">
@@ -12,10 +12,10 @@
 	
     <table width="100%" cellspacing="1" cellpadding="4" border="0">
     <tr valign="middle" bgcolor="#ffffe4">
-	<th>Task</th>
-	<th>Case</th>
-	<th>Enabled</th>
-	<th>Deadline</th>
+	<th>#acs-workflow.Task#</th>
+	<th>#acs-workflow.Case#</th>
+	<th>#acs-workflow.Enabled#</th>
+	<th>#acs-workflow.Deadline#</th>
     </tr>
     
     <multiple name="tasks">

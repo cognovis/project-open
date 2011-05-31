@@ -1,27 +1,27 @@
 <master>
-<property name="title">Add attribute</property>
+<property name="title">#acs-workflow.Add_attribute#</property>
 <property name="context">@context;noquote@</property>
-<property name="focus">attribute.name</property>
+<property name="focus">#acs-workflow.attributename#</property>
 
 <form action="attribute-add-2" name="attribute">
 @export_vars;noquote@
 
 <table>
   <tr>
-    <th align=right>Name</th>
+    <th align=right>#acs-workflow.Name#</th>
     <td>
       <input type="text" size="30" name="attribute_name">
-      <br><small>(no special characters)</small>
+      <br><small>#acs-workflow.lt_no_special_characters#</small>
     </td>
   </tr>
   <tr>
-    <th align=right>Pretty name<br>(Question)</th>
+    <th align=right>#acs-workflow.Pretty_name#<br>#acs-workflow.Question#</th>
     <td>
       <input type="text" size="80" name="pretty_name">
     </td>
   </tr>
   <tr>
-    <th align=right>Datatype</th>
+    <th align=right>#acs-workflow.Datatype#</th>
     <td>
       <select name="datatype">
         <multiple name="datatypes">
@@ -31,7 +31,7 @@
     </td>
   </tr>
   <tr>
-    <th align=right>Default value</th>
+    <th align=right>#acs-workflow.Default_value#</th>
     <td>
       <input type="text" size="80" name="default_value">
     </td>

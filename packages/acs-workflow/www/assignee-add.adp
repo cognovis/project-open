@@ -1,14 +1,14 @@
 <master>
-<property name="title">Add Assignee</property>
+<property name="title">#acs-workflow.Add_Assignee#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">@focus;noquote@</property>
 
 <if @party_widget@ nil>
   <blockquote>
-    <em>Every possible assignee is already assigned</em>
+    <em>#acs-workflow.lt_Every_possible_assign#</em>
     <p>
     <ul>
-      <li><a href="@return_url@">Go back</a></li>
+      <li><a href="@return_url@">#acs-workflow.Go_back#</a></li>
     </ul>
   </blockquote>
 </if>
@@ -19,7 +19,7 @@
   <table>
     <tr>
       <th align="right">
-	Party to assign
+	#acs-workflow.Party_to_assign#
       </th>
       <td>
 	@party_widget;noquote@ <input type="submit" value="Add" />
@@ -30,3 +30,4 @@
 </else>
 
 </master>
+

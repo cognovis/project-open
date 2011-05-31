@@ -1,6 +1,6 @@
 <if @transitions:rowcount@ eq 0>
   <blockquote>
-    <em>No transitions defined</em>
+    <em>#acs-workflow.lt_No_transitions_define#</em>
   </blockquote>
 </if>
 <else>
@@ -9,11 +9,11 @@
       <td bgcolor="#cccccc">
 	<table cellspacing="1" cellpadding="4" border="0">
 	  <tr valign="middle" bgcolor="#ffffe4">
-            <th>No.</th>
-            <th>Transition</th>
-            <th>Trigger</th>
-            <th>Action</th>
-	    <th>By Role</th>
+            <th>#acs-workflow.No_#</th>
+            <th>#acs-workflow.Transition#</th>
+            <th>#acs-workflow.Trigger#</th>
+            <th>#acs-workflow.Action#</th>
+	    <th>#acs-workflow.By_Role#</th>
 	  </tr>
    
 	  <multiple name="transitions">
@@ -23,7 +23,7 @@
               <td align="center">@transitions.trigger_type_pretty@</td>
               <td>
                 <if @transitions.delete_url@ not nil>
-		  (<a href="@transitions.delete_url@">delete</a>)
+		  (<a href="@transitions.delete_url@">#acs-workflow.delete#</a>)
 		</if>
 		<else>&nbsp;</else>
 	      </td>
@@ -33,7 +33,7 @@
                 </if>
                 <else>
                   <if @transitions.trigger_type@ eq "user">
-                    <em>Not associated with any role</em> (<a href="@transitions.edit_url@">edit</a>)
+                    <em>#acs-workflow.lt_Not_associated_with_a#</em> (<a href="@transitions.edit_url@">#acs-workflow.edit#</a>)
                   </if>
                   <else>
                     &nbsp;
@@ -47,4 +47,5 @@
     </tr>
   </table>
 </else>
-(<a href="@transition_add_url@">add transition</a>)
+(<a href="@transition_add_url@">#acs-workflow.add_transition#</a>)
+

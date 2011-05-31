@@ -1,5 +1,5 @@
 <master>
-<property name="title">Add Role</property>
+<property name="title">#acs-workflow.Add_Role#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">role.role_name</property>
 
@@ -9,7 +9,7 @@
 <table>
 
 <tr>
-<th align="right">Role name</th>
+<th align="right">#acs-workflow.Role_name#</th>
 <td><input type="text" size="40" name="role_name" /></td>
 </tr>
 
@@ -24,3 +24,4 @@
 </form>
 
 </master>
+

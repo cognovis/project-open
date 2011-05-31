@@ -1,5 +1,5 @@
 <master>
-<property name="title">@workflow_name;noquote@ Cases</property>
+<property name="title">#acs-workflow.lt_workflow_namenoquote_#</property>
 <property name="context">@context;noquote@</property>
 
 @dimensional_html;noquote@
@@ -9,5 +9,6 @@
 @table_html;noquote@
 
 </master>
+
 
 

@@ -1,6 +1,6 @@
 <if @active_tasks:rowcount@ eq 0>
   <blockquote>
-    <em>No active tasks</em>
+    <em>#acs-workflow.No_active_tasks#</em>
   </blockquote>
 </if>
 <else>
@@ -9,14 +9,14 @@
       <td bgcolor="#cccccc">
 	<table width="100%" cellspacing="1" cellpadding="4" border="0">
 	  <tr valign="middle" bgcolor="#ffffe4">
-	    <th>Task Name</th>
-	    <th>State</th>
-	    <th>Activated Date</th>
-	    <th>Started Date</th>
-	    <th>Deadline</th>
-            <th>Holder</th>
-            <th>Assignees</th>
-            <th>Action</th>
+	    <th>#acs-workflow.Task_Name#</th>
+	    <th>#acs-workflow.State#</th>
+	    <th>#acs-workflow.Activated_Date#</th>
+	    <th>#acs-workflow.Started_Date#</th>
+	    <th>#acs-workflow.Deadline#</th>
+            <th>#acs-workflow.Holder#</th>
+            <th>#acs-workflow.Assignees#</th>
+            <th>#acs-workflow.Action#</th>
 	  </tr>
 	  <multiple name="active_tasks">
 	    <tr bgcolor="#eeeeee">
@@ -25,7 +25,7 @@
 	      <td>@active_tasks.enabled_date_pretty@</td>
 	      <td>
 		<if @active_tasks.started_date_pretty@ not nil>@active_tasks.started_date_pretty@</if>
-		<else><em>not started</em></else>
+		<else><em>#acs-workflow.not_started#</em></else>
 	      </td>
 	      <td>
 		<if @active_tasks.deadline_pretty@ not nil>@active_tasks.deadline_pretty@</if>
@@ -51,12 +51,12 @@
                   </group>
                 </if>
                 <else>
-                  <em>Unassigned</em>
+                  <em>#acs-workflow.Unassigned#</em>
                 </else>
               </td>
               <td>
                 <if @active_tasks.reassign_url@ not nil>
-                  (<a href="@active_tasks.reassign_url@">reassign</a>)
+                  (<a href="@active_tasks.reassign_url@">#acs-workflow.reassign#</a>)
                 </if>
                 <else>&nbsp;</else>
               </td>
@@ -67,4 +67,5 @@
     </tr>
   </table>
 </else>
+
 

@@ -150,7 +150,7 @@ begin
 		null, 
 		start_case__case_id,
 		''case start'',
-		''Case started'',
+		''#acs-workflow.Case_started#'',
 		now(),
 		start_case__creation_user,
 		start_case__creation_ip,

@@ -1,5 +1,5 @@
 <master>
-<property name="title">Assignments for @case.object_name;noquote@ case</property>
+<property name="title">#acs-workflow.lt_Assignments_for_caseo#</property>
 <property name="context">@context;noquote@</property>
 
 <blockquote>
@@ -18,4 +18,5 @@
 </table>
 
 </master>
+
 

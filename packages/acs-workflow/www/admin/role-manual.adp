@@ -1,5 +1,5 @@
 <master>
-<property name="title">Manually Assign @role_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Manually_Assign_role_#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">manual_form.transition_key</property>
 
@@ -9,7 +9,7 @@
 <table>
   <tr>
     <th>
-      Select the task that you want to assign the @role_name@ role:
+      #acs-workflow.lt_Select_the_task_that_#
     </th>
   </tr>
   <tr>
@@ -33,3 +33,4 @@
 </form>
 
 </master>
+

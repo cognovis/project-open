@@ -23,7 +23,7 @@
 	       <tr bgcolor="#ffffff">
 		 <td>
 		   @workflow.description@
-		   <div align="right">(<a href="name-edit?workflow_key=@workflow.workflow_key@">edit name</a>)</div>
+		   <div align="right">(<a href="name-edit?workflow_key=@workflow.workflow_key@">#intranet-workflow.edit_name#</a>)</div>
 		 </td>
 	       </tr>
 	     </table>
@@ -49,7 +49,7 @@
 	      <table border="0" cellspacing="1" cellpadding="2" width="100%">
 		<tr bgcolor="#ccccff">
 		  <th>
-		    Process
+		    #intranet-workflow.Process#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -78,3 +78,4 @@
 
 
 </master>
+

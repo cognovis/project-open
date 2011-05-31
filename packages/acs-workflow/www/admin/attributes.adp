@@ -1,5 +1,5 @@
 <master>
-<property name="title">Attributes for @workflow_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Attributes_for_workfl#</property>
 <property name="context">@context;noquote@</property>
 
 <table>
@@ -24,3 +24,4 @@
 </table>
 
 </master>
+

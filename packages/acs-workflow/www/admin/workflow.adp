@@ -29,7 +29,7 @@
 	       <tr bgcolor="#ffffff">
 		 <td>
 		   @workflow.description@
-		   <div align="right">(<a href="name-edit?workflow_key=@workflow.workflow_key@">edit name</a>)</div>
+		   <div align="right">(<a href="name-edit?workflow_key=@workflow.workflow_key@">#acs-workflow.edit_name#</a>)</div>
 		 </td>
 	       </tr>
 	     </table>
@@ -47,15 +47,15 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Actions
+		    #acs-workflow.Actions#
 		  </th>
 		</tr>
                <tr bgcolor="#ffffff">
                  <td>
-                   (<a href="@edit_process_url@">graphic process editor</a>)
-                   (<a href="@export_process_url@">export process</a>)
+                   (<a href="@edit_process_url@">#acs-workflow.lt_graphic_process_edito#</a>)
+                   (<a href="@export_process_url@">#acs-workflow.export_process#</a>)
                    <if @copy_process_url@ not nil>
-                     (<a href="@copy_process_url@">make a copy</a>)
+                     (<a href="@copy_process_url@">#acs-workflow.make_a_copy#</a>)
                    </if>
 		 </td>
 	       </tr>
@@ -73,12 +73,12 @@
 	    <td bgcolor="#cccccc">
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
-		  <th>Cases</th>
+		  <th>#acs-workflow.Cases#</th>
 		</tr>
 		<tr bgcolor="#ffffff">
 		  <td>
 		    <if @workflow.num_unassigned_tasks@ gt 0>
-		      <strong>Note! 
+		      <strong>#acs-workflow.Note_# 
 			<a href="unassigned-tasks?workflow_key=@workflow.workflow_key@">
 			  @workflow.num_unassigned_tasks@ 
 			  unassigned task<if @workflow.num_unassigned_tasks@ gt 1>s</if>
@@ -88,26 +88,26 @@
 		    </if>
 		    <p>
 		    <if @workflow.num_active_cases@ eq 0>
-		      No active cases
+		      #acs-workflow.No_active_cases#
 		    </if>
 		    <if @workflow.num_active_cases@ eq 1>
-		      <a href="cases?state=active&workflow_key=@workflow.workflow_key@">1 active case</a>
+		      <a href="cases?state=active&workflow_key=@workflow.workflow_key@">#acs-workflow.1_active_case#</a>
 		    </if>
 		    <if @workflow.num_active_cases@ gt 1>
-		      <a href="cases?state=active&workflow_key=@workflow.workflow_key@">@workflow.num_active_cases@ active cases</a>
+		      <a href="cases?state=active&workflow_key=@workflow.workflow_key@">#acs-workflow.lt_workflownum_active_ca#</a>
 		    </if>
 		    <p>
 		    <if @workflow.num_cases@ eq 0>
-		      No old cases
+		      #acs-workflow.No_old_cases#
 		    </if>
 		    <if @workflow.num_cases@ eq 1>
-		      <a href="workflow-summary?workflow_key=@workflow.workflow_key@">1 case total</a>
+		      <a href="workflow-summary?workflow_key=@workflow.workflow_key@">#acs-workflow.1_case_total#</a>
 		    </if>
 		    <if @workflow.num_cases@ gt 1>
-		      <a href="workflow-summary?workflow_key=@workflow.workflow_key@">@workflow.num_cases@ cases total</a>
+		      <a href="workflow-summary?workflow_key=@workflow.workflow_key@">#acs-workflow.lt_workflownum_cases_cas#</a>
 		    </if>
 		    <p>
-		    (<a href="init?workflow_key=@workflow.workflow_key@">start new case</a>)
+		    (<a href="init?workflow_key=@workflow.workflow_key@">#acs-workflow.start_new_case#</a>)
 		  </td>
 		</tr>
 	      </table>
@@ -124,15 +124,15 @@
 	    <td bgcolor="#cccccc">
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
-		  <th>Extreme Actions</th>
+		  <th>#acs-workflow.Extreme_Actions#</th>
 		</tr>
 		<tr bgcolor="#ffffff">
 		  <td>
 		    <if @workflow.num_cases@ gt 0>
-		      (<a href="javascript:if(confirm('Are you sure that you want to delete all cases of this process?'))location.href='workflow-cases-delete?workflow_key=@workflow.workflow_key@'">delete all cases</a>) &nbsp;
+		      (<a href="javascript:if(confirm('Are you sure that you want to delete all cases of this process?'))location.href='workflow-cases-delete?workflow_key=@workflow.workflow_key@'">#acs-workflow.delete_all_cases#</a>) &nbsp;
 		    </if>
 		    (<a href="javascript:if(confirm('Are you sure you want to delete this business process definition?
-	Doing so will delete all cases of this workflow.'))location.href='workflow-delete?workflow_key=@workflow.workflow_key@'">delete process entirely</a>)
+	Doing so will delete all cases of this workflow.'))location.href='workflow-delete?workflow_key=@workflow.workflow_key@'">#acs-workflow.lt_delete_process_entire#</a>)
 		  </td>
 		</tr>
 	      </table>
@@ -154,7 +154,7 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Transitions
+		    #acs-workflow.Transitions#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -181,7 +181,7 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Attributes
+		    #acs-workflow.Attributes#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -208,7 +208,7 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Roles
+		    #acs-workflow.Roles#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -240,7 +240,7 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Transition Panels
+		    #acs-workflow.Transition_Panels#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -265,7 +265,7 @@
 	      <table width="100%" cellspacing="1" cellpadding="2" border="0">
 		<tr valign="middle" bgcolor="#ccccff">
 		  <th>
-		    Static Assignments
+		    #acs-workflow.Static_Assignments#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -297,7 +297,7 @@
 	      <table border="0" cellspacing="1" cellpadding="2" width="100%">
 		<tr bgcolor="#ccccff">
 		  <th>
-		    Process
+		    #acs-workflow.Process#
 		  </th>
 		</tr>
 		<tr bgcolor="#ffffff">
@@ -326,3 +326,4 @@
 
 
 </master>
+

@@ -1,5 +1,5 @@
 <master>
-<property name="title">Attributes to be set by @transition_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Attributes_to_be_set_#</property>
 <property name="context">@context;noquote@</property>
 
 <table>
@@ -11,15 +11,15 @@
 	  <td bgcolor="#cccccc">
 	    <table width="100%" cellspacing="1" cellpadding="4" border="0">
               <tr bgcolor="#ffffe4">
-		<th>No.</th>
-		<th>Attribute name</th>
-                <th>Datatype</th>
-                <th>Action</th>
+		<th>#acs-workflow.No#</th>
+		<th>#acs-workflow.Attribute_name#</th>
+                <th>#acs-workflow.Datatype#</th>
+                <th>#acs-workflow.Action#</th>
               </tr>
               <if @attributes:rowcount@ eq 0>
                  <tr bgcolor="#eeeeee">
                    <td colspan="4">
-                     <em>No attributes</em>
+                     <em>#acs-workflow.No_attributes#</em>
                    </td>
                  </tr>
               </if>
@@ -31,13 +31,13 @@
                     <td>@attributes.datatype@</td>
 		    <td>
 		      <if @attributes.edit_url@ not nil>
-			(<a href="@attributes.edit_url@">edit</a>)
+			(<a href="@attributes.edit_url@">#acs-workflow.edit#</a>)
 		      </if>
 		      <if @attributes.delete_url@ not nil>
-			(<a href="@attributes.delete_url@">delete</a>)
+			(<a href="@attributes.delete_url@">#acs-workflow.delete#</a>)
 		      </if>
 		      <if @attributes.move_up_url@ not nil>
-			(<a href="@attributes.move_up_url@">move up</a>)
+			(<a href="@attributes.move_up_url@">#acs-workflow.move_up#</a>)
 		      </if>
 		    </td>
 		  </tr>
@@ -58,8 +58,7 @@
       <td>&nbsp;</td>
       <td colspan="2">
 	<form action="@add_url@" method="post">
-	@add_export_vars;noquote@
-	Set this:
+	#acs-workflow.lt_add_export_varsnoquot#
 	<select name="attribute_id">
 	  <multiple name="attributes_not_set">
 	    <option value="@attributes_not_set.attribute_id@">
@@ -87,3 +86,4 @@
 </table>
 
 </master>
+

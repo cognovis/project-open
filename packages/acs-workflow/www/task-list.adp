@@ -1,5 +1,5 @@
 <if @task_list:rowcount@ eq 0>
-    <em>No tasks</em>
+    <em>#acs-workflow.No_tasks#</em>
 </if>
 
 <if @task_list:rowcount@ ne 0>
@@ -14,11 +14,11 @@
     <th><%= [lang::message::lookup "" acs-workflow.As_part_of "Part of"] %></th>
     
     <if @type@ eq "own">
-	<th>Started</th>
+	<th>#acs-workflow.Started#</th>
     </if>	
     
-    <th>Time Estimate</th>
-    <th>Deadline</th>
+    <th>#acs-workflow.Time_Estimate#</th>
+    <th>#acs-workflow.Deadline#</th>
     </tr>
     </thead>
     <tbody>
@@ -30,7 +30,7 @@
 		<if @task_list.holding_user@ not nil>
 		    <if @task_list.holding_user_first@ not nil>
 			<if @task_list.holding_user_email@ not nil>
-			     by <a href="/shared/community-member?user_id=@task_list.holding_user@">@task_list.holding_user_first@ @task_list.holding_user_last@</a> (<a href="mailto:@task_list.holding_user_email@">@task_list.holding_user_email@</a>)
+			     #acs-workflow.by# <a href="/shared/community-member?user_id=@task_list.holding_user@">@task_list.holding_user_first@ @task_list.holding_user_last@</a> (<a href="mailto:@task_list.holding_user_email@">@task_list.holding_user_email@</a>)
 			</if>
 		    </if>
 		</if>

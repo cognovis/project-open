@@ -1,6 +1,6 @@
 <if @finished_tasks:rowcount@ eq 0>
   <blockquote>
-    <em>No tasks have finished yet.</em>
+    <em>#acs-workflow.lt_No_tasks_have_finishe#</em>
   </blockquote>
 </if>
 <else>
@@ -9,11 +9,11 @@
       <td bgcolor="#cccccc">
         <table width="100%" cellspacing="1" cellpadding="4" border="0">
           <tr valign="middle" bgcolor="#ffffe4">
-            <th>Task Name</th>
-            <th>State</th>
-            <th>Activated Date</th>
-            <th>Done Date</th>
-            <th>Done By</th>
+            <th>#acs-workflow.Task_Name#</th>
+            <th>#acs-workflow.State#</th>
+            <th>#acs-workflow.Activated_Date#</th>
+            <th>#acs-workflow.Done_Date#</th>
+            <th>#acs-workflow.Done_By#</th>
           </tr>
           <multiple name="finished_tasks">
             <tr bgcolor="#eeeeee">
@@ -43,3 +43,4 @@
     </tr>
   </table>
 </else>
+

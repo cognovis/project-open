@@ -1,8 +1,8 @@
 <master>
-<property name="title">Reassign Task</property>
+<property name="title">#acs-workflow.Reassign_Task#</property>
 <property name="context">@context;noquote@</property>
 
-<h3>Current Assignees</h3>
+<h3>#acs-workflow.Current_Assignees#</h3>
 
 <ul>
 
@@ -15,24 +15,24 @@
         @assignees.name@
       </else>
       <if @assignees.email@ not nil>(<a href="mailto:@assignees.email@">@assignees.email@</a>)</if>
-      (<a href="@assignees.remove_url@">remove</a>)
+      (<a href="@assignees.remove_url@">#acs-workflow.remove#</a>)
     </li>
 </multiple>
 
 <if @assignees:rowcount@ eq 0>
-    <em>no assignees</em>
+    <em>#acs-workflow.no_assignees#</em>
 </if>
 
 </ul>
 
-(<a href="@task.add_group_url@">add group</a>)
-(<a href="@task.add_person_url@">add person</a>)
+(<a href="@task.add_group_url@">#acs-workflow.add_group#</a>)
+(<a href="@task.add_person_url@">#acs-workflow.add_person#</a>)
 
 <if @task.this_user_is_assigned_p@ eq 0>
-    (<a href="@task.assign_yourself_url@">assign yourself</a>)
+    (<a href="@task.assign_yourself_url@">#acs-workflow.assign_yourself#</a>)
 </if>
 
-<h3>Effective Assignees</h3>
+<h3>#acs-workflow.Effective_Assignees#</h3>
 
 <ul>
 
@@ -41,7 +41,7 @@
 </multiple>
 
 <if @effective_assignees:rowcount@ eq 0>
-    <em>no effective assignees</em>
+    <em>#acs-workflow.lt_no_effective_assignee#</em>
 </if>
 
 </ul>
@@ -58,3 +58,4 @@
 </form>
 
 </master>
+
