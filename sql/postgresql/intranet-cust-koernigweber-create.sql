@@ -497,4 +497,9 @@ end;' language 'plpgsql';
 
 
 
+-- -------------------------------------------------------------
+-- Hours/Minutes for absences 
+-- -------------------------------------------------------------
 
+ALTER TABLE im_user_absences ALTER COLUMN duration_days TYPE numeric(12,5);
+ALTER TABLE im_user_absences ADD COLUMN hours_day_base numeric(2,1);
