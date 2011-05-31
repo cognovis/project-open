@@ -251,7 +251,7 @@ if { [empty_string_p $company_id] } {
     set company_id 0
 }
 
-set company_options [im_company_options -include_empty_p 1 -include_empty_name "All" -status "CustOrIntl"]
+set company_options [im_company_options -include_empty_p 1 -include_empty_name "All" -type "CustOrIntl" ]
 
 # Get the list of profiles readable for current_user_id
 set managable_profiles [im_profile::profile_options_managable_for_user -privilege "read" $current_user_id]
