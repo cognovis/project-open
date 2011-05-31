@@ -503,3 +503,9 @@ end;' language 'plpgsql';
 
 ALTER TABLE im_user_absences ALTER COLUMN duration_days TYPE numeric(12,5);
 ALTER TABLE im_user_absences ADD COLUMN hours_day_base numeric(2,1);
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (20015,200,NULL,'Absence Days','"[lindex [split [calculate_dd_hh_mm_from_day $duration_days $hours_day_base] \" \"] 0 ]"','','',12,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (20016,200,NULL,'Absence Hours','"[lindex [split [calculate_dd_hh_mm_from_day $duration_days $hours_day_base] \" \"] 1 ]"','','',13,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (20017,200,NULL,'Absence Minutes','"[expr [lindex [split [calculate_dd_hh_mm_from_day $duration_days $hours_day_base] \" \"] 2 ]*15]"','','',14,'');
