@@ -889,6 +889,9 @@ ad_proc -private im_rest_get_object_type {
 		$where_clause
     "
 
+    # Append sorting "ORDER BY" clause to the sql.
+    append sql [im_rest_object_type_order_sql -query_hash_pairs $query_hash_pairs]
+
     # Append pagination "LIMIT $limit OFFSET $start" to the sql.
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
@@ -1847,6 +1850,51 @@ ad_proc -public im_rest_object_type_pagination_sql {
     return $pagination_sql
 }
 
+ad_proc -public im_rest_object_type_order_sql { 
+    -query_hash_pairs:required
+} {
+    returns an "ORDER BY" statement for the *_get_object_type SQL.
+    URL parameter example: sort=[{"property":"creation_date", "direction":"DESC"}]
+} {
+    set order_sql ""
+    array set query_hash $query_hash_pairs
+
+    set order_by_clauses {}
+    if {[info exists query_hash(sort)]} { 
+	set sort_json $query_hash(sort)
+	array set parsed_json [util::json::parse $sort_json]
+	set json_list $parsed_json(_array_)
+
+	foreach sorter $json_list {
+	    # Skpe the leading "_object_" key
+	    set sorter_list [lindex $sorter 1]
+	    array set sorter_hash $sorter_list
+
+	    set property $sorter_hash(property)
+	    set direction [string toupper $sorter_hash(direction)]
+	    
+	    # Perform security checks on the sorters
+	    if {![regexp {} $property match]} { 
+		ns_log Error "im_rest_object_type_order_sql: Found invalid sort property='$property'"
+		continue 
+	    }
+	    if {[lsearch {DESC ASC} $direction] < 0} { 
+		ns_log Error "im_rest_object_type_order_sql: Found invalid sort direction='$direction'"
+		continue 
+	    }
+	    
+	    lappend order_by_clauses "$property $direction"
+	}
+    }
+
+    if {"" != $order_by_clauses} {
+	return "order by [join $order_by_clauses ", "]\n"
+    } else {
+	# No order by clause specified
+	return ""
+    }
+}
+
 
 ad_proc -public im_rest_object_type_select_sql { 
     {-no_where_clause_p 0}
@@ -2120,17 +2168,20 @@ ad_proc -public im_rest_valid_sql {
     # ------------------------------------------------------
     # Massage the string so that it suits the rule engine.
 
+    # Reduce all characters to lower case
+    set string [string tolower $string]
+
     # Add spaces around the string
     set string " $string "
 
     # Replace ocurrences of double (escaped) single-ticks with "quote"
     regsub -all {''} $string { quote } string
 
-    # Add an extra space between all "funky" characters in the where clause
+    # Add an extra space between all "comparison" strings in the where clause
     regsub -all {([\>\<\=\!]+)} $string { \1 } string
 
     # Add an extra space around parentesis
-    regsub -all {([\(\)]+)} $string { \1 } string
+    regsub -all {([\(\)])} $string { \1 } string
 
     # Add an extra space around kommas
     regsub -all {(,)} $string { \1 } string
@@ -2144,8 +2195,10 @@ ad_proc -public im_rest_valid_sql {
     set rules {
 	query {select [a-z_]+}
 	query {from [a-z_]+}
+	query {where [a-z_]+ in \( query \)}
 	query {where cond}
 	query {query query}
+	query {query \( val \)}
 	cond {cond and cond}
 	cond {cond or cond}
 	cond {\( cond \)}
