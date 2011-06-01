@@ -33,7 +33,7 @@ Ext.define('TicketBrowser.Main', {
                 xtype: 'ticketfilteraccordion',
                 region: 'west',
                 width: 300,
-                title: 'Ticket Filters',
+                title: '#intranet-helpdesk.Filter_Tickets#',
                 split: true,
                 margins: '5 0 5 5'
             }, {
@@ -48,11 +48,11 @@ Ext.define('TicketBrowser.Main', {
                 items: [
 		{
                     itemId: 'ticket',
-		    title: 'Tickets',
+		    title: '#intranet-helpdesk.Tickets#',
                     xtype: 'ticketcontainer'
                 }, {
                     itemId: 'company',
-		    title: '#intranet-sencha-ticket-tracker.Companies#',
+		    title: '#intranet-core.Companies#',
                     xtype: 'companycontainer'
 		}
 		]
