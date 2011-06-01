@@ -32,8 +32,7 @@ Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
 	var	result = 'Category #' + category_id;
 	var	rec = this.findRecord('category_id',category_id);
 	if (rec == null || typeof rec == "undefined") { return result; }
-	category = rec.get('category'); 
-	return category;
+	return rec.get('category'); 
     }
 });
 
@@ -46,8 +45,7 @@ Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
 	var	result = 'User #' + user_id;
 	var	rec = this.findRecord('user_id',user_id);
 	if (rec == null || typeof rec == "undefined") { return result; }
-	result = rec.get('name');
-	return result;
+	return rec.get('name');
     }
 });
 
@@ -60,9 +58,15 @@ Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
 	var	result = 'Company #' + company_id;
 	var	rec = this.findRecord('company_id',company_id);
 	if (rec == null || typeof rec == "undefined") { return result; }
-	result = rec.get('company_name');
-	return result;
+	return rec.get('company_name');
+    },
+
+    vat_id_from_id: function(company_id) {
+	var	rec = this.findRecord('company_id',company_id);
+	if (rec == null || typeof rec == "undefined") { return ''; }
+	return rec.get('vat_number');
     }
+
 });
 
 
@@ -84,7 +88,7 @@ var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 		});
 
 
-var ticketStatusStore = Ext.create('Ext.data.Store', {
+var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
 			storeId: 'ticketStatusStore',
 		        autoLoad: true,
 		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
@@ -101,7 +105,7 @@ var ticketStatusStore = Ext.create('Ext.data.Store', {
 		        }
 		});
 
-var companyTypeStore = Ext.create('Ext.data.Store', {
+var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
 			storeId: 'companyTypeStore',
 		        autoLoad: true,
 		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load

@@ -52,7 +52,7 @@ Ext.define('TicketBrowser.Main', {
                     xtype: 'ticketcontainer'
                 }, {
                     itemId: 'company',
-		    title: 'Companies',
+		    title: '#intranet-sencha-ticket-tracker.Companies#',
                     xtype: 'companycontainer'
 		}
 		]
