@@ -13,7 +13,7 @@
                   (<a href="@transition.actions_url@">#acs-workflow.actions#</a>)
                 </td>
                 <th align=center valign=middle>
-                  #acs-workflow.lt_Task_transitiontransi#<a href="@transition.edit_url@">#acs-workflow.edit#</a>)
+                  #acs-workflow.Task#: @transition.transition_name;noquote@ (<a href="@transition.edit_url@">#acs-workflow.edit#</a>)
                 </th>
                 <td align="right" width="25%">
                   <if @transitions.delete_url@ not nil>

@@ -9,7 +9,7 @@
               <tr>
                 <td width="20%">&nbsp;</td>
                 <th align=center>
-                  #acs-workflow.lt_Place_placeplace_name#<a href="@place.edit_url@">#acs-workflow.edit#</a>)
+                  #acs-workflow.Place#: @place.place_name;noquote@ (<a href="@place.edit_url@">#acs-workflow.edit#</a>)
                 </th>
                 <td align=right width="20%">
                   <if @place.delete_url@ not nil>

@@ -32,7 +32,7 @@ if { [wf_graphviz_installed_p] } {
 	set size {}
     }
 
-    set dot_text [wf_generate_dot_representation -size $size workflow]
+    set dot_text [lang::util::localize [wf_generate_dot_representation -size $size workflow]]
 
     if {[catch {
 	set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
