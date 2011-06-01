@@ -2217,6 +2217,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val in \( query \)}
 	val  {val , val}
 	val {[0-9]+}
+	val {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
 	val {\'[a-z0-9_\ \-\%]*\'}
     }
 
