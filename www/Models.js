@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js,v 1.7 2011/05/30 15:58:32 po34demo Exp $
+ * @cvs-id $Id: Models.js,v 1.8 2011/06/01 15:15:58 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -72,6 +72,7 @@ Ext.define('TicketBrowser.Ticket', {
 					// so the ticket name is stored as project_name.
 	'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
 					// project that handles the financials of the ticket.
+	'company_id',			// Company for whom the ticket has been created
 	'creation_user',		// User_id of the guy creating the ticket
 	'ticket_status_id',		// Lifecycle control: Current Status
 	'ticket_type_id',		// Type of ticket: Controls presence/absence of DynFields
@@ -115,6 +116,32 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_observations',           // Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
+    ]
+});
+
+
+Ext.define('TicketBrowser.Company', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'company_id',		// The primary key or object_id of the company
+    fields: [
+	// Basic company fields with special meaning
+	'company_id',			// The primary key or object_id of the company
+	'company_name',			// The name of the company. Company is as sub-type of Project, 
+					// so the company name is stored as project_name.
+	'company_path',			// Short name and path to the company's filestorage
+	'main_office_id',		// The company's main office
+					// project that handles the financials of the company.
+	'company_status_id',		// Lifecycle control: Current Status
+	'company_type_id',		// Type of company: Controls presence/absence of DynFields
+	'primary_contact_id',		// Main customer contact
+	'accounting_contact_id',	// Customer contact for accounting purposes
+	'note',				// Free text note for company, full-text indexed
+	'referral_source',		// How have we heard about the company first?
+	'annual_revenue_id',		// How much turnover do we have with company?
+	'vat_number',			// Company's VAT ID
+	'company_group_id',		// Does the company belong to a group structure?
+	'business_sector_id'		// Business sector of the company
     ]
 });
 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js,v 1.6 2011/05/30 16:12:24 mcordova Exp $
+ * @cvs-id $Id: Main.js,v 1.7 2011/06/01 15:15:58 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -45,10 +45,17 @@ Ext.define('TicketBrowser.Main', {
                 tabBar: {
                     border: true
                 },
-                items: {
+                items: [
+		{
                     itemId: 'ticket',
+		    title: 'Tickets',
                     xtype: 'ticketcontainer'
-                }
+                }, {
+                    itemId: 'company',
+		    title: 'Companies',
+                    xtype: 'companycontainer'
+		}
+		]
             }]
         });
         this.callParent();

@@ -11,6 +11,8 @@
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
 	<script type="text/javascript" src="SlaList.js"></script> 
+
+	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
 	<script type="text/javascript" src="TicketGrid.js"></script> 
  	<script type="text/javascript" src="Panels.js"></script>
@@ -18,6 +20,12 @@
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
 	<script type="text/javascript" src="TicketFilterAccordion.js"></script> 
 	<script type="text/javascript" src="PreviewPlugin.js"></script> 
+
+	<!-- ------------------------------- Tickets ---------------------------------------- -->
+	<script type="text/javascript" src="CompanyContainer.js"></script> 
+	<script type="text/javascript" src="CompanyGrid.js"></script> 
+
+
 	<script type="text/javascript" src="Main.js"></script> 
 
 	<script type="text/javascript">

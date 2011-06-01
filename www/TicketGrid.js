@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js,v 1.10 2011/06/01 10:23:20 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js,v 1.11 2011/06/01 15:15:58 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -57,13 +57,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'project_name',
 			flex: 1,
 			renderer: function(value, o, record) {
-				var	user_id = record.get('creation_user'),
-					creation_user_idx = customerContactStore.find('user_id',user_id),
-					user_record = customerContactStore.getAt(creation_user_idx),
-					user_name = 'User #' + user_id;
-				if (typeof user_record != "undefined") { user_name = user_record.get('name'); }
-				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',
-				       value, user_name);
+				var	user_name = employeeStore.name_from_id(record.get('creation_user'));
+				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
 			}
 		}, {
 			header: 'Prio',
@@ -90,7 +85,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'creation_user',
 			width: 100,
 			renderer: function(value, o, record) {
-				return employeeStore.user_name_from_id(record.get('creation_user'));
+				return employeeStore.name_from_id(record.get('creation_user'));
 			}
 		}, {
 			header: 'Replies',
@@ -105,32 +100,52 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Assignee',
 			dataIndex: 'ticket_assignee_id',
 			renderer: function(value, o, record) {
-				return employeeStore.user_name_from_id(record.get('ticket_assignee_id'));
+				return employeeStore.name_from_id(record.get('ticket_assignee_id'));
+			}
+		}, {
+			header: 'Contact',
+			dataIndex: 'ticket_customer_contact_id',
+			renderer: function(value, o, record) {
+				return employeeStore.name_from_id(record.get('ticket_customer_contact_id'));
+			}
+		}, {
+			header: 'Customer',
+			dataIndex: 'company_id',
+			renderer: function(value, o, record) {
+				return companyStore.name_from_id(record.get('company_id'));
 			}
 		}, {
 			header: 'Queue',
 			dataIndex: 'ticket_queue_id'
+		}, {
+			header: 'Dept',
+			dataIndex: 'ticket_dept_id'
+		}, {
+			header: 'Service',
+			dataIndex: 'ticket_service_id'
+		}, {
+			header: 'Alarm Date',
+			dataIndex: 'ticket_alarm_date'
+		}, {
+			header: 'Alarm Action',
+			dataIndex: 'ticket_alarm_action'
+		}, {
+			header: 'Hardware',
+			dataIndex: 'ticket_hardware_id'
+		}, {
+			header: 'Application',
+			dataIndex: 'ticket_application_id'
+		}, {
+			header: 'Conf Item',
+			dataIndex: 'ticket_conf_item_id'
+		}, {
+			header: 'Customer Deadline',
+			dataIndex: 'ticket_customer_deadline'
+		}, {
+			header: '1st CC',
+			dataIndex: 'ticket_closed_in_1st_contact_p'
 		}
 	    ],
-
-/**
-        { name: 'ticket_dept_id',               xtype: 'hiddenfield'},
-        { name: 'ticket_service_id',            xtype: 'hiddenfield'},
-        { name: 'ticket_hardware_id',           xtype: 'hiddenfield'},
-        { name: 'ticket_application_id',        xtype: 'hiddenfield'},
-        { name: 'ticket_alarm_date',            xtype: 'hiddenfield'},
-        { name: 'ticket_alarm_action',          xtype: 'hiddenfield'},
-        { name: 'ticket_note',                  xtype: 'hiddenfield'},
-        { name: 'ticket_conf_item_id',          xtype: 'hiddenfield'},
-        { name: 'ticket_component_id',          xtype: 'hiddenfield'},
-        { name: 'ticket_description',           xtype: 'hiddenfield'},
-        { name: 'ticket_customer_deadline',     xtype: 'hiddenfield'},
-        { name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'},
-        { name: 'project_name', fieldLabel: 'Name', allowBlank:false},
-        { name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
-        { name: 'ticket_customer_contact_id',   xtype: 'combobox',
- */
-
 	    dockedItems: [{
 		xtype: 'toolbar',
 		cls: 'x-docked-noborder-top',
