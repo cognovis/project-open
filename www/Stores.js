@@ -42,11 +42,25 @@ Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
  * The subclass contains a special lookup function.
  */
 Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
-    user_name_from_id: function(user_id) {
+    name_from_id: function(user_id) {
 	var	result = 'User #' + user_id;
-	var	rec = customerContactStore.findRecord('user_id',user_id);
+	var	rec = this.findRecord('user_id',user_id);
 	if (rec == null || typeof rec == "undefined") { return result; }
 	result = rec.get('name');
+	return result;
+    }
+});
+
+/*
+ * Create a specific store for users of all type.
+ * The subclass contains a special lookup function.
+ */
+Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
+    name_from_id: function(company_id) {
+	var	result = 'Company #' + company_id;
+	var	rec = this.findRecord('company_id',company_id);
+	if (rec == null || typeof rec == "undefined") { return result; }
+	result = rec.get('company_name');
 	return result;
     }
 });
@@ -284,11 +298,14 @@ var ticketStore = Ext.create('Ext.data.Store', {
         });
         
 
-var companyStore = Ext.create('Ext.data.Store', {
+var companyStore = Ext.create('Ext.ux.CompanyStore', {
             model: 'TicketBrowser.Company',
             remoteSort: true,
 	    pageSize: 10,			// Enable pagination
 	    autoSync: true,			// Write changes to the REST server ASAP
+
+	    autoLoad: true,
+
             sorters: [{
                 property: 'creation_date',
                 direction: 'DESC'

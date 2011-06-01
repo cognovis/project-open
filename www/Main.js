@@ -45,10 +45,17 @@ Ext.define('TicketBrowser.Main', {
                 tabBar: {
                     border: true
                 },
-                items: {
+                items: [
+		{
                     itemId: 'ticket',
+		    title: 'Tickets',
                     xtype: 'ticketcontainer'
-                }
+                }, {
+                    itemId: 'company',
+		    title: 'Companies',
+                    xtype: 'companycontainer'
+		}
+		]
             }]
         });
         this.callParent();
