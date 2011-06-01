@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js,v 1.7 2011/06/01 09:09:05 po34demo Exp $
+ * @cvs-id $Id: Stores.js,v 1.8 2011/06/01 10:23:20 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -121,6 +121,7 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 		                reader: { type: 'json', root: 'data' }
 		        }
 		});
+
 
 
 var ticketOriginStore = Ext.create('Ext.data.Store', {
@@ -310,3 +311,10 @@ var companyStore = Ext.create('Ext.data.Store', {
             }
         });
         
+
+
+// fake store while developing
+var ticketServiceTypeStore = ticketPriorityStore;
+var ticketChannelStore = ticketPriorityStore;
+
+
