@@ -301,28 +301,36 @@ ad_proc -private im_rest_call {
 	    # Is the post operation performed on a particular object or on the object_type?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
 
-		# POST with object_id => Update operation on an object
-		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
-		return [im_rest_post_object \
-		    -format $format \
-		    -format_variant $format_variant \
-		    -user_id $user_id \
-		    -rest_otype $rest_otype \
-		    -rest_oid $rest_oid \
-		    -query_hash_pairs $query_hash_pairs \
-		]
-		
+		if {[catch {
+		    # POST with object_id => Update operation on an object
+		    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
+		    im_rest_post_object \
+			-format $format \
+			-format_variant $format_variant \
+			-user_id $user_id \
+			-rest_otype $rest_otype \
+			-rest_oid $rest_oid \
+			-query_hash_pairs $query_hash_pairs
+
+		} err_msg]} {
+		    ns_log Error "im_rest_call: Error during POST operation: $err_msg"
+		}
+
 	    } else {
 
-		# POST without object_id => Update operation on the "factory" object_type
-		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
-		return [im_rest_post_object_type \
-			    -format $format \
-			    -format_variant $format_variant \
-			    -user_id $user_id \
-			    -rest_otype $rest_otype \
-			    -query_hash_pairs $query_hash_pairs \
-		]
+		if {[catch {
+		    # POST without object_id => Update operation on the "factory" object_type
+		    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
+		    im_rest_post_object_type \
+			-format $format \
+			-format_variant $format_variant \
+			-user_id $user_id \
+			-rest_otype $rest_otype \
+			-query_hash_pairs $query_hash_pairs
+		    
+		} err_msg]} {
+		    ns_log Error "im_rest_call: Error during POST operation: $err_msg"
+		}
 	    }
 	}
 	default {
@@ -1385,15 +1393,12 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
-	    return
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
-	    return
 	}
 	json {  
 	    doc_return 200 "text/plain" "\[\n$result\n\]\n"
-	    return
 	}
     }
 
@@ -1520,15 +1525,16 @@ ad_proc -private im_rest_post_object {
 	}
     }
 
-    ns_log Notice "im_rest_post_object: hash_array=[array get hash_array]"
-
 
     # Update the object. This routine will return a HTTP error in case 
     # of a database constraint violation
+    ns_log Notice "im_rest_post_object: Before im_rest_object_type_update_sql"
     im_rest_object_type_update_sql \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
 	-hash_array [array get hash_array]
+    ns_log Notice "im_rest_post_object: After im_rest_object_type_update_sql"
+
 
     # The update was successful - return a suitable message.
     switch $format {
@@ -1541,9 +1547,15 @@ ad_proc -private im_rest_post_object {
 		</table>[im_footer]
 	    "
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
+	json {
+	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n}"
+	    doc_return 200 "text/plain" $result
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" 
+	}
     }
-
+    return
 }
 
 
@@ -2132,6 +2144,7 @@ ad_proc -public im_rest_object_type_update_sql {
     ns_log Notice "im_rest_object_type_update_sql: [array get sql_hash]"
 
     foreach table [array names sql_hash] {
+	ns_log Notice "im_rest_object_type_update_sql: Going to update table '$table'"
 	set sqls $sql_hash($table)
 	set update_sql "update $table set [join $sqls ", "] where $index_column($table) = :rest_oid"
 
@@ -2142,6 +2155,7 @@ ad_proc -public im_rest_object_type_update_sql {
 	}
     }
 
+    ns_log Notice "im_rest_object_type_update_sql: returning"
     return
 }
 
@@ -2216,9 +2230,10 @@ ad_proc -public im_rest_valid_sql {
 	cond {val in \( val \)}
 	cond {val in \( query \)}
 	val  {val , val}
-	val {[0-9]+}
-	val {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
-	val {\'[a-z0-9_\ \-\%]*\'}
+	val  {[0-9]+}
+	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
+	val  {\'[a-z0-9_\ \-\%]*\'}
+	val  {[a-z0-9_]+ \( [a-z0-9_]+ \)}
     }
 
     # Add rules for every variable saying that it's a var.
@@ -2258,6 +2273,7 @@ ad_proc -public im_rest_valid_sql {
 
     return $result
 }
+
 
 # ----------------------------------------------------------------------
 # Error Handling
