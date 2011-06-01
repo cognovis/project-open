@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js,v 1.1 2011/06/01 15:15:14 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js,v 1.2 2011/06/01 16:40:21 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,7 +33,11 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	      {
 		  header: 'Company',
 		  dataIndex: 'company_name',
-		  flex: 1
+		  flex: 1,
+		  minWidth: 150
+	      }, {
+		  header: 'VAT ID',
+		  dataIndex: 'vat_number'
 	      }, {
 		  header: 'Primary Contact',
 		  dataIndex: 'primary_contact_id',

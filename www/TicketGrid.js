@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js,v 1.11 2011/06/01 15:15:58 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js,v 1.12 2011/06/01 16:40:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -56,9 +56,51 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Ticket',
 			dataIndex: 'project_name',
 			flex: 1,
+			minWidth: 100,
+			width: 200,
 			renderer: function(value, o, record) {
 				var	user_name = employeeStore.name_from_id(record.get('creation_user'));
 				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
+			}
+		}, {
+			header: 'Creation Date',
+			dataIndex: 'ticket_creation_date',
+			width: 80
+		}, {
+			header: 'VAT ID',
+			dataIndex: 'vat_number',
+			renderer: function(value, o, record) {
+				return companyStore.vat_id_from_id(record.get('company_id'));
+			}
+		}, {
+			header: 'Customer',
+			dataIndex: 'company_id',
+			renderer: function(value, o, record) {
+				return companyStore.name_from_id(record.get('company_id'));
+			}
+		}, {
+			header: 'Program',
+			dataIndex: 'ticket_program_id'
+		}, {
+			header: 'Channel',
+			dataIndex: 'ticket_channel_id',
+			hidden: true
+		}, {
+			header: 'Status',
+			dataIndex: 'ticket_status_id',
+			width: 60,
+			renderer: function(value, o, record) {
+				return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
+			},
+			field: {
+				xtype: 'combobox',
+				typeAhead: false,
+				triggerAction: 'all',
+				selectOnTab: true,
+				queryMode: 'local',
+				store: ticketStatusStore,
+				displayField: 'category',
+				valueField: 'category_id'
 			}
 		}, {
 			header: 'Prio',
@@ -93,10 +135,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			width: 70,
 			align: 'right'
 		}, {
-			header: 'Creation Date',
-			dataIndex: 'creation_date',
-			width: 150
-		}, {
 			header: 'Assignee',
 			dataIndex: 'ticket_assignee_id',
 			renderer: function(value, o, record) {
@@ -107,12 +145,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'ticket_customer_contact_id',
 			renderer: function(value, o, record) {
 				return employeeStore.name_from_id(record.get('ticket_customer_contact_id'));
-			}
-		}, {
-			header: 'Customer',
-			dataIndex: 'company_id',
-			renderer: function(value, o, record) {
-				return companyStore.name_from_id(record.get('company_id'));
 			}
 		}, {
 			header: 'Queue',
@@ -227,7 +259,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			case 'vat_number':
 				// The customer's VAT number is not part of the REST
 				// ticket fields. So translate into a query:
-				query = query + ' and company_id in (select company_id from im_companies where vat_number like \'%' + value + '%\')';
+				value = value.toLowerCase();
+				query = query + ' and company_id in (select company_id from im_companies where lower(vat_number) like \'%' + value + '%\')';
 				key = 'query';
 				value = query;
 				break;
@@ -240,7 +273,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			case 'company_name':
 				// The customer's company name is not part of the REST
 				// ticket fields. So translate into a query:
-				query = query + ' and company_id in (select company_id from im_companies where company_name like \'%' + value + '%\')';
+				value = value.toLowerCase();
+				query = query + ' and company_id in (select company_id from im_companies where lower(company_name) like \'%' + value + '%\')';
 				key = 'query';
 				value = query;
 				break;

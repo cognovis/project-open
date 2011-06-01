@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js,v 1.7 2011/06/01 15:15:58 po34demo Exp $
+ * @cvs-id $Id: Main.js.adp,v 1.1 2011/06/01 16:40:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -52,7 +52,7 @@ Ext.define('TicketBrowser.Main', {
                     xtype: 'ticketcontainer'
                 }, {
                     itemId: 'company',
-		    title: 'Companies',
+		    title: '#intranet-sencha-ticket-tracker.Companies#',
                     xtype: 'companycontainer'
 		}
 		]
