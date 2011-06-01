@@ -214,25 +214,52 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				// ticket fields. So translate into a query:
 				query = query + ' and company_id in (select company_id from im_companies where vat_number like \'%' + value + '%\')';
 				key = 'query';
-				filterValues['query'] = query;
+				value = query;
 				break;
 			case 'company_type_id':
 				// The customer's company type is not part of the REST ticket fields.
 				query = query + ' and company_id in (select company_id from im_companies where company_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
 				key = 'query';
-				filterValues['query'] = query;
+				value = query;
 				break;
 			case 'company_name':
 				// The customer's company name is not part of the REST
 				// ticket fields. So translate into a query:
 				query = query + ' and company_id in (select company_id from im_companies where company_name like \'%' + value + '%\')';
 				key = 'query';
-				filterValues['query'] = query;
+				value = query;
+				break;
+			case 'start_date':
+				// I can't get the proxy to quote (') the date, so we do it manually here:
+				var	year = '' + value.getFullYear(),
+					month =  '' + (1 + value.getMonth()),
+					day = '' + value.getDate();
+				if (month.length < 2) { month = '0' + month; }
+				if (day.length < 2) { day = '0' + day; }
+				value = '\'' + year + '-' + month + '-' + day + '\'';
+				// console.log(value);
+				query = query + ' and ticket_creation_date >= ' + value;
+				key = 'query';
+				value = query;
+				break;
+			case 'end_date':
+				// I can't get the proxy to quote (') the date, so we do it manually here:
+				var	year = '' + value.getFullYear(),
+					month =  '' + (1 + value.getMonth()),
+					day = '' + value.getDate();
+				if (month.length < 2) { month = '0' + month; }
+				if (day.length < 2) { day = '0' + day; }
+				value = '\'' + year + '-' + month + '-' + day + '\'';
+				// console.log(value);
+				query = query + ' and ticket_creation_date <= ' + value;
+				key = 'query';
+				value = query;
+				break;
 			break;
 		    }
 
 		    // Save the property in the proxy, which will pass it directly to the REST server
-		    proxy.extraParams[key] = filterValues[key];
+		    proxy.extraParams[key] = value;
 		}
 	    }
 	}

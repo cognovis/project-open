@@ -123,6 +123,7 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 		});
 
 
+
 var ticketOriginStore = Ext.create('Ext.data.Store', {
 			storeId: 'ticketOriginStore',
 		        autoLoad: true,
@@ -310,3 +311,10 @@ var companyStore = Ext.create('Ext.data.Store', {
             }
         });
         
+
+
+// fake store while developing
+var ticketServiceTypeStore = ticketPriorityStore;
+var ticketChannelStore = ticketPriorityStore;
+
+

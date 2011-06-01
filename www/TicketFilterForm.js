@@ -74,6 +74,66 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketSlaStore
+	}, {
+		fieldLabel: 'Area',
+		name: 'ticket_area_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: requestAreaStore
+	}, {
+		fieldLabel: 'Service Type',
+		name: 'ticket_service_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketServiceTypeStore
+	}, {
+		fieldLabel: 'Ticket Type',
+		name: 'ticket_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketTypeStore
+	}, {
+		fieldLabel: 'Ticket Nr',
+		name: 'project_nr'
+	}, {
+		fieldLabel: 'Ticket Status',
+		name: 'ticket_status_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketStatusStore
+	}, {
+		fieldLabel: 'Channel',
+		name: 'ticket_channel_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketChannelStore
+	}, {
+		fieldLabel: 'Date Since',
+		name: 'start_date',
+		xtype: 'datefield',
+		format: 'Y-m-d',
+		submitFormat: 'Y-m-d'
+	}, {
+		fieldLabel: 'Date Until',
+		name: 'end_date',
+		xtype: 'datefield',
+		format: 'Y-m-d',
+		submitFormat: 'Y-m-d'
 	}
 	],
 
