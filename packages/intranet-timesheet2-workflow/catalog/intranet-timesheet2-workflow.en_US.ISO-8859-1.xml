@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-workflow" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="_Vacation">Approval</msg>
+  <msg key="Approval">workflow for vacations.
+The &quot;approval&quot; transition is assigned to the project manager of the user.</msg>
+  <msg key="Approve">the Absence?</msg>
+  <msg key="Approve_1">Absence</msg>
+  <msg key="Conf_Project">Project</msg>
+  <msg key="Conf_Status">Status</msg>
+  <msg key="Conf_Type">Type</msg>
+  <msg key="Conf_User">User</msg>
+  <msg key="Date">Date</msg>
+  <msg key="Hours">Hours</msg>
+  <msg key="Included_Hours">Included Hours</msg>
+  <msg key="lt_Approve_the_logged">Approve the logged hours?</msg>
+  <msg key="Modify">Absence</msg>
+  <msg key="Modify_Included_Hours">Modify included hours</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Process">finished</msg>
+  <msg key="Ready">to Enter</msg>
+  <msg key="Ready_1">to Review</msg>
+  <msg key="Ready_2">to Approved</msg>
+  <msg key="Ready_3">to Deleted</msg>
+  <msg key="Timesheet">Confirmation Object</msg>
+  <msg key="Timesheet_1">Confirmation Objects</msg>
+  <msg key="Timesheet_Conf_Object">Timesheet Confirmation</msg>
+  <msg key="Vacation">Approval</msg>
+  <msg key="View">Timesheet Conf Objects All</msg>
+</message_catalog>

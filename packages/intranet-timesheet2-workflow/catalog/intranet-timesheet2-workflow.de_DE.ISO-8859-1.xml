@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-workflow" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="lt_Approve_the_logged">Geloggte Stunden genehmigen?</msg>
+  <msg key="Modify">Modify</msg>
+</message_catalog>
