@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-procs.tcl,v 1.436 2011/05/26 18:29:27 gustafn Exp $
+    @cvs-id $Id: xowiki-procs.tcl,v 1.437 2011/05/27 13:17:01 victorg Exp $
 }
 
 namespace eval ::xowiki {
@@ -1831,7 +1831,9 @@ namespace eval ::xowiki {
           "</div>\n"
     }
 
-    append footer [my include my-references] 
+    if {[$package_id get_parameter "show_page_references" 1]} {
+      append footer [my include my-references] 
+    }
     
     if {[$package_id get_parameter "show_per_object_categories" 1]} {
       set html [my include my-categories]

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js,v 1.7 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js,v 1.12 2011/06/01 16:40:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,41 +23,14 @@
  */
 
 
-Ext.define('TicketBrowser.TicketGrid', {
+var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.ticketgrid',
     minHeight: 200,
+    store: ticketStore,
 
     initComponent: function(){
-        var store = Ext.create('Ext.data.Store', {
-            model: 'TicketBrowser.Ticket',
-            remoteSort: true,
-	    pageSize: 10,			// Enable pagination
-	    autoSync: true,			// Write changes to the REST server ASAP
-            sorters: [{
-                property: 'creation_date',
-                direction: 'DESC'
-            }],
-            proxy: {
-                type: 'rest',
-                url: '/intranet-rest/im_ticket',
-		extraParams: {
-		    format: 'json',		// Tell the ]po[ REST to return JSON data.
-		    format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
-                },
-                reader: {
-                    type: 'json',		// Tell the Proxy Reader to parse JSON
-                    root: 'data',		// Where do the data start in the JSON file?
-		    totalProperty: 'total'
-                },
-                writer: {
-                    type: 'json'
-                }
-            }
-        });
-        
         Ext.apply(this, {
-            store: store,
 	    plugins: [
 		Ext.create('Ext.grid.plugin.CellEditing', {
         	    clicksToEdit: 1
@@ -83,27 +56,58 @@ Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Ticket',
 			dataIndex: 'project_name',
 			flex: 1,
+			minWidth: 100,
+			width: 200,
 			renderer: function(value, o, record) {
-				var	user_id = record.get('creation_user'),
-					creation_user_idx = customerContactStore.find('user_id',user_id),
-					user_record = customerContactStore.getAt(creation_user_idx),
-					user_name = 'User #' + user_id;
-				if (typeof user_record != "undefined") { user_name = user_record.get('name'); }
-				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',
-				       value, user_name);
+				var	user_name = employeeStore.name_from_id(record.get('creation_user'));
+				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
+			}
+		}, {
+			header: 'Creation Date',
+			dataIndex: 'ticket_creation_date',
+			width: 80
+		}, {
+			header: 'VAT ID',
+			dataIndex: 'vat_number',
+			renderer: function(value, o, record) {
+				return companyStore.vat_id_from_id(record.get('company_id'));
+			}
+		}, {
+			header: 'Customer',
+			dataIndex: 'company_id',
+			renderer: function(value, o, record) {
+				return companyStore.name_from_id(record.get('company_id'));
+			}
+		}, {
+			header: 'Program',
+			dataIndex: 'ticket_program_id'
+		}, {
+			header: 'Channel',
+			dataIndex: 'ticket_channel_id',
+			hidden: true
+		}, {
+			header: 'Status',
+			dataIndex: 'ticket_status_id',
+			width: 60,
+			renderer: function(value, o, record) {
+				return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
+			},
+			field: {
+				xtype: 'combobox',
+				typeAhead: false,
+				triggerAction: 'all',
+				selectOnTab: true,
+				queryMode: 'local',
+				store: ticketStatusStore,
+				displayField: 'category',
+				valueField: 'category_id'
 			}
 		}, {
 			header: 'Prio',
 			dataIndex: 'ticket_prio_id',
 			width: 40,
 			renderer: function(value, o, record) {
-				// Show the dereferenced category
-				var	category_id = record.get('ticket_prio_id'),
-					category_idx = ticketPriorityStore.find('category_id',category_id),
-					category_record = ticketPriorityStore.getAt(category_idx),
-					category = 'Category #' + category_id;
-				if (typeof category_record != "undefined") { category = category_record.get('category'); }
-				return category;
+				return ticketPriorityStore.category_from_id(record.get('ticket_prio_id'));
 			},
 			field: {
 				xtype: 'combobox',
@@ -121,45 +125,59 @@ Ext.define('TicketBrowser.TicketGrid', {
 		}, {
 			header: 'Creator',
 			dataIndex: 'creation_user',
-			width: 100
+			width: 100,
+			renderer: function(value, o, record) {
+				return employeeStore.name_from_id(record.get('creation_user'));
+			}
 		}, {
 			header: 'Replies',
 			dataIndex: 'replycount',
 			width: 70,
 			align: 'right'
 		}, {
-			header: 'Creation Date',
-			dataIndex: 'creation_date',
-			width: 150
-		}, {
 			header: 'Assignee',
-			dataIndex: 'ticket_assignee_id'
+			dataIndex: 'ticket_assignee_id',
+			renderer: function(value, o, record) {
+				return employeeStore.name_from_id(record.get('ticket_assignee_id'));
+			}
+		}, {
+			header: 'Contact',
+			dataIndex: 'ticket_customer_contact_id',
+			renderer: function(value, o, record) {
+				return employeeStore.name_from_id(record.get('ticket_customer_contact_id'));
+			}
 		}, {
 			header: 'Queue',
 			dataIndex: 'ticket_queue_id'
+		}, {
+			header: 'Dept',
+			dataIndex: 'ticket_dept_id'
+		}, {
+			header: 'Service',
+			dataIndex: 'ticket_service_id'
+		}, {
+			header: 'Alarm Date',
+			dataIndex: 'ticket_alarm_date'
+		}, {
+			header: 'Alarm Action',
+			dataIndex: 'ticket_alarm_action'
+		}, {
+			header: 'Hardware',
+			dataIndex: 'ticket_hardware_id'
+		}, {
+			header: 'Application',
+			dataIndex: 'ticket_application_id'
+		}, {
+			header: 'Conf Item',
+			dataIndex: 'ticket_conf_item_id'
+		}, {
+			header: 'Customer Deadline',
+			dataIndex: 'ticket_customer_deadline'
+		}, {
+			header: '1st CC',
+			dataIndex: 'ticket_closed_in_1st_contact_p'
 		}
 	    ],
-
-/**
-        { name: 'ticket_dept_id',               xtype: 'hiddenfield'},
-        { name: 'ticket_service_id',            xtype: 'hiddenfield'},
-        { name: 'ticket_hardware_id',           xtype: 'hiddenfield'},
-        { name: 'ticket_application_id',        xtype: 'hiddenfield'},
-        { name: 'ticket_alarm_date',            xtype: 'hiddenfield'},
-        { name: 'ticket_alarm_action',          xtype: 'hiddenfield'},
-        { name: 'ticket_note',                  xtype: 'hiddenfield'},
-        { name: 'ticket_conf_item_id',          xtype: 'hiddenfield'},
-        { name: 'ticket_component_id',          xtype: 'hiddenfield'},
-        { name: 'ticket_description',           xtype: 'hiddenfield'},
-        { name: 'ticket_customer_deadline',     xtype: 'hiddenfield'},
-        { name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'},
-        { name: 'project_name', fieldLabel: 'Name', allowBlank:false},
-        { name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
-        { name: 'ticket_customer_contact_id',   xtype: 'combobox',
- */
-
-
-
 	    dockedItems: [{
 		xtype: 'toolbar',
 		cls: 'x-docked-noborder-top',
@@ -187,7 +205,7 @@ Ext.define('TicketBrowser.TicketGrid', {
 	    }, {
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
-		store: store,
+		store: ticketStore,
 		displayInfo: true,
 		displayMsg: 'Displaying tickets {0} - {1} of {2}',
 		emptyMsg: 'No tickets to display'
@@ -203,6 +221,98 @@ Ext.define('TicketBrowser.TicketGrid', {
     loadSla: function(id){
 	var store = this.store;
 	store.getProxy().extraParams.parent_id = id;
+	store.loadPage(1);
+    },
+    
+    // Called from TicketFilterForm in order to limit the list of
+    // tickets according to filter variables.
+    // filterValues is a key-value list (object).
+    filterTickets: function(filterValues){
+	var store = this.store;
+	var proxy = store.getProxy();
+	var value = '';
+	var query = '1=1';
+
+	// delete filters added by other accordion filters
+	delete proxy.extraParams['query'];
+	delete proxy.extraParams['parent_id'];
+
+	// Apply the filter values directly to the proxy.
+	// This only works if the filters are named according
+	// to the REST interface specs.
+	for(var key in filterValues) {
+	    if (filterValues.hasOwnProperty(key)) {
+
+		value = filterValues[key];
+		// console.log('TicketGrid: "'+key+'" = "' + value + '"');
+	
+		if (value == '' || value == undefined || value == null) {
+
+		    // Delete the filter
+		    // console.log('TicketGrid: Deleting key="'+key+'"');
+		    delete proxy.extraParams[key];
+
+		} else {
+
+		    // special treatment for special filter variables
+		    switch (key) {
+			case 'vat_number':
+				// The customer's VAT number is not part of the REST
+				// ticket fields. So translate into a query:
+				value = value.toLowerCase();
+				query = query + ' and company_id in (select company_id from im_companies where lower(vat_number) like \'%' + value + '%\')';
+				key = 'query';
+				value = query;
+				break;
+			case 'company_type_id':
+				// The customer's company type is not part of the REST ticket fields.
+				query = query + ' and company_id in (select company_id from im_companies where company_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
+				key = 'query';
+				value = query;
+				break;
+			case 'company_name':
+				// The customer's company name is not part of the REST
+				// ticket fields. So translate into a query:
+				value = value.toLowerCase();
+				query = query + ' and company_id in (select company_id from im_companies where lower(company_name) like \'%' + value + '%\')';
+				key = 'query';
+				value = query;
+				break;
+			case 'start_date':
+				// I can't get the proxy to quote (') the date, so we do it manually here:
+				var	year = '' + value.getFullYear(),
+					month =  '' + (1 + value.getMonth()),
+					day = '' + value.getDate();
+				if (month.length < 2) { month = '0' + month; }
+				if (day.length < 2) { day = '0' + day; }
+				value = '\'' + year + '-' + month + '-' + day + '\'';
+				// console.log(value);
+				query = query + ' and ticket_creation_date >= ' + value;
+				key = 'query';
+				value = query;
+				break;
+			case 'end_date':
+				// I can't get the proxy to quote (') the date, so we do it manually here:
+				var	year = '' + value.getFullYear(),
+					month =  '' + (1 + value.getMonth()),
+					day = '' + value.getDate();
+				if (month.length < 2) { month = '0' + month; }
+				if (day.length < 2) { day = '0' + day; }
+				value = '\'' + year + '-' + month + '-' + day + '\'';
+				// console.log(value);
+				query = query + ' and ticket_creation_date <= ' + value;
+				key = 'query';
+				value = query;
+				break;
+			break;
+		    }
+
+		    // Save the property in the proxy, which will pass it directly to the REST server
+		    proxy.extraParams[key] = value;
+		}
+	    }
+	}
+	
 	store.loadPage(1);
     },
     

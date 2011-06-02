@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js,v 1.4 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js,v 1.6 2011/05/30 15:58:32 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -28,21 +28,21 @@ Ext.define('TicketBrowser.TicketContainer', {
     alias: 'widget.ticketcontainer',
     title: 'Loading...',
 
+    layout: 'border',
+
+    items: [{
+	itemId: 'grid',
+	xtype: 'ticketgrid',
+	region: 'center'
+    }, {
+	itemId: 'preview',
+	xtype: 'ticketInfo',
+	region: 'south',
+	split: true,
+	title: 'View Ticket'
+    }],
+
     initComponent: function(){
-        Ext.apply(this, {
-            layout: 'border',
-            items: [{
-                itemId: 'grid',
-                xtype: 'ticketgrid',
-                region: 'center'
-            }, {
-                itemId: 'preview',
-		xtype: 'ticketform',
-                region: 'south',
-                split: true,
-                title: 'View Ticket'
-            }]
-        });
         this.callParent();
     },
 
@@ -55,6 +55,11 @@ Ext.define('TicketBrowser.TicketContainer', {
     loadSla: function(rec) {
         this.tab.setText(rec.get('project_name'));
         this.child('#grid').loadSla(rec.getId());
+    },
+    
+    filterTickets: function(filterValues) {
+        this.tab.setText('Filtered Tickets');
+        this.child('#grid').filterTickets(filterValues);
     },
     
     onSelect: function(rec) {
