@@ -35,7 +35,13 @@ Ext.define('TicketBrowser.TicketInfo', {
         allowBlank: false
     }, {
         fieldLabel: 'Tipo de Servicio',
-        name:       'service_type'
+        name:       'ticket_service_id',
+	xtype: 'combobox',
+        valueField: 'category_id',
+        displayField: 'category',
+	forceSelection: true,
+	queryMode: 'remote',
+	store: ticketServiceTypeStore
     }, {
         fieldLabel: '#intranet-helpdesk.Ticket_type#',
 	name: 'ticket_type_id',
