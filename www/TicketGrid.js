@@ -187,7 +187,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    handler: function(){
 			alert('Not implemented');
 		    }
-		}, '-', {
+		}, {
+		    text: 'Copy Ticket',
+		    iconCls: 'icon-new-ticket',
+		    handler: function(){
+			alert('Not implemented');
+		    }
+		},    {
+    		    text: 'Remove Ticket',
+    		    iconCls: 'icon-new-ticket',
+    		    handler: function(){
+    			alert('Not implemented');
+    		    }
+    		}, '-', {
 		    text: 'Preview Pane',
 		    iconCls: 'icon-preview',
 		    enableToggle: true,
