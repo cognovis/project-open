@@ -36,12 +36,10 @@ Ext.define('TicketBrowser.TicketContainer', {
 	region: 'center'
     }, {
 	itemId: 'preview',
-	xtype: 'ticketInfo',
-	region: 'south',
-	split: true,
-	title: 'View Ticket'
+	xtype: 'ticketTabPanel',
+	region: 'south'
     }],
-
+    
     initComponent: function(){
         this.callParent();
     },
