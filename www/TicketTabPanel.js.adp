@@ -36,7 +36,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	title: 'View Ticket'
     }, {
 	itemId: 'ticketFilestorage',
-	title: '#intranet-helpdesk.Tickets#',
-	html: '<h1>test</h1>'
+	title: '#intranet-filestorage.File_Storage#',
+	xtype: 'fileStorageGrid'
     }]   
 });
