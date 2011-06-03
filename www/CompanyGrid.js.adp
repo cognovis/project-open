@@ -36,8 +36,15 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		  flex: 1,
 		  minWidth: 150
 	      }, {
-		  header: 'VAT ID',
-		  dataIndex: 'vat_number'
+  		  header: 'VAT ID',
+  		  dataIndex: 'vat_number'
+  	      }, {
+                  header: 'compnay ID',
+                  dataIndex: 'company_id',
+                  renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+                        return '<a href="/intranet/companies/view?company_id=' + value + '" target="_blank">'
+                                + value +'</a>';
+                  }
 	      }, {
 		  header: 'Primary Contact',
 		  dataIndex: 'primary_contact_id',
