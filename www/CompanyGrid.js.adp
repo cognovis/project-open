@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.1 2011/06/03 08:37:58 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.2 2011/06/03 12:04:47 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,8 +36,15 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		  flex: 1,
 		  minWidth: 150
 	      }, {
-		  header: 'VAT ID',
-		  dataIndex: 'vat_number'
+  		  header: 'VAT ID',
+  		  dataIndex: 'vat_number'
+  	      }, {
+                  header: 'compnay ID',
+                  dataIndex: 'company_id',
+                  renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+                        return '<a href="/intranet/companies/view?company_id=' + value + '" target="_blank">'
+                                + value +'</a>';
+                  }
 	      }, {
 		  header: 'Primary Contact',
 		  dataIndex: 'primary_contact_id',
