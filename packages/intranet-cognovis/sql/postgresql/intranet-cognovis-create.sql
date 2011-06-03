@@ -2373,7 +2373,7 @@ BEGIN
 	SELECT widget_id INTO v_widget_id FROM im_dynfield_widgets where widget_name = ''open_projects'';
 	
 	UPDATE im_dynfield_widgets 
-	SET parameters = ''{custom {tcl {im_project_options -include_empty 1 -project_status_id [im_project_status_open] -exclude_tasks_p 1} switch_p 1}}'', widget = ''generic_tcl'' WHERE widget_id = v_widget_id;
+	SET parameters = ''{custom {tcl {im_project_options -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed] -exclude_tasks_p 1} switch_p 1}}'', widget = ''generic_tcl'' WHERE widget_id = v_widget_id;
 
 	RETURN 0;
 END;' language 'plpgsql';
