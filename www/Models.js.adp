@@ -145,3 +145,22 @@ Ext.define('TicketBrowser.Company', {
     ]
 });
 
+
+Ext.define('TicketBrowser.FileStorage', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'id'	,		// The primary key or object_id of the filestorage
+    fields: [
+	// Basic filestorage fields with special meaning
+	'id',				// The primary key or object_id of the filestorage
+	'name',				// The name of the file.
+	'parent_id',			// The ID of the content folder that contains the file
+	'mime_type',			// MIME type of the file, i.e. "image/jpeg", ...
+	'description',			// Manual description of the file
+	'creation_date',		// Date of creation
+	'creation_user',		// The user who created the file
+	'last_modified',		// Date of last modification
+	'content_length'		// size of the file
+    ]
+});
+

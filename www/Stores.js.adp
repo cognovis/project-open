@@ -307,9 +307,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
             remoteSort: true,
 	    pageSize: 10,			// Enable pagination
 	    autoSync: true,			// Write changes to the REST server ASAP
-
 	    autoLoad: true,
-
             sorters: [{
                 property: 'creation_date',
                 direction: 'DESC'
@@ -319,7 +317,6 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
                 url: '/intranet-rest/im_company',
 		extraParams: {
 		    format: 'json',		// Tell the ]po[ REST to return JSON data.
-		    format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
                 },
                 reader: {
                     type: 'json',		// Tell the Proxy Reader to parse JSON
@@ -332,6 +329,32 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
             }
         });
         
+
+var fileStorageStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.FileStorage',
+    storeId: 'fileStorageStore',
+    autoLoad: true,
+    remoteSort: true,
+    pageSize: 10,			// Enable pagination
+
+    sorters: [{
+	property: 'name',
+	direction: 'DESC'
+    }],
+
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/file_storage_object',
+	appendId: true,
+	extraParams: {
+	    format: 'json'
+	},
+	reader: { 
+	    type: 'json', 
+	    root: 'data' 
+	}
+    }
+});
 
 
 // fake store while developing
