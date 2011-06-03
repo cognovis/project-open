@@ -448,8 +448,8 @@ ad_proc -public im_timesheet_task_list_component {
 		child.*,
 		child.project_nr as task_nr,
 		child.project_name as task_name,
-		child.project_status_id as task_status_id,
-        im_name_from_id(child.project_status_id) as task_status,
+		t.task_status_id as task_status_id,
+        im_name_from_id(t.task_status_id) as task_status,
 		child.project_type_id as task_type_id,
 		child.project_id as child_project_id,
 		child.parent_id as child_parent_id,
@@ -461,8 +461,8 @@ ad_proc -public im_timesheet_task_list_component {
 		child.project_id as subproject_id,
 		child.project_nr as subproject_nr,
 		child.project_name as subproject_name,
-		child.project_status_id as subproject_status_id,
-		im_category_from_id(child.project_status_id) as subproject_status,
+		t.task_status_id as subproject_status_id,
+		im_category_from_id(t.task_status_id) as subproject_status,
 		im_category_from_id(child.project_type_id) as subproject_type,
 		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as subproject_level,
 		$order_by_clause as order_by_value
@@ -477,7 +477,7 @@ ad_proc -public im_timesheet_task_list_component {
 	where
 		parent.project_id = $restrict_to_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-		child.project_status_id not in ([im_project_status_deleted])
+		t.task_status_id not in ([im_project_status_deleted])
 		$extra_where
 	order by
 		child.tree_sortkey
@@ -1133,7 +1133,7 @@ ad_proc -public -callback im_timesheet_task_after_update -impl im_timesheet_task
     } -default ""]
     
     if {[exists_and_not_null task_status]} {
-	if {$task_status eq [im_timeshee_task_status_closed]} {
+	if {$task_status eq [im_timesheet_task_status_closed]} {
 	    UPDATE im_projects SET project_status_id = [im_project_status_closed] WHERE project_id = :object_id
 	}
     }

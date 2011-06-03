@@ -816,7 +816,7 @@ BEGIN
 		 ''start_date'',			-- column_name
 		 ''#intranet-core.Start_Date#'',	-- pretty_name
 		 ''date'',				-- widget_name
-		 ''timestamp'',				-- acs_datatype
+		 ''date'',				-- acs_datatype
 		 ''t'',					-- required_p   
 		 9,					-- pos y
 		 ''f'',					-- also_hard_coded
@@ -884,7 +884,7 @@ BEGIN
 		 ''end_date'',				-- column_name
 		 ''#intranet-core.End_Date#'',		-- pretty_name
 		 ''date'',				-- widget_name
-		 ''timestamp'',				-- acs_datatype
+		 ''date'',				-- acs_datatype
 		 ''t'',					-- required_p   
 		 10,					-- pos y
 		 ''f'',					-- also_hard_coded
@@ -2013,7 +2013,7 @@ BEGIN
         ''start_date'',
         ''Start Date'',
         ''date'',
-        ''timestamp'',
+        ''date'',
         ''f'',
         12,
         ''f'',
@@ -2064,7 +2064,7 @@ BEGIN
         ''end_date'',
         ''End Date'',
         ''date'',
-        ''timestamp'',
+        ''date'',
         ''f'',
         13,
         ''f'',

@@ -14,3 +14,5 @@ END;' language 'plpgsql';
 
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
+update acs_attributes set datatype='date' where attribute_name = 'end_date';
+update acs_attributes set datatype='date' where attribute_name = 'start_date';
