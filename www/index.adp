@@ -10,7 +10,7 @@
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
-	<script type="text/javascript" src="SlaList.js"></script> 
+	<script type="text/javascript" src="ProjectSlaList.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
@@ -20,7 +20,7 @@
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
 	<script type="text/javascript" src="TicketTabPanel.js"></script> 
 	<script type="text/javascript" src="TicketFilterAccordion.js"></script> 
-	<script type="text/javascript" src="PreviewPlugin.js"></script> 
+	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
