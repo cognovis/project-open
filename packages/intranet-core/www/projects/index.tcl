@@ -251,7 +251,7 @@ if { [empty_string_p $company_id] } {
     set company_id 0
 }
 
-set company_options [im_company_options -include_empty_p 1 -include_empty_name "All" -type "CustOrIntl" ]
+set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
 
 # Get the list of profiles readable for current_user_id
 set managable_profiles [im_profile::profile_options_managable_for_user -privilege "read" $current_user_id]
@@ -261,7 +261,7 @@ foreach g $managable_profiles {
     lappend user_select_groups [lindex $g 1]
 }
 set user_options [im_profile::user_options -profile_ids $user_select_groups]
-set user_options [linsert $user_options 0 [list "All" ""]]
+set user_options [linsert $user_options 0 [list "#intranet-core.All#" ""]]
 
 ad_form -extend -name $form_id -form {
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }

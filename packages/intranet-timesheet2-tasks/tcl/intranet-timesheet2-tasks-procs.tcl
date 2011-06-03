@@ -110,7 +110,7 @@ ad_proc -private im_timesheet_task_type_options {
     set options [db_list_of_lists task_type_options "
         select	category, category_id
         from	im_categories
-	where	category_type = 'Intranet Project Type' and
+	where	category_type = 'Intranet Timesheet Task Type' and
 		category_id in ([join [im_sub_categories [im_project_type_task]] ","]) and
 		(enabled_p is null OR enabled_p = 't')
     "]
@@ -124,7 +124,7 @@ ad_proc -private im_timesheet_task_status_options { {-include_empty 1} } {
     set options [db_list_of_lists task_status_options "
 	select	category, category_id
 	from	im_categories
-	where	category_type = 'Intranet Project Status' and
+	where	category_type = 'Intranet Timesheet Task Status' and
 		(enabled_p is null OR enabled_p = 't')
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
@@ -609,12 +609,12 @@ ad_proc -public im_timesheet_task_list_component {
 	set percent_done_input "<input type=textbox size=3 name=percent_completed.$task_id value=$percent_completed_rounded>"
 	set billable_hours_input "<input type=textbox size=3 name=billable_units.$task_id value=$billable_units>"
         if { ![empty_string_p $task_id]} {
-            set status_select [im_category_select {Intranet Project Status} task_status_id.$task_id $task_status_id]
+            set status_select [im_category_select {Intranet Timesheet Task Status} task_status_id.$task_id $task_status_id]
         } else {
             set status_select ""
         }
 	set planned_hours_input "<input type=textbox size=3 name=planned_units.$task_id value=$planned_units>"
-
+	set uom [im_category_from_id $uom_id]
 	# Table fields for projects and others (tickets?)
 	if {$project_type_id != [im_project_type_task] || !$edit_task_estimates_p} {
 
