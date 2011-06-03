@@ -195,7 +195,8 @@ foreach p $category_list_sorted {
 }
 
 foreach toplist [lsort -index 1 $top_list] {
-    set p [lindex $toplist 0]
+ds_comment "$toplist" 
+   set p [lindex $toplist 0]
     append category_select_html [im_biz_object_category_select_branch -translate_p $translate_p -package_key $package_key -type_id_var $type_id_var $p $default_category_id $base_level [array get cat] [array get direct_parent]]
 }
 

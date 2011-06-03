@@ -317,7 +317,7 @@ set user_status_types [im_memoize_list select_user_status_types \
 set user_status_types [linsert $user_status_types 0 0 All]
 
 
-set user_types [list [list All all]]
+set user_types [list [list "#acs-kernel.common_All#" all]]
 db_foreach select_user_types "
 	select
 		group_id,
@@ -328,6 +328,8 @@ db_foreach select_user_types "
 	where
 		group_id = profile_id" \
     {
+	set group_name [lang::message::lookup "" intranet-core.[lang::util::suggest_key $group_name] $group_name]
+
         set option [list $group_name [im_mangle_user_group_name $group_name]]
         lappend user_types $option
     }
