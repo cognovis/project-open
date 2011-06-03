@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js,v 1.10 2011/06/01 16:40:22 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.1 2011/06/03 08:37:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
