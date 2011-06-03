@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.2 2011/06/03 10:06:09 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.3 2011/06/03 10:51:32 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,7 +36,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	title: 'View Ticket'
     }, {
 	itemId: 'ticketFilestorage',
-	title: '#intranet-filestorage.File_Storage#',
+	title: '#intranet-filestorage.Filestorage#',
 	xtype: 'fileStorageGrid'
     }]   
 });
