@@ -22,70 +22,71 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.onReady(function(){
-
-    var selModel = Ext.create('Ext.selection.CheckboxModel', {
-        listeners: {
-            selectionchange: function(sm, selections) {
-                grid4.down('\#removeButton').setDisabled(selections.length == 0);
-            }
+var selModel = Ext.create('Ext.selection.CheckboxModel', {
+    listeners: {
+        selectionchange: function(sm, selections) {
+            grid4.down('\#removeButton').setDisabled(selections.length == 0);
         }
-    });
-    
-    var grid4 = Ext.create('Ext.grid.Panel', {
-        id:'button-grid',
-        store: fileStorageStore,
-        columns: [
+    }
+});
+
+
+var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
+    extend: 'Ext.grid.Panel',
+    alias: 'widget.fileStorageGrid',
+    store: fileStorageStore,
+
+    minWidth: 300,
+    minHeight: 100,
+    frame: true,
+    iconCls: 'icon-grid',
+
+    columns: [
 	      {text: "Name", flex: 1, sortable: true, dataIndex: 'name'},
 	      {text: "Description", sortable: true, dataIndex: 'description'},
 	      {text: "Creation Date", sortable: true, dataIndex: 'creation_date'},
 	      {text: "Size", sortable: true, dataIndex: 'content_length'},
 	      {text: "MIME Type", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
-        columnLines: true,
-        selModel: selModel,
+    columnLines: true,
+    selModel: selModel,
 
-        // inline buttons
-        dockedItems: [{
-            xtype: 'toolbar',
-            dock: 'bottom',
-            ui: 'footer',
-            layout: {
-                pack: 'center'
-            },
-            items: [{
-                minWidth: 80,
-                text: 'Save'
-            },{
-                minWidth: 80,
-                text: 'Cancel'
-            }]
-        }, {
-            xtype: 'toolbar',
-            items: [{
-                text:'Add Something',
-                tooltip:'Add a new row',
-                iconCls:'add'
-            }, '-', {
-                text:'Options',
-                tooltip:'Set options',
-                iconCls:'option'
-            },'-',{
-                itemId: 'removeButton',
-                text:'Remove Something',
-                tooltip:'Remove the selected item',
-                iconCls:'remove',
-                disabled: true
-            }]
-        }],
+    // inline buttons
+    dockedItems: [{
+        xtype: 'toolbar',
+        dock: 'bottom',
+        ui: 'footer',
+        layout: {
+            pack: 'center'
+        },
+        items: [{
+            minWidth: 80,
+            text: 'Save'
+        },{
+            minWidth: 80,
+            text: 'Cancel'
+        }]
+    }, {
+        xtype: 'toolbar',
+        items: [{
+            text:'Add Something',
+            tooltip:'Add a new row',
+            iconCls:'add'
+        }, '-', {
+            text:'Options',
+            tooltip:'Set options',
+            iconCls:'option'
+        },'-',{
+            itemId: 'removeButton',
+            text:'Remove Something',
+            tooltip:'Remove the selected item',
+            iconCls:'remove',
+            disabled: true
+        }]
+    }]
 
-        width: 600,
-        height: 300,
-        frame: true,
-        title: 'Support for standard Panel features such as framing, buttons and toolbars',
-        iconCls: 'icon-grid',
-        renderTo: Ext.getBody()
-    });
 });
+
+
 
 
