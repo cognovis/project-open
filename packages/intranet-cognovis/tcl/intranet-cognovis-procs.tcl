@@ -351,3 +351,22 @@ ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
 	company_id company_type_id company_status_id company_name return_url 
     }] 
 } 
+
+ad_proc -public intranet-cognovis::delete_project {
+    {-project_id:required}
+} {
+    Delete project completely
+} {
+    db_dml delete "delete from survsimp_responses where related_object_id = :project_id"
+    set item_id [db_string item "select item_id from cr_items where parent_id = $project_id" -default ""]
+    if {$item_id ne ""} {
+	db_string delete "select content_item__del($item_id) from dual" -default ""
+    }
+    ns_log Notice "<li>Nuking project \#$project_id ...<br>\n"
+    set error [im_project_nuke $project_id]
+    if {"" == $error} {
+	ns_log Notice "... successful\n"
+    } else {
+	ns_log Notice "<font color=red>$error</font>\n"
+    }
+}
