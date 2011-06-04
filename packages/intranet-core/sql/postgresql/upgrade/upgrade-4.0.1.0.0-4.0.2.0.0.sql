@@ -76,3 +76,4 @@ SELECT	im_component_plugin__new (
 );
 
 
+drop function last_day(date);
