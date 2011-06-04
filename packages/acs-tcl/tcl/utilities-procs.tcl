@@ -2357,7 +2357,7 @@ ad_proc -public util_exploit_url_p {{} string} {
 	    # Try to decode URL and try again
 	    set tuple [ns_urldecode $tuple]
 	    
-	    if {[regexp -nocase {^([a-z0-9_\.\-]+)=(.*)$} $tuple match var value]} {
+	    if {[regexp -nocase {^([a-z0-9_\.\-\:]+)=(.*)$} $tuple match var value]} {
 		ns_log Notice "util_exploit_url_p: Found a valid var=value pair: '$var'='$value'"
 	    } else {
 		ns_log Notice "util_exploit_url_p: Found invalid var=value pair: '$tuple'"

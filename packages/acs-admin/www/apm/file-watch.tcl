@@ -9,7 +9,7 @@ ad_page_contract {
 } {
     version_id:integer
     paths:multiple
-    {return_url ""}
+    {return_url "/acs-admin/apm/index"}
 } 
 
 set package_key [apm_package_key_from_version_id $version_id]
