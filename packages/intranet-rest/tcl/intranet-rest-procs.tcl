@@ -109,20 +109,12 @@ ad_proc -private im_rest_call_get {
     set valid_formats {xml html json}
     if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
 
-    # Should we return Sencha or YUI specific status messages?
-    set format_variant ""
-    if {[info exists query_hash(format_variant)]} { set format_variant $query_hash(format_variant) }
-    set valid_format_variants {{} sencha yui}
-    if {[lsearch $valid_format_variants $format_variant] < 0} { return [im_rest_error -http_status 406 -message "Invalid format_variant option '$format_variant'. Valid formats include $valid_format_variants."] }
-
-
     # Call the main request processing routine
     if {[catch {
 
 	im_rest_call \
 	    -method $http_method \
 	    -format $format \
-	    -format_variant $format_variant \
 	    -user_id $auth_user_id \
 	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
@@ -145,7 +137,6 @@ ad_proc -private im_rest_call_get {
 ad_proc -private im_rest_call {
     { -method GET }
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -163,7 +154,6 @@ ad_proc -private im_rest_call {
     if {[lsearch $pages $rest_otype] >= 0} {
 	return [im_rest_page \
 		    -format $format \
-		    -format_variant $format_variant \
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
@@ -192,7 +182,6 @@ ad_proc -private im_rest_call {
 		    im_category {
 			return [im_rest_get_im_category \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -202,7 +191,6 @@ ad_proc -private im_rest_call {
 		    im_dynfield_attribute {
 			return [im_rest_get_im_dynfield_attribute \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -212,7 +200,6 @@ ad_proc -private im_rest_call {
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_item \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -222,7 +209,6 @@ ad_proc -private im_rest_call {
 		    im_hour {
 			return [im_rest_get_im_hour \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -233,7 +219,6 @@ ad_proc -private im_rest_call {
 			# Return generic object information
 			return [im_rest_get_object \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -rest_oid $rest_oid \
@@ -250,7 +235,6 @@ ad_proc -private im_rest_call {
 		    im_category {
 			return [im_rest_get_im_categories \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -259,7 +243,6 @@ ad_proc -private im_rest_call {
 		    im_dynfield_attribute {
 			return [im_rest_get_im_dynfield_attributes \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -268,7 +251,6 @@ ad_proc -private im_rest_call {
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_items \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -277,7 +259,6 @@ ad_proc -private im_rest_call {
 		    im_hour {
 			return [im_rest_get_im_hours \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -287,7 +268,6 @@ ad_proc -private im_rest_call {
 			# Return query from the object rest_otype
 			return [im_rest_get_object_type \
 				    -format $format \
-				    -format_variant $format_variant \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
 				    -query_hash_pairs $query_hash_pairs \
@@ -306,7 +286,6 @@ ad_proc -private im_rest_call {
 		    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
 		    im_rest_post_object \
 			-format $format \
-			-format_variant $format_variant \
 			-user_id $user_id \
 			-rest_otype $rest_otype \
 			-rest_oid $rest_oid \
@@ -323,7 +302,6 @@ ad_proc -private im_rest_call {
 		    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
 		    im_rest_post_object_type \
 			-format $format \
-			-format_variant $format_variant \
 			-user_id $user_id \
 			-rest_otype $rest_otype \
 			-query_hash_pairs $query_hash_pairs
@@ -343,7 +321,6 @@ ad_proc -private im_rest_call {
 ad_proc -private im_rest_page {
     { -rest_otype "index" }
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_oid 0 }
     { -query_hash_pairs {} }
@@ -374,7 +351,6 @@ ad_proc -private im_rest_page {
 
 ad_proc -private im_rest_get_object {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -460,7 +436,6 @@ ad_proc -private im_rest_get_object {
 
 ad_proc -private im_rest_get_im_category {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -540,7 +515,6 @@ ad_proc -private im_rest_get_im_category {
 
 ad_proc -private im_rest_get_im_dynfield_attribute {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -624,7 +598,6 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 
 ad_proc -private im_rest_get_im_invoice_item {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -703,7 +676,6 @@ ad_proc -private im_rest_get_im_invoice_item {
 
 ad_proc -private im_rest_get_im_hour {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -782,7 +754,6 @@ ad_proc -private im_rest_get_im_hour {
 
 ad_proc -private im_rest_get_object_type {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -850,28 +821,14 @@ ad_proc -private im_rest_get_object_type {
     ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
 
 
-    # Determine the list of valid columns for the object type
-    set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
-
-
     # -------------------------------------------------------
     # Check if there are "valid_vars" specified in the HTTP header
     # and add these vars to the SQL clause
+    set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
     set where_clause_list [list]
     foreach v $valid_vars {
 	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
     }
-    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
-    append where_clause [join $where_clause_list " and "]
- 
-    # Check that the query is a valid SQL where clause
-    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
-    if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
-	return
-    }
-    if {"" != $where_clause} { set where_clause "and $where_clause" }
-
 
     # -------------------------------------------------------
     # Transform the database table to deal with exceptions
@@ -880,7 +837,24 @@ ad_proc -private im_rest_get_object_type {
 	user - person - party {
 	    set table_name "(select * from users u, parties pa, persons pe where u.user_id = pa.party_id and u.user_id = pe.person_id )"
 	}
+	file_storage_object {
+	    # file storage object needs additional security
+	    lappend where_clause_list "'t' = acs_permission__permission_p(o.object_id, $user_id, 'read')"
+	}
     }
+
+    # Build the complete where clause
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+
+ 
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
 
 
     # -------------------------------------------------------
@@ -912,7 +886,10 @@ ad_proc -private im_rest_get_object_type {
     db_foreach objects $sql {
 
 	# Skip objects with empty object name
-	if {"" == $object_name} { continue }
+	if {"" == $object_name} { 
+	    ns_log Notice "im_rest_get_object_type: Skipping object #$object_id because object_name is empty."
+	    continue 
+	}
 
 	# -------------------------------------------------------
 	# Permissions
@@ -938,13 +915,11 @@ ad_proc -private im_rest_get_object_type {
 		set komma ",\n"
 		if {0 == $obj_ctr} { set komma "" }
 		set dereferenced_result ""
-		if {"sencha" == $format_variant} {
-		    foreach v $valid_vars {
-			eval "set a $$v"
-			regsub -all {\n} $a {\n} a
-			regsub -all {\r} $a {} a
-			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
-		    }
+		foreach v $valid_vars {
+		    eval "set a $$v"
+		    regsub -all {\n} $a {\n} a
+		    regsub -all {\r} $a {} a
+		    append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
 		}
 		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
 	    }
@@ -988,7 +963,6 @@ ad_proc -private im_rest_get_object_type {
 
 ad_proc -private im_rest_get_im_invoice_items {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1084,7 +1058,6 @@ ad_proc -private im_rest_get_im_invoice_items {
 
 ad_proc -private im_rest_get_im_hours {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1183,10 +1156,8 @@ ad_proc -private im_rest_get_im_hours {
 }
 
 
-
 ad_proc -private im_rest_get_im_categories {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1314,7 +1285,6 @@ ad_proc -private im_rest_get_im_categories {
 
 ad_proc -private im_rest_get_im_dynfield_attributes {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -query_hash_pairs {} }
@@ -1413,7 +1383,6 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 
 ad_proc -private im_rest_post_object_type {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1467,7 +1436,6 @@ ad_proc -private im_rest_post_object_type {
 
 ad_proc -private im_rest_post_object {
     { -format "xml" }
-    { -format_variant "" }
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
@@ -1477,7 +1445,7 @@ ad_proc -private im_rest_post_object {
     Handler for POST rest calls to an individual object:
     Update the specific object using a generic update procedure
 } {
-    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', format_variant='$format_variant', query_hash=$query_hash_pairs"
+    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', query_hash=$query_hash_pairs"
 
     # Get the content of the HTTP POST request
     set content [im_rest_get_content]
@@ -2231,6 +2199,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val in \( query \)}
 	val  {val , val}
 	val  {[0-9]+}
+	val  {[0-9a-z\_]+\.[0-9a-z\_]+}
 	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
 	val  {\'[a-z0-9_\ \-\%]*\'}
 	val  {[a-z0-9_]+ \( [a-z0-9_]+ \)}

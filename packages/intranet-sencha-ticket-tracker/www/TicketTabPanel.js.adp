@@ -1,10 +1,10 @@
 /**
- * intranet-sencha-ticket-tracker/www/Main.js
- * Main page for the ]po[ Sencha Ticket Browser.
+ * intranet-sencha-ticket-tracker/www/TicketContainer.js
+ * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterAccordion.js,v 1.1 2011/05/27 20:18:46 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.3 2011/06/03 10:51:32 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,17 +23,20 @@
  */
 
 
-var item2 = Ext.create('Ext.Panel', {
-	title: 'Accordion Item 2',
-	html: '&lt;empty panel&gt;',
-	cls:'empty'
-});
-
-Ext.define('TicketBrowser.TicketFilterAccordion', {
-	extend: 'Ext.Panel',
-	alias: 'widget.ticketfilteraccordion',
-	split:true,
-	minWidth: 200,
-	layout:'accordion',
-	items: [ticketFilterForm, slaList, item2]
+Ext.define('TicketBrowser.TicketTabPanel', {
+    extend: 'Ext.tab.Panel',
+    alias: 'widget.ticketTabPanel',
+    activeTab: 0,
+    tabBar: {
+	border: true
+    },
+    items: [{
+	itemId: 'ticket',
+	xtype: 'ticketInfo',
+	title: 'View Ticket'
+    }, {
+	itemId: 'ticketFilestorage',
+	title: '#intranet-filestorage.Filestorage#',
+	xtype: 'fileStorageGrid'
+    }]   
 });

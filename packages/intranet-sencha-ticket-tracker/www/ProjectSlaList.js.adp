@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: SlaList.js,v 1.4 2011/05/27 20:18:45 po34demo Exp $
+ * @cvs-id $Id: ProjectSlaList.js.adp,v 1.1 2011/06/03 08:37:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js,v 1.6 2011/05/30 15:58:32 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.1 2011/06/03 08:38:00 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,12 +36,10 @@ Ext.define('TicketBrowser.TicketContainer', {
 	region: 'center'
     }, {
 	itemId: 'preview',
-	xtype: 'ticketInfo',
-	region: 'south',
-	split: true,
-	title: 'View Ticket'
+	xtype: 'ticketTabPanel',
+	region: 'south'
     }],
-
+    
     initComponent: function(){
         this.callParent();
     },

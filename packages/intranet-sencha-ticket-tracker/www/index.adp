@@ -7,10 +7,12 @@
 	<link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
 	<link rel="stylesheet" type="text/css" href="ticketbrowser.css" /> 
 
+	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
-	<script type="text/javascript" src="SlaList.js"></script> 
+	<script type="text/javascript" src="ProjectSlaList.js"></script> 
+	<script type="text/javascript" src="FileStorageGrid.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
@@ -18,8 +20,9 @@
  	<script type="text/javascript" src="Panels.js"></script>
 	<script type="text/javascript" src="TicketForm.js"></script> 
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
+	<script type="text/javascript" src="TicketTabPanel.js"></script> 
 	<script type="text/javascript" src="TicketFilterAccordion.js"></script> 
-	<script type="text/javascript" src="PreviewPlugin.js"></script> 
+	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
@@ -31,6 +34,7 @@
 	<script type="text/javascript">
 		Ext.Loader.setConfig({enabled: true});
 		Ext.Loader.setPath('Ext', '/intranet-sencha/');
+		Ext.Loader.setPath('Ext.ux', '/intranet-sencha/ext-4.0.0/examples/ux');
 		Ext.require([
 			'Ext.grid.*',
 			'Ext.tree.*',
