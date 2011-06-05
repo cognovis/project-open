@@ -31,12 +31,12 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
     columns: [
 	      {
-		  header: 'Company',
+		  header: '#intranet-core.Company_Name#',
 		  dataIndex: 'company_name',
 		  flex: 1,
 		  minWidth: 150
 	      }, {
-  		  header: 'VAT ID',
+  		  header: '#intranet-core.VAT_Number#',
   		  dataIndex: 'vat_number'
   	      }, {
                   header: 'compnay ID',
@@ -46,7 +46,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
                                 + value +'</a>';
                   }
 	      }, {
-		  header: 'Primary Contact',
+		  header: '#intranet-core.Primary_contact#',
 		  dataIndex: 'primary_contact_id',
 		  renderer: function(value, o, record) {
 		      return employeeStore.name_from_id(record.get('primary_contact_id'));
@@ -54,6 +54,16 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	      }
     ],
     dockedItems: [{
+        xtype: 'toolbar',
+        cls: 'x-docked-noborder-top',
+        items: [{
+            text: '#intranet-core.Add_a_new_Company#',
+            iconCls: 'icon-new-ticket',
+            handler: function(){
+                alert('Not implemented');
+            }
+        }] 
+    }, {
         xtype: 'pagingtoolbar',
         store: companyStore,
         dock: 'bottom',
