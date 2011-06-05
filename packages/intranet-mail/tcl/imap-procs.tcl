@@ -266,7 +266,7 @@ ad_proc -public imap::load_mails {
     @param mailbox Name of the folder to scan, relative to IMAPRootFolder
     
 } {
-    set session_id [imap::start_session -mailbox $mailbox]
+    set session_id [imap::start_session]
     set delimiter [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPDelimiter"]
 
     # Get all the E-Mails, oldest first (hence the 0)
