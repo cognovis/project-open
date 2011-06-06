@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.4 2011/06/06 14:02:15 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.5 2011/06/06 14:37:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,6 +27,17 @@
 var fileStorageNewForm;
 
 function showFileStorageNewForm() {
+
+    var msg = function(title, msg) {
+        Ext.Msg.show({
+            title: title,
+            msg: msg,
+            minWidth: 200,
+            modal: true,
+            icon: Ext.Msg.INFO,
+            buttons: Ext.Msg.OK
+        });
+    };
     
     // Create the upload form if it isn't defined yet:
     if (!fileStorageNewForm) {
@@ -64,6 +75,9 @@ function showFileStorageNewForm() {
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
 			    success: function(fp, o) {
 				msg('Success', 'Processed file "' + o.result.file + '" on the server');
+			    },
+			    failure: function(fp, o) {
+				msg('Failure', o.result.errors);
 			    }
 			});
 		    }

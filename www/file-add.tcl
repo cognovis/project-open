@@ -2,7 +2,7 @@ ad_page_contract {
     page to add a new file to the system
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: file-add.tcl,v 1.1 2011/06/06 14:02:15 po34demo Exp $
+    @cvs-id $Id: file-add.tcl,v 1.2 2011/06/06 14:37:19 po34demo Exp $
 } {
     folder_id:integer,optional,notnull
     upload_file:trim,optional
@@ -12,10 +12,24 @@ ad_page_contract {
 }
 
 if {![info exists upload_file]} {
-    ns_return 200 "text/html" "{\"result\":{
-	\"success\":false,
-	\"errors\": {\"email\":\"already taken\"}
-    }}"
+    ns_log Notice "file-add: failure"
+
+    ns_return 200 "text/html" "\[
+    {
+        \"action\":\"Profile\",\"method\":\"updateBasicInfo\",\"type\":\"rpc\",\"tid\":3,
+        \"result\":{
+            \"success\":true
+        }
+    }
+    \]"
+    ad_script_abort
+
+    ns_return 200 "text/html" "{
+	\"result\": {
+		\"success\":	false,
+		\"errors\":	{\"email\": \"already taken\"}
+    	}
+    }"
     ad_script_abort
 }
 
@@ -51,8 +65,12 @@ if {"" != $upload_file} {
 db_release_unused_handles
 ad_http_cache_control
 
-ns_return 200 "text/html" "{\"result\":{\"success\":true}}"
+ns_log Notice "file-add: success"
+ns_return 200 "text/html" "{
+	\"result\": {
+		\"success\":	true,
+		\"errors\":	{\"email\": \"already taken\"}
+    	}
+}"
 ad_script_abort
-
-
 
