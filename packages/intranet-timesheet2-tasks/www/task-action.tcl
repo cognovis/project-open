@@ -69,7 +69,9 @@ switch $action {
 	    }
 
 	    set planned ""
-	    if {[info exists planned_units($save_task_id)]} { set planned $planned_units($save_task_id) }
+	    if {[exists_and_not_null planned_units($save_task_id)]} { 
+		set planned $planned_units($save_task_id)
+	    }
 	    if {"" != $planned} {
 		if {$planned < 0} {
 		    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Planned_units_positive "Planned Units needs to be a positive number"]"
@@ -95,14 +97,14 @@ switch $action {
 	    if {[catch {
 		db_dml save_tasks_to_project "
 			update	im_projects
-			set	percent_completed = :completed
+			set	percent_completed = round(:completed)
 			where	project_id = :save_task_id
 		"
 
 		if {"" != $planned || "" != $billable} {
 		    db_dml save_tasks_to_ts_task "
 			update	im_timesheet_tasks
-			set	planned_units = :planned,
+			set	planned_units = round(:planned),
 				billable_units = :billable
 			where	task_id = :save_task_id
 		    "
