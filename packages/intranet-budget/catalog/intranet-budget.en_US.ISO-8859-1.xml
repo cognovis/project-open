@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-budget" locale="en_US" charset="ISO-8859-1">
+
   <msg key="Add_Benefit">Add Benefit</msg>
   <msg key="Approved">Approved</msg>
   <msg key="Benefits">Benefits</msg>
@@ -17,6 +18,9 @@
   <msg key="include_remaining_effort">Include Remaining Effort</msg>
   <msg key="Investment_Costs">Investment Costs</msg>
   <msg key="Logged_Hours">Logged Hours</msg>
+  <msg key="lt_missing_budget_id">You need to provide either budget_id or project_id</msg>
+  <msg key="Missing_variable">Missing variable</msg>
+  <msg key="New_Budget">New Budget</msg>
   <msg key="New_Budget_Estimate">New Budget Estimation</msg>
   <msg key="New_Provider_Estimation">New Provider Estimation</msg>
   <msg key="One_Time_Costs">One Time Costs</msg>
