@@ -323,9 +323,9 @@ ad_proc -public im_timesheet_task_list_component {
     
     # ---------------------- Calculate the Children's restrictions -------------------------
     set criteria [list]
-
+    set task_criteria [list]
     if {[string is integer $restrict_to_status_id] && $restrict_to_status_id > 0} {
-	lappend criteria "p.project_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])"
+	lappend extra_wheres "(t.task_status_id in ([join [im_sub_categories $restrict_to_status_id] ","]) or t.task_status_id is null)"
     }
 
     if {"mine" == $restrict_to_mine_p} {
@@ -337,7 +337,7 @@ ad_proc -public im_timesheet_task_list_component {
     }
 
     if {[string is integer $restrict_to_type_id] && $restrict_to_type_id > 0} {
-	lappend criteria "p.project_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
+	lappend extra_wheres "(t.task_type_id in ([join [im_sub_categories $restrict_to_type_id] ","]) or t.task_type_id is null)"
     }
 
     set restriction_clause [join $criteria "\n\tand "]
@@ -477,7 +477,7 @@ ad_proc -public im_timesheet_task_list_component {
 	where
 		parent.project_id = $restrict_to_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-		t.task_status_id not in ([im_project_status_deleted])
+                child.project_status_id not in ([im_project_status_deleted])
 		$extra_where
 	order by
 		child.tree_sortkey
