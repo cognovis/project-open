@@ -12,5 +12,5 @@
   <formtemplate id="delete_confirm"></formtemplate>
 </if>
   <else>
-      No valid items to be deleted
+#file-storage.lt_This_file_has_version#
     </else>
