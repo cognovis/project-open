@@ -23,25 +23,19 @@
  */
 
 
-Ext.define('TicketBrowser.TicketTabPanel', {
+Ext.define('TicketBrowser.TicketContactPanel', {
     extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketTabPanel',
+    alias: 'widget.ticketContact',
     activeTab: 0,
     tabBar: {
 	border: true
     },
     items: [{
 	itemId: 'ticket',
-	xtype: 'ticketInfo',
 	title: 'View Ticket'
     }, {
 	itemId: 'ticketContact',
 	title: 'Contact',
-	xtype: 'ticketContact'
-    }, {
-	itemId: 'ticketFilestorage',
-	title: '#intranet-filestorage.Filestorage#',
-	xtype: 'fileStorageGrid'
     }]   
 });
 
