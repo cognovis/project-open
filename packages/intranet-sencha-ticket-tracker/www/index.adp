@@ -20,6 +20,7 @@
  	<script type="text/javascript" src="Panels.js"></script>
 	<script type="text/javascript" src="TicketForm.js"></script> 
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
+	<script type="text/javascript" src="TicketContactPanel.js"></script> 
 	<script type="text/javascript" src="TicketTabPanel.js"></script> 
 	<script type="text/javascript" src="TicketFilterAccordion.js"></script> 
 	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
@@ -27,6 +28,7 @@
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
+	<script type="text/javascript" src="ContactContainer.js"></script> 
 
 
 	<script type="text/javascript" src="Main.js"></script> 
@@ -41,6 +43,7 @@
 			'Ext.data.*',
 			'Ext.toolbar.*',
 			'Ext.tab.Panel',
+			'Ext.ux.RowExpander',
 			'Ext.layout.container.Border'
 		]);
 		Ext.onReady(function(){

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.2 2011/06/03 11:34:10 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.3 2011/06/06 14:02:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -347,7 +347,8 @@ var fileStorageStore = Ext.create('Ext.data.Store', {
 	url: '/intranet-rest/file_storage_object',
 	appendId: true,
 	extraParams: {
-	    format: 'json'
+	    format: 'json',
+	    parent_id: 59616
 	},
 	reader: { 
 	    type: 'json', 
