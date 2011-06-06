@@ -413,9 +413,17 @@ ad_proc -public im_gp_ms_project_time_to_seconds {
     converts the ms project time string to seconds
 } {
     set days 0
-    regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds
+    if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds]} {
+	# MS-Project duration format
+	return [expr $seconds + 60*$minutes + 60*60*$hours + 60*60*24*$days]
+    }
 
-    return [expr $seconds + 60*$minutes + 60*60*$hours + 60*60*24*$days]
+    if {[regexp {^([0-9]+)$} $time match days]} {
+	# GanttProject days
+	return [expr $time * 60*60*24]
+    }
+
+    error "im_gp_ms_project_time_to_seconds: unable to parse data='$time'"
 }
 
 

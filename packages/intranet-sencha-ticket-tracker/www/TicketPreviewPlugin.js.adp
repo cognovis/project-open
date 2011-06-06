@@ -6,7 +6,7 @@
  * @author somebody@sencha.com
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: PreviewPlugin.js,v 1.3 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: TicketPreviewPlugin.js.adp,v 1.1 2011/06/03 08:38:01 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *

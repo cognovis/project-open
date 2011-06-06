@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: SlaList.js,v 1.3 2011/05/25 20:39:39 po34demo Exp $
+ * @cvs-id $Id: ProjectSlaList.js.adp,v 1.1 2011/06/03 08:37:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -21,10 +21,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-Ext.define('TicketBrowser.SlaList', {
+var slaList = Ext.define('TicketBrowser.SlaList', {
 
     extend: 'Ext.tree.Panel',   
     alias: 'widget.slalist',
+    title: 'Service Level Agreements',
+
     rootVisible: false,
     lines: false,
     defaultSla: 53349,
@@ -63,6 +65,7 @@ Ext.define('TicketBrowser.SlaList', {
                     load: this.onFirstLoad
                 }
             })
+
         });
         this.callParent();
         this.getSelectionModel().on({
@@ -78,7 +81,7 @@ Ext.define('TicketBrowser.SlaList', {
     
     onSelect: function(selModel, rec){
 	if (rec.get('leaf')) { 		
-            this.ownerCt.loadSla(rec);
+            this.ownerCt.ownerCt.loadSla(rec);
 	}
     }
 });

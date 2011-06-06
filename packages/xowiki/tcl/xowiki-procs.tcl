@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-procs.tcl,v 1.436 2011/05/26 18:29:27 gustafn Exp $
+    @cvs-id $Id: xowiki-procs.tcl,v 1.438 2011/06/03 10:28:36 victorg Exp $
 }
 
 namespace eval ::xowiki {
@@ -114,7 +114,7 @@ namespace eval ::xowiki {
       -form ::xowiki::ObjectForm
 
   ::xo::db::CrClass create Form -superclass PageTemplate \
-      -pretty_name "#xowiki.Form_pretty_name#" -pretty_plural "#xowiki.Form_pretty_name#" \
+      -pretty_name "#xowiki.Form_pretty_name#" -pretty_plural "#xowiki.Form_pretty_plural#" \
       -table_name "xowiki_form"  -id_column "xowiki_form_id" \
       -slots {
         ::xo::db::CrAttribute create form \
@@ -129,7 +129,7 @@ namespace eval ::xowiki {
       -form ::xowiki::FormForm
 
   ::xo::db::CrClass create FormPage -superclass PageInstance \
-      -pretty_name "#xowiki.FormPage_pretty_name#" -pretty_plural "#xowiki.FormPage_pretty_name#" \
+      -pretty_name "#xowiki.FormPage_pretty_name#" -pretty_plural "#xowiki.FormPage_pretty_plural#" \
       -table_name "xowiki_form_page" -id_column "xowiki_form_page_id" \
       -slots {
         ::xo::db::CrAttribute create assignee \
@@ -1831,7 +1831,9 @@ namespace eval ::xowiki {
           "</div>\n"
     }
 
-    append footer [my include my-references] 
+    if {[$package_id get_parameter "show_page_references" 1]} {
+      append footer [my include my-references] 
+    }
     
     if {[$package_id get_parameter "show_per_object_categories" 1]} {
       set html [my include my-categories]

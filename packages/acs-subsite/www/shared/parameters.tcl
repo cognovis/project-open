@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-13
-    @cvs-id $Id: parameters.tcl,v 1.3 2010/12/17 18:18:25 versia Exp $
+    @cvs-id $Id: parameters.tcl,v 1.20 2010/04/04 14:51:47 donb Exp $
 } {
     {package_id:naturalnum "[ad_conn package_id]"}
     package_key:optional
@@ -54,7 +54,6 @@ if {$section ne ""} {
 }
 
 
-set datatype ""
 array set sections {}
 
 db_foreach select_params {} {

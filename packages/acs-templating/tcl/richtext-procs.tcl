@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 2003-01-27
-    @cvs-id $Id: richtext-procs.tcl,v 1.3 2011/04/26 22:22:46 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template {}
@@ -82,15 +82,7 @@ ad_proc -public template::data::validate::richtext {
 
     # enhanced text and HTML needs to be security checked
     if { [lsearch { text/enhanced text/html } $format] != -1 } {
-	# don't check, if user is side-wide admin or a package admin
-	# -gustaf neumann
-	if {[acs_user::site_wide_admin_p] ||
-	    ([ns_conn isconnected]
-	     && [ad_conn user_id] != 0
-	     && [permission::permission_p -object_id [ad_conn package_id] -privilege admin \
-		     -party_id [ad_conn user_id]])} {
-	    return 1
-	}
+
         set check_result [ad_html_security_check $contents]
         if { $check_result ne "" } {
             set message $check_result

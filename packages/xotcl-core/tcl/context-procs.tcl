@@ -7,7 +7,7 @@ ad_library {
 
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @creation-date 2006-08-06
-  @cvs-id $Id: context-procs.tcl,v 1.57 2011/05/26 17:29:50 gustafn Exp $
+  @cvs-id $Id: context-procs.tcl,v 1.58 2011/05/28 17:15:15 gustafn Exp $
 }
 
 namespace eval ::xo {
@@ -269,7 +269,7 @@ namespace eval ::xo {
     ::xo::cc mobile 0
     if {[ns_conn isconnected]} {
       set user_agent [string tolower [ns_set get [ns_conn headers] User-Agent]]
-      ::xo::cc mobile [regexp (android|webos|iphone|ipod) $user_agent]
+      ::xo::cc mobile [regexp (android|webos|iphone|ipad) $user_agent]
     }
 
     if {![info exists ::ad_conn(charset)]} {
@@ -459,7 +459,8 @@ namespace eval ::xo {
 
   ConnectionContext instproc load_form_parameter {} {
     my instvar form_parameter
-    if {[ns_conn isconnected]} {
+
+    if {[ns_conn isconnected] && [ns_conn method] eq "POST"} {
       #array set form_parameter [ns_set array [ns_getform]]
       foreach {att value} [ns_set array [ns_getform]] {
         # For some unknown reasons, Safari 3.* returns sometimes
@@ -474,6 +475,7 @@ namespace eval ::xo {
       array set form_parameter {}
     }
   }
+
   ConnectionContext instproc form_parameter {name {default ""}} {
     my instvar form_parameter form_parameter_multiple
     if {![info exists form_parameter]} {
