@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.5 2011/06/06 14:37:18 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.6 2011/06/06 16:00:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -74,12 +74,17 @@ function showFileStorageNewForm() {
 			    },
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
 			    success: function(fp, o) {
-				msg('Success', 'Processed file "' + o.result.file + '" on the server');
+				// msg('Success', 'Processed file "' + o.result.file + '" on the server');
+				fileStorageNewForm.hide();
 			    },
 			    failure: function(fp, o) {
-				msg('Failure', o.result.errors);
+				// msg('Failure', o.result.errors);
+				fileStorageNewForm.hide();
 			    }
 			});
+	
+			// reload the store which should update this grid as well
+			fileStorageStore.load();
 		    }
 		}
 	    }]
@@ -100,6 +105,16 @@ function showFileStorageNewForm() {
     fileStorageNewForm.show();
 }
 
+
+
+var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
+    listeners: {
+	selectionchange: function(sm, selections) {
+	    // var grid = this.view;
+	    // grid.down('#removeButton').setDisabled(selections.length == 0);
+	}
+    }
+});
 
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
     extend: 'Ext.grid.Panel',
@@ -142,13 +157,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 	      {text: "MIME Type", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
     columnLines: true,
-    selModel: Ext.create('Ext.selection.CheckboxModel', {
-	listeners: {
-	    selectionchange: function(sm, selections) {
-		fileStorageGrid.down('\#removeButton').setDisabled(selections.length == 0);
-	    }
-	}
-    }),
+    selModel: fileStorageGridSelModel,
 
     // inline buttons
     dockedItems: [{
@@ -181,7 +190,11 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
             text:'Remove Something',
             tooltip:'Remove the selected item',
             iconCls:'remove',
-            disabled: true
+            disabled: false,
+	    handler: function () {
+		var selection = fileStorageGridSelModel.getSelection();
+		msg('Selection', selection);
+	    }
         }]
     }]
 });
