@@ -54,6 +54,10 @@ Ext.define('TicketBrowser.Main', {
                     itemId: 'company',
 		    title: '#intranet-core.Companies#',
                     xtype: 'companycontainer'
+    		}, {
+                    itemId: 'contact',
+		    title: '#intranet-core.Contact#',
+                    xtype: 'contactcontainer'
 		}
 		]
             }]
