@@ -30,7 +30,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	defaultType: 'textfield',
 	defaults: { anchor: '100%' },
 	minWidth: 200,
-	stanardsubmit:true,
+	standardsubmit:true,
 	items: [
 	{	name: 'vat_number', 
 		fieldLabel: 'VAT ID' 

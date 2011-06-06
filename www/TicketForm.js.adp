@@ -26,7 +26,7 @@ Ext.define('TicketBrowser.TicketForm', {
 	extend: 'Ext.form.Panel',	
 	alias: 'widget.ticketform',
 	minHeight: 200,
-	stanardsubmit:false,
+	standardsubmit:false,
 	frame:true,
 	title: 'Ticket',
 	bodyStyle:'padding:5px 5px 0',
