@@ -30,33 +30,70 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         alias: 'widget.ticketContact',
 	fieldDefaults: {
 		msgTarget: 'side',
-		labelWidth: 75
+		labelWidth: 125
 	},
         items: [{
-        	xtype: 'textfield',
-                fieldLabel: 'Razon social',
-                name:       'ticket_company_name',
-                allowBlank: false
+        	xtype:          'textfield',
+                fieldLabel:     'Razon social',
+                name:           'ticket_company_name',
+                allowBlank:     false
         }, {
-        	xtype: 'textfield',
-                fieldLabel: 'DNI/NIF',
-                name:       'nif_cif'
+        	xtype:          'textfield',
+                fieldLabel:     'DNI/NIF',
+                name:           'nif_cif'
+        }, {
+                xtype:          'radiofield',
+                name:           'ticket_language',
+                value:          'eu_EU',
+                fieldLabel:     'Idioma',
+                boxLabel:       'Euskera'
+        }, {
+                xtype:          'radiofield',
+                name:           'ticket_language',
+                value:          'es_ES',
+                fieldLabel:     '',
+                labelSeparator: '',
+                hideEmptyLabel: false,
+                boxLabel:       'Castellano'
+        },{
+                xtype:          'combobox',
+                fieldLabel:     'Tipo de Sociedad',
+                name:           'company',
+                value:          '',
+                valueField:     'category_id',
+                displayField:   'category',
+                store:          companyTypeStore
+        }, {
+                xtype:          'textfield',
+                fieldLabel:     'Province',
+                name:           'ticket_province'
+        }, {
+                // Here a fieldset?
+                xtype:          'textfield',
+                fieldLabel:     '#intranet-core.First_names#',
+                name:           'ticket_first_contact_name',
+                allowBlank:     false
         },
         {
-            xtype:      'radiofield',
-            name:       'ticket_language',
-            value:      'eu_EU',
-            fieldLabel: 'Idioma',
-            boxLabel:   'Euskera'
+                xtype:          'textfield',
+                fieldLabel:     '(Last name)',
+                name:           'ticket_first_contact_last_name'
         },
         {
-            xtype:      'radiofield',
-            name:       'ticket_language',
-            value:      'es_ES',
-            fieldLabel: '',
-            labelSeparator: '',
-            hideEmptyLabel: false,
-            boxLabel:   'Castellano'
+                xtype:          'radiofield',
+                name:           'ticket_sex',
+                value:          '1',
+                fieldLabel:     'Genre',
+                boxLabel:       'male'
+        },
+        {
+                xtype:          'radiofield',
+                name:           'ticket_sex',
+                value:          '0',
+                fieldLabel:     '',
+                labelSeparator: '',
+                hideEmptyLabel: false,
+                boxLabel:       'female'
         }],
         buttons: [{
         	text: 'New Company',
@@ -70,5 +107,4 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 }
         }]
 });
-
 
