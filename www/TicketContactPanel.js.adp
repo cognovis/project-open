@@ -108,8 +108,13 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         }],
 
 	loadTicket: function(rec){
-		this.loadRecord(rec);
-		var comp = this.getComponent('ticket_type_id');
+
+		// Customer ID, may be NULL
+		var customer_id = rec.data.ticket_customer_contact_id;
+		var cust = employeeStore.findRecord('user_id',customer_id);
+	        if (cust == null || typeof cust == "undefined") { return; }
+
+		this.loadRecord(cust);
 	}
 
 });

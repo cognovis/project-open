@@ -217,6 +217,7 @@ var customerContactStore = Ext.create('Ext.ux.UserStore', {
 var employeeStore = Ext.create('Ext.ux.UserStore', {
 			storeId: 'employeeStore',
 		        autoLoad: true,
+			pageSize: 1000000,
 		        fields: ['user_id', 'first_names', 'last_name',
 				{ name: 'name',
 				  convert: function(value, record) {
