@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.7 2011/06/06 16:58:44 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.8 2011/06/06 17:20:08 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -211,7 +211,13 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		fileStorageStore.load();
 	    }
         }]
-    }]
+    }],
+
+    // Load the files for the new ticket
+    loadTicket: function(rec){
+	// Reload the store containing the ticket's files
+    }
+
 });
 
 

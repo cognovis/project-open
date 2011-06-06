@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.4 2011/06/06 15:08:31 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.5 2011/06/06 17:20:08 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -42,7 +42,16 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	itemId: 'ticketFilestorage',
 	title: '#intranet-filestorage.Filestorage#',
 	xtype: 'fileStorageGrid'
-    }]   
+    }],
+
+    // Called from the TicketGrid if the user has selected
+    // a ticket
+    loadTicket: function(rec){
+        this.child('#ticket').loadTicket(rec);
+        this.child('#ticketContact').loadTicket(rec);
+        this.child('#ticketFilestorage').loadTicket(rec);
+    }
+
 });
 
 
