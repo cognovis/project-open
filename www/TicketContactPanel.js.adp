@@ -24,19 +24,51 @@
 
 
 Ext.define('TicketBrowser.TicketContactPanel', {
-    extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketContact',
-    activeTab: 0,
-    tabBar: {
-	border: true
-    },
-    items: [{
-	itemId: 'ticket',
-	title: 'View Ticket'
-    }, {
-	itemId: 'ticketContact',
-	title: 'Contact',
-    }]   
+	extend: 'Ext.form.Panel',
+	frame:true,
+	title: 'Ticket Contact',
+        alias: 'widget.ticketContact',
+	fieldDefaults: {
+		msgTarget: 'side',
+		labelWidth: 75
+	},
+        items: [{
+        	xtype: 'textfield',
+                fieldLabel: 'Razon social',
+                name:       'ticket_company_name',
+                allowBlank: false
+        }, {
+        	xtype: 'textfield',
+                fieldLabel: 'DNI/NIF',
+                name:       'nif_cif'
+        },
+        {
+            xtype:      'radiofield',
+            name:       'ticket_language',
+            value:      'eu_EU',
+            fieldLabel: 'Idioma',
+            boxLabel:   'Euskera'
+        },
+        {
+            xtype:      'radiofield',
+            name:       'ticket_language',
+            value:      'es_ES',
+            fieldLabel: '',
+            labelSeparator: '',
+            hideEmptyLabel: false,
+            boxLabel:   'Castellano'
+        }],
+        buttons: [{
+        	text: 'New Company',
+        	handler: function(){
+                        alert ('Not implemented Yet')
+                }
+        }, {
+        	text: 'New Contact',
+        	handler: function(){
+                        alert ('Not implemented Yet')
+                }
+        }]
 });
 
 
