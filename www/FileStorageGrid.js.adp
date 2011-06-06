@@ -193,7 +193,22 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
             disabled: false,
 	    handler: function () {
 		var selection = fileStorageGridSelModel.getSelection();
-		msg('Selection', selection);
+		for (var i = 0; i < selection.length; i++) {
+		    var file = selection[i].data;
+		    Ext.Ajax.request({
+			url: 'file-delete',
+			method: 'GET',
+			params: {
+			    item_id: file.item_id
+			},
+			success: function(response){
+			    var text = response.responseText;
+			}
+		    });
+		}
+		
+		// reload the filestorage
+		fileStorageStore.load();
 	    }
         }]
     }]

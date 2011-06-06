@@ -65,6 +65,7 @@ Ext.define('TicketBrowser.TicketContainer', {
             title: rec.get('project_name')
         });
         this.child('#preview').child('#ticket').loadTicket(rec);
+        this.child('#preview').child('#ticketContact').loadTicket(rec);
     },
     
     togglePreview: function(show){

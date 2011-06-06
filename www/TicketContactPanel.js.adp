@@ -105,6 +105,12 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         	handler: function(){
                         alert ('Not implemented Yet')
                 }
-        }]
+        }],
+
+	loadTicket: function(rec){
+		this.loadRecord(rec);
+		var comp = this.getComponent('ticket_type_id');
+	}
+
 });
 
