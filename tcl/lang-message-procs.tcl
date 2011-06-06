@@ -12,7 +12,7 @@ ad_library {
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-message-procs.tcl,v 1.8 2010/10/19 20:11:53 po34demo Exp $
+    @cvs-id $Id: lang-message-procs.tcl,v 1.9 2011/06/06 14:42:38 po34demo Exp $
 }
 
 namespace eval lang::message {}
@@ -775,10 +775,10 @@ ad_proc -public lang::message::lookup {
 			} else {
 			    if {[string match "acs-translations.*" $key]} {
 				ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: '$key'"
+				set message "MESSAGE KEY MISSING: $key"
 			    } else {
 				ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: '$key'"
+				set message "MESSAGE KEY MISSING: $key"
 			    }
 			}
 		    }
