@@ -2205,9 +2205,9 @@ ad_proc -public ad_returnredirect {
       	util_user_message -message $message -html
     }
 
-    if { [util_exploit_url_p $target_url] } {
-	error "Redirection to invalid URL: '[ns_quotehtml $target_url]'"
-    }
+#    if { [util_exploit_url_p $target_url] } {
+#	error "Redirection to invalid URL: '[ns_quotehtml $target_url]'"
+#    }
 
     if { [util_complete_url_p $target_url] } {
         # http://myserver.com/foo/bar.tcl style - just pass to ns_returnredirect
