@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.4 2011/06/06 15:08:31 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.1 2011/06/06 15:08:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,25 +23,19 @@
  */
 
 
-Ext.define('TicketBrowser.TicketTabPanel', {
+Ext.define('TicketBrowser.TicketContactPanel', {
     extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketTabPanel',
+    alias: 'widget.ticketContact',
     activeTab: 0,
     tabBar: {
 	border: true
     },
     items: [{
 	itemId: 'ticket',
-	xtype: 'ticketInfo',
 	title: 'View Ticket'
     }, {
 	itemId: 'ticketContact',
 	title: 'Contact',
-	xtype: 'ticketContact'
-    }, {
-	itemId: 'ticketFilestorage',
-	title: '#intranet-filestorage.Filestorage#',
-	xtype: 'fileStorageGrid'
     }]   
 });
 
