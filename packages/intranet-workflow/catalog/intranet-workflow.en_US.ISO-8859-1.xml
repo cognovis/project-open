@@ -7,8 +7,8 @@
   <msg key="All_Tasks">All Tasks</msg>
   <msg key="Approval">WF to ask a user's project manager to approve the user's hour for a specific project. The WF refers to a im_timesheet_conf_object for variables and status.</msg>
   <msg key="Approve">Approve</msg>
-  <msg key="Approved">Approved</msg>
   <msg key="Approve_1">the logged hours?</msg>
+  <msg key="Approved">Approved</msg>
   <msg key="Assign_somebody_else">Assign to somebody else</msg>
   <msg key="Assign_yourself">Assign to yourself</msg>
   <msg key="Assignee">Assignee</msg>
