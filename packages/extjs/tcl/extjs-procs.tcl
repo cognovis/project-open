@@ -326,7 +326,9 @@ ad_proc -public extjs::RowEditor::ComboBox {
         } else {
             set option_list [db_list_of_lists sql $sql]
             foreach option $option_list {
-                lappend data "\['[lindex $option 0]', '[lindex $option 1]'\]"  
+		set option_string [lindex $option 1]
+		set option_string [lang::message::lookup "" intranet-core.[lang::util::suggest_key $option_string] $option_string ]
+                lappend data "\['[lindex $option 0]', '$option_string'\]"  
             }
         }
     } else {

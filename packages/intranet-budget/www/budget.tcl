@@ -260,7 +260,7 @@ template::head::add_javascript -src "/extjs/ux-numeric.js" -order 20
 # Approve button for the PMO
 if {[im_permission $user_id "approve_budgets"]} {
     set pmo_approve_js ",{
-            text: 'Approve',
+            text: '#intranet-budget.Approve#',
             handler:function(){
                 budget_form.getForm().load({
                     url:'budget-data',

@@ -352,7 +352,7 @@ ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
     }] 
 } 
 
-ad_proc -public intranet-cognovis::delete_project {
+ad_proc -public intranet_cognovis::delete_project {
     {-project_id:required}
 } {
     Delete project completely

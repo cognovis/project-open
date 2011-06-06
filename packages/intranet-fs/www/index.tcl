@@ -109,14 +109,14 @@ if { !${root_folder_p}} {
     }    
     
     if {[llength $context] == 1} {
-	set up_url [ad_conn package_url]
+#	set up_url [ad_conn package_url]
 	set up_name [ad_conn instance_name]
     } else {
-	set up_url [lindex [lindex $context end-1] 0]
+#	set up_url [lindex [lindex $context end-1] 0]
 	set up_name [lindex [lindex $context end-1] 1]
     }
 
-    set up_url [export_vars -base $up_url {{folder_id $parent_folder_id} project_id return_url}]
+    set up_url [export_vars -base "/intranet-fs/index" {{folder_id $parent_folder_id} project_id return_url}]
     set up_name [lang::util::localize $up_name]
     
 }
