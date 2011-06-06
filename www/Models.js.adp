@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.2 2011/06/03 11:34:10 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.3 2011/06/06 14:02:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -149,10 +149,10 @@ Ext.define('TicketBrowser.Company', {
 Ext.define('TicketBrowser.FileStorage', {
     extend: 'Ext.data.Model',
 
-    idProperty: 'id'	,		// The primary key or object_id of the filestorage
+    idProperty: 'item_id',		// The primary key or object_id of the filestorage
     fields: [
 	// Basic filestorage fields with special meaning
-	'id',				// The primary key or object_id of the filestorage
+	'item_id',			// The primary key or object_id of the filestorage
 	'name',				// The name of the file.
 	'parent_id',			// The ID of the content folder that contains the file
 	'mime_type',			// MIME type of the file, i.e. "image/jpeg", ...
