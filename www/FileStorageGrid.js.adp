@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.6 2011/06/06 16:00:55 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.7 2011/06/06 16:58:44 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -193,7 +193,22 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
             disabled: false,
 	    handler: function () {
 		var selection = fileStorageGridSelModel.getSelection();
-		msg('Selection', selection);
+		for (var i = 0; i < selection.length; i++) {
+		    var file = selection[i].data;
+		    Ext.Ajax.request({
+			url: 'file-delete',
+			method: 'GET',
+			params: {
+			    item_id: file.item_id
+			},
+			success: function(response){
+			    var text = response.responseText;
+			}
+		    });
+		}
+		
+		// reload the filestorage
+		fileStorageStore.load();
 	    }
         }]
     }]

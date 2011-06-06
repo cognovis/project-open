@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.3 2011/06/06 15:58:03 mcordova Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.4 2011/06/06 16:58:44 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -105,6 +105,12 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         	handler: function(){
                         alert ('Not implemented Yet')
                 }
-        }]
+        }],
+
+	loadTicket: function(rec){
+		this.loadRecord(rec);
+		var comp = this.getComponent('ticket_type_id');
+	}
+
 });
 
