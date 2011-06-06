@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.1 2011/06/06 15:08:31 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.2 2011/06/06 15:43:05 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,19 +24,51 @@
 
 
 Ext.define('TicketBrowser.TicketContactPanel', {
-    extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketContact',
-    activeTab: 0,
-    tabBar: {
-	border: true
-    },
-    items: [{
-	itemId: 'ticket',
-	title: 'View Ticket'
-    }, {
-	itemId: 'ticketContact',
-	title: 'Contact',
-    }]   
+	extend: 'Ext.form.Panel',
+	frame:true,
+	title: 'Ticket Contact',
+        alias: 'widget.ticketContact',
+	fieldDefaults: {
+		msgTarget: 'side',
+		labelWidth: 75
+	},
+        items: [{
+        	xtype: 'textfield',
+                fieldLabel: 'Razon social',
+                name:       'ticket_company_name',
+                allowBlank: false
+        }, {
+        	xtype: 'textfield',
+                fieldLabel: 'DNI/NIF',
+                name:       'nif_cif'
+        },
+        {
+            xtype:      'radiofield',
+            name:       'ticket_language',
+            value:      'eu_EU',
+            fieldLabel: 'Idioma',
+            boxLabel:   'Euskera'
+        },
+        {
+            xtype:      'radiofield',
+            name:       'ticket_language',
+            value:      'es_ES',
+            fieldLabel: '',
+            labelSeparator: '',
+            hideEmptyLabel: false,
+            boxLabel:   'Castellano'
+        }],
+        buttons: [{
+        	text: 'New Company',
+        	handler: function(){
+                        alert ('Not implemented Yet')
+                }
+        }, {
+        	text: 'New Contact',
+        	handler: function(){
+                        alert ('Not implemented Yet')
+                }
+        }]
 });
 
 
