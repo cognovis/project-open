@@ -27,6 +27,17 @@
 var fileStorageNewForm;
 
 function showFileStorageNewForm() {
+
+    var msg = function(title, msg) {
+        Ext.Msg.show({
+            title: title,
+            msg: msg,
+            minWidth: 200,
+            modal: true,
+            icon: Ext.Msg.INFO,
+            buttons: Ext.Msg.OK
+        });
+    };
     
     // Create the upload form if it isn't defined yet:
     if (!fileStorageNewForm) {
@@ -64,6 +75,9 @@ function showFileStorageNewForm() {
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
 			    success: function(fp, o) {
 				msg('Success', 'Processed file "' + o.result.file + '" on the server');
+			    },
+			    failure: function(fp, o) {
+				msg('Failure', o.result.errors);
 			    }
 			});
 		    }
