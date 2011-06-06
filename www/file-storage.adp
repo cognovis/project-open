@@ -28,13 +28,17 @@
                         'Ext.tab.Panel',
                         'Ext.layout.container.Border'
                 ]);
-        </script>
+
+
+	</script>
 
 </head> 
 <body> 
     <h1>Grid Plugins Examples</h1> 
     <p>This example demonstrates several plugins.  Note that the js is not minified so it is readable.
     See <a href="grid-plugins.js">grid-plugins.js</a>.</p> 
+
+<div id="file-storage"></div>
 
 </body> 
 </html> 

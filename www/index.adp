@@ -41,6 +41,7 @@
 			'Ext.data.*',
 			'Ext.toolbar.*',
 			'Ext.tab.Panel',
+			'Ext.ux.RowExpander',
 			'Ext.layout.container.Border'
 		]);
 		Ext.onReady(function(){

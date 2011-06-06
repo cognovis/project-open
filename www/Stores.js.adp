@@ -347,7 +347,8 @@ var fileStorageStore = Ext.create('Ext.data.Store', {
 	url: '/intranet-rest/file_storage_object',
 	appendId: true,
 	extraParams: {
-	    format: 'json'
+	    format: 'json',
+	    parent_id: 59616
 	},
 	reader: { 
 	    type: 'json', 
