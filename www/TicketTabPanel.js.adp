@@ -42,7 +42,16 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	itemId: 'ticketFilestorage',
 	title: '#intranet-filestorage.Filestorage#',
 	xtype: 'fileStorageGrid'
-    }]   
+    }],
+
+    // Called from the TicketGrid if the user has selected
+    // a ticket
+    loadTicket: function(rec){
+        this.child('#ticket').loadTicket(rec);
+        this.child('#ticketContact').loadTicket(rec);
+        this.child('#ticketFilestorage').loadTicket(rec);
+    }
+
 });
 
 

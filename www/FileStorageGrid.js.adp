@@ -211,7 +211,13 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		fileStorageStore.load();
 	    }
         }]
-    }]
+    }],
+
+    // Load the files for the new ticket
+    loadTicket: function(rec){
+	// Reload the store containing the ticket's files
+    }
+
 });
 
 
