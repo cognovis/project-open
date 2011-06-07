@@ -22,32 +22,38 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('TicketBrowser.TicketForm', {
-	extend: 'Ext.form.Panel',	
-	alias: 'widget.ticketform',
-	minHeight: 200,
-	standardsubmit:false,
-	frame:true,
-	title: 'Ticket',
-	bodyStyle:'padding:5px 5px 0',
-	width: 350,
+var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
+	extend: 	'Ext.form.Panel',	
+	alias: 		'widget.ticketInfo',
+	minHeight:	200,
+	standardsubmit:	false,
+	frame:		true,
+	title: 		'#intranet-helpdesk.Ticket#',
+	bodyStyle:	'padding:5px 5px 0',
+	width: 		350,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 75
 	},
-	defaultType: 'textfield',
-	defaults: { anchor: '100%' },
+	defaultType:	'textfield',
+	defaults: {
+	        mode:           'local',
+	        queryMode:      'local',
+	        value:          '',
+	        displayField:   'pretty_name',
+	        valueField:     'id'
+	},
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'form:id',			xtype: 'hiddenfield', value: 'helpdesk_ticket' },
-	{ name: '__key_signature',		xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
-	{ name: '__key',			xtype: 'hiddenfield', value: 'ticket_id' },
-	{ name: '__new_p',			xtype: 'hiddenfield', value: '0' },
-	{ name: '__refreshing_p',		xtype: 'hiddenfield', value: '0' },
-	{ name: 'ticket_id',			xtype: 'hiddenfield'},
-	{ name: 'ticket_name',			xtype: 'hiddenfield', value: 'sencha' },
-	{ name: 'ticket_sla_id',		xtype: 'hiddenfield', value: '53349' },
+	{ name: 'form:id',		xtype: 'hiddenfield', value: 'helpdesk_ticket' },
+	{ name: '__key_signature',	xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
+	{ name: '__key',		xtype: 'hiddenfield', value: 'ticket_id' },
+	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
+	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
+	{ name: 'ticket_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
+	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
 
 	// tell the /intranet-helpdesk/new page to return JSON
 	{ name: 'format',			xtype: 'hiddenfield', value: 'json' },
@@ -63,7 +69,7 @@ Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 'remote',
 		store: customerContactStore
 	}, {
-		fieldLabel: 'Type',
+	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -71,6 +77,14 @@ Ext.define('TicketBrowser.TicketForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketTypeStore
+	}, {
+	        fieldLabel:	'Expediente',
+	        name:		'ticket_file',
+	        xtype:		'textfield'
+	}, {
+        	fieldLabel:	'Area',
+        	name:		'ticket_area',
+	        xtype:		'textfield'
 	}, {
 		fieldLabel: 'Status',
 		name: 'ticket_status_id',
@@ -95,12 +109,32 @@ Ext.define('TicketBrowser.TicketForm', {
 		name: 'time',
 		minValue: '8:00am',
 		maxValue: '6:00pm'
+	}, {
+        	fieldLabel:     '#intranet-core.Program#',
+        	name:           'ticket_program_id',
+        	xtype:          'combobox',
+        	valueField:     'category_id',
+        	displayField:   'category',
+        	valueField:     'id',
+        	triggerAction:  'all',
+        	forceSelection: true,
+        	editable:       false,
+        	queryMode:      'remote',
+        	store:          'requestAreaStore'
+	}, {
+	        fieldLabel:	'Tipo de Servicio',
+	        name:		'ticket_service_id',
+	        xtype:		'combobox',
+	        valueField:	'category_id',
+	        displayField:	'category',
+	        forceSelection: true,
+	        queryMode: 	'remote',
+	        store: 		ticketServiceTypeStore
 	},
 
 	// Additional fields to add later
 	{ name: 'ticket_assignee_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_service_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
 	{ name: 'ticket_queue_id',		xtype: 'hiddenfield'},
@@ -113,11 +147,6 @@ Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
 	{ name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'}
 	],
-
-	loadTicket: function(rec){
-		this.loadRecord(rec);
-		var comp = this.getComponent('ticket_type_id');
-	},
 
 	buttons: [{
             text: 'Submit',
@@ -137,5 +166,19 @@ Ext.define('TicketBrowser.TicketForm', {
                     waitMsg: 'Saving Data...'
 		});
 	    }
-	}]
+	}],
+
+	loadTicket: function(rec){
+		this.loadRecord(rec);
+		var comp = this.getComponent('ticket_type_id');
+	},
+
+	// Somebody pressed the "New Ticket" button:
+	// Prepare the form for entering a new ticket
+	onNewTicket: function() {
+	        var form = this.getForm();
+	        form.reset();
+	        alert('New Ticket');
+	}
 });
+
