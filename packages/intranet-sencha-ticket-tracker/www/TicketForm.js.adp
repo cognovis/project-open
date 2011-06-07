@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.1 2011/06/03 08:38:00 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.2 2011/06/06 15:59:28 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,7 +26,7 @@ Ext.define('TicketBrowser.TicketForm', {
 	extend: 'Ext.form.Panel',	
 	alias: 'widget.ticketform',
 	minHeight: 200,
-	stanardsubmit:false,
+	standardsubmit:false,
 	frame:true,
 	title: 'Ticket',
 	bodyStyle:'padding:5px 5px 0',

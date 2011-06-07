@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.1 2011/06/03 08:38:00 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.2 2011/06/06 15:59:29 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,7 +30,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	defaultType: 'textfield',
 	defaults: { anchor: '100%' },
 	minWidth: 200,
-	stanardsubmit:true,
+	standardsubmit:true,
 	items: [
 	{	name: 'vat_number', 
 		fieldLabel: 'VAT ID' 

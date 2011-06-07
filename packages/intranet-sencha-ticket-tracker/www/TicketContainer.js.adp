@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.2 2011/06/06 15:12:41 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.4 2011/06/06 17:20:08 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -64,7 +64,7 @@ Ext.define('TicketBrowser.TicketContainer', {
         this.child('#preview').update({
             title: rec.get('project_name')
         });
-        this.child('#preview').child('#ticket').loadTicket(rec);
+        this.child('#preview').loadTicket(rec);
     },
     
     togglePreview: function(show){
