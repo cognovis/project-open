@@ -31,34 +31,8 @@ Ext.define('TicketBrowser.ContactContainer', {
     layout: 'border',
 
     items: [{
-	itemId: 'grid',
-        xtype:  'fieldset',
-	region: 'center',
-	items :[
-        {
-            fieldLabel: '#intranet-core.First_names#',
-            name:       'ticket_first_contact_name',
-            allowBlank: false
-        },
-        {
-            fieldLabel: '#intranet-core.Last_name#',
-            name:       'ticket_first_contact_last_name'
-        },
-        {
-            xtype:  'radiofield',
-            name:   'ticket_sex',
-            value:  '1',
-            fieldLabel: 'Genero',
-            boxLabel:   'hombre'
-        },
-        {
-            xtype:          'radiofield',
-            name:           'ticket_sex',
-            value:          '0',
-            fieldLabel:     '',
-            labelSeparator: '',
-            hideEmptyLabel: false,
-            boxLabel:       'mujer'
-        }]
+        itemId: 'grid',
+        xtype: 'contactgrid',
+        region: 'center'
     }]
 });

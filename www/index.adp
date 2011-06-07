@@ -29,6 +29,7 @@
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
 	<script type="text/javascript" src="ContactContainer.js"></script> 
+	<script type="text/javascript" src="ContactGrid.js"></script> 
 
 
 	<script type="text/javascript" src="Main.js"></script> 
