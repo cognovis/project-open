@@ -10,25 +10,103 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
-ad_register_proc GET /intranet-sencha-ticket-tracker/* im_sencha_ticket_tracker_page
+
+# Create a new content folder for the specified object
+ad_proc -public im_fs_content_folder_for_object { 
+    -object_id:required
+    {-path ""}
+} {
+    Returns the folder_id of the specified path for the specified
+    object. Creates necessary folders on the fly.
+    @parm path Optional path within the object's FS
+} {
+    return [util_memoize [list im_fs_content_folder_for_object_helper -object_id $object_id -path $path]]
+}
 
 
-# Serve the abstract URL 
-# /intranet/download/<group_id>/...
-#
-proc im_sencha_ticket_tracker_page { } {
+# Create a new content folder for the specified object
+ad_proc -public im_fs_content_folder_for_object_helper { 
+    -object_id:required
+    {-path ""}
+} {
+    Returns the folder_id of the specified path for the specified
+    object. Creates necessary folders on the fly.
+    @parm path Optional path within the object's FS
+} {
+    # Check if the folder already exists and return it
+    set folder_id [db_string fs_folder "
+        select  fs_folder_id
+        from    im_biz_objects
+        where   object_id = :object_id
+    " -default ""]
+    if {"" != $folder_id} { return $folder_id }
 
+    # Prepare the variables that we need in order to create
+    # a new folder
     set user_id [ad_maybe_redirect_for_registration]
+    set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
+    db_0or1row object_info "
+	select	*,
+		pretty_plural as object_pretty_plural,
+		acs_object__name(o.object_id) as object_name_pretty
+	from	acs_objects o,
+		acs_object_types ot
+	where	o.object_id = :object_id and
+		o.object_type = ot.object_type
+    "
+    if {![info exists object_pretty_plural]} {
+	ns_log Error "im_fs_content_folder_for_object: didn't find object #$object_id"
+	return ""
+    }
+    
+    # Get the root folder for the fs instance
+    set root_folder_id [fs::get_root_folder -package_id $package_id]
+    if {"" == $root_folder_id} {
+	set root_folder_id [fs::new_root_folder -package_id $package_id]
+    }
 
-    # get the filename
-    set url [ns_conn url]
-    set path_list [split $url {/}]
-    set file_name [lindex $path_list end]
+    # Default folder name for the object: Append the object's unique ID
+    # to the object's pretty name
+    set object_paths [list]
+    switch $object_type {
+	im_project - im_ticket {
+	    db_1row project_info "
+	        select	p.project_nr,
+	                p.project_path,
+	                c.company_path
+	        from	im_projects p,
+	                im_companies c
+	        where	p.project_id = :object_id
+	                and p.company_id = c.company_id
+	    "
+	    set object_paths [list $company_path $project_nr]
+	}
+	user - person - im_employee {
+	    set object_paths [list $object_id]
+	}
+    }
+    if {"" == $object_paths} {
+	# By default use a single path based on the object's name and ID
+        set object_path [list $object_name_pretty - $object_id]
+    }
 
-    set path "[acs_root_dir]/packages/intranet-sencha-ticket-tracker/www/$file_name"
-    ns_log Notice "im_sencha_ticket_tracker_page: url=$url, file_name=$file_name, path=$path"
+    # The path we want to create
+    set file_paths [split $path "/"]
+    set file_paths [concat $object_paths $file_paths]
+    set file_paths [linsert $file_paths 0 $object_pretty_plural]
 
-    doc_return 200 "text/plain" $path
+    set path ""
+    set parent_folder_id $root_folder_id
+    foreach p $file_paths {
+	append path "/${p}"
+	set folder_id [content::item::get_id -item_path $path -root_folder_id $parent_folder_id]
+	if {"" == $folder_id} {
+	    set folder_id [content::folder::new -parent_id $parent_folder_id -name $p -label $p]
+	}
+	ns_log Notice "im_fs_content_folder_for_object: oid=$object_id: path=$path, parent_id=$parent_folder_id => folder_id=$folder_id"
+	set parent_folder_id $folder_id
+    }
 
+    return $folder_id
 }
 
