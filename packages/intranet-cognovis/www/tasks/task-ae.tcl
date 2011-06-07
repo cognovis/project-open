@@ -211,6 +211,9 @@ ad_form -extend -name task -on_request {
     }
 
     set project_nr [string tolower $project_nr]
+    if {$project_nr eq ""} {
+	set project_nr [lang::util::suggest_key $project_name]
+    }
 
     if {![exists_and_not_null uom_id]} {
 	# Set default UoM to Hour
