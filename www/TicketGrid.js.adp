@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.2 2011/06/07 16:23:04 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.3 2011/06/07 17:48:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,7 +25,7 @@
 
 var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
-    alias: 'widget.ticketgrid',
+    alias: 'widget.ticketGrid',
     minHeight: 200,
     store: ticketStore,
 
@@ -184,9 +184,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		items: [{
 		    text: 'New Ticket',
 		    iconCls: 'icon-new-ticket',
-		    handler: function(){
-			ticketInfoPanel.onNewTicket();
-		    }
+		    handler: this.onNewTicket
 		}, {
 		    text: 'Copy Ticket',
 		    iconCls: 'icon-new-ticket',
@@ -339,6 +337,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	this.ownerCt.togglePreview(pressed);
     },
     
+    onNewTicket: function(dummy){
+        var panel = this.ownerCt.ownerCt;
+	panel.ownerCt.onNewTicket();
+    },
+
     onGridChange: function(btn, pressed){
 	this.ownerCt.toggleGrid(pressed);
     },
@@ -347,3 +350,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
     }
 });
+
+
+

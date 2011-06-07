@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.5 2011/06/07 16:23:04 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.6 2011/06/07 17:48:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,8 +31,8 @@ Ext.define('TicketBrowser.TicketContainer', {
     layout: 'border',
 
     items: [{
-	itemId: 'grid',
-	xtype: 'ticketgrid',
+	itemId: 'ticketGrid',
+	xtype: 'ticketGrid',
 	region: 'center'
     }, {
 	itemId: 'preview',
@@ -52,12 +52,12 @@ Ext.define('TicketBrowser.TicketContainer', {
     
     loadSla: function(rec) {
         this.tab.setText(rec.get('project_name'));
-        this.child('#grid').loadSla(rec.getId());
+        this.child('#ticketGrid').loadSla(rec.getId());
     },
     
     filterTickets: function(filterValues) {
         this.tab.setText('Filtered Tickets');
-        this.child('#grid').filterTickets(filterValues);
+        this.child('#ticketGrid').filterTickets(filterValues);
     },
     
     onSelect: function(rec) {
@@ -76,8 +76,16 @@ Ext.define('TicketBrowser.TicketContainer', {
         }
     },
 
+    // Inform the TicketInfo Panel to clear values for 
+    // entering a new ticket
+    onNewTicket: function(){
+        var preview = this.child('#preview');
+	var infoPanel = preview.child('#ticket');
+	infoPanel.onNewTicket();
+    },
+
     toggleGrid: function(show){
-        var grid = this.child('#grid');
+        var grid = this.child('#ticketGrid');
         if (show) {
             grid.show();
         } else {
