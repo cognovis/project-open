@@ -74,5 +74,14 @@ Ext.define('TicketBrowser.TicketContainer', {
         } else {
             preview.hide();
         }
+    },
+
+    toggleGrid: function(show){
+        var grid = this.child('#grid');
+        if (show) {
+            grid.show();
+        } else {
+            grid.hide();
+        }
     }
 });

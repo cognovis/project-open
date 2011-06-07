@@ -2,7 +2,7 @@
 //                       Ticket Information                             //
 // -------------------------------------------------------------------- //
 
-Ext.define('TicketBrowser.TicketInfo', {
+var ticketInfoPanel = Ext.define('TicketBrowser.TicketInfo', {
     extend:         'Ext.form.Panel',
     alias:          'widget.ticketInfo',
     stanardsubmit:  false,
@@ -16,7 +16,6 @@ Ext.define('TicketBrowser.TicketInfo', {
     },
     defaultType:    'textfield',
     defaults: {
-        anchor:         '100%',
         mode:           'local',
         queryMode:      'local',
         value:          '!!N/A',
@@ -24,15 +23,16 @@ Ext.define('TicketBrowser.TicketInfo', {
         displayField:   'pretty_name',
         valueField:     'id',
     },
-
     items: [{
         xtype:      'textfield',
         fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
         name:       'ticket_id',
         valueField: 'id',
         msgTarget:  'side',
-        labelWidth: 75,
-        allowBlank: false
+	width:	    200,
+        // labelWidth: 75,
+        allowBlank: false,
+	disabled:   true
     }, {
         fieldLabel: 'Tipo de Servicio',
         name:       'ticket_service_id',
@@ -73,11 +73,6 @@ Ext.define('TicketBrowser.TicketInfo', {
         store:          'requestAreaStore'
     }],
 
-    loadTicket: function(rec){
-	this.loadRecord(rec);
-	var comp = this.getComponent('ticket_type_id');
-    },
-
     buttons: [{
         text: '#intranet-core.Save_Changes#',
         disabled: false,
@@ -96,8 +91,19 @@ Ext.define('TicketBrowser.TicketInfo', {
             waitMsg: 'Saving Data...'
         });
         }
-    }]
+    }],
 
+    // Load the data of a new ticket
+    loadTicket: function(rec){
+	this.loadRecord(rec);
+	var comp = this.getComponent('ticket_type_id');
+    },
+
+    // Somebody pressed the "New Ticket" button:
+    // Prepare the form for entering a new ticket
+    onNewTicket: function() {
+	alert('New Ticket');
+    }
 });
 
 // -------------------------------------------------------------------- //
