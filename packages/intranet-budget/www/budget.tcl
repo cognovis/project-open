@@ -61,7 +61,7 @@ set after_success "budget_form.getForm().load(\{
 #
 ##################################
 
-set amount_new_json [util::json::gen [util::json::object::create [list title "New Budget" amount 0 type_id 3751]]]
+set amount_new_json [util::json::gen [util::json::object::create [list title "#intranet-budget.Add_Cost#" amount 0 type_id 3751]]]
 
 
 set amount_baseParams [list action "get_costs" budget_id $budget_id]
@@ -126,7 +126,7 @@ set amount_cm [extjs::RowEditor::ColumnModel -prefix "amount_" -column_defs_json
 #
 ##################################
 
-set benefit_new_json [util::json::gen [util::json::object::create [list title "New Budget" benefit 0 type_id 3760]]]
+set benefit_new_json [util::json::gen [util::json::object::create [list title "#intranet-budget.Add_Benefit#" benefit 0 type_id 3760]]]
 
 set benefit_baseParams [list action "get_benefits" budget_id $budget_id]
 set benefit_sortInfo  [util::json::gen [util::json::object::create [list field "title" direction "ASC"]]]
@@ -181,7 +181,7 @@ set benefit_cm [extjs::RowEditor::ColumnModel -prefix "benefit_" -column_defs_js
 #
 ##################################
 
-set hour_new_json [util::json::gen [util::json::object::create [list title "New Time" hour 0 department_id 0]]]
+set hour_new_json [util::json::gen [util::json::object::create [list title "#intranet-budget.New_hour_estimate#" hour 0 department_id 0]]]
 
 
 set hour_baseParams [list action "get_hours" budget_id $budget_id]
