@@ -70,7 +70,11 @@ foreach uid $user_id_from_search {
 
 set current_user_name [db_string cur_user "select im_name_from_user_id(:user_id) from dual"]
 set object_rel_url [db_string object_url "select url from im_biz_object_urls where url_type = 'view' and object_type = :object_type"]
-set role_name [db_string role_name "select im_category_from_id(:role_id) from dual" -default "Member"]
+# set role_name [db_string role_name "select im_category_from_id(:role_id) from dual" -default "Member"]
+set role_name [im_category_from_id $role_id]
+if {$role_name eq ""} {
+    set role_name "#intranet-core.Member#"
+}
 
 # Get the SystemUrl without trailing "/"
 set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL ""]
