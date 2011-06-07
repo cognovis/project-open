@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.3 2011/06/06 14:02:15 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.4 2011/06/06 17:45:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -217,6 +217,7 @@ var customerContactStore = Ext.create('Ext.ux.UserStore', {
 var employeeStore = Ext.create('Ext.ux.UserStore', {
 			storeId: 'employeeStore',
 		        autoLoad: true,
+			pageSize: 1000000,
 		        fields: ['user_id', 'first_names', 'last_name',
 				{ name: 'name',
 				  convert: function(value, record) {
