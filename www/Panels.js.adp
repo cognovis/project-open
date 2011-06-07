@@ -7,7 +7,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketInfo', {
     alias:          'widget.ticketInfo',
     stanardsubmit:  false,
     frame:          true,
-    title:          'Información del ticket',
+    title:          'Ticket Information',
     bodyStyle:      'padding:5px 5px 0',
     width:          350,
     fieldDefaults: {
@@ -18,7 +18,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketInfo', {
     defaults: {
         mode:           'local',
         queryMode:      'local',
-        value:          '!!N/A',
+        value:          '',
         store:          'TEC.store.Tickets',
         displayField:   'pretty_name',
         valueField:     'id',
@@ -102,6 +102,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketInfo', {
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     onNewTicket: function() {
+	var form = this.getForm();
+	form.reset();
 	alert('New Ticket');
     }
 });

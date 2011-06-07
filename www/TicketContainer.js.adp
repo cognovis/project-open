@@ -31,8 +31,8 @@ Ext.define('TicketBrowser.TicketContainer', {
     layout: 'border',
 
     items: [{
-	itemId: 'grid',
-	xtype: 'ticketgrid',
+	itemId: 'ticketGrid',
+	xtype: 'ticketGrid',
 	region: 'center'
     }, {
 	itemId: 'preview',
@@ -52,12 +52,12 @@ Ext.define('TicketBrowser.TicketContainer', {
     
     loadSla: function(rec) {
         this.tab.setText(rec.get('project_name'));
-        this.child('#grid').loadSla(rec.getId());
+        this.child('#ticketGrid').loadSla(rec.getId());
     },
     
     filterTickets: function(filterValues) {
         this.tab.setText('Filtered Tickets');
-        this.child('#grid').filterTickets(filterValues);
+        this.child('#ticketGrid').filterTickets(filterValues);
     },
     
     onSelect: function(rec) {
@@ -76,8 +76,16 @@ Ext.define('TicketBrowser.TicketContainer', {
         }
     },
 
+    // Inform the TicketInfo Panel to clear values for 
+    // entering a new ticket
+    onNewTicket: function(){
+        var preview = this.child('#preview');
+	var infoPanel = preview.child('#ticket');
+	infoPanel.onNewTicket();
+    },
+
     toggleGrid: function(show){
-        var grid = this.child('#grid');
+        var grid = this.child('#ticketGrid');
         if (show) {
             grid.show();
         } else {
