@@ -1312,4 +1312,3 @@ ad_proc -public im_helpdesk_related_tickets_component {
 } {
     return ""
 }
-

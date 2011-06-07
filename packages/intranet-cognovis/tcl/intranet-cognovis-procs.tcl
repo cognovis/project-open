@@ -370,3 +370,36 @@ ad_proc -public intranet_cognovis::delete_project {
 	ns_log Notice "<font color=red>$error</font>\n"
     }
 }
+
+# ---------------------------------------------------------------
+# intranet-helpdesk new ticket redirection
+# ---------------------------------------------------------------
+
+ad_proc -public -callback im_helpdesk_ticket_new_redirect -impl intranet-helpdesk {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-ticket_id ""}
+    {-form_mode ""}
+    {-ticket_status_id ""}
+    {-ticket_type_id ""}
+    {-return_url:required}
+} {
+	This is mainly a callback to redirect from the original new.tcl page to somewhere else
+	
+        @param ticket_id ID of the task
+	@param project_id ID of the project 
+        @ticket_status_id This checks what is the current status of a ticket 
+        @ticket_type_id This checks what is the current type of a ticket
+} {
+
+    if {[exists_and_not_null ticket_id]} {
+	ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/view" {
+	    ticket_id form_mode ticket_status_id ticket_type_id return_url 
+	}]
+    } else {
+	ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/ticket-ae" {
+	    form_mode return_url 
+	}]
+    }
+} 

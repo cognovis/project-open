@@ -1,3 +1,5 @@
+SELECT acs_log__debug(' /packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d13-0.5d14.sql','');
+
 create or replace FUNCTION inline_0 ()
 returns integer as '
 DECLARE

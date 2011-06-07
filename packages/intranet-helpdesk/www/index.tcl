@@ -13,7 +13,7 @@ ad_page_contract {
     { order_by "Prio" }
     { mine_p "all" }
     { ticket_status_id:integer "[im_ticket_status_open]" } 
-    { ticket_type_id:integer 0 } 
+    { ticket_type_id:integer "" } 
     { ticket_queue_id:integer 0 } 
     { ticket_sla_id:integer 0 } 
     { ticket_creator_id:integer 0 } 

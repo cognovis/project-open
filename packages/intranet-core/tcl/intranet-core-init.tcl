@@ -466,3 +466,21 @@ ad_proc -public -callback im_timesheet_tasks_index_filter {
 
     @param form_id ID of the form to which we want to append filter elements
 } - 
+
+ad_proc -public -callback im_helpdesk_ticket_new_redirect {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+    {-ticket_id ""}
+    {-form_mode ""}
+    {-ticket_status_id ""}
+    {-ticket_type_id ""}
+    {-return_url:required}
+} {
+    This is mainly a callback to redirect from the original new.tcl page to somewhere else
+    
+    @param task_id ID of the task
+    @param project_id ID of the project 
+    @task_status_id This checks what is the current status of a task 
+    @ticket_type_id This checks what is the current type of a ticket
+} -

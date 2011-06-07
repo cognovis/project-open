@@ -80,6 +80,19 @@ if {![info exists task]} {
 
 }
 
+if {[info exists ticket_id]} {
+    callback im_helpdesk_ticket_new_redirect -object_id [ad_conn object_id] \
+	-status_id "" -type_id "" -ticket_id $ticket_id \
+	-form_mode $form_mode -ticket_status_id $ticket_status_id \
+	-ticket_type_id $ticket_type_id -return_url $return_url
+} else {
+    callback im_helpdesk_ticket_new_redirect -object_id [ad_conn object_id] \
+	-status_id "" -type_id "" -ticket_id ""  \
+	-form_mode $form_mode -return_url $return_url
+}
+
+
+
 # ------------------------------------------------------------------
 # Default & Security
 # ------------------------------------------------------------------
@@ -555,7 +568,10 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	}
 	db_release_unused_handles
     }
-
+} -new_request {
+    if {![exists_and_not_null ticket_customer_contact_id]} {
+	set ticket_customer_contact_id [ad_conn user_id]
+    }
 } -select_query {
 
 	select	t.*,
