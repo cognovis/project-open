@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.8 2011/06/06 17:20:08 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.9 2011/06/07 15:51:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,7 +26,7 @@
 // The form for uploading a new file
 var fileStorageNewForm;
 
-function showFileStorageNewForm() {
+function showFileStorageNewForm(ticket_id) {
 
     var msg = function(title, msg) {
         Ext.Msg.show({
@@ -42,6 +42,7 @@ function showFileStorageNewForm() {
     // Create the upload form if it isn't defined yet:
     if (!fileStorageNewForm) {
 	var form = Ext.widget('form', {
+	    itemId: 'ticketUploadForm',
 	    layout: { type: 'vbox', align: 'stretch' },
 	    border: false,
 	    fieldDefaults: { labelAlign: 'top', labelWidth: 100 },
@@ -51,6 +52,11 @@ function showFileStorageNewForm() {
 		xtype: 'textfield',
 		id: 'name',
 		fieldLabel: '#intranet-core.Name#'
+	    }, {
+		name: 'ticket_id',
+		xtype: 'textfield',
+		id: 'ticket_id',
+		fieldLabel: 'Ticket ID'
 	    }, {
 		name: 'upload_file',
 		xtype: 'filefield',
@@ -65,12 +71,15 @@ function showFileStorageNewForm() {
 		text: 'Save',
 		handler: function(){
 		    var form = this.up('form').getForm();
+		    var form_fields = form.getFieldValues();
+		    var ticket_id = form_fields.ticket_id;
+
 		    if(form.isValid()){
 			form.submit({
 			    url: 'file-add',
 			    method: 'POST',
 			    params: {
-				folder_id: 59616
+				folder_id: ticket_id
 			    },
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
 			    success: function(fp, o) {
@@ -94,14 +103,18 @@ function showFileStorageNewForm() {
 	    title: '#intranet-filestorage.Upload_File#',
 	    closeAction: 'hide',
 	    width: 300,
-	    height: 200,
-	    minHeight: 100,
+	    height: 400,
+	    minHeight: 200,
 	    layout: 'fit',
 	    resizable: true,
 	    modal: true,
 	    items: form
 	});
     }
+
+    var form = fileStorageNewForm.child('#ticketUploadForm');
+    var form2 = form.getForm();
+    form2.setValues({ticket_id: ticket_id});
     fileStorageNewForm.show();
 }
 
@@ -114,6 +127,26 @@ var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	    // grid.down('#removeButton').setDisabled(selections.length == 0);
 	}
     }
+});
+
+
+var fileStorageStore = Ext.create('Ext.data.Store', {
+	    model: 'TicketBrowser.FileStorage',
+	    storeId: 'fileStorageStore',
+	    autoLoad: false,
+	    remoteSort: true,
+	    pageSize: 10,			// Enable pagination
+	    sorters: [{
+		property: 'name',
+		direction: 'DESC'
+	    }],
+	    proxy: {
+		type: 'rest',
+		url: '/intranet-rest/file_storage_object',
+		appendId: true,
+		extraParams: { format: 'json', parent_id: 0 },
+		reader: { type: 'json', root: 'data' }
+	    }
 });
 
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
@@ -180,7 +213,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
             text:'Add a file',
             tooltip:'Add a new row',
             iconCls:'add',
-	    handler: showFileStorageNewForm
+	    handler: function() {
+		var tid = fileStorageStore.proxy.extraParams['ticket_id'];
+		showFileStorageNewForm(tid);
+	    }
         }, '-', {
             text:'Options',
             tooltip:'Set options',
@@ -215,7 +251,20 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
     // Load the files for the new ticket
     loadTicket: function(rec){
+
 	// Reload the store containing the ticket's files
+	var folder_id = rec.get('fs_folder_id');
+	var ticket_id = rec.get('ticket_id');
+
+	// Replace empty string by "0", because an empty string means no restriction to the server.
+        if ("" === folder_id) { folder_id = 0; }
+
+	// Save the property in the proxy, which will pass it directly to the REST server
+	fileStorageStore.proxy.extraParams['parent_id'] = folder_id;
+	fileStorageStore.proxy.extraParams['ticket_id'] = ticket_id;
+
+        this.ticket_id = ticket_id;
+	fileStorageStore.load();
     }
 
 });

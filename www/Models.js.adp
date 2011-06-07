@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.3 2011/06/06 14:02:15 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.4 2011/06/07 15:51:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -77,6 +77,8 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_status_id',		// Lifecycle control: Current Status
 	'ticket_type_id',		// Type of ticket: Controls presence/absence of DynFields
 	'ticket_customer_contact_id',	// For whom do we work?
+
+	'fs_folder_id',			// File-storage folder for this ticket
 
 	// Main ticket fields
 	'ticket_prio_id',		// Priority

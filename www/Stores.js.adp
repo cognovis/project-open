@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.4 2011/06/06 17:45:31 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.5 2011/06/07 15:51:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -217,6 +217,8 @@ var customerContactStore = Ext.create('Ext.ux.UserStore', {
 var employeeStore = Ext.create('Ext.ux.UserStore', {
 			storeId: 'employeeStore',
 		        autoLoad: true,
+			// Load all users into this table, this is rarely more than 2000...
+			// ToDo: Replace this with a server-side search function plus cache(?)
 			pageSize: 1000000,
 		        fields: ['user_id', 'first_names', 'last_name',
 				{ name: 'name',
@@ -330,33 +332,6 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
             }
         });
         
-
-var fileStorageStore = Ext.create('Ext.data.Store', {
-    model: 'TicketBrowser.FileStorage',
-    storeId: 'fileStorageStore',
-    autoLoad: true,
-    remoteSort: true,
-    pageSize: 10,			// Enable pagination
-
-    sorters: [{
-	property: 'name',
-	direction: 'DESC'
-    }],
-
-    proxy: {
-	type: 'rest',
-	url: '/intranet-rest/file_storage_object',
-	appendId: true,
-	extraParams: {
-	    format: 'json',
-	    parent_id: 59616
-	},
-	reader: { 
-	    type: 'json', 
-	    root: 'data' 
-	}
-    }
-});
 
 
 // fake store while developing
