@@ -275,9 +275,10 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	if {$ext_table_name == ""} { continue }
 	if {$ext_table_name == $main_table_name} { continue }
 
-	lappend ext_tables $ext_table_name
-	append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
-    }
+        if {![lsearch ext_tables $ext_table_name]} { 
+           lappend ext_tables $ext_table_name
+            append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
+       }
 
     set bind_vars [ns_set create]
     set criteria [list]
