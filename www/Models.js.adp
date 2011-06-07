@@ -78,6 +78,8 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_type_id',		// Type of ticket: Controls presence/absence of DynFields
 	'ticket_customer_contact_id',	// For whom do we work?
 
+	'fs_folder_id',			// File-storage folder for this ticket
+
 	// Main ticket fields
 	'ticket_prio_id',		// Priority
 	'ticket_assignee_id',		// Who is assigned to the work?

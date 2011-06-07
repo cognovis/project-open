@@ -4,7 +4,7 @@ ad_page_contract {
     @creation-date 6 Nov 2000
     @cvs-id $Id$
 } {
-    folder_id:integer,optional,notnull
+    { ticket_id:integer ""}
     upload_file:trim,optional
     upload_file.tmpfile:tmpfile,optional
     {title ""}
@@ -13,38 +13,51 @@ ad_page_contract {
 
 if {![info exists upload_file]} {
     ns_log Notice "file-add: failure"
-
-    ns_return 200 "text/html" "\[
-    {
-        \"action\":\"Profile\",\"method\":\"updateBasicInfo\",\"type\":\"rpc\",\"tid\":3,
-        \"result\":{
-            \"success\":true
-        }
-    }
-    \]"
-    ad_script_abort
-
     ns_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	false,
-		\"errors\":	{\"email\": \"already taken\"}
+		\"errors\":	{\"upload_file\": \"You have to specify a file to upload\"}
     	}
     }"
     ad_script_abort
 }
 
+# -------------------------------------------------------------
+# Security
+# -------------------------------------------------------------
+
 set user_id [ad_conn user_id]
 # Get package. ad_conn package_id doesn't seem to work...
 set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
 set mime_type [cr_filename_to_mime_type -create -- $upload_file]
+set folder_id [im_fs_content_folder_for_object -object_id $ticket_id]
 
-ns_log Notice "file-add: folder_id=[im_opt_val folder_id], upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}, mime_type=$mime_type, package_id=$package_id"
+ns_log Notice "file-add: upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}, mime_type=$mime_type, package_id=$package_id, folder_id=$folder_id"
 
-permission::require_permission \
+set permission_p [permission::permission_p \
     -object_id $folder_id \
     -party_id $user_id \
-    -privilege "write"
+    -privilege "write" \
+]
+ns_log Notice "file-add: permission_p=$permission_p"
 
+# set permission_p "1"
+
+
+if {1 != $permission_p} {
+    ns_log Notice "file-add: failure: User \#$user_id doesn't have write permissions to folder \#$folder_id"
+    doc_return 200 "text/html" "{
+	\"result\": {
+		\"success\":	false,
+		\"errors\":	{\"permission\": \"You do not have permission to write to folder \#$folder_id\"}
+    	}
+    }"
+    ad_script_abort
+}
+
+# -------------------------------------------------------------
+# Create the new file in the FS
+# -------------------------------------------------------------
 
 if {"" != $upload_file} {
     set this_file_id ""
@@ -62,11 +75,8 @@ if {"" != $upload_file} {
     
 }
 
-db_release_unused_handles
-ad_http_cache_control
-
 ns_log Notice "file-add: success"
-ns_return 200 "text/html" "{
+doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	true,
 		\"errors\":	{\"email\": \"already taken\"}

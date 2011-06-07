@@ -46,7 +46,7 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     set user_id [ad_maybe_redirect_for_registration]
     set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
     db_0or1row object_info "
-	select	*,
+	select	o.object_type,
 		pretty_plural as object_pretty_plural,
 		acs_object__name(o.object_id) as object_name_pretty
 	from	acs_objects o,
@@ -106,6 +106,13 @@ ad_proc -public im_fs_content_folder_for_object_helper {
 	ns_log Notice "im_fs_content_folder_for_object: oid=$object_id: path=$path, parent_id=$parent_folder_id => folder_id=$folder_id"
 	set parent_folder_id $folder_id
     }
+
+    # Save the new folder to the biz_object table
+    db_dml project_folder_save "
+	update im_biz_objects
+	set fs_folder_id = :folder_id
+	where object_id = :object_id
+    "
 
     return $folder_id
 }
