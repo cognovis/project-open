@@ -1238,9 +1238,16 @@ ad_proc -public im_workflow_home_inbox_component {
 
 	if {[lsearch $relationships $rel] == -1} { continue }
 
-	# L10ned version of next action
-	regsub -all " " $transition_name "_" next_action_key
-	set next_action_l10n [lang::message::lookup "" intranet-workflow.$next_action_key $transition_name]
+
+
+	regsub -all "#" $transition_name "" transition_key
+	if {$transition_name ne $transition_key} {
+	    set next_action_l10n [lang::message::lookup "" $transition_key]
+	} else {
+	    # L10ned version of next action
+	    regsub -all " " $transition_name "_" next_action_key
+	    set next_action_l10n [lang::message::lookup "" intranet-workflow.$next_action_key $transition_name]
+	}
 	set object_subtype [im_category_from_id $type_id]
 	set status [im_category_from_id $status_id]
 	set object_url "[im_biz_object_url $object_id "view"]&return_url=[ns_urlencode $return_url]"
