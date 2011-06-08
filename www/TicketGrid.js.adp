@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.3 2011/06/07 17:48:13 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.4 2011/06/08 16:16:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +27,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.ticketGrid',
     minHeight: 200,
-    store: ticketStore,
+    store: ticketStore,    
+    iconCls: 'icon-grid',
 
     initComponent: function(){
         Ext.apply(this, {

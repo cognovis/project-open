@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.5 2011/06/06 17:45:32 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.6 2011/06/08 16:16:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,96 +25,95 @@
 
 Ext.define('TicketBrowser.TicketContactPanel', {
 	extend: 'Ext.form.Panel',
-	frame:true,
-	title: 'Ticket Contact',
         alias: 'widget.ticketContact',
+	title: 'Ticket Contact',
+	frame:true,
+	height: 400,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 125
 	},
         items: [{
-        	xtype:          'textfield',
-                fieldLabel:     'Razon social',
-                name:           'ticket_company_name',
-                allowBlank:     false
-        }, {
-        	xtype:          'textfield',
-                fieldLabel:     'DNI/NIF',
-                name:           'nif_cif'
-        }, {
-                xtype:          'radiofield',
-                name:           'ticket_language',
-                value:          'eu_EU',
-                fieldLabel:     'Idioma',
-                boxLabel:       'Euskera'
-        }, {
-                xtype:          'radiofield',
-                name:           'ticket_language',
-                value:          'es_ES',
-                fieldLabel:     '',
-                labelSeparator: '',
-                hideEmptyLabel: false,
-                boxLabel:       'Castellano'
-        },{
+                name:           'user_id',
                 xtype:          'combobox',
-                fieldLabel:     'Tipo de Sociedad',
-                name:           'company',
-                value:          '',
-                valueField:     'category_id',
-                displayField:   'category',
-                store:          companyTypeStore
+                fieldLabel:     '#intranet-core.User#',
+                value:          '#intranet-core.New_User#',
+		valueNotFoundText: 'Create a new User',
+                valueField:     'user_id',
+                displayField:   'name',
+                store:          employeeStore,
+		listeners:{
+		    // The user has selected a user from the drop-down box.
+		    // Lookup the user and fill the form with the fields.
+		    'select': function() {
+			var user_id = this.getValue();
+			var user_record = employeeStore.findRecord('user_id',user_id);
+		        if (user_record == null || typeof user_record == "undefined") { return; }
+			this.ownerCt.loadRecord(user_record);
+		    }
+		}
         }, {
-                xtype:          'textfield',
-                fieldLabel:     'Province',
-                name:           'ticket_province'
+            xtype:	'fieldset',
+            title:	'User Information',
+            checkboxToggle: false,
+            defaultType: 'textfield',
+            collapsed:	false,
+	    frame:	false,
+            layout: 	'hbox',
+            defaults:	{ anchor: '50%'  },
+            items :[{
+	                name:           'first_names',
+	                xtype:          'textfield',
+	                fieldLabel:     '#intranet-core.First_names#',
+	                allowBlank:     false
+	        }, {
+	                name:           'last_name',
+	                xtype:          'textfield',
+	                fieldLabel:     '#intranet-core.Last_name#'
+	    }],
+	    buttons: [{
+        	text: 'New Contact',
+        	handler: function(){
+			var form = this.ownerCt;
+			form.reset();			// empty fields to allow for entry of new contact
+			var combo = form.fiendField('user_id');
+                        alert ('Not implemented Yet')
+                }
+	    }]
+	}, {
+                name:           'ticket_sex',
+                xtype:          'radiofield',
+                fieldLabel:     '#intranet-core.Gender#',
+                boxLabel:       '#intranet-core.Male#',
+                value:          '1'
         }, {
-                // Here a fieldset?
-                xtype:          'textfield',
-                fieldLabel:     '#intranet-core.First_names#',
-                name:           'ticket_first_contact_name',
-                allowBlank:     false
-        },
-        {
-                xtype:          'textfield',
-                fieldLabel:     '(Last name)',
-                name:           'ticket_first_contact_last_name'
-        },
-        {
-                xtype:          'radiofield',
                 name:           'ticket_sex',
-                value:          '1',
-                fieldLabel:     'Genre',
-                boxLabel:       'male'
-        },
-        {
                 xtype:          'radiofield',
-                name:           'ticket_sex',
+                boxLabel:       '#intranet-core.Female#',
                 value:          '0',
                 fieldLabel:     '',
                 labelSeparator: '',
-                hideEmptyLabel: false,
-                boxLabel:       'female'
+                hideEmptyLabel: false
         }],
         buttons: [{
-        	text: 'New Company',
-        	handler: function(){
-                        alert ('Not implemented Yet')
-                }
-        }, {
         	text: 'New Contact',
         	handler: function(){
+			var form = this.ownerCt;
+			form.reset();			// empty fields to allow for entry of new contact
+			var combo = form.fiendField('user_id');
                         alert ('Not implemented Yet')
                 }
         }],
 
 	loadTicket: function(rec){
 
-		// Customer ID, may be NULL
-		var customer_id = rec.data.ticket_customer_contact_id;
-		var cust = employeeStore.findRecord('user_id',customer_id);
-	        if (cust == null || typeof cust == "undefined") { return; }
+		// Customer contact ID, may be NULL
+		var contact_id = rec.data.ticket_customer_contact_id;
+		var contact_record = employeeStore.findRecord('user_id',contact_id);
+	        if (contact_record == null || typeof contact_record == "undefined") { return; }
 
-		this.loadRecord(cust);
+		// load the information from the record into the form
+		this.loadRecord(contact_record);
 	}
 
 });

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.5 2011/06/07 15:51:42 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.6 2011/06/08 16:16:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -308,7 +308,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 var companyStore = Ext.create('Ext.ux.CompanyStore', {
             model: 'TicketBrowser.Company',
             remoteSort: true,
-	    pageSize: 10,			// Enable pagination
+	    pageSize: 1000000,
 	    autoSync: true,			// Write changes to the REST server ASAP
 	    autoLoad: true,
             sorters: [{

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.5 2011/06/06 17:20:08 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.6 2011/06/08 16:16:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -35,8 +35,12 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	xtype: 'ticketInfo',
 	title: 'View Ticket'
     }, {
+	itemId: 'ticketCustomer',
+	title: '#intranet-core.Customer#',
+	xtype: 'ticketCustomer'
+    }, {
 	itemId: 'ticketContact',
-	title: 'Contact',
+	title: '#intranet-core.Contact#',
 	xtype: 'ticketContact'
     }, {
 	itemId: 'ticketFilestorage',
@@ -49,6 +53,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     loadTicket: function(rec){
         this.child('#ticket').loadTicket(rec);
         this.child('#ticketContact').loadTicket(rec);
+        this.child('#ticketCustomer').loadTicket(rec);
         this.child('#ticketFilestorage').loadTicket(rec);
     }
 
