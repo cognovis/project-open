@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.6 2011/06/08 16:16:11 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.7 2011/06/08 17:54:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -41,13 +41,13 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 		valueNotFoundText: 'Create a new User',
                 valueField:     'user_id',
                 displayField:   'name',
-                store:          employeeStore,
+                store:          userStore,
 		listeners:{
 		    // The user has selected a user from the drop-down box.
 		    // Lookup the user and fill the form with the fields.
 		    'select': function() {
 			var user_id = this.getValue();
-			var user_record = employeeStore.findRecord('user_id',user_id);
+			var user_record = userStore.findRecord('user_id',user_id);
 		        if (user_record == null || typeof user_record == "undefined") { return; }
 			this.ownerCt.loadRecord(user_record);
 		    }
@@ -70,15 +70,6 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	                name:           'last_name',
 	                xtype:          'textfield',
 	                fieldLabel:     '#intranet-core.Last_name#'
-	    }],
-	    buttons: [{
-        	text: 'New Contact',
-        	handler: function(){
-			var form = this.ownerCt;
-			form.reset();			// empty fields to allow for entry of new contact
-			var combo = form.fiendField('user_id');
-                        alert ('Not implemented Yet')
-                }
 	    }]
 	}, {
                 name:           'ticket_sex',
@@ -98,10 +89,35 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         buttons: [{
         	text: 'New Contact',
         	handler: function(){
-			var form = this.ownerCt;
+			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
-			var combo = form.fiendField('user_id');
-                        alert ('Not implemented Yet')
+			var combo = form.findField('user_id');
+		}
+	}, {
+        	text: 'Save Changes',
+        	handler: function(){
+			// Get the values of this form into the "values" object
+			var form = this.ownerCt.ownerCt.getForm();
+			var user_id = form.findField('user_id').getValue();
+			var values = form.getFieldValues();
+
+			// Search for previous row in the store
+			var rec = userStore.findRecord('user_id',user_id);
+
+			// overwrite the store data with the new data
+			rec.set(values);
+			// now the store should automatically update the values
+			// using it's REST proxy
+                }
+	}, {
+        	text: 'Create New Contact',
+        	handler: function(){
+			var form = this.ownerCt.ownerCt.getForm();
+			var values = form.getFieldValues();
+
+			// add the form values to the store.
+			userStore.add(values);
+			// the store should create a new object now (does he?)
                 }
         }],
 
@@ -109,7 +125,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 		// Customer contact ID, may be NULL
 		var contact_id = rec.data.ticket_customer_contact_id;
-		var contact_record = employeeStore.findRecord('user_id',contact_id);
+		var contact_record = userStore.findRecord('user_id',contact_id);
 	        if (contact_record == null || typeof contact_record == "undefined") { return; }
 
 		// load the information from the record into the form

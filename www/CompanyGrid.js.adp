@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.3 2011/06/05 22:00:07 mcordova Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.4 2011/06/08 17:54:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -49,7 +49,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		  header: '#intranet-core.Primary_contact#',
 		  dataIndex: 'primary_contact_id',
 		  renderer: function(value, o, record) {
-		      return employeeStore.name_from_id(record.get('primary_contact_id'));
+		      return userStore.name_from_id(record.get('primary_contact_id'));
 		  }
 	      }
     ],

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.1 2011/06/07 15:39:50 mcordova Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.2 2011/06/08 17:54:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +27,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.contactgrid',
     minHeight: 200,
-    store: customerContactStore,
+    store: userStore,
 
     columns: [
         {
@@ -55,7 +55,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         }] 
     }, {
         xtype: 'pagingtoolbar',
-        store: customerContactStore,
+        store: userStore,
         dock: 'bottom',
         displayInfo: true
     }],

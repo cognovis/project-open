@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.4 2011/06/07 15:51:42 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.5 2011/06/08 17:54:22 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -144,6 +144,23 @@ Ext.define('TicketBrowser.Company', {
 	'vat_number',			// Company's VAT ID
 	'company_group_id',		// Does the company belong to a group structure?
 	'business_sector_id'		// Business sector of the company
+    ]
+});
+
+
+Ext.define('TicketBrowser.User', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'user_id',		// The primary key or object_id of the company
+    fields: [
+	'user_id',			// Primary key
+	'first_names',
+	'last_name',
+	{ name: 'name',			// Calculated compound name
+	  convert: function(value, record) {
+		return record.get('first_names') + ' ' + record.get('last_name');
+	  }
+	}
     ]
 });
 
