@@ -27,7 +27,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.ticketGrid',
     minHeight: 200,
-    store: ticketStore,
+    store: ticketStore,    
+    iconCls: 'icon-grid',
 
     initComponent: function(){
         Ext.apply(this, {

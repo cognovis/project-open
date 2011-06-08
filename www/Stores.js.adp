@@ -308,7 +308,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 var companyStore = Ext.create('Ext.ux.CompanyStore', {
             model: 'TicketBrowser.Company',
             remoteSort: true,
-	    pageSize: 10,			// Enable pagination
+	    pageSize: 1000000,
 	    autoSync: true,			// Write changes to the REST server ASAP
 	    autoLoad: true,
             sorters: [{

@@ -35,8 +35,12 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	xtype: 'ticketInfo',
 	title: 'View Ticket'
     }, {
+	itemId: 'ticketCustomer',
+	title: '#intranet-core.Customer#',
+	xtype: 'ticketCustomer'
+    }, {
 	itemId: 'ticketContact',
-	title: 'Contact',
+	title: '#intranet-core.Contact#',
 	xtype: 'ticketContact'
     }, {
 	itemId: 'ticketFilestorage',
@@ -49,6 +53,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     loadTicket: function(rec){
         this.child('#ticket').loadTicket(rec);
         this.child('#ticketContact').loadTicket(rec);
+        this.child('#ticketCustomer').loadTicket(rec);
         this.child('#ticketFilestorage').loadTicket(rec);
     }
 
