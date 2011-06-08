@@ -601,26 +601,54 @@ ad_proc -private im_rest_post_object_type_user {
     set current_user_id $user_id
     unset user_id
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object_type_user: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+	}
+	default {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object_type_user: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
     }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
-    }
-    if {![info exists screen_name]} { set screen_name $username }
+
+    ns_log Notice "im_rest_post_object_type_user: hash_array=[array get hash_array]"
+
 
     # Check that all required variables are there
-    set required_vars {username email first_names last_name password url}
+    set required_vars {first_names last_name}
     foreach var $required_vars {
 	if {![info exists $var]} { 
 	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
+
+    // Fake the following required variables
+    if {![info exists username]} { set username "$first_names $last_name"}
+    if {![info exists screen_name]} { set screen_name $username }
+    if {![info exists email]} { 
+	set email "${first_names}.${last_name}@nowhere.com"
+	set email [string tolower $email]
+	regsub -all {[^a-zA-Z0-9_\-]} $email "." email
+    }
+    if {![info exists password]} { set password [ad_generate_random_string] }
+    if {![info exists url]} { set url "" }
+
 
     # Check for duplicate
     set dup_sql "
