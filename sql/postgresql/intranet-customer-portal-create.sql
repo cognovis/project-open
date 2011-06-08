@@ -15,6 +15,21 @@
 -- @author klaus.hofeditz@project-open.com
 
 
+-- Create table for inquiries 
+create sequence im_inquiries_customer_portal_seq start 1;
+create table im_inquiries_customer_portal (
+        inquiry_id              integer,
+                                primary key
+        first_names             varchar(50),
+                                not null
+        last_names              varchar(50),
+                                not null
+        email	                varchar(50),
+                                not null
+        company_name            varchar(50)
+)
+
+# Create DynView for project list  
 
 delete from im_view_columns where view_id = 960; 
 delete from im_views where view_id = 960; 
@@ -38,4 +53,9 @@ begin
 end;' LANGUAGE 'plpgsql';
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
+
+
+
+
+
 
