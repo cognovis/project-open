@@ -30,6 +30,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     tabBar: {
 	border: true
     },
+    deferredRender: false,
     items: [{
 	itemId: 'ticket',
 	xtype: 'ticketInfo',
