@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.6 2011/06/08 16:16:11 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.7 2011/06/08 17:25:04 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,6 +30,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     tabBar: {
 	border: true
     },
+    deferredRender: false,
     items: [{
 	itemId: 'ticket',
 	xtype: 'ticketInfo',
