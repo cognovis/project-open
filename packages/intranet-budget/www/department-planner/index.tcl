@@ -22,6 +22,7 @@ ad_page_contract {
     { view_name "" }
     { view_type "" }
     { project_id "" }
+    { project_status_id ""}
     { ajax_p "0" }
 }
 
@@ -128,6 +129,8 @@ ad_form -name department_planner_filter -form {
     {view_name:text(hidden) {value $view_name}}
     {ajax_p:text(hidden) {value $ajax_p}}
     {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options {{Tabelle ""} {Excel xls} {OpenOffice ods} {PDF pdf}} }}
+    {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {custom {category_type "Intranet Project Status" translate_p 1}} }
+
 } -on_request {   
     set filter_year $todays_year
     set include_remaining_p 0

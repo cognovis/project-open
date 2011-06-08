@@ -52,6 +52,7 @@
 		child.project_id = task.task_id and
 		main.parent_id is null and
 		child.tree_sortkey between main.tree_sortkey and tree_right(main.tree_sortkey)
+        $criteria
 	order by
 		child.tree_sortkey
     </querytext>
@@ -105,6 +106,7 @@
                 (main.start_date between to_date(:report_start_date,'YYYY-MM-DD') and to_date(:report_end_date,'YYYY-MM-DD') or
                  main.end_date between to_date(:report_start_date,'YYYY-MM-DD') and to_date(:report_end_date,'YYYY-MM-DD')) and
                 project_status_id in ([template::util::tcl_to_sql_list [im_sub_categories [list 76 71]]])
+                $criteria
 	order by
 		prio_sort desc,
 		lower(main.project_name)

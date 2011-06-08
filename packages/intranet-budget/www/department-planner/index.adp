@@ -36,7 +36,7 @@
 </table>
 
 <if @ajax_p@ eq 1>
-	<include src="../../lib/department-planner-ajax" filter_year="@filter_year@" include_remaining_p="@include_remaining_p@" view_name="@view_name;noquote@">
+	<include src="../../lib/department-planner-ajax" filter_year="@filter_year@" include_remaining_p="@include_remaining_p@" view_name="@view_name;noquote@" project_status_id="@project_status_id@">
 </if><else>
 	<include src="../../lib/department-planner" filter_year="@filter_year@" include_remaining_p="@include_remaining_p@" view_name="@view_name;noquote@">
 </else>

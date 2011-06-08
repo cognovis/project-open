@@ -44,6 +44,7 @@ ad_proc -public im_department_planner_get_list_multirow {
     { -start_date "" }
     { -end_date "" }
     { -view_name "" }
+    { -project_status_id ""}
 } {
     Returns:
     - A multirow with the available days per cost center
@@ -54,6 +55,12 @@ ad_proc -public im_department_planner_get_list_multirow {
     - A ListBuilder list configured to show the calculated
       report multirow.
 } {
+
+    if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
+        set criteria "and main.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
+    } else {
+        set criteria ""
+    }
 
     # ---------------------------------------------------------------
     # Constants

@@ -65,6 +65,7 @@ set error_html [im_department_planner_get_list_multirow \
 		    -start_date $start_date \
 		    -end_date $end_date \
 		    -view_name $view_name \
+            -project_status_id $project_status_id
 		   ]
 
 
