@@ -67,7 +67,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField: 'name',
 		forceSelection: true,
 		queryMode: 'remote',
-		store: customerContactStore
+		store: userStore
 	}, {
 	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',

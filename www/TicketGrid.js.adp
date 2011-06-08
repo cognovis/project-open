@@ -60,7 +60,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			minWidth: 100,
 			width: 200,
 			renderer: function(value, o, record) {
-				var	user_name = employeeStore.name_from_id(record.get('creation_user'));
+				var	user_name = userStore.name_from_id(record.get('creation_user'));
 				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
 			}
 		}, {
@@ -128,7 +128,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'creation_user',
 			width: 100,
 			renderer: function(value, o, record) {
-				return employeeStore.name_from_id(record.get('creation_user'));
+				return userStore.name_from_id(record.get('creation_user'));
 			}
 		}, {
 			header: 'Replies',
@@ -139,13 +139,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Assignee',
 			dataIndex: 'ticket_assignee_id',
 			renderer: function(value, o, record) {
-				return employeeStore.name_from_id(record.get('ticket_assignee_id'));
+				return userStore.name_from_id(record.get('ticket_assignee_id'));
 			}
 		}, {
 			header: 'Contact',
 			dataIndex: 'ticket_customer_contact_id',
 			renderer: function(value, o, record) {
-				return employeeStore.name_from_id(record.get('ticket_customer_contact_id'));
+				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 			}
 		}, {
 			header: 'Queue',

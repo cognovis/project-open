@@ -27,7 +27,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
     extend: 'Ext.grid.Panel',    
     alias: 'widget.contactgrid',
     minHeight: 200,
-    store: customerContactStore,
+    store: userStore,
 
     columns: [
         {
@@ -55,7 +55,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         }] 
     }, {
         xtype: 'pagingtoolbar',
-        store: customerContactStore,
+        store: userStore,
         dock: 'bottom',
         displayInfo: true
     }],

@@ -191,42 +191,15 @@ var ticketPriorityData = [
 {"id": "30209", "object_name": "9", "category_id": "30209", "tree_sortkey": "00030209", "category": "9", "category_translated": "9", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"}
 ];
 
-var customerContactStore = Ext.create('Ext.ux.UserStore', {
-			storeId: 'customerContactStore',
-		        autoLoad: true,
-		        fields: ['user_id', 'first_names', 'last_name',
-				{ name: 'name',
-				  convert: function(value, record) {
-					return record.get('first_names') + ' ' + record.get('last_name');
-				  }
-				}
-			],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/user',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					format_variant: 'sencha'
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
-
-
-var employeeStore = Ext.create('Ext.ux.UserStore', {
-			storeId: 'employeeStore',
-		        autoLoad: true,
+var userStore = Ext.create('Ext.ux.UserStore', {
+			storeId:	'employeeStore',
+			model:		'TicketBrowser.User',
+			remoteSort:	true,
+		        autoLoad: 	true,
+			autoSync: 	true,			// Write changes to the REST server ASAP
 			// Load all users into this table, this is rarely more than 2000...
 			// ToDo: Replace this with a server-side search function plus cache(?)
-			pageSize: 1000000,
-		        fields: ['user_id', 'first_names', 'last_name',
-				{ name: 'name',
-				  convert: function(value, record) {
-					return record.get('first_names') + ' ' + record.get('last_name');
-				  }
-				}
-			],
+			pageSize: 	1000000,
 		        proxy: {
 		                type: 'rest',
 		                url: '/intranet-rest/user',
@@ -235,9 +208,17 @@ var employeeStore = Ext.create('Ext.ux.UserStore', {
 		                        format: 'json',
 					format_variant: 'sencha'
 		                },
-		                reader: { type: 'json', root: 'data' }
+		                reader: { 
+					type: 'json', 
+					root: 'data',
+					totalProperty: 'total'
+				},
+		                writer: {
+		                    type: 'json'
+		                }
 		        }
 		});
+
 
 var programStore = Ext.create('Ext.data.Store', {
 			storeId: 'programStore',

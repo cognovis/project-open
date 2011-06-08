@@ -49,7 +49,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		  header: '#intranet-core.Primary_contact#',
 		  dataIndex: 'primary_contact_id',
 		  renderer: function(value, o, record) {
-		      return employeeStore.name_from_id(record.get('primary_contact_id'));
+		      return userStore.name_from_id(record.get('primary_contact_id'));
 		  }
 	      }
     ],

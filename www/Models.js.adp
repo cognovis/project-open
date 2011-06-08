@@ -148,6 +148,23 @@ Ext.define('TicketBrowser.Company', {
 });
 
 
+Ext.define('TicketBrowser.User', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'user_id',		// The primary key or object_id of the company
+    fields: [
+	'user_id',			// Primary key
+	'first_names',
+	'last_name',
+	{ name: 'name',			// Calculated compound name
+	  convert: function(value, record) {
+		return record.get('first_names') + ' ' + record.get('last_name');
+	  }
+	}
+    ]
+});
+
+
 Ext.define('TicketBrowser.FileStorage', {
     extend: 'Ext.data.Model',
 
