@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.7 2011/06/08 17:25:04 mcordova Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.8 2011/06/09 12:10:03 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,16 +24,15 @@
 
 
 Ext.define('TicketBrowser.TicketTabPanel', {
-    extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketTabPanel',
-    activeTab: 0,
-    tabBar: {
-	border: true
-    },
+    extend:	'Ext.tab.Panel',
+    alias:	'widget.ticketTabPanel',
+    id:		'ticketTabPanel',
+    activeTab: 	0,
+    tabBar:	{ border: true },
     deferredRender: false,
     items: [{
 	itemId: 'ticket',
-	xtype: 'ticketInfo',
+	xtype: 'ticketForm',
 	title: 'View Ticket'
     }, {
 	itemId: 'ticketCustomer',
@@ -42,15 +41,14 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     }, {
 	itemId: 'ticketContact',
 	title: '#intranet-core.Contact#',
-	xtype: 'ticketContact'
+	xtype: 'ticketContactPanel'
     }, {
 	itemId: 'ticketFilestorage',
 	title: '#intranet-filestorage.Filestorage#',
 	xtype: 'fileStorageGrid'
     }],
 
-    // Called from the TicketGrid if the user has selected
-    // a ticket
+    // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#ticket').loadTicket(rec);
         this.child('#ticketContact').loadTicket(rec);

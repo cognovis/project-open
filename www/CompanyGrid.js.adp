@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.4 2011/06/08 17:54:22 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.5 2011/06/09 12:10:01 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,10 +24,11 @@
 
 
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
-    extend: 'Ext.grid.Panel',    
-    alias: 'widget.companygrid',
-    minHeight: 200,
-    store: companyStore,
+    extend:	'Ext.grid.Panel',    
+    alias:	'widget.companyGrid',
+    id:		'companyGrid',
+    minHeight:	200,
+    store:	companyStore,
 
     columns: [
 	      {

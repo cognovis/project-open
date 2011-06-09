@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.8 2011/06/09 10:03:43 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.9 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,11 +24,12 @@
 
 
 Ext.define('TicketBrowser.TicketContactPanel', {
-	extend: 'Ext.form.Panel',
-        alias: 'widget.ticketContact',
-	title: 'Ticket Contact',
-	frame:true,
-	height: 400,
+	extend:		'Ext.form.Panel',
+        alias:		'widget.ticketContactPanel',
+        id:		'ticketContactPanel',
+	title:		'Ticket Contact',
+	frame:		true,
+	height:		400,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 125

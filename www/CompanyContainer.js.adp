@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyContainer.js.adp,v 1.1 2011/06/03 08:37:58 po34demo Exp $
+ * @cvs-id $Id: CompanyContainer.js.adp,v 1.2 2011/06/09 12:10:01 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,14 +25,14 @@
 
 Ext.define('TicketBrowser.CompanyContainer', {
     extend: 'Ext.container.Container',
-    alias: 'widget.companycontainer',
+    alias: 'widget.companyContainer',
     title: 'Loading...',
 
     layout: 'border',
 
     items: [{
 	itemId: 'grid',
-	xtype: 'companygrid',
+	xtype: 'companyGrid',
 	region: 'center'
     }]
 });

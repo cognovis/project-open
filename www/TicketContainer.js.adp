@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.7 2011/06/09 10:57:09 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.8 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,25 +23,27 @@
  */
 
 
-Ext.define('TicketBrowser.TicketContainer', {
-	extend:		'Ext.container.Container',
-	alias:		'widget.ticketcontainer',
-	title:		'Loading...',
-	layout:		'border',
+var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
+	extend:	'Ext.container.Container',
+	alias:	'widget.ticketContainer',
+	id:	'ticketContainer',
+	title:	'Loading...',
+	layout:	'border',
 
 	items:	[{
-		itemID:		'ticketFilter',
-		xtype:		'ticketFilterForm',
-		region:		'west',
-		width:		300,
-		title:		'#intranet-helpdesk.Filter_Tickets#',
-		split:		true,
-		margins:	'5 0 5 5'
+		itemID:	'ticketFilter',
+		xtype:	'ticketFilterForm',
+		region:	'west',
+		width:	300,
+		title:	'#intranet-helpdesk.Filter_Tickets#',
+		split:	true,
+		margins: '5 0 5 5'
 	}, {
 		itemId:	'main2',
 		title:	'#intranet-helpdesk.Tickets#',
 		region:	'center',
 		layout:	'border',
+		split:	true,
 		items:	[{
 			itemId:	'ticketGrid',
 			xtype:	'ticketGrid',
@@ -71,13 +73,6 @@ Ext.define('TicketBrowser.TicketContainer', {
 	filterTickets: function(filterValues) {
 		this.tab.setText('Filtered Tickets');
 		this.child('#ticketGrid').filterTickets(filterValues);
-	},
-	
-	onSelect: function(rec) {
-		this.child('#preview').update({
-			title:	rec.get('project_name')
-		});
-		this.child('#preview').loadTicket(rec);
 	},
 	
 	togglePreview: function(show){

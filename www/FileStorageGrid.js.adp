@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.9 2011/06/07 15:51:42 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.10 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -130,46 +130,38 @@ var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 });
 
 
+// Local store definition.
+// We have to redefine the store every time we show
+// files for a different ticket
 var fileStorageStore = Ext.create('Ext.data.Store', {
-	    model: 'TicketBrowser.FileStorage',
-	    storeId: 'fileStorageStore',
-	    autoLoad: false,
-	    remoteSort: true,
-	    pageSize: 10,			// Enable pagination
-	    sorters: [{
-		property: 'name',
-		direction: 'DESC'
-	    }],
-	    proxy: {
-		type: 'rest',
-		url: '/intranet-rest/file_storage_object',
-		appendId: true,
-		extraParams: { format: 'json', parent_id: 0 },
-		reader: { type: 'json', root: 'data' }
-	    }
+    model: 'TicketBrowser.FileStorage',
+    storeId: 'fileStorageStore',
+    autoLoad: false,
+    remoteSort: true,
+    pageSize: 10,			// Enable pagination
+    sorters: [{
+	property: 'name',
+	direction: 'DESC'
+    }],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/file_storage_object',
+	appendId: true,
+	extraParams: { format: 'json', parent_id: 0 },
+	reader: { type: 'json', root: 'data' }
+    }
 });
 
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
-    extend: 'Ext.grid.Panel',
-    alias: 'widget.fileStorageGrid',
-    store: fileStorageStore,
+    extend:	'Ext.grid.Panel',
+    alias:	'widget.fileStorageGrid',
+    id:		'fileStorageGrid',
+    store: 	fileStorageStore,
 
-    minWidth: 300,
-    minHeight: 100,
-    frame: true,
-    iconCls: 'icon-grid',
-
-    /* Allow to show detailed information about files?
-    plugins: [{
-	ptype: 'rowexpander',
-	rowBodyTpl : [
-		      '<p><b>Company:</b> {company}</p><br>',
-		      '<p><b>Summary:</b> {desc}</p>'
-		     ]
-    }],
-    collapsible: true,
-    animCollapse: true,
-    */
+    minWidth:	300,
+    minHeight:	100,
+    frame:	true,
+    iconCls:	'icon-grid',
 
     columns: [
 	      {

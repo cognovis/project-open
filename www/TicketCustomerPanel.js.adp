@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.1 2011/06/08 16:16:33 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.2 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,10 +24,11 @@
 
 
 Ext.define('TicketBrowser.TicketCustomerPanel', {
-	extend: 'Ext.form.Panel',
-        alias: 'widget.ticketCustomer',
-	title: 'Ticket Customer',
-	frame:true,
+	extend:	'Ext.form.Panel',
+        alias:	'widget.ticketCustomer',
+        id:	'ticketCustomerPanel',
+	title:	'Ticket Customer',
+	frame:	true,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 125

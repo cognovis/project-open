@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.6 2011/06/09 10:03:43 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.7 2011/06/09 12:10:03 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,11 +24,12 @@
 
 
 var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
-    extend: 'Ext.grid.Panel',    
-    alias: 'widget.ticketGrid',
-    minHeight: 200,
-    store: ticketStore,    
-    iconCls: 'icon-grid',
+    extend:	'Ext.grid.Panel',    
+    alias:	'widget.ticketGrid',
+    id:		'ticketGrid',
+    minHeight:	200,
+    store:	ticketStore,    
+    iconCls:	'icon-grid',
 
     listeners: {
 	itemdblclick: function() {
@@ -239,7 +240,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
 
     onSelect: function(selModel, rec){
-	this.ownerCt.onSelect(rec);
+	var tabPanel = Ext.getCmp('ticketTabPanel');
+	tabPanel.loadTicket(rec);
     },
     
     loadSla: function(id){

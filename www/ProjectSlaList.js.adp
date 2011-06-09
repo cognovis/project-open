@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ProjectSlaList.js.adp,v 1.1 2011/06/03 08:37:59 po34demo Exp $
+ * @cvs-id $Id: ProjectSlaList.js.adp,v 1.2 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,15 +22,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 var slaList = Ext.define('TicketBrowser.SlaList', {
-
-    extend: 'Ext.tree.Panel',   
-    alias: 'widget.slalist',
-    title: 'Service Level Agreements',
-
+    extend:	'Ext.tree.Panel',   
+    alias:	'widget.slaList',
+    id:		'slaList',
+    title:	'Service Level Agreements',
     rootVisible: false,
-    lines: false,
+    lines:	false,
     defaultSla: 53349,
-    minWidth: 200,
+    minWidth:	200,
     displayField: 'project_name',
     
     initComponent: function(){

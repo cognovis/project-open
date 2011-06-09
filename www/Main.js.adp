@@ -6,7 +6,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js.adp,v 1.6 2011/06/09 10:57:09 po34demo Exp $
+ * @cvs-id $Id: Main.js.adp,v 1.7 2011/06/09 12:10:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,11 +26,12 @@
 
 Ext.define('TicketBrowser.Main', {
 	extend: 'Ext.container.Viewport',
+	layout: 'border',
+	id:	'main',
+	itemId: 'main',
 
 	// We need an "outer" container here, because we can't have
 	// a viewport with tabs apparently.
-	layout: 'border',
-	itemId: 'main',
 	items: [{
 		// Outermost Tab container
 		// Here we can add tabs for the various object types.
@@ -42,15 +43,15 @@ Ext.define('TicketBrowser.Main', {
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-helpdesk.Tickets#',
-			xtype: 'ticketcontainer'
+			xtype: 'ticketContainer'
 		}, {
 			itemId: 'company',
 			title: 	'#intranet-core.Companies#',
-			xtype: 'companycontainer'
+			xtype: 'companyContainer'
 		}, {
 			itemId: 'contact',
 			title: '#intranet-core.Contact#',
-			xtype: 'contactcontainer'
+			xtype: 'contactContainer'
 		}]
 	}]
 });
