@@ -37,11 +37,23 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
             flex: 1,
             minWidth: 150
         }, {
-            header: 'nombre',
+            header: '#intranet-core.First_names#',
             dataIndex: 'first_names'
         }, {
-            header: 'apellidos',
+            header: '#intranet-core.Last_name#',
             dataIndex: 'last_name'
+        }, {
+            header: '#intranet-core.Contact_Mail#',
+            dataIndex: 'email'
+        }, {
+            header: '#intranet-core.Telephone#',
+            dataIndex: 'contact_telephone'
+        }, {
+            header: '#intranet-core.Language#',
+            dataIndex: 'language_preference'
+        }, {
+            header: '#acs-subsite.Information_Updated#',
+            dataIndex: 'last_modified'
         }
     ],
     dockedItems: [{
