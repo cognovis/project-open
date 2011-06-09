@@ -181,7 +181,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                displayField: 'category',
 			forceSelection: true,
 			queryMode: 'remote',
-			store: ticketStatusStore
+			store: ticketStatusStore,
+			width: 500
 	    }, {
 			fieldLabel: '#intranet-sencha-ticket-tracker.Escalated#',
 			name: 'ticket_queue_id',
@@ -190,7 +191,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                displayField: 'group_name',
 			forceSelection: true,
 			queryMode: 'remote',
-			store: ticketQueueStore
+			store: ticketQueueStore,
+			width: 500
 	    }]
 	},
 
