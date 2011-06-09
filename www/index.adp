@@ -1,4 +1,4 @@
-<master src="../../intranet-customer-portal/www/wizard/master">
+<master src="../../intranet-customer-portal/www/master">
 <property name="title">@page_title;noquote@</property>
 
 

@@ -17,10 +17,7 @@ ad_page_contract {
     @param 
     @author Klaus Hofeditz (klaus.hofeditz@project-open.com)
 } {
-    {authority_id ""}
-    {username ""}
-    {email ""}
-    {return_url ""}
+
 }
 
 # ---------------------------------------------------------------
@@ -35,20 +32,23 @@ set show_left_navbar_p 0
 template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
 template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "1"
 
-
 # ---------------------------------------------------------------
 # Set OpenACS login form
 # ---------------------------------------------------------------
 
-set subsite_id [ad_conn subsite_id]
-set login_template [parameter::get -parameter "LoginTemplate" -package_id $subsite_id]
+# set subsite_id [ad_conn subsite_id]
+#  set login_template [parameter::get -parameter "LoginTemplate" -package_id $subsite_id]
+
+set authority_id "" 
+set username "" 
+set email ""
+
 set login_template "/packages/acs-subsite/lib/login"
+set return_url "/intranet-customer-portal/upload-files"
 
 # ---------------------------------------------------------------
 # Add customer registration
 # ---------------------------------------------------------------
 
 template::head::add_javascript -src "/intranet-customer-portal/resources/js/customer-registration-form.js" -order "2"
-
-
 
