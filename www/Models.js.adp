@@ -161,7 +161,24 @@ Ext.define('TicketBrowser.User', {
 		return record.get('first_names') + ' ' + record.get('last_name');
 	  }
 	}
-    ]
+    ],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/user',
+	appendId: true,
+	extraParams: {
+	    format: 'json',
+	    format_variant: 'sencha'
+	},
+	reader: { 
+	    type: 'json', 
+	    root: 'data',
+	    totalProperty: 'total'
+	},
+	writer: {
+	    type: 'json'
+	}
+    }
 });
 
 
