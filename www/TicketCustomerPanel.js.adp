@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.2 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.3 2011/06/09 17:04:29 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -54,7 +54,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         }, {
                 name:           'company_name',
         	xtype:          'textfield',
-                fieldLabel:     '#intranet-core.Customer_Name#',
+                fieldLabel:     '#intranet-core.Customer#',
                 allowBlank:     false
         }, {
                 name:           'vat_number',
@@ -74,7 +74,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 name:           'ticket_province'
         }],
         buttons: [{
-        	text: 'New Company',
+        	text: '#intranet-core.Add_a_new_Company#',
         	handler: function(){
                         alert ('Not implemented Yet')
                 }

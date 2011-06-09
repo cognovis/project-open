@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.5 2011/06/09 12:10:03 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.6 2011/06/09 17:04:29 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -29,7 +29,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	minHeight:	200,
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-helpdesk.Ticket#',
+	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	width: 		350,
 	fieldDefaults: {
@@ -60,7 +60,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'format',			xtype: 'hiddenfield', value: 'json' },
 
 	// Main ticket fields
-	{ name: 'project_name', fieldLabel: 'Name' },
+	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
 	{ name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
 	{ name: 'ticket_customer_contact_id',	xtype: 'combobox',
 		fieldLabel: 'Customer Contact',
@@ -87,7 +87,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	name:		'ticket_area',
 	        xtype:		'textfield'
 	}, {
-		fieldLabel: 'Status',
+		fieldLabel: '#intranet-core.Status#',
 		name: 'ticket_status_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -96,7 +96,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 'remote',
 		store: ticketStatusStore
 	}, {
-		fieldLabel: 'Prio',
+		fieldLabel: '#intranet-helpdesk.Prio#',
 		name: 'ticket_prio_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -106,7 +106,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		store: ticketPriorityStore
 	}, {
 		xtype: 'timefield',
-		fieldLabel: 'Time',
+		fieldLabel: '#intranet-core.Creation_Date#',
 		name: 'time',
 		minValue: '8:00am',
 		maxValue: '6:00pm'
@@ -150,7 +150,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	],
 
 	buttons: [{
-            text: 'Submit',
+            text: '#acs-kernel.common_Save#',
             disabled: false,
             formBind: true,
 	    handler: function(){

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.10 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.11 2011/06/09 17:04:28 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -68,7 +68,7 @@ function showFileStorageNewForm(ticket_id) {
 	    }],
 
 	    buttons: [{
-		text: 'Save',
+		text: '#acs-kernel.common_Save#',
 		handler: function(){
 		    var form = this.up('form').getForm();
 		    var form_fields = form.getFieldValues();
@@ -165,7 +165,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
     columns: [
 	      {
-		  header: 'File',
+		  header: '#intranet-filestorage.Filename#',
 		  dataIndex: 'name',
 		  flex: 1,
 		  minWidth: 100,
@@ -176,10 +176,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		      return html;
 		  }
 	      },
-	      {text: "Description", sortable: true, dataIndex: 'description'},
-	      {text: "Creation Date", sortable: true, dataIndex: 'creation_date'},
-	      {text: "Size", sortable: true, dataIndex: 'content_length'},
-	      {text: "MIME Type", sortable: true, dataIndex: 'mime_type', hidden: true}
+	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
+	      {text: "#intranet-helpdesk.Fecha_de_creación#", sortable: true, dataIndex: 'creation_date'},
+	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
+	      {text: "#intranet-core.Document_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
     columnLines: true,
     selModel: fileStorageGridSelModel,
@@ -194,15 +194,15 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
         },
         items: [{
             minWidth: 80,
-            text: 'Save'
+            text: '#acs-kernel.common_Save#'
         },{
             minWidth: 80,
-            text: 'Cancel'
+            text: '#acs-kernel.common_Cancel#'
         }]
     }, {
         xtype: 'toolbar',
         items: [{
-            text:'Add a file',
+            text:'#file-storage.Upload_New_File#',
             tooltip:'Add a new row',
             iconCls:'add',
 	    handler: function() {
@@ -210,13 +210,13 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		showFileStorageNewForm(tid);
 	    }
         }, '-', {
-            text:'Options',
+            text:'#acs-subsite.Options#',
             tooltip:'Set options',
             iconCls:'option'
         },'-',{
             itemId: 'removeButton',
-            text:'Remove Something',
-            tooltip:'Remove the selected item',
+            text:'#general-comments.Delete_attachment#',
+            tooltip:'#intranet-helpdesk.Remove_checked_items#',
             iconCls:'remove',
             disabled: false,
 	    handler: function () {
