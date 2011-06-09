@@ -33,7 +33,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
     listeners: {
 	itemdblclick: function() {
-	    alert('double click');
+		var mainTabPanel = Ext.getCmp('mainTabPanel');
+		var tab = mainTabPanel.add({
+        	    title:	'Tab ' + (mainTabPanel.items.length + 1),
+		    xtype:	'ticketCompoundPanel'
+        	});
 	}
     },
 

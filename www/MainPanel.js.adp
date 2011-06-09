@@ -27,20 +27,25 @@
 Ext.define('TicketBrowser.Main', {
 	extend: 'Ext.container.Viewport',
 	layout: 'border',
-	id:	'main',
-	itemId: 'main',
+	id:	'mainPanel',
+	itemId: 'mainPanel',
 
 	// We need an "outer" container here, because we can't have
 	// a viewport with tabs apparently.
 	items: [{
 		// Outermost Tab container
 		// Here we can add tabs for the various object types.
+		id:		'mainTabPanel',
 		region:		'center',
 		xtype:		'tabpanel',
 		margins:	'5 0 5 5',
 		border:		false,
 		tabBar:		{ border: true },
 		items: [{
+			itemId: 'sample',
+			title: 'Sample',
+			xtype: 'ticketCompoundPanel'
+		}, {
 			itemId: 'ticket',
 			title: '#intranet-helpdesk.Tickets#',
 			xtype: 'ticketContainer'
@@ -55,4 +60,5 @@ Ext.define('TicketBrowser.Main', {
 		}]
 	}]
 });
+
 
