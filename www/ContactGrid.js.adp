@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.4 2011/06/09 18:03:16 mcordova Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.5 2011/06/09 18:23:01 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -37,11 +37,23 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
             flex: 1,
             minWidth: 150
         }, {
-            header: 'nombre',
+            header: '#intranet-core.First_names#',
             dataIndex: 'first_names'
         }, {
-            header: 'apellidos',
+            header: '#intranet-core.Last_name#',
             dataIndex: 'last_name'
+        }, {
+            header: '#intranet-core.Contact_Mail#',
+            dataIndex: 'email'
+        }, {
+            header: '#intranet-core.Telephone#',
+            dataIndex: 'contact_telephone'
+        }, {
+            header: '#intranet-core.Language#',
+            dataIndex: 'language_preference'
+        }, {
+            header: '#acs-subsite.Information_Updated#',
+            dataIndex: 'last_modified'
         }
     ],
     dockedItems: [{
