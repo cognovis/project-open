@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.9 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.10 2011/06/09 17:04:01 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -300,7 +300,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 
 
 // fake store while developing
-var ticketServiceTypeStore = ticketPriorityStore;
+var ticketServiceTypeStore = ticketSlaStore;
 var ticketChannelStore = ticketPriorityStore;
 
 
