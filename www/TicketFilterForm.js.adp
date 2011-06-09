@@ -34,10 +34,10 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	standardsubmit:	true,
 	items: [
 	{	name: 'vat_number', 
-		fieldLabel: 'VAT ID' 
+		fieldLabel: '#intranet-core.VAT_Number#' 
 	}, {	
 		name: 'company_name', 
-		fieldLabel: 'Company Name'
+		fieldLabel: '#intranet-helpdesk.Company_name#'
 	}, {
 		fieldLabel: 'Company Type',
 		name: 'company_type_id',
@@ -85,7 +85,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: requestAreaStore
 	}, {
-		fieldLabel: 'Service Type',
+		fieldLabel: '#intranet-helpdesk.SLA#',
 		name: 'ticket_service_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -94,7 +94,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketServiceTypeStore
 	}, {
-		fieldLabel: 'Ticket Type',
+		fieldLabel: '#intranet-helpdesk.Type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -103,10 +103,10 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketTypeStore
 	}, {
-		fieldLabel: 'Ticket Nr',
+		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
 		name: 'project_nr'
 	}, {
-		fieldLabel: 'Ticket Status',
+		fieldLabel: '#intranet-helpdesk.Status#',
 		name: 'ticket_status_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -115,7 +115,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketStatusStore
 	}, {
-		fieldLabel: 'Channel',
+		fieldLabel: '#intranet-core.Ticket_origin#',
 		name: 'ticket_channel_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -139,13 +139,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	],
 
 	buttons: [{
-            text: 'Clear Form',
+            text: '#acs-kernel.common_Reset#',
 	    handler: function(){
 		var form = this.up('form').getForm();
 		form.reset();
 	    }
 	}, {
-            text: 'Submit',
+            text: '#acs-kernel.common_Search#',
 	    handler: function() {
 		var form = this.up('form').getForm();
 		var filterValues = form.getFieldValues();

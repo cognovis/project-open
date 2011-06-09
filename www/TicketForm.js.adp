@@ -99,7 +99,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	queryMode:      'remote',
         	store:          'requestAreaStore'
 	}, {
-	        fieldLabel:	'Tipo de Servicio',
+	        fieldLabel:	'#intranet-helpdesk.SLA#',
 	        name:		'ticket_service_id',
 	        xtype:		'combobox',
 	        valueField:	'category_id',

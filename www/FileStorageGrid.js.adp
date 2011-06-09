@@ -177,7 +177,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		  }
 	      },
 	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
-	      {text: "#intranet-helpdesk.Fecha_de_creación#", sortable: true, dataIndex: 'creation_date'},
+	      {text: "#intranet-helpdesk.Ticket_creation_date#", sortable: true, dataIndex: 'creation_date'},
 	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
 	      {text: "#intranet-core.Document_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
@@ -203,7 +203,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
         xtype: 'toolbar',
         items: [{
             text:'#file-storage.Upload_New_File#',
-            tooltip:'Add a new row',
+            tooltip:'#attachments.lt_Upload_New_Attachment#',
             iconCls:'add',
 	    handler: function() {
 		var tid = fileStorageStore.proxy.extraParams['ticket_id'];
