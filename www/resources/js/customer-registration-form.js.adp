@@ -3,8 +3,8 @@ Ext.onReady(function(){
 	var simple = new Ext.form.FormPanel({
 		id: 'frmRegister',
        		standardSubmit: true,
-	        frame:true,
-       		// title: 'Customer Registration',
+		url: '/intranet-customer-portal/customer-registration-form-action.tcl',
+		method: 'POST',
 	        width: 350,
       		defaults: {width: 230},
 	        defaultType: 'textfield',
@@ -14,9 +14,7 @@ Ext.onReady(function(){
        		buttons: [{
 	       		text: 'Submit',
 		        handler: function() {
-				simple.getForm().getEl().dom.action = 'customer-registration-form-action.tcl';
-			        simple.getForm().getEl().dom.method = 'POST';
-        	       		simple.getForm().submit();
+				Ext.getCmp('frmRegister').getForm().submit();
        			}
 		}]
 	});
@@ -48,7 +46,7 @@ Ext.onReady(function(){
 		if (field.password_confirm) {
 			// var pwd = Ext.getCmp(field.initialPassField);
 			var pwd =  Ext.getCmp("frmRegister").getForm().findField("password").getValue();
-			return (val == pwd;
+			return (val == pwd);
 		}
 		return true;
   	},
