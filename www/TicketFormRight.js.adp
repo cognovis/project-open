@@ -162,8 +162,37 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		        queryMode: 	'remote',
 		        store: 		ticketServiceTypeStore
 	    }]
-	},
 
+	}, {
+
+	    xtype:	'fieldset',
+            title:	'',
+            checkboxToggle: false,
+            collapsed:	false,
+	    frame:	false,
+	    width:	1000,
+
+            layout: 	{ type: 'table', columns: 2 },
+            items :[{
+			fieldLabel: '#intranet-core.Status#',
+			name: 'ticket_status_id',
+			xtype: 'combobox',
+	                valueField: 'category_id',
+	                displayField: 'category',
+			forceSelection: true,
+			queryMode: 'remote',
+			store: ticketStatusStore
+	    }, {
+			fieldLabel: '#intranet-sencha-ticket-tracker.Escalated#',
+			name: 'ticket_queue_id',
+			xtype: 'combobox',
+	                valueField: 'group_id',
+	                displayField: 'group_name',
+			forceSelection: true,
+			queryMode: 'remote',
+			store: ticketQueueStore
+	    }]
+	},
 
 	// SPRI specific fields
 	{ name: 'ticket_file',		xtype: 'hiddenfield' },

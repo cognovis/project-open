@@ -34,6 +34,18 @@ Ext.define('TicketBrowser.Sla', {
 
 
 
+Ext.define('TicketBrowser.Profile', {
+    extend: 'Ext.data.Model',
+    idProperty: 'group_id',		// The primary key. A Queue is a subtype of "group".
+    fields: [
+	'group_id',			// The primary key
+	'group_name',			// The name of the queue
+    ]
+});
+
+
+
+
 // A "category" is a kind of constant frequently used for states and types
 Ext.define('TicketBrowser.Category', {
     extend: 'Ext.data.Model',

@@ -78,15 +78,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	name:		'ticket_area',
 	        xtype:		'textfield'
 	}, {
-		fieldLabel: '#intranet-core.Status#',
-		name: 'ticket_status_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketStatusStore
-	}, {
         	fieldLabel:     '#intranet-core.Program#',
         	name:           'ticket_program_id',
         	xtype:          'combobox',

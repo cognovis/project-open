@@ -70,6 +70,24 @@ Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
 });
 
 
+var ticketQueueStore = Ext.create('Ext.data.Store', {
+	storeId: 'ticketQueueStore',
+	autoLoad: true,
+	model: 'TicketBrowser.Profile',		// Causes the Drop-Down not to load
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_profile',
+		appendId: true,
+		extraParams: {
+			format: 'json'
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
+
+
+
+
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId: 'ticketTypeStore',
 	autoLoad: true,
