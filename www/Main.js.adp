@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js.adp,v 1.4 2011/06/09 10:07:03 po34demo Exp $
+ * @cvs-id $Id: Main.js.adp,v 1.5 2011/06/09 10:40:52 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,47 +23,59 @@
  */
 
 Ext.define('TicketBrowser.Main', {
-    extend: 'Ext.container.Viewport',
-    
-    layout: 'border',
-    itemId: 'main',
-    items: [{
-	xtype: 'ticketfilteraccordion',
-	region: 'west',
-	width: 300,
-	title: '#intranet-helpdesk.Filter_Tickets#',
-	split: true,
-	margins: '5 0 5 5'
-    }, {
-	region: 'center',
-	xtype: 'tabpanel',
-	margins: '5 5 5 0',
-	minWidth: 400,
-	border: false,
-	tabBar: {
-	    border: true
-	},
+	extend: 'Ext.container.Viewport',
+
+	layout: 'border',
+	itemId: 'main',
 	items: [{
-	    itemId: 'ticket',
-	    title: '#intranet-helpdesk.Tickets#',
-	    xtype: 'ticketcontainer'
-	}, {
-	    itemId: 'company',
-	    title: '#intranet-core.Companies#',
-	    xtype: 'companycontainer'
-	}, {
-	    itemId: 'contact',
-	    title: '#intranet-core.Contact#',
-	    xtype: 'contactcontainer'
-	}
-	       ]
-    }],
+		// Outermost Tab container
+		// Here we can add tabs for the various object types.
+		region:		'center',
+		xtype:		'tabpanel',
+		margins:	'5 0 5 5',
+		border:		false,
+		tabBar:		{ border: true },
+		items: [{
+			itemId: 'main2',
+			title:	'#intranet-helpdesk.Tickets#',
+			layout: 'border',
+			items: [{
+				xtype: 'ticketfilteraccordion',
+				region: 'west',
+				width: 300,
+				title: '#intranet-helpdesk.Filter_Tickets#',
+				split: true,
+				margins: '5 0 5 5'
+			}, {
+				region: 'center',
+				xtype: 'tabpanel',
+				margins: '5 5 5 0',
+				minWidth: 400,
+				border: false,
+				tabBar: { border: true },
+				items: [{
+					itemId: 'ticket',
+					title: '#intranet-helpdesk.Tickets#',
+					xtype: 'ticketcontainer'
+				}]
+			}]
+		}, {
+			itemId: 'company',
+			title: 	'#intranet-core.Companies#',
+			xtype: 'companycontainer'
+		}, {
+			itemId: 'contact',
+			title: '#intranet-core.Contact#',
+			xtype: 'contactcontainer'
+		}],
 
-    loadSla: function(rec){
-        this.down('#ticket').loadSla(rec);
-    },
-
-    filterTickets: function(filterValues){
-        this.down('#ticket').filterTickets(filterValues);
-    }
+		loadSla: function(rec){
+			this.down('#ticket').loadSla(rec);
+		},
+		
+		filterTickets: function(filterValues){
+			this.down('#ticket').filterTickets(filterValues);
+		}
+	}]
 });
+
