@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.2 2011/06/09 19:52:35 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.3 2011/06/09 20:17:39 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -162,8 +162,37 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		        queryMode: 	'remote',
 		        store: 		ticketServiceTypeStore
 	    }]
-	},
 
+	}, {
+
+	    xtype:	'fieldset',
+            title:	'',
+            checkboxToggle: false,
+            collapsed:	false,
+	    frame:	false,
+	    width:	1000,
+
+            layout: 	{ type: 'table', columns: 2 },
+            items :[{
+			fieldLabel: '#intranet-core.Status#',
+			name: 'ticket_status_id',
+			xtype: 'combobox',
+	                valueField: 'category_id',
+	                displayField: 'category',
+			forceSelection: true,
+			queryMode: 'remote',
+			store: ticketStatusStore
+	    }, {
+			fieldLabel: '#intranet-sencha-ticket-tracker.Escalated#',
+			name: 'ticket_queue_id',
+			xtype: 'combobox',
+	                valueField: 'group_id',
+	                displayField: 'group_name',
+			forceSelection: true,
+			queryMode: 'remote',
+			store: ticketQueueStore
+	    }]
+	},
 
 	// SPRI specific fields
 	{ name: 'ticket_file',		xtype: 'hiddenfield' },

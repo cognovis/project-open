@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.6 2011/06/09 10:03:43 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.7 2011/06/09 20:17:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,6 +31,18 @@ Ext.define('TicketBrowser.Sla', {
 	{ name: 'leaf', convert: function(value, record) { return true; } }
     ]
 });
+
+
+
+Ext.define('TicketBrowser.Profile', {
+    extend: 'Ext.data.Model',
+    idProperty: 'group_id',		// The primary key. A Queue is a subtype of "group".
+    fields: [
+	'group_id',			// The primary key
+	'group_name',			// The name of the queue
+    ]
+});
+
 
 
 

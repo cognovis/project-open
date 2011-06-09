@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.10 2011/06/09 17:04:01 mcordova Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.11 2011/06/09 20:17:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -68,6 +68,24 @@ Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
 	}
 
 });
+
+
+var ticketQueueStore = Ext.create('Ext.data.Store', {
+	storeId: 'ticketQueueStore',
+	autoLoad: true,
+	model: 'TicketBrowser.Profile',		// Causes the Drop-Down not to load
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_profile',
+		appendId: true,
+		extraParams: {
+			format: 'json'
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
+
+
 
 
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.8 2011/06/09 18:03:17 mcordova Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.9 2011/06/09 20:17:39 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -77,15 +77,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	fieldLabel:	'Area',
         	name:		'ticket_area',
 	        xtype:		'textfield'
-	}, {
-		fieldLabel: '#intranet-core.Status#',
-		name: 'ticket_status_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketStatusStore
 	}, {
         	fieldLabel:     '#intranet-core.Program#',
         	name:           'ticket_program_id',
