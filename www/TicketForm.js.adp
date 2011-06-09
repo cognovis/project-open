@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.6 2011/06/09 17:04:29 mcordova Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.7 2011/06/09 17:32:25 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,12 +26,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	extend: 	'Ext.form.Panel',	
 	alias: 		'widget.ticketForm',
 	id:		'ticketForm',
-	minHeight:	200,
 	standardsubmit:	false,
 	frame:		true,
 	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
-	width: 		350,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 75
@@ -62,14 +60,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	// Main ticket fields
 	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
 	{ name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
-	{ name: 'ticket_customer_contact_id',	xtype: 'combobox',
-		fieldLabel: 'Customer Contact',
-                valueField: 'user_id',
-                displayField: 'name',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: userStore
-	}, {
+	{
 	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
@@ -95,21 +86,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketStatusStore
-	}, {
-		fieldLabel: '#intranet-helpdesk.Prio#',
-		name: 'ticket_prio_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketPriorityStore
-	}, {
-		xtype: 'timefield',
-		fieldLabel: '#intranet-core.Creation_Date#',
-		name: 'time',
-		minValue: '8:00am',
-		maxValue: '6:00pm'
 	}, {
         	fieldLabel:     '#intranet-core.Program#',
         	name:           'ticket_program_id',
