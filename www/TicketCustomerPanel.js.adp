@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.3 2011/06/09 17:04:29 mcordova Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.4 2011/06/09 22:28:31 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -54,7 +54,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         }, {
                 name:           'company_name',
         	xtype:          'textfield',
-                fieldLabel:     '#intranet-core.Customer#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Company_name#',
                 allowBlank:     false
         }, {
                 name:           'vat_number',
@@ -63,14 +63,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         },{
                 name:           'company_type_id',
                 xtype:          'combobox',
-                fieldLabel:     '#intranet-core.Customer_Type#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Company_Type#',
                 value:          '',
                 valueField:     'category_id',
                 displayField:   'category',
                 store:          companyTypeStore
         }, {
                 xtype:          'textfield',
-                fieldLabel:     'Province',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Province#',
                 name:           'ticket_province'
         }],
         buttons: [{

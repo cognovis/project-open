@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.10 2011/06/09 18:03:17 mcordova Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.11 2011/06/09 22:28:31 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -77,30 +77,30 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
 			}
 		}, {
-			header: 'Creation Date',
+			header: '#intranet-core.Creation_Date#',
 			dataIndex: 'ticket_creation_date',
 			width: 80
 		}, {
-			header: 'VAT ID',
+			header: '#intranet-core.VAT_Number#',
 			dataIndex: 'vat_number',
 			renderer: function(value, o, record) {
 				return companyStore.vat_id_from_id(record.get('company_id'));
 			}
 		}, {
-			header: 'Customer',
+			header: '#intranet-core.Customer#',
 			dataIndex: 'company_id',
 			renderer: function(value, o, record) {
 				return companyStore.name_from_id(record.get('company_id'));
 			}
 		}, {
-			header: 'Program',
+			header: '#intranet-sencha-ticket-tracker.Program#',
 			dataIndex: 'ticket_program_id'
 		}, {
-			header: 'Channel',
+			header: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 			dataIndex: 'ticket_channel_id',
 			hidden: true
 		}, {
-			header: 'Status',
+			header: '#intranet-helpdesk.Status#',
 			dataIndex: 'ticket_status_id',
 			width: 60,
 			renderer: function(value, o, record) {
@@ -117,7 +117,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
-			header: 'Prio',
+			header: '#intranet-helpdesk.Prio#',
 			dataIndex: 'ticket_prio_id',
 			width: 40,
 			renderer: function(value, o, record) {
@@ -137,25 +137,25 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'id'
 			}
 		}, {
-			header: 'Creator',
+			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('creation_user'));
 			}
 		}, {
-			header: 'Replies',
+			header: '#intranet-sencha-ticket-tracker.Replies#',
 			dataIndex: 'replycount',
 			width: 70,
 			align: 'right'
 		}, {
-			header: 'Assignee',
+			header: '#intranet-core.Assignee#',
 			dataIndex: 'ticket_assignee_id',
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('ticket_assignee_id'));
 			}
 		}, {
-			header: 'Contact',
+			header: '#intranet-core.Contact#',
 			dataIndex: 'ticket_customer_contact_id',
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
@@ -164,28 +164,28 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: '#intranet-helpdesk.Queue#',
 			dataIndex: 'ticket_queue_id'
 		}, {
-			header: '#intranet-core.Department#',
+			header: '#intranet-sencha-ticket-tracker.Department#',
 			dataIndex: 'ticket_dept_id'
 		}, {
-			header: 'Service',
+			header: '#intranet-sencha-ticket-tracker.Service#',
 			dataIndex: 'ticket_service_id'
 		}, {
-			header: 'Alarm Date',
+			header: '#intranet-sencha-ticket-tracker.Alarm_Date#',
 			dataIndex: 'ticket_alarm_date'
 		}, {
-			header: 'Alarm Action',
+			header: '#intranet-sencha-ticket-tracker.Alarm_Action#',
 			dataIndex: 'ticket_alarm_action'
 		}, {
 			header: '#intranet-helpdesk.Conf_Item_type_Hardware#',
 			dataIndex: 'ticket_hardware_id'
 		}, {
-			header: 'Application',
+			header: '#intranet-sencha-ticket-tracker.Application#',
 			dataIndex: 'ticket_application_id'
 		}, {
 			header: '#intranet-helpdesk.Conf_Item#',
 			dataIndex: 'ticket_conf_item_id'
 		}, {
-			header: 'Customer Deadline',
+			header: '#intranet-sencha-ticket-tracker.Customer_Deadline#',
 			dataIndex: 'ticket_customer_deadline'
 		}, {
 			header: '#intranet-core.lt_Closed_in_1st_Contact#',
@@ -200,7 +200,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    iconCls: 'icon-new-ticket',
 		    handler: this.onNewTicket
 		}, {
-		    text: '#acs-kernel.common_Copy#',
+		    text: '#intranet-sencha-ticket-tracker.Copy_Ticket#',
 		    iconCls: 'icon-new-ticket',
 		    handler: function(){
 			alert('Not implemented');
@@ -212,14 +212,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     			alert('Not implemented');
     		    }
     		}, '-', {
-		    text: 'Show Grid',
+		    text: '#intranet-sencha-ticket-tracker.Show_Grid#',
 		    iconCls: 'icon-preview',
 		    enableToggle: true,
 		    pressed: true,
 		    scope: this,
 		    toggleHandler: this.onGridChange
     		}, '-', {
-		    text: 'Show Ticket',
+		    text: '#intranet-sencha-ticket-tracker.Show_Ticket#',
 		    iconCls: 'icon-preview',
 		    enableToggle: true,
 		    pressed: true,
@@ -238,8 +238,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		xtype: 'pagingtoolbar',
 		store: ticketStore,
 		displayInfo: true,
-		displayMsg: 'Displaying tickets {0} - {1} of {2}',
-		emptyMsg: '#intranet-dynfield.No_items#'
+		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
+		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#'
 	    }]
 	});
 	this.callParent();

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.9 2011/06/09 14:09:55 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.10 2011/06/09 22:28:31 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +27,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 	extend:	'Ext.container.Container',
 	alias:	'widget.ticketContainer',
 	id:	'ticketContainer',
-	title:	'Loading...',
+	title:	'#intranet-sencha-ticket-tracker.Loading___#',
 	layout:	'border',
 	deferredRender: false,
 

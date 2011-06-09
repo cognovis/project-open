@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.5 2011/06/09 19:52:35 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.6 2011/06/09 22:28:30 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -44,7 +44,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-core.Ticket#'
 	}, {
 		itemId: 'ticketCustomer',
-		title: '#intranet-core.Customer#',
+		title: '#intranet-sencha-ticket-tracker.Company#',
 		xtype: 'ticketCustomer'
 	}, {
 		itemId: 'ticketContact',
@@ -59,7 +59,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:	'east',
 	region: 'east',
 	layout:	'anchor',
-	width:	1000,
+	width:	800,
 
 	items: [{
 		itemId: 'ticketFormRight',

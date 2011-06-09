@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactContainer.js.adp,v 1.3 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: ContactContainer.js.adp,v 1.4 2011/06/09 22:28:30 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,7 +26,7 @@
 Ext.define('TicketBrowser.ContactContainer', {
     extend: 'Ext.container.Container',
     alias: 'widget.contactContainer',
-    title: 'Loading...',
+    title: '#intranet-sencha-ticket-tracker.Loading___#',
 
     layout: 'border',
 

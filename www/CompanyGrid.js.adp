@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.5 2011/06/09 12:10:01 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.6 2011/06/09 22:28:30 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -58,7 +58,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
         xtype: 'toolbar',
         cls: 'x-docked-noborder-top',
         items: [{
-            text: '#intranet-core.Add_a_new_Company#',
+            text: '#intranet-sencha-ticket-tracker.New_Company#',
             iconCls: 'icon-new-ticket',
             handler: function(){
                 alert('Not implemented');
