@@ -1,10 +1,12 @@
 /**
  * intranet-sencha-ticket-tracker/www/Main.js
- * Main page for the ]po[ Sencha Ticket Browser.
+ * Main container for the ]po[ Sencha Ticket Browser.
+ * The TabPanel container contains a separate tab for every
+ * type of business object included.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Main.js.adp,v 1.5 2011/06/09 10:40:52 po34demo Exp $
+ * @cvs-id $Id: Main.js.adp,v 1.6 2011/06/09 10:57:09 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,6 +27,8 @@
 Ext.define('TicketBrowser.Main', {
 	extend: 'Ext.container.Viewport',
 
+	// We need an "outer" container here, because we can't have
+	// a viewport with tabs apparently.
 	layout: 'border',
 	itemId: 'main',
 	items: [{
@@ -36,29 +40,9 @@ Ext.define('TicketBrowser.Main', {
 		border:		false,
 		tabBar:		{ border: true },
 		items: [{
-			itemId: 'main2',
-			title:	'#intranet-helpdesk.Tickets#',
-			layout: 'border',
-			items: [{
-				xtype: 'ticketfilteraccordion',
-				region: 'west',
-				width: 300,
-				title: '#intranet-helpdesk.Filter_Tickets#',
-				split: true,
-				margins: '5 0 5 5'
-			}, {
-				region: 'center',
-				xtype: 'tabpanel',
-				margins: '5 5 5 0',
-				minWidth: 400,
-				border: false,
-				tabBar: { border: true },
-				items: [{
-					itemId: 'ticket',
-					title: '#intranet-helpdesk.Tickets#',
-					xtype: 'ticketcontainer'
-				}]
-			}]
+			itemId: 'ticket',
+			title: '#intranet-helpdesk.Tickets#',
+			xtype: 'ticketcontainer'
 		}, {
 			itemId: 'company',
 			title: 	'#intranet-core.Companies#',
@@ -67,15 +51,7 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'contact',
 			title: '#intranet-core.Contact#',
 			xtype: 'contactcontainer'
-		}],
-
-		loadSla: function(rec){
-			this.down('#ticket').loadSla(rec);
-		},
-		
-		filterTickets: function(filterValues){
-			this.down('#ticket').filterTickets(filterValues);
-		}
+		}]
 	}]
 });
 

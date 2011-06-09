@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.2 2011/06/06 15:59:29 mcordova Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.3 2011/06/09 10:57:09 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,7 +24,7 @@
 
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	extend: 'Ext.form.Panel',	
-	alias: 'widget.ticketfilterform',
+	alias: 'widget.ticketFilterForm',
 	title: 'Ticket Filters',
 	bodyStyle:'padding:5px 5px 0',
 	defaultType: 'textfield',
