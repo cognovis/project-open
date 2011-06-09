@@ -27,7 +27,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     extend:	'Ext.container.Container',
     alias:	'widget.ticketCompoundPanel',
     // No id: This is not a singleton object
-    // id:	'ticketCompoundPanel',
+    id:		'ticketCompoundPanel',
     title:  'Loading...',
     layout: 'border',
     deferredRender: false,
@@ -37,7 +37,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	region: 'center',
 	layout: 'anchor',
 	items: [{
-		itemId: 'ticket',
+		itemId: 'ticketForm',
 		xtype: 'ticketForm',
 		title: '#intranet-helpdesk.Ticket#'
 	}, {
@@ -63,10 +63,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
-        this.child('#ticket').loadTicket(rec);
-        this.child('#ticketContact').loadTicket(rec);
-        this.child('#ticketCustomer').loadTicket(rec);
-        this.child('#ticketFilestorage').loadTicket(rec);
+        this.child('#center').child('#ticketForm').loadTicket(rec);
+        this.child('#center').child('#ticketContact').loadTicket(rec);
+        this.child('#center').child('#ticketCustomer').loadTicket(rec);
+        this.child('#east').child('#ticketFilestorage').loadTicket(rec);
     }
 
 });

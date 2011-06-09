@@ -32,12 +32,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     iconCls:	'icon-grid',
 
     listeners: {
-	itemdblclick: function() {
+	itemdblclick: function(view, record, item, index, e) {
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		var tab = mainTabPanel.add({
         	    title:	'Tab ' + (mainTabPanel.items.length + 1),
 		    xtype:	'ticketCompoundPanel'
         	});
+		tab.doLayout();
+		tab.loadTicket(record);
 	}
     },
 
@@ -244,8 +246,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
 
     onSelect: function(selModel, rec){
-	var tabPanel = Ext.getCmp('ticketTabPanel');
-	tabPanel.loadTicket(rec);
+	var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+	compoundPanel.loadTicket(rec);
+	var title = rec.get('project_name');
+        compoundPanel.tab.setText(title);
+
+	var mainTabPanel = Ext.getCmp('mainTabPanel');
+	mainTabPanel.setActiveTab(compoundPanel);
     },
     
     loadSla: function(id){

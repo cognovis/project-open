@@ -29,6 +29,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 	id:	'ticketContainer',
 	title:	'Loading...',
 	layout:	'border',
+	deferredRender: false,
 
 	items:	[{
 		itemID:	'ticketFilter',
@@ -48,10 +49,6 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 			itemId:	'ticketGrid',
 			xtype:	'ticketGrid',
 			region:	'center'
-		}, {
-			itemId:	'preview',
-			xtype:	'ticketTabPanel',
-			region:	'south'
 		}]
 	}],
 	

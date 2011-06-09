@@ -42,10 +42,6 @@ Ext.define('TicketBrowser.Main', {
 		border:		false,
 		tabBar:		{ border: true },
 		items: [{
-			itemId: 'sample',
-			title: 'Sample',
-			xtype: 'ticketCompoundPanel'
-		}, {
 			itemId: 'ticket',
 			title: '#intranet-helpdesk.Tickets#',
 			xtype: 'ticketContainer'
@@ -57,6 +53,10 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'contact',
 			title: '#intranet-core.Contact#',
 			xtype: 'contactContainer'
+		}, {
+			itemId: 'sample',
+			title: 'Sample',
+			xtype: 'ticketCompoundPanel'
 		}]
 	}]
 });
