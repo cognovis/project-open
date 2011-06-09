@@ -22,7 +22,7 @@
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
 	<script type="text/javascript" src="TicketContactPanel.js"></script> 
 	<script type="text/javascript" src="TicketCustomerPanel.js"></script> 
-	<script type="text/javascript" src="TicketTabPanel.js"></script> 
+<!--	<script type="text/javascript" src="TicketTabPanel.js"></script> 	-->
 	<script type="text/javascript" src="TicketCompoundPanel.js"></script> 
 	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 

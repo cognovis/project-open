@@ -6,7 +6,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: MainPanel.js.adp,v 1.1 2011/06/09 13:29:55 po34demo Exp $
+ * @cvs-id $Id: MainPanel.js.adp,v 1.2 2011/06/09 14:09:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -42,10 +42,6 @@ Ext.define('TicketBrowser.Main', {
 		border:		false,
 		tabBar:		{ border: true },
 		items: [{
-			itemId: 'sample',
-			title: 'Sample',
-			xtype: 'ticketCompoundPanel'
-		}, {
 			itemId: 'ticket',
 			title: '#intranet-helpdesk.Tickets#',
 			xtype: 'ticketContainer'
@@ -57,6 +53,10 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'contact',
 			title: '#intranet-core.Contact#',
 			xtype: 'contactContainer'
+		}, {
+			itemId: 'sample',
+			title: 'Sample',
+			xtype: 'ticketCompoundPanel'
 		}]
 	}]
 });

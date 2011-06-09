@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.8 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.9 2011/06/09 14:09:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -29,6 +29,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 	id:	'ticketContainer',
 	title:	'Loading...',
 	layout:	'border',
+	deferredRender: false,
 
 	items:	[{
 		itemID:	'ticketFilter',
@@ -48,10 +49,6 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 			itemId:	'ticketGrid',
 			xtype:	'ticketGrid',
 			region:	'center'
-		}, {
-			itemId:	'preview',
-			xtype:	'ticketTabPanel',
-			region:	'south'
 		}]
 	}],
 	

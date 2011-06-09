@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.1 2011/06/09 13:29:55 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.2 2011/06/09 14:09:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +27,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     extend:	'Ext.container.Container',
     alias:	'widget.ticketCompoundPanel',
     // No id: This is not a singleton object
-    // id:	'ticketCompoundPanel',
+    id:		'ticketCompoundPanel',
     title:  'Loading...',
     layout: 'border',
     deferredRender: false,
@@ -37,7 +37,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	region: 'center',
 	layout: 'anchor',
 	items: [{
-		itemId: 'ticket',
+		itemId: 'ticketForm',
 		xtype: 'ticketForm',
 		title: '#intranet-helpdesk.Ticket#'
 	}, {
@@ -63,10 +63,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
-        this.child('#ticket').loadTicket(rec);
-        this.child('#ticketContact').loadTicket(rec);
-        this.child('#ticketCustomer').loadTicket(rec);
-        this.child('#ticketFilestorage').loadTicket(rec);
+        this.child('#center').child('#ticketForm').loadTicket(rec);
+        this.child('#center').child('#ticketContact').loadTicket(rec);
+        this.child('#center').child('#ticketCustomer').loadTicket(rec);
+        this.child('#east').child('#ticketFilestorage').loadTicket(rec);
     }
 
 });

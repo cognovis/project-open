@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.8 2011/06/09 13:29:55 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.9 2011/06/09 14:09:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -32,12 +32,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     iconCls:	'icon-grid',
 
     listeners: {
-	itemdblclick: function() {
+	itemdblclick: function(view, record, item, index, e) {
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		var tab = mainTabPanel.add({
         	    title:	'Tab ' + (mainTabPanel.items.length + 1),
 		    xtype:	'ticketCompoundPanel'
         	});
+		tab.doLayout();
+		tab.loadTicket(record);
 	}
     },
 
@@ -244,8 +246,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
 
     onSelect: function(selModel, rec){
-	var tabPanel = Ext.getCmp('ticketTabPanel');
-	tabPanel.loadTicket(rec);
+	var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+	compoundPanel.loadTicket(rec);
+	var title = rec.get('project_name');
+        compoundPanel.tab.setText(title);
+
+	var mainTabPanel = Ext.getCmp('mainTabPanel');
+	mainTabPanel.setActiveTab(compoundPanel);
     },
     
     loadSla: function(id){
