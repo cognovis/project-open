@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.1 2011/06/09 18:31:45 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.2 2011/06/09 19:52:35 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,6 +31,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	frame:		true,
 	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
+	width:		1000,
+
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 75
@@ -69,6 +71,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
+	    width:	1000,
+
             layout: 	{ type: 'table', columns: 3 },
             items :[{
 	                name:           'creation_date',
@@ -95,12 +99,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	        }, {
 	                name:           'ticket_done_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-core.Close_Date#',
-			colspan:	2
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Close_Date#'
+	        }, {
+	                name:           'ticket_escalation_date',
+	                xtype:          'datefield',
+	                fieldLabel:     '#intranet-sencha_ticket_tracker.Escalation_Date#'
 	        }, {
 	                name:           'ticket_reaction_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-core.Reaction_Date#',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Reaction_Date#',
 	    }]
 	},
 
@@ -110,14 +117,44 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
+	    width:	1000,
+
             layout: 	{ type: 'table', columns: 2 },
             items :[{
 	                name:           'ticket_note',
-	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Request#'
+			xtype:		'textareafield',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
+			width:		400
 	        }, {
-	                name:           'ticket_channel_id',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel#',
+	                name:           'ticket_resolution',
+			xtype:		'textareafield',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
+			width:		400
+	    }]
+	},
+
+        {
+	    xtype:	'fieldset',
+            title:	'',
+            checkboxToggle: false,
+            collapsed:	false,
+	    frame:	false,
+	    width:	1000,
+
+            layout: 	{ type: 'table', columns: 3 },
+            items :[{
+			name:		'ticket_closed_in_1st_contact_p',
+			xtype:		'checkbox',
+			fieldLabel:     '#intranet-helpdesk.Close_in_1st_contact#',
+			value:		'1'
+	    }, {
+			name:		'ticket_requires_addition_info_p',
+			xtype:		'checkbox',
+			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additonal_info#',
+			value:		'1'
+	        }, {
+	                name:           'ticket_exit_channel_id',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Exit_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category',

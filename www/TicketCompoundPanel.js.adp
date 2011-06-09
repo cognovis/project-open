@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.4 2011/06/09 18:31:45 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.5 2011/06/09 19:52:35 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,19 +24,19 @@
 
 
 var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
-    extend:	'Ext.container.Container',
-    alias:	'widget.ticketCompoundPanel',
-    // No id: This is not a singleton object
-    id:		'ticketCompoundPanel',
-    title:  'Loading...',
-    layout: 'border',
-    deferredRender: false,
+    extend:		'Ext.container.Container',
+    alias:		'widget.ticketCompoundPanel',
+    id:			'ticketCompoundPanel',
+    title:		'Loading...',
+    layout:		'border',
+    deferredRender:	false,
+    split:		true,
 
     items: [{
 	itemId:	'center',
 	region: 'center',
 	layout: 'anchor',
-	width:	400,
+	width:	500,
 
 	items: [{
 		itemId: 'ticketForm',
