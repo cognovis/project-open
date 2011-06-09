@@ -24,7 +24,8 @@
 
 var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	extend: 	'Ext.form.Panel',	
-	alias: 		'widget.ticketInfo',
+	alias: 		'widget.ticketForm',
+	id:		'ticketForm',
 	minHeight:	200,
 	standardsubmit:	false,
 	frame:		true,

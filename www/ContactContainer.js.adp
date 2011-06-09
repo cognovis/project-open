@@ -25,14 +25,14 @@
 
 Ext.define('TicketBrowser.ContactContainer', {
     extend: 'Ext.container.Container',
-    alias: 'widget.contactcontainer',
+    alias: 'widget.contactContainer',
     title: 'Loading...',
 
     layout: 'border',
 
     items: [{
         itemId: 'grid',
-        xtype: 'contactgrid',
+        xtype: 'contactGrid',
         region: 'center'
     }]
 });

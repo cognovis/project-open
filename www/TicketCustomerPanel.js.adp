@@ -24,10 +24,11 @@
 
 
 Ext.define('TicketBrowser.TicketCustomerPanel', {
-	extend: 'Ext.form.Panel',
-        alias: 'widget.ticketCustomer',
-	title: 'Ticket Customer',
-	frame:true,
+	extend:	'Ext.form.Panel',
+        alias:	'widget.ticketCustomer',
+        id:	'ticketCustomerPanel',
+	title:	'Ticket Customer',
+	frame:	true,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 125

@@ -24,11 +24,12 @@
 
 
 var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
-    extend: 'Ext.grid.Panel',    
-    alias: 'widget.ticketGrid',
-    minHeight: 200,
-    store: ticketStore,    
-    iconCls: 'icon-grid',
+    extend:	'Ext.grid.Panel',    
+    alias:	'widget.ticketGrid',
+    id:		'ticketGrid',
+    minHeight:	200,
+    store:	ticketStore,    
+    iconCls:	'icon-grid',
 
     listeners: {
 	itemdblclick: function() {
@@ -239,7 +240,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
 
     onSelect: function(selModel, rec){
-	this.ownerCt.onSelect(rec);
+	var tabPanel = Ext.getCmp('ticketTabPanel');
+	tabPanel.loadTicket(rec);
     },
     
     loadSla: function(id){

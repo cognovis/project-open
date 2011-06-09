@@ -130,46 +130,38 @@ var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 });
 
 
+// Local store definition.
+// We have to redefine the store every time we show
+// files for a different ticket
 var fileStorageStore = Ext.create('Ext.data.Store', {
-	    model: 'TicketBrowser.FileStorage',
-	    storeId: 'fileStorageStore',
-	    autoLoad: false,
-	    remoteSort: true,
-	    pageSize: 10,			// Enable pagination
-	    sorters: [{
-		property: 'name',
-		direction: 'DESC'
-	    }],
-	    proxy: {
-		type: 'rest',
-		url: '/intranet-rest/file_storage_object',
-		appendId: true,
-		extraParams: { format: 'json', parent_id: 0 },
-		reader: { type: 'json', root: 'data' }
-	    }
+    model: 'TicketBrowser.FileStorage',
+    storeId: 'fileStorageStore',
+    autoLoad: false,
+    remoteSort: true,
+    pageSize: 10,			// Enable pagination
+    sorters: [{
+	property: 'name',
+	direction: 'DESC'
+    }],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/file_storage_object',
+	appendId: true,
+	extraParams: { format: 'json', parent_id: 0 },
+	reader: { type: 'json', root: 'data' }
+    }
 });
 
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
-    extend: 'Ext.grid.Panel',
-    alias: 'widget.fileStorageGrid',
-    store: fileStorageStore,
+    extend:	'Ext.grid.Panel',
+    alias:	'widget.fileStorageGrid',
+    id:		'fileStorageGrid',
+    store: 	fileStorageStore,
 
-    minWidth: 300,
-    minHeight: 100,
-    frame: true,
-    iconCls: 'icon-grid',
-
-    /* Allow to show detailed information about files?
-    plugins: [{
-	ptype: 'rowexpander',
-	rowBodyTpl : [
-		      '<p><b>Company:</b> {company}</p><br>',
-		      '<p><b>Summary:</b> {desc}</p>'
-		     ]
-    }],
-    collapsible: true,
-    animCollapse: true,
-    */
+    minWidth:	300,
+    minHeight:	100,
+    frame:	true,
+    iconCls:	'icon-grid',
 
     columns: [
 	      {

@@ -28,12 +28,12 @@
  * The subclass contains a special lookup function.
  */
 Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
-    category_from_id: function(category_id) {
-	var	result = 'Category #' + category_id;
-	var	rec = this.findRecord('category_id',category_id);
-	if (rec == null || typeof rec == "undefined") { return result; }
-	return rec.get('category'); 
-    }
+	category_from_id: function(category_id) {
+		var	result = 'Category #' + category_id;
+		var	rec = this.findRecord('category_id',category_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('category'); 
+	}
 });
 
 /*
@@ -41,12 +41,12 @@ Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
  * The subclass contains a special lookup function.
  */
 Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
-    name_from_id: function(user_id) {
-	var	result = 'User #' + user_id;
-	var	rec = this.findRecord('user_id',user_id);
-	if (rec == null || typeof rec == "undefined") { return result; }
-	return rec.get('name');
-    }
+	name_from_id: function(user_id) {
+		var	result = 'User #' + user_id;
+		var	rec = this.findRecord('user_id',user_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('name');
+	}
 });
 
 /*
@@ -54,128 +54,128 @@ Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
  * The subclass contains a special lookup function.
  */
 Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
-    name_from_id: function(company_id) {
-	var	result = 'Company #' + company_id;
-	var	rec = this.findRecord('company_id',company_id);
-	if (rec == null || typeof rec == "undefined") { return result; }
-	return rec.get('company_name');
-    },
+	name_from_id: function(company_id) {
+		var	result = 'Company #' + company_id;
+		var	rec = this.findRecord('company_id',company_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('company_name');
+	},
 
-    vat_id_from_id: function(company_id) {
-	var	rec = this.findRecord('company_id',company_id);
-	if (rec == null || typeof rec == "undefined") { return ''; }
-	return rec.get('vat_number');
-    }
+	vat_id_from_id: function(company_id) {
+		var	rec = this.findRecord('company_id',company_id);
+		if (rec == null || typeof rec == "undefined") { return ''; }
+		return rec.get('vat_number');
+	}
 
 });
 
 
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
-			storeId: 'ticketTypeStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Ticket Type\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'ticketTypeStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Ticket Type\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
-			storeId: 'ticketStatusStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Ticket Status\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'ticketStatusStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Ticket Status\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
-			storeId: 'companyTypeStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Company Type\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'companyTypeStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Company Type\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
-			storeId: 'ticketPriorityStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Ticket Priority\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'ticketPriorityStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Ticket Priority\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 
 var ticketOriginStore = Ext.create('Ext.data.Store', {
-			storeId: 'ticketOriginStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Ticket Origin\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'ticketOriginStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Ticket Origin\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 var requestAreaStore = Ext.create('Ext.data.Store', {
-			storeId: 'requestAreaStore',
-		        autoLoad: true,
-		        // model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-		        fields: ['category_id', 'category'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_category',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					category_type: '\'Intranet Request Area\''
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'requestAreaStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Request Area\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 
@@ -192,110 +192,111 @@ var ticketPriorityData = [
 ];
 
 var userStore = Ext.create('Ext.ux.UserStore', {
-			storeId:	'employeeStore',
-			model:		'TicketBrowser.User',
-			remoteSort:	true,
-		        autoLoad: 	true,
-			autoSync: 	true,			// Write changes to the REST server ASAP
-			// Load all users into this table, this is rarely more than 2000...
-			// ToDo: Replace this with a server-side search function plus cache(?)
-			pageSize: 	1000000
-		});
+	storeId:	'employeeStore',
+	model:		'TicketBrowser.User',
+	remoteSort:	true,
+	autoLoad: 	true,
+	autoSync: 	true,			// Write changes to the REST server ASAP
+	// Load all users into this table, this is rarely more than 2000...
+	// ToDo: Replace this with a server-side search function plus cache(?)
+	pageSize: 	1000000
+});
 
 
 var programStore = Ext.create('Ext.data.Store', {
-			storeId: 'programStore',
-		        autoLoad: true,
-		        fields: ['project_id', 'project_name'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_project',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					format_variant: 'sencha',
-					project_type_id: '2510'		// project_type_id = "Program"
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'programStore',
+	autoLoad: true,
+	fields: ['project_id', 'project_name'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_project',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			format_variant: 'sencha',
+			project_type_id: '2510'		// project_type_id = "Program"
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 
 var ticketSlaStore = Ext.create('Ext.data.Store', {
-			storeId: 'ticketSlaStore',
-		        autoLoad: true,
-		        fields: ['project_id', 'project_name'],
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/im_project',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					format_variant: 'sencha',
-					project_type_id: '2502'		// project_type_id = "Service Level Agreement"
-		                },
-		                reader: { type: 'json', root: 'data' }
-		        }
-		});
+	storeId: 'ticketSlaStore',
+	autoLoad: true,
+	fields: ['project_id', 'project_name'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_project',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			format_variant: 'sencha',
+			project_type_id: '2502'		// project_type_id = "Service Level Agreement"
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 
 var ticketStore = Ext.create('Ext.data.Store', {
-            model: 'TicketBrowser.Ticket',
-            remoteSort: true,
-	    pageSize: 10,			// Enable pagination
-	    autoSync: true,			// Write changes to the REST server ASAP
-            sorters: [{
-                property: 'creation_date',
-                direction: 'DESC'
-            }],
-            proxy: {
-                type: 'rest',
-                url: '/intranet-rest/im_ticket',
+	storeId: 'ticketStore',
+	model: 'TicketBrowser.Ticket',
+	remoteSort: true,
+	pageSize: 10,			// Enable pagination
+	autoSync: true,			// Write changes to the REST server ASAP
+	sorters: [{
+		property: 'creation_date',
+		direction: 'DESC'
+	}],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_ticket',
 		extraParams: {
-		    format: 'json',		// Tell the ]po[ REST to return JSON data.
-		    format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
-                },
-                reader: {
-                    type: 'json',		// Tell the Proxy Reader to parse JSON
-                    root: 'data',		// Where do the data start in the JSON file?
-		    totalProperty: 'total'
-                },
-                writer: {
-                    type: 'json'
-                }
-            }
-        });
-        
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+			format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+});
+	
 
 var companyStore = Ext.create('Ext.ux.CompanyStore', {
-            model: 'TicketBrowser.Company',
-            remoteSort: true,
-	    pageSize: 1000000,
-	    autoSync: true,			// Write changes to the REST server ASAP
-	    autoLoad: true,
-            sorters: [{
-                property: 'creation_date',
-                direction: 'DESC'
-            }],
-            proxy: {
-                type: 'rest',
-                url: '/intranet-rest/im_company',
+	storeId: 'companyStore',
+	model: 'TicketBrowser.Company',
+	remoteSort: true,
+	pageSize: 1000000,
+	autoSync: true,			// Write changes to the REST server ASAP
+	autoLoad: true,
+	sorters: [{
+		property: 'creation_date',
+		direction: 'DESC'
+	}],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_company',
 		extraParams: {
-		    format: 'json',		// Tell the ]po[ REST to return JSON data.
-                },
-                reader: {
-                    type: 'json',		// Tell the Proxy Reader to parse JSON
-                    root: 'data',		// Where do the data start in the JSON file?
-		    totalProperty: 'total'
-                },
-                writer: {
-                    type: 'json'
-                }
-            }
-        });
-        
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+});
 
 
 // fake store while developing

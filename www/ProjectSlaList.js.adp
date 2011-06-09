@@ -22,15 +22,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 var slaList = Ext.define('TicketBrowser.SlaList', {
-
-    extend: 'Ext.tree.Panel',   
-    alias: 'widget.slalist',
-    title: 'Service Level Agreements',
-
+    extend:	'Ext.tree.Panel',   
+    alias:	'widget.slaList',
+    id:		'slaList',
+    title:	'Service Level Agreements',
     rootVisible: false,
-    lines: false,
+    lines:	false,
     defaultSla: 53349,
-    minWidth: 200,
+    minWidth:	200,
     displayField: 'project_name',
     
     initComponent: function(){

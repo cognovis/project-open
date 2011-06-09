@@ -25,14 +25,14 @@
 
 Ext.define('TicketBrowser.CompanyContainer', {
     extend: 'Ext.container.Container',
-    alias: 'widget.companycontainer',
+    alias: 'widget.companyContainer',
     title: 'Loading...',
 
     layout: 'border',
 
     items: [{
 	itemId: 'grid',
-	xtype: 'companygrid',
+	xtype: 'companyGrid',
 	region: 'center'
     }]
 });

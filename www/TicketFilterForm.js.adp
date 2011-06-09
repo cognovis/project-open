@@ -23,14 +23,15 @@
  */
 
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
-	extend: 'Ext.form.Panel',	
-	alias: 'widget.ticketFilterForm',
-	title: 'Ticket Filters',
-	bodyStyle:'padding:5px 5px 0',
-	defaultType: 'textfield',
-	defaults: { anchor: '100%' },
-	minWidth: 200,
-	standardsubmit:true,
+	extend:		'Ext.form.Panel',	
+	alias:		'widget.ticketFilterForm',
+	title:		'Ticket Filters',
+	id:		'ticketFilterForm',
+	bodyStyle:	'padding:5px 5px 0',
+	defaultType:	'textfield',
+	defaults:	{ anchor: '100%' },
+	minWidth:	200,
+	standardsubmit:	true,
 	items: [
 	{	name: 'vat_number', 
 		fieldLabel: 'VAT ID' 
@@ -137,8 +138,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	}
 	],
 
-	buttons: [
-	{
+	buttons: [{
             text: 'Clear Form',
 	    handler: function(){
 		var form = this.up('form').getForm();
@@ -149,11 +149,10 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	    handler: function(){
 		var form = this.up('form').getForm();
 		var filterValues = form.getFieldValues();
-		var panel = this.up('form');
-
-		// tell the grid to get new tickets with filter variables
-		panel.ownerCt.ownerCt.filterTickets(filterValues);
+		var grid = Ext.getCmp('ticketGrid');
+		grid.filterTickets(filterValues);
 	    }
-	}
-	]
+	}]
 });
+
+

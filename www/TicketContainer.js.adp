@@ -23,25 +23,27 @@
  */
 
 
-Ext.define('TicketBrowser.TicketContainer', {
-	extend:		'Ext.container.Container',
-	alias:		'widget.ticketcontainer',
-	title:		'Loading...',
-	layout:		'border',
+var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
+	extend:	'Ext.container.Container',
+	alias:	'widget.ticketContainer',
+	id:	'ticketContainer',
+	title:	'Loading...',
+	layout:	'border',
 
 	items:	[{
-		itemID:		'ticketFilter',
-		xtype:		'ticketFilterForm',
-		region:		'west',
-		width:		300,
-		title:		'#intranet-helpdesk.Filter_Tickets#',
-		split:		true,
-		margins:	'5 0 5 5'
+		itemID:	'ticketFilter',
+		xtype:	'ticketFilterForm',
+		region:	'west',
+		width:	300,
+		title:	'#intranet-helpdesk.Filter_Tickets#',
+		split:	true,
+		margins: '5 0 5 5'
 	}, {
 		itemId:	'main2',
 		title:	'#intranet-helpdesk.Tickets#',
 		region:	'center',
 		layout:	'border',
+		split:	true,
 		items:	[{
 			itemId:	'ticketGrid',
 			xtype:	'ticketGrid',
@@ -71,13 +73,6 @@ Ext.define('TicketBrowser.TicketContainer', {
 	filterTickets: function(filterValues) {
 		this.tab.setText('Filtered Tickets');
 		this.child('#ticketGrid').filterTickets(filterValues);
-	},
-	
-	onSelect: function(rec) {
-		this.child('#preview').update({
-			title:	rec.get('project_name')
-		});
-		this.child('#preview').loadTicket(rec);
 	},
 	
 	togglePreview: function(show){

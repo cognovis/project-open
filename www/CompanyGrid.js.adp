@@ -24,10 +24,11 @@
 
 
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
-    extend: 'Ext.grid.Panel',    
-    alias: 'widget.companygrid',
-    minHeight: 200,
-    store: companyStore,
+    extend:	'Ext.grid.Panel',    
+    alias:	'widget.companyGrid',
+    id:		'companyGrid',
+    minHeight:	200,
+    store:	companyStore,
 
     columns: [
 	      {
