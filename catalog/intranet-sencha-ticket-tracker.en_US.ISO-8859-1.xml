@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-sencha-ticket-tracker" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Alarm_Action">Alarm Action</msg>
+  <msg key="Alarm_Date">Alarm Date</msg>
+  <msg key="Area">Area</msg>
+  <msg key="button_Cancel">Cancel</msg>
+  <msg key="button_OK">OK</msg>
+  <msg key="button_Save">Save</msg>
+  <msg key="button_Search">Search</msg>
+  <msg key="Cancel">Cancel</msg>
+  <msg key="Clear_Form">Clear Form</msg>
+  <msg key="Company_name">Company Name</msg>
+  <msg key="Company_Type">Company Type</msg>
+  <msg key="Copy_Ticket">Copy Ticket</msg>
+  <msg key="Customer_Deadline">Customer Deadline</msg>
+  <msg key="Date_Since">Date_Since</msg>
+  <msg key="Date_Until">Date_Until</msg>
+  <msg key="Delete_attachment">Delete attachment</msg>
+  <msg key="Department">Department</msg>
+  <msg key="Displaying_tickets_0_1_of_2_">Displaying tickets {0} - {1} of {2}</msg>
+  <msg key="Female">Female</msg>
+  <msg key="Incoming_Channel">Incoming Channel</msg>
+  <msg key="Last_Updated">Last Updated</msg>
+  <msg key="Loading___">Loading...</msg>
+  <msg key="Male">Male</msg>
+  <msg key="MIME_Type">MIME Type</msg>
+  <msg key="No_items">No items</msg>
+  <msg key="Options">Options</msg>
+  <msg key="Outgoing_Channel">Outgoing Channel</msg>
+  <msg key="Province">Province</msg>
+  <msg key="Saving_data_">Saving data...</msg>
+  <msg key="Show_Grid">Show Grid</msg>
+  <msg key="Ticket_File_Number">Ticket File Number</msg>
+  <msg key="Ticket_Type">Ticket Type</msg>
+  <msg key="Upload_New_Attachment">Upload New Attachment</msg>
+  <msg key="Uploading_your_photo">Uploading your photo</msg>
+</message_catalog>
