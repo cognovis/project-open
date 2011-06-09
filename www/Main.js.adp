@@ -24,46 +24,40 @@
 
 Ext.define('TicketBrowser.Main', {
     extend: 'Ext.container.Viewport',
-
-    initComponent: function(){
-        Ext.apply(this, {
-            layout: 'border',
-            itemId: 'main',
-            items: [{
-                xtype: 'ticketfilteraccordion',
-                region: 'west',
-                width: 300,
-                title: '#intranet-helpdesk.Filter_Tickets#',
-                split: true,
-                margins: '5 0 5 5'
-            }, {
-                region: 'center',
-                xtype: 'tabpanel',
-                margins: '5 5 5 0',
-                minWidth: 400,
-                border: false,
-                tabBar: {
-                    border: true
-                },
-                items: [
-		{
-                    itemId: 'ticket',
-		    title: '#intranet-helpdesk.Tickets#',
-                    xtype: 'ticketcontainer'
-                }, {
-                    itemId: 'company',
-		    title: '#intranet-core.Companies#',
-                    xtype: 'companycontainer'
-    		}, {
-                    itemId: 'contact',
-		    title: '#intranet-core.Contact#',
-                    xtype: 'contactcontainer'
-		}
-		]
-            }]
-        });
-        this.callParent();
-    },
+    
+    layout: 'border',
+    itemId: 'main',
+    items: [{
+	xtype: 'ticketfilteraccordion',
+	region: 'west',
+	width: 300,
+	title: '#intranet-helpdesk.Filter_Tickets#',
+	split: true,
+	margins: '5 0 5 5'
+    }, {
+	region: 'center',
+	xtype: 'tabpanel',
+	margins: '5 5 5 0',
+	minWidth: 400,
+	border: false,
+	tabBar: {
+	    border: true
+	},
+	items: [{
+	    itemId: 'ticket',
+	    title: '#intranet-helpdesk.Tickets#',
+	    xtype: 'ticketcontainer'
+	}, {
+	    itemId: 'company',
+	    title: '#intranet-core.Companies#',
+	    xtype: 'companycontainer'
+	}, {
+	    itemId: 'contact',
+	    title: '#intranet-core.Contact#',
+	    xtype: 'contactcontainer'
+	}
+	       ]
+    }],
 
     loadSla: function(rec){
         this.down('#ticket').loadSla(rec);
