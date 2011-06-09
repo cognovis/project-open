@@ -39,7 +39,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-helpdesk.Ticket#'
+		title: '#intranet-core.Ticket#'
 	}, {
 		itemId: 'ticketCustomer',
 		title: '#intranet-core.Customer#',
