@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.7 2011/06/08 17:54:22 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.8 2011/06/09 10:03:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -98,7 +98,8 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         	handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
-			var user_id = form.findField('user_id').getValue();
+			var combo = form.findField('user_id');
+			var user_id = combo.getValue();
 			var values = form.getFieldValues();
 
 			// Search for previous row in the store
@@ -106,18 +107,35 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 			// overwrite the store data with the new data
 			rec.set(values);
-			// now the store should automatically update the values
-			// using it's REST proxy
+
+			// Tell the store to update the server via it's REST proxy
+			userStore.sync();
+
+			// force reload of the drop-down
+			delete combo.lastQuery;
+
                 }
 	}, {
         	text: 'Create New Contact',
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
+			var combo = form.findField('user_id');
 			var values = form.getFieldValues();
+			values.user_id = null;
+
+			var user = Ext.ModelManager.create(values, 'TicketBrowser.User');
+			user.phantom = true;
+			user.save();
 
 			// add the form values to the store.
-			userStore.add(values);
+			userStore.add(user);
 			// the store should create a new object now (does he?)
+
+			// Tell the store to update the server via it's REST proxy
+			userStore.sync();
+
+			// force reload of the drop-down
+			delete combo.lastQuery;
                 }
         }],
 

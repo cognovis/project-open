@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.7 2011/06/08 17:54:22 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.8 2011/06/09 10:03:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -199,24 +199,7 @@ var userStore = Ext.create('Ext.ux.UserStore', {
 			autoSync: 	true,			// Write changes to the REST server ASAP
 			// Load all users into this table, this is rarely more than 2000...
 			// ToDo: Replace this with a server-side search function plus cache(?)
-			pageSize: 	1000000,
-		        proxy: {
-		                type: 'rest',
-		                url: '/intranet-rest/user',
-		                appendId: true,
-		                extraParams: {
-		                        format: 'json',
-					format_variant: 'sencha'
-		                },
-		                reader: { 
-					type: 'json', 
-					root: 'data',
-					totalProperty: 'total'
-				},
-		                writer: {
-		                    type: 'json'
-		                }
-		        }
+			pageSize: 	1000000
 		});
 
 

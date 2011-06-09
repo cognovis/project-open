@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.5 2011/06/08 17:54:22 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.6 2011/06/09 10:03:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -161,7 +161,24 @@ Ext.define('TicketBrowser.User', {
 		return record.get('first_names') + ' ' + record.get('last_name');
 	  }
 	}
-    ]
+    ],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/user',
+	appendId: true,
+	extraParams: {
+	    format: 'json',
+	    format_variant: 'sencha'
+	},
+	reader: { 
+	    type: 'json', 
+	    root: 'data',
+	    totalProperty: 'total'
+	},
+	writer: {
+	    type: 'json'
+	}
+    }
 });
 
 

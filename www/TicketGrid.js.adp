@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.5 2011/06/08 17:54:22 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.6 2011/06/09 10:03:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,6 +30,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     store: ticketStore,    
     iconCls: 'icon-grid',
 
+    listeners: {
+	itemdblclick: function() {
+	    alert('double click');
+	}
+    },
+
     initComponent: function(){
         Ext.apply(this, {
 	    plugins: [
@@ -46,7 +52,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                 }]
             },
             selModel: Ext.create('Ext.selection.RowModel', {
-                mode: 'SINGLE',
+                mode: 'MULTI',
                 listeners: {
                     scope: this,
                     select: this.onSelect
@@ -57,7 +63,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Ticket',
 			dataIndex: 'project_name',
 			flex: 1,
-			minWidth: 100,
+			minWidth: 150,
 			width: 200,
 			renderer: function(value, o, record) {
 				var	user_name = userStore.name_from_id(record.get('creation_user'));
@@ -231,7 +237,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	});
 	this.callParent();
     },
-    
+
     onSelect: function(selModel, rec){
 	this.ownerCt.onSelect(rec);
     },
@@ -351,6 +357,3 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
     }
 });
-
-
-
