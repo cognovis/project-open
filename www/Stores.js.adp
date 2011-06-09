@@ -300,7 +300,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 
 
 // fake store while developing
-var ticketServiceTypeStore = ticketPriorityStore;
+var ticketServiceTypeStore = ticketSlaStore;
 var ticketChannelStore = ticketPriorityStore;
 
 
