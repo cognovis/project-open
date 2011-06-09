@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.7 2011/06/09 12:10:03 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.8 2011/06/09 13:29:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,7 +33,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
     listeners: {
 	itemdblclick: function() {
-	    alert('double click');
+		var mainTabPanel = Ext.getCmp('mainTabPanel');
+		var tab = mainTabPanel.add({
+        	    title:	'Tab ' + (mainTabPanel.items.length + 1),
+		    xtype:	'ticketCompoundPanel'
+        	});
 	}
     },
 
