@@ -36,18 +36,11 @@ set form_fields_list [list]
 set captcha_question "What is two + two? (Please type answer as a number)" 
 set captcha_answer "4" 
 
-
 # ---------------------------------------------------------------
 # Build form 
 # ---------------------------------------------------------------
 
         set form_fields_str "
-		{fieldLabel: '[_ intranet-core.Email]',
-	               	name: 'email',
-			id: 'email',
-        	       	allowBlank:false,
-			vtype: 'unique_email',
-		},\n
 		{fieldLabel: '[_ intranet-core.First_names]',
 	               name: 'first_names',
         	       allowBlank:false
@@ -56,30 +49,41 @@ set captcha_answer "4"
                 	name: 'last_name',
 	        	allowBlank:false
 		},\n
-		{fieldLabel: '[_ intranet-core.Password]',
-                	name: 'password',
-	        	allowBlank:false,
-			inputType: 'password',
-			minLength: 6,
-			minLengthText: 'Password must be at least 6 characters long.'
-		},\n
-		{fieldLabel: '[_ intranet-core.lt_Password_Confirmation]',
-	               	name: 'password_confirm',
-        	       	allowBlank:false,
-			inputType: 'password',
-			minLength: 6,
-			minLengthText: 'Password must be at least 6 characters long.',
-			initialPassField: 'password'
-		},\n
-                {fieldLabel: 'This helps us to check if you are a human being. Please answer the following question:<br>$captcha_question',
-                        name: 'captcha',
-                        allowBlank:false
+                {fieldLabel: '[_ intranet-core.Email]',
+                        name: 'email',
+                        id: 'email',
+                        allowBlank:false,
+                        vtype: 'unique_email',
+                },\n
+                {fieldLabel: '[_ intranet-core.Phone]',
+                        name: 'phone',
+                        id: 'phone',
+                        allowBlank:true
                 },\n
 		{fieldLabel: '[_ intranet-core.Company_Name]', 
 			name: 'company_name',
 			allowBlank:true
 		}\n
 	"
+#                {fieldLabel: 'This helps us to check if you are a human being. Please answer the following question:<br>$captcha_question',
+#                        name: 'captcha',
+#                        allowBlank:false
+#                },\n
+#		{fieldLabel: '[_ intranet-core.Password]',
+#                	name: 'password',
+#	        	allowBlank:false,
+#			inputType: 'password',
+#			minLength: 6,
+#			minLengthText: 'Password must be at least 6 characters long.'
+#		},\n
+#		{fieldLabel: '[_ intranet-core.lt_Password_Confirmation]',
+#	               	name: 'password_confirm',
+#        	       	allowBlank:false,
+#			inputType: 'password',
+#			minLength: 6,
+#			minLengthText: 'Password must be at least 6 characters long.',
+#			initialPassField: 'password'
+#		},\n
 
 # set type to JS
 ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"

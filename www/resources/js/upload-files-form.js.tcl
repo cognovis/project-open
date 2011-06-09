@@ -1,4 +1,4 @@
-# /packages/intranet-customer-portal/www/resources/js/wizard/wizard-form.js.tcl
+# /packages/intranet-customer-portal/www/upload-files-form.js.tcl 
 #
 # Copyright (C) 2011, ]project-open[
 #
@@ -21,8 +21,12 @@ ad_page_contract {
     @param dynview
     @author klaus.hofeditz@project-open.com
 } {
-    { object_table "" }
+    { security_token "" }
+    { inquiry_id "" }
 }
+
+# ad_return_complaint 1 "KHD: inquiry_id: $inquiry_id"
+
 
 # ---------------------------------------------------------------
 # Security 
@@ -33,6 +37,12 @@ ad_page_contract {
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
+
+if { ""==$inquiry_id && ""==$security_token } {
+    # first enty from registered user 
+    # set inquiry_id [db_string nextval "select nextval('im_inquiries_customer_portal_seq')"]
+} 
+
 
 
 # ---------------------------------------------------------------
