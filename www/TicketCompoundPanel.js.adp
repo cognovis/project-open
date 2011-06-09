@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.3 2011/06/09 17:04:29 mcordova Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.4 2011/06/09 18:31:45 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,6 +36,8 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:	'center',
 	region: 'center',
 	layout: 'anchor',
+	width:	400,
+
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
@@ -48,15 +50,21 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		itemId: 'ticketContact',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel'
+	}, {
+		itemId: 'ticketFilestorage',
+		title: '#intranet-filestorage.Filestorage#',
+		xtype: 'fileStorageGrid'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
 	layout:	'anchor',
+	width:	1000,
+
 	items: [{
-		itemId: 'ticketFilestorage',
-		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
+		itemId: 'ticketFormRight',
+		title: '',
+		xtype: 'ticketFormRight'
 	}]
 
     }],
@@ -66,7 +74,8 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContact').loadTicket(rec);
         this.child('#center').child('#ticketCustomer').loadTicket(rec);
-        this.child('#east').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#east').child('#ticketFormRight').loadTicket(rec);
     }
 
 });
