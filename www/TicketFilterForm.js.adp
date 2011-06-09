@@ -24,7 +24,7 @@
 
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	extend: 'Ext.form.Panel',	
-	alias: 'widget.ticketfilterform',
+	alias: 'widget.ticketFilterForm',
 	title: 'Ticket Filters',
 	bodyStyle:'padding:5px 5px 0',
 	defaultType: 'textfield',

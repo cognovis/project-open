@@ -24,72 +24,85 @@
 
 
 Ext.define('TicketBrowser.TicketContainer', {
-    extend: 'Ext.container.Container',
-    alias: 'widget.ticketcontainer',
-    title: 'Loading...',
+	extend:		'Ext.container.Container',
+	alias:		'widget.ticketcontainer',
+	title:		'Loading...',
+	layout:		'border',
 
-    layout: 'border',
+	items:	[{
+		itemID:		'ticketFilter',
+		xtype:		'ticketFilterForm',
+		region:		'west',
+		width:		300,
+		title:		'#intranet-helpdesk.Filter_Tickets#',
+		split:		true,
+		margins:	'5 0 5 5'
+	}, {
+		itemId:	'main2',
+		title:	'#intranet-helpdesk.Tickets#',
+		region:	'center',
+		layout:	'border',
+		items:	[{
+			itemId:	'ticketGrid',
+			xtype:	'ticketGrid',
+			region:	'center'
+		}, {
+			itemId:	'preview',
+			xtype:	'ticketTabPanel',
+			region:	'south'
+		}]
+	}],
+	
+	initComponent: function(){
+		this.callParent();
+	},
 
-    items: [{
-	itemId: 'ticketGrid',
-	xtype: 'ticketGrid',
-	region: 'center'
-    }, {
-	itemId: 'preview',
-	xtype: 'ticketTabPanel',
-	region: 'south'
-    }],
-    
-    initComponent: function(){
-        this.callParent();
-    },
+	afterLayout: function() {
+		this.callParent();
+		// IE6 likes to make the content disappear, hack around it...
+		if (Ext.isIE6) { this.el.repaint(); }
+	},
+	
+	loadSla: function(rec) {
+		this.tab.setText(rec.get('project_name'));
+		this.child('#ticketGrid').loadSla(rec.getId());
+	},
+	
+	filterTickets: function(filterValues) {
+		this.tab.setText('Filtered Tickets');
+		this.child('#ticketGrid').filterTickets(filterValues);
+	},
+	
+	onSelect: function(rec) {
+		this.child('#preview').update({
+			title:	rec.get('project_name')
+		});
+		this.child('#preview').loadTicket(rec);
+	},
+	
+	togglePreview: function(show){
+		var preview = this.child('#preview');
+		if (show) {
+			preview.show();
+		} else {
+			preview.hide();
+		}
+	},
 
-    afterLayout: function() {
-        this.callParent();
-        // IE6 likes to make the content disappear, hack around it...
-        if (Ext.isIE6) { this.el.repaint(); }
-    },
-    
-    loadSla: function(rec) {
-        this.tab.setText(rec.get('project_name'));
-        this.child('#ticketGrid').loadSla(rec.getId());
-    },
-    
-    filterTickets: function(filterValues) {
-        this.tab.setText('Filtered Tickets');
-        this.child('#ticketGrid').filterTickets(filterValues);
-    },
-    
-    onSelect: function(rec) {
-        this.child('#preview').update({
-            title: rec.get('project_name')
-        });
-        this.child('#preview').loadTicket(rec);
-    },
-    
-    togglePreview: function(show){
-        var preview = this.child('#preview');
-        if (show) {
-            preview.show();
-        } else {
-            preview.hide();
-        }
-    },
+	// Inform the TicketInfo Panel to clear values for 
+	// entering a new ticket
+	onNewTicket: function(){
+		var preview = this.child('#preview');
+		var infoPanel = preview.child('#ticket');
+		infoPanel.onNewTicket();
+	},
 
-    // Inform the TicketInfo Panel to clear values for 
-    // entering a new ticket
-    onNewTicket: function(){
-        var preview = this.child('#preview');
-	var infoPanel = preview.child('#ticket');
-	infoPanel.onNewTicket();
-    },
-
-    toggleGrid: function(show){
-        var grid = this.child('#ticketGrid');
-        if (show) {
-            grid.show();
-        } else {
-            grid.hide();
-        }
-    }
+	toggleGrid: function(show){
+		var grid = this.child('#ticketGrid');
+		if (show) {
+			grid.show();
+		} else {
+			grid.hide();
+		}
+	}
 });
