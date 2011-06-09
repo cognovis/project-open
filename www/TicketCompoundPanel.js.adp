@@ -44,7 +44,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-core.Ticket#'
 	}, {
 		itemId: 'ticketCustomer',
-		title: '#intranet-core.Customer#',
+		title: '#intranet-sencha-ticket-tracker.Company#',
 		xtype: 'ticketCustomer'
 	}, {
 		itemId: 'ticketContact',
@@ -59,7 +59,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:	'east',
 	region: 'east',
 	layout:	'anchor',
-	width:	1000,
+	width:	800,
 
 	items: [{
 		itemId: 'ticketFormRight',

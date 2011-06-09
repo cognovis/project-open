@@ -70,15 +70,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 'remote',
 		store: ticketTypeStore
 	}, {
-	        fieldLabel:	'Expediente',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',
 	        xtype:		'textfield'
 	}, {
-        	fieldLabel:	'Area',
+        	fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
         	name:		'ticket_area',
 	        xtype:		'textfield'
 	}, {
-        	fieldLabel:     '#intranet-core.Program#',
+        	fieldLabel:     '#intranet-sencha-ticket-tracker.Program#',
         	name:           'ticket_program_id',
         	xtype:          'combobox',
         	valueField:     'category_id',
@@ -117,7 +117,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	],
 
 	buttons: [{
-            text: '#acs-kernel.common_Save#',
+            text: '#intranet-sencha-ticket-tracker.button_Save#',
             disabled: false,
             formBind: true,
 	    handler: function(){
@@ -131,7 +131,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                     url: '/intranet-helpdesk/new',
 		    method: 'GET',
                     submitEmptyText: false,
-                    waitMsg: 'Saving Data...'
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data_#'
 		});
 	    }
 	}],

@@ -60,7 +60,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         xtype: 'toolbar',
         cls: 'x-docked-noborder-top',
         items: [{
-            text: '#intranet-core.new_client_contact#',
+            text: '#intranet-sencha-ticket-tracker.New_Contact#',
             iconCls: 'icon-new-ticket',
             handler: function(){
                 alert('Not implemented');

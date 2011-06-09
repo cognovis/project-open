@@ -92,7 +92,7 @@ Ext.define('TEC.panel.TicketEntidad', {
                     name:   'ticket_sex',
                     value:  '1',
                     fieldLabel: 'Genero',
-                    boxLabel:   'hombre'
+                    boxLabel:   '#intranet-sencha-ticket-tracker.Male#'
                 },
                 {
                     xtype:          'radiofield',
@@ -101,16 +101,16 @@ Ext.define('TEC.panel.TicketEntidad', {
                     fieldLabel:     '',
                     labelSeparator: '',
                     hideEmptyLabel: false,
-                    boxLabel:       'mujer'
+                    boxLabel:       '#intranet-sencha-ticket-tracker.Female#'
                 }]
         },
         {
-            fieldLabel:     'Email',
+            fieldLabel:     '#intranet-sencha-ticket-tracker.Email#',
             name:           'ticket_first_mail',
             vtype:          'email'
         },
         {
-            fieldLabel:     'Mobile',
+            fieldLabel:     '#intranet-sencha-ticket-tracker.Mobile#',
             name:           'contact_telephone'
         }]
     ,

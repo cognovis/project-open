@@ -68,7 +68,7 @@ function showFileStorageNewForm(ticket_id) {
 	    }],
 
 	    buttons: [{
-		text: '#acs-kernel.common_Save#',
+		text: '#intranet-sencha-ticket-tracker.button_Save#',
 		handler: function(){
 		    var form = this.up('form').getForm();
 		    var form_fields = form.getFieldValues();
@@ -179,7 +179,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
 	      {text: "#intranet-helpdesk.Ticket_creation_date#", sortable: true, dataIndex: 'creation_date'},
 	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
-	      {text: "#intranet-core.Document_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
+	      {text: "#intranet-sencha-ticket-tracker.MIME_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
     columnLines: true,
     selModel: fileStorageGridSelModel,
@@ -194,28 +194,28 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
         },
         items: [{
             minWidth: 80,
-            text: '#acs-kernel.common_Save#'
+            text: '#intranet-sencha-ticket-tracker.button_Save#'
         },{
             minWidth: 80,
-            text: '#acs-kernel.common_Cancel#'
+            text: '#intranet-sencha-ticket-tracker.button_Cancel#'
         }]
     }, {
         xtype: 'toolbar',
         items: [{
             text:'#file-storage.Upload_New_File#',
-            tooltip:'#attachments.lt_Upload_New_Attachment#',
+            tooltip:'#intranet-sencha-ticket-tracker.Upload_New_Attachment#',
             iconCls:'add',
 	    handler: function() {
 		var tid = fileStorageStore.proxy.extraParams['ticket_id'];
 		showFileStorageNewForm(tid);
 	    }
         }, '-', {
-            text:'#acs-subsite.Options#',
-            tooltip:'Set options',
+            text:'#intranet-sencha-ticket-tracker.Options#',
+            tooltip:'#intranet-sencha-ticket-tracker.Set_options#',
             iconCls:'option'
         },'-',{
             itemId: 'removeButton',
-            text:'#general-comments.Delete_attachment#',
+            text:'#intranet-sencha-ticket-tracker.Delete_attachment#',
             tooltip:'#intranet-helpdesk.Remove_checked_items#',
             iconCls:'remove',
             disabled: false,

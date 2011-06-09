@@ -27,7 +27,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 	extend:	'Ext.container.Container',
 	alias:	'widget.ticketContainer',
 	id:	'ticketContainer',
-	title:	'Loading...',
+	title:	'#intranet-sencha-ticket-tracker.Loading___#',
 	layout:	'border',
 	deferredRender: false,
 

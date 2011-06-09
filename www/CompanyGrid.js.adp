@@ -58,7 +58,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
         xtype: 'toolbar',
         cls: 'x-docked-noborder-top',
         items: [{
-            text: '#intranet-core.Add_a_new_Company#',
+            text: '#intranet-sencha-ticket-tracker.New_Company#',
             iconCls: 'icon-new-ticket',
             handler: function(){
                 alert('Not implemented');

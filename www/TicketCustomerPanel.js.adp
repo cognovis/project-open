@@ -54,7 +54,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         }, {
                 name:           'company_name',
         	xtype:          'textfield',
-                fieldLabel:     '#intranet-core.Customer#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Company_name#',
                 allowBlank:     false
         }, {
                 name:           'vat_number',
@@ -63,14 +63,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         },{
                 name:           'company_type_id',
                 xtype:          'combobox',
-                fieldLabel:     '#intranet-core.Customer_Type#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Company_Type#',
                 value:          '',
                 valueField:     'category_id',
                 displayField:   'category',
                 store:          companyTypeStore
         }, {
                 xtype:          'textfield',
-                fieldLabel:     'Province',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Province#',
                 name:           'ticket_province'
         }],
         buttons: [{

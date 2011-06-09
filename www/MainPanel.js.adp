@@ -47,11 +47,11 @@ Ext.define('TicketBrowser.Main', {
 			xtype: 'ticketContainer'
 		}, {
 			itemId: 'company',
-			title: 	'#intranet-core.Companies#',
+			title: 	'#intranet-sencha-ticket-tracker.Companies#',
 			xtype: 'companyContainer'
 		}, {
 			itemId: 'contact',
-			title: '#intranet-core.Contact#',
+			title: '#intranet-sencha-ticket-tracker.Contacts#',
 			xtype: 'contactContainer'
 		}, {
 			itemId: 'sample',

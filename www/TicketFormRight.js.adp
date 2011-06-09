@@ -31,7 +31,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	frame:		true,
 	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
-	width:		1000,
+	width:		800,
 
 	fieldDefaults: {
 		msgTarget: 'side',
@@ -71,7 +71,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
-	    width:	1000,
+	    width:	800,
 
             layout: 	{ type: 'table', columns: 3 },
             items :[{
@@ -80,7 +80,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                fieldLabel:     '#intranet-core.Creation_Date#'
 	        }, {
 	                name:           'ticket_channel_id',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel#',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category',
@@ -103,7 +103,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	        }, {
 	                name:           'ticket_escalation_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-sencha_ticket_tracker.Escalation_Date#'
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Escalation_Date#'
 	        }, {
 	                name:           'ticket_reaction_date',
 	                xtype:          'datefield',
@@ -117,7 +117,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
-	    width:	1000,
+	    width:	800,
 
             layout: 	{ type: 'table', columns: 2 },
             items :[{
@@ -139,22 +139,24 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
-	    width:	1000,
+	    width:	800,
 
             layout: 	{ type: 'table', columns: 3 },
             items :[{
 			name:		'ticket_closed_in_1st_contact_p',
 			xtype:		'checkbox',
-			fieldLabel:     '#intranet-helpdesk.Close_in_1st_contact#',
-			value:		'1'
+			fieldLabel:     '#intranet-core.lt_Closed_in_1st_Contact#',
+			value:		'1',
+			width:		150
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
-			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additonal_info#',
-			value:		'1'
+			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additional_info#',
+			value:		'1',
+			width:		150
 	        }, {
 	                name:           'ticket_exit_channel_id',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Exit_Channel#',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category',
@@ -170,7 +172,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             checkboxToggle: false,
             collapsed:	false,
 	    frame:	false,
-	    width:	1000,
+	    width:	800,
 
             layout: 	{ type: 'table', columns: 2 },
             items :[{
@@ -182,7 +184,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			forceSelection: true,
 			queryMode: 'remote',
 			store: ticketStatusStore,
-			width: 500
+			width: 200
 	    }, {
 			fieldLabel: '#intranet-sencha-ticket-tracker.Escalated#',
 			name: 'ticket_queue_id',
@@ -192,7 +194,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			forceSelection: true,
 			queryMode: 'remote',
 			store: ticketQueueStore,
-			width: 500
+			width: 400
 	    }]
 	},
 
@@ -220,7 +222,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	],
 
 	buttons: [{
-            text: '#acs-kernel.common_Save#',
+            text: '#intranet-sencha-ticket-tracker.button_Save#',
             disabled: false,
             formBind: true,
 	    handler: function(){
@@ -234,7 +236,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
                     url: '/intranet-helpdesk/new',
 		    method: 'GET',
                     submitEmptyText: false,
-                    waitMsg: 'Saving Data...'
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data_#'
 		});
 	    }
 	}],

@@ -39,7 +39,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'company_name', 
 		fieldLabel: '#intranet-helpdesk.Company_name#'
 	}, {
-		fieldLabel: 'Company Type',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Type#',
 		name: 'company_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -48,7 +48,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: companyTypeStore
 	}, {
-		fieldLabel: 'Program',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
 		name: 'program_id',
 		xtype: 'combobox',
                 valueField: 'project_id',
@@ -57,7 +57,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: programStore
 	}, {
-		fieldLabel: 'Prio',
+		fieldLabel: '#intranet-core.Prio#',
 		name: 'ticket_prio_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -66,7 +66,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketPriorityStore
 	}, {
-		fieldLabel: 'SLA',
+		fieldLabel: '#intranet-helpdesk.SLA#',
 		name: 'parent_id',
 		xtype: 'combobox',
                 valueField: 'project_id',
@@ -76,7 +76,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketSlaStore
 	}, {
-		fieldLabel: 'Area',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Area#',
 		name: 'ticket_area_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -94,7 +94,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketServiceTypeStore
 	}, {
-		fieldLabel: '#intranet-helpdesk.Type#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_Type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -115,7 +115,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketStatusStore
 	}, {
-		fieldLabel: '#intranet-core.Ticket_origin#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		name: 'ticket_channel_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
@@ -124,13 +124,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode: 'remote',
 		store: ticketChannelStore
 	}, {
-		fieldLabel: 'Date Since',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Since#',
 		name: 'start_date',
 		xtype: 'datefield',
 		format: 'Y-m-d',
 		submitFormat: 'Y-m-d'
 	}, {
-		fieldLabel: 'Date Until',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Until#',
 		name: 'end_date',
 		xtype: 'datefield',
 		format: 'Y-m-d',
@@ -139,13 +139,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	],
 
 	buttons: [{
-            text: '#acs-kernel.common_Reset#',
+            text: '#intranet-sencha-ticket-tracker.Clear_Form#',
 	    handler: function(){
 		var form = this.up('form').getForm();
 		form.reset();
 	    }
 	}, {
-            text: '#acs-kernel.common_Search#',
+            text: '#intranet-sencha-ticket-tracker.button_Search#',
 	    handler: function() {
 		var form = this.up('form').getForm();
 		var filterValues = form.getFieldValues();

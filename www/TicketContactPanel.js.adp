@@ -54,7 +54,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 		}
         }, {
             xtype:	'fieldset',
-            title:	'User Information',
+            title:	'#intranet-sencha-ticket-tracker.User_Information#',
             checkboxToggle: false,
             defaultType: 'textfield',
             collapsed:	false,
@@ -75,26 +75,26 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 name:           'ticket_sex',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-core.Gender#',
-                boxLabel:       '#intranet-core.Male#',
+                boxLabel:       '#intranet-sencha-ticket-tracker.Male#',
                 value:          '1'
         }, {
                 name:           'ticket_sex',
                 xtype:          'radiofield',
-                boxLabel:       '#intranet-core.Female#',
+                boxLabel:       '#intranet-sencha-ticket-tracker.Female#',
                 value:          '0',
                 fieldLabel:     '',
                 labelSeparator: '',
                 hideEmptyLabel: false
         }],
         buttons: [{
-        	text: 'New Contact',
+        	text: '#intranet-sencha-ticket-tracker.button_New_Contact#',
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
 			var combo = form.findField('user_id');
 		}
 	}, {
-        	text: 'Save Changes',
+        	text: '#intranet-sencha-ticket-tracker.button_Save_Changes#',
         	handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
@@ -116,7 +116,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
                 }
 	}, {
-        	text: 'Create New Contact',
+        	text: '#intranet-sencha-ticket-tracker.Create_New_Contact#',
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('user_id');
