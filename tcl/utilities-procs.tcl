@@ -2310,6 +2310,8 @@ ad_proc -public util_exploit_url_p {{} string} {
   Determine whether string is an exploit URL, i.e.
   wheteher it contains strange or forbidden characters.
 } {
+    return 0
+
     set string [ns_urldecode $string]
     ns_log Notice "util_exploit_url_p: Checking URL for exploit attemts: '$string'"
 
