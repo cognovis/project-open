@@ -29,7 +29,6 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         id:		'ticketContactPanel',
 	title:		'Ticket Contact',
 	frame:		true,
-	height:		400,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 125

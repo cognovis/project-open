@@ -24,19 +24,19 @@
 
 
 var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
-    extend:	'Ext.container.Container',
-    alias:	'widget.ticketCompoundPanel',
-    // No id: This is not a singleton object
-    id:		'ticketCompoundPanel',
-    title:  'Loading...',
-    layout: 'border',
-    deferredRender: false,
+    extend:		'Ext.container.Container',
+    alias:		'widget.ticketCompoundPanel',
+    id:			'ticketCompoundPanel',
+    title:		'Loading...',
+    layout:		'border',
+    deferredRender:	false,
+    split:		true,
 
     items: [{
 	itemId:	'center',
 	region: 'center',
 	layout: 'anchor',
-	width:	400,
+	width:	500,
 
 	items: [{
 		itemId: 'ticketForm',
