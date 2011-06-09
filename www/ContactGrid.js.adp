@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.3 2011/06/09 12:10:02 po34demo Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.4 2011/06/09 18:03:16 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -48,7 +48,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         xtype: 'toolbar',
         cls: 'x-docked-noborder-top',
         items: [{
-            text: 'Add a new contact',
+            text: '#intranet-core.new_client_contact#',
             iconCls: 'icon-new-ticket',
             handler: function(){
                 alert('Not implemented');

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.9 2011/06/09 14:09:56 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.10 2011/06/09 18:03:17 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -161,10 +161,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 			}
 		}, {
-			header: 'Queue',
+			header: '#intranet-helpdesk.Queue#',
 			dataIndex: 'ticket_queue_id'
 		}, {
-			header: 'Dept',
+			header: '#intranet-core.Department#',
 			dataIndex: 'ticket_dept_id'
 		}, {
 			header: 'Service',
@@ -176,19 +176,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			header: 'Alarm Action',
 			dataIndex: 'ticket_alarm_action'
 		}, {
-			header: 'Hardware',
+			header: '#intranet-helpdesk.Conf_Item_type_Hardware#',
 			dataIndex: 'ticket_hardware_id'
 		}, {
 			header: 'Application',
 			dataIndex: 'ticket_application_id'
 		}, {
-			header: 'Conf Item',
+			header: '#intranet-helpdesk.Conf_Item#',
 			dataIndex: 'ticket_conf_item_id'
 		}, {
 			header: 'Customer Deadline',
 			dataIndex: 'ticket_customer_deadline'
 		}, {
-			header: '1st CC',
+			header: '#intranet-core.lt_Closed_in_1st_Contact#',
 			dataIndex: 'ticket_closed_in_1st_contact_p'
 		}
 	    ],
@@ -196,17 +196,17 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		xtype: 'toolbar',
 		cls: 'x-docked-noborder-top',
 		items: [{
-		    text: 'New Ticket',
+		    text: '#intranet-helpdesk.New_Ticket#',
 		    iconCls: 'icon-new-ticket',
 		    handler: this.onNewTicket
 		}, {
-		    text: 'Copy Ticket',
+		    text: '#acs-kernel.common_Copy#',
 		    iconCls: 'icon-new-ticket',
 		    handler: function(){
 			alert('Not implemented');
 		    }
 		},    {
-    		    text: 'Remove Ticket',
+    		    text: '#intranet-helpdesk.Remove_checked_items#',
     		    iconCls: 'icon-new-ticket',
     		    handler: function(){
     			alert('Not implemented');
@@ -226,7 +226,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    scope: this,
 		    toggleHandler: this.onPreviewChange
 		}, {
-		    text: 'Summary',
+		    text: '#intranet-core.Summary#',
 		    iconCls: 'icon-summary',
 		    enableToggle: true,
 		    pressed: true,
@@ -239,7 +239,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		store: ticketStore,
 		displayInfo: true,
 		displayMsg: 'Displaying tickets {0} - {1} of {2}',
-		emptyMsg: 'No tickets to display'
+		emptyMsg: '#intranet-dynfield.No_items#'
 	    }]
 	});
 	this.callParent();

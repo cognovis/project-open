@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.7 2011/06/09 17:32:25 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.8 2011/06/09 18:03:17 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -99,7 +99,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	queryMode:      'remote',
         	store:          'requestAreaStore'
 	}, {
-	        fieldLabel:	'Tipo de Servicio',
+	        fieldLabel:	'#intranet-helpdesk.SLA#',
 	        name:		'ticket_service_id',
 	        xtype:		'combobox',
 	        valueField:	'category_id',
