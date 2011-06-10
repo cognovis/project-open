@@ -272,31 +272,31 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     set ext_tables [list]
     set ext_table_join_where ""
     db_foreach ext_tables $ext_table_sql {
-	if {$ext_table_name == ""} { continue }
-	if {$ext_table_name == $main_table_name} { continue }
-
+        if {$ext_table_name == ""} { continue }
+        if {$ext_table_name == $main_table_name} { continue }
+        
         if {![lsearch ext_tables $ext_table_name]} { 
-           lappend ext_tables $ext_table_name
+            lappend ext_tables $ext_table_name
             append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
-       }
-
+        }
+    }        
     set bind_vars [ns_set create]
     set criteria [list]
     db_foreach attributes $attributes_sql {
 	
 	# Check whether the attribute is part of the form
-	if {[lsearch $form_elements $attribute_name] >= 0} {
-	    set value [template::element::get_value $form_id $attribute_name]
-	    if {"" == $value} { continue }
-	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
-	    ns_set put $bind_vars $attribute_name $value
-	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-	}
+        if {[lsearch $form_elements $attribute_name] >= 0} {
+            set value [template::element::get_value $form_id $attribute_name]
+            if {"" == $value} { continue }
+            if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
+            ns_set put $bind_vars $attribute_name $value
+            lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+        }
     }
-
+    
     set where_clause [join $criteria " and\n            "]
     if { ![empty_string_p $where_clause] } {
-	set where_clause " and $where_clause"
+        set where_clause " and $where_clause"
     }
 
     set sql "

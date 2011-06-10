@@ -198,3 +198,5 @@ END;' language 'plpgsql';
 
 SELECT inline_0();
 DROP FUNCTION inline_0();
+
+UPDATE im_menus SET url = '' /intranet-timesheet2-tasks/index?view_name=im_timesheet_task_list&task_status_id=9600'' WHERE package_name = ''intranet-timesheet2-tasks'' AND label = ''project_timesheet_task'' AND name = ''Tasks'';    
