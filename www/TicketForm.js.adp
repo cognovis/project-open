@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.12 2011/06/10 01:06:00 mcordova Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.13 2011/06/10 09:50:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -59,7 +59,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Main ticket fields
 	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
-	{ name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
+	{ name: 'parent_id',		xtype: 'hiddenfield' },
 	{
 	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',

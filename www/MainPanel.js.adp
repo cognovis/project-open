@@ -6,7 +6,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: MainPanel.js.adp,v 1.3 2011/06/09 22:28:30 mcordova Exp $
+ * @cvs-id $Id: MainPanel.js.adp,v 1.4 2011/06/10 09:50:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,10 +25,11 @@
  */
 
 Ext.define('TicketBrowser.Main', {
-	extend: 'Ext.container.Viewport',
-	layout: 'border',
-	id:	'mainPanel',
-	itemId: 'mainPanel',
+	extend:		'Ext.container.Viewport',
+	layout:		'border',
+	id:		'mainPanel',
+	itemId:		'mainPanel',
+	title:		'Loading ...',
 
 	// We need an "outer" container here, because we can't have
 	// a viewport with tabs apparently.

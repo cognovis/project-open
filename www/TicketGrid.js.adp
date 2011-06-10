@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.11 2011/06/09 22:28:31 mcordova Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.12 2011/06/10 09:50:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -369,4 +369,5 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     onSummaryChange: function(btn, pressed){
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
     }
+
 });
