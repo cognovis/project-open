@@ -163,6 +163,7 @@ var ticketOriginStore = Ext.create('Ext.data.Store', {
 var requestAreaStore = Ext.create('Ext.data.Store', {
 	storeId: 'requestAreaStore',
 	autoLoad: true,
+	pageSize: 500,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
 	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
@@ -182,6 +183,7 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 var requestAreaProgramStore = Ext.create('Ext.data.Store', {
 	storeId: 'requestAreaProgramStore',
 	autoLoad: true,
+	pageSize: 500,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
 	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
