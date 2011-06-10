@@ -47,7 +47,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'company_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: companyTypeStore
@@ -55,11 +55,11 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
 		name: 'program_id',
 		xtype: 'combobox',
-                valueField: 'project_id',
-                displayField: 'project_name',
+                valueField: 'category_id',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
-		store: programStore
+		store: requestAreaProgramStore
 	}, {	name: 'ticket_file', 
 		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#'
 	}, {
@@ -67,7 +67,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'ticket_area_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: requestAreaStore
@@ -86,7 +86,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketTypeStore
@@ -98,7 +98,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'ticket_status_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketStatusStore

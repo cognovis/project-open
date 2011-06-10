@@ -70,29 +70,11 @@ Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
 });
 
 
-var ticketQueueStore = Ext.create('Ext.data.Store', {
-	storeId: 'ticketQueueStore',
-	autoLoad: true,
-	model: 'TicketBrowser.Profile',		// Causes the Drop-Down not to load
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_profile',
-		appendId: true,
-		extraParams: {
-			format: 'json'
-		},
-		reader: { type: 'json', root: 'data' }
-	}
-});
-
-
-
-
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId: 'ticketTypeStore',
 	autoLoad: true,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category'],
+	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -110,7 +92,7 @@ var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId: 'ticketStatusStore',
 	autoLoad: true,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category'],
+	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -127,7 +109,7 @@ var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId: 'companyTypeStore',
 	autoLoad: true,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category'],
+	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -164,7 +146,7 @@ var ticketOriginStore = Ext.create('Ext.data.Store', {
 	storeId: 'ticketOriginStore',
 	autoLoad: true,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category'],
+	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -182,7 +164,7 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 	storeId: 'requestAreaStore',
 	autoLoad: true,
 	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category'],
+	fields: ['category_id', 'category', 'category_translated'],
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -195,6 +177,24 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 	}
 });
 
+
+
+var requestAreaProgramStore = Ext.create('Ext.data.Store', {
+	storeId: 'requestAreaProgramStore',
+	autoLoad: true,
+	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
+	fields: ['category_id', 'category', 'category_translated'],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Request Area\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
 
 
 var ticketPriorityData = [
@@ -319,6 +319,6 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 
 // fake store while developing
 var ticketServiceTypeStore = ticketSlaStore;
-var ticketChannelStore = ticketPriorityStore;
-
+var ticketChannelStore = ticketOriginStore; // look up for ticket_origin
+var ticketQueueStore = ticketPriorityStore;
 
