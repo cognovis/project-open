@@ -83,16 +83,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
-		        displayField:	'category',
+		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketServiceTypeStore
+		        store: 		ticketChannelStore
 	        }, {
 	                name:           'ticket_channel_detail_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel_Details#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
-		        displayField:	'category',
+		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
 		        store: 		ticketServiceTypeStore
@@ -159,7 +159,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
-		        displayField:	'category',
+		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
 		        store: 		ticketServiceTypeStore
@@ -180,7 +180,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			name: 'ticket_status_id',
 			xtype: 'combobox',
 	                valueField: 'category_id',
-	                displayField: 'category',
+	                displayField: 'category_translated',
 			forceSelection: true,
 			queryMode: 'remote',
 			store: ticketStatusStore,
@@ -194,7 +194,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			forceSelection: true,
 			queryMode: 'remote',
 			store: ticketQueueStore,
-			width: 400
+			width: 300
 	    }]
 	},
 

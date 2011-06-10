@@ -66,7 +66,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Company_Type#',
                 value:          '',
                 valueField:     'category_id',
-                displayField:   'category',
+                displayField:   'category_translated',
                 store:          companyTypeStore
         }, {
                 xtype:          'textfield',
