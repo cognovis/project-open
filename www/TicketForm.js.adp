@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.10 2011/06/09 22:28:31 mcordova Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.11 2011/06/10 00:35:59 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -65,7 +65,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketTypeStore
@@ -76,28 +76,34 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	}, {
         	fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
         	name:		'ticket_area',
-	        xtype:		'textfield'
+        	xtype:          'combobox',
+        	valueField:     'category_id',
+        	displayField:   'category_translated',
+        	valueField:     'id',
+        	triggerAction:  'all',
+        	queryMode:      'remote',
+        	store:          requestAreaStore
 	}, {
         	fieldLabel:     '#intranet-sencha-ticket-tracker.Program#',
         	name:           'ticket_program_id',
         	xtype:          'combobox',
         	valueField:     'category_id',
-        	displayField:   'category',
+        	displayField:   'category_translated',
         	valueField:     'id',
         	triggerAction:  'all',
-        	forceSelection: true,
+        	width: 		320,
         	editable:       false,
         	queryMode:      'remote',
-        	store:          'requestAreaStore'
+        	store:          requestAreaProgramStore
 	}, {
-	        fieldLabel:	'#intranet-helpdesk.SLA#',
-	        name:		'ticket_service_id',
-	        xtype:		'combobox',
-	        valueField:	'category_id',
-	        displayField:	'category',
-	        forceSelection: true,
-	        queryMode: 	'remote',
-	        store: 		ticketServiceTypeStore
+	        fieldLabel:	'#intranet-helpdesk.Status#',
+		name: 		'ticket_status_id',
+		xtype: 		'combobox',
+                valueField: 	'category_id',
+                displayField: 	'category_translated',
+		forceSelection: true,
+		queryMode: 	'remote',
+		store: 		ticketStatusStore
 	},
 
 	// Additional fields to add later
