@@ -152,6 +152,15 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 
 	}],
 
+	afterRender: function() {
+		var filterForm = Ext.getCmp('ticketFilterForm');
+		var form = filterForm.getForm();
+		var filterValues = form.getFieldValues();
+		var grid = Ext.getCmp('ticketGrid');
+		grid.filterTickets(filterValues);
+		return true;
+	}
+
 });
 
 

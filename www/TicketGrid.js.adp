@@ -369,4 +369,5 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     onSummaryChange: function(btn, pressed){
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
     }
+
 });

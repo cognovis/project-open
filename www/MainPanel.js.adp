@@ -25,10 +25,11 @@
  */
 
 Ext.define('TicketBrowser.Main', {
-	extend: 'Ext.container.Viewport',
-	layout: 'border',
-	id:	'mainPanel',
-	itemId: 'mainPanel',
+	extend:		'Ext.container.Viewport',
+	layout:		'border',
+	id:		'mainPanel',
+	itemId:		'mainPanel',
+	title:		'Loading ...',
 
 	// We need an "outer" container here, because we can't have
 	// a viewport with tabs apparently.

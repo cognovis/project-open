@@ -59,7 +59,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Main ticket fields
 	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
-	{ name: 'parent_id', fieldLabel: 'SLA', allowBlank:false},
+	{ name: 'parent_id',		xtype: 'hiddenfield' },
 	{
 	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',
