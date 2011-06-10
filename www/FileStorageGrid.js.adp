@@ -177,7 +177,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		  }
 	      },
 	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
-	      {text: "#intranet-helpdesk.Ticket_creation_date#", sortable: true, dataIndex: 'creation_date'},
+	      {text: "#intranet-sencha-ticket-tracker.Creation_Date#", sortable: true, dataIndex: 'creation_date'},
 	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
 	      {text: "#intranet-sencha-ticket-tracker.MIME_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
@@ -257,6 +257,12 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
         this.ticket_id = ticket_id;
 	fileStorageStore.load();
+    },
+
+    // Somebody pressed the "New Ticket" button:
+    // Prepare the form for entering a new ticket
+    newTicket: function() {
+	// ToDo: Load empty Filestorage
     }
 
 });

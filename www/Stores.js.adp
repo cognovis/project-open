@@ -212,7 +212,7 @@ var ticketPriorityData = [
 ];
 
 var userStore = Ext.create('Ext.ux.UserStore', {
-	storeId:	'employeeStore',
+	storeId:	'userStore',
 	model:		'TicketBrowser.User',
 	remoteSort:	true,
 	autoLoad: 	true,
@@ -300,22 +300,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 	sorters: [{
 		property: 'creation_date',
 		direction: 'DESC'
-	}],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_company',
-		extraParams: {
-			format: 'json',		// Tell the ]po[ REST to return JSON data.
-		},
-		reader: {
-			type: 'json',		// Tell the Proxy Reader to parse JSON
-			root: 'data',		// Where do the data start in the JSON file?
-			totalProperty: 'total'
-		},
-		writer: {
-			type: 'json'
-		}
-	}
+	}]
 });
 
 

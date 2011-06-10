@@ -41,7 +41,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		fieldLabel: '#intranet-core.VAT_Number#'
 	}, {	
 		name: 'company_name', 
-		fieldLabel: '#intranet-helpdesk.Company_name#'
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Name#'
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Type#',
 		name: 'company_type_id',

@@ -77,7 +77,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             items :[{
 	                name:           'creation_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-core.Creation_Date#'
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Creation_Date#'
 	        }, {
 	                name:           'ticket_channel_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Incoming_Channel#',
@@ -236,7 +236,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
                     url: '/intranet-helpdesk/new',
 		    method: 'GET',
                     submitEmptyText: false,
-                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data_#'
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
 		});
 	    }
 	}],
@@ -248,9 +248,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
-	onNewTicket: function() {
-	        var form = this.getForm();
-	        form.reset();
+	newTicket: function() {
+                var form = this.getForm();
+                form.reset();
 	}
 });
 

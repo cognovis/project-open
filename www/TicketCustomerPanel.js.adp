@@ -37,6 +37,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 name:           'company_id',
                 xtype:          'combobox',
                 fieldLabel:     '#intranet-core.Customer#',
+		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
                 value:          '#intranet-core.New_Customer#',
                 valueField:     'company_id',
                 displayField:   'company_name',
@@ -69,20 +70,93 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 displayField:   'category_translated',
                 store:          companyTypeStore
         }, {
+                name:           'company_province',
                 xtype:          'textfield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Province#',
-                name:           'ticket_province'
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Province#'
         }],
         buttons: [{
-        	text: '#intranet-core.Add_a_new_Company#',
+		itemId:		'addButton',
+        	text: 		'#intranet-core.Add_a_new_Company#',
         	handler: function(){
-                        alert ('Not implemented Yet')
+                        var form = this.ownerCt.ownerCt.getForm();
+                        form.reset();                   // empty fields to allow for entry of new contact
+                        var combo = form.findField('company_id');
+
+			// Enable the button to save the new company
+			var createButton = this.ownerCt.child('#createButton');
+			createButton.show();
+			
+			// Disable the "Save Changes" button
+			var createButton = this.ownerCt.child('#saveButton');
+			createButton.hide();
+			
+			// Diable this button
+			this.hide();
+                }
+	}, {
+		itemId:		'saveButton',
+        	text: 		'#intranet-core.Save_Changes#',
+        	handler: function(){
+			var form = this.ownerCt.ownerCt.getForm();
+			var combo = form.findField('company_id');
+			var values = form.getFieldValues();
+			var company_id = combo.getValue();
+			
+			// find the company in the store
+			var company_record = companyStore.findRecord('company_id',company_id);
+			company_record.set('company_name', form.findField('company_name').getValue());
+			company_record.set('company_type_id', form.findField('company_type_id').getValue());
+			company_record.set('vat_number', form.findField('vat_number').getValue());
+			company_record.set('company_province', form.findField('company_province').getValue());
+
+			// Tell the store to update the server via it's REST proxy
+			companyStore.sync();
+                }
+	}, {
+		itemId:		'createButton',
+        	text: 		'#intranet-sencha-ticket-tracker.Save_New_Company#',
+		hidden:		true,			// only show when in "adding mode"
+        	handler: function(){
+			var form = this.ownerCt.ownerCt.getForm();
+			var combo = form.findField('company_id');
+			var values = form.getFieldValues();
+			var company_name = values.company_name;
+			values.company_id = null;
+
+			var company = Ext.ModelManager.create(values, 'TicketBrowser.Company');
+			company.phantom = true;
+			company.save();
+
+			// add the form values to the store.
+			companyStore.add(company);
+			// the store should create a new object now (does he?)
+
+			// Tell the store to update the server via it's REST proxy
+			companyStore.sync();
+
+			// force reload of the drop-down
+			delete combo.lastQuery;
+
+			// set the combo to the new company
+			var new_company = companyStore.findRecord('company_name',company_name);
+			var new_company_id = new_company.get('company_id');
+			combo.setValue(new_company_id);
+
+			// Disable this button and re-enable the "New Company" button
+			var addButton = this.ownerCt.child('#addButton');
+                        addButton.show();
+			this.hide();
+
+			// Re-enable the "Save Changes" button
+			var createButton = this.ownerCt.child('#saveButton');
+			createButton.show();
                 }
         }],
 
 	// For a new ticket reset the values of the form.
-	onNewTicket: function() {
-		this.reset();
+	newTicket: function() {
+                var form = this.getForm();
+                form.reset();
 	},
 
 	loadTicket: function(rec){

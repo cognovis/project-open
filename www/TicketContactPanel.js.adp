@@ -38,7 +38,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 xtype:          'combobox',
                 fieldLabel:     '#intranet-core.User#',
                 value:          '#intranet-core.New_User#',
-		valueNotFoundText: 'Create a new User',
+		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_User#',
                 valueField:     'user_id',
                 displayField:   'name',
                 store:          userStore,
@@ -74,7 +74,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	}, {
                 name:           'ticket_sex',
                 xtype:          'radiofield',
-                fieldLabel:     '#intranet-core.Gender#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.Male#',
                 value:          '1'
         }, {
@@ -140,7 +140,6 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         }],
 
 	loadTicket: function(rec){
-
 		// Customer contact ID, may be NULL
 		var contact_id = rec.data.ticket_customer_contact_id;
 		var contact_record = userStore.findRecord('user_id',contact_id);
@@ -148,7 +147,14 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 		// load the information from the record into the form
 		this.loadRecord(contact_record);
-	}
+	},
+
+        // Somebody pressed the "New Ticket" button:
+        // Prepare the form for entering a new ticket
+        newTicket: function() {
+		var form = this.getForm();
+                form.reset();
+        }
 
 });
 
