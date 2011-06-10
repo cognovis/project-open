@@ -412,26 +412,59 @@ ad_proc -private im_rest_post_object_type_im_company {
 } {
     ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # Store XML values into local variables
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+	}
+	default {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
     }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
+    # --------------------------------------------
     # Check that all required variables are there
-    set required_vars {company_name company_path company_status_id company_type_id main_office_id}
+    set required_vars {company_name}
     foreach var $required_vars {
 	if {![info exists $var]} { 
 	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
+
+    # --------------------------------------------
+    # Make sure the variable "company_path" exists.
+    if {![info exists company_path] || "" == $company_path} {
+	# Take company_name, make it lower and replace any strange chars with "_"
+	set company_path [string tolower $company_name]
+	regsub -all {[^a-z0-9]} $company_path "_" company_path
+    }
+
+    # --------------------------------------------
     # Check for duplicate
     set dup_sql "
 	select	count(*)
@@ -442,6 +475,59 @@ ad_proc -private im_rest_post_object_type_im_company {
     if {[db_string duplicates $dup_sql]} {
 	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
     }
+
+
+    # Special case: The direction of a company is stored in it's "Office".
+    # So let's create a new office if the variable "main_office_id" isn't
+    # defined.
+    ns_log Notice "im_rest_post_object_type_$object_type: Before new main_office_id for company"
+    if {![info exists main_office_id] || "" == $main_office_id || 0 == $main_office_id} {
+
+	ns_log Notice "im_rest_post_object_type_$object_type: Create new main_office_id for company"
+
+	# Make sure all important fields are somehow defined
+	if {![info exists office_name] || "" == $office_name} { set office_name "[im_opt_val company_name] Main Office" }
+	if {![info exists office_path] || "" == $office_path} { 
+	    # Take company_name, make it lower and replace any strange chars with "_"
+	    set office_path [string tolower [im_opt_val company_name]]
+	    regsub -all {[^a-z0-9]} $office_path "_" office_path
+	}
+	if {![info exists office_status_id] || "" == $office_status_id} { set office_status_id [im_office_status_active] }
+	if {![info exists office_type_id] || "" == $office_type_id} { set office_type_id [im_office_type_main] }
+
+	set main_office_id [db_string office_exists "select office_id from im_offices where office_name = :office_name" -default ""]
+	
+	if {"" == $main_office_id} {
+	    set main_office_id [office::new \
+				    -office_name $office_name \
+				    -office_path $office_path \
+				    -office_type_id $office_type_id \
+				    -office_status_id $office_status_id
+			       ]
+	}
+
+	if {[catch {
+	    im_rest_object_type_update_sql \
+		-rest_otype "im_office" \
+		-rest_oid $main_office_id \
+		-hash_array [array get hash]
+	    
+	} err_msg]} {
+	    return [im_rest_error -http_status 406 -message "Error updating im_office: '$err_msg'."]
+	}
+
+    }
+
+    # Create some default parameters in order to reduce the number of parameters necessary
+    if {![info exists company_status_id] || "" == $company_status_id} { 
+	# By default make the company "active"
+	set company_status_id [im_company_status_active]
+    }
+    if {![info exists company_type_id] || "" == $company_type_id} { 
+	# By default create a "customer" (should be more frequent then "provider"...)
+	set company_type_id [im_company_type_customer]
+    }
+
 
     if {[catch {
 	set rest_oid [db_string new_company "
@@ -626,9 +712,14 @@ ad_proc -private im_rest_post_object_type_user {
 	    }
 	}
     }
-
     ns_log Notice "im_rest_post_object_type_user: hash_array=[array get hash_array]"
 
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_user: key=$key, value=$value"
+	set $key $value
+    }
 
     # Check that all required variables are there
     set required_vars {first_names last_name}
@@ -638,13 +729,13 @@ ad_proc -private im_rest_post_object_type_user {
 	}
     }
 
-    // Fake the following required variables
+    # Fake the following required variables
     if {![info exists username]} { set username "$first_names $last_name"}
     if {![info exists screen_name]} { set screen_name $username }
     if {![info exists email]} { 
 	set email "${first_names}.${last_name}@nowhere.com"
 	set email [string tolower $email]
-	regsub -all {[^a-zA-Z0-9_\-]} $email "." email
+	regsub -all {[^a-zA-Z0-9_\-@]} $email "." email
     }
     if {![info exists password]} { set password [ad_generate_random_string] }
     if {![info exists url]} { set url "" }
@@ -667,6 +758,7 @@ ad_proc -private im_rest_post_object_type_user {
     }
 
     if {[catch {
+	ns_log Notice "im_rest_post_object_type_user: before auth::create_user"
 	array set creation_info [auth::create_user \
 				     -username $username \
 				     -email $email \
@@ -676,6 +768,7 @@ ad_proc -private im_rest_post_object_type_user {
 				     -password $password \
 				     -url $url \
 				    ]
+	ns_log Notice "im_rest_post_object_type_user: after auth::create_user"
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
 	    return [im_rest_error -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
