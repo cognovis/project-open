@@ -81,6 +81,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	displayField:   'category_translated',
         	valueField:     'id',
         	triggerAction:  'all',
+        	width: 		300,
+        	editable:       false,
         	queryMode:      'remote',
         	store:          requestAreaStore
 	}, {
@@ -94,7 +96,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         	width: 		320,
         	editable:       false,
         	queryMode:      'remote',
-        	store:          requestAreaProgramStore
+        	store:          requestAreaProgramStore,
+		listeners:{
+		    // The user has selected a program from the drop-down box.
+		    // Lookup the area (parent of program) and fill the form with the fields.
+		    'select': function() {
+			var program_id = this.getValue();
+			var area = requestAreaProgramStore.findRecord('id',program_id);
+		        if (area == null || typeof area == "undefined") { return; }
+			this.ownerCt.loadRecord(area);
+		    }
+		}
 	}, {
 	        fieldLabel:	'#intranet-helpdesk.Status#',
 		name: 		'ticket_status_id',
