@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.4 2011/06/09 22:28:31 mcordova Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.5 2011/06/10 00:41:23 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -66,7 +66,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Company_Type#',
                 value:          '',
                 valueField:     'category_id',
-                displayField:   'category',
+                displayField:   'category_translated',
                 store:          companyTypeStore
         }, {
                 xtype:          'textfield',
