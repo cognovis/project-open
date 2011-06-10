@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.13 2011/06/09 22:28:30 mcordova Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.14 2011/06/10 14:24:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -177,7 +177,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		  }
 	      },
 	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
-	      {text: "#intranet-helpdesk.Ticket_creation_date#", sortable: true, dataIndex: 'creation_date'},
+	      {text: "#intranet-sencha-ticket-tracker.Creation_Date#", sortable: true, dataIndex: 'creation_date'},
 	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
 	      {text: "#intranet-sencha-ticket-tracker.MIME_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
@@ -257,6 +257,12 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
         this.ticket_id = ticket_id;
 	fileStorageStore.load();
+    },
+
+    // Somebody pressed the "New Ticket" button:
+    // Prepare the form for entering a new ticket
+    newTicket: function() {
+	// ToDo: Load empty Filestorage
     }
 
 });

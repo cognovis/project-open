@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.7 2011/06/09 20:17:38 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.8 2011/06/10 14:24:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -155,8 +155,27 @@ Ext.define('TicketBrowser.Company', {
 	'annual_revenue_id',		// How much turnover do we have with company?
 	'vat_number',			// Company's VAT ID
 	'company_group_id',		// Does the company belong to a group structure?
-	'business_sector_id'		// Business sector of the company
-    ]
+	'business_sector_id',		// Business sector of the company
+
+	'company_province'		// Custom field "province"
+    ],
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_company',
+		extraParams: {
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+
 });
 
 

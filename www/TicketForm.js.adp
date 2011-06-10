@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.13 2011/06/10 09:50:41 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.14 2011/06/10 14:24:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,6 +51,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
 	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
 	{ name: 'ticket_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: '30000' },
 	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
 	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
 
@@ -61,6 +62,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
 	{ name: 'parent_id',		xtype: 'hiddenfield' },
 	{
+	        fieldLabel: '#intranet-sencha-ticket-tracker.Service_Type#',
+		name: 'ticket_service_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category_translated',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketTypeStore
+	}, {
 	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
@@ -107,15 +117,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			this.ownerCt.loadRecord(area);
 		    }
 		}
-	}, {
-	        fieldLabel:	'#intranet-helpdesk.Status#',
-		name: 		'ticket_status_id',
-		xtype: 		'combobox',
-                valueField: 	'category_id',
-                displayField: 	'category_translated',
-		forceSelection: true,
-		queryMode: 	'remote',
-		store: 		ticketStatusStore
 	},
 
 	// Additional fields to add later
@@ -149,7 +150,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                     url: '/intranet-helpdesk/new',
 		    method: 'GET',
                     submitEmptyText: false,
-                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data_#'
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
 		});
 	    }
 	}],
@@ -161,10 +162,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
-	onNewTicket: function() {
+	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
-	        alert('New Ticket');
+		// Use TCL function to create the next ticket Nr
+		var name = '#intranet-helpdesk.Ticket#' + ' <%= [im_ticket::next_ticket_nr] %>';
+		form.findField('project_name').setValue(name);
 	}
 });
 

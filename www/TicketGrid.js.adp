@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.12 2011/06/10 09:50:41 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.13 2011/06/10 14:24:06 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -77,7 +77,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				return Ext.String.format('<div class="ticket"><b>{0}</b><span class="author">{1}</span></div>',value, user_name);
 			}
 		}, {
-			header: '#intranet-core.Creation_Date#',
+			header: '#intranet-sencha-ticket-tracker.Creation_Date#',
 			dataIndex: 'ticket_creation_date',
 			width: 80
 		}, {
@@ -198,7 +198,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		items: [{
 		    text: '#intranet-helpdesk.New_Ticket#',
 		    iconCls: 'icon-new-ticket',
-		    handler: this.onNewTicket
+		    handler: function() {
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+		        compoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);	
+			compoundPanel.newTicket();
+		    }
 		}, {
 		    text: '#intranet-sencha-ticket-tracker.Copy_Ticket#',
 		    iconCls: 'icon-new-ticket',
@@ -211,21 +217,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     		    handler: function(){
     			alert('Not implemented');
     		    }
-    		}, '-', {
-		    text: '#intranet-sencha-ticket-tracker.Show_Grid#',
-		    iconCls: 'icon-preview',
-		    enableToggle: true,
-		    pressed: true,
-		    scope: this,
-		    toggleHandler: this.onGridChange
-    		}, '-', {
-		    text: '#intranet-sencha-ticket-tracker.Show_Ticket#',
-		    iconCls: 'icon-preview',
-		    enableToggle: true,
-		    pressed: true,
-		    scope: this,
-		    toggleHandler: this.onPreviewChange
-		}, {
+		}, '-', {
 		    text: '#intranet-core.Summary#',
 		    iconCls: 'icon-summary',
 		    enableToggle: true,

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.13 2011/06/10 01:04:28 mcordova Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.14 2011/06/10 14:24:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -212,7 +212,7 @@ var ticketPriorityData = [
 ];
 
 var userStore = Ext.create('Ext.ux.UserStore', {
-	storeId:	'employeeStore',
+	storeId:	'userStore',
 	model:		'TicketBrowser.User',
 	remoteSort:	true,
 	autoLoad: 	true,
@@ -300,22 +300,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 	sorters: [{
 		property: 'creation_date',
 		direction: 'DESC'
-	}],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_company',
-		extraParams: {
-			format: 'json',		// Tell the ]po[ REST to return JSON data.
-		},
-		reader: {
-			type: 'json',		// Tell the Proxy Reader to parse JSON
-			root: 'data',		// Where do the data start in the JSON file?
-			totalProperty: 'total'
-		},
-		writer: {
-			type: 'json'
-		}
-	}
+	}]
 });
 
 
