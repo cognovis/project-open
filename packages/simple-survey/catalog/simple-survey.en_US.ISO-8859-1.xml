@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="simple-survey" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Fill_out_survey">auszufüllender Statusbericht</msg>
+  <msg key="Select_One">Select One</msg>
+  <msg key="Select_one">Select one</msg>
+</message_catalog>
