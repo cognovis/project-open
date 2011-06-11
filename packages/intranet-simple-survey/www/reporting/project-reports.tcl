@@ -254,29 +254,56 @@ set border 0
 set gif_size 16
 if {[info exists color_survey($survey_id)]} {
     
+    set old_response_id ""
+    set old_key ""
+    set old_question_key ""
     # A "color survey" with at least one "color question" consisting of know color codes
     db_foreach inner $inner_sql {
         set key "$project_id-$monday_julian"
-        
-        set color_question_p [info exists color_question($question_id)]
-        if {$color_question_p && "" == $color_question($question_id)} { set color_question_p 0 }
-        if {!$color_question_p} { continue }
-        
-        # Convert Green/Yellow/Red responses into BB images
-        set color [string tolower [lang::util::localize $response "en_US"]]
-        
-        set alt_text $question_text
-        set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
-        set html "<a href='$one_response_url$response_id'>$gif</a>\n"
-        
-        # Append html to the cell
-        set val ""
-        if {[info exists report_hash($key)]} { set val $report_hash($key) }
-        if {"" != $val} { append val "<br>" }
-        append val $html
-        set report_hash($key) $val
+	set question_key "$response_id-$question_id"
+	
+	# Do nothing if the answer for this question already showed up
+	if {$old_question_key ne $question_key} {
+
+	    set html ""
+	    set color_question_p [info exists color_question($question_id)]
+	    if {$color_question_p && "" == $color_question($question_id)} { set color_question_p 0 }
+	    if {!$color_question_p} { continue }
+
+	    if {$old_key ne $key} {
+		# We fill out a new cell, close the old table and start building the new table
+		if {$old_key ne ""} {
+		    set report_hash($old_key) "$report_hash($old_key) </td></tr></table>\n"
+		}
+		set html "\n<table><tr><td>"
+		set old_response_id $response_id
+		set old_key $key
+	    } 
+	    
+	    if {$old_response_id ne $response_id} {
+		# We have a new response but in the same week, start a new column
+		set html " </td><td> \n"
+		set old_response_id $response_id
+	    }
+	    
+	    # Convert Green/Yellow/Red responses into BB images
+	    set color [string tolower [lang::util::localize $response "en_US"]]
+	    
+	    set alt_text $question_text
+	    set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
+	    append html "<a href='$one_response_url$response_id'>$gif</a>\n"
+	    
+	    # Append html to the cell
+	    set val ""
+	    if {[info exists report_hash($key)]} { set val $report_hash($key) }
+	    if {"" != $val} { append val "<br>" }
+	    append val $html
+	    set report_hash($key) $val
+	    set old_question_key $question_key
+	}
     }
-    
+    # Close the table for the last cell
+    set report_hash($old_key) "$report_hash($old_key) </td></tr></table>\n"
 } else {
     
     db_foreach inner $inner_sql {
