@@ -71,7 +71,7 @@ if {"" == $payment_id} {
 	select to_char(min(sb.start_block),'Month DD, YYYY') as start_block
 	  from im_start_months sb,
 	       dual
-	where sb.start_block >= to_date(sysdate,'yyyymmdd')}] } {
+	  where sb.start_block >= sysdate}] } {
 	    ad_return_error "[_ intranet-payments.Start_block_error]" "[_ intranet-payments.lt_The_intranet_start_bl]"
 	    return
     }
