@@ -5,7 +5,7 @@ ad_library {
 
     @author Jon Salz (jsalz@arsdigita.com)
     @creation-date 15 May 2000
-    @cvs-id $Id: request-processor-procs.tcl,v 1.102.2.1 2010/05/11 23:38:17 donb Exp $
+    @cvs-id $Id: request-processor-procs.tcl,v 1.105 2011/05/15 16:43:24 ryang Exp $
 }
 
 #####
@@ -699,7 +699,10 @@ ad_proc -private rp_filter { why } {
       ad_try {
         switch -glob -- [ad_conn extra_url] {
             admin/* {
-              permission::require_permission -object_id [ad_conn object_id] -privilege admin
+                # double check someone has not accidentally granted
+                # admin to public and require logins for all admin pages
+                auth::require_login
+                permission::require_permission -object_id [ad_conn object_id] -privilege admin
             }
             sitewide-admin/* {
                 permission::require_permission -object_id [acs_lookup_magic_object security_context_root] -privilege admin
@@ -775,8 +778,12 @@ ad_proc rp_report_error {
     #Serve the stacktrace
     set params [list [list stacktrace $message] [list user_id $user_id] [list error_file $error_file] [list prev_url $prev_url] [list feedback_id $feedback_id] [list error_url $error_url] [list bug_package_id $bug_package_id] [list vars_to_export $vars_to_export]]
     
-    if {![parameter::get -package_id [ad_acs_kernel_id] -parameter RestrictErrorsToAdminsP -default 0] || \
-            [permission::permission_p -object_id [ad_conn package_id] -privilege admin] } {
+    set error_message $message
+
+    if {[parameter::get -package_id [ad_acs_kernel_id] -parameter RestrictErrorsToAdminsP -default 0] && \
+            ![permission::permission_p -object_id [ad_conn package_id] -privilege admin] } {
+        set message {}
+        set params [lreplace $params 0 0 [list stacktrace $message]]    
     }
     
     with_catch errmsg {
@@ -785,7 +792,7 @@ ad_proc rp_report_error {
         # An error occurred during rendering of the error page
         global errorInfo
         ns_log Error "rp_report_error: Error rendering error page (!)\n$errorInfo"
-        set rendered_page "</table></table></table></h1></b></i><blockquote><pre>[ns_quotehtml $message]</pre></blockquote>[ad_footer]"
+        set rendered_page "</table></table></table></h1></b></i><blockquote><pre>[ns_quotehtml $error_message]</pre></blockquote>[ad_footer]"
     }
 
     ns_return 500 text/html $rendered_page
@@ -793,7 +800,7 @@ ad_proc rp_report_error {
     set headers [ns_conn headers]
     ns_log Error "[ns_conn method] http://[ns_set iget $headers host][ns_conn url]?[ns_conn query]
 referred by \"[ns_set iget $headers referer]\"
-$message"
+$error_message"
 
 }
 

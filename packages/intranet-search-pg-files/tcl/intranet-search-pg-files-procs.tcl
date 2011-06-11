@@ -169,8 +169,10 @@ ad_proc -public intranet_search_pg_files_index_object {
     # Home Filestorage depends on object type...
     switch $object_type {
 	im_project { set home_path [im_filestorage_project_path $object_id] }
+	im_ticket { set home_path [im_filestorage_ticket_path $object_id] }
 	im_timesheet_task { set home_path [im_filestorage_project_path $object_id] }
 	im_company { set home_path [im_filestorage_company_path $object_id] }
+	im_cost { set home_path [im_filestorage_cost_path $object_id] }
 	user { set home_path [im_filestorage_user_path $object_id] }
 	default { 
 	    lappend error_list "im_ftio($object_id): Unknown object type: '$object_type'" 
