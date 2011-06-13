@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.10 2011/06/13 17:56:28 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.11 2011/06/13 23:17:20 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -86,7 +86,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	}, {
 
 		itemId:		'addButton',
-        	text: 		'#intranet-core.Add_a_new_Company#',
+        	text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
+		width: 		120,
         	handler: function(){
                         var form = this.ownerCt.ownerCt.getForm();
                         form.reset();                   // empty fields to allow for entry of new contact
@@ -106,6 +107,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	}, {
 		itemId:		'saveButton',
         	text: 		'#intranet-core.Save_Changes#',
+		width: 		120,
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('company_id');
