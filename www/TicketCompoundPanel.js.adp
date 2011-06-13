@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.7 2011/06/10 14:24:05 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.8 2011/06/13 10:54:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -68,6 +68,16 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	}]
 
     }],
+
+    // Create a copy of the currrent ticket
+    onCopyTicket: function() {
+	var ticketForm = this.child('#center').child('#ticketForm');
+	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+	var ticket_id = ticket_id_field.getValue();
+
+	ticketForm.setNewTicketName();
+
+    },
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){

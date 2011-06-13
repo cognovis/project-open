@@ -17,6 +17,7 @@
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
  	<script type="text/javascript" src="Panels.js"></script>
+	<script type="text/javascript" src="TicketActionBar.js"></script> 
 	<script type="text/javascript" src="TicketGrid.js"></script> 
 	<script type="text/javascript" src="TicketForm.js"></script> 
 	<script type="text/javascript" src="TicketFormRight.js"></script> 

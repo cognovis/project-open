@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.14 2011/06/13 08:52:43 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.15 2011/06/13 10:54:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -188,40 +188,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'ticket_closed_in_1st_contact_p'
 		}
 	    ],
-	    dockedItems: [{
-		xtype: 'toolbar',
-		cls: 'x-docked-noborder-top',
-		items: [{
-		    text: '#intranet-helpdesk.New_Ticket#',
-		    iconCls: 'icon-new-ticket',
-		    handler: function() {
-			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-		        compoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
-			var mainTabPanel = Ext.getCmp('mainTabPanel');
-			mainTabPanel.setActiveTab(compoundPanel);	
-			compoundPanel.newTicket();
-		    }
-		}, {
-		    text: '#intranet-sencha-ticket-tracker.Copy_Ticket#',
-		    iconCls: 'icon-new-ticket',
-		    handler: function(){
-			alert('Not implemented');
-		    }
-		},    {
-    		    text: '#intranet-helpdesk.Remove_checked_items#',
-    		    iconCls: 'icon-new-ticket',
-    		    handler: function(){
-    			alert('Not implemented');
-    		    }
-		}, '-', {
-		    text: '#intranet-core.Summary#',
-		    iconCls: 'icon-summary',
-		    enableToggle: true,
-		    pressed: true,
-		    scope: this,
-		    toggleHandler: this.onSummaryChange
-		}]
+	    dockedItems: [
+	    {
+/*
+		dock: 'top',
+		xtype: 'ticketActionBar'
 	    }, {
+*/
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
 		store: ticketStore,
