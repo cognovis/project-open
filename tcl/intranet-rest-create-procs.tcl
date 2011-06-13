@@ -105,6 +105,9 @@ ad_proc -private im_rest_post_object_type_im_project {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    # Write Audit Trail
+    im_project_audit -project_id $rest_oid -action create  
     
     return $rest_oid
 }
@@ -125,16 +128,38 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 } {
     ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # Store the XML values into local variables
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+	}
+	default {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
     }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Create optional variables if they haven't been specified in the XML request
@@ -203,9 +228,14 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	    -hash_array [array get hash]
 
     } err_msg]} {
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty during update: '$err_msg'"
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    # Write Audit Trail
+    im_project_audit -project_id $rest_oid -action create
     
+    ns_log Notice "im_rest_post_object_type_im_ticket: Successfully created object with object_id=$rest_oid"
     return $rest_oid
 }
 
@@ -392,6 +422,8 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    im_audit -object_type "im_trans_task" -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -558,6 +590,8 @@ ad_proc -private im_rest_post_object_type_im_company {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    im_audit -object_type "im_company" -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -663,6 +697,8 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    im_audit -object_type "im_user_absence" -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -855,6 +891,8 @@ ad_proc -private im_rest_post_object_type_user {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
 
+    im_audit -object_type "user" -object_id $rest_oid -action create
+
     return $new_user_id
 }
 
@@ -955,6 +993,8 @@ ad_proc -private im_rest_post_object_type_im_invoice {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
+
+    im_audit -object_type "im_invoice" -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -986,6 +1026,9 @@ ad_proc -private im_rest_post_object_type_im_trans_invoice {
 	set	object_type = 'im_trans_invoice"
 	where	object_id = :rest_oid
     "
+
+    im_audit -object_type "im_trans_invoice" -object_id $rest_oid -action create
+
     return $rest_oid
 }
 

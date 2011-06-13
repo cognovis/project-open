@@ -422,10 +422,10 @@ ad_proc -private im_rest_get_object {
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<$rest_otype>\n$result</$rest_otype>" 
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}" 
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}" 
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format1: '$format'"
 	}
     }
   
@@ -499,11 +499,11 @@ ad_proc -private im_rest_get_im_category {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format2: '$format'"
 	}
     }
   
@@ -584,11 +584,11 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format3: '$format'"
 	}
     }
   
@@ -661,11 +661,11 @@ ad_proc -private im_rest_get_im_invoice_item {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format4: '$format'"
 	}
     }
   
@@ -739,11 +739,11 @@ ad_proc -private im_rest_get_im_hour {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format5: '$format'"
 	}
     }
   
@@ -950,11 +950,11 @@ ad_proc -private im_rest_get_object_type {
 	    # Calculate the total number of objects
 	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
 	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
-	    doc_return 200 "text/plain" $result
+	    doc_return 200 "text/html" $result
 	    return
 	}
 	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
+	     ad_return_complaint 1 "Invalid format5: '$format'"
 	     return
 	}
     }
@@ -1047,7 +1047,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "{object_type: \"$rest_otype\",\n$result\n}"
+	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
     }
@@ -1147,7 +1147,7 @@ ad_proc -private im_rest_get_im_hours {
 	    return
 	}
 	json {  
-	    doc_return 200 "text/plain" "\[$result\]\n"
+	    doc_return 200 "text/html" "\[$result\]\n"
 	    return
 	}
     }
@@ -1227,6 +1227,10 @@ ad_proc -private im_rest_get_im_categories {
 	set category_key "intranet-core.[lang::util::suggest_key $category]"
         set category_translated [lang::message::lookup $locale $category_key $category]
 
+        # Calculate indent
+        set indent [expr [string length tree_sortkey] - 8]
+        # for {set i 0} {$i < $indent} {incr i} { set category_translated "  $category_translated" }
+
 	# Check permissions
 	set read_p $rest_otype_read_all_p
 	set read_p 1
@@ -1275,7 +1279,7 @@ ad_proc -private im_rest_get_im_categories {
 	json {  
 	    # Deal with different JSON variants for different AJAX frameworks
 	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
-	    doc_return 200 "text/plain" $result
+	    doc_return 200 "text/html" $result
 	    return
 	}
     }
@@ -1368,7 +1372,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	}
 	json {  
-	    doc_return 200 "text/plain" "\[\n$result\n\]\n"
+	    doc_return 200 "text/html" "\[\n$result\n\]\n"
 	}
     }
 
@@ -1405,11 +1409,13 @@ ad_proc -private im_rest_post_object_type {
     # Check if the procedure exists.
     if {0 != [llength [info commands im_rest_post_object_type_$rest_otype]]} {
 	
+	ns_log Notice "im_rest_post_object_type: Before calling im_rest_post_object_type_$rest_otype"
 	set rest_oid [eval [list im_rest_post_object_type_$rest_otype \
 		  -format $format \
 		  -user_id $user_id \
 		  -content $content \
 	]]
+	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype. rest_oid=$rest_oid"
 
 	switch $format {
 	    html { 
@@ -1421,18 +1427,25 @@ ad_proc -private im_rest_post_object_type {
 		</table>[im_footer]
 		"
 	    }
-	    xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
+	    json { 
+		set data "{\"object_id\": $rest_oid}"
+		set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
+		doc_return 200 "text/html" $result
+	    }
+	    xml {  
+		doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" 
+	    }
 	    default {
-		ad_return_complaint 1 "Invalid format: '$format'"
+		ad_return_complaint 1 "Invalid format6: '$format'"
 	    }
 	}
 
     } else {
-	im_rest_error -http_status 404 -message "No 'create' operation available for object type '$rest_otype'."
+	ns_log Notice "im_rest_post_object_type: Create for '$rest_otype' not implemented yet"
+	im_rest_error -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
     }
     return
 }
-
 
 ad_proc -private im_rest_post_object {
     { -format "xml" }
@@ -1475,6 +1488,8 @@ ad_proc -private im_rest_post_object {
 	    array set parsed_json [util::json::parse $content]
 	    set json_list $parsed_json(_object_)
 	    array set hash_array $json_list
+	    # fix Json "null" values in
+	    foreach key [array names hash_array] { if {"null" == $hash_array($key)} { set hash_array($key) "" } }
 	}
 	default {
 	    # store the key-value pairs into a hash array
@@ -1493,6 +1508,9 @@ ad_proc -private im_rest_post_object {
 	}
     }
 
+    # Audit + Callback before updating the object
+    im_audit -object_type $rest_otype -object_id $rest_oid -action after_update
+
 
     # Update the object. This routine will return a HTTP error in case 
     # of a database constraint violation
@@ -1502,6 +1520,9 @@ ad_proc -private im_rest_post_object {
 	-rest_oid $rest_oid \
 	-hash_array [array get hash_array]
     ns_log Notice "im_rest_post_object: After im_rest_object_type_update_sql"
+
+    # Audit + Callback after updating the object
+    im_audit -object_type $rest_otype -object_id $rest_oid -action after_update
 
 
     # The update was successful - return a suitable message.
@@ -1517,7 +1538,7 @@ ad_proc -private im_rest_post_object {
 	}
 	json {
 	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n}"
-	    doc_return 200 "text/plain" $result
+	    doc_return 200 "text/html" $result
 	}
 	xml {  
 	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" 
