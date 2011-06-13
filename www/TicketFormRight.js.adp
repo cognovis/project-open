@@ -47,24 +47,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	},
 	items: [
 
-	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'form:id',		xtype: 'hiddenfield', value: 'helpdesk_ticket' },
-	{ name: '__key_signature',	xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
-	{ name: '__key',		xtype: 'hiddenfield', value: 'ticket_id' },
-	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
-	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
-	{ name: 'ticket_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
-	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
-
 	// tell the /intranet-helpdesk/new page to return JSON
 	{ name: 'format',		xtype: 'hiddenfield', value: 'json' },
 
-	// Main ticket fields
-	{ name: 'project_name',		xtype: 'hiddenfield' },
-	{ name: 'parent_id',		xtype: 'hiddenfield' },
-	{ name: 'ticket_type_id',	xtype: 'hiddenfield' },
+	// Variables for the new.tcl page to recognize an ad_form
+	{ name: 'ticket_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_last_queue_id',	xtype: 'hiddenfield'},
 
+	// Main ticket fields
         {
 	    xtype:	'fieldset',
             title:	'',
@@ -75,43 +65,47 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
             layout: 	{ type: 'table', columns: 3 },
             items :[{
-	                name:           'creation_date',
+	                name:           'ticket_creation_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Creation_Date#'
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Creation_Date#',
+			format:		'Y-m-d'
 	        }, {
-	                name:           'ticket_channel_id',
+	                name:           'ticket_incoming_channel_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketChannelStore
+		        store: 		ticketStatusStore
 	        }, {
 	                name:           'ticket_channel_detail_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel_Details#',
-		        xtype:		'combobox',
+		        xtype:		'hiddenfield',
 		        valueField:	'category_id',
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketServiceTypeStore
+		        store: 		ticketStatusStore
 	        }, {
 	                name:           'ticket_done_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Close_Date#'
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Close_Date#',
+			format:		'Y-m-d'
 	        }, {
 	                name:           'ticket_escalation_date',
 	                xtype:          'datefield',
-	                fieldLabel:     '#intranet-sencha-ticket-tracker.Escalation_Date#'
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Escalation_Date#',
+			format:		'Y-m-d'
 	        }, {
 	                name:           'ticket_reaction_date',
 	                xtype:          'datefield',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Reaction_Date#',
+			format:		'Y-m-d'
 	    }]
-	},
 
-        {
+	}, {
+
 	    xtype:	'fieldset',
             title:	'',
             checkboxToggle: false,
@@ -121,7 +115,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
             layout: 	{ type: 'table', columns: 2 },
             items :[{
-	                name:           'ticket_note',
+	                name:           'ticket_request',
 			xtype:		'textareafield',
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
 			width:		400
@@ -131,9 +125,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
 			width:		400
 	    }]
-	},
 
-        {
+	}, {
 	    xtype:	'fieldset',
             title:	'',
             checkboxToggle: false,
@@ -146,23 +139,23 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			name:		'ticket_closed_in_1st_contact_p',
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-core.lt_Closed_in_1st_Contact#',
-			value:		'1',
+			inputValue:	't',
 			width:		150
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additional_info#',
-			value:		'1',
+			inputValue:	't',
 			width:		150
 	        }, {
-	                name:           'ticket_exit_channel_id',
+	                name:           'ticket_outgoing_channel_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketServiceTypeStore
+		        store: 		ticketStatusStore
 	    }]
 
 	}, {
@@ -193,7 +186,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                displayField: 'group_name',
 			forceSelection: true,
 			queryMode: 'remote',
-			store: ticketQueueStore,
+			store: profileStore,
 			width: 300
 	    }]
 	},
@@ -201,7 +194,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	// SPRI specific fields
 	{ name: 'ticket_file',		xtype: 'hiddenfield' },
 	{ name: 'ticket_area',		xtype: 'hiddenfield' },
-	{ name: 'ticket_status_id',	xtype: 'hiddenfield' },
 	{ name: 'ticket_program_id',	xtype: 'hiddenfield' },
 	{ name: 'ticket_service_id',	xtype: 'hiddenfield' },
 
@@ -210,7 +202,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
-	{ name: 'ticket_queue_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_alarm_date',		xtype: 'hiddenfield'},
 	{ name: 'ticket_alarm_action',		xtype: 'hiddenfield'},
 	{ name: 'ticket_note',			xtype: 'hiddenfield'},
@@ -218,7 +209,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	{ name: 'ticket_component_id',		xtype: 'hiddenfield'},
 	{ name: 'ticket_description',		xtype: 'hiddenfield'},
 	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
-	{ name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'}
 	],
 
 	buttons: [{
@@ -228,22 +218,57 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	    handler: function(){
 		var form = this.up('form').getForm();
 
-		var ticket_name_field = form.findField('ticket_name');
-		var project_name_field = form.findField('project_name');
-		ticket_name_field.setValue(project_name_field.getValue());
+		// find out the ticket_id
+                var ticket_id_field = form.findField('ticket_id');
+                var ticket_id = ticket_id_field.getValue();
 
-		form.submit({
-                    url: '/intranet-helpdesk/new',
-		    method: 'GET',
-                    submitEmptyText: false,
-                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
-		});
+		// Set certain ticket dates depending on the status
+                var ticket_status_field = form.findField('ticket_status_id');
+                var ticket_status_id = parseInt(ticket_status_field.getValue());
+		
+		var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+		switch (ticket_status_id) {
+			case 30001:		// closed
+			case 30022:		// sign-off
+			case 30096:		// resolved
+		                form.findField('ticket_done_date').setValue(today);
+				break;
+		};
+
+		// Set escalation_date once the tickt is reassinged to a queue
+                var ticket_queue_field = form.findField('ticket_queue_id');
+		var ticket_esc_date_field = form.findField('ticket_escalation_date');
+                var ticket_queue_id = parseInt(ticket_queue_field.getValue());
+		var ticket_esc_date = ticket_esc_date_field.getValue();
+		if (ticket_esc_date == null && <ticket_queue_id != null) {
+			form.findField('ticket_escalation_date').setValue(today);
+		}
+
+		// Write form values into the store
+		var values = form.getFieldValues();
+		var ticket_record = ticketStore.findRecord('ticket_id',ticket_id);
+		var value;
+		for(var field in values) {
+			if (values.hasOwnProperty(field)) {
+				value = values[field];
+				if (value == null) { value = ''; }
+				ticket_record.set(field, value);
+			}
+		}
+	
+		// Tell the store to update the server via it's REST proxy
+		ticketStore.sync();
+
+		// Update this and the other ticket forms
+		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+		compoundPanel.loadTicket(ticket_record);
+
 	    }
 	}],
 
 	loadTicket: function(rec){
+                var form = this.getForm();
 		this.loadRecord(rec);
-		var comp = this.getComponent('ticket_type_id');
 	},
 
 	// Somebody pressed the "New Ticket" button:

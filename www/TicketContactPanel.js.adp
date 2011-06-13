@@ -141,7 +141,9 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 	loadTicket: function(rec){
 		// Customer contact ID, may be NULL
-		var contact_id = rec.data.ticket_customer_contact_id;
+		var contact_id;
+		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { contact_id = rec.data.ticket_customer_contact_id; }
+
 		var contact_record = userStore.findRecord('user_id',contact_id);
 	        if (contact_record == null || typeof contact_record == "undefined") { return; }
 

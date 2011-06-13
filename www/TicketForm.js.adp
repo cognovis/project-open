@@ -45,119 +45,127 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'form:id',		xtype: 'hiddenfield', value: 'helpdesk_ticket' },
-	{ name: '__key_signature',	xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
-	{ name: '__key',		xtype: 'hiddenfield', value: 'ticket_id' },
-	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
-	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
-	{ name: 'ticket_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: '30000' },
-	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
-	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
-
-	// tell the /intranet-helpdesk/new page to return JSON
-	{ name: 'format',			xtype: 'hiddenfield', value: 'json' },
+	{ name: 'ticket_id',		xtype: 'textfield', disabled: true },
+	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },
+	{ name: 'ticket_name',		xtype: 'hiddenfield' },
+	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: 53349 },
+	{ name: 'parent_id',		xtype: 'hiddenfield', value: 53349 },
 
 	// Main ticket fields
-	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
-	{ name: 'parent_id',		xtype: 'hiddenfield' },
 	{
-	        fieldLabel: '#intranet-sencha-ticket-tracker.Service_Type#',
-		name: 'ticket_service_type_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketTypeStore
+		name: 'project_name', 
+		fieldLabel:	'#intranet-helpdesk.Ticket_Name#',
+		disabled:	true,
+        	width: 		300
 	}, {
-	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
-		name: 'ticket_type_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Service_Type#',
+		name:		'ticket_service_type_id',
+		xtype:		'combobox',
+        	width: 		300,
+                valueField:	'category_id',
+                displayField:	'category_translated',
+		forceSelection:	true,
+		queryMode:	'remote',
+		store:		ticketTypeStore
+	}, {
+	        fieldLabel:	'#intranet-helpdesk.Ticket_type#',
+		name:		'ticket_type_id',
+		xtype:		'combobox',
+        	width: 		300,
+                valueField:	'category_id',
+                displayField:	'category_translated',
 		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketTypeStore
+		queryMode: 	'remote',
+		store: 		ticketTypeStore
 	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',
+        	width: 		300,
 	        xtype:		'textfield'
 	}, {
-        	fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
-        	name:		'ticket_area',
-        	xtype:          'combobox',
-        	valueField:     'category_id',
-        	displayField:   'category_translated',
-        	valueField:     'id',
-        	triggerAction:  'all',
+	        fieldLabel:	'#intranet-helpdesk.Area#',
+		name:		'ticket_area_id',
+		xtype:		'combobox',
         	width: 		300,
-        	editable:       false,
-        	queryMode:      'remote',
-        	store:          requestAreaStore
-	}, {
-        	fieldLabel:     '#intranet-sencha-ticket-tracker.Program#',
-        	name:           'ticket_program_id',
-        	xtype:          'combobox',
-        	valueField:     'category_id',
-        	displayField:   'category_translated',
-        	valueField:     'id',
-        	triggerAction:  'all',
-        	width: 		320,
-        	editable:       false,
-        	queryMode:      'remote',
-        	store:          requestAreaProgramStore,
-		listeners:{
-		    // The user has selected a program from the drop-down box.
-		    // Lookup the area (parent of program) and fill the form with the fields.
-		    'select': function() {
-			var program_id = this.getValue();
-			var area = requestAreaProgramStore.findRecord('id',program_id);
-		        if (area == null || typeof area == "undefined") { return; }
-			this.ownerCt.loadRecord(area);
-		    }
-		}
-	},
-
-	// Additional fields to add later
-	{ name: 'ticket_assignee_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
-	{ name: 'ticket_queue_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_alarm_date',		xtype: 'hiddenfield'},
-	{ name: 'ticket_alarm_action',		xtype: 'hiddenfield'},
-	{ name: 'ticket_note',			xtype: 'hiddenfield'},
-	{ name: 'ticket_conf_item_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_component_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_description',		xtype: 'hiddenfield'},
-	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
-	{ name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'}
-	],
+                valueField:	'category_id',
+                displayField:	'category_translated',
+		forceSelection: true,
+		queryMode: 	'remote',
+		store: 		ticketAreaStore
+	}],
 
 	buttons: [{
-            text: '#intranet-sencha-ticket-tracker.button_Save#',
-            disabled: false,
-            formBind: true,
+	    itemId:	'saveButton',
+            text:	'#intranet-sencha-ticket-tracker.button_Save#',
+            disabled:	false,
+            formBind:	true,
 	    handler: function(){
+
+		// get the form and all of its values
 		var form = this.up('form').getForm();
+		var values = form.getFieldValues();
+		var value;
 
-		var ticket_name_field = form.findField('ticket_name');
-		var project_name_field = form.findField('project_name');
-		ticket_name_field.setValue(project_name_field.getValue());
+		// find out the ticket_id
+		var ticket_id_field = form.findField('ticket_id');
+		var ticket_id = ticket_id_field.getValue();
 
-		form.submit({
-                    url: '/intranet-helpdesk/new',
-		    method: 'GET',
-                    submitEmptyText: false,
-                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
-		});
+		if ('' == ticket_id) {
+
+			// create a new ticket
+			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
+			ticket_record.phantom = true;
+			ticket_record.save({
+				scope: Ext.getCmp('ticketForm'),
+				success: function(record, operation) {
+					// This code is called once the reply from the server has arrived.
+					// The server response includes data.object_id for the new object.
+					try {
+						var resp = Ext.decode(operation.response.responseText);
+						var ticket_id = resp.data.object_id;
+					} catch (ex) {
+						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
+						return;
+					}
+
+					// Extract all fields of the new object, including the ones in this form.
+					var ticketForm = Ext.getCmp('ticketForm').getForm();
+					var form_values = ticketForm.getFieldValues();
+					form_values.ticket_id = ticket_id;
+
+					// Tell all panels to load the data of the newly created object
+					var ticket_model= Ext.ModelManager.create(form_values, 'TicketBrowser.Ticket');
+					ticketStore.add(ticket_model);
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_model);	
+				}
+			});
+
+		} else {
+
+			// Update an existing ticket
+			// Loop through all form fields and store into the ticket store
+			var ticket_record = ticketStore.findRecord('ticket_id',ticket_id);
+			for(var field in values) {
+				if (values.hasOwnProperty(field)) {
+					value = values[field];
+					ticket_record.set(field, value);
+				}
+			}
+	
+			// Tell the store to update the server via it's REST proxy
+			ticketStore.sync();
+
+			// Update this and the other ticket forms
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+			compoundPanel.loadTicket(ticket_record);
+
+		}
 	    }
 	}],
 
 	loadTicket: function(rec){
 		this.loadRecord(rec);
-		var comp = this.getComponent('ticket_type_id');
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -165,9 +173,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
+
 		// Use TCL function to create the next ticket Nr
-		var name = '#intranet-helpdesk.Ticket#' + ' <%= [im_ticket::next_ticket_nr] %>';
+		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ' <%= [im_ticket::next_ticket_nr] %>';
 		form.findField('project_name').setValue(name);
+
+		// Pre-set the creation date
+		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+		form.findField('ticket_creation_date').setValue(name);
+
 	}
 });
 

@@ -245,8 +245,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
     loadTicket: function(rec){
 
 	// Reload the store containing the ticket's files
-	var folder_id = rec.get('fs_folder_id');
-	var ticket_id = rec.get('ticket_id');
+	var folder_id;
+	if (rec.data.hasOwnProperty('folder_id')) { folder_id = rec.data.folder_id; }
+	if (folder_id == null) { return; }
+	var ticket_id = rec.data.ticket_id;
 
 	// Replace empty string by "0", because an empty string means no restriction to the server.
         if ("" === folder_id) { folder_id = 0; }
