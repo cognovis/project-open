@@ -624,7 +624,7 @@ ad_proc -public im_rest_valid_sql {
     The validator is based on applying a number of rules using a rule engine.
     Return the validation result if debug=1.
 } {
-    ns_log Notice "im_rest_valid_sql: vars=$variables, sql=$string"
+    ns_log Notice "im_rest_valid_sql: sql=$string, vars=$variables"
 
     # An empty string is a valid SQL...
     if {"" == $string} { return 1 }
@@ -713,7 +713,7 @@ ad_proc -public im_rest_valid_sql {
 
     set string [string trim $string]
     set result 0
-    if {"" == $string || "cond" == $string} { set result 1 }
+    if {"" == $string || "cond" == $string || "query" == $string} { set result 1 }
 
     # Show the application of rules for debugging
     if {$debug} { 

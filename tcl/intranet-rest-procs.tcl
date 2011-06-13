@@ -817,7 +817,8 @@ ad_proc -private im_rest_get_object_type {
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
 
-    set where_clause [ns_urldecode $where_clause]
+    # Decoding the where clause messes up a value like '%123%' (searching for vat_id)
+    # set where_clause [ns_urldecode $where_clause]
     ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
 
 
