@@ -78,6 +78,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore
 	}, {
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
+		name:		'ticket_program_id',
+		xtype:		'combobox',
+        	width: 		300,
+                valueField:	'category_id',
+                displayField:	'category_translated',
+		forceSelection: true,
+		queryMode: 	'remote',
+		store: 		ticketAreaStore
+	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
