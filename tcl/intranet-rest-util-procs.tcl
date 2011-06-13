@@ -662,8 +662,12 @@ ad_proc -public im_rest_valid_sql {
 	query {where [a-z_]+ in \( query \)}
 	query {where cond}
 	query {query query}
+	query {query where val}
+	query {query val}
 	query {query \( val \)}
 	cond {cond and cond}
+	cond {cond and val}
+	cond {cond val}
 	cond {cond or cond}
 	cond {\( cond \)}
 	cond {val = val}
@@ -680,6 +684,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val in \( val \)}
 	cond {val in \( query \)}
 	val  {val , val}
+	val  {val val}
 	val  {[0-9]+}
 	val  {[0-9a-z\_]+\.[0-9a-z\_]+}
 	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
@@ -688,6 +693,7 @@ ad_proc -public im_rest_valid_sql {
     }
 
     # Add rules for every variable saying that it's a var.
+    lappend variables member_id user_id group_id
     foreach var $variables {
 	lappend rules val
 	lappend rules $var
