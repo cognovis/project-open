@@ -63,7 +63,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
             },
             columns: [
 		{
-			header: 'Ticket',
+			header: '#intranet-helpdesk.Ticket#',
 			dataIndex: 'project_name',
 			flex: 1,
 			minWidth: 150,

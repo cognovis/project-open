@@ -33,7 +33,7 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     items: [{
 	itemId: 'ticket',
 	xtype: 'ticketForm',
-	title: 'View Ticket'
+	title: '#intranet-sencha-ticket-tracker.View_Ticket#'
     }, {
 	itemId: 'ticketCustomer',
 	title: '#intranet-core.Customer#',

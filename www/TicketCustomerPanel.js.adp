@@ -27,7 +27,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:	'Ext.form.Panel',
         alias:	'widget.ticketCustomer',
         id:	'ticketCustomerPanel',
-	title:	'Ticket Customer',
+	title:	'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:	true,
 	fieldDefaults: {
 		msgTarget: 'side',

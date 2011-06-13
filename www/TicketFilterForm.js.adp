@@ -25,7 +25,7 @@
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	extend:		'Ext.form.Panel',	
 	alias:		'widget.ticketFilterForm',
-	title:		'Ticket Filters',
+	title:		'#intranet-sencha-ticket-tracker.Ticket_Filters#',
 	id:		'ticketFilterForm',
 	bodyStyle:	'padding:5px 5px 0',
 	defaultType:	'textfield',
