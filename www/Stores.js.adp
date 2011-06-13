@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.15 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.16 2011/06/13 15:19:09 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -165,8 +165,8 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 });
 
 
-
-var ticketOriginStore = Ext.create('Ext.data.Store', {
+// Incoming and Outgoing channels are both 'Intranet Ticket Origin' category
+var ticketOriginStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketOriginStore',
 	autoLoad:	true,
 	remoteFilter:	true,
