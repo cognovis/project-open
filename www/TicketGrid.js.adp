@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.13 2011/06/10 14:24:06 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.14 2011/06/13 08:52:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,13 +33,16 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
     listeners: {
 	itemdblclick: function(view, record, item, index, e) {
+
+		// Open the ticket in a separate tab
+		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+		compoundPanel.loadTicket(record);
+		var title = record.get('project_name');
+	        compoundPanel.tab.setText(title);
+	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		var tab = mainTabPanel.add({
-        	    title:	'Tab ' + (mainTabPanel.items.length + 1),
-		    xtype:	'ticketCompoundPanel'
-        	});
-		tab.doLayout();
-		tab.loadTicket(record);
+		mainTabPanel.setActiveTab(compoundPanel);
+
 	}
     },
 
@@ -58,13 +61,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                     expanded: true
                 }]
             },
-            selModel: Ext.create('Ext.selection.RowModel', {
-                mode: 'MULTI',
-                listeners: {
-                    scope: this,
-                    select: this.onSelect
-                }    
-            }),
             columns: [
 		{
 			header: 'Ticket',
@@ -237,16 +233,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	this.callParent();
     },
 
-    onSelect: function(selModel, rec){
-	var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-	compoundPanel.loadTicket(rec);
-	var title = rec.get('project_name');
-        compoundPanel.tab.setText(title);
-
-	var mainTabPanel = Ext.getCmp('mainTabPanel');
-	mainTabPanel.setActiveTab(compoundPanel);
-    },
-    
     loadSla: function(id){
 	var store = this.store;
 	store.getProxy().extraParams.parent_id = id;

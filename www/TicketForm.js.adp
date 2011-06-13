@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.15 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.16 2011/06/13 08:52:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -78,12 +78,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore
 	}, {
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
-	        name:		'ticket_file',
-        	width: 		300,
-	        xtype:		'textfield'
-	}, {
-	        fieldLabel:	'#intranet-helpdesk.Area#',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
         	width: 		300,
@@ -92,6 +87,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		forceSelection: true,
 		queryMode: 	'remote',
 		store: 		ticketAreaStore
+	}, {
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+	        name:		'ticket_file',
+        	width: 		300,
+	        xtype:		'textfield'
 	}],
 
 	buttons: [{
@@ -177,11 +177,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		// Use TCL function to create the next ticket Nr
 		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ' <%= [im_ticket::next_ticket_nr] %>';
 		form.findField('project_name').setValue(name);
-
-		// Pre-set the creation date
-		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
-		form.findField('ticket_creation_date').setValue(name);
-
 	}
 });
 
