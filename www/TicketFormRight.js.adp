@@ -240,7 +240,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var ticket_esc_date_field = form.findField('ticket_escalation_date');
                 var ticket_queue_id = parseInt(ticket_queue_field.getValue());
 		var ticket_esc_date = ticket_esc_date_field.getValue();
-		if (ticket_esc_date == null && <ticket_queue_id != null) {
+		if (ticket_esc_date == null && ticket_queue_id != null) {
 			form.findField('ticket_escalation_date').setValue(today);
 		}
 
@@ -276,6 +276,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	newTicket: function() {
                 var form = this.getForm();
                 form.reset();
+
+		// Pre-set the creation date
+		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+		form.findField('ticket_creation_date').setValue(name);
 	}
 });
 

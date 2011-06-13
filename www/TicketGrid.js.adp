@@ -33,13 +33,16 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
     listeners: {
 	itemdblclick: function(view, record, item, index, e) {
+
+		// Open the ticket in a separate tab
+		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+		compoundPanel.loadTicket(record);
+		var title = record.get('project_name');
+	        compoundPanel.tab.setText(title);
+	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		var tab = mainTabPanel.add({
-        	    title:	'Tab ' + (mainTabPanel.items.length + 1),
-		    xtype:	'ticketCompoundPanel'
-        	});
-		tab.doLayout();
-		tab.loadTicket(record);
+		mainTabPanel.setActiveTab(compoundPanel);
+
 	}
     },
 
@@ -58,13 +61,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                     expanded: true
                 }]
             },
-            selModel: Ext.create('Ext.selection.RowModel', {
-                mode: 'MULTI',
-                listeners: {
-                    scope: this,
-                    select: this.onSelect
-                }    
-            }),
             columns: [
 		{
 			header: 'Ticket',
@@ -237,16 +233,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	this.callParent();
     },
 
-    onSelect: function(selModel, rec){
-	var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-	compoundPanel.loadTicket(rec);
-	var title = rec.get('project_name');
-        compoundPanel.tab.setText(title);
-
-	var mainTabPanel = Ext.getCmp('mainTabPanel');
-	mainTabPanel.setActiveTab(compoundPanel);
-    },
-    
     loadSla: function(id){
 	var store = this.store;
 	store.getProxy().extraParams.parent_id = id;
