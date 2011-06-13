@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.8 2011/06/10 14:24:05 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.9 2011/06/13 08:38:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,7 +51,7 @@ Ext.define('TicketBrowser.Category', {
     extend: 'Ext.data.Model',
     idProperty: 'category_id',		// The primary key of the category
     fields: [
-        {type: 'int', name: 'category_id'},
+        {type: 'string', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
@@ -96,7 +96,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_prio_id',		// Priority
 	'ticket_assignee_id',		// Who is assigned to the work?
 	'ticket_dept_id',		// Which department?
-	'ticket_service_id',
+	'ticket_service_type_id',
 	'ticket_hardware_id',
 	'ticket_application_id',
 	'ticket_queue_id',		// Assignee queue (currently not used)
@@ -113,14 +113,22 @@ Ext.define('TicketBrowser.Ticket', {
 	// Ticket lifecycle tracking	
 	'ticket_creation_date',		// 
 	'ticket_reaction_date',		// 
-	'ticket_confirmation_date',		// 
+	'ticket_confirmation_date',	// 
+	'ticket_escalation_date',	// 
+	'ticket_resolution_date',	// 
 	'ticket_done_date',		// 
-	'ticket_signoff_date',		// 
+	'ticket_signoff_date',		//
 
-        'service_type',                 // tipo de Servicio
-        'intranet_request_area',        // Area y programa
+	'ticket_requires_addition_info_p',
+	'ticket_incoming_channel_id',
+	'ticket_outgoing_channel_id',
+
+        'ticket_area_id',		// Area y programa
 
         'ticket_file',                  // expediente
+        'ticket_request',               // expediente
+        'ticket_resolution',            // expediente
+
         'ticket_origin',                // canal
         'ticket_sex',                   // genero hombre/mujer
         'ticket_language',              // idioma
@@ -130,7 +138,25 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_observations',           // Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
-    ]
+    ],
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_ticket',
+		extraParams: {
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+			format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+
 });
 
 

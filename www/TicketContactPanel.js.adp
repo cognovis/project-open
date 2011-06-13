@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.12 2011/06/10 14:24:05 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.13 2011/06/13 08:38:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -141,7 +141,9 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 	loadTicket: function(rec){
 		// Customer contact ID, may be NULL
-		var contact_id = rec.data.ticket_customer_contact_id;
+		var contact_id;
+		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { contact_id = rec.data.ticket_customer_contact_id; }
+
 		var contact_record = userStore.findRecord('user_id',contact_id);
 	        if (contact_record == null || typeof contact_record == "undefined") { return; }
 

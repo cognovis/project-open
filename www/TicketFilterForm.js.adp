@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.11 2011/06/10 14:24:05 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.12 2011/06/13 08:38:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -53,24 +53,19 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		store: companyTypeStore
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
-		name: 'program_id',
+		name: 'ticket_area',
 		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: requestAreaProgramStore
-	}, {	name: 'ticket_file', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#'
+		displayField:	'pretty_name',
+		valueField:	'category_id',
+		store:		ticketAreaStore,
+		queryMode:	'local',
+        	triggerAction:  'all',
+        	width: 		300,
+        	editable:       false,
+		forceSelection: true
 	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Area#',
-		name: 'ticket_area_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: requestAreaStore
+		name: 'ticket_file', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#'
 	}, {
 		fieldLabel: '#intranet-helpdesk.SLA#',
 		name: 'parent_id',

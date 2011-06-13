@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.6 2011/06/10 14:24:05 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.7 2011/06/13 08:38:38 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -111,6 +111,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 			// Tell the store to update the server via it's REST proxy
 			companyStore.sync();
+
+			// Write the new company (if any...) to the ticket store
+			var ticket_form = Ext.getCmp('ticketForm');
+			var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
+			var rec = ticketStore.findRecord('ticket_id',ticket_id);
+			rec.set('company_id', company_id);
+			ticketStore.sync();
+
                 }
 	}, {
 		itemId:		'createButton',
@@ -161,7 +169,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 	loadTicket: function(rec){
 		// Customer ID, may be NULL
-		var customer_id = rec.data.company_id;
+		var customer_id;
+		if (rec.data.hasOwnProperty('company_id')) { customer_id = rec.data.company_id; }
+
 		var cust = companyStore.findRecord('company_id',customer_id);
 	        if (cust == null || typeof cust == "undefined") { return; }
 
