@@ -77,7 +77,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketStatusStore
+		        store: 		ticketChannelStore
 	        }, {
 	                name:           'ticket_channel_detail_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel_Details#',
@@ -155,7 +155,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
-		        store: 		ticketStatusStore
+		        store: 		ticketChannelStore
 	    }]
 
 	}, {

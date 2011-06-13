@@ -52,7 +52,7 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
             header: '#intranet-core.Language#',
             dataIndex: 'language_preference'
         }, {
-            header: '#acs-subsite.Information_Updated#',
+            header: '#intranet-sencha-ticket-tracker.Last_Updated#',
             dataIndex: 'last_modified'
         }
     ],
