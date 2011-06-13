@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.7 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.8 2011/06/13 11:09:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +27,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:	'Ext.form.Panel',
         alias:	'widget.ticketCustomer',
         id:	'ticketCustomerPanel',
-	title:	'Ticket Customer',
+	title:	'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:	true,
 	fieldDefaults: {
 		msgTarget: 'side',

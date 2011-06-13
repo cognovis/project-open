@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.12 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.13 2011/06/13 11:09:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,7 +25,7 @@
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	extend:		'Ext.form.Panel',	
 	alias:		'widget.ticketFilterForm',
-	title:		'Ticket Filters',
+	title:		'#intranet-sencha-ticket-tracker.Ticket_Filters#',
 	id:		'ticketFilterForm',
 	bodyStyle:	'padding:5px 5px 0',
 	defaultType:	'textfield',
