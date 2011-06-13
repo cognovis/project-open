@@ -78,7 +78,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		itemId:		'viewButton',
         	text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
 		handler:	function() {
-			var company_id = this.getForm().findField('company_id').getValue();
+			var form = this.ownerCt.ownerCt.getForm();
+			var company_id = form.findField('company_id').getValue();
 			var redirect = '/intranet/companies/view?company_id='+company_id; 
 			window.location = redirect;
 		}

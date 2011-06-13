@@ -22,6 +22,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Use TCL template language to get the current user_id
+var currentUserId = <%= [ad_get_user_id] %>;
+
 Ext.define('TicketBrowser.Sla', {
     extend: 'Ext.data.Model',
     idProperty: 'project_id',		// The primary key of object_id of the SLA project

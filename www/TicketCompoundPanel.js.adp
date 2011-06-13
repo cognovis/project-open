@@ -62,11 +62,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	width:	800,
 
 	items: [{
+		itemId: 'auditGrid',
+		title: '',
+		xtype: 'auditGrid'
+	}, {
 		itemId: 'ticketFormRight',
 		title: '',
 		xtype: 'ticketFormRight'
 	}]
-
     }],
 
     // Create a copy of the currrent ticket

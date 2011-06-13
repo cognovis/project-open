@@ -33,18 +33,18 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	minWidth:	200,
 	standardsubmit:	true,
 	items: [
-	{	name: 'group', 
+	{	name: 'assigned_queue_id', 
 		fieldLabel: '#intranet-sencha-ticket-tracker.Group#',
 		xtype: 'combobox',
                 valueField: 'group_id',
                 displayField: 'group_name',
-		
+		emptyText: '#intranet-sencha-ticket-tracker.My_Groups#',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: profileStore,
 		width: 300
 	}, {
-		name: 'user', 
+		name: 'assigned_user_id',
 		fieldLabel: '#intranet-sencha-ticket-tracker.Assigned_to#',
                 xtype:          'combobox',
                 fieldLabel:     '#intranet-core.User#',
@@ -103,7 +103,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		store: ticketTypeStore
 	}, {
 		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
-		name: 'project_nr'
+		name: 'project_name'
 	}, {
 		fieldLabel: '#intranet-helpdesk.Status#',
 		name: 'ticket_status_id',
@@ -122,15 +122,6 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketChannelStore
-	}, {
-		fieldLabel: '#intranet-core.Prio#',
-		name: 'ticket_prio_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketPriorityStore
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Since#',
 		name: 'start_date',
@@ -158,6 +149,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		var form = this.up('form').getForm();
 		var filterValues = form.getFieldValues();
 		var grid = Ext.getCmp('ticketGrid');
+	
 		grid.filterTickets(filterValues);
 	}
 

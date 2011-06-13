@@ -224,6 +224,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	var value = '';
 	var query = '1=1';
 
+	// Special logic for assigned_queue_id: Set to '' (=My Queues) if empty
+	if (null === filterValues.assigned_queue_id) {
+		filterValues.assigned_queue_id = 'my_groups'; 
+	}
+	
 	// delete filters added by other accordion filters
 	delete proxy.extraParams['query'];
 	delete proxy.extraParams['parent_id'];
@@ -235,18 +240,33 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    if (filterValues.hasOwnProperty(key)) {
 
 		value = filterValues[key];
-		// console.log('TicketGrid: "'+key+'" = "' + value + '"');
-	
 		if (value == '' || value == undefined || value == null) {
-
 		    // Delete the filter
-		    // console.log('TicketGrid: Deleting key="'+key+'"');
 		    delete proxy.extraParams[key];
-
 		} else {
 
 		    // special treatment for special filter variables
 		    switch (key) {
+			case 'assigned_queue_id':
+				// The "my groups" information is not part of the REST information.
+				if (value == 'my_groups') {
+					// default query: all of my groups
+					query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
+				} else {
+					// assigned_queue_id contains a group_id
+					query = query + ' and ticket_queue_id = ' + value;
+				}
+				key = 'query';
+				value = query;
+				
+				break;
+			case 'project_name':
+				// Fuzzy search for the name of the ticket
+				value = value.toLowerCase();
+				query = query + ' and project_name like \'%' + value + '%\'';
+				key = 'query';
+				value = query;
+				break;
 			case 'vat_number':
 				// The customer's VAT number is not part of the REST
 				// ticket fields. So translate into a query:

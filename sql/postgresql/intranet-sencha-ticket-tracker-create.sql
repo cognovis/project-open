@@ -157,7 +157,7 @@ $body$ language 'plpgsql';
 -- 76000-76999  Intranet Sencha Ticket Tracker (1000)
 
 
-
+-- 76000
 SELECT im_category_new(76000, 'Promocion Empresarial', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76002, 'Connect', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76004, 'Miniconnect', 'Intranet Sencha Ticket Tracker Area');
