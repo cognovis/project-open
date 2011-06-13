@@ -50,7 +50,7 @@ Ext.define('TicketBrowser.Main', {
 
 		items: [{
 			itemId: 'ticket',
-			title: '#intranet-helpdesk.Tickets#',
+			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketContainer'
 		}, {
 			itemId: 'company',

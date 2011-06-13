@@ -34,10 +34,26 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	standardsubmit:	true,
 	items: [
 	{	name: 'group', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Group#'
-	}, {	name: 'user', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Assigned_to#'
-	}, {	name: 'vat_number', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Group#',
+		xtype: 'combobox',
+                valueField: 'group_id',
+                displayField: 'group_name',
+		
+		forceSelection: true,
+		queryMode: 'remote',
+		store: profileStore,
+		width: 300
+	}, {
+		name: 'user', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Assigned_to#',
+                xtype:          'combobox',
+                fieldLabel:     '#intranet-core.User#',
+                value:          '#intranet-core.New_User#',
+                valueField:     'user_id',
+                displayField:   'name',
+                store:          userStore
+	}, {
+		name: 'vat_number', 
 		fieldLabel: '#intranet-core.VAT_Number#'
 	}, {	
 		name: 'company_name', 

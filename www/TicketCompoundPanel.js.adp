@@ -73,10 +73,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     onCopyTicket: function() {
 	var ticketForm = this.child('#center').child('#ticketForm');
 	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
-	var ticket_id = ticket_id_field.getValue();
+	var old_ticket_id = ticket_id_field.getValue();
+	ticket_id_field.setValue('');
 
+	// Create a new ticket name
 	ticketForm.setNewTicketName();
 
+	// Write out an alert message
+	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
 
     // Called from the TicketGrid if the user has selected a ticket

@@ -41,7 +41,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 		margins: '5 0 5 5'
 	}, {
 		itemId:	'main2',
-		title:	'#intranet-helpdesk.Tickets#',
+		title:	'#intranet-sencha-ticket-tracker.Tickets#',
 		region:	'center',
 		layout:	'border',
 		split:	true,

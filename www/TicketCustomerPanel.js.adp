@@ -75,6 +75,15 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Province#'
         }],
         buttons: [{
+		itemId:		'viewButton',
+        	text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
+		handler:	function() {
+			var company_id = this.getForm().findField('company_id').getValue();
+			var redirect = '/intranet/companies/view?company_id='+company_id; 
+			window.location = redirect;
+		}
+	}, {
+
 		itemId:		'addButton',
         	text: 		'#intranet-core.Add_a_new_Company#',
         	handler: function(){

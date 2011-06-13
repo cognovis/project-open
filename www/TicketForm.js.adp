@@ -54,7 +54,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	// Main ticket fields
 	{
 		name: 'project_name', 
-		fieldLabel:	'#intranet-helpdesk.Ticket_Name#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Name#',
 		disabled:	true,
         	width: 		300
 	}, {
