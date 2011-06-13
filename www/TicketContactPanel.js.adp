@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.13 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.14 2011/06/13 23:15:20 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -72,6 +72,20 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	                fieldLabel:     '#intranet-core.Last_name#'
 	    }]
 	}, {
+                name:           'ticket_language',
+                xtype:          'radiofield',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.ticket_language#',
+                boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
+                value:          'eu_ES'
+        }, {
+                name:           'ticket_language',
+                xtype:          'radiofield',
+                boxLabel:       '#intranet-sencha-ticket-tracker.lang_es_ES#',
+                value:          'es_ES',
+                fieldLabel:     '',
+                labelSeparator: '',
+                hideEmptyLabel: false
+	}, {
                 name:           'ticket_sex',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
@@ -88,6 +102,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         }],
         buttons: [{
         	text: '#intranet-sencha-ticket-tracker.button_New_Contact#',
+		width: 	100,
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
@@ -95,6 +110,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 		}
 	}, {
         	text: '#intranet-sencha-ticket-tracker.button_Save_Changes#',
+		width: 	120,
         	handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
@@ -117,6 +133,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 }
 	}, {
         	text: '#intranet-sencha-ticket-tracker.Create_New_Contact#',
+		width: 	120,
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('user_id');
