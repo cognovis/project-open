@@ -120,7 +120,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_signoff_date',		//
 
 	'ticket_requires_addition_info_p',
-	'ticket_incoming_channel_id',
+	'ticket_incoming_channel_id',	// actually ticket_origin
 	'ticket_outgoing_channel_id',
 
         'ticket_area_id',		// Area y programa

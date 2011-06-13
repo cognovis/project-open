@@ -165,8 +165,8 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 });
 
 
-
-var ticketOriginStore = Ext.create('Ext.data.Store', {
+// Incoming and Outgoing channels are both 'Intranet Ticket Origin' category
+var ticketOriginStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketOriginStore',
 	autoLoad:	true,
 	remoteFilter:	true,

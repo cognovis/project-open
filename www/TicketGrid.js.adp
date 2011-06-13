@@ -93,8 +93,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'ticket_program_id'
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
-			dataIndex: 'ticket_channel_id',
-			hidden: true
+			dataIndex: 'ticket_origin',
+			renderer: function(value, o, record) {
+				return ticketOriginStore.category_from_id(record.get('ticket_origin'));
+			}
 		}, {
 			header: '#intranet-helpdesk.Status#',
 			dataIndex: 'ticket_status_id',
@@ -158,7 +160,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}
 		}, {
 			header: '#intranet-helpdesk.Queue#',
-			dataIndex: 'ticket_queue_id'
+			dataIndex: 'ticket_queue_id',
+			hidden: true
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Department#',
 			dataIndex: 'ticket_dept_id'
