@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
 	<script type="text/javascript" src="ProjectSlaList.js"></script> 
+	<script type="text/javascript" src="AuditGrid.js"></script> 
 	<script type="text/javascript" src="FileStorageGrid.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->

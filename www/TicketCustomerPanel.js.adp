@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.9 2011/06/13 14:12:11 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.10 2011/06/13 17:56:28 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -78,7 +78,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		itemId:		'viewButton',
         	text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
 		handler:	function() {
-			var company_id = this.getForm().findField('company_id').getValue();
+			var form = this.ownerCt.ownerCt.getForm();
+			var company_id = form.findField('company_id').getValue();
 			var redirect = '/intranet/companies/view?company_id='+company_id; 
 			window.location = redirect;
 		}

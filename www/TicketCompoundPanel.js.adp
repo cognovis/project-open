@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.9 2011/06/13 14:12:11 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.10 2011/06/13 17:56:28 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -62,11 +62,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	width:	800,
 
 	items: [{
+		itemId: 'auditGrid',
+		title: '',
+		xtype: 'auditGrid'
+	}, {
 		itemId: 'ticketFormRight',
 		title: '',
 		xtype: 'ticketFormRight'
 	}]
-
     }],
 
     // Create a copy of the currrent ticket

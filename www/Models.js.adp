@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.10 2011/06/13 15:19:09 mcordova Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.11 2011/06/13 17:56:28 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -21,6 +21,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Use TCL template language to get the current user_id
+var currentUserId = <%= [ad_get_user_id] %>;
 
 Ext.define('TicketBrowser.Sla', {
     extend: 'Ext.data.Model',
