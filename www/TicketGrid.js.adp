@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.16 2011/06/13 11:09:34 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.17 2011/06/13 14:12:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -63,7 +63,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
             },
             columns: [
 		{
-			header: '#intranet-helpdesk.Ticket#',
+			header: '#intranet-sencha-ticket-tracker.Ticket#',
 			dataIndex: 'project_name',
 			flex: 1,
 			minWidth: 150,

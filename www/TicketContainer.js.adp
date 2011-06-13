@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.10 2011/06/09 22:28:31 mcordova Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.11 2011/06/13 14:12:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -41,7 +41,7 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 		margins: '5 0 5 5'
 	}, {
 		itemId:	'main2',
-		title:	'#intranet-helpdesk.Tickets#',
+		title:	'#intranet-sencha-ticket-tracker.Tickets#',
 		region:	'center',
 		layout:	'border',
 		split:	true,

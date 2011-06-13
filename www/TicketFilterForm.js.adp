@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.13 2011/06/13 11:09:34 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.14 2011/06/13 14:12:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -34,10 +34,26 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	standardsubmit:	true,
 	items: [
 	{	name: 'group', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Group#'
-	}, {	name: 'user', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Assigned_to#'
-	}, {	name: 'vat_number', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Group#',
+		xtype: 'combobox',
+                valueField: 'group_id',
+                displayField: 'group_name',
+		
+		forceSelection: true,
+		queryMode: 'remote',
+		store: profileStore,
+		width: 300
+	}, {
+		name: 'user', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Assigned_to#',
+                xtype:          'combobox',
+                fieldLabel:     '#intranet-core.User#',
+                value:          '#intranet-core.New_User#',
+                valueField:     'user_id',
+                displayField:   'name',
+                store:          userStore
+	}, {
+		name: 'vat_number', 
 		fieldLabel: '#intranet-core.VAT_Number#'
 	}, {	
 		name: 'company_name', 

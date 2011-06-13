@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.8 2011/06/13 10:54:54 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.9 2011/06/13 14:12:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -73,10 +73,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     onCopyTicket: function() {
 	var ticketForm = this.child('#center').child('#ticketForm');
 	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
-	var ticket_id = ticket_id_field.getValue();
+	var old_ticket_id = ticket_id_field.getValue();
+	ticket_id_field.setValue('');
 
+	// Create a new ticket name
 	ticketForm.setNewTicketName();
 
+	// Write out an alert message
+	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
 
     // Called from the TicketGrid if the user has selected a ticket
