@@ -7,6 +7,7 @@
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Assigned to</msg>
   <msg key="button_Cancel">Cancel</msg>
+  <msg key="button_New_Company">New Company</msg>
   <msg key="button_New_Contact">New Contact</msg>
   <msg key="button_OK">OK</msg>
   <msg key="button_Save">Save</msg>
@@ -23,7 +24,9 @@
   <msg key="Company_Type">Company Type</msg>
   <msg key="Contacts">Contacts</msg>
   <msg key="Copy_Ticket">Copy Ticket</msg>
+  <msg key="Create_New_Company">Create New Company</msg>
   <msg key="Create_New_Contact">Create New Contact</msg>
+  <msg key="Create_New_User">Create New User</msg>
   <msg key="Creation_Date">Creation Date</msg>
   <msg key="Customer_Deadline">Customer Deadline</msg>
   <msg key="Date_Since">Date_Since</msg>
@@ -35,8 +38,12 @@
   <msg key="Escalated">Escalated</msg>
   <msg key="Escalation_Date">Escalation Date</msg>
   <msg key="Female">Female</msg>
+  <msg key="Gender">Gender</msg>
   <msg key="Group">Group</msg>
   <msg key="Incoming_Channel">Incoming Channel</msg>
+  <msg key="lang_en_US">English</msg>
+  <msg key="lang_es_ES">Spanish</msg>
+  <msg key="lang_eu_ES">Basque</msg>
   <msg key="Last_Updated">Last Updated</msg>
   <msg key="Loading___">Loading...</msg>
   <msg key="Male">Male</msg>
@@ -64,6 +71,7 @@
   <msg key="Show_Ticket">Show Ticket</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_File_Number">Ticket File Number</msg>
+  <msg key="ticket_language">ticket language</msg>
   <msg key="Ticket_Name">Ticket Name</msg>
   <msg key="Ticket_Type">Ticket Type</msg>
   <msg key="Tickets">Tickets</msg>

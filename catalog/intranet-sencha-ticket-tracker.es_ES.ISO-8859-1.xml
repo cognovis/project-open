@@ -7,6 +7,7 @@
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Asignado a</msg>
   <msg key="button_Cancel">Cancelar</msg>
+  <msg key="button_New_Company">Nueva Entidad</msg>
   <msg key="button_New_Contact">Nuevo contacto</msg>
   <msg key="button_OK">Ok</msg>
   <msg key="button_Save">Guardar</msg>
@@ -35,8 +36,12 @@
   <msg key="Escalated">Escalado</msg>
   <msg key="Escalation_Date">Fecha de escalado</msg>
   <msg key="Female">Mujer</msg>
+  <msg key="Gender">Sexo</msg>
   <msg key="Group">Grupo</msg>
   <msg key="Incoming_Channel">Canal de entrada</msg>
+  <msg key="lang_en_US">Inglés</msg>
+  <msg key="lang_es_ES">Castellano</msg>
+  <msg key="lang_eu_ES">Euskera</msg>
   <msg key="Last_Updated">Última actualización</msg>
   <msg key="Loading___">Cargando...</msg>
   <msg key="Male">Hombre</msg>
