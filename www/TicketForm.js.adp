@@ -173,8 +173,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
-
+		this.setNewTicketName();
+	},
+	
+	setNewTicketName: function() {
 		// Use TCL function to create the next ticket Nr
+	        var form = this.getForm();
 		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ' <%= [im_ticket::next_ticket_nr] %>';
 		form.findField('project_name').setValue(name);
 	}

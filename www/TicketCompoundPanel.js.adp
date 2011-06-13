@@ -69,6 +69,16 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     }],
 
+    // Create a copy of the currrent ticket
+    onCopyTicket: function() {
+	var ticketForm = this.child('#center').child('#ticketForm');
+	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+	var ticket_id = ticket_id_field.getValue();
+
+	ticketForm.setNewTicketName();
+
+    },
+
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#center').child('#ticketForm').newTicket(rec);

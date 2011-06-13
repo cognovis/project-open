@@ -42,6 +42,12 @@ Ext.define('TicketBrowser.Main', {
 		margins:	'5 0 5 5',
 		border:		false,
 		tabBar:		{ border: true },
+
+		dockedItems: [{
+			dock: 'top',
+			xtype: 'ticketActionBar'
+		}],
+
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-helpdesk.Tickets#',
