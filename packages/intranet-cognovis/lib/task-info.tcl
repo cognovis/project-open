@@ -19,8 +19,10 @@ foreach dynfield_id $dynfield_ids {
     
     # Initialize the Attribute                                                 
     set element [im::dynfield::Element get_instance_from_db -id $dynfield_id]
-    
-    set field [$element pretty_name]  
+    set pretty_name [$element pretty_name]
+    set pretty_name_key "intranet-core.[lang::util::suggest_key $pretty_name]"
+    set field [lang::message::lookup "" $pretty_name_key $pretty_name]
+    #set field [$element pretty_name]  
     set value [$task value $element]
     
     if {[$element multiple_p] && $value ne ""} {
