@@ -58,7 +58,12 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
-        {	name: 'pretty_name',
+        {type: 'string', name: 'indentClass',
+		convert: function(value, record) {
+			return 'tttttttttttttt';
+		}
+	},
+        {	name: 'indented_category_translated',
 		convert: function(value, record) {
 			var	category = record.get('category_translated'),
 				indent = record.get('tree_sortkey').length - 8,
@@ -103,6 +108,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_hardware_id',
 	'ticket_application_id',
 	'ticket_queue_id',		// Assignee queue (currently not used)
+	'ticket_last_queue_id',		// Last queue before escalation
 	'ticket_conf_item_id',
 	'ticket_component_id',
 	'ticket_description',		// Initial description of the ticket

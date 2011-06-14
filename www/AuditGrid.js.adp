@@ -130,6 +130,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Prepare the form for entering a new ticket
     newTicket: function() {
 	this.loadTicket({data: {object_id: 0}});
+	this.hide();
     }
 
 });

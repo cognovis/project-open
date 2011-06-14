@@ -323,6 +323,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 var profileStore = Ext.create('Ext.data.Store', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
+	autoLoad: true,
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 1000,			// There should never be more then dozen groups or so...
