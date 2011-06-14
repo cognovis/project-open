@@ -29,6 +29,7 @@
  */
 Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
 	category_from_id: function(category_id) {
+		if (null == category_id || '' == category_id) { return ''; }
 		var	result = 'Category #' + category_id;
 		var	rec = this.findRecord('category_id',category_id);
 		if (rec == null || typeof rec == "undefined") { return result; }

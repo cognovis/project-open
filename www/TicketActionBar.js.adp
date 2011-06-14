@@ -63,12 +63,14 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			break
 		}
 	    }
+/*
 	}, {
 	    text: '#intranet-helpdesk.Remove_checked_items#',
 	    iconCls: 'icon-new-ticket',
 	    handler: function(){
 		    alert('Not implemented');
    	    }
+*/
 	}, '-', {
 	    text: '#intranet-core.Summary#',
 	    iconCls: 'icon-summary',
