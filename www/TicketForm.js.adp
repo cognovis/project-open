@@ -68,6 +68,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore
 	}, {
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		},
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
@@ -76,13 +81,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode: 	'remote',
-		store: 		ticketAreaStore,
-		listConfig: {
-			getInnerTpl: function() {
-                		//return '<div class=extjs-indent-level-1>' + '{name}&nbsp;' + '</div>';
-                		return '<div class=' + '{indentClass}' + '>' + '{name}&nbsp;' + '</div>';
-			}
-		}
+		store: 		ticketAreaStore
 	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',

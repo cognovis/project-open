@@ -58,24 +58,14 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
-        {type: 'string', name: 'indentClass',
+        {type: 'string', name: 'indent_class',
+		// Determine the indentation level for each element in the tree
 		convert: function(value, record) {
-			return 'extjs-indent-level-0';
+			var	category = record.get('category_translated');
+			var	indent = (record.get('tree_sortkey').length / 8) - 1;
+			return 'extjs-indent-level-' + indent;
 		}
-	},
-        {	name: 'indented_category_translated',
-		convert: function(value, record) {
-			var	category = record.get('category_translated'),
-				indent = record.get('tree_sortkey').length - 8,
-				result = '',
-				i=0;
-			for (i=0; i<indent; i++){
-				result = result + '&nbsp;';
-			}
-			result = result + category;
-			return result;
-		}
-        }
+	}
     ]
 });
 
