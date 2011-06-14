@@ -81,7 +81,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var form = this.ownerCt.ownerCt.getForm();
 			var company_id = form.findField('company_id').getValue();
 			var redirect = '/intranet/companies/view?company_id='+company_id; 
-			window.location = redirect;
+			window.open(redirect, '_blank');
 		}
 	}, {
 
