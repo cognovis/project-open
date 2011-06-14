@@ -76,3 +76,17 @@ img.x-tree-icon-parent {
 .icon-summary {
     background-image: url(images/details.gif) !important;
 }
+
+
+
+
+.extjs-indent-level-0 {
+        font-size: 11px; padding-left: 5px
+}
+.extjs-indent-level-1 {
+        font-size: 11px; padding-left: 15px
+}
+.extjs-indent-level-2 {
+        font-size: 11px; padding-left: 25px
+}
+

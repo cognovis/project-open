@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.17 2011/06/14 10:58:31 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.18 2011/06/14 14:43:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -103,8 +103,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		store: ticketTypeStore
 	}, {
 		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
-		name: 'project_name',
-		value: '636'
+		name: 'project_name'
 	}, {
 		fieldLabel: '#intranet-helpdesk.Status#',
 		name: 'ticket_status_id',

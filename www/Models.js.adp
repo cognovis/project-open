@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.13 2011/06/14 10:58:31 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.14 2011/06/14 14:43:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -60,7 +60,7 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'category_translated'},
         {type: 'string', name: 'indentClass',
 		convert: function(value, record) {
-			return 'tttttttttttttt';
+			return 'extjs-indent-level-0';
 		}
 	},
         {	name: 'indented_category_translated',
