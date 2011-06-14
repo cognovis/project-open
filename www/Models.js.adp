@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.12 2011/06/14 09:01:16 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.13 2011/06/14 10:58:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -58,7 +58,12 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
-        {	name: 'pretty_name',
+        {type: 'string', name: 'indentClass',
+		convert: function(value, record) {
+			return 'tttttttttttttt';
+		}
+	},
+        {	name: 'indented_category_translated',
 		convert: function(value, record) {
 			var	category = record.get('category_translated'),
 				indent = record.get('tree_sortkey').length - 8,
@@ -103,6 +108,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_hardware_id',
 	'ticket_application_id',
 	'ticket_queue_id',		// Assignee queue (currently not used)
+	'ticket_last_queue_id',		// Last queue before escalation
 	'ticket_conf_item_id',
 	'ticket_component_id',
 	'ticket_description',		// Initial description of the ticket

@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.10 2011/06/13 22:38:59 mcordova Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.11 2011/06/14 10:58:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -52,7 +52,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 	// Variables for the new.tcl page to recognize an ad_form
 	{ name: 'ticket_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_last_queue_id',	xtype: 'hiddenfield'},
+	{ name: 'ticket_last_queue_id',	xtype: 'textfield', fieldLabel: 'Last', disabled: true },
+	{ name: 'ticket_org_queue_id',	xtype: 'textfield', fieldLabel: 'Org', disabled: true },	// original queue_id from DB when loading the form.
 
 	// Main ticket fields
         {
@@ -118,12 +119,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                name:           'ticket_request',
 			xtype:		'textareafield',
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
-			width:		400
+			width:		300
 	        }, {
 	                name:           'ticket_resolution',
 			xtype:		'textareafield',
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
-			width:		400
+			width:		300
 	    }]
 
 	}, {
@@ -212,7 +213,20 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	],
 
 	buttons: [{
+            text: '#intranet-sencha-ticket-tracker.Reject_Button#',
+	    itemId: 'rejectButton',
+            hidden: false,		// ToDo: Hide and enable only if rejectable (last_queue_id is set)
+            formBind: true,
+	    handler: function() {
+		// Restore the last value of the assigned group
+		var form = this.up('form').getForm();
+                var ticket_queue_field = form.findField('ticket_queue_id');
+                var ticket_last_queue_field = form.findField('ticket_last_queue_id');
+		ticket_queue_field.setValue(ticket_last_queue_field.getValue());
+	    }
+	}, {
             text: '#intranet-sencha-ticket-tracker.button_Save#',
+	    itemId: 'saveButton',
             disabled: false,
             formBind: true,
 	    handler: function(){
@@ -236,13 +250,28 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		};
 
 		// Set escalation_date once the tickt is reassinged to a queue
+		// Store the last assignation into the ticket_last_queue_id
                 var ticket_queue_field = form.findField('ticket_queue_id');
-		var ticket_esc_date_field = form.findField('ticket_escalation_date');
-                var ticket_queue_id = parseInt(ticket_queue_field.getValue());
-		var ticket_esc_date = ticket_esc_date_field.getValue();
-		if (ticket_esc_date == null && ticket_queue_id != null) {
+                var ticket_last_queue_field = form.findField('ticket_last_queue_id');
+                var ticket_org_queue_field = form.findField('ticket_org_queue_id');
+		var ticket_escalation_date_field = form.findField('ticket_escalation_date');
+
+                var ticket_queue_id = ticket_queue_field.getValue();
+                var ticket_org_queue_id = ticket_org_queue_field.getValue();
+		var ticket_escalation_date = ticket_escalation_date_field.getValue();
+
+		// set the escalation date if not already defined
+		if (ticket_escalation_date == null && (ticket_queue_id != null && ticket_queue_id != '')) {
 			form.findField('ticket_escalation_date').setValue(today);
 		}
+
+		// Write the org_queue_id into the last_queue_id field
+		// IF org_queue_id != queue_id
+		if (ticket_queue_id != ticket_org_queue_id) {
+			// We've got a queue-change-event
+			ticket_last_queue_field.setValue(ticket_org_queue_field.getValue());
+		}
+
 
 		// Write form values into the store
 		var values = form.getFieldValues();
@@ -269,6 +298,19 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	loadTicket: function(rec){
                 var form = this.getForm();
 		this.loadRecord(rec);
+
+		// Save the originalqueue_id from the DB. This value will become the 
+		// value of ticket_last_queue_id if the user selected a different queue.
+                var ticket_queue_field = form.findField('ticket_queue_id');
+                var ticket_last_queue_field = form.findField('ticket_last_queue_id');
+                var ticket_org_queue_field = form.findField('ticket_org_queue_id');
+		ticket_org_queue_field.setValue(ticket_queue_field.getValue());
+
+	        // Enable the "Reject" button if last_queue_id exists
+	        if ('' != ticket_last_queue_field.getValue()) {
+		    // ToDo: enable the reject button
+		}
+		
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -280,6 +322,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		// Pre-set the creation date
 		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
 		form.findField('ticket_creation_date').setValue(name);
+
 	}
 });
 

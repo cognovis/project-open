@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.17 2011/06/14 09:01:16 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.18 2011/06/14 10:58:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -323,6 +323,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 var profileStore = Ext.create('Ext.data.Store', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
+	autoLoad: true,
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 1000,			// There should never be more then dozen groups or so...

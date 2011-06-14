@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.2 2011/06/14 09:01:15 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.3 2011/06/14 10:58:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -130,6 +130,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Prepare the form for entering a new ticket
     newTicket: function() {
 	this.loadTicket({data: {object_id: 0}});
+	this.hide();
     }
 
 });
