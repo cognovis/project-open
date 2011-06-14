@@ -103,8 +103,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		store: ticketTypeStore
 	}, {
 		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
-		name: 'project_name',
-		value: '636'
+		name: 'project_name'
 	}, {
 		fieldLabel: '#intranet-helpdesk.Status#',
 		name: 'ticket_status_id',

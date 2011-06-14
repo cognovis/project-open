@@ -60,7 +60,7 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'category_translated'},
         {type: 'string', name: 'indentClass',
 		convert: function(value, record) {
-			return 'tttttttttttttt';
+			return 'extjs-indent-level-0';
 		}
 	},
         {	name: 'indented_category_translated',

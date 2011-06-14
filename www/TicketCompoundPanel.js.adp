@@ -33,10 +33,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     split:		true,
 
     items: [{
-	itemId:	'center',
-	region: 'center',
-	layout: 'anchor',
-	width:	500,
+	itemId:		'center',
+	region: 	'center',
+	layout: 	'anchor',
+	minWidth:	400,
 
 	items: [{
 		itemId: 'ticketForm',

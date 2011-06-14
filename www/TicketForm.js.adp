@@ -55,18 +55,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{
 		name: 'project_name', 
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Name#',
-		disabled:	true,
+		disabled:	false,
         	width: 		300
-	}, {
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Service_Type#',
-		name:		'ticket_service_type_id',
-		xtype:		'combobox',
-        	width: 		300,
-                valueField:	'category_id',
-                displayField:	'category_translated',
-		forceSelection:	true,
-		queryMode:	'remote',
-		store:		ticketTypeStore
 	}, {
 	        fieldLabel:	'#intranet-helpdesk.Ticket_type#',
 		name:		'ticket_type_id',
@@ -78,16 +68,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore
 	}, {
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
-		name:		'ticket_program_id',
-		xtype:		'combobox',
-        	width: 		300,
-                valueField:	'category_id',
-                displayField:	'category_translated',
-		forceSelection: true,
-		queryMode: 	'remote',
-		store: 		ticketAreaStore
-	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
@@ -96,7 +76,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode: 	'remote',
-		store: 		ticketAreaStore
+		store: 		ticketAreaStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		//return '<div class=extjs-indent-level-1>' + '{name}&nbsp;' + '</div>';
+                		return '<div class=' + '{indentClass}' + '>' + '{name}&nbsp;' + '</div>';
+			}
+		}
 	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',
@@ -189,7 +175,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	setNewTicketName: function() {
 		// Use TCL function to create the next ticket Nr
 	        var form = this.getForm();
-		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ' <%= [im_ticket::next_ticket_nr] %>';
+		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + '<%= [im_ticket::next_ticket_nr] %>';
 		form.findField('project_name').setValue(name);
 	}
 });
