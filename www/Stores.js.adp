@@ -32,7 +32,7 @@ Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
 		var	result = 'Category #' + category_id;
 		var	rec = this.findRecord('category_id',category_id);
 		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('category'); 
+		return rec.get('category_translated'); 
 	}
 });
 

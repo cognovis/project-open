@@ -43,13 +43,13 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
             header: '#intranet-core.Last_name#',
             dataIndex: 'last_name'
         }, {
-            header: '#intranet-core.Contact_Mail#',
+            header: '#intranet-sencha-ticket-tracker.Contact_Mail#',
             dataIndex: 'email'
         }, {
             header: '#intranet-core.Telephone#',
             dataIndex: 'contact_telephone'
         }, {
-            header: '#intranet-core.Language#',
+            header: '#intranet-sencha-ticket-tracker.Language#',
             dataIndex: 'language_preference'
         }, {
             header: '#intranet-sencha-ticket-tracker.Last_Updated#',

@@ -193,17 +193,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    ],
 	    dockedItems: [
 	    {
-/*
-		dock: 'top',
-		xtype: 'ticketActionBar'
-	    }, {
-*/
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
 		store: ticketStore,
 		displayInfo: true,
 		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
-		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#'
+		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
+		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
 	    }]
 	});
 	this.callParent();

@@ -62,7 +62,7 @@ function showFileStorageNewForm(ticket_id) {
 		xtype: 'filefield',
 		id: 'file',
 		emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
-		fieldLabel: '#intranet-core.Photo#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.File#',
 		buttonText: '',
 		buttonConfig: { iconCls: 'upload-icon' }
 	    }],

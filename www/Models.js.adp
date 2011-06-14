@@ -260,3 +260,100 @@ Ext.define('TicketBrowser.FileStorage', {
     ]
 });
 
+
+
+Ext.define('TicketBrowser.TicketAudit', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'audit_id',		// The primary key or object_id of the filestorage
+    fields: [
+	'audit_id',			// The primary key or object_id of the filestorage
+	'audit_object_id',		// The name of the file.
+	'audit_action',			// The ID of the content folder that contains the file
+	'audit_user_id',		// MIME type of the file, i.e. "image/jpeg", ...
+	'audit_date',			// Manual description of the file
+	'audit_ip',			// Date of creation
+	'audit_object_status_id',	// The user who created the file
+
+	// Fields from im_company
+	'company_id',
+	'company_project_nr',
+	'confirm_date',
+	'corporate_sponsor',
+	'cost_bills_cache',
+	'cost_cache_dirty',
+	'cost_delivery_notes_cache',
+	'cost_expense_logged_cache',
+	'cost_expense_planned_cache',
+	'cost_invoices_cache',
+	'cost_purchase_orders_cache',
+	'cost_quotes_cache',
+	'cost_timesheet_logged_cache',
+	'cost_timesheet_planned_cache',
+	'description',
+	'end_date',
+	'milestone_p',
+	'note',
+	'on_track_status_id',
+	'parent_id',
+	'percent_completed',
+	'presales_probability',
+	'presales_value',
+	'program_id',
+	'project_budget',
+	'project_budget_currency',
+	'project_budget_hours',
+	'project_id',
+	'project_lead_id',
+	'project_name',
+	'project_nr',
+	'project_path',
+	'project_priority_id',
+	'project_risk',
+	'project_status_id',
+	'project_type_id',
+	'reported_days_cache',
+	'reported_hours_cache',
+	'sla_ticket_priority_map',
+	'sort_order',
+	'start_date',
+	'subject_area_id',
+	'supervisor_id',
+
+	// fields from im_ticket
+	'ticket_alarm_action',
+	'ticket_alarm_date',
+	'ticket_application_id',
+	'ticket_assignee_id',
+	'ticket_closed_in_1st_contact_p',
+	'ticket_component_id',
+	'ticket_conf_item_id',
+	'ticket_confirmation_date',
+	'ticket_creation_date',
+	'ticket_customer_contact_id',
+	'ticket_customer_deadline',
+	'ticket_dept_id',
+	'ticket_description',
+	'ticket_done_date',
+	'ticket_hardware_id',
+	'ticket_id',
+	'ticket_note',
+	'ticket_prio_id',
+	'ticket_queue_id',
+	'ticket_quote_comment',
+	'ticket_quoted_days',
+	'ticket_reaction_date',
+	'ticket_resolution_time',
+	'ticket_resolution_time_dirty',
+	'ticket_service_id',
+	'ticket_signoff_date',
+	'ticket_sla_id',
+	'ticket_status_id',
+	'ticket_telephony_new_number',
+	'ticket_telephony_old_number',
+	'ticket_telephony_request_type_id',
+	'ticket_type_id'
+    ]
+});
+
+

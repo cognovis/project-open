@@ -74,7 +74,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	}, {
                 name:           'ticket_language',
                 xtype:          'radiofield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.ticket_language#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
                 value:          'eu_ES'
         }, {

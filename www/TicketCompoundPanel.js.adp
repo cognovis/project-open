@@ -60,7 +60,6 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	region: 'east',
 	layout:	'anchor',
 	width:	800,
-
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
@@ -92,6 +91,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').newTicket(rec);
         this.child('#center').child('#ticketCustomer').newTicket(rec);
         this.child('#center').child('#ticketFilestorage').newTicket(rec);
+        this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
     },
 
@@ -101,6 +101,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').loadTicket(rec);
         this.child('#center').child('#ticketCustomer').loadTicket(rec);
         this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
     }
 
