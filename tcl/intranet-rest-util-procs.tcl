@@ -545,6 +545,7 @@ ad_proc -public im_rest_object_type_update_sql {
     "
     db_foreach tables $tables_sql {
 	set index_column($table_name) $id_column
+	set index_column($id_column) $id_column
     }
 
     set columns_sql "

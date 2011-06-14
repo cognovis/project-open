@@ -220,12 +220,11 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
-
     if {[catch {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty during update: '$err_msg'"
@@ -325,7 +324,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	    "]
 	}
     } err_msg]} {
-	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty: '$err_msg'"
+	ns_log Notice "im_rest_post_object_type_$object_type: Error creating $object_type_pretty: '$err_msg'"
 	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 

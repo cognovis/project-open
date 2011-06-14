@@ -1230,7 +1230,7 @@ ad_proc -private im_rest_get_im_categories {
 
         # Calculate indent
         set indent [expr [string length tree_sortkey] - 8]
-        # for {set i 0} {$i < $indent} {incr i} { set category_translated "  $category_translated" }
+        # for {set i 0} {$i < $indent} {incr i} { set category_translated "&nbsp;$category_translated" }
 
 	# Check permissions
 	set read_p $rest_otype_read_all_p
@@ -1510,7 +1510,7 @@ ad_proc -private im_rest_post_object {
     }
 
     # Audit + Callback before updating the object
-    im_audit -object_type $rest_otype -object_id $rest_oid -action after_update
+    im_audit -object_type $rest_otype -object_id $rest_oid -action before_update
 
 
     # Update the object. This routine will return a HTTP error in case 
