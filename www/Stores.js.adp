@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.19 2011/06/14 17:54:12 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.20 2011/06/14 18:30:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -336,7 +336,7 @@ var profileStore = Ext.create('Ext.data.Store', {
 		type: 'rest',
 		url: '/intranet-rest/im_profile',
 		extraParams: {
-			format: 'json',		// Tell the ]po[ REST to return JSON data.
+			format: 'json'		// Tell the ]po[ REST to return JSON data.
 		},
 		reader: {
 			type: 'json',		// Tell the Proxy Reader to parse JSON

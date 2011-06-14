@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.8 2011/06/14 09:01:15 po34demo Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.9 2011/06/14 18:30:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -71,5 +71,5 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         store: userStore,
         dock: 'bottom',
         displayInfo: true
-    }],
+    }]
 });

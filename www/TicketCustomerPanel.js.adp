@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.12 2011/06/14 15:45:56 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.13 2011/06/14 18:30:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -60,7 +60,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         }, {
                 name:           'vat_number',
         	xtype:          'textfield',
-                fieldLabel:     '#intranet-core.VAT_Number#',
+                fieldLabel:     '#intranet-core.VAT_Number#'
         },{
                 name:           'company_type_id',
                 xtype:          'combobox',
@@ -97,9 +97,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var createButton = this.ownerCt.child('#createButton');
 			createButton.show();
 			
-			// Disable the "Save Changes" button
+			// Disable the "Save Changes" and "View Company" button
 			var createButton = this.ownerCt.child('#saveButton');
 			createButton.hide();
+			var viewButton = this.ownerCt.child('#viewButton');
+			viewButton.hide();
 			
 			// Diable this button
 			this.hide();
@@ -143,33 +145,37 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var company_name = values.company_name;
 			values.company_id = null;
 
-			var company = Ext.ModelManager.create(values, 'TicketBrowser.Company');
-			company.phantom = true;
-			company.save();
+			// create a new company
+			var company_record = Ext.ModelManager.create(values, 'TicketBrowser.Company');
+			company_record.phantom = true;
+			company_record.save({
+				scope: Ext.getCmp('ticketForm'),
+				success: function(record, operation) {
+					// This code is called once the reply from the server has arrived.
+					// The server response includes data.object_id for the new object.
+					try {
+						var resp = Ext.decode(operation.response.responseText);
+						var company_id = resp.data.object_id;
+					} catch (ex) {
+						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
+						return;
+					}
 
-			// add the form values to the store.
-			companyStore.add(company);
-			// the store should create a new object now (does he?)
+					// Store the new company_id into the ticketForm
+					var ticketForm = Ext.getCmp('ticketForm').getForm();
+					var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+					var ticket_id = ticket_id_field.getValue();
+					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
 
-			// Tell the store to update the server via it's REST proxy
-			companyStore.sync();
+					// Store the company_id into the ticket model and update the REST server
+					ticket_model.set('company_id', company_id);
+					ticket_model.save();
 
-			// force reload of the drop-down
-			delete combo.lastQuery;
-
-			// set the combo to the new company
-			var new_company = companyStore.findRecord('company_name',company_name);
-			var new_company_id = new_company.get('company_id');
-			combo.setValue(new_company_id);
-
-			// Disable this button and re-enable the "New Company" button
-			var addButton = this.ownerCt.child('#addButton');
-                        addButton.show();
-			this.hide();
-
-			// Re-enable the "Save Changes" button
-			var createButton = this.ownerCt.child('#saveButton');
-			createButton.show();
+					// Tell all panels to load the data of the newly created object
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_model);	
+				}
+			});
                 }
         }],
 
@@ -180,6 +186,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	},
 
 	loadTicket: function(rec){
+
 		// Customer ID, may be NULL
 		var customer_id;
 		if (rec.data.hasOwnProperty('company_id')) { customer_id = rec.data.company_id; }

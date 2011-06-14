@@ -234,7 +234,7 @@ Ext.define('TEC.panel.TickeContacto', {
                     fieldLabel: 'Detalle sobre estado...',
                     name:       'ticket_status_detail',
                     value:      '',
-                    anchor:     "100%",
+                    anchor:     "100%"
                 }]
         },
         {
@@ -284,7 +284,7 @@ Ext.define('TEC.panel.TicketFiles', {
     },
     defaultType: 'filefield',
     defaults: {
-        anchor: '100%',
+        anchor: '100%'
     },
 
     items: [{

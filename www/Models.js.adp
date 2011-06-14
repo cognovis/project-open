@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.15 2011/06/14 16:10:51 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.16 2011/06/14 18:30:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -189,7 +189,7 @@ Ext.define('TicketBrowser.Company', {
 		type: 'rest',
 		url: '/intranet-rest/im_company',
 		extraParams: {
-			format: 'json',		// Tell the ]po[ REST to return JSON data.
+			format: 'json'		// Tell the ]po[ REST to return JSON data.
 		},
 		reader: {
 			type: 'json',		// Tell the Proxy Reader to parse JSON
