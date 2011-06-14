@@ -51,22 +51,22 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select user_id from users where username = 'anonimo'" -default 624] %>,
+		value: <%= [db_string anon "select user_id from users where username = 'anonimo'" -default 624] %>
 	},
 	{ 	// Anonimous SLA
 		name: 'parent_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select project_id from im_projects where project_nr = 'anonimo'" -default 0] %>,
+		value: <%= [db_string anon "select project_id from im_projects where project_nr = 'anonimo'" -default 0] %>
 	},
 	{ 	// Anonimous Company
 		name: 'company_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>,
+		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>
 	},
 	{
 		name: 'ticket_creation_date',
 		xtype: 'hiddenfield',
-		value: '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>',
+		value: '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>'
 	},
 
 	// Main ticket fields
@@ -195,8 +195,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the customer field to anonymous company
 		form.findField('project_name').setValue(ticket_name);
-
-		value: 53349
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 

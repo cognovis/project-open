@@ -71,5 +71,5 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         store: userStore,
         dock: 'bottom',
         displayInfo: true
-    }],
+    }]
 });

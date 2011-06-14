@@ -69,5 +69,5 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
         store: companyStore,
         dock: 'bottom',
         displayInfo: true
-    }],
+    }]
 });
