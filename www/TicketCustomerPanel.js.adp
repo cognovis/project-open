@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.11 2011/06/13 23:17:20 mcordova Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.12 2011/06/14 15:45:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -81,7 +81,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var form = this.ownerCt.ownerCt.getForm();
 			var company_id = form.findField('company_id').getValue();
 			var redirect = '/intranet/companies/view?company_id='+company_id; 
-			window.location = redirect;
+			window.open(redirect, '_blank');
 		}
 	}, {
 
