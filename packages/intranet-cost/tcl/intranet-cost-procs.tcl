@@ -2026,7 +2026,7 @@ ad_proc im_costs_project_finance_component {
         $currency_outdated_warning
 	<table>
 	<tr valign=top>
-	  <td>
+	  <td valign=top>
 	    $cost_html
             <br>
             $summary_html
