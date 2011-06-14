@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.22 2011/06/14 16:26:46 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.23 2011/06/14 17:54:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -46,10 +46,28 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Variables for the new.tcl page to recognize an ad_form
 	{ name: 'ticket_id',		xtype: 'textfield', disabled: true },
-	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },
-	{ name: 'ticket_name',		xtype: 'hiddenfield' },
-	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: 53349 },
-	{ name: 'parent_id',		xtype: 'hiddenfield', value: 53349 },
+	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
+	{ name: 'ticket_name',		xtype: 'hiddenfield' },			// Set by AJAX call with new name
+	{ 	// Anonimous User
+		name: 'ticket_customer_contact_id',
+		xtype: 'hiddenfield',
+		value: <%= [db_string anon "select user_id from users where username = 'anonimo'" -default 624] %>,
+	},
+	{ 	// Anonimous SLA
+		name: 'parent_id',
+		xtype: 'hiddenfield',
+		value: <%= [db_string anon "select project_id from im_projects where project_nr = 'anonimo'" -default 0] %>,
+	},
+	{ 	// Anonimous Company
+		name: 'company_id',
+		xtype: 'hiddenfield',
+		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>,
+	},
+	{
+		name: 'ticket_creation_date',
+		xtype: 'hiddenfield',
+		value: '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>',
+	},
 
 	// Main ticket fields
 	{
@@ -66,13 +84,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode: 	'remote',
-		store: 		ticketTypeStore
-	}, {
+		store: 		ticketTypeStore,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
-		},
+		}
+	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
@@ -81,7 +99,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode: 	'remote',
-		store: 		ticketAreaStore
+		store: 		ticketAreaStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',
@@ -169,6 +192,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        var form = this.getForm();
 	        form.reset();
 		this.setNewTicketName();
+
+		// Set the customer field to anonymous company
+		form.findField('project_name').setValue(ticket_name);
+
+		value: 53349
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 

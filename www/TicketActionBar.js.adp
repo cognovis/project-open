@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketActionBar.js.adp,v 1.1 2011/06/13 10:55:20 po34demo Exp $
+ * @cvs-id $Id: TicketActionBar.js.adp,v 1.2 2011/06/14 17:54:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -63,12 +63,14 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			break
 		}
 	    }
+/*
 	}, {
 	    text: '#intranet-helpdesk.Remove_checked_items#',
 	    iconCls: 'icon-new-ticket',
 	    handler: function(){
 		    alert('Not implemented');
    	    }
+*/
 	}, '-', {
 	    text: '#intranet-core.Summary#',
 	    iconCls: 'icon-summary',

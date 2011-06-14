@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.11 2011/06/14 10:58:31 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.12 2011/06/14 17:54:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -190,27 +190,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			store: profileStore,
 			width: 300
 	    }]
-	},
-
-	// SPRI specific fields
-	{ name: 'ticket_file',		xtype: 'hiddenfield' },
-	{ name: 'ticket_area',		xtype: 'hiddenfield' },
-	{ name: 'ticket_program_id',	xtype: 'hiddenfield' },
-	{ name: 'ticket_service_id',	xtype: 'hiddenfield' },
-
-	// Additional fields to add later
-	{ name: 'ticket_assignee_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
-	{ name: 'ticket_alarm_date',		xtype: 'hiddenfield'},
-	{ name: 'ticket_alarm_action',		xtype: 'hiddenfield'},
-	{ name: 'ticket_note',			xtype: 'hiddenfield'},
-	{ name: 'ticket_conf_item_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_component_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_description',		xtype: 'hiddenfield'},
-	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
-	],
+	}],
 
 	buttons: [{
             text: '#intranet-sencha-ticket-tracker.Reject_Button#',
