@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.16 2011/06/13 15:19:09 mcordova Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.17 2011/06/14 09:01:16 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -32,7 +32,7 @@ Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
 		var	result = 'Category #' + category_id;
 		var	rec = this.findRecord('category_id',category_id);
 		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('category'); 
+		return rec.get('category_translated'); 
 	}
 });
 

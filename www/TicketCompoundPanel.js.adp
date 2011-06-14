@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.10 2011/06/13 17:56:28 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.11 2011/06/14 09:01:16 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -60,7 +60,6 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	region: 'east',
 	layout:	'anchor',
 	width:	800,
-
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
@@ -92,6 +91,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').newTicket(rec);
         this.child('#center').child('#ticketCustomer').newTicket(rec);
         this.child('#center').child('#ticketFilestorage').newTicket(rec);
+        this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
     },
 
@@ -101,6 +101,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').loadTicket(rec);
         this.child('#center').child('#ticketCustomer').loadTicket(rec);
         this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
     }
 

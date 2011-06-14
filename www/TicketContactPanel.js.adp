@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.14 2011/06/13 23:15:20 mcordova Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.15 2011/06/14 09:01:16 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -74,7 +74,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	}, {
                 name:           'ticket_language',
                 xtype:          'radiofield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.ticket_language#',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
                 value:          'eu_ES'
         }, {

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.19 2011/06/13 17:56:29 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.20 2011/06/14 09:01:16 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -193,17 +193,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    ],
 	    dockedItems: [
 	    {
-/*
-		dock: 'top',
-		xtype: 'ticketActionBar'
-	    }, {
-*/
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
 		store: ticketStore,
 		displayInfo: true,
 		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
-		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#'
+		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
+		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
 	    }]
 	});
 	this.callParent();

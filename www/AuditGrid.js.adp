@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.1 2011/06/13 17:56:28 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.2 2011/06/14 09:01:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,10 +36,11 @@ var auditGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 // Local store definition. We have to redefine the store every time we show
 // files for a different ticket
 var auditStore = Ext.create('Ext.data.Store', {
-    model: 'TicketBrowser.Audit',
+    model: 'TicketBrowser.TicketAudit',
     storeId: 'auditStore',
     autoLoad: false,
     remoteSort: true,
+    remoteFilter: true,
     pageSize: 10,			// Enable pagination
     sorters: [{
 	property: 'audit_date',
@@ -54,6 +55,7 @@ var auditStore = Ext.create('Ext.data.Store', {
     }
 });
 
+
 var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.auditGrid',
@@ -64,19 +66,53 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     frame:	true,
     iconCls:	'icon-grid',
 
+    dockedItems: [{
+		dock: 'bottom',
+		xtype: 'pagingtoolbar',
+		store: auditStore,
+		displayInfo: true,
+		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
+		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
+		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
+    }],
     columns: [
 	      {
 		  header: '#intranet-sencha-ticket-tracker.Request#',
 		  dataIndex: 'ticket_request',
+		  sortable: false, 
 		  flex: 1,
 		  minWidth: 100,
 		  renderer: function(value, o, record) {
 		      var name = record.get('ticket_request');
 		      return name;
 		  }
+	      }, {
+		  header: '#intranet-sencha-ticket-tracker.Resolution#',
+		  dataIndex: 'ticket_solution',
+		  flex: 1,
+		  sortable: false, 
+		  minWidth: 100,
+		  renderer: function(value, o, record) {
+		      var name = record.get('ticket_solution');
+		      return name;
+		  }
+	      }, {
+			header: '#intranet-helpdesk.Status#',
+			dataIndex: 'ticket_status_id',
+			width: 60,
+			sortable: true, 
+			renderer: function(value, o, record) {
+				return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
+			}
 	      },
 	      {text: "#intranet-core.Date#", sortable: true, dataIndex: 'audit_date'},
-	      {text: "#intranet-core.User#", sortable: true, dataIndex: 'audit_user_id'}
+	      {
+			header: "#intranet-core.User#", 
+			sortable: true, 
+                        renderer: function(value, o, record) {
+                                return userStore.name_from_id(record.get('audit_user_id'));
+                        }
+		}
 	 ],
     columnLines: true,
     selModel: auditGridSelModel,
@@ -93,7 +129,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({object_id: 0});
+	this.loadTicket({data: {object_id: 0}});
     }
 
 });

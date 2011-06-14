@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.15 2011/06/13 08:38:38 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.16 2011/06/14 09:01:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -62,7 +62,7 @@ function showFileStorageNewForm(ticket_id) {
 		xtype: 'filefield',
 		id: 'file',
 		emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
-		fieldLabel: '#intranet-core.Photo#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.File#',
 		buttonText: '',
 		buttonConfig: { iconCls: 'upload-icon' }
 	    }],
