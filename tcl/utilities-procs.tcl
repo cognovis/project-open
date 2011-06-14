@@ -4683,6 +4683,8 @@ ad_proc util::external_url_p { url } {
     HTTP or HTTPS port number added or removed from current host name    
    or another hostname that the host responds to (from host_node_map)
 } {
+    return 0
+
     set locations_list [security::locations]
     # there may be as many as 3 valid full urls from one hostname
     set external_url_p [util_complete_url_p $url]
