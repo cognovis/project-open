@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.21 2011/06/14 16:10:51 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.22 2011/06/14 16:26:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -171,11 +171,24 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		this.setNewTicketName();
 	},
 	
+	// Determine the new of the new ticket. Send an async AJAX request 
+	// to the server and tell the callback to insert the new ticket number
+	// into the project_name field in this form.
 	setNewTicketName: function() {
-		// Use TCL function to create the next ticket Nr
-	        var form = this.getForm();
-		var name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + '<%= [im_ticket::next_ticket_nr] %>';
-		form.findField('project_name').setValue(name);
+	    Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/ticket-next-nr',
+		success: function(response) {
+		    // ticket-next-nr just returns a string which represents the name
+		    var ticket_nr = response.responseText;
+		    var form = this.getForm();
+		    var ticket_name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ticket_nr;
+		    form.findField('project_name').setValue(ticket_name);
+		},
+		failure: function(response) {
+		    alert('#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#');
+		}
+	    });
 	}
 });
 
