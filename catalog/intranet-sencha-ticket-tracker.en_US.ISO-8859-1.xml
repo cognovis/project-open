@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-sencha-ticket-tracker" locale="en_US" charset="ISO-8859-1">
 
+  <msg key="A_new_ticket_has_been_created">A new ticket has been created</msg>
   <msg key="Alarm_Action">Alarm Action</msg>
   <msg key="Alarm_Date">Alarm Date</msg>
   <msg key="Application">Application</msg>
@@ -52,6 +53,7 @@
   <msg key="My_Groups">My Groups</msg>
   <msg key="New_Company">New Company</msg>
   <msg key="New_Contact">New Contact</msg>
+  <msg key="New_Ticket_Prefix">Ticket</msg>
   <msg key="No_items">No items</msg>
   <msg key="Options">Options</msg>
   <msg key="Outgoing_Channel">Outgoing Channel</msg>
@@ -62,6 +64,8 @@
   <msg key="Request">Request</msg>
   <msg key="Requires_additional_info">Requires additional info</msg>
   <msg key="Resolution">Resolution</msg>
+  <msg key="Save_New_Company">Save New Company</msg>
+  <msg key="Saving_Data">Saving Data</msg>
   <msg key="Saving_data_">Saving data...</msg>
   <msg key="Service">Service</msg>
   <msg key="Service_Type">Service Type</msg>
@@ -71,8 +75,8 @@
   <msg key="Show_Ticket">Show Ticket</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_File_Number">Ticket File Number</msg>
-  <msg key="ticket_language">ticket language</msg>
   <msg key="Ticket_Name">Ticket Name</msg>
+  <msg key="ticket_language">Ticket Language</msg>
   <msg key="Ticket_Type">Ticket Type</msg>
   <msg key="Tickets">Tickets</msg>
   <msg key="Upload_New_Attachment">Upload New Attachment</msg>
