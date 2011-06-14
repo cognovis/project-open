@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.14 2011/06/14 14:43:34 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.15 2011/06/14 16:10:51 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -58,24 +58,14 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
-        {type: 'string', name: 'indentClass',
+        {type: 'string', name: 'indent_class',
+		// Determine the indentation level for each element in the tree
 		convert: function(value, record) {
-			return 'extjs-indent-level-0';
+			var	category = record.get('category_translated');
+			var	indent = (record.get('tree_sortkey').length / 8) - 1;
+			return 'extjs-indent-level-' + indent;
 		}
-	},
-        {	name: 'indented_category_translated',
-		convert: function(value, record) {
-			var	category = record.get('category_translated'),
-				indent = record.get('tree_sortkey').length - 8,
-				result = '',
-				i=0;
-			for (i=0; i<indent; i++){
-				result = result + '&nbsp;';
-			}
-			result = result + category;
-			return result;
-		}
-        }
+	}
     ]
 });
 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.20 2011/06/14 14:43:34 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.21 2011/06/14 16:10:51 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -68,6 +68,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore
 	}, {
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		},
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
@@ -76,13 +81,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode: 	'remote',
-		store: 		ticketAreaStore,
-		listConfig: {
-			getInnerTpl: function() {
-                		//return '<div class=extjs-indent-level-1>' + '{name}&nbsp;' + '</div>';
-                		return '<div class=' + '{indentClass}' + '>' + '{name}&nbsp;' + '</div>';
-			}
-		}
+		store: 		ticketAreaStore
 	}, {
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 	        name:		'ticket_file',

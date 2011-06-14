@@ -89,4 +89,22 @@ img.x-tree-icon-parent {
 .extjs-indent-level-2 {
         font-size: 11px; padding-left: 25px
 }
+.extjs-indent-level-3 {
+        font-size: 11px; padding-left: 35px
+}
+.extjs-indent-level-4 {
+        font-size: 11px; padding-left: 45px
+}
+.extjs-indent-level-5 {
+        font-size: 11px; padding-left: 55px
+}
+.extjs-indent-level-6 {
+        font-size: 11px; padding-left: 65px
+}
+.extjs-indent-level-7 {
+        font-size: 11px; padding-left: 75px
+}
+.extjs-indent-level-8 {
+        font-size: 11px; padding-left: 85px
+}
 
