@@ -66,7 +66,7 @@ set sql "
 		$property $direction
 "
 
-set simple_sql "
+set simp_sql "
 	select	*
 	from	im_audits a
 	where	a.audit_object_id = :object_id

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.20 2011/06/14 18:30:17 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.21 2011/06/15 12:23:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -47,6 +47,19 @@ Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
 		var	rec = this.findRecord('user_id',user_id);
 		if (rec == null || typeof rec == "undefined") { return result; }
 		return rec.get('name');
+	}
+});
+
+/*
+ * Create a specific store for groups/profiles.
+ * The subclass contains a special lookup function.
+ */
+Ext.ux.ProfileStore = Ext.extend(Ext.data.Store, {
+	name_from_id: function(group_id) {
+		var	result = 'Profile #' + group_id;
+		var	rec = this.findRecord('group_id',group_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('group_name');
 	}
 });
 
@@ -321,7 +334,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 });
 
 
-var profileStore = Ext.create('Ext.data.Store', {
+var profileStore = Ext.create('Ext.ux.ProfileStore', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
 	autoLoad: true,
