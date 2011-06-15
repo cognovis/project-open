@@ -800,3 +800,50 @@ ad_proc -public im_rest_get_content {} {
     ns_unlink $filename
     return $text
 }
+
+ad_proc -public im_rest_parse_xml_json_content {
+    { -format "" }
+    { -content "" }
+    { -object_type "" }
+} {
+    Parse the XML or JSON content of a POST request with 
+    the values of the object to create or update.
+    @author Frank Bergmann
+} {
+    # Parse the HTTP content
+    switch $format {
+	json {
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse json content=$content"
+	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
+	    array set parsed_json [util::json::parse $content]
+	    set json_list $parsed_json(_object_)
+	    array set hash_array $json_list
+
+	    # ToDo: Modify the JSON Parser to return NULL values as "" (TCL NULL) instead of "null"
+	    foreach var [array names hash_array] {
+		set val $hash_array($var)
+		if {"null" == $val} { set hash_array($var) "" }
+	    }
+	}
+	xml {
+	    # store the key-value pairs into a hash array
+	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse xml content=$content"
+	    if {[catch {set doc [dom parse $content]} err_msg]} {
+		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+	    }
+	    
+	    set root_node [$doc documentElement]
+	    array unset hash_array
+	    foreach child [$root_node childNodes] {
+		set nodeName [$child nodeName]
+		set nodeText [$child text]
+		set hash_array($nodeName) $nodeText
+	    }
+	}
+	default {
+	    return [im_rest_error -http_status 406 -message "Unknown format: '$format'. Expected: {xml|json}"]
+	}
+    }
+    return [array get hash_array]
+}
+

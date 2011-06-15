@@ -52,7 +52,7 @@ ad_proc -private im_rest_post_object_type_im_project {
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	set hash($nodeName) $nodeText
+	set hash_array($nodeName) $nodeText
 	set $nodeName $nodeText
     }
 
@@ -84,13 +84,13 @@ ad_proc -private im_rest_post_object_type_im_project {
 	set rest_oid [project::new \
 			-creation_user		$user_id \
 			-context_id		"" \
-			-project_name		$hash(project_name) \
-			-project_nr		$hash(project_nr) \
-			-project_path       	$hash(project_path) \
-			-company_id	 	$hash(company_id) \
-			-parent_id	  	$hash(parent_id) \
-			-project_type_id    	$hash(project_type_id) \
-			-project_status_id  	$hash(project_status_id) \
+			-project_name		$hash_array(project_name) \
+			-project_nr		$hash_array(project_nr) \
+			-project_path       	$hash_array(project_path) \
+			-company_id	 	$hash_array(company_id) \
+			-parent_id	  	$hash_array(parent_id) \
+			-project_type_id    	$hash_array(project_type_id) \
+			-project_status_id  	$hash_array(project_status_id) \
 	]
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
@@ -100,7 +100,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -163,11 +163,26 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     }
 
     # Create optional variables if they haven't been specified in the XML request
-    if {![info exists ticket_nr]} { set ticket_nr [db_nextval "im_ticket_seq"] }
-    if {![info exists ticket_customer_contact_id]} { set ticket_customer_contact_id "" }
-    if {![info exists ticket_start_date]} { set ticket_start_date "" }
-    if {![info exists ticket_end_date]} { set ticket_end_date "" }
-    if {![info exists ticket_note]} { set ticket_note "" }
+    if {![info exists ticket_nr]} { 
+	set ticket_nr [db_nextval "im_ticket_seq"] 
+	set hash_array(ticket_nr) $ticket_nr
+    }
+    if {![info exists ticket_customer_contact_id]} { 
+	set ticket_customer_contact_id "" 
+	set hash_array(ticket_customer_contact_id) $ticket_customer_contact_id
+    }
+    if {![info exists ticket_start_date]} { 
+	set ticket_start_date "" 
+	set hash_array(ticket_start_date) $ticket_start_date
+    }
+    if {![info exists ticket_end_date]} { 
+	set ticket_end_date "" 
+	set hash_array(ticket_end_date) $ticket_end_date
+    }
+    if {![info exists ticket_note]} { 
+	set ticket_note "" 
+	set hash_array(ticket_note) $ticket_note
+    }
 
     # Check that all required variables are there
     set required_vars {project_name parent_id ticket_status_id ticket_type_id}
@@ -270,7 +285,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	set hash($nodeName) $nodeText
+	set hash_array($nodeName) $nodeText
 	set $nodeName $nodeText
     }
 
@@ -333,7 +348,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -366,7 +381,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	set hash($nodeName) $nodeText
+	set hash_array($nodeName) $nodeText
 	set $nodeName $nodeText
     }
 
@@ -416,7 +431,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -443,32 +458,8 @@ ad_proc -private im_rest_post_object_type_im_company {
 } {
     ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # Parse the HTTP content
-    switch $format {
-	json {
-	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse json content=$content"
-	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
-	    array set parsed_json [util::json::parse $content]
-	    set json_list $parsed_json(_object_)
-	    array set hash_array $json_list
-	}
-	default {
-	    # store the key-value pairs into a hash array
-	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse xml content=$content"
-	    if {[catch {set doc [dom parse $content]} err_msg]} {
-		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-	    }
-	    
-	    set root_node [$doc documentElement]
-	    array unset hash_array
-	    foreach child [$root_node childNodes] {
-		set nodeName [$child nodeName]
-		set nodeText [$child text]
-		set hash_array($nodeName) $nodeText
-	    }
-	}
-    }
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
 
     # write hash values as local variables
     foreach key [array names hash_array] {
@@ -486,14 +477,17 @@ ad_proc -private im_rest_post_object_type_im_company {
 	}
     }
 
-
     # --------------------------------------------
     # Make sure the variable "company_path" exists.
     if {![info exists company_path] || "" == $company_path} {
 	# Take company_name, make it lower and replace any strange chars with "_"
 	set company_path [string tolower $company_name]
 	regsub -all {[^a-z0-9]} $company_path "_" company_path
+	set hash_array(company_path) $company_path
     }
+
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
 
     # --------------------------------------------
     # Check for duplicate
@@ -541,22 +535,26 @@ ad_proc -private im_rest_post_object_type_im_company {
 	    im_rest_object_type_update_sql \
 		-rest_otype "im_office" \
 		-rest_oid $main_office_id \
-		-hash_array [array get hash]
+		-hash_array [array get hash_array]
 	    
 	} err_msg]} {
 	    return [im_rest_error -http_status 406 -message "Error updating im_office: '$err_msg'."]
 	}
 
+	set hash_array(main_office_id) $main_office_id
     }
 
     # Create some default parameters in order to reduce the number of parameters necessary
     if {![info exists company_status_id] || "" == $company_status_id} { 
 	# By default make the company "active"
 	set company_status_id [im_company_status_active]
+	set hash_array(company_status_id) $company_status_id
     }
+
     if {![info exists company_type_id] || "" == $company_type_id} { 
 	# By default create a "customer" (should be more frequent then "provider"...)
 	set company_type_id [im_company_type_customer]
+	set hash_array(company_type_id) $company_type_id
     }
 
 
@@ -584,7 +582,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -611,18 +609,17 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 } {
     ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # Store XML values into local variables
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
     set contact_info ""
     set group_id ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -691,7 +688,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -722,37 +719,15 @@ ad_proc -private im_rest_post_object_type_user {
     set current_user_id $user_id
     unset user_id
 
-    # Parse the HTTP content
-    switch $format {
-	json {
-	    ns_log Notice "im_rest_post_object_type_user: going to parse json content=$content"
-	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
-	    array set parsed_json [util::json::parse $content]
-	    set json_list $parsed_json(_object_)
-	    array set hash_array $json_list
-	}
-	default {
-	    # store the key-value pairs into a hash array
-	    ns_log Notice "im_rest_post_object_type_user: going to parse xml content=$content"
-	    if {[catch {set doc [dom parse $content]} err_msg]} {
-		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-	    }
-	    
-	    set root_node [$doc documentElement]
-	    array unset hash_array
-	    foreach child [$root_node childNodes] {
-		set nodeName [$child nodeName]
-		set nodeText [$child text]
-		set hash_array($nodeName) $nodeText
-	    }
-	}
-    }
-    ns_log Notice "im_rest_post_object_type_user: hash_array=[array get hash_array]"
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_user: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
 	set $key $value
     }
 
@@ -765,16 +740,28 @@ ad_proc -private im_rest_post_object_type_user {
     }
 
     # Fake the following required variables
-    if {![info exists username]} { set username "$first_names $last_name"}
-    if {![info exists screen_name]} { set screen_name $username }
+    if {![info exists username]} { 
+	set username "$first_names $last_name"
+	set hash_array(username) $username
+    }
+    if {![info exists screen_name]} { 
+	set screen_name $username 
+	set hash_array(screen_name) $screen_name
+    }
     if {![info exists email]} { 
 	set email "${first_names}.${last_name}@nowhere.com"
 	set email [string tolower $email]
 	regsub -all {[^a-zA-Z0-9_\-@]} $email "." email
+	set hash_array(email) $email
     }
-    if {![info exists password]} { set password [ad_generate_random_string] }
-    if {![info exists url]} { set url "" }
-
+    if {![info exists password]} { 
+	set password [ad_generate_random_string] 
+	set hash_array(password) $password
+    }
+    if {![info exists url]} { 
+	set url "" 
+	set hash_array(url) $url
+    }
 
     # Check for duplicate
     set dup_sql "
@@ -884,7 +871,7 @@ ad_proc -private im_rest_post_object_type_user {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $new_user_id \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -922,16 +909,17 @@ ad_proc -private im_rest_post_object_type_im_invoice {
     set template_id ""
     set company_contact_id ""
     set effective_date [db_string effdate "select now()::date"]
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	# Store the values
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -987,7 +975,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -1055,15 +1043,17 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     set item_status_id ""
     set invoice_id ""
     set project_id ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -1111,7 +1101,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -1141,18 +1131,16 @@ ad_proc -private im_rest_post_object_type_im_hour {
 } {
     ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
 
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	# Store the values
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -1202,7 +1190,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 	im_rest_object_type_update_sql \
 	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
-	    -hash_array [array get hash]
+	    -hash_array [array get hash_array]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
@@ -1223,7 +1211,6 @@ ad_proc -private im_rest_post_object_im_hour {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid "" }
-    { -query_hash_pairs "" }
     { -content "" }
     { -debug 0 }
 } {
@@ -1233,19 +1220,16 @@ ad_proc -private im_rest_post_object_im_hour {
 } {
     ns_log Notice "im_rest_post_object_im_hour: rest_oid=$rest_oid"
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
 
-    set root_node [$doc documentElement]
-    array unset hash_array
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-       	set hash_array($nodeName) $nodeText
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
-    ns_log Notice "im_rest_post_object_im_hour: hash_array = [array get hash_array]"
 
     set hours $hash_array(hours)
     set hour_id $hash_array(hour_id)
@@ -1306,15 +1290,17 @@ ad_proc -private im_rest_post_object_type_membership_rel {
     set member_state "appoved"
     set creation_user $user_id
     set creation_ip [ad_conn peeraddr]
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -1376,16 +1362,19 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
     set rel_type $object_type
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
-    }
+
 
     # Check that all required variables are there
     set required_vars {object_id_one object_id_two}
@@ -1446,16 +1435,19 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
     set rel_type $object_type
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
-    }
+
 
     # Check that all required variables are there
     set required_vars {object_id_one object_id_two}
@@ -1516,15 +1508,17 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
     set rel_type $object_type
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash($nodeName) $nodeText
-	set $nodeName $nodeText
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
