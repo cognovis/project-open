@@ -162,7 +162,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 					}
 
 					// Store the new company_id into the ticketForm
-					var ticketForm = Ext.getCmp('ticketForm').getForm();
+					var ticketForm = Ext.getCmp('ticketForm');
 					var ticket_id_field = ticketForm.getForm().findField('ticket_id');
 					var ticket_id = ticket_id_field.getValue();
 					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);

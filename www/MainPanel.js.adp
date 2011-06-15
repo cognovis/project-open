@@ -62,7 +62,7 @@ Ext.define('TicketBrowser.Main', {
 			xtype: 'contactContainer'
 		}, {
 			itemId: 'sample',
-			title: 'Sample',
+			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel'
 		}]
 	}]

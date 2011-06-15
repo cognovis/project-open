@@ -139,7 +139,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             items :[{
 			name:		'ticket_closed_in_1st_contact_p',
 			xtype:		'checkbox',
-			fieldLabel:     '#intranet-core.lt_Closed_in_1st_Contact#',
+			fieldLabel:     '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			inputValue:	't',
 			width:		150
 	    }, {
