@@ -24,31 +24,34 @@
 
 
 Ext.define('TicketBrowser.TicketContactPanel', {
-	extend:		'Ext.container.Container',
+	extend:		'Ext.panel.Panel',
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
 	title:		'#intranet-core.Contact#',
-	frame:		true,
 	layout:		'anchor',
 	deferredRender:	false,
-	split:		false,
 	items: [{
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'objectMemberGrid',
 		xtype:	'objectMemberGrid',
-		region:	'center',
+		preventHeader: true
+	}, {
+		title:	'#intranet-sencha-ticket-tracker.Contacts#',
+		itemId:	'ticketContactForm',
+		xtype:	'ticketContactForm',
+		preventHeader: true
 	}],
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#objectMemberGrid').newTicket(rec);
-        // this.child('#ticketContactForm').newTicket(rec);
+        this.child('#ticketContactForm').newTicket(rec);
     },
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#objectMemberGrid').loadTicket(rec);
-        // this.child('#ticketContactForm').loadTicket(rec);
+        this.child('#ticketContactForm').loadTicket(rec);
     }
 
 });

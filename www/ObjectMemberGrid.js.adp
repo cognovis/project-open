@@ -64,12 +64,14 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
     columns: [{
-	header: '#intranet-core.Contact#',
+	header:		'#intranet-core.Contact#',
+	minWidth:	100,
+	flex:		1,
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('object_id_two'));
 	}
     }, {
-	header: '#intranet-sencha-ticket-tracker.Role#',
+	header: 	'#intranet-sencha-ticket-tracker.Object_Member_Role#',
 	renderer: function(value, o, record) {
 	    return bizObjectRoleStore.category_from_id(record.get('object_role_id'));
 	}
