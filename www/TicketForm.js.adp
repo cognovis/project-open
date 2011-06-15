@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.26 2011/06/15 12:23:19 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.27 2011/06/15 14:51:39 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -190,10 +190,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
-		this.setNewTicketName();
 
-		// Set the customer field to anonymous company
-		form.findField('project_name').setValue(ticket_name);
+		// Ask the server to provide a new ticket name
+		this.setNewTicketName();
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 

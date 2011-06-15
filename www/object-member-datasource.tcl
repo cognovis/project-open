@@ -29,8 +29,10 @@ if {"" != $object_id_two} { set where_clause "r.object_id_two = :object_id_two" 
 set sql "
 	select	r.rel_id,
 		r.rel_type,
+		r.object_id_one,
+		r.object_id_two,
 		bom.object_role_id,
-		bom.percentage,
+		bom.percentage
 	from	acs_rels r
 		LEFT OUTER JOIN im_biz_object_members bom ON (bom.rel_id = r.rel_id)
 	where	$where_clause
@@ -49,10 +51,12 @@ db_foreach limited_sql $limited_sql {
     set json_row [list]
     lappend json_row "\"rel_id\": \"$rel_id\""
     lappend json_row "\"rel_type\": \"$rel_type\""
+    lappend json_row "\"object_id_one\": \"$object_id_one\""
+    lappend json_row "\"object_id_two\": \"$object_id_two\""
     lappend json_row "\"object_role_id\": \"$object_role_id\""
     lappend json_row "\"percentage\": \"$percentage\""
 
-    lappend json_list "{[join $json_row ", "]}"
+    lappend json_list "\t\t{[join $json_row ", "]}"
 }
 
 # Paginated Sencha grids require a "total" amount in order to know
