@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketContactPanel.js.adp,v 1.15 2011/06/14 09:01:16 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.12 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -72,6 +76,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	                fieldLabel:     '#intranet-core.Last_name#'
 	    }]
 	}, {
+<<<<<<< HEAD
                 name:           'ticket_language',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
@@ -86,6 +91,8 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 labelSeparator: '',
                 hideEmptyLabel: false
 	}, {
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
                 name:           'ticket_sex',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
@@ -102,7 +109,10 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         }],
         buttons: [{
         	text: '#intranet-sencha-ticket-tracker.button_New_Contact#',
+<<<<<<< HEAD
 		width: 	100,
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
@@ -110,7 +120,10 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 		}
 	}, {
         	text: '#intranet-sencha-ticket-tracker.button_Save_Changes#',
+<<<<<<< HEAD
 		width: 	120,
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         	handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
@@ -133,7 +146,10 @@ Ext.define('TicketBrowser.TicketContactPanel', {
                 }
 	}, {
         	text: '#intranet-sencha-ticket-tracker.Create_New_Contact#',
+<<<<<<< HEAD
 		width: 	120,
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('user_id');
@@ -158,9 +174,13 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
 	loadTicket: function(rec){
 		// Customer contact ID, may be NULL
+<<<<<<< HEAD
 		var contact_id;
 		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { contact_id = rec.data.ticket_customer_contact_id; }
 
+=======
+		var contact_id = rec.data.ticket_customer_contact_id;
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		var contact_record = userStore.findRecord('user_id',contact_id);
 	        if (contact_record == null || typeof contact_record == "undefined") { return; }
 

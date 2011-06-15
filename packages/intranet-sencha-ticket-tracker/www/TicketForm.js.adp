@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketForm.js.adp,v 1.25 2011/06/15 10:20:45 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketForm.js.adp,v 1.14 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -45,6 +49,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
+<<<<<<< HEAD
 	{ name: 'ticket_id',		xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
@@ -180,11 +185,124 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			compoundPanel.loadTicket(ticket_record);
 
 		}
+=======
+	{ name: 'form:id',		xtype: 'hiddenfield', value: 'helpdesk_ticket' },
+	{ name: '__key_signature',	xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
+	{ name: '__key',		xtype: 'hiddenfield', value: 'ticket_id' },
+	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
+	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
+	{ name: 'ticket_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: '30000' },
+	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
+	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
+
+	// tell the /intranet-helpdesk/new page to return JSON
+	{ name: 'format',			xtype: 'hiddenfield', value: 'json' },
+
+	// Main ticket fields
+	{ name: 'project_name', fieldLabel: '#intranet-helpdesk.Ticket_Name#' },
+	{ name: 'parent_id',		xtype: 'hiddenfield' },
+	{
+	        fieldLabel: '#intranet-sencha-ticket-tracker.Service_Type#',
+		name: 'ticket_service_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category_translated',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketTypeStore
+	}, {
+	        fieldLabel: '#intranet-helpdesk.Ticket_type#',
+		name: 'ticket_type_id',
+		xtype: 'combobox',
+                valueField: 'category_id',
+                displayField: 'category_translated',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: ticketTypeStore
+	}, {
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+	        name:		'ticket_file',
+	        xtype:		'textfield'
+	}, {
+        	fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
+        	name:		'ticket_area',
+        	xtype:          'combobox',
+        	valueField:     'category_id',
+        	displayField:   'category_translated',
+        	valueField:     'id',
+        	triggerAction:  'all',
+        	width: 		300,
+        	editable:       false,
+        	queryMode:      'remote',
+        	store:          requestAreaStore
+	}, {
+        	fieldLabel:     '#intranet-sencha-ticket-tracker.Program#',
+        	name:           'ticket_program_id',
+        	xtype:          'combobox',
+        	valueField:     'category_id',
+        	displayField:   'category_translated',
+        	valueField:     'id',
+        	triggerAction:  'all',
+        	width: 		320,
+        	editable:       false,
+        	queryMode:      'remote',
+        	store:          requestAreaProgramStore,
+		listeners:{
+		    // The user has selected a program from the drop-down box.
+		    // Lookup the area (parent of program) and fill the form with the fields.
+		    'select': function() {
+			var program_id = this.getValue();
+			var area = requestAreaProgramStore.findRecord('id',program_id);
+		        if (area == null || typeof area == "undefined") { return; }
+			this.ownerCt.loadRecord(area);
+		    }
+		}
+	},
+
+	// Additional fields to add later
+	{ name: 'ticket_assignee_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
+	{ name: 'ticket_queue_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_alarm_date',		xtype: 'hiddenfield'},
+	{ name: 'ticket_alarm_action',		xtype: 'hiddenfield'},
+	{ name: 'ticket_note',			xtype: 'hiddenfield'},
+	{ name: 'ticket_conf_item_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_component_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_description',		xtype: 'hiddenfield'},
+	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
+	{ name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'}
+	],
+
+	buttons: [{
+            text: '#intranet-sencha-ticket-tracker.button_Save#',
+            disabled: false,
+            formBind: true,
+	    handler: function(){
+		var form = this.up('form').getForm();
+
+		var ticket_name_field = form.findField('ticket_name');
+		var project_name_field = form.findField('project_name');
+		ticket_name_field.setValue(project_name_field.getValue());
+
+		form.submit({
+                    url: '/intranet-helpdesk/new',
+		    method: 'GET',
+                    submitEmptyText: false,
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
+		});
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    }
 	}],
 
 	loadTicket: function(rec){
 		this.loadRecord(rec);
+<<<<<<< HEAD
+=======
+		var comp = this.getComponent('ticket_type_id');
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -192,6 +310,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
+<<<<<<< HEAD
 		this.setNewTicketName();
 
 		// Set the customer field to anonymous company
@@ -216,6 +335,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    alert('#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#');
 		}
 	    });
+=======
+		// Use TCL function to create the next ticket Nr
+		var name = '#intranet-helpdesk.Ticket#' + ' <%= [im_ticket::next_ticket_nr] %>';
+		form.findField('project_name').setValue(name);
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	}
 });
 

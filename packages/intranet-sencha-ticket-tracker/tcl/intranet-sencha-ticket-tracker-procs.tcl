@@ -101,9 +101,13 @@ ad_proc -public im_fs_content_folder_for_object_helper {
 	append path "/${p}"
 	set folder_id [content::item::get_id -item_path $path -root_folder_id $parent_folder_id]
 	if {"" == $folder_id} {
+<<<<<<< HEAD
 	    // create the folder and grant "Admin" to employees
 	    set folder_id [content::folder::new -parent_id $parent_folder_id -name $p -label $p]
 	    permission::grant -party_id [im_profile_employees] -object_id folder_id -privilege "admin"
+=======
+	    set folder_id [content::folder::new -parent_id $parent_folder_id -name $p -label $p]
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	}
 	ns_log Notice "im_fs_content_folder_for_object: oid=$object_id: path=$path, parent_id=$parent_folder_id => folder_id=$folder_id"
 	set parent_folder_id $folder_id

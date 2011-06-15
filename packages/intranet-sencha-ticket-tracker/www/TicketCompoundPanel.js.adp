@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.12 2011/06/14 14:43:34 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.7 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,10 +37,17 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     split:		true,
 
     items: [{
+<<<<<<< HEAD
 	itemId:		'center',
 	region: 	'center',
 	layout: 	'anchor',
 	minWidth:	400,
+=======
+	itemId:	'center',
+	region: 'center',
+	layout: 'anchor',
+	width:	500,
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 
 	items: [{
 		itemId: 'ticketForm',
@@ -60,15 +71,21 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	region: 'east',
 	layout:	'anchor',
 	width:	800,
+<<<<<<< HEAD
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
 		xtype: 'auditGrid'
 	}, {
+=======
+
+	items: [{
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		itemId: 'ticketFormRight',
 		title: '',
 		xtype: 'ticketFormRight'
 	}]
+<<<<<<< HEAD
     }],
 
     // Create a copy of the currrent ticket
@@ -84,6 +101,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Write out an alert message
 	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
+=======
+
+    }],
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
@@ -91,7 +112,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').newTicket(rec);
         this.child('#center').child('#ticketCustomer').newTicket(rec);
         this.child('#center').child('#ticketFilestorage').newTicket(rec);
+<<<<<<< HEAD
         this.child('#east').child('#auditGrid').newTicket(rec);
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         this.child('#east').child('#ticketFormRight').newTicket(rec);
     },
 
@@ -101,7 +125,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketContact').loadTicket(rec);
         this.child('#center').child('#ticketCustomer').loadTicket(rec);
         this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+<<<<<<< HEAD
         this.child('#east').child('#auditGrid').loadTicket(rec);
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
     }
 

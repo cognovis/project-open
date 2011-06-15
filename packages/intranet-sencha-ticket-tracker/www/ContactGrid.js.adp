@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: ContactGrid.js.adp,v 1.9 2011/06/14 18:30:17 po34demo Exp $
+=======
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.6 2011/06/09 22:28:30 mcordova Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -43,16 +47,27 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
             header: '#intranet-core.Last_name#',
             dataIndex: 'last_name'
         }, {
+<<<<<<< HEAD
             header: '#intranet-sencha-ticket-tracker.Contact_Mail#',
+=======
+            header: '#intranet-core.Contact_Mail#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
             dataIndex: 'email'
         }, {
             header: '#intranet-core.Telephone#',
             dataIndex: 'contact_telephone'
         }, {
+<<<<<<< HEAD
             header: '#intranet-sencha-ticket-tracker.Language#',
             dataIndex: 'language_preference'
         }, {
             header: '#intranet-sencha-ticket-tracker.Last_Updated#',
+=======
+            header: '#intranet-core.Language#',
+            dataIndex: 'language_preference'
+        }, {
+            header: '#acs-subsite.Information_Updated#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
             dataIndex: 'last_modified'
         }
     ],
@@ -71,5 +86,9 @@ var companyGrid = Ext.define('TicketBrowser.ContactGrid', {
         store: userStore,
         dock: 'bottom',
         displayInfo: true
+<<<<<<< HEAD
     }]
+=======
+    }],
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 });

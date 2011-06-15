@@ -11,15 +11,22 @@
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
+<<<<<<< HEAD
 	<script type="text/javascript" src="RowExpander.js"></script> 
 	<script type="text/javascript" src="ProjectSlaList.js"></script> 
 	<script type="text/javascript" src="AuditGrid.js"></script> 
+=======
+	<script type="text/javascript" src="ProjectSlaList.js"></script> 
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	<script type="text/javascript" src="FileStorageGrid.js"></script> 
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
  	<script type="text/javascript" src="Panels.js"></script>
+<<<<<<< HEAD
 	<script type="text/javascript" src="TicketActionBar.js"></script> 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	<script type="text/javascript" src="TicketGrid.js"></script> 
 	<script type="text/javascript" src="TicketForm.js"></script> 
 	<script type="text/javascript" src="TicketFormRight.js"></script> 
@@ -40,12 +47,20 @@
 	<script type="text/javascript">
 		Ext.Loader.setConfig({enabled: true});
 		Ext.Loader.setPath('Ext', '/intranet-sencha/');
+<<<<<<< HEAD
+=======
+		Ext.Loader.setPath('Ext.ux', '/intranet-sencha/ext-4.0.0/examples/ux');
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		Ext.require([
 			'Ext.grid.*',
 			'Ext.tree.*',
 			'Ext.data.*',
 			'Ext.toolbar.*',
 			'Ext.tab.Panel',
+<<<<<<< HEAD
+=======
+			'Ext.ux.RowExpander',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			'Ext.layout.container.Border'
 		]);
 		Ext.onReady(function(){

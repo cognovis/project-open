@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: Models.js.adp,v 1.16 2011/06/14 18:30:17 po34demo Exp $
+=======
+ * @cvs-id $Id: Models.js.adp,v 1.8 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,9 +26,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+<<<<<<< HEAD
 // Use TCL template language to get the current user_id
 var currentUserId = <%= [ad_get_user_id] %>;
 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 Ext.define('TicketBrowser.Sla', {
     extend: 'Ext.data.Model',
     idProperty: 'project_id',		// The primary key of object_id of the SLA project
@@ -54,6 +61,7 @@ Ext.define('TicketBrowser.Category', {
     extend: 'Ext.data.Model',
     idProperty: 'category_id',		// The primary key of the category
     fields: [
+<<<<<<< HEAD
         {type: 'string', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
@@ -66,6 +74,25 @@ Ext.define('TicketBrowser.Category', {
 			return 'extjs-indent-level-' + indent;
 		}
 	}
+=======
+        {type: 'int', name: 'category_id'},
+        {type: 'string', name: 'tree_sortkey'},
+        {type: 'string', name: 'category'},
+        {type: 'string', name: 'category_translated'},
+        {	name: 'pretty_name',
+		convert: function(value, record) {
+			var	category = record.get('category_translated'),
+				indent = record.get('tree_sortkey').length - 8,
+				result = '',
+				i=0;
+			for (i=0; i<indent; i++){
+				result = result + '&nbsp;';
+			}
+			result = result + category;
+			return result;
+		}
+        }
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
     ]
 });
 
@@ -94,11 +121,18 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_prio_id',		// Priority
 	'ticket_assignee_id',		// Who is assigned to the work?
 	'ticket_dept_id',		// Which department?
+<<<<<<< HEAD
 	'ticket_service_type_id',
 	'ticket_hardware_id',
 	'ticket_application_id',
 	'ticket_queue_id',		// Assignee queue (currently not used)
 	'ticket_last_queue_id',		// Last queue before escalation
+=======
+	'ticket_service_id',
+	'ticket_hardware_id',
+	'ticket_application_id',
+	'ticket_queue_id',		// Assignee queue (currently not used)
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	'ticket_conf_item_id',
 	'ticket_component_id',
 	'ticket_description',		// Initial description of the ticket
@@ -112,6 +146,7 @@ Ext.define('TicketBrowser.Ticket', {
 	// Ticket lifecycle tracking	
 	'ticket_creation_date',		// 
 	'ticket_reaction_date',		// 
+<<<<<<< HEAD
 	'ticket_confirmation_date',	// 
 	'ticket_escalation_date',	// 
 	'ticket_resolution_date',	// 
@@ -128,6 +163,16 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_request',               // expediente
         'ticket_resolution',            // expediente
 
+=======
+	'ticket_confirmation_date',		// 
+	'ticket_done_date',		// 
+	'ticket_signoff_date',		// 
+
+        'service_type',                 // tipo de Servicio
+        'intranet_request_area',        // Area y programa
+
+        'ticket_file',                  // expediente
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         'ticket_origin',                // canal
         'ticket_sex',                   // genero hombre/mujer
         'ticket_language',              // idioma
@@ -137,6 +182,7 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_observations',           // Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
+<<<<<<< HEAD
     ],
 
 	proxy: {
@@ -156,6 +202,9 @@ Ext.define('TicketBrowser.Ticket', {
 		}
 	}
 
+=======
+    ]
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 });
 
 
@@ -189,7 +238,11 @@ Ext.define('TicketBrowser.Company', {
 		type: 'rest',
 		url: '/intranet-rest/im_company',
 		extraParams: {
+<<<<<<< HEAD
 			format: 'json'		// Tell the ]po[ REST to return JSON data.
+=======
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		},
 		reader: {
 			type: 'json',		// Tell the Proxy Reader to parse JSON
@@ -256,6 +309,7 @@ Ext.define('TicketBrowser.FileStorage', {
     ]
 });
 
+<<<<<<< HEAD
 
 
 Ext.define('TicketBrowser.TicketAudit', {
@@ -353,3 +407,5 @@ Ext.define('TicketBrowser.TicketAudit', {
 });
 
 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b

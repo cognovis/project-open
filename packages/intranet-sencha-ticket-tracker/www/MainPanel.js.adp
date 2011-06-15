@@ -6,7 +6,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: MainPanel.js.adp,v 1.7 2011/06/15 08:11:12 po34demo Exp $
+=======
+ * @cvs-id $Id: MainPanel.js.adp,v 1.4 2011/06/10 09:50:41 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -42,6 +46,7 @@ Ext.define('TicketBrowser.Main', {
 		margins:	'5 0 5 5',
 		border:		false,
 		tabBar:		{ border: true },
+<<<<<<< HEAD
 
 		dockedItems: [{
 			dock: 'top',
@@ -51,6 +56,11 @@ Ext.define('TicketBrowser.Main', {
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
+=======
+		items: [{
+			itemId: 'ticket',
+			title: '#intranet-helpdesk.Tickets#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			xtype: 'ticketContainer'
 		}, {
 			itemId: 'company',
@@ -62,7 +72,11 @@ Ext.define('TicketBrowser.Main', {
 			xtype: 'contactContainer'
 		}, {
 			itemId: 'sample',
+<<<<<<< HEAD
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
+=======
+			title: 'Sample',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			xtype: 'ticketCompoundPanel'
 		}]
 	}]

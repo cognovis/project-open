@@ -12,6 +12,7 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_file', 'Ticket File', 'te
 
 
 
+<<<<<<< HEAD
 alter table im_tickets
 add column ticket_request text;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_request', 'Ticket Request', 'textbox_medium', 'string', 'f');
@@ -24,12 +25,15 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_resolution', 'Ticket Reso
 
 
 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 alter table im_companies
 add column company_province text;
 SELECT im_dynfield_attribute_new ('im_company', 'company_province', 'Province', 'textbox_medium', 'string', 'f');
 
 
 
+<<<<<<< HEAD
 alter table im_tickets
 add column ticket_escalation_date timestamptz;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_escalation_date', 'Escalation Date', 'date', 'string', 'f');
@@ -215,3 +219,5 @@ SELECT im_category_new(76606, 'Nets', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_hierarchy_new(76602, 76600);
 SELECT im_category_hierarchy_new(76604, 76600);
 SELECT im_category_hierarchy_new(76606, 76600);
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b

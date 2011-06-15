@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.14 2011/06/15 08:11:12 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.6 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -27,7 +31,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:	'Ext.form.Panel',
         alias:	'widget.ticketCustomer',
         id:	'ticketCustomerPanel',
+<<<<<<< HEAD
 	title:	'#intranet-sencha-ticket-tracker.Ticket_Customer#',
+=======
+	title:	'Ticket Customer',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	frame:	true,
 	fieldDefaults: {
 		msgTarget: 'side',
@@ -60,7 +68,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
         }, {
                 name:           'vat_number',
         	xtype:          'textfield',
+<<<<<<< HEAD
                 fieldLabel:     '#intranet-core.VAT_Number#'
+=======
+                fieldLabel:     '#intranet-core.VAT_Number#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         },{
                 name:           'company_type_id',
                 xtype:          'combobox',
@@ -75,6 +87,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Province#'
         }],
         buttons: [{
+<<<<<<< HEAD
 		itemId:		'viewButton',
         	text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
 		handler:	function() {
@@ -88,6 +101,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		itemId:		'addButton',
         	text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
 		width: 		120,
+=======
+		itemId:		'addButton',
+        	text: 		'#intranet-core.Add_a_new_Company#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         	handler: function(){
                         var form = this.ownerCt.ownerCt.getForm();
                         form.reset();                   // empty fields to allow for entry of new contact
@@ -97,11 +114,17 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var createButton = this.ownerCt.child('#createButton');
 			createButton.show();
 			
+<<<<<<< HEAD
 			// Disable the "Save Changes" and "View Company" button
 			var createButton = this.ownerCt.child('#saveButton');
 			createButton.hide();
 			var viewButton = this.ownerCt.child('#viewButton');
 			viewButton.hide();
+=======
+			// Disable the "Save Changes" button
+			var createButton = this.ownerCt.child('#saveButton');
+			createButton.hide();
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			
 			// Diable this button
 			this.hide();
@@ -109,7 +132,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	}, {
 		itemId:		'saveButton',
         	text: 		'#intranet-core.Save_Changes#',
+<<<<<<< HEAD
 		width: 		120,
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('company_id');
@@ -125,6 +151,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 			// Tell the store to update the server via it's REST proxy
 			companyStore.sync();
+<<<<<<< HEAD
 
 			// Write the new company (if any...) to the ticket store
 			var ticket_form = Ext.getCmp('ticketForm');
@@ -133,6 +160,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			rec.set('company_id', company_id);
 			ticketStore.sync();
 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
                 }
 	}, {
 		itemId:		'createButton',
@@ -145,6 +174,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var company_name = values.company_name;
 			values.company_id = null;
 
+<<<<<<< HEAD
 			// create a new company
 			var company_record = Ext.ModelManager.create(values, 'TicketBrowser.Company');
 			company_record.phantom = true;
@@ -176,6 +206,35 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 					compoundPanel.loadTicket(ticket_model);	
 				}
 			});
+=======
+			var company = Ext.ModelManager.create(values, 'TicketBrowser.Company');
+			company.phantom = true;
+			company.save();
+
+			// add the form values to the store.
+			companyStore.add(company);
+			// the store should create a new object now (does he?)
+
+			// Tell the store to update the server via it's REST proxy
+			companyStore.sync();
+
+			// force reload of the drop-down
+			delete combo.lastQuery;
+
+			// set the combo to the new company
+			var new_company = companyStore.findRecord('company_name',company_name);
+			var new_company_id = new_company.get('company_id');
+			combo.setValue(new_company_id);
+
+			// Disable this button and re-enable the "New Company" button
+			var addButton = this.ownerCt.child('#addButton');
+                        addButton.show();
+			this.hide();
+
+			// Re-enable the "Save Changes" button
+			var createButton = this.ownerCt.child('#saveButton');
+			createButton.show();
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
                 }
         }],
 
@@ -186,11 +245,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	},
 
 	loadTicket: function(rec){
+<<<<<<< HEAD
 
 		// Customer ID, may be NULL
 		var customer_id;
 		if (rec.data.hasOwnProperty('company_id')) { customer_id = rec.data.company_id; }
 
+=======
+		// Customer ID, may be NULL
+		var customer_id = rec.data.company_id;
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		var cust = companyStore.findRecord('company_id',customer_id);
 	        if (cust == null || typeof cust == "undefined") { return; }
 

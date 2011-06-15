@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketGrid.js.adp,v 1.22 2011/06/15 08:11:12 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.13 2011/06/10 14:24:06 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,6 +37,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
     listeners: {
 	itemdblclick: function(view, record, item, index, e) {
+<<<<<<< HEAD
 
 		// Open the ticket in a separate tab
 		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
@@ -43,6 +48,15 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(compoundPanel);
 
+=======
+		var mainTabPanel = Ext.getCmp('mainTabPanel');
+		var tab = mainTabPanel.add({
+        	    title:	'Tab ' + (mainTabPanel.items.length + 1),
+		    xtype:	'ticketCompoundPanel'
+        	});
+		tab.doLayout();
+		tab.loadTicket(record);
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	}
     },
 
@@ -61,9 +75,22 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                     expanded: true
                 }]
             },
+<<<<<<< HEAD
             columns: [
 		{
 			header: '#intranet-sencha-ticket-tracker.Ticket#',
+=======
+            selModel: Ext.create('Ext.selection.RowModel', {
+                mode: 'MULTI',
+                listeners: {
+                    scope: this,
+                    select: this.onSelect
+                }    
+            }),
+            columns: [
+		{
+			header: 'Ticket',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			dataIndex: 'project_name',
 			flex: 1,
 			minWidth: 150,
@@ -90,6 +117,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Program#',
+<<<<<<< HEAD
 			dataIndex: 'ticket_area_id',
 			renderer: function(value, o, record) {
 				return ticketAreaStore.category_from_id(record.get('ticket_area_id'));
@@ -100,6 +128,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			renderer: function(value, o, record) {
 				return ticketOriginStore.category_from_id(record.get('ticket_origin'));
 			}
+=======
+			dataIndex: 'ticket_program_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
+			dataIndex: 'ticket_channel_id',
+			hidden: true
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		}, {
 			header: '#intranet-helpdesk.Status#',
 			dataIndex: 'ticket_status_id',
@@ -118,6 +153,29 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
+<<<<<<< HEAD
+=======
+			header: '#intranet-helpdesk.Prio#',
+			dataIndex: 'ticket_prio_id',
+			width: 40,
+			renderer: function(value, o, record) {
+				return ticketPriorityStore.category_from_id(record.get('ticket_prio_id'));
+			},
+			field: {
+				xtype: 'combobox',
+				typeAhead: false,
+				triggerAction: 'all',
+				selectOnTab: true,
+				queryMode: 'local',
+				store: Ext.create('Ext.data.Store', {
+				    fields: ['id', 'category'],
+				    data : ticketPriorityData
+				}),
+				displayField: 'category',
+				valueField: 'id'
+			}
+		}, {
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
@@ -130,6 +188,15 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			width: 70,
 			align: 'right'
 		}, {
+<<<<<<< HEAD
+=======
+			header: '#intranet-core.Assignee#',
+			dataIndex: 'ticket_assignee_id',
+			renderer: function(value, o, record) {
+				return userStore.name_from_id(record.get('ticket_assignee_id'));
+			}
+		}, {
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			header: '#intranet-core.Contact#',
 			dataIndex: 'ticket_customer_contact_id',
 			renderer: function(value, o, record) {
@@ -137,6 +204,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}
 		}, {
 			header: '#intranet-helpdesk.Queue#',
+<<<<<<< HEAD
 			dataIndex: 'ticket_queue_id',
 			hidden: true
 		}, {
@@ -146,18 +214,101 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    ],
 	    dockedItems: [
 	    {
+=======
+			dataIndex: 'ticket_queue_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Department#',
+			dataIndex: 'ticket_dept_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Service#',
+			dataIndex: 'ticket_service_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Alarm_Date#',
+			dataIndex: 'ticket_alarm_date'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Alarm_Action#',
+			dataIndex: 'ticket_alarm_action'
+		}, {
+			header: '#intranet-helpdesk.Conf_Item_type_Hardware#',
+			dataIndex: 'ticket_hardware_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Application#',
+			dataIndex: 'ticket_application_id'
+		}, {
+			header: '#intranet-helpdesk.Conf_Item#',
+			dataIndex: 'ticket_conf_item_id'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Customer_Deadline#',
+			dataIndex: 'ticket_customer_deadline'
+		}, {
+			header: '#intranet-core.lt_Closed_in_1st_Contact#',
+			dataIndex: 'ticket_closed_in_1st_contact_p'
+		}
+	    ],
+	    dockedItems: [{
+		xtype: 'toolbar',
+		cls: 'x-docked-noborder-top',
+		items: [{
+		    text: '#intranet-helpdesk.New_Ticket#',
+		    iconCls: 'icon-new-ticket',
+		    handler: function() {
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+		        compoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);	
+			compoundPanel.newTicket();
+		    }
+		}, {
+		    text: '#intranet-sencha-ticket-tracker.Copy_Ticket#',
+		    iconCls: 'icon-new-ticket',
+		    handler: function(){
+			alert('Not implemented');
+		    }
+		},    {
+    		    text: '#intranet-helpdesk.Remove_checked_items#',
+    		    iconCls: 'icon-new-ticket',
+    		    handler: function(){
+    			alert('Not implemented');
+    		    }
+		}, '-', {
+		    text: '#intranet-core.Summary#',
+		    iconCls: 'icon-summary',
+		    enableToggle: true,
+		    pressed: true,
+		    scope: this,
+		    toggleHandler: this.onSummaryChange
+		}]
+	    }, {
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
 		store: ticketStore,
 		displayInfo: true,
 		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
+<<<<<<< HEAD
 		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
+=======
+		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#'
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    }]
 	});
 	this.callParent();
     },
 
+<<<<<<< HEAD
+=======
+    onSelect: function(selModel, rec){
+	var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+	compoundPanel.loadTicket(rec);
+	var title = rec.get('project_name');
+        compoundPanel.tab.setText(title);
+
+	var mainTabPanel = Ext.getCmp('mainTabPanel');
+	mainTabPanel.setActiveTab(compoundPanel);
+    },
+    
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
     loadSla: function(id){
 	var store = this.store;
 	store.getProxy().extraParams.parent_id = id;
@@ -173,11 +324,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	var value = '';
 	var query = '1=1';
 
+<<<<<<< HEAD
 	// Special logic for assigned_queue_id: Set to '' (=My Queues) if empty
 	if (null === filterValues.assigned_queue_id) {
 		filterValues.assigned_queue_id = 'my_groups'; 
 	}
 	
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	// delete filters added by other accordion filters
 	delete proxy.extraParams['query'];
 	delete proxy.extraParams['parent_id'];
@@ -189,13 +343,25 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    if (filterValues.hasOwnProperty(key)) {
 
 		value = filterValues[key];
+<<<<<<< HEAD
 		if (value == '' || value == undefined || value == null) {
 		    // Delete the filter
 		    delete proxy.extraParams[key];
+=======
+		// console.log('TicketGrid: "'+key+'" = "' + value + '"');
+	
+		if (value == '' || value == undefined || value == null) {
+
+		    // Delete the filter
+		    // console.log('TicketGrid: Deleting key="'+key+'"');
+		    delete proxy.extraParams[key];
+
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		} else {
 
 		    // special treatment for special filter variables
 		    switch (key) {
+<<<<<<< HEAD
 			case 'assigned_queue_id':
 				// The "my groups" information is not part of the REST information.
 				if (value == 'my_groups') {
@@ -216,6 +382,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				key = 'query';
 				value = query;
 				break;
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			case 'vat_number':
 				// The customer's VAT number is not part of the REST
 				// ticket fields. So translate into a query:

@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: FileStorageGrid.js.adp,v 1.16 2011/06/14 09:01:15 po34demo Exp $
+=======
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.14 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -62,7 +66,11 @@ function showFileStorageNewForm(ticket_id) {
 		xtype: 'filefield',
 		id: 'file',
 		emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
+<<<<<<< HEAD
 		fieldLabel: '#intranet-sencha-ticket-tracker.File#',
+=======
+		fieldLabel: '#intranet-core.Photo#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		buttonText: '',
 		buttonConfig: { iconCls: 'upload-icon' }
 	    }],
@@ -245,10 +253,15 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
     loadTicket: function(rec){
 
 	// Reload the store containing the ticket's files
+<<<<<<< HEAD
 	var folder_id;
 	if (rec.data.hasOwnProperty('folder_id')) { folder_id = rec.data.folder_id; }
 	if (folder_id == null) { return; }
 	var ticket_id = rec.data.ticket_id;
+=======
+	var folder_id = rec.get('fs_folder_id');
+	var ticket_id = rec.get('ticket_id');
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 
 	// Replace empty string by "0", because an empty string means no restriction to the server.
         if ("" === folder_id) { folder_id = 0; }

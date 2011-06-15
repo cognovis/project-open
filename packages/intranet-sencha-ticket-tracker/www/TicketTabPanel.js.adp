@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 b/**
+=======
+/**
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  * intranet-sencha-ticket-tracker/www/TicketContainer.js
  * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketTabPanel.js.adp,v 1.10 2011/06/13 11:09:34 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.8 2011/06/09 12:10:03 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,7 +41,11 @@ Ext.define('TicketBrowser.TicketTabPanel', {
     items: [{
 	itemId: 'ticket',
 	xtype: 'ticketForm',
+<<<<<<< HEAD
 	title: '#intranet-sencha-ticket-tracker.View_Ticket#'
+=======
+	title: 'View Ticket'
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
     }, {
 	itemId: 'ticketCustomer',
 	title: '#intranet-core.Customer#',

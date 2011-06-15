@@ -5,7 +5,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: TicketFormRight.js.adp,v 1.14 2011/06/15 10:20:45 po34demo Exp $
+=======
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.7 2011/06/10 14:24:05 po34demo Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -47,6 +51,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	},
 	items: [
 
+<<<<<<< HEAD
 	// tell the /intranet-helpdesk/new page to return JSON
 	{ name: 'format',		xtype: 'hiddenfield', value: 'json' },
 
@@ -56,6 +61,26 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	{ name: 'ticket_org_queue_id',	xtype: 'hiddenfield' },	// original queue_id from DB when loading the form.
 
 	// Main ticket fields
+=======
+	// Variables for the new.tcl page to recognize an ad_form
+	{ name: 'form:id',		xtype: 'hiddenfield', value: 'helpdesk_ticket' },
+	{ name: '__key_signature',	xtype: 'hiddenfield', value: '530 0 DC49DED6D708DC86A6A618E7A482E7050FB53ACB' },
+	{ name: '__key',		xtype: 'hiddenfield', value: 'ticket_id' },
+	{ name: '__new_p',		xtype: 'hiddenfield', value: '0' },
+	{ name: '__refreshing_p',	xtype: 'hiddenfield', value: '0' },
+	{ name: 'ticket_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_name',		xtype: 'hiddenfield', value: 'sencha' },
+	{ name: 'ticket_sla_id',	xtype: 'hiddenfield', value: '53349' },
+
+	// tell the /intranet-helpdesk/new page to return JSON
+	{ name: 'format',		xtype: 'hiddenfield', value: 'json' },
+
+	// Main ticket fields
+	{ name: 'project_name',		xtype: 'hiddenfield' },
+	{ name: 'parent_id',		xtype: 'hiddenfield' },
+	{ name: 'ticket_type_id',	xtype: 'hiddenfield' },
+
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
         {
 	    xtype:	'fieldset',
             title:	'',
@@ -66,12 +91,20 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
             layout: 	{ type: 'table', columns: 3 },
             items :[{
+<<<<<<< HEAD
 	                name:           'ticket_creation_date',
 	                xtype:          'datefield',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Creation_Date#',
 			format:		'Y-m-d'
 	        }, {
 	                name:           'ticket_incoming_channel_id',
+=======
+	                name:           'creation_date',
+	                xtype:          'datefield',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Creation_Date#'
+	        }, {
+	                name:           'ticket_channel_id',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
@@ -82,11 +115,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	        }, {
 	                name:           'ticket_channel_detail_id',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Channel_Details#',
+<<<<<<< HEAD
 		        xtype:		'hiddenfield',
+=======
+		        xtype:		'combobox',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 		        valueField:	'category_id',
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
+<<<<<<< HEAD
 		        store: 		ticketStatusStore
 	        }, {
 	                name:           'ticket_done_date',
@@ -98,15 +136,33 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                xtype:          'datefield',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Escalation_Date#',
 			format:		'Y-m-d'
+=======
+		        store: 		ticketServiceTypeStore
+	        }, {
+	                name:           'ticket_done_date',
+	                xtype:          'datefield',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Close_Date#'
+	        }, {
+	                name:           'ticket_escalation_date',
+	                xtype:          'datefield',
+	                fieldLabel:     '#intranet-sencha-ticket-tracker.Escalation_Date#'
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	        }, {
 	                name:           'ticket_reaction_date',
 	                xtype:          'datefield',
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Reaction_Date#',
+<<<<<<< HEAD
 			format:		'Y-m-d'
 	    }]
 
 	}, {
 
+=======
+	    }]
+	},
+
+        {
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    xtype:	'fieldset',
             title:	'',
             checkboxToggle: false,
@@ -116,18 +172,33 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
             layout: 	{ type: 'table', columns: 2 },
             items :[{
+<<<<<<< HEAD
 	                name:           'ticket_request',
 			xtype:		'textareafield',
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
 			width:		300
+=======
+	                name:           'ticket_note',
+			xtype:		'textareafield',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
+			width:		400
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	        }, {
 	                name:           'ticket_resolution',
 			xtype:		'textareafield',
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
+<<<<<<< HEAD
 			width:		300
 	    }]
 
 	}, {
+=======
+			width:		400
+	    }]
+	},
+
+        {
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    xtype:	'fieldset',
             title:	'',
             checkboxToggle: false,
@@ -139,24 +210,40 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             items :[{
 			name:		'ticket_closed_in_1st_contact_p',
 			xtype:		'checkbox',
+<<<<<<< HEAD
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			inputValue:	't',
+=======
+			fieldLabel:     '#intranet-core.lt_Closed_in_1st_Contact#',
+			value:		'1',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 			width:		150
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additional_info#',
+<<<<<<< HEAD
 			inputValue:	't',
 			width:		150
 	        }, {
 	                name:           'ticket_outgoing_channel_id',
+=======
+			value:		'1',
+			width:		150
+	        }, {
+	                name:           'ticket_exit_channel_id',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	                fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
 		        xtype:		'combobox',
 		        valueField:	'category_id',
 		        displayField:	'category_translated',
 		        forceSelection: true,
 		        queryMode: 	'remote',
+<<<<<<< HEAD
 		        store: 		ticketChannelStore
+=======
+		        store: 		ticketServiceTypeStore
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    }]
 
 	}, {
@@ -187,6 +274,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	                displayField: 'group_name',
 			forceSelection: true,
 			queryMode: 'remote',
+<<<<<<< HEAD
 			store: profileStore,
 			width: 300
 	    }]
@@ -207,11 +295,44 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	}, {
             text: '#intranet-sencha-ticket-tracker.button_Save#',
 	    itemId: 'saveButton',
+=======
+			store: ticketQueueStore,
+			width: 300
+	    }]
+	},
+
+	// SPRI specific fields
+	{ name: 'ticket_file',		xtype: 'hiddenfield' },
+	{ name: 'ticket_area',		xtype: 'hiddenfield' },
+	{ name: 'ticket_status_id',	xtype: 'hiddenfield' },
+	{ name: 'ticket_program_id',	xtype: 'hiddenfield' },
+	{ name: 'ticket_service_id',	xtype: 'hiddenfield' },
+
+	// Additional fields to add later
+	{ name: 'ticket_assignee_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_dept_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_hardware_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_application_id',	xtype: 'hiddenfield'},
+	{ name: 'ticket_queue_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_alarm_date',		xtype: 'hiddenfield'},
+	{ name: 'ticket_alarm_action',		xtype: 'hiddenfield'},
+	{ name: 'ticket_note',			xtype: 'hiddenfield'},
+	{ name: 'ticket_conf_item_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_component_id',		xtype: 'hiddenfield'},
+	{ name: 'ticket_description',		xtype: 'hiddenfield'},
+	{ name: 'ticket_customer_deadline', 	xtype: 'hiddenfield'},
+	{ name: 'ticket_closed_in_1st_contact_p', xtype: 'hiddenfield'}
+	],
+
+	buttons: [{
+            text: '#intranet-sencha-ticket-tracker.button_Save#',
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
             disabled: false,
             formBind: true,
 	    handler: function(){
 		var form = this.up('form').getForm();
 
+<<<<<<< HEAD
 		// find out the ticket_id
                 var ticket_id_field = form.findField('ticket_id');
                 var ticket_id = ticket_id_field.getValue();
@@ -272,10 +393,23 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 		compoundPanel.loadTicket(ticket_record);
 
+=======
+		var ticket_name_field = form.findField('ticket_name');
+		var project_name_field = form.findField('project_name');
+		ticket_name_field.setValue(project_name_field.getValue());
+
+		form.submit({
+                    url: '/intranet-helpdesk/new',
+		    method: 'GET',
+                    submitEmptyText: false,
+                    waitMsg: '#intranet-sencha-ticket-tracker.Saving_Data#'
+		});
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	    }
 	}],
 
 	loadTicket: function(rec){
+<<<<<<< HEAD
                 var form = this.getForm();
 		this.loadRecord(rec);
 
@@ -291,6 +425,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		    // ToDo: enable the reject button
 		}
 		
+=======
+		this.loadRecord(rec);
+		var comp = this.getComponent('ticket_type_id');
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -298,11 +436,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	newTicket: function() {
                 var form = this.getForm();
                 form.reset();
+<<<<<<< HEAD
 
 		// Pre-set the creation date
 		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
 		form.findField('ticket_creation_date').setValue(name);
 
+=======
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 	}
 });
 

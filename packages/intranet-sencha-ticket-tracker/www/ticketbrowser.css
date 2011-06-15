@@ -75,6 +75,7 @@ img.x-tree-icon-parent {
 }
 .icon-summary {
     background-image: url(images/details.gif) !important;
+<<<<<<< HEAD
 }
 
 
@@ -108,3 +109,6 @@ img.x-tree-icon-parent {
         font-size: 11px; padding-left: 165px
 }
 
+=======
+}
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b

@@ -4,7 +4,11 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
+<<<<<<< HEAD
  * @cvs-id $Id: CompanyGrid.js.adp,v 1.7 2011/06/14 18:30:17 po34demo Exp $
+=======
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.6 2011/06/09 22:28:30 mcordova Exp $
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -69,5 +73,9 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
         store: companyStore,
         dock: 'bottom',
         displayInfo: true
+<<<<<<< HEAD
     }]
+=======
+    }],
+>>>>>>> f28b20312987c00522c779b38657840137fb0b5b
 });
