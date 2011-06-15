@@ -18,6 +18,7 @@
   <msg key="Channel_Details">Channel Details</msg>
   <msg key="Clear_Form">Clear Form</msg>
   <msg key="Close_Date">Close Date</msg>
+  <msg key="Closed_in_1st_Contact">Closed in 1st Contact</msg>
   <msg key="Companies">Companies</msg>
   <msg key="Company">Company</msg>
   <msg key="Company_Name">Company Name</msg>
@@ -30,6 +31,7 @@
   <msg key="Create_New_Contact">Create New Contact</msg>
   <msg key="Create_New_User">Create New User</msg>
   <msg key="Creation_Date">Creation Date</msg>
+  <msg key="Creation_User">Creation User</msg>
   <msg key="Customer_Deadline">Customer Deadline</msg>
   <msg key="Date_Since">Date_Since</msg>
   <msg key="Date_Until">Date_Until</msg>
@@ -39,6 +41,7 @@
   <msg key="Email">Email</msg>
   <msg key="Escalated">Escalated</msg>
   <msg key="Escalation_Date">Escalation Date</msg>
+  <msg key="Failed_to_get_new_ticket_nr">Failed to create a new ticket number for the new ticket.</msg>
   <msg key="Female">Female</msg>
   <msg key="File">File</msg>
   <msg key="Gender">Gender</msg>
@@ -63,6 +66,7 @@
   <msg key="Program">Program</msg>
   <msg key="Province">Province</msg>
   <msg key="Reaction_Date">Reaction Date</msg>
+  <msg key="Reject_Button">Reject</msg>
   <msg key="Replies">Replies</msg>
   <msg key="Request">Request</msg>
   <msg key="Requires_additional_info">Requires additional info</msg>
