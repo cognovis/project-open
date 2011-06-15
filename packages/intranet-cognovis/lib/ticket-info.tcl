@@ -6,47 +6,112 @@ ad_page_contract {
 }
 
 
+# ---------------------------------------------------------------------
+# Get Everything about the project
+# ---------------------------------------------------------------------
 
 
+set extra_selects [list "0 as zero"]
 
-# Instantiate the task object
-set ticket [::im::dynfield::Class get_instance_from_db -id $ticket_id]
-
-# Get the list of dynfields for this task based on the task_type_id
-set dynfield_ids [db_list dynfields {     
-    SELECT DISTINCT m.attribute_id FROM acs_attributes aa, im_dynfield_attributes a, im_dynfield_type_attribute_map m, im_dynfield_layout d 
-    WHERE m.attribute_id = d.attribute_id and aa.attribute_id = a.acs_attribute_id and a.attribute_id = m.attribute_id and aa.object_type = 'im_ticket' and object_type_id in (select DISTINCT m.object_type_id from acs_attributes aa, im_dynfield_attributes a, im_dynfield_type_attribute_map m, im_dynfield_layout d  where m.attribute_id = d.attribute_id and aa.attribute_id = a.acs_attribute_id and a.attribute_id = m.attribute_id and aa.object_type = 'im_ticket')                           
-   }]
-
-# Initialize ticket information 
-template::multirow create ticket_info heading field value
-set old_section ""
-
-foreach dynfield_id $dynfield_ids {
     
-    # Initialize the Attribute                                                 
-    set element [im::dynfield::Element get_instance_from_db -id $dynfield_id]
-    
-    set field [$element pretty_name]  
-    set value [$ticket value $element]
-    
-    if {[$element multiple_p] && $value ne ""} {
-	set value "<ul><li>[join $value "</li><li>"]</li></ul>"
-    }
 
-    set heading ""
-    
-    if {$old_section != [$element section_heading]} {
-	set heading [$element section_heading]
-       	set old_section [$element section_heading]
-	
-    }   
 
-    template::multirow append task_info $heading $field $value
+db_foreach column_list_sql {
+    select    w.deref_plpgsql_function,
+                aa.attribute_name,
+    aa.table_name
+    from      im_dynfield_widgets w,
+    im_dynfield_attributes a,
+    acs_attributes aa
+    where     a.widget_name = w.widget_name and
+    a.acs_attribute_id = aa.attribute_id and
+    aa.object_type = 'im_ticket'
     
+}  {
+    lappend extra_selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref"
 }
 
-set current_user_id [ad_conn user_id]
-im_project_permissions $current_user_id $ticket_id view read write admin
+set extra_select [join $extra_selects ",\n\t"]
 
+if {[exists_and_not_null extra_select]} {
+    set extra_where  "AND im_tickets.ticket_id = im_projects.project_id"
+}
+
+ns_log Notice "TICKET ID $ticket_id"
+
+
+if { ![db_0or1row project_info_query "
+    SELECT
+                im_projects.*,
+                im_companies.*,
+                to_char(im_projects.end_date, 'HH24:MI') as end_date_time,
+                to_char(im_projects.start_date, 'YYYY-MM-DD') as start_date_formatted,
+                to_char(im_projects.end_date, 'YYYY-MM-DD') as end_date_formatted,
+                to_char(im_projects.percent_completed, '999990.9%') as percent_completed_formatted,
+                im_companies.primary_contact_id as company_contact_id,
+                im_name_from_user_id(im_companies.primary_contact_id) as company_contact,
+                im_email_from_user_id(im_companies.primary_contact_id) as company_contact_email,
+                im_name_from_user_id(im_projects.project_lead_id) as project_lead,
+                im_name_from_user_id(im_projects.supervisor_id) as supervisor,
+                im_name_from_user_id(im_companies.manager_id) as manager,
+                $extra_select
+    FROM
+                im_projects,
+                im_companies
+    WHERE       im_projects.project_id=:ticket_id
+    AND         im_projects.company_id = im_companies.company_id
+    $extra_where
+"]} {
+	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	return
+}
+
+
+
+set user_id [ad_conn user_id] 
+set project_type [im_category_from_id $project_type_id]
+set project_status [im_category_from_id $project_status_id]
+
+# Get the parent project's name
+if {"" == $parent_id} { set parent_id 0 }
+set parent_name [util_memoize [list db_string parent_name "select project_name from im_projects where project_id = $parent_id" -default ""]]
+
+
+# ---------------------------------------------------------------------
+# Add DynField Columns to the display
+
+db_multirow -extend {attrib_var value} ticket_info dynfield_attribs_sql {
+      select
+      		aa.pretty_name,
+      		aa.attribute_name
+      from
+      		im_dynfield_widgets w,
+      		acs_attributes aa,
+      		im_dynfield_attributes a
+      		LEFT OUTER JOIN (
+      			select *
+      			from im_dynfield_layout
+      			where page_url = ''
+      		) la ON (a.attribute_id = la.attribute_id)
+      where
+    a.widget_name = w.widget_name and
+    a.acs_attribute_id = aa.attribute_id and
+    aa.object_type = 'im_ticket'
+    order by la.pos_y
+    
+} {
+    
+    set var ${attribute_name}_deref
+    set value [expr $$var]
+    if {"" != [string trim $value]} {
+	set attrib_var [lang::message::lookup "" intranet-core.$attribute_name $pretty_name]
+    }
+    
+    ns_log Notice "$attribute_name | $value"
+   
+}
+
+
+# get the current users permissions for this project
+im_project_permissions $user_id $project_id view read write admin
 

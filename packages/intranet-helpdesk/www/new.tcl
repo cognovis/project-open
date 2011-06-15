@@ -80,6 +80,7 @@ if {![info exists task]} {
 
 }
 
+# Callback to redirect the new pages
 if {[info exists ticket_id]} {
     callback im_helpdesk_ticket_new_redirect -object_id [ad_conn object_id] \
 	-status_id "" -type_id "" -ticket_id $ticket_id \

@@ -58,7 +58,7 @@ SELECT im_dynfield_attribute_new (
 );
 
 
--- parent_id SLA
+-- parent_id/ticket_sla_id
 CREATE OR REPLACE FUNCTION inline_0 () 
 RETURNS integer AS '
 DECLARE 

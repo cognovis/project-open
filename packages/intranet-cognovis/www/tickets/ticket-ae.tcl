@@ -9,7 +9,7 @@ ad_page_contract {
     @param form_mode edit or display
     @author frank.bergmann@project-open.com
 } {
-
+    { ticket_id ""}
     { ticket_type_id "" }
     { ticket_sla_id "" }
     { parent_id $ticket_sla_id }
@@ -17,16 +17,6 @@ ad_page_contract {
     { return_url "" }
     { format "html" }  
 }
-# Debug form! This chunk must be erased later                                                                                                                
-set myform [ns_getform]
-if {[string equal "" $myform]} {
-    ns_log Notice "No Form was submited"
-} else {
-    ns_log Notice "FORM"
-    ns_set print $myform
-}
-
-
 
 
 # ----------------------------------------------                                                                                                            
@@ -118,16 +108,22 @@ im_dynfield::append_attributes_to_form \
     -object_subtype_id $dynfield_ticket_type_id
 
 
-ad_form -extend -name ticket -new_data {
+ad_form -extend -name ticket -edit_request { 
+    db_1row select_ticket_info {
+	SELECT t.*, p.*
+	FROM im_tickets t, im_projects p
+	WHERE p.project_id = t.ticket_id
+	AND t.ticket_id = :ticket_id
+    }
+ 
+} -new_data {
 
-    ns_log Notice "new: new_data"
-    ns_log Notice "FLAG1"
 
     if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
     if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
     
-    set ticket_nr [string trim [string tolower $ticket_nr]]
-    if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
+    set project_nr [string trim [string tolower $project_nr]]
+    if {"" == $project_nr} { set project_nr [im_ticket::next_ticket_nr] }
 
     set message ""
     if {[info exists ticket_note]} { append message $ticket_note }
@@ -144,7 +140,6 @@ ad_form -extend -name ticket -new_data {
     ]
 
 
-    ns_log Notice "FLAG2"
     im_dynfield::attribute_store \
 	-object_type "im_ticket" \
 	-object_id $ticket_id \
@@ -182,12 +177,12 @@ ad_form -extend -name ticket -new_data {
 
 } -edit_data {
 
-    ns_log Notice "new: edit_data"
-    set ticket_nr [string trim [string tolower $ticket_nr]]
-    if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
-    set start_date_sql [template::util::date get_property sql_date $start_date]
-    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+    set project_nr [string trim [string tolower $project_nr]]
+    if {"" == $project_nr} { set project_nr [im_ticket::next_ticket_nr] }
 
+    if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
+    if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
+    
 
     im_dynfield::attribute_store \
 	-object_type "im_ticket" \
@@ -209,7 +204,7 @@ ad_form -extend -name ticket -new_data {
 } -after_submit {
 
 
-    ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/view" {ticket_id {form_mode display}}]
+    ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/view" {ticket_id}]
     ad_script_abort
     
 }
