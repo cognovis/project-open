@@ -244,6 +244,9 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
     // Load the files for the new ticket
     loadTicket: function(rec){
 
+	// Show this portlet (may be hidden before).
+        this.show();
+
 	// Reload the store containing the ticket's files
 	var folder_id;
 	if (rec.data.hasOwnProperty('folder_id')) { folder_id = rec.data.folder_id; }
@@ -264,7 +267,8 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	// ToDo: Load empty Filestorage
+	// We don't need to show this while the ticket hasn't yet been created...
+        this.hide();
     }
 
 });

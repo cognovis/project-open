@@ -47,7 +47,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-sencha-ticket-tracker.Company#',
 		xtype: 'ticketCustomer'
 	}, {
-		itemId: 'ticketContact',
+		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel'
 	}, {
@@ -88,8 +88,8 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#center').child('#ticketForm').newTicket(rec);
-        this.child('#center').child('#ticketContact').newTicket(rec);
         this.child('#center').child('#ticketCustomer').newTicket(rec);
+        this.child('#center').child('#ticketContactPanel').newTicket(rec);
         this.child('#center').child('#ticketFilestorage').newTicket(rec);
         this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
@@ -98,7 +98,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#center').child('#ticketForm').loadTicket(rec);
-        this.child('#center').child('#ticketContact').loadTicket(rec);
+        this.child('#center').child('#ticketContactPanel').loadTicket(rec);
         this.child('#center').child('#ticketCustomer').loadTicket(rec);
         this.child('#center').child('#ticketFilestorage').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);

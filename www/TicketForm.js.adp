@@ -190,10 +190,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
-		this.setNewTicketName();
 
-		// Set the customer field to anonymous company
-		form.findField('project_name').setValue(ticket_name);
+		// Ask the server to provide a new ticket name
+		this.setNewTicketName();
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 
