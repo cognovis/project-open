@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.21 2011/06/14 17:54:13 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.22 2011/06/15 08:11:12 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -118,26 +118,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
-			header: '#intranet-helpdesk.Prio#',
-			dataIndex: 'ticket_prio_id',
-			width: 40,
-			renderer: function(value, o, record) {
-				return ticketPriorityStore.category_from_id(record.get('ticket_prio_id'));
-			},
-			field: {
-				xtype: 'combobox',
-				typeAhead: false,
-				triggerAction: 'all',
-				selectOnTab: true,
-				queryMode: 'local',
-				store: Ext.create('Ext.data.Store', {
-				    fields: ['id', 'category'],
-				    data : ticketPriorityData
-				}),
-				displayField: 'category',
-				valueField: 'id'
-			}
-		}, {
 			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
@@ -160,31 +140,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			dataIndex: 'ticket_queue_id',
 			hidden: true
 		}, {
-			header: '#intranet-sencha-ticket-tracker.Department#',
-			dataIndex: 'ticket_dept_id'
-		}, {
-			header: '#intranet-sencha-ticket-tracker.Service#',
-			dataIndex: 'ticket_service_id'
-		}, {
-			header: '#intranet-sencha-ticket-tracker.Alarm_Date#',
-			dataIndex: 'ticket_alarm_date'
-		}, {
-			header: '#intranet-sencha-ticket-tracker.Alarm_Action#',
-			dataIndex: 'ticket_alarm_action'
-		}, {
-			header: '#intranet-helpdesk.Conf_Item_type_Hardware#',
-			dataIndex: 'ticket_hardware_id'
-		}, {
-			header: '#intranet-sencha-ticket-tracker.Application#',
-			dataIndex: 'ticket_application_id'
-		}, {
-			header: '#intranet-helpdesk.Conf_Item#',
-			dataIndex: 'ticket_conf_item_id'
-		}, {
-			header: '#intranet-sencha-ticket-tracker.Customer_Deadline#',
-			dataIndex: 'ticket_customer_deadline'
-		}, {
-			header: '#intranet-core.lt_Closed_in_1st_Contact#',
+			header: '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			dataIndex: 'ticket_closed_in_1st_contact_p'
 		}
 	    ],

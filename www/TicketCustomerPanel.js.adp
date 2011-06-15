@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.13 2011/06/14 18:30:18 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.14 2011/06/15 08:11:12 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -162,7 +162,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 					}
 
 					// Store the new company_id into the ticketForm
-					var ticketForm = Ext.getCmp('ticketForm').getForm();
+					var ticketForm = Ext.getCmp('ticketForm');
 					var ticket_id_field = ticketForm.getForm().findField('ticket_id');
 					var ticket_id = ticket_id_field.getValue();
 					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);

@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.12 2011/06/14 17:54:13 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.13 2011/06/15 08:11:12 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -139,7 +139,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
             items :[{
 			name:		'ticket_closed_in_1st_contact_p',
 			xtype:		'checkbox',
-			fieldLabel:     '#intranet-core.lt_Closed_in_1st_Contact#',
+			fieldLabel:     '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			inputValue:	't',
 			width:		150
 	    }, {
