@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ObjectMemberGrid.js.adp,v 1.2 2011/06/15 15:18:44 po34demo Exp $
+ * @cvs-id $Id: ObjectMemberGrid.js.adp,v 1.3 2011/06/15 16:11:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -53,6 +53,20 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
     minHeight:	200,
     frame:	true,
     iconCls:	'icon-grid',
+
+    listeners: {
+	itemdblclick: function(view, record, item, index, e) {
+		// Open the User in the TicketContactForm
+		var contact_id = record.get('object_id_two');
+
+                var contact_record = userStore.findRecord('user_id',contact_id);
+                if (contact_record == null || typeof contact_record == "undefined") { return; }
+
+                // load the information from the record into the form
+		var ticketContactForm = Ext.getCmp('ticketContactForm');
+		ticketContactForm.loadUser(contact_record);
+	}
+    },
 
     dockedItems: [{
 		dock: 'bottom',

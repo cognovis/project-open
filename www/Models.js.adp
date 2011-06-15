@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.18 2011/06/15 14:51:38 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.19 2011/06/15 16:11:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -210,11 +210,15 @@ Ext.define('TicketBrowser.User', {
     idProperty: 'user_id',		// The primary key or object_id of the company
     fields: [
 	'user_id',			// Primary key
-	'first_names',
-	'last_name',
+	'first_names',			// First name(s)
+	'last_name',			// Standard last name
+	'last_name2',			// Spanish 2nd last name
+	'email',			// Just email txt
+	'gender',			// male or female
+	'language',			// es_ES or eu_ES
 	{ name: 'name',			// Calculated compound name
 	  convert: function(value, record) {
-		return record.get('first_names') + ' ' + record.get('last_name');
+		return record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2');
 	  }
 	}
     ],

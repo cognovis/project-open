@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.1 2011/06/15 14:52:05 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.2 2011/06/15 16:11:47 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,8 +30,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	title:		'#intranet-sencha-ticket-tracker.Contacts#',
 	frame:		true,
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 125
+		msgTarget:	'side',
+		labelWidth:	125,
+		width:		300
 	},
         items: [{
                 name:           'user_id',
@@ -53,24 +54,22 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		    }
 		}
         }, {
-            xtype:	'fieldset',
-            title:	'#intranet-sencha-ticket-tracker.User_Information#',
-            checkboxToggle: false,
-            defaultType: 'textfield',
-            collapsed:	false,
-	    frame:	false,
-            layout: 	'hbox',
-            defaults:	{ anchor: '50%'  },
-            items :[{
-	                name:           'first_names',
-	                xtype:          'textfield',
-	                fieldLabel:     '#intranet-core.First_names#',
-	                allowBlank:     false
-	        }, {
-	                name:           'last_name',
-	                xtype:          'textfield',
-	                fieldLabel:     '#intranet-core.Last_name#'
-	    }]
+               name:           'first_names',
+               xtype:          'textfield',
+               fieldLabel:     '#intranet-core.First_names#',
+               allowBlank:     false
+        }, {
+                name:           'last_name',
+                xtype:          'textfield',
+                fieldLabel:     '#intranet-core.Last_name#'
+        }, {
+                name:           'last_name2',
+                xtype:          'textfield',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Last_Name2#'
+        }, {
+                name:           'email',
+                xtype:          'textfield',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Email#'
 	}, {
                 name:           'ticket_language',
                 xtype:          'radiofield',
@@ -166,6 +165,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadRecord(contact_record);
+	},
+
+	loadUser: function(rec){
+		// load the information from the record into the form
+		this.loadRecord(rec);
 	},
 
         // Somebody pressed the "New Ticket" button:
