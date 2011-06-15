@@ -51,9 +51,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	{ name: 'format',		xtype: 'hiddenfield', value: 'json' },
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'ticket_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_last_queue_id',	xtype: 'textfield', fieldLabel: 'Last', disabled: true },
-	{ name: 'ticket_org_queue_id',	xtype: 'textfield', fieldLabel: 'Org', disabled: true },	// original queue_id from DB when loading the form.
+	{ name: 'ticket_id',		xtype: 'hiddenfield' },
+	{ name: 'ticket_last_queue_id',	xtype: 'hiddenfield' },
+	{ name: 'ticket_org_queue_id',	xtype: 'hiddenfield' },	// original queue_id from DB when loading the form.
 
 	// Main ticket fields
         {
