@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ObjectMemberGrid.js.adp,v 1.1 2011/06/15 14:51:52 po34demo Exp $
+ * @cvs-id $Id: ObjectMemberGrid.js.adp,v 1.2 2011/06/15 15:18:44 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -64,12 +64,14 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
     columns: [{
-	header: '#intranet-core.Contact#',
+	header:		'#intranet-core.Contact#',
+	minWidth:	100,
+	flex:		1,
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('object_id_two'));
 	}
     }, {
-	header: '#intranet-sencha-ticket-tracker.Role#',
+	header: 	'#intranet-sencha-ticket-tracker.Object_Member_Role#',
 	renderer: function(value, o, record) {
 	    return bizObjectRoleStore.category_from_id(record.get('object_role_id'));
 	}

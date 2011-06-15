@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.16 2011/06/15 14:51:39 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.17 2011/06/15 15:18:44 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,31 +24,34 @@
 
 
 Ext.define('TicketBrowser.TicketContactPanel', {
-	extend:		'Ext.container.Container',
+	extend:		'Ext.panel.Panel',
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
 	title:		'#intranet-core.Contact#',
-	frame:		true,
 	layout:		'anchor',
 	deferredRender:	false,
-	split:		false,
 	items: [{
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'objectMemberGrid',
 		xtype:	'objectMemberGrid',
-		region:	'center',
+		preventHeader: true
+	}, {
+		title:	'#intranet-sencha-ticket-tracker.Contacts#',
+		itemId:	'ticketContactForm',
+		xtype:	'ticketContactForm',
+		preventHeader: true
 	}],
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#objectMemberGrid').newTicket(rec);
-        // this.child('#ticketContactForm').newTicket(rec);
+        this.child('#ticketContactForm').newTicket(rec);
     },
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#objectMemberGrid').loadTicket(rec);
-        // this.child('#ticketContactForm').loadTicket(rec);
+        this.child('#ticketContactForm').loadTicket(rec);
     }
 
 });
