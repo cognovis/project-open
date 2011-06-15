@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: date-procs.tcl,v 1.6 2011/04/06 10:42:28 po34demo Exp $
+# $Id: date-procs.tcl,v 1.7 2011/06/15 10:28:50 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -274,7 +274,27 @@ ad_proc -public template::util::date::get_property { what date } {
       }
       return 0
     }
-    sql_date -
+    sql_date {
+	if {1 == [llength $date]} { set date [split $date "-"] }
+
+	# LARS: Empty date results in NULL value
+	if { [empty_string_p $date] } { return "NULL" }
+	set value ""
+	set format ""
+	set space ""
+	set pad "0000"
+	foreach { index sql_form } { 0 YYYY 1 MM 2 DD 3 HH24 4 MI 5 SS } {
+	    set piece [lindex $date $index]
+	    if { ![string equal $piece {}] } {
+		append value "$space[string range $pad [string length $piece] end]$piece"
+		append format $space
+		append format $sql_form
+		set space " "
+	    }
+	    set pad "00"
+	}
+	return "to_date('$value', '$format')"
+    }
     sql_timestamp {
       # LARS: Empty date results in NULL value
       if { $date eq "" } {
