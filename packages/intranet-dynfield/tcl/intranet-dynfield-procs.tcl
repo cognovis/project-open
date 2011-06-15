@@ -280,6 +280,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
             append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
         }
     }        
+
     set bind_vars [ns_set create]
     set criteria [list]
     db_foreach attributes $attributes_sql {
