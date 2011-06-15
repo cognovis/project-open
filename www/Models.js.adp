@@ -316,6 +316,10 @@ Ext.define('TicketBrowser.TicketAudit', {
 	'subject_area_id',
 	'supervisor_id',
 
+        'ticket_file',                  // expediente
+        'ticket_request',               // expediente
+        'ticket_resolution',            // expediente
+
 	// fields from im_ticket
 	'ticket_alarm_action',
 	'ticket_alarm_date',

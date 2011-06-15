@@ -64,11 +64,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		xtype: 'hiddenfield',
 		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>
 	},
-	{
-		name: 'ticket_creation_date',
-		xtype: 'hiddenfield',
-		value: '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>'
-	},
 
 	// Main ticket fields
 	{
@@ -130,6 +125,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var ticket_id = ticket_id_field.getValue();
 
 		if ('' == ticket_id) {
+
+			// Set the creation date
+			value.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
 
 			// create a new ticket
 			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');

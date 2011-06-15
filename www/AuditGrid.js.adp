@@ -41,7 +41,7 @@ var auditStore = Ext.create('Ext.data.Store', {
     autoLoad: false,
     remoteSort: true,
     remoteFilter: true,
-    pageSize: 10,			// Enable pagination
+    pageSize: 5,			// Enable pagination
     sorters: [{
 	property: 'audit_date',
 	direction: 'DESC'
@@ -62,7 +62,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     id:		'auditGrid',
     store: 	auditStore,
     minWidth:	300,
-    minHeight:	100,
+    minHeight:	300,
     frame:	true,
     iconCls:	'icon-grid',
 
@@ -71,49 +71,108 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 		xtype: 'pagingtoolbar',
 		store: auditStore,
 		displayInfo: true,
-		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_tickets_0_1_of_2_#',
+		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_versions_0_1_of_2_#',
 		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
-    columns: [
-	      {
-		  header: '#intranet-sencha-ticket-tracker.Request#',
-		  dataIndex: 'ticket_request',
-		  sortable: false, 
-		  flex: 1,
-		  minWidth: 100,
-		  renderer: function(value, o, record) {
-		      var name = record.get('ticket_request');
-		      return name;
-		  }
-	      }, {
-		  header: '#intranet-sencha-ticket-tracker.Resolution#',
-		  dataIndex: 'ticket_solution',
-		  flex: 1,
-		  sortable: false, 
-		  minWidth: 100,
-		  renderer: function(value, o, record) {
-		      var name = record.get('ticket_solution');
-		      return name;
-		  }
-	      }, {
-			header: '#intranet-helpdesk.Status#',
-			dataIndex: 'ticket_status_id',
-			width: 60,
-			sortable: true, 
-			renderer: function(value, o, record) {
-				return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
-			}
-	      },
-	      {text: "#intranet-core.Date#", sortable: true, dataIndex: 'audit_date'},
-	      {
-			header: "#intranet-core.User#", 
-			sortable: true, 
-                        renderer: function(value, o, record) {
-                                return userStore.name_from_id(record.get('audit_user_id'));
-                        }
-		}
-	 ],
+    columns: [{
+	text: "#intranet-core.Date#", 
+	sortable: true, 
+	minWidth: 50,
+	dataIndex: 'audit_date'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Request#',
+	dataIndex: 'ticket_request',
+	sortable: false, 
+	flex: 1,
+	minWidth: 100,
+	renderer: function(value, o, record) {
+	    var name = record.get('ticket_request');
+	    return name;
+	}
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Resolution#',
+	dataIndex: 'ticket_resolution',
+	flex: 1,
+	sortable: false, 
+	minWidth: 100,
+	renderer: function(value, o, record) {
+	    var name = record.get('ticket_resolution');
+	    return name;
+	}
+    }, {
+	header: '#intranet-helpdesk.Status#',
+	dataIndex: 'ticket_status_id',
+	width: 60,
+	sortable: true, 
+	renderer: function(value, o, record) {
+	    return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
+	}
+    }, {
+	header: '#intranet-helpdesk.Type#',
+	dataIndex: 'ticket_type_id',
+	width: 60,
+	sortable: true, 
+	renderer: function(value, o, record) {
+	    return ticketTypeStore.category_from_id(record.get('ticket_type_id'));
+	}
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Escalated#',
+	dataIndex: 'ticket_queue_id',
+	width: 60,
+	sortable: true, 
+	renderer: function(value, o, record) {
+	    return profileStore.name_from_id(record.get('ticket_queue_id'));
+	}
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Area#',
+	width: 60,
+	renderer: function(value, o, record) {
+	    return ticketAreaStore.category_from_id(record.get('ticket_area_id'));
+	}
+    }, {
+	header: '#intranet-core.Customer#',
+	dataIndex: 'company_id',
+	width: 60,
+	renderer: function(value, o, record) {
+	    return companyStore.name_from_id(record.get('company_id'));
+	}
+    }, {
+	header: '#intranet-core.Contact#',
+	dataIndex: 'ticket_customer_contact_id',
+	renderer: function(value, o, record) {
+	    return userStore.name_from_id(record.get('ticket_customer_contact_id'));
+	}
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Creation_Date#',
+	dataIndex: 'ticket_creation_date'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Reaction_Date#',
+	dataIndex: 'ticket_reaction_date'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Escalation_Date#',
+	dataIndex: 'ticket_escalation_date'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Close_Date#',
+	dataIndex: 'ticket_done_date'
+    }, {
+	header: "#intranet-sencha-ticket-tracker.Audit_User#", 
+	sortable: true, 
+	renderer: function(value, o, record) {
+	    return userStore.name_from_id(record.get('audit_user_id'));
+	}
+    }, {
+	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
+	dataIndex: 'audit_ip'
+    }],
+
+/*
+	'ticket_confirmation_date',	// 
+	'ticket_escalation_date',	// 
+	'ticket_resolution_date',	// 
+	'ticket_done_date',		// 
+*/
+
     columnLines: true,
     selModel: auditGridSelModel,
 
