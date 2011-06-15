@@ -89,8 +89,7 @@ var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	model:		'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	// fields: ['category_id', 'category', 'category_translated'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -108,8 +107,7 @@ var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
 	autoLoad:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -127,8 +125,7 @@ var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketStatusStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -145,8 +142,7 @@ var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'companyTypeStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -164,8 +160,7 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketPriorityStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model:	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -184,8 +179,7 @@ var ticketOriginStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketOriginStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model:	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category', 'category_translated'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -204,8 +198,7 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	pageSize:	500,
-	// model: 	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category', 'category_translated'],
+	model: 		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
