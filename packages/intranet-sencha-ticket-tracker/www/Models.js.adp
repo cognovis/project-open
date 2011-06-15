@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.3 2011/06/06 14:02:15 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.16 2011/06/14 18:30:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,6 +22,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Use TCL template language to get the current user_id
+var currentUserId = <%= [ad_get_user_id] %>;
+
 Ext.define('TicketBrowser.Sla', {
     extend: 'Ext.data.Model',
     idProperty: 'project_id',		// The primary key of object_id of the SLA project
@@ -34,28 +37,35 @@ Ext.define('TicketBrowser.Sla', {
 
 
 
+Ext.define('TicketBrowser.Profile', {
+    extend: 'Ext.data.Model',
+    idProperty: 'group_id',		// The primary key. A Queue is a subtype of "group".
+    fields: [
+	'group_id',			// The primary key
+	'group_name',			// The name of the queue
+    ]
+});
+
+
+
+
 // A "category" is a kind of constant frequently used for states and types
 Ext.define('TicketBrowser.Category', {
     extend: 'Ext.data.Model',
     idProperty: 'category_id',		// The primary key of the category
     fields: [
-        {type: 'int', name: 'category_id'},
+        {type: 'string', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
         {type: 'string', name: 'category_translated'},
-        {	name: 'pretty_name',
+        {type: 'string', name: 'indent_class',
+		// Determine the indentation level for each element in the tree
 		convert: function(value, record) {
-			var	category = record.get('category_translated'),
-				indent = record.get('tree_sortkey').length - 8,
-				result = '',
-				i=0;
-			for (i=0; i<indent; i++){
-				result = result + '&nbsp;';
-			}
-			result = result + category;
-			return result;
+			var	category = record.get('category_translated');
+			var	indent = (record.get('tree_sortkey').length / 8) - 1;
+			return 'extjs-indent-level-' + indent;
 		}
-        }
+	}
     ]
 });
 
@@ -78,14 +88,17 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_type_id',		// Type of ticket: Controls presence/absence of DynFields
 	'ticket_customer_contact_id',	// For whom do we work?
 
+	'fs_folder_id',			// File-storage folder for this ticket
+
 	// Main ticket fields
 	'ticket_prio_id',		// Priority
 	'ticket_assignee_id',		// Who is assigned to the work?
 	'ticket_dept_id',		// Which department?
-	'ticket_service_id',
+	'ticket_service_type_id',
 	'ticket_hardware_id',
 	'ticket_application_id',
 	'ticket_queue_id',		// Assignee queue (currently not used)
+	'ticket_last_queue_id',		// Last queue before escalation
 	'ticket_conf_item_id',
 	'ticket_component_id',
 	'ticket_description',		// Initial description of the ticket
@@ -99,14 +112,22 @@ Ext.define('TicketBrowser.Ticket', {
 	// Ticket lifecycle tracking	
 	'ticket_creation_date',		// 
 	'ticket_reaction_date',		// 
-	'ticket_confirmation_date',		// 
+	'ticket_confirmation_date',	// 
+	'ticket_escalation_date',	// 
+	'ticket_resolution_date',	// 
 	'ticket_done_date',		// 
-	'ticket_signoff_date',		// 
+	'ticket_signoff_date',		//
 
-        'service_type',                 // tipo de Servicio
-        'intranet_request_area',        // Area y programa
+	'ticket_requires_addition_info_p',
+	'ticket_incoming_channel_id',	// actually ticket_origin
+	'ticket_outgoing_channel_id',
+
+        'ticket_area_id',		// Area y programa
 
         'ticket_file',                  // expediente
+        'ticket_request',               // expediente
+        'ticket_resolution',            // expediente
+
         'ticket_origin',                // canal
         'ticket_sex',                   // genero hombre/mujer
         'ticket_language',              // idioma
@@ -116,7 +137,25 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_observations',           // Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
-    ]
+    ],
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_ticket',
+		extraParams: {
+			format: 'json',		// Tell the ]po[ REST to return JSON data.
+			format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+
 });
 
 
@@ -141,8 +180,61 @@ Ext.define('TicketBrowser.Company', {
 	'annual_revenue_id',		// How much turnover do we have with company?
 	'vat_number',			// Company's VAT ID
 	'company_group_id',		// Does the company belong to a group structure?
-	'business_sector_id'		// Business sector of the company
-    ]
+	'business_sector_id',		// Business sector of the company
+
+	'company_province'		// Custom field "province"
+    ],
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_company',
+		extraParams: {
+			format: 'json'		// Tell the ]po[ REST to return JSON data.
+		},
+		reader: {
+			type: 'json',		// Tell the Proxy Reader to parse JSON
+			root: 'data',		// Where do the data start in the JSON file?
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+
+});
+
+
+Ext.define('TicketBrowser.User', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'user_id',		// The primary key or object_id of the company
+    fields: [
+	'user_id',			// Primary key
+	'first_names',
+	'last_name',
+	{ name: 'name',			// Calculated compound name
+	  convert: function(value, record) {
+		return record.get('first_names') + ' ' + record.get('last_name');
+	  }
+	}
+    ],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/user',
+	appendId: true,
+	extraParams: {
+	    format: 'json',
+	    format_variant: 'sencha'
+	},
+	reader: { 
+	    type: 'json', 
+	    root: 'data',
+	    totalProperty: 'total'
+	},
+	writer: {
+	    type: 'json'
+	}
+    }
 });
 
 
@@ -163,4 +255,101 @@ Ext.define('TicketBrowser.FileStorage', {
 	'content_length'		// size of the file
     ]
 });
+
+
+
+Ext.define('TicketBrowser.TicketAudit', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'audit_id',		// The primary key or object_id of the filestorage
+    fields: [
+	'audit_id',			// The primary key or object_id of the filestorage
+	'audit_object_id',		// The name of the file.
+	'audit_action',			// The ID of the content folder that contains the file
+	'audit_user_id',		// MIME type of the file, i.e. "image/jpeg", ...
+	'audit_date',			// Manual description of the file
+	'audit_ip',			// Date of creation
+	'audit_object_status_id',	// The user who created the file
+
+	// Fields from im_company
+	'company_id',
+	'company_project_nr',
+	'confirm_date',
+	'corporate_sponsor',
+	'cost_bills_cache',
+	'cost_cache_dirty',
+	'cost_delivery_notes_cache',
+	'cost_expense_logged_cache',
+	'cost_expense_planned_cache',
+	'cost_invoices_cache',
+	'cost_purchase_orders_cache',
+	'cost_quotes_cache',
+	'cost_timesheet_logged_cache',
+	'cost_timesheet_planned_cache',
+	'description',
+	'end_date',
+	'milestone_p',
+	'note',
+	'on_track_status_id',
+	'parent_id',
+	'percent_completed',
+	'presales_probability',
+	'presales_value',
+	'program_id',
+	'project_budget',
+	'project_budget_currency',
+	'project_budget_hours',
+	'project_id',
+	'project_lead_id',
+	'project_name',
+	'project_nr',
+	'project_path',
+	'project_priority_id',
+	'project_risk',
+	'project_status_id',
+	'project_type_id',
+	'reported_days_cache',
+	'reported_hours_cache',
+	'sla_ticket_priority_map',
+	'sort_order',
+	'start_date',
+	'subject_area_id',
+	'supervisor_id',
+
+	// fields from im_ticket
+	'ticket_alarm_action',
+	'ticket_alarm_date',
+	'ticket_application_id',
+	'ticket_assignee_id',
+	'ticket_closed_in_1st_contact_p',
+	'ticket_component_id',
+	'ticket_conf_item_id',
+	'ticket_confirmation_date',
+	'ticket_creation_date',
+	'ticket_customer_contact_id',
+	'ticket_customer_deadline',
+	'ticket_dept_id',
+	'ticket_description',
+	'ticket_done_date',
+	'ticket_hardware_id',
+	'ticket_id',
+	'ticket_note',
+	'ticket_prio_id',
+	'ticket_queue_id',
+	'ticket_quote_comment',
+	'ticket_quoted_days',
+	'ticket_reaction_date',
+	'ticket_resolution_time',
+	'ticket_resolution_time_dirty',
+	'ticket_service_id',
+	'ticket_signoff_date',
+	'ticket_sla_id',
+	'ticket_status_id',
+	'ticket_telephony_new_number',
+	'ticket_telephony_old_number',
+	'ticket_telephony_request_type_id',
+	'ticket_type_id'
+    ]
+});
+
 

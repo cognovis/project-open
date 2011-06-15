@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.2 2011/06/06 15:59:29 mcordova Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.19 2011/06/14 17:54:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,49 +23,76 @@
  */
 
 var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
-	extend: 'Ext.form.Panel',	
-	alias: 'widget.ticketfilterform',
-	title: 'Ticket Filters',
-	bodyStyle:'padding:5px 5px 0',
-	defaultType: 'textfield',
-	defaults: { anchor: '100%' },
-	minWidth: 200,
-	standardsubmit:true,
+	extend:		'Ext.form.Panel',	
+	alias:		'widget.ticketFilterForm',
+	title:		'#intranet-sencha-ticket-tracker.Ticket_Filters#',
+	id:		'ticketFilterForm',
+	bodyStyle:	'padding:5px 5px 0',
+	defaultType:	'textfield',
+	defaults:	{ anchor: '100%' },
+	minWidth:	200,
+	standardsubmit:	true,
 	items: [
-	{	name: 'vat_number', 
-		fieldLabel: 'VAT ID' 
+	{	name: 'assigned_queue_id', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Group#',
+		xtype: 'combobox',
+                valueField: 'group_id',
+                displayField: 'group_name',
+		emptyText: '#intranet-sencha-ticket-tracker.My_Groups#',
+		forceSelection: true,
+		queryMode: 'remote',
+		store: profileStore,
+		width: 300
+	}, {
+		name: 'creation_user',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_User#',
+                xtype:          'combobox',
+                valueField:     'user_id',
+                displayField:   'name',
+                store:          userStore
+	}, {
+		name: 'vat_number', 
+		fieldLabel: '#intranet-core.VAT_Number#'
 	}, {	
 		name: 'company_name', 
-		fieldLabel: 'Company Name'
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Name#'
 	}, {
-		fieldLabel: 'Company Type',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Type#',
 		name: 'company_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
-		store: companyTypeStore
+		store: companyTypeStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
-		fieldLabel: 'Program',
-		name: 'program_id',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
+		name: 'ticket_area',
 		xtype: 'combobox',
-                valueField: 'project_id',
-                displayField: 'project_name',
+		displayField:	'category_translated',
+		valueField:	'category_id',
+		store:		ticketAreaStore,
+		queryMode:	'local',
+        	triggerAction:  'all',
+        	width: 		300,
+        	editable:       false,
 		forceSelection: true,
-		queryMode: 'remote',
-		store: programStore
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
-		fieldLabel: 'Prio',
-		name: 'ticket_prio_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketPriorityStore
+		name: 'ticket_file', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#'
+/*
 	}, {
-		fieldLabel: 'SLA',
+		fieldLabel: '#intranet-helpdesk.SLA#',
 		name: 'parent_id',
 		xtype: 'combobox',
                 valueField: 'project_id',
@@ -74,62 +101,55 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketSlaStore
+*/
 	}, {
-		fieldLabel: 'Area',
-		name: 'ticket_area_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: requestAreaStore
-	}, {
-		fieldLabel: 'Service Type',
-		name: 'ticket_service_type_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketServiceTypeStore
-	}, {
-		fieldLabel: 'Ticket Type',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_Type#',
 		name: 'ticket_type_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
-		store: ticketTypeStore
+		store: ticketTypeStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
-		fieldLabel: 'Ticket Nr',
-		name: 'project_nr'
+		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
+		name: 'project_name'
 	}, {
-		fieldLabel: 'Ticket Status',
+		fieldLabel: '#intranet-helpdesk.Status#',
 		name: 'ticket_status_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketStatusStore
 	}, {
-		fieldLabel: 'Channel',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		name: 'ticket_channel_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
                 displayField: 'category',
 		forceSelection: true,
 		queryMode: 'remote',
-		store: ticketChannelStore
+		store: ticketChannelStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
-		fieldLabel: 'Date Since',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Since#',
 		name: 'start_date',
 		xtype: 'datefield',
 		format: 'Y-m-d',
 		submitFormat: 'Y-m-d'
 	}, {
-		fieldLabel: 'Date Until',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Until#',
 		name: 'end_date',
 		xtype: 'datefield',
 		format: 'Y-m-d',
@@ -137,23 +157,33 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	}
 	],
 
-	buttons: [
-	{
-            text: 'Clear Form',
+	buttons: [{
+            text: '#intranet-sencha-ticket-tracker.Clear_Form#',
 	    handler: function(){
 		var form = this.up('form').getForm();
 		form.reset();
 	    }
 	}, {
-            text: 'Submit',
-	    handler: function(){
+            text: '#intranet-sencha-ticket-tracker.button_Search#',
+	    handler: function() {
 		var form = this.up('form').getForm();
 		var filterValues = form.getFieldValues();
-		var panel = this.up('form');
-
-		// tell the grid to get new tickets with filter variables
-		panel.ownerCt.ownerCt.filterTickets(filterValues);
-	    }
+		var grid = Ext.getCmp('ticketGrid');
+	
+		grid.filterTickets(filterValues);
 	}
-	]
+
+	}],
+
+	afterRender: function() {
+		var filterForm = Ext.getCmp('ticketFilterForm');
+		var form = filterForm.getForm();
+		var filterValues = form.getFieldValues();
+		var grid = Ext.getCmp('ticketGrid');
+		grid.filterTickets(filterValues);
+		return true;
+	}
+
 });
+
+

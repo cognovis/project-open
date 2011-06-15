@@ -457,7 +457,7 @@ set ticket_elements [list]
 if {[im_permission $current_user_id add_tickets_for_customers]} {
 
     lappend ticket_elements {ticket_sla_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $customer_sla_options}}
-    lappend ticket_elements {ticket_customer_contact_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+    lappend ticket_elements {ticket_customer_contact_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 
 } else {
 
@@ -466,7 +466,7 @@ if {[im_permission $current_user_id add_tickets_for_customers]} {
 
     lappend ticket_elements {ticket_sla_id:text(select) {mode display} {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $customer_sla_options}}
     set ticket_customer_contact_id $current_user_id
-    lappend ticket_elements {ticket_customer_contact_id:text(select) {mode display} {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+    lappend ticket_elements {ticket_customer_contact_id:text(select),optional {mode display} {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 
 }
 

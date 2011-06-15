@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.8 2011/06/06 17:20:08 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.16 2011/06/14 09:01:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,7 +26,7 @@
 // The form for uploading a new file
 var fileStorageNewForm;
 
-function showFileStorageNewForm() {
+function showFileStorageNewForm(ticket_id) {
 
     var msg = function(title, msg) {
         Ext.Msg.show({
@@ -42,6 +42,7 @@ function showFileStorageNewForm() {
     // Create the upload form if it isn't defined yet:
     if (!fileStorageNewForm) {
 	var form = Ext.widget('form', {
+	    itemId: 'ticketUploadForm',
 	    layout: { type: 'vbox', align: 'stretch' },
 	    border: false,
 	    fieldDefaults: { labelAlign: 'top', labelWidth: 100 },
@@ -52,25 +53,33 @@ function showFileStorageNewForm() {
 		id: 'name',
 		fieldLabel: '#intranet-core.Name#'
 	    }, {
+		name: 'ticket_id',
+		xtype: 'textfield',
+		id: 'ticket_id',
+		fieldLabel: 'Ticket ID'
+	    }, {
 		name: 'upload_file',
 		xtype: 'filefield',
 		id: 'file',
 		emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
-		fieldLabel: '#intranet-core.Photo#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.File#',
 		buttonText: '',
 		buttonConfig: { iconCls: 'upload-icon' }
 	    }],
 
 	    buttons: [{
-		text: 'Save',
+		text: '#intranet-sencha-ticket-tracker.button_Save#',
 		handler: function(){
 		    var form = this.up('form').getForm();
+		    var form_fields = form.getFieldValues();
+		    var ticket_id = form_fields.ticket_id;
+
 		    if(form.isValid()){
 			form.submit({
 			    url: 'file-add',
 			    method: 'POST',
 			    params: {
-				folder_id: 59616
+				folder_id: ticket_id
 			    },
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
 			    success: function(fp, o) {
@@ -94,14 +103,18 @@ function showFileStorageNewForm() {
 	    title: '#intranet-filestorage.Upload_File#',
 	    closeAction: 'hide',
 	    width: 300,
-	    height: 200,
-	    minHeight: 100,
+	    height: 400,
+	    minHeight: 200,
 	    layout: 'fit',
 	    resizable: true,
 	    modal: true,
 	    items: form
 	});
     }
+
+    var form = fileStorageNewForm.child('#ticketUploadForm');
+    var form2 = form.getForm();
+    form2.setValues({ticket_id: ticket_id});
     fileStorageNewForm.show();
 }
 
@@ -116,31 +129,43 @@ var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
     }
 });
 
-var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
-    extend: 'Ext.grid.Panel',
-    alias: 'widget.fileStorageGrid',
-    store: fileStorageStore,
 
-    minWidth: 300,
-    minHeight: 100,
-    frame: true,
-    iconCls: 'icon-grid',
-
-    /* Allow to show detailed information about files?
-    plugins: [{
-	ptype: 'rowexpander',
-	rowBodyTpl : [
-		      '<p><b>Company:</b> {company}</p><br>',
-		      '<p><b>Summary:</b> {desc}</p>'
-		     ]
+// Local store definition.
+// We have to redefine the store every time we show
+// files for a different ticket
+var fileStorageStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.FileStorage',
+    storeId: 'fileStorageStore',
+    autoLoad: false,
+    remoteSort: true,
+    pageSize: 10,			// Enable pagination
+    sorters: [{
+	property: 'name',
+	direction: 'DESC'
     }],
-    collapsible: true,
-    animCollapse: true,
-    */
+    proxy: {
+	type: 'rest',
+	url: '/intranet-rest/file_storage_object',
+	appendId: true,
+	extraParams: { format: 'json', parent_id: 0 },
+	reader: { type: 'json', root: 'data' }
+    }
+});
+
+var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
+    extend:	'Ext.grid.Panel',
+    alias:	'widget.fileStorageGrid',
+    id:		'fileStorageGrid',
+    store: 	fileStorageStore,
+
+    minWidth:	300,
+    minHeight:	100,
+    frame:	true,
+    iconCls:	'icon-grid',
 
     columns: [
 	      {
-		  header: 'File',
+		  header: '#intranet-filestorage.Filename#',
 		  dataIndex: 'name',
 		  flex: 1,
 		  minWidth: 100,
@@ -151,10 +176,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		      return html;
 		  }
 	      },
-	      {text: "Description", sortable: true, dataIndex: 'description'},
-	      {text: "Creation Date", sortable: true, dataIndex: 'creation_date'},
-	      {text: "Size", sortable: true, dataIndex: 'content_length'},
-	      {text: "MIME Type", sortable: true, dataIndex: 'mime_type', hidden: true}
+	      {text: "#intranet-core.Description#", sortable: true, dataIndex: 'description'},
+	      {text: "#intranet-sencha-ticket-tracker.Creation_Date#", sortable: true, dataIndex: 'creation_date'},
+	      {text: "#intranet-core.Size#", sortable: true, dataIndex: 'content_length'},
+	      {text: "#intranet-sencha-ticket-tracker.MIME_Type#", sortable: true, dataIndex: 'mime_type', hidden: true}
 	 ],
     columnLines: true,
     selModel: fileStorageGridSelModel,
@@ -169,26 +194,29 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
         },
         items: [{
             minWidth: 80,
-            text: 'Save'
+            text: '#intranet-sencha-ticket-tracker.button_Save#'
         },{
             minWidth: 80,
-            text: 'Cancel'
+            text: '#intranet-sencha-ticket-tracker.button_Cancel#'
         }]
     }, {
         xtype: 'toolbar',
         items: [{
-            text:'Add a file',
-            tooltip:'Add a new row',
+            text:'#file-storage.Upload_New_File#',
+            tooltip:'#intranet-sencha-ticket-tracker.Upload_New_Attachment#',
             iconCls:'add',
-	    handler: showFileStorageNewForm
+	    handler: function() {
+		var tid = fileStorageStore.proxy.extraParams['ticket_id'];
+		showFileStorageNewForm(tid);
+	    }
         }, '-', {
-            text:'Options',
-            tooltip:'Set options',
+            text:'#intranet-sencha-ticket-tracker.Options#',
+            tooltip:'#intranet-sencha-ticket-tracker.Set_options#',
             iconCls:'option'
         },'-',{
             itemId: 'removeButton',
-            text:'Remove Something',
-            tooltip:'Remove the selected item',
+            text:'#intranet-sencha-ticket-tracker.Delete_attachment#',
+            tooltip:'#intranet-helpdesk.Remove_checked_items#',
             iconCls:'remove',
             disabled: false,
 	    handler: function () {
@@ -215,7 +243,28 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
     // Load the files for the new ticket
     loadTicket: function(rec){
+
 	// Reload the store containing the ticket's files
+	var folder_id;
+	if (rec.data.hasOwnProperty('folder_id')) { folder_id = rec.data.folder_id; }
+	if (folder_id == null) { return; }
+	var ticket_id = rec.data.ticket_id;
+
+	// Replace empty string by "0", because an empty string means no restriction to the server.
+        if ("" === folder_id) { folder_id = 0; }
+
+	// Save the property in the proxy, which will pass it directly to the REST server
+	fileStorageStore.proxy.extraParams['parent_id'] = folder_id;
+	fileStorageStore.proxy.extraParams['ticket_id'] = ticket_id;
+
+        this.ticket_id = ticket_id;
+	fileStorageStore.load();
+    },
+
+    // Somebody pressed the "New Ticket" button:
+    // Prepare the form for entering a new ticket
+    newTicket: function() {
+	// ToDo: Load empty Filestorage
     }
 
 });

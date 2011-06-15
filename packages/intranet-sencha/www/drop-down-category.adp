@@ -26,7 +26,8 @@ Ext.require([
 ]);
 
 // A category basically consists of an ID and a string.
-Ext.regModel('Category', {
+Ext.define('TicketBrowser.Category', {
+    extend: 'Ext.data.Model',
     fields: [
         {type: 'int', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
@@ -51,7 +52,7 @@ Ext.regModel('Category', {
 
 var store = Ext.create('Ext.data.Store', {
 	autoLoad: true,
-	model: 'Category',
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',

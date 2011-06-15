@@ -1,10 +1,10 @@
-/**
+b/**
  * intranet-sencha-ticket-tracker/www/TicketContainer.js
  * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.5 2011/06/06 17:20:08 po34demo Exp $
+ * @cvs-id $Id: TicketTabPanel.js.adp,v 1.10 2011/06/13 11:09:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,31 +24,35 @@
 
 
 Ext.define('TicketBrowser.TicketTabPanel', {
-    extend: 'Ext.tab.Panel',
-    alias: 'widget.ticketTabPanel',
-    activeTab: 0,
-    tabBar: {
-	border: true
-    },
+    extend:	'Ext.tab.Panel',
+    alias:	'widget.ticketTabPanel',
+    id:		'ticketTabPanel',
+    activeTab: 	0,
+    tabBar:	{ border: true },
+    deferredRender: false,
     items: [{
 	itemId: 'ticket',
-	xtype: 'ticketInfo',
-	title: 'View Ticket'
+	xtype: 'ticketForm',
+	title: '#intranet-sencha-ticket-tracker.View_Ticket#'
+    }, {
+	itemId: 'ticketCustomer',
+	title: '#intranet-core.Customer#',
+	xtype: 'ticketCustomer'
     }, {
 	itemId: 'ticketContact',
-	title: 'Contact',
-	xtype: 'ticketContact'
+	title: '#intranet-core.Contact#',
+	xtype: 'ticketContactPanel'
     }, {
 	itemId: 'ticketFilestorage',
 	title: '#intranet-filestorage.Filestorage#',
 	xtype: 'fileStorageGrid'
     }],
 
-    // Called from the TicketGrid if the user has selected
-    // a ticket
+    // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#ticket').loadTicket(rec);
         this.child('#ticketContact').loadTicket(rec);
+        this.child('#ticketCustomer').loadTicket(rec);
         this.child('#ticketFilestorage').loadTicket(rec);
     }
 

@@ -1,104 +1,3 @@
-// -------------------------------------------------------------------- //
-//                       Ticket Information                             //
-// -------------------------------------------------------------------- //
-
-Ext.define('TicketBrowser.TicketInfo', {
-    extend:         'Ext.form.Panel',
-    alias:          'widget.ticketInfo',
-    stanardsubmit:  false,
-    frame:          true,
-    title:          'Información del ticket',
-    bodyStyle:      'padding:5px 5px 0',
-    width:          350,
-    fieldDefaults: {
-        msgTarget:  'side',
-        labelWidth: 125
-    },
-    defaultType:    'textfield',
-    defaults: {
-        anchor:         '100%',
-        mode:           'local',
-        queryMode:      'local',
-        value:          '!!N/A',
-        store:          'TEC.store.Tickets',
-        displayField:   'pretty_name',
-        valueField:     'id',
-    },
-
-    items: [{
-        xtype:      'textfield',
-        fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
-        name:       'ticket_id',
-        valueField: 'id',
-        msgTarget:  'side',
-        labelWidth: 75,
-        allowBlank: false
-    }, {
-        fieldLabel: 'Tipo de Servicio',
-        name:       'ticket_service_id',
-	xtype: 'combobox',
-        valueField: 'category_id',
-        displayField: 'category',
-	forceSelection: true,
-	queryMode: 'remote',
-	store: ticketServiceTypeStore
-    }, {
-        fieldLabel: '#intranet-helpdesk.Ticket_type#',
-	name: 'ticket_type_id',
-	xtype: 'combobox',
-        valueField: 'category_id',
-        displayField: 'category',
-	forceSelection: true,
-	queryMode: 'remote',
-	store: ticketTypeStore
-    }, {
-        xtype:      'textfield',
-        fieldLabel: 'Expediente',
-        name:       'ticket_file',
-    }, {
-        fieldLabel: 'Area',
-        name:       'ticket_area'
-    }, {
-        xtype:          'combobox',
-        valueField:     'category_id',
-        displayField:   'category',
-        mode:           'local',
-        triggerAction:  'all',
-        forceSelection: true,
-        editable:       false,
-        fieldLabel:     '#intranet-core.Program#',
-        name:           'TEC.store.TicketPrograms',
-        valueField:     'id',
-        queryMode:      'local',
-        store:          'requestAreaStore'
-    }],
-
-    loadTicket: function(rec){
-	this.loadRecord(rec);
-	var comp = this.getComponent('ticket_type_id');
-    },
-
-    buttons: [{
-        text: '#intranet-core.Save_Changes#',
-        disabled: false,
-        formBind: true,
-        handler: function(){
-        var form = this.up('form').getForm();
-
-        var ticket_name_field = form.findField('ticket_name');
-        var project_name_field = form.findField('project_name');
-        ticket_name_field.setValue(project_name_field.getValue());
-
-        form.submit({
-            url: '/intranet-helpdesk/new',
-            method: 'GET',
-            submitEmptyText: false,
-            waitMsg: 'Saving Data...'
-        });
-        }
-    }]
-
-});
 
 // -------------------------------------------------------------------- //
 //                       Entidad y Persona de contacto                  //
@@ -193,7 +92,7 @@ Ext.define('TEC.panel.TicketEntidad', {
                     name:   'ticket_sex',
                     value:  '1',
                     fieldLabel: 'Genero',
-                    boxLabel:   'hombre'
+                    boxLabel:   '#intranet-sencha-ticket-tracker.Male#'
                 },
                 {
                     xtype:          'radiofield',
@@ -202,16 +101,16 @@ Ext.define('TEC.panel.TicketEntidad', {
                     fieldLabel:     '',
                     labelSeparator: '',
                     hideEmptyLabel: false,
-                    boxLabel:       'mujer'
+                    boxLabel:       '#intranet-sencha-ticket-tracker.Female#'
                 }]
         },
         {
-            fieldLabel:     'Email',
+            fieldLabel:     '#intranet-sencha-ticket-tracker.Email#',
             name:           'ticket_first_mail',
             vtype:          'email'
         },
         {
-            fieldLabel:     'Mobile',
+            fieldLabel:     '#intranet-sencha-ticket-tracker.Mobile#',
             name:           'contact_telephone'
         }]
     ,
@@ -335,7 +234,7 @@ Ext.define('TEC.panel.TickeContacto', {
                     fieldLabel: 'Detalle sobre estado...',
                     name:       'ticket_status_detail',
                     value:      '',
-                    anchor:     "100%",
+                    anchor:     "100%"
                 }]
         },
         {
@@ -385,7 +284,7 @@ Ext.define('TEC.panel.TicketFiles', {
     },
     defaultType: 'filefield',
     defaults: {
-        anchor: '100%',
+        anchor: '100%'
     },
 
     items: [{

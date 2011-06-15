@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactContainer.js.adp,v 1.1 2011/06/06 14:35:13 mcordova Exp $
+ * @cvs-id $Id: ContactContainer.js.adp,v 1.4 2011/06/09 22:28:30 mcordova Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,40 +25,14 @@
 
 Ext.define('TicketBrowser.ContactContainer', {
     extend: 'Ext.container.Container',
-    alias: 'widget.contactcontainer',
-    title: 'Loading...',
+    alias: 'widget.contactContainer',
+    title: '#intranet-sencha-ticket-tracker.Loading___#',
 
     layout: 'border',
 
     items: [{
-	itemId: 'grid',
-        xtype:  'fieldset',
-	region: 'center',
-	items :[
-        {
-            fieldLabel: '#intranet-core.First_names#',
-            name:       'ticket_first_contact_name',
-            allowBlank: false
-        },
-        {
-            fieldLabel: '#intranet-core.Last_name#',
-            name:       'ticket_first_contact_last_name'
-        },
-        {
-            xtype:  'radiofield',
-            name:   'ticket_sex',
-            value:  '1',
-            fieldLabel: 'Genero',
-            boxLabel:   'hombre'
-        },
-        {
-            xtype:          'radiofield',
-            name:           'ticket_sex',
-            value:          '0',
-            fieldLabel:     '',
-            labelSeparator: '',
-            hideEmptyLabel: false,
-            boxLabel:       'mujer'
-        }]
+        itemId: 'grid',
+        xtype: 'contactGrid',
+        region: 'center'
     }]
 });
