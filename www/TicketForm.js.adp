@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.24 2011/06/14 18:30:18 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.25 2011/06/15 10:20:45 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -45,8 +45,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'ticket_id',		xtype: 'textfield', disabled: true },
+	{ name: 'ticket_id',		xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
+	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
 	{ name: 'ticket_name',		xtype: 'hiddenfield' },			// Set by AJAX call with new name
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',

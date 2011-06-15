@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.13 2011/06/15 08:11:12 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.14 2011/06/15 10:20:45 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,9 +51,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	{ name: 'format',		xtype: 'hiddenfield', value: 'json' },
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'ticket_id',		xtype: 'hiddenfield'},
-	{ name: 'ticket_last_queue_id',	xtype: 'textfield', fieldLabel: 'Last', disabled: true },
-	{ name: 'ticket_org_queue_id',	xtype: 'textfield', fieldLabel: 'Org', disabled: true },	// original queue_id from DB when loading the form.
+	{ name: 'ticket_id',		xtype: 'hiddenfield' },
+	{ name: 'ticket_last_queue_id',	xtype: 'hiddenfield' },
+	{ name: 'ticket_org_queue_id',	xtype: 'hiddenfield' },	// original queue_id from DB when loading the form.
 
 	// Main ticket fields
         {
