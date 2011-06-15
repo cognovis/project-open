@@ -1415,6 +1415,7 @@ ad_proc -private im_rest_post_object_type {
 		  -format $format \
 		  -user_id $user_id \
 		  -content $content \
+		  -rest_otype $rest_otype \
 	]]
 	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype. rest_oid=$rest_oid"
 
@@ -1482,36 +1483,11 @@ ad_proc -private im_rest_post_object {
     }
 
     # Parse the HTTP content
-    switch $format {
-	json {
-	    ns_log Notice "im_rest_post_object: going to parse json content=$content"
-	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
-	    array set parsed_json [util::json::parse $content]
-	    set json_list $parsed_json(_object_)
-	    array set hash_array $json_list
-	    # fix Json "null" values in
-	    foreach key [array names hash_array] { if {"null" == $hash_array($key)} { set hash_array($key) "" } }
-	}
-	default {
-	    # store the key-value pairs into a hash array
-	    ns_log Notice "im_rest_post_object: going to parse xml content=$content"
-	    if {[catch {set doc [dom parse $content]} err_msg]} {
-		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-	    }
-	    
-	    set root_node [$doc documentElement]
-	    array unset hash_array
-	    foreach child [$root_node childNodes] {
-		set nodeName [$child nodeName]
-		set nodeText [$child text]
-		set hash_array($nodeName) $nodeText
-	    }
-	}
-    }
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
 
     # Audit + Callback before updating the object
-    im_audit -object_type $rest_otype -object_id $rest_oid -action before_update
-
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action before_update
 
     # Update the object. This routine will return a HTTP error in case 
     # of a database constraint violation
@@ -1523,7 +1499,7 @@ ad_proc -private im_rest_post_object {
     ns_log Notice "im_rest_post_object: After im_rest_object_type_update_sql"
 
     # Audit + Callback after updating the object
-    im_audit -object_type $rest_otype -object_id $rest_oid -action after_update
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_update
 
 
     # The update was successful - return a suitable message.
