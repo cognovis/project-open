@@ -215,3 +215,19 @@ SELECT im_category_new(76606, 'Nets', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_hierarchy_new(76602, 76600);
 SELECT im_category_hierarchy_new(76604, 76600);
 SELECT im_category_hierarchy_new(76606, 76600);
+
+
+
+alter table persons
+add column last_name2 text;
+SELECT im_dynfield_attribute_new ('person', 'last_name2', 'Last Name 2', 'textbox_medium', 'string', 'f');
+
+
+alter table persons
+add column gender text;
+SELECT im_dynfield_attribute_new ('person', 'gender', 'Gender', 'textbox_medium', 'string', 'f');
+
+alter table persons
+add column language text;
+SELECT im_dynfield_attribute_new ('person', 'language', 'Language', 'textbox_medium', 'string', 'f');
+

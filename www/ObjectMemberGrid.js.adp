@@ -54,6 +54,20 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
     frame:	true,
     iconCls:	'icon-grid',
 
+    listeners: {
+	itemdblclick: function(view, record, item, index, e) {
+		// Open the User in the TicketContactForm
+		var contact_id = record.get('object_id_two');
+
+                var contact_record = userStore.findRecord('user_id',contact_id);
+                if (contact_record == null || typeof contact_record == "undefined") { return; }
+
+                // load the information from the record into the form
+		var ticketContactForm = Ext.getCmp('ticketContactForm');
+		ticketContactForm.loadUser(contact_record);
+	}
+    },
+
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',

@@ -210,11 +210,15 @@ Ext.define('TicketBrowser.User', {
     idProperty: 'user_id',		// The primary key or object_id of the company
     fields: [
 	'user_id',			// Primary key
-	'first_names',
-	'last_name',
+	'first_names',			// First name(s)
+	'last_name',			// Standard last name
+	'last_name2',			// Spanish 2nd last name
+	'email',			// Just email txt
+	'gender',			// male or female
+	'language',			// es_ES or eu_ES
 	{ name: 'name',			// Calculated compound name
 	  convert: function(value, record) {
-		return record.get('first_names') + ' ' + record.get('last_name');
+		return record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2');
 	  }
 	}
     ],
