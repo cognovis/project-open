@@ -247,6 +247,8 @@ ad_proc -public im_audit_impl {
 } {
     Creates a new audit item for object after an update.
 } {
+    ns_log Notice "im_audit_impl: object_id=$object_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
+
     set user_id [ad_get_user_id]
     set peeraddr [ns_conn peeraddr]
     if {"" == $action} { set action "update" }
