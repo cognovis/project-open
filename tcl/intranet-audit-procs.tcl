@@ -241,15 +241,18 @@ ad_proc -public im_audit_calculate_diff {
 
 ad_proc -public im_audit_impl { 
     -object_id:required
+    {-user_id "" }
     {-object_type "" }
+    {-status_id "" }
+    {-type_id "" }
     {-action "update" }
     {-comment "" }
 } {
     Creates a new audit item for object after an update.
 } {
-    ns_log Notice "im_audit_impl: object_id=$object_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
+    ns_log Notice "im_audit_impl: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
 
-    set user_id [ad_get_user_id]
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
     set peeraddr [ns_conn peeraddr]
     if {"" == $action} { set action "update" }
     set action [string tolower $action]
@@ -405,13 +408,15 @@ ad_proc -public im_audit_sweeper { } {
 
 ad_proc -public im_project_audit_impl  {
     -project_id:required
+    {-user_id "" }
     {-action update }
     {-comment "" }
 } {
     Creates an audit entry of the specified project
 } {
     # Call the normal audit function
-    im_audit_impl -object_id $project_id
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
+    im_audit_impl -object_id $project_id -user_id $user_id
 
     # No audit for non-existing projects
     if {"" == $project_id} { return "project_id is empty" }
@@ -431,13 +436,10 @@ ad_proc -public im_project_audit_impl  {
 
 
     # Who is modifying? Use empty values when called from schedules proc sweeper
-    if {[ad_conn -connected_p]} {
-	set modifying_user [ad_get_user_id]
-	set modifying_ip [ad_conn peeraddr]
-    } else {
-	set modifying_user ""
-	set modifying_ip ""
-    }
+    set peeraddr "0.0.0.0"
+    catch { set peeraddr [ad_conn peeraddr] }
+    set modifying_user $user_id
+    set modifying_ip $peeraddr
 
     catch {
 
