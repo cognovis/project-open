@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.16 2011/06/14 18:30:17 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.19 2011/06/15 16:11:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -210,11 +210,15 @@ Ext.define('TicketBrowser.User', {
     idProperty: 'user_id',		// The primary key or object_id of the company
     fields: [
 	'user_id',			// Primary key
-	'first_names',
-	'last_name',
+	'first_names',			// First name(s)
+	'last_name',			// Standard last name
+	'last_name2',			// Spanish 2nd last name
+	'email',			// Just email txt
+	'gender',			// male or female
+	'language',			// es_ES or eu_ES
 	{ name: 'name',			// Calculated compound name
 	  convert: function(value, record) {
-		return record.get('first_names') + ' ' + record.get('last_name');
+		return record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2');
 	  }
 	}
     ],
@@ -236,6 +240,41 @@ Ext.define('TicketBrowser.User', {
 	}
     }
 });
+
+
+
+Ext.define('TicketBrowser.ObjectMember', {
+    extend: 'Ext.data.Model',
+
+    idProperty: 'rel_id',			// The primary key or object_id of the company
+    fields: [
+	'rel_id',				// Primary key
+	'rel_type',				// Type of relationship (membership_rel, im_key_account_rel, ...)
+	'object_id_one',			// Business Object (company, project, ...)
+	'object_id_two',			// User who is a member
+	'object_role_id',			// The "role" in which the user is part of the biz object,
+						// i.w. Project Manager, Key Account, Full Member etc.
+	'percentage'				// Membership percentage (only membership roles)
+    ],
+    proxy: {
+	type: 'rest',
+	url: '/intranet-sencha-ticket-tracker/object-member-datasource',
+	appendId: true,
+	extraParams: {
+		// object_id_one: <business object>
+		// object_id_two: <user>
+	},
+	reader: { 
+	    type: 'json', 
+	    root: 'data',
+	    totalProperty: 'total'
+	}
+    }
+});
+
+
+
+
 
 
 Ext.define('TicketBrowser.FileStorage', {
@@ -315,6 +354,10 @@ Ext.define('TicketBrowser.TicketAudit', {
 	'start_date',
 	'subject_area_id',
 	'supervisor_id',
+
+        'ticket_file',                  // expediente
+        'ticket_request',               // expediente
+        'ticket_resolution',            // expediente
 
 	// fields from im_ticket
 	'ticket_alarm_action',

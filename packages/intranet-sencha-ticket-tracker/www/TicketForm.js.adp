@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.25 2011/06/15 10:20:45 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.27 2011/06/15 14:51:39 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -63,11 +63,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		name: 'company_id',
 		xtype: 'hiddenfield',
 		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>
-	},
-	{
-		name: 'ticket_creation_date',
-		xtype: 'hiddenfield',
-		value: '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>'
 	},
 
 	// Main ticket fields
@@ -131,6 +126,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		if ('' == ticket_id) {
 
+			// Set the creation date
+			value.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
+
 			// create a new ticket
 			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
 			ticket_record.phantom = true;
@@ -192,10 +190,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
-		this.setNewTicketName();
 
-		// Set the customer field to anonymous company
-		form.findField('project_name').setValue(ticket_name);
+		// Ask the server to provide a new ticket name
+		this.setNewTicketName();
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 
