@@ -9,6 +9,7 @@
 
 	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
+	<script type="text/javascript" src="POClasses.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
 	<script type="text/javascript" src="RowExpander.js"></script> 
@@ -18,7 +19,6 @@
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 
- 	<script type="text/javascript" src="Panels.js"></script>
 	<script type="text/javascript" src="TicketActionBar.js"></script> 
 	<script type="text/javascript" src="TicketGrid.js"></script> 
 	<script type="text/javascript" src="TicketForm.js"></script> 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.5 2011/06/16 07:18:27 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.6 2011/06/16 11:38:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -164,6 +164,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     }, {
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	dataIndex: 'audit_ip'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Audit_Action#',
+	dataIndex: 'audit_action'
     }],
 
 /*

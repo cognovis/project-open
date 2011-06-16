@@ -1,0 +1,94 @@
+/**
+ * intranet-sencha-ticket-tracker/www/POClasses.js
+ * Subclasses specific for ]po[ use of Sencha
+ *
+ * @author Frank Bergmann (frank.bergmann@project-open.com)
+ * @creation-date 2011-05
+ * @cvs-id $Id: POClasses.js.adp,v 1.1 2011/06/16 11:38:41 po34demo Exp $
+ *
+ * Copyright (C) 2011, ]project-open[
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/*
+ * Create a specific store for categories.
+ * The subclass contains a special lookup function.
+ */
+
+Ext.define('PO.data.CategoryStore', {
+	extend: 'Ext.data.Store',
+	category_from_id: function(category_id) {
+		if (null == category_id || '' == category_id) { return ''; }
+		var	result = 'Category #' + category_id;
+		var	rec = this.findRecord('category_id',category_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('category_translated'); 
+	}
+});
+
+
+/*
+ * Create a specific store for users of all type.
+ * The subclass contains a special lookup function.
+ */
+
+Ext.define('PO.data.UserStore', {
+	extend: 'Ext.data.Store',
+	name_from_id: function(user_id) {
+		if (null == user_id || '' == user_id) { return ''; }
+		var	result = 'User #' + user_id;
+		var	rec = this.findRecord('user_id',user_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('name');
+	}
+});
+
+/*
+ * Create a specific store for groups/profiles.
+ * The subclass contains a special lookup function.
+ */
+Ext.define('PO.data.ProfileStore', {
+	extend: 'Ext.data.Store',
+	name_from_id: function(group_id) {
+		if (null == group_id || '' == group_id) { return ''; }
+		var	result = 'Profile #' + group_id;
+		var	rec = this.findRecord('group_id',group_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('group_name');
+	}
+});
+
+/*
+ * Create a specific store for users of all type.
+ * The subclass contains a special lookup function.
+ */
+Ext.define('PO.data.CompanyStore', {
+	extend: 'Ext.data.Store',
+	name_from_id: function(company_id) {
+		var result = 'Company #' + company_id;
+		var rec = this.findRecord('company_id',company_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('company_name');
+	},
+
+	vat_id_from_id: function(company_id) {
+		var rec = this.findRecord('company_id',company_id);
+		if (rec == null || typeof rec == "undefined") { return ''; }
+		return rec.get('vat_number');
+	}
+
+});
+

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.24 2011/06/16 07:18:27 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.25 2011/06/16 11:38:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,74 +22,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-/*
- * Create a specific store for categories.
- * The subclass contains a special lookup function.
- */
-Ext.ux.CategoryStore = Ext.extend(Ext.data.Store, {
-	category_from_id: function(category_id) {
-		if (null == category_id || '' == category_id) { return ''; }
-		var	result = 'Category #' + category_id;
-		var	rec = this.findRecord('category_id',category_id);
-		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('category_translated'); 
-	}
-});
-
-/*
- * Create a specific store for users of all type.
- * The subclass contains a special lookup function.
- */
-Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
-	name_from_id: function(user_id) {
-		var	result = 'User #' + user_id;
-		var	rec = this.findRecord('user_id',user_id);
-		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('name');
-	}
-});
-
-/*
- * Create a specific store for groups/profiles.
- * The subclass contains a special lookup function.
- */
-Ext.ux.ProfileStore = Ext.extend(Ext.data.Store, {
-	name_from_id: function(group_id) {
-		var	result = 'Profile #' + group_id;
-		var	rec = this.findRecord('group_id',group_id);
-		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('group_name');
-	}
-});
-
-/*
- * Create a specific store for users of all type.
- * The subclass contains a special lookup function.
- */
-Ext.ux.CompanyStore = Ext.extend(Ext.data.Store, {
-	name_from_id: function(company_id) {
-		var result = 'Company #' + company_id;
-		var rec = this.findRecord('company_id',company_id);
-		if (rec == null || typeof rec == "undefined") { return result; }
-		return rec.get('company_name');
-	},
-
-	vat_id_from_id: function(company_id) {
-		var rec = this.findRecord('company_id',company_id);
-		if (rec == null || typeof rec == "undefined") { return ''; }
-		return rec.get('vat_number');
-	}
-
-});
-
-
-
-var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
+var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
-	autoLoad:	true,
+	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
-	model:		'TicketBrowser.Category',
+	autoLoad:	false,
+
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -101,9 +39,15 @@ var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+ticketAreaStore.load(
+	function(record, operation) {
+		// This code is called once the reply from the server has arrived.
+		ticketAreaStore.sort('tree_sortkey');
+	}
+);
 
 
-var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
+var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
 	autoLoad:	false,
@@ -128,7 +72,7 @@ ticketTypeStore.load(
 
 
 
-var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
+var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketStatusStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -145,7 +89,7 @@ var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
 	}
 });
 
-var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
+var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -163,7 +107,7 @@ var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
 });
 
 
-var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
+var ticketPriorityStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketPriorityStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -182,7 +126,7 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 
 
 // Incoming and Outgoing channels are both 'Intranet Ticket Origin' category
-var ticketOriginStore = Ext.create('Ext.ux.CategoryStore', {
+var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketOriginStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -220,7 +164,7 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 
 
 
-var requestAreaProgramStore = Ext.create('Ext.ux.CategoryStore', {
+var requestAreaProgramStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'requestAreaProgramStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -239,7 +183,7 @@ var requestAreaProgramStore = Ext.create('Ext.ux.CategoryStore', {
 });
 
 
-var bizObjectRoleStore = Ext.create('Ext.ux.CategoryStore', {
+var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'bizObjectRoleStore',
 	autoLoad:	true,
 	remoteFilter:	true,
@@ -258,7 +202,7 @@ var bizObjectRoleStore = Ext.create('Ext.ux.CategoryStore', {
 });
 
 
-var userStore = Ext.create('Ext.ux.UserStore', {
+var userStore = Ext.create('PO.data.UserStore', {
 	storeId:	'userStore',
 	model:		'TicketBrowser.User',
 	remoteSort:	true,
@@ -325,7 +269,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 });
 	
 
-var companyStore = Ext.create('Ext.ux.CompanyStore', {
+var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',
 	model: 'TicketBrowser.Company',
 	remoteSort: true,
@@ -340,7 +284,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 });
 
 
-var profileStore = Ext.create('Ext.ux.ProfileStore', {
+var profileStore = Ext.create('PO.data.ProfileStore', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
 	autoLoad: true,
@@ -368,6 +312,6 @@ var profileStore = Ext.create('Ext.ux.ProfileStore', {
 
 // fake store while developing
 var ticketServiceTypeStore = ticketSlaStore;
-var ticketChannelStore = ticketOriginStore; // look up for ticket_origin
+var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
 var ticketQueueStore = ticketPriorityStore;
 

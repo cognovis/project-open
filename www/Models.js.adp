@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.20 2011/06/16 07:18:27 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.21 2011/06/16 11:38:41 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -120,7 +120,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_signoff_date',		//
 
 	'ticket_requires_addition_info_p',
-	'ticket_incoming_channel_id',	// actually ticket_origin
+	'ticket_incoming_channel_id',	//
 	'ticket_outgoing_channel_id',
 
         'ticket_area_id',		// Area y programa
@@ -129,13 +129,8 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_request',               // expediente
         'ticket_resolution',            // expediente
 
-        'ticket_origin',                // canal
-        'ticket_sex',                   // genero hombre/mujer
-        'ticket_language',              // idioma
-        'ticket_province',              // Provincia
-
         'ticket_answer',                // Respuesta
-        'ticket_observations',           // Observaciones
+        'ticket_observations',		// Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
     ],

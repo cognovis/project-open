@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.19 2011/06/14 17:54:13 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.20 2011/06/16 11:38:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -133,7 +133,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'ticket_channel_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketChannelStore,
