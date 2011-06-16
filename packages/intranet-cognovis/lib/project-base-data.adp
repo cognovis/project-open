@@ -8,7 +8,7 @@
       </tr>
     </if>
     <tr>
-      <td align="right" valign="top" class="attribute">@project_info.field;noquote@:</td>
+      <td align="right" valign="top" class="attribute">@project_info.pretty_name;noquote@:</td>
       <td align="left" valign="top" class="value">@project_info.value;noquote@</td>
     </tr>
   </multiple>    

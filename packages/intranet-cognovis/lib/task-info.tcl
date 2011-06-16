@@ -1,5 +1,6 @@
 ad_page_contract {
     The display for the task base data 
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @author iuri sampaio (iuri.sampaio@gmail.com)
     @date 2010-10-07
 
