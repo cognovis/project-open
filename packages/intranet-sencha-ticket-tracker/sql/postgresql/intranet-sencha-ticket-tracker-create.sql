@@ -109,7 +109,10 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_last_queue_id', 'Ticket L
 
 
 
-alter table im_tickets alter column ticket_closed_in_1st_contact_p type text;
+-- alter table im_tickets alter column ticket_closed_in_1st_contact_p type text;
+alter table im_tickets
+add column ticket_closed_in_1st_contact_p text;
+
 alter table im_tickets alter column ticket_requires_addition_info_p type text;
 
 alter table im_tickets alter column ticket_creation_date type date;
