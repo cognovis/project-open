@@ -67,9 +67,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			items :[{
 				name:		'ticket_creation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_Date#',
-				xtype:		'textfield',
+				xtype:		'po_datetimefield_read_only',
 				disabled:	true
-				//format:		'Y-m-d'
 			}, {
 				name:		'ticket_incoming_channel_id',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
@@ -95,40 +94,41 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				store: 		ticketStatusStore
 			}, {
 				name:		'ticket_done_date',
-				xtype:		'datefield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
-				format:		'Y-m-d'
+				xtype:		'po_datetimefield_read_only',
+				disabled:	true
 			}, {
 				name:		'ticket_escalation_date',
-				xtype:		'datefield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
-				format:		'Y-m-d'
+				xtype:		'po_datetimefield_read_only',
+				disabled:	true
 			}, {
 				name:		'ticket_reaction_date',
-				xtype:		'datefield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
-				format:		'Y-m-d'
+				xtype:		'po_datetimefield_read_only',
+				disabled:	false
 			}]
 	
 		}, {
 	
-			xtype:	'fieldset',
-			title:	'',
+			xtype:		'fieldset',
+			title:		'',
 			checkboxToggle: false,
 			collapsed:	false,
-			frame:	false,
-			width:	800,
-	
+			frame:		false,
+			width:		800,
 			layout: 	{ type: 'table', columns: 2 },
 			items :[{
 				name:		'ticket_request',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
+				labelAlign:	'top',
 				width:		300
 			}, {
 				name:		'ticket_resolution',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
+				labelAlign:	'top',
 				width:		300
 			}]
 	
@@ -154,8 +154,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 						var statusField = panel.getForm().findField('ticket_status_id');
 						statusField.setValue('30001');
 						// Set the ticket_done_date
-						var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
-						panel.getForm().findField('ticket_done_date').setValue(today);
+						var doneField = panel.getForm().findField('ticket_done_date');
+						doneField.setValue(today_date_time);
+						doneField.setDisabled(false);
 					}
 				}
 			}, {
@@ -207,7 +208,26 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				forceSelection: true,
 				queryMode:	'remote',
 				store:		ticketStatusStore,
-				width:		200
+				width:		200,
+				listeners:{
+				    // Handle special "Esclation" date + field entable
+				    'select': function(field, values) {
+					var panel = this.ownerCt.ownerCt;
+					if (!panel.rendered) { return; }		// Skip action while form is still rendering
+					var value = field.getValue();
+					if (value == '30028' || value == '30009') {
+						// Set the esclation date field
+						var esclationDateField = panel.getForm().findField('ticket_escalation_date');
+						esclationDateField.setValue(today_date_time);
+						esclationDateField.setDisabled(false);	// enable to allow saving
+
+						// Enable the tickte_queue_id to define the escalation group
+						var queueField = panel.getForm().findField('ticket_queue_id');
+						queueField.show();
+					}
+
+				    }
+				}
 			}, {
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalated#',
 				name:		'ticket_queue_id',
@@ -215,6 +235,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'group_id',
 				displayField:	'group_name',
 				forceSelection: true,
+				hidden:		true,
 				queryMode:	'remote',
 				store:		profileStore,
 				width:		300
@@ -225,6 +246,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	buttons: [{
 		text:			'#intranet-sencha-ticket-tracker.Reject_Button#',
 		itemId:			'rejectButton',
+		id:			'ticketFormRightRejectButton',
 		hidden:			false,		// ToDo: Hide and enable only if rejectable (last_queue_id is set)
 		formBind:		true,
 		handler: function() {
@@ -235,10 +257,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			ticket_queue_field.setValue(ticket_last_queue_field.getValue());
 		}
 	}, {
-		text:		'#intranet-sencha-ticket-tracker.button_Save#',
-		itemId:		'saveButton',
-		disabled:	false,
-		formBind:	true,
+		text:			'#intranet-sencha-ticket-tracker.button_Save#',
+		itemId:			'saveButton',
+		id:			'ticketFormRightSaveButton',
+		disabled:		false,
+		formBind:		true,
 		handler: function(){
 			var form = this.up('form').getForm();
 	
@@ -250,12 +273,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			var ticket_status_field = form.findField('ticket_status_id');
 			var ticket_status_id = parseInt(ticket_status_field.getValue());
 			
-			var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+			var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
 			switch (ticket_status_id) {
 				case 30001:		// closed
 				case 30022:		// sign-off
 				case 30096:		// resolved
-					form.findField('ticket_done_date').setValue(today);
+					var doneField = form.findField('ticket_done_date');
+					if ('' == doneField.getValue()) { doneField.setValue(today_date_time); }
 					break;
 			};
 
@@ -284,7 +308,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	
 	
 			// Write form values into the store
-			var values = form.getFieldValues();
+			var values = form.getValues();
 			var ticket_record = ticketStore.findRecord('ticket_id',ticket_id);
 			var value;
 			for(var field in values) {
@@ -320,7 +344,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		if ('' != ticket_last_queue_field.getValue()) {
 			// ToDo: enable the reject button
 		}
-		
+
+		// Disable the read-only date fields
+		form.findField('ticket_creation_date').setDisabled(true);
+		form.findField('ticket_escalation_date').setDisabled(true);
+		form.findField('ticket_done_date').setDisabled(true);
+
+		this.show();
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -330,9 +360,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		form.reset();
 
 		// Pre-set the creation date
-		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
 		form.findField('ticket_creation_date').setValue(name);
 
+		this.hide();
 	}
 });
 

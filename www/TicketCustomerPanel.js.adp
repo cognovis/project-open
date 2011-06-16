@@ -183,6 +183,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	newTicket: function() {
                 var form = this.getForm();
                 form.reset();
+
+		// Don't show this form for new tickets
+		this.hide();
 	},
 
 	loadTicket: function(rec){
@@ -196,6 +199,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// load the customer's information into the form.
 		this.loadRecord(cust);
+
+		// Show the form
+		this.show();
 	}
 
 });

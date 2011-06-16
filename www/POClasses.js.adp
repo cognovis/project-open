@@ -92,3 +92,29 @@ Ext.define('PO.data.CompanyStore', {
 
 });
 
+
+
+Ext.define('PO.form.field.DateTimeReadOnly', {
+	extend: 'Ext.form.field.Text',
+	alias:	'widget.po_datetimefield_read_only',
+
+	setValue: function(mixed) {
+		if (typeof mixed == 'undefined') { 
+			// Just pass on directly to parent
+			this.callParent(arguments);
+
+		} else {
+			var mixed = mixed.substr(0,16);
+			this.callParent([mixed]);
+		}
+	}
+});
+
+
+
+// Define the date of today
+// This date is only calculated one during loading
+// ToDo: Update the date in regular intervals
+var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
+var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
+

@@ -169,11 +169,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadRecord(contact_record);
+
+		// Show (might have been hidden when creating a new ticket)
+		this.show();
 	},
 
 	loadUser: function(rec){
 		// load the information from the record into the form
 		this.loadRecord(rec);
+		this.show();
 	},
 
         // Somebody pressed the "New Ticket" button:
@@ -181,6 +185,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
         newTicket: function() {
 		var form = this.getForm();
                 form.reset();
+		this.hide();
         }
 
 });
