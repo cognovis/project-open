@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.15 2011/06/16 07:18:27 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.16 2011/06/16 08:00:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -146,13 +146,29 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			inputValue:	't',
-			width:		150
+			width:		150,
+			handler: function(checkbox, checked) {
+				// Set status to "closed" if checked by the user
+				var panel = this.ownerCt.ownerCt;
+				if (checked && panel.rendered) {
+					var statusField = panel.getForm().findField('ticket_status_id');
+					statusField.setValue('30001');
+				}
+			}
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additional_info#',
 			inputValue:	't',
-			width:		150
+			width:		150,
+			handler: function(checkbox, checked) {
+				// Set status to "frozen" if checked by the user
+				var panel = this.ownerCt.ownerCt;
+				if (checked && panel.rendered) {
+					var statusField = panel.getForm().findField('ticket_status_id');
+					statusField.setValue('30028');
+				}
+			}
 		}, {
 			name:	   'ticket_outgoing_channel_id',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
