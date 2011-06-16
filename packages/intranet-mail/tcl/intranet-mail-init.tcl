@@ -25,4 +25,7 @@ ad_library {
 nsv_set intranet-mail_load_mails check_mails_p 0
 
 # Check every few minutes for new mails
-ad_schedule_proc -thread t 60 intranet-mail::load_mails
+set imap_server [parameter::get_from_package_key -package_key "intranet-mail" -parameter "IMAPServer"]    
+if {$imap_server ne ""} {
+    ad_schedule_proc -thread t 60 intranet-mail::load_mails
+}
