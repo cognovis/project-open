@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.4 2011/06/15 12:23:18 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.5 2011/06/16 07:18:27 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -178,6 +178,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 
     // Load the files for the new ticket
     loadTicket: function(rec){
+
+	// The panel may have been hidden during newTicket()
+	this.show();
 
 	// Save the property in the proxy, which will pass it directly to the REST server
 	var ticket_id = rec.data.ticket_id;

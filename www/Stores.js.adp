@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.23 2011/06/15 16:53:28 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.24 2011/06/16 07:18:27 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -106,7 +106,7 @@ var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
-	autoLoad:	true,
+	autoLoad:	false,
 	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
@@ -119,6 +119,13 @@ var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+ticketTypeStore.load(
+      function(record, operation) {
+      // This code is called once the reply from the server has arrived.
+      ticketTypeStore.sort('tree_sortkey');
+    }
+);
+
 
 
 var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
