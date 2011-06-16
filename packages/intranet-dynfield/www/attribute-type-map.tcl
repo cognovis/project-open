@@ -165,21 +165,6 @@ set sql "
 		aa.sort_order, aa.pretty_name
 "
 
-# This is a bad hack to make tasks work for the time being
-if {$acs_object_type eq "im_timesheet_task"} {
-    set sql "
-	select  m.attribute_id,
-	        m.object_type_id,
-	        m.display_mode
-	from
-	        im_dynfield_type_attribute_map m
-	where
-	        m.object_type_id = 100
-"
-
-    set top_scale_map(100) "Default"
-    set top_scale 100
-}
     
 db_foreach attribute_table_map $sql {
     set key "$attribute_id.$object_type_id"

@@ -150,5 +150,10 @@ ad_proc im_dynfield::generic_sql_option_name {
     Return the name of a SQL generated ID
 } {
     template::util::list_of_lists_to_array [im_dynfield::generic_sql_option_list -widget_name $widget_name] generic_sql
-    return $generic_sql($object_id)
+    if {[exists_and_not_null generic_sql($object_id)]} {
+	set option_name $generic_sql($object_id)
+    } else {
+	set option_name [db_string name_from_id "select im_name_from_id(:object_id) from dual" -default ""]
+    } 
+    return $option_name
 }
