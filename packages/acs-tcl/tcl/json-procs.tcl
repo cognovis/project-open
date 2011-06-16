@@ -35,7 +35,7 @@ ad_library {
 
     @creation-date 2010/04/09
     @author Don Baccus
-    @cvs-id $Id: json-procs.tcl,v 1.3 2011/03/19 17:24:24 donb Exp $
+    @cvs-id $Id: json-procs.tcl,v 1.1 2010/10/19 20:37:03 po34demo Exp $
 }
 
 namespace eval util {
@@ -370,11 +370,6 @@ ad_proc -private util::json::gen_inner {value} {
                     && ![regexp {^(?:true|false|null)$} $value]} {
                     set value "\"$value\""
                 }
-                # Cleanup linebreaks
-                regsub -all {\r\n} $value "\n" value
-                regsub -all {\r} $value "\n" value
-                # JSON requires new line characters be escaped
-                regsub -all {\n} $value "\\n" value
                 return $value
             }
          }
