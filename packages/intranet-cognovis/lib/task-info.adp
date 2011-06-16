@@ -8,7 +8,7 @@
       </tr>
     </if>
     <tr>
-      <td align="right" valign="top" class="attribute">@task_info.field;noquote@:</td>
+      <td align="right" valign="top" class="attribute">@task_info.pretty_name;noquote@:</td>
       <td align="left" valign="top" class="value">@task_info.value;noquote@</td>
     </tr>
   </multiple>    
