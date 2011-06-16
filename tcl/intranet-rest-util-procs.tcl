@@ -109,6 +109,7 @@ ad_proc -private im_rest_debug_headers {
 
 ad_proc -private im_rest_authenticate {
     {-debug 1}
+    {-format "xml" }
     -query_hash_pairs:required
 } {
     Determine the autenticated user
@@ -151,7 +152,7 @@ ad_proc -private im_rest_authenticate {
 	set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
 	if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
     }
-    if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password, basic_auth_user_id=$basic_auth_user_id, basic_auth_password_ok_p=$basic_auth_password_ok_p" }
+    if {$debug} { ns_log Notice "im_rest_authenticate: format=$format, basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password, basic_auth_user_id=$basic_auth_user_id, basic_auth_password_ok_p=$basic_auth_password_ok_p" }
 
 
     # --------------------------------------------------------
@@ -172,12 +173,12 @@ ad_proc -private im_rest_authenticate {
 	token { set auth_user_id $token_user_id }
 	basic { set auth_user_id $basic_auth_user_id }
 	default { 
-	    return [im_rest_error -http_status 401 -message "No authentication found ('$auth_method')."] 
+	    return [im_rest_error -format $format -http_status 401 -message "No authentication found ('$auth_method')."] 
 	}
     }
 
     if {"" == $auth_user_id} { set auth_user_id 0 }
-    ns_log Notice "im_rest_authenticate: auth_method=$auth_method, auth_user_id=$auth_user_id"
+    ns_log Notice "im_rest_authenticate: format=$format, auth_method=$auth_method, auth_user_id=$auth_user_id"
 
     return [list user_id $auth_user_id method $auth_method]
 }
@@ -739,6 +740,7 @@ ad_proc -public im_rest_valid_sql {
 
 ad_proc -public im_rest_error {
     { -http_status 404 }
+    { -format "xml" }
     { -message "" }
 } {
     Returns a suitable REST error message
@@ -760,14 +762,35 @@ ad_proc -public im_rest_error {
 	default { set status_message "Unknown http_status '$http_status'." }
     }
 
+
+    switch $format {
+	html { 
+	    set page_title [lindex [split $status_message ":"] 0]
+	    doc_return 200 "text/html" "
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle><td>$status_message</td></tr>
+		</table>[im_footer]
+	    " 
+	}
+	xml {  
     doc_return $http_status "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
 <error>
 <http_status>$http_status</http_status>
 <http_status_message>$status_message</http_status_message>
 <request>[ns_quotehtml $url]</request>
 <message>$message</message>
-</error>
-"
+</error>"
+	}
+	json {  
+	    # Calculate the total number of objects
+	    set result "{\"success\": false,\n\"message\": \"$status_message\"\n}"
+	    doc_return 200 "text/html" $result
+	}
+	default {
+	     ad_return_complaint 1 "Invalid format1: '$format'"
+	}
+    }
+
     return
 }
 

@@ -58,7 +58,7 @@ ad_proc -private im_rest_post_object_type_im_project {
     set required_vars {project_name project_nr project_path company_id parent_id project_status_id project_type_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -75,7 +75,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name, project_nr or project_path already exists for the specified parent_id."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name, project_nr or project_path already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -91,7 +91,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 			-project_status_id  	$hash_array(project_status_id) \
 	]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -101,7 +101,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # Write Audit Trail
@@ -170,7 +170,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     set required_vars {project_name parent_id ticket_status_id ticket_type_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -187,13 +187,13 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your ticket_name or ticket_nr already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your ticket_name or ticket_nr already exists."]
     }
 
     # Check for valid parent_id
     set company_id [db_string ticket_company "select company_id from im_projects where project_id = :parent_id" -default ""]
     if {"" == $company_id} {
-	return [im_rest_error -http_status 406 -message "Invalid $rest_otype_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
+	return [im_rest_error -format $format -http_status 406 -message "Invalid $rest_otype_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
     }
 
     if {[catch {
@@ -214,7 +214,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	}
     } err_msg]} {
 	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $rest_otype_pretty: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -225,7 +225,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 
     } err_msg]} {
 	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $rest_otype_pretty during update: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # Write Audit Trail
@@ -275,12 +275,12 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     set required_vars {project_name project_nr parent_id project_status_id project_type_id uom_id material_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
     # More checks
-    if {"" == $parent_id} { return [im_rest_error -http_status 406 -message "Variable 'parent_id' is not a valid project_id."] }
+    if {"" == $parent_id} { return [im_rest_error -format $format -http_status 406 -message "Variable 'parent_id' is not a valid project_id."] }
 
 
     # Check for duplicates
@@ -294,7 +294,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 			 upper(trim(p.project_nr)) = upper(trim(:project_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name or project_nr already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name or project_nr already exists."]
     }
 
     if {[catch {
@@ -322,7 +322,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	}
     } err_msg]} {
 	ns_log Notice "im_rest_post_object_type_$rest_otype: Error creating $rest_otype_pretty: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
 
@@ -333,7 +333,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
     
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -371,7 +371,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
     set required_vars {task_name project_id task_type_id task_status_id source_language_id target_language_id task_uom_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -384,7 +384,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 			target_language_id = :target_language_id
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your task_name and target_language_id already exists for the specified parent_id."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your task_name and target_language_id already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -406,7 +406,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -416,7 +416,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -455,7 +455,7 @@ ad_proc -private im_rest_post_object_type_im_company {
     set required_vars {company_name}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -480,7 +480,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 		lower(company_name) = lower(:company_name))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
 
@@ -520,7 +520,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 		-hash_array [array get hash_array]
 	    
 	} err_msg]} {
-	    return [im_rest_error -http_status 406 -message "Error updating im_office: '$err_msg'."]
+	    return [im_rest_error -format $format -http_status 406 -message "Error updating im_office: '$err_msg'."]
 	}
 
 	set hash_array(main_office_id) $main_office_id
@@ -557,7 +557,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -567,7 +567,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -608,7 +608,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
     set required_vars { absence_name owner_id duration_days absence_type_id absence_status_id start_date end_date description }
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -621,7 +621,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 		start_date = :start_date
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your combination of owner_id=$owner_id, start_date=$start_date and absence_type_id=$absence_type_id already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your combination of owner_id=$owner_id, start_date=$start_date and absence_type_id=$absence_type_id already exists."]
     }
 
     if {[catch {
@@ -663,7 +663,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 		where object_id = :rest_oid
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -673,7 +673,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -717,7 +717,7 @@ ad_proc -private im_rest_post_object_type_user {
     set required_vars {first_names last_name}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -758,11 +758,12 @@ ad_proc -private im_rest_post_object_type_user {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your username or email already exist."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your username or email already exist."]
     }
 
     if {[catch {
-	ns_log Notice "im_rest_post_object_type_user: before auth::create_user"
+	ns_log Notice "im_rest_post_object_type_user: before auth::create_user -username $username -email $email -first_names $first_names -last_name $last_name -screen_name $screen_name -password $password -url $url"
+
 	array set creation_info [auth::create_user \
 				     -username $username \
 				     -email $email \
@@ -774,7 +775,7 @@ ad_proc -private im_rest_post_object_type_user {
 				    ]
 	ns_log Notice "im_rest_post_object_type_user: after auth::create_user"
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
-	    return [im_rest_error -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
+	    return [im_rest_error -format $format -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
 	set new_user_id $creation_info(user_id)
 	
@@ -846,7 +847,7 @@ ad_proc -private im_rest_post_object_type_user {
 	}
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -854,12 +855,11 @@ ad_proc -private im_rest_post_object_type_user {
 	    -rest_otype $rest_otype \
 	    -rest_oid $new_user_id \
 	    -hash_array [array get hash_array]
-
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $new_user_id -action create
 
     return $new_user_id
 }
@@ -908,7 +908,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
     set required_vars { invoice_nr customer_id provider_id cost_status_id cost_type_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -919,7 +919,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		where	invoice_nr = :invoice_nr
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your specified invoice_nr='$invoice_nr' already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your specified invoice_nr='$invoice_nr' already exists."]
     }
 
     if {[catch {
@@ -950,7 +950,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -960,7 +960,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -1042,7 +1042,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     set required_vars { item_name invoice_id sort_order item_uom_id item_units price_per_unit currency }
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1055,7 +1055,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 			sort_order = :sort_order
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
     }
 
     if {[catch {
@@ -1076,7 +1076,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -1086,7 +1086,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # re-calculate the amount of the invoice
@@ -1132,7 +1132,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
     set required_vars { user_id project_id day hours note }
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1145,7 +1145,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 			day = :day
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified user, project and day."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified user, project and day."]
     }
 
     if {[catch {
@@ -1168,7 +1168,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
@@ -1178,7 +1178,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # Not a real object, so no audit!
@@ -1295,7 +1295,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
     set required_vars {object_id_one object_id_two}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1308,7 +1308,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
@@ -1324,13 +1324,91 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
     return $rest_oid
 }
+
+
+# --------------------------------------------------------
+# Business Object Membership
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_biz_object_member {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -rest_otype "im_biz_object_member" }
+    { -rest_otype_pretty "Ticket-Ticket Relationship" }
+} {
+    Create a new object and return the object_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
+
+    # Store XML values into local variables
+    set rel_type $rest_otype
+    set creation_ip [ad_conn peeraddr]
+    set sort_order ""
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
+    }
+
+    # Check that all required variables are there
+    set required_vars {object_id_one object_id_two}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    if {![info exists percentage]} { set percentage "" }
+    if {![info exists object_role_id]} { set object_role_id [im_biz_object_role_full_member] }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	acs_rels
+	where	rel_type = :rest_otype and
+		object_id_one = :object_id_one and
+		object_id_two = :object_id_two
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_im_biz_object_member "
+		select im_biz_object_member__new (
+			null,			-- rel_id
+			:rest_otype,		-- rel_type
+			:object_id_one,
+			:object_id_two,
+			:object_role_id,	-- full member, project manager, key account manger, ...
+			:percentage,		-- percentage of assignment
+			:user_id,		-- Creation user
+			'[ns_conn peeraddr]'	-- Connection IP address for audit
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+    }
+   
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+
+    return $rest_oid
+}
+
 
 
 # --------------------------------------------------------
@@ -1370,7 +1448,7 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
     set required_vars {object_id_one object_id_two}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1378,19 +1456,19 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
     set dup_sql "
 	select	count(*)
 	from	acs_rels
-	where	rel_type = :object_type and
+	where	rel_type = :rest_otype and
 		object_id_one = :object_id_one and
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
 	set rest_oid [db_string new_im_ticket_ticket_rel "
 		select im_ticket_ticket_rel__new (
 			null,			-- task_id
-			:object_type,		-- object_type
+			:rest_otype,		-- object_type
 			:object_id_one,
 			:object_id_two,
 			null,			-- context_id
@@ -1399,7 +1477,7 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -1445,7 +1523,7 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
     set required_vars {object_id_one object_id_two}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1453,19 +1531,19 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
     set dup_sql "
 	select	count(*)
 	from	acs_rels
-	where	rel_type = :object_type and
+	where	rel_type = :rest_otype and
 		object_id_one = :object_id_one and
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
 	set rest_oid [db_string new_im_key_account_rel "
 		select im_key_account_rel__new (
 			null,			-- task_id
-			:object_type,		-- object_type
+			:rest_otype,		-- object_type
 			:object_id_one,
 			:object_id_two,
 			null,			-- context_id
@@ -1474,7 +1552,7 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
@@ -1519,7 +1597,7 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
     set required_vars {object_id_one object_id_two}
     foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
@@ -1527,19 +1605,19 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
     set dup_sql "
 	select	count(*)
 	from	acs_rels
-	where	rel_type = :object_type and
+	where	rel_type = :rest_otype and
 		object_id_one = :object_id_one and
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
 	set rest_oid [db_string new_im_company_employee_rel "
 		select im_company_employee_rel__new (
 			null,			-- task_id
-			:object_type,		-- object_type
+			:rest_otype,		-- object_type
 			:object_id_one,
 			:object_id_two,
 			null,			-- context_id
@@ -1548,7 +1626,7 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create

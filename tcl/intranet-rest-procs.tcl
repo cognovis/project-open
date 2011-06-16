@@ -56,6 +56,7 @@ ad_proc -private im_rest_call_delete {} {
 
 ad_proc -private im_rest_call_get {
     {-http_method GET }
+    {-format "xml" }
 } {
     Handler for GET rest calls
 } {
@@ -87,12 +88,14 @@ ad_proc -private im_rest_call_get {
 	}
     }
 
+    if {[info exists query_hash(format)]} { set format $query_hash(format) }
+
     # Determine the authenticated user_id. 0 means not authenticated.
-    array set auth_hash [im_rest_authenticate -query_hash_pairs [array get query_hash]]
-    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
+    array set auth_hash [im_rest_authenticate -format $format -query_hash_pairs [array get query_hash]]
+    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
     set auth_user_id $auth_hash(user_id)
     set auth_method $auth_hash(method)
-    if {0 == $auth_user_id} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
+    if {0 == $auth_user_id} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
 
     # Default format are:
     # - "html" for cookie authentication
@@ -102,12 +105,12 @@ ad_proc -private im_rest_call_get {
 	basic { set format "xml" }
 	cookie { set format "html" }
 	token { set format "xml" }
-	default { return [im_rest_error -http_status 401 -message "Invalid authentication method '$auth_method'."] }
+	default { return [im_rest_error -format $format -http_status 401 -message "Invalid authentication method '$auth_method'."] }
     }
     # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
     set valid_formats {xml html json}
-    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
 
     # Call the main request processing routine
     if {[catch {
@@ -123,7 +126,7 @@ ad_proc -private im_rest_call_get {
     } err_msg]} {
 
 	ns_log Notice "im_rest_call_get: im_rest_call returned an error: $err_msg"
-	return [im_rest_error -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
+	return [im_rest_error -format $format -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
 
     }
     
@@ -168,7 +171,7 @@ ad_proc -private im_rest_call {
 	from	acs_object_types union
 	select	'im_category'
     "]]
-    if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
+    if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
 
     # -------------------------------------------------------
     switch $method  {
@@ -312,7 +315,7 @@ ad_proc -private im_rest_call {
 	    }
 	}
 	default {
-	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
+	    return [im_rest_error -format $format -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
 	}
     }
 }
@@ -394,7 +397,7 @@ ad_proc -private im_rest_get_object {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -469,7 +472,7 @@ ad_proc -private im_rest_get_im_category {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Category: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Category: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -554,7 +557,7 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Dynfield Attribute: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Dynfield Attribute: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -631,7 +634,7 @@ ad_proc -private im_rest_get_im_invoice_item {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Invoice Item: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Invoice Item: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -709,7 +712,7 @@ ad_proc -private im_rest_get_im_hour {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Timesheet Hour: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Timesheet Hour: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -852,7 +855,7 @@ ad_proc -private im_rest_get_object_type {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -988,7 +991,7 @@ ad_proc -private im_rest_get_im_invoice_items {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1093,7 +1096,7 @@ ad_proc -private im_rest_get_im_hours {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1200,7 +1203,7 @@ ad_proc -private im_rest_get_im_categories {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1313,7 +1316,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1444,7 +1447,7 @@ ad_proc -private im_rest_post_object_type {
 
     } else {
 	ns_log Notice "im_rest_post_object_type: Create for '$rest_otype' not implemented yet"
-	im_rest_error -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
+	im_rest_error -format $format -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
     }
     return
 }
