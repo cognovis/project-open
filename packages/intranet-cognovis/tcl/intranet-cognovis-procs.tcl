@@ -403,3 +403,18 @@ ad_proc -public -callback im_helpdesk_ticket_new_redirect -impl intranet-helpdes
 	}]
     }
 } 
+
+# ----------------------------------------------------------------------
+# Ticket Info Component
+# ---------------------------------------------------------------------
+ad_proc -public im_ticket_info_cognovis_component {
+    ticket_id
+    return_url
+} {
+
+    set params [list  [list base_url "/intranet-cognovis/"]  [list ticket_id  $ticket_id] [list return_url $return_url]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/ticket-info"]
+
+    return [string trim $result]
+}
