@@ -1,11 +1,11 @@
-<table valign="top" align="center" width="350px">
+<table valign="top" align="center" width="100%" border=1>
   <tr>
       <td colspan="2" align="center">
          <h3 class="contact-title">@ticket_id@</h3>
       </td>
   </tr>
   <multiple name="ticket_info">
-    <tr> 
+    <tr VALIGN=TOP> 
       <td>@ticket_info.pretty_name;noquote@</td>
       <td>@ticket_info.value;noquote@</td>
     </tr>
@@ -18,7 +18,7 @@
 	  <input type="hidden" name="ticket_id" value="@ticket_id@">
 	  <input type="hidden" name="return_url" value="@return_url@">
 	  <input type="submit" value="#intranet-core.Edit#" name=submit3>
-	  <input type="button" value="#intranet-core.Cancel#" name="btnCancel" onclick="JavaScript:history.go(-1)" /> 
+	  <input type="button" value="#acs-kernel.common_Cancel#" name="btnCancel" onclick="JavaScript:history.go(-1)" /> 
         </form>
       </td>
     </tr>

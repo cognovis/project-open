@@ -3383,3 +3383,6 @@ SELECT im_component_plugin__new (
        null,
        1,
        'im_ticket_info_cognovis_component $ticket_id $return_url');
+
+update im_component_plugins set page_url = '/intranet-cognovis/tickets/view' where page_url = '/intranet-helpdesk/new';
+update im_component_plugins set enabled_p = 'f' where plugin_name = 'Filestorage' and page_url = '/intranet-cognovis/tickets/view';

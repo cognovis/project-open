@@ -80,9 +80,12 @@
   <msg key="Status">Status</msg>
   <msg key="Telephony_Request">Telephony Request</msg>
   <msg key="Ticket_Details">Ticket Details</msg>
+  <msg key="Ticket_Info">Ticket Info</msg>
   <msg key="Ticket_Members">Ticket Members</msg>
   <msg key="Ticket_Name">Ticket Name</msg>
   <msg key="Ticket_Nr">Ticket Num</msg>
+  <msg key="Ticket_Status">Ticket Status</msg>
+  <msg key="Ticket_Type">Ticket Type</msg>
   <msg key="Ticket_type_Bug_Request">Bug Request</msg>
   <msg key="Ticket_type_Feature_Request">Feature Request</msg>
   <msg key="Ticket_type_Permission_Request">Permission Request</msg>
