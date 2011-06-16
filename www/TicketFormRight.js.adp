@@ -146,13 +146,29 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			inputValue:	't',
-			width:		150
+			width:		150,
+			handler: function(checkbox, checked) {
+				// Set status to "closed" if checked by the user
+				var panel = this.ownerCt.ownerCt;
+				if (checked && panel.rendered) {
+					var statusField = panel.getForm().findField('ticket_status_id');
+					statusField.setValue('30001');
+				}
+			}
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Requires_additional_info#',
 			inputValue:	't',
-			width:		150
+			width:		150,
+			handler: function(checkbox, checked) {
+				// Set status to "frozen" if checked by the user
+				var panel = this.ownerCt.ownerCt;
+				if (checked && panel.rendered) {
+					var statusField = panel.getForm().findField('ticket_status_id');
+					statusField.setValue('30028');
+				}
+			}
 		}, {
 			name:	   'ticket_outgoing_channel_id',
 			fieldLabel:     '#intranet-sencha-ticket-tracker.Outgoing_Channel#',
