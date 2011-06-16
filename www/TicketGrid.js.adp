@@ -96,9 +96,9 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
-			dataIndex: 'ticket_origin',
+			dataIndex: 'ticket_incoming_channel_id',
 			renderer: function(value, o, record) {
-				return ticketOriginStore.category_from_id(record.get('ticket_origin'));
+				return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
 			}
 		}, {
 			header: '#intranet-helpdesk.Status#',

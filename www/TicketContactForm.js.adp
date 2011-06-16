@@ -70,6 +70,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 name:           'email',
                 xtype:          'textfield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Email#'
+        }, {
+                name:           'telephone',
+                xtype:          'textfield',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Telephone#'
 	}, {
                 name:           'ticket_language',
                 xtype:          'radiofield',

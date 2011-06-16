@@ -133,7 +133,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		name: 'ticket_channel_id',
 		xtype: 'combobox',
                 valueField: 'category_id',
-                displayField: 'category',
+                displayField: 'category_translated',
 		forceSelection: true,
 		queryMode: 'remote',
 		store: ticketChannelStore,

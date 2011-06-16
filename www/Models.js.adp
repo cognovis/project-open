@@ -120,7 +120,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_signoff_date',		//
 
 	'ticket_requires_addition_info_p',
-	'ticket_incoming_channel_id',	// actually ticket_origin
+	'ticket_incoming_channel_id',	//
 	'ticket_outgoing_channel_id',
 
         'ticket_area_id',		// Area y programa
@@ -129,13 +129,8 @@ Ext.define('TicketBrowser.Ticket', {
         'ticket_request',               // expediente
         'ticket_resolution',            // expediente
 
-        'ticket_origin',                // canal
-        'ticket_sex',                   // genero hombre/mujer
-        'ticket_language',              // idioma
-        'ticket_province',              // Provincia
-
         'ticket_answer',                // Respuesta
-        'ticket_observations',           // Observaciones
+        'ticket_observations',		// Observaciones
 
 	'replycount'			// Number of ticket replies - not supported at the moment
     ],

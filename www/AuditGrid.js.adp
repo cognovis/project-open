@@ -164,6 +164,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     }, {
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	dataIndex: 'audit_ip'
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Audit_Action#',
+	dataIndex: 'audit_action'
     }],
 
 /*
