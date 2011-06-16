@@ -153,8 +153,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				if (checked && panel.rendered) {
 					var statusField = panel.getForm().findField('ticket_status_id');
 					statusField.setValue('30001');
+
+					// Set the ticket_done_date
+			                var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+					panel.getForm().findField('ticket_done_date').setValue(today);
 				}
-			}
+                	}
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
