@@ -274,7 +274,27 @@ ad_proc -public template::util::date::get_property { what date } {
       }
       return 0
     }
-    sql_date -
+      sql_date {
+          if {1 == [llength $date]} { set date [split $date "-"] }
+          
+          # LARS: Empty date results in NULL value
+          if { [empty_string_p $date] } { return "NULL" }
+          set value ""
+          set format ""
+          set space ""
+          set pad "0000"
+          foreach { index sql_form } { 0 YYYY 1 MM 2 DD 3 HH24 4 MI 5 SS } {
+              set piece [lindex $date $index]
+              if { ![string equal $piece {}] } {
+                  append value "$space[string range $pad [string length $piece] end]$piece"
+                  append format $space
+                  append format $sql_form
+                  set space " "
+              }
+              set pad "00"
+          }
+          return "to_date('$value', '$format')"
+      }
     sql_timestamp {
       # LARS: Empty date results in NULL value
       if { $date eq "" } {
