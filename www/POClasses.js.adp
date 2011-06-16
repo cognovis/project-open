@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: POClasses.js.adp,v 1.1 2011/06/16 11:38:41 po34demo Exp $
+ * @cvs-id $Id: POClasses.js.adp,v 1.2 2011/06/16 13:55:26 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -91,4 +91,30 @@ Ext.define('PO.data.CompanyStore', {
 	}
 
 });
+
+
+
+Ext.define('PO.form.field.DateTimeReadOnly', {
+	extend: 'Ext.form.field.Text',
+	alias:	'widget.po_datetimefield_read_only',
+
+	setValue: function(mixed) {
+		if (typeof mixed == 'undefined') { 
+			// Just pass on directly to parent
+			this.callParent(arguments);
+
+		} else {
+			var mixed = mixed.substr(0,16);
+			this.callParent([mixed]);
+		}
+	}
+});
+
+
+
+// Define the date of today
+// This date is only calculated one during loading
+// ToDo: Update the date in regular intervals
+var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
+var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
 

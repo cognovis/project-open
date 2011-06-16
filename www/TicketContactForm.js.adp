@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.3 2011/06/16 11:38:41 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.4 2011/06/16 13:55:26 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -169,11 +169,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadRecord(contact_record);
+
+		// Show (might have been hidden when creating a new ticket)
+		this.show();
 	},
 
 	loadUser: function(rec){
 		// load the information from the record into the form
 		this.loadRecord(rec);
+		this.show();
 	},
 
         // Somebody pressed the "New Ticket" button:
@@ -181,6 +185,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
         newTicket: function() {
 		var form = this.getForm();
                 form.reset();
+		this.hide();
         }
 
 });

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.14 2011/06/15 08:11:12 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.15 2011/06/16 13:55:26 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -183,6 +183,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	newTicket: function() {
                 var form = this.getForm();
                 form.reset();
+
+		// Don't show this form for new tickets
+		this.hide();
 	},
 
 	loadTicket: function(rec){
@@ -196,6 +199,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// load the customer's information into the form.
 		this.loadRecord(cust);
+
+		// Show the form
+		this.show();
 	}
 
 });
