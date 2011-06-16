@@ -25,7 +25,7 @@
 
 Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:	'Ext.form.Panel',
-        alias:	'widget.ticketCustomer',
+        alias:	'widget.ticketCustomerPanel',
         id:	'ticketCustomerPanel',
 	title:	'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:	true,
@@ -84,7 +84,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			window.open(redirect, '_blank');
 		}
 	}, {
-
 		itemId:		'addButton',
         	text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
 		width: 		120,

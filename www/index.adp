@@ -25,7 +25,7 @@
 	<script type="text/javascript" src="TicketFormRight.js"></script> 
 	<script type="text/javascript" src="TicketFilterForm.js"></script> 
 	<script type="text/javascript" src="TicketContactForm.js"></script> 
-	<script type="text/javascript" src="ObjectMemberGrid.js"></script> 
+	<script type="text/javascript" src="BizObjectMemberGrid.js"></script> 
 	<script type="text/javascript" src="TicketContactPanel.js"></script> 
 	<script type="text/javascript" src="TicketCustomerPanel.js"></script> 
 	<script type="text/javascript" src="TicketCompoundPanel.js"></script> 

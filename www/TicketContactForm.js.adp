@@ -104,15 +104,24 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 hideEmptyLabel: false
         }],
         buttons: [{
-        	text: '#intranet-sencha-ticket-tracker.button_New_Contact#',
+        	text: '#intranet-sencha-ticket-tracker.Add_New_Contact#',
+		itemId:	'addButton',
 		width: 	100,
         	handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
-			var combo = form.findField('user_id');
+
+			// Button logic:
+			this.hide();
+
+			var createButton = this.ownerCt.child('#createButton');
+			createButton.show();
+			var saveButton = this.ownerCt.child('#saveButton');
+			saveButton.hide();
 		}
 	}, {
-        	text: '#intranet-sencha-ticket-tracker.button_Save_Changes#',
+        	text: '#intranet-sencha-ticket-tracker.Save_Changes#',
+		itemId:	'saveButton',
 		width: 	120,
         	handler: function(){
 			// Get the values of this form into the "values" object
@@ -130,39 +139,91 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			// Tell the store to update the server via it's REST proxy
 			userStore.sync();
 
-			// force reload of the drop-down
-			delete combo.lastQuery;
-
+			// Tell all panels to load the data of the newly created object
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+			compoundPanel.loadTicket(ticket_model);	
                 }
 	}, {
-        	text: '#intranet-sencha-ticket-tracker.Create_New_Contact#',
+        	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
+		itemId:	'createButton',
 		width: 	120,
-        	handler: function(){
+		hidden:	true,
+        	handler: function() {
 			var form = this.ownerCt.ownerCt.getForm();
-			var combo = form.findField('user_id');
 			var values = form.getFieldValues();
 			values.user_id = null;
+			values.first_names = values.first_names + Math.random();
+			values.last_name = values.last_name + Math.random();
+			values.email = values.first_names + '.' + values.last_name + '@asdf.com';
 
-			var user = Ext.ModelManager.create(values, 'TicketBrowser.User');
-			user.phantom = true;
-			user.save();
+			// create a new user
+			var user_record = Ext.ModelManager.create(values, 'TicketBrowser.User');
+			user_record.phantom = true;
+			user_record.save({
+				scope: Ext.getCmp('ticketContactForm'),
+				success: function(record, operation) {
+					// This code is called once the reply from the server has arrived.
+					try {
+						var resp = Ext.decode(operation.response.responseText);
+						var user_id = resp.data.object_id;
+					} catch (ex) {
+						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
+						return;
+					}
 
-			// add the form values to the store.
-			userStore.add(user);
-			// the store should create a new object now (does he?)
+					// update the user_model and add to the store
+					var new_user = Ext.ModelManager.getModel('TicketBrowser.User');
+					new_user.load(user_id, {
+						scope: this,
+						success: function(record, operation) {
+							userStore.add(record);
+						},
+						failure: function(record, operation) {
+							alert('Error reloading the newly created users from the server.');
+						}
+					});
 
-			// Tell the store to update the server via it's REST proxy
-			userStore.sync();
+					// Store the new user_id into the ticketForm
+					var ticketForm = Ext.getCmp('ticketForm');
+					var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+					var ticket_id = ticket_id_field.getValue();
+					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+					ticket_model.set('ticket_customer_contact_id', user_id);
+					ticket_model.save();
 
-			// force reload of the drop-down
-			delete combo.lastQuery;
+					//  Get the customer_id from the customer panel
+					var customerForm = Ext.getCmp('ticketCustomerPanel');
+					var customer_id_field = customerForm.getForm().findField('company_id');
+					var customer_id = customer_id_field.getValue();
+					
+					// Create a object_member relationship between the user and the company
+					var memberValues = {
+						object_id_one:	customer_id,
+						object_id_two:	user_id,
+						rel_type:	'im_biz_object_member',
+						object_role_id:	1300,
+						percentage:	''
+					};
+					var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
+		                        member_model.phantom = true;
+					member_model.save({
+						scope: Ext.getCmp('ticketCompoundPanel'),
+		                                success: function(record, operation) {
+							// reload the entire form
+							this.loadTicket(ticket_model);
+						}
+					});
+				}
+			});
                 }
         }],
 
 	loadTicket: function(rec){
 		// Customer contact ID, may be NULL
 		var contact_id;
-		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { contact_id = rec.data.ticket_customer_contact_id; }
+		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { 
+			contact_id = rec.data.ticket_customer_contact_id; 
+		}
 
 		var contact_record = userStore.findRecord('user_id',contact_id);
 	        if (contact_record == null || typeof contact_record == "undefined") { return; }

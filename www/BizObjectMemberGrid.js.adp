@@ -1,5 +1,5 @@
 /**
- * intranet-sencha-ticket-tracker/www/ObjectMemberGrid.js
+ * intranet-sencha-ticket-tracker/www/BizObjectMemberGrid.js
  * Shows the members of a business object (company, project, ticket or office).
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
@@ -24,9 +24,9 @@
 
 
 // Local store definition. We have to redefine the store every time we show the grid
-var objectMemberStore = Ext.create('Ext.data.Store', {
-    model: 'TicketBrowser.ObjectMember',
-    storeId: 'objectMemberStore',
+var bizObjectMemberStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'bizObjectMemberStore',
     autoLoad: false,
     remoteSort: true,
     remoteFilter: true,
@@ -44,11 +44,11 @@ var objectMemberStore = Ext.create('Ext.data.Store', {
     }
 });
 
-var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
+var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
     extend:	'Ext.grid.Panel',
-    alias:	'widget.objectMemberGrid',
-    id:		'objectMemberGrid',
-    store: 	objectMemberStore,
+    alias:	'widget.bizObjectMemberGrid',
+    id:		'bizObjectMemberGrid',
+    store: 	bizObjectMemberStore,
     minWidth:	300,
     minHeight:	200,
     frame:	true,
@@ -71,7 +71,7 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
-		store: objectMemberStore,
+		store: bizObjectMemberStore,
 		displayInfo: true,
 		displayMsg: '#intranet-sencha-ticket-tracker.Displaying_versions_0_1_of_2_#',
 		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
@@ -97,8 +97,8 @@ var objectMemberGrid = Ext.define('TicketBrowser.ObjectMemberGrid', {
 
 	// Save the property in the proxy, which will pass it directly to the REST server
 	var ticket_id = rec.data.ticket_id;
-	objectMemberStore.proxy.extraParams['object_id_one'] = ticket_id;
-	objectMemberStore.load();
+	bizObjectMemberStore.proxy.extraParams['object_id_one'] = ticket_id;
+	bizObjectMemberStore.load();
     },
 
     // Somebody pressed the "New Ticket" button:
