@@ -118,6 +118,8 @@ ad_proc -public im_audit_object_type_sql {
     colon-variables, so the variable "object_id" must be defined in 
     the context where this statement is to be executed.
 } {
+    ns_log Notice "im_audit_object_type_sql: object_type=$object_type"
+
     # ---------------------------------------------------------------
     # Construct a SQL that pulls out all information about one object
     set tables_sql "
@@ -148,6 +150,8 @@ UNION
 	from	[join $froms ", "]
 	where	[join $wheres " and "]
     "
+
+    ns_log Notice "im_audit_object_type_sql: About to return sql=$sql"
     return $sql
 }
 
@@ -160,6 +164,8 @@ ad_proc -public im_audit_object_value {
     Concatenates the value of all object fields (according to DynFields)
     to form a single string describing the object's values.
 } {
+    ns_log Notice "im_audit_object_value: object_id=$object_id, object_type=$object_type"
+
     if {"" == $object_id} { return "" }
     im_security_alert_check_integer -location "im_audit_object_value" -value $object_id
 
@@ -171,6 +177,7 @@ ad_proc -public im_audit_object_value {
     set sql [util_memoize [list im_audit_object_type_sql -object_type $object_type]]
 
     # Execute the sql. As a result we get "col_names" with list of columns and "lol" with the result list of lists
+    set col_names ""
     db_with_handle db {
 	set selection [db_exec select $db query $sql 1]
 	set lol [list]
@@ -184,6 +191,11 @@ ad_proc -public im_audit_object_value {
 	}
     }
     db_release_unused_handles
+
+    if {![info exists col_names]} {
+	ns_log Error "im_audit_object_value: For some reason we didn't find any record matching sql=$sql"
+	return ""
+    }
 
     # lol should have only a single line!
     set col_values [lindex $lol 0]
