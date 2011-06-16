@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.16 2011/06/16 08:00:46 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.17 2011/06/16 08:09:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -153,8 +153,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				if (checked && panel.rendered) {
 					var statusField = panel.getForm().findField('ticket_status_id');
 					statusField.setValue('30001');
+
+					// Set the ticket_done_date
+			                var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\')"] %>';
+					panel.getForm().findField('ticket_done_date').setValue(today);
 				}
-			}
+                	}
 	    }, {
 			name:		'ticket_requires_addition_info_p',
 			xtype:		'checkbox',
