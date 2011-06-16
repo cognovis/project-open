@@ -210,7 +210,7 @@ set rec_stati [im_memoize_list select_project_rec_stati \
         "select category_id, category
          from im_categories
 	 where category_type = 'Intranet Recruiting Status'
-         order by lower(category_id)"]
+         order by sort_order, lower(category)"]
 set rec_stati [linsert $rec_stati 0 0 All]
 
 # rec_test_results will be a list of pairs of (status_id, status)
@@ -218,7 +218,7 @@ set rec_test_results [im_memoize_list select_project_rec_test_results \
         "select category_id, category
          from im_categories
 	 where category_type = 'Intranet Recruiting Test Result'
-         order by lower(category_id)"]
+         order by sort_order, lower(category)"]
 set rec_test_results [linsert $rec_test_results 0 0 All]
 
 
