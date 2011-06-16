@@ -106,7 +106,7 @@ var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
 var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
-	autoLoad:	true,
+	autoLoad:	false,
 	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
@@ -119,6 +119,13 @@ var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+ticketTypeStore.load(
+      function(record, operation) {
+      // This code is called once the reply from the server has arrived.
+      ticketTypeStore.sort('tree_sortkey');
+    }
+);
+
 
 
 var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {

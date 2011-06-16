@@ -57,6 +57,7 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
+	{type: 'string', name: 'category_type'},
         {type: 'string', name: 'category_translated'},
         {type: 'string', name: 'indent_class',
 		// Determine the indentation level for each element in the tree

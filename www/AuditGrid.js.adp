@@ -179,6 +179,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Load the files for the new ticket
     loadTicket: function(rec){
 
+	// The panel may have been hidden during newTicket()
+	this.show();
+
 	// Save the property in the proxy, which will pass it directly to the REST server
 	var ticket_id = rec.data.ticket_id;
 	auditStore.proxy.extraParams['object_id'] = ticket_id;

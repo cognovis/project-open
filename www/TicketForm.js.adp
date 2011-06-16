@@ -46,6 +46,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Variables for the new.tcl page to recognize an ad_form
 	{ name: 'ticket_id',		xtype: 'hiddenfield' },
+	{ name: 'ticket_creation_date', xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
 	{ name: 'ticket_name',		xtype: 'hiddenfield' },			// Set by AJAX call with new name
@@ -126,9 +127,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		if ('' == ticket_id) {
 
-			// Set the creation date
-			value.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
-
 			// create a new ticket
 			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
 			ticket_record.phantom = true;
@@ -149,6 +147,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					var ticketForm = Ext.getCmp('ticketForm').getForm();
 					var form_values = ticketForm.getFieldValues();
 					form_values.ticket_id = ticket_id;
+					form_values.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
 
 					// Tell all panels to load the data of the newly created object
 					var ticket_model= Ext.ModelManager.create(form_values, 'TicketBrowser.Ticket');
