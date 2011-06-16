@@ -37,23 +37,21 @@ ad_proc -private im_rest_post_object_type_im_project {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_project" }
-    { -object_type_pretty "Project" }
+    { -rest_otype "im_project" }
+    { -rest_otype_pretty "Project" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
-    # Store the XML values into local variables
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash_array($nodeName) $nodeText
-	set $nodeName $nodeText
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -77,7 +75,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your project_name, project_nr or project_path already exists for the specified parent_id."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name, project_nr or project_path already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -93,17 +91,17 @@ ad_proc -private im_rest_post_object_type_im_project {
 			-project_status_id  	$hash_array(project_status_id) \
 	]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # Write Audit Trail
@@ -121,44 +119,28 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_ticket" }
-    { -object_type_pretty "Ticket" }
+    { -rest_otype "im_ticket" }
+    { -rest_otype_pretty "Ticket" }
 } {
     Create a new object and return its object_id
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
-    # Parse the HTTP content
-    switch $format {
-	json {
-	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse json content=$content"
-	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
-	    array set parsed_json [util::json::parse $content]
-	    set json_list $parsed_json(_object_)
-	    array set hash_array $json_list
-	}
-	default {
-	    # store the key-value pairs into a hash array
-	    ns_log Notice "im_rest_post_object_type_$object_type: going to parse xml content=$content"
-	    if {[catch {set doc [dom parse $content]} err_msg]} {
-		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-	    }
-	    
-	    set root_node [$doc documentElement]
-	    array unset hash_array
-	    foreach child [$root_node childNodes] {
-		set nodeName [$child nodeName]
-		set nodeText [$child text]
-		set hash_array($nodeName) $nodeText
-	    }
-	}
-    }
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
+    }
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -205,13 +187,13 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your ticket_name or ticket_nr already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your ticket_name or ticket_nr already exists."]
     }
 
     # Check for valid parent_id
     set company_id [db_string ticket_company "select company_id from im_projects where project_id = :parent_id" -default ""]
     if {"" == $company_id} {
-	return [im_rest_error -http_status 406 -message "Invalid $object_type_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
+	return [im_rest_error -http_status 406 -message "Invalid $rest_otype_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
     }
 
     if {[catch {
@@ -231,19 +213,19 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 
 	}
     } err_msg]} {
-	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $rest_otype_pretty: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty during update: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $rest_otype_pretty during update: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # Write Audit Trail
@@ -262,12 +244,12 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_timesheet_task" }
-    { -object_type_pretty "Timesheet Task" }
+    { -rest_otype "im_timesheet_task" }
+    { -rest_otype_pretty "Timesheet Task" }
 } {
     Create a new object and return its object_id
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store the XML values into local variables
     set planned_units ""
@@ -278,15 +260,15 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     set sort_order ""
     set gantt_project_id ""
     set note ""
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash_array($nodeName) $nodeText
-	set $nodeName $nodeText
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -312,7 +294,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 			 upper(trim(p.project_nr)) = upper(trim(:project_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your project_name or project_nr already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your project_name or project_nr already exists."]
     }
 
     if {[catch {
@@ -339,21 +321,23 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	    "]
 	}
     } err_msg]} {
-	ns_log Notice "im_rest_post_object_type_$object_type: Error creating $object_type_pretty: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Error creating $rest_otype_pretty: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
     
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+
     return $rest_oid
 }
 
@@ -366,23 +350,21 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_trans_task" }
-    { -object_type_pretty "Translation Task" }
+    { -rest_otype "im_trans_task" }
+    { -rest_otype_pretty "Translation Task" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
-    # Store the XML values into local variables
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-    set root_node [$doc documentElement]
-    foreach child [$root_node childNodes] {
-	set nodeName [$child nodeName]
-	set nodeText [$child text]
-	set hash_array($nodeName) $nodeText
-	set $nodeName $nodeText
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
     }
 
     # Check that all required variables are there
@@ -402,7 +384,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 			target_language_id = :target_language_id
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your task_name and target_language_id already exists for the specified parent_id."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your task_name and target_language_id already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -424,20 +406,20 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -object_type "im_trans_task" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -451,20 +433,20 @@ ad_proc -private im_rest_post_object_type_im_company {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_company" }
-    { -object_type_pretty "Company" }
+    { -rest_otype "im_company" }
+    { -rest_otype_pretty "Company" }
 } {
     Create a new Company and return the company_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -486,7 +468,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 	set hash_array(company_path) $company_path
     }
 
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
 
     # --------------------------------------------
@@ -498,17 +480,17 @@ ad_proc -private im_rest_post_object_type_im_company {
 		lower(company_name) = lower(:company_name))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
 
     # Special case: The direction of a company is stored in it's "Office".
     # So let's create a new office if the variable "main_office_id" isn't
     # defined.
-    ns_log Notice "im_rest_post_object_type_$object_type: Before new main_office_id for company"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: Before new main_office_id for company"
     if {![info exists main_office_id] || "" == $main_office_id || 0 == $main_office_id} {
 
-	ns_log Notice "im_rest_post_object_type_$object_type: Create new main_office_id for company"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Create new main_office_id for company"
 
 	# Make sure all important fields are somehow defined
 	if {![info exists office_name] || "" == $office_name} { set office_name "[im_opt_val company_name] Main Office" }
@@ -575,20 +557,20 @@ ad_proc -private im_rest_post_object_type_im_company {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -object_type "im_company" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -602,23 +584,23 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_user_absence" }
-    { -object_type_pretty "User Absence" }
+    { -rest_otype "im_user_absence" }
+    { -rest_otype_pretty "User Absence" }
 } {
     Create a new User Absence and return the company_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     set contact_info ""
     set group_id ""
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -639,7 +621,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 		start_date = :start_date
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your combination of owner_id=$owner_id, start_date=$start_date and absence_type_id=$absence_type_id already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your combination of owner_id=$owner_id, start_date=$start_date and absence_type_id=$absence_type_id already exists."]
     }
 
     if {[catch {
@@ -681,20 +663,20 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 		where object_id = :rest_oid
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -object_type "im_user_absence" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -707,12 +689,12 @@ ad_proc -private im_rest_post_object_type_user {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "user" }
-    { -object_type_pretty "User" }
+    { -rest_otype "user" }
+    { -rest_otype_pretty "User" }
 } {
     Create a new User object return the user_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: Started"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: Started"
 
     # Make sure we don't get confused with the generic user_id
     # We will call the ID of the new user new_user_id
@@ -721,13 +703,13 @@ ad_proc -private im_rest_post_object_type_user {
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -776,7 +758,7 @@ ad_proc -private im_rest_post_object_type_user {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your username or email already exist."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your username or email already exist."]
     }
 
     if {[catch {
@@ -864,20 +846,20 @@ ad_proc -private im_rest_post_object_type_user {
 	}
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $new_user_id \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -object_type "user" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
     return $new_user_id
 }
@@ -891,12 +873,12 @@ ad_proc -private im_rest_post_object_type_im_invoice {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_invoice" }
-    { -object_type_pretty "Financial Document" }
+    { -rest_otype "im_invoice" }
+    { -rest_otype_pretty "Financial Document" }
 } {
     Create a new Financial Document and return the task_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store the XML key-value pairs into local variables
     set note ""
@@ -912,13 +894,13 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -937,7 +919,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		where	invoice_nr = :invoice_nr
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your specified invoice_nr='$invoice_nr' already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your specified invoice_nr='$invoice_nr' already exists."]
     }
 
     if {[catch {
@@ -968,20 +950,20 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -object_type "im_invoice" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
     return $rest_oid
 }
@@ -991,19 +973,19 @@ ad_proc -private im_rest_post_object_type_im_trans_invoice {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_trans_invoice" }
-    { -object_type_pretty "Translation Financial Document" }
+    { -rest_otype "im_trans_invoice" }
+    { -rest_otype_pretty "Translation Financial Document" }
 } {
     Create a new object and return the object_id
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
     set rest_oid [ \
 		       im_rest_post_object_type_im_trans_invoice \
 			-format $format \
     			-user_id $user_id \
 			-content $content \
-			-object_type $object_type \
-			-object_type_pretty $object_type_pretty \
+			-rest_otype $rest_otype \
+			-rest_otype_pretty $rest_otype_pretty \
     ]
     db_dml insert_trans_invoice "
 	insert into im_trans_invoices (invoice_id) values (:rest_oid)
@@ -1014,7 +996,7 @@ ad_proc -private im_rest_post_object_type_im_trans_invoice {
 	where	object_id = :rest_oid
     "
 
-    im_audit -object_type "im_trans_invoice" -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
     return $rest_oid
 }
@@ -1029,12 +1011,12 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_invoice_item" }
-    { -object_type_pretty "Financial Document Item" }
+    { -rest_otype "im_invoice_item" }
+    { -rest_otype_pretty "Financial Document Item" }
 } {
     Create a new Financial Document line and return the item_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     set description ""
@@ -1046,13 +1028,13 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1073,7 +1055,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 			sort_order = :sort_order
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
     }
 
     if {[catch {
@@ -1094,22 +1076,25 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
     # re-calculate the amount of the invoice
     im_invoice_update_rounded_amount -invoice_id $invoice_id 
-    
+
+    # No audit here, invoice_item is not a real object
+    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+
     return $rest_oid
 }
 
@@ -1124,22 +1109,22 @@ ad_proc -private im_rest_post_object_type_im_hour {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_hour" }
-    { -object_type_pretty "Timesheet Hour" }
+    { -rest_otype "im_hour" }
+    { -rest_otype_pretty "Timesheet Hour" }
 } {
     Create a new Timesheet Hour line and return the item_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1160,7 +1145,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 			day = :day
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your item already exists with the specified user, project and day."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your item already exists with the specified user, project and day."]
     }
 
     if {[catch {
@@ -1183,18 +1168,21 @@ ad_proc -private im_rest_post_object_type_im_hour {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype $object_type \
+	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash_array]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
+
+    # Not a real object, so no audit!
+    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
     return $rest_oid
 }
@@ -1221,13 +1209,13 @@ ad_proc -private im_rest_post_object_im_hour {
     ns_log Notice "im_rest_post_object_im_hour: rest_oid=$rest_oid"
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1278,12 +1266,12 @@ ad_proc -private im_rest_post_object_type_membership_rel {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "membership_rel" }
-    { -object_type_pretty "Membership Relationship" }
+    { -rest_otype "membership_rel" }
+    { -rest_otype_pretty "Membership Relationship" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store XML values into local variables
     set rel_type "membership_rel"
@@ -1293,13 +1281,13 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1320,7 +1308,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
@@ -1336,9 +1324,11 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+
     return $rest_oid
 }
 
@@ -1351,27 +1341,27 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_ticket_ticket_rel" }
-    { -object_type_pretty "Ticket-Ticket Relationship" }
+    { -rest_otype "im_ticket_ticket_rel" }
+    { -rest_otype_pretty "Ticket-Ticket Relationship" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store XML values into local variables
-    set rel_type $object_type
+    set rel_type $rest_otype
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1393,7 +1383,7 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
@@ -1409,9 +1399,11 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+
     return $rest_oid
 }
 
@@ -1424,27 +1416,27 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_key_account_rel" }
-    { -object_type_pretty "Key Account Relationship" }
+    { -rest_otype "im_key_account_rel" }
+    { -rest_otype_pretty "Key Account Relationship" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store XML values into local variables
-    set rel_type $object_type
+    set rel_type $rest_otype
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1466,7 +1458,7 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
@@ -1482,8 +1474,10 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
+
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
    
     return $rest_oid
 }
@@ -1497,27 +1491,27 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
-    { -object_type "im_company_employee_rel" }
-    { -object_type_pretty "Company Employee Relationship" }
+    { -rest_otype "im_company_employee_rel" }
+    { -rest_otype_pretty "Company Employee Relationship" }
 } {
     Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$rest_otype: user_id=$user_id"
 
     # Store XML values into local variables
-    set rel_type $object_type
+    set rel_type $rest_otype
     set creation_ip [ad_conn peeraddr]
     set sort_order ""
 
 
     # Extract a key-value list of variables from XML or JSON POST request
-    array set hash_array [im_rest_parse_xml_json_content -object_type $object_type -format $format -content $content]
-    ns_log Notice "im_rest_post_object_type_$object_type: hash_array=[array get hash_array]"
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
     # write hash values as local variables
     foreach key [array names hash_array] {
 	set value $hash_array($key)
-	ns_log Notice "im_rest_post_object_type_$object_type: key=$key, value=$value"
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
 	set $key $value
     }
 
@@ -1538,7 +1532,7 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
 		object_id_two = :object_id_two
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
@@ -1554,8 +1548,10 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
+
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
    
     return $rest_oid
 }

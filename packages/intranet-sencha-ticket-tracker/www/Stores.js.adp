@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.20 2011/06/14 18:30:17 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.23 2011/06/15 16:53:28 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,6 +51,19 @@ Ext.ux.UserStore = Ext.extend(Ext.data.Store, {
 });
 
 /*
+ * Create a specific store for groups/profiles.
+ * The subclass contains a special lookup function.
+ */
+Ext.ux.ProfileStore = Ext.extend(Ext.data.Store, {
+	name_from_id: function(group_id) {
+		var	result = 'Profile #' + group_id;
+		var	rec = this.findRecord('group_id',group_id);
+		if (rec == null || typeof rec == "undefined") { return result; }
+		return rec.get('group_name');
+	}
+});
+
+/*
  * Create a specific store for users of all type.
  * The subclass contains a special lookup function.
  */
@@ -76,8 +89,7 @@ var ticketAreaStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	model:		'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	// fields: ['category_id', 'category', 'category_translated'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -95,8 +107,7 @@ var ticketTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
 	autoLoad:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -114,8 +125,7 @@ var ticketStatusStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketStatusStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -132,8 +142,7 @@ var companyTypeStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'companyTypeStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model: 'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: ['category_id', 'category', 'category_translated'],
+	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -151,8 +160,7 @@ var ticketPriorityStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketPriorityStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model:	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -171,8 +179,7 @@ var ticketOriginStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'ticketOriginStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	// model:	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category', 'category_translated'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -191,8 +198,7 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	pageSize:	500,
-	// model: 	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields: 	['category_id', 'category', 'category_translated'],
+	model: 		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -207,13 +213,12 @@ var requestAreaStore = Ext.create('Ext.data.Store', {
 
 
 
-var requestAreaProgramStore = Ext.create('Ext.data.Store', {
+var requestAreaProgramStore = Ext.create('Ext.ux.CategoryStore', {
 	storeId:	'requestAreaProgramStore',
 	autoLoad:	true,
 	remoteFilter:	true,
 	pageSize:	500,
-	// model:	'TicketBrowser.Category',	// Causes the Drop-Down not to load
-	fields:		['category_id', 'category', 'category_translated'],
+	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -227,17 +232,24 @@ var requestAreaProgramStore = Ext.create('Ext.data.Store', {
 });
 
 
-var ticketPriorityData = [
-{"id": "30201", "object_name": "1", "category_id": "30201", "tree_sortkey": "00030201", "category": "1", "category_translated": "1", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30202", "object_name": "2", "category_id": "30202", "tree_sortkey": "00030202", "category": "2", "category_translated": "2", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30203", "object_name": "3", "category_id": "30203", "tree_sortkey": "00030203", "category": "3", "category_translated": "3", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30204", "object_name": "4", "category_id": "30204", "tree_sortkey": "00030204", "category": "4", "category_translated": "4", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30205", "object_name": "5", "category_id": "30205", "tree_sortkey": "00030205", "category": "5", "category_translated": "5", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30206", "object_name": "6", "category_id": "30206", "tree_sortkey": "00030206", "category": "6", "category_translated": "6", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30207", "object_name": "7", "category_id": "30207", "tree_sortkey": "00030207", "category": "7", "category_translated": "7", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30208", "object_name": "8", "category_id": "30208", "tree_sortkey": "00030208", "category": "8", "category_translated": "8", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"},
-{"id": "30209", "object_name": "9", "category_id": "30209", "tree_sortkey": "00030209", "category": "9", "category_translated": "9", "category_description": "", "category_type": "Intranet Ticket Priority", "category_gif": "category", "enabled_p": "t", "parent_only_p": "f", "aux_int1": "", "aux_int2": "", "aux_string1": "", "aux_string2": "", "sort_order": "0"}
-];
+var bizObjectRoleStore = Ext.create('Ext.ux.CategoryStore', {
+	storeId:	'bizObjectRoleStore',
+	autoLoad:	true,
+	remoteFilter:	true,
+	pageSize:	500,
+	model:		'TicketBrowser.Category',
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Biz Object Role\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
+
 
 var userStore = Ext.create('Ext.ux.UserStore', {
 	storeId:	'userStore',
@@ -321,7 +333,7 @@ var companyStore = Ext.create('Ext.ux.CompanyStore', {
 });
 
 
-var profileStore = Ext.create('Ext.data.Store', {
+var profileStore = Ext.create('Ext.ux.ProfileStore', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
 	autoLoad: true,

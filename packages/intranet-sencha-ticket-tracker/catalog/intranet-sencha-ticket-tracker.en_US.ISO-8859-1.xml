@@ -7,6 +7,7 @@
   <msg key="Application">Application</msg>
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Assigned To</msg>
+  <msg key="Audit_User">Audit User</msg>
   <msg key="button_Cancel">Cancel</msg>
   <msg key="button_New_Company">New Company</msg>
   <msg key="button_New_Contact">New Contact</msg>
@@ -38,6 +39,7 @@
   <msg key="Delete_attachment">Delete attachment</msg>
   <msg key="Department">Department</msg>
   <msg key="Displaying_tickets_0_1_of_2_">Displaying tickets {0} - {1} of {2}</msg>
+  <msg key="Displaying_versions_0_1_of_2_">Displaying versions {0} - {1} of {2}</msg>
   <msg key="Email">Email</msg>
   <msg key="Escalated">Escalated</msg>
   <msg key="Escalation_Date">Escalation Date</msg>
@@ -47,9 +49,11 @@
   <msg key="Gender">Gender</msg>
   <msg key="Group">Group</msg>
   <msg key="Incoming_Channel">Incoming Channel</msg>
+  <msg key="IP_Address">IP Address</msg>
   <msg key="lang_es_ES">Spanish</msg>
   <msg key="lang_eu_ES">Euskera</msg>
   <msg key="Language">Language</msg>
+  <msg key="Last_Name2">Last Name 2</msg>
   <msg key="Last_Updated">Last Updated</msg>
   <msg key="Loading___">Loading...</msg>
   <msg key="Male">Male</msg>
@@ -60,6 +64,7 @@
   <msg key="New_Contact">New Contact</msg>
   <msg key="New_Ticket_Prefix">Ticket #</msg>
   <msg key="No_items">No items</msg>
+  <msg key="Object_Member_Role">Role</msg>
   <msg key="Options">Options</msg>
   <msg key="Outgoing_Channel">Outgoing Channel</msg>
   <msg key="Page">Page</msg>
