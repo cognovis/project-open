@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.21 2011/06/16 11:38:41 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.22 2011/06/16 18:27:48 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -239,37 +239,36 @@ Ext.define('TicketBrowser.User', {
 
 
 
-Ext.define('TicketBrowser.ObjectMember', {
+Ext.define('TicketBrowser.BizObjectMember', {
     extend: 'Ext.data.Model',
 
     idProperty: 'rel_id',			// The primary key or object_id of the company
     fields: [
 	'rel_id',				// Primary key
-	'rel_type',				// Type of relationship (membership_rel, im_key_account_rel, ...)
+	'rel_type',				// Type of relationship (=im_biz_object_member)
 	'object_id_one',			// Business Object (company, project, ...)
 	'object_id_two',			// User who is a member
 	'object_role_id',			// The "role" in which the user is part of the biz object,
-						// i.w. Project Manager, Key Account, Full Member etc.
-	'percentage'				// Membership percentage (only membership roles)
+						// Role (1300=Full Member, 1301=Project Manager, ...)
+	'percentage'				// Membership percentage 
     ],
     proxy: {
 	type: 'rest',
-	url: '/intranet-sencha-ticket-tracker/object-member-datasource',
+	url: '/intranet-rest/im_biz_object_member',
 	appendId: true,
 	extraParams: {
-		// object_id_one: <business object>
-		// object_id_two: <user>
+		format: 'json'
 	},
 	reader: { 
 	    type: 'json', 
 	    root: 'data',
 	    totalProperty: 'total'
+	},
+	writer: {
+	    type: 'json'
 	}
     }
 });
-
-
-
 
 
 

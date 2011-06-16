@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.13 2011/06/15 14:51:39 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.14 2011/06/16 18:27:49 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -43,9 +43,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		xtype: 'ticketForm',
 		title: '#intranet-core.Ticket#'
 	}, {
-		itemId: 'ticketCustomer',
+		itemId: 'ticketCustomerPanel',
 		title: '#intranet-sencha-ticket-tracker.Company#',
-		xtype: 'ticketCustomer'
+		xtype: 'ticketCustomerPanel'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
@@ -88,7 +88,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#center').child('#ticketForm').newTicket(rec);
-        this.child('#center').child('#ticketCustomer').newTicket(rec);
+        this.child('#center').child('#ticketCustomerPanel').newTicket(rec);
         this.child('#center').child('#ticketContactPanel').newTicket(rec);
         this.child('#center').child('#ticketFilestorage').newTicket(rec);
         this.child('#east').child('#auditGrid').newTicket(rec);
@@ -99,7 +99,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     loadTicket: function(rec){
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);
-        this.child('#center').child('#ticketCustomer').loadTicket(rec);
+        this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
         this.child('#center').child('#ticketFilestorage').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);

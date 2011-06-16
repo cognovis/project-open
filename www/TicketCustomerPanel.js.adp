@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.15 2011/06/16 13:55:26 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.16 2011/06/16 18:27:49 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,7 +25,7 @@
 
 Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:	'Ext.form.Panel',
-        alias:	'widget.ticketCustomer',
+        alias:	'widget.ticketCustomerPanel',
         id:	'ticketCustomerPanel',
 	title:	'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:	true,
@@ -84,7 +84,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			window.open(redirect, '_blank');
 		}
 	}, {
-
 		itemId:		'addButton',
         	text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
 		width: 		120,
