@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 18 Nov 1998
     @author Allen Pulsifer (pulsifer@mediaone.net)
-    @cvs-id $Id: admin-init.tcl,v 1.8 2004/06/29 10:17:44 jeffd Exp $
+    @cvs-id $Id: admin-init.tcl,v 1.3 2011/05/13 12:46:44 po34demo Exp $
 
 }
 
@@ -32,6 +32,8 @@ if { [parameter::get -package_id [ad_acs_kernel_id] -parameter RegisterRestrictE
     ns_log Notice "admin-init.tcl:  Registering ad_restrict_entire_server_to_registered_users for ${url}*"
     ad_register_filter preauth GET "${url}*" ad_restrict_entire_server_to_registered_users
     ad_register_filter preauth POST "${url}*" ad_restrict_entire_server_to_registered_users
+    ad_register_filter preauth PUT "${url}*" ad_restrict_entire_server_to_registered_users
+    ad_register_filter preauth DELETE "${url}*" ad_restrict_entire_server_to_registered_users
     ad_register_filter preauth HEAD "${url}*" ad_restrict_entire_server_to_registered_users
     ad_register_filter preauth PUT "${url}*" ad_restrict_entire_server_to_registered_users
     ad_register_filter preauth DELETE "${url}*" ad_restrict_entire_server_to_registered_users
