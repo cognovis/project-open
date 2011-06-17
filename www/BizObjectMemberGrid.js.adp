@@ -28,20 +28,13 @@ var bizObjectMemberStore = Ext.create('Ext.data.Store', {
     model: 'TicketBrowser.BizObjectMember',
     storeId: 'bizObjectMemberStore',
     autoLoad: false,
-    remoteSort: true,
-    remoteFilter: true,
+    remoteSort: false,
+    remoteFilter: false,
     pageSize: 10,			// Enable pagination
     sorters: [{
-	property: 'member_name',
+	property: 'object_role_id',
 	direction: 'DESC'
-    }],
-    proxy: {
-	type: 'rest',
-	url: '/intranet-sencha-ticket-tracker/object-member-datasource',
-	appendId: true,
-	extraParams: { format: 'json', object_id: 0 },
-	reader: { type: 'json', root: 'data' }
-    }
+    }]
 });
 
 var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
@@ -96,8 +89,8 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 	this.show();
 
 	// Save the property in the proxy, which will pass it directly to the REST server
-	var ticket_id = rec.data.ticket_id;
-	bizObjectMemberStore.proxy.extraParams['object_id_one'] = ticket_id;
+	var company_id = rec.get('company_id');
+	bizObjectMemberStore.proxy.extraParams['object_id_one'] = company_id;
 	bizObjectMemberStore.load();
     },
 

@@ -248,8 +248,7 @@ Ext.define('TicketBrowser.BizObjectMember', {
 	'rel_type',				// Type of relationship (=im_biz_object_member)
 	'object_id_one',			// Business Object (company, project, ...)
 	'object_id_two',			// User who is a member
-	'object_role_id',			// The "role" in which the user is part of the biz object,
-						// Role (1300=Full Member, 1301=Project Manager, ...)
+	'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
 	'percentage'				// Membership percentage 
     ],
     proxy: {
