@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.17 2011/06/15 14:51:38 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.18 2011/06/17 14:53:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -48,15 +48,13 @@ function showFileStorageNewForm(ticket_id) {
 	    fieldDefaults: { labelAlign: 'top', labelWidth: 100 },
 	    defaults: {	margins: '10 10 10 10' },
 	    items: [{
+		name:	'ticket_id',
+		xtype:	'hiddenfield'
+	    }, {
 		name: 'title',
 		xtype: 'textfield',
 		id: 'name',
 		fieldLabel: '#intranet-core.Name#'
-	    }, {
-		name: 'ticket_id',
-		xtype: 'textfield',
-		id: 'ticket_id',
-		fieldLabel: 'Ticket ID'
 	    }, {
 		name: 'upload_file',
 		xtype: 'filefield',
@@ -70,25 +68,42 @@ function showFileStorageNewForm(ticket_id) {
 	    buttons: [{
 		text: '#intranet-sencha-ticket-tracker.button_Save#',
 		handler: function(){
-		    var form = this.up('form').getForm();
-		    var form_fields = form.getFieldValues();
-		    var ticket_id = form_fields.ticket_id;
 
+		    // Get the ticket_id
+		    var ticket_form = Ext.getCmp('ticketForm');
+                    var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
+
+		    // Store into local form
+		    var form = this.up('form').getForm();
+		    form.findField('ticket_id').setValue(ticket_id);
+
+		    // Submit the form
 		    if(form.isValid()){
 			form.submit({
 			    url: 'file-add',
-			    method: 'POST',
-			    params: {
-				folder_id: ticket_id
-			    },
+			    method: 'GET',
 			    waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
-			    success: function(fp, o) {
-				// msg('Success', 'Processed file "' + o.result.file + '" on the server');
+			    success: function(form, action) {
+				// Hide the form again, now that we don't need it anymore
 				fileStorageNewForm.hide();
+
+				// Creating a file might have created a new FS folder in the backend.
+				// To get this value, we need to reload the ticket model:
+				var ticket_id = form.findField('ticket_id').getValue();
+				var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+				ticket_model.load(ticket_id);
 			    },
-			    failure: function(fp, o) {
-				// msg('Failure', o.result.errors);
+			    failure: function(form, action) {
 				fileStorageNewForm.hide();
+				var resp = action.response.ResponseText;
+				alert('FileSorageGride: Error creating file: ' + resp);
+
+				// Creating a file might have created a new FS folder in the backend.
+				// To get this value, we need to reload the ticket model:
+				var ticket_id = form.findField('ticket_id').getValue();
+				var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+				ticket_model.load(ticket_id);
+
 			    }
 			});
 	
@@ -138,7 +153,7 @@ var fileStorageStore = Ext.create('Ext.data.Store', {
     storeId: 'fileStorageStore',
     autoLoad: false,
     remoteSort: true,
-    pageSize: 10,			// Enable pagination
+    pageSize: 5,			// Enable pagination
     sorters: [{
 	property: 'name',
 	direction: 'DESC'
@@ -209,49 +224,15 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 		var tid = fileStorageStore.proxy.extraParams['ticket_id'];
 		showFileStorageNewForm(tid);
 	    }
-        }, '-', {
-            text:'#intranet-sencha-ticket-tracker.Options#',
-            tooltip:'#intranet-sencha-ticket-tracker.Set_options#',
-            iconCls:'option'
-        },'-',{
-            itemId: 'removeButton',
-            text:'#intranet-sencha-ticket-tracker.Delete_attachment#',
-            tooltip:'#intranet-helpdesk.Remove_checked_items#',
-            iconCls:'remove',
-            disabled: false,
-	    handler: function () {
-		var selection = fileStorageGridSelModel.getSelection();
-		for (var i = 0; i < selection.length; i++) {
-		    var file = selection[i].data;
-		    Ext.Ajax.request({
-			url: 'file-delete',
-			method: 'GET',
-			params: {
-			    item_id: file.item_id
-			},
-			success: function(response){
-			    var text = response.responseText;
-			}
-		    });
-		}
-		
-		// reload the filestorage
-		fileStorageStore.load();
-	    }
         }]
     }],
 
     // Load the files for the new ticket
     loadTicket: function(rec){
 
-	// Show this portlet (may be hidden before).
-        this.show();
-
 	// Reload the store containing the ticket's files
-	var folder_id;
-	if (rec.data.hasOwnProperty('folder_id')) { folder_id = rec.data.folder_id; }
-	if (folder_id == null) { return; }
-	var ticket_id = rec.data.ticket_id;
+	var folder_id = rec.get('fs_folder_id');
+	var ticket_id = rec.get('ticket_id');
 
 	// Replace empty string by "0", because an empty string means no restriction to the server.
         if ("" === folder_id) { folder_id = 0; }
@@ -262,6 +243,9 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
         this.ticket_id = ticket_id;
 	fileStorageStore.load();
+
+	// Show this portlet (may be hidden before).
+        this.show();
     },
 
     // Somebody pressed the "New Ticket" button:

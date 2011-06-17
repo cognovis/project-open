@@ -1,9 +1,11 @@
 
--- 
-alter table im_tickets
-add column ticket_fs_folder_id integer
+
+alter table im_biz_objects
+add column fs_folder_id integer
 constraint im_tickets_fs_folder_fk references cr_items;
 
+alter table im_biz_objects
+add column fs_folder_path text;
 
 
 alter table im_tickets

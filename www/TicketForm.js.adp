@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.29 2011/06/17 13:54:11 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.30 2011/06/17 14:53:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -49,7 +49,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_creation_date', xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
-	{ name: 'ticket_name',		xtype: 'hiddenfield' },			// Set by AJAX call with new name
+	{ name: 'fs_folder_id',		xtype: 'textfield', disabled: true },	// Assign to Employees by default
+	{ name: 'project_nr',		xtype: 'hiddenfield' },
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
@@ -82,6 +83,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		forceSelection: true,
 		queryMode: 	'remote',
 		store: 		ticketTypeStore,
+		allowBlank:	false,			// Require a value for this one
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
