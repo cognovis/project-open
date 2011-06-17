@@ -205,6 +205,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // ticket-next-nr just returns a string which represents the name
 		    var ticket_nr = response.responseText;
 		    var form = this.getForm();
+		    form.findField('project_nr').setValue(ticket_nr);
 		    var ticket_name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ticket_nr;
 		    form.findField('project_name').setValue(ticket_name);
 		},
