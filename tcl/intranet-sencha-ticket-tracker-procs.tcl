@@ -20,7 +20,8 @@ ad_proc -public im_fs_content_folder_for_object {
     object. Creates necessary folders on the fly.
     @parm path Optional path within the object's FS
 } {
-    return [util_memoize [list im_fs_content_folder_for_object_helper -object_id $object_id -path $path]]
+    return [im_fs_content_folder_for_object_helper -object_id $object_id -path $path]
+#    return [util_memoize [list im_fs_content_folder_for_object_helper -object_id $object_id -path $path]]
 }
 
 
@@ -33,6 +34,7 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     object. Creates necessary folders on the fly.
     @parm path Optional path within the object's FS
 } {
+    ns_log Notice "im_fs_content_folder_for_object_helper: object_id=$object_id, path=$path"
     # Check if the folder already exists and return it
     set folder_id [db_string fs_folder "
         select  fs_folder_id
@@ -41,8 +43,8 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     " -default ""]
     if {"" != $folder_id} { return $folder_id }
 
-    # Prepare the variables that we need in order to create
-    # a new folder
+    # Prepare the variables that we need in order to create a new folder
+    ns_log Notice "im_fs_content_folder_for_object_helper: Prepare to create new folder"
     set user_id [ad_maybe_redirect_for_registration]
     set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
     db_0or1row object_info "
@@ -64,6 +66,7 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     if {"" == $root_folder_id} {
 	set root_folder_id [fs::new_root_folder -package_id $package_id]
     }
+    ns_log Notice "im_fs_content_folder_for_object_helper: root_folder_id=$root_folder_id"
 
     # Default folder name for the object: Append the object's unique ID
     # to the object's pretty name
@@ -95,15 +98,29 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     set file_paths [concat $object_paths $file_paths]
     set file_paths [linsert $file_paths 0 $object_pretty_plural]
 
+    ns_log Notice "im_fs_content_folder_for_object_helper: file_paths=$file_paths"
+
     set path ""
     set parent_folder_id $root_folder_id
     foreach p $file_paths {
 	append path "/${p}"
-	set folder_id [content::item::get_id -item_path $path -root_folder_id $parent_folder_id]
+	ns_log Notice "im_fs_content_folder_for_object_helper: path='$path'"
+
+	ns_log Notice "im_fs_content_folder_for_object_helper: content::item::get_id -item_path $path -root_folder_id $root_folder_id"
+	set folder_id [content::item::get_id -item_path $path -root_folder_id $root_folder_id]
+	ns_log Notice "im_fs_content_folder_for_object_helper: folder_id='$folder_id'"
+
 	if {"" == $folder_id} {
-	    // create the folder and grant "Admin" to employees
+
+	    # create the folder and grant "Admin" to employees
+	    ns_log Notice "im_fs_content_folder_for_object_helper: content::folder::new -parent_id $parent_folder_id -name $p -label $p"
 	    set folder_id [content::folder::new -parent_id $parent_folder_id -name $p -label $p]
-	    permission::grant -party_id [im_profile_employees] -object_id folder_id -privilege "admin"
+
+	    # All the folder to contain FS files
+	    content::folder::register_content_type -folder_id $folder_id -content_type "file_storage_object"
+
+	    # Allow all employees to admin the new folder
+	    permission::grant -party_id [im_profile_employees] -object_id $folder_id -privilege "admin"
 	}
 	ns_log Notice "im_fs_content_folder_for_object: oid=$object_id: path=$path, parent_id=$parent_folder_id => folder_id=$folder_id"
 	set parent_folder_id $folder_id
@@ -111,8 +128,9 @@ ad_proc -public im_fs_content_folder_for_object_helper {
 
     # Save the new folder to the biz_object table
     db_dml project_folder_save "
-	update im_biz_objects
-	set fs_folder_id = :folder_id
+	update im_biz_objects set 
+		fs_folder_id = :folder_id,
+		fs_folder_path = :path
 	where object_id = :object_id
     "
 

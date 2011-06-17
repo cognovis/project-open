@@ -11,8 +11,9 @@ ad_page_contract {
     {description "" }
 }
 
+
 if {![info exists upload_file]} {
-    ns_log Notice "file-add: failure"
+    ns_log Notice "file-add: failure: upload_file does not exist"
     ns_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	false,
@@ -26,13 +27,12 @@ if {![info exists upload_file]} {
 # Security
 # -------------------------------------------------------------
 
-set user_id [ad_conn user_id]
+set user_id [im_rest_cookie_auth_user_id]
 # Get package. ad_conn package_id doesn't seem to work...
 set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
 set mime_type [cr_filename_to_mime_type -create -- $upload_file]
 set folder_id [im_fs_content_folder_for_object -object_id $ticket_id]
-
-ns_log Notice "file-add: upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}, mime_type=$mime_type, package_id=$package_id, folder_id=$folder_id"
+ns_log Notice "file-add: user_id=$user_id, ticket_id=$ticket_id, mime_type=$mime_type, folder_id=$folder_id, upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}"
 
 set permission_p [permission::permission_p \
     -object_id $folder_id \
@@ -40,9 +40,6 @@ set permission_p [permission::permission_p \
     -privilege "write" \
 ]
 ns_log Notice "file-add: permission_p=$permission_p"
-
-# set permission_p "1"
-
 
 if {1 != $permission_p} {
     ns_log Notice "file-add: failure: User \#$user_id doesn't have write permissions to folder \#$folder_id"

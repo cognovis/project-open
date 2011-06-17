@@ -125,10 +125,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				return userStore.name_from_id(record.get('creation_user'));
 			}
 		}, {
-			header: '#intranet-sencha-ticket-tracker.Replies#',
-			dataIndex: 'replycount',
-			width: 70,
-			align: 'right'
+			header: '#intranet-sencha-ticket-tracker.Request#',
+			dataIndex: 'ticket_request'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Resolution#',
+			dataIndex: 'ticket_resolution'
 		}, {
 			header: '#intranet-core.Contact#',
 			dataIndex: 'ticket_customer_contact_id',
