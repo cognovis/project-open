@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.23 2011/06/17 09:57:07 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.24 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -249,7 +249,16 @@ Ext.define('TicketBrowser.BizObjectMember', {
 	'object_id_one',			// Business Object (company, project, ...)
 	'object_id_two',			// User who is a member
 	'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
-	'percentage'				// Membership percentage 
+	'percentage',				// Membership percentage 
+	{
+		name:	'member_name',
+		convert: function(value, record) {
+			var member_id = record.get('object_id_two');
+			var store = Ext.data.StoreManager.lookup('userStore');
+			var name = store.name_from_id(member_id);
+			return name;
+		}
+	}
     ],
     proxy: {
 	type: 'rest',

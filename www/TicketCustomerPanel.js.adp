@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.16 2011/06/16 18:27:49 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.17 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -50,6 +50,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var cust = companyStore.findRecord('company_id',customer_id);
 		        if (cust == null || typeof cust == "undefined") { return; }
 			this.ownerCt.loadRecord(cust);
+		
+			// Inform the TicketCustomerPanel about the new company
+			var contactPanel = Ext.getCmp('ticketContactPanel');
+			contactPanel.loadCustomer(cust);
 		    }
 		}
         }, {

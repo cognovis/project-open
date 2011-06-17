@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.18 2011/06/16 18:27:49 po34demo Exp $
+ * @cvs-id $Id: TicketContactPanel.js.adp,v 1.19 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -52,6 +52,12 @@ Ext.define('TicketBrowser.TicketContactPanel', {
     loadTicket: function(rec){
         this.child('#bizObjectMemberGrid').loadTicket(rec);
         this.child('#ticketContactForm').loadTicket(rec);
+    },
+
+    // Called from the TicketCustomerContactPanel if the company changed
+    loadCustomer: function(rec){
+        this.child('#bizObjectMemberGrid').loadCustomer(rec);
+        this.child('#ticketContactForm').loadCustomer(rec);
     }
 
 });

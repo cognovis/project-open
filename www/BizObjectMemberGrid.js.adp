@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: BizObjectMemberGrid.js.adp,v 1.2 2011/06/17 09:57:06 po34demo Exp $
+ * @cvs-id $Id: BizObjectMemberGrid.js.adp,v 1.3 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,11 +30,7 @@ var bizObjectMemberStore = Ext.create('Ext.data.Store', {
     autoLoad: false,
     remoteSort: false,
     remoteFilter: false,
-    pageSize: 10,			// Enable pagination
-    sorters: [{
-	property: 'object_role_id',
-	direction: 'DESC'
-    }]
+    pageSize: 5				// Enable pagination
 });
 
 var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
@@ -76,22 +72,50 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 	flex:		1,
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('object_id_two'));
-	}
+	},
+	sortable:	false
     }, {
 	header: 	'#intranet-sencha-ticket-tracker.Object_Member_Role#',
 	renderer: function(value, o, record) {
 	    return bizObjectRoleStore.category_from_id(record.get('object_role_id'));
-	}
+	},
+	sortable:	false
     }],
 
+    // Load new data if the user has selected a new ticket
     loadTicket: function(rec){
 	// Show this list of members. A new ticket doesn't need this list...
 	this.show();
 
+	// Load the company's contacts into the form.
+	var customer_id = rec.get('company_id');
+	this.loadCustomer(customer_id);
+    },
+
+    // Load new data if the user has selected a new customer
+    loadCustomer: function(customer){
+
+	// Deal with both a single value and a customer model
+	var customer_id = '';
+	if (typeof customer === 'string') {
+		customer_id = customer;
+	} else {
+		// We probably got the entire customer_model here
+		var customer_id = customer.get('company_id');
+	}
+
 	// Save the property in the proxy, which will pass it directly to the REST server
-	var company_id = rec.get('company_id');
-	bizObjectMemberStore.proxy.extraParams['object_id_one'] = company_id;
+	bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
 	bizObjectMemberStore.load();
+
+	// We need to filter manually because the Store's "filters" config doesn't work in Ext 4.0.1
+	bizObjectMemberStore.filter(new Ext.util.Filter({
+		filterFn: function(item) {
+			// Only show "Full Member" objects in order to include Key Accounts etc.
+			var role = item.get('object_role_id');
+			return (role == '1300');
+		}
+	}));
     },
 
     // Somebody pressed the "New Ticket" button:

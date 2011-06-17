@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.5 2011/06/16 18:27:49 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.6 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -75,13 +75,18 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 xtype:          'textfield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Telephone#'
 	}, {
-                name:           'ticket_language',
+                name:           'ticket_customer_contact_p',
+                fieldLabel:     '#intranet-sencha-ticket-tracker.Primary_Contact#',
+                xtype:          'checkbox',
+                value:          '1'
+	}, {
+                name:           'language',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
                 value:          'eu_ES'
         }, {
-                name:           'ticket_language',
+                name:           'language',
                 xtype:          'radiofield',
                 boxLabel:       '#intranet-sencha-ticket-tracker.lang_es_ES#',
                 value:          'es_ES',
@@ -89,13 +94,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 labelSeparator: '',
                 hideEmptyLabel: false
 	}, {
-                name:           'ticket_sex',
+                name:           'gender',
                 xtype:          'radiofield',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.Male#',
                 value:          '1'
         }, {
-                name:           'ticket_sex',
+                name:           'gender',
                 xtype:          'radiofield',
                 boxLabel:       '#intranet-sencha-ticket-tracker.Female#',
                 value:          '0',
@@ -138,6 +143,21 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 			// Tell the store to update the server via it's REST proxy
 			userStore.sync();
+
+			// Get the ticket
+			var ticketForm = Ext.getCmp('ticketForm');
+			var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+                        var ticket_id = ticket_id_field.getValue();
+                        var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+
+			// Mark the user as the ticket's contact
+			var ticket_customer_ticket_customer_contact_field = form.findField('ticket_customer_contact_p');
+			var ticket_customer_contact_p = ticket_customer_ticket_customer_contact_field.getValue();
+
+			if (true == ticket_customer_contact_p || '1' == ticket_customer_contact_p) {
+	                        ticket_model.set('ticket_customer_contact_id', user_id);
+        	                ticket_model.save();
+			}
 
 			// Tell all panels to load the data of the newly created object
 			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
@@ -239,6 +259,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		// load the information from the record into the form
 		this.loadRecord(rec);
 		this.show();
+	},
+
+	// Called when the user changed the customer in the TicketCustomerPanel
+	loadCustomer: function(customerModel){
+		var form = this.getForm();
+		form.reset();
 	},
 
         // Somebody pressed the "New Ticket" button:

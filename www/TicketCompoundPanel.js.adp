@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.14 2011/06/16 18:27:49 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.15 2011/06/17 11:29:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -50,10 +50,6 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel'
-	}, {
-		itemId: 'ticketFilestorage',
-		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
 	}]
     }, {
 	itemId:	'east',
@@ -68,6 +64,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		itemId: 'ticketFormRight',
 		title: '',
 		xtype: 'ticketFormRight'
+	}, {
+		itemId: 'fileStorageGrid',
+		title: '#intranet-filestorage.Filestorage#',
+		xtype: 'fileStorageGrid'
 	}]
     }],
 
@@ -90,9 +90,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketForm').newTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').newTicket(rec);
         this.child('#center').child('#ticketContactPanel').newTicket(rec);
-        this.child('#center').child('#ticketFilestorage').newTicket(rec);
         this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
+        this.child('#east').child('#fileStorageGrid').newTicket(rec);
     },
 
     // Called from the TicketGrid if the user has selected a ticket
@@ -100,9 +100,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
-        this.child('#center').child('#ticketFilestorage').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
+        this.child('#east').child('#fileStorageGrid').loadTicket(rec);
     }
 
 });
