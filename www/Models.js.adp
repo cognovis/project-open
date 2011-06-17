@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.22 2011/06/16 18:27:48 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.23 2011/06/17 09:57:07 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -248,8 +248,7 @@ Ext.define('TicketBrowser.BizObjectMember', {
 	'rel_type',				// Type of relationship (=im_biz_object_member)
 	'object_id_one',			// Business Object (company, project, ...)
 	'object_id_two',			// User who is a member
-	'object_role_id',			// The "role" in which the user is part of the biz object,
-						// Role (1300=Full Member, 1301=Project Manager, ...)
+	'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
 	'percentage'				// Membership percentage 
     ],
     proxy: {
