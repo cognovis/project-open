@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.28 2011/06/16 07:18:27 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.29 2011/06/17 13:54:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -205,6 +205,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // ticket-next-nr just returns a string which represents the name
 		    var ticket_nr = response.responseText;
 		    var form = this.getForm();
+		    form.findField('project_nr').setValue(ticket_nr);
 		    var ticket_name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ticket_nr;
 		    form.findField('project_name').setValue(ticket_name);
 		},
