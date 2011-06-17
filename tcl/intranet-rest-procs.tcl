@@ -818,8 +818,12 @@ ad_proc -private im_rest_get_object_type {
     # Check if there is a where clause specified in the URL
     # and validate the clause.
     set where_clause ""
+    set where_clause_list [list]
+    set where_clause_unchecked_list [list]
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    if {"" != $where_clause} { lappend where_clause_list $where_clause }
 
+    # Fraber 110612:
     # Decoding the where clause messes up a value like '%123%' (searching for vat_id)
     # set where_clause [ns_urldecode $where_clause]
     ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
@@ -829,7 +833,6 @@ ad_proc -private im_rest_get_object_type {
     # Check if there are "valid_vars" specified in the HTTP header
     # and add these vars to the SQL clause
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
-    set where_clause_list [list]
     foreach v $valid_vars {
 	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
     }
@@ -843,22 +846,25 @@ ad_proc -private im_rest_get_object_type {
 	}
 	file_storage_object {
 	    # file storage object needs additional security
-	    lappend where_clause_list "'t' = acs_permission__permission_p(o.object_id, $user_id, 'read')"
+	    lappend where_clause_unchecked_list "'t' = acs_permission__permission_p(o.object_id, $user_id, 'read')"
+	}
+    }
+
+    # Check that the where_clause elements are valid SQL statements
+    foreach where_clause $where_clause_list {
+	set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+	if {!$valid_sql_where} {
+	    im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	    return
 	}
     }
 
     # Build the complete where clause
+    set where_clause_list [concat $where_clause_list $where_clause_unchecked_list]
     if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
-    append where_clause [join $where_clause_list " and "]
-
- 
-    # Check that the query is a valid SQL where clause
-    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
-    if {!$valid_sql_where} {
-	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
-	return
-    }
+    append where_clause [join $where_clause_list " and\n\t\t"]
     if {"" != $where_clause} { set where_clause "and $where_clause" }
+    # ad_return_complaint 1 "<pre>$where_clause</pre>"
 
 
     # -------------------------------------------------------
