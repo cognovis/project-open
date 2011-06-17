@@ -50,10 +50,6 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel'
-	}, {
-		itemId: 'ticketFilestorage',
-		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
 	}]
     }, {
 	itemId:	'east',
@@ -68,6 +64,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		itemId: 'ticketFormRight',
 		title: '',
 		xtype: 'ticketFormRight'
+	}, {
+		itemId: 'fileStorageGrid',
+		title: '#intranet-filestorage.Filestorage#',
+		xtype: 'fileStorageGrid'
 	}]
     }],
 
@@ -90,9 +90,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketForm').newTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').newTicket(rec);
         this.child('#center').child('#ticketContactPanel').newTicket(rec);
-        this.child('#center').child('#ticketFilestorage').newTicket(rec);
         this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
+        this.child('#east').child('#fileStorageGrid').newTicket(rec);
     },
 
     // Called from the TicketGrid if the user has selected a ticket
@@ -100,9 +100,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
-        this.child('#center').child('#ticketFilestorage').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
+        this.child('#east').child('#fileStorageGrid').loadTicket(rec);
     }
 
 });

@@ -52,6 +52,12 @@ Ext.define('TicketBrowser.TicketContactPanel', {
     loadTicket: function(rec){
         this.child('#bizObjectMemberGrid').loadTicket(rec);
         this.child('#ticketContactForm').loadTicket(rec);
+    },
+
+    // Called from the TicketCustomerContactPanel if the company changed
+    loadCustomer: function(rec){
+        this.child('#bizObjectMemberGrid').loadCustomer(rec);
+        this.child('#ticketContactForm').loadCustomer(rec);
     }
 
 });

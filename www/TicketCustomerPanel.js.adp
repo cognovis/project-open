@@ -50,6 +50,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			var cust = companyStore.findRecord('company_id',customer_id);
 		        if (cust == null || typeof cust == "undefined") { return; }
 			this.ownerCt.loadRecord(cust);
+		
+			// Inform the TicketCustomerPanel about the new company
+			var contactPanel = Ext.getCmp('ticketContactPanel');
+			contactPanel.loadCustomer(cust);
 		    }
 		}
         }, {
