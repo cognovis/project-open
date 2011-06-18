@@ -4,6 +4,10 @@
 <property name="title">@page_title;noquote@</property>
 
 <br><br><br><br><br>
+
+
+@company_placeholder;noquote@
+
 <h1>File to upload</h1>
 <table border="0" cellpadding="5px" cellspacing="5px">
 <tr>
@@ -33,9 +37,9 @@ Desired Delivery Date
 <tr>
 
 <if @anonymous_p@ false>
-<td valign="top">
+<!--<td valign="top">
 	<%=[im_project_select -include_empty_p 1 -include_empty_name "New project" -project_status_id [im_project_status_open] -exclude_subprojects_p 0 project_id "" "open"]%>
-</td>
+</td>-->
 </if>
 
 <td valign="top">
@@ -46,10 +50,12 @@ Desired Delivery Date
     <form id="form_source_language">@source_language_combo;noquote@</form>
 </td>
 <td valign="top">
-    <form id="form_target_languages">@target_language_combo;noquote@</form>    
+    <div id="form_target_languages"></div>    
 </td>
+
 <td valign="top">
-    <label>Delivery Date:</label><input type="text" id="dateField"><button id="openCalendar">Pick</button><div id="calendar"></div>
+    <!--<input type="text" id="dateField">-->
+    <div id='delivery_date_placeholder'></div>
 </td>
 
 <td valign="top">
@@ -58,20 +64,20 @@ Desired Delivery Date
 
 </tr>
 
+</table>
 
+<br><br><br>
+
+<table cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td colspan="100"><h2><br><br><br>Uploaded for this quote:</h2></td>
+	<td><div id="panel_files_uploaded_placeholder"></div></td>
+	<td><div id="panel_uploaded_files"></div></td>
+</tr>
+<tr>
+	<td colspan="2" align="right"><button id="continue">Continue >></button></td>
 </tr>
 
 </table>
 
-@table_uploaded_files;noquote@
 
-<br><br><button id="continue">Continue >></button></td>
-
-
-
-
-
-
-
+<div id="sidebar"></div>
