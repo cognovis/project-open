@@ -2,6 +2,7 @@ ad_page_contract {
     Displays Ticket Info Cognovis Component
 
     @author Iuri Sampaio (iuri.sampaio@iurix.com)
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2011-06-06
 }
 
@@ -10,23 +11,18 @@ ad_page_contract {
 # Get Everything about the project
 # ---------------------------------------------------------------------
 
-
 set extra_selects [list "0 as zero"]
-
-    
-
 
 db_foreach column_list_sql {
     select    w.deref_plpgsql_function,
-                aa.attribute_name,
-    aa.table_name
+              aa.attribute_name,
+              aa.table_name
     from      im_dynfield_widgets w,
-    im_dynfield_attributes a,
-    acs_attributes aa
+              im_dynfield_attributes a,
+              acs_attributes aa
     where     a.widget_name = w.widget_name and
-    a.acs_attribute_id = aa.attribute_id and
-    aa.object_type = 'im_ticket'
-    
+              a.acs_attribute_id = aa.attribute_id and
+              aa.object_type = 'im_ticket'
 }  {
     lappend extra_selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref"
 }
@@ -79,25 +75,28 @@ set parent_name [util_memoize [list db_string parent_name "select project_name f
 
 # ---------------------------------------------------------------------
 # Add DynField Columns to the display
+# ---------------------------------------------------------------------
+
+set ticket_type_id [db_string ptype "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
 
 db_multirow -extend {attrib_var value} ticket_info dynfield_attribs_sql {
       select
       		aa.pretty_name,
       		aa.attribute_name
       from
-      		im_dynfield_widgets w,
       		acs_attributes aa,
+                im_dynfield_type_attribute_map tam,
       		im_dynfield_attributes a
       		LEFT OUTER JOIN (
       			select *
       			from im_dynfield_layout
-      			where page_url = ''
+      			where page_url = 'default'
       		) la ON (a.attribute_id = la.attribute_id)
       where
-    a.widget_name = w.widget_name and
-    a.acs_attribute_id = aa.attribute_id and
-    aa.object_type = 'im_ticket'
-    order by la.pos_y
+                a.acs_attribute_id = aa.attribute_id and
+                tam.attribute_id = a.attribute_id and
+                tam.object_type_id = :ticket_type_id
+      order by  la.pos_y
     
 } {
     

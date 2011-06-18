@@ -18,7 +18,6 @@
 	  <input type="hidden" name="ticket_id" value="@ticket_id@">
 	  <input type="hidden" name="return_url" value="@return_url@">
 	  <input type="submit" value="#intranet-core.Edit#" name=submit3>
-	  <input type="button" value="#acs-kernel.common_Cancel#" name="btnCancel" onclick="JavaScript:history.go(-1)" /> 
         </form>
       </td>
     </tr>
