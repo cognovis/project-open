@@ -17,7 +17,64 @@ Ext.require([
 
 Ext.onReady(function(){
 
-        // ************** Panel: Target Language *** //
+	// ************** Panel: UploadedFiles Data Grid*** //
+
+	Ext.define('UploadedFiles', {
+	    extend: 'Ext.data.Model',
+	    fields: [
+        	{name: 'inquiry_files_id', type: 'string'},
+	        {name: 'file_name', type: 'string'},
+        	{name: 'source_language', type: 'string'},
+	        {name: 'target_language',  type: 'string'},
+        	{name: 'deliver_date',  type: 'string'}
+	    ]
+	});
+
+	var uploadedFilesStore = new Ext.data.Store({
+	    autoLoad: true,
+	    model: 'UploadedFiles',
+	    proxy: {
+        	type: 'ajax',
+	        url: '/intranet-customer-portal/get-uploaded-files1?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
+        	reader: {
+	            type: 'json',
+        	    root: 'files'
+	        }
+	    }
+	});
+	
+	var grid = new Ext.grid.GridPanel({
+		renderTo: 'grid_uploaded_files',
+		store: uploadedFilesStore,
+		width: 600,
+		height: 300,
+		columns: [
+        	    {header: "ID", width: 25, dataIndex: 'inquiry_files_id', sortable: true},
+        	    {header: "File", width: 150, dataIndex: 'file_name', sortable: true},
+        	    {header: "Source Language", width: 100, dataIndex: 'source_language', sortable: true},
+        	    {header: "Target Languages", width: 100, dataIndex: 'target_language', sortable: true},
+        	    {header: "Delivery Date", width: 100, dataIndex: 'deliver_date', sortable: true}
+        	]
+	});
+
+	uploadedFilesStore.load();
+
+       // ************** Panel: UploadedFiles *** //
+/*
+       Ext.define('CustomerPortal.UploadedFiles', {
+            extend: 'Ext.data.Model',
+            idProperty: 'inquiry_files_id',          // The primary key of the category
+            fields: [
+                {type: 'string', name: 'inquiry_files_id'},
+                {type: 'string', name: 'file_name'},
+                {type: 'string', name: 'source_language'},
+                {type: 'string', name: 'target_languages'},
+                {type: 'string', name: 'deliver_date'},
+            ]
+        });
+*/
+
+        // ************** Target Language *** //
 
        Ext.define('CustomerPortal.Category', {
             extend: 'Ext.data.Model',
@@ -174,6 +231,7 @@ input_delivery_date = new Ext.form.Date({
 
 */
         // ************** Panel: Files already uploaded *** //
+/*
 
 	Ext.create('Ext.Panel', {
 		id: 'panel_files_uploaded',
@@ -203,6 +261,7 @@ input_delivery_date = new Ext.form.Date({
 	}();
 
 	handle_file_list.update_file_list();
+*/
 
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
@@ -234,7 +293,7 @@ input_delivery_date = new Ext.form.Date({
                         document.getElementById('delivery_date').value = todays_date;
                         myuploadform.getForm().findField('upload_file').setValue('');
                         form_source_language.elements[0].value = '';
-			handle_file_list.update_file_list().delay(5000);
+			// handle_file_list.update_file_list().delay(5000);
                  }
         };
 
