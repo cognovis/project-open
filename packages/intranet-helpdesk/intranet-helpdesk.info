@@ -9,13 +9,13 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-helpdesk</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-helpdesk-4.0.1.0.0.apm">
+    <version name="4.0.1.0.1" url="http://www.project-open.org/download/apm/intranet-helpdesk-4.0.1.0.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Helpdesk Management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Helpdesk Management is similar to Change Management. However, Helpdesk tickets have different characteristics then RFC tickets and require special functionality such as queue management etc.</description>
 
-	<provides url="intranet-helpdesk" version="3.4.0.0.0"/>
+	<provides url="intranet-helpdesk" version="4.0.1.0.1"/>
         <requires url="intranet-confdb" version="3.4.0.0.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 
