@@ -29,5 +29,5 @@ SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrad
 update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 1007;
 
 -- Update to correctly view the tasks with the new status
-update im_component_plugins set component_tcl = 'im_timesheet_task_list_component -restrict_to_project_id $project_id -view_name im_timesheet_task_list_short -restrict_to_status_id 9600' where plugin_name = 'Project Timesheet Tasks';
+update im_component_plugins set component_tcl = 'im_timesheet_task_list_component -restrict_to_project_id $project_id -view_name im_timesheet_task_list_short -restrict_to_status_id 9600 -restrict_to_project_status_ids [list 71 76]' where plugin_name = 'Project Timesheet Tasks';
 

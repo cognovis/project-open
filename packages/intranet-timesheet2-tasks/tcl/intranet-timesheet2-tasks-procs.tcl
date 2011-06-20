@@ -146,6 +146,7 @@ ad_proc -public im_timesheet_task_list_component {
     {-restrict_to_status_id 0} 
     {-restrict_to_material_id 0} 
     {-restrict_to_project_id 0} 
+    {-restrict_to_project_status_ids ""} 
     {-restrict_to_mine_p "all"} 
     {-restrict_to_with_member_id ""} 
     {-restrict_to_cost_center_id ""} 
@@ -326,6 +327,20 @@ ad_proc -public im_timesheet_task_list_component {
     set task_criteria [list]
     if {[string is integer $restrict_to_status_id] && $restrict_to_status_id > 0} {
 	lappend extra_wheres "(t.task_status_id in ([join [im_sub_categories $restrict_to_status_id] ","]) or t.task_status_id is null)"
+    }
+
+    # Make it possible to restrict the display to only e.g. open project's tasks
+    set project_status_sub_categories [list]
+    foreach restrict_to_project_status_id $restrict_to_project_status_ids {
+	if {[string is integer $restrict_to_project_status_id] && $restrict_to_project_status_id > 0} {
+	    foreach category_id [im_sub_categories $restrict_to_project_status_id] {
+		lappend project_status_sub_categories $category_id
+	    }
+	}
+    }
+    if {$project_status_sub_categories ne ""} {
+	lappend extra_wheres "parent.project_status_id in ([join $project_status_sub_categories ","])"
+	lappend extra_wheres "(child.project_status_id in ([join $project_status_sub_categories ","]) or child.project_type_id = 100)"
     }
 
     if {"mine" == $restrict_to_mine_p} {
