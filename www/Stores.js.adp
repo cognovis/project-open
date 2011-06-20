@@ -305,6 +305,7 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_profile',
+		appendId: true,
 		extraParams: {
 			format: 'json'		// Tell the ]po[ REST to return JSON data.
 		},
