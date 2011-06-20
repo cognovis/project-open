@@ -30,7 +30,7 @@ set show_navbar_p 0
 set show_left_navbar_p 0
 set anonymous_p 1
 set company_placeholder ""
-
+set session_id [ad_get_signed_cookie "ad_session_id"]
 
 if { "" != $security_token } {
     if { $inquiry_id == 0} {
@@ -42,34 +42,56 @@ if { "" != $security_token } {
     set anonymous_p 0
     set master_file "../../intranet-core/www/master"
 
-    # If user is member of more than one company, we have to show a combo  
-    set ctr 0  
-    set option_str ""
-    set column_sql "
-	select 
-		a.object_id_one as company_id,  
-		(select company_name from im_companies where company_id = a.object_id_one) as company_name 
-	from 
-		acs_rels a
-	where 
-		object_id_two = $user_id and 
-		rel_type = 'im_company_employee_rel'
-    "
-    db_foreach col $column_sql {
-	incr ctr
-	append option_str "<option value='$company_id'>$company_name</option>"
-    }
+    # refresh / double click should not create new inquiry 
+    set inquiry_exists_p [db_string get_view_id "select inquiry_id from im_inquiries_customer_portal where session_id='$session_id'" -default 0]
+    if { !$inquiry_exists_p } {
+	set email [im_email_from_user_id $user_id]
+
+	set ctr 0  
+	set option_str ""
+	set column_sql "
+		select 
+			a.object_id_one as company_id,  
+			(select company_name from im_companies where company_id = a.object_id_one) as company_name 
+		from 
+			acs_rels a
+		where 
+			object_id_two = $user_id and 
+			rel_type = 'im_company_employee_rel'
+		limit 1
+    	"
+	# db_foreach col $column_sql {
+	#	incr ctr
+	#	# append option_str "<option value='$company_id'>$company_name</option>"
+    	# }
     
-    if { 1 < $ctr } {
-	append company_placeholder "We have registered you for at least companies. Please choose the one you inquire the quote for:"
-	append company_placeholder "<select id=\"company_id\" name=\"company_id\""
-	append company_placeholder $option_str
-	append company_placeholder </select>
-    } elseif { 1 == $ctr } {
-	set company_placeholder "<span style='font-size: medium; font-weight: bold'>Company:&nbsp;</span>"
-	append company_placeholder "$company_name<br><br>"
-	append company_placeholder 
-    } 
+	# if { 1 < $ctr } {
+	#	append company_placeholder "We have registered you for at least companies. Please choose the one you inquire the quote for:"
+	#	append company_placeholder "<select id=\"company_id\" name=\"company_id\""
+	#	append company_placeholder $option_str
+	#	append company_placeholder </select>
+    	# } elseif { 1 == $ctr } {
+		set company_placeholder "<span style='font-weight: bold'>Company:&nbsp;</span>"
+		append company_placeholder "$company_name<br><br>"
+    	# }	 
+
+	set inquiry_id [db_string nextval "select nextval('im_inquiries_customer_portal_seq');"]
+	set str_length 40
+	set security_token [subst [string repeat {[format %c [expr {int(rand() * 26) + (int(rand() * 10) > 5 ? 97 : 65)}]]} $str_length]]
+	db_dml insert_inq "
+        	insert into im_inquiries_customer_portal
+                	(inquiry_id, email, security_token, company_id, session_id)
+	        values
+        	        ($inquiry_id, '$email', '$security_token', company_id, '$session_id')
+    	"
+
+	# Create tmp path 
+	set template_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
+	file mkdir "$template_path/$tmp_sub_folder"
+
+    } else {
+	db_1row inquiry_info "select inquiry_id, security_token from im_inquiries_customer_portal where session_id = '$session_id'"  
+    }
 }
 
 # Load Sencha libs 
@@ -100,5 +122,5 @@ set source_language_combo [im_trans_language_select -include_country_locale $inc
 # Add customer registration
 # ---------------------------------------------------------------
 
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id" -order "2"
+template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token" -order "2"
 

@@ -50,22 +50,25 @@ template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comment
 # Create Project when registered user 
 # ---------------------------------------------------------------
 
-set project_name "RFQ Customer Portal:"
+
 
 # set project nr_& project_path (by default identical)
 # Make sure that constraints are enforced: 
 #  - "im_projects_nr_un" UNIQUE, btree (project_nr, company_id, parent_id)
 #  - "im_projects_path_un" UNIQUE, btree (project_nr, company_id, parent_id)
-set project_nr "Customer Portal" 
-set project_path ""
+
+set parent_id 0
+set company_id [db_string get_view_id "select company_id from im_inquiries_customer_portal where inquiry_id=:inquiry_id" -default 0]
+
 
 # project_type -> always 'Translation Project'
-set project_type 2500
+set project_type_id 2500
+set project_status_id 71
 
-if { ![auth::get_user_id] } { 
+# if { ![auth::get_user_id] } { 
 
 	# Set Source Path 
-	set template_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp/"]
+	set template_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
 	set tmp_sub_folder $security_token
 
 	# Set Target Path  
@@ -74,10 +77,23 @@ if { ![auth::get_user_id] } {
 
 	set column_sql "
 		select * from im_inquiries_files where inquiry_id = :inquiry_id
-
 	"
+
+	set ctr 700
+
 	db_foreach col $column_sql {
-		if { ![info exists lang_hash($source_language)] }
+
+	    set project_name "RFQ Customer Portal $inquiry_id $ctr"
+	    
+	    set project_nr "RFQ_Customer_Portal-"
+	    append project_nr $inquiry_id
+            append project_nr "_" 
+            append project_nr $ctr 
+            append project_nr "_" 
+
+	    set project_path $project_nr
+
+	    if { ![info exists lang_hash($source_language)] } {
 			set lang_hash($source_language) 1
 		        set project_id ""
 		        catch {
@@ -111,18 +127,20 @@ if { ![auth::get_user_id] } {
 	            	ad_script_abort
 		        }  
 
-			set destination_path_project [append $destination_path "/$project_nr/0_source_$source_language"]
+			set destination_path_project [append destination_path "/$project_nr/0_source_$source_language"]
 			file mkdir $destination_path_project 
+	    } else {
+		set destination_path_project [append destination_path "/$project_nr/0_source_$source_language"]
+	    }
 
-		}
-
-		if { [catch {
-		    ns_cp "$template_path/$tmp_sub_folder/$file_name" $destination_path 
-		} err_msg] } {
-		    ns_return 200 text/html 0
-		}
+	    if { [catch {
+		ns_cp "$template_path/$tmp_sub_folder/$file_name" $destination_path 
+	    } err_msg] } {
+		ns_return 200 text/html 0
+	    }
+	    incr ctr
 	} 
-}
+# }
 
 
 
