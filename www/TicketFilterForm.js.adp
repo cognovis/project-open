@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.20 2011/06/16 11:38:42 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.21 2011/06/20 11:24:20 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,6 +30,9 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	bodyStyle:	'padding:5px 5px 0',
 	defaultType:	'textfield',
 	defaults:	{ anchor: '100%' },
+	fieldDefaults:	{
+		enableKeyEvents: true
+	},
 	minWidth:	200,
 	standardsubmit:	true,
 	items: [
@@ -42,20 +45,34 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		forceSelection: true,
 		queryMode: 'remote',
 		store: profileStore,
-		width: 300
+		width: 300,
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		name: 'creation_user',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_User#',
                 xtype:          'combobox',
                 valueField:     'user_id',
                 displayField:   'name',
-                store:          userStore
+                store:          userStore,
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		name: 'vat_number', 
-		fieldLabel: '#intranet-core.VAT_Number#'
+		fieldLabel: '#intranet-core.VAT_Number#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {	
 		name: 'company_name', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Name#'
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Name#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Type#',
 		name: 'company_type_id',
@@ -69,93 +86,110 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
+		},
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
-		name: 'ticket_area',
-		xtype: 'combobox',
+		name:		'ticket_area',
+		xtype:		'combobox',
 		displayField:	'category_translated',
 		valueField:	'category_id',
 		store:		ticketAreaStore,
-		queryMode:	'local',
-        	triggerAction:  'all',
+		queryMode:	'remote',
         	width: 		300,
-        	editable:       false,
 		forceSelection: true,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
+		},
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function() { alert('key'); }
 		}
 	}, {
 		name: 'ticket_file', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#'
-/*
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
-		fieldLabel: '#intranet-helpdesk.SLA#',
-		name: 'parent_id',
-		xtype: 'combobox',
-                valueField: 'project_id',
-                displayField: 'project_name',
-		allowBlank: true,
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketSlaStore
-*/
-	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_Type#',
-		name: 'ticket_type_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketTypeStore,
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Type#',
+		name:		'ticket_type_id',
+		xtype:		'combobox',
+                valueField:	'category_id',
+                displayField:	'category_translated',
+		forceSelection:	true,
+		queryMode:	'remote',
+		store:		ticketTypeStore,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
+		},
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
 		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
-		name: 'project_name'
+		name: 'project_name',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
-		fieldLabel: '#intranet-helpdesk.Status#',
-		name: 'ticket_status_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: ticketStatusStore
+		fieldLabel:	'#intranet-helpdesk.Status#',
+		name:		'ticket_status_id',
+		xtype:		'combobox',
+                valueField:	'category_id',
+                displayField:	'category_translated',
+		forceSelection:	true,
+		queryMode:	'remote',
+		store:		ticketStatusStore,
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
-		name: 'ticket_channel_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
+		name:		'ticket_incoming_channel_id',
+		xtype:		'combobox',
+                valueField:	'category_id',
+                displayField:	'category_translated',
 		forceSelection: true,
-		queryMode: 'remote',
+		queryMode:	'remote',
 		store: ticketChannelStore,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
+		},
+		listeners: {
+			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Since#',
-		name: 'start_date',
-		xtype: 'datefield',
-		format: 'Y-m-d',
-		submitFormat: 'Y-m-d'
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Date_Since#',
+		name:		'start_date',
+		xtype:		'datefield',
+		format:		'Y-m-d',
+		submitFormat:	'Y-m-d',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Date_Until#',
 		name: 'end_date',
 		xtype: 'datefield',
 		format: 'Y-m-d',
-		submitFormat: 'Y-m-d'
-	}
-	],
+		submitFormat: 'Y-m-d',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
+	}],
 
 	buttons: [{
             text: '#intranet-sencha-ticket-tracker.Clear_Form#',
@@ -166,14 +200,19 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	}, {
             text: '#intranet-sencha-ticket-tracker.button_Search#',
 	    handler: function() {
-		var form = this.up('form').getForm();
+		var panel = this.up('form');
+		panel.onSearch();
+	    }
+
+	}],
+
+	onSearch: function() {
+		var form = this.getForm();
 		var filterValues = form.getFieldValues();
 		var grid = Ext.getCmp('ticketGrid');
 	
 		grid.filterTickets(filterValues);
-	}
-
-	}],
+	},
 
 	afterRender: function() {
 		var filterForm = Ext.getCmp('ticketFilterForm');
