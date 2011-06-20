@@ -41,7 +41,7 @@ Ext.onReady(function(){
 	    ]
 	});
 
-	var uploadedFilesStore = new Ext.data.Store({
+	uploadedFilesStore = new Ext.data.Store({
 	    autoLoad: true,
 	    model: 'UploadedFiles',
 	    proxy: {
@@ -68,7 +68,7 @@ Ext.onReady(function(){
         	]
 	});
 
-	uploadedFilesStore.load();
+	// uploadedFilesStore.load();
 
 
         // ************** Target Language *** //
@@ -194,82 +194,19 @@ Ext.onReady(function(){
 
 	// ************** Date Picker *** // 
 
-
-
-input_delivery_date = new Ext.form.Date({
-    id: 'delivery_date',
-    renderTo: 'delivery_date_placeholder',
-    fieldLabel: 'Desired Delivery Date',
-    labelAlign: 'left',
-    labelWidth: 150, 
-    format: 'Y-m-d',
-    value: new Date(todays_date),
-    minValue: todays_date,
-    // maxValue: '31/01/2009',
-    allowBlank: false,
-    anchor : '32%'
-      });
-
-/*
-
-    	//define select handler
-	var selectHandler = function(myDP, date) {
-		 myDP.hide();	
-	};
-  
-	// create the date picker
-	var myDP = Ext.create('Ext.menu.DatePicker', {
-		handler: function(dp, date){
-			document.getElementById('dateField').value = Ext.Date.format(date, 'Y-m-d')
-			myDP.hide();
-       		}
-	});
-	
-	// document.getElementById('dateField').style.visibility='hidden'
-	// myDP.show();
-
-	//define click handler
-	var clickHandler = function() {
-		//show the date picker
-		myDP.show();
-	};
-
-	//add listener for button click
-	// Ext.EventManager.on('openCalendar', 'click', clickHandler);
-
-*/
-        // ************** Panel: Files already uploaded *** //
-/*
-
-	Ext.create('Ext.Panel', {
-		id: 'panel_files_uploaded',
-	        width: 600,
-        	renderTo: 'panel_files_uploaded_placeholder',
-	        // style: "margin:15px",
-        	bodyStyle: 'padding:5px;font-size:11px;',
-	        title: 'Uploaded Files for this quote:',
-        	html: '<p><i>Loading ...</i></p>'
+	input_delivery_date = new Ext.form.Date({
+	    id: 'delivery_date',
+	    renderTo: 'delivery_date_placeholder',
+	    fieldLabel: 'Desired Delivery Date',
+	    labelAlign: 'left',
+	    labelWidth: 150, 
+	    format: 'Y-m-d',
+	    value: new Date(todays_date),
+	    minValue: todays_date,
+	    allowBlank: false,
+	    anchor : '32%'
 	});
 
-
-        // ************** Panel: Comments *** //
-
-       handle_file_list = function(){
-	       return {
-			update_file_list : function() {
-			       Ext.Ajax.request({
-				  url: '/intranet-customer-portal/get-uploaded-files' + '?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
-			        	success: function(r) {
-	        				Ext.getCmp('panel_files_uploaded').body.update(r.responseText);
-				                Ext.getCmp('panel_files_uploaded').doLayout();
-        		  	        }
-       				});
-			}
-		}	
-	}();
-
-	handle_file_list.update_file_list();
-*/
 
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
@@ -283,26 +220,21 @@ input_delivery_date = new Ext.form.Date({
 		var curr_year = input_delivery_date.getValue().getFullYear();
 		var delivery_date = curr_year + '-' + curr_month + '-' + curr_date;
 
-		console.log('DeliveryDate:' + delivery_date);
 		if(myuploadform.getForm().isValid()){
 			form_action=1;
 	                myuploadform.getForm().submit({
         	        	url: '/intranet-customer-portal/upload-files-form-action.tcl',
-				params: 'source_language=' + source_language + '&target_languages=' + target_languages + '&delivery_date=' + delivery_date + '&inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote',
+				params: 'source_language=' + source_language + '&target_languages=' + target_languages + '&delivery_date=' + delivery_date + '&inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
                 	        waitMsg: 'Uploading file...',
-                        	success: function(form,action){
-	                  	      msg('Success', 'Processed file on the server');
-				      console.log('Success, Processed file on the server');
-        	         	}
+				success: function(response){
+					uploadedFilesStore.load();
+				}
                  	});
-			console.log('file uploaded!');
-			console.log('requesting:' + '/intranet-customer-portal/get-uploaded-files' + '?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote' + '...');
+
+			// reset form values 
                         targetLanguageForm.getForm().findField('target_language_id').setValue('');
                         document.getElementById('delivery_date').value = todays_date;
                         myuploadform.getForm().findField('upload_file').setValue('');
-                        // form_source_language.elements[0].value = '';
-			// handle_file_list.update_file_list().delay(5000);
-			uploadedFilesStore.load().delay(3000);
                  }
         };
 
@@ -310,26 +242,7 @@ input_delivery_date = new Ext.form.Date({
         Ext.EventManager.on('btnSendFileandMetaData', 'click', clickHandlerSendFileandMetaData);
 
         // ************** Handle CANCEL case *** //
-/*
-        var clickHandlerCancel = function() {
-                if(myuploadform.getForm().isValid()){
-                        form_action=1;
-                        myuploadform.getForm().submit({
-                                url: '/intranet-customer-portal/cancel_inquiry.tcl',
-                                params: '&inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote',
-                                waitMsg: 'Uploading file...',
-                                success: function(form,action){
-                                            msg('Success', 'Processed file on the server');
-                                }
-                        });
-                 }
-        };
-
-        // add listener for button CANCEL
-        // Ext.EventManager.on('continue', 'click', clickHandlerCancel);
-
-*/
-
+        // Ext.EventManager.on('cancel', 'click', clickHandlerCancel);
 });
 
 
