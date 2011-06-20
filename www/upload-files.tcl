@@ -60,20 +60,23 @@ if { "" != $security_token } {
 			rel_type = 'im_company_employee_rel'
 		limit 1
     	"
-	# db_foreach col $column_sql {
+	# db_foreach col $column_sql 
 	#	incr ctr
 	#	# append option_str "<option value='$company_id'>$company_name</option>"
-    	# }
+    	# 
     
-	# if { 1 < $ctr } {
+	# if  1 < $ctr 
 	#	append company_placeholder "We have registered you for at least companies. Please choose the one you inquire the quote for:"
 	#	append company_placeholder "<select id=\"company_id\" name=\"company_id\""
 	#	append company_placeholder $option_str
 	#	append company_placeholder </select>
-    	# } elseif { 1 == $ctr } {
-		set company_placeholder "<span style='font-weight: bold'>Company:&nbsp;</span>"
-		append company_placeholder "$company_name<br><br>"
-    	# }	 
+    	#  elseif  1 == $ctr 
+	
+	db_1row get_company_data $column_sql 
+
+	set company_placeholder "<span style='font-weight: bold'>Company:&nbsp;</span>"
+	append company_placeholder "$company_name<br><br>"
+    		 
 
 	set inquiry_id [db_string nextval "select nextval('im_inquiries_customer_portal_seq');"]
 	set str_length 40
@@ -82,12 +85,17 @@ if { "" != $security_token } {
         	insert into im_inquiries_customer_portal
                 	(inquiry_id, email, security_token, company_id, session_id)
 	        values
-        	        ($inquiry_id, '$email', '$security_token', company_id, '$session_id')
+        	        ($inquiry_id, '$email', '$security_token', $company_id, '$session_id')
     	"
 
 	# Create tmp path 
-	set template_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
-	file mkdir "$template_path/$tmp_sub_folder"
+	set temp_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
+
+	if { [catch {
+	    file mkdir "$temp_path/$security_token"
+	} err_msg] } {
+            ad_return_complaint 1 "Could not create temp directory, please check if paramter 'TempPath' of package 'intranet-customer-portal' contains a valid path."
+	}
 
     } else {
 	db_1row inquiry_info "select inquiry_id, security_token from im_inquiries_customer_portal where session_id = '$session_id'"  

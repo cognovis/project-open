@@ -169,7 +169,7 @@ Ext.onReady(function(){
 	myuploadform = new Ext.FormPanel({
 		renderTo: 'upload_file_placeholder',
                 fileUpload: true,
-                width: 300,
+                width: 600,
                 autoHeight: true,
                 labelWidth: 150,
                 defaults: {
@@ -186,7 +186,8 @@ Ext.onReady(function(){
 		    labelAlign: 'left',
 		    fieldLabel: 'File to translate',
 		    labelWidth: 150,
-                    buttonText: 'Browse'
+                    buttonText: 'Browse',
+                    width: 300
                  }
 		]
         });
@@ -228,7 +229,10 @@ Ext.onReady(function(){
                 	        waitMsg: 'Uploading file...',
 				success: function(response){
 					uploadedFilesStore.load();
-				}
+				}, 
+				failure: function(response){
+					Ext.Msg.show({title:'Could not upload file', msg:'<br/>The file you are trying to upload is either too big or you have already uploaded another file with an identical name.'});
+				}, 
                  	});
 
 			// reset form values 

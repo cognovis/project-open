@@ -25,12 +25,16 @@ ad_page_contract {
     { security_token "" }
 }
 
+
 # ---------------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------------
 
-# set user_id [ad_maybe_redirect_for_registration]
-set template_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp/"]
+if { ![info exists security_token] } {
+    set user_id [ad_maybe_redirect_for_registration]
+} 
+
+set temp_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
 set page_title ""
 set context_bar ""
 
@@ -44,48 +48,43 @@ im_security_alert_check_tmpnam -location "upload-files-form-action.tcl" -value $
 set filesize [file size $tmp_filename]
 
 if { $max_n_bytes && ($filesize > $max_n_bytes) } {
-    set util_commify_number_max_n_bytes [util_commify_number $max_n_bytes]
-    ad_return_complaint 1 "[_ intranet-translation.lt_Your_file_is_larger_t_1]"
-    ad_script_abort
+    # set util_commify_number_max_n_bytes [util_commify_number $max_n_bytes]
+    # ad_return_complaint 1 "[_ intranet-translation.lt_Your_file_is_larger_t_1]"
+    # ad_script_abort
+    ns_return 200 text/html "\{\"success\":false\}"
 }
 
-# if {![regexp {^([a-zA-Z0-9_\-]+)\.([a-zA-Z_]+)\.([a-zA-Z]+)$} $upload_file match]} {
-#    ad_return_complaint 1 [lang::message::lookup "" intranet-core.Invalid_Template_format "
-#        <b>Invalid Template Format</b>:<br>
-#        Templates should have the format 'filebody.locale.ext'.
-#    "]
-#    ad_script_abort
-#}
-
+if { [db_string get_view_id "select count (*) from im_inquiries_files where file_name='$upload_file' and inquiry_id = :inquiry_id" -default 0] } {
+    ns_return 200 text/html "\{\"success\":false\}"
+}
 
 # -------------------------------------------------------------------
 # Copy the uploaded file into the template filestorage
 # -------------------------------------------------------------------
 
+ns_log NOTICE "KHD: $temp_path/$security_token/$upload_file"
+
 if { [catch {
-    ns_cp $tmp_filename "$template_path/$upload_file"
+    ns_cp $tmp_filename "$temp_path/$security_token/$upload_file"
 } err_msg] } {
-    ns_return 200 text/html 0
+    ns_return 200 text/html "\{\"success\":false\}"
 }
 
 # -------------------------------------------------------------------
 # Write inquiry to db 
 # -------------------------------------------------------------------
 
-
-#ad_return_complaint 1 "KHD: Writing to im_inquiries_files: $inquiry_id"
-
 set inquiry_files_id [db_string nextval "select nextval('im_inquiries_files_seq');"]
 
 db_dml insert_inq "
         insert into im_inquiries_files
-                (inquiry_files_id, inquiry_id, file_name, source_language, target_languages, deliver_date, project_id)
+                (inquiry_files_id, inquiry_id, file_name, source_language, target_languages, deliver_date, project_id, file_path)
         values
-                ($inquiry_files_id, $inquiry_id, '$upload_file', :source_language, :target_languages, :delivery_date, :project_id)
+                ($inquiry_files_id, $inquiry_id, '$upload_file', :source_language, :target_languages, :delivery_date, :project_id, '$temp_path/$security_token/')
 "
 
 # -------------------------------------------------------------------
 # Return
 # -------------------------------------------------------------------
 
-ns_return 200 text/html 1
+ns_return 200 text/html "\{\"success\":true\}"

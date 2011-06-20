@@ -79,17 +79,14 @@ set project_status_id 71
 		select * from im_inquiries_files where inquiry_id = :inquiry_id
 	"
 
-	set ctr 700
+	set ctr 0
 
 	db_foreach col $column_sql {
 
 	    set project_name "RFQ Customer Portal $inquiry_id $ctr"
 	    
-	    set project_nr "RFQ_Customer_Portal-"
-	    append project_nr $inquiry_id
-            append project_nr "_" 
-            append project_nr $ctr 
-            append project_nr "_" 
+	    set project_nr "RFQ_Customer_Portal-$inquiry_id"    
+	    append project_nr "_$ctr" "_" 
 
 	    set project_path $project_nr
 
