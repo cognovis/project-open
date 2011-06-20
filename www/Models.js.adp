@@ -141,6 +141,7 @@ Ext.define('TicketBrowser.Ticket', {
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_ticket',
+		appendId: true,
 		extraParams: {
 			format: 'json',		// Tell the ]po[ REST to return JSON data.
 			format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
