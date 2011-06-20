@@ -1439,7 +1439,7 @@ ad_proc -private im_rest_post_object_type {
 		"
 	    }
 	    json { 
-		set data "{\"object_id\": $rest_oid}"
+		set data "\[{\"object_id\": $rest_oid}\]"
 		set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
 		doc_return 200 "text/html" $result
 	    }
@@ -1523,7 +1523,8 @@ ad_proc -private im_rest_post_object {
 	    "
 	}
 	json {
-	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n}"
+	    set data "\[{\"object_id\": $rest_oid}\]"
+	    set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
 	    doc_return 200 "text/html" $result
 	}
 	xml {  
