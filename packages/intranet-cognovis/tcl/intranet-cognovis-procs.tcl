@@ -376,13 +376,15 @@ ad_proc -public intranet_cognovis::delete_project {
 # ---------------------------------------------------------------
 
 ad_proc -public -callback im_helpdesk_ticket_new_redirect -impl intranet-helpdesk {
-    {-object_id:required}
-    {-status_id ""}
-    {-type_id ""}
     {-ticket_id ""}
-    {-form_mode ""}
+    {-ticket_name "" }
+    {-ticket_nr "" }
+    {-ticket_sla_id "" }
+    {-ticket_customer_contact_id "" }
     {-ticket_status_id ""}
-    {-ticket_type_id ""}
+    {-ticket_type_id "" }
+    {-view_name ""}
+    {-escalate_from_ticket_id ""}
     {-return_url:required}
 } {
 	This is mainly a callback to redirect from the original new.tcl page to somewhere else
@@ -392,14 +394,13 @@ ad_proc -public -callback im_helpdesk_ticket_new_redirect -impl intranet-helpdes
         @ticket_status_id This checks what is the current status of a ticket 
         @ticket_type_id This checks what is the current type of a ticket
 } {
-
     if {[exists_and_not_null ticket_id]} {
 	ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/view" {
-	    ticket_id form_mode ticket_status_id ticket_type_id return_url 
+	    ticket_id return_url 
 	}]
     } else {
 	ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/ticket-ae" {
-	    form_mode return_url 
+	    {project_name $ticket_name} {project_nr $ticket_nr} {parent_id $ticket_sla_id} ticket_customer_contact_id ticket_status_id ticket_type_id view_name escalate_from_ticket_id return_url
 	}]
     }
 } 

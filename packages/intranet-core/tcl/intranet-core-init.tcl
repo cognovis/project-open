@@ -468,13 +468,15 @@ ad_proc -public -callback im_timesheet_tasks_index_filter {
 } - 
 
 ad_proc -public -callback im_helpdesk_ticket_new_redirect {
-    {-object_id:required}
-    {-status_id ""}
-    {-type_id ""}
     {-ticket_id ""}
-    {-form_mode ""}
+    {-ticket_name "" }
+    {-ticket_nr "" }
+    {-ticket_sla_id "" }
+    {-ticket_customer_contact_id "" }
     {-ticket_status_id ""}
-    {-ticket_type_id ""}
+    {-ticket_type_id "" }
+    {-view_name ""}
+    {-escalate_from_ticket_id ""}
     {-return_url:required}
 } {
     This is mainly a callback to redirect from the original new.tcl page to somewhere else

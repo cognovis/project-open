@@ -82,17 +82,21 @@ if {![info exists task]} {
 
 # Callback to redirect the new pages
 if {[info exists ticket_id]} {
-    callback im_helpdesk_ticket_new_redirect -object_id [ad_conn object_id] \
-	-status_id "" -type_id "" -ticket_id $ticket_id \
-	-form_mode $form_mode -ticket_status_id $ticket_status_id \
-	-ticket_type_id $ticket_type_id -return_url $return_url
+    set callback_ticket_id $ticket_id
 } else {
-    callback im_helpdesk_ticket_new_redirect -object_id [ad_conn object_id] \
-	-status_id "" -type_id "" -ticket_id ""  \
-	-form_mode $form_mode -return_url $return_url
+    set callback_ticket_id ""
 }
 
-
+callback im_helpdesk_ticket_new_redirect -ticket_id $callback_ticket_id \
+    -ticket_name $ticket_name \
+    -ticket_nr $ticket_nr \
+    -ticket_sla_id $ticket_sla_id \
+    -ticket_customer_contact_id $ticket_customer_contact_id \
+    -ticket_status_id $ticket_status_id \
+    -ticket_type_id $ticket_type_id \
+    -view_name $view_name \
+    -escalate_from_ticket_id $escalate_from_ticket_id \
+    -return_url $return_url 
 
 # ------------------------------------------------------------------
 # Default & Security

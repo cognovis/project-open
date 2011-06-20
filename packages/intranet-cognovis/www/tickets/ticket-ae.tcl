@@ -10,13 +10,16 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     ticket_id:integer,optional
-    { ticket_type_id "" }
-    { ticket_sla_id "" }
-    { parent_id $ticket_sla_id }
-    { return_url "" }
-    { format "html" }  
+    {project_name "" }
+    {project_nr "" }
+    {parent_id "" }
+    {ticket_customer_contact_id "" }
+    {ticket_status_id ""}
+    {ticket_type_id "" }
+    {view_name ""}
+    {escalate_from_ticket_id 0}
+    {return_url ""}
 }
-
 
 # ----------------------------------------------                                                                                                            
 # Page Title                                                                                                                                                
@@ -24,7 +27,7 @@ set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticke
 if {[exists_and_not_null ticket_id]} {
     set page_title [db_string title "select project_name from im_projects where project_id = :ticket_id" -default ""]
 }
-set focus "ticket.ticket_name"
+set focus "ticket.project_name"
 set context [list $page_title]
 
 
@@ -43,8 +46,8 @@ set create_ticket_p [im_permission $current_user_id add_tickets_for_customers]
 
 # Check if we can get the ticket_customer_id.                                                                                                                
 # We need this field in order to limit the customer contacts to show.                                                                                        
-if {![exists_and_not_null ticket_customer_id] && [exists_and_not_null ticket_sla_id] && "new" != $ticket_sla_id} {
-    set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
+if {![exists_and_not_null ticket_customer_id] && [exists_and_not_null parent_id] && "new" != $parent_id} {
+    set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :parent_id" -default ""]
 }
 
 ad_form \
@@ -85,7 +88,7 @@ ad_form -extend -name ticket -edit_request {
 
 } -new_request {
     # ------------------------------------------------------------------
-    # Redirect if ticket_type_id or ticket_sla_id are missing
+    # Redirect if ticket_type_id or parent_id are missing
     # ------------------------------------------------------------------
     
     set redirect_p 0
@@ -97,10 +100,10 @@ ad_form -extend -name ticket -edit_request {
     }
     
     # Redirect if the SLA hasn't been defined yet
-    if {("" == $ticket_sla_id || 0 == $ticket_sla_id) && ![exists_and_not_null ticket_id]} { set redirect_p 1 }
+    if {("" == $parent_id || 0 == $parent_id) && ![exists_and_not_null ticket_id]} { set redirect_p 1 }
     
     if {$redirect_p} {
-	ad_returnredirect [export_vars -base "/intranet-helpdesk/new-typeselect" {{return_url $current_url} ticket_id ticket_type_id ticket_name ticket_nr ticket_nr ticket_sla_id}]
+	ad_returnredirect [export_vars -base "/intranet-cognovis/tickets/new-typeselect" {{return_url $current_url} ticket_id ticket_type_id project_name project_nr ticket_status_id parent_id}]
     }
     
     

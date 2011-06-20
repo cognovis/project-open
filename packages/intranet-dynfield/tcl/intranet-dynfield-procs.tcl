@@ -1080,6 +1080,14 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             set default_message ""
         }
         
+        # set the value
+        upvar $attribute_name x
+
+        if {[info exists x]} {
+	    ds_comment "$attribute_id | $attribute_name | $x"
+        } else {
+	    ds_comment "$attribute_name"
+	}
         
         im_dynfield::append_attribute_to_form \
             -attribute_name $attribute_name \
@@ -1094,11 +1102,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             -default_value $default_message \
             -admin_html $admin_html
         
-        # set the value
-        upvar $attribute_name x
         if {[info exists x]} {
-	    ns_log Notice "$attribute_id | $attribute_name"
-
             template::element::set_value $form_id $attribute_name $x
         }
         
