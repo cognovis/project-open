@@ -188,6 +188,7 @@ Ext.define('TicketBrowser.Company', {
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_company',
+		appendId: true,
 		extraParams: {
 			format: 'json'		// Tell the ]po[ REST to return JSON data.
 		},
