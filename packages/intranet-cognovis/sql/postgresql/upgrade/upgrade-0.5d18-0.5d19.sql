@@ -19,6 +19,10 @@
 -- @cvs-id $Id$
 --
 
+drop view acs_log_id_seq;
+create view acs_log_id_seq as
+select nextval('t_acs_log_id_seq') as nextval from dual;
+
 SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d18-0.5d19.sql','');
 
 -- Update the view to correctly display the project and task

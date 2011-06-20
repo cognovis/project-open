@@ -1,5 +1,5 @@
 -- upgrade-4.0.1.0.3-4.0.1.0.4.sql
-SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-4.0.1.0.3-4.0.1.0.4.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-4.0.1.0.3-4.0.1.0.4.sql','') from dual;
 
 
 -- Remove im_timesheet_task dynfield attributes: project_status_id and project_type_id
@@ -76,22 +76,9 @@ BEGIN
         ''f'',
         ''im_timesheet_tasks''
         );
-      END IF;
 
       -- Add column on table im_timesheet_tasks
       ALTER TABLE im_timesheet_tasks ADD COLUMN task_status_id integer;
-
-      -- Set default object_type_id for tasks as 9500 instead of 100
-      SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map 
-      WHERE attribute_id = v_attribute_id AND (object_type_id = 100 OR object_type_id = 9500);
-
-      IF v_count = 0 THEN
-      	 INSERT INTO im_dynfield_type_attribute_map
-	 	(attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
-	 VALUES
-		(v_attribute_id, 9500,''none'',null,null,null,''t'');
-      ELSE
-	 UPDATE im_dynfield_type_attribute_map SET object_type_id = 9500, display_mode = ''none'', required_p = ''t'' WHERE attribute_id = v_attribute_id AND object_type_id = 100;
       END IF;
 
       RETURN 0;
@@ -148,10 +135,10 @@ BEGIN
         ''f'',
         ''im_timesheet_tasks''
         );
-      END IF;
-
       -- Add column on table im_timesheet_tasks
       ALTER TABLE im_timesheet_tasks ADD COLUMN task_type_id integer;
+      END IF;
+
       
       SELECT count(*) INTO v_count FROM im_dynfield_type_attribute_map 
       WHERE attribute_id = v_attribute_id AND (object_type_id = 100 OR object_type_id = 9500);
@@ -177,26 +164,9 @@ DROP FUNCTION inline_5 ();
 -- Task Status Category "Closed"
 SELECT im_category_new (9601,'Closed','Intranet Timesheet Task Status');
 
+UPDATE im_timesheet_tasks SET task_type_id = 9500;
 
+UPDATE im_timesheet_tasks SET task_status_id = 9600 where task_id in (select project_id from im_projects where project_status_id = 76);
+UPDATE im_timesheet_tasks SET task_status_id = 9601 where task_id in (select project_id from im_projects where project_status_id = 81);
 
--- Set task_type_id to the default value 9500 and task_status_id to 9600 and 9602
-CREATE OR REPLACE FUNCTION inline_0()
-RETURNS integer AS '
-DECLARE 
-
-BEGIN
-
-	UPDATE im_timesheet_tasks SET task_type_id = 9500;
-
-	UPDATE im_timesheet_tasks SET task_status_id = 9600 FROM im_timesheet_tasks t INNER JOIN im_projects p ON t.task_id = p.project_id AND p.project_status_id = 76;
-
-	UPDATE im_timesheet_tasks SET task_status_id = 9601 FROM im_timesheet_tasks t INNER JOIN im_projects p ON t.task_id = p.project_id AND p.project_status_id = 81;
-
-	RETURN 0;
-	
-END;' language 'plpgsql';
-
-SELECT inline_0();
-DROP FUNCTION inline_0();
-
-UPDATE im_menus SET url = '' /intranet-timesheet2-tasks/index?view_name=im_timesheet_task_list&task_status_id=9600'' WHERE package_name = ''intranet-timesheet2-tasks'' AND label = ''project_timesheet_task'' AND name = ''Tasks'';    
+UPDATE im_menus SET url = '/intranet-timesheet2-tasks/index?view_name=im_timesheet_task_list&task_status_id=9600' WHERE package_name = 'intranet-timesheet2-tasks' AND label = 'project_timesheet_task' AND name = 'Tasks';    

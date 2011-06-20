@@ -8,7 +8,7 @@
 
 create sequence t_acs_log_id_seq;
 create view acs_log_id_seq as
-select nextval('t_acs_log_id_seq') as nextval;
+select nextval('t_acs_log_id_seq') as nextval from dual;
 
 create table acs_logs (
 	log_id		integer
