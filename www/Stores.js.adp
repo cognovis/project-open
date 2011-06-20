@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.25 2011/06/16 11:38:41 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.26 2011/06/20 17:09:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,7 +26,7 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
-	autoLoad:	false,
+	autoLoad:	true,
 
 	proxy: {
 		type: 'rest',
@@ -50,7 +50,7 @@ ticketAreaStore.load(
 var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketTypeStore',
 	remoteFilter:	true,
-	autoLoad:	false,
+	autoLoad:	true,
 	model: 'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
@@ -211,7 +211,14 @@ var userStore = Ext.create('PO.data.UserStore', {
 	autoSync: 	true,			// Write changes to the REST server ASAP
 	// Load all users into this table, this is rarely more than 2000...
 	// ToDo: Replace this with a server-side search function plus cache(?)
-	pageSize: 	1000000
+	pageSize: 	1000000,
+	sorters: [{
+		property: 'first_names',
+		direction: 'ASC'
+	}, {
+		property: 'last_name',
+		direction: 'ASC'
+	}]
 });
 
 
@@ -278,8 +285,8 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	autoSync: true,			// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
-		property: 'creation_date',
-		direction: 'DESC'
+		property: 'company_name',
+		direction: 'ASC'
 	}]
 });
 
@@ -307,6 +314,17 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 			totalProperty: 'total'
 		}
 	}
+});
+
+
+
+
+// Store for keeping the filtered groups per program.
+// Initialize to an empty store. There is a procedure
+// updating its values depending on the "program/area".
+var programGroupStore = Ext.create('PO.data.ProfileStore', {
+	model:		'TicketBrowser.Profile',
+	autoLoad:	false
 });
 
 

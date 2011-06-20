@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.24 2011/06/17 11:29:10 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.25 2011/06/20 17:09:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -57,6 +57,8 @@ Ext.define('TicketBrowser.Category', {
         {type: 'string', name: 'category_id'},
         {type: 'string', name: 'tree_sortkey'},
         {type: 'string', name: 'category'},
+	{type: 'string', name: 'aux_string1'},
+	{type: 'string', name: 'aux_string2'},
 	{type: 'string', name: 'category_type'},
         {type: 'string', name: 'category_translated'},
         {type: 'string', name: 'indent_class',
@@ -90,6 +92,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_customer_contact_id',	// For whom do we work?
 
 	'fs_folder_id',			// File-storage folder for this ticket
+	'fs_folder_path',		// File-storage folder path for this ticket
 
 	// Main ticket fields
 	'ticket_prio_id',		// Priority
@@ -361,6 +364,9 @@ Ext.define('TicketBrowser.TicketAudit', {
         'ticket_file',                  // expediente
         'ticket_request',               // expediente
         'ticket_resolution',            // expediente
+
+	'ticket_program_id',		//
+	'ticket_area_id',		//
 
 	// fields from im_ticket
 	'ticket_alarm_action',

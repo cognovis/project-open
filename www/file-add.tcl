@@ -2,7 +2,7 @@ ad_page_contract {
     page to add a new file to the system
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: file-add.tcl,v 1.4 2011/06/17 14:53:56 po34demo Exp $
+    @cvs-id $Id: file-add.tcl,v 1.5 2011/06/20 17:09:43 po34demo Exp $
 } {
     { ticket_id:integer ""}
     upload_file:trim,optional
@@ -11,6 +11,7 @@ ad_page_contract {
     {description "" }
 }
 
+if {"" == $title} { set title $upload_file }
 
 if {![info exists upload_file]} {
     ns_log Notice "file-add: failure: upload_file does not exist"
@@ -72,11 +73,17 @@ if {"" != $upload_file} {
     
 }
 
+set folder_path [db_string folder_path "select fs_folder_path from im_biz_objects where object_id = :ticket_id"]
+
 ns_log Notice "file-add: success"
 doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	true,
-		\"errors\":	{\"email\": \"already taken\"}
+		\"message\":	\"File successfully created\",
+		\"data\":	\[{
+			\"fs_folder_id\":	$folder_id,
+			\"fs_folder_path\":	\"$folder_path\"
+		}\]
     	}
 }"
 ad_script_abort

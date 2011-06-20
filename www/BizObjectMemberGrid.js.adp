@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: BizObjectMemberGrid.js.adp,v 1.3 2011/06/17 11:29:10 po34demo Exp $
+ * @cvs-id $Id: BizObjectMemberGrid.js.adp,v 1.4 2011/06/20 17:09:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -97,11 +97,17 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 
 	// Deal with both a single value and a customer model
 	var customer_id = '';
-	if (typeof customer === 'string') {
-		customer_id = customer;
-	} else {
-		// We probably got the entire customer_model here
-		var customer_id = customer.get('company_id');
+	switch (typeof customer) {
+		case 'string':
+			customer_id = customer;
+		break;
+		case 'number':
+			customer_id = customer + '';
+		break;
+		default:
+			// We probably got the entire customer_model here
+			var customer_id = customer.get('company_id');
+		break;
 	}
 
 	// Save the property in the proxy, which will pass it directly to the REST server

@@ -176,6 +176,23 @@ SELECT im_category_new(76024, 'Maquina Herramienta', 'Intranet Sencha Ticket Tra
 SELECT im_category_new(76026, 'MEP', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76028, 'Sucesiones', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76030, 'Transmision Empresarial y Emprendizaje', 'Intranet Sencha Ticket Tracker Area');
+
+update im_categories set aux_string1 = 'BE-XXXX-2011' where category_id = 76002;
+update im_categories set aux_string1 = 'BE-XXXX-2011' where category_id = 76004;
+update im_categories set aux_string1 = 'CET-XX-2011' where category_id = 76006;
+update im_categories set aux_string1 = 'CEU-XX-2011' where category_id = 76008;
+update im_categories set aux_string1 = 'BA-XX-2011' where category_id = 76010;
+update im_categories set aux_string1 = 'GZI-XXXX-2011' where category_id = 76012;
+update im_categories set aux_string1 = 'GZIMP-XXXX-2011' where category_id = 76012;
+update im_categories set aux_string1 = 'GZT-XXXX-2011' where category_id = 76016;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76018;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76020;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76022;
+update im_categories set aux_string1 = 'MH-XXXX-11' where category_id = 76024;
+update im_categories set aux_string1 = 'MEP-XXXX-2011' where category_id = 76026;
+update im_categories set aux_string1 = 'XXX-11' where category_id = 76028;
+update im_categories set aux_string1 = 'XXXXXXXXXXXXXXXXXX' where category_id = 76030;
+
 SELECT im_category_hierarchy_new(76002, 76000);
 SELECT im_category_hierarchy_new(76004, 76000);
 SELECT im_category_hierarchy_new(76006, 76000);
@@ -192,9 +209,12 @@ SELECT im_category_hierarchy_new(76026, 76000);
 SELECT im_category_hierarchy_new(76028, 76000);
 SELECT im_category_hierarchy_new(76030, 76000);
 
+
 SELECT im_category_new(76200, 'Sociedad de la Informacion', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76202, 'Mejora + Digital@', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76204, 'Asociacion + Digital@', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'XXXXX-11' where category_id = 76202;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76204;
 SELECT im_category_hierarchy_new(76202, 76200);
 SELECT im_category_hierarchy_new(76204, 76200);
 
@@ -204,6 +224,11 @@ SELECT im_category_new(76404, 'Compite Agentes Comercio', 'Intranet Sencha Ticke
 SELECT im_category_new(76406, 'Compite Empresas', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76408, 'Itinerarios', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76410, 'Aldatu', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'AD-2011-XXXX' where category_id = 76402;
+update im_categories set aux_string1 = 'AT-2011-XXXX' where category_id = 76404;
+update im_categories set aux_string1 = 'AB-2011-XXXX' where category_id = 76406;
+update im_categories set aux_string1 = 'YYY-XXXX-10' where category_id = 76408;
+update im_categories set aux_string1 = 'AL-2011-XXXX' where category_id = 76410;
 SELECT im_category_hierarchy_new(76402, 76400);
 SELECT im_category_hierarchy_new(76404, 76400);
 SELECT im_category_hierarchy_new(76406, 76400);
@@ -214,6 +239,9 @@ SELECT im_category_new(76600, 'Tecnologia y Innovacion', 'Intranet Sencha Ticket
 SELECT im_category_new(76602, 'Gaitek', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76604, 'Hedatu', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76606, 'Nets', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76602;
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76604;
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76606;
 SELECT im_category_hierarchy_new(76602, 76600);
 SELECT im_category_hierarchy_new(76604, 76600);
 SELECT im_category_hierarchy_new(76606, 76600);

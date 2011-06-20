@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.19 2011/06/16 13:55:26 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.20 2011/06/20 17:09:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,6 +22,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	extend: 	'Ext.form.Panel',	
@@ -83,15 +84,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
 				}
-			}, {
-				name:		'ticket_channel_detail_id',
-				fieldLabel:	'#intranet-sencha-ticket-tracker.Channel_Details#',
-				xtype:		'hiddenfield',
-				valueField:	'category_id',
-				displayField:	'category_translated',
-				forceSelection: true,
-				queryMode: 	'remote',
-				store: 		ticketStatusStore
 			}, {
 				name:		'ticket_done_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
@@ -215,6 +207,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					var panel = this.ownerCt.ownerCt;
 					if (!panel.rendered) { return; }		// Skip action while form is still rendering
 					var value = field.getValue();
+					var queueField = panel.getForm().findField('ticket_queue_id');
 					if (value == '30028' || value == '30009') {
 						// Set the esclation date field
 						var esclationDateField = panel.getForm().findField('ticket_escalation_date');
@@ -222,8 +215,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 						esclationDateField.setDisabled(false);	// enable to allow saving
 
 						// Enable the tickte_queue_id to define the escalation group
-						var queueField = panel.getForm().findField('ticket_queue_id');
+						queueField.store = programGroupStore;
+						delete queueField.lastQuery;
 						queueField.show();
+					} else {
+						queueField.hide();
 					}
 
 				    }
@@ -236,8 +232,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				displayField:	'group_name',
 				forceSelection: true,
 				hidden:		true,
-				queryMode:	'remote',
-				store:		profileStore,
+				queryMode:	'local',
+				store:		programGroupStore,	// Filtered list of profiles
 				width:		300
 			}]
 		}

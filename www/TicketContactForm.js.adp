@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.6 2011/06/17 11:29:10 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.7 2011/06/20 17:09:43 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -185,7 +185,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					// This code is called once the reply from the server has arrived.
 					try {
 						var resp = Ext.decode(operation.response.responseText);
-						var user_id = resp.data.object_id;
+						var user_id = resp.data[0].object_id + '';
 					} catch (ex) {
 						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
 						return;
