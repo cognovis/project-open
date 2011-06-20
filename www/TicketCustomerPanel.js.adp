@@ -136,6 +136,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			rec.set('company_id', company_id);
 			ticketStore.sync();
 
+			// Tell all panels to load the data of the newly created object
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+			compoundPanel.loadTicket(ticket_model);	
                 }
 	}, {
 		itemId:		'createButton',
@@ -158,7 +161,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 					// The server response includes data.object_id for the new object.
 					try {
 						var resp = Ext.decode(operation.response.responseText);
-						var company_id = resp.data.object_id;
+						var company_id = resp.data[0].object_id + '';
 					} catch (ex) {
 						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
 						return;

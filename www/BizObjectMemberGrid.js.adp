@@ -97,11 +97,17 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 
 	// Deal with both a single value and a customer model
 	var customer_id = '';
-	if (typeof customer === 'string') {
-		customer_id = customer;
-	} else {
-		// We probably got the entire customer_model here
-		var customer_id = customer.get('company_id');
+	switch (typeof customer) {
+		case 'string':
+			customer_id = customer;
+		break;
+		case 'number':
+			customer_id = customer + '';
+		break;
+		default:
+			// We probably got the entire customer_model here
+			var customer_id = customer.get('company_id');
+		break;
 	}
 
 	// Save the property in the proxy, which will pass it directly to the REST server

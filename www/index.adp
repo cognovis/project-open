@@ -7,6 +7,7 @@
 	<link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
 	<link rel="stylesheet" type="text/css" href="ticketbrowser.css" /> 
 
+
 	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="POClasses.js"></script> 
@@ -16,6 +17,9 @@
 	<script type="text/javascript" src="ProjectSlaList.js"></script> 
 	<script type="text/javascript" src="AuditGrid.js"></script> 
 	<script type="text/javascript" src="FileStorageGrid.js"></script> 
+
+	<!-- ------------------------------- Custome Specific ---------------------------------- -->
+	<script type="text/javascript" src="SPRIProgramGroupStore.js"></script>
 
 	<!-- ------------------------------- Tickets ---------------------------------------- -->
 	<script type="text/javascript" src="TicketContainer.js"></script> 

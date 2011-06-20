@@ -185,7 +185,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					// This code is called once the reply from the server has arrived.
 					try {
 						var resp = Ext.decode(operation.response.responseText);
-						var user_id = resp.data.object_id;
+						var user_id = resp.data[0].object_id + '';
 					} catch (ex) {
 						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
 						return;

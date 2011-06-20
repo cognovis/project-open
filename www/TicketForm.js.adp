@@ -22,6 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	extend: 	'Ext.form.Panel',	
 	alias: 		'widget.ticketForm',
@@ -69,7 +70,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Main ticket fields
 	{
-		name: 'project_name', 
+		name:		'project_name', 
+		itemId:		'project_name',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Name#',
 		disabled:	false,
         	width: 		300
@@ -90,8 +92,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		}
 	}, {
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_area_id',
+		itemId:		'ticket_area_id',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		xtype:		'combobox',
         	width: 		300,
                 valueField:	'category_id',
@@ -103,10 +106,54 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
+		},
+		listeners:{
+		    // The user has selected a program/area from the drop-down box.
+		    // Now construct a new ProgramGroupStore based on this information
+		    // with only those groups/profiles that are assigned to the program
+		    'change': function() {
+
+			// Set the default code for the new ticket
+			var programId = this.getValue();
+			if (null != programId) {
+				var programModel = ticketAreaStore.findRecord('category_id', programId);
+				var programName = programModel.get('category');
+				var programFile = programModel.get('aux_string1');
+				var fileField = this.ownerCt.child('#ticket_file');
+				fileField.setValue(programFile);
+
+				// Remove all elements from the store
+				programGroupStore = new Ext.data.ArrayStore({
+					model:		'TicketBrowser.Profile',
+					autoDestroy:	true
+				});
+	
+				// Get the row with the list of groups enabled for this area:
+	                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
+				if (null == mapRow) {
+					alert('Configuration Error:\nProgram "'+programName+'" not found');
+					return;
+				}
+	
+				// loop through the groups in the profile store and add them
+				// to the programGroupStore IF it's enabled for this program.
+				for (var i = 0; i < profileStore.getCount(); i++) {
+					var profileModel = profileStore.getAt(i);
+					var profileName = profileModel.get('group_name');
+					var enabled = mapRow.get(profileName);
+					if (enabled != null && enabled != '') {
+						programGroupStore.insert(0, profileModel);
+					}
+				}
+			}
+		    }
 		}
+
+
 	}, {
+		name:		'ticket_file',
+		itemId:		'ticket_file',
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
-	        name:		'ticket_file',
         	width: 		300,
 	        xtype:		'textfield'
 	}],
@@ -129,6 +176,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		if ('' == ticket_id) {
 
+			// Disable the form until the ticket_id has arrived
+			this.setDisabled(true);
+
 			// create a new ticket
 			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
 			ticket_record.phantom = true;
@@ -139,17 +189,22 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					// The server response includes data.object_id for the new object.
 					try {
 						var resp = Ext.decode(operation.response.responseText);
-						var ticket_id = resp.data.object_id;
+						var ticket_id = resp.data[0].object_id + '';
 					} catch (ex) {
 						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
 						return;
 					}
+
+					if (null == ticket_id) { alert('Creating the object completely failed'); return; }	
 
 					// Extract all fields of the new object, including the ones in this form.
 					var ticketForm = Ext.getCmp('ticketForm').getForm();
 					var form_values = ticketForm.getFieldValues();
 					form_values.ticket_id = ticket_id;
 					form_values.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
+
+					// The ticket_id has arrived, so we can show the rest
+					this.setDisabled(false);
 
 					// Tell all panels to load the data of the newly created object
 					var ticket_model= Ext.ModelManager.create(form_values, 'TicketBrowser.Ticket');
