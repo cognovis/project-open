@@ -17,6 +17,17 @@ Ext.require([
 
 Ext.onReady(function(){
 
+	var transformed = Ext.create('Ext.form.field.ComboBox', {
+	    renderTo: 'source_language_placeholder',
+	    typeAhead: true,
+	    transform: 'source_language_id',
+	    // width: 135,
+	    forceSelection: true,
+	    fieldLabel: 'Source Language',
+	    labelAlign: 'left',
+	    labelWidth: 150              
+	});
+
 	// ************** Panel: UploadedFiles Data Grid*** //
 
 	Ext.define('UploadedFiles', {
@@ -25,7 +36,7 @@ Ext.onReady(function(){
         	{name: 'inquiry_files_id', type: 'string'},
 	        {name: 'file_name', type: 'string'},
         	{name: 'source_language', type: 'string'},
-	        {name: 'target_language',  type: 'string'},
+	        {name: 'target_languages',  type: 'string'},
         	{name: 'deliver_date',  type: 'string'}
 	    ]
 	});
@@ -35,7 +46,7 @@ Ext.onReady(function(){
 	    model: 'UploadedFiles',
 	    proxy: {
         	type: 'ajax',
-	        url: '/intranet-customer-portal/get-uploaded-files1?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
+	        url: '/intranet-customer-portal/get-uploaded-files?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
         	reader: {
 	            type: 'json',
         	    root: 'files'
@@ -50,35 +61,23 @@ Ext.onReady(function(){
 		height: 300,
 		columns: [
         	    {header: "ID", width: 25, dataIndex: 'inquiry_files_id', sortable: true},
-        	    {header: "File", width: 150, dataIndex: 'file_name', sortable: true},
+        	    {header: "File", width: 100, dataIndex: 'file_name', sortable: true},
         	    {header: "Source Language", width: 100, dataIndex: 'source_language', sortable: true},
-        	    {header: "Target Languages", width: 100, dataIndex: 'target_language', sortable: true},
+        	    {header: "Target Languages", width: 200, dataIndex: 'target_languages', sortable: true},
         	    {header: "Delivery Date", width: 100, dataIndex: 'deliver_date', sortable: true}
         	]
 	});
 
 	uploadedFilesStore.load();
 
-       // ************** Panel: UploadedFiles *** //
-/*
-       Ext.define('CustomerPortal.UploadedFiles', {
-            extend: 'Ext.data.Model',
-            idProperty: 'inquiry_files_id',          // The primary key of the category
-            fields: [
-                {type: 'string', name: 'inquiry_files_id'},
-                {type: 'string', name: 'file_name'},
-                {type: 'string', name: 'source_language'},
-                {type: 'string', name: 'target_languages'},
-                {type: 'string', name: 'deliver_date'},
-            ]
-        });
-*/
 
         // ************** Target Language *** //
 
        Ext.define('CustomerPortal.Category', {
             extend: 'Ext.data.Model',
             idProperty: 'category_id',          // The primary key of the category
+
+
             fields: [
                 {type: 'string', name: 'category_id'},
                 {type: 'string', name: 'tree_sortkey'},
@@ -130,13 +129,19 @@ Ext.onReady(function(){
             id:                 'targetLanguageForm_id',
             renderTo:           'form_target_languages',
             autoHeight:         true,
-            width:              200,
-            height:             100,
+            // width:              400,
+            height:             50,
             // standardsubmit:     true,
+            // bodyStyle: 'padding: 0px 10px 0px 10px;',
+		
             items: [{
                 id: 'target_language_id',
                 // name: 'target_language_id',
-                xtype: 'boxselect',
+                width: 700,
+		xtype: 'boxselect',
+		fieldLabel: 'Target Languages',
+		labelAlign: 'left',
+		labelWidth: 150,
                 valueField: 'category_id',
 		hiddenName: 'target_language_ids',
                 displayField: 'category_translated',
@@ -162,12 +167,11 @@ Ext.onReady(function(){
         // ************** Upload Form *** //
 
 	myuploadform = new Ext.FormPanel({
-		renderTo: 'fi-basic',
+		renderTo: 'upload_file_placeholder',
                 fileUpload: true,
                 width: 300,
                 autoHeight: true,
-                // bodyStyle: 'padding: 10px 10px 10px 10px;',
-                labelWidth: 50,
+                labelWidth: 150,
                 defaults: {
                     anchor: '95%',
                     allowBlank: false,
@@ -178,8 +182,10 @@ Ext.onReady(function(){
                     xtype: 'fileuploadfield',
 		    id: 'upload_file',
 		    name:  'upload_file',
-                    emptyText: 'Select a document to upload...',
-                    fieldLabel: 'File',
+                    // emptyText: 'Select a document to upload...',
+		    labelAlign: 'left',
+		    fieldLabel: 'File to translate',
+		    labelWidth: 150,
                     buttonText: 'Browse'
                  }
 		]
@@ -193,7 +199,9 @@ Ext.onReady(function(){
 input_delivery_date = new Ext.form.Date({
     id: 'delivery_date',
     renderTo: 'delivery_date_placeholder',
-    // fieldLabel: 'Birth date',
+    fieldLabel: 'Desired Delivery Date',
+    labelAlign: 'left',
+    labelWidth: 150, 
     format: 'Y-m-d',
     value: new Date(todays_date),
     minValue: todays_date,
@@ -292,8 +300,9 @@ input_delivery_date = new Ext.form.Date({
                         targetLanguageForm.getForm().findField('target_language_id').setValue('');
                         document.getElementById('delivery_date').value = todays_date;
                         myuploadform.getForm().findField('upload_file').setValue('');
-                        form_source_language.elements[0].value = '';
+                        // form_source_language.elements[0].value = '';
 			// handle_file_list.update_file_list().delay(5000);
+			uploadedFilesStore.load().delay(3000);
                  }
         };
 

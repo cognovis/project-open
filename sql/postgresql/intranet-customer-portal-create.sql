@@ -20,15 +20,15 @@ create sequence im_inquiries_customer_portal_seq start 1;
 create table im_inquiries_customer_portal (
         inquiry_id              integer
                                 primary key,
-        first_names             varchar(50)
-                                not null,
-        last_names              varchar(50)
-                                not null,
-        email	                varchar(50)
-                                not null,
-        company_name            varchar(50),
-        phone			varchar(50),
-        security_token 		varchar(40)
+        first_names             varchar(50),
+        last_names              varchar(80),
+        email	                varchar(50),
+        company_name            varchar(80),
+        phone			varchar(20),
+        security_token 		varchar(40),
+	company_id		integer,
+	status_id		integer,
+	session_id		varchar(200)
 );
 
 create sequence im_inquiries_files_seq start 1;
@@ -43,7 +43,8 @@ create table im_inquiries_files (
 	target_languages	varchar(200)
                                 not null, 
 	deliver_date		date,
-	project_id		integer
+	project_id		integer,
+	file_path		varchar(200)
 );
 
 -- Create DynView for project list  

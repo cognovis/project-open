@@ -40,6 +40,13 @@ if { "" != $inquiry_id } {
                 i.inquiry_id = :inquiry_id
     } {
 	incr row_count
+	set target_lang_lst [split "$target_languages" ","]
+	set abbrev_target_lang_lst [list]
+
+	foreach j $target_lang_lst {
+	    lappend abbrev_target_lang_lst "[im_category_from_id $j]"
+	}
+	set target_languages [join $abbrev_target_lang_lst ", "]
     }
 }
 
