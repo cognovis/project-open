@@ -144,6 +144,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	    return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 	}
     }, {
+	header: '#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+	dataIndex: 'ticket_file'
+    }, {
 	header: '#intranet-sencha-ticket-tracker.Creation_Date#',
 	dataIndex: 'ticket_creation_date'
     }, {
@@ -188,7 +191,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	// Save the property in the proxy, which will pass it directly to the REST server
 	var ticket_id = rec.data.ticket_id;
 	auditStore.proxy.extraParams['object_id'] = ticket_id;
-	auditStore.load();
+	auditStore.loadPage(1);
     },
 
     // Somebody pressed the "New Ticket" button:
