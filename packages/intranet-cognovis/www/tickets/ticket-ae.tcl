@@ -170,7 +170,7 @@ ad_form -extend -name ticket -edit_request {
     }   
     
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action create
+    im_project_audit -object_type "im_ticket" -project_id $ticket_id -action create
 
 } -edit_data {
 
@@ -184,7 +184,7 @@ ad_form -extend -name ticket -edit_request {
 	-form_id ticket
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action update
+    im_project_audit -object_type "im_ticket" -project_id $ticket_id -action update
 
     notification::new \
         -type_id [notification::type::get_type_id -short_name ticket_notif] \

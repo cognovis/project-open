@@ -1,15 +1,5 @@
 ad_library {
-    Bring together all procedures and components (=HTML + SQL code)
-    related to Projects.
-
-    Sections of this library:
-    <ul>
-    <li>Project OO new, del and name methods
-    <li>Project Business Logic
-    <li>Project Components
-
-    @author unknown@arsdigita.com
-    @author frank.bergmann@project-open.com
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @author iuri.sampaio@gmail.com
 }
 
