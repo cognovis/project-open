@@ -1,15 +1,10 @@
 <master>
 
 <table>
-@channel_header;noquote@
-@channel_body;noquote@
+<tr class=rowtitle>@header;noquote@</tr>
+@body;noquote@
+<tr>@footer;noquote@</tr>
 </table>
-
-<!--
-<p>
-<pre><%= [array get channel_hash] %></pre>
--->
-
 
 
 
