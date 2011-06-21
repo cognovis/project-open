@@ -81,8 +81,6 @@ db_foreach channel_hash $channel_sql {
     }
 }
 
-# ad_return_complaint 1 "<pre>$dimension_perms\n[array get channel_hash]</pre>"
-
 
 # ----------------------------------------------------------------
 # Calculate the dimension values
@@ -127,45 +125,52 @@ lappend channel_list -1001
 # Format the data 
 # ----------------------------------------------------------------
 
-set channel_header "<td class=rowtitle></td>"
+set header "<td class=rowtitle></td>"
 foreach channel_id $channel_list {
-    append channel_header "<td class=rowtitle>[im_category_from_id -translate_p 0 $channel_id]</td>"
+    append header "<td class=rowtitle>[im_category_from_id -translate_p 0 $channel_id]</td>\n"
 }
-append channel_header "<td class=rowtitle>$sigma</td>"
-set channel_header "<tr class=rowtitle>$channel_header</tr>"
+append header "<td class=rowtitle>$sigma</td>\n"
 
 set channel_body ""
 foreach area_id $area_list {
-    set row "<tr><td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+    set row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
     foreach channel_id $channel_list {
 	set val "-"
 	set key "$area_id-$channel_id"
 	if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
-	append row "<td>$val</td>"
+	append row($area_id) "<td>$val</td>"
     }
 
     # Last Column
     set val "-"
     set key $area_id
     if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
-    append row "<td>$val</td>"
-
-    append row "</tr>"
-    append channel_body $row
+    append row($area_id) "<td>$val</td>"
 }
 
-set row "<tr><td>$sigma</td>\n"
+set footer "<td>$sigma</td>\n"
 foreach channel_id $channel_list {
     set val "-"
     set key "$channel_id"
     if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
-    append row "<td>$val</td>"
+    append footer "<td>$val</td>"
 }
 
 # Last Column
 set val "-"
 set key ""
 if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
-append row "<td>$val</td>"
+append footer "<td>$val</td>"
 
-append channel_body $row
+
+
+# ----------------------------------------------------------------
+# Join the area rows
+# ----------------------------------------------------------------
+
+set body ""
+foreach area_id $area_list {
+    ns_log Notice "report-area: area_id=$area_id"
+    append body "<tr>$row($area_id)</tr>\n"
+}
+
