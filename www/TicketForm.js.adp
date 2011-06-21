@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.31 2011/06/20 17:09:43 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.32 2011/06/21 12:32:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -115,35 +115,35 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 			// Set the default code for the new ticket
 			var programId = this.getValue();
-			if (null != programId) {
-				var programModel = ticketAreaStore.findRecord('category_id', programId);
-				var programName = programModel.get('category');
-				var programFile = programModel.get('aux_string1');
-				var fileField = this.ownerCt.child('#ticket_file');
-				fileField.setValue(programFile);
+			if (null == programId) { return; }
+			var programModel = ticketAreaStore.findRecord('category_id', programId);
+			if (null == programModel) { return; }
+			var programName = programModel.get('category');
+			var programFile = programModel.get('aux_string1');
+			var fileField = this.ownerCt.child('#ticket_file');
+			fileField.setValue(programFile);
 
-				// Remove all elements from the store
-				programGroupStore = new Ext.data.ArrayStore({
-					model:		'TicketBrowser.Profile',
-					autoDestroy:	true
-				});
+			// Remove all elements from the store
+			programGroupStore = new Ext.data.ArrayStore({
+				model:		'TicketBrowser.Profile',
+				autoDestroy:	true
+			});
 	
-				// Get the row with the list of groups enabled for this area:
-	                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
-				if (null == mapRow) {
-					alert('Configuration Error:\nProgram "'+programName+'" not found');
-					return;
-				}
+			// Get the row with the list of groups enabled for this area:
+                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
+			if (null == mapRow) {
+				alert('Configuration Error:\nProgram "'+programName+'" not found');
+				return;
+			}
 	
-				// loop through the groups in the profile store and add them
-				// to the programGroupStore IF it's enabled for this program.
-				for (var i = 0; i < profileStore.getCount(); i++) {
-					var profileModel = profileStore.getAt(i);
-					var profileName = profileModel.get('group_name');
-					var enabled = mapRow.get(profileName);
-					if (enabled != null && enabled != '') {
-						programGroupStore.insert(0, profileModel);
-					}
+			// loop through the groups in the profile store and add them
+			// to the programGroupStore IF it's enabled for this program.
+			for (var i = 0; i < profileStore.getCount(); i++) {
+				var profileModel = profileStore.getAt(i);
+				var profileName = profileModel.get('group_name');
+				var enabled = mapRow.get(profileName);
+				if (enabled != null && enabled != '') {
+					programGroupStore.insert(0, profileModel);
 				}
 			}
 		    }
@@ -177,40 +177,24 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		if ('' == ticket_id) {
 
 			// Disable the form until the ticket_id has arrived
-			this.setDisabled(true);
+			Ext.getCmp('ticketForm').setDisabled(true);
+
+			// Set the creation data of the new ticket
+			values.ticket_creation_date = today_date_time;
 
 			// create a new ticket
-			var ticket_record = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
-			ticket_record.phantom = true;
-			ticket_record.save({
+			var ticketModel = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
+			ticketModel.phantom = true;
+			ticketModel.save({
 				scope: Ext.getCmp('ticketForm'),
-				success: function(record, operation) {
+				success: function(ticket_record, operation) {
 					// This code is called once the reply from the server has arrived.
-					// The server response includes data.object_id for the new object.
-					try {
-						var resp = Ext.decode(operation.response.responseText);
-						var ticket_id = resp.data[0].object_id + '';
-					} catch (ex) {
-						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
-						return;
-					}
-
-					if (null == ticket_id) { alert('Creating the object completely failed'); return; }	
-
-					// Extract all fields of the new object, including the ones in this form.
-					var ticketForm = Ext.getCmp('ticketForm').getForm();
-					var form_values = ticketForm.getFieldValues();
-					form_values.ticket_id = ticket_id;
-					form_values.ticket_creation_date = '<%= [db_string today "select to_char(now(), 'YYYY-MM-DD')"] %>';
-
-					// The ticket_id has arrived, so we can show the rest
-					this.setDisabled(false);
+					// The server response includes all necessary data for the new object.
+					ticketStore.add(ticket_record);
 
 					// Tell all panels to load the data of the newly created object
-					var ticket_model= Ext.ModelManager.create(form_values, 'TicketBrowser.Ticket');
-					ticketStore.add(ticket_model);
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_model);	
+					compoundPanel.loadTicket(ticket_record);	
 				}
 			});
 
@@ -218,26 +202,37 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 			// Update an existing ticket
 			// Loop through all form fields and store into the ticket store
-			var ticket_record = ticketStore.findRecord('ticket_id',ticket_id);
+			var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
 			for(var field in values) {
 				if (values.hasOwnProperty(field)) {
 					value = values[field];
-					ticket_record.set(field, value);
+					ticketModel.set(field, value);
 				}
 			}
 	
+			// Disable this form to indicate the request is working
+			Ext.getCmp('ticketForm').setDisabled(true);
+
 			// Tell the store to update the server via it's REST proxy
-			ticketStore.sync();
-
-			// Update this and the other ticket forms
-			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-			compoundPanel.loadTicket(ticket_record);
-
+			ticketModel.save({
+				scope: Ext.getCmp('ticketForm'),
+				success: function() {
+					// Refresh all forms to show the updated information
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticketModel);
+				},
+				failure: function() {
+					alert('Failed to save ticket');
+				}
+			});
 		}
 	    }
 	}],
 
 	loadTicket: function(rec){
+		// Show this ticket, in case it was disabled before
+		this.setDisabled(false);
+		// load the data from the record into the form
 		this.loadRecord(rec);
 	},
 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.7 2011/06/20 17:09:43 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.8 2011/06/21 12:32:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -135,33 +135,43 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_id = combo.getValue();
 			var values = form.getFieldValues();
 
-			// Search for previous row in the store
-			var rec = userStore.findRecord('user_id',user_id);
-
-			// overwrite the store data with the new data
-			rec.set(values);
-
-			// Tell the store to update the server via it's REST proxy
-			userStore.sync();
+			// Update the model with the form variables and save
+			var userModel = userStore.findRecord('user_id',user_id);
+			userModel.set(values);
+			userModel.save({
+				scope: Ext.getCmp('ticketContactForm'),
+				success: function() {
+					this.loadUser(userModel);
+				},
+				failure: function() {
+					alert('Failed to save user');
+				}
+			});
 
 			// Get the ticket
 			var ticketForm = Ext.getCmp('ticketForm');
-			var ticket_id_field = ticketForm.getForm().findField('ticket_id');
-                        var ticket_id = ticket_id_field.getValue();
+			var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
                         var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
 
 			// Mark the user as the ticket's contact
-			var ticket_customer_ticket_customer_contact_field = form.findField('ticket_customer_contact_p');
-			var ticket_customer_contact_p = ticket_customer_ticket_customer_contact_field.getValue();
-
+			var ticket_customer_contact_p = form.findField('ticket_customer_contact_p').getValue();
 			if (true == ticket_customer_contact_p || '1' == ticket_customer_contact_p) {
 	                        ticket_model.set('ticket_customer_contact_id', user_id);
-        	                ticket_model.save();
-			}
+				ticket_model.save({
+					scope: Ext.getCmp('ticketContactForm'),
+					success: function() {
+						alert('Successfully saved ticket');
 
-			// Tell all panels to load the data of the newly created object
-			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-			compoundPanel.loadTicket(ticket_model);	
+						// Tell all panels to refresh
+						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+						compoundPanel.loadTicket(ticket_model);	
+
+					},
+					failure: function() {
+						alert('Failed to save ticket');
+					}
+				});
+			}
                 }
 	}, {
         	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
@@ -172,51 +182,37 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var form = this.ownerCt.ownerCt.getForm();
 			var values = form.getFieldValues();
 			values.user_id = null;
-			values.first_names = values.first_names + Math.random();
-			values.last_name = values.last_name + Math.random();
-			values.email = values.first_names + '.' + values.last_name + '@asdf.com';
+
+			// Deugging help...
+			// values.first_names = values.first_names + Math.random();
+			// values.last_name = values.last_name + Math.random();
+			// values.email = values.first_names + '.' + values.last_name + '@asdf.com';
 
 			// create a new user
-			var user_record = Ext.ModelManager.create(values, 'TicketBrowser.User');
-			user_record.phantom = true;
-			user_record.save({
+			var userModel = Ext.ModelManager.create(values, 'TicketBrowser.User');
+			userModel.phantom = true;
+			userModel.save({
 				scope: Ext.getCmp('ticketContactForm'),
-				success: function(record, operation) {
-					// This code is called once the reply from the server has arrived.
-					try {
-						var resp = Ext.decode(operation.response.responseText);
-						var user_id = resp.data[0].object_id + '';
-					} catch (ex) {
-						alert('Error creating object.\nThe server returned:\n' + operation.response.responseText);
-						return;
-					}
+				success: function(user_record, operation) {
 
-					// update the user_model and add to the store
-					var new_user = Ext.ModelManager.getModel('TicketBrowser.User');
-					new_user.load(user_id, {
-						scope: this,
-						success: function(record, operation) {
-							userStore.add(record);
-						},
-						failure: function(record, operation) {
-							alert('Error reloading the newly created users from the server.');
-						}
+					// Add the new user to the user store to make it accessible
+					userStore.add(record);
+
+					// Get the ticket model and extract the customer_id
+					var ticketForm = Ext.getCmp('ticketForm');
+					var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
+					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+					var customer_id = ticket_model.get('company_id');
+
+					// Save the new user as the default contact for the ticket.
+					// We don't care much if this save was successful - no refresh.
+					ticket_model.set('ticket_customer_contact_id', user_id);
+					ticket_model.save({
+						success: function(record, operation) { alert('ticket_customer_contact_id saved.'); },
+						failure: function(record, operation) { alert('Failed to save ticket_customer_contact_id.'); }
 					});
 
-					// Store the new user_id into the ticketForm
-					var ticketForm = Ext.getCmp('ticketForm');
-					var ticket_id_field = ticketForm.getForm().findField('ticket_id');
-					var ticket_id = ticket_id_field.getValue();
-					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
-					ticket_model.set('ticket_customer_contact_id', user_id);
-					ticket_model.save();
-
-					//  Get the customer_id from the customer panel
-					var customerForm = Ext.getCmp('ticketCustomerPanel');
-					var customer_id_field = customerForm.getForm().findField('company_id');
-					var customer_id = customer_id_field.getValue();
-					
-					// Create a object_member relationship between the user and the company
+					// Create an object_member relationship between the user and the company
 					var memberValues = {
 						object_id_one:	customer_id,
 						object_id_two:	user_id,
@@ -231,7 +227,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		                                success: function(record, operation) {
 							// reload the entire form
 							this.loadTicket(ticket_model);
-						}
+						},
+						failure: function() { alert('Failed to create company-user relationship'); }
 					});
 				}
 			});
