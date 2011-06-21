@@ -107,7 +107,8 @@ ad_proc -private im_rest_post_object_type_im_project {
     # Write Audit Trail
     im_project_audit -project_id $rest_oid -action create  
     
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -232,7 +233,9 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     im_project_audit -project_id $rest_oid -action create
     
     ns_log Notice "im_rest_post_object_type_im_ticket: Successfully created object with object_id=$rest_oid"
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(ticket_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -338,7 +341,9 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(task_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -421,7 +426,9 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(task_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -572,7 +579,9 @@ ad_proc -private im_rest_post_object_type_im_company {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(company_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -678,7 +687,9 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(absence_id) $rest_oid
+    return [array get hash_array]
 }
 
 # --------------------------------------------------------
@@ -861,7 +872,11 @@ ad_proc -private im_rest_post_object_type_user {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $new_user_id -action create
 
-    return $new_user_id
+    set rest_oid $new_user_id
+
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(user_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -965,7 +980,9 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
     
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(invoice_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -998,7 +1015,9 @@ ad_proc -private im_rest_post_object_type_im_trans_invoice {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(invoice_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1095,7 +1114,9 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     # No audit here, invoice_item is not a real object
     # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(item_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1184,7 +1205,9 @@ ad_proc -private im_rest_post_object_type_im_hour {
     # Not a real object, so no audit!
     # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(hour_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1329,7 +1352,9 @@ ad_proc -private im_rest_post_object_type_membership_rel {
    
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1406,7 +1431,9 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
    
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1482,7 +1509,9 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
    
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
 
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1557,7 +1586,9 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
    
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
 }
 
 
@@ -1631,6 +1662,8 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
 
     im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
    
-    return $rest_oid
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
 }
 

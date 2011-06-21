@@ -959,7 +959,7 @@ ad_proc -private im_rest_get_object_type {
 	json {  
 	    # Calculate the total number of objects
 	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
-	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"im_rest_get_object_type: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/html" $result
 	    return
 	}
@@ -1288,7 +1288,7 @@ ad_proc -private im_rest_get_im_categories {
 	}
 	json {  
 	    # Deal with different JSON variants for different AJAX frameworks
-	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    set result "{\"success\": true,\n\"message\": \"im_rest_get_im_categories: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/html" $result
 	    return
 	}
@@ -1420,13 +1420,17 @@ ad_proc -private im_rest_post_object_type {
     if {0 != [llength [info commands im_rest_post_object_type_$rest_otype]]} {
 	
 	ns_log Notice "im_rest_post_object_type: Before calling im_rest_post_object_type_$rest_otype"
-	set rest_oid [eval [list im_rest_post_object_type_$rest_otype \
+	array set hash_array [eval [list im_rest_post_object_type_$rest_otype \
 		  -format $format \
 		  -user_id $user_id \
 		  -content $content \
 		  -rest_otype $rest_otype \
 	]]
-	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype. rest_oid=$rest_oid"
+
+	# Extract the object's id from the return array and write into object_id in case a client needs the info
+	set rest_oid $hash_array(rest_oid)
+	set hash_array(object_id) $rest_oid
+	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype: rest_oid=$rest_oid, hash_array=[array get hash_array]"
 
 	switch $format {
 	    html { 
@@ -1438,9 +1442,16 @@ ad_proc -private im_rest_post_object_type {
 		</table>[im_footer]
 		"
 	    }
-	    json { 
-		set data "\[{\"object_id\": $rest_oid}\]"
-		set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
+	    json {
+		# Return a JSON structure with all fields of the object.
+		set data_list [list]
+		foreach key [array names hash_array] {
+		set value $hash_array($key)
+		    lappend data_list "\"$key\": \"[ns_quotehtml $value]\""
+		}
+		
+		set data "\[{[join $data_list ", "]}\]"
+		set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
 		doc_return 200 "text/html" $result
 	    }
 	    xml {  
@@ -1523,8 +1534,17 @@ ad_proc -private im_rest_post_object {
 	    "
 	}
 	json {
-	    set data "\[{\"object_id\": $rest_oid}\]"
-	    set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
+	    # Empty data: The empty array is necessary for Sencha in order to call callbacks
+	    # without error. However, adding data here will create empty records in the store later,
+	    # so the array needs to be empty.
+	    set data_list [list]
+	    foreach key [array names hash_array] {
+		set value $hash_array($key)
+		lappend data_list "\"$key\": \"[ns_quotehtml $value]\""
+	    }
+
+	    set data "\[{[join $data_list ", "]}\]"
+	    set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
 	    doc_return 200 "text/html" $result
 	}
 	xml {  
