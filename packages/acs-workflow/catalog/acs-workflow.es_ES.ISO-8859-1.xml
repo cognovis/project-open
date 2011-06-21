@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-workflow" package_version="4.5.3" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="acs-workflow" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="As_part_of">Part of</msg>
   <msg key="On_what">On what?</msg>

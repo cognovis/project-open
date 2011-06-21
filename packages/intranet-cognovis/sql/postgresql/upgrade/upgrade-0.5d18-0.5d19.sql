@@ -23,7 +23,7 @@ drop view acs_log_id_seq;
 create view acs_log_id_seq as
 select nextval('t_acs_log_id_seq') as nextval from dual;
 
-SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d18-0.5d19.sql','');
+SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/upgrade/upgrade-0.5d18-0.5d19.sql','') from dual;
 
 -- Update the view to correctly display the project and task
 update im_view_columns set column_render_tcl = '"<nobr>$indent_html$gif_html<a href=/intranet-cognovis/tasks/view?[export_url_vars project_id task_id return_url]>$task_name</a></nobr>"' where column_id = 1007;
