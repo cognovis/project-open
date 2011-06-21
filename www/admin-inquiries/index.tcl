@@ -1,4 +1,4 @@
-# /packages/intranet-timesheet2/www/absences/index.tcl
+# /packages/intranet-customer-portal/www/admin-inquiries/index.tcl
 #
 # Copyright (C) 1998-2004 various parties
 # The code is based on ArsDigita ACS 3.4
@@ -46,5 +46,3 @@ template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comment
 # ---------------------------------------------------------------
 
 template::head::add_javascript -src "/intranet-customer-portal/resources/js/index-admin-inquiries.js" -order "2"
-
-

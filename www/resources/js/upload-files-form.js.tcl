@@ -23,6 +23,7 @@ ad_page_contract {
 } {
     { security_token "" }
     { inquiry_id "" }
+    { reset "" }
 }
 
 # ad_return_complaint 1 "KHD: inquiry_id: $inquiry_id"
@@ -38,12 +39,7 @@ ad_page_contract {
 # Settings
 # ---------------------------------------------------------------
 
-if { ""==$inquiry_id && ""==$security_token } {
-    # first enty from registered user 
-    # set inquiry_id [db_string nextval "select nextval('im_inquiries_customer_portal_seq')"]
-} 
-
-
+if { ""==$reset } { set reset 0 }
 
 # ---------------------------------------------------------------
 # Build form 

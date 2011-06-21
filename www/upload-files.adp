@@ -38,11 +38,14 @@
 	<td><div id="panel_uploaded_files"></div></td>-->
 	<td><div id="grid_uploaded_files"></div></td>
 </tr>
-<tr>
-	<td colspan="2" align="right"><button id="continue">Request Quote >></button></td>
-</tr>
-
 </table>
 
+<form id="form_request_quote" name="form_request_quote" action="/intranet-customer-portal/complete_inquiry" method="post">
+	<input type="hidden" name="security_token" value="@security_token;noquote@"> 
+	<input type="hidden" name="inquiry_id" value="@inquiry_id;noquote@"> 
+	<input type="hidden" name="btn_value" value=""> 
+	<input name="btnSubmit" type="button" id="btnSubmit" value="Request Quote" onclick="document.forms['form_request_quote'].btn_value.value='submit'; document.forms['form_request_quote'].submit();">&nbsp;
+	<input name="btnCancel" type="button" id="btnCancel" value="Cancel and remove all files" onclick="document.forms['form_request_quote'].btn_value.value='cancel'; document.forms['form_request_quote'].submit();"
+</form>
 
 <div id="sidebar"></div>

@@ -19,6 +19,7 @@ ad_page_contract {
 } {
     {security_token ""}
     {inquiry_id ""}
+    {reset ""}
 }
 
 # ---------------------------------------------------------------
@@ -43,7 +44,11 @@ if { "" != $security_token } {
     set master_file "../../intranet-core/www/master"
 
     # refresh / double click should not create new inquiry 
-    set inquiry_exists_p [db_string get_view_id "select inquiry_id from im_inquiries_customer_portal where session_id='$session_id'" -default 0]
+    set inquiry_exists_p [db_string get_view_id "select inquiry_id from im_inquiries_customer_portal where session_id='$session_id' and inquiry_id=:inquiry_id" -default 0]
+
+    # "reset" forces new inquiry
+    if { 1==$reset } {set inquiry_exists_p 0}
+
     if { !$inquiry_exists_p } {
 	set email [im_email_from_user_id $user_id]
 
@@ -76,7 +81,6 @@ if { "" != $security_token } {
 
 	set company_placeholder "<span style='font-weight: bold'>Company:&nbsp;</span>"
 	append company_placeholder "$company_name<br><br>"
-    		 
 
 	set inquiry_id [db_string nextval "select nextval('im_inquiries_customer_portal_seq');"]
 	set str_length 40
@@ -115,9 +119,12 @@ template::head::add_javascript -src "/intranet-customer-portal/resources/js/BoxS
 # ---------------------------------------------------------------
 
 #Source Language 
-set source_language_id 250
+set source_language_id 0
 set include_source_language_country_locale [ad_parameter -package_id [im_package_translation_id] SourceLanguageWithCountryLocaleP "" 0]
+
 set source_language_combo [im_trans_language_select -include_country_locale $include_source_language_country_locale source_language_id $source_language_id]
+# set source_language_combo [im_trans_language_select -include_country_locale $include_source_language_country_locale]
+
 
 #Target Language
 # set target_language_ids [im_target_language_ids 0]
@@ -130,5 +137,5 @@ set source_language_combo [im_trans_language_select -include_country_locale $inc
 # Add customer registration
 # ---------------------------------------------------------------
 
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token" -order "2"
+template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset" -order "2"
 
