@@ -39,3 +39,29 @@ BEGIN
 
 	RETURN v_longest_path || v_cat;
 end;$body$ language 'plpgsql';
+
+
+
+
+create or replace function im_category_parents (
+	integer
+) returns setof integer as $body$
+declare
+	p_cat			alias for $1;
+	v_cat			integer;
+	row			RECORD;
+BEGIN
+	FOR row IN
+		select	c.category_id
+		from	im_categories c,
+			im_category_hierarchy h
+		where	c.category_id = h.parent_id and
+			h.child_id = p_cat and
+			(c.enabled_p = 't' OR c.enabled_p is NULL)
+	LOOP
+		RETURN NEXT row.category_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
