@@ -733,27 +733,32 @@ ad_proc -private im_rest_post_object_type_user {
     }
 
     # Fake the following required variables
-    if {![info exists username]} { 
+    if {![info exists username] || "" == $username} { 
 	set username "$first_names $last_name"
 	set hash_array(username) $username
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Set username=$username"
     }
-    if {![info exists screen_name]} { 
+    if {![info exists screen_name] || "" == $screen_name} { 
 	set screen_name $username 
 	set hash_array(screen_name) $screen_name
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Set screen_name=$screen_name"
     }
-    if {![info exists email]} { 
+    if {![info exists email] || "" == $email} { 
 	set email "${first_names}.${last_name}@nowhere.com"
 	set email [string tolower $email]
 	regsub -all {[^a-zA-Z0-9_\-@]} $email "." email
 	set hash_array(email) $email
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Set email=$email"
     }
-    if {![info exists password]} { 
+    if {![info exists password] || "" == $password} { 
 	set password [ad_generate_random_string] 
 	set hash_array(password) $password
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Set password=$password"
     }
-    if {![info exists url]} { 
+    if {![info exists url] || "" == $url} { 
 	set url "" 
 	set hash_array(url) $url
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Set url=$url"
     }
 
     # Check for duplicate
