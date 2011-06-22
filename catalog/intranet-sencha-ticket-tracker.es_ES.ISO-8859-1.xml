@@ -7,6 +7,7 @@
   <msg key="Application">Aplicación</msg>
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Asignado a</msg>
+  <msg key="Audit_Action">Acción</msg>
   <msg key="Audit_User">Usuario</msg>
   <msg key="button_Cancel">Cancelar</msg>
   <msg key="button_New_Company">Nueva Empresa</msg>
@@ -86,6 +87,7 @@
   <msg key="Show_Customer">Mostrar cliente</msg>
   <msg key="Show_Grid">Ver lista</msg>
   <msg key="Show_Ticket">Ver ticket</msg>
+  <msg key="Telephone">Teléfono</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_Customer">Cliente</msg>
   <msg key="Ticket_File_Number">Expediente</msg>

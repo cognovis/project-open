@@ -2,7 +2,5 @@
 <message_catalog package_key="intranet-sencha-ticket-tracker" locale="eu_ES" charset="ISO-8859-1">
 
   <msg key="Female">Neska</msg>
-  <msg key="lang_es_ES">Gaztelania</msg>
-  <msg key="lang_eu_ES">Euskara</msg>
   <msg key="Male">Mutil</msg>
 </message_catalog>
