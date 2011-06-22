@@ -2,11 +2,13 @@
 <message_catalog package_key="intranet-sencha-ticket-tracker" locale="en_US" charset="ISO-8859-1">
 
   <msg key="A_new_ticket_has_been_created">A new ticket has been created</msg>
+  <msg key="Add_New_Contact">Add New Contact</msg>
   <msg key="Alarm_Action">Alarm Action</msg>
   <msg key="Alarm_Date">Alarm Date</msg>
   <msg key="Application">Application</msg>
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Assigned To</msg>
+  <msg key="Audit_Action">Action</msg>
   <msg key="Audit_User">Audit User</msg>
   <msg key="button_Cancel">Cancel</msg>
   <msg key="button_New_Company">New Company</msg>
@@ -68,6 +70,7 @@
   <msg key="Options">Options</msg>
   <msg key="Outgoing_Channel">Outgoing Channel</msg>
   <msg key="Page">Page</msg>
+  <msg key="Primary_Contact">Primary Contact</msg>
   <msg key="Program">Program</msg>
   <msg key="Province">Province</msg>
   <msg key="Reaction_Date">Reaction Date</msg>
@@ -76,6 +79,7 @@
   <msg key="Request">Request</msg>
   <msg key="Requires_additional_info">Requires additional info</msg>
   <msg key="Resolution">Resolution</msg>
+  <msg key="Save_Changes">Save Changes</msg>
   <msg key="Save_New_Company">Save New Company</msg>
   <msg key="Saving_Data">Saving Data</msg>
   <msg key="Saving_data_">Saving data...</msg>
@@ -86,6 +90,7 @@
   <msg key="Show_Customer">Show Customer</msg>
   <msg key="Show_Grid">Show Grid</msg>
   <msg key="Show_Ticket">Show Ticket</msg>
+  <msg key="Telephone">Telephone</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_Customer">Ticket Customer</msg>
   <msg key="Ticket_File_Number">Ticket File Number</msg>

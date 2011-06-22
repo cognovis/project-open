@@ -50,7 +50,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_creation_date', xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
-	{ name: 'fs_folder_id',		xtype: 'textfield', disabled: true },	// Assign to Employees by default
+	{ name: 'fs_folder_id',		xtype: 'hiddenfield' },			// Assign to Employees by default
 	{ name: 'project_nr',		xtype: 'hiddenfield' },
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
