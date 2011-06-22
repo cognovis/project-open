@@ -84,7 +84,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 name:           'language',
                 xtype:          'combobox',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
-                boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
 		queryMode:	'local',
 		valueField:	'iso',
 		displayField:	'language',
@@ -99,18 +98,20 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		})
 	}, {
                 name:           'gender',
-                xtype:          'radiofield',
+                xtype:          'combobox',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
-                boxLabel:       '#intranet-sencha-ticket-tracker.Male#',
-                value:          '1'
-        }, {
-                name:           'gender',
-                xtype:          'radiofield',
-                boxLabel:       '#intranet-sencha-ticket-tracker.Female#',
-                value:          '0',
-                fieldLabel:     '',
-                labelSeparator: '',
-                hideEmptyLabel: false
+		queryMode:	'local',
+		valueField:	'id',
+		displayField:	'gender',
+		triggerAction:	'all',
+		store:		new Ext.data.ArrayStore({
+					id: 0,
+					fields: ['id', 'gender'],
+					data: [
+						['male', '#intranet-sencha-ticket-tracker.Male#'], 
+						['female', '#intranet-sencha-ticket-tracker.Female#']
+					]
+		})
         }],
         buttons: [{
         	text: '#intranet-sencha-ticket-tracker.Add_New_Contact#',
