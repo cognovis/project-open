@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.9 2011/06/22 15:44:35 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.10 2011/06/22 16:01:11 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -206,6 +206,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 					// Save the new user as the default contact for the ticket.
 					// We don't care much if this save was successful - no refresh.
+					var user_id = user_record.get('user_id');
 					ticket_model.set('ticket_customer_contact_id', user_id);
 					ticket_model.save({
 						success: function(record, operation) { alert('ticket_customer_contact_id saved.'); },
