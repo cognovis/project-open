@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.11 2011/06/22 16:49:46 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.12 2011/06/22 17:04:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -82,18 +82,21 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 value:          '1'
 	}, {
                 name:           'language',
-                xtype:          'radiofield',
+                xtype:          'combobox',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
                 boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
-                value:          'eu_ES'
-        }, {
-                name:           'language',
-                xtype:          'radiofield',
-                boxLabel:       '#intranet-sencha-ticket-tracker.lang_es_ES#',
-                value:          'es_ES',
-                fieldLabel:     '',
-                labelSeparator: '',
-                hideEmptyLabel: false
+		queryMode:	'local',
+		valueField:	'iso',
+		displayField:	'language',
+		triggerAction:	'all',
+		store:		new Ext.data.ArrayStore({
+					id: 0,
+					fields: ['iso', 'language'],
+					data: [
+						['en_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
+						['eu_ES', '#intranet-sencha-ticket-tracker.lang_eu_ES#']
+					]
+		})
 	}, {
                 name:           'gender',
                 xtype:          'radiofield',
