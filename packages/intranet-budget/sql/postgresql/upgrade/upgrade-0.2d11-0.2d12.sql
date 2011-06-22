@@ -38,28 +38,28 @@ BEGIN
    	IF v_acs_attribute_id IS NULL THEN
         alter table im_budgets add column approved_p boolean default ''f'';
         PERFORM im_dynfield_attribute_new (''im_budget'', ''approved_p'', ''#intranet-budget.Approved#'', ''checkbox'', ''boolean'', ''f'', 20, ''f'');
-        select content_type__refresh_view(''im_budget'');
+        PERFORM content_type__refresh_view(''im_budget'');
     END IF;
 
  	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_budget_hour'' AND attribute_name = ''approved_p'';
    	IF v_acs_attribute_id IS NULL THEN
         alter table im_budget_hours add column approved_p boolean default ''f'';
         PERFORM im_dynfield_attribute_new (''im_budget_hour'', ''approved_p'', ''#intranet-budget.Approved#'', ''checkbox'', ''boolean'', ''f'', 20, ''f'');
-        select content_type__refresh_view(''im_budget_hour'');
+        PERFORM content_type__refresh_view(''im_budget_hour'');
     END IF;
 
  	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_budget_cost'' AND attribute_name = ''approved_p'';
    	IF v_acs_attribute_id IS NULL THEN
         alter table im_budget_costs add column approved_p boolean default ''f'';
         PERFORM im_dynfield_attribute_new (''im_budget_cost'', ''approved_p'', ''#intranet-budget.Approved#'', ''checkbox'', ''boolean'', ''f'', 20, ''f'');
-        select content_type__refresh_view(''im_budget_cost'');
+        PERFORM content_type__refresh_view(''im_budget_cost'');
     END IF;
 
  	SELECT attribute_id INTO v_acs_attribute_id FROM acs_attributes WHERE object_type = ''im_budget_benefit'' AND attribute_name = ''approved_p'';
    	IF v_acs_attribute_id IS NULL THEN
         alter table im_budget_benefits add column approved_p boolean default ''f'';
         PERFORM im_dynfield_attribute_new (''im_budget_benefit'', ''approved_p'', ''#intranet-budget.Approved#'', ''checkbox'', ''boolean'', ''f'', 20, ''f'');
-        select content_type__refresh_view(''im_budget_benefit'');
+        PERFORM content_type__refresh_view(''im_budget_benefit'');
     END IF;
     
     -- Update the current live versions with the approved flag
