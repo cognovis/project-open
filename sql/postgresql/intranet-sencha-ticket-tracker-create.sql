@@ -252,6 +252,9 @@ alter table persons
 add column last_name2 text;
 SELECT im_dynfield_attribute_new ('person', 'last_name2', 'Last Name 2', 'textbox_medium', 'string', 'f');
 
+alter table persons
+add column telephone text;
+SELECT im_dynfield_attribute_new ('person', 'telephone', 'Telephone', 'textbox_medium', 'string', 'f');
 
 alter table persons
 add column gender text;

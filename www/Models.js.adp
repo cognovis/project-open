@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.27 2011/06/20 17:31:08 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.28 2011/06/22 12:20:10 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -214,6 +214,7 @@ Ext.define('TicketBrowser.User', {
 	'first_names',			// First name(s)
 	'last_name',			// Standard last name
 	'last_name2',			// Spanish 2nd last name
+	'telephone',			// Telephone
 	'email',			// Just email txt
 	'gender',			// male or female
 	'language',			// es_ES or eu_ES
