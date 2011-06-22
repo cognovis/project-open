@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.12 2011/06/22 17:04:31 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.13 2011/06/22 17:13:39 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -84,7 +84,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
                 name:           'language',
                 xtype:          'combobox',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
-                boxLabel:       '#intranet-sencha-ticket-tracker.lang_eu_ES#',
 		queryMode:	'local',
 		valueField:	'iso',
 		displayField:	'language',
@@ -99,18 +98,20 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		})
 	}, {
                 name:           'gender',
-                xtype:          'radiofield',
+                xtype:          'combobox',
                 fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
-                boxLabel:       '#intranet-sencha-ticket-tracker.Male#',
-                value:          '1'
-        }, {
-                name:           'gender',
-                xtype:          'radiofield',
-                boxLabel:       '#intranet-sencha-ticket-tracker.Female#',
-                value:          '0',
-                fieldLabel:     '',
-                labelSeparator: '',
-                hideEmptyLabel: false
+		queryMode:	'local',
+		valueField:	'id',
+		displayField:	'gender',
+		triggerAction:	'all',
+		store:		new Ext.data.ArrayStore({
+					id: 0,
+					fields: ['id', 'gender'],
+					data: [
+						['male', '#intranet-sencha-ticket-tracker.Male#'], 
+						['female', '#intranet-sencha-ticket-tracker.Female#']
+					]
+		})
         }],
         buttons: [{
         	text: '#intranet-sencha-ticket-tracker.Add_New_Contact#',
