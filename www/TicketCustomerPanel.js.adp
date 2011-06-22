@@ -72,7 +72,12 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		value:		'',
 		valueField:	'category_id',
 		displayField:   'category_translated',
-		store:		companyTypeStore
+		store:		companyTypeStore,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		}
 	}, {
 		name:		'company_province',
 		xtype:		'textfield',
