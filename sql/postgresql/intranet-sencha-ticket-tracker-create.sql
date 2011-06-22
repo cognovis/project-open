@@ -264,3 +264,8 @@ alter table persons
 add column language text;
 SELECT im_dynfield_attribute_new ('person', 'language', 'Language', 'textbox_medium', 'string', 'f');
 
+alter table persons
+add column asterisk_user_id text;
+SELECT im_dynfield_attribute_new ('person', 'asterisk_user_id', 'Asterisk User ID', 'textbox_medium', 'string', 'f');
+update persons set asterisk_user_id = person_id;
+
