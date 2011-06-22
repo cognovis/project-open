@@ -29,8 +29,11 @@ set show_navbar_p 0
 set show_left_navbar_p 0
 
 # Load Sencha libs 
-template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
-template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "1"
+template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
+template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+
+# CSS Adjustemnts to ExtJS 
+template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
 
 # ---------------------------------------------------------------
 # Set OpenACS login form
@@ -50,5 +53,5 @@ set return_url "/intranet-customer-portal/upload-files"
 # Add customer registration
 # ---------------------------------------------------------------
 
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/customer-registration-form.js" -order "2"
+template::head::add_javascript -src "/intranet-customer-portal/resources/js/customer-registration-form.js" -order 2
 
