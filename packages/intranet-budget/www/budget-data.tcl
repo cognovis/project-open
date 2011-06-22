@@ -120,16 +120,25 @@ switch $action {
         
         set json_lists [list]
         set counter 0
+        
         # Get the data from the database
-        set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
+        set cost_revision_ids [db_list costs {select latest_revision from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
         
-        foreach item_id $cost_ids {
+        foreach revision_id $cost_revision_ids {
             incr counter
-            set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]            
-            # Append one entry to the json_lists for the array
-            lappend json_lists [$Cost json_object]
+            db_1row cost_info "select object_title as title, type_id, fund_id, amount, item_id, approved_p from im_budget_costsx where fund_id = :revision_id"
+
+            # Set the json
+            set json_list [list]
+            foreach var [list fund_id amount approved_p title item_id type_id] {
+                lappend json_list $var
+                lappend json_list [set $var]
+            }
+            # Make sure we have no " " " unescaped
+            regsub -all {\"} $json_list {\\\"} json_list
+            lappend json_lists [util::json::object::create $json_list]
         }
-        
+
         # Generate the array of items
         set json_array(results) $counter
         set json_array(items) [util::json::array::create $json_lists]
@@ -137,20 +146,7 @@ switch $action {
     }
     save_costs {
         if {$item_id ne ""} {
-            
-            # We are editing a cost row, because we have an item_id,
-            # first get the Cost object for the row
-            set Cost [::im::dynfield::CrClass::im_budget_cost get_instance_from_db -item_id $item_id]
-
-            # Now update the fields
-            $Cost set title $title
-            $Cost set amount $amount
-            $Cost set type_id $type_id
-            $Cost set approved_p "f"
-
-            # Save and destro
-            $Cost save -live_p false
-            $Cost destroy
+            content::revision::new -item_id $item_id -attributes [list [list amount $amount] [list approved_p "f"] [list type_id $type_id]] -title $title            
 
             # Return success if it worked
             ns_return 200 text/text "1"
@@ -161,14 +157,7 @@ switch $action {
             if {![exists_and_not_null budget_id]} {
                 ns_return 200 text/text "0"
             } else {
-
-                set Cost [::im::dynfield::CrClass::im_budget_cost create cost \
-                              -parent_id $budget_id \
-                              -title $title \
-                              -amount $amount \
-                              -type_id $type_id]
-                
-                $Cost save_new -live_p false
+                content::item::new -parent_id $budget_id -attributes [list [list amount $amount] [list type_id $type_id] [list approved_p "f"]] -title $title -name "$title" -content_type "im_budget_cost"
                 ns_return 200 text/text "1"
             }
         }
@@ -178,19 +167,28 @@ switch $action {
         if {![exists_and_not_null budget_id]} {
             ad_return_error "Missing budget_id" "You need to provide a budget_id if you want to get the budget with get_budget"
         }
-        
+
         set json_lists [list]
         set counter 0
+        
         # Get the data from the database
-        set benefit_ids [db_list benefits {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_benefit'}]
+        set benefit_revision_ids [db_list benefits {select latest_revision from cr_items where parent_id = :budget_id and content_type = 'im_budget_benefit'}]
         
-        foreach item_id $benefit_ids {
+        foreach revision_id $benefit_revision_ids {
             incr counter
-            set Benefit [::im::dynfield::CrClass::im_budget_benefit get_instance_from_db -item_id $item_id]            
-            # Append one entry to the json_lists for the array
-            lappend json_lists [$Benefit json_object]
+            db_1row benefit_info "select object_title as title, fund_id, amount, item_id, approved_p from im_budget_benefitsx where fund_id = :revision_id"
+
+            # Set the json
+            set json_list [list]
+            foreach var [list fund_id amount approved_p title item_id] {
+                lappend json_list $var
+                lappend json_list [set $var]
+            }
+            # Make sure we have no " " " unescaped
+            regsub -all {\"} $json_list {\\\"} json_list
+            lappend json_lists [util::json::object::create $json_list]
         }
-        
+
         # Generate the array of items
         set json_array(results) $counter
         set json_array(items) [util::json::array::create $json_lists]
@@ -198,20 +196,7 @@ switch $action {
     }
     save_benefits {
         if {$item_id ne ""} {
-            
-            # We are editing a benefit row, because we have an item_id,
-            # first get the Benefit object for the row
-            set Benefit [::im::dynfield::CrClass::im_budget_benefit get_instance_from_db -item_id $item_id]
-            ns_log Notice "[$Benefit serialize]"
-            ns_log Notice "Amount :: $amount"
-            # Now update the fields
-            $Benefit set title $title
-            $Benefit set amount $amount
-            $Benefit set approved_p "f"
-
-            # Save and destro
-            $Benefit save -live_p false
-            $Benefit destroy
+            content::revision::new -item_id $item_id -attributes [list [list amount $amount] [list approved_p "f"]] -title $title            
 
             # Return success if it worked
             ns_return 200 text/text "1"
@@ -222,14 +207,7 @@ switch $action {
             if {![exists_and_not_null budget_id]} {
                 ns_return 200 text/text "0"
             } else {
-
-                set Benefit [::im::dynfield::CrClass::im_budget_benefit create benefit \
-                              -parent_id $budget_id \
-                              -title $title \
-                              -amount $amount \
-                              -type_id $type_id]
-                
-                $Benefit save_new -live_p false
+                content::item::new -parent_id $budget_id -attributes [list [list amount $amount] [list approved_p "f"]] -title $title -name "$title" -content_type "im_budget_benefit"
                 ns_return 200 text/text "1"
             }
         }
@@ -242,16 +220,25 @@ switch $action {
         
         set json_lists [list]
         set counter 0
-
+ 
         # Get the data from the database
-        set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
+        set hour_revision_ids [db_list hours {select latest_revision from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
         
-        foreach item_id $hour_ids {
+        foreach revision_id $hour_revision_ids {
             incr counter
-            set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]            
-            lappend json_lists [$Hour json_object]
+            db_1row hour_info "select object_title as title, hour_id, department_id, hours, item_id, approved_p from im_budget_hoursx where hour_id = :revision_id"
+
+            # Set the json
+            set json_list [list]
+            foreach var [list hour_id department_id hours approved_p title item_id] {
+                lappend json_list $var
+                lappend json_list [set $var]
+            }
+            # Make sure we have no " " " unescaped
+            regsub -all {\"} $json_list {\\\"} json_list
+            lappend json_lists [util::json::object::create $json_list]
         }
-        
+
         # Generate the array of items
         set json_array(results) $counter
         set json_array(items) [util::json::array::create $json_lists]
@@ -260,41 +247,21 @@ switch $action {
     save_hours {
         if {$item_id ne ""} {
             
-            # We are editing a cost row, because we have an item_id,
-            # first get the Hour object for the row
-            set Hour [::im::dynfield::CrClass::im_budget_hour get_instance_from_db -item_id $item_id]
-
-            # Now update the fields
-            $Hour set title $title
-            $Hour set hours $hours
-            $Hour set department_id $department_id
-            $Hour set approved_p "f"
-
-            # Save and destro
-            $Hour save -live_p false
-            $Hour destroy
+            content::revision::new -item_id $item_id -attributes [list [list hours $hours] [list department_id $department_id] [list approved_p "f"]] -title $title
 
             # Return success if it worked
             ns_return 200 text/text "1"
         } else {
-            
+
             # We have a new entry, so let's instantiate the object,
             # but only if we have a budget_id
             if {![exists_and_not_null budget_id]} {
                 ns_return 200 text/text "0"
             } else {
-
-                set Hour [::im::dynfield::CrClass::im_budget_hour create cost \
-                              -parent_id $budget_id \
-                              -title $title \
-                              -hours $hours \
-                              -department_id $department_id]
-                
-                $Hour save_new -live_p false
+                content::item::new -parent_id $budget_id -attributes [list [list hours $hours] [list department_id $department_id] [list approved_p "f"]] -title $title -name "$title" -content_type "im_budget_hour"
                 ns_return 200 text/text "1"
             }
         }
-        
     }
     default {
     }
