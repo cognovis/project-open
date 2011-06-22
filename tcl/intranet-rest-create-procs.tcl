@@ -146,9 +146,9 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     }
 
     # Create optional variables if they haven't been specified in the XML request
-    if {![info exists ticket_nr]} { 
-	set ticket_nr [db_nextval "im_ticket_seq"] 
-	set hash_array(ticket_nr) $ticket_nr
+    if {![info exists project_nr]} { 
+	set project_nr [db_nextval "im_ticket_seq"] 
+	set hash_array(project_nr) $project_nr
     }
     if {![info exists ticket_customer_contact_id]} { 
 	set ticket_customer_contact_id "" 
@@ -185,10 +185,10 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 		where	t.ticket_id = p.project_id and
 			$parent_sql and
 			(upper(trim(p.project_name)) = upper(trim(:project_name)) OR
-			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
+			 upper(trim(p.project_nr)) = upper(trim(:project_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your ticket_name or ticket_nr already exists."]
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your ticket_name or project_nr already exists."]
     }
 
     # Check for valid parent_id
@@ -203,7 +203,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	    set rest_oid [im_ticket::new \
 			      -ticket_sla_id $parent_id \
 			      -ticket_name $project_name \
-			      -ticket_nr $ticket_nr \
+			      -ticket_nr $project_nr \
 			      -ticket_customer_contact_id $ticket_customer_contact_id \
 			      -ticket_type_id $ticket_type_id \
 			      -ticket_status_id $ticket_status_id \
