@@ -791,7 +791,7 @@ ad_proc -public im_rest_error {
 	}
     }
 
-    return
+    ad_script_abort
 }
 
 

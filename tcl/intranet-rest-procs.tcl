@@ -1428,6 +1428,10 @@ ad_proc -private im_rest_post_object_type {
 	]]
 
 	# Extract the object's id from the return array and write into object_id in case a client needs the info
+	if {![info exists hash_array(rest_oid)]} {
+	    # Probably after an im_rest_error
+	    ns_log Error "im_rest_post_object_type: Didn't find hash_array(rest_oid): This should never happened".
+	}
 	set rest_oid $hash_array(rest_oid)
 	set hash_array(object_id) $rest_oid
 	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype: rest_oid=$rest_oid, hash_array=[array get hash_array]"
