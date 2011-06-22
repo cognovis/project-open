@@ -79,6 +79,10 @@ db_multirow -extend { object_attributes_url } object_types select_object_types {
 			'im_invoice', 'im_expense', 'im_expense_bundle',
 			'im_material', 'im_timesheet_task',
 			'im_sla_parameter'
+		) 
+           or   object_type in (
+                  select object_type from acs_attributes aa, im_dynfield_attributes ida
+                  where aa.attribute_id = ida.acs_attribute_id
 		)
 	order by
 		lower(pretty_name)
