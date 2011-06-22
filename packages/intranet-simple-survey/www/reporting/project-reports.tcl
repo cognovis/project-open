@@ -44,6 +44,19 @@ if {![string equal "t" $read_p]} {
     return
 }
 
+# No "permissions" - just select all projects
+set perm_sql "im_projects"
+
+if {![im_permission $current_user_id "view_projects_all"]} {
+    set perm_sql "
+	(select	p.*
+	from	im_projects p,
+		acs_rels r
+	where	r.object_id_one = p.project_id
+		and r.object_id_two = :current_user_id
+	)"
+}
+
 # Check for the default survey name if survey_id was not specified
 if {"" == $survey_id} {
     set default_survey_name [parameter::get_from_package_key -package_key "intranet-simple-survey" -parameter DefaultProjectReportSurveyName -default "Project Status Report"]
@@ -221,8 +234,8 @@ set projects_sql "
 		im_category_from_id(parent.project_type_id) as project_type
 	from
 		($inner_sql) i,
-		im_projects parent,
-		im_projects children
+		$perm_sql parent,
+		$perm_sql children
 	where
 		parent.parent_id is null and
 		children.project_id = i.project_id and
