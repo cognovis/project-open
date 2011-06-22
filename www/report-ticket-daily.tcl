@@ -107,13 +107,6 @@ set report_sql "
 		cust.company_name,
 		cust.vat_number,
 		cust.company_province,
-		im_category_from_id(cust.company_type_id) as company_type,
-
-		CASE WHEN t.ticket_queue_id = 463 THEN 1 ELSE 0 END as ticket_resuelto,
-		CASE WHEN t.ticket_requires_addition_info_p = 'true' THEN 1 ELSE 0 END as ticket_requires_addition_info,
-
-		p_creator.person_id as creation_user_id,
-		coalesce(p_creator.asterisk_user_id, im_name_from_user_id(p_creator.person_id)) as creation_user_asterisk_id,
 		im_name_from_user_id(p_creator.person_id) as creation_user_name,
 
 		coalesce(p_contact.first_names,'') || ' ' || 
@@ -125,18 +118,9 @@ set report_sql "
 		p_contact.gender as contact_gender,
 		p_contact.language as contact_language,
 
-		to_char(o.creation_date, 'YYYY-MM-DD') as creation_date_date,
-		to_char(o.creation_date, 'HH24:MI') as creation_date_time,
-
 		to_char(t.ticket_creation_date, :date_time_format) as ticket_creation_date_pretty,
 		to_char(t.ticket_creation_date, 'YYYY-MM-DD') as ticket_creation_date_date,
 		to_char(t.ticket_creation_date, 'HH24:MI') as ticket_creation_date_time,
-
-		to_char(t.ticket_escalation_date, 'YYYY-MM-DD') as ticket_escalation_date_date,
-		to_char(t.ticket_escalation_date, 'HH24:MI') as ticket_escalation_date_time,
-
-		to_char(t.ticket_done_date, 'YYYY-MM-DD') as ticket_done_date_date,
-		to_char(t.ticket_done_date, 'HH24:MI') as ticket_done_date_time,
 
 		to_char(t.ticket_reaction_date, :date_time_format) as ticket_reaction_date_pretty,
 		to_char(t.ticket_confirmation_date, :date_time_format) as ticket_confirmation_date_pretty,
@@ -174,23 +158,15 @@ set report_sql "
 
 # Global Header Line
 set header0 {
-	"Asterisk ID Informador" 
-	"Ticket ID"
-	"Fecha Sistema"
-	"Hora Sistema"
-	"Fecha Recepcion"
-	"Hora Recepcion"
-	"Fecha Escalacion"
-	"Hora Escalacion"
-	"Fecha Cierre"
-	"Hora Cierre"
+	"Informador" 
+	"ID"
+	"Fecha" 
+	"Hora"
 	"Canal"
-	"NIF"
+	"CIF"
 	"Empresa"
-	"Tipo Empresa"
-	"Provincia"
-	"Contacto Nombre"
-	"Contacto Mail"
+	"Mail"
+	"Contacto"
 	"Telefono"
 	"Area"
 	"Programa"
@@ -201,6 +177,8 @@ set header0 {
 	"Resuelto"
 	"Apoyo Mail"
 	"Escalado"
+	"Solucion del Escalado"
+	"Detalle Escalado"
 }
 
 # The entries in this list include <a HREF=...> tags
@@ -209,33 +187,27 @@ set header0 {
 set report_def [list \
     group_by ticket_id \
     header {
-	$creation_user_asterisk_id
+	$creation_user_name
 	$project_nr
-	$creation_date_date
-	$creation_date_time
 	$ticket_creation_date_date
 	$ticket_creation_date_time
-	$ticket_escalation_date_date
-	$ticket_escalation_date_time
-	$ticket_done_date_date
-	$ticket_done_date_time
 	$ticket_incoming_channel
 	$vat_number
 	$company_name
-	$company_type
-	$company_province
-	$contact_name
 	$contact_email
+	$contact_name
 	$contact_telephone
 	$ticket_area
 	$ticket_program
-	$ticket_type
+	"Tema"
 	$ticket_file
 	$ticket_request
 	$ticket_resolution
-	$ticket_resuelto
-	$ticket_requires_addition_info
+	"Resuelto"
+	"Apoyo Mail"
 	$ticket_queue
+	"Solucion del Escalado"
+	"Detalle Escalado"
     } \
     content {} \
     footer {} \
