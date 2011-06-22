@@ -206,6 +206,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 					// Save the new user as the default contact for the ticket.
 					// We don't care much if this save was successful - no refresh.
+					var user_id = user_record.get('user_id');
 					ticket_model.set('ticket_customer_contact_id', user_id);
 					ticket_model.save({
 						success: function(record, operation) { alert('ticket_customer_contact_id saved.'); },
