@@ -27,7 +27,7 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
 	autoLoad:	true,
-
+	pageSize:	1000,
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -52,6 +52,7 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	remoteFilter:	true,
 	autoLoad:	true,
 	model: 'TicketBrowser.Category',
+	pageSize:	1000,
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -77,6 +78,8 @@ var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	model: 'TicketBrowser.Category',
+	pageSize:	1000,
+
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -94,6 +97,8 @@ var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	model: 'TicketBrowser.Category',
+	pageSize:	1000,
+
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -112,6 +117,7 @@ var ticketPriorityStore = Ext.create('PO.data.CategoryStore', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	model:		'TicketBrowser.Category',
+	pageSize:	1000,
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -131,6 +137,7 @@ var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 	autoLoad:	true,
 	remoteFilter:	true,
 	model:		'TicketBrowser.Category',
+	pageSize:	1000,
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -168,7 +175,7 @@ var requestAreaProgramStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'requestAreaProgramStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	pageSize:	500,
+	pageSize:	1000,
 	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
@@ -187,7 +194,7 @@ var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'bizObjectRoleStore',
 	autoLoad:	true,
 	remoteFilter:	true,
-	pageSize:	500,
+	pageSize:	1000,
 	model:		'TicketBrowser.Category',
 	proxy: {
 		type: 'rest',
