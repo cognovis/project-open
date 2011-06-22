@@ -208,7 +208,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					if (!panel.rendered) { return; }		// Skip action while form is still rendering
 					var value = field.getValue();
 					var queueField = panel.getForm().findField('ticket_queue_id');
-					if (value == '30028' || value == '30009') {
+					if (value == '30009' || value == '30011') {
 						// Set the esclation date field
 						var esclationDateField = panel.getForm().findField('ticket_escalation_date');
 						esclationDateField.setValue(today_date_time);
