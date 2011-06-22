@@ -54,14 +54,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		    }
 		}
         }, {
-               name:           'first_names',
-               xtype:          'textfield',
-               fieldLabel:     '#intranet-core.First_names#',
-               allowBlank:     false
+		name:		'first_names',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-core.First_names#',
+		allowBlank:	false
         }, {
                 name:           'last_name',
                 xtype:          'textfield',
-                fieldLabel:     '#intranet-core.Last_name#'
+                fieldLabel:     '#intranet-core.Last_name#',
+		allowBlank:	false
         }, {
                 name:           'last_name2',
                 xtype:          'textfield',
@@ -160,12 +161,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				ticket_model.save({
 					scope: Ext.getCmp('ticketContactForm'),
 					success: function() {
-						alert('Successfully saved ticket');
-
 						// Tell all panels to refresh
 						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 						compoundPanel.loadTicket(ticket_model);	
-
 					},
 					failure: function() {
 						alert('Failed to save ticket');
@@ -209,7 +207,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					var user_id = user_record.get('user_id');
 					ticket_model.set('ticket_customer_contact_id', user_id);
 					ticket_model.save({
-						success: function(record, operation) { alert('ticket_customer_contact_id saved.'); },
+						success: function(record, operation) { 
+							// alert('ticket_customer_contact_id saved.'); 
+						},
 						failure: function(record, operation) { alert('Failed to save ticket_customer_contact_id.'); }
 					});
 
