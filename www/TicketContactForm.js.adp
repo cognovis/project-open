@@ -196,7 +196,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				success: function(user_record, operation) {
 
 					// Add the new user to the user store to make it accessible
-					userStore.add(record);
+					userStore.add(user_record);
 
 					// Get the ticket model and extract the customer_id
 					var ticketForm = Ext.getCmp('ticketForm');
