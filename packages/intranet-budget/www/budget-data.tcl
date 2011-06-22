@@ -73,6 +73,7 @@ switch $action {
         set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
         
         $Budget update_from_form
+        $Budget approved_p "f"
         $Budget save -live_p false
 
         # Update the project information
@@ -84,24 +85,29 @@ switch $action {
     approve_budget {
         # Publish the budget and all associated items. A published
         # budget is an approved one.
-
+        
         item::publish -item_id $budget_id
+        db_dml set_approved_p "update im_budgets set approved_p = 't' where budget_id = (select live_revision from cr_items where item_id = :budget_id)"
 
         set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
         foreach item_id $cost_ids {
             item::publish -item_id $item_id
+            db_dml set_approved_p "update im_budget_costs set approved_p = 't' where fund_id = (select live_revision from cr_items where item_id = :item_id)"
         }
 
         set benefit_ids [db_list benefits {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_benefit'}]
         foreach item_id $benefit_ids {
             item::publish -item_id $item_id
+            db_dml set_approved_p "update im_budget_benefits set approved_p = 't' where fund_id = (select live_revision from cr_items where item_id = :item_id)"
         }
 
         set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
         foreach item_id $hour_ids {
             item::publish -item_id $item_id
+            db_dml set_approved_p "update im_budget_hours set approved_p = 't' where hour_id = (select live_revision from cr_items where item_id = :item_id)"
         }
 
+        
         set json [util::json::gen [util::json::object::create [list success true]]]
 
         ns_return 200 text/text $json
@@ -140,6 +146,7 @@ switch $action {
             $Cost set title $title
             $Cost set amount $amount
             $Cost set type_id $type_id
+            $Cost set approved_p "f"
 
             # Save and destro
             $Cost save -live_p false
@@ -200,7 +207,8 @@ switch $action {
             # Now update the fields
             $Benefit set title $title
             $Benefit set amount $amount
-            
+            $Benefit set approved_p "f"
+
             # Save and destro
             $Benefit save -live_p false
             $Benefit destroy
@@ -260,6 +268,7 @@ switch $action {
             $Hour set title $title
             $Hour set hours $hours
             $Hour set department_id $department_id
+            $Hour set approved_p "f"
 
             # Save and destro
             $Hour save -live_p false
