@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.20 2011/06/20 17:09:43 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.21 2011/06/22 17:51:58 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -208,7 +208,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					if (!panel.rendered) { return; }		// Skip action while form is still rendering
 					var value = field.getValue();
 					var queueField = panel.getForm().findField('ticket_queue_id');
-					if (value == '30028' || value == '30009') {
+					if (value == '30009' || value == '30011') {
 						// Set the esclation date field
 						var esclationDateField = panel.getForm().findField('ticket_escalation_date');
 						esclationDateField.setValue(today_date_time);
