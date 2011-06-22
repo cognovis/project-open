@@ -214,6 +214,7 @@ Ext.define('TicketBrowser.User', {
 	'first_names',			// First name(s)
 	'last_name',			// Standard last name
 	'last_name2',			// Spanish 2nd last name
+	'telephone',			// Telephone
 	'email',			// Just email txt
 	'gender',			// male or female
 	'language',			// es_ES or eu_ES
