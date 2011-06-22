@@ -83,6 +83,7 @@ Ext.define('TicketBrowser.Ticket', {
 	'ticket_id',			// The primary key or object_id of the ticket
 	'project_name',			// The name of the ticket. Ticket is as sub-type of Project, 
 					// so the ticket name is stored as project_name.
+	'project_nr',			// The short name of the ticket.
 	'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
 					// project that handles the financials of the ticket.
 	'company_id',			// Company for whom the ticket has been created
@@ -166,8 +167,7 @@ Ext.define('TicketBrowser.Company', {
     fields: [
 	// Basic company fields with special meaning
 	'company_id',			// The primary key or object_id of the company
-	'company_name',			// The name of the company. Company is as sub-type of Project, 
-					// so the company name is stored as project_name.
+	'company_name',			// The name of the company
 	'company_path',			// Short name and path to the company's filestorage
 	'main_office_id',		// The company's main office
 					// project that handles the financials of the company.
