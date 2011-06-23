@@ -47,7 +47,7 @@ db_1row get_cnt "
 
 set row_count 0
 
-db_multirow -extend { id } inquiries inquiries_query {
+db_multirow -extend { id action_column} inquiries inquiries_query {
 	select 
     		i.inquiry_id,
 		i.title, 
@@ -74,12 +74,18 @@ db_multirow -extend { id } inquiries inquiries_query {
 	on 
 		i.project_id = im_costs.project_id
 } {
+	set action_column ""
 	set id [expr $row_count + 1 ]
 	if { ""==$cost_name } { 
-		set cost_name "to be created" 
+		set cost_name "inquiring" 
 	} else {
                 set cost_name "<a href='/intranet-invoices/view?invoice_id=$cost_id'>$cost_name</a>"	
-	}
+	        set action_column "<img id='accept_quote' src='/resources/themes/images/default/dd/drop-yes.gif'>&nbsp;<img id='reject_quote' src='/resources/themes/images/default/grid/drop-no.gif'>"}
+
 	incr row_count
+
+# <a href='/intranet-invoices/view?invoice_id=$cost_id'><img src='/resources/themes/images/default/dd/drop-yes.gif'></a>
+# <a href='/intranet-invoices/view?invoice_id=$cost_id'><img src='/resources/themes/images/default/grid/drop-no.gif'></a>-->
+
 }
 
