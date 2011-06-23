@@ -93,7 +93,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
-		name:		'ticket_area',
+		name:		'ticket_area_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
 		valueField:	'category_id',
