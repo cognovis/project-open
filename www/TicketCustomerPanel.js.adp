@@ -72,6 +72,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		value:		'',
 		valueField:	'category_id',
 		displayField:   'category_translated',
+		allowBlank:	false,
 		store:		companyTypeStore,
 		listConfig: {
 			getInnerTpl: function() {
@@ -81,7 +82,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	}, {
 		name:		'company_province',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#'
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
+		allowBlank:	false
 	}],
 	buttons: [{
 		itemId:		'viewButton',
