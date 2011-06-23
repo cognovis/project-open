@@ -381,6 +381,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 	'ticket_conf_item_id',
 	'ticket_confirmation_date',
 	'ticket_creation_date',
+	'ticket_escalation_date',
+	'ticket_resolution_date',
 	'ticket_customer_contact_id',
 	'ticket_customer_deadline',
 	'ticket_dept_id',
