@@ -900,8 +900,8 @@ ad_proc -private im_rest_get_object_type {
 
 	# Skip objects with empty object name
 	if {"" == $object_name} { 
-	    ns_log Notice "im_rest_get_object_type: Skipping object #$object_id because object_name is empty."
-	    continue 
+	    ns_log Error "im_rest_get_object_type: Skipping object #$object_id because object_name is empty."
+	    continue
 	}
 
 	# -------------------------------------------------------
