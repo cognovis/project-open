@@ -870,3 +870,21 @@ ad_proc -public im_rest_parse_xml_json_content {
     return [array get hash_array]
 }
 
+
+
+
+
+
+ad_proc -public im_quotejson { str } {
+    Quote a JSON string. In particular this means escaping
+    single and double quotes, as well as new lines, tabs etc.
+    @author Frank Bergmann
+} {
+    regsub -all {\\} $str {\\\\} str
+    regsub -all {'} $str {\'} str
+    regsub -all {"} $str {\"} str
+    regsub -all {\n} $str {\\n} str
+    regsub -all {\t} $str {\\t} str
+    return $str
+}
+

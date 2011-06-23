@@ -1454,7 +1454,7 @@ ad_proc -private im_rest_post_object_type {
 		set data_list [list]
 		foreach key [array names hash_array] {
 		set value $hash_array($key)
-		    lappend data_list "\"$key\": \"[ns_quotehtml $value]\""
+		    lappend data_list "\"$key\": \"[ns_quotejson $value]\""
 		}
 		
 		set data "\[{[join $data_list ", "]}\]"
@@ -1547,7 +1547,7 @@ ad_proc -private im_rest_post_object {
 	    set data_list [list]
 	    foreach key [array names hash_array] {
 		set value $hash_array($key)
-		lappend data_list "\"$key\": \"[ns_quotehtml $value]\""
+		lappend data_list "\"$key\": \"[im_quotejson $value]\""
 	    }
 
 	    set data "\[{[join $data_list ", "]}\]"
