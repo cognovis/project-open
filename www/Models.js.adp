@@ -294,6 +294,38 @@ Ext.define('TicketBrowser.BizObjectMember', {
 
 
 
+Ext.define('TicketBrowser.GroupMember', {
+	extend: 'Ext.data.Model',
+	idProperty: 'rel_id',				// The primary key or object_id of the company
+	fields: [
+		'rel_id',				// Primary key
+		'rel_type',				// Type of relationship (=im_biz_object_member)
+		'object_id_one',			// Business Object (company, project, ...)
+		'object_id_two',			// User who is a member
+		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
+		'member_state',				// Status of membership (approved|banned)
+		{
+			name:	'member_name',
+			convert: function(value, record) {
+				var member_id = record.get('object_id_two');
+				var store = Ext.data.StoreManager.lookup('userStore');
+				var name = store.name_from_id(member_id);
+				return name;
+			}
+		}
+	],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/membership_rel',
+		appendId: true,
+		extraParams: { format: 'json' },
+		reader: { type: 'json', root: 'data', totalProperty: 'total' },
+		writer: { type: 'json' }
+	}
+});
+
+
+
 Ext.define('TicketBrowser.FileStorage', {
 	extend: 'Ext.data.Model',
 	idProperty: 'item_id',		// The primary key or object_id of the filestorage

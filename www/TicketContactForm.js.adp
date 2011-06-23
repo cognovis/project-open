@@ -195,9 +195,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					alert('Failed to create company-user relationship'); 
 				}
 			});
-
-
-
                 }
 	}, {
         	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
@@ -267,6 +264,26 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						failure: function() { alert('Failed to create company-user relationship'); }
 					});
 
+					// Add the users to the group "Customers".
+					// This code doesn't need to be synchronized.
+					// The record will establish a "relationship" between the users and a group
+					var groupMember = {
+						object_id_one:	461,		// group_id for Customers
+						object_id_two:	user_id,
+						rel_type:	'membership_rel',
+						member_state:	'approved'
+					};
+		
+					var groupMemberModel = Ext.ModelManager.create(groupMember, 'TicketBrowser.GroupMember');
+		                        groupMemberModel.phantom = true;
+					groupMemberModel.save({
+						scope: Ext.getCmp('ticketCompoundPanel'),
+						failure: function(record, operation) { 
+							var err = operation.getError();
+							alert('Failed to create group membership relationship ' + err); 
+						}
+					});
+		
 
 
 				}
