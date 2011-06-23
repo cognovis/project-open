@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.24 2011/06/17 14:53:56 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.25 2011/06/23 13:41:49 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -118,6 +118,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
+			header: '#intranet-helpdesk.Queue#',
+			dataIndex: 'ticket_queue_id',
+			width: 60,
+			sortable: true, 
+			renderer: function(value, o, record) {
+			    return profileStore.name_from_id(record.get('ticket_queue_id'));
+			}
+		}, {
 			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
@@ -136,10 +144,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 			}
-		}, {
-			header: '#intranet-helpdesk.Queue#',
-			dataIndex: 'ticket_queue_id',
-			hidden: true
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			dataIndex: 'ticket_closed_in_1st_contact_p'

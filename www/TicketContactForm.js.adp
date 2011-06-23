@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.15 2011/06/23 11:33:10 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.16 2011/06/23 13:41:49 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -157,6 +157,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var ticketForm = Ext.getCmp('ticketForm');
 			var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
                         var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+			var customer_id = ticket_model.get('company_id');
 
 			// Mark the user as the ticket's contact
 			var ticket_customer_contact_p = form.findField('ticket_customer_contact_p').getValue();
@@ -166,14 +167,37 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					scope: Ext.getCmp('ticketContactForm'),
 					success: function() {
 						// Tell all panels to refresh
-						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-						compoundPanel.loadTicket(ticket_model);	
 					},
 					failure: function() {
 						alert('Failed to save ticket');
 					}
 				});
 			}
+
+			// Add the users as a contact of the company
+			var memberValues = {
+				object_id_one:	customer_id,
+				object_id_two:	user_id,
+				rel_type:	'im_biz_object_member',
+				object_role_id:	1300,
+				percentage:	''
+			};
+			var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
+                        member_model.phantom = true;
+			member_model.save({
+				scope: Ext.getCmp('ticketCompoundPanel'),
+				success: function(record, operation) {
+					// reload the entire form AFTER the relationship was saved
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_model);	
+				},
+				failure: function(record, operation) { 
+					alert('Failed to create company-user relationship'); 
+				}
+			});
+
+
+
                 }
 	}, {
         	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
