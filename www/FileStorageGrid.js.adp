@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.20 2011/06/23 12:08:17 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.21 2011/06/23 12:19:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -55,20 +55,26 @@ function showFileStorageNewForm(ticket_id) {
 		errorReader: Ext.create('Ext.data.reader.Json', {	// Workaround for Sencha bug parsing JSON replies
 			model:		'example.fielderror',
 			record:		'field',
-			successProperty:	'success'
+			successProperty: 'success'
 		}),
 
 		items: [{
-			name:	'ticket_id',
-			xtype:	'hiddenfield'
+			name:		'ticket_id',				// We need this field to identify the upload folder
+			xtype:		'hiddenfield'
 		}, {
-			name: 'upload_file',
-			xtype: 'filefield',
-			id: 'file',
-			emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
-			fieldLabel: '#intranet-sencha-ticket-tracker.File#',
-			buttonText: '',
-			buttonConfig: { iconCls: 'upload-icon' }
+			name:		'upload_file',
+			xtype:		'filefield',
+			id:		'file',
+			emptyText:	'#intranet-sencha-ticket-tracker.Select_a_file#',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.File#',
+			buttonText:	'',
+			buttonConfig:	{ iconCls: 'upload-icon' }
+		}, {
+			name:		'description',
+			xtype:		'textfield',
+			id:		'title',
+			emptyText:	'#intranet-sencha-ticket-tracker.Description#',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Description#'
 		}],
 	
 		buttons: [{
