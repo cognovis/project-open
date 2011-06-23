@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.19 2011/06/20 17:09:43 po34demo Exp $
+ * @cvs-id $Id: FileStorageGrid.js.adp,v 1.20 2011/06/23 12:08:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -204,7 +204,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 			  var name = record.get('name');
 			  var item_id = record.get('item_id');
 			  var path = this.ownerCt.folder_path;
-			  var html = '<a href="/fs/view'+this.fs_folder_path+'/'+name+'" target="_blank">' + name + '</a>';
+			  var html = '<a href="/file-storage/view'+this.fs_folder_path+'/'+name+'" target="_blank">' + name + '</a>';
 			  return html;
 		  }
 		  },
