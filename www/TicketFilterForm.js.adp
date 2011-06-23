@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.22 2011/06/23 09:47:53 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.23 2011/06/23 10:40:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -108,7 +108,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		},
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
-			'keypress': function() { alert('key'); }
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
 		name: 'ticket_file', 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.13 2011/06/22 17:13:39 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.14 2011/06/23 10:40:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -255,6 +255,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// Show (might have been hidden when creating a new ticket)
 		this.show();
+
+		// Reset button config
+		var buttonToolbar = this.getDockedComponent(0);
+		var addButton = buttonToolbar.getComponent('addButton');
+		addButton.show();
+		var createButton = buttonToolbar.getComponent('createButton');
+		createButton.hide();
+		var saveButton = buttonToolbar.getComponent('saveButton');
+		saveButton.show();
 	},
 
 	loadUser: function(rec){

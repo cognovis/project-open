@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.21 2011/06/23 08:39:42 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.22 2011/06/23 10:40:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -85,111 +85,119 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
 		allowBlank:	false
 	}],
-	buttons: [{
-		itemId:		'viewButton',
-		text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
-		handler:	function() {
-			var form = this.ownerCt.ownerCt.getForm();
-			var company_id = form.findField('company_id').getValue();
-			var redirect = '/intranet/companies/view?company_id='+company_id; 
-			window.open(redirect, '_blank');
-		}
-	}, {
-		itemId:		'addButton',
-		text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
-		width: 		120,
-		handler: function(){
-			var form = this.ownerCt.ownerCt.getForm();
-			form.reset();		// empty fields to allow for entry of new contact
 
-			// Enable the button to save the new company
-			var createButton = this.ownerCt.child('#createButton');
-			createButton.show();
-			
-			// Disable the "Save Changes" and "View Company" button
-			var createButton = this.ownerCt.child('#saveButton');
-			createButton.hide();
-			var viewButton = this.ownerCt.child('#viewButton');
-			viewButton.hide();
-			
-			// Diable this button
-			this.hide();
-		}
-	}, {
-		itemId:		'saveButton',
-		text: 		'#intranet-core.Save_Changes#',
-		width: 		120,
-		handler: function(){
-			var form = this.ownerCt.ownerCt.getForm();
-			var combo = form.findField('company_id');
-			var values = form.getFieldValues();
-			var company_id = combo.getValue();
-			
-			// find the company in the store
-			var company_record = companyStore.findRecord('company_id',company_id);
-			company_record.set('company_name', form.findField('company_name').getValue());
-			company_record.set('company_type_id', form.findField('company_type_id').getValue());
-			company_record.set('vat_number', form.findField('vat_number').getValue());
-			company_record.set('company_province', form.findField('company_province').getValue());
-
-			// Tell the store to update the server via it's REST proxy
-			companyStore.sync();
-
-			// Write the new company (if any...) to the ticket store
-			var ticket_form = Ext.getCmp('ticketForm');
-			var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
-			var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-			ticketModel.set('company_id', company_id);
-
-			// Update the ticket model and tell the form to refresh everything
-			ticketModel.save({
-				scope: Ext.getCmp('ticketForm'),
-				success: function() {
-					// Refresh all forms to show the updated information
-					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticketModel);
-				},
-				failure: function() {
-					alert('Failed to save ticket');
-				}
-			});
-		}
-	}, {
-		itemId:		'createButton',
-		text: 		'#intranet-sencha-ticket-tracker.Save_New_Company#',
-		hidden:		true,			// only show when in "adding mode"
-		handler: function(){
-			var form = this.ownerCt.ownerCt.getForm();
-			var values = form.getFieldValues();
-
-			// create a new company
-			values.company_id = null;
-			var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
-			companyModel.phantom = true;
-			companyModel.save({
-				success: function(company_record, operation) {
-
-					// Store the new company in the store that that it can be referenced.
-					companyStore.add(company_record);
-
-					// Store the new company_id into the current ticket
-					var ticketForm = Ext.getCmp('ticketForm');
-					var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
-					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
-					var company_id = company_record.get('company_id');
-					ticket_model.set('company_id', company_id);
-					ticket_model.save({
-						success: function() {
-							// Tell all panels to load the data of the newly created object
-							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-							compoundPanel.loadTicket(ticket_model);	
-						},
-						failure: function() { alert('TicketCustomerPanel: Failed to save ticket'); }
-					});
-				}
-			});
-		}
+	dockedItems: [{
+		xtype:		'toolbar',
+		dock:		'bottom',
+		itemId:		'ticketCustomerPanelButtonToolbar',
+		defaults:	{ minWidth: 100 },
+		items: ['->', {
+			itemId:		'viewButton',
+			text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
+			handler:	function() {
+				var form = this.ownerCt.ownerCt.getForm();
+				var company_id = form.findField('company_id').getValue();
+				var redirect = '/intranet/companies/view?company_id='+company_id; 
+				window.open(redirect, '_blank');
+			}
+		}, {
+			itemId:		'addButton',
+			text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
+			width: 		120,
+			handler: function(){
+				var form = this.ownerCt.ownerCt.getForm();
+				form.reset();		// empty fields to allow for entry of new contact
+	
+				// Enable the button to save the new company
+				var createButton = this.ownerCt.child('#createButton');
+				createButton.show();
+				
+				// Disable the "Save Changes" and "View Company" button
+				var createButton = this.ownerCt.child('#saveButton');
+				createButton.hide();
+				var viewButton = this.ownerCt.child('#viewButton');
+				viewButton.hide();
+				
+				// Diable this button
+				this.hide();
+			}
+		}, {
+			itemId:		'saveButton',
+			text: 		'#intranet-core.Save_Changes#',
+			width: 		120,
+			handler: function(){
+				var form = this.ownerCt.ownerCt.getForm();
+				var combo = form.findField('company_id');
+				var values = form.getFieldValues();
+				var company_id = combo.getValue();
+				
+				// find the company in the store
+				var company_record = companyStore.findRecord('company_id',company_id);
+				company_record.set('company_name', form.findField('company_name').getValue());
+				company_record.set('company_type_id', form.findField('company_type_id').getValue());
+				company_record.set('vat_number', form.findField('vat_number').getValue());
+				company_record.set('company_province', form.findField('company_province').getValue());
+	
+				// Tell the store to update the server via it's REST proxy
+				companyStore.sync();
+	
+				// Write the new company (if any...) to the ticket store
+				var ticket_form = Ext.getCmp('ticketForm');
+				var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
+				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+				ticketModel.set('company_id', company_id);
+	
+				// Update the ticket model and tell the form to refresh everything
+				ticketModel.save({
+					scope: Ext.getCmp('ticketForm'),
+					success: function() {
+						// Refresh all forms to show the updated information
+						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+						compoundPanel.loadTicket(ticketModel);
+					},
+					failure: function() {
+						alert('Failed to save ticket');
+					}
+				});
+			}
+		}, {
+			itemId:		'createButton',
+			text: 		'#intranet-sencha-ticket-tracker.Save_New_Company#',
+			hidden:		true,			// only show when in "adding mode"
+			handler: function(){
+				var form = this.ownerCt.ownerCt.getForm();
+				var values = form.getFieldValues();
+	
+				// create a new company
+				values.company_id = null;
+				var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
+				companyModel.phantom = true;
+				companyModel.save({
+					success: function(company_record, operation) {
+	
+						// Store the new company in the store that that it can be referenced.
+						companyStore.add(company_record);
+	
+						// Store the new company_id into the current ticket
+						var ticketForm = Ext.getCmp('ticketForm');
+						var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
+						var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+						var company_id = company_record.get('company_id');
+						ticket_model.set('company_id', company_id);
+						ticket_model.save({
+							success: function() {
+								// Tell all panels to load the data of the newly created object
+								var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+								compoundPanel.loadTicket(ticket_model);	
+							},
+							failure: function() { alert('TicketCustomerPanel: Failed to save ticket'); }
+						});
+					}
+				});
+			}
+		}]
 	}],
+
 
 	// For a new ticket reset the values of the form.
 	newTicket: function() {
@@ -216,6 +224,17 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// Show the form
 		this.show();
+
+		// Reset button config
+		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');
+		var viewButton = buttonToolbar.getComponent('addButton');
+		viewButton.show();
+		var addButton = buttonToolbar.getComponent('addButton');
+		addButton.show();
+		var saveButton = buttonToolbar.getComponent('saveButton');
+		saveButton.show();
+		var createButton = buttonToolbar.getComponent('createButton');
+		createButton.hide();
 	}
 
 });
