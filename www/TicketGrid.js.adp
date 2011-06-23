@@ -118,6 +118,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
+			header: '#intranet-helpdesk.Queue#',
+			dataIndex: 'ticket_queue_id',
+			width: 60,
+			sortable: true, 
+			renderer: function(value, o, record) {
+			    return profileStore.name_from_id(record.get('ticket_queue_id'));
+			}
+		}, {
 			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
@@ -136,10 +144,6 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 			}
-		}, {
-			header: '#intranet-helpdesk.Queue#',
-			dataIndex: 'ticket_queue_id',
-			hidden: true
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			dataIndex: 'ticket_closed_in_1st_contact_p'

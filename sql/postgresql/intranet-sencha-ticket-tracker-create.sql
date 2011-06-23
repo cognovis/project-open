@@ -114,13 +114,13 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_last_queue_id', 'Ticket L
 alter table im_tickets alter column ticket_closed_in_1st_contact_p type text;
 alter table im_tickets alter column ticket_requires_addition_info_p type text;
 
-alter table im_tickets alter column ticket_creation_date type date;
-alter table im_tickets alter column ticket_reaction_date type date;
-alter table im_tickets alter column ticket_confirmation_date type date;
-alter table im_tickets alter column ticket_done_date type date;
-alter table im_tickets alter column ticket_signoff_date type date;
-alter table im_tickets alter column ticket_escalation_date type date;
-alter table im_tickets alter column ticket_resolution_date type date;
+alter table im_tickets alter column ticket_creation_date type timestamptz;
+alter table im_tickets alter column ticket_reaction_date type timestamptz;
+alter table im_tickets alter column ticket_confirmation_date type timestamptz;
+alter table im_tickets alter column ticket_done_date type timestamptz;
+alter table im_tickets alter column ticket_signoff_date type timestamptz;
+alter table im_tickets alter column ticket_escalation_date type timestamptz;
+alter table im_tickets alter column ticket_resolution_date type timestamptz;
 
 
 
