@@ -1407,18 +1407,20 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
 
     # Check for duplicate
     set dup_sql "
-	select	count(*)
+	select	min(rel_id)
 	from	acs_rels
 	where	rel_type = :rest_otype and
 		object_id_one = :object_id_one and
 		object_id_two = :object_id_two
     "
-    if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: Your company_name or company_path already exists."]
-    }
+    set rest_oid [db_string duplicates $dup_sql -default ""]
 
-    if {[catch {
-	set rest_oid [db_string new_im_biz_object_member "
+    if {"" == $rest_oid} {
+
+	# Add the new relationship only if it doesn't exist yet
+	# Gracefully handle duplicates
+	if {[catch {
+	    set rest_oid [db_string new_im_biz_object_member "
 		select im_biz_object_member__new (
 			null,			-- rel_id
 			:rest_otype,		-- rel_type
@@ -1429,12 +1431,13 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
 			:user_id,		-- Creation user
 			'[ns_conn peeraddr]'	-- Connection IP address for audit
 		)
-	"]
-    } err_msg]} {
-	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
-    }
+	    "]
+	} err_msg]} {
+	    return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+	}
    
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+	im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    }
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid
