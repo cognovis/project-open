@@ -204,7 +204,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 			  var name = record.get('name');
 			  var item_id = record.get('item_id');
 			  var path = this.ownerCt.folder_path;
-			  var html = '<a href="/fs/view'+this.fs_folder_path+'/'+name+'" target="_blank">' + name + '</a>';
+			  var html = '<a href="/file-storage/view'+this.fs_folder_path+'/'+name+'" target="_blank">' + name + '</a>';
 			  return html;
 		  }
 		  },
