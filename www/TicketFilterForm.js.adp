@@ -108,7 +108,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		},
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
-			'keypress': function() { alert('key'); }
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
 		name: 'ticket_file', 

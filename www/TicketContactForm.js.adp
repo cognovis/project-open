@@ -255,6 +255,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// Show (might have been hidden when creating a new ticket)
 		this.show();
+
+		// Reset button config
+		var buttonToolbar = this.getDockedComponent(0);
+		var addButton = buttonToolbar.getComponent('addButton');
+		addButton.show();
+		var createButton = buttonToolbar.getComponent('createButton');
+		createButton.hide();
+		var saveButton = buttonToolbar.getComponent('saveButton');
+		saveButton.show();
 	},
 
 	loadUser: function(rec){
