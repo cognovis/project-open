@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.21 2011/06/20 11:24:20 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.22 2011/06/23 09:47:53 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -93,7 +93,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
-		name:		'ticket_area',
+		name:		'ticket_area_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
 		valueField:	'category_id',
