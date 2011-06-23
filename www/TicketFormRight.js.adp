@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.21 2011/06/22 17:51:58 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.22 2011/06/23 14:23:49 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -345,6 +345,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		form.findField('ticket_creation_date').setDisabled(true);
 		form.findField('ticket_escalation_date').setDisabled(true);
 		form.findField('ticket_done_date').setDisabled(true);
+
+
+		var queueField = form.findField('ticket_queue_id');
+		var ticket_status_id = rec.ticket_status_id;
+		if (ticket_status_id == '30009' || ticket_status_id == '30011') {
+			// Enable the queue field
+			queueField.setDisabled(false);
+		}
 
 		this.show();
 	},
