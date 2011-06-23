@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.29 2011/06/22 17:32:15 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.30 2011/06/23 13:34:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -381,6 +381,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 	'ticket_conf_item_id',
 	'ticket_confirmation_date',
 	'ticket_creation_date',
+	'ticket_escalation_date',
+	'ticket_resolution_date',
 	'ticket_customer_contact_id',
 	'ticket_customer_deadline',
 	'ticket_dept_id',
