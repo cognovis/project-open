@@ -1331,7 +1331,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
     set dup_sql "
 	select	count(*)
 	from	acs_rels
-	where	rel_type = :object_type and
+	where	rel_type = :rest_otype and
 		object_id_one = :object_id_one and
 		object_id_two = :object_id_two
     "
@@ -1343,7 +1343,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 	set rest_oid [db_string new_membership_rel "
 		select membership_rel__new (
 			null,			-- task_id
-			:object_type,		-- object_type
+			:rest_otype,		-- object_type
 			:object_id_one,
 			:object_id_two,
 			:member_state,
