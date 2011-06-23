@@ -199,6 +199,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 					// Add the new user to the user store to make it accessible
 					userStore.add(user_record);
+					var user_id = user_record.get('user_id');
 
 					// Get the ticket model and extract the customer_id
 					var ticketForm = Ext.getCmp('ticketForm');
@@ -206,16 +207,22 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
 					var customer_id = ticket_model.get('company_id');
 
+
 					// Save the new user as the default contact for the ticket.
 					// We don't care much if this save was successful - no refresh.
-					var user_id = user_record.get('user_id');
-					ticket_model.set('ticket_customer_contact_id', user_id);
-					ticket_model.save({
-						success: function(record, operation) { 
-							// alert('ticket_customer_contact_id saved.'); 
-						},
-						failure: function(record, operation) { alert('Failed to save ticket_customer_contact_id.'); }
-					});
+					var ticket_customer_contact_field = this.getForm().findField('ticket_customer_contact_p');
+					var ticket_customer_contact_p = ticket_customer_contact_field.getValue();
+					if (true == ticket_customer_contact_p || '1' == ticket_customer_contact_p) {
+						ticket_model.set('ticket_customer_contact_id', user_id);
+						ticket_model.save({
+							success: function(record, operation) { 
+								// alert('ticket_customer_contact_id saved.'); 
+							},
+							failure: function(record, operation) { 
+								alert('Failed to save ticket_customer_contact_id.'); 
+							}
+						});
+					}
 
 					// Create an object_member relationship between the user and the company
 					var memberValues = {
@@ -230,11 +237,14 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					member_model.save({
 						scope: Ext.getCmp('ticketCompoundPanel'),
 		                                success: function(record, operation) {
-							// reload the entire form
+							// reload the entire form AFTER the relationship was saved
 							this.loadTicket(ticket_model);
 						},
 						failure: function() { alert('Failed to create company-user relationship'); }
 					});
+
+
+
 				}
 			});
                 }
