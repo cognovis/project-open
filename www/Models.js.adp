@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.31 2011/06/23 15:15:54 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.32 2011/06/23 16:06:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -289,6 +289,38 @@ Ext.define('TicketBrowser.BizObjectMember', {
 		writer: {
 			type: 'json'
 		}
+	}
+});
+
+
+
+Ext.define('TicketBrowser.GroupMember', {
+	extend: 'Ext.data.Model',
+	idProperty: 'rel_id',				// The primary key or object_id of the company
+	fields: [
+		'rel_id',				// Primary key
+		'rel_type',				// Type of relationship (=im_biz_object_member)
+		'object_id_one',			// Business Object (company, project, ...)
+		'object_id_two',			// User who is a member
+		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
+		'member_state',				// Status of membership (approved|banned)
+		{
+			name:	'member_name',
+			convert: function(value, record) {
+				var member_id = record.get('object_id_two');
+				var store = Ext.data.StoreManager.lookup('userStore');
+				var name = store.name_from_id(member_id);
+				return name;
+			}
+		}
+	],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/membership_rel',
+		appendId: true,
+		extraParams: { format: 'json' },
+		reader: { type: 'json', root: 'data', totalProperty: 'total' },
+		writer: { type: 'json' }
 	}
 });
 

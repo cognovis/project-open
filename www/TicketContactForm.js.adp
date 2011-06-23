@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.16 2011/06/23 13:41:49 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.17 2011/06/23 16:06:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -195,9 +195,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					alert('Failed to create company-user relationship'); 
 				}
 			});
-
-
-
                 }
 	}, {
         	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
@@ -267,6 +264,26 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						failure: function() { alert('Failed to create company-user relationship'); }
 					});
 
+					// Add the users to the group "Customers".
+					// This code doesn't need to be synchronized.
+					// The record will establish a "relationship" between the users and a group
+					var groupMember = {
+						object_id_one:	461,		// group_id for Customers
+						object_id_two:	user_id,
+						rel_type:	'membership_rel',
+						member_state:	'approved'
+					};
+		
+					var groupMemberModel = Ext.ModelManager.create(groupMember, 'TicketBrowser.GroupMember');
+		                        groupMemberModel.phantom = true;
+					groupMemberModel.save({
+						scope: Ext.getCmp('ticketCompoundPanel'),
+						failure: function(record, operation) { 
+							var err = operation.getError();
+							alert('Failed to create group membership relationship ' + err); 
+						}
+					});
+		
 
 
 				}
