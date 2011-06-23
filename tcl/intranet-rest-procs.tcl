@@ -778,8 +778,11 @@ ad_proc -private im_rest_get_object_type {
 	where	object_type = :rest_otype
     "
 
-    set base_url "[im_rest_system_url]/intranet-rest"
+    if {"" == $table_name} {
+	im_rest_error -format $format -http_status 500 -message "Invalid DynField configuration: Object type '$rest_otype' doesn't have a table_name specified in table acs_object_types."
+    }
 
+    set base_url "[im_rest_system_url]/intranet-rest"
 
     # -------------------------------------------------------
     # Check for generic permissions to read all objects of this type
