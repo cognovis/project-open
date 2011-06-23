@@ -9,3 +9,8 @@ where
 ;
 
 
+
+delete from cr_text;
+alter table cr_text disable trigger cr_text_tr;
+insert into cr_text (text_data) values ('');
+alter table cr_text enable trigger cr_text_tr;
