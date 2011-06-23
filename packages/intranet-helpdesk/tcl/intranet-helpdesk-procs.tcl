@@ -379,87 +379,91 @@ namespace eval im_ticket {
         -ticket_sla_id:required
         { -ticket_name "" }
         { -ticket_nr "" }
-	{ -ticket_customer_contact_id "" }
-	{ -ticket_type_id "" }
-	{ -ticket_status_id "" }
-	{ -ticket_start_date "" }
-	{ -ticket_end_date "" }
-	{ -ticket_note "" }
-	{ -creation_date "" }
-	{ -creation_user "" }
-	{ -creation_ip "" }
-	{ -context_id "" }
+        { -ticket_customer_contact_id "" }
+        { -ticket_type_id "" }
+        { -ticket_status_id "" }
+        { -ticket_start_date "" }
+        { -ticket_end_date "" }
+        { -ticket_note "" }
+        { -creation_date "" }
+        { -creation_user "" }
+        { -creation_ip "" }
+        { -context_id "" }
+        -no_audit:boolean
+        -no_notification:boolean
     } {
-	Create a new ticket.
-	This procedure deals with the base ticket creation.
-	DynField values need to be stored extract.
-
-	@author frank.bergmann@project-open.com
-	@return <code>ticket_id</code> of the newly created project or "" in case of an error.
+        Create a new ticket.
+        This procedure deals with the base ticket creation.
+        DynField values need to be stored extract.
+        
+        @author frank.bergmann@project-open.com
+        @return <code>ticket_id</code> of the newly created project or "" in case of an error.
     } {
-	set ticket_id ""
-	set current_user_id $creation_user
-	if {"" == $current_user_id} { set current_user_id [ad_get_user_id] }
-
-	db_transaction {
-
-	    # Set default input values
-	    if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
-	    if {"" == $ticket_name} { set ticket_name $ticket_nr }    
-	    if {"" == $ticket_start_date} { set ticket_start_date [db_string now "select now()::date from dual"] }
-	    if {"" == $ticket_end_date} { set ticket_end_date [db_string now "select (now()::date)+1 from dual"] }
-	    set start_date_sql [template::util::date get_property sql_date $ticket_start_date]
-	    set end_date_sql [template::util::date get_property sql_timestamp $ticket_end_date]
-	
-	    # Create a new forum topic of type "Note"
-	    set topic_id [db_nextval im_forum_topics_seq]
-
-	    # Get customer from SLA
-	    set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
-	    if {"" == $ticket_customer_id} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>No customer was specified for ticket" }
-
-	    set ticket_name_exists_p [db_string pex "select count(*) from im_projects where project_name = :ticket_name"]
-	    if {$ticket_name_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Name '$ticket_name' already exists." }
-
-	    set ticket_nr_exists_p [db_string pnex "select count(*) from im_projects where project_nr = :ticket_nr"]
-	    if {$ticket_nr_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Nr '$ticket_nr' already exists." }
-
-	    set ticket_id [db_string ticket_insert {}]
-	    db_dml ticket_update {}
-	    db_dml project_update {}
-
-
-	    # Deal with OpenACS 5.4 "title" static title columm which is wrong:
-	    if {[im_column_exists acs_objects title]} {
-		db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
-	    }
-
-	    # Add the current user to the project
-	    im_biz_object_add_role $current_user_id $ticket_id [im_biz_object_role_project_manager]
-	
-	    # Start a new workflow case
-	    im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
-
-	
-	    # Write Audit Trail
-	    im_project_audit -project_id $ticket_id -action create
-
-	    # Create a new forum topic of type "Note"
-	    set topic_type_id [im_topic_type_id_discussion]
-	    set topic_status_id [im_topic_status_id_open]
-	    set message ""
-
-
-	    # The owner of a topic can edit its content.
-	    # But we don't want customers to edit their stuff here...
-	    set topic_owner_id $current_user_id
-	    if {[im_user_is_customer_p $current_user_id]} { 
-		set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
-	    }
-
-	    if {"" == $ticket_note} { set ticket_note [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
-
-	    db_dml topic_insert {
+        set ticket_id ""
+        set current_user_id $creation_user
+        if {"" == $current_user_id} { set current_user_id [ad_get_user_id] }
+        
+        db_transaction {
+            
+            # Set default input values
+            if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
+            if {"" == $ticket_name} { set ticket_name $ticket_nr }    
+            if {"" == $ticket_start_date} { set ticket_start_date [db_string now "select now()::date from dual"] }
+            if {"" == $ticket_end_date} { set ticket_end_date [db_string now "select (now()::date)+1 from dual"] }
+            set start_date_sql [template::util::date get_property sql_date $ticket_start_date]
+            set end_date_sql [template::util::date get_property sql_timestamp $ticket_end_date]
+            
+            # Create a new forum topic of type "Note"
+            set topic_id [db_nextval im_forum_topics_seq]
+            
+            # Get customer from SLA
+            set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
+            if {"" == $ticket_customer_id} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>No customer was specified for ticket" }
+            
+            set ticket_name_exists_p [db_string pex "select count(*) from im_projects where project_name = :ticket_name"]
+            if {$ticket_name_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Name '$ticket_name' already exists." }
+            
+            set ticket_nr_exists_p [db_string pnex "select count(*) from im_projects where project_nr = :ticket_nr"]
+            if {$ticket_nr_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Nr '$ticket_nr' already exists." }
+            
+            set ticket_id [db_string ticket_insert {}]
+            db_dml ticket_update {}
+            db_dml project_update {}
+            
+            
+            # Deal with OpenACS 5.4 "title" static title columm which is wrong:
+            if {[im_column_exists acs_objects title]} {
+                db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
+            }
+            
+            # Add the current user to the project
+            im_biz_object_add_role $current_user_id $ticket_id [im_biz_object_role_project_manager]
+            
+            # Start a new workflow case
+            im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
+            
+            
+            # Write Audit Trail
+            if {!$no_audit_p} {
+                im_project_audit -project_id $ticket_id -action create
+            }
+            
+            # Create a new forum topic of type "Note"
+            set topic_type_id [im_topic_type_id_discussion]
+            set topic_status_id [im_topic_status_id_open]
+            set message ""
+            
+            
+            # The owner of a topic can edit its content.
+            # But we don't want customers to edit their stuff here...
+            set topic_owner_id $current_user_id
+            if {[im_user_is_customer_p $current_user_id]} { 
+                set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
+            }
+            
+            if {"" == $ticket_note} { set ticket_note [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
+            
+            db_dml topic_insert {
                 insert into im_forum_topics (
                         topic_id, object_id, parent_id,
                         topic_type_id, topic_status_id, owner_id,
@@ -469,17 +473,18 @@ namespace eval im_ticket {
                         :topic_type_id, :topic_status_id, :topic_owner_id,
                         :ticket_name, :ticket_note
                 )
-	    }
+            }
 
-	    # Subscribe owner to Notifications	    
-	    im_ticket::notification_subscribe -ticket_id $ticket_id -user_id $current_user_id
-
-	} on_error {
-	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
+            # Subscribe owner to Notifications	    
+            if {!$no_notification_p} {
+                im_ticket::notification_subscribe -ticket_id $ticket_id -user_id $current_user_id
+            }
+        } on_error {
+            ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
 	    <pre>$errmsg</pre>"
-	}
-
-	return $ticket_id 
+        }
+        
+        return $ticket_id 
     }
 
 

@@ -128,12 +128,14 @@ ad_form -extend -name ticket -edit_request {
     if {[info exists ticket_description]} { append message $ticket_description }
 
     set ticket_id [im_ticket::new \
-	-ticket_sla_id $parent_id \
-        -ticket_name $project_name \
-        -ticket_nr $project_nr \
-	-ticket_customer_contact_id $ticket_customer_contact_id \
-        -ticket_type_id $ticket_type_id \
-        -ticket_status_id $ticket_status_id \
+                       -ticket_sla_id $parent_id \
+                       -ticket_name $project_name \
+                       -ticket_nr $project_nr \
+                       -ticket_customer_contact_id $ticket_customer_contact_id \
+                       -ticket_type_id $ticket_type_id \
+                       -ticket_status_id $ticket_status_id \
+                       -no_audit \
+                       -no_notification \
     ]
 
 
@@ -142,14 +144,6 @@ ad_form -extend -name ticket -edit_request {
 	-object_id $ticket_id \
 	-form_id ticket
     
-
-    notification::new \
-        -type_id [notification::type::get_type_id -short_name ticket_notif] \
-        -object_id $ticket_id \
-        -response_id "" \
-        -notif_subject $project_name \
-        -notif_text $message
-
 
     if {[info exists escalate_from_ticket_id] && 0 != $escalate_from_ticket_id} {
 	
@@ -171,6 +165,13 @@ ad_form -extend -name ticket -edit_request {
     
     # Write Audit Trail
     im_project_audit -object_type "im_ticket" -project_id $ticket_id -action create
+
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name ticket_notif] \
+        -object_id $ticket_id \
+        -response_id "" \
+        -notif_subject $project_name \
+        -notif_text $message
 
 } -edit_data {
 
