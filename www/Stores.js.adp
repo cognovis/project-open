@@ -308,20 +308,7 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 	sorters: [{
 		property: 'group_name',
 		direction: 'DESC'
-	}],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_profile',
-		appendId: true,
-		extraParams: {
-			format: 'json'		// Tell the ]po[ REST to return JSON data.
-		},
-		reader: {
-			type: 'json',		// Tell the Proxy Reader to parse JSON
-			root: 'data',		// Where do the data start in the JSON file?
-			totalProperty: 'total'
-		}
-	}
+	}]
 });
 
 

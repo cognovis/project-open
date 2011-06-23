@@ -246,11 +246,21 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		hidden:			false,		// ToDo: Hide and enable only if rejectable (last_queue_id is set)
 		formBind:		true,
 		handler: function() {
-			// Restore the last value of the assigned group
+
+			// Get the field information
 			var form = this.up('form').getForm();
 			var ticket_queue_field = form.findField('ticket_queue_id');
 			var ticket_last_queue_field = form.findField('ticket_last_queue_id');
-			ticket_queue_field.setValue(ticket_last_queue_field.getValue());
+			var ticket_last_queue_id = ticket_last_queue_field.getValue();
+
+			// Check that the store contains the value for rejection
+			var lastQueueRecord = programGroupStore.findRecord('group_id', ticket_last_queue_id);
+			if (null == lastQueueRecord || undefined == lastQueueRecord) {
+				// We need to add the group to the store
+                                var profileModel = profileStore.findRecord('group_id', ticket_last_queue_id);
+				programGroupStore.insert(0, profileModel);
+			}
+			ticket_queue_field.setValue(ticket_last_queue_id);
 		}
 	}, {
 		text:			'#intranet-sencha-ticket-tracker.button_Save#',
