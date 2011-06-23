@@ -55,20 +55,26 @@ function showFileStorageNewForm(ticket_id) {
 		errorReader: Ext.create('Ext.data.reader.Json', {	// Workaround for Sencha bug parsing JSON replies
 			model:		'example.fielderror',
 			record:		'field',
-			successProperty:	'success'
+			successProperty: 'success'
 		}),
 
 		items: [{
-			name:	'ticket_id',
-			xtype:	'hiddenfield'
+			name:		'ticket_id',				// We need this field to identify the upload folder
+			xtype:		'hiddenfield'
 		}, {
-			name: 'upload_file',
-			xtype: 'filefield',
-			id: 'file',
-			emptyText: '#intranet-sencha-ticket-tracker.Select_a_file#',
-			fieldLabel: '#intranet-sencha-ticket-tracker.File#',
-			buttonText: '',
-			buttonConfig: { iconCls: 'upload-icon' }
+			name:		'upload_file',
+			xtype:		'filefield',
+			id:		'file',
+			emptyText:	'#intranet-sencha-ticket-tracker.Select_a_file#',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.File#',
+			buttonText:	'',
+			buttonConfig:	{ iconCls: 'upload-icon' }
+		}, {
+			name:		'description',
+			xtype:		'textfield',
+			id:		'title',
+			emptyText:	'#intranet-sencha-ticket-tracker.Description#',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Description#'
 		}],
 	
 		buttons: [{
