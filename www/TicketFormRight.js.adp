@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.24 2011/06/23 14:30:13 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.25 2011/06/23 14:31:55 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -351,7 +351,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var ticket_status_id = rec.get('ticket_status_id');
 		if (ticket_status_id == '30009' || ticket_status_id == '30011') {
 			// Enable the queue field
-			queueField.setHidden(false);
+			queueField.show();
 		}
 
 		this.show();
