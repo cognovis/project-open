@@ -117,14 +117,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	    return ticketTypeStore.category_from_id(record.get('ticket_type_id'));
 	}
     }, {
-	header: '#intranet-helpdesk.Queue#',
-	dataIndex: 'ticket_queue_id',
-	width: 60,
-	sortable: true, 
-	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id'));
-	}
-    }, {
 	header: '#intranet-sencha-ticket-tracker.Escalated#',
 	dataIndex: 'ticket_queue_id',
 	width: 60,

@@ -348,7 +348,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 
 		var queueField = form.findField('ticket_queue_id');
-		var ticket_status_id = rec.ticket_status_id;
+		var ticket_status_id = rec.get('ticket_status_id');
 		if (ticket_status_id == '30009' || ticket_status_id == '30011') {
 			// Enable the queue field
 			queueField.setDisabled(false);
