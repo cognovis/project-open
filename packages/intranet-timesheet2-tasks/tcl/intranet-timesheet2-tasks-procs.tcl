@@ -464,7 +464,7 @@ ad_proc -public im_timesheet_task_list_component {
 		child.project_nr as task_nr,
 		child.project_name as task_name,
 		t.task_status_id as task_status_id,
-        im_name_from_id(t.task_status_id) as task_status,
+        im_category_from_id(t.task_status_id) as task_status,
 		child.project_type_id as task_type_id,
 		child.project_id as child_project_id,
 		child.parent_id as child_parent_id,
@@ -679,10 +679,10 @@ ad_proc -public im_timesheet_task_list_component {
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
     if { [empty_string_p $table_body_html] } {
-        set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]"
-	set table_body_html "
+        set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]
+        set table_body_html "
 		<tr class=table_list_page_plain>
-			<td colspan=$colspan align=left>
+        <td colspan=$colspan align=left>
 			<b>[_ intranet-timesheet2-tasks.There_are_no_active_tasks]</b>
 			</td>
 		</tr>
@@ -743,7 +743,7 @@ ad_proc -public im_timesheet_task_list_component {
 	</tr>
 	</table>
     "
-    if {!$write} { set table_footer_action "" }
+    if {!$write && ![im_permission $user_id "add_timesheet_tasks"]} { set table_footer_action "" }
 
     set table_footer "
 	<tfoot>

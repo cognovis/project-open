@@ -94,7 +94,7 @@ if {!$project_read && ![im_permission $user_id view_timesheet_tasks_all]} {
     return
 }
 
-if {!$project_write} {
+if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
     ad_return_complaint 1 "You have insufficient privileges to add/modify timesheet tasks for this project"
     return
 }
