@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.22 2011/06/23 10:40:31 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.23 2011/06/24 14:59:57 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -232,7 +232,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
 		var saveButton = buttonToolbar.getComponent('saveButton');
-		saveButton.show();
+
+		// Disable the Save button if we show the anonymous customer
+		if (customer_id == anonimo_company_id) {
+			saveButton.hide();
+		} else {
+			saveButton.hide();
+		}
+
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
 	}

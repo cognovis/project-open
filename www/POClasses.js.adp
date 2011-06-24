@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: POClasses.js.adp,v 1.2 2011/06/16 13:55:26 po34demo Exp $
+ * @cvs-id $Id: POClasses.js.adp,v 1.3 2011/06/24 14:59:57 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -117,4 +117,5 @@ Ext.define('PO.form.field.DateTimeReadOnly', {
 // ToDo: Update the date in regular intervals
 var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
 var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
+var anonimo_company_id = '<%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>';
 
