@@ -222,6 +222,10 @@ Ext.define('TicketBrowser.User', {
 		'user_id',			// Primary key
 		'first_names',			// First name(s)
 		'last_name',			// Standard last name
+		'username',			// Windows username
+		'url',				// Web site URL
+		'authority_id',			// Windows domain
+		'member_state',			// "approved" or "banned"?
 		'last_name2',			// Spanish 2nd last name
 		'telephone',			// Telephone
 		'email',			// Just email txt

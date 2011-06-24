@@ -117,4 +117,5 @@ Ext.define('PO.form.field.DateTimeReadOnly', {
 // ToDo: Update the date in regular intervals
 var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
 var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
+var anonimo_company_id = '<%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>';
 

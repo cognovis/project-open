@@ -232,7 +232,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
 		var saveButton = buttonToolbar.getComponent('saveButton');
-		saveButton.show();
+
+		// Disable the Save button if we show the anonymous customer
+		if (customer_id == anonimo_company_id) {
+			saveButton.hide();
+		} else {
+			saveButton.hide();
+		}
+
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
 	}

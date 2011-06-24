@@ -314,7 +314,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
 		var saveButton = buttonToolbar.getComponent('saveButton');
-		saveButton.show();
+
+		var username = contact_record.get('username');
+		if (username.indexOf('anon') >= 0) {
+			saveButton.hide();
+		} else {
+			saveButton.show();
+		}
 	},
 
 	loadUser: function(rec){
