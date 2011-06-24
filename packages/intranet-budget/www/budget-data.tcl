@@ -16,6 +16,17 @@ ad_page_contract {
     {type_id ""}
     {hours ""}
     {department_id ""}
+    {budget "0"}
+    {budget_hours "0"}
+    {budget_hours_explanation ""}
+    {economic_gain "0"}
+    {economic_gain_explanation ""}
+    {single_costs "0"}
+    {single_costs_explanation ""}
+    {annual_costs "0"}
+    {annual_costs_explanation ""}
+    {investment_costs "0"}
+    {investment_costs_explanation ""}
 } -properties {
 } -validate {
 } -errors {
@@ -28,10 +39,26 @@ switch $action {
         if {![exists_and_not_null budget_id]} {
             ad_return_error "Missing budget_id" "You need to provide a budget_id if you want to get the budget with get_budget"
         }
+
+        set json_lists [list]
+
+        # Get the data from the database
+        set revision_id [db_string revision_id {select latest_revision from cr_items where item_id = :budget_id}]
+        set vars [list budget budget_hours budget_hours_explanation economic_gain economic_gain_explanation single_costs single_costs_explanation annual_costs annual_costs_explanation investment_costs investment_costs_explanation item_id approved_p]
         
-        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
-        set json [util::json::gen [util::json::object::create [list success true data [$Budget json_object]]]]
+        db_1row budget_info "select object_title as title, [join $vars ","] from im_budgetsx where budget_id = :revision_id"
+        lappend vars title
+
+        # Set the json
+        set json_list [list]
+        foreach var $vars {
+            lappend json_list $var
+            lappend json_list [set $var]
+        }
+        regsub -all {\"} $json_list {\\\"} json_list        
+        set json [util::json::gen [util::json::object::create [list success true data [util::json::object::create $json_list]]]]
         ns_return 200 text/text $json
+        
     }
     get_live_budget {
 
@@ -39,10 +66,24 @@ switch $action {
         if {![exists_and_not_null budget_id]} {
             ad_return_error "Missing budget_id" "You need to provide a budget_id if you want to get the budget with get_budget"
         }
+
+        set json_lists [list]
+
+        # Get the data from the database
+        set revision_id [db_string revision_id {select live_revision from cr_items where item_id = :budget_id}]
+        set vars [list budget budget_hours budget_hours_explanation economic_gain economic_gain_explanation single_costs single_costs_explanation annual_costs annual_costs_explanation investment_costs investment_costs_explanation item_id approved_p]
         
-        set revision_id [content::item::get_live_revision -item_id $budget_id]
-        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -revision_id $revision_id]
-        set json [util::json::gen [util::json::object::create [list success true data [$Budget json_object]]]]
+        db_1row budget_info "select object_title as title, [join $vars ","] from im_budgetsx where budget_id = :revision_id"
+        lappend vars title
+
+        # Set the json
+        set json_list [list]
+        foreach var $vars {
+            lappend json_list $var
+            lappend json_list [set $var]
+        }
+        regsub -all {\"} $json_list {\\\"} json_list        
+        set json [util::json::gen [util::json::object::create [list success true data [util::json::object::create $json_list]]]]
         ns_return 200 text/text $json
     }
     get_calculated_budget {
@@ -51,41 +92,60 @@ switch $action {
         if {![exists_and_not_null budget_id]} {
             ad_return_error "Missing budget_id" "You need to provide a budget_id if you want to get the budget with get_budget"
         }
-        
-        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
 
-        # Now we overwrite what is in the database with the calculated
-        # figures from the costs, benefits and hours. This allows us
-        # to differentiate between the saved value (which you get with
-        # get_budget) and what should the value be (based on the sum)
-        $Budget set budget_hours [db_string get_hours "select sum(b.hours) from im_budget_hours b, cr_items ci where parent_id = :budget_id and latest_revision = hour_id"]
-        $Budget set investment_costs [db_string get_costs "select sum(amount) from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3751"]
-        $Budget set single_costs [db_string get_costs "select sum(amount) from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3752"]
-        $Budget set annual_costs [db_string get_costs "select sum(amount) from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3753"]
-        $Budget set economic_gain [db_string get_hours "select sum(b.amount) from im_budget_benefits b, cr_items ci where parent_id = :budget_id and latest_revision = fund_id"]
-        $Budget set budget [db_string get_costs "select sum(amount) from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id in (3751,3752)"]
-        set json [util::json::gen [util::json::object::create [list success true data [$Budget json_object]]]]
+        set json_lists [list]
+
+        # Get the data from the database
+        set revision_id [db_string revision_id {select live_revision from cr_items where item_id = :budget_id}]
+        set vars [list budget budget_hours budget_hours_explanation economic_gain economic_gain_explanation single_costs single_costs_explanation annual_costs annual_costs_explanation investment_costs investment_costs_explanation item_id approved_p]
+        
+        db_1row budget_info "select object_title as title, [join $vars ","] from im_budgetsx where budget_id = :revision_id"
+
+        set budget_hours [db_string get_hours "select coalesce(sum(b.hours),0) as budget_hours from im_budget_hours b, cr_items ci where parent_id = :budget_id and latest_revision = hour_id"]
+        set investment_costs [db_string get_costs "select coalesce(sum(amount),0) as investment_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3751"]
+        set single_costs [db_string get_costs "select coalesce(sum(amount),0) as single_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3752"]
+        set annual_costs [db_string get_costs "select coalesce(sum(amount),0) as annual_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3753"]
+        set economic_gain [db_string get_hours "select coalesce(sum(b.amount),0) as economic_gain from im_budget_benefits b, cr_items ci where parent_id = :budget_id and latest_revision = fund_id"]
+        set budget [db_string get_costs "select coalesce(sum(amount),0) as budget from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id in (3751,3752)"]
+
+        # Set the json
+        lappend vars title
+        set json_list [list]
+        foreach var $vars {
+            lappend json_list $var
+            lappend json_list [set $var]
+        }
+        regsub -all {\"} $json_list {\\\"} json_list        
+        set json [util::json::gen [util::json::object::create [list success true data [util::json::object::create $json_list]]]]
         ns_return 200 text/text $json
     }
     save_budget {
-        
-        # Get the budget from the database
-        set Budget [::im::dynfield::CrClass::im_budget get_instance_from_db -item_id $budget_id]
-        
-        $Budget update_from_form
-        $Budget approved_p "f"
-        $Budget save -live_p false
+        content::revision::new -item_id $budget_id \
+            -attributes [list \
+                             [list budget $budget] \
+                             [list budget_hours $budget_hours] \
+                             [list budget_hours_explanation $budget_hours_explanation] \
+                             [list economic_gain $economic_gain] \
+                             [list economic_gain_explanation $economic_gain_explanation] \
+                             [list single_costs $single_costs] \
+                             [list single_costs_explanation $single_costs_explanation] \
+                             [list investment_costs $investment_costs] \
+                             [list investment_costs_explanation $investment_costs_explanation] \
+                             [list annual_costs $annual_costs] \
+                             [list annual_costs_explanation $annual_costs_explanation] \
+                        ] \
+            -title $title            
 
         # Update the project information
-        db_dml update_project "update im_projects set project_budget = [$Budget budget], project_budget_hours = [$Budget budget_hours] where project_id = [$Budget parent_id]"
-        set json [util::json::gen [util::json::object::create [list success true]]]
+        db_dml update_project "update im_projects set project_budget = $budget, project_budget_hours = $budget_hours where project_id = (select parent_id from cr_items where item_id = :item_id)"
 
+        set json [util::json::gen [util::json::object::create [list success true]]]
         ns_return 200 text/text $json
     }        
     approve_budget {
         # Publish the budget and all associated items. A published
         # budget is an approved one.
-        
+
         item::publish -item_id $budget_id
         db_dml set_approved_p "update im_budgets set approved_p = 't' where budget_id = (select live_revision from cr_items where item_id = :budget_id)"
 
