@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.37 2011/06/27 12:05:59 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.38 2011/06/27 12:06:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -247,7 +247,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue(10000191);
+		form.findField('ticket_type_id').setValue('10000191');
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 
