@@ -51,6 +51,17 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_record = userStore.findRecord('user_id',user_id);
 		        if (user_record == null || typeof user_record == "undefined") { return; }
 			this.ownerCt.loadRecord(user_record);
+
+			// Enable/Disable the "Save" button for anonymous
+			var buttonToolbar = this.getDockedComponent(0);
+			var saveButton = buttonToolbar.getComponent('saveButton');
+			var username = user_record.get('username');
+			if (username.indexOf('anon') >= 0) {
+				saveButton.hide();
+			} else {
+				saveButton.show();
+			}
+
 		    }
 		}
         }, {
