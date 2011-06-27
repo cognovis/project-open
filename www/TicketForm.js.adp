@@ -86,7 +86,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		queryMode: 	'remote',
 		store: 		ticketTypeStore,
 		allowBlank:	false,			// Require a value for this one
-		value:		10000191,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
@@ -245,6 +244,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		
+
+		// Set the default value for ticket_type
+		var form = this.getForm();
+		form.findField('ticket_type_id').setValue(10000191);
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 
