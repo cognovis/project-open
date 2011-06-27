@@ -375,9 +375,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		}
 
 		// Disable the read-only date fields
-		form.findField('ticket_creation_date').setDisabled(true);
-		form.findField('ticket_escalation_date').setDisabled(true);
-		form.findField('ticket_done_date').setDisabled(true);
+		// form.findField('ticket_creation_date').setDisabled(true);
+		// form.findField('ticket_escalation_date').setDisabled(true);
+		// form.findField('ticket_done_date').setDisabled(true);
 
 
 		var queueField = form.findField('ticket_queue_id');
