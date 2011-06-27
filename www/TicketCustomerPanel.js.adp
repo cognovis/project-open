@@ -50,6 +50,15 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var cust = companyStore.findRecord('company_id',customer_id);
 				if (cust == null || typeof cust == "undefined") { return; }
 				this.ownerCt.loadRecord(cust);
+
+				// Disable the Save button if we show the anonymous customer
+				var buttonToolbar = this.ownerCt.getDockedComponent('ticketCustomerPanelButtonToolbar');
+				var saveButton = buttonToolbar.getComponent('saveButton');
+				if (customer_id == anonimo_company_id) {
+					saveButton.hide();
+				} else {
+					saveButton.show();
+				}
 			
 				// Inform the TicketCustomerPanel about the new company
 				var contactPanel = Ext.getCmp('ticketContactPanel');
@@ -237,7 +246,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		if (customer_id == anonimo_company_id) {
 			saveButton.hide();
 		} else {
-			saveButton.hide();
+			saveButton.show();
 		}
 
 		var createButton = buttonToolbar.getComponent('createButton');

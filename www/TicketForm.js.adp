@@ -51,7 +51,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
 	{ name: 'fs_folder_id',		xtype: 'hiddenfield' },			// Assign to Employees by default
-	{ name: 'project_nr',		xtype: 'textfield' },
+	{ name: 'project_nr',		xtype: 'hiddenfield' },
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
@@ -162,7 +162,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	    itemId:	'saveButton',
             text:	'#intranet-sencha-ticket-tracker.button_Save#',
             disabled:	false,
-            formBind:	true,
+            formBind:	true,			// Disable if form is invalid
 	    handler: function(){
 
 		// get the form and all of its values

@@ -33,6 +33,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	width:		800,
+	monitorValid:	true,
 
 	fieldDefaults: {
 		msgTarget: 'side',
@@ -324,14 +325,36 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					ticket_record.set(field, value);
 				}
 			}
-		
-			// Tell the store to update the server via it's REST proxy
-			ticketStore.sync();
 
-			// Update this and the other ticket forms
-			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-			compoundPanel.loadTicket(ticket_record);
+			// Check if the model validates correctly
+			var errors = ticket_record.validate();
+			if (!errors.isValid()) {
+				var msg = '';
+				for (var i = 0; i < errors.length; i++) {
+					var field = errors.items[i].field;
+					var message = errors.items[i].message;
+					msg = msg + 'Error in ' + field + ': ' + message + '\n';
+				}
+				alert(msg);
+				return;
+			}
 
+			// Save the record and _then_ reload the form.
+			ticket_record.save({
+				scope: 			Ext.getCmp('ticketFormRight'),
+				messageProperty:	'message',
+				success: function() {
+					// Refresh all forms to show the updated information
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_record);
+				},
+				failure: function(model, operation) {
+					var err = operation.getError();
+					alert('Failed to save ticket: ' + err);
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_record);
+				}
+			});
 		}
 	}],
 

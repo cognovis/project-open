@@ -151,6 +151,16 @@ Ext.define('TicketBrowser.Ticket', {
 		'replycount'			// Number of ticket replies - not supported at the moment
 	],
 
+	validations: [
+	//	{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_reaction_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_confirmation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_escalation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_resolution_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_done_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_signoff_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ }
+	],
+
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_ticket',
