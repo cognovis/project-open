@@ -247,7 +247,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue(10000191);
+		form.findField('ticket_type_id').setValue('10000191');
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request 
