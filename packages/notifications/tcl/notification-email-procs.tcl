@@ -77,7 +77,10 @@ namespace eval notification::email {
     } {
         Build an object/type-specific e-mail address that the user can reply to.
     } {
-        if {[empty_string_p $object_id] || [empty_string_p $type_id]} {
+	set notification_sender [parameter::get_from_package_key -package_key "acs-mail-lite" -parameter "NotificationSender"]
+	if {$notifcation_sender ne ""} {
+	    return $notification_sender
+	} elseif {[empty_string_p $object_id] || [empty_string_p $type_id]} {
             return "\"[address_domain] mailer\" <[reply_address_prefix]@[address_domain]>"
         } else {
             return "\"[address_domain] mailer\" <[reply_address_prefix]-$object_id-$type_id@[address_domain]>"
