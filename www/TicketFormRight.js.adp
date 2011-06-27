@@ -89,12 +89,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				name:		'ticket_done_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	true
+				disabled:	false
 			}, {
 				name:		'ticket_escalation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	true
+				disabled:	false
 			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
