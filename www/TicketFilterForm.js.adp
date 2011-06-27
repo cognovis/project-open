@@ -56,7 +56,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 xtype:          'combobox',
                 valueField:     'user_id',
                 displayField:   'name',
-                store:          userStore,
+                store:          employeeStore,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }

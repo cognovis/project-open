@@ -267,6 +267,46 @@ Ext.define('TicketBrowser.User', {
 });
 
 
+// Lookup the list of users who are member of the group "Employees".
+// The store primarily loads all member IDs, and then performs a lookup
+// on the users store in order to get the name.
+Ext.define('TicketBrowser.Employee', {
+	extend: 'Ext.data.Model',
+	idProperty: 'rel_id',			// The primary key or object_id of the company
+	fields: [
+		'object_id_one',		// Group ID
+		'object_id_two',		// User ID
+		{ name: 'user_id',		// Calculated user_id
+			convert: function(value, record) {
+				return record.get('object_id_two');
+			}
+		},
+		{ name: 'name',			// Calculated compound name
+			convert: function(value, record) {
+				return userStore.name_from_id(record.get('object_id_two'));
+			}
+		}
+	],
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/membership_rel',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			object_id_one: '463'
+		},
+		reader: { 
+			type: 'json', 
+			root: 'data',
+			totalProperty: 'total'
+		},
+		writer: {
+			type: 'json'
+		}
+	}
+});
+
+
 
 Ext.define('TicketBrowser.BizObjectMember', {
 	extend: 'Ext.data.Model',
