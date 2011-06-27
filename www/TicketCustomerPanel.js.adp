@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.23 2011/06/24 14:59:57 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.24 2011/06/27 11:37:53 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -50,6 +50,15 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var cust = companyStore.findRecord('company_id',customer_id);
 				if (cust == null || typeof cust == "undefined") { return; }
 				this.ownerCt.loadRecord(cust);
+
+				// Disable the Save button if we show the anonymous customer
+				var buttonToolbar = this.ownerCt.getDockedComponent('ticketCustomerPanelButtonToolbar');
+				var saveButton = buttonToolbar.getComponent('saveButton');
+				if (customer_id == anonimo_company_id) {
+					saveButton.hide();
+				} else {
+					saveButton.show();
+				}
 			
 				// Inform the TicketCustomerPanel about the new company
 				var contactPanel = Ext.getCmp('ticketContactPanel');
@@ -237,7 +246,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		if (customer_id == anonimo_company_id) {
 			saveButton.hide();
 		} else {
-			saveButton.hide();
+			saveButton.show();
 		}
 
 		var createButton = buttonToolbar.getComponent('createButton');

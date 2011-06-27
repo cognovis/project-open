@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.34 2011/06/23 08:39:42 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.35 2011/06/27 11:37:53 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,7 +51,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
 	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
 	{ name: 'fs_folder_id',		xtype: 'hiddenfield' },			// Assign to Employees by default
-	{ name: 'project_nr',		xtype: 'textfield' },
+	{ name: 'project_nr',		xtype: 'hiddenfield' },
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
@@ -162,7 +162,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	    itemId:	'saveButton',
             text:	'#intranet-sencha-ticket-tracker.button_Save#',
             disabled:	false,
-            formBind:	true,
+            formBind:	true,			// Disable if form is invalid
 	    handler: function(){
 
 		// get the form and all of its values
