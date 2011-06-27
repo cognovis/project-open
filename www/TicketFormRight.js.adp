@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.29 2011/06/27 11:37:53 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.30 2011/06/27 11:40:57 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -89,12 +89,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				name:		'ticket_done_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	true
+				disabled:	false
 			}, {
 				name:		'ticket_escalation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	true
+				disabled:	false
 			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
