@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.18 2011/06/24 14:59:57 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.19 2011/06/27 13:46:00 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -51,6 +51,17 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_record = userStore.findRecord('user_id',user_id);
 		        if (user_record == null || typeof user_record == "undefined") { return; }
 			this.ownerCt.loadRecord(user_record);
+
+			// Enable/Disable the "Save" button for anonymous
+			var buttonToolbar = this.getDockedComponent(0);
+			var saveButton = buttonToolbar.getComponent('saveButton');
+			var username = user_record.get('username');
+			if (username.indexOf('anon') >= 0) {
+				saveButton.hide();
+			} else {
+				saveButton.show();
+			}
+
 		    }
 		}
         }, {
