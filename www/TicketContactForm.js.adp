@@ -53,7 +53,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			this.ownerCt.loadRecord(user_record);
 
 			// Enable/Disable the "Save" button for anonymous
-			var buttonToolbar = this.getDockedComponent(0);
+			var buttonToolbar = this.ownerCt.getDockedComponent(0);
 			var saveButton = buttonToolbar.getComponent('saveButton');
 			var username = user_record.get('username');
 			if (username.indexOf('anon') >= 0) {
