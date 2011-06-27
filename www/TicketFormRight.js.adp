@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.30 2011/06/27 11:40:57 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.31 2011/06/27 13:16:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -375,9 +375,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		}
 
 		// Disable the read-only date fields
-		form.findField('ticket_creation_date').setDisabled(true);
-		form.findField('ticket_escalation_date').setDisabled(true);
-		form.findField('ticket_done_date').setDisabled(true);
+		// form.findField('ticket_creation_date').setDisabled(true);
+		// form.findField('ticket_escalation_date').setDisabled(true);
+		// form.findField('ticket_done_date').setDisabled(true);
 
 
 		var queueField = form.findField('ticket_queue_id');
