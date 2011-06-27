@@ -224,8 +224,8 @@ begin
 		p_task_nr,		-- project_path
 		p_project_id,		-- parent_id
 		v_company_id,		-- company_id
-		p_task_type_id,		-- project_type
-		p_task_status_id	-- project_status
+		100,		-- project_type
+		76	-- project_status
 	);
 
 	update	im_projects

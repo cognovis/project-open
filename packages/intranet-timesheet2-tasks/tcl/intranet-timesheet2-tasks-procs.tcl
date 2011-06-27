@@ -1143,13 +1143,13 @@ ad_proc -public -callback im_timesheet_task_after_update -impl im_timesheet_task
 } {
     Updates tasks status on im_projects table according with im_timesheet_tasks table.
 } {
-    set task_status [db_string select_task_status {
-	SELECT task_status_id FROM im_timesheet_tasks WHERE task_id = :object_id
+    set task_status [db_string select_task_status { 
+    	SELECT task_status_id FROM im_timesheet_tasks WHERE task_id = :object_id
     } -default ""]
     
     if {[exists_and_not_null task_status]} {
-	if {$task_status eq [im_timesheet_task_status_closed]} {
-	    UPDATE im_projects SET project_status_id = [im_project_status_closed] WHERE project_id = :object_id
-	}
+        if {$task_status eq [im_timesheet_task_status_closed]} {
+            db_dml update " UPDATE im_projects SET project_status_id = [im_project_status_closed] WHERE project_id = :object_id"
+        }
     }
 }
