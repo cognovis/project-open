@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.19 2011/06/27 13:46:00 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.20 2011/06/27 13:53:28 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -53,7 +53,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			this.ownerCt.loadRecord(user_record);
 
 			// Enable/Disable the "Save" button for anonymous
-			var buttonToolbar = this.getDockedComponent(0);
+			var buttonToolbar = this.ownerCt.getDockedComponent(0);
 			var saveButton = buttonToolbar.getComponent('saveButton');
 			var username = user_record.get('username');
 			if (username.indexOf('anon') >= 0) {
