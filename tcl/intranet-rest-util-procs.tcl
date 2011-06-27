@@ -519,6 +519,7 @@ ad_proc -public im_rest_object_type_index_columns {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_rest_object_type_update_sql { 
+    { -format "xml" }
     -rest_otype:required
     -rest_oid:required
     -hash_array:required
@@ -526,7 +527,7 @@ ad_proc -public im_rest_object_type_update_sql {
     Updates all the object's tables with the information from the
     hash array.
 } {
-    ns_log Notice "im_rest_object_type_update_sql: rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=$hash_array"
+    ns_log Notice "im_rest_object_type_update_sql: format=$format, rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=$hash_array"
 
     # Stuff the list of variables into a hash
     array set hash $hash_array
@@ -603,7 +604,7 @@ ad_proc -public im_rest_object_type_update_sql {
 	if {[catch {
 	    db_dml sql_$table $update_sql -bind [array get hash]
 	} err_msg]} {
-	    return [im_rest_error -http_status 404 -message "Error updating $rest_otype: '$err_msg'"]
+	    return [im_rest_error -format $format -http_status 404 -message "Error updating $rest_otype: '$err_msg'"]
 	}
     }
 
@@ -745,7 +746,7 @@ ad_proc -public im_rest_error {
 } {
     Returns a suitable REST error message
 } {
-    ns_log Notice "im_rest_error: http_status=$http_status, message=$message"
+    ns_log Notice "im_rest_error: http_status=$http_status, format=$format, message=$message"
     set url [im_url_with_query]
 
     switch $http_status {
@@ -762,10 +763,10 @@ ad_proc -public im_rest_error {
 	default { set status_message "Unknown http_status '$http_status'." }
     }
 
+    set page_title [lindex [split $status_message ":"] 0]
 
     switch $format {
 	html { 
-	    set page_title [lindex [split $status_message ":"] 0]
 	    doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle><td>$status_message</td></tr>
@@ -783,7 +784,7 @@ ad_proc -public im_rest_error {
 	}
 	json {  
 	    # Calculate the total number of objects
-	    set result "{\"success\": false,\n\"message\": \"$status_message\"\n}"
+	    set result "{\"success\": false,\n\"message\": \"[im_quotejson $message]\"\n}"
 	    doc_return 200 "text/html" $result
 	}
 	default {

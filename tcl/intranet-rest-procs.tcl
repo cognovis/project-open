@@ -1520,6 +1520,7 @@ ad_proc -private im_rest_post_object {
     # of a database constraint violation
     ns_log Notice "im_rest_post_object: Before im_rest_object_type_update_sql"
     im_rest_object_type_update_sql \
+	-format $format \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
 	-hash_array [array get hash_array]
