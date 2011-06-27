@@ -282,6 +282,23 @@ SELECT im_component_plugin__new (
         'im_mail_project_component -project_id $task_id -return_url $return_url'
 );
 
+-- Component for tickets
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Intranet Mail Ticket Component',        -- plugin_name
+        'intranet-mail',                  -- package_name
+        'right',                        -- location
+        '/intranet-cognovis/tickets/view',      -- page_url
+        null,                           -- view_name
+        12,                             -- sort_order
+        'im_mail_project_component -project_id $ticket_id -return_url $return_url'
+);
+
 
 
 
@@ -308,6 +325,12 @@ BEGIN
 
 	-- Intranet Mail Task Component
 	SELECT plugin_id INTO v_object_id FROM im_component_plugins WHERE plugin_name = ''Intranet Mail Task Component'' AND page_url = ''/intranet-cognovis/tasks/view'';
+
+	PERFORM im_grant_permission(v_object_id,v_employees,''read'');
+	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');
+
+	-- Intranet Mail Ticket Component
+	SELECT plugin_id INTO v_object_id FROM im_component_plugins WHERE plugin_name = ''Intranet Mail Ticket Component'' AND page_url = ''/intranet-cognovis/tickets/view'';
 
 	PERFORM im_grant_permission(v_object_id,v_employees,''read'');
 	PERFORM im_grant_permission(v_object_id,v_poadmins,''read'');

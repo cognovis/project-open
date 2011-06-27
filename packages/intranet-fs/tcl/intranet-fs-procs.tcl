@@ -189,17 +189,11 @@ ad_proc -public im_fs_component {
     # Intranet FS 
     # ---------------------------------------------------------------------
 
-    # make sure we have a project and not a task
-    if {[db_string object_type "select object_type from acs_objects where object_id = :project_id"] ne "im_project"} {
-	return
-    }
-    
     set folder_id [intranet_fs::get_project_folder_id -project_id $project_id]
 
-    ds_comment "folder $folder_id"
     if {$folder_id eq ""} {
-		# we don't have a folder_id as the project was created without one. Now we need to create a folder for the project
-		set folder_id [intranet_fs::create_project_folder -project_id $project_id]
+	# we don't have a folder_id as the project was created without one. Now we need to create a folder for the project
+	set folder_id [intranet_fs::create_project_folder -project_id $project_id]
     }
     
     set params [list  [list base_url "/intranet-fs/"]  [list folder_id $folder_id] [list project_id $project_id] [list return_url [im_biz_object_url $project_id]]]
@@ -246,7 +240,7 @@ ad_proc -public -callback im_project_after_update -impl intranet-fs_update_paren
     {-status_id ""}
     {-type_id ""}
 } {
-    Move the imap folder to the new parent project
+    Move the folder to the new parent project
 } {
 
     set project_id $object_id
