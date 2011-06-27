@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.30 2011/06/23 15:15:54 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.31 2011/06/27 15:37:50 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -21,6 +21,41 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
+var userStore = Ext.create('PO.data.UserStore', {
+	storeId:	'userStore',
+	model:		'TicketBrowser.User',
+	remoteSort:	true,
+	remoteFilter:	true,
+	autoLoad: 	true,
+	autoSync: 	true,			// Write changes to the REST server ASAP
+	// Load all users into this table, this is rarely more than 2000...
+	// ToDo: Replace this with a server-side search function plus cache(?)
+	pageSize: 	1000000,
+	sorters: [{
+		property: 'first_names',
+		direction: 'ASC'
+	}, {
+		property: 'last_name',
+		direction: 'ASC'
+	}]
+});
+
+
+
+var employeeStore = Ext.create('Ext.data.Store', {
+	storeId:	'employeeStore',
+	model:		'TicketBrowser.Employee',
+	remoteSort:	false,
+	remoteFilter:	false,
+	autoLoad: 	true,
+	autoSync: 	true,			// Write changes to the REST server ASAP
+	// Load all users into this table, this is rarely more than 2000...
+	// ToDo: Replace this with a server-side search function plus cache(?)
+	pageSize: 	1000000
+});
+
 
 var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
@@ -206,26 +241,6 @@ var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 		},
 		reader: { type: 'json', root: 'data' }
 	}
-});
-
-
-var userStore = Ext.create('PO.data.UserStore', {
-	storeId:	'userStore',
-	model:		'TicketBrowser.User',
-	remoteSort:	true,
-	remoteFilter:	true,
-	autoLoad: 	true,
-	autoSync: 	true,			// Write changes to the REST server ASAP
-	// Load all users into this table, this is rarely more than 2000...
-	// ToDo: Replace this with a server-side search function plus cache(?)
-	pageSize: 	1000000,
-	sorters: [{
-		property: 'first_names',
-		direction: 'ASC'
-	}, {
-		property: 'last_name',
-		direction: 'ASC'
-	}]
 });
 
 
