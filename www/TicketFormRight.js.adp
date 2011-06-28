@@ -71,7 +71,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				name:		'ticket_creation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	true
+				disabled:	false
 			}, {
 				name:		'ticket_incoming_channel_id',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
