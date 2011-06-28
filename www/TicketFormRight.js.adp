@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.31 2011/06/27 13:16:31 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.32 2011/06/28 14:18:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,8 +36,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	monitorValid:	true,
 
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 75
+		msgTarget:	'side',
+		labelWidth:	75,
+		typeAhead:	true
 	},
 	defaultType:	'textfield',
 	defaults: {

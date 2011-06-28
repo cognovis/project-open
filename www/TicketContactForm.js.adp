@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.20 2011/06/27 13:53:28 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.21 2011/06/28 14:18:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -32,7 +32,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	fieldDefaults: {
 		msgTarget:	'side',
 		labelWidth:	125,
-		width:		300
+		width:		300,
+		typeAhead:	true
 	},
         items: [{
                 name:           'user_id',

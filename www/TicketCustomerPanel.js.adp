@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.24 2011/06/27 11:37:53 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.25 2011/06/28 14:18:31 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,8 +30,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	title:		'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:		true,
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 125
+		msgTarget:	'side',
+		labelWidth:	125,
+		typeAhead:	true
 	},
 	items: [{
 		name:		'company_id',
@@ -42,6 +43,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		valueField:	'company_id',
 		displayField:   'company_name',
 		store:		companyStore,
+		enableKeyEvents:true,
 		listeners: {
 			// The user has selected a customer from the drop-down box.
 			// Lookup the customer and fill the form with the fields.
