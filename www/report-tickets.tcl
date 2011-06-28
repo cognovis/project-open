@@ -248,7 +248,13 @@ set report_def [list \
 # Global Footer Line
 set footer0 {}
 
-ad_return_top_of_page "
+
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
+
+switch $output_format {
+    html {
+	ns_write "
 	[im_header]
 	[im_navbar]
 	<table cellspacing=0 cellpadding=0 border=0>
@@ -293,12 +299,54 @@ ad_return_top_of_page "
 	
 	<!-- Here starts the main report table -->
 	<table border=0 cellspacing=1 cellpadding=1>
-"
+    "
+    }
+    printer {
+	ns_write "
+	<link rel=StyleSheet type='text/css' href='/intranet-reporting/printer-friendly.css' media=all>
+        <div class=\"fullwidth-list\">
+	<table border=0 cellspacing=1 cellpadding=1 rules=all>
+	<colgroup>
+		<col id=datecol>
+		<col id=hourcol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=hourcol>
+		<col id=hourcol>
+		<col id=hourcol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+	</colgroup>
+	"
+    }
+
+}
 
 set footer_array_list [list]
 set last_value_list [list]
 
 im_report_render_row \
+    -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
     -cell_class "rowtitle"
@@ -314,6 +362,7 @@ db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
 	im_report_display_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
@@ -322,6 +371,7 @@ db_foreach sql $report_sql {
 	    -cell_class $class
 
 	set last_value_list [im_report_render_header \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -330,6 +380,7 @@ db_foreach sql $report_sql {
 	]
 
 	set footer_array_list [im_report_render_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -341,6 +392,7 @@ db_foreach sql $report_sql {
 }
 
 im_report_display_footer \
+    -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
     -last_value_array_list $last_value_list \
@@ -350,17 +402,20 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
+    -output_format $output_format \
     -row $footer0 \
     -row_class $class \
     -cell_class $class \
     -upvar_level 1
 
+ns_log Notice "report-tickets: $output_format"
 
 # Write out the HTMl to close the main report table
 # and write out the page footer.
 #
-ns_write "
-	</table>
-	[im_footer]
-"
+switch $output_format {
+    html { nns_write "</table>[im_footer]\n" }
+    printer { ns_write "</table>\n</div>\n" }
+    cvs { }
+}
 
