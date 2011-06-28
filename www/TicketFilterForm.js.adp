@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.25 2011/06/28 14:18:31 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.26 2011/06/28 15:09:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -61,8 +61,25 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode:	'local',
                 store:          employeeStore,
 		listeners: {
-			'change': function(field, values) { if (null == values) { this.reset(); }},
-			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+			'change': function(field, values) { 
+				if (null == values) { this.reset(); }
+			},
+			'focus': function(field, values) { 
+				// Reload the employee store a 2nd time once the userStore is there
+				var dirty = employeeStore.poDirty;
+				if (null == dirty || true == dirty) {
+					employeeStore.load({
+						scope: this,
+						callback: function() {
+							employeeStore.poDirty = false;
+						}
+					});
+				}
+
+			},
+			'keypress': function(field, key) {
+				if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } 
+			}
 		}
 	}, {
 		name: 'vat_number', 

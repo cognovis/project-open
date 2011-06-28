@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.31 2011/06/27 15:37:50 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.32 2011/06/28 15:09:05 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -55,6 +55,7 @@ var employeeStore = Ext.create('Ext.data.Store', {
 	// ToDo: Replace this with a server-side search function plus cache(?)
 	pageSize: 	1000000
 });
+employeeStore.poDirty = true;
 
 
 var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
