@@ -55,6 +55,7 @@ var employeeStore = Ext.create('Ext.data.Store', {
 	// ToDo: Replace this with a server-side search function plus cache(?)
 	pageSize: 	1000000
 });
+employeeStore.poDirty = true;
 
 
 var ticketAreaStore = Ext.create('PO.data.CategoryStore', {

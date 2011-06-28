@@ -61,8 +61,25 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		queryMode:	'local',
                 store:          employeeStore,
 		listeners: {
-			'change': function(field, values) { if (null == values) { this.reset(); }},
-			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+			'change': function(field, values) { 
+				if (null == values) { this.reset(); }
+			},
+			'focus': function(field, values) { 
+				// Reload the employee store a 2nd time once the userStore is there
+				var dirty = employeeStore.poDirty;
+				if (null == dirty || true == dirty) {
+					employeeStore.load({
+						scope: this,
+						callback: function() {
+							employeeStore.poDirty = false;
+						}
+					});
+				}
+
+			},
+			'keypress': function(field, key) {
+				if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } 
+			}
 		}
 	}, {
 		name: 'vat_number', 
