@@ -414,7 +414,7 @@ ns_log Notice "report-tickets: $output_format"
 # and write out the page footer.
 #
 switch $output_format {
-    html { nns_write "</table>[im_footer]\n" }
+    html { ns_write "</table>[im_footer]\n" }
     printer { ns_write "</table>\n</div>\n" }
     cvs { }
 }
