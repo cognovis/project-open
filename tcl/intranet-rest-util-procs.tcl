@@ -527,7 +527,7 @@ ad_proc -public im_rest_object_type_update_sql {
     Updates all the object's tables with the information from the
     hash array.
 } {
-    ns_log Notice "im_rest_object_type_update_sql: format=$format, rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=$hash_array"
+    ns_log Notice "im_rest_object_type_update_sql: format=$format, rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=[array get hash_array]"
 
     # Stuff the list of variables into a hash
     array set hash $hash_array
