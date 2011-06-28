@@ -837,7 +837,7 @@ ad_proc -public im_rest_parse_xml_json_content {
     # Parse the HTTP content
     switch $format {
 	json {
-	    ns_log Notice "im_rest_parse_xml_jason_content: going to parse json content=$content"
+	    ns_log Notice "im_rest_parse_xml_json_content: going to parse json content=$content"
 	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
 	    array set parsed_json [util::json::parse $content]
 	    set json_list $parsed_json(_object_)
@@ -851,7 +851,7 @@ ad_proc -public im_rest_parse_xml_json_content {
 	}
 	xml {
 	    # store the key-value pairs into a hash array
-	    ns_log Notice ""im_rest_parse_xml_jason_content: going to parse xml content=$content"
+	    ns_log Notice "im_rest_parse_xml_json_content: going to parse xml content=$content"
 	    if {[catch {set doc [dom parse $content]} err_msg]} {
 		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
 	    }
