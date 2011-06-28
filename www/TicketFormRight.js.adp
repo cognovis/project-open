@@ -147,10 +147,18 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					if (checked && panel.rendered) {
 						var statusField = panel.getForm().findField('ticket_status_id');
 						statusField.setValue('30001');
-						// Set the ticket_done_date
-						var doneField = panel.getForm().findField('ticket_done_date');
-						doneField.setValue(today_date_time);
-						doneField.setDisabled(false);
+
+						// Set the creation done_date of the ticket
+						Ext.Ajax.request({
+							scope:	panel.getForm(),
+							url:	'/intranet-sencha-ticket-tracker/today-date-time',
+							success: function(response) {		// response is the current date-time
+								var doneField = this.findField('ticket_done_date');
+								doneField.setValue(response.responseText);
+								doneField.setDisabled(false);
+							},
+						});
+
 					}
 				}
 			}, {
@@ -210,19 +218,45 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					if (!panel.rendered) { return; }		// Skip action while form is still rendering
 					var value = field.getValue();
 					var queueField = panel.getForm().findField('ticket_queue_id');
-					if (value == '30009' || value == '30011') {
-						// Set the esclation date field
-						var esclationDateField = panel.getForm().findField('ticket_escalation_date');
-						esclationDateField.setValue(today_date_time);
-						esclationDateField.setDisabled(false);	// enable to allow saving
 
-						// Enable the tickte_queue_id to define the escalation group
-						queueField.store = programGroupStore;
-						delete queueField.lastQuery;
-						queueField.show();
-					} else {
-						queueField.hide();
-					}
+					// by default hide the Queue field, unless there is a specific status
+					queueField.hide();
+
+					switch (value) {
+						case '30001':		// closed
+						case '30022':		// sign-off
+						case '30096':		// resolved
+							// Set the done_date of the ticket
+							Ext.Ajax.request({
+								scope:	panel.getForm(),
+								url:	'/intranet-sencha-ticket-tracker/today-date-time',
+								success: function(response) {		// response is the current date-time
+									var doneField = this.findField('ticket_done_date');
+									doneField.setValue(response.responseText);
+									doneField.setDisabled(false);
+								}
+							});
+		
+							break;
+						case '30009':		// escalated
+						case '30011':		// assigned
+							// Enable the tickte_queue_id to define the escalation group
+							queueField.store = programGroupStore;
+							delete queueField.lastQuery;
+							queueField.show();
+	
+							// Set the escalation_date
+							Ext.Ajax.request({
+								scope:	panel.getForm(),
+								url:	'/intranet-sencha-ticket-tracker/today-date-time',
+								success: function(response) {		// response is the current date-time
+									var escalationField = this.findField('ticket_escalation_date');
+									escalationField.setValue(response.responseText);
+									escalationField.setDisabled(false);
+								}
+							});
+							break;
+					};
 
 				    }
 				}
@@ -281,16 +315,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			var ticket_status_field = form.findField('ticket_status_id');
 			var ticket_status_id = parseInt(ticket_status_field.getValue());
 			
-			var today = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
-			switch (ticket_status_id) {
-				case 30001:		// closed
-				case 30022:		// sign-off
-				case 30096:		// resolved
-					var doneField = form.findField('ticket_done_date');
-					if ('' == doneField.getValue()) { doneField.setValue(today_date_time); }
-					break;
-			};
-
 			// Set escalation_date once the tickt is reassinged to a queue
 			// Store the last assignation into the ticket_last_queue_id
 			var ticket_queue_field = form.findField('ticket_queue_id');

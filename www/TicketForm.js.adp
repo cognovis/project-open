@@ -178,9 +178,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			// Disable the form until the ticket_id has arrived
 			Ext.getCmp('ticketForm').setDisabled(true);
 
-			// Set the creation data of the new ticket
-			values.ticket_creation_date = today_date_time;
-
 			// create a new ticket
 			var ticketModel = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
 			ticketModel.phantom = true;
@@ -243,6 +240,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		
+
+		// Set the creation data of the new ticket
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/today-date-time',
+			success: function(response) {		// response is the current date-time
+				var form = this.getForm();
+				var date_time = response.responseText;
+				form.findField('ticket_creation_date').setValue(date_time);
+			},
+		});
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
