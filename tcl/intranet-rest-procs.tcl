@@ -813,6 +813,7 @@ ad_proc -private im_rest_get_object_type {
 		# Well, no object type except the ones above has a custom procedure,
 		# so we can deny access here:
 		set rest_otype_read_none_p 1
+		ns_log Notice "im_rest_get_object_type: Denying access to $rest_otype"
 	    }
 	}
     }

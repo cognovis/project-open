@@ -722,7 +722,7 @@ ad_proc -public im_rest_valid_sql {
 
     set string [string trim $string]
     set result 0
-    if {"" == $string || "cond" == $string || "query" == $string} { set result 1 }
+    if {"" == $string || "cond" == $string || "query" == $string || "val" == $string} { set result 1 }
 
     # Show the application of rules for debugging
     if {$debug} { 
