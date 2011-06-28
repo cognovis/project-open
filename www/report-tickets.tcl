@@ -109,10 +109,12 @@ set report_sql "
 		cust.company_province,
 		im_category_from_id(cust.company_type_id) as company_type,
 
-		CASE WHEN t.ticket_queue_id = 463 THEN 1 ELSE 0 END as ticket_resuelto,
-		CASE WHEN t.ticket_requires_addition_info_p = 'true' THEN 1 ELSE 0 END as ticket_requires_addition_info,
+		CASE WHEN t.ticket_queue_id = 463 THEN 'SI' ELSE 'NO' END as ticket_resuelto,
+		CASE WHEN t.ticket_requires_addition_info_p = 'true' THEN 'SI' ELSE 'NO' END as ticket_requires_addition_info,
 
 		p_creator.person_id as creation_user_id,
+		p_creator.first_names as creation_user_first_names,
+		p_creator.last_name as creation_user_last_name,
 		coalesce(p_creator.asterisk_user_id, im_name_from_user_id(p_creator.person_id)) as creation_user_asterisk_id,
 		im_name_from_user_id(p_creator.person_id) as creation_user_name,
 
@@ -209,7 +211,7 @@ set header0 {
 set report_def [list \
     group_by ticket_id \
     header {
-	$creation_user_asterisk_id
+	$creation_user_first_names
 	$project_nr
 	$creation_date_date
 	$creation_date_time
