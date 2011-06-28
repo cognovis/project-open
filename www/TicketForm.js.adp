@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.38 2011/06/27 12:06:54 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.39 2011/06/28 14:30:51 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -41,7 +41,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        queryMode:      'local',
 	        value:          '',
 	        displayField:   'pretty_name',
-	        valueField:     'id'
+	        valueField:     'id',
+		typeAhead:	true
 	},
 	items: [
 
@@ -83,7 +84,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection: true,
-		queryMode: 	'remote',
 		store: 		ticketTypeStore,
 		allowBlank:	false,			// Require a value for this one
 		listConfig: {
@@ -100,7 +100,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection: true,
-		queryMode: 	'remote',
 		store: 		ticketAreaStore,
 		listConfig: {
 			getInnerTpl: function() {
