@@ -31,21 +31,23 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	defaultType:	'textfield',
 	defaults:	{ anchor: '100%' },
 	fieldDefaults:	{
-		enableKeyEvents: true
+		enableKeyEvents:	true,
+		typeAhead:		true,
+		triggerType:		'all'
 	},
 	minWidth:	200,
 	standardsubmit:	true,
 	items: [
-	{	name: 'assigned_queue_id', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Group#',
-		xtype: 'combobox',
-                valueField: 'group_id',
-                displayField: 'group_name',
-		emptyText: '#intranet-sencha-ticket-tracker.My_Groups#',
-		forceSelection: true,
-		queryMode: 'remote',
-		store: profileStore,
-		width: 300,
+	{	name:		'assigned_queue_id', 
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Group#',
+		xtype:		'combobox',
+                valueField:	'group_id',
+                displayField:	'group_name',
+		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
+		forceSelection:	true,
+		queryMode:	'local',
+		store:		profileStore,
+		width:		300,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
@@ -56,6 +58,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 xtype:          'combobox',
                 valueField:     'user_id',
                 displayField:   'name',
+		queryMode:	'local',
                 store:          employeeStore,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
@@ -74,14 +77,15 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Type#',
-		name: 'company_type_id',
-		xtype: 'combobox',
-                valueField: 'category_id',
-                displayField: 'category_translated',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Company_Type#',
+		name:		'company_type_id',
+		xtype:		'combobox',
+                valueField:	'category_id',
+                displayField:	'category_translated',
 		forceSelection: true,
-		queryMode: 'remote',
-		store: companyTypeStore,
+		queryMode:	'local',
+		store:		companyTypeStore,
+		typeAhead:	true,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
@@ -92,13 +96,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel: '#intranet-sencha-ticket-tracker.Program#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
 		valueField:	'category_id',
 		store:		ticketAreaStore,
-		queryMode:	'remote',
+		queryMode:	'local',
         	width: 		300,
 		forceSelection: true,
 		listConfig: {
@@ -123,7 +127,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection:	true,
-		queryMode:	'remote',
+		queryMode:	'local',
 		store:		ticketTypeStore,
 		listConfig: {
 			getInnerTpl: function() {
@@ -147,7 +151,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection:	true,
-		queryMode:	'remote',
+		queryMode:	'local',
 		store:		ticketStatusStore,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
@@ -160,7 +164,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection: true,
-		queryMode:	'remote',
+		queryMode:	'local',
 		store: ticketChannelStore,
 		listConfig: {
 			getInnerTpl: function() {

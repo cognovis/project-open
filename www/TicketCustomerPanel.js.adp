@@ -30,8 +30,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	title:		'#intranet-sencha-ticket-tracker.Ticket_Customer#',
 	frame:		true,
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 125
+		msgTarget:	'side',
+		labelWidth:	125,
+		typeAhead:	true
 	},
 	items: [{
 		name:		'company_id',
@@ -42,6 +43,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		valueField:	'company_id',
 		displayField:   'company_name',
 		store:		companyStore,
+		enableKeyEvents:true,
 		listeners: {
 			// The user has selected a customer from the drop-down box.
 			// Lookup the customer and fill the form with the fields.

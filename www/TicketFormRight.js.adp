@@ -36,8 +36,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	monitorValid:	true,
 
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 75
+		msgTarget:	'side',
+		labelWidth:	75,
+		typeAhead:	true
 	},
 	defaultType:	'textfield',
 	defaults: {

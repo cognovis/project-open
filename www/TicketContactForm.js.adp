@@ -32,7 +32,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	fieldDefaults: {
 		msgTarget:	'side',
 		labelWidth:	125,
-		width:		300
+		width:		300,
+		typeAhead:	true
 	},
         items: [{
                 name:           'user_id',
