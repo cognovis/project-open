@@ -267,18 +267,18 @@ switch $output_format {
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
 		</tr>
 		<tr>
-		  <td>Level of<br>Details</td>
-		  <td>
-		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-		  </td>
-		</tr>
-		<tr>
 		  <td><nobr>Start Date:</nobr></td>
 		  <td><input type=text name=start_date value='$start_date'></td>
 		</tr>
 		<tr>
 		  <td>End Date:</td>
 		  <td><input type=text name=end_date value='$end_date'></td>
+		</tr>
+		<tr>
+		  <td class=form-label>Format</td>
+		  <td class=form-widget>
+		    [im_report_output_format_select output_format "" $output_format]
+		  </td>
 		</tr>
 		<tr>
 		  <td</td>
