@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.39 2011/06/28 14:30:51 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.40 2011/06/28 17:18:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -178,9 +178,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			// Disable the form until the ticket_id has arrived
 			Ext.getCmp('ticketForm').setDisabled(true);
 
-			// Set the creation data of the new ticket
-			values.ticket_creation_date = today_date_time;
-
 			// create a new ticket
 			var ticketModel = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
 			ticketModel.phantom = true;
@@ -243,6 +240,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		
+
+		// Set the creation data of the new ticket
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/today-date-time',
+			success: function(response) {		// response is the current date-time
+				var form = this.getForm();
+				var date_time = response.responseText;
+				form.findField('ticket_creation_date').setValue(date_time);
+			},
+		});
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
