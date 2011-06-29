@@ -422,6 +422,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			var programModel = ticketAreaStore.findRecord('category_id', programId);
 			if (null != programModel) {
 
+				// Delete the selection of the Escalation combo
+				var esclationField = form.findField('ticket_queue_id');
+				delete esclationField.lastQuery;
+
 				// Remove all elements from the store
 				programGroupStore = new Ext.data.ArrayStore({
 					model:		'TicketBrowser.Profile',
