@@ -1,6 +1,6 @@
--- upgrade-4.0.2.0.2-4.0.2.0.3.sql
+-- upgrade-4.0.2.0.3-4.0.2.0.4.sql
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.2.0.2-4.0.2.0.3.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.2.0.3-4.0.2.0.4.sql','');
 
 CREATE OR REPLACE FUNCTION im_category_find_next_free_id_in_sequence(INTEGER, INTEGER)
   RETURNS INTEGER AS '
