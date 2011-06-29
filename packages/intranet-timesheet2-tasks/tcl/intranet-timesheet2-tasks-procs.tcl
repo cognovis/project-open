@@ -936,17 +936,17 @@ ad_proc im_timesheet_project_advance { project_id } {
     # ----------------------------------------------------------------
     # Get the topmost project
     if {![db_0or1row main_project "
-	select	project_id as main_project_id,
-		project_type_id
-	from	im_projects
-	where	tree_sortkey = (
+    	select	project_id as main_project_id,
+	    	project_type_id
+      	from	im_projects
+	    where	tree_sortkey = (
 			select	tree_root_key(tree_sortkey)
 			from	im_projects
 			where	project_id = :project_id
 		)
     "]} {
-	ad_return_complaint 1 "Unable to find parent for project #$project_id"
-	ad_script_abort
+        ad_return_complaint 1 "Unable to find parent for project #$project_id"
+        ad_script_abort
     }
 
 
@@ -975,100 +975,99 @@ ad_proc im_timesheet_project_advance { project_id } {
     "
     db_foreach hierarchy $hierarchy_sql {
 
-	if {"" == $percent_completed} { set percent_completed 0 }
-	if {"" == $planned_units} { set planned_units 0 }
-	if {"" == $billable_units} { set billable_units 0 }
-	if {"" == $advanced_units} { set advanced_units 0 }
-
-	# Multiply units with 8.0 if UoM = "Day".
-	# We need this in order to deal with "mixed" hour/day projects
-	if {$task_uom_id == [im_uom_day]} {
-	    set planned_units [expr $planned_units * $hours_per_day]
-	    set billable_units [expr $billable_units * $hours_per_day]
-	    set advanced_units [expr $advanced_units * $hours_per_day]
-	}
-
-	# Deal with translation projects.
-	# Use the fields trans_project_words and trans_project_hours to calculate an
-	# estimated of the number of hours included
-	if {"" != $trans_project_hours || "" != $trans_project_words} {
-	    if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
-	    if {"" == $trans_project_words} { set trans_project_words 0.0 }
-	    set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
-	    set billable_units $planned_units
-	    set advanced_units [expr $planned_units * $percent_completed / 100.0]
-	}
-
-	set parent_hash($project_id) $parent_id
-	set tree_level_hash($project_id) $tree_level
-	set leaf_p_hash($parent_id) 0
-	set type_id_hash($project_id) $project_type_id
-	set status_id_hash($project_id) $project_status_id
-	set planned_units_hash($project_id) $planned_units
-	set billable_units_hash($project_id) $billable_units
-	set advanced_units_hash($project_id) $advanced_units
-	set percent_completed_hash($project_id) $percent_completed
+        if {"" == $percent_completed} { set percent_completed 0 }
+        if {"" == $planned_units} { set planned_units 0 }
+        if {"" == $billable_units} { set billable_units 0 }
+        if {"" == $advanced_units} { set advanced_units 0 }
+        
+        # Multiply units with 8.0 if UoM = "Day".
+        # We need this in order to deal with "mixed" hour/day projects
+        if {$task_uom_id == [im_uom_day]} {
+            set planned_units [expr $planned_units * $hours_per_day]
+            set billable_units [expr $billable_units * $hours_per_day]
+            set advanced_units [expr $advanced_units * $hours_per_day]
+        }
+        
+        # Deal with translation projects.
+        # Use the fields trans_project_words and trans_project_hours to calculate an
+        # estimated of the number of hours included
+        if {"" != $trans_project_hours || "" != $trans_project_words} {
+            if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
+            if {"" == $trans_project_words} { set trans_project_words 0.0 }
+            set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
+            set billable_units $planned_units
+            set advanced_units [expr $planned_units * $percent_completed / 100.0]
+        }
+        
+        set parent_hash($project_id) $parent_id
+        set tree_level_hash($project_id) $tree_level
+        set leaf_p_hash($parent_id) 0
+        set type_id_hash($project_id) $project_type_id
+        set status_id_hash($project_id) $project_status_id
+        set planned_units_hash($project_id) $planned_units
+        set billable_units_hash($project_id) $billable_units
+        set advanced_units_hash($project_id) $advanced_units
+        set percent_completed_hash($project_id) $percent_completed
     }
-
+    
     # ----------------------------------------------------------------
     # Loop through all projects and aggregate the planned and advanced
     # units to the parents
     foreach pid [array names parent_hash] {
+        
+        # Add the current planned and advanced units to the parent
+        set parent_id $parent_hash($pid)
+        while {"" != $parent_id } {
+            
+            set planned_sum 0.0
+            set advanced_sum 0.0
+            set billable_sum 0.0
+            if {[info exists planned_sum_hash($parent_id)]} { set planned_sum $planned_sum_hash($parent_id) }
+            if {[info exists advanced_sum_hash($parent_id)]} { set advanced_sum $advanced_sum_hash($parent_id) }
+            if {[info exists billable_sum_hash($parent_id)]} { set billable_sum $billable_sum_hash($parent_id) }
+            
+            if {[info exists planned_units_hash($pid)]} { 
+                set planned $planned_units_hash($pid)
+                if {"" == $planned} { set planned 0.0 }
+                set planned_sum [expr $planned_sum + $planned]
+            }
+            if {[info exists advanced_units_hash($pid)]} { 
+                set advanced $advanced_units_hash($pid)
+                if {"" == $advanced} { set advanced 0.0 }
+                set advanced_sum [expr $advanced_sum + $advanced]
+            }
+            if {[info exists billable_units_hash($pid)]} { 
+                set billable $billable_units_hash($pid)
+                if {"" == $billable} { set billable 0.0 }
+                set billable_sum [expr $billable_sum + $billable]
+            }
+            set planned_sum_hash($parent_id) $planned_sum
+            set advanced_sum_hash($parent_id) $advanced_sum
+            set billable_sum_hash($parent_id) $billable_sum
 
-	# Add the current planned and advanced units to the parent
-	set parent_id $parent_hash($pid)
-	while {"" != $parent_id } {
-
-	    set planned_sum 0.0
-	    set advanced_sum 0.0
-	    set billable_sum 0.0
-	    if {[info exists planned_sum_hash($parent_id)]} { set planned_sum $planned_sum_hash($parent_id) }
-	    if {[info exists advanced_sum_hash($parent_id)]} { set advanced_sum $advanced_sum_hash($parent_id) }
-	    if {[info exists billable_sum_hash($parent_id)]} { set billable_sum $billable_sum_hash($parent_id) }
-	    
-	    if {[info exists planned_units_hash($pid)]} { 
-		set planned $planned_units_hash($pid)
-		if {"" == $planned} { set planned 0.0 }
-		set planned_sum [expr $planned_sum + $planned]
-	    }
-	    if {[info exists advanced_units_hash($pid)]} { 
-		set advanced $advanced_units_hash($pid)
-		if {"" == $advanced} { set advanced 0.0 }
-		set advanced_sum [expr $advanced_sum + $advanced]
-	    }
-	    if {[info exists billable_units_hash($pid)]} { 
-		set billable $billable_units_hash($pid)
-		if {"" == $billable} { set billable 0.0 }
-		set billable_sum [expr $billable_sum + $billable]
-	    }
-	    set planned_sum_hash($parent_id) $planned_sum
-	    set advanced_sum_hash($parent_id) $advanced_sum
-	    set billable_sum_hash($parent_id) $billable_sum
-
-	    # fraber 110310: After deleting tasks there are errors in this function, so I added a "catch"...
-	    set parent_id ""
-	    catch { set parent_id $parent_hash($parent_id) }
-	}
+            # fraber 110310: After deleting tasks there are errors in this function, so I added a "catch"...
+            set parent_id ""
+            catch { set parent_id $parent_hash($parent_id) }
+        }
     }
     
     foreach parid [array names planned_sum_hash] {
-	
-	set planned_sum $planned_sum_hash($parid)
-	set advanced_sum $advanced_sum_hash($parid)
-	set billable_sum $billable_sum_hash($parid)
+        
+        set planned_sum $planned_sum_hash($parid)
+        set advanced_sum $advanced_sum_hash($parid)
+        set billable_sum $billable_sum_hash($parid)
+        
+        catch {
+            db_dml update_project_advance "
+            		update im_projects set
+			        percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
+		            where project_id = :parid
+	                "
+        }
 
-	catch {
-	    db_dml update_project_advance "
-		update im_projects set
-			percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
-		where project_id = :parid
-	    "
-	}
-
-	# Write audit trail
-	im_project_audit -project_id $parid
+        # Write audit trail
+        im_project_audit -project_id $parid
     }
-
 }
 
 

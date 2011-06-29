@@ -265,7 +265,7 @@ ad_form -extend -name task -on_request {
     im_project_audit -project_id $task_id -action create
     
     # Update percent_completed
-    #    im_timesheet_project_advance $task_id
+    im_timesheet_project_advance $task_id
 } -edit_data {
 
     if {!$project_write} {
@@ -288,7 +288,7 @@ ad_form -extend -name task -on_request {
     
     
     # Update percent_completed
-    #im_timesheet_project_advance $parent_id
+    im_timesheet_project_advance $parent_id
 
 } -on_submit {
 
