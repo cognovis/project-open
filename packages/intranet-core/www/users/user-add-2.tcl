@@ -36,12 +36,18 @@ if {![im_permission $current_user_id add_users]} {
     ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_no_rights_to]"
     return
 }
+
+# Deal with the password which would be overwriten by the db_1row
+set given_password $password
+
 set admin_user_id [ad_verify_and_get_user_id]
 db_1row user_info "
 	select	*
 	from	cc_users
 	where	user_id = :user_id
 "
+# Reset the password
+set password $given_password
 
 # Check that we really just created this user...
 if {$creation_user != $admin_user_id} {
