@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.21 2011/06/28 14:18:31 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.22 2011/06/29 17:45:01 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -25,32 +25,41 @@
 
 Ext.define('TicketBrowser.TicketContactForm', {
 	extend:		'Ext.form.Panel',
-        alias:		'widget.ticketContactForm',
-        id:		'ticketContactForm',
+	alias:		'widget.ticketContactForm',
+	id:		'ticketContactForm',
 	title:		'#intranet-sencha-ticket-tracker.Contacts#',
 	frame:		true,
 	fieldDefaults: {
-		msgTarget:	'side',
-		labelWidth:	125,
-		width:		300,
-		typeAhead:	true
+		msgTarget:		'side',
+		labelWidth:		125,
+		width:			300,
+		typeAhead:		true
 	},
-        items: [{
-                name:           'user_id',
-                xtype:          'combobox',
-                fieldLabel:     '#intranet-core.User#',
-                value:          '#intranet-core.New_User#',
-		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_User#',
-                valueField:     'user_id',
-                displayField:   'name',
-                store:          userStore,
+	items: [{
+		name:			'user_id',
+		xtype:			'combobox',
+		fieldLabel:		'#intranet-core.User#',
+		value:			'#intranet-core.New_User#',
+		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
+		valueField:		'user_id',
+		displayField:   	'name',
+		store:			userStore,
+		enableKeyEvents:	true,
+		triggerAction:		'all',
 		listeners:{
-		    // The user has selected a user from the drop-down box.
-		    // Lookup the user and fill the form with the fields.
-		    'select': function() {
+
+		 // The user has selected a user from the drop-down box.
+		 // Lookup the user and fill the form with the fields.
+		 'blur': function(field, event) {
+
 			var user_id = this.getValue();
 			var user_record = userStore.findRecord('user_id',user_id);
-		        if (user_record == null || typeof user_record == "undefined") { return; }
+			if (user_record == null || user_record == undefined) { 
+				var user_record = userStore.findRecord('name',user_id);
+			}
+			if (user_record == null || user_record == undefined) { return; }
+
+			// load the values of the user into the form
 			this.ownerCt.loadRecord(user_record);
 
 			// Enable/Disable the "Save" button for anonymous
@@ -63,39 +72,39 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				saveButton.show();
 			}
 
-		    }
+		 }
 		}
-        }, {
+	}, {
 		name:		'first_names',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-core.First_names#',
 		allowBlank:	false
-        }, {
-                name:           'last_name',
-                xtype:          'textfield',
-                fieldLabel:     '#intranet-core.Last_name#',
+	}, {
+		name:		'last_name',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-core.Last_name#',
 		allowBlank:	false
-        }, {
-                name:           'last_name2',
-                xtype:          'textfield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Last_Name2#'
-        }, {
-                name:           'email',
-                xtype:          'textfield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Email#'
-        }, {
-                name:           'telephone',
-                xtype:          'textfield',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Telephone#'
 	}, {
-                name:           'ticket_customer_contact_p',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Primary_Contact#',
-                xtype:          'checkbox',
-                value:          '1'
+		name:		'last_name2',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_Name2#'
 	}, {
-                name:           'language',
-                xtype:          'combobox',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Ticket_Language#',
+		name:		'email',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Email#'
+	}, {
+		name:		'telephone',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#'
+	}, {
+		name:		'ticket_customer_contact_p',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Primary_Contact#',
+		xtype:		'checkbox',
+		value:		'1'
+	}, {
+		name:		'language',
+		xtype:		'combobox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Language#',
 		queryMode:	'local',
 		valueField:	'iso',
 		displayField:	'language',
@@ -109,9 +118,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					]
 		})
 	}, {
-                name:           'gender',
-                xtype:          'combobox',
-                fieldLabel:     '#intranet-sencha-ticket-tracker.Gender#',
+		name:		'gender',
+		xtype:		'combobox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Gender#',
 		queryMode:	'local',
 		valueField:	'id',
 		displayField:	'gender',
@@ -124,12 +133,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
-        }],
-        buttons: [{
-        	text: '#intranet-sencha-ticket-tracker.Add_New_Contact#',
-		itemId:	'addButton',
-		width: 	100,
-        	handler: function(){
+	}],
+	buttons: [{
+		text:		'#intranet-sencha-ticket-tracker.Add_New_Contact#',
+		itemId:		'addButton',
+		width: 		100,
+		handler: function(){
 			var form = this.ownerCt.ownerCt.getForm();
 			form.reset();			// empty fields to allow for entry of new contact
 
@@ -142,10 +151,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			saveButton.hide();
 		}
 	}, {
-        	text: '#intranet-sencha-ticket-tracker.Save_Changes#',
-		itemId:	'saveButton',
-		width: 	120,
-        	handler: function(){
+		text:		'#intranet-sencha-ticket-tracker.Save_Changes#',
+		itemId:		'saveButton',
+		width:		120,
+		handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
 			var combo = form.findField('user_id');
@@ -168,13 +177,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			// Get the ticket
 			var ticketForm = Ext.getCmp('ticketForm');
 			var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
-                        var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+			var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
 			var customer_id = ticket_model.get('company_id');
 
 			// Mark the user as the ticket's contact
 			var ticket_customer_contact_p = form.findField('ticket_customer_contact_p').getValue();
 			if (true == ticket_customer_contact_p || '1' == ticket_customer_contact_p) {
-	                        ticket_model.set('ticket_customer_contact_id', user_id);
+				ticket_model.set('ticket_customer_contact_id', user_id);
 				ticket_model.save({
 					scope: Ext.getCmp('ticketContactForm'),
 					success: function() {
@@ -195,7 +204,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				percentage:	''
 			};
 			var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
-                        member_model.phantom = true;
+			member_model.phantom = true;
 			member_model.save({
 				scope: Ext.getCmp('ticketCompoundPanel'),
 				success: function(record, operation) {
@@ -207,13 +216,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					alert('Failed to create company-user relationship'); 
 				}
 			});
-                }
+		}
 	}, {
-        	text:	'#intranet-sencha-ticket-tracker.Create_New_Contact#',
-		itemId:	'createButton',
-		width: 	120,
-		hidden:	true,
-        	handler: function() {
+		text:		'#intranet-sencha-ticket-tracker.Create_New_Contact#',
+		itemId:		'createButton',
+		width: 		120,
+		hidden:		true,
+		handler: function() {
 			var form = this.ownerCt.ownerCt.getForm();
 			var values = form.getFieldValues();
 			values.user_id = null;
@@ -266,10 +275,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						percentage:	''
 					};
 					var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
-		                        member_model.phantom = true;
+					member_model.phantom = true;
 					member_model.save({
 						scope: Ext.getCmp('ticketCompoundPanel'),
-		                                success: function(record, operation) {
+						success: function(record, operation) {
 							// reload the entire form AFTER the relationship was saved
 							this.loadTicket(ticket_model);
 						},
@@ -287,7 +296,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					};
 		
 					var groupMemberModel = Ext.ModelManager.create(groupMember, 'TicketBrowser.GroupMember');
-		                        groupMemberModel.phantom = true;
+					groupMemberModel.phantom = true;
 					groupMemberModel.save({
 						scope: Ext.getCmp('ticketCompoundPanel'),
 						failure: function(record, operation) { 
@@ -300,8 +309,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 				}
 			});
-                }
-        }],
+		}
+	}],
 
 	loadTicket: function(rec){
 		// Customer contact ID, may be NULL
@@ -311,10 +320,16 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		}
 
 		var contact_record = userStore.findRecord('user_id',contact_id);
-	        if (contact_record == null || typeof contact_record == "undefined") { return; }
+		if (contact_record == null || typeof contact_record == "undefined") { return; }
 
 		// load the information from the record into the form
-		this.loadRecord(contact_record);
+		this.loadUser(contact_record);
+	},
+
+	loadUser: function(rec){
+
+		// load the information from the record into the form
+		this.loadRecord(rec);
 
 		// Show (might have been hidden when creating a new ticket)
 		this.show();
@@ -327,18 +342,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		createButton.hide();
 		var saveButton = buttonToolbar.getComponent('saveButton');
 
-		var username = contact_record.get('username');
+		var username = rec.get('username');
 		if (username.indexOf('anon') >= 0) {
 			saveButton.hide();
 		} else {
 			saveButton.show();
 		}
-	},
-
-	loadUser: function(rec){
-		// load the information from the record into the form
-		this.loadRecord(rec);
-		this.show();
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
@@ -347,13 +356,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		form.reset();
 	},
 
-        // Somebody pressed the "New Ticket" button:
-        // Prepare the form for entering a new ticket
-        newTicket: function() {
+	// Somebody pressed the "New Ticket" button:
+	// Prepare the form for entering a new ticket
+	newTicket: function() {
 		var form = this.getForm();
-                form.reset();
+		form.reset();
 		this.hide();
-        }
+	}
 
 });
 

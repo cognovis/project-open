@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.40 2011/06/28 17:18:19 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.41 2011/06/29 17:45:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -47,12 +47,32 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'ticket_id',		xtype: 'hiddenfield' },
-	{ name: 'ticket_creation_date', xtype: 'hiddenfield' },
-	{ name: 'ticket_status_id',	xtype: 'hiddenfield', value: 30000 },	// Open by default
-	{ name: 'ticket_queue_id',	xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
-	{ name: 'fs_folder_id',		xtype: 'hiddenfield' },			// Assign to Employees by default
-	{ name: 'project_nr',		xtype: 'hiddenfield' },
+	{ name: 'ticket_id',			xtype: 'hiddenfield' },
+	{ name: 'ticket_creation_date', 	xtype: 'hiddenfield' },
+	{ name: 'ticket_status_id',		xtype: 'hiddenfield', value: 30000 },	// Open by default
+	{ name: 'ticket_queue_id',		xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
+	{ name: 'ticket_last_queue_id',		xtype: 'hiddenfield' },			// 
+	{ name: 'fs_folder_id',			xtype: 'hiddenfield' },			// Assign to Employees by default
+	{ name: 'project_nr',			xtype: 'hiddenfield' },
+
+	// Optional fields start here
+	{ name: 'ticket_request',		xtype: 'hiddenfield' },
+	{ name: 'ticket_resolution',		xtype: 'hiddenfield' },
+	{ name: 'ticket_description',		xtype: 'hiddenfield' },
+	{ name: 'ticket_note',			xtype: 'hiddenfield' },
+
+	{ name: 'ticket_closed_in_1st_contact_p',xtype: 'hiddenfield' },
+	{ name: 'ticket_incoming_channel_id',	xtype: 'hiddenfield' },
+	{ name: 'ticket_outgoing_channel_id',	xtype: 'hiddenfield' },
+
+	{ name: 'ticket_confirmation_date',	xtype: 'hiddenfield' },
+	{ name: 'ticket_done_date',		xtype: 'hiddenfield' },
+	{ name: 'ticket_escalation_date',	xtype: 'hiddenfield' },
+	{ name: 'ticket_reaction_date',		xtype: 'hiddenfield' },
+	{ name: 'ticket_resolution_date',	xtype: 'hiddenfield' },
+	{ name: 'ticket_signoff_date',		xtype: 'hiddenfield' },
+	// Optional fields end here
+
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
@@ -71,7 +91,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 	// Main ticket fields
 	{
-		name:		'project_name', 
+		name:		'project_name',
 		itemId:		'project_name',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Name#',
 		disabled:	false,
@@ -121,30 +141,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			var programFile = programModel.get('aux_string1');
 			var fileField = this.ownerCt.child('#ticket_file');
 			fileField.setValue(programFile);
-
-			// Remove all elements from the store
-			programGroupStore = new Ext.data.ArrayStore({
-				model:		'TicketBrowser.Profile',
-				autoDestroy:	true
-			});
-	
-			// Get the row with the list of groups enabled for this area:
-                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
-			if (null == mapRow) {
-				alert('Configuration Error:\nProgram "'+programName+'" not found');
-				return;
-			}
-	
-			// loop through the groups in the profile store and add them
-			// to the programGroupStore IF it's enabled for this program.
-			for (var i = 0; i < profileStore.getCount(); i++) {
-				var profileModel = profileStore.getAt(i);
-				var profileName = profileModel.get('group_name');
-				var enabled = mapRow.get(profileName);
-				if (enabled != null && enabled != '') {
-					programGroupStore.insert(0, profileModel);
-				}
-			}
 		    }
 		}
 
@@ -257,7 +253,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		form.findField('ticket_type_id').setValue('10000191');
 	},
 	
-	// Determine the new of the new ticket. Send an async AJAX request 
+	// Determine the new of the new ticket. Send an async AJAX request
 	// to the server and tell the callback to insert the new ticket number
 	// into the project_name field in this form.
 	setNewTicketName: function() {
