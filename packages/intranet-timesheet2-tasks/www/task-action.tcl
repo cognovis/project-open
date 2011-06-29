@@ -112,9 +112,9 @@ switch $action {
 
                 if {"" != $status_id} {
                     db_dml save_project_status "
-                    		    update	im_projects
-			                    set	project_status_id = :status_id
-			                    where	project_id = :save_task_id
+                    		    update	im_timesheet_tasks
+			                    set	task_status_id = :status_id
+			                    where	task_id = :save_task_id
 		                        "
                 }
             } errmsg]} {
@@ -124,7 +124,6 @@ switch $action {
 
             # Audit the action
             im_project_audit -action update -project_id $save_task_id
-            im_timesheet_project_advance $save_task_id       
         }
     }
 
