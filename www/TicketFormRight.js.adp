@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.36 2011/06/29 18:13:27 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.37 2011/06/29 18:29:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -427,10 +427,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				delete esclationField.lastQuery;
 
 				// Remove all elements from the store
-				programGroupStore = new Ext.data.ArrayStore({
-					model:		'TicketBrowser.Profile',
-					autoDestroy:	true
-				});
+				programGroupStore.removeAll();
 	
 				// Get the row with the list of groups enabled for this area:
 				var programName = programModel.get('category');
