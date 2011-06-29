@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.35 2011/06/29 17:45:02 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.36 2011/06/29 18:13:27 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -421,6 +421,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		if (null != programId) {
 			var programModel = ticketAreaStore.findRecord('category_id', programId);
 			if (null != programModel) {
+
+				// Delete the selection of the Escalation combo
+				var esclationField = form.findField('ticket_queue_id');
+				delete esclationField.lastQuery;
 
 				// Remove all elements from the store
 				programGroupStore = new Ext.data.ArrayStore({
