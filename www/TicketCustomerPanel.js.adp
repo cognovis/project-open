@@ -45,12 +45,18 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		store:		companyStore,
 		enableKeyEvents:true,
 		listeners: {
+
 			// The user has selected a customer from the drop-down box.
 			// Lookup the customer and fill the form with the fields.
-			'select': function() {
+			'blur': function() {
 				var customer_id = this.getValue();
 				var cust = companyStore.findRecord('company_id',customer_id);
-				if (cust == null || typeof cust == "undefined") { return; }
+				if (cust == null || cust == undefined) { 
+					cust = companyStore.findRecord('company_name',customer_id);
+				}
+				if (cust == null || cust == undefined) { return; }
+
+				// load the record into the form
 				this.ownerCt.loadRecord(cust);
 
 				// Disable the Save button if we show the anonymous customer

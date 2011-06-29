@@ -415,6 +415,40 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			queueField.setValue(ticket_queue_id);
 		}
 
+
+		// Calculate the drop-down box for escalation
+		var programId = rec.get('ticket_area_id');
+		if (null != programId) {
+			var programModel = ticketAreaStore.findRecord('category_id', programId);
+			if (null != programModel) {
+
+				// Remove all elements from the store
+				programGroupStore = new Ext.data.ArrayStore({
+					model:		'TicketBrowser.Profile',
+					autoDestroy:	true
+				});
+	
+				// Get the row with the list of groups enabled for this area:
+				var programName = programModel.get('category');
+	                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
+				if (null == mapRow) {
+					alert('Configuration Error:\nProgram "'+programName+'" not found');
+					return;
+				}
+	
+				// loop through the groups in the profile store and add them
+				// to the programGroupStore IF it's enabled for this program.
+				for (var i = 0; i < profileStore.getCount(); i++) {
+					var profileModel = profileStore.getAt(i);
+					var profileName = profileModel.get('group_name');
+					var enabled = mapRow.get(profileName);
+					if (enabled != null && enabled != '') {
+						programGroupStore.insert(0, profileModel);
+					}
+				}
+		    	}
+		}
+
 		this.show();
 	},
 
