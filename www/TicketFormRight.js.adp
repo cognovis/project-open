@@ -427,10 +427,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				delete esclationField.lastQuery;
 
 				// Remove all elements from the store
-				programGroupStore = new Ext.data.ArrayStore({
-					model:		'TicketBrowser.Profile',
-					autoDestroy:	true
-				});
+				programGroupStore.removeAll();
 	
 				// Get the row with the list of groups enabled for this area:
 				var programName = programModel.get('category');
