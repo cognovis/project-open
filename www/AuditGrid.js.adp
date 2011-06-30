@@ -23,16 +23,6 @@
  */
 
 
-var auditGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-    listeners: {
-	selectionchange: function(sm, selections) {
-	    // var grid = this.view;
-	    // grid.down('#removeButton').setDisabled(selections.length == 0);
-	}
-    }
-});
-
-
 // Local store definition. We have to redefine the store every time we show
 // files for a different ticket
 var auditStore = Ext.create('Ext.data.Store', {
@@ -167,9 +157,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     }, {
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	dataIndex: 'audit_ip'
-    }, {
-	header: '#intranet-sencha-ticket-tracker.Audit_Action#',
-	dataIndex: 'audit_action'
     }],
 
 /*
@@ -180,7 +167,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 */
 
     columnLines: true,
-    selModel: auditGridSelModel,
 
     // Load the files for the new ticket
     loadTicket: function(rec){
