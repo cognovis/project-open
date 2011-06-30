@@ -314,6 +314,30 @@ ad_proc -private im_rest_call {
 		}
 	    }
 	}
+	DELETE {
+	    # Is the post operation performed on a particular object or on the object_type?
+	    if {"" != $rest_oid && 0 != $rest_oid} {
+
+		if {[catch {
+		    # DELETE with object_id => delete operation
+		    ns_log Notice "im_rest_call: Found a DELETE operation on object_type=$rest_otype with object_id=$rest_oid"
+		    im_rest_delete_object \
+			-format $format \
+			-user_id $user_id \
+			-rest_otype $rest_otype \
+			-rest_oid $rest_oid \
+			-query_hash_pairs $query_hash_pairs
+
+		} err_msg]} {
+		    ns_log Error "im_rest_call: Error during DELETE operation: $err_msg"
+		}
+
+	    } else {
+		# DELETE without object_id is not allowed - you can only destroy a known object
+		ns_log Error "im_rest_call: You have to specify an object to DELETE."
+	    }
+	}
+
 	default {
 	    return [im_rest_error -format $format -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
 	}
@@ -1473,6 +1497,78 @@ ad_proc -private im_rest_post_object_type {
     } else {
 	ns_log Notice "im_rest_post_object_type: Create for '$rest_otype' not implemented yet"
 	im_rest_error -format $format -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
+    }
+    return
+}
+
+ad_proc -private im_rest_delete_object {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid 0 }
+    { -query_hash_pairs {} }
+    { -debug 0 }
+} {
+    Handler for DELETE rest calls to an individual object:
+    Update the specific object using a generic update procedure
+} {
+    ns_log Notice "im_rest_delete_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', query_hash=$query_hash_pairs"
+
+    # Get the content of the HTTP DELETE request
+    set content [im_rest_get_content]
+    ns_log Notice "im_rest_delete_object: content=$content"
+
+    # Only administrators have the right to DELETE
+    if {![im_user_is_admin_p $user_id]} {
+	im_rest_error -format $format -http_status 401 -message "User #$user_id is not a system administrator. You need admin rights to perform a DELETE."
+    }
+
+    # Deal with certain subtypes
+    switch $rest_otype {
+	im_ticket {
+	    set nuke_otype "im_project"
+	}
+	default {
+	    set nuke_otype $rest_otype
+	}
+    }
+
+    if {[catch {
+	set nuke_tcl [list "${nuke_otype}_nuke" -user_id $user_id $rest_oid]
+	eval $nuke_tcl
+
+    } err_msg]} {
+	im_rest_error -format $format -http_status 404 -message "DELETE for object #$rest_oid of type '$rest_otype' returned an error: $err_msg"
+    }
+
+    # The update was successful - return a suitable message.
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
+		<tr<td>$rest_oid</td></tr>
+		</table>[im_footer]
+	    "
+	}
+	json {
+	    # Empty data: The empty array is necessary for Sencha in order to call callbacks
+	    # without error. However, adding data here will create empty records in the store later,
+	    # so the array needs to be empty.
+	    set data_list [list]
+	    foreach key [array names hash_array] {
+		set value $hash_array($key)
+		lappend data_list "\"$key\": \"[im_quotejson $value]\""
+	    }
+
+	    set data "\[{[join $data_list ", "]}\]"
+	    set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
+	    doc_return 200 "text/html" $result
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" 
+	}
     }
     return
 }
