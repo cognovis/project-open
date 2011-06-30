@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.22 2011/06/29 17:45:01 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.23 2011/06/30 08:31:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -100,7 +100,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		name:		'ticket_customer_contact_p',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Primary_Contact#',
 		xtype:		'checkbox',
-		value:		'1'
+		value:		true
 	}, {
 		name:		'language',
 		xtype:		'combobox',
@@ -348,6 +348,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		} else {
 			saveButton.show();
 		}
+
+		var form = this.getForm();
+		contactField = form.findField('ticket_customer_contact_p');
+		contactField.setValue(true);
+		
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
