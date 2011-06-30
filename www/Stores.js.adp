@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.33 2011/06/28 15:33:48 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.34 2011/06/30 16:08:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -289,7 +289,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	model: 'TicketBrowser.Ticket',
 	remoteSort: true,
 	remoteFilter:	true,
-	pageSize: 10,			// Enable pagination
+	pageSize: 15,				// Enable pagination
 	// autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
 		property: 'creation_date',
@@ -304,7 +304,7 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 1000000,
-	autoSync: true,			// Write changes to the REST server ASAP
+	autoSync: true,				// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
 		property: 'company_name',
@@ -319,7 +319,7 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 	autoLoad: true,
 	remoteSort: true,
 	remoteFilter:	true,
-	pageSize: 1000,			// There should never be more then dozen groups or so...
+	pageSize: 1000,				// There should never be more then dozen groups or so...
 	sorters: [{
 		property: 'group_name',
 		direction: 'DESC'

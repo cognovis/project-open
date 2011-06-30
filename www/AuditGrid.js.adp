@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.9 2011/06/23 14:28:11 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.10 2011/06/30 16:08:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -21,16 +21,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-var auditGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-    listeners: {
-	selectionchange: function(sm, selections) {
-	    // var grid = this.view;
-	    // grid.down('#removeButton').setDisabled(selections.length == 0);
-	}
-    }
-});
 
 
 // Local store definition. We have to redefine the store every time we show
@@ -167,9 +157,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     }, {
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	dataIndex: 'audit_ip'
-    }, {
-	header: '#intranet-sencha-ticket-tracker.Audit_Action#',
-	dataIndex: 'audit_action'
     }],
 
 /*
@@ -180,7 +167,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 */
 
     columnLines: true,
-    selModel: auditGridSelModel,
 
     // Load the files for the new ticket
     loadTicket: function(rec){

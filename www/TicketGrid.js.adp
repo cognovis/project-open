@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.25 2011/06/23 13:41:49 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.26 2011/06/30 16:08:56 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,6 +22,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
+	mode:	'SINGLE',
+	listeners: {
+        	selectionchange: function(sm, selections) {
+        	    // var grid = this.view;
+        	    // grid.down('#removeButton').setDisabled(selections.length == 0);
+        	}
+	}
+});
 
 var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend:	'Ext.grid.Panel',    
@@ -30,6 +39,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     minHeight:	200,
     store:	ticketStore,    
     iconCls:	'icon-grid',
+    columnLines: true,
+    selModel:	ticketGridSelModel,
 
     listeners: {
 	itemdblclick: function(view, record, item, index, e) {
@@ -57,7 +68,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                 plugins: [{
                     pluginId: 'preview',
                     ptype: 'preview',
-                    bodyField: 'ticket_description',
+                    bodyField: 'ticket_request',
                     expanded: true
                 }]
             },
@@ -296,6 +307,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     
     onSummaryChange: function(btn, pressed){
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
+    },
+
+    onDeleteItems: function(btn, pressed){
+	var selection = this.selModel.getSelection();
+	var ticketModel = selection[0];
+	ticketModel.destroy({
+		success: function(record, operation) {
+     			console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+    		},
+		failure: function(record, operation) {
+			alert('Error destroying Ticket #'+ticketModel.get('project_nr')+'');
+    		}
+	});
     }
 
 });
