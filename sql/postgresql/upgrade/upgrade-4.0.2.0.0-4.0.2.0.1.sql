@@ -1,3 +1,6 @@
+-- upgrade-4.0.2.0.0-4.0.2.0.1.sql
+
+SELECT acs_log__debug('/packages/file-storage/sql/postgresql/upgrade/upgrade-4.0.2.0.0-4.0.2.0.1.sql','');
 
 
 -- Fix metadata from file_storage_object
