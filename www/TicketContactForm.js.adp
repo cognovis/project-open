@@ -100,7 +100,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		name:		'ticket_customer_contact_p',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Primary_Contact#',
 		xtype:		'checkbox',
-		value:		'1'
+		value:		true
 	}, {
 		name:		'language',
 		xtype:		'combobox',
@@ -348,6 +348,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		} else {
 			saveButton.show();
 		}
+
+		var form = this.getForm();
+		contactField = form.findField('ticket_customer_contact_p');
+		contactField.setValue(true);
+		
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
