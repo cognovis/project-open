@@ -1153,3 +1153,35 @@ ad_proc -public -callback im_timesheet_task_after_update -impl im_timesheet_task
         }
     }
 }
+
+ad_proc -public im_timesheet_task_units { 
+    -project_id
+    {-type "planned"}
+} {
+    Return the planned hours for a project including the subprojects
+
+    @param project_id Project for which to calculate the planned units
+    @param type Billable or planned units
+} {
+    return [util_memoize [list im_timesheet_task_units_not_cached -project_id $project_id -type $type] 360]
+}
+
+ad_proc -public im_timesheet_task_units_not_cached { 
+    -project_id
+    {-type "planned"}
+} {
+    Return the planned units for a project including the subprojects not cached
+
+    @param project_id Project for which to calculate the planned units
+    @param type Billable or planned units
+} {
+    return [db_string planned_project_units "select to_char(sum(${type}_units),'9999999.0') from im_timesheet_tasks where task_id in (
+    select children.project_id
+      from im_projects parent, im_projects children
+    where
+      children.tree_sortkey between 
+      parent.tree_sortkey 
+      and tree_right(parent.tree_sortkey)
+      and parent.project_id = :project_id
+    )" -default ""]
+}
