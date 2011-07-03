@@ -5,8 +5,8 @@
 
 <!--@company_placeholder;noquote@-->
 <h1>Request for Quote</h1>
-<p>Please upload the files and provide the relevant information. Once you have uploaded all files, please use "Continue" to send your inquiry.</p>    
-
+<p>Please upload the files and provide the relevant information. Once you have uploaded all files, please click "Request Quote" to send your inquiry.</p>    
+<br>
 <if @anonymous_p@ false>
 <!--
 <td valign="top">
@@ -21,25 +21,62 @@
 </td>-->
 </if>
 
-<br><br>
-    <div id="upload_file_placeholder"></div>
-    <form id="form_source_language">@source_language_combo;noquote@<div id="source_language_placeholder"></div></form>
-    <div id="form_target_languages"></div>    
-    <div id='delivery_date_placeholder'></div>
-<br>
-    <div><button id="btnSendFileandMetaData">Upload file and store attributes</button></div>
-<br><br>
-
-<b> Files already uploaded for this "Request for Quote":
-<br><br>
-<table cellpadding="0" cellspacing="0" border="0">
+<table>
 <tr>
-	<!--<td><div id="panel_files_uploaded_placeholder"></div></td>
-	<td><div id="panel_uploaded_files"></div></td>-->
-	<td><div id="grid_uploaded_files"></div></td>
+	<td><b>Upload Files:</b></td>	
+	<td></td>
+	<td><b>Files already uploaded for this RFQ:</b></td>
 </tr>
-</table>
+<tr><td colspan="3">&nbsp;</td></tr><tr>
+<td align='top'>
+	<div id="upload-form">
+	<table>
+	<tr>
+		<td>
+		    <div id='delivery_date_placeholder'></div>
+		</td>
+		<td>
+		    <div id="upload_file_placeholder"></div>
 
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+		    <form id="form_source_language">@source_language_combo;noquote@<div id="source_language_placeholder"></div></form>
+		</td>
+	</tr>
+	<tr>
+	<td colspan='2'>
+		    <div id="form_target_languages"></div>    
+	</td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+
+	<tr>
+		<td colspan="2" align="right">
+		    <div><button id="btnSendFileandMetaData">Upload file and store attributes</button></div>
+		</td>
+	</tr>
+	</table>
+	</div>
+</td>
+	<td>&nbsp;&nbsp;</td>
+<td align='top'>
+	<table cellpadding="0" cellspacing="0" border="0">
+		<tr>
+		<!--<td><div id="panel_files_uploaded_placeholder"></div></td>
+		<td><div id="panel_uploaded_files"></div></td>-->
+		<td><div id="grid_uploaded_files"></div></td>
+		</tr>
+	</table>
+
+</td>
+</tr>
+
+<tr><td><br><br></td></tr>
+
+<tr>
+<td colspan="3" align="center">
 <form id="form_request_quote" name="form_request_quote" action="/intranet-customer-portal/complete_inquiry" method="post">
 	<input type="hidden" name="security_token" value="@security_token;noquote@"> 
 	<input type="hidden" name="inquiry_id" value="@inquiry_id;noquote@"> 
@@ -47,5 +84,10 @@
 	<input name="btnSubmit" type="button" id="btnSubmit" value="Request Quote" onclick="document.forms['form_request_quote'].btn_value.value='submit'; document.forms['form_request_quote'].submit();">&nbsp;
 	<input name="btnCancel" type="button" id="btnCancel" value="Cancel and remove all files" onclick="document.forms['form_request_quote'].btn_value.value='cancel'; document.forms['form_request_quote'].submit();"
 </form>
+
+
+</td>
+</tr>
+</table>
 
 <div id="sidebar"></div>
