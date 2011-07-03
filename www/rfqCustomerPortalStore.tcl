@@ -23,6 +23,19 @@ ad_page_contract {
 # Returns inquiries as JSON 
 # ---------------------------------------------------------------
 
+# todo: improve 
+set user_id [ad_maybe_redirect_for_registration]
+
+set where_clause ""
+if {[im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id]} {
+
+	set where_clause "
+
+
+	"
+}
+
+
 
 db_1row get_cnt "
         select
@@ -37,6 +50,9 @@ db_1row get_cnt "
                         project_id
                 from
                         im_inquiries_customer_portal
+		where 
+			status_id <> 380 and status_id <> 77
+
         ) as i
         left outer join
                 im_costs
@@ -76,6 +92,8 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
 			company_name
                 from
                         im_inquiries_customer_portal
+                where
+                        status_id <> 380 and status_id <> 77
         ) as i
 
         left outer join

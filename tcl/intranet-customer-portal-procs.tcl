@@ -38,5 +38,8 @@ ad_proc -public im_list_rfqs_component {} {
     # Include Component JS
     template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 2
 
-    return "<div id='gridRFQ'></div>"
+    set html_output "<div id='rfq_admin_links'><ul><li><a href='/intranet-customer-portal/upload-files'>Get a new quote</a></li></ul></div><br>"
+    append html_output "<div id='gridRFQ'></div>"
+# ad_return_complaint 1 $html_output
+    return $html_output
 }
