@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.26 2011/06/30 16:08:56 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.27 2011/07/04 17:04:50 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -315,9 +315,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	ticketModel.destroy({
 		success: function(record, operation) {
      			console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+			ticketStore.remove(ticketModel);
     		},
 		failure: function(record, operation) {
-			alert('Error destroying Ticket #'+ticketModel.get('project_nr')+'');
+			alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.');
     		}
 	});
     }
