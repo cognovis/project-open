@@ -198,6 +198,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		xtype:		'datefield',
 		format:		'Y-m-d',
 		submitFormat:	'Y-m-d',
+		startDay:	1,
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
@@ -207,6 +208,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		xtype: 'datefield',
 		format: 'Y-m-d',
 		submitFormat: 'Y-m-d',
+		startDay:	1,
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
