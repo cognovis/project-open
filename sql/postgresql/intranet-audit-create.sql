@@ -25,7 +25,7 @@ create table im_audits (
 				references im_categories,
 	audit_action		text
 				constraint im_audits_action_ck
-				check (audit_action in ('create','update','delete','nuke','pre_update')),
+				check (audit_action in ('after_create','before_update','after_update','before_nuke')),
 	audit_user_id		integer
 				constraint im_audits_user_nn
 				not null,
