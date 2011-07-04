@@ -164,18 +164,17 @@ Ext.define('TicketBrowser.Ticket', {
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_ticket',
-		appendId: true,
+		appendId: true,				// Append the object_id: ../im_ticket/<object_id>
 		extraParams: {
-			format: 'json',			// Tell the ]po[ REST to return JSON data.
-			format_variant: 'sencha'	// Tell the ]po[ REST to return all columns
+			format: 'json'			// Tell the ]po[ REST to return JSON data.
 		},
 		reader: {
 			type: 'json',			// Tell the Proxy Reader to parse JSON
 			root: 'data',			// Where do the data start in the JSON file?
-			totalProperty: 'total'
+			totalProperty: 'total'		// Total number of tickets for pagination
 		},
 		writer: {
-			type: 'json'
+			type: 'json'			// Allow Sencha to write ticket changes
 		}
 	}
 
