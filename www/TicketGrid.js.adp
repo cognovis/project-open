@@ -315,9 +315,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	ticketModel.destroy({
 		success: function(record, operation) {
      			console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+			ticketStore.remove(ticketModel);
     		},
 		failure: function(record, operation) {
-			alert('Error destroying Ticket #'+ticketModel.get('project_nr')+'');
+			alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.');
     		}
 	});
     }
