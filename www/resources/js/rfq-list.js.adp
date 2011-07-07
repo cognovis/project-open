@@ -81,7 +81,12 @@ Ext.onReady(function(){
                 	    handler: function(grid, rowIndex, colIndex) {
                         	var rec = gridPanel.getStore().getAt(rowIndex);
  				clickHandlerCustomerDecisionQuote(rec.get('inquiry_id'), rec.get('project_id'),'accept');
-				console.log(rec.get('project_id')); 
+		                Ext.Msg.show({
+					title: '', 
+					msg:'Thanks for your order.',
+                                        closable:true
+				});
+				rfqCustomerPortalStore.load();
 	       	            }, 
                     	    getClass: function(v, meta, rec) {          // Or return a class from a function
 	                        if ( rec.get('action_column') == '') {
@@ -93,7 +98,13 @@ Ext.onReady(function(){
                             tooltip: 'Reject Quote',
                             handler: function(grid, rowIndex, colIndex) {
                                 var rec = gridPanel.getStore().getAt(rowIndex);
-                                clickHandlerCustomerDecisionQuote(rec.get('inquiry_id'), rec.get('project_id'),reject);
+                                clickHandlerCustomerDecisionQuote(rec.get('inquiry_id'), rec.get('project_id'),'reject');
+		                Ext.Msg.show({
+					title:'', 
+					msg: 'We are sorry to be unable to meet your expectations',
+					closable:true
+				});
+				rfqCustomerPortalStore.load();
                             },
                             getClass: function(v, meta, rec) {          // Or return a class from a function
                                 if ( rec.get('action_column') == '') {
