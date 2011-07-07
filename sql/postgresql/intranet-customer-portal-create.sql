@@ -20,16 +20,22 @@ create sequence im_inquiries_customer_portal_seq start 1;
 create table im_inquiries_customer_portal (
         inquiry_id              integer
                                 primary key,
+        user_id 	        integer,
         first_names             varchar(50),
         last_names              varchar(80),
+	title			varchar(80),
         email	                varchar(50),
         company_name            varchar(80),
         phone			varchar(20),
         security_token 		varchar(40),
 	company_id		integer,
 	status_id		integer,
-	session_id		varchar(200)
+	session_id		varchar(200),
+	project_id		integer,
+	inquiry_date		date,
+	comment			varchar(1000)
 );
+
 
 create sequence im_inquiries_files_seq start 1;
 create table im_inquiries_files (
@@ -72,4 +78,22 @@ end;' LANGUAGE 'plpgsql';
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
 
+SELECT  im_component_plugin__new (
+        null,       	             -- plugin_id
+        'acs_object',                -- object_type
+        now(),                       -- creation_date
+        null,                        -- creation_user
+        null,                        -- creation_ip
+        null,                           -- context_id
+        'List of RFQs',			-- plugin_name
+        'intranet-customer-portal',     -- package_name
+        'top',	                        -- location
+        '/intranet/index',              -- page_url
+        null,                           -- view_name
+        1,                              -- sort_order
+        'im_list_rfqs_component'  	-- component_tcl
+);
 
+
+-- create new Category to 
+SELECT im_category_new ('380', 'Quote accepted', 'Intranet Project Status');

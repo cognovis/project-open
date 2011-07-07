@@ -61,31 +61,43 @@ Ext.onReady(function(){
 
 	uploadedFilesStore = new Ext.data.Store({
 	    autoLoad: true,
+	    id: 'uploadedFilesStore',
 	    model: 'UploadedFiles',
 	    proxy: {
         	type: 'ajax',
 	        url: '/intranet-customer-portal/get-uploaded-files?inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
         	reader: {
 	            type: 'json',
-        	    root: 'files'
+        	    root: 'files', 
+		    totalProperty: 'totalCount'
 	        }
 	    }
 	});
-	
-	var grid = new Ext.grid.GridPanel({
+
+	uploadedFilesStore.load(function(records, operation, success) {
+		console.log('reloading uploadedFilesStore'); 
+		if (0 == uploadedFilesStore.getTotalCount()) {
+			document.getElementById('tableUploadedFiles').style.display = 'none';
+			document.getElementById('titleUploadedFiles').style.display = 'none';
+			document.getElementById('sendButtons').style.display = 'none';
+		} 
+
+	});
+
+	grid = new Ext.grid.GridPanel({
+		id: 'gridUploadedFiles',
 		renderTo: 'grid_uploaded_files',
 		store: uploadedFilesStore,
-		width: 600,
-		height: 300,
+		width: 515,
+		height: 250,
 		columns: [
         	    {header: "ID", width: 25, dataIndex: 'inquiry_files_id', sortable: true},
         	    {header: "File", width: 100, dataIndex: 'file_name', sortable: true},
         	    {header: "Source Language", width: 100, dataIndex: 'source_language', sortable: true},
-        	    {header: "Target Languages", width: 100, dataIndex: 'target_languages', sortable: true},
+        	    {header: "Target Languages", width: 200, dataIndex: 'target_languages', sortable: true},
         	    {header: "Delivery Date", width: 100, dataIndex: 'deliver_date', sortable: true}
         	]
 	});
-
 
         // ************** Target Language *** //
 
@@ -181,9 +193,8 @@ Ext.onReady(function(){
 	myuploadform = new Ext.FormPanel({
 		renderTo: 'upload_file_placeholder',
                 fileUpload: true,
-                width: 200,
+                width: 240,
                 autoHeight: true,
-                labelWidth: 150,
                 defaults: {
                     anchor: '95%',
                     allowBlank: false,
@@ -194,12 +205,10 @@ Ext.onReady(function(){
                     xtype: 'fileuploadfield',
 		    id: 'upload_file',
 		    name:  'upload_file',
-                    // emptyText: 'Select a document to upload...',
+                    emptyText: 'Please select a document ...',
 		    labelAlign: 'top',
 		    fieldLabel: 'File to translate',
-		    labelWidth: 150,
-                    buttonText: 'Browse',
-                    width: 120
+                    buttonText: 'Browse'
                  }
 		]
         });
@@ -240,10 +249,13 @@ Ext.onReady(function(){
 				params: 'source_language=' + source_language + '&target_languages=' + target_languages + '&delivery_date=' + delivery_date + '&inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
                 	        waitMsg: 'Uploading file...',
 				success: function(response){
+		                        document.getElementById('tableUploadedFiles').style.display = 'block';
+                		        document.getElementById('titleUploadedFiles').style.display = 'block';
+		                        document.getElementById('sendButtons').style.display = 'block';
 					uploadedFilesStore.load();
 				}, 
 				failure: function(response){
-					Ext.Msg.show({title:'Could not upload file', msg:'<br/>The file you are trying to upload is either too big or you have already uploaded another file with an identical name.'});
+					Ext.Msg.show({title:'Could not upload file', msg:'<br/>The file you are trying to upload is either too large or you have already uploaded another file with an identical name.'});
 				}, 
                  	});
 
@@ -260,9 +272,14 @@ Ext.onReady(function(){
         // ************** Handle CANCEL case *** //
         // Ext.EventManager.on('cancel', 'click', clickHandlerCancel);
 
-	if ( 1 == @reset;noquote@) {
+	if ( 1 == @reset_p;noquote@ && 0 == @cancel_p;noquote@ ) {
 		Ext.Msg.show({title:'Thanks for submitting.'});
+	}	
+        console.log("cancel:@cancel_p;noquote@");
+	if ( 1 == @cancel_p;noquote@ ) {
+                Ext.Msg.show({title:'Your inquiry has been deleted'});
 	}
+	// console.log("store size: " + uploadedFilesStore.getTotalCount());
 });
 
 

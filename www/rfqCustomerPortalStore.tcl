@@ -28,14 +28,9 @@ set user_id [ad_maybe_redirect_for_registration]
 
 set where_clause ""
 if {[im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id]} {
-
 	set where_clause "
-
-
 	"
 }
-
-
 
 db_1row get_cnt "
         select
@@ -60,12 +55,12 @@ db_1row get_cnt "
                 i.project_id = im_costs.project_id
 "
 
-
 set row_count 0
 
 db_multirow -extend { id action_column} inquiries inquiries_query {
         select
                 i.inquiry_id,
+		i.user_id,
                 i.title,
                 i.inquiry_date,
                 i.status_id,
@@ -84,6 +79,7 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
         (
                 select
                         inquiry_id,
+			user_id,
                         title,
                         inquiry_date,
                         status_id,
@@ -106,13 +102,11 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
 	if { ""==$cost_name } { 
 		set cost_name "inquiring" 
 	} else {
-                set cost_name "<a href='/intranet-invoices/view?invoice_id=$cost_id'>$cost_name</a>"	
+		# Make sure that user who inquired gets read permissions 
+		permission::grant -object_id $cost_id -party_id $user_id -privilege "read"
+                set cost_name "<a href='/intranet-invoices/view?invoice_id=$cost_id&render_template_id=$template_id'>$cost_name</a>"
 	        set action_column "<img id='buttonAcceptQuote' src='/resources/themes/images/default/dd/drop-yes.gif'>&nbsp;<img id='buttonRejectQuote' src='/resources/themes/images/default/grid/drop-no.gif'>"}
 
 	incr row_count
-
-# <a href='/intranet-invoices/view?invoice_id=$cost_id'><img src='/resources/themes/images/default/dd/drop-yes.gif'></a>
-# <a href='/intranet-invoices/view?invoice_id=$cost_id'><img src='/resources/themes/images/default/grid/drop-no.gif'></a>-->
-
 }
 

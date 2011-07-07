@@ -19,7 +19,8 @@ ad_page_contract {
 } {
     {security_token ""}
     {inquiry_id ""}
-    {reset ""}
+    {reset_p ""}
+    {cancel_p ""}
 }
 
 # ---------------------------------------------------------------
@@ -44,10 +45,10 @@ if { "" != $security_token } {
     set master_file "../../intranet-core/www/master"
 
     # refresh / double click should not create new inquiry 
-    set inquiry_exists_p [db_string get_view_id "select inquiry_id from im_inquiries_customer_portal where session_id='$session_id' and inquiry_id=:inquiry_id" -default 0]
+    set inquiry_exists_p [db_string get_view_id "select inquiry_id from im_inquiries_customer_portal where session_id='$session_id' and inquiry_id=:inquiry_id and status_id = null" -default 0]
 
     # "reset" forces new inquiry
-    if { 1==$reset } {set inquiry_exists_p 0}
+    if { 1==$reset_p } {set inquiry_exists_p 0}
 
     if { !$inquiry_exists_p } {
 	set email [im_email_from_user_id $user_id]
@@ -87,9 +88,9 @@ if { "" != $security_token } {
 	set security_token [subst [string repeat {[format %c [expr {int(rand() * 26) + (int(rand() * 10) > 5 ? 97 : 65)}]]} $str_length]]
 	db_dml insert_inq "
         	insert into im_inquiries_customer_portal
-                	(inquiry_id, email, security_token, company_id, session_id)
+                	(inquiry_id, user_id, email, security_token, company_id, session_id, inquiry_date)
 	        values
-        	        ($inquiry_id, '$email', '$security_token', $company_id, '$session_id')
+        	        ($inquiry_id, $user_id, '$email', '$security_token', $company_id, '$session_id', now())
     	"
 
 	# Create tmp path 
@@ -100,7 +101,6 @@ if { "" != $security_token } {
 	} err_msg] } {
             ad_return_complaint 1 "Could not create temp directory, please check if paramter 'TempPath' of package 'intranet-customer-portal' contains a valid path."
 	}
-
     } else {
 	db_1row inquiry_info "select inquiry_id, security_token from im_inquiries_customer_portal where session_id = '$session_id'"  
     }
@@ -108,13 +108,13 @@ if { "" != $security_token } {
 
 # Load Sencha libs 
 template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-template::head::add_css -href "/intranet-customer-portal/resources/css/BoxSelect.css" -media "screen" -order 2
+template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
 
 # CSS Adjustemnts to ExtJS
 template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
 
 # Load SuperSelectBox
-template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+template::head::add_css -href "/intranet-customer-portal/resources/css/BoxSelect.css" -media "screen" -order 2
 template::head::add_javascript -src "/intranet-customer-portal/resources/js/BoxSelect.js" -order 100
 
 # ---------------------------------------------------------------
@@ -140,5 +140,5 @@ set source_language_combo [im_trans_language_select -include_country_locale $inc
 # Add customer registration
 # ---------------------------------------------------------------
 
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset" -order 2
+template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset_p&cancel_p=$cancel_p" -order 2
 
