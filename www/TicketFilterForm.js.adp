@@ -46,7 +46,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
 		forceSelection:	true,
 		queryMode:	'local',
-		store:		profileStore,
+		store:		profileFilteredStore,
 		width:		300,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
@@ -59,23 +59,10 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:     'user_id',
                 displayField:   'name',
 		queryMode:	'local',
-                store:          employeeStore,
+                store:          userEmployeeStore,
 		listeners: {
 			'change': function(field, values) { 
 				if (null == values) { this.reset(); }
-			},
-			'focus': function(field, values) { 
-				// Reload the employee store a 2nd time once the userStore is there
-				var dirty = employeeStore.poDirty;
-				if (null == dirty || true == dirty) {
-					employeeStore.load({
-						scope: this,
-						callback: function() {
-							employeeStore.poDirty = false;
-						}
-					});
-				}
-
 			},
 			'keypress': function(field, key) {
 				if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } 

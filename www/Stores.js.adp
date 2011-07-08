@@ -22,13 +22,114 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Status Engine for the StoreManager
+ * There are dependencies with stores,
+ * which we handle here explicitely.
+ */
+Ext.data.StoreManager.addListener('add', function(index, store, key) {
+	var storeId = store.storeId;
+	// console.log('StoreManager: add: ' + storeId);
+});
+
+
+
+// ----------------------------------------------------------------
+// Employees
+// ----------------------------------------------------------------
+
+// Loads all the IDs of the members of the "Employees" group.
+// This store needs to load before the userStore,
+// because we need to filter users into employees.
+var employeeMembershipRelStore = Ext.create('Ext.data.Store', {
+	storeId:	'employeeMembershipRelStore',
+	model:		'TicketBrowser.EmployeeMembershipRel',
+	autoLoad: 	true,			// Load ASAP
+	remoteSort:	false,			// Doesn't need sorting
+	remoteFilter:	false,			// Doesn't need filtering
+	pageSize: 	1000000			// Load entire table
+});
+
+// EmployeeStore is a "child store" of userStore
+Ext.define('PO.data.EmployeeStore', {
+	extend: 'Ext.data.Store',
+	load: function(options) {
+		// Delete whatever was there before
+		this.removeAll();
+		// Copy values from userStore if the user is member of Employees group
+		userStore.each(function(record) {
+			var user_id = record.get('user_id');
+			var emp_rec = employeeMembershipRelStore.findRecord('object_id_two',user_id);
+			if (null != emp_rec) { 
+				userEmployeeStore.add(record); 
+			}
+		});
+	}
+});
+
+// Create a copy of the userStore with filtered values.
+// Performs the filtering once the original store has been loaded.
+var userEmployeeStore = Ext.create('PO.data.EmployeeStore', {
+	storeId: 'userEmployeeStore',
+	model: 'TicketBrowser.User'
+});
+
+
+
+
+// ----------------------------------------------------------------
+// Customers
+// ----------------------------------------------------------------
+
+// Loads all the IDs of the members of the "Customers" group.
+// This store needs to load before the userStore,
+// because we need to filter users into customers.
+var customerMembershipRelStore = Ext.create('Ext.data.Store', {
+	storeId:	'customerMembershipRelStore',
+	model:		'TicketBrowser.CustomerMembershipRel',
+	autoLoad: 	true,			// Load ASAP
+	remoteSort:	false,			// Doesn't need sorting
+	remoteFilter:	false,			// Doesn't need filtering
+	pageSize: 	1000000			// Load entire table
+});
+
+// CustomerStore is a "child store" of userStore
+Ext.define('PO.data.CustomerStore', {
+	extend: 'Ext.data.Store',
+	load: function(options) {
+		// Delete whatever was there before
+		this.removeAll();
+		// Copy values from userStore if the user is member of Customers group
+		userStore.each(function(record) {
+			var user_id = record.get('user_id');
+			var emp_rec = customerMembershipRelStore.findRecord('object_id_two',user_id);
+			if (null != emp_rec) { 
+				userCustomerStore.add(record); 
+			}
+		});
+	}
+});
+
+// Create a copy of the userStore with filtered values.
+// Performs the filtering once the original store has been loaded.
+var userCustomerStore = Ext.create('PO.data.CustomerStore', {
+	storeId: 'userCustomerStore',
+	model: 'TicketBrowser.User'
+});
+
+
+
+
+// ----------------------------------------------------------------
+// User Store
+// ----------------------------------------------------------------
 
 var userStore = Ext.create('PO.data.UserStore', {
 	storeId:	'userStore',
 	model:		'TicketBrowser.User',
 	remoteSort:	true,
 	remoteFilter:	true,
-	autoLoad: 	true,
+	autoLoad: 	false,			// Load manually below in order to create child stores.
 	autoSync: 	true,			// Write changes to the REST server ASAP
 	// Load all users into this table, this is rarely more than 2000...
 	// ToDo: Replace this with a server-side search function plus cache(?)
@@ -43,18 +144,17 @@ var userStore = Ext.create('PO.data.UserStore', {
 });
 
 
+userStore.load(
+	function(record, operation) {
+		// This code is called once the reply from the server has arrived.
+		userStore.sort('name');
 
-var employeeStore = Ext.create('Ext.data.Store', {
-	storeId:	'employeeStore',
-	model:		'TicketBrowser.Employee',
-	remoteSort:	false,
-	remoteFilter:	false,
-	autoLoad: 	true,
-	autoSync: 	true,			// Write changes to the REST server ASAP
-	// Load all users into this table, this is rarely more than 2000...
-	// ToDo: Replace this with a server-side search function plus cache(?)
-	pageSize: 	1000000
-});
+		// Now we can load (re-load possibly?) the child stores
+		// The child stores will be sorted in the same order as userStore
+		userEmployeeStore.load();
+		userCustomerStore.load();
+	}
+);
 
 
 var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
@@ -289,7 +389,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	model: 'TicketBrowser.Ticket',
 	remoteSort: true,
 	remoteFilter:	true,
-	pageSize: 15,				// Enable pagination
+	pageSize: 12,				// Enable pagination
 	// autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
 		property: 'creation_date',
@@ -313,10 +413,11 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 });
 
 
+
 var profileStore = Ext.create('PO.data.ProfileStore', {
 	storeId: 'profileStore',
 	model: 'TicketBrowser.Profile',
-	autoLoad: true,
+	autoLoad: false,
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 1000,				// There should never be more then dozen groups or so...
@@ -326,6 +427,27 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 	}]
 });
 
+
+// Create a copy of the profileStore with filtered values.
+// Performs the filtering once the original store has been loaded.
+var profileFilteredStore = Ext.create('Ext.data.Store', {
+	storeId: 'profileFilteredStore',
+	model: 'TicketBrowser.Profile'
+});
+
+profileStore.load(
+	function(record, operation) {
+		// This code is called once the reply from the server has arrived.
+		profileStore.sort('group_name');
+
+		profileStore.each(function(record) {
+			var groupId = record.get('group_id');
+			if (groupId > 1000) {		// Ignore built-in groups with low IDs
+				profileFilteredStore.add(record);
+			}
+		});
+	}
+);
 
 
 
