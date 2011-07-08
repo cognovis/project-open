@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.26 2011/06/29 17:45:02 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.27 2011/07/08 08:05:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -150,9 +150,12 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				
 				// find the company in the store
 				var company_record = companyStore.findRecord('company_id',company_id);
-				company_record.set('company_name', form.findField('company_name').getValue());
+				var company_name = form.findField('company_name').getValue();
+				var vat_number = form.findField('vat_number').getValue();
+
+				company_record.set('company_name', company_name.toUpperCase());
+				company_record.set('vat_number', vat_number.toUpperCase());
 				company_record.set('company_type_id', form.findField('company_type_id').getValue());
-				company_record.set('vat_number', form.findField('vat_number').getValue());
 				company_record.set('company_province', form.findField('company_province').getValue());
 	
 				// Tell the store to update the server via it's REST proxy

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.27 2011/07/04 17:22:19 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.28 2011/07/08 08:05:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -46,7 +46,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
 		forceSelection:	true,
 		queryMode:	'local',
-		store:		profileStore,
+		store:		profileFilteredStore,
 		width:		300,
 		listeners: {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
@@ -59,23 +59,10 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:     'user_id',
                 displayField:   'name',
 		queryMode:	'local',
-                store:          employeeStore,
+                store:          userEmployeeStore,
 		listeners: {
 			'change': function(field, values) { 
 				if (null == values) { this.reset(); }
-			},
-			'focus': function(field, values) { 
-				// Reload the employee store a 2nd time once the userStore is there
-				var dirty = employeeStore.poDirty;
-				if (null == dirty || true == dirty) {
-					employeeStore.load({
-						scope: this,
-						callback: function() {
-							employeeStore.poDirty = false;
-						}
-					});
-				}
-
 			},
 			'keypress': function(field, key) {
 				if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.15 2011/06/17 11:29:10 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.16 2011/07/08 08:05:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,43 +31,58 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     layout:		'border',
     deferredRender:	false,
     split:		true,
+	autoScroll:	true,
 
     items: [{
 	itemId:		'center',
 	region: 	'center',
-	layout: 	'anchor',
+	layout: 	'border',
 	minWidth:	400,
+	split:	true,
 
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-core.Ticket#'
+		title: '#intranet-core.Ticket#',
+		split:	true,
+		region:	'north'
 	}, {
-		itemId: 'ticketCustomerPanel',
-		title: '#intranet-sencha-ticket-tracker.Company#',
-		xtype: 'ticketCustomerPanel'
+		itemId:	'ticketCustomerPanel',
+		title:	'#intranet-sencha-ticket-tracker.Company#',
+		xtype:	'ticketCustomerPanel',
+		split:	true,
+		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
-		xtype: 'ticketContactPanel'
+		xtype: 'ticketContactPanel',
+		split:	true,
+		region:	'south'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
 	layout:	'anchor',
 	width:	800,
+	split:	true,
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
-		xtype: 'auditGrid'
+		xtype: 'auditGrid',
+		split:	true,
+		region:	'north'
 	}, {
 		itemId: 'ticketFormRight',
 		title: '',
-		xtype: 'ticketFormRight'
+		xtype: 'ticketFormRight',
+		split:	true,
+		region:	'center'
 	}, {
 		itemId: 'fileStorageGrid',
 		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
+		xtype: 'fileStorageGrid',
+		split:	true,
+		region:	'south'
 	}]
     }],
 

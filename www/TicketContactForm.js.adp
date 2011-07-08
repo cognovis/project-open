@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.23 2011/06/30 08:31:19 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.24 2011/07/08 08:05:19 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -43,7 +43,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
 		valueField:		'user_id',
 		displayField:   	'name',
-		store:			userStore,
+		store:			userCustomerStore,
 		enableKeyEvents:	true,
 		triggerAction:		'all',
 		listeners:{
@@ -226,6 +226,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var form = this.ownerCt.ownerCt.getForm();
 			var values = form.getFieldValues();
 			values.user_id = null;
+			values.first_names = values.first_names.toUpperCase();
+			values.last_name = values.last_name.toUpperCase();
+			values.last_name2 = values.last_name2.toUpperCase();
 
 			// Deugging help...
 			// values.first_names = values.first_names + Math.random();
@@ -241,6 +244,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 					// Add the new user to the user store to make it accessible
 					userStore.add(user_record);
+					userCusotmerStore.add(user_record);
 					var user_id = user_record.get('user_id');
 
 					// Get the ticket model and extract the customer_id
