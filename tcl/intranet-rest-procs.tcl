@@ -790,7 +790,8 @@ ad_proc -private im_rest_get_object_type {
     Handler for GET rest calls on a whole object type -
     mapped to queries on the specified object type
 } {
-    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+    set current_user_id $user_id
+    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$current_user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
 
@@ -810,7 +811,7 @@ ad_proc -private im_rest_get_object_type {
 
     # -------------------------------------------------------
     # Check for generic permissions to read all objects of this type
-    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $current_user_id -privilege "read"]
 
     # Deny completely access to the object type?
     set rest_otype_read_none_p 0
@@ -819,17 +820,17 @@ ad_proc -private im_rest_get_object_type {
 	# There are "view_xxx_all" permissions allowing a user to see all objects:
 	switch $rest_otype {
 	    bt_bug		{ }
-	    im_company		{ set rest_otype_read_all_p [im_permission $user_id "view_companies_all"] }
-	    im_cost		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_conf_item	{ set rest_otype_read_all_p [im_permission $user_id "view_conf_items_all"] }
-	    im_invoices		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_project		{ set rest_otype_read_all_p [im_permission $user_id "view_projects_all"] }
-	    im_user_absence	{ set rest_otype_read_all_p [im_permission $user_id "view_absences_all"] }
-	    im_office		{ set rest_otype_read_all_p [im_permission $user_id "view_offices_all"] }
-	    im_ticket		{ set rest_otype_read_all_p [im_permission $user_id "view_tickets_all"] }
-	    im_timesheet_task	{ set rest_otype_read_all_p [im_permission $user_id "view_timesheet_tasks_all"] }
-	    im_timesheet_invoices { set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_trans_invoices	{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_company		{ set rest_otype_read_all_p [im_permission $current_user_id "view_companies_all"] }
+	    im_cost		{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_conf_item	{ set rest_otype_read_all_p [im_permission $current_user_id "view_conf_items_all"] }
+	    im_invoices		{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_project		{ set rest_otype_read_all_p [im_permission $current_user_id "view_projects_all"] }
+	    im_user_absence	{ set rest_otype_read_all_p [im_permission $current_user_id "view_absences_all"] }
+	    im_office		{ set rest_otype_read_all_p [im_permission $current_user_id "view_offices_all"] }
+	    im_ticket		{ set rest_otype_read_all_p [im_permission $current_user_id "view_tickets_all"] }
+	    im_timesheet_task	{ set rest_otype_read_all_p [im_permission $current_user_id "view_timesheet_tasks_all"] }
+	    im_timesheet_invoices { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_trans_invoices	{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
 	    im_translation_task	{ }
 	    user		{ }
 	    default { 
@@ -874,7 +875,7 @@ ad_proc -private im_rest_get_object_type {
 	}
 	file_storage_object {
 	    # file storage object needs additional security
-	    lappend where_clause_unchecked_list "'t' = acs_permission__permission_p(o.object_id, $user_id, 'read')"
+	    lappend where_clause_unchecked_list "'t' = acs_permission__permission_p(o.object_id, $current_user_id, 'read')"
 	}
     }
 
@@ -940,7 +941,7 @@ ad_proc -private im_rest_get_object_type {
 	if {!$read_p} {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
-	    eval "${rest_otype}_permissions $user_id $rest_oid view_p read_p write_p admin_p"
+	    eval "${rest_otype}_permissions $current_user_id $rest_oid view_p read_p write_p admin_p"
 	}
 	if {!$read_p} { continue }
 
