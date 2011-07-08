@@ -51,11 +51,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     alias:	'widget.auditGrid',
     id:		'auditGrid',
     store: 	auditStore,
-    minWidth:	300,
-    minHeight:	300,
-    frame:	true,
     iconCls:	'icon-grid',
-
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
@@ -108,11 +104,11 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Escalated#',
-	dataIndex: 'ticket_queue_id',
+	dataIndex: 'ticket_queue_id_pretty',
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id'));
+	    return profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',

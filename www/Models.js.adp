@@ -529,6 +529,7 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_note',
 		'ticket_prio_id',
 		'ticket_queue_id',
+		'ticket_queue_id_pretty',
 		'ticket_quote_comment',
 		'ticket_quoted_days',
 		'ticket_reaction_date',
