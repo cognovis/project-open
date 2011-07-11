@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.11 2011/07/08 15:22:58 po34demo Exp $
+ * @cvs-id $Id: AuditGrid.js.adp,v 1.12 2011/07/11 11:04:54 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -179,7 +179,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({data: {object_id: 0}});
+	this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
 	this.hide();
     }
 
