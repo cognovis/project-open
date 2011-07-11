@@ -156,7 +156,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								var doneField = this.findField('ticket_done_date');
 								doneField.setValue(response.responseText);
 								doneField.setDisabled(false);
-							},
+							}
 						});
 
 					}
