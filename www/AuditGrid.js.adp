@@ -179,7 +179,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({data: {object_id: 0}});
+	this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
 	this.hide();
     }
 
