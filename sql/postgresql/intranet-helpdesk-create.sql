@@ -219,8 +219,8 @@ BEGIN
 		p_ticket_nr::varchar,
 		null,			-- parent_id
 		p_ticket_customer_id,
-		101,			-- p_ticket_type_id
-		76			-- p_ticket_status_id	
+		101,			-- p_project_type_id
+		76			-- p_project_status_id	
 	);
 
 	update im_projects set
