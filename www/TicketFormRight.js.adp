@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.37 2011/06/29 18:29:59 po34demo Exp $
+ * @cvs-id $Id: TicketFormRight.js.adp,v 1.38 2011/07/11 12:57:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -156,7 +156,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								var doneField = this.findField('ticket_done_date');
 								doneField.setValue(response.responseText);
 								doneField.setDisabled(false);
-							},
+							}
 						});
 
 					}

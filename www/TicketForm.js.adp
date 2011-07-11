@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.41 2011/06/29 17:45:02 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.42 2011/07/11 12:57:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -245,7 +245,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 				var form = this.getForm();
 				var date_time = response.responseText;
 				form.findField('ticket_creation_date').setValue(date_time);
-			},
+			}
 		});
 
 		// Set the default value for ticket_type
