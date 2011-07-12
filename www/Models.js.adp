@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.39 2011/07/08 15:22:59 po34demo Exp $
+ * @cvs-id $Id: Models.js.adp,v 1.40 2011/07/12 08:54:42 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,9 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Use TCL template language to get the current user_id
-var currentUserId = <%= [ad_get_user_id] %>;
-
+// SLA will be used in future versions
 Ext.define('TicketBrowser.Sla', {
 	extend: 'Ext.data.Model',
 	idProperty: 'project_id',		// The primary key of object_id of the SLA project
@@ -292,7 +290,7 @@ Ext.define('TicketBrowser.EmployeeMembershipRel', {
 		appendId: true,
 		extraParams: {
 			format: 'json',
-			object_id_one: '463'		// Employees group
+			object_id_one: employeeGroupId		// Employees group
 		},
 		reader: { 
 			type: 'json', 
@@ -334,7 +332,7 @@ Ext.define('TicketBrowser.CustomerMembershipRel', {
 		appendId: true,
 		extraParams: {
 			format: 'json',
-			object_id_one: '461'		// Customers group
+			object_id_one: customerGroupId		// Customers group
 		},
 		reader: { 
 			type: 'json', 
