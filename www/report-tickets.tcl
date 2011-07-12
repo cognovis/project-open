@@ -217,7 +217,8 @@ set header0 {
 	"Hora Escalacion"
 	"Fecha Cierre"
 	"Hora Cierre"
-	"Canal"
+	"Canal Entrada"
+	"Canal Salida"
 	"NIF"
 	"Empresa"
 	"Tipo Empresa"
@@ -253,6 +254,7 @@ set report_def [list \
 	$ticket_done_date_date
 	$ticket_done_date_time
 	$ticket_incoming_channel
+	$ticket_outgoing_channel
 	$vat_number
 	$company_name
 	$company_type
