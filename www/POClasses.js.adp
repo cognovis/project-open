@@ -119,3 +119,11 @@ var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') fro
 var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
 var anonimo_company_id = '<%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>';
 
+// Use TCL template language to get the current user_id
+var currentUserId = <%= [ad_get_user_id] %>;
+
+// Constant for employee groups
+var employeeGroupId = '463';		// String!
+var customerGroupId = '461';		// String!
+
+
