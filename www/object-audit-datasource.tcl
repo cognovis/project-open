@@ -98,7 +98,7 @@ db_foreach limited_sql $limited_sql {
 	set el [split $line "\t"]
 	set key [lindex $el 0]
 	set val [lindex $el 1]
-	lappend json_row "\"$key\": \"[ns_quotehtml $val]\""
+	lappend json_row "\"$key\": \"[im_quotejson $val]\""
     }
 
     lappend json_list "{[join $json_row ", "]}"
