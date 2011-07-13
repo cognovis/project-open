@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.24 2011/07/08 08:05:19 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.25 2011/07/13 07:57:57 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -244,7 +244,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 					// Add the new user to the user store to make it accessible
 					userStore.add(user_record);
-					userCusotmerStore.add(user_record);
+					userCustomerStore.add(user_record);
 					var user_id = user_record.get('user_id');
 
 					// Get the ticket model and extract the customer_id
