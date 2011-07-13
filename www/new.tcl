@@ -320,7 +320,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	-form_id riskmanagement_risk
 
     # Write Audit Trail
-    im_project_audit -project_id $risk_id -action update
+    im_project_audit -project_id $risk_id -action after_update
 
 } -on_submit {
 
