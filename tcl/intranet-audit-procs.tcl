@@ -261,7 +261,7 @@ ad_proc -public im_audit_impl {
     {-object_type "" }
     {-status_id "" }
     {-type_id "" }
-    {-action "update" }
+    {-action "after_update" }
     {-comment "" }
 } {
     Creates a new audit item for object after an update.
@@ -425,7 +425,7 @@ ad_proc -public im_audit_sweeper { } {
 ad_proc -public im_project_audit_impl  {
     -project_id:required
     {-user_id "" }
-    {-action update }
+    {-action after_update }
     {-comment "" }
 } {
     Creates an audit entry of the specified project
