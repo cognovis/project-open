@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.35 2011/07/08 08:05:18 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.36 2011/07/13 11:00:02 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -127,7 +127,7 @@ var userCustomerStore = Ext.create('PO.data.CustomerStore', {
 var userStore = Ext.create('PO.data.UserStore', {
 	storeId:	'userStore',
 	model:		'TicketBrowser.User',
-	remoteSort:	true,
+	remoteSort:	false,
 	remoteFilter:	true,
 	autoLoad: 	false,			// Load manually below in order to create child stores.
 	autoSync: 	true,			// Write changes to the REST server ASAP
