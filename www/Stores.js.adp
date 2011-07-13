@@ -127,7 +127,7 @@ var userCustomerStore = Ext.create('PO.data.CustomerStore', {
 var userStore = Ext.create('PO.data.UserStore', {
 	storeId:	'userStore',
 	model:		'TicketBrowser.User',
-	remoteSort:	true,
+	remoteSort:	false,
 	remoteFilter:	true,
 	autoLoad: 	false,			// Load manually below in order to create child stores.
 	autoSync: 	true,			// Write changes to the REST server ASAP
