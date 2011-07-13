@@ -204,6 +204,10 @@ ad_proc -public im_audit_object_value {
     for {set i 0} {$i < [llength $col_names]} {incr i} {
 	set var [lindex $col_names $i]
 	set val [lindex $col_values $i]
+	
+	# We need to quote \n and \t in $val because it is used to separate values
+	regsub -all {\n} $val {\n} val
+	regsub -all {\t} $val {\t} val
 
 	# Skip a number of known internal variables
 	if {"tree_sortkey" == $var} { continue }
