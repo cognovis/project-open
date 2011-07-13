@@ -186,7 +186,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 					// Tell all panels to load the data of the newly created object
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_record);	
+					compoundPanel.loadTicket(ticket_record);
+				},
+				failure: function(record, operation) {
+					Ext.Msg.alert("Error durante la creacion de un nuevo ticket", operation.request.scope.reader.jsonData["message"]);
+					// Re-enable this form
+					Ext.getCmp('ticketForm').setDisabled(true);
+
+					// Return to the main tickets Tab
+					var ticketContainer = Ext.getCmp('ticketContainer');
+					var mainTabPanel = Ext.getCmp('mainTabPanel');
+					mainTabPanel.setActiveTab(ticketContainer);
 				}
 			});
 
