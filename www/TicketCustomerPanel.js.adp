@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.27 2011/07/08 08:05:19 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.28 2011/07/13 13:16:06 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -212,7 +212,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 							},
 							failure: function() { alert('TicketCustomerPanel: Failed to save ticket'); }
 						});
+					},
+					failure: function(user_record, operation) {
+						Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
 					}
+
 				});
 			}
 		}]

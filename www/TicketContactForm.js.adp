@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.25 2011/07/13 07:57:57 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.26 2011/07/13 13:16:06 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -308,9 +308,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 							alert('Failed to create group membership relationship ' + err); 
 						}
 					});
-		
-
-
+				},
+				failure: function(user_record, operation) {
+					Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}
