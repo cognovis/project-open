@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFilterForm.js.adp,v 1.28 2011/07/08 08:05:19 po34demo Exp $
+ * @cvs-id $Id: TicketFilterForm.js.adp,v 1.29 2011/07/13 12:06:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -44,6 +44,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:	'group_id',
                 displayField:	'group_name',
 		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
+		value:		'my_groups',
 		forceSelection:	true,
 		queryMode:	'local',
 		store:		profileFilteredStore,

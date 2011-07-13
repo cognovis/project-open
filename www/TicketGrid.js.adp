@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.27 2011/07/04 17:04:50 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.28 2011/07/13 12:06:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -214,13 +214,20 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    switch (key) {
 			case 'assigned_queue_id':
 				// The "my groups" information is not part of the REST information.
-				if (value == 'my_groups') {
-					// default query: all of my groups
-					query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
-				} else {
-					// assigned_queue_id contains a group_id
-					query = query + ' and ticket_queue_id = ' + value;
+				switch (value) {
+					case 'my_groups':
+						// default query: all of my groups
+						query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
+						break;
+					case 'all_groups':
+						// Do nothing.
+						break;
+					default:
+						// assigned_queue_id contains a group_id
+						query = query + ' and ticket_queue_id = ' + value;
+						break;
 				}
+
 				key = 'query';
 				value = query;
 				

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.36 2011/07/13 11:00:02 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.37 2011/07/13 12:06:59 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -440,6 +440,17 @@ profileStore.load(
 		// This code is called once the reply from the server has arrived.
 		profileStore.sort('group_name');
 
+		// Add "My Groups" as the very first value
+		var profileVars = {group_id: 'my_groups', group_name: '#intranet-sencha-ticket-tracker.My_Groups#'};
+		var profile = Ext.ModelManager.create(profileVars, 'TicketBrowser.Profile');
+		profileFilteredStore.add(profile);
+
+		// Add "All Groups" as the second value
+		var profileVars = {group_id: 'all_groups', group_name: 'Todos Grupos'};
+		var profile = Ext.ModelManager.create(profileVars, 'TicketBrowser.Profile');
+		profileFilteredStore.add(profile);
+
+		// Add all the other groups defined by the user
 		profileStore.each(function(record) {
 			var groupId = record.get('group_id');
 			if (groupId > 1000) {		// Ignore built-in groups with low IDs
