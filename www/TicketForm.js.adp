@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.42 2011/07/11 12:57:13 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.43 2011/07/13 15:24:46 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -186,7 +186,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 					// Tell all panels to load the data of the newly created object
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_record);	
+					compoundPanel.loadTicket(ticket_record);
+				},
+				failure: function(record, operation) {
+					Ext.Msg.alert("Error durante la creacion de un nuevo ticket", operation.request.scope.reader.jsonData["message"]);
+					// Re-enable this form
+					Ext.getCmp('ticketForm').setDisabled(true);
+
+					// Return to the main tickets Tab
+					var ticketContainer = Ext.getCmp('ticketContainer');
+					var mainTabPanel = Ext.getCmp('mainTabPanel');
+					mainTabPanel.setActiveTab(ticketContainer);
 				}
 			});
 
