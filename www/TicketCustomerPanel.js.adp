@@ -212,7 +212,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 							},
 							failure: function() { alert('TicketCustomerPanel: Failed to save ticket'); }
 						});
+					},
+					failure: function(user_record, operation) {
+						Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
 					}
+
 				});
 			}
 		}]

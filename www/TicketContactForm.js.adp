@@ -308,9 +308,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 							alert('Failed to create group membership relationship ' + err); 
 						}
 					});
-		
-
-
+				},
+				failure: function(user_record, operation) {
+					Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}

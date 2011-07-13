@@ -172,6 +172,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    }]
 	});
 	this.callParent();
+
+	// Translate the column headers
+	// http://www.extjs.com.br/forum/index.php?topic=4812.0
+	if (Ext.grid.header.Container){
+		Ext.apply(Ext.grid.header.Container.prototype, {
+		sortAscText:	'#intranet-sencha-ticket-tracker.Sort_Ascending#',
+		sortDescText:	'#intranet-sencha-ticket-tracker.Sort_Descending#',
+		sortClearText:	'#intranet-sencha-ticket-tracker.Clear#',
+		columnsText:	'#intranet-sencha-ticket-tracker.Columns#'
+	      });
+	}
+
+
     },
 
     loadSla: function(id){
@@ -304,7 +317,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
     
     onNewTicket: function(dummy){
-        var panel = this.ownerCt.ownerCt;
+	var panel = this.ownerCt.ownerCt;
 	panel.ownerCt.onNewTicket();
     },
 
