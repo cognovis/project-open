@@ -50,7 +50,7 @@ switch $action_id {
 		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
 		im_ticket::close_workflow	-ticket_id $ticket_id
 		im_ticket::close_forum		-ticket_id $ticket_id
-		im_ticket::audit		-ticket_id $ticket_id -action "update"
+		im_ticket::audit		-ticket_id $ticket_id -action "after_update"
 	    }
 
 	    if {$action_id == 30510} {

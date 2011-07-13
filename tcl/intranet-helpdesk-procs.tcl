@@ -139,7 +139,7 @@ ad_proc -public im_ticket_permissions {
 				im_biz_object_members bom
 			where	r.rel_id = bom.rel_id and
 				r.object_id_two in ([join $user_parties ","]) and
-				bom.role_id in (1301, 1302)
+				bom.object_role_id in (1301, 1302)
 		) t) as ticket_admin_p,
 		(select count(*) from (
 			-- cases with user as task_assignee
@@ -184,8 +184,8 @@ ad_proc -public im_ticket_permissions {
     set assignee_p [expr $user_id == $ticket_assignee_id]
     set customer_p [expr $user_id == $ticket_customer_contact_id]
 
-    set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || ticket_member_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
-    set write [expr ($read && $edit_ticket_status_p) || ticket_admin_p]
+    set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || $ticket_member_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
+    set write [expr ($read && $edit_ticket_status_p) || $ticket_admin_p]
 
     set view $read
     set admin $write

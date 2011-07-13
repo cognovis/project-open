@@ -39,7 +39,8 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 -- Create "Full Member" role for tickets
 insert into im_biz_object_role_map values ('im_ticket',null,1300);
 
-
+-- Define where the system can find the status and type of the ticket.
+-- Allows for automatic workflow updates and display
 update acs_object_types set
 		status_type_table = 'im_tickets',
 		status_column = 'ticket_status_id',
