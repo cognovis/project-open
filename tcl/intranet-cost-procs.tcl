@@ -2208,7 +2208,7 @@ ad_proc im_cost_update_payments { cost_id } {
     "
 
     # Audit the action
-    # im_audit -object_id $cost_id -action update -comment "Logging a payment on the cost."
+    # im_audit -object_id $cost_id -action after_update -comment "Logging a payment on the cost."
 
 }
 
@@ -2365,7 +2365,7 @@ ad_proc -public im_cost_update_project_cost_cache {
     "
 
     # Audit the action
-    # im_project_audit -project_id $project_id -action update
+    # im_project_audit -project_id $project_id -action after_update
 
     return [array get subtotals]
 }
