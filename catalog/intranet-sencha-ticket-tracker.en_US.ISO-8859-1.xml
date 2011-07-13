@@ -19,9 +19,11 @@
   <msg key="button_Search">Search</msg>
   <msg key="Cancel">Cancel</msg>
   <msg key="Channel_Details">Channel Details</msg>
+  <msg key="Clear">Clear</msg>
   <msg key="Clear_Form">Clear Form</msg>
   <msg key="Close_Date">Close Date</msg>
   <msg key="Closed_in_1st_Contact">Closed in 1st Contact</msg>
+  <msg key="Columns">Columns</msg>
   <msg key="Companies">Companies</msg>
   <msg key="Company">Company</msg>
   <msg key="Company_Name">Company Name</msg>
@@ -40,8 +42,10 @@
   <msg key="Date_Until">Date_Until</msg>
   <msg key="Delete_attachment">Delete attachment</msg>
   <msg key="Department">Department</msg>
+  <msg key="Description">Description</msg>
   <msg key="Displaying_tickets_0_1_of_2_">Displaying tickets {0} - {1} of {2}</msg>
   <msg key="Displaying_versions_0_1_of_2_">Displaying versions {0} - {1} of {2}</msg>
+  <msg key="Do_not_modify_anonimo">You can't modify the anonymous company.</msg>
   <msg key="Email">Email</msg>
   <msg key="Escalated">Escalated</msg>
   <msg key="Escalation_Date">Escalation Date</msg>
@@ -90,6 +94,8 @@
   <msg key="Show_Customer">Show Customer</msg>
   <msg key="Show_Grid">Show Grid</msg>
   <msg key="Show_Ticket">Show Ticket</msg>
+  <msg key="Sort_Ascending">Sort Ascending</msg>
+  <msg key="Sort_Descending">Sort Descending</msg>
   <msg key="Telephone">Telephone</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_Customer">Ticket Customer</msg>
