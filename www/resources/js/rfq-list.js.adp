@@ -32,10 +32,10 @@ Ext.onReady(function(){
 	        {name: 'title', type: 'string'},
 	        {name: 'inquiry_date',  type: 'date', dateFormat: 'Y-m-d'},
         	{name: 'status_id',  type: 'string'},
-		{name: 'company_name', type: 'string' },
-		{name: 'cost_name', type: 'string' },
-                {name: 'amount', type: 'string', },
-                {name: 'currency', type: 'string' },
+		{name: 'company_name', type: 'string'},
+		{name: 'cost_name', type: 'string'},
+                {name: 'amount', type: 'string'},
+                {name: 'currency', type: 'string'},
                 {name: 'action_column', type: 'string'},
                 {name: 'project_id', type: 'number'}
 	    ]
@@ -57,7 +57,7 @@ Ext.onReady(function(){
 	var gridPanel = Ext.create('Ext.grid.Panel', {
 		renderTo: 'gridRFQ',
 		store: rfqCustomerPortalStore,
-		width: 780,	
+		width: 880,	
 		height: 400,
 		columns: [
         	    {header: "No", width: 40, dataIndex: 'id', sortable: true},
@@ -66,7 +66,8 @@ Ext.onReady(function(){
 		    {header: "Company", width: 150, dataIndex: 'company_name', sortable: true},
         	    {header: "Date inquired", width: 80, dataIndex: 'inquiry_date', sortable: true, renderer: Ext.util.Format.dateRenderer('d-M-Y')},
         	    // {header: "Status", width: 50, dataIndex: 'status_id', sortable: true},
-        	    {header: "Status", width: 100, dataIndex: 'cost_name', sortable: true},
+        	    {header: "Status", width: 100, dataIndex: 'status_id', sortable: true},
+        	    {header: "Quote", width: 100, dataIndex: 'cost_name', sortable: true},
         	    {header: "Amount", width: 60, dataIndex: 'amount', sortable: true, align: 'right'},
         	    {header: "Currency", width: 60, dataIndex: 'currency', sortable: true, align: 'left'},
         	    {header: "Project Id", dataIndex: 'project_id',hidden: true},

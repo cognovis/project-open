@@ -74,6 +74,7 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
                 trunc((im_costs.amount ) :: numeric, 2) as amount,
                 im_costs.currency,
                 im_costs.cost_id, 
+    		im_costs.template_id,
 		i.project_id
         from
         (
@@ -99,8 +100,13 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
 } {
 	set action_column ""
 	set id [expr $row_count + 1 ]
+    	set status_id [im_category_from_id $status_id]
+
+        if { ""==$amount } { set amount "---" }
+        if { ""==$currency } { set currency "---" }
+
 	if { ""==$cost_name } { 
-		set cost_name "inquiring" 
+		set cost_name "---" 
 	} else {
 		# Make sure that user who inquired gets read permissions 
 		permission::grant -object_id $cost_id -party_id $user_id -privilege "read"
