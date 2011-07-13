@@ -214,13 +214,20 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    switch (key) {
 			case 'assigned_queue_id':
 				// The "my groups" information is not part of the REST information.
-				if (value == 'my_groups') {
-					// default query: all of my groups
-					query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
-				} else {
-					// assigned_queue_id contains a group_id
-					query = query + ' and ticket_queue_id = ' + value;
+				switch (value) {
+					case 'my_groups':
+						// default query: all of my groups
+						query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
+						break;
+					case 'all_groups':
+						// Do nothing.
+						break;
+					default:
+						// assigned_queue_id contains a group_id
+						query = query + ' and ticket_queue_id = ' + value;
+						break;
 				}
+
 				key = 'query';
 				value = query;
 				

@@ -44,6 +44,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 valueField:	'group_id',
                 displayField:	'group_name',
 		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
+		value:		'my_groups',
 		forceSelection:	true,
 		queryMode:	'local',
 		store:		profileFilteredStore,

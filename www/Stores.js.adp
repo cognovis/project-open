@@ -440,6 +440,17 @@ profileStore.load(
 		// This code is called once the reply from the server has arrived.
 		profileStore.sort('group_name');
 
+		// Add "My Groups" as the very first value
+		var profileVars = {group_id: 'my_groups', group_name: '#intranet-sencha-ticket-tracker.My_Groups#'};
+		var profile = Ext.ModelManager.create(profileVars, 'TicketBrowser.Profile');
+		profileFilteredStore.add(profile);
+
+		// Add "All Groups" as the second value
+		var profileVars = {group_id: 'all_groups', group_name: 'Todos Grupos'};
+		var profile = Ext.ModelManager.create(profileVars, 'TicketBrowser.Profile');
+		profileFilteredStore.add(profile);
+
+		// Add all the other groups defined by the user
 		profileStore.each(function(record) {
 			var groupId = record.get('group_id');
 			if (groupId > 1000) {		// Ignore built-in groups with low IDs
