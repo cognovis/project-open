@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.37 2011/07/13 12:06:59 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.38 2011/07/14 16:01:34 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -222,6 +222,25 @@ var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 		extraParams: {
 			format: 'json',
 			category_type: '\'Intranet Ticket Status\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
+
+var companyStatusStore = Ext.create('PO.data.CategoryStore', {
+	storeId:	'companyStatusStore',
+	autoLoad:	true,
+	remoteFilter:	true,
+	model: 		'TicketBrowser.Category',
+	pageSize:	1000,
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Company Status\''
 		},
 		reader: { type: 'json', root: 'data' }
 	}
