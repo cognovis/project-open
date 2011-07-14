@@ -35,7 +35,8 @@
 	<script type="text/javascript" src="TicketCompoundPanel.js"></script> 
 	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 
-	<!-- ------------------------------- Tickets ---------------------------------------- -->
+	<!-- ------------------------------- Companies ---------------------------------------- -->
+	<script type="text/javascript" src="CompanyFilterForm.js"></script> 
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
 	<script type="text/javascript" src="ContactContainer.js"></script> 

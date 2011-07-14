@@ -227,6 +227,25 @@ var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 	}
 });
 
+var companyStatusStore = Ext.create('PO.data.CategoryStore', {
+	storeId:	'companyStatusStore',
+	autoLoad:	true,
+	remoteFilter:	true,
+	model: 		'TicketBrowser.Category',
+	pageSize:	1000,
+
+	proxy: {
+		type: 'rest',
+		url: '/intranet-rest/im_category',
+		appendId: true,
+		extraParams: {
+			format: 'json',
+			category_type: '\'Intranet Company Status\''
+		},
+		reader: { type: 'json', root: 'data' }
+	}
+});
+
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
 	autoLoad:	true,
