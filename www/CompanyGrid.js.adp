@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.8 2011/07/14 16:01:34 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.9 2011/07/15 18:13:35 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,12 +23,26 @@
  */
 
 
+var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
+	mode:	'SINGLE'
+});
+
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
-	extend:	'Ext.grid.Panel',	
-	alias:	'widget.companyGrid',
+	extend:		'Ext.grid.Panel',	
+	alias:		'widget.companyGrid',
 	id:		'companyGrid',
 	minHeight:	200,
-	store:	companyStore,
+	store:		companyStore,
+	selModel:	companyGridSelModel,
+
+	listeners: {
+		itemdblclick: function(view, record, item, index, e) {
+	
+			// Load the company into the CompanyCompoundPanel
+			var compoundPanel = Ext.getCmp('companyCompoundPanel');
+			compoundPanel.loadCompany(record);
+		}
+	},
 
 	columns: [
 		{

@@ -1,10 +1,10 @@
 /**
- * intranet-sencha-ticket-tracker/www/TicketContainer.js
+ * intranet-sencha-ticket-tracker/www/TicketCompoundPanel.js
  * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.17 2011/07/08 15:23:00 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.18 2011/07/15 18:13:35 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
