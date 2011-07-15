@@ -205,7 +205,7 @@ ad_form -extend -name task -on_request {
 } -edit_request {
 
 } -new_data {
-    if {!$project_write} {
+    if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
 	ad_return_complaint 1 "You have insufficient privileges to add/modify timesheet tasks for this project"
 	ad_script_abort
     }
@@ -268,7 +268,7 @@ ad_form -extend -name task -on_request {
     im_timesheet_project_advance $task_id
 } -edit_data {
 
-    if {!$project_write} {
+    if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
 	ad_return_complaint 1 "You have insufficient privileges to add/modify timesheet tasks for this project"
 	ad_script_abort
     }
