@@ -486,7 +486,6 @@ set sql "
 
 
 "
-ns_log NOTICE $sql
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
