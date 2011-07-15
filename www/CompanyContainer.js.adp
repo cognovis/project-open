@@ -48,6 +48,10 @@ Ext.define('TicketBrowser.CompanyContainer', {
 			itemId:	'companyGrid',
 			xtype:	'companyGrid',
 			region:	'center'
+		}, {
+			itemId:	'companyCompoundPanel',
+			xtype:	'companyCompoundPanel',
+			region:	'south'
 		}]
 	}],
 

@@ -23,12 +23,26 @@
  */
 
 
+var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
+	mode:	'SINGLE'
+});
+
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
-	extend:	'Ext.grid.Panel',	
-	alias:	'widget.companyGrid',
+	extend:		'Ext.grid.Panel',	
+	alias:		'widget.companyGrid',
 	id:		'companyGrid',
 	minHeight:	200,
-	store:	companyStore,
+	store:		companyStore,
+	selModel:	companyGridSelModel,
+
+	listeners: {
+		itemdblclick: function(view, record, item, index, e) {
+	
+			// Load the company into the CompanyCompoundPanel
+			var compoundPanel = Ext.getCmp('companyCompoundPanel');
+			compoundPanel.loadCompany(record);
+		}
+	},
 
 	columns: [
 		{

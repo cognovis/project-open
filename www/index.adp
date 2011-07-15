@@ -36,13 +36,19 @@
 	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 
 	<!-- ------------------------------- Companies ---------------------------------------- -->
+	<script type="text/javascript" src="CompanyForm.js"></script> 
 	<script type="text/javascript" src="CompanyFilterForm.js"></script> 
-	<script type="text/javascript" src="CompanyContainer.js"></script> 
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
+	<script type="text/javascript" src="CompanyCompoundPanel.js"></script> 
+	<script type="text/javascript" src="CompanyContainer.js"></script> 
+
+	<!-- ------------------------------- Contacts ---------------------------------------- -->
 	<script type="text/javascript" src="ContactContainer.js"></script> 
 	<script type="text/javascript" src="ContactGrid.js"></script> 
 
+	<!-- ------------------------------- Main - Integrating Everything ------------------- -->
 	<script type="text/javascript" src="MainPanel.js"></script> 
+
 
 	<script type="text/javascript">
 		Ext.Loader.setConfig({enabled: true});
