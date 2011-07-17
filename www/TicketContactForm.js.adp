@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.26 2011/07/13 13:16:06 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.27 2011/07/17 15:32:29 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -113,7 +113,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					id: 0,
 					fields: ['iso', 'language'],
 					data: [
-						['en_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
+						['es_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
 						['eu_ES', '#intranet-sencha-ticket-tracker.lang_eu_ES#']
 					]
 		})
