@@ -113,7 +113,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					id: 0,
 					fields: ['iso', 'language'],
 					data: [
-						['en_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
+						['es_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
 						['eu_ES', '#intranet-sencha-ticket-tracker.lang_eu_ES#']
 					]
 		})
