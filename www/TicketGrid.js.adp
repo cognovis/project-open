@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.31 2011/07/18 15:59:24 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.32 2011/07/18 17:49:13 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -332,8 +332,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
+
+		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
 		var ticketModel = selection[0];
+
+		// Delete the ticket. This triggers a DELETE server request
 		ticketModel.destroy({
 			success: function(record, operation) {
 		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
@@ -346,7 +350,18 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	},
 
 	onCopy: function() {
-		alert('ContactGrid.onCopy() not implemented yet');
+		var selection = this.selModel.getSelection();
+		var ticketModel = selection[0];
+
+		// Ticket list or view page
+		var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
+		ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+		var mainTabPanel = Ext.getCmp('mainTabPanel');
+		mainTabPanel.setActiveTab(ticketCompoundPanel);
+
+		// Tell the compound panel to create a copy of the old ticket
+		ticketCompoundPanel.loadTicket(ticketModel);
+		ticketCompoundPanel.onCopy();
 	}
 
 });

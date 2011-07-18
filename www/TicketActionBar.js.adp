@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketActionBar.js.adp,v 1.4 2011/07/18 15:59:23 po34demo Exp $
+ * @cvs-id $Id: TicketActionBar.js.adp,v 1.5 2011/07/18 17:49:12 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -46,16 +46,13 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					Ext.getCmp('contactGrid').onNew(btn, pressed);
 					break;
 				case 'ticketContainer':
-					// List page for tickets - copy the selected ticket
-					Ext.getCmp('contactGrid').onNew(btn, pressed);
-					break;
 				case 'ticketCompoundPanel':
-					// View page for a ticket
+					// Ticket list or view page
 					var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
 					ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
 					var mainTabPanel = Ext.getCmp('mainTabPanel');
 					mainTabPanel.setActiveTab(ticketCompoundPanel);
-					ticketCompoundPanel.onNew(btn, pressed);
+					ticketCompoundPanel.newTicket();
 					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
