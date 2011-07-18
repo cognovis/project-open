@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.43 2011/07/13 15:24:46 po34demo Exp $
+ * @cvs-id $Id: TicketForm.js.adp,v 1.44 2011/07/18 11:26:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -218,13 +218,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			// Tell the store to update the server via it's REST proxy
 			ticketModel.save({
 				scope: Ext.getCmp('ticketForm'),
-				success: function() {
+				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.loadTicket(ticketModel);
 				},
-				failure: function() {
-					alert('Failed to save ticket');
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}

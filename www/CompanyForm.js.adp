@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyForm.js.adp,v 1.1 2011/07/17 15:32:28 po34demo Exp $
+ * @cvs-id $Id: CompanyForm.js.adp,v 1.2 2011/07/18 11:26:17 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,7 +23,7 @@
  */
 
 
-var ticketForm = Ext.define('TicketBrowser.CompanyForm', {
+var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 	extend: 	'Ext.form.Panel',	
 	alias: 		'widget.companyForm',
 	id:		'companyForm',
@@ -147,13 +147,13 @@ var ticketForm = Ext.define('TicketBrowser.CompanyForm', {
 			// Tell the store to update the server via it's REST proxy
 			companyModel.save({
 				scope: Ext.getCmp('companyForm'),
-				success: function() {
+				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('companyCompoundPanel');
 					compoundPanel.loadCompany(companyModel);
 				},
-				failure: function() {
-					alert('Failed to save company');
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save company', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}

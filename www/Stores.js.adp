@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.38 2011/07/14 16:01:34 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.39 2011/07/18 11:26:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -44,7 +44,7 @@ Ext.data.StoreManager.addListener('add', function(index, store, key) {
 var employeeMembershipRelStore = Ext.create('Ext.data.Store', {
 	storeId:	'employeeMembershipRelStore',
 	model:		'TicketBrowser.EmployeeMembershipRel',
-	autoLoad: 	true,			// Load ASAP
+	autoLoad: 	false,			// Load ASAP
 	remoteSort:	false,			// Doesn't need sorting
 	remoteFilter:	false,			// Doesn't need filtering
 	pageSize: 	1000000			// Load entire table

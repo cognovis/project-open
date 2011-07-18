@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.28 2011/07/13 13:16:06 po34demo Exp $
+ * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.29 2011/07/18 11:26:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -170,13 +170,13 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				// Update the ticket model and tell the form to refresh everything
 				ticketModel.save({
 					scope: Ext.getCmp('ticketForm'),
-					success: function() {
+					success: function(record, operation) {
 						// Refresh all forms to show the updated information
 						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 						compoundPanel.loadTicket(ticketModel);
 					},
-					failure: function() {
-						alert('Failed to save ticket');
+					failure: function(record, operation) {
+						Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);
 					}
 				});
 			}
@@ -205,12 +205,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 						var company_id = company_record.get('company_id');
 						ticket_model.set('company_id', company_id);
 						ticket_model.save({
-							success: function() {
+							success: function(record, operation) {
 								// Tell all panels to load the data of the newly created object
 								var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 								compoundPanel.loadTicket(ticket_model);	
 							},
-							failure: function() { alert('TicketCustomerPanel: Failed to save ticket'); }
+							failure: function(record, operation) { 
+								Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);
+							}
 						});
 					},
 					failure: function(user_record, operation) {

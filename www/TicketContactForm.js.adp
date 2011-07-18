@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.27 2011/07/17 15:32:29 po34demo Exp $
+ * @cvs-id $Id: TicketContactForm.js.adp,v 1.28 2011/07/18 11:26:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -166,11 +166,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			userModel.set(values);
 			userModel.save({
 				scope: Ext.getCmp('ticketContactForm'),
-				success: function() {
+				success: function(record, operation) {
 					this.loadUser(userModel);
 				},
-				failure: function() {
-					alert('Failed to save user');
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 
@@ -186,11 +186,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				ticket_model.set('ticket_customer_contact_id', user_id);
 				ticket_model.save({
 					scope: Ext.getCmp('ticketContactForm'),
-					success: function() {
+					success: function(record, operation) {
 						// Tell all panels to refresh
 					},
-					failure: function() {
-						alert('Failed to save ticket');
+					failure: function(record, operation) {
+						Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 					}
 				});
 			}
@@ -213,7 +213,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					compoundPanel.loadTicket(ticket_model);	
 				},
 				failure: function(record, operation) { 
-					alert('Failed to create company-user relationship'); 
+					Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
 				}
 			});
 		}
@@ -262,10 +262,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						ticket_model.set('ticket_customer_contact_id', user_id);
 						ticket_model.save({
 							success: function(record, operation) { 
-								// alert('ticket_customer_contact_id saved.'); 
+								// Ext.Msg.alert('ticket_customer_contact_id saved.', operation.request.scope.reader.jsonData["message"]); 
 							},
 							failure: function(record, operation) { 
-								alert('Failed to save ticket_customer_contact_id.'); 
+								Ext.Msg.alert('Failed to save ticket_customer_contact_id.', operation.request.scope.reader.jsonData["message"]);
 							}
 						});
 					}
@@ -286,7 +286,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 							// reload the entire form AFTER the relationship was saved
 							this.loadTicket(ticket_model);
 						},
-						failure: function() { alert('Failed to create company-user relationship'); }
+						failure: function(record, operation) { 
+							Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+						}
 					});
 
 					// Add the users to the group "Customers".
@@ -304,12 +306,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					groupMemberModel.save({
 						scope: Ext.getCmp('ticketCompoundPanel'),
 						failure: function(record, operation) { 
-							var err = operation.getError();
-							alert('Failed to create group membership relationship ' + err); 
+							Ext.Msg.alert('Failed to create group membership relationship.', operation.request.scope.reader.jsonData["message"]); 
 						}
 					});
 				},
-				failure: function(user_record, operation) {
+				failure: function(record, operation) {
 					Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
 				}
 			});

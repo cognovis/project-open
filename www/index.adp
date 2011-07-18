@@ -43,8 +43,11 @@
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
 
 	<!-- ------------------------------- Contacts ---------------------------------------- -->
-	<script type="text/javascript" src="ContactContainer.js"></script> 
+	<script type="text/javascript" src="ContactForm.js"></script> 
+	<script type="text/javascript" src="ContactFilterForm.js"></script> 
 	<script type="text/javascript" src="ContactGrid.js"></script> 
+	<script type="text/javascript" src="ContactCompoundPanel.js"></script> 
+	<script type="text/javascript" src="ContactContainer.js"></script> 
 
 	<!-- ------------------------------- Main - Integrating Everything ------------------- -->
 	<script type="text/javascript" src="MainPanel.js"></script> 
