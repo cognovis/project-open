@@ -332,8 +332,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
+
+		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
 		var ticketModel = selection[0];
+
+		// Delete the ticket. This triggers a DELETE server request
 		ticketModel.destroy({
 			success: function(record, operation) {
 		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
@@ -346,7 +350,18 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	},
 
 	onCopy: function() {
-		alert('ContactGrid.onCopy() not implemented yet');
+		var selection = this.selModel.getSelection();
+		var ticketModel = selection[0];
+
+		// Ticket list or view page
+		var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
+		ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+		var mainTabPanel = Ext.getCmp('mainTabPanel');
+		mainTabPanel.setActiveTab(ticketCompoundPanel);
+
+		// Tell the compound panel to create a copy of the old ticket
+		ticketCompoundPanel.loadTicket(ticketModel);
+		ticketCompoundPanel.onCopy();
 	}
 
 });

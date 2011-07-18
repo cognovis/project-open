@@ -105,17 +105,40 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     // Delete the selected ticket
     onDelete: function() {
-	alert('Borrar tickets no ha sido implementado todavia');
+	
+	// Get the ID of the current ticket
+	var ticketForm = this.child('#center').child('#ticketForm');
+	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+	var ticket_id = ticket_id_field.getValue();
+	if (null == ticket_id || '' == ticket_id) { return; }
+
+	// Get the 
+	var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+
+	// Delete the ticket. This triggers a DELETE server request
+	ticketModel.destroy({
+		success: function(record, operation) {
+	 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+			ticketStore.remove(ticketModel);
+		},
+		failure: function(record, operation) {
+			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+		}
+	});
+
+	// Switch back to the ticket list page
+	Ext.getCmp('mainTabPanel').setActiveTab(0);
     },
 
-    // Called from the TicketGrid if the user has selected a ticket
-    newTicket: function(rec){
-        this.child('#center').child('#ticketForm').newTicket(rec);
-        this.child('#center').child('#ticketCustomerPanel').newTicket(rec);
-        this.child('#center').child('#ticketContactPanel').newTicket(rec);
-        this.child('#east').child('#auditGrid').newTicket(rec);
-        this.child('#east').child('#ticketFormRight').newTicket(rec);
-        this.child('#east').child('#fileStorageGrid').newTicket(rec);
+    // Called from the TicketGrid or the TicketActionPanel in order to create 
+    // a new ticket
+    newTicket: function(){
+        this.child('#center').child('#ticketForm').newTicket();
+        this.child('#center').child('#ticketCustomerPanel').newTicket();
+        this.child('#center').child('#ticketContactPanel').newTicket();
+        this.child('#east').child('#auditGrid').newTicket();
+        this.child('#east').child('#ticketFormRight').newTicket();
+        this.child('#east').child('#fileStorageGrid').newTicket();
     },
 
     // Called from the TicketGrid if the user has selected a ticket

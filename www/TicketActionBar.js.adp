@@ -46,16 +46,13 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					Ext.getCmp('contactGrid').onNew(btn, pressed);
 					break;
 				case 'ticketContainer':
-					// List page for tickets - copy the selected ticket
-					Ext.getCmp('contactGrid').onNew(btn, pressed);
-					break;
 				case 'ticketCompoundPanel':
-					// View page for a ticket
+					// Ticket list or view page
 					var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
 					ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
 					var mainTabPanel = Ext.getCmp('mainTabPanel');
 					mainTabPanel.setActiveTab(ticketCompoundPanel);
-					ticketCompoundPanel.onNew(btn, pressed);
+					ticketCompoundPanel.newTicket();
 					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
