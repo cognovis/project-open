@@ -57,13 +57,13 @@ Ext.onReady(function(){
 	var gridPanel = Ext.create('Ext.grid.Panel', {
 		renderTo: 'gridRFQ',
 		store: rfqCustomerPortalStore,
-		width: 880,	
+		width: 730,	
 		height: 400,
 		columns: [
         	    {header: "No", width: 40, dataIndex: 'id', sortable: true},
         	    {header: "Inquiry ID", dataIndex: 'inquiry_id',hidden: true},
         	    {header: "Title", width: 200, dataIndex: 'title', sortable: true},
-		    {header: "Company", width: 150, dataIndex: 'company_name', sortable: true},
+		    // {header: "Company", width: 150, dataIndex: 'company_name', sortable: true},
         	    {header: "Date inquired", width: 80, dataIndex: 'inquiry_date', sortable: true, renderer: Ext.util.Format.dateRenderer('d-M-Y')},
         	    // {header: "Status", width: 50, dataIndex: 'status_id', sortable: true},
         	    {header: "Status", width: 100, dataIndex: 'status_id', sortable: true},

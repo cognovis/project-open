@@ -38,8 +38,34 @@ ad_proc -public im_list_rfqs_component {} {
     # Include Component JS
     template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 2
 
-    set html_output "<div id='rfq_admin_links'><ul><li><a href='/intranet-customer-portal/upload-files'>Get a new quote</a></li></ul></div><br>"
-    append html_output "<div id='gridRFQ'></div>"
-# ad_return_complaint 1 $html_output
+    set html_output "<div id='gridRFQ'></div><br>"
+
+    if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
+	append html_output "<button class='form-button40' id='getNewQuote' onclick=\"document.location.href='/intranet-customer-portal/upload-files'; return false;\">Get a new quote</button>"
+    }
+
+    return $html_output
+}
+
+ad_proc -public im_list_financial_documents_component {} {
+    Returns a component that list all current RFQ together with their status
+    and action options, such as "Accept/Deny Quote".
+
+} {
+
+    set user_id [ad_get_user_id]
+
+    # Include sencha libs
+    template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
+    template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+
+    # CSS Adjustemnts to ExtJS
+    template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+
+    # Include Component JS
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
+
+    set html_output "<div id='gridFinancialDocuments'></div><br>"
+
     return $html_output
 }

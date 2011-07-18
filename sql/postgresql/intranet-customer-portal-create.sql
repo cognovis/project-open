@@ -95,6 +95,24 @@ SELECT  im_component_plugin__new (
 );
 
 
+SELECT  im_component_plugin__new (
+        null,                        -- plugin_id
+        'acs_object',                -- object_type
+        now(),                       -- creation_date
+        null,                        -- creation_user
+        null,                        -- creation_ip
+        null,                           -- context_id
+        'Financial Documents',          -- plugin_name
+        'intranet-customer-portal',     -- package_name
+        'right',                          -- location
+        '/intranet/index',              -- page_url
+        null,                           -- view_name
+        1,                              -- sort_order
+        'im_list_financial_documents_component'        -- component_tcl
+);
+
+
+
 -- create new Category to 
 SELECT im_category_new ('380', 'Quote accepted', 'Intranet Project Status');
 
@@ -189,181 +207,185 @@ drop function inline_1();
 
 -- creating wf notification 
 
-create function inline_0()
-returns integer as '
+CREATE OR REPLACE FUNCTION im_customer_portal_notify_customer(integer, varchar, varchar)
+  RETURNS integer AS '
+
 declare
-        impl_id integer;
-        v_notif_type_id  integer;
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
 begin
-        -- the notification type impl
-        impl_id := acs_sc_impl__new (
-                      ''NotificationType'',
-                      ''inquiry_notif_type'',
-                      ''inquiries''
+        RAISE NOTICE ''KHD: Notify_assignee_project_approval: enter'';
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  language_preference into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := ''Notification_Subject_Notify_Customer_Quote_Created'';
+        v_subject := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = ''MISSING'' THEN
+                v_subject := ''A quote has been created'';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, ''%object_name%'', v_object_name);
+        -- v_subject := replace(v_subject, ''%transition_name%'', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := ''Notification_Body_Notify_Customer_QuoteCreated'';
+        v_body := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = ''MISSING'' THEN
+                v_body := ''Please check your RFQ box for a new quote'';
+        END IF;
+        -- Replace variables
+        -- v_body := replace(v_body, ''%object_name%'', v_object_name);
+        -- v_body := replace(v_body, ''%transition_name%'', v_transition_name);
+
+        RAISE NOTICE ''KHD: Notify_assignee_project_approval: Subject=%, Body=%'', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_creation_user,              -- party_to
+		''f'',                        -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
         );
 
-        PERFORM acs_sc_impl_alias__new (
-                    ''NotificationType'',
-                    ''inquiry_notif_type'',
-                    ''GetURL'',
-                    ''im_inquiry::notification::get_url'',
-                    ''TCL''
+        return 0;
+end;
+' LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION im_customer_portal_notify_pm(integer, varchar, varchar)
+  RETURNS integer AS '
+
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+	v_pm 			integer; 
+        v_locale                text;
+        v_count                 integer;
+
+
+begin
+        RAISE NOTICE ''KHD: Notify_assignee_project_approval: enter'';
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+	-- get Project Manager id  
+	select project_lead_id into v_pm from im_projects where project_id = v_object_id;
+
+        -- Get locale of PM
+        select  language_preference into v_locale
+        from    user_preferences
+        where   user_id = v_pm;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := ''Notification_Subject_Notify_Project_Customer_Decision'';
+        v_subject := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = ''MISSING'' THEN
+                v_subject := ''RFQ: Customer decision taken'';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, ''%object_name%'', v_object_name);
+        -- v_subject := replace(v_subject, ''%transition_name%'', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := ''Notification_Body_Notify_Project_Customer_Decision'';
+        v_body := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = ''MISSING'' THEN
+                v_body := ''Customer rejected/accepted Quote'';
+        END IF;
+        -- Replace variables
+        -- v_body := replace(v_body, ''%object_name%'', v_object_name);
+        -- v_body := replace(v_body, ''%transition_name%'', v_transition_name);
+
+        RAISE NOTICE ''KHD: Notify_assignee_project_approval: Subject=%, Body=%'', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_pm,		              -- party_to
+		''f'',                        -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
         );
 
-        PERFORM acs_sc_impl_alias__new (
-                    ''NotificationType'',
-                    ''inquiry_notif_type'',
-                    ''ProcessReply'',
-                    ''im_inquiry::notification::process_reply'',
-                    ''TCL''
-        );
+        return 0;
+end;
+' LANGUAGE 'plpgsql';
 
-        PERFORM acs_sc_binding__new (
-                    ''NotificationType'',
-                    ''inquiry_notif_type''
-        );
-
-        v_notif_type_id:= notification_type__new (
-                NULL,
-                impl_id,
-                ''inquiry_notif'',
-                ''Inquiry Notifications'',
-                ''Notifications of status of inquiry'',
-                now(),
-                NULL,
-                NULL,
-        NULL
-        );
-
-        -- enable the various intervals and delivery methods
-        insert into notification_types_intervals (type_id, interval_id)
-        select v_notif_type_id, interval_id
-        from notification_intervals where name in (''instant'',''hourly'',''daily'');
-
-        insert into notification_types_del_methods (type_id, delivery_method_id)
-        select v_notif_type_id, delivery_method_id
-        from notification_delivery_methods where short_name in (''email'');
-
-        return (0);
-end;' language 'plpgsql';
-select inline_0();
-drop function inline_0();
-
-
---PERFORM workflow_case__notify_assignee (v_task_id, v_creation_user, null, null, ''inquiry_notif'');
-
-
-create or replace function im_customer_portal_notify_customer(int4,int4,varchar,varchar,varchar) returns int4 as '
-       declare
-       	notify__task_id                alias for $1;
-       	notify__user_id                alias for $2;
-       	notify__callback               alias for $3;
-       	notify__custom_arg             alias for $4;
-       	notify__notification_type      alias for $5;
-       
-       	v_str					varchar;
-       	v_custom_arg				varchar;
-       	v_object_name                           text; 
-       	v_transition_key                        wf_transitions.transition_key%TYPE;
-       	v_transition_name                       wf_transitions.transition_name%TYPE;
-       	v_party_from                            parties.party_id%TYPE;
-       	v_party_to                              parties.party_id%TYPE;
-       	v_subject                               text; 
-       	v_body                                  text; 
-       	v_request_id                            integer; 
-       	v_workflow_url			  	text;
-       	v_acs_lang_package_id			integer;
-       
-       	v_notification_type			varchar;
-       	v_notification_type_id		  	integer;
-       	v_workflow_package_id			integer;
-       	v_notification_n_seconds		integer;
-       	v_locale				text;
-       	v_count				  	integer;
-
-       begin
-       	RAISE NOTICE ''KHD: Notify_assignee_project_approval: enter'';
-       		-- Default notification type
-       		v_notification_type := notify__notification_type;
-       		IF v_notification_type is null THEN
-       		  v_notification_type := ''inquiry_notif'';
-       		END IF;
-       
-       	select acs_object__name(c.object_id), tr.transition_key, tr.transition_name
-       	into   v_object_name, v_transition_key, v_transition_name
-       	  from wf_tasks ta, wf_transitions tr, wf_cases c
-       	 where ta.task_id = notify__task_id
-       	   and c.case_id = ta.case_id
-       	   and tr.workflow_key = c.workflow_key
-       	   and tr.transition_key = ta.transition_key;
-       
-       	v_party_from := -1;
-       
-       	-- Get locale of user 
-       	select	language_preference into v_locale
-       	from	user_preferences
-	where   user_id = notify__user_id; 
-
-       	-- make sure there are no null values - replaces(...,null) returns null...
-       	IF v_workflow_url is NULL THEN v_workflow_url := ''undefined''; END IF;
-       
-       	-- ------------------------------------------------------------
-       	-- Try with specific translation first
-       	v_subject := ''Notification_Subject_Notify_Customer_Quote_Created'';
-       	v_subject := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_subject);
-       
-       	-- Fallback to generic (no transition key) translation
-       	IF substring(v_subject from 1 for 7) = ''MISSING'' THEN
-       		v_subject := ''A quote has been created'';
-       	END IF;
-       	
-       	-- Replace variables
-       	-- v_subject := replace(v_subject, ''%object_name%'', v_object_name);
-       	-- v_subject := replace(v_subject, ''%transition_name%'', v_transition_name);
-       
-       	-- ------------------------------------------------------------
-       	-- Try with specific translation first
-       	v_body := ''Notification_Body_Notify_Customer_QuoteCreated'';
-       	v_body := acs_lang_lookup_message(v_locale, ''intranet-customer-portal'', v_body);
-       
-       	-- Fallback to generic (no transition key) translation
-       	IF substring(v_body from 1 for 7) = ''MISSING'' THEN
-       		v_body := ''Please check your RFQ box for a new quote'';
-       	END IF;
-       
-       	-- Replace variables
-       	-- v_body := replace(v_body, ''%object_name%'', v_object_name);
-       	-- v_body := replace(v_body, ''%transition_name%'', v_transition_name);
-       	-- v_body := replace(v_body, ''%workflow_url%'', v_workflow_url);
-       
-       	RAISE NOTICE ''KHD: Notify_assignee_project_approval: Subject=%, Body=%'', v_subject, v_body;
-       
-       	v_custom_arg := notify__custom_arg;
-       	IF v_custom_arg is null THEN v_custom_arg := ''null''; END IF;
-       
-       	IF length(notify__callback) > 0 and notify__callback is not null THEN
-       
-       		v_str :=  ''select '' || notify__callback || '' ('' ||
-       		      notify__task_id || '','' ||
-       		      quote_literal(v_custom_arg) || '','' ||
-       		      notify__user_id || '','' ||
-       		      v_party_from || '','' ||
-       		      quote_literal(v_subject) || '','' ||
-       		      quote_literal(v_body) || '')'';
-       
-       		execute v_str;
-       	else
-       		v_request_id := acs_mail_nt__post_request (
-       ~/packages/intranet-customer-portal/		v_party_from,                 -- party_from
-       		notify__user_id,     	      -- party_to
-       		''f'',                        -- expand_group
-       		v_subject,                    -- subject
-       		v_body,                       -- message
-       		0                             -- max_retries
-       		);
-       	end if;
-       
-       	  return 0; 
-end;' language 'plpgsql';
-	   
 

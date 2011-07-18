@@ -16,14 +16,12 @@
         <vendor url="www.project-open.org">]project-open[</vendor>
         <description format="text/html">Customers can see their current projects, inquire and confirm quotes, upload files etc.</description>
         <maturity>0</maturity>
-
         <provides url="intranet-customer-portal" version="0.1d"/>
-
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="KeyRFQWorkflow"  default="project_approval3_wf" description=""/>
+            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="TempPath"  default="/tmp" description="Temporary path for files uploaded"/>
         </parameters>
-
     </version>
 </package>

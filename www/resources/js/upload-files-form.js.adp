@@ -1,5 +1,4 @@
 // General Settings
-
 var todays_date = Date();
 
 // set local blank image 
@@ -23,7 +22,7 @@ Ext.onReady(function(){
 	Ext.apply(Ext.form.VTypes,{  
 		sourceNotEmpty: function(val, field){  
 		        try {  
-				if ( 0 == field.getValue()) {console.log('sl=0');return false;} else {return true;};  
+				if ( 0 == field.getValue()) {return false;} else {return true;};  
 		        } catch(e) {  
         		    return false;  
         		}        
@@ -33,7 +32,10 @@ Ext.onReady(function(){
 
         sourceLanguageForm = new Ext.FormPanel({
             id: 'sourceLanguageForm_id',
-            renderTo: 'source_language_placeholder',  
+            renderTo: 'source_language_placeholder',
+	    autoHeight: true,
+	    width: 150,
+            style: { "margin-right": "10px" },
           items: [{
                 xtype: 'combo',
 		transform: 'source_language_id',
@@ -75,11 +77,11 @@ Ext.onReady(function(){
 	});
 
 	uploadedFilesStore.load(function(records, operation, success) {
-		console.log('reloading uploadedFilesStore'); 
+		// console.log('reloading uploadedFilesStore'); 
 		if (0 == uploadedFilesStore.getTotalCount()) {
-			document.getElementById('tableUploadedFiles').style.display = 'none';
-			document.getElementById('titleUploadedFiles').style.display = 'none';
-			document.getElementById('sendButtons').style.display = 'none';
+			// document.getElementById('tableUploadedFiles').style.display = 'none';
+			// document.getElementById('titleUploadedFiles').style.display = 'none';
+			// document.getElementById('sendButtons').style.display = 'none';
 		} 
 
 	});
@@ -156,10 +158,11 @@ Ext.onReady(function(){
             id:                 'targetLanguageForm_id',
             renderTo:           'form_target_languages',
             autoHeight:         true,
-            height:             100,
+            height:             170,
+            style: { "margin-right": "10px" },
             items: [{
                 id: 'target_language_id',
-                width: 400,
+                width: 200,
 		xtype: 'boxselect',
 		fieldLabel: 'Target Languages',
 		labelAlign: 'top',
@@ -191,6 +194,7 @@ Ext.onReady(function(){
         // ************** Upload Form *** //
 
 	myuploadform = new Ext.FormPanel({
+	        id: 'upload_file_form',
 		renderTo: 'upload_file_placeholder',
                 fileUpload: true,
                 width: 240,
@@ -219,14 +223,16 @@ Ext.onReady(function(){
 	input_delivery_date = new Ext.form.Date({
 	    id: 'delivery_date',
 	    renderTo: 'delivery_date_placeholder',
-	    fieldLabel: 'Desired Delivery Date',
+	    fieldLabel: 'Delivery Date',
 	    labelAlign: 'top',
-	    labelWidth: 150, 
+	    labelWidth: 100,
+	    width: 100,  
 	    format: 'Y-m-d',
 	    value: new Date(todays_date),
 	    minValue: todays_date,
 	    allowBlank: false,
-	    anchor : '32%'
+	    style: { "margin-right": "10px" }
+	    // anchor : '90%'
 	});
 
         // ************** Form Handling *** //
@@ -237,31 +243,45 @@ Ext.onReady(function(){
 
 		// toDo: Improve
 		var curr_date = input_delivery_date.getValue().getDate();
-		var curr_month = input_delivery_date.getValue().getMonth();
+		var curr_month = input_delivery_date.getValue().getMonth() + 1;
 		var curr_year = input_delivery_date.getValue().getFullYear();
+		// console.log('curr_date: ' + curr_date + ', curr_month:' + curr_month + ', curr_year: ' + curr_year )
+
 		var delivery_date = curr_year + '-' + curr_month + '-' + curr_date;
-		console.log('target_languages:' + target_languages);
+		// console.log('target_languages:' + target_languages);
 
 		if( myuploadform.getForm().isValid() && targetLanguageForm.getForm().isValid() && sourceLanguageForm.getForm().isValid() ){
 			form_action=1;
+			// console.log('delivery_date:' + delivery_date);
 	                myuploadform.getForm().submit({
         	        	url: '/intranet-customer-portal/upload-files-form-action.tcl',
 				params: 'source_language=' + source_language + '&target_languages=' + target_languages + '&delivery_date=' + delivery_date + '&inquiry_id=@inquiry_id;noquote@&security_token=@security_token;noquote@',
                 	        waitMsg: 'Uploading file...',
 				success: function(response){
-		                        document.getElementById('tableUploadedFiles').style.display = 'block';
-                		        document.getElementById('titleUploadedFiles').style.display = 'block';
-		                        document.getElementById('sendButtons').style.display = 'block';
+		                        document.getElementById('tableUploadedFiles').style.visibility='visible';
+                		        document.getElementById('titleUploadedFiles').style.visibility='visible';
+		                        document.getElementById('sendButtons').style.visibility='visible';
+					document.getElementById('btnSendFileandMetaData').innerHTML = 'Add file to this quote'; 
+					myuploadform.remove('upload_file', true);
+					myuploadform.add(new Ext.ux.form.FileUploadField({
+			                    xtype: 'fileuploadfield',
+			                    id: 'upload_file',
+			                    name:  'upload_file',
+			                    emptyText: 'Please select a document ...',
+			                    labelAlign: 'top',
+			                    fieldLabel: 'File to translate',
+			                    buttonText: 'Browse'
+            				}));
 					uploadedFilesStore.load();
 				}, 
 				failure: function(response){
 					Ext.Msg.show({title:'Could not upload file', msg:'<br/>The file you are trying to upload is either too large or you have already uploaded another file with an identical name.'});
-				}, 
+				} 
                  	});
 
 			// reset form values 
-                        targetLanguageForm.getForm().findField('target_language_id').setValue('');
-                        document.getElementById('delivery_date').value = todays_date;
+                        // targetLanguageForm.getForm().findField('target_language_id').setValue('');
+                        // document.getElementById('delivery_date').value = todays_date;
                         myuploadform.getForm().findField('upload_file').setValue('');
                  }
         };
@@ -273,15 +293,21 @@ Ext.onReady(function(){
         // Ext.EventManager.on('cancel', 'click', clickHandlerCancel);
 
 	if ( 1 == @reset_p;noquote@ && 0 == @cancel_p;noquote@ ) {
-		Ext.Msg.show({title:'Thanks for submitting.'});
+		Ext.Msg.show({msg:'Thanks for submitting.'});
 	}	
-        console.log("cancel:@cancel_p;noquote@");
+        // console.log("cancel:@cancel_p;noquote@");
 	if ( 1 == @cancel_p;noquote@ ) {
-                Ext.Msg.show({title:'Your inquiry has been deleted'});
+                Ext.Msg.show({
+			msg:'Your inquiry and all uploaded files have been deleted',
+			buttons: Ext.MessageBox.OK,
+			closable:true
+		});
 	}
 	// console.log("store size: " + uploadedFilesStore.getTotalCount());
+	document.getElementById('tableUploadedFiles').style.visibility='hidden';
+	document.getElementById('titleUploadedFiles').style.visibility='hidden';
+	document.getElementById('sendButtons').style.visibility='hidden';
 });
-
 
 
 

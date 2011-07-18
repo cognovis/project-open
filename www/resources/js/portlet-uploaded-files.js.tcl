@@ -23,12 +23,7 @@ ad_page_contract {
 } {
     { security_token "" }
     { inquiry_id "" }
-    { reset_p "" }
-    { cancel_p "" }
 }
-
-# ad_return_complaint 1 "KHD: inquiry_id: $inquiry_id"
-
 
 # ---------------------------------------------------------------
 # Security 
@@ -40,9 +35,6 @@ ad_page_contract {
 # Settings
 # ---------------------------------------------------------------
 
-if { ""==$reset_p } { set reset_p 0 }
-if { ""==$cancel_p } { set cancel_p 0 }
-
 # ---------------------------------------------------------------
 # Build form 
 # ---------------------------------------------------------------
@@ -53,5 +45,7 @@ if { ""==$cancel_p } { set cancel_p 0 }
 # set type to JS
 ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"
 
+# Get temp path for link 
+set temp_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
 
 
