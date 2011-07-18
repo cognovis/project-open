@@ -218,13 +218,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			// Tell the store to update the server via it's REST proxy
 			ticketModel.save({
 				scope: Ext.getCmp('ticketForm'),
-				success: function() {
+				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.loadTicket(ticketModel);
 				},
-				failure: function() {
-					alert('Failed to save ticket');
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}

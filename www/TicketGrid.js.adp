@@ -338,7 +338,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			ticketStore.remove(ticketModel);
     		},
 		failure: function(record, operation) {
-			alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.');
+			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
     		}
 	});
     }

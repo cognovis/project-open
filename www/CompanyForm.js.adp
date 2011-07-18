@@ -23,7 +23,7 @@
  */
 
 
-var ticketForm = Ext.define('TicketBrowser.CompanyForm', {
+var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 	extend: 	'Ext.form.Panel',	
 	alias: 		'widget.companyForm',
 	id:		'companyForm',
@@ -147,13 +147,13 @@ var ticketForm = Ext.define('TicketBrowser.CompanyForm', {
 			// Tell the store to update the server via it's REST proxy
 			companyModel.save({
 				scope: Ext.getCmp('companyForm'),
-				success: function() {
+				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('companyCompoundPanel');
 					compoundPanel.loadCompany(companyModel);
 				},
-				failure: function() {
-					alert('Failed to save company');
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save company', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
 		}

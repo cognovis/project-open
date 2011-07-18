@@ -44,7 +44,7 @@ Ext.data.StoreManager.addListener('add', function(index, store, key) {
 var employeeMembershipRelStore = Ext.create('Ext.data.Store', {
 	storeId:	'employeeMembershipRelStore',
 	model:		'TicketBrowser.EmployeeMembershipRel',
-	autoLoad: 	true,			// Load ASAP
+	autoLoad: 	false,			// Load ASAP
 	remoteSort:	false,			// Doesn't need sorting
 	remoteFilter:	false,			// Doesn't need filtering
 	pageSize: 	1000000			// Load entire table

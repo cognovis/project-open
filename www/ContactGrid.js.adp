@@ -113,5 +113,94 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		store:		userStore,
 		dock:		'bottom',
 		displayInfo:	true
-	}]
+	}],
+
+	// Called from ContactFilterForm in order to limit the list of
+	// contacts according to filter variables.
+	// filterValues is a key-value list (object).
+	filterContacts: function(filterValues){
+		var store = this.store;
+		var proxy = store.getProxy();
+		var value = '';
+		var query = '1=1';
+	
+		// delete filters added by other accordion filters
+		delete proxy.extraParams['query'];
+	
+		// Apply the filter values directly to the proxy.
+		// This only works if the filters are named according
+		// to the REST interface specs.
+		for(var key in filterValues) {
+			if (filterValues.hasOwnProperty(key)) {
+	
+				value = filterValues[key];
+				if (value == '' || value == undefined || value == null) {
+					// Delete the filter
+					delete proxy.extraParams[key];
+				} else {
+		
+					// special treatment for special filter variables
+					switch (key) {
+					case 'vat_number':
+						// The customer's VAT number is not part of the REST
+						// contact fields. So translate into a query:
+						value = value.toLowerCase();
+						query = query + ' and person_id in (select person_id from persons where lower(vat_number) like \'%' + value + '%\')';
+						key = 'query';
+						value = query;
+						break;
+					case 'contact_type_id':
+						// The customer's contact type is not part of the REST contact fields.
+						query = query + ' and person_id in (select person_id from persons where contact_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
+						key = 'query';
+						value = query;
+						break;
+					case 'contact_name':
+						// The customer's contact name is not part of the REST
+						// contact fields. So translate into a query:
+						value = value.toLowerCase();
+						query = query + ' and person_id in (select person_id from persons where lower(contact_name) like \'%' + value + '%\')';
+						key = 'query';
+						value = query;
+						break;
+					case 'start_date':
+						// I can't get the proxy to quote (') the date, so we do it manually here:
+						var	year = '' + value.getFullYear(),
+							month =  '' + (1 + value.getMonth()),
+							day = '' + value.getDate();
+						if (month.length < 2) { month = '0' + month; }
+						if (day.length < 2) { day = '0' + day; }
+						value = '\'' + year + '-' + month + '-' + day + '\'';
+						// console.log(value);
+						query = query + ' and contact_creation_date >= ' + value;
+						key = 'query';
+						value = query;
+						break;
+					case 'end_date':
+						// I can't get the proxy to quote (') the date, so we do it manually here:
+						var	year = '' + value.getFullYear(),
+							month =  '' + (1 + value.getMonth()),
+							day = '' + value.getDate();
+						if (month.length < 2) { month = '0' + month; }
+						if (day.length < 2) { day = '0' + day; }
+						value = '\'' + year + '-' + month + '-' + day + '\'';
+						// console.log(value);
+						query = query + ' and contact_creation_date <= ' + value;
+						key = 'query';
+						value = query;
+						break;
+					break;
+					}
+		
+					// Save the property in the proxy, which will pass it directly to the REST server
+					proxy.extraParams[key] = value;
+				}
+			}
+		}
+		
+		store.loadPage(1);
+	}
+
+
+
 });

@@ -368,14 +368,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			ticket_record.save({
 				scope: 			Ext.getCmp('ticketFormRight'),
 				messageProperty:	'message',
-				success: function() {
+				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.loadTicket(ticket_record);
 				},
-				failure: function(model, operation) {
-					var err = operation.getError();
-					alert('Failed to save ticket: ' + err);
+				failure: function(record, operation) {
+					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.loadTicket(ticket_record);
 				}
