@@ -31,6 +31,7 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 	frame:		true,
 	title: 		'#intranet-core.Contact#',
 	bodyStyle:	'padding:5px 5px 0',
+	minHeight:	250,
 	fieldDefaults: {
 		msgTarget: 'side',
 		labelWidth: 75
@@ -145,7 +146,7 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 				failure: function(record, operation) {
 					Ext.Msg.alert("Error durante la creacion de un nuevo contact", operation.request.scope.reader.jsonData["message"]);
 					// Re-enable this form
-					Ext.getCmp('contactForm').setDisabled(true);
+					Ext.getCmp('contactForm').setDisabled(false);
 
 					// Return to the main contacts Tab
 					var contactContainer = Ext.getCmp('contactContainer');
@@ -197,45 +198,6 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 	newContact: function() {
 	        var form = this.getForm();
 	        form.reset();
-
-		// Ask the server to provide a new contact name
-		this.setNewContactName();		
-
-		// Set the creation data of the new contact
-		Ext.Ajax.request({
-			scope:	this,
-			url:	'/intranet-sencha-ticket-tracker/today-date-time',
-			success: function(response) {		// response is the current date-time
-				var form = this.getForm();
-				var date_time = response.responseText;
-				form.findField('contact_creation_date').setValue(date_time);
-			}
-		});
-
-		// Set the default value for contact_type
-		var form = this.getForm();
-		form.findField('contact_type_id').setValue('10000191');
-	},
-	
-	// Determine the new of the new contact. Send an async AJAX request
-	// to the server and tell the callback to insert the new contact number
-	// into the contact_name field in this form.
-	setNewContactName: function() {
-	    Ext.Ajax.request({
-		scope:	this,
-		url:	'/intranet-sencha-ticket-tracker/contact-next-nr',
-		success: function(response) {
-		    // contact-next-nr just returns a string which represents the name
-		    var contact_nr = response.responseText;
-		    var form = this.getForm();
-		    form.findField('project_nr').setValue(contact_nr);
-		    var contact_name = '#intranet-sencha-ticket-tracker.New_Contact_Prefix#' + contact_nr;
-		    form.findField('contact_name').setValue(contact_name);
-		},
-		failure: function(response) {
-		    alert('#intranet-sencha-ticket-tracker.Failed_to_get_new_contact_nr#');
-		}
-	    });
 	}
 });
 

@@ -236,12 +236,32 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		});
 	},
 
+	// The user has pressed the "New" button.
+	// Tell the ContactForm to clean the data
 	onNew: function() {
-		alert('ContactGrid.onNew() not implemented yet');
+		var contactForm = Ext.getCmp('contactForm');
+		contactForm.newContact();
 	},
 
+	// The user has pressed the "Delete" button in the contact list page
 	onDelete: function() {
-		alert('ContactGrid.onDelete() not implemented yet');
+
+		// Get the selected user (only one!)
+		var selection = this.selModel.getSelection();
+		var userModel = selection[0];
+
+		// Delete the user. This triggers a DELETE server request
+		userModel.destroy({
+			success: function(record, operation) {
+				contactGridStore.remove(userModel);
+				userStore.remove(userModel);
+			},
+			failure: function(record, operation) {
+				Ext.Msg.alert('Error borrando User #'+userModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar users.', operation.request.scope.reader.jsonData["message"]);
+			}
+		});
+
+
 	},
 
 	onCopy: function() {
