@@ -27,7 +27,7 @@ ad_page_contract {
 # Security & Defaults
 # ---------------------------------------------------------------
 
-set page_title "Project Wizard"
+set page_title "Request for Quote"
 set show_navbar_p 0
 set show_left_navbar_p 0
 set anonymous_p 1
@@ -77,7 +77,13 @@ if { "" != $security_token } {
 	#	append company_placeholder $option_str
 	#	append company_placeholder </select>
     	#  elseif  1 == $ctr 
-	
+
+        if { [catch {
+	    db_1row get_company_data $column_sql
+        } err_msg] } {
+            ad_return_complaint 1 "We could not find a company for your account. Please get in touch with your 'Key Account Manager'"
+        }
+
 	db_1row get_company_data $column_sql 
 
 	set company_placeholder "<span style='font-weight: bold'>Company:&nbsp;</span>"
@@ -140,5 +146,9 @@ set source_language_combo [im_trans_language_select -include_country_locale $inc
 # Add customer registration
 # ---------------------------------------------------------------
 
+if { "" == $reset_p } { set reset_p 0 }
+if { "" == $cancel_p } { set cancel_p 0 }
+
 template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset_p&cancel_p=$cancel_p" -order 2
+
 

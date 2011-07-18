@@ -51,23 +51,26 @@ if { $max_n_bytes && ($filesize > $max_n_bytes) } {
     # set util_commify_number_max_n_bytes [util_commify_number $max_n_bytes]
     # ad_return_complaint 1 "[_ intranet-translation.lt_Your_file_is_larger_t_1]"
     # ad_script_abort
-    ns_return 200 text/html "\{\"success\":false\}"
+    ns_return 406 text/html "\{\"success\":false\}"
 }
 
 if { [db_string get_view_id "select count (*) from im_inquiries_files where file_name='$upload_file' and inquiry_id = :inquiry_id" -default 0] } {
-    ns_return 200 text/html "\{\"success\":false\}"
+    ns_log NOTICE "KHD: File already exists"
+    ns_return 406 text/html "\{\"success\":false\}"
+    ad_script_abort
 }
+
 
 # -------------------------------------------------------------------
 # Copy the uploaded file into the template filestorage
 # -------------------------------------------------------------------
 
-ns_log NOTICE "KHD: $temp_path/$security_token/$upload_file"
+ns_log NOTICE "KHD: Now copying file: $temp_path/$security_token/$upload_file"
 
 if { [catch {
     ns_cp $tmp_filename "$temp_path/$security_token/$upload_file"
 } err_msg] } {
-    ns_return 200 text/html "\{\"success\":false\}"
+    ns_return 406 text/html "\{\"success\":false\}"
 }
 
 # -------------------------------------------------------------------

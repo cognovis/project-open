@@ -20,32 +20,31 @@ ad_page_contract {
     {inquiry_id ""}
 }
 
+
 # ---------------------------------------------------------------
-# Create a table that shows all files already uploaded
+# Returns inquiries as JSON 
 # ---------------------------------------------------------------
 
-if { "" != $inquiry_id } {
 
-    db_1row get_cnt "select count(*) as files_count from im_inquiries_files where inquiry_id=:inquiry_id"
+db_1row get_cnt "select count(*) as inquiries_count from im_inquiries_customer_portal"
 
-    set row_count 0
-    db_multirow files file_query {
+set row_count 0
+
+
+db_multirow -extend { prospect_project_type } inquiries inquiries_query {
         select
-                i.*,
-                (select project_name from im_projects where project_id=i.project_id) as project_name
+                inquiry_id, 
+    		(first_names || ' ' || last_names) as name, 
+		email, 
+		company_name,
+		phone
         from
-                im_inquiries_files i
-        where
-                i.inquiry_id = :inquiry_id
-    } {
+                im_inquiries_customer_portal
+} {
 	incr row_count
-	set target_lang_lst [split "$target_languages" ","]
-	set abbrev_target_lang_lst [list]
-
-	foreach j $target_lang_lst {
-	    lappend abbrev_target_lang_lst "[im_category_from_id $j]"
-	}
-	set target_languages [join $abbrev_target_lang_lst ", "]
-    }
+	set email "\"$email\""
+    	if { ""==$company_name } {
+		set company_name "\"not defined\""
+    	}
 }
 

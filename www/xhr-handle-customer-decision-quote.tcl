@@ -45,6 +45,7 @@ if { "rejected" == $decision  } {
     set attribute_value t
 }
 
+
 set workflow_key [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "KeyRFQWorkflow" -default "project_approval3_wf"]
 set case_id [db_string get_case_id "select case_id from wf_cases where workflow_key='$workflow_key' and object_id=:project_id" -default 0]
 

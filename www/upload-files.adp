@@ -1,11 +1,17 @@
 <master src="@master_file;noquote@">
 <property name="title">@page_title;noquote@</property>
 <property name="show_left_navbar_p">@show_left_navbar_p;noquote@</property>
+<property name="main_navbar_label">intranet_customer_portal</property>
+
+  <!--[if IE]>
+	<style type="text/css">
+	#source_language_placeholder { margin-top: -12px }
+    	</style>
+  <![endif]-->
+
 <!--@company_placeholder;noquote@-->
-<h1>Request for Quote:</h1>
-
 <!--<p>Please upload the files and provide the relevant information. Once you have uploaded all files, please click "Request Quote" to send your inquiry.</p>-->    
-
+<br><br>
 <if @anonymous_p@ false>
 <!--
 <td valign="top">
@@ -20,88 +26,62 @@
 </td>-->
 </if>
 
-<table>
-<tr>
-	<td><b><!--Upload Files:--></b></td>	
-	<td></td>
-	<td><b><span id='titleUploadedFiles'>Files already uploaded for this RFQ:</b></span></td>
-</tr>
-<tr><td colspan="3">&nbsp;</td></tr><tr>
-<td align='top'>
-	<div id="upload-form">
-	<table>
-	<tr>
-		<td>
-		    <div id='delivery_date_placeholder'></div>
-		</td>
-		<td>
-		    <div id="upload_file_placeholder"></div>
 
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2">
-		    <form id="form_source_language">@source_language_combo;noquote@<div id="source_language_placeholder"></div></form>
-		</td>
-	</tr>
-	<tr>
-	<td colspan='2'>
-		    <div id="form_target_languages"></div>    
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+	<td> 
+		<!-- Upload Form -->
+		<div id="upload-form">
+			<table border="0">
+			<tr>
+				<td valign="top"><div id="upload_file_placeholder"></div> </td>
+				<td valign="top"><div id='delivery_date_placeholder'></div> </td>
+				<td valign="top"><form id="form_source_language">@source_language_combo;noquote@<div id="source_language_placeholder"></div></form> </td>
+				<td valign="top"><div id="form_target_languages"</div> </td>
+				<td valign="top"><div class="buttons" style="margin-top: 20px"><button id="btnSendFileandMetaData">Upload file</button></div></td>
+			</tr>
+			</table>
+		</div>
 	</td>
-	</tr>
-	<tr><td>&nbsp;</td></tr>
-
-	<tr>
-		<td colspan="2" align="center">
-	
-	<div class="buttons"><button id="btnSendFileandMetaData">Upload file</button></div>
-		</td>
-	</tr>
-	</table>
-	</div>
-</td>
-	<td>&nbsp;&nbsp;</td>
-<td align='top'>
-	<span id='tableUploadedFiles'>
-	<table cellpadding="0" cellspacing="0" border="0">
-		<tr>
-		<td><div id="grid_uploaded_files"></div></td>
-		</tr>
-	</table>
-	</span>
-
-</td>
 </tr>
 
-<tr><td><br><br></td></tr>
+</table>
 
-<tr>
-<td colspan="3" align="center">
+<!-- File Viewer & Comments --> 
+<br><br>
+
 <span id='sendButtons' class="buttons">
 <form id="form_request_quote" name="form_request_quote" action="/intranet-customer-portal/upload-files-action" method="post">
-	
-<table>
-<tr>
-	<td>
-		<b>Comments:</b><br><br><textarea name="comment" cols="40" rows="10"></textarea><br><br>
-	</td>
-</tr>
-<tr>
-	<td>
+
 	<input type="hidden" name="security_token" value="@security_token;noquote@"> 
 	<input type="hidden" name="inquiry_id" value="@inquiry_id;noquote@"> 
 	<input type="hidden" name="btn_value" value=""> 
-	<input name="btnSubmit" type="button" id="btnSubmit" value="Done, Request Quote" onclick="document.forms['form_request_quote'].btn_value.value='submit'; document.forms['form_request_quote'].submit();">&nbsp;
-	<input name="btnCancel" type="button" id="btnCancel" value="Cancel and remove all files" onclick="document.forms['form_request_quote'].btn_value.value='cancel'; document.forms['form_request_quote'].submit();"
+
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+	<td valign="top"><span id='titleUploadedFiles'><b>Files already uploaded for this RFQ:</b></span></td>
+        <td>&nbsp;&nbsp;&nbsp;</td>
+	<td valign="top"><b>Comments:</b><td>
+</tr>
+<tr>
+        <td colspan="3">&nbsp;&nbsp;&nbsp;</td>
+</tr>
+
+<tr>
+        <td valign="top">
+		<!-- File Viewer --> 
+		<span id='tableUploadedFiles'><div id="grid_uploaded_files"></div></span>
 	</td>
+	<td></td>
+        <td valign="top" align="center">
+		<textarea name="comment" cols="50" rows="14"></textarea><br><br>	
+		<input name="btnSubmit" type="button" id="btnSubmit" value="Send quote request" onclick="document.forms['form_request_quote'].btn_value.value='submit'; document.forms['form_request_quote'].submit();">&nbsp;
+		<input name="btnCancel" type="button" id="btnCancel" value="Cancel" onclick="document.forms['form_request_quote'].btn_value.value='cancel'; document.forms['form_request_quote'].submit();"
+        </td>
 </tr>
-</table>
 
+</table>
 </form>
-</span>
-
-</td>
-</tr>
-</table>
+</span>		
 
 <div id="sidebar"></div>

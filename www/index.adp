@@ -1,6 +1,6 @@
 <master src="../../intranet-customer-portal/www/master">
 <property name="title">@page_title;noquote@</property>
-
+<property name="show_left_navbar_p">0</property>
 
 <br><br><br><br><br><br><br>
 <div id="dummy" align="center" widt="100%">

@@ -27,37 +27,11 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 
 set where_clause ""
-if {[im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id]} {
-	set where_clause "
-	"
+if { ![im_profile::member_p -profile_id [im_employee_group_id] -user_id $user_id] } {
+	set where_clause "and user_id = :user_id"
 }
 
-db_1row get_cnt "
-        select
-		count(*) as inquiries_count
-        from
-        (
-                select
-                        inquiry_id,
-                        title,
-                        inquiry_date,
-                        status_id,
-                        project_id
-                from
-                        im_inquiries_customer_portal
-		where 
-			status_id <> 380 and status_id <> 77
-
-        ) as i
-        left outer join
-                im_costs
-        on
-                i.project_id = im_costs.project_id
-"
-
-set row_count 0
-
-db_multirow -extend { id action_column} inquiries inquiries_query {
+set inquiries_query "
         select
                 i.inquiry_id,
 		i.user_id,
@@ -90,14 +64,20 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
                 from
                         im_inquiries_customer_portal
                 where
-                        status_id <> 380 and status_id <> 77
+                        status_id <> 380 
+			and status_id <> 77
+			$where_clause 		
         ) as i
 
         left outer join
                 im_costs
         on
                 i.project_id = im_costs.project_id
-} {
+
+"
+
+set row_count 0
+db_multirow -extend { id action_column} inquiries inquiries_query $inquiries_query {
 	set action_column ""
 	set id [expr $row_count + 1 ]
     	set status_id [im_category_from_id $status_id]
@@ -116,3 +96,4 @@ db_multirow -extend { id action_column} inquiries inquiries_query {
 	incr row_count
 }
 
+set inquiries_count $row_count

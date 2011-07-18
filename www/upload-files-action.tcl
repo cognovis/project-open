@@ -20,6 +20,7 @@ ad_page_contract {
     {security_token ""}
     {inquiry_id ""}
     {btn_value ""}
+    {comment ""}
 }
 
 # ---------------------------------------------------------------
@@ -40,10 +41,11 @@ if { "" != $security_token } {
     }
     set master_file "../../intranet-customer-portal/www/master"
 } else {
-    set user_id [ad_maybe_redirect_for_registration]
     set anonymous_p 0
     set master_file "../../intranet-core/www/master"
 }
+
+set user_id [ad_maybe_redirect_for_registration]
 
 # Load Sencha libs 
 template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
@@ -74,8 +76,9 @@ if { "submit"==$btn_value } {
 
 	# Create Parent Project if more than one source language 
 
-        set project_name "RFQ Customer Portal #$inquiry_id"
-        set project_nr "rfq_customer_portal_$inquiry_id"
+        set project_name "RFQ #$inquiry_id"
+        # set project_nr "rfq_customer_portal_$inquiry_id"
+	set project_nr [im_next_project_nr -customer_id $company_id]
 	set project_path $project_nr
 
 	if { 1 < [db_string i "select count(*) from im_inquiries_files where inquiry_id = :inquiry_id" -default 0] } {
@@ -87,30 +90,35 @@ if { "submit"==$btn_value } {
 			-company_id         $company_id \
 			-project_type_id    $project_type_id \
 			-project_status_id  $project_status_id \
-			-start_date         $day_today \
-   		        -end_date           $day_today \
 			      ]
-		set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
+		# 
+		# set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
+	    	set title $project_name		
 		db_dml update "update im_inquiries_customer_portal set (project_id, title, status_id) = ($parent_id, '$title', 72) where inquiry_id = :inquiry_id"
-		db_dml update "update im_projects set start_date='$day_today', end_date = '$day_today' where project_id = $project_id"
+		db_dml update "update im_projects set start_date='$day_today', end_date = '$day_today' where project_id = $parent_id"
 		set multiple_documents_p 1
+		im_biz_object_add_role $user_id $parent_id "1300"
 	}
 
         set sql "
-                select * from im_inquiries_files where inquiry_id = :inquiry_id
+                select * from im_inquiries_files where inquiry_id = :inquiry_id order by source_language; 
         "
 
 	set ctr 0
 
 	# Create a project for each source language in the RFQ
-	db_foreach col $sql {
-
-	    set project_name "RFQ Customer Portal #$inquiry_id/$inquiry_files_id"   
-	    set project_nr "rfq_customer_portal_" 
-	    append project_nr $inquiry_id "_" $inquiry_files_id    
-	    set project_path $project_nr
+	db_foreach source_language $sql {
 
 	    if { ![info exists lang_hash($source_language)] } {
+			set project_name "RFQ #$inquiry_id/$inquiry_files_id"   
+			# set project_nr "rfq_customer_portal_" 
+			set project_nr [im_next_project_nr -customer_id $company_id]
+
+			# append project_nr $inquiry_id "_" $inquiry_files_id    
+			append project_nr "_" $inquiry_id "_" $inquiry_files_id    
+
+			set project_path $project_nr
+
 			set lang_hash($source_language) 1
 		        set project_id ""
 		        catch {
@@ -136,6 +144,8 @@ if { "submit"==$btn_value } {
 
 				set parent_id $project_id
 			    }
+			    im_biz_object_add_role $user_id $parent_id "1300"
+
 			    set source_language_id [im_id_from_category "$source_language" "Intranet Translation Language"]
 			    db_dml update "update 
 						im_projects 
@@ -144,7 +154,7 @@ if { "submit"==$btn_value } {
 					   where 
 						project_id = $project_id
 			    "
-
+			    
 			    } err_msg
 
 		        if {0 == $project_id || "" == $project_id} {
@@ -164,22 +174,75 @@ if { "submit"==$btn_value } {
         		    "
 			    ad_script_abort
 		        }  
+
+			set message "test - mail - body"
+
+			notification::new \
+			    	-type_id [notification::type::get_type_id -short_name "inquiry_notif"] \
+				-object_id $project_id \
+			        -response_id "" \
+			        -notif_subject "test mail subject" \
+			        -notif_text $message
 			
+		        set type_id [notification::type::get_type_id -short_name "inquiry_notif"]
+			set interval_id [notification::get_interval_id -name "instant"]
+        		set delivery_method_id [notification::get_delivery_method_id -name "email"]
+
+		        notification::request::new \
+		            -type_id $type_id \
+		            -user_id $user_id \
+		            -object_id $project_id \
+		            -interval_id $interval_id \
+		            -delivery_method_id $delivery_method_id
+
 			# There's only one doc in the RFQ -> no parent project 
 			if { !$multiple_documents_p } {
-				set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
+				# set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
+			    	set title $project_name
 	                	db_dml update "update im_inquiries_customer_portal set (project_id,title, status_id) = ($project_id, '$title',72 ) where inquiry_id = :inquiry_id"
 			}
 			set destination_path_project $destination_path 
 			append destination_path_project "/$project_nr/0_source_$source_language"
 			file mkdir $destination_path_project 
-	    } else {
+
+			# Create forum 
+			if { "" != $comment } {
+
+			    set topic_type_id 1108
+			    set forum_object_id $parent_id
+			    set today [db_string get_sysdate "select sysdate from dual"]
+			    set topic_id [db_nextval "im_forum_topics_seq"]		
+
+		            db_dml topic_insert "
+                		insert into im_forum_topics (
+		                        topic_id, object_id, topic_type_id,topic_status_id, owner_id, subject
+                	     	) values (
+	                        	:topic_id, :forum_object_id, :topic_type_id, 1200, $user_id, 'Comment made by client'
+                	     	)
+            		    "
+			    db_dml topic_update "
+			        update im_forum_topics set
+			                posting_date=:today,
+			                owner_id=$user_id,
+			                scope='pm',
+			                message=:comment,
+			                priority=5,
+			                asignee_id=0
+			        where topic_id=:topic_id
+        		    "
+
+
+
+
+			}
+
+	    } else {	
 		set destination_path_project $destination_path 
 		append destination_path_project "/$project_nr/0_source_$source_language"
 	    }
 
 	    if { [catch {
-		ns_log NOTICE "KHD: $temp_path/$security_token/$file_name" --> $destination_path_project/$file_name" 
+		ns_log NOTICE "KHD: Copy file to Project Folder: $temp_path/$security_token/$file_name" --> $destination_path_project/$file_name" 
 		ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$file_name"
 	    } err_msg] } {
 		ns_log NOTICE "Error copying file: $err_msg" 
