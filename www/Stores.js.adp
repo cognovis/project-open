@@ -147,7 +147,13 @@ var userStore = Ext.create('PO.data.UserStore', {
 userStore.load(
 	function(record, operation) {
 		// This code is called once the reply from the server has arrived.
-		userStore.sort('name');
+		userStore.sort([{
+			property: 'first_names',
+			direction: 'ASC'
+		}, {
+			property: 'last_name',
+			direction: 'ASC'
+		}]);
 
 		// Now we can load (re-load possibly?) the child stores
 		// The child stores will be sorted in the same order as userStore

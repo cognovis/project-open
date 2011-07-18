@@ -54,7 +54,7 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 			}
 		}
 	}, {
-		name: 'first_name', 
+		name: 'first_names', 
 		fieldLabel: '#intranet-core.First_names#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
@@ -119,7 +119,7 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 		var filterValues = form.getFieldValues();
 		var grid = Ext.getCmp('contactGrid');
 	
-		grid.filterCompanies(filterValues);
+		grid.filterContacts(filterValues);
 	},
 
 	afterRender: function() {
