@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.9 2011/07/15 18:13:35 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.10 2011/07/18 12:05:29 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,6 +23,20 @@
  */
 
 
+var companyGridStore = Ext.create('PO.data.CompanyStore', {
+	storeId: 'companyGridStore',
+	model: 'TicketBrowser.Company',
+	remoteSort: true,
+	remoteFilter:	true,
+	pageSize: 20,
+	autoSync: true,				// Write changes to the REST server ASAP
+	autoLoad: true,
+	sorters: [{
+		property: 'company_name',
+		direction: 'ASC'
+	}]
+});
+
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE'
 });
@@ -32,7 +46,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	alias:		'widget.companyGrid',
 	id:		'companyGrid',
 	minHeight:	200,
-	store:		companyStore,
+	store:		companyGridStore,
 	selModel:	companyGridSelModel,
 
 	listeners: {
@@ -106,7 +120,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		}] 
 	}, {
 		xtype: 'pagingtoolbar',
-		store: companyStore,
+		store: companyGridStore,
 		dock: 'bottom',
 		displayInfo: true
 	}],

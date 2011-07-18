@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactFilterForm.js.adp,v 1.1 2011/07/18 11:26:17 po34demo Exp $
+ * @cvs-id $Id: ContactFilterForm.js.adp,v 1.2 2011/07/18 12:05:29 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -54,7 +54,7 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 			}
 		}
 	}, {
-		name: 'first_name', 
+		name: 'first_names', 
 		fieldLabel: '#intranet-core.First_names#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
@@ -119,7 +119,7 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 		var filterValues = form.getFieldValues();
 		var grid = Ext.getCmp('contactGrid');
 	
-		grid.filterCompanies(filterValues);
+		grid.filterContacts(filterValues);
 	},
 
 	afterRender: function() {

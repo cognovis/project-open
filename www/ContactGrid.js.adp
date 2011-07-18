@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.11 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.12 2011/07/18 12:05:29 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -23,6 +23,27 @@
  */
 
 
+// This store is similar to userStore but needs to be separated
+// because it will be filtered. Also, it is paged, while userStore
+// contains all users in the system.
+var contactGridStore = Ext.create('PO.data.UserStore', {
+	storeId:	'contactGridStore',
+	model:		'TicketBrowser.User',
+	remoteSort:	false,
+	remoteFilter:	true,
+	autoLoad: 	false,			// Don't load manually
+	autoSync: 	true,			// Write changes to the REST server ASAP
+	pageSize: 	20,			// 
+	sorters: [{
+		property: 'first_names',
+		direction: 'ASC'
+	}, {
+		property: 'last_name',
+		direction: 'ASC'
+	}]
+});
+
+
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE'
 });
@@ -33,7 +54,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 	alias:		'widget.contactGrid',
 	id:		'contactGrid',
 	minHeight:	200,
-	store:		userStore,
+	store:		contactGridStore,
 	selModel:	contactGridSelModel,
 
 	listeners: {
@@ -110,7 +131,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		}] 
 	}, {
 		xtype:		'pagingtoolbar',
-		store:		userStore,
+		store:		contactGridStore,
 		dock:		'bottom',
 		displayInfo:	true
 	}],
@@ -141,25 +162,31 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		
 					// special treatment for special filter variables
 					switch (key) {
-					case 'vat_number':
-						// The customer's VAT number is not part of the REST
-						// contact fields. So translate into a query:
+					case 'first_names':
+						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and person_id in (select person_id from persons where lower(vat_number) like \'%' + value + '%\')';
+						query = query + ' and lower(first_names) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;
-					case 'contact_type_id':
-						// The customer's contact type is not part of the REST contact fields.
-						query = query + ' and person_id in (select person_id from persons where contact_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
+					case 'last_name':
+						// Fuzzy search
+						value = value.toLowerCase();
+						query = query + ' and lower(last_name) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;
-					case 'contact_name':
-						// The customer's contact name is not part of the REST
-						// contact fields. So translate into a query:
+					case 'last_name2':
+						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and person_id in (select person_id from persons where lower(contact_name) like \'%' + value + '%\')';
+						query = query + ' and lower(last_name2) like \'%' + value + '%\'';
+						key = 'query';
+						value = query;
+						break;
+					case 'email':
+						// Fuzzy search
+						value = value.toLowerCase();
+						query = query + ' and lower(email) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;
@@ -198,9 +225,14 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			}
 		}
 		
-		store.loadPage(1);
+		// Load the filtered user store
+		store.load({
+			scope: this,
+			callback: function(record, operation) {
+				if (!operation.wasSuccessful()) {
+					Ext.Msg.alert('Error buscando por un contacto', operation.request.scope.reader.jsonData["message"]);
+				}
+			}
+		});
 	}
-
-
-
 });

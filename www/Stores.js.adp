@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.39 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id: Stores.js.adp,v 1.40 2011/07/18 12:05:29 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -147,7 +147,13 @@ var userStore = Ext.create('PO.data.UserStore', {
 userStore.load(
 	function(record, operation) {
 		// This code is called once the reply from the server has arrived.
-		userStore.sort('name');
+		userStore.sort([{
+			property: 'first_names',
+			direction: 'ASC'
+		}, {
+			property: 'last_name',
+			direction: 'ASC'
+		}]);
 
 		// Now we can load (re-load possibly?) the child stores
 		// The child stores will be sorted in the same order as userStore
