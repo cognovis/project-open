@@ -18,20 +18,20 @@ ad_page_contract {
     {department_id ""}
     {budget "0"}
     {budget_hours "0"}
-    {budget_hours_explanation ""}
+    {budget_hours_explanation:html ""}
     {economic_gain "0"}
-    {economic_gain_explanation ""}
+    {economic_gain_explanation:html ""}
     {single_costs "0"}
-    {single_costs_explanation ""}
+    {single_costs_explanation:html ""}
     {annual_costs "0"}
-    {annual_costs_explanation ""}
+    {annual_costs_explanation:html ""}
     {investment_costs "0"}
-    {investment_costs_explanation ""}
+    {investment_costs_explanation:html ""}
 } -properties {
 } -validate {
 } -errors {
 }
-
+ns_log Notice "BUDGET ACTION $action"
 switch $action {
     get_budget {
 
@@ -120,6 +120,7 @@ switch $action {
         ns_return 200 text/text $json
     }
     save_budget {
+        ns_log Notice "SAVING BUDGET"
         content::revision::new -item_id $budget_id \
             -attributes [list \
                              [list budget $budget] \
