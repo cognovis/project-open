@@ -28,15 +28,15 @@ ad_proc -public im_list_rfqs_component {} {
 
     set user_id [ad_get_user_id]
 
-    # Include sencha libs 
-    template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-    template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
-
-    # CSS Adjustemnts to ExtJS
-    template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
-
-    # Include Component JS
-    template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 2
+    if {[im_openacs54_p]} {
+        # Include sencha libs
+        template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
+        template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+        # CSS Adjustemnts to ExtJS
+        template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+        # Include Component JS
+        template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
+    }
 
     set html_output "<div id='gridRFQ'></div><br>"
 
@@ -54,16 +54,16 @@ ad_proc -public im_list_financial_documents_component {} {
 } {
 
     set user_id [ad_get_user_id]
+    if {[im_openacs54_p]} {
+	# Include sencha libs
+	template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
+	template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+	# CSS Adjustemnts to ExtJS
+	template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+	# Include Component JS
+	template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
+    }
 
-    # Include sencha libs
-    template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-    template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
-
-    # CSS Adjustemnts to ExtJS
-    template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
-
-    # Include Component JS
-    template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
 
     set html_output "<div id='gridFinancialDocuments'></div><br>"
 
