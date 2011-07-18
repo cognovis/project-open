@@ -1344,7 +1344,7 @@ ad_proc -public im_helpdesk_related_tickets_component {
 # ---------------------------------------------------------------
 
 ad_proc im_ticket_nuke {
-    {-user_id 0}
+    {-current_user_id 0}
     ticket_id
 } {
     Nuke (complete delete from the database) a ticket.
@@ -1352,6 +1352,6 @@ ad_proc im_ticket_nuke {
     string otherwise.
 } {
     ns_log Notice "im_ticket_nuke ticket_id=$ticket_id"
-    return [im_project_nuke -user_id $user_id $ticket_id]
+    return [im_project_nuke -current_user_id $current_user_id $ticket_id]
 }
 
