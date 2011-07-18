@@ -49,6 +49,6 @@ set return_url "/intranet-customer-portal/upload-files"
 # ---------------------------------------------------------------
 # Add customer registration
 # ---------------------------------------------------------------
-
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/customer-registration-form.js" -order "2"
-
+if {[im_openacs54_p]} {
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/customer-registration-form.js" -order "2"
+}

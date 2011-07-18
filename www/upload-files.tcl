@@ -112,16 +112,18 @@ if { "" != $security_token } {
     }
 }
 
-# Load Sencha libs 
-template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+if {[im_openacs54_p]} {
 
-# CSS Adjustemnts to ExtJS
-template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+    # Load Sencha libs 
+    template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
+    template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+    # CSS Adjustemnts to ExtJS
+    template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+    # Load SuperSelectBox
+    template::head::add_css -href "/intranet-customer-portal/resources/css/BoxSelect.css" -media "screen" -order 2
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/BoxSelect.js" -order 100
+}
 
-# Load SuperSelectBox
-template::head::add_css -href "/intranet-customer-portal/resources/css/BoxSelect.css" -media "screen" -order 2
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/BoxSelect.js" -order 100
 
 # ---------------------------------------------------------------
 # Set HTML elements
