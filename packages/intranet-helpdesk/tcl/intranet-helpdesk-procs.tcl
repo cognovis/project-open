@@ -91,6 +91,7 @@ ad_proc -public im_ticket_permissions {
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $ticket_id
 } {
+    ns_log Notice "im_ticket_permissions: user_id=$user_id, ticket_id=$ticket_id"
     upvar $view_var view
     upvar $read_var read
     upvar $write_var write
@@ -107,6 +108,10 @@ ad_proc -public im_ticket_permissions {
     set add_tickets_p [im_permission $user_id "add_tickets"]
     set view_tickets_all_p [im_permission $user_id "view_tickets_all"]
 
+    # Determine the list of all groups in which the current user is a member
+    set user_parties [im_profile::profiles_for_user -user_id $user_id]
+    lappend user_parties $user_id
+
     if {![db_0or1row ticket_info "
 	select	coalesce(t.ticket_assignee_id, 0) as ticket_assignee_id,
 		coalesce(t.ticket_customer_contact_id,0) as ticket_customer_contact_id,
@@ -119,6 +124,23 @@ ad_proc -public im_ticket_permissions {
 				r.object_id_two = :user_id and
 				g.group_id = t.ticket_queue_id
 		) t) as queue_member_p,
+		(select count(*) from (
+			-- member of the ticket - any role_id will do.
+			select	distinct r.object_id_one
+			from	acs_rels r,
+				im_biz_object_members bom
+			where	r.rel_id = bom.rel_id and
+				r.object_id_two in ([join $user_parties ","])
+		) t) as ticket_member_p,
+		(select count(*) from (
+			-- admin of the ticket
+			select	distinct r.object_id_one
+			from	acs_rels r,
+				im_biz_object_members bom
+			where	r.rel_id = bom.rel_id and
+				r.object_id_two in ([join $user_parties ","]) and
+				bom.object_role_id in (1301, 1302)
+		) t) as ticket_admin_p,
 		(select count(*) from (
 			-- cases with user as task_assignee
 			select distinct wfc.object_id
@@ -162,8 +184,8 @@ ad_proc -public im_ticket_permissions {
     set assignee_p [expr $user_id == $ticket_assignee_id]
     set customer_p [expr $user_id == $ticket_customer_contact_id]
 
-    set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
-    set write [expr $read && $edit_ticket_status_p]
+    set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || $ticket_member_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
+    set write [expr ($read && $edit_ticket_status_p) || $ticket_admin_p]
 
     set view $read
     set admin $write
@@ -1311,5 +1333,25 @@ ad_proc -public im_helpdesk_related_tickets_component {
     Replaced by im_helpdesk_related_objects_component
 } {
     return ""
+}
+
+
+
+
+
+# ---------------------------------------------------------------
+# Nuke
+# ---------------------------------------------------------------
+
+ad_proc im_ticket_nuke {
+    {-user_id 0}
+    ticket_id
+} {
+    Nuke (complete delete from the database) a ticket.
+    Returns an empty string if everything was OK or an error
+    string otherwise.
+} {
+    ns_log Notice "im_ticket_nuke ticket_id=$ticket_id"
+    return [im_project_nuke -user_id $user_id $ticket_id]
 }
 

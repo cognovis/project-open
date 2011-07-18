@@ -3,7 +3,7 @@
 <property name="context">@context@</property>
 
 <%= [im_box_header "DynField Base Information"] %>
-<formtaemplate id="attribute_form"></formtemplate>
+<formtemplate id="attribute_form"></formtemplate>
 <%= [im_box_footer] %>
 <br>&nbsp;<br>
 

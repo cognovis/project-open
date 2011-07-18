@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: package-procs.tcl,v 1.246 2011/05/27 13:17:01 victorg Exp $
+    @cvs-id $Id: package-procs.tcl,v 1.247 2011/07/14 17:59:56 gustafn Exp $
 }
 
 namespace eval ::xowiki {
@@ -1015,8 +1015,10 @@ namespace eval ::xowiki {
     # (we can handle only one unknown at a time).
     set nr_elements [llength $elements]
     set n 0
+    set ref_ids {}
     foreach element $elements {
       set (last_parent_id) $parent_id
+      lappend ref_ids $parent_id
       array set "" [my simple_item_ref \
                         -normalize_name $normalize_name \
                         -use_package_path $use_package_path \
@@ -1036,7 +1038,7 @@ namespace eval ::xowiki {
 
     return [list link $link link_type $(link_type) form $(form) \
                 prefix $(prefix) stripped_name $(stripped_name) \
-                item_id $(item_id) parent_id $(parent_id)]
+                item_id $(item_id) parent_id $(parent_id) ref_ids $ref_ids]
   }
 
   Package instproc simple_item_ref {

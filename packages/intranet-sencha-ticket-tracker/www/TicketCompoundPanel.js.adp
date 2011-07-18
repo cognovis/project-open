@@ -1,10 +1,10 @@
 /**
- * intranet-sencha-ticket-tracker/www/TicketContainer.js
+ * intranet-sencha-ticket-tracker/www/TicketCompoundPanel.js
  * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.13 2011/06/15 14:51:39 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.18 2011/07/15 18:13:35 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,43 +31,58 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     layout:		'border',
     deferredRender:	false,
     split:		true,
+	autoScroll:	true,
 
     items: [{
 	itemId:		'center',
 	region: 	'center',
-	layout: 	'anchor',
+	layout: 	'border',
 	minWidth:	400,
+	split:		true,
 
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-core.Ticket#'
+		title: '#intranet-core.Ticket#',
+		split:	true,
+		region:	'north'
 	}, {
-		itemId: 'ticketCustomer',
-		title: '#intranet-sencha-ticket-tracker.Company#',
-		xtype: 'ticketCustomer'
+		itemId:	'ticketCustomerPanel',
+		title:	'#intranet-sencha-ticket-tracker.Company#',
+		xtype:	'ticketCustomerPanel',
+		split:	true,
+		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
-		xtype: 'ticketContactPanel'
-	}, {
-		itemId: 'ticketFilestorage',
-		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
+		xtype: 'ticketContactPanel',
+		split:	true,
+		region:	'south'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
-	layout:	'anchor',
+	layout:	'border',
 	width:	800,
+	split:	true,
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
-		xtype: 'auditGrid'
+		xtype: 'auditGrid',
+		split:	true,
+		region:	'north'
 	}, {
 		itemId: 'ticketFormRight',
 		title: '',
-		xtype: 'ticketFormRight'
+		xtype: 'ticketFormRight',
+		split:	true,
+		region:	'center'
+	}, {
+		itemId: 'fileStorageGrid',
+		title: '#intranet-filestorage.Filestorage#',
+		xtype: 'fileStorageGrid',
+		split:	true,
+		region:	'south'
 	}]
     }],
 
@@ -88,21 +103,21 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
         this.child('#center').child('#ticketForm').newTicket(rec);
-        this.child('#center').child('#ticketCustomer').newTicket(rec);
+        this.child('#center').child('#ticketCustomerPanel').newTicket(rec);
         this.child('#center').child('#ticketContactPanel').newTicket(rec);
-        this.child('#center').child('#ticketFilestorage').newTicket(rec);
         this.child('#east').child('#auditGrid').newTicket(rec);
         this.child('#east').child('#ticketFormRight').newTicket(rec);
+        this.child('#east').child('#fileStorageGrid').newTicket(rec);
     },
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);
-        this.child('#center').child('#ticketCustomer').loadTicket(rec);
-        this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
+        this.child('#east').child('#fileStorageGrid').loadTicket(rec);
     }
 
 });

@@ -296,10 +296,10 @@ background-position: 0px -10px;
 }
 
 #main {
-   position: relative;
-
+	position: relative;
+	-moz-box-sizing: content-box;
+	moz-box-sizing: content-box;
 }
-
 
 #main_portrait_and_username {
 	position: absolute;
@@ -380,10 +380,12 @@ background-position: 0px -10px;
 
 
 #navbar_main_wrapper {
-  position: relative;
-  left: 0px;
-  top: 0px;
-  background-color: #2E2E2E;
+	position: relative;
+	left: 0px;
+	top: 0px;
+	background-color: #2E2E2E;
+        -moz-box-sizing: content-box;
+	box-sizing: content-box;
 }
 
 #navbar_main {
@@ -402,7 +404,10 @@ background-position: 0px -10px;
 	overflow: visible;
 	z-index: 500;
 	position: relative;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
       }
+
     #navbar_main li {
 	display:inline;
 	margin:0;
@@ -881,7 +886,7 @@ a   span  {float:none;}
 
 .fullwidth-list .component table td {
 	padding: 0px 2px 0px 2px;
-	vertical-align: middle;
+	vertical-align: top;
 }
 
 .fullwidth-list .component table.month_header td {
@@ -1605,4 +1610,10 @@ div.xowiki-content hr {
 #hours_confirmed_yellow a, #hours_confirmed_yellow a:visited {
         color: #F77809;
 }
+
+.calendar_table {
+	width: auto;
+}
+
+
 

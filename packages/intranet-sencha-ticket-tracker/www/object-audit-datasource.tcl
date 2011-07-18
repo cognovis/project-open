@@ -44,34 +44,30 @@ set direction $sorter_hash(direction)
 
 # Define the main SQL to check for
 set sql "
-	select	
-		min(audit_id) as audit_id,
-		min(audit_user_id) as audit_user_id,
-		min(audit_action) as audit_action,
-		min(audit_date) as audit_date,
-		min(audit_ip) as audit_ip,
-		audit_object_id,
-		audit_object_status_id,
-		audit_value
-	from
-		( select	*
-		  from	im_audits a
-		  where	a.audit_object_id = :object_id
+	select	a.*,
+		t.ticket_queue_id_pretty
+	from	im_audits a,
+		(select	max(audit_id) as audit_id,
+			audit_object_status_id,
+			ticket_queue_id_pretty
+		from	(select	*,
+				CASE WHEN 463=ticket_queue_id THEN '' ELSE ticket_queue_id END as ticket_queue_id_pretty
+			from	(select	audit_id,
+					audit_object_status_id,
+					substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as ticket_queue_id
+				from	im_audits
+				where	audit_object_id = :object_id
+				) t
+			) t
+		group by
+			audit_object_status_id,
+			ticket_queue_id_pretty
 		) t
-	group by
-		audit_object_id,
-		audit_object_status_id,
-		audit_value
-	order by
-		$property $direction
+	where	a.audit_id = t.audit_id
+	order by $property $direction
 "
 
-set simp_sql "
-	select	*
-	from	im_audits a
-	where	a.audit_object_id = :object_id
-	order by audit_date
-"
+
 
 # The AuditGrid uses pagination, so we only want to 
 # return the first N elements
@@ -102,7 +98,7 @@ db_foreach limited_sql $limited_sql {
 	set el [split $line "\t"]
 	set key [lindex $el 0]
 	set val [lindex $el 1]
-	lappend json_row "\"$key\": \"[ns_quotehtml $val]\""
+	lappend json_row "\"$key\": \"[im_quotejson $val]\""
     }
 
     lappend json_list "{[join $json_row ", "]}"

@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: includelet-procs.tcl,v 1.167 2011/05/26 20:26:02 gustafn Exp $
+    @cvs-id $Id: includelet-procs.tcl,v 1.169 2011/06/19 12:38:24 gustafn Exp $
 }
 namespace eval ::xowiki::includelet {
   #
@@ -4029,25 +4029,47 @@ namespace eval ::xowiki::includelet {
         {parameter_declaration {
           {-form:required}
           {-publish_status "ready"}
+          {-expires 600}
         }}
       }
- 
-  random-form-page instproc render {} {
-    my get_parameters
+
+  random-form-page proc page_names {package_id form publish_status} {
+    #
+    # This is a cacheable method returing a list of the names from
+    # which the random page is selected. We use a class method and the
+    # argument list with util_memoize inability to provide a key for
+    # caching.
+    #
     set form_item_ids [::xowiki::Weblog instantiate_forms -forms $form -package_id $package_id]
     set form_fields [::xowiki::FormPage get_table_form_fields \
                          -base_item [lindex $form_item_ids 0] -field_names _name \
                          -form_constraints ""]
     set items [::xowiki::FormPage get_form_entries \
                    -base_item_ids $form_item_ids -form_fields $form_fields \
+		   -initialize false \
                    -publish_status $publish_status \
                    -package_id $package_id]
-    set random_element [expr { int([llength [$items children]] * rand()) }]
-    set random_item [lindex [$items children] $random_element]
+    set result [list]
+    foreach item [$items children] {
+      lappend result [$item name]
+    }
+    return $result
+  }
+ 
+  random-form-page instproc render {} {
+    my get_parameters
+
+    set cmd [list ::xowiki::includelet::random-form-page page_names $package_id $form $publish_status]
+    if {[ns_info name] eq "NaviServer"} {
+      set names [ns_cache_eval -expires $expires xowiki_cache random-$package_id-$form $cmd]
+    } else {
+      set names [util_memoize $cmd]
+    }
+    set random_item [lindex $names [expr { int([llength $names] * rand()) }]]
     if {$random_item eq ""} {
       return ""
     } {
-      return [[my set __including_page] include [list [$random_item name] -decoration none]]
+      return [[my set __including_page] include [list $random_item -decoration none]]
     }
   }
 }

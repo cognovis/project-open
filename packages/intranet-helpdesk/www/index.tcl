@@ -364,6 +364,12 @@ switch $mine_p {
 				wft.case_id = wfc.case_id and
 				wft.holding_user = :current_user_id
 		)
+    		OR :current_user_id in (
+                        select  object_id_two
+                        from    acs_rels r
+                        where   r.object_id_one = t.ticket_id and 
+			r.rel_type = 'im_biz_object_member'
+                )
 	)"
     }
     "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
@@ -477,8 +483,9 @@ set sql "
 			$where_clause
 			$extra_where
 		$order_by_clause
-"
 
+
+"
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>

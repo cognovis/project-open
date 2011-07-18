@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.22 2011/06/15 08:11:12 po34demo Exp $
+ * @cvs-id $Id: TicketGrid.js.adp,v 1.30 2011/07/18 11:26:18 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,6 +22,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
+	mode:	'SINGLE',
+	listeners: {
+        	selectionchange: function(sm, selections) {
+        	    // var grid = this.view;
+        	    // grid.down('#removeButton').setDisabled(selections.length == 0);
+        	}
+	}
+});
 
 var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     extend:	'Ext.grid.Panel',    
@@ -30,6 +39,8 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     minHeight:	200,
     store:	ticketStore,    
     iconCls:	'icon-grid',
+    columnLines: true,
+    selModel:	ticketGridSelModel,
 
     listeners: {
 	itemdblclick: function(view, record, item, index, e) {
@@ -57,7 +68,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
                 plugins: [{
                     pluginId: 'preview',
                     ptype: 'preview',
-                    bodyField: 'ticket_description',
+                    bodyField: 'ticket_request',
                     expanded: true
                 }]
             },
@@ -96,9 +107,9 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Incoming_Channel#',
-			dataIndex: 'ticket_origin',
+			dataIndex: 'ticket_incoming_channel_id',
 			renderer: function(value, o, record) {
-				return ticketOriginStore.category_from_id(record.get('ticket_origin'));
+				return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
 			}
 		}, {
 			header: '#intranet-helpdesk.Status#',
@@ -118,6 +129,14 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				valueField: 'category_id'
 			}
 		}, {
+			header: '#intranet-helpdesk.Queue#',
+			dataIndex: 'ticket_queue_id',
+			width: 60,
+			sortable: true, 
+			renderer: function(value, o, record) {
+			    return profileStore.name_from_id(record.get('ticket_queue_id'));
+			}
+		}, {
 			header: '#intranet-helpdesk.Creator#',
 			dataIndex: 'creation_user',
 			width: 100,
@@ -125,20 +144,17 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				return userStore.name_from_id(record.get('creation_user'));
 			}
 		}, {
-			header: '#intranet-sencha-ticket-tracker.Replies#',
-			dataIndex: 'replycount',
-			width: 70,
-			align: 'right'
+			header: '#intranet-sencha-ticket-tracker.Request#',
+			dataIndex: 'ticket_request'
+		}, {
+			header: '#intranet-sencha-ticket-tracker.Resolution#',
+			dataIndex: 'ticket_resolution'
 		}, {
 			header: '#intranet-core.Contact#',
 			dataIndex: 'ticket_customer_contact_id',
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 			}
-		}, {
-			header: '#intranet-helpdesk.Queue#',
-			dataIndex: 'ticket_queue_id',
-			hidden: true
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Closed_in_1st_Contact#',
 			dataIndex: 'ticket_closed_in_1st_contact_p'
@@ -156,6 +172,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	    }]
 	});
 	this.callParent();
+
+	// Translate the column headers
+	// http://www.extjs.com.br/forum/index.php?topic=4812.0
+	if (Ext.grid.header.Container){
+		Ext.apply(Ext.grid.header.Container.prototype, {
+		sortAscText:	'#intranet-sencha-ticket-tracker.Sort_Ascending#',
+		sortDescText:	'#intranet-sencha-ticket-tracker.Sort_Descending#',
+		sortClearText:	'#intranet-sencha-ticket-tracker.Clear#',
+		columnsText:	'#intranet-sencha-ticket-tracker.Columns#'
+	      });
+	}
+
+
     },
 
     loadSla: function(id){
@@ -198,13 +227,20 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		    switch (key) {
 			case 'assigned_queue_id':
 				// The "my groups" information is not part of the REST information.
-				if (value == 'my_groups') {
-					// default query: all of my groups
-					query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
-				} else {
-					// assigned_queue_id contains a group_id
-					query = query + ' and ticket_queue_id = ' + value;
+				switch (value) {
+					case 'my_groups':
+						// default query: all of my groups
+						query = query + ' and ticket_queue_id in (select group_id from group_distinct_member_map where member_id in ( ' + currentUserId +'))';
+						break;
+					case 'all_groups':
+						// Do nothing.
+						break;
+					default:
+						// assigned_queue_id contains a group_id
+						query = query + ' and ticket_queue_id = ' + value;
+						break;
 				}
+
 				key = 'query';
 				value = query;
 				
@@ -281,7 +317,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     },
     
     onNewTicket: function(dummy){
-        var panel = this.ownerCt.ownerCt;
+	var panel = this.ownerCt.ownerCt;
 	panel.ownerCt.onNewTicket();
     },
 
@@ -291,6 +327,20 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
     
     onSummaryChange: function(btn, pressed){
 	this.getView().getPlugin('preview').toggleExpanded(pressed);
+    },
+
+    onDeleteItems: function(btn, pressed){
+	var selection = this.selModel.getSelection();
+	var ticketModel = selection[0];
+	ticketModel.destroy({
+		success: function(record, operation) {
+     			console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+			ticketStore.remove(ticketModel);
+    		},
+		failure: function(record, operation) {
+			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+    		}
+	});
     }
 
 });

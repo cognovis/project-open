@@ -3,7 +3,7 @@ ad_library {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 16 August, 2007
-    @cvs-id $Id: intranet-core-init.tcl,v 1.13 2011/04/04 09:59:12 po34demo Exp $
+    @cvs-id $Id: intranet-core-init.tcl,v 1.14 2011/06/16 18:27:48 po34demo Exp $
 }
 
 # Create a global cache for im_profile entries.
@@ -26,7 +26,9 @@ ns_cache create im_company -timeout [ad_parameter -package_id [im_package_core_i
 
 
 set object_types {
+    im_biz_object_member
     im_company
+    im_company_employee_rel
     im_component_plugin
     im_conf_item
     im_cost
@@ -40,6 +42,7 @@ set object_types {
     im_indicator
     im_investment
     im_invoice
+    im_key_account_rel
     im_material
     im_menu
     im_note
@@ -53,12 +56,14 @@ set object_types {
     im_sla_parameter
     im_ticket
     im_ticket_queue
+    im_ticket_ticket_rel
     im_timesheet_conf_object
     im_timesheet_invoice
     im_timesheet_task
     im_trans_invoice
     im_trans_task
     im_user_absence
+    membership_rel
     person
     user
 }
