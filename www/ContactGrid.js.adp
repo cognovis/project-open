@@ -234,5 +234,18 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 				}
 			}
 		});
+	},
+
+	onNew: function() {
+		alert('ContactGrid.onNew() not implemented yet');
+	},
+
+	onDelete: function() {
+		alert('ContactGrid.onDelete() not implemented yet');
+	},
+
+	onCopy: function() {
+		alert('ContactGrid.onCopy() not implemented yet');
 	}
+
 });

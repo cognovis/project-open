@@ -83,10 +83,10 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 
 	// Inform the TicketInfo Panel to clear values for 
 	// entering a new ticket
-	onNewTicket: function(){
+	onNew: function(){
 		var preview = this.child('#preview');
 		var infoPanel = preview.child('#ticket');
-		infoPanel.onNewTicket();
+		infoPanel.onNew();
 	},
 
 	toggleGrid: function(show){

@@ -210,6 +210,18 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		}
 		
 		store.loadPage(1);
+	},
+
+	onNew: function() {
+		alert('CompanyGrid.onNew() not implemented yet');
+	},
+
+	onDelete: function() {
+		alert('CompanyGrid.onDelete() not implemented yet');
+	},
+
+	onCopy: function() {
+		alert('CompanyGrid.onCopy() not implemented yet');
 	}
 
 });
