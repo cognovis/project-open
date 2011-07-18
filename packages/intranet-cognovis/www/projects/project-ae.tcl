@@ -129,7 +129,7 @@ set dynfield_project_type_id [im_opt_val project_type_id]
 if {[info exists project_id]} {
     set existing_project_type_id [db_string ptype "select project_type_id from im_projects where project_id = :project_id" -default 0]
     if {0 != $existing_project_type_id && "" != $existing_project_type_id} {
-	set dynfield_project_type_id $existing_project_type_id
+        set dynfield_project_type_id $existing_project_type_id
     }
 }
 
@@ -141,9 +141,6 @@ if {[exists_and_not_null project_id]} {
     set ::super_project_id 0
 }
 
-ns_log Notice "/intranet-cognovis/www/projects/project-ae: im_dynfield::append_attributes_to_form -object_subtype_id $dynfield_project_type_id -object_type $object_type -form_id $form_id -object_id $dynfield_project_id"
-
-ds_comment "calling append attributes to form"
 im_dynfield::append_attributes_to_form \
     -object_subtype_id $dynfield_project_type_id \
     -object_type $object_type \
@@ -153,36 +150,38 @@ im_dynfield::append_attributes_to_form \
 
 
 set requires_report_p "f"
-ad_form -extend -name $form_id -new_request { 
 
+ad_form -extend -name $form_id -new_request { 
+    
     # -------------------------------------------
     # Set Defaut Values
     # -------------------------------------------
     if { ![exists_and_not_null parent_id] } {
-    
-    
-	# A brand new project (not a subproject)
-	if { ![exists_and_not_null company_id] } {
-	    set company_id [im_company_internal]
-	}
-	set page_title "[_ intranet-core.Add_New_Project]"
-	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] $page_title]
-	set parent_id ""
-
+        
+        
+        # A brand new project (not a subproject)
+        if { ![exists_and_not_null company_id] } {
+            set company_id [im_company_internal]
+        }
+        set page_title "[_ intranet-core.Add_New_Project]"
+        set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] $page_title]
+        set parent_id ""
+        
     } else {
-	
-	# This means we are adding a subproject.
-	# Let's select out some defaults for this page
-	db_1row projects_by_parent_id_query {}
-	
-	# Now set the values for status and type
-	template::element::set_value $form_id project_status_id $project_status_id
-	template::element::set_value $form_id project_type_id $project_type_id
-
-	set page_title "[_ intranet-core.Add_subproject]"
-	set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
+        
+        # This means we are adding a subproject.
+        # Let's select out some defaults for this page
+        db_1row projects_by_parent_id_query {}
+        
+        # Now set the values for status and type
+        template::element::set_value $form_id project_status_id $parent_status_id
+        if {$project_type_id eq ""} {
+            template::element::set_value $form_id project_type_id $parent_type_id
+        }
+        set page_title "[_ intranet-core.Add_subproject]"
+        set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
     }
-
+    
     # Calculate the next project number by calculating the maximum of
     # the "reasonably build numbers" currently available
     set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]

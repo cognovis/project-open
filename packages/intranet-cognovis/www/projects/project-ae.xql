@@ -19,8 +19,8 @@
     <querytext>
 	    select 
 	    p.company_id, 
-	    p.project_type_id, 
-	    p.project_status_id
+	    p.project_type_id as parent_type_id, 
+	    p.project_status_id as parent_status_id
 	    from
 	    im_projects p
 	    where 
