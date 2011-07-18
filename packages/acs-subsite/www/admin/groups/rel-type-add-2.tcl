@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Jan  2 12:10:17 2001
-    @cvs-id $Id: rel-type-add-2.tcl,v 1.3 2007/01/10 21:22:07 gustafn Exp $
+    @cvs-id $Id: rel-type-add-2.tcl,v 1.4 2010/10/04 21:59:20 victorg Exp $
 
 } {
     group_id:integer,notnull
@@ -35,11 +35,13 @@ ad_page_contract {
     }
 }
 
-if { [catch {db_dml insert_rel_type {
+if { [catch {
+    set group_rel_id [db_nextval acs_object_id_seq]
+    db_dml insert_rel_type {
     insert into group_rels
     (group_rel_id, group_id, rel_type)
     values
-    (acs_object_id_seq.nextval, :group_id, :rel_type)
+    (:group_rel_id, :group_id, :rel_type)
 }   } err_msg] } {
     # Does this pair already exists?
     if { ![db_string exists_p {

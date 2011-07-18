@@ -7,7 +7,7 @@ header('Content-Type: text/javascript; charset=UTF-8');
  * relative to the base_dir given in config.inc.php
  * This is pretty much just thumbs.php with some mods, I'm too lazy to do it properly
  * @author $Author: gustafn $
- * @version $Id: resizer.php,v 1.10 2009/03/27 08:20:44 gustafn Exp $
+ * @version $Id: resizer.php,v 1.11 2010/05/23 11:58:33 gustafn Exp $
  * @package ImageManager
  */
 
@@ -22,6 +22,11 @@ function js_success($resultFile)    { echo '\'' . $resultFile . '\''; exit;   }
 if(!isset($_GET['img']) || !isset($_GET['width']) || !isset($_GET['height']))
 {
   js_fail('Missing parameter.');
+}
+
+if($IMConfig['resize_files'] == FALSE)
+{
+  js_success($_GET['img']);
 }
 
 $manager = new ImageManager($IMConfig);

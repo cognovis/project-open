@@ -4,11 +4,11 @@ ad_page_contract {
 
     @author Yonatan Feldman (yon@arsdigita.com)
     @creation-date August 13, 2000
-    @cvs-id $Id: index.tcl,v 1.5 2006/06/04 00:45:45 donb Exp $
+    @cvs-id $Id: index.tcl,v 1.6 2011/04/18 17:24:30 emmar Exp $
 
 } {}
 
-set page_title "Object Type Hierarchical Index"
+set doc(title) "Object Type Hierarchical Index"
 set context [list "Object Type Hierarchical Index"]
 
 set object_type_hierarchy [acs_object_type_hierarchy]

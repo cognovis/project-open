@@ -17,7 +17,7 @@ require_once '../ImageManager/Classes/Files.php';
 /**
  * ExtendedFileManager Class.
  * @author Wei Zhuo, Afru, Krzysztof Kotowicz, Raimund Meyer
- * @version $Id: ExtendedFileManager.php,v 1.7 2009/03/27 08:20:43 gustafn Exp $
+ * @version $Id: ExtendedFileManager.php,v 1.8 2010/05/23 11:58:33 gustafn Exp $
  */
 class ExtendedFileManager 
 {

@@ -5,7 +5,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
 
     @creation-date 26 October 2001
-    @cvs-id $Id: package-list.tcl,v 1.9 2008/04/18 06:48:43 victorg Exp $
+    @cvs-id $Id: package-list.tcl,v 1.10 2011/04/07 16:28:27 emmar Exp $
 } {
     locale
 } -properties {
@@ -54,10 +54,12 @@ db_multirow -extend {
            (select count(*) 
             from   lang_messages lm 
             where  lm.package_key = q.package_key
-            and    lm.locale = :current_locale) as num_translated
+            and    lm.locale = :current_locale
+            and    lm.deleted_p = 'f') as num_translated
     from   (select lmk.package_key,
                    count(message_key) as num_messages
-            from   lang_message_keys lmk
+            from   lang_messages lmk
+            where  lmk.locale = :default_locale and lmk.deleted_p = 'f' 
             group  by package_key) q
     order  by package_key
 } {

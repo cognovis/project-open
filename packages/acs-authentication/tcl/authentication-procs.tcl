@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaobraid.biz)
     @creation-date 2003-05-13
-    @cvs-id $Id: authentication-procs.tcl,v 1.86 2010/02/15 22:46:05 hectorr Exp $
+    @cvs-id $Id: authentication-procs.tcl,v 1.87 2010/11/08 23:09:10 victorg Exp $
 }
 
 namespace eval auth {}
@@ -1415,7 +1415,7 @@ ad_proc -private auth::get_user_secret_token {
 } {
     Get a secret token for the user. Can be used for email verification purposes. 
 } {
-    return [db_string select_secret_token {}]
+    return [ns_sha1 "${user_id}[sec_get_token 1]"]
 }
 
 ad_proc -private auth::send_email_verification_email {

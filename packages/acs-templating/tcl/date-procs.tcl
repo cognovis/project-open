@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: date-procs.tcl,v 1.45.2.1 2010/06/05 20:51:17 donb Exp $
+# $Id: date-procs.tcl,v 1.48 2011/02/28 01:21:25 donb Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -15,10 +15,14 @@ namespace eval template {}
 namespace eval template::data {}
 namespace eval template::data::validate {}
 namespace eval template::util {}
+namespace eval template::util::time_of_day {}
+namespace eval template::util::timestamp {}
 namespace eval template::util::date {}
 namespace eval template::util::textdate {}
 namespace eval template::widget {}
 namespace eval template::data::transform {}
+namespace eval template::data::to_sql {}
+namespace eval template::data::from_sql {}
 
 ad_proc -public template::util::date { command args } {
     Dispatch procedure for the date object
@@ -1252,59 +1256,6 @@ ad_proc -public template::data::transform::textdate { element_ref } {
 	return $value
     }
 }
-
-ad_proc -public template::data::validate::textdate {
-    value_ref
-    message_ref
-} {
-  Validate that a submitted textdate if properly formatted.
-
-  @param value_ref Reference variable to the submitted value.
-  @param message_ref Reference variable for returning an error message.
-
-  @return True (1) if valid, false (0) if not.
-} {
-
-    upvar 2 $message_ref message $value_ref textdate
-    set error_msg [list]
-    if { [exists_and_not_null textdate] } {
-	if { [regexp {^[0-9]{4}-[0-9]{2}-[0-9]{2}$} $textdate match] } {
-	    if { [catch { clock scan "${textdate}" }] } {
-		# the textdate is formatted properly the template::data::transform::textdate proc
-		# will only return correctly formatted dates in iso format, but the date is not
-                # valid so they have entered some info incorrectly
-		set datelist [split $textdate "-"]
-		set year  [lindex $datelist 0]
-		set month [::string trimleft [lindex $datelist 1] 0]
-		set day   [::string trimleft [lindex $datelist 2] 0]
-		if { $month < 1 || $month > 12 } {
-		    lappend error_msg [_ acs-templating.Month_must_be_between_1_and_12]
-		} else {		    
-		    set maxdays [template::util::date::get_property days_in_month $datelist]
-		    if { $day < 1 || $day > $maxdays } {
-			set month_pretty [template::util::date::get_property long_month_name $datelist]
-			if { $month == "2" } {
-			    # February has a different number of days depending on the year
-			    append month_pretty " ${year}"
-			}
-			lappend error_msg [_ acs-templating.lt_day_between_for_month_pretty]
-		    }
-		}
-	    }
-	} else {
-	    # the textdate is not formatted properly
-	    set format [::string toupper [template::util::textdate_localized_format]]
-	    lappend error_msg [_ acs-templating.lt_Dates_must_be_formatted_]
-	}
-    }
-    if { [llength $error_msg] > 0 } {
-	set message "[join $error_msg {<br>}]"
-        return 0
-    } else {
-        return 1
-    }
-}
-    
 ad_proc -public template::widget::textdate { element_reference tag_attributes } {
     Implements the textdate widget.
 
@@ -1350,3 +1301,123 @@ ad_proc -public template::widget::textdate { element_reference tag_attributes } 
       
   return $output
 }
+
+# handle date transformations using a standardized naming convention.
+
+ad_proc template::data::to_sql::date { value } {
+} {
+    return [template::util::date::get_property sql_date $value]
+}
+
+ad_proc template::data::from_sql::date { value } {
+} {
+    return [template::util::date::acquire ansi $value]
+}
+
+# The abstract type system includes a timestamp type, so we need to implement one
+# in the template "data type" system (even though in reality it should really just
+# be a widget working on the abstract type "date", or "timestamp" should replace "date")
+
+ad_proc template::data::to_sql::timestamp { value } {
+} {
+    return [template::data::to_sql::date $value]
+}
+
+ad_proc template::data::from_sql::timestamp { value } {
+} {
+    return [template::data::from_sql::date $value]
+}
+
+ad_proc -public template::data::transform::timestamp { element_ref } {
+    Collect a timestamp object from the form
+} {
+    upvar $element_ref element
+    return [template::data::transform::date element]
+}
+
+ad_proc -public template::util::timestamp::set_property { what date value } {
+
+    get a property in a list created by a timestamp  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit from_sql element modifiers.
+
+} {
+    return [template::util::date::set_property $what $date $value]
+}
+
+ad_proc -public template::util::timestamp::get_property { what date } {
+
+    Replace a property in a list created by a timestamp  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit to_sql element modifiers.
+} {
+    return [template::util::date::get_property $what $date]
+}
+
+ad_proc -public template::widget::timestamp { element_reference tag_attributes } {
+    Render a timestamp widget.  Default is the localized version.
+} {
+
+    upvar $element_reference element
+
+    if { ! [info exists element(format)] } { 
+        set element(format) "[_ acs-lang.localization-formbuilder_date_format] [_ acs-lang.localization-formbuilder_time_format]"
+    }
+    return [template::widget::date element $tag_attributes]
+}
+
+# The abstract type system includes a time-of-day type, so we need to implement one
+# in the template "data type" system.
+
+ad_proc template::data::to_sql::time_of_day { value } {
+} {
+    return [template::data::to_sql::date $value]
+}
+
+ad_proc template::data::from_sql::time_of_day { value } {
+} {
+    return [template::data::from_sql::date $value]
+}
+
+ad_proc -public template::data::transform::time_of_day { element_ref } {
+    Collect a time_of_day object from the form
+} {
+    upvar $element_ref element
+    return [template::data::transform::date element]
+}
+
+ad_proc -public template::util::time_of_day::set_property { what date value } {
+
+    get a property in a list created by a time_of_day  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit from_sql element modifiers.
+
+} {
+    return [template::util::date::set_property $what $date $value]
+}
+
+ad_proc -public template::util::time_of_day::get_property { what date } {
+
+    Replace a property in a list created by a time_of_day  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit to_sql element modifiers.
+} {
+    return [template::util::date::get_property $what $date]
+}
+
+ad_proc -public template::widget::time_of_day { element_reference tag_attributes } {
+    Render a time_of_day widget.  Default is the localized version.
+} {
+
+    upvar $element_reference element
+
+    if { ! [info exists element(format)] } { 
+        set element(format) "[_ acs-lang.localization-formbuilder_date_format] [_ acs-lang.localization-formbuilder_time_format]"
+    }
+    return [template::widget::date element $tag_attributes]
+}
+

@@ -8,7 +8,7 @@ ad_page_contract {
     @author Lars Pind (lars@pinds.com)
     @creation-date 1 July 2000
     
-    @cvs-id $Id: content-page-view.tcl,v 1.3.18.1 2010/11/25 09:16:24 gustafn Exp $
+    @cvs-id $Id: content-page-view.tcl,v 1.5 2010/11/25 09:17:23 gustafn Exp $
 } {
     version_id:integer,optional
     source_p:integer,optional,trim
@@ -45,6 +45,8 @@ if { [info exists version_id] } {
     }
     lappend context [list "package-view?version_id=$version_id&kind=content" "$pretty_name $version_name"]
 }
+
+
 
 lappend context [file tail $path]
 

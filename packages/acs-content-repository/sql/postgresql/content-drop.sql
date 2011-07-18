@@ -4,7 +4,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-drop.sql,v 1.4 2001/09/27 22:48:16 danw Exp $
+-- $Id: content-drop.sql,v 1.5 2011/04/11 01:08:27 donb Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -206,19 +206,5 @@ drop table cr_locales ;
 -- mime types
 drop table cr_content_mime_type_map ;
 drop table cr_mime_types ;
-
-
--- dropping ats datatypes for cms
-begin;
-
-  delete from acs_datatypes where datatype in ('text');
-
-  delete from acs_datatypes where datatype in ('keyword');
-
-  delete from acs_datatypes where datatype in ('integer');
-
-commit;
-
-
 
 

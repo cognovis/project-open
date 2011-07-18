@@ -4,7 +4,7 @@
 #
 # @author Dave Bauer (dave@thedesignexperience.org)
 # @creation-date 2006-08-01
-# @cvs-id $Id: file.vuh,v 1.8.2.1 2010/10/22 11:43:07 raulm Exp $
+# @cvs-id $Id: file.vuh,v 1.9 2010/10/22 14:31:14 raulm Exp $
 
 if {![regexp {^/([0-9]+)(/(private)/([0-9]+))?(/(.*))?$} [ad_conn path_info] match object_id private_slash private private_parent_id anchor]} {
     ad_return_warning "Invalid object id" [subst {

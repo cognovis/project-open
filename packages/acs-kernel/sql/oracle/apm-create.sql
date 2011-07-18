@@ -6,7 +6,7 @@
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id $Id: apm-create.sql,v 1.52.2.1 2010/05/30 20:18:50 donb Exp $
+-- @cvs-id $Id: apm-create.sql,v 1.54 2010/10/17 21:06:08 donb Exp $
 
 -----------------------------
 --     PACKAGE OBJECT	   --

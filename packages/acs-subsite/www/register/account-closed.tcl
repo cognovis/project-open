@@ -1,9 +1,9 @@
 ad_page_contract {
     Inform the user that his/her account is closed
 
-    @cvs-id $Id: account-closed.tcl,v 1.8 2005/04/28 09:53:08 jeffd Exp $
+    @cvs-id $Id: account-closed.tcl,v 1.9 2011/02/10 15:17:01 daveb Exp $
 } {
-    {message:html ""}
+
 }
 
 set page_title [_ acs-subsite.Account_closed_title]

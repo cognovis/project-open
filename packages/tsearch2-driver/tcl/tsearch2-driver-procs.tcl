@@ -4,7 +4,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-05
     @arch-tag: 49a5102d-7c06-4245-8b8d-15a3b12a8cc5
-    @cvs-id $Id: tsearch2-driver-procs.tcl,v 1.27 2009/07/12 01:12:33 donb Exp $
+    @cvs-id $Id: tsearch2-driver-procs.tcl,v 1.28 2010/11/05 16:35:10 daveb Exp $
 }
 
 namespace eval tsearch2 {}
@@ -179,7 +179,7 @@ ad_proc -callback search::search -impl tsearch2-driver {
     
     set results_ids [db_list search {}]
 
-    set count [db_string count "select count(*) from txt $base_query"]
+    set count [db_string count {}]
 
     set stop_words [list]
 

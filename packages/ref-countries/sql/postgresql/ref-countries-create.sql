@@ -2,7 +2,7 @@
 --
 -- @author jon@jongriffin.com.com
 -- @creation-date 2001-08-27
--- @cvs-id $Id: ref-countries-create.sql,v 1.3.2.1 2010/05/15 16:38:20 donb Exp $
+-- @cvs-id $Id: ref-countries-create.sql,v 1.4 2010/10/17 21:06:09 donb Exp $
 
 -- country is taken from ISO 3166
 

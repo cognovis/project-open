@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Mon Dec 11 12:13:02 2000
-    @cvs-id $Id: index.tcl,v 1.2 2002/09/06 21:50:01 jeffd Exp $
+    @cvs-id $Id: index.tcl,v 1.3 2011/04/18 17:24:30 emmar Exp $
 
 } {
 } -properties {
@@ -14,7 +14,8 @@ ad_page_contract {
     seg:multirow
 }
 
-set context [list "Relational segments"]
+set context [list [_ acs-subsite.Relational_Segments]]
+set doc(title) [_ acs-subsite.Relational_Segment_administration]
 
 set user_id [ad_conn user_id]
 

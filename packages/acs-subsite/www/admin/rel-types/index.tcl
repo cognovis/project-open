@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Sun Dec 10 17:10:56 2000
-    @cvs-id $Id: index.tcl,v 1.2 2002/09/06 21:50:03 jeffd Exp $
+    @cvs-id $Id: index.tcl,v 1.3 2011/04/19 21:22:47 emmar Exp $
 
 } {
 } -properties {
@@ -15,7 +15,7 @@ ad_page_contract {
     rel_types:multirow
 }
 
-set context [list "Relationship types"]
+set context [list [_ acs-subsite.Relationship_Types]]
 
 set package_id [ad_conn package_id]
 

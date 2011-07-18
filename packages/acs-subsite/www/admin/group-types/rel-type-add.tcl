@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Sun Dec 10 16:50:58 2000
-    @cvs-id $Id: rel-type-add.tcl,v 1.3 2002/09/06 21:49:58 jeffd Exp $
+    @cvs-id $Id: rel-type-add.tcl,v 1.4 2011/04/15 11:43:48 emmar Exp $
 
 } {
     group_type:trim,notnull
@@ -19,7 +19,9 @@ ad_page_contract {
 }
 
 set return_url_enc [ad_urlencode "[ad_conn url]?[ad_conn query]"]
-set context [list [list "[ad_conn package_url]admin/group-types/" "Group types"] [list one?[ad_export_vars {group_type}] "One type"] "Add relation type"]
+
+set doc(title) [_ acs-subsite.Add_a_permissible_relationship_type]
+set context [list [list "[ad_conn package_url]admin/group-types/" [_ acs-subsite.Group_Types]] [list one?[ad_export_vars {group_type}] $group_type] $doc(title)]
 
 
 # Select out all the relationship types that are not currently

@@ -4,7 +4,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-template.sql,v 1.23 2007/09/17 09:43:56 gustafn Exp $
+-- $Id: content-template.sql,v 1.24 2010/10/04 21:59:20 victorg Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -53,7 +53,7 @@ declare
 begin
 
   if new__parent_id is null then
-    v_parent_id := content_template_globals.c_root_folder_id;
+    select c_root_folder_id into v_parent_id from content_template_globals;
   else
     v_parent_id := new__parent_id;
   end if;
@@ -133,7 +133,7 @@ declare
 begin
 
   if new__parent_id is null then
-    v_parent_id := content_template_globals.c_root_folder_id;
+    select c_root_folder_id into v_parent_id from content_template_globals;
   else
     v_parent_id := new__parent_id;
   end if;

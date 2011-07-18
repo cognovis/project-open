@@ -6,7 +6,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Dec 12 15:40:39 2000
-    @cvs-id $Id: rel-types-procs.tcl,v 1.9 2007/01/10 21:22:06 gustafn Exp $
+    @cvs-id $Id: rel-types-procs.tcl,v 1.10 2010/10/04 21:59:20 victorg Exp $
 }
 
 ad_page_contract_filter rel_type_dynamic_p {name value} {
@@ -218,6 +218,7 @@ namespace eval rel_types {
 	Add a permissible relationship for a given group type
     } {
 	if {[catch {
+	    set group_rel_type_id [db_nextval acs_object_id_seq]
 	    db_dml insert_rel_type {}
 	} errmsg]} {
 	}

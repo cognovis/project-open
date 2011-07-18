@@ -6,7 +6,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Wed Dec 27 16:02:44 2000
-    @cvs-id $Id: package-procs.tcl,v 1.24.2.1 2010/06/09 21:00:25 donb Exp $
+    @cvs-id $Id: package-procs.tcl,v 1.25 2010/10/17 21:06:09 donb Exp $
 
 }
 

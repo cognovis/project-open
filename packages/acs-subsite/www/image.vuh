@@ -4,7 +4,7 @@
 #
 # @author Dave Bauer (dave@thedesignexperience.org)
 # @creation-date 2006-08-01
-# @cvs-id $Id: image.vuh,v 1.7.2.1 2010/10/22 11:43:07 raulm Exp $
+# @cvs-id $Id: image.vuh,v 1.8 2010/10/22 14:31:14 raulm Exp $
 set url [ad_conn path_info]
 if {![regexp {^/([0-9]+)(/(|thumbnail|avatar|info))?(/(private)/([0-9]+))?(/(.*))?$} $url match object_id extra_arg_slash extra_arg private_slash private private_parent_id filename_slash filename anchor]} {
     ad_return_warning "Invalid object id" [subst {

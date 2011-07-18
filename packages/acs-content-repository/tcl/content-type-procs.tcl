@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-09
     @arch-tag: 4a8a3652-fd5d-49aa-86fc-fade683f06ce
-    @cvs-id $Id: content-type-procs.tcl,v 1.11 2007/09/18 20:04:21 gustafn Exp $
+    @cvs-id $Id: content-type-procs.tcl,v 1.12 2010/12/28 15:21:26 gustafn Exp $
 }
 
 namespace eval ::content::type {}
@@ -286,7 +286,7 @@ ad_proc -public content::type::rotate_template {
 ad_proc -public content::type::set_default_template {
     -content_type:required
     -template_id:required
-    {use_context: "public"}
+    {use_context "public"}
 } {
     @param content_type
     @param template_id

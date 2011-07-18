@@ -4,30 +4,11 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-create.sql,v 1.28 2008/06/07 20:28:47 donb Exp $
+-- $Id: content-create.sql,v 1.29 2011/04/11 01:08:27 donb Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
 -- http://www.fsf.org/copyleft/gpl.html
-
-----------------------------------
--- CMS datatypes
-----------------------------------
-
--- create ats datatypes for cms
-begin
-  insert into acs_datatypes
-    (datatype, max_n_values)
-  values
-    ('text', null);
-
-  insert into acs_datatypes
-    (datatype, max_n_values)
-  values
-    ('keyword', 1);
-
-end;
-/
 
 
 --------------------------------------------------------------

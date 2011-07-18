@@ -329,7 +329,7 @@ done
       <title>Who Wrote This and When</title>
       <para>This problem set was originally written by <ulink url="http://www.weg.ee.usyd.edu.au/people/ncarroll">Nick Carroll</ulink> in August 2004 for the <ulink url="http://www.usyd.edu.au">University of Sydney</ulink> Course <ulink url="http://www.weg.ee.usyd.edu.au/courses/ebus5002">EBUS5002</ulink>.</para>
       <para>This material is copyright 2004 by Nick Carroll.  It may be copied, reused, and modified, provided credit is given to the original author.</para>
-      <para><phrase role="cvstag">($Id: tutorial-advanced.xml,v 1.48.2.1 2010/12/12 00:07:03 ryang Exp $)</phrase></para>
+      <para><phrase role="cvstag">($Id: tutorial-advanced.xml,v 1.49 2010/12/11 23:36:32 ryang Exp $)</phrase></para>
     </sect2>
     
   </sect1>

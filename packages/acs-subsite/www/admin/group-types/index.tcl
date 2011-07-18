@@ -6,14 +6,15 @@ ad_page_contract {
     @author mbryzek@arsdigita.com
 
     @creation-date 2000-11-06
-    @cvs-id $Id: index.tcl,v 1.3 2003/05/17 09:59:47 jeffd Exp $
+    @cvs-id $Id: index.tcl,v 1.4 2011/04/15 11:43:48 emmar Exp $
 } {
 } -properties {
     context:onevalue
     group_types:multirow
 }
 
-set context [list "Group types"]
+set doc(title) [_ acs-subsite.Group_type_administration]
+set context [list [_ acs-subsite.Group_Types]]
 
 # we may want to move the inner count to get the number of groups of
 # each type to its own pl/sql function. That way, we execute the

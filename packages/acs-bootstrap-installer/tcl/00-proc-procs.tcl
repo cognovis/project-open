@@ -850,7 +850,7 @@ ad_library {
 
     @creation-date 7 Jun 2000
     @author Jon Salz (jsalz@mit.edu)
-    @cvs-id $Id: 00-proc-procs.tcl,v 1.38.4.1 2010/10/30 21:45:51 gustafn Exp $
+    @cvs-id $Id: 00-proc-procs.tcl,v 1.39 2010/10/30 21:43:01 gustafn Exp $
 }
 
 ad_proc -public empty_string_p {query_string} {

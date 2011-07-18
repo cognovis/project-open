@@ -3,21 +3,21 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-05-28
-    @cvs-id $Id: multiple-add.tcl,v 1.1 2003/12/14 11:56:54 lars Exp $
+    @cvs-id $Id: multiple-add.tcl,v 1.2 2011/04/15 10:29:16 emmar Exp $
 } {
     {return_url "."}
 }
 
-set page_title "Add Applications"
-set context [list [list "." "Applications"] $page_title]
+set doc(title) "[_ acs-subsite.Add_multiple_applications]"
+set context [list [list "." [_ acs-subsite.Applications]] $doc(title)]
 
 set packages [subsite::get_application_options]
 
 ad_form -name application -cancel_url . -export { return_url } -form {
     {package_key:text(checkbox),multiple
-        {label "Select Applications"}
+        {label "[_ acs-subsite.Select_Applications]"}
         {options $packages}
-        {help_text "If the application is not in the list, you may need to <a href=\"/acs-admin/install/\">install</a> it on the server."}
+        {help_text "[_ acs-subsite.Select_Applications__helptext]"}
     }
 } -on_submit {
     # Find the package pretty name from the list of packages

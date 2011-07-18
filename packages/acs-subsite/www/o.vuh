@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Jeff Davis davis@xarg.net
     @creation-date 2003-12-29
-    @cvs-id $Id: o.vuh,v 1.5.2.1 2010/10/22 11:43:07 raulm Exp $
+    @cvs-id $Id: o.vuh,v 1.6 2010/10/22 14:31:14 raulm Exp $
 } {}
 
 if {![regexp {^/([0-9]+)(-(.+))?$} [ad_conn path_info] match object_id dummy anchor]} {
