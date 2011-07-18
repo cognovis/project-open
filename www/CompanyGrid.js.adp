@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.10 2011/07/18 12:05:29 po34demo Exp $
+ * @cvs-id $Id: CompanyGrid.js.adp,v 1.11 2011/07/18 15:59:23 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -210,6 +210,18 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		}
 		
 		store.loadPage(1);
+	},
+
+	onNew: function() {
+		alert('CompanyGrid.onNew() not implemented yet');
+	},
+
+	onDelete: function() {
+		alert('CompanyGrid.onDelete() not implemented yet');
+	},
+
+	onCopy: function() {
+		alert('CompanyGrid.onCopy() not implemented yet');
 	}
 
 });

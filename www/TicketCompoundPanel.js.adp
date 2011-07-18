@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.18 2011/07/15 18:13:35 po34demo Exp $
+ * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.19 2011/07/18 15:59:23 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -87,7 +87,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     }],
 
     // Create a copy of the currrent ticket
-    onCopyTicket: function() {
+    onCopy: function() {
 	var ticketForm = this.child('#center').child('#ticketForm');
 	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
 	var old_ticket_id = ticket_id_field.getValue();
@@ -96,8 +96,16 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Create a new ticket name
 	ticketForm.setNewTicketName();
 
+	// Save the copied ticket(?)
+	// ...
+	
 	// Write out an alert message
 	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
+    },
+
+    // Delete the selected ticket
+    onDelete: function() {
+	alert('Borrar tickets no ha sido implementado todavia');
     },
 
     // Called from the TicketGrid if the user has selected a ticket
