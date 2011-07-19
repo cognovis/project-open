@@ -18,6 +18,20 @@ set sigma "&Sigma;"
 
 
 
+ad_proc -public v { 
+    var_name
+    {undef "-"}
+} {
+    Acts like a "$" to evaluate a variable, but
+    returns "-" if the variable is not defined
+    instead of an error.
+} {
+    upvar $var_name var
+    if [exists_and_not_null var] { return $var }
+    return $undef
+} 
+
+
 
 # ----------------------------------------------------------------
 # Dimensions
@@ -112,10 +126,6 @@ set channel_sql "
 	group by area_id, channel_id
 "
 
-#		o.creation_date >= :start_date and
-#		o.creation_date < :end_date
-
-
 db_foreach channel_hash $channel_sql {
 
     set area [im_category_from_id -translate_p 0 $area_id]
@@ -130,20 +140,13 @@ db_foreach channel_hash $channel_sql {
 	set channel "undefined_channel"
     }
 
-    ns_log Notice "report-area:"
-    ns_log Notice "report-area: area_id=$area_id, channel_id=$channel_id"
-
     foreach perm $dimension_perms {
-
 	# Add a "$" before every variable
 	set perm_subs [list]
 	foreach p $perm { lappend perm_subs "\$$p" }
-
 	set key_expr [join $perm_subs "-"]
 	set key [eval "set a \"$key_expr\""]
-	
-	set sum 0
-	if {[info exists channel_hash($key)]} { set sum $channel_hash($key) }
+	set sum [v channel_hash($key) 0]
 	if {"" == $aggregate} { set aggregate 0 }
 	set sum [expr $sum + $aggregate]
 	set channel_hash($key) $sum
@@ -152,44 +155,55 @@ db_foreach channel_hash $channel_sql {
 }
 
 
-
 # ----------------------------------------------------------------
 # Format the data 
 
 append header "<td class=rowtitle></td>"
+append header "<td class=rowtitle>$sigma</td>\n"
+append header "<td class=rowtitle>${sigma}%</td>\n"
 foreach channel_id $channel_list {
     append header "<td class=rowtitle>[im_category_from_id -translate_p 0 $channel_id]</td>\n"
 }
 append header "<td class=rowtitle>$sigma</td>\n"
 
+set total_tickets [v channel_hash() 0]
+
 foreach area_id $area_list {
-    set row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+    set row($area_id) ""
+
+    # Area name (from category)
+    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+
+    # Total column
+    set val [v channel_hash($area_id)]
+    append row($area_id) "<td>$val</td>"
+
+    # Total column
+    set val [v channel_hash($area_id)]
+    append row($area_id) "<td>$val</td>"
+
+    # List of category values
     foreach channel_id $channel_list {
-	set val "-"
-	set key "$area_id-$channel_id"
-	if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
+	set val [v channel_hash($area_id-$channel_id)]
 	append row($area_id) "<td>$val</td>"
     }
 
     # Last Column
-    set val "-"
     set key $area_id
-    if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
+    set val [v channel_hash($key)]
     append row($area_id) "<td>$val</td>"
 }
 
 append footer "<td>$sigma</td>\n"
 foreach channel_id $channel_list {
-    set val "-"
     set key "$channel_id"
-    if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
+    set val [v channel_hash($key)]
     append footer "<td>$val</td>"
 }
 
 # Last Column
-set val "-"
 set key ""
-if {[info exists channel_hash($key)]} { set val $channel_hash($key) }
+set val [v channel_hash($key)]
 append footer "<td>$val</td>"
 
 
@@ -255,7 +269,7 @@ db_foreach service_hash $service_sql {
 	set key [eval "set a \"$key_expr\""]
 	
 	set sum 0
-	if {[info exists service_hash($key)]} { set sum $service_hash($key) }
+	set sum [v service_hash($key)]
 	if {"" == $aggregate} { set aggregate 0 }
 	set sum [expr $sum + $aggregate]
 	set service_hash($key) $sum
@@ -276,31 +290,27 @@ append header "<td class=rowtitle>$sigma</td>\n"
 foreach area_id $area_list {
     append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
     foreach service_id $service_list {
-	set val "-"
 	set key "$area_id-$service_id"
-	if {[info exists service_hash($key)]} { set val $service_hash($key) }
+	set val [v service_hash($key)]
 	append row($area_id) "<td>$val</td>"
     }
 
     # Last Column
-    set val "-"
     set key $area_id
-    if {[info exists service_hash($key)]} { set val $service_hash($key) }
+    set val [v service_hash($key)]
     append row($area_id) "<td>$val</td>"
 }
 
 append footer "<td>$sigma</td>\n"
 foreach service_id $service_list {
-    set val "-"
     set key "$service_id"
-    if {[info exists service_hash($key)]} { set val $service_hash($key) }
+    set val [v service_hash($key)]
     append footer "<td>$val</td>"
 }
 
 # Last Column
-set val "-"
 set key ""
-if {[info exists service_hash($key)]} { set val $service_hash($key) }
+set val [v service_hash($key)]
 append footer "<td>$val</td>"
 
 
