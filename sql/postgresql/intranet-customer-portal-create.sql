@@ -113,6 +113,59 @@ SELECT  im_component_plugin__new (
 
 
 
+-- Set permissions on all Plugin Components for Employees, Freelancers and Customers.
+create or replace function inline_0 ()
+returns varchar as '
+DECLARE
+        v_count         integer;
+        v_plugin_id     integer;
+        row             RECORD;
+
+        v_emp_id        integer;
+        v_freel_id      integer;
+        v_cust_id       integer;
+	v_pm_id		integer;
+BEGIN
+        select group_id into v_emp_id from groups where group_name = ''Employees'';
+        select group_id into v_freel_id from groups where group_name = ''Freelancers'';
+        select group_id into v_cust_id from groups where group_name = ''Customers'';
+        select group_id into v_pm_id from groups where group_name = ''Project Managers'';
+
+
+        -- Check if permissions were already configured
+        -- Stop if there is just a single configured plugin.
+        select  count(*) into v_count
+        from    acs_permissions p,
+                im_component_plugins pl
+        where   p.object_id = pl.plugin_id;
+        IF v_count > 0 THEN return 0; END IF;
+
+        -- Add read permissions to - Requests for Quote -
+
+        select  plugin_id
+	into 	v_plugin_id
+        from    im_component_plugins pl
+	where   plugin_name = ''Requests for Quote''
+		and package_name = ''intranet-customer-portal'';
+
+        PERFORM im_grant_permission(v_plugin_id, v_pm_id, ''read'');
+        PERFORM im_grant_permission(v_plugin_id, v_cust_id, ''read'');
+
+        -- Add read permissions to - Financial Documents -
+
+        select  plugin_id
+        into    v_plugin_id
+        from    im_component_plugins pl
+        where   plugin_name = ''Financial Documents'' 
+		and package_name = ''intranet-customer-portal'';
+
+        PERFORM im_grant_permission(v_plugin_id, v_cust_id, ''read'');
+
+        return 0;
+END;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
 -- create new Category to 
 SELECT im_category_new ('380', 'Quote accepted', 'Intranet Project Status');
 
