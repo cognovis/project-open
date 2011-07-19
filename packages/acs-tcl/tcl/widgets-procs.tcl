@@ -1,7 +1,7 @@
 ad_library {
     UI widgets for use in forms, etc.
 
-    @cvs-id $Id: widgets-procs.tcl,v 1.16 2010/03/11 11:03:01 gustafn Exp $
+    @cvs-id $Id: widgets-procs.tcl,v 1.16.4.1 2011/05/20 08:27:30 victorg Exp $
 }
 
 ad_proc state_widget { {default ""} {select_name "usps_abbrev"}} "Returns a state selection box" {
@@ -79,7 +79,7 @@ ad_proc month_list {} "Returns list of month abbreviations" {
 }
 
 ad_proc long_month_list {} "Returns list of months" {
-    return  {January February March April May Jun July August September October November December}
+    return  {January February March April May June July August September October November December}
 }
 
 # use ad_integer_optionlist instead of month_value_list

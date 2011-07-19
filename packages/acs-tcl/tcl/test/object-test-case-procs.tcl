@@ -7,7 +7,7 @@ ad_library {
     @author byron Haroldo Linares Roman (bhlr@galileo.edu)
     @creation-date 2006-08-11
     @arch-tag: E1207E78-A4E3-4DC7-BEB7-49EA35B99D69
-    @cvs-id $Id: object-test-case-procs.tcl,v 1.5 2007/01/10 21:22:12 gustafn Exp $
+    @cvs-id $Id: object-test-case-procs.tcl,v 1.5.8.1 2011/07/02 20:06:15 donb Exp $
 }
 
 aa_register_case \
@@ -80,9 +80,7 @@ aa_register_case \
                   end;"
 
 		set type_drop_sql "begin
-                  acs_object_type.drop_type(
- 			object_type => :object_type,
- 			cascade_p => 't');
+                  acs_object_type.drop_type(object_type => :object_type);
                   end;"
 	    }
 
