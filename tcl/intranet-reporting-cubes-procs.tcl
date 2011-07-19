@@ -1479,8 +1479,6 @@ ad_proc im_reporting_cubes_ticket {
   		to_char(p.end_date, 'Q') as end_quarter_of_year,
   		to_char(p.end_date, 'IW') as end_week_of_year,
   		to_char(p.end_date, 'DD') as end_day_of_month,
-  		cust.company_name as customer_name,
-  		cust.company_path as customer_path,
                 [join $derefs ",\n\t\t"]
   	from
   		($inner_sql) p

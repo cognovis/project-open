@@ -124,7 +124,7 @@ set read_p [db_string report_perms "
 
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
-[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+	[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
 }
 
@@ -153,12 +153,12 @@ set page_title [lang::message::lookup "" intranet-reporting.Ticket_Cube "Ticket 
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
-
+[lang::message::lookup "" intranet-reporting.Ticket_Cube_Help "
 This Pivot Table ('cube') is a kind of report that shows 
 a number of characteristics of helpdesk tickets.
 This cube effectively replaces a dozen of specific reports and allows
 you to 'drill down' into results.
-"
+"]"
 
 
 # ------------------------------------------------------------
@@ -210,36 +210,31 @@ set this_url [export_vars -base "/intranet-reporting/ticket-cube" {start_date en
 # ------------------------------------------------------------
 # Options
 
-set aggregate_options {
-	"one"				"Number of Tickets"
-	"ticket_resolution_time"	"Resolution Time"
-	"cost_timesheet_logged_cache"	"Logged Hours"
-}
+set aggregate_options [list \
+	"one"					[lang::message::lookup "" intranet-reporting.Number_of_Tickets "Number of Tickets"] \
+	"ticket_resolution_time"		[lang::message::lookup "" intranet-reporting.Resolution_Time "Resolution Time"] \
+	"cost_timesheet_logged_cache"		[lang::message::lookup "" intranet-reporting.Logged_Hours "Logged Hours"] \
+]
 
-#	"reaction_time"			"Reaction Time"
+set top_vars_options [list \
+	""					[lang::message::lookup "" intranet-reporting.No_Date_Dimension "No Date Dimension"] \
+	"year"					[lang::message::lookup "" intranet-reporting.Year "Year"] \
+	"year quarter_of_year"			[lang::message::lookup "" intranet-reporting.Year_and_Quarter "Year and Quarter"] \
+	"year month_of_year"			[lang::message::lookup "" intranet-reporting.Year_and_Month "Year and Month"] \
+	"year quarter_of_year month_of_year"	[lang::message::lookup "" intranet-reporting.Year_Quarter_and_Month "Year, Quarter and Month"] \
+	"year quarter_of_year month_of_year day_of_month" [lang::message::lookup "" intranet-reporting.Year_Quarter_Month_and_Day "Year, Quarter, Month and Day"] \
+	"year week_of_year"			[lang::message::lookup "" intranet-reporting.Year_and_Week "Year and Week"] \
+	"quarter_of_year year"			[lang::message::lookup "" intranet-reporting.Quarter_and_Year "Quarter and Year (compare quarters)"] \
+	"month_of_year year"			[lang::message::lookup "" intranet-reporting.Month_and_Year "Month and Year (compare months)"] \
+]
 
-set top_vars_options {
-	"" "No Date Dimension" 
-	"year" "Year" 
-	"year quarter_of_year" "Year and Quarter" 
-	"year month_of_year" "Year and Month" 
-	"year quarter_of_year month_of_year" "Year, Quarter and Month" 
-	"year quarter_of_year month_of_year day_of_month" "Year, Quarter, Month and Day" 
-	"year week_of_year" "Year and Week"
-	"quarter_of_year year" "Quarter and Year (compare quarters)"
-	"month_of_year year" "Month and Year (compare months)"
-}
-
-set left_scale_options {
-	"" ""
-	"ticket_name" "Ticket - Name"
-	"ticket_nr" "Ticket - Nr"
-	"ticket_creation_user" "Ticket - Creation User"
-	"ticket_creation_user_dept" "Ticket - Creator's Department"
-	"customer_name" "Customer - Name"
-	"customer_type" "Customer - Type"
-	"customer_status" "Customer - Status"
-}
+set left_scale_options [list \
+	"" 					"" \
+	"ticket_name"				"Ticket - Name" \
+	"ticket_nr"				"Ticket - Nr" \
+	"ticket_creation_user"			"Ticket - Creation User" \
+	"ticket_creation_user_dept"		"Ticket - Creator's Department" \
+]
 
 
 # ------------------------------------------------------------
@@ -290,8 +285,6 @@ db_foreach dynfield_attributes $dynfield_sql {
     lappend derefs $deref
 }
 
-# ad_return_complaint 1 "$derefs <br> $left_scale_options"
-
 # ------------------------------------------------------------
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
 foreach var $dimension_vars {
@@ -329,88 +322,88 @@ ns_write "
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
-	  <td class=form-label>Start Date</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Start_Date "Start Date"]</td>
 	  <td class=form-widget colspan=3>
 	    <input type=textfield name=start_date value=$start_date>
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>End Date</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.End_Date "End Date"]</td>
 	  <td class=form-widget colspan=3>
 	    <input type=textfield name=end_date value=$end_date>
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Ticket Type</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Type "Ticket Type"]</td>
 	  <td class=form-widget colspan=3>
 	    [im_category_select -include_empty_p 1 "Intranet Ticket Type" ticket_type_id $ticket_type_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Ticket Status</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Status "Ticket Status"]</td>
 	  <td class=form-widget colspan=3>
 	    [im_category_select -include_empty_p 1 "Intranet Ticket Status" ticket_status_id $ticket_status_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Customer Type</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer_Type "Customer Type"]</td>
 	  <td class=form-widget colspan=3>
 	    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Customer</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer Customer]</td>
 	  <td class=form-widget colspan=3>
 	    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-widget colspan=4 align=center>&nbsp;<br>Aggregate</td>
+	  <td class=form-widget colspan=4 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Aggregate Aggregate]</td>
 	</tr>
 	<tr>
-	  <td class=form-label>Show:</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Show Show]</td>
 	  <td class=form-widget colspan=3>
 	    [im_select -translate_p 1 aggregate $aggregate_options $aggregate]
 	</td>
 	<tr>
-	  <td class=form-widget colspan=2 align=center>&nbsp;<br>Left-Dimension</td>
-	  <td class=form-widget colspan=2 align=center>&nbsp;<br>Top-Dimension</td>
+	  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Left_Dimension Left-Dimension]</td>
+	  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Top_Dimension Top-Dimension]</td>
 	</tr>
 	<tr>
-	  <td class=form-label>Left 1</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left1 "Left 1"]</td>
 	  <td class=form-widget>
 	    [im_select -translate_p 0 left_var1 $left_scale_options $left_var1]
 	  </td>
 
-	  <td class=form-label>Date Dimension</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Date_Dimension "Date Dimension"]</td>
 	    <td class=form-widget>
 	      [im_select -translate_p 0 top_var1 $top_vars_options $top_var1]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Left 2</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left2 "Left 2"]</td>
 	  <td class=form-widget>
 	    [im_select -translate_p 0 left_var2 $left_scale_options $left_var2]
 	  </td>
 
-	  <td class=form-label>Top 1</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top1 "Top 1"]</td>
 	  <td class=form-widget>
 	    [im_select -translate_p 0 top_var2 $left_scale_options $top_var2]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Left 3</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left3 "Left 3"]</td>
 	  <td class=form-widget>
 	    [im_select -translate_p 0 left_var3 $left_scale_options $left_var3]
 	  </td>
-	  <td class=form-label>Top 2</td>
+	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top2 "Top 2"]</td>
 	  <td class=form-widget>
 	    [im_select -translate_p 0 top_var3 $left_scale_options $top_var3]
 	  </td>
 	</tr>
 	<tr>
 	  <td class=form-label></td>
-	  <td class=form-widget colspan=3><input type=submit value=Submit></td>
+	  <td class=form-widget colspan=3><input type=submit value=[lang::message::lookup "" intranet-core.Submit Submit]></td>
 	</tr>
 	</table>
 </td>
@@ -427,7 +420,6 @@ ns_write "
 </form>
 </table>
 "
-
 
 # ------------------------------------------------------------
 # Get the cube data
