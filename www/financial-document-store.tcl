@@ -25,9 +25,9 @@ ad_page_contract {
 # Returns inquiries as JSON 
 # ---------------------------------------------------------------
 
-
 # todo: improve 
 set user_id [ad_maybe_redirect_for_registration]
+set row_count 0
 
 # we assume that user is member of only one company 
 set sql "
@@ -44,83 +44,84 @@ set sql "
 if { [catch {
             db_1row get_company_data $sql
 } err_msg] } {
-            ad_return_complaint 1 "We could not find a company for your account. Please get in touch with your 'Key Account Manager'"
+	ns_return 200 text/html "\{\"totalCount\":\"0\"\}"
 }
-
 
 # security: user must be either "Key Account" or "Accounting Contact" ToDo: ... or listed in package parameter
-set user_is_rimary_contact_or_accounting_contact [db_string get_view_id "select count(*) from im_companies where (primary_contact_id = :user_id or accounting_contact_id = :user_id) and company_id = $company_id" -default 0]
-if { !$user_is_rimary_contact_or_accounting_contact } { return 0 }
+set user_is_primary_contact_or_accounting_contact [db_string get_view_id "select count(*) from im_companies where (primary_contact_id = :user_id or accounting_contact_id = :user_id) and company_id = $company_id" -default 0]
+if { !$user_is_primary_contact_or_accounting_contact } {  
+	ns_return 200 text/html "\{\"totalCount\":\"0\"\}"
 
-
-set cur_format [im_l10n_sql_currency_format -locale en]
-
-set doc_query "
-select
-        i.invoice_id as id,
-        o.object_type,
-	ci.cost_name,
-        ci.currency as invoice_currency,
-        pr.project_nr,
-	pr.project_id,
-	to_char(ci.effective_date, 'YYYY-MM-DD') as doc_date,
-        to_char(ci.amount * (1 + coalesce(ci.vat,0)/100 + coalesce(ci.tax,0)/100), '$cur_format') as invoice_amount_formatted,
-        im_category_from_id(i.invoice_status_id) as status_id,
-        im_category_from_id(i.cost_type_id) as cost_type, 
-	ci.template_id
-from
-        im_invoices_active i,
-        im_costs ci
-	        LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
-        acs_objects o,
-        im_companies c,
-        im_companies p
-where
-        i.invoice_id = o.object_id
-        and i.invoice_id = ci.cost_id
-        and i.customer_id=c.company_id
-        and i.provider_id=p.company_id
-	and c.company_id = $company_id
-order by 
-	i.invoice_id
-limit   :limit
-offset  :start 
-
-
-"
-
-set row_count 0
-db_multirow -extend { invoice_status } docs doc_query $doc_query {
-    	set invoice_status [im_category_from_id $status_id]
-
-	if { ""==$cost_name } { 
-	        set cost_name "---" 
-	} else {
-                set cost_name "<a href='/intranet-invoices/view?invoice_id=$id&render_template_id=$template_id'>$cost_name</a>"
+} else {
+    set cur_format [im_l10n_sql_currency_format -locale en]
+    set doc_query "
+	select
+	        i.invoice_id as id,
+	        o.object_type,
+		ci.cost_name,
+	        ci.currency as invoice_currency,
+	        pr.project_nr,
+		pr.project_id,
+		to_char(ci.effective_date, 'YYYY-MM-DD') as doc_date,
+	        to_char(ci.amount * (1 + coalesce(ci.vat,0)/100 + coalesce(ci.tax,0)/100), '$cur_format') as invoice_amount_formatted,
+	        im_category_from_id(i.invoice_status_id) as status_id,
+	        im_category_from_id(i.cost_type_id) as cost_type, 
+		ci.template_id
+	from
+	        im_invoices_active i,
+	        im_costs ci
+		        LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
+	        acs_objects o,
+	        im_companies c,
+	        im_companies p
+	where
+	        i.invoice_id = o.object_id
+	        and i.invoice_id = ci.cost_id
+	        and i.customer_id=c.company_id
+	        and i.provider_id=p.company_id
+		and c.company_id = $company_id
+	order by 
+		i.invoice_id
+	limit   :limit
+	offset  :start 
+	
+	
+	"
+	
+	db_multirow -extend { invoice_status } docs doc_query $doc_query {
+	    	set invoice_status [im_category_from_id $status_id]
+	
+		if { ""==$cost_name } { 
+		        set cost_name "---" 
+		} else {
+	                set cost_name "<a href='/intranet-invoices/view?invoice_id=$id&render_template_id=$template_id'>$cost_name</a>"
+		}
+		set project_nr "<a href='/intranet/projects/view?project_id=$project_id'>$project_nr</a>"
+		incr row_count
 	}
-	set project_nr "<a href='/intranet/projects/view?project_id=$project_id'>$project_nr</a>"
-	incr row_count
+	
+	set sql "
+	select 
+		count(*)
+	from
+	        im_invoices_active i,
+	        im_costs ci
+	                LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
+	        acs_objects o,
+	        im_companies c,
+	        im_companies p
+	where
+	        i.invoice_id = o.object_id
+	        and i.invoice_id = ci.cost_id
+	        and i.customer_id=c.company_id
+	        and i.provider_id=p.company_id
+	        and c.company_id = $company_id
+	"
+	
+	
+	if { 0 == $row_count} {
+		set docs_count 0
+	} else {
+		set docs_count [db_string get_count $sql -default 0]
+	}
 }
-
-set sql "
-select 
-	count(*)
-from
-        im_invoices_active i,
-        im_costs ci
-                LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
-        acs_objects o,
-        im_companies c,
-        im_companies p
-where
-        i.invoice_id = o.object_id
-        and i.invoice_id = ci.cost_id
-        and i.customer_id=c.company_id
-        and i.provider_id=p.company_id
-        and c.company_id = $company_id
-"
-
-set docs_count [db_string get_count $sql -default 0]
-
-
-
