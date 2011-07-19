@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.28 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -329,6 +329,21 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadUser(contact_record);
+		
+		//If Ticket is closed, disable the buttons.
+		var ticketStatusId=rec.get('ticket_status_id');;
+		var buttonToolbar = Ext.getCmp('ticketContactForm').getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');	
+		var addButton = buttonToolbar.getComponent('addButton');	
+		var createButton = buttonToolbar.getComponent('createButton');	
+
+		if (ticketStatusId == '30001'){
+			saveButton.hide();
+			addButton.hide();
+		} else {
+			saveButton.show();
+			addButton.show();	
+		}		
 	},
 
 	loadUser: function(rec){

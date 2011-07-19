@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.40 2011/07/12 08:54:42 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -140,7 +140,8 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_incoming_channel_id',	//
 		'ticket_outgoing_channel_id',
 
-		'ticket_area_id',		// Area y programa
+		'ticket_area_id',		// Area
+		'ticket_program_id', // programa
 		'ticket_file',			// expediente
 		'ticket_request',		// expediente
 		'ticket_resolution',		// expediente
@@ -502,8 +503,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_request',		// expediente
 		'ticket_resolution',		// Expediente
 
-		'ticket_program_id',		//
-		'ticket_area_id',		//
+		'ticket_program_id',		// Program
+		'ticket_area_id',		// Area
 	
 		// fields from im_ticket
 		'ticket_alarm_action',

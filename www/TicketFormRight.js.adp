@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.39 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -73,6 +73,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false
 			}, {
+				name:		'ticket_escalation_date',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
+				xtype:		'po_datetimefield_read_only',
+				disabled:	false
+			}, {
+				name:		'ticket_done_date',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
+				xtype:		'po_datetimefield_read_only',
+				disabled:	false
+			}, {
 				name:		'ticket_incoming_channel_id',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
 				xtype:		'combobox',
@@ -86,16 +96,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
 				}
-			}, {
-				name:		'ticket_done_date',
-				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
-				xtype:		'po_datetimefield_read_only',
-				disabled:	false
-			}, {
-				name:		'ticket_escalation_date',
-				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
-				xtype:		'po_datetimefield_read_only',
-				disabled:	false
 			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
@@ -413,7 +413,18 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			queueField.show();
 			queueField.setValue(ticket_queue_id);
 		}
-
+		
+		//If the Ticket is close, hide the buttons
+		var buttonToolbar = this.getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');	
+		var rejectButton = buttonToolbar.getComponent('rejectButton');		
+		if (ticket_status_id == '30001'){
+			saveButton.hide();
+			rejectButton.hide();
+		} else {
+			saveButton.show();
+			rejectButton.show();			
+		}
 
 		// Calculate the drop-down box for escalation
 		var programId = rec.get('ticket_area_id');

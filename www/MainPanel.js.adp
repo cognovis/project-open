@@ -6,7 +6,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: MainPanel.js.adp,v 1.7 2011/06/15 08:11:12 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -64,6 +64,31 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'sample',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel'
+/*
+      listeners: {
+          deactivate: function(){
+						// Show a dialog
+						var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+						var ticket_id = ticket_id_field.getValue();
+						var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
+						//There is a ticked that is not closed and dirty			
+						if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
+							Ext.Msg.show({
+						     title:'Save Changes?',
+						     msg: 'You are closing a tab that has unsaved changes. Would you like to save your changes?',
+						     buttons: Ext.Msg.YESNO,
+						     icon: Ext.Msg.QUESTION,
+						     fn: function(btn){
+						     		if (btn == 'yes'){
+						     			//Save Ticket
+											ticketModel.save();						     			
+						     		}
+						     }
+							});
+						}            
+          }
+      }	
+*/			
 		}]
 	}]
 });
