@@ -1259,6 +1259,7 @@ ad_proc -private im_rest_get_im_categories {
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
+    set value ""
     set result ""
     set obj_ctr 0
     db_foreach objects $sql {
@@ -1479,7 +1480,7 @@ ad_proc -private im_rest_post_object_type {
 		# Return a JSON structure with all fields of the object.
 		set data_list [list]
 		foreach key [array names hash_array] {
-		set value $hash_array($key)
+		    set value $hash_array($key)
 		    lappend data_list "\"$key\": \"[im_quotejson $value]\""
 		}
 		
@@ -1535,7 +1536,7 @@ ad_proc -private im_rest_delete_object {
     }
 
     if {[catch {
-	set nuke_tcl [list "${nuke_otype}_nuke" -user_id $user_id $rest_oid]
+	set nuke_tcl [list "${nuke_otype}_nuke" -current_user_id $user_id $rest_oid]
 	eval $nuke_tcl
 
     } err_msg]} {

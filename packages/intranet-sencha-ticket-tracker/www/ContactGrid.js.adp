@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.12 2011/07/18 12:05:29 po34demo Exp $
+ * @cvs-id $Id: ContactGrid.js.adp,v 1.14 2011/07/18 18:37:15 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -234,5 +234,38 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 				}
 			}
 		});
+	},
+
+	// The user has pressed the "New" button.
+	// Tell the ContactForm to clean the data
+	onNew: function() {
+		var contactForm = Ext.getCmp('contactForm');
+		contactForm.newContact();
+	},
+
+	// The user has pressed the "Delete" button in the contact list page
+	onDelete: function() {
+
+		// Get the selected user (only one!)
+		var selection = this.selModel.getSelection();
+		var userModel = selection[0];
+
+		// Delete the user. This triggers a DELETE server request
+		userModel.destroy({
+			success: function(record, operation) {
+				contactGridStore.remove(userModel);
+				userStore.remove(userModel);
+			},
+			failure: function(record, operation) {
+				Ext.Msg.alert('Error borrando User #'+userModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar users.', operation.request.scope.reader.jsonData["message"]);
+			}
+		});
+
+
+	},
+
+	onCopy: function() {
+		alert('ContactGrid.onCopy() not implemented yet');
 	}
+
 });

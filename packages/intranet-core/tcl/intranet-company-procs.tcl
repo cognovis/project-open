@@ -560,16 +560,24 @@ ad_proc -public im_company_select {
 # -----------------------------------------------------------
 
 
-ad_proc im_company_nuke {company_id} {
+ad_proc im_company_nuke {
+    {-current_user_id 0}
+    company_id
+} {
     Nuke (complete delete from the database) a company
 } {
     ns_log Notice "im_company_nuke company_id=$company_id"
 
+    # Use a predefined user_id to avoid a call to ad_get_user_id.
+    # ad_get_user_id's connection isn't defined during a DELETE REST request.
+    if {0 == $current_user_id} { 
+	ns_log Notice "im_company_nuke: No current_user_id specified - using ad_get_user_id"
+	set current_user_id [ad_get_user_id] 
+    }
+
     # Log the action
     im_audit -object_type "im_company" -object_id $company_id -action before_delete
 
-    set current_user_id [ad_get_user_id]
-    set user_id $current_user_id
     set company_exists_p [db_string exists "select count(*) from im_companies where company_id = :company_id"]
     if {!$company_exists_p} { return }
 
@@ -590,7 +598,7 @@ ad_proc im_company_nuke {company_id} {
 	from im_projects
 	where company_id = :company_id"
     db_foreach delete_projects $companies_projects_sql {
-	im_project_nuke $project_id
+	im_project_nuke -current_user_id $current_user_id $project_id
     }
 
     # Delete the offices for this company
@@ -607,7 +615,7 @@ ad_proc im_company_nuke {company_id} {
     "
     db_foreach delete_offices $companies_offices_sql {
 	db_dml unlink_offices "update im_companies set main_office_id = (select min(office_id) from im_offices) where main_office_id = :office_id"
-	im_office_nuke $office_id
+	im_office_nuke -current_user_id $current_user_id $office_id
     }
 
     db_transaction {
@@ -768,7 +776,7 @@ ad_proc im_company_nuke {company_id} {
 		where company_id = :company_id"
 
     } on_error {
-    
+
 	set detailed_explanation ""
 	if {[ regexp {integrity constraint \([^.]+\.([^)]+)\)} $errmsg match constraint_name]} {
 	    
@@ -777,22 +785,9 @@ ad_proc im_company_nuke {company_id} {
 	    db_foreach user_constraints_by_name $sql {
 		set detailed_explanation "<p>[_ intranet-core.lt_It_seems_the_table_we]"
 	    }
-	    
 	}
-	ad_return_error "[_ intranet-core.Failed_to_nuke]" "
-		[_ intranet-core.lt_The_nuking_of_user_us]
-		$detailed_explanation
-		<p>
-		[_ intranet-core.lt_For_good_measure_here]
-		<blockquote>
-		<pre>
-		$errmsg
-		</pre>
-		</blockquote>
-	"
-	return
+	return "$detailed_explanation<br><pre>$errmsg</pre>"
     }
-    set return_to_admin_link "<a href=\"/intranet/companies/\">[_ intranet-core.lt_return_to_user_admini]</a>" 
     return
 }
 

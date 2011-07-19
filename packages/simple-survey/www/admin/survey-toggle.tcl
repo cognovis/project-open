@@ -8,7 +8,7 @@ ad_page_contract {
     @author raj@alum.mit.edu
     @author nstrug@arsdigita.com
     @creation-date   February 9, 2000
-    @cvs-id $Id: survey-toggle.tcl,v 1.1.1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id: survey-toggle.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
 } {
     survey_id:integer
     enabled_p
