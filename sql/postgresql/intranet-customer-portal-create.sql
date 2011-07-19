@@ -131,15 +131,6 @@ BEGIN
         select group_id into v_cust_id from groups where group_name = ''Customers'';
         select group_id into v_pm_id from groups where group_name = ''Project Managers'';
 
-
-        -- Check if permissions were already configured
-        -- Stop if there is just a single configured plugin.
-        select  count(*) into v_count
-        from    acs_permissions p,
-                im_component_plugins pl
-        where   p.object_id = pl.plugin_id;
-        IF v_count > 0 THEN return 0; END IF;
-
         -- Add read permissions to - Requests for Quote -
 
         select  plugin_id
