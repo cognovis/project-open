@@ -35,7 +35,7 @@ ad_proc -public im_list_rfqs_component {} {
         # CSS Adjustemnts to ExtJS
         template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
         # Include Component JS
-        template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
+        template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 2
     }
 
     set html_output "<div id='gridRFQ'></div><br>"
