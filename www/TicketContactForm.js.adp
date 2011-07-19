@@ -329,6 +329,21 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadUser(contact_record);
+		
+		//If Ticket is closed, disable the buttons.
+		var ticketStatusId=rec.get('ticket_status_id');;
+		var buttonToolbar = Ext.getCmp('ticketContactForm').getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');	
+		var addButton = buttonToolbar.getComponent('addButton');	
+		var createButton = buttonToolbar.getComponent('createButton');	
+
+		if (ticketStatusId == '30001'){
+			saveButton.hide();
+			addButton.hide();
+		} else {
+			saveButton.show();
+			addButton.show();	
+		}		
 	},
 
 	loadUser: function(rec){

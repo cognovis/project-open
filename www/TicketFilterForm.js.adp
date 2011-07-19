@@ -100,13 +100,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
-	}, {
+	},  {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
-		name:		'ticket_area_id',
+		name:		'ticket_program_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
 		valueField:	'category_id',
-		store:		ticketAreaStore,
+		store:		programTicketAreaStore,
 		queryMode:	'local',
         	width: 		300,
 		forceSelection: true,
@@ -116,7 +116,38 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			}
 		},
 		listeners: {
-			'change': function(field, values) { if (null == values) { this.reset(); }},
+			'change': function(field, values) { 
+									if (null == values) { this.reset();}
+									var ticket_area_id =  Ext.getCmp('ticketFilterForm').getForm().findField('ticket_area_id');
+									ticket_area_id.reset();
+									if (ticket_area_id.store.filters.length > 0) {
+										//Filter value is modified with the new value selected.
+										ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
+									} else {
+										//New filters is created with the value selected
+										ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
+									}
+									ticket_area_id.store.load();
+			},
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
+	}, {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
+		name:		'ticket_area_id',
+		xtype:		'combobox',
+		displayField:	'category_translated',
+		valueField:	'category_id',
+		store:		areaTicketAreaStore,
+		queryMode:	'local',
+        	width: 		300,
+		forceSelection: true,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		},
+		listeners: {
+			'change': function(field, values) {if (null == values) { this.reset(); }},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {

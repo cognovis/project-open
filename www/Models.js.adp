@@ -140,7 +140,8 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_incoming_channel_id',	//
 		'ticket_outgoing_channel_id',
 
-		'ticket_area_id',		// Area y programa
+		'ticket_area_id',		// Area
+		'ticket_program_id', // programa
 		'ticket_file',			// expediente
 		'ticket_request',		// expediente
 		'ticket_resolution',		// expediente
@@ -502,8 +503,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_request',		// expediente
 		'ticket_resolution',		// Expediente
 
-		'ticket_program_id',		//
-		'ticket_area_id',		//
+		'ticket_program_id',		// Program
+		'ticket_area_id',		// Area
 	
 		// fields from im_ticket
 		'ticket_alarm_action',
