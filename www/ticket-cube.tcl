@@ -14,7 +14,7 @@ ad_page_contract {
     { top_var1 "year quarter_of_year" }
     { top_var2 "" }
     { top_var3 "" }
-    { left_var1 "customer_name" }
+    { left_var1 "company_name" }
     { left_var2 "" }
     { left_var3 "" }
     { ticket_status_id:multiple "" }
@@ -245,6 +245,7 @@ set left_scale_options [list \
 set dynfield_sql "
 	select	aa.attribute_name,
 		aa.pretty_name as attribute_pretty_name,
+		ot.object_type,
 		ot.pretty_name as object_type_pretty_name,
 		w.widget as tcl_widget,
 		w.widget_name as dynfield_widget,
@@ -269,8 +270,10 @@ set dynfield_sql "
 set derefs [list]
 db_foreach dynfield_attributes $dynfield_sql {
 
+    set object_type_l10n [lang::message::lookup "" intranet-reporting.Object_type_$object_type $object_type_pretty_name]
+    set attrib_l10n [lang::message::lookup "" intranet-reporting.Attribute_$attribute_name $attribute_pretty_name]
     lappend left_scale_options ${attribute_name}_deref
-    lappend left_scale_options "$object_type_pretty_name - $attribute_pretty_name"
+    lappend left_scale_options "$object_type_l10n - $attrib_l10n"
 
     # How to dereferentiate the attribute_name to attribute_name_deref?
     # The code is going to be executed as part of an SQL
