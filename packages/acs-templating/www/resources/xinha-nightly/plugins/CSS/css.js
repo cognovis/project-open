@@ -6,7 +6,7 @@
 // Distributed under the same terms as HTMLArea itself.
 // This notice MUST stay intact for use (see license.txt).
 //
-// $Id: CSS.js,v 1.3 2010/05/23 11:58:33 gustafn Exp $
+// $Id: css.js,v 1.10 2010/05/23 11:58:33 gustafn Exp $
 // @TODO This is the default and won't be very useful to others.
 // We should make this better.
 Xinha.Config.prototype.cssPluginConfig =
