@@ -1,4 +1,6 @@
 @html;noquote@
 <div id='grid_uploaded_files'></div>
-@js_include;noquote@
+<script type=text/javascript>
+	@js_include;noquote@
+</script>
 <br>
