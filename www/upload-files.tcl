@@ -117,13 +117,14 @@ if {[im_openacs54_p]} {
     # Load Sencha libs 
     template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
     template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+
     # CSS Adjustemnts to ExtJS
     template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
+
     # Load SuperSelectBox
     template::head::add_css -href "/intranet-customer-portal/resources/css/BoxSelect.css" -media "screen" -order 2
     template::head::add_javascript -src "/intranet-customer-portal/resources/js/BoxSelect.js" -order 100
 }
-
 
 # ---------------------------------------------------------------
 # Set HTML elements
@@ -133,7 +134,7 @@ if {[im_openacs54_p]} {
 set source_language_id 0
 set include_source_language_country_locale [ad_parameter -package_id [im_package_translation_id] SourceLanguageWithCountryLocaleP "" 0]
 
-set source_language_combo [im_trans_language_select -include_country_locale $include_source_language_country_locale source_language_id $source_language_id]
+set source_language_combo [im_trans_language_select_cp -include_country_locale $include_source_language_country_locale source_language_id $source_language_id ]
 # set source_language_combo [im_trans_language_select -include_country_locale $include_source_language_country_locale]
 
 
@@ -151,6 +152,16 @@ set source_language_combo [im_trans_language_select -include_country_locale $inc
 if { "" == $reset_p } { set reset_p 0 }
 if { "" == $cancel_p } { set cancel_p 0 }
 
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset_p&cancel_p=$cancel_p" -order 2
-
-
+if {[im_openacs54_p]} {
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset_p&cancel_p=$cancel_p" -order 2
+    set js_include ""
+} else {
+    
+    set params [list \
+                    [list inquiry_id $inquiry_id] \
+		    [list security_token $security_token] \
+		    [list reset_p $reset_p] \
+		    [list cancel_p $cancel_p] \
+		    ]
+    set js_include [ad_parse_template -params $params "/packages/intranet-customer-portal/www/resources/js/upload-files-form.js"]
+}

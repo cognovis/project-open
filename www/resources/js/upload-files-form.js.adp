@@ -6,13 +6,13 @@ Ext.BLANK_IMAGE_URL = '/intranet/images/cleardot.gif';
 
 // SuperSelectBox Target Language
 var tempIdCounter = 0;
-
+/*
 Ext.require([
     'Ext.form.field.File',
     'Ext.form.Panel',
     'Ext.window.MessageBox'
 ]);
-
+*/
 
 Ext.onReady(function(){
 
@@ -29,24 +29,6 @@ Ext.onReady(function(){
 		}, 
 		sourceNotEmptyText: 'Please provide a value for "Source Language"'
 	});  
-
-        sourceLanguageForm = new Ext.FormPanel({
-            id: 'sourceLanguageForm_id',
-            renderTo: 'source_language_placeholder',
-	    autoHeight: true,
-	    width: 150,
-            style: { "margin-right": "10px" },
-          items: [{
-                xtype: 'combo',
-		transform: 'source_language_id',
-		allowBlank: false,
-		blankText: 'Please provide a value',
-	        fieldLabel: 'Source Language',
-        	labelAlign: 'top',
-	        labelWidth: 150,
-		vtype:'sourceNotEmpty'
-            }]
-        });
 
 	// ************** Panel: UploadedFiles Data Grid*** //
 
@@ -238,7 +220,8 @@ Ext.onReady(function(){
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
 		
-		var source_language = form_source_language.elements[0].value;
+		// V4.0: var source_language = form_source_language.elements[0].value;
+		var source_language = document.getElementById("form_source_language").elements[0].value;
 		var target_languages = targetLanguageForm.getForm().findField('target_language_id').getValue();
 
 		// toDo: Improve
@@ -307,6 +290,24 @@ Ext.onReady(function(){
 	document.getElementById('tableUploadedFiles').style.visibility='hidden';
 	document.getElementById('titleUploadedFiles').style.visibility='hidden';
 	document.getElementById('sendButtons').style.visibility='hidden';
+
+        sourceLanguageForm = new Ext.FormPanel({
+            id: 'sourceLanguageForm_id',
+            renderTo: 'source_language_placeholder',
+            autoHeight: true,
+            width: 150,
+            style: { "margin-right": "10px" },
+          items: [{
+                xtype: 'combo',
+                transform: 'source_language_id',
+                allowBlank: false,
+                blankText: 'Please provide a value',
+                fieldLabel: 'Source Language',
+                labelAlign: 'top',
+                labelWidth: 150,
+                vtype:'sourceNotEmpty'
+            }]
+        });
 });
 
 
