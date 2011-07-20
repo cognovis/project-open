@@ -134,7 +134,9 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				width:	60,
 				sortable:	true, 
 				renderer: function(value, o, record) {
-					return profileStore.name_from_id(record.get('ticket_queue_id'));
+				    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+				    if ('Employees' == queueName) { queueName = ''; }
+				    return queueName;
 				}
 			}, {
 				header:	'#intranet-helpdesk.Creator#',

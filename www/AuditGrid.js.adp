@@ -108,7 +108,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
+	    if ("Employees" == queueName) { queue_name = ''; }
+	    return queueName;
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',
