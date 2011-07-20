@@ -160,9 +160,12 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
 				var ticket_id = ticket_id_field.getValue();
 				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-				var ticketModelFieldValue =  ticketModel.get(field.name);
-				if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
-					ticketModel.setDirty();
+				
+				if (ticketModel != null && ticketModel != undefined) {
+					var ticketModelFieldValue =  ticketModel.get(field.name);
+					if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+						ticketModel.setDirty();
+					}
 				}
 			}
 		}    
