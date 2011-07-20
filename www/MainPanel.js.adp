@@ -63,34 +63,44 @@ Ext.define('TicketBrowser.Main', {
 		}, {
 			itemId: 'sample',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
-			xtype: 'ticketCompoundPanel'
-/*
+			xtype: 'ticketCompoundPanel',
       listeners: {
           deactivate: function(){
-						// Show a dialog
+						// Show a dialog to save changes in ticket
 						var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
 						var ticket_id = ticket_id_field.getValue();
 						var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
 						//There is a ticked that is not closed and dirty			
 						if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
 							Ext.Msg.show({
-						     title:'Save Changes?',
-						     msg: 'You are closing a tab that has unsaved changes. Would you like to save your changes?',
-						     buttons: Ext.Msg.YESNO,
-						     icon: Ext.Msg.QUESTION,
+						     title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+						     msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+						    //'You are closing a tab that has unsaved changes. Would you like to save your changes?',
+						    // buttons: Ext.Msg.YESNO,
+						     //icon: Ext.Msg.QUESTION,
+						     buttons: Ext.Msg.OK,
+						     icon: Ext.Msg.WARNING,
 						     fn: function(btn){
+						     		ticketModel.dirty = false;
 						     		if (btn == 'yes'){
 						     			//Save Ticket
-											ticketModel.save();						     			
+											ticketModel.dirty = false;     			
 						     		}
 						     }
 							});
-						}            
+						}
+						//this.checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
           }
-      }	
-*/			
+      }			
 		}]
-	}]
+	}],
+	
+	checkButton: function (component_id,docked_component_id,button_id,disable){
+		var ticketActionBar = Ext.getCmp(component_id).getDockedComponent(docked_component_id);
+		var buttonCopyTicket = tb.getComponent(button_id);
+		buttonCopyTicket.setDisable(disable);		
+	}
+		
 });
 
 

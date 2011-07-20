@@ -32,7 +32,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	fieldDefaults: {
 		msgTarget:	'side',
 		labelWidth:	125,
-		typeAhead:	true
+		typeAhead:	true				
 	},
 	items: [{
 		name:		'company_id',
@@ -71,7 +71,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				// Inform the TicketCustomerPanel about the new company
 				var contactPanel = Ext.getCmp('ticketContactPanel');
 				contactPanel.loadCustomer(cust);
-			}
+			},
+			change: function (field,newValue,oldValue) {
+				 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+			}			
 		}
 	}, {
 		name:		'company_name',
@@ -254,7 +257,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// load the customer's information into the form.
 		this.loadRecord(cust);
-
+		
 		// Show the form
 		this.show();
 

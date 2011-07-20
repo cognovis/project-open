@@ -149,7 +149,23 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
         this.child('#east').child('#fileStorageGrid').loadTicket(rec);
-    }
+        //Inicialize dirty. There is no changes after load.
+				var ticketModel = ticketStore.findRecord('ticket_id',rec.get('ticket_id'));
+				ticketModel.dirty = false;        
+    },
+    
+		//If the field value is diferent from store value, set model dirty variable to true
+		checkTicketField: function(field,newValue,oldValue,store) { 
+			if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
+				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+				var ticket_id = ticket_id_field.getValue();
+				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+				var ticketModelFieldValue =  ticketModel.get(field.name);
+				if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+					ticketModel.setDirty();
+				}
+			}
+		}    
 
 });
 

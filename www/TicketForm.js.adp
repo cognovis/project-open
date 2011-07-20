@@ -42,8 +42,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        value:          '',
 	        displayField:   'pretty_name',
 	        valueField:     'id',
-		typeAhead:	true
+					typeAhead:	true,
+					listeners: {
+								change: function (field,newValue,oldValue) {
+									 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+								}
+					}							
 	},
+	
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
@@ -275,8 +281,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			form.findField('ticket_area_id').select(ticket_program_id);					// The real "program" field
 
 			// fraber 110720: Should be stored in Model anyway, right?
-			// var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
-			// ticket_file.setValue(rec.get('ticket_file'));
+			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
+			ticket_file.setValue(rec.get('ticket_file'));
 		}
 			
 		//If Ticket is closed, disable the buttons.

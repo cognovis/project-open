@@ -60,6 +60,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			}
 		}
 	}, {
+		id: 'buttonCopyTicket',
 		text:		'#intranet-sencha-ticket-tracker.Copy_Ticket#',
 		iconCls:	'icon-new-ticket',
 		handler: function(btn, pressed){
