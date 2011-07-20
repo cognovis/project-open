@@ -41,9 +41,10 @@ ad_page_contract {
 # 
 # show only for new customers
 
-
 # set type to JS
-ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"
+if {[im_openacs54_p]} {
+    ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"
+}
 
 # Get temp path for link 
 set temp_path [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "TempPath" -default "/tmp"]
