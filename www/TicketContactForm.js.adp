@@ -205,17 +205,19 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			};
 			var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
 			member_model.phantom = true;
-			member_model.save({
-				scope: Ext.getCmp('ticketCompoundPanel'),
-				success: function(record, operation) {
-					// reload the entire form AFTER the relationship was saved
-					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_model);	
-				},
-				failure: function(record, operation) { 
-					Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
-				}
-			});
+			if (75464 != customer_id) {		// Exclude "Anonymous" customer
+				member_model.save({
+					scope: Ext.getCmp('ticketCompoundPanel'),
+					success: function(record, operation) {
+						// reload the entire form AFTER the relationship was saved
+						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+						compoundPanel.loadTicket(ticket_model);	
+					},
+					failure: function(record, operation) { 
+						Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+					}
+				});
+			}
 		}
 	}, {
 		text:		'#intranet-sencha-ticket-tracker.Create_New_Contact#',
@@ -280,16 +282,18 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					};
 					var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
 					member_model.phantom = true;
-					member_model.save({
-						scope: Ext.getCmp('ticketCompoundPanel'),
-						success: function(record, operation) {
-							// reload the entire form AFTER the relationship was saved
-							this.loadTicket(ticket_model);
-						},
-						failure: function(record, operation) { 
-							Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
-						}
-					});
+					if (75464 != customer_id) {		// Don't save for Anonymous
+						member_model.save({
+							scope: Ext.getCmp('ticketCompoundPanel'),
+							success: function(record, operation) {
+								// reload the entire form AFTER the relationship was saved
+								this.loadTicket(ticket_model);
+							},
+							failure: function(record, operation) { 
+								Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+							}
+						});
+					}
 
 					// Add the users to the group "Customers".
 					// This code doesn't need to be synchronized.
