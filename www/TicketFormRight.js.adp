@@ -46,7 +46,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		queryMode:	'local',
 		value:		'',
 		displayField:   'pretty_name',
-		valueField:	'id'
+		valueField:	'id'		
 	},
 	items: [
 
@@ -67,6 +67,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			frame:		false,
 			width:		800,
 			layout: 	{ type: 'table', columns: 3 },
+			defaults: {		
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},
 			items :[{
 				name:		'ticket_creation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_Date#',
@@ -112,6 +119,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			frame:		false,
 			width:		800,
 			layout: 	{ type: 'table', columns: 2 },
+			defaults: {		
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},			
 			items :[{
 				name:		'ticket_request',
 				xtype:		'textareafield',
@@ -135,6 +149,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			width:		800,
 	
 			layout: 	{ type: 'table', columns: 3 },
+			defaults: {		
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},				
 			items :[{
 				name:		'ticket_closed_in_1st_contact_p',
 				xtype:		'checkbox',
@@ -192,15 +213,20 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			}]
 	
 		}, {
-	
 			xtype:		'fieldset',
 			title:		'',
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
 			width:		800,
-	
 			layout: 	{ type: 'table', columns: 2 },
+			defaults: {		
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},				
 			items :[{
 				fieldLabel:	'#intranet-core.Status#',
 				name:		'ticket_status_id',
@@ -258,7 +284,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							break;
 					};
 
-				    }
+				    },
+					change: function (field,newValue,oldValue) {
+						 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+					}				    
 				}
 			}, {
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalated#',
