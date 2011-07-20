@@ -21,10 +21,11 @@ ad_page_contract {
     @param dynview
     @author klaus.hofeditz@project-open.com
 } {
-    { security_token "" }
-    { inquiry_id "" }
-    { reset_p "" }
-    { cancel_p "" }
+
+    security_token:optional
+    inquiry_id:integer,optional
+    reset_p:optional
+    cancel_p:optional
 }
 
 # ad_return_complaint 1 "KHD: inquiry_id: $inquiry_id"
@@ -47,11 +48,10 @@ if { ""==$cancel_p } { set cancel_p 0 }
 # Build form 
 # ---------------------------------------------------------------
 # 
-# show only for new customers
-
 
 # set type to JS
-ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"
-
+if {[im_openacs54_p]} {
+    ns_set put [ad_conn outputheaders] "content-type" "application/x-javascript; charset=utf-8"
+} 
 
 
