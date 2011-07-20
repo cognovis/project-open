@@ -276,11 +276,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var ticket_program_model = ticketAreaStore.getById(ticket_program_id);
 		if (ticket_program_model != null && ticket_program_model != undefined){
 			var ticket_program_tree_sortkey = ticket_program_model.get('tree_sortkey');
-			var ticket_program_tree_sortkey_cut = ticket_program_tree_sortkey.substring(3,8);
+			var ticket_program_tree_sortkey_cut = '' + parseInt(ticket_program_tree_sortkey.substring(0,8),'10');
 			form.findField('ticket_program_id').select(ticket_program_tree_sortkey_cut);			// The real "area" field
 			form.findField('ticket_area_id').select(ticket_program_id);					// The real "program" field
 
 			// fraber 110720: Should be stored in Model anyway, right?
+			// dblao 110720: No, 'ticket_file' value is calculated when 'ticket_area_id' changes (event), the real stored value must be reloaded.
 			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
 			ticket_file.setValue(rec.get('ticket_file'));
 		}
