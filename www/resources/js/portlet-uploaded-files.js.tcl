@@ -22,7 +22,7 @@ ad_page_contract {
     @author klaus.hofeditz@project-open.com
 } {
     { security_token "" }
-    { inquiry_id "" }
+    inquiry_id:integer,optional
 }
 
 # ---------------------------------------------------------------
