@@ -101,7 +101,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	},  {
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_program_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
@@ -132,7 +132,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
