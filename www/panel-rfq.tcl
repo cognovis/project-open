@@ -181,12 +181,13 @@ db_foreach column_list_sql $column_sql {
 
 set inquiry_id [db_string get_inquiry_id "select inquiry_id from im_inquiries_customer_portal where project_id=$project_id" -default 0]
 
-# Load ExtJS libs
-template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
-template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
-
-# Load ExtJS "Uploaded Files Portlet"
-template::head::add_javascript -src "/intranet-customer-portal/resources/js/portlet-uploaded-files.js?inquiry_id=$inquiry_id" -order "2"
+if {[im_openacs54_p]} {
+    # Load ExtJS "Uploaded Files Portlet"
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/portlet-uploaded-files.js?inquiry_id=$inquiry_id" -order "2"
+    set js_include ""
+} else {
+    set js_include [ad_parse_template -params $params "/packages/intranet-customer-portal/www/resources/js/portlet-uploaded-files.js?inquiry_id=$inquiry_id"]
+}
 
 db_1row get_inquiry_info "select * from im_inquiries_customer_portal where inquiry_id=$inquiry_id" 
 	append project_base_data_html "
