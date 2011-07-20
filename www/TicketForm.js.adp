@@ -114,7 +114,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	}, {
 		name:		'ticket_program_id',
 		itemId:		'ticket_program_id',
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		xtype:		'combobox',
         	width: 		300,
                 valueField:	'category_id',
@@ -144,7 +144,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    }
 		} 
 	}, {
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
 		name:		'ticket_area_id',
 		xtype:		'combobox',
 		displayField:	'category_translated',
