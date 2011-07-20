@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.32 2011/07/18 17:49:13 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -134,7 +134,9 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				width:	60,
 				sortable:	true, 
 				renderer: function(value, o, record) {
-					return profileStore.name_from_id(record.get('ticket_queue_id'));
+				    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+				    if ('Employees' == queueName) { queueName = ''; }
+				    return queueName;
 				}
 			}, {
 				header:	'#intranet-helpdesk.Creator#',

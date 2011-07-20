@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.12 2011/07/11 11:04:54 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -108,7 +108,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
+	    if ("Employees" == queueName) { queue_name = ''; }
+	    return queueName;
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',
