@@ -282,12 +282,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		//Disable de buttons if the ticket is closed
 		var ticket_status_id=rec.get('ticket_status_id');
 		if (ticket_status_id == '30001'){
-			viewButton.hide();
 			saveButton.hide();
 			addButton.hide();
 			createButton.hide();
 		}	else {
-			viewButton.show();
 			saveButton.show();
 			addButton.show();		
 		}				

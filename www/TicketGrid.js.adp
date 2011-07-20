@@ -26,6 +26,11 @@ var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
 	listeners: {
 		selectionchange: function(sm, selections) {
+			if (selections.length > 0){
+				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',false);
+			} else {
+				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
+			}
 			// var grid = this.view;
 			// grid.down('#removeButton').setDisabled(selections.length == 0);
 		}
