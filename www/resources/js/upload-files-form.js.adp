@@ -124,8 +124,8 @@ Ext.onReady(function(){
                 model: 'CustomerPortal.Category',
                 proxy: {
                         type: 'rest',
-                        // url: '/intranet-rest/im_category',
-                        url: '/intranet-customer-portal/target-languages.txt',
+                        url: '/intranet-customer-portal/get-target-languages',
+                        // url: '/intranet-customer-portal/target-languages.txt',
                         appendId: true,
                         extraParams: {
                                 format: 'json',
