@@ -257,24 +257,21 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	}],
 
 	loadTicket: function(rec){
+		var form = this.getForm();
+
 		// Show this ticket, in case it was disabled before
 		this.setDisabled(false);
 						
 		// load the data from the record into the form
 		this.loadRecord(rec);
 
-		var formulario = 	Ext.getCmp('ticketForm').getForm();
-		formulario.getFields().each(function(field){
-			var campo = field.isDirty();
-		});
-		
 		//Search the program/area values and recover the ticket file
-		var ticket_area_id = rec.get('ticket_area_id');
-		var ticket_program = ticketAreaStore.getById(ticket_area_id);
+		var ticket_program_id = rec.get('ticket_area_id');
+		var ticket_program = ticketAreaStore.getById(ticket_program_id);
 		if (ticket_program != null && ticket_program != undefined){
 			var ticket_program_tree_sortkey = ticket_program.get('tree_sortkey');
-			Ext.getCmp('ticketForm').getForm().findField('ticket_program_id').select(ticket_program_tree_sortkey.substring(3,8));
-			Ext.getCmp('ticketForm').getForm().findField('ticket_area_id').select(ticket_area_id);
+			form.findField('ticket_program_id').select(ticket_program_tree_sortkey.substring(3,8));
+			form.findField('ticket_area_id').select(ticket_program_id);
 			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
 			ticket_file.setValue(rec.get('ticket_file'));
 		}
