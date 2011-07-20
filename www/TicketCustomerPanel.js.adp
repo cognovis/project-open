@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.29 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -192,9 +192,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				values.company_id = null;
 				var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
 				companyModel.phantom = true;
+
+				// Only use upper case
+				companyModel.set('company_name', company_name.toUpperCase());
+				companyModel.set('vat_number', vat_number.toUpperCase());
+				companyModel.set('company_type_id', form.findField('company_type_id').getValue());
+				companyModel.set('company_province', form.findField('company_province').getValue());
+
 				companyModel.save({
 					success: function(company_record, operation) {
-	
+
 						// Store the new company in the store that that it can be referenced.
 						companyStore.add(company_record);
 	
