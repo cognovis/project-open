@@ -225,8 +225,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	// inline buttons
 	dockedItems: [{
+		id: 'uploadButtonToolbar',
 		xtype:	'toolbar',
 		items: [{
+			id: 'uploadButton',
 			text:'#file-storage.Upload_New_File#',
 			tooltip:'#intranet-sencha-ticket-tracker.Upload_New_Attachment#',
 			iconCls:'add',
@@ -266,6 +268,17 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 		// Show this portlet (may be hidden before).
 		this.show();
+		
+		//If ticket is closed, the button is disabled
+		var ticket_status_id=rec.get('ticket_status_id');
+		var buttonToolbar = this.getDockedComponent('uploadButtonToolbar');
+		var loadButton = buttonToolbar.getComponent('uploadButton');
+		
+		if (ticket_status_id == '30001'){ //Closed
+				loadButton.setDisabled(true);
+		} else {
+			loadButton.setDisabled(false);
+		}				
 	},
 
 	// Somebody pressed the "New Ticket" button:

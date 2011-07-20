@@ -48,14 +48,22 @@ Ext.define('TicketBrowser.Main', {
 			xtype: 'ticketActionBar'
 		}],
 
+		defaults: {
+      listeners: {
+      		activate:  function(){
+      				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
+      		}
+      }		
+		},
+		
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
-			xtype: 'ticketContainer'
+			xtype: 'ticketContainer'	
 		}, {
 			itemId: 'company',
 			title: 	'#intranet-sencha-ticket-tracker.Companies#',
-			xtype: 'companyContainer'
+			xtype: 'companyContainer'	
 		}, {
 			itemId: 'contact',
 			title: '#intranet-sencha-ticket-tracker.Contacts#',
@@ -65,6 +73,9 @@ Ext.define('TicketBrowser.Main', {
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel',
       listeners: {
+      		activate:  function(){
+      				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',false);
+      		},
           deactivate: function(){
 						// Show a dialog to save changes in ticket
 						var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
@@ -89,16 +100,15 @@ Ext.define('TicketBrowser.Main', {
 						     }
 							});
 						}
-						//this.checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
           }
       }			
 		}]
 	}],
 	
-	checkButton: function (component_id,docked_component_id,button_id,disable){
-		var ticketActionBar = Ext.getCmp(component_id).getDockedComponent(docked_component_id);
-		var buttonCopyTicket = tb.getComponent(button_id);
-		buttonCopyTicket.setDisable(disable);		
+	checkButton: function (component_id,docked_component_id,button_id,disabled){
+		var bar = Ext.getCmp(component_id).getDockedComponent(docked_component_id);
+		var but = bar.getComponent(button_id);
+		but.setDisabled(disabled);		
 	}
 		
 });
