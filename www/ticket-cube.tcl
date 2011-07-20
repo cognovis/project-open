@@ -208,13 +208,62 @@ set this_url [export_vars -base "/intranet-reporting/ticket-cube" {start_date en
 
 
 # ------------------------------------------------------------
-# Options
-
+# Aggregates
+# These are countable values from the im_tickets
+# table or specially defined values.
+#
 set aggregate_options [list \
 	"one"					[lang::message::lookup "" intranet-reporting.Number_of_Tickets "Number of Tickets"] \
 	"ticket_resolution_time"		[lang::message::lookup "" intranet-reporting.Resolution_Time "Resolution Time"] \
 	"cost_timesheet_logged_cache"		[lang::message::lookup "" intranet-reporting.Logged_Hours "Logged Hours"] \
 ]
+
+# Select out all fields of type "numeric" or "float".
+set aggregate_sql "
+	select	lower(utc.column_name) as column_name,
+		lower(utc.data_type) as data_type,
+		aa.attribute_name,
+		aa.pretty_name
+	from	user_tab_columns utc,
+		im_dynfield_attributes a,
+		acs_attributes aa
+	where	utc.table_name = 'IM_TICKETS' and
+		aa.object_type = 'im_ticket' and
+		lower(utc.column_name) = aa.attribute_name and
+		a.acs_attribute_id = aa.attribute_id and
+		lower(utc.data_type) not in ('text', 'int4', 'timestamptz', 'bpchar', 'varchar', '')
+"
+db_foreach aggregates $aggregate_sql {
+    lappend aggregate_options $attribute_name
+    lappend aggregate_options [lang::message::lookup "" intranet-reporting.Aggregate_$attribute_name $pretty_name]
+}
+
+
+set dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name as attribute_pretty_name,
+		ot.object_type,
+		ot.pretty_name as object_type_pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
+	from
+	where
+		a.widget_name = w.widget_name
+		and a.acs_attribute_id = aa.attribute_id
+		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
+		and aa.object_type in ('im_ticket','im_company')
+		and aa.object_type = ot.object_type
+		and aa.attribute_name not like 'default%'
+	order by
+		aa.object_type,
+		aa.pretty_name
+" 
+
+
+
+# ------------------------------------------------------------
+# Options
 
 set top_vars_options [list \
 	""					[lang::message::lookup "" intranet-reporting.No_Date_Dimension "No Date Dimension"] \
@@ -234,6 +283,7 @@ set left_scale_options [list \
 	"ticket_nr"				"Ticket - Nr" \
 	"ticket_creation_user"			"Ticket - Creation User" \
 	"ticket_creation_user_dept"		"Ticket - Creator's Department" \
+	"company_name"				"Company - Name" \
 ]
 
 
