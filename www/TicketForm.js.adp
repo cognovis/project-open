@@ -267,13 +267,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		//Search the program/area values and recover the ticket file
 		var ticket_program_id = rec.get('ticket_area_id');
-		var ticket_program = ticketAreaStore.getById(ticket_program_id);
-		if (ticket_program != null && ticket_program != undefined){
-			var ticket_program_tree_sortkey = ticket_program.get('tree_sortkey');
-			form.findField('ticket_program_id').select(ticket_program_tree_sortkey.substring(3,8));
-			form.findField('ticket_area_id').select(ticket_program_id);
-			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
-			ticket_file.setValue(rec.get('ticket_file'));
+		var ticket_program_model = ticketAreaStore.getById(ticket_program_id);
+		if (ticket_program_model != null && ticket_program_model != undefined){
+			var ticket_program_tree_sortkey = ticket_program_model.get('tree_sortkey');
+			var ticket_program_tree_sortkey_cut = ticket_program_tree_sortkey.substring(3,8);
+			form.findField('ticket_program_id').select(ticket_program_tree_sortkey_cut);			// The real "area" field
+			form.findField('ticket_area_id').select(ticket_program_id);					// The real "program" field
+
+			// fraber 110720: Should be stored in Model anyway, right?
+			// var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
+			// ticket_file.setValue(rec.get('ticket_file'));
 		}
 			
 		//If Ticket is closed, disable the buttons.
@@ -285,8 +288,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			saveButton = buttonToolbar.getComponent('saveButton');	
 		}
 		
-		if (ticket_status_id == '30001'){
-				saveButton.hide();
+		if (ticket_status_id == '30001') {		// Closed status
+			saveButton.hide();
 		} else {
 			saveButton.show();
 		}		
