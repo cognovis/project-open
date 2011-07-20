@@ -108,8 +108,8 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
-	    if ("Employees" == queueName) { queue_name = ''; }
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+	    if ("Employees" == queueName) { queueName = ''; }
 	    return queueName;
 	}
     }, {
