@@ -194,6 +194,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				companyModel.phantom = true;
 
 				// Only use upper case
+				var company_name = form.findField('company_name').getValue();
+				var vat_number = form.findField('vat_number').getValue();
+
 				companyModel.set('company_name', company_name.toUpperCase());
 				companyModel.set('vat_number', vat_number.toUpperCase());
 				companyModel.set('company_type_id', form.findField('company_type_id').getValue());
