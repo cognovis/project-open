@@ -21,10 +21,12 @@ ad_page_contract {
 }
 
 
+
+set user_id [ad_maybe_redirect_for_registration]
+
 # ---------------------------------------------------------------
 # Returns inquiries as JSON 
 # ---------------------------------------------------------------
-
 
 db_1row get_cnt "select count(*) as inquiries_count from im_inquiries_customer_portal"
 
