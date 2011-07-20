@@ -20,8 +20,8 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="KeyRFQWorkflow"  default="project_approval3_wf" description=""/>
-            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="TempPath"  default="/tmp" description="Temporary path for files uploaded"/>
+            <parameter datatype="number" min_n_values="1"  max_n_values="1" name="KeyRFQWorkflow" default="rfq_customer_portal_wf" description=""/>
+            <parameter datatype="number" min_n_values="1"  max_n_values="1" name="TempPath" default="/tmp" description="Temporary path for files uploaded"/>
         </parameters>
     </version>
 </package>
