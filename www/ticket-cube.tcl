@@ -275,18 +275,27 @@ db_foreach dynfield_attributes $dynfield_sql {
     lappend left_scale_options ${attribute_name}_deref
     lappend left_scale_options "$object_type_l10n - $attrib_l10n"
 
-    # How to dereferentiate the attribute_name to attribute_name_deref?
-    # The code is going to be executed as part of an SQL
-
-    # Skip adding "deref" stuff if the variable is not looked at...
-    if {[lsearch $dimension_vars ${attribute_name}_deref] < 0} { 
-	continue 
+    # Add the "deref" stuff only if the variable is not looked at...
+    if {[lsearch $dimension_vars ${attribute_name}_deref] >= 0} { 
+	# Catch the generic ones - We know how to dereferentiate integer references of these fields.
+	set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
+	lappend derefs $deref
     }
 
-    # Catch the generic ones - We know how to dereferentiate integer references of these fields.
-    set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
-    lappend derefs $deref
+    ns_log Notice "ticket-cube: tcl_widget=$tcl_widget"
+
+    # The im_category_tree widget allows for hierarchical dimensions
+    if {"im_category_tree" == $tcl_widget} {
+	lappend left_scale_options ${attribute_name}_level1_deref
+	lappend left_scale_options "$object_type_l10n - $attrib_l10n - Level 1"
+
+	# Dereference the "level 1"
+	set deref "im_category_from_id(im_category_min_parent($attribute_name)) as ${attribute_name}_level1_deref"
+	lappend derefs $deref
+    }
 }
+
+# ad_return_complaint 1 "<pre>[join $derefs "\n"]</pre>"
 
 # ------------------------------------------------------------
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
