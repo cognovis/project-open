@@ -229,7 +229,7 @@ var areaTicketAreaStore = Ext.create('PO.data.AreaStore', {
 });
 var programTicketAreaStore = Ext.create('PO.data.ProgramStore', {
 	storeId: 'programTicketAreaStore',
-	model: 'TicketBrowser.Category',
+	model: 'TicketBrowser.Category'
 });
 
 var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
