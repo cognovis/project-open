@@ -347,7 +347,10 @@ ad_proc -public im_audit_impl {
 
 	db_dml update_object "
 		update acs_objects set
-			last_audit_id = :new_audit_id
+			last_audit_id = :new_audit_id,
+			last_modified = now(),
+			modifying_user = :user_id,
+			modifying_ip = :peeraddr
 		where object_id = :object_id
 	"
 
