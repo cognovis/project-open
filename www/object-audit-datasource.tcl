@@ -76,6 +76,7 @@ set limited_sql "$sql
 	LIMIT $limit
 "
 
+set cnt 0
 set json_list [list]
 db_foreach limited_sql $limited_sql {
 
@@ -102,7 +103,15 @@ db_foreach limited_sql $limited_sql {
     }
 
     lappend json_list "{[join $json_row ", "]}"
+    incr cnt
 }
+
+# Update the ticket with the count
+db_dml update_ticket_actions "
+	update im_tickets
+	set ticket_action_count = :cnt
+	where ticket_id = :object_id
+"
 
 # Paginated Sencha grids require a "total" amount in order to know
 # the total number of pages
