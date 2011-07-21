@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyContainer.js.adp,v 1.5 2011/07/15 18:13:35 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -35,7 +35,7 @@ Ext.define('TicketBrowser.CompanyContainer', {
 		xtype:	'companyFilterForm',
 		region:	'west',
 		width:	300,
-		title:	'#intranet-helpdesk.Filter_Companys#',
+		title:	'#intranet-sencha-ticket-tracker.Filter_Companies#',
 		split:	true,
 		margins: '5 0 5 5'
 	}, {
