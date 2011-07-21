@@ -8,11 +8,55 @@
 ad_page_contract {
     SPRI Cube
 } {
-    { start_date "2001-06-01" }
-    { end_date "2011-07-01" }
+    { start_date "" }
+    { end_date "" }
 }
 
+
+# ----------------------------------------------------------------
+# Constants & Security 
+# ----------------------------------------------------------------
+
 set sigma "&Sigma;"
+set days_in_past 0
+
+db_1row todays_date "
+select
+	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
+	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
+	to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
+from dual
+"
+
+if {"" == $start_date} { 
+    set start_date "$todays_year-$todays_month-01"
+}
+
+db_1row end_date "
+select
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+from dual
+"
+
+if {"" == $end_date} { 
+    set end_date "$end_year-$end_month-01"
+}
+
+
+# Check that Start & End-Date have correct format
+if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+    Current value: '$start_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+    Current value: '$end_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
 
 # ----------------------------------------------------------------
 # Dereferencing Function
@@ -68,7 +112,7 @@ set footer ""
 
 
 append top_header "<td class=rowtitle></td>\n"
-append top_header "<td class=rowtitle align=center colspan=2>Total</td>\n"
+append top_header "<td class=rowtitle align=center colspan=2>Actividad</td>\n"
 append header "<td class=rowtitle></td>"
 append header "<td class=rowtitle>Total</td>\n"
 append header "<td class=rowtitle>Total %</td>\n"
@@ -85,7 +129,9 @@ set total_sql "
 		im_projects p,
 		acs_objects o
 	where   t.ticket_id = p.project_id and
-		t.ticket_id = o.object_id
+		t.ticket_id = o.object_id and
+		o.creation_date >= :start_date and
+		o.creation_date < :end_date
 "
 
 set total_aggregate_sql "
@@ -176,7 +222,9 @@ set channel_sql "
 		im_projects p,
 		acs_objects o
 	where   t.ticket_id = p.project_id and
-		t.ticket_id = o.object_id
+		t.ticket_id = o.object_id and
+		o.creation_date >= :start_date and
+		o.creation_date < :end_date
 "
 
 set channel_aggregate_sql "
@@ -341,7 +389,9 @@ set type_sql "
 		im_projects p,
 		acs_objects o
 	where   t.ticket_id = p.project_id and
-		t.ticket_id = o.object_id
+		t.ticket_id = o.object_id and
+		o.creation_date >= :start_date and
+		o.creation_date < :end_date
 "
 
 set type_aggregate_sql "
