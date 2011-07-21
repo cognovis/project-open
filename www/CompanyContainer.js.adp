@@ -35,7 +35,7 @@ Ext.define('TicketBrowser.CompanyContainer', {
 		xtype:	'companyFilterForm',
 		region:	'west',
 		width:	300,
-		title:	'#intranet-helpdesk.Filter_Companys#',
+		title:	'#intranet-sencha-ticket-tracker.Filter_Companies#',
 		split:	true,
 		margins: '5 0 5 5'
 	}, {
