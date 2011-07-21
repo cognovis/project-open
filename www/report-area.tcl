@@ -52,6 +52,96 @@ db_foreach area $area_list_sql {
 }
 lappend area_list -1000
 
+
+
+
+# ----------------------------------------------------------------
+# Initialize the columns and show total
+# ----------------------------------------------------------------
+
+set top_header ""
+set header ""
+foreach area_id $area_list {
+    set row($area_id) ""
+}
+set footer ""
+
+
+append top_header "<td class=rowtitle></td>\n"
+append top_header "<td class=rowtitle align=center colspan=2>Total</td>\n"
+append header "<td class=rowtitle></td>"
+append header "<td class=rowtitle>Total</td>\n"
+append header "<td class=rowtitle>Total %</td>\n"
+
+set dimension_vars [list area_id]
+set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+
+set total_sql "
+	select  coalesce(
+			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
+			t.ticket_area_id
+		) as area_id
+	from    im_tickets t,
+		im_projects p,
+		acs_objects o
+	where   t.ticket_id = p.project_id and
+		t.ticket_id = o.object_id
+"
+
+set total_aggregate_sql "
+	select	count(*) as aggregate,
+		area_id
+	from	($total_sql) t
+	group by
+		area_id
+"
+
+db_foreach total_hash $total_aggregate_sql {
+    if {"" == $area_id} { set area_id -1000 }
+    foreach perm $dimension_perms {
+	# Add a "$" before every variable
+	set perm_subs [list]
+	foreach p $perm { lappend perm_subs "\$$p" }
+	set key_expr [join $perm_subs "-"]
+	set key [eval "set a \"$key_expr\""]
+	set sum [v total_hash($key) 0]
+	set sum [expr $sum + $aggregate]
+	set total_hash($key) $sum
+    }
+}
+
+set total_tickets [v total_hash() 0]
+
+foreach area_id $area_list {
+    set row($area_id) ""
+    set total_ticket_for_area [v total_hash($area_id) 0]
+
+    # -------------------------------------
+    # Area name (from category)
+    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+
+    # -------------------------------------
+    # Total and Total %
+    set val [v total_hash($area_id)]
+    append row($area_id) "<td align=right>$val</td>"
+    if {[catch { set perc "[expr round(1000.0 * $val / $total_tickets) / 10.0]%" }]} { set perc "undef" }
+    append row($area_id) "<td align=right>$perc</td>"
+}
+
+append footer "<td>Total</td>\n"
+append footer "<td align=right>$total_tickets</td>\n"
+append footer "<td align=right>100.0%</td>\n"
+
+
+# ----------------------------------------------------------------
+# Calculate information by channel
+# ----------------------------------------------------------------
+
+set dimension_vars [list area_id channel_level1_id channel_id]
+set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+
+# ----------------------------------------------------------------
+# Get the list of all channels
 set channel_list_sql "
 	select distinct
 		coalesce(
@@ -69,42 +159,8 @@ db_foreach channel $channel_list_sql {
 lappend channel_list -1001
 
 
-set service_list_sql "
-	select distinct
-		coalesce(
-			(select min(im_category_parents) from im_category_parents(category_id)), 
-			category_id
-		) as category_id
-	from	im_categories
-	where	category_type = 'Intranet Ticket Type'
-	order by category_id
-"
-set service_list [list]
-db_foreach service $service_list_sql {
-    lappend service_list $category_id
-}
-lappend service_list -1002
-
-
-
-
 # ----------------------------------------------------------------
-# Initialize the columns
-# ----------------------------------------------------------------
-
-set header ""
-foreach area_id $area_list {
-    set row($area_id) ""
-}
-set footer ""
-
-
-# ----------------------------------------------------------------
-# Calculate information by channel
-# ----------------------------------------------------------------
-
-set dimension_vars [list area_id channel_level1_id channel_id]
-set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+# Select out the number of tickets per dimension variable
 
 set channel_sql "
 	select  coalesce(
@@ -135,8 +191,7 @@ set channel_aggregate_sql "
 		channel_id
 "
 
-# ad_return_complaint 1 "<pre>[join [db_list_of_lists t $channel_aggregate_sql] "\n"]</pre>"
-
+# Write the values from the SQL into a hash array and aggregate
 db_foreach channel_hash $channel_aggregate_sql {
 
     if {"" == $area_id}			{ set area_id -1000 }
@@ -159,8 +214,6 @@ db_foreach channel_hash $channel_aggregate_sql {
 	ns_log Notice "report-area: key=$key, agg=$aggregate, perm=$perm => sum=$sum"
     }
 }
-
-# ad_return_complaint 1 "<pre>[join [array get channel_hash] "\n"]</pre>"
 
 # ----------------------------------------------------------------
 # Calculate the list of incoming channels with values != 0
@@ -188,9 +241,11 @@ foreach channel_id $channel_list {
 # ----------------------------------------------------------------
 # Format the data 
 
-append header "<td class=rowtitle></td>"
-append header "<td class=rowtitle>Total</td>\n"
-append header "<td class=rowtitle>Total %</td>\n"
+
+append top_header "<td class=rowtitle></td>\n"
+
+append header "<td class=rowtitle></td>\n"
+set cnt 0
 foreach channel_id $channels_with_values_list {
 
     set channel [im_category_from_id $channel_id]
@@ -202,9 +257,11 @@ foreach channel_id $channels_with_values_list {
 
     append header "<td class=rowtitle>$channel</td>\n"
     append header "<td class=rowtitle>%</td>\n"   
+    incr cnt
 }
+append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Canal</td>\n"
 
-set total_tickets [v channel_hash() 0]
+
 
 # Constants defined for channels
 set telephone_channel_id 10000036
@@ -213,19 +270,12 @@ set empty_channel_id -1001
 
 
 foreach area_id $area_list {
-    set row($area_id) ""
     set total_ticket_for_area [v channel_hash($area_id) 0]
 
     # -------------------------------------
-    # Area name (from category)
-    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
-
-    # -------------------------------------
-    # Total and Total %
-    set val [v channel_hash($area_id)]
-    append row($area_id) "<td align=right>$val</td>"
-    if {[catch { set perc "[expr round(1000.0 * $val / $total_tickets) / 10.0]%" }]} { set perc "undef" }
-    append row($area_id) "<td align=right>$perc</td>"
+    # Area empty colum
+    append row($area_id) "<td align=right></td>"
+    # append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
 
     # List of category values
     foreach channel_id $channels_with_values_list {
@@ -239,9 +289,8 @@ foreach area_id $area_list {
     }
 }
 
-append footer "<td>Total</td>\n"
-append footer "<td align=right>[v channel_hash()]</td>\n"
-append footer "<td align=right>100.0%</td>\n"
+# Deal with footer
+append footer "<td align=right></td>"
 foreach channel_id $channels_with_values_list {
     set key "$channel_id"
     set val [v channel_hash($key)]
@@ -251,109 +300,173 @@ foreach channel_id $channels_with_values_list {
 
 
 
+
+
 # ----------------------------------------------------------------
 # Calculate information by service
 # ----------------------------------------------------------------
 
-set ttt {
-
-set dimension_vars [list area_id service_id]
+set dimension_vars [list area_id type_level1_id type_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
-# ad_return_complaint 1 $dimension_perms
 
-set service_sql "
-	select  count(*) as aggregate,
+
+set type_list_sql "
+	select distinct
 		coalesce(
+			(select min(im_category_parents) from im_category_parents(category_id)), 
+			category_id
+		) as category_id
+	from	im_categories
+	where	category_type = 'Intranet Ticket Type'
+	order by category_id
+"
+set type_list [list]
+db_foreach type $type_list_sql {
+    lappend type_list $category_id
+}
+lappend type_list -1002
+
+
+set type_sql "
+	select  coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
 		) as area_id,
 		coalesce(
-			(select min(im_category_parents) from im_category_parents(t.ticket_service_type_id)), 
-			t.ticket_service_type_id
-		) as service_id
+			(select min(im_category_parents) from im_category_parents(t.ticket_type_id)), 
+			t.ticket_type_id
+		) as type_level1_id,
+		t.ticket_type_id - 10000000 as type_id
 	from    im_tickets t,
 		im_projects p,
 		acs_objects o
 	where   t.ticket_id = p.project_id and
 		t.ticket_id = o.object_id
-	group by area_id, service_id
 "
 
-#		o.creation_date >= :start_date and
-#		o.creation_date < :end_date
+set type_aggregate_sql "
+	select	count(*) as aggregate,
+		area_id,
+		type_level1_id,
+		type_id
+	from	($type_sql) t
+	group by
+		area_id,
+		type_level1_id,
+		type_id
+"
 
+# ad_return_complaint 1 "<pre>[join [db_list_of_lists t $type_aggregate_sql] "\n"]</pre>"
 
-db_foreach service_hash $service_sql {
+db_foreach type_hash $type_aggregate_sql {
 
-    set area [im_category_from_id -translate_p 0 $area_id]
-    set service [im_category_from_id -translate_p 0 $service_id]
+    if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $type_id} 		{ set type_id -1001 }
+    if {"" == $type_level1_id} 	{ set type_level1_id -1002 }
 
-    if {"" == $area_id} {
-	set area_id -1000
-	set area "undefined_area"
-    }
-    if {"" == $service_id} {
-	set service_id -1002
-	set service "undefined_service"
-    }
-
-    ns_log Notice "report-area:"
-    ns_log Notice "report-area: area_id=$area_id, service_id=$service_id"
+    ns_log Notice "---------------------------------------------------------------"
+    ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, type_level1_id=$type_level1_id, type_id=$type_id"
+    ns_log Notice ""
 
     foreach perm $dimension_perms {
-
 	# Add a "$" before every variable
 	set perm_subs [list]
 	foreach p $perm { lappend perm_subs "\$$p" }
-
 	set key_expr [join $perm_subs "-"]
 	set key [eval "set a \"$key_expr\""]
-	
-	set sum 0
-	set sum [v service_hash($key)]
-	if {"" == $aggregate} { set aggregate 0 }
+	set sum [v type_hash($key) 0]
 	set sum [expr $sum + $aggregate]
-	set service_hash($key) $sum
+	set type_hash($key) $sum
 	ns_log Notice "report-area: key=$key, agg=$aggregate, perm=$perm => sum=$sum"
     }
 }
 
+# ad_return_complaint 1 "<pre>[join [array get type_hash] "\n"]</pre>"
+
+# ----------------------------------------------------------------
+# Calculate the list of incoming types with values != 0
+set types_with_values_list [list]
+foreach type_id $type_list {
+    
+    set val [v type_hash($type_id) 0]
+    if {0 != $val} {
+	lappend types_with_values_list $type_id
+
+	# Disable sub-categories for ticket_type
+	continue
+
+	# Check for sub-categories with values
+	set subcats [im_sub_categories $type_id]
+	foreach sub_type_id $subcats {
+	    set sub_type_id [expr $sub_type_id - 10000000]
+	    if {0 == $sub_type_id} { continue }
+	    if {$type_id == $sub_type_id} { continue }
+	    set val [v type_hash($sub_type_id) 0]
+	    if {0 != $val} {
+		lappend types_with_values_list $sub_type_id
+	    }
+	}
+    }
+}
 
 # ----------------------------------------------------------------
 # Format the data 
 
+append top_header "<td class=rowtitle></td>"
 append header "<td class=rowtitle></td>"
-foreach service_id $service_list {
-    append header "<td class=rowtitle>[im_category_from_id -translate_p 0 $service_id]</td>\n"
+set cnt 0
+foreach type_id $types_with_values_list {
+
+    set type [im_category_from_id $type_id]
+    if {$type_id < 1000} { 
+	# Ugly. Restore the category
+	set type "Sub-Cat<br>[im_category_from_id [expr $type_id + 10000000]]"
+    }
+    if {$type_id < 0} { set type "N/C" }
+
+    append header "<td class=rowtitle>$type</td>\n"
+    append header "<td class=rowtitle>%</td>\n"   
+    incr cnt
 }
-append header "<td class=rowtitle>$sigma</td>\n"
+append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Servicio</td>\n"
+
+
+set total_tickets [v type_hash() 0]
+
+# Constants defined for types
+set telephone_type_id 10000036
+set email_type_id 10000089
+set empty_type_id -1001
+
 
 foreach area_id $area_list {
-    append row($area_id) "<td align=right>[im_category_from_id -translate_p 0 $area_id]</td>\n"
-    foreach service_id $service_list {
-	set key "$area_id-$service_id"
-	set val [v service_hash($key)]
+    set total_ticket_for_area [v type_hash($area_id) 0]
+
+    # -------------------------------------
+    # Area name (from category)
+    append row($area_id) "<td></td>\n"
+
+    # List of category values
+    foreach type_id $types_with_values_list {
+	set key "$area_id-$type_id"
+	set val [v type_hash($key) ""]
 	append row($area_id) "<td align=right>$val</td>"
+	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	set perc "$perc%"
+	if {"" == $val} { set perc "" }
+	append row($area_id) "<td align=right>$perc</td>"
     }
-
-    # Last Column
-    set key $area_id
-    set val [v service_hash($key)]
-    append row($area_id) "<td align=right>$val</td>"
 }
 
-append footer "<td align=right>$sigma</td>\n"
-foreach service_id $service_list {
-    set key "$service_id"
-    set val [v service_hash($key)]
+append footer "<td></td>\n"
+foreach type_id $types_with_values_list {
+    set key "$type_id"
+    set val [v type_hash($key)]
     append footer "<td align=right>$val</td>"
+    append footer "<td align=right></td>"
 }
 
-# Last Column
-set key ""
-set val [v service_hash($key)]
-append footer "<td align=right>$val</td>"
-}
+
 
 
 # ----------------------------------------------------------------
@@ -362,7 +475,6 @@ append footer "<td align=right>$val</td>"
 
 set body ""
 foreach area_id $area_list {
-    ns_log Notice "report-area: area_id=$area_id"
     append body "<tr>$row($area_id)</tr>\n"
 }
 
