@@ -5,7 +5,6 @@
 # All rights reserved. Please check
 # http://www.ticket-open.com/ for licensing details.
 
-
 ad_page_contract {
     SPRI Cube
 } {
@@ -13,10 +12,11 @@ ad_page_contract {
     { end_date "2011-07-01" }
 }
 
-
 set sigma "&Sigma;"
 
-
+# ----------------------------------------------------------------
+# Dereferencing Function
+# ----------------------------------------------------------------
 
 ad_proc -public v { 
     var_name
@@ -30,7 +30,6 @@ ad_proc -public v {
     if [exists_and_not_null var] { return $var }
     return $undef
 } 
-
 
 
 # ----------------------------------------------------------------
@@ -106,7 +105,6 @@ set footer ""
 
 set dimension_vars [list area_id channel_level1_id channel_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
-# ad_return_complaint 1 "<pre>[join $dimension_perms "\n"]</pre>"
 
 set channel_sql "
 	select  coalesce(
@@ -169,10 +167,21 @@ db_foreach channel_hash $channel_aggregate_sql {
 set channels_with_values_list [list]
 foreach channel_id $channel_list {
     
-    set key $channel_id
-    set val [v channel_hash($key) 0]
+    set val [v channel_hash($channel_id) 0]
     if {0 != $val} {
-       lappend channels_with_values_list $channel_id
+	lappend channels_with_values_list $channel_id
+
+	# Check for sub-categories with values
+	set subcats [im_sub_categories $channel_id]
+	foreach sub_channel_id $subcats {
+	    set sub_channel_id [expr $sub_channel_id - 10000000]
+	    if {0 == $sub_channel_id} { continue }
+	    if {$channel_id == $sub_channel_id} { continue }
+	    set val [v channel_hash($sub_channel_id) 0]
+	    if {0 != $val} {
+		lappend channels_with_values_list $sub_channel_id
+	    }
+	}
     }
 }
 
@@ -183,8 +192,14 @@ append header "<td class=rowtitle></td>"
 append header "<td class=rowtitle>Total</td>\n"
 append header "<td class=rowtitle>Total %</td>\n"
 foreach channel_id $channels_with_values_list {
+
     set channel [im_category_from_id $channel_id]
+    if {$channel_id < 1000} { 
+	# Ugly. Restore the category
+	set channel "Sub-Cat<br>[im_category_from_id [expr $channel_id + 10000000]]"
+    }
     if {$channel_id < 0} { set channel "N/C" }
+
     append header "<td class=rowtitle>$channel</td>\n"
     append header "<td class=rowtitle>%</td>\n"   
 }
