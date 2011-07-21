@@ -104,41 +104,50 @@ set footer ""
 # Calculate information by channel
 # ----------------------------------------------------------------
 
-set dimension_vars [list area_id channel_id]
+set dimension_vars [list area_id channel_level1_id channel_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
-# ad_return_complaint 1 $dimension_perms
+# ad_return_complaint 1 "<pre>[join $dimension_perms "\n"]</pre>"
 
 set channel_sql "
-	select  count(*) as aggregate,
-		coalesce(
+	select  coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
 		) as area_id,
 		coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_incoming_channel_id)), 
 			t.ticket_incoming_channel_id
-		) as channel_id
+		) as channel_level1_id,
+		t.ticket_incoming_channel_id - 10000000 as channel_id
 	from    im_tickets t,
 		im_projects p,
 		acs_objects o
 	where   t.ticket_id = p.project_id and
 		t.ticket_id = o.object_id
-	group by area_id, channel_id
 "
 
-db_foreach channel_hash $channel_sql {
+set channel_aggregate_sql "
+	select	count(*) as aggregate,
+		area_id,
+		channel_level1_id,
+		channel_id
+	from	($channel_sql) t
+	group by
+		area_id,
+		channel_level1_id,
+		channel_id
+"
 
-    set area [im_category_from_id -translate_p 0 $area_id]
-    set channel [im_category_from_id -translate_p 0 $channel_id]
+# ad_return_complaint 1 "<pre>[join [db_list_of_lists t $channel_aggregate_sql] "\n"]</pre>"
 
-    if {"" == $area_id} {
-	set area_id -1000
-	set area "undefined_area"
-    }
-    if {"" == $channel_id} {
-	set channel_id -1001
-	set channel "undefined_channel"
-    }
+db_foreach channel_hash $channel_aggregate_sql {
+
+    if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $channel_id} 		{ set channel_id -1001 }
+    if {"" == $channel_level1_id} 	{ set channel_level1_id -1002 }
+
+    ns_log Notice "---------------------------------------------------------------"
+    ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, channel_level1_id=$channel_level1_id, channel_id=$channel_id"
+    ns_log Notice ""
 
     foreach perm $dimension_perms {
 	# Add a "$" before every variable
@@ -147,74 +156,91 @@ db_foreach channel_hash $channel_sql {
 	set key_expr [join $perm_subs "-"]
 	set key [eval "set a \"$key_expr\""]
 	set sum [v channel_hash($key) 0]
-	if {"" == $aggregate} { set aggregate 0 }
 	set sum [expr $sum + $aggregate]
 	set channel_hash($key) $sum
 	ns_log Notice "report-area: key=$key, agg=$aggregate, perm=$perm => sum=$sum"
     }
 }
 
+# ad_return_complaint 1 "<pre>[join [array get channel_hash] "\n"]</pre>"
+
+# ----------------------------------------------------------------
+# Calculate the list of incoming channels with values != 0
+set channels_with_values_list [list]
+foreach channel_id $channel_list {
+    
+    set key $channel_id
+    set val [v channel_hash($key) 0]
+    if {0 != $val} {
+       lappend channels_with_values_list $channel_id
+    }
+}
 
 # ----------------------------------------------------------------
 # Format the data 
 
 append header "<td class=rowtitle></td>"
-append header "<td class=rowtitle>$sigma</td>\n"
-append header "<td class=rowtitle>${sigma}%</td>\n"
-foreach channel_id $channel_list {
-    append header "<td class=rowtitle>[im_category_from_id -translate_p 0 $channel_id]</td>\n"
+append header "<td class=rowtitle>Total</td>\n"
+append header "<td class=rowtitle>Total %</td>\n"
+foreach channel_id $channels_with_values_list {
+    set channel [im_category_from_id $channel_id]
+    if {$channel_id < 0} { set channel "N/C" }
+    append header "<td class=rowtitle>$channel</td>\n"
+    append header "<td class=rowtitle>%</td>\n"   
 }
-append header "<td class=rowtitle>$sigma</td>\n"
 
 set total_tickets [v channel_hash() 0]
 
+# Constants defined for channels
+set telephone_channel_id 10000036
+set email_channel_id 10000089
+set empty_channel_id -1001
+
+
 foreach area_id $area_list {
     set row($area_id) ""
+    set total_ticket_for_area [v channel_hash($area_id) 0]
 
+    # -------------------------------------
     # Area name (from category)
     append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
 
-    # Total column
+    # -------------------------------------
+    # Total and Total %
     set val [v channel_hash($area_id)]
-    append row($area_id) "<td>$val</td>"
-
-    # Total column
-    set val [v channel_hash($area_id)]
-    append row($area_id) "<td>$val</td>"
+    append row($area_id) "<td align=right>$val</td>"
+    if {[catch { set perc "[expr round(1000.0 * $val / $total_tickets) / 10.0]%" }]} { set perc "undef" }
+    append row($area_id) "<td align=right>$perc</td>"
 
     # List of category values
-    foreach channel_id $channel_list {
-	set val [v channel_hash($area_id-$channel_id)]
-	append row($area_id) "<td>$val</td>"
+    foreach channel_id $channels_with_values_list {
+	set key "$area_id-$channel_id"
+	set val [v channel_hash($key) ""]
+	append row($area_id) "<td align=right>$val</td>"
+	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	set perc "$perc%"
+	if {"" == $val} { set perc "" }
+	append row($area_id) "<td align=right>$perc</td>"
     }
-
-    # Last Column
-    set key $area_id
-    set val [v channel_hash($key)]
-    append row($area_id) "<td>$val</td>"
 }
 
-append footer "<td>$sigma</td>\n"
-foreach channel_id $channel_list {
+append footer "<td>Total</td>\n"
+append footer "<td align=right>[v channel_hash()]</td>\n"
+append footer "<td align=right>100.0%</td>\n"
+foreach channel_id $channels_with_values_list {
     set key "$channel_id"
     set val [v channel_hash($key)]
-    append footer "<td>$val</td>"
+    append footer "<td align=right>$val</td>"
+    append footer "<td align=right></td>"
 }
-
-# Last Column
-set key ""
-set val [v channel_hash($key)]
-append footer "<td>$val</td>"
-
-
-
-
 
 
 
 # ----------------------------------------------------------------
 # Calculate information by service
 # ----------------------------------------------------------------
+
+set ttt {
 
 set dimension_vars [list area_id service_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
@@ -288,31 +314,31 @@ foreach service_id $service_list {
 append header "<td class=rowtitle>$sigma</td>\n"
 
 foreach area_id $area_list {
-    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+    append row($area_id) "<td align=right>[im_category_from_id -translate_p 0 $area_id]</td>\n"
     foreach service_id $service_list {
 	set key "$area_id-$service_id"
 	set val [v service_hash($key)]
-	append row($area_id) "<td>$val</td>"
+	append row($area_id) "<td align=right>$val</td>"
     }
 
     # Last Column
     set key $area_id
     set val [v service_hash($key)]
-    append row($area_id) "<td>$val</td>"
+    append row($area_id) "<td align=right>$val</td>"
 }
 
-append footer "<td>$sigma</td>\n"
+append footer "<td align=right>$sigma</td>\n"
 foreach service_id $service_list {
     set key "$service_id"
     set val [v service_hash($key)]
-    append footer "<td>$val</td>"
+    append footer "<td align=right>$val</td>"
 }
 
 # Last Column
 set key ""
 set val [v service_hash($key)]
-append footer "<td>$val</td>"
-
+append footer "<td align=right>$val</td>"
+}
 
 
 # ----------------------------------------------------------------
