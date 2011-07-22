@@ -26,6 +26,7 @@
   <msg key="Columns">Columns</msg>
   <msg key="Companies">Companies</msg>
   <msg key="Company">Company</msg>
+  <msg key="Company_Filters">Company filters</msg>
   <msg key="Company_Name">Company Name</msg>
   <msg key="Company_name">Company Name</msg>
   <msg key="Company_Type">Company Type</msg>
@@ -52,6 +53,7 @@
   <msg key="Failed_to_get_new_ticket_nr">Failed to create a new ticket number for the new ticket.</msg>
   <msg key="Female">Female</msg>
   <msg key="File">File</msg>
+  <msg key="Filter_Companys">Filter Companys</msg>
   <msg key="Gender">Gender</msg>
   <msg key="Group">Group</msg>
   <msg key="Incoming_Channel">Incoming Channel</msg>
@@ -66,9 +68,11 @@
   <msg key="MIME_Type">MIME Type</msg>
   <msg key="Mobile">Mobile</msg>
   <msg key="My_Groups">My Groups</msg>
+  <msg key="New">New</msg>
   <msg key="New_Company">New Company</msg>
   <msg key="New_Contact">New Contact</msg>
   <msg key="New_Ticket_Prefix">Ticket #</msg>
+  <msg key="No">No</msg>
   <msg key="No_items">No items</msg>
   <msg key="Object_Member_Role">Role</msg>
   <msg key="Options">Options</msg>
@@ -84,6 +88,8 @@
   <msg key="Requires_additional_info">Requires additional info</msg>
   <msg key="Resolution">Resolution</msg>
   <msg key="Save_Changes">Save Changes</msg>
+  <msg key="Save_changes_message">You are closing a tab that has unsaved changes. </msg>
+  <msg key="Save_changes_tittle">Save Changes?</msg>
   <msg key="Save_New_Company">Save New Company</msg>
   <msg key="Saving_Data">Saving Data</msg>
   <msg key="Saving_data_">Saving data...</msg>
@@ -108,4 +114,5 @@
   <msg key="Upload_New_Attachment">Upload New Attachment</msg>
   <msg key="Uploading_your_photo">Uploading your photo</msg>
   <msg key="User_Information">User Information</msg>
+  <msg key="Yes">Yes</msg>
 </message_catalog>

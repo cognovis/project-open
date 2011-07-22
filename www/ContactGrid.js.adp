@@ -120,16 +120,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		}
 	],
 	dockedItems:	[{
-		xtype:	'toolbar',
-		cls:	'x-docked-noborder-top',
-		items:	[{
-				text:		'#intranet-sencha-ticket-tracker.New_Contact#',
-				iconCls:	'icon-new-ticket',
-				handler: function(){
-					alert('Not implemented');
-				}
-		}] 
-	}, {
 		xtype:		'pagingtoolbar',
 		store:		contactGridStore,
 		dock:		'bottom',

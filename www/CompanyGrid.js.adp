@@ -109,16 +109,6 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
 	],
 	dockedItems: [{
-		xtype: 'toolbar',
-		cls: 'x-docked-noborder-top',
-		items: [{
-			text: '#intranet-sencha-ticket-tracker.New_Company#',
-			iconCls: 'icon-new-ticket',
-			handler: function(){
-			alert('Not implemented');
-			}
-		}] 
-	}, {
 		xtype: 'pagingtoolbar',
 		store: companyGridStore,
 		dock: 'bottom',
