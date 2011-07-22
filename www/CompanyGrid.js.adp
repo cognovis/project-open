@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.11 2011/07/18 15:59:23 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -109,16 +109,6 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
 	],
 	dockedItems: [{
-		xtype: 'toolbar',
-		cls: 'x-docked-noborder-top',
-		items: [{
-			text: '#intranet-sencha-ticket-tracker.New_Company#',
-			iconCls: 'icon-new-ticket',
-			handler: function(){
-			alert('Not implemented');
-			}
-		}] 
-	}, {
 		xtype: 'pagingtoolbar',
 		store: companyGridStore,
 		dock: 'bottom',

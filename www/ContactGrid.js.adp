@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.14 2011/07/18 18:37:15 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -120,16 +120,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		}
 	],
 	dockedItems:	[{
-		xtype:	'toolbar',
-		cls:	'x-docked-noborder-top',
-		items:	[{
-				text:		'#intranet-sencha-ticket-tracker.New_Contact#',
-				iconCls:	'icon-new-ticket',
-				handler: function(){
-					alert('Not implemented');
-				}
-		}] 
-	}, {
 		xtype:		'pagingtoolbar',
 		store:		contactGridStore,
 		dock:		'bottom',

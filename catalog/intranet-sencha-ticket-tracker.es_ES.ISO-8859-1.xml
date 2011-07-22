@@ -19,13 +19,14 @@
   <msg key="button_Search">Buscar</msg>
   <msg key="Cancel">Cancelar</msg>
   <msg key="Channel_Details">Detalle Canal Entrada</msg>
-  <msg key="Clear">Borrar</msg>
+  <msg key="Clear">Limpiar</msg>
   <msg key="Clear_Form">Borrar formulario</msg>
   <msg key="Close_Date">Fecha de cierre</msg>
   <msg key="Closed_in_1st_Contact">Cerrado en 1er contacto</msg>
   <msg key="Columns">Columnas</msg>
   <msg key="Companies">Entidades</msg>
   <msg key="Company">Entidad</msg>
+  <msg key="Company_Filters">Filtro entidad</msg>
   <msg key="Company_Name">Razon Social</msg>
   <msg key="Company_name">Nombre de Entidad</msg>
   <msg key="Company_Type">Tipo de Entidad</msg>
@@ -52,6 +53,7 @@
   <msg key="Failed_to_get_new_ticket_nr">El servidor no ha podido crear un nuevo número de ticket.</msg>
   <msg key="Female">Mujer</msg>
   <msg key="File">Archivo</msg>
+  <msg key="Filter_Companys">Filtro compañias</msg>
   <msg key="Gender">Género</msg>
   <msg key="Group">Grupo</msg>
   <msg key="Incoming_Channel">Canal Entrada</msg>
@@ -66,9 +68,11 @@
   <msg key="MIME_Type">Tipo de archivo</msg>
   <msg key="Mobile">Móvil</msg>
   <msg key="My_Groups">Mis Grupos</msg>
+  <msg key="New">Nuevo</msg>
   <msg key="New_Company">Nueva</msg>
   <msg key="New_Contact">Nuevo contacto</msg>
   <msg key="New_Ticket_Prefix">Ticket </msg>
+  <msg key="No">No</msg>
   <msg key="No_items">No hay elementos que mostrar</msg>
   <msg key="Object_Member_Role">Papel</msg>
   <msg key="Options">Opciones</msg>
@@ -84,7 +88,10 @@
   <msg key="Requires_additional_info">Requiere información adicional</msg>
   <msg key="Resolution">Resultado</msg>
   <msg key="Save_Changes">Guardar</msg>
+  <msg key="Save_changes_message">La pestaña cerrada tiene cambios no salvados.</msg>
+  <msg key="Save_changes_tittle">¿Salvar cambios?</msg>
   <msg key="Save_New_Company">Guardar Nueva Razón Social</msg>
+  <msg key="SaveChangesTittle">¿Salvar cambios?</msg>
   <msg key="Saving_Data">Guardando Fecha</msg>
   <msg key="Saving_data_">Guardando datos...</msg>
   <msg key="Select_a_file">Seleccionar un archivo</msg>
@@ -94,8 +101,8 @@
   <msg key="Show_Customer">Mostrar cliente</msg>
   <msg key="Show_Grid">Ver lista</msg>
   <msg key="Show_Ticket">Ver ticket</msg>
-  <msg key="Sort_Ascending">Ordenar Ascendente</msg>
-  <msg key="Sort_Descending">Ordenar Descendente</msg>
+  <msg key="Sort_Ascending">Orden ascendente</msg>
+  <msg key="Sort_Descending">Orden descendente</msg>
   <msg key="Telephone">Teléfono</msg>
   <msg key="Ticket">Ticket</msg>
   <msg key="Ticket_Customer">Cliente</msg>
@@ -108,4 +115,5 @@
   <msg key="Upload_New_Attachment">Subir nuevo adjunto</msg>
   <msg key="Uploading_your_photo">Subiendo su foto</msg>
   <msg key="User_Information">Información de persona de contacto</msg>
+  <msg key="Yes">Sí</msg>
 </message_catalog>
