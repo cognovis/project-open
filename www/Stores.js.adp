@@ -142,6 +142,7 @@ var userStore = Ext.create('PO.data.UserStore', {
 });
 
 
+// ToDo: Start progress bar here
 userStore.load(
 	function(record, operation) {
 		// This code is called once the reply from the server has arrived.
@@ -157,6 +158,8 @@ userStore.load(
 		// The child stores will be sorted in the same order as userStore
 		userEmployeeStore.load();
 		userCustomerStore.load();
+
+		// ToDo: Stop progress bar here
 	}
 );
 
