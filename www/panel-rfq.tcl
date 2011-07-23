@@ -178,10 +178,7 @@ db_foreach column_list_sql $column_sql {
     }
 }
 
-
 set inquiry_id [db_string get_inquiry_id "select inquiry_id from im_inquiries_customer_portal where project_id=$project_id" -default 0]
-
-
 
 if {[im_openacs54_p]} {
     # Load ExtJS "Uploaded Files Portlet"
