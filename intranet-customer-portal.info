@@ -10,19 +10,19 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-customer-portal</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-customer-portal-0.1d.apm">
+    <version name="0.2d" url="http://openacs.org/repository/download/apm/intranet-customer-portal-0.2d.apm">
         <owner url="mailto:klaus.hofeditz@project-open.com">Klaus Hofeditz</owner>
         <summary>Provides a customer portal for translation agencies</summary>
         <vendor url="www.project-open.org">]project-open[</vendor>
         <description format="text/html">Customers can see their current projects, inquire and confirm quotes, upload files etc.</description>
         <maturity>0</maturity>
-        <provides url="intranet-customer-portal" version="0.1d"/>
+        <provides url="intranet-customer-portal" version="0.2d"/>
         <callbacks>
         </callbacks>
         <parameters>
             <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="KeyRFQWorkflow"  default="project_approval3_wf" description=""/>
             <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="TempPath"  default="/tmp" description="Temporary path for files uploaded"/>
-            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="DirNameSourceLanguage"  default="0_source_" description="Name for directory holding the source files. Should be either  '0_source_' or '01_source_' dependending on PO version"/>
+            <parameter datatype="string" min_n_values="1"  max_n_values="1"  name="DirNameSourceLanguage"  default="0_source_" description="Name for directory holding the source files. Should be either  '0_source_' or '01_source_' dependending on PO version"/>
         </parameters>
     </version>
 </package>
