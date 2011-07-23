@@ -22,7 +22,7 @@
         <parameters>
             <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="KeyRFQWorkflow"  default="project_approval3_wf" description=""/>
             <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="TempPath"  default="/tmp" description="Temporary path for files uploaded"/>
-            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="DirNameSourceLanguage"  default="0_source_" description="Name for directory holding the source files. Shoudl contain either  '0_source_' or '01_source_' dependending on PO version"/>
+            <parameter datatype="number" min_n_values="1"  max_n_values="1"  name="DirNameSourceLanguage"  default="0_source_" description="Name for directory holding the source files. Should be either  '0_source_' or '01_source_' dependending on PO version"/>
         </parameters>
     </version>
 </package>
