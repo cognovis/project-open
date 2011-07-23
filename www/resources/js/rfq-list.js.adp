@@ -58,7 +58,7 @@ Ext.onReady(function(){
 		renderTo: 'gridRFQ',
 		store: rfqCustomerPortalStore,
 		width: 730,	
-		height: 400,
+		height: 200,
 		columns: [
         	    {header: "No", width: 40, dataIndex: 'id', sortable: true},
         	    {header: "Inquiry ID", dataIndex: 'inquiry_id',hidden: true},
