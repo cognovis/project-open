@@ -196,8 +196,9 @@ if { "submit"==$btn_value } {
 			set destination_path_project $destination_path 
 
 	                set target_languages_list [split $target_languages ',']
-
-                        file mkdir "$destination_path_project/$project_nr/0_source_$source_language"
+			
+			set name_src_dir [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "DirNameSourceLanguage" -default "0_source_"]
+                        file mkdir "$destination_path_project/$project_nr/$name_src_dir$source_language"
 
         	        foreach i $target_languages_list {
                 	        set lang_abbrev [im_category_from_id $i]
