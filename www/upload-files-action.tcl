@@ -254,15 +254,15 @@ if { "submit"==$btn_value } {
                         }
                 }
 	    }
-            foreach i $target_languages_list {
-		    if { [catch {
-			ns_log NOTICE "KHD: Copy file to Project Folder: $temp_path/$security_token/$file_name --> $destination_path_project/$project_nr/0_source_$lang_abbrev/$file_name" 
-			ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/0_source_$lang_abbrev/$file_name" 
-		    } err_msg] } {
-			ns_log NOTICE "Error copying file: $err_msg" 
-			ad_return_complaint 1 $err_msg
-		    }
+
+	    if { [catch {
+		ns_log NOTICE "KHD: Copy file to Source Folder: $temp_path/$security_token/$file_name --> $destination_path_project/$project_nr/0_source_$source_language/$file_name" 
+		ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/0_source_$source_language/$file_name" 
+	    } err_msg] } {
+		ns_log NOTICE "Error copying file: $err_msg" 
+		ad_return_complaint 1 $err_msg
 	    }
+
 	    incr ctr
 	    set path "" 
 	} 
