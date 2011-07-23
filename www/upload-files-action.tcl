@@ -34,6 +34,8 @@ set anonymous_p 1
 set multiple_documents_p 0
 set day_today [clock format [clock seconds] -format {%Y-%m-%d}]
 set path ""
+set name_src_dir [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "DirNameSourceLanguage" -default "0_source_"]
+
 
 if { "" != $security_token } {
     # set inquiry_id [db_string inq_id "select inquiry_id from im_inquiries_customer_portal where security_token = :security_token" -default 0]
@@ -196,8 +198,7 @@ if { "submit"==$btn_value } {
 			set destination_path_project $destination_path 
 
 	                set target_languages_list [split $target_languages ',']
-			
-			set name_src_dir [parameter::get -package_id [apm_package_id_from_key intranet-customer-portal] -parameter "DirNameSourceLanguage" -default "0_source_"]
+
                         file mkdir "$destination_path_project/$project_nr/$name_src_dir$source_language"
 
         	        foreach i $target_languages_list {
@@ -255,7 +256,7 @@ if { "submit"==$btn_value } {
 
 	    if { [catch {
 		ns_log NOTICE "KHD: Copy file to Source Folder: $temp_path/$security_token/$file_name --> $destination_path_project/$project_nr/0_source_$source_language/$file_name" 
-		ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/0_source_$source_language/$file_name" 
+		ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/$name_src_dir$source_language/$file_name" 
 	    } err_msg] } {
 		ns_log NOTICE "Error copying file: $err_msg" 
 		ad_return_complaint 1 $err_msg
