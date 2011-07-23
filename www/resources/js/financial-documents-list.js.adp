@@ -67,8 +67,8 @@ Ext.onReady(function(){
 		renderTo: 'gridFinancialDocuments',
 		store: financialDocumentStore,
 		remoteSort: true,
-		width: 670,	
-		height: 400,
+		width: 685,	
+		height: 200,
 		columns: [
         	    {header: "No", width: 80, dataIndex: 'id', sortable: true},
         	    {header: "Title", width: 120, dataIndex: 'title', sortable: true},
