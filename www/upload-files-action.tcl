@@ -196,9 +196,11 @@ if { "submit"==$btn_value } {
 			set destination_path_project $destination_path 
 
 	                set target_languages_list [split $target_languages ',']
+
+                        file mkdir "$destination_path_project/$project_nr/0_source_$source_language"
+
         	        foreach i $target_languages_list {
                 	        set lang_abbrev [im_category_from_id $i]
-                                file mkdir "$destination_path_project/$project_nr/0_source_$lang_abbrev"
 	                        file mkdir "$destination_path_project/$project_nr/1_trans_$lang_abbrev"
         	                file mkdir "$destination_path_project/$project_nr/2_edit_$lang_abbrev"
                 	        file mkdir "$destination_path_project/$project_nr/3_proof_$lang_abbrev"
@@ -254,7 +256,7 @@ if { "submit"==$btn_value } {
 	    }
             foreach i $target_languages_list {
 		    if { [catch {
-			ns_log NOTICE "KHD: Copy file to Project Folder: $destination_path_project/$project_nr/0_source_/$lang_abbrev/$file_name" --> $destination_path_project/$file_name" 
+			ns_log NOTICE "KHD: Copy file to Project Folder: $temp_path/$security_token/$file_name --> $destination_path_project/$project_nr/0_source_$lang_abbrev/$file_name" 
 			ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/0_source_$lang_abbrev/$file_name" 
 		    } err_msg] } {
 			ns_log NOTICE "Error copying file: $err_msg" 
