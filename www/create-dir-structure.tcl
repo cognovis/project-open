@@ -25,5 +25,4 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 im_filestorage_create_directories $project_id
-ns_returnredirect "/intranet/projects/view?&project_id=$project_id&view_name=files"
-
+ns_returnredirect "../intranet/projects/view?&project_id=$project_id&view_name=files"
