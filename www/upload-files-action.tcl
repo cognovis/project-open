@@ -201,11 +201,6 @@ if { "submit"==$btn_value } {
 
         	        foreach i $target_languages_list {
                 	        set lang_abbrev [im_category_from_id $i]
-	                        file mkdir "$destination_path_project/$project_nr/1_trans_$lang_abbrev"
-        	                file mkdir "$destination_path_project/$project_nr/2_edit_$lang_abbrev"
-                	        file mkdir "$destination_path_project/$project_nr/3_proof_$lang_abbrev"
-                        	file mkdir "$destination_path_project/$project_nr/4_deliv_$lang_abbrev"
-
 			        set sql "insert into im_target_languages values ($project_id, $i)"
 			        db_dml insert_im_target_language $sql
 			        if {[im_table_exists im_freelancers]} {
@@ -238,22 +233,24 @@ if { "submit"==$btn_value } {
 			        where topic_id=:topic_id
         		    "
 			}
-	    } else {	
-                set target_languages_list [split $target_languages ',']
-                foreach i $target_languages_list {
-           		set lang_abbrev [im_category_from_id $i] 
-                        file mkdir "$destination_path_project/$project_nr/0_source_$lang_abbrev"
-                        file mkdir "$destination_path_project/$project_nr/1_trans_$lang_abbrev"
-                        file mkdir "$destination_path_project/$project_nr/2_edit_$lang_abbrev"
-                        file mkdir "$destination_path_project/$project_nr/3_proof_$lang_abbrev"
-                        file mkdir "$destination_path_project/$project_nr/4_deliv_$lang_abbrev"
-                        set sql "insert into im_target_languages values ($project_id, $i)"
-                        db_dml insert_im_target_language $sql
-                        if {[im_table_exists im_freelancers]} {
-                            im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $i
-                        }
-                }
-	    }
+	    } 
+
+	    # ToDo 
+	    # a) Add target language to existing project only in case this hasn't been done yet 
+	    # b) add target language to freelance_required_skills only in case this hasn't been done yet
+	    # 
+	    # else {	
+            #    set target_languages_list [split $target_languages ',']
+      	    #	set lang_abbrev [im_category_from_id $i] 
+            #    # file mkdir "$destination_path_project/$project_nr/0_source_$lang_abbrev"
+            #    foreach i $target_languages_list {
+            #            set sql "insert into im_target_languages values ($project_id, $i)"
+            #            db_dml insert_im_target_language $sql
+            #            if {[im_table_exists im_freelancers]} {
+            #                im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $i
+            #            }
+            #    }
+	    # }
 
 	    if { [catch {
 		ns_log NOTICE "KHD: Copy file to Source Folder: $temp_path/$security_token/$file_name --> $destination_path_project/$project_nr/0_source_$source_language/$file_name" 
