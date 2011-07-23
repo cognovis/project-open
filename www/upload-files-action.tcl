@@ -33,6 +33,7 @@ set show_left_navbar_p 0
 set anonymous_p 1
 set multiple_documents_p 0
 set day_today [clock format [clock seconds] -format {%Y-%m-%d}]
+set path ""
 
 if { "" != $security_token } {
     # set inquiry_id [db_string inq_id "select inquiry_id from im_inquiries_customer_portal where security_token = :security_token" -default 0]
@@ -77,10 +78,8 @@ if { "submit"==$btn_value } {
 	append destination_path "/" [db_string get_company_path "select company_path from im_companies where company_id=$company_id" -default 0]
 
 	# Create Parent Project if more than one source language 
-
-        set project_name "RFQ #$inquiry_id"
-        # set project_nr "rfq_customer_portal_$inquiry_id"
 	set project_nr [im_next_project_nr -customer_id $company_id]
+        set project_name "$project_nr (RFQ)"
 	set project_path $project_nr
 
 	if { 1 < [db_string i "select count(*) from im_inquiries_files where inquiry_id = :inquiry_id" -default 0] } {
@@ -95,8 +94,7 @@ if { "submit"==$btn_value } {
 			      ]
 		# 
 		# set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
-	    	set title $project_name		
-		db_dml update "update im_inquiries_customer_portal set (project_id, title, status_id) = ($parent_id, '$title', 72) where inquiry_id = :inquiry_id"
+		db_dml update "update im_inquiries_customer_portal set (project_id, title, status_id) = ($parent_id, '$project_name', 72) where inquiry_id = :inquiry_id"
 		db_dml update "update im_projects set start_date='$day_today', end_date = '$day_today' where project_id = $parent_id"
 		set multiple_documents_p 1
 		im_biz_object_add_role $user_id $parent_id "1300"
@@ -110,15 +108,10 @@ if { "submit"==$btn_value } {
 
 	# Create a project for each source language in the RFQ
 	db_foreach source_language $sql {
-
 	    if { ![info exists lang_hash($source_language)] } {
-			set project_name "RFQ #$inquiry_id/$inquiry_files_id"   
-			# set project_nr "rfq_customer_portal_" 
+
 			set project_nr [im_next_project_nr -customer_id $company_id]
-
-			# append project_nr $inquiry_id "_" $inquiry_files_id    
-			append project_nr "_" $inquiry_id "_" $inquiry_files_id    
-
+			set project_name "$project_nr (RFQ)"
 			set project_path $project_nr
 
 			set lang_hash($source_language) 1
@@ -177,39 +170,49 @@ if { "submit"==$btn_value } {
 			    ad_script_abort
 		        }  
 
-			set message "test - mail - body"
-
-			notification::new \
-			    	-type_id [notification::type::get_type_id -short_name "inquiry_notif"] \
-				-object_id $project_id \
-			        -response_id "" \
-			        -notif_subject "test mail subject" \
-			        -notif_text $message
+			# set message "test - mail - body"
+			# notification::new \
+			#    	-type_id [notification::type::get_type_id -short_name "inquiry_notif"] \
+			#	-object_id $project_id \
+			#        -response_id "" \
+			#        -notif_subject "test mail subject" \
+			#        -notif_text $message
 			
 		        set type_id [notification::type::get_type_id -short_name "inquiry_notif"]
 			set interval_id [notification::get_interval_id -name "instant"]
         		set delivery_method_id [notification::get_delivery_method_id -name "email"]
 
-		        notification::request::new \
-		            -type_id $type_id \
-		            -user_id $user_id \
-		            -object_id $project_id \
-		            -interval_id $interval_id \
-		            -delivery_method_id $delivery_method_id
+		        # notification::request::new \
+		        #    -type_id $type_id \
+		        #    -user_id $user_id \
+		        #    -object_id $project_id \
+		        #    -interval_id $interval_id \
+		        #    -delivery_method_id $delivery_method_id
 
 			# There's only one doc in the RFQ -> no parent project 
 			if { !$multiple_documents_p } {
-				# set title [db_string get_view_id "select file_name from im_inquiries_files where inquiry_id =:inquiry_id limit 1" -default ""]
-			    	set title $project_name
-	                	db_dml update "update im_inquiries_customer_portal set (project_id,title, status_id) = ($project_id, '$title',72 ) where inquiry_id = :inquiry_id"
+	                	db_dml update "update im_inquiries_customer_portal set (project_id,title, status_id) = ($project_id, '$project_name',72 ) where inquiry_id = :inquiry_id"
 			}
 			set destination_path_project $destination_path 
-			append destination_path_project "/$project_nr/0_source_$source_language"
-			file mkdir $destination_path_project 
+
+	                set target_languages_list [split $target_languages ',']
+        	        foreach i $target_languages_list {
+                	        set lang_abbrev [im_category_from_id $i]
+                                file mkdir "$destination_path_project/$project_nr/0_source_$lang_abbrev"
+	                        file mkdir "$destination_path_project/$project_nr/1_trans_$lang_abbrev"
+        	                file mkdir "$destination_path_project/$project_nr/2_edit_$lang_abbrev"
+                	        file mkdir "$destination_path_project/$project_nr/3_proof_$lang_abbrev"
+                        	file mkdir "$destination_path_project/$project_nr/4_deliv_$lang_abbrev"
+
+			        set sql "insert into im_target_languages values ($project_id, $i)"
+			        db_dml insert_im_target_language $sql
+			        if {[im_table_exists im_freelancers]} {
+			            im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $i
+        			}
+        	        }
 
 			# Create forum 
 			if { "" != $comment } {
-
 			    set topic_type_id 1108
 			    set forum_object_id $parent_id
 			    set today [db_string get_sysdate "select sysdate from dual"]
@@ -232,26 +235,34 @@ if { "submit"==$btn_value } {
 			                asignee_id=0
 			        where topic_id=:topic_id
         		    "
-
-
-
-
 			}
-
 	    } else {	
-		set destination_path_project $destination_path 
-		append destination_path_project "/$project_nr/0_source_$source_language"
+                set target_languages_list [split $target_languages ',']
+                foreach i $target_languages_list {
+           		set lang_abbrev [im_category_from_id $i] 
+                        file mkdir "$destination_path_project/$project_nr/0_source_$lang_abbrev"
+                        file mkdir "$destination_path_project/$project_nr/1_trans_$lang_abbrev"
+                        file mkdir "$destination_path_project/$project_nr/2_edit_$lang_abbrev"
+                        file mkdir "$destination_path_project/$project_nr/3_proof_$lang_abbrev"
+                        file mkdir "$destination_path_project/$project_nr/4_deliv_$lang_abbrev"
+                        set sql "insert into im_target_languages values ($project_id, $i)"
+                        db_dml insert_im_target_language $sql
+                        if {[im_table_exists im_freelancers]} {
+                            im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $i
+                        }
+                }
 	    }
-
-	    if { [catch {
-		ns_log NOTICE "KHD: Copy file to Project Folder: $temp_path/$security_token/$file_name" --> $destination_path_project/$file_name" 
-		ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$file_name"
-	    } err_msg] } {
-		ns_log NOTICE "Error copying file: $err_msg" 
-		# ad_return_complaint 1 $err_msg
-		# ns_return 200 text/html 0
+            foreach i $target_languages_list {
+		    if { [catch {
+			ns_log NOTICE "KHD: Copy file to Project Folder: $destination_path_project/$project_nr/0_source_/$lang_abbrev/$file_name" --> $destination_path_project/$file_name" 
+			ns_cp "$temp_path/$security_token/$file_name" "$destination_path_project/$project_nr/0_source_$lang_abbrev/$file_name" 
+		    } err_msg] } {
+			ns_log NOTICE "Error copying file: $err_msg" 
+			ad_return_complaint 1 $err_msg
+		    }
 	    }
 	    incr ctr
+	    set path "" 
 	} 
 
 	# create WF case 
