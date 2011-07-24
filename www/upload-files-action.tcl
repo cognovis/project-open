@@ -110,8 +110,7 @@ if { "submit"==$btn_value } {
 
 	# Create a project for each source language in the RFQ
 	db_foreach source_language $sql {
-	    if { ![info exists lang_hash($source_language)] } {
-
+	    # if ![info exists lang_hash($source_language)] 
 			set project_nr [im_next_project_nr -customer_id $company_id]
 			set project_name "$project_nr (RFQ)"
 			set project_path $project_nr
@@ -235,7 +234,7 @@ if { "submit"==$btn_value } {
 			        where topic_id=:topic_id
         		    "
 			}
-	    } 
+	    # end if removed  
 
 	    # ToDo 
 	    # a) Add target language to existing project only in case this hasn't been done yet 
