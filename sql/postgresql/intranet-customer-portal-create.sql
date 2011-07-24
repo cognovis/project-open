@@ -87,7 +87,7 @@ SELECT  im_component_plugin__new (
         null,                           -- context_id
         'Requests for Quote',		-- plugin_name
         'intranet-customer-portal',     -- package_name
-        'top',	                        -- location
+        'right',                        -- location
         '/intranet/index',              -- page_url
         null,                           -- view_name
         1,                              -- sort_order
@@ -248,6 +248,8 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+
 
 -- creating wf notification 
 
