@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.36 2010/02/04 21:06:42 daveb Exp $
+    @cvs-id $Id$
 } {
     q:trim
     {t:trim ""}
@@ -94,7 +94,9 @@ set params [list $q $offset $limit $user_id $df]
 if {$search_package_id eq "" && [parameter::get -package_id $package_id -parameter SubsiteSearchP -default 1]
     && [subsite::main_site_id] != [ad_conn subsite_id]} {
     # We are in a subsite and SubsiteSearchP is true
-    lappend params [concat [ad_conn subsite_id] [subsite::util::packages -node_id [ad_conn node_id]]]
+    set subsite_packages [concat [ad_conn subsite_id] [subsite::util::packages -node_id [ad_conn node_id]]]
+    lappend params $subsite_packages
+    set search_package_id $subsite_packages
 } else { 
   lappend params $search_package_id
 }
