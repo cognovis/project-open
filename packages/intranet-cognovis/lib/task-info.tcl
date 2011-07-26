@@ -132,3 +132,9 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
 	
 }
 
+set current_user_id [ad_conn user_id]
+im_project_permissions $current_user_id $task_id view read write admin
+
+if {$write eq 0} {
+    im_project_permissions $current_user_id $parent_id view_project read_project write admin_project
+}
