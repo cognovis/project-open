@@ -1,4 +1,0 @@
-#!/bin/bash
-git fetch $1
-git merge -s subtree --squash --no-commit $1/$2
-git commit -n -uno --no-status -m "Merge $1:: $myvar"
