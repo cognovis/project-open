@@ -5,6 +5,7 @@ ad_page_contract {
     Purpose: form to add a new project or edit an existing one
 } {
     {project_type_id ""}
+    {project_status_id ""}
     {company_id ""}
     {parent_id ""}
     {project_nr ""}
@@ -73,40 +74,40 @@ if {$project_exists_p} {
     # to allow freelancers to add sub-projects
     if {"" != $parent_id} {
 	im_project_permissions $user_id $parent_id view read write admin
-	if {$admin} { set perm_p 1 }
+        if {$admin} { set perm_p 1 }
     }
     
     # Users with "add_projects" privilege can always create new projects...
     if {[im_permission $user_id add_projects]} { set perm_p 1 } 
     if {!$perm_p} { 
-	ad_return_complaint "Insufficient Privileges" "
+        ad_return_complaint "Insufficient Privileges" "
             <li>You don't have sufficient privileges to see this page."
-	return
+        return
     }
     
     # Do we need to get the project type first in order to show the right DynFields?
     if {("" == $org_project_type_id || 0 == $org_project_type_id)} {
-	set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_project"]
-	if {!$all_same_p} {
-	    set exclude_category_ids [list \
-					  [im_project_type_ticket] \
-					  [im_project_type_software_release_item] \
-					 ]
-
-	    if {![exists_and_not_null project_id]} {
-		ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {
-		    project_name
-		    project_id
-		    also_add_users
-		    company_id
-		    { return_url "/intranet-cognovis/projects/project-ae" }
-		    { object_type "im_project" }
-		    { type_id_var "project_type_id" }
-		    { pass_through_variables "project_name also_add_users company_id" }
-		    { exclude_category_ids $exclude_category_ids }
-		}]
-	    }
-	}
+        set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_project"]
+        if {!$all_same_p} {
+            set exclude_category_ids [list \
+                                          [im_project_type_ticket] \
+                                          [im_project_type_software_release_item] \
+                                         ]
+            
+            if {![exists_and_not_null project_id]} {
+                ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {
+                    project_name
+                    project_id
+                    also_add_users
+                    company_id
+                    { return_url "/intranet-cognovis/projects/project-ae" }
+                    { object_type "im_project" }
+                    { type_id_var "project_type_id" }
+                    { pass_through_variables "project_name also_add_users company_id" }
+                    { exclude_category_ids $exclude_category_ids }
+                }]
+            }
+        }
     }
 }
 
@@ -119,7 +120,7 @@ ad_form -name $form_id -action /intranet-cognovis/projects/project-ae -cancel_ur
     project_id:key
 }
 
-	
+
 # ------------------------------------------------------
 # Dynamic Fields
 # ------------------------------------------------------
@@ -174,7 +175,9 @@ ad_form -extend -name $form_id -new_request {
         db_1row projects_by_parent_id_query {}
         
         # Now set the values for status and type
-        template::element::set_value $form_id project_status_id $parent_status_id
+        if {$project_status_id eq ""} {
+            template::element::set_value $form_id project_status_id $parent_status_id
+        }
         if {$project_type_id eq ""} {
             template::element::set_value $form_id project_type_id $parent_type_id
         }
@@ -202,44 +205,44 @@ ad_form -extend -name $form_id -new_request {
 } -validate { 
     
     {project_nr
-	{![var_contains_quotes $project_nr]}
-	{[_ intranet-core.lt_Quotes_in_Project_Nr_]}
+        {![var_contains_quotes $project_nr]}
+        {[_ intranet-core.lt_Quotes_in_Project_Nr_]}
     }
     {project_nr
-	{[regexp {^[a-z0-9_]+$} $project_nr match]}
-	{[lang::message::lookup "" intranet-core.Non_alphanum_chars_in_nr "The specified path contains invalid characters.<br> Allowed are only aphanumeric characters including a-z, 0-9 and '_'."]}
+        {[regexp {^[a-z0-9_]+$} $project_nr match]}
+        {[lang::message::lookup "" intranet-core.Non_alphanum_chars_in_nr "The specified path contains invalid characters.<br> Allowed are only aphanumeric characters including a-z, 0-9 and '_'."]}
     }
     {project_nr
-	{![regexp {/} $project_nr]}
-	{[_ intranet-core.intranet-core.lt_Slashes__in_Project_P]}
+        {![regexp {/} $project_nr]}
+        {[_ intranet-core.intranet-core.lt_Slashes__in_Project_P]}
     }
     {project_nr
-	{![regexp {\.} $project_nr]}
-	{[_ intranet-core.lt_Dots__in_Project_Path]}
+        {![regexp {\.} $project_nr]}
+        {[_ intranet-core.lt_Dots__in_Project_Path]}
     }
     {project_name
-	{![var_contains_quotes $project_name]}
-	{[_ intranet-core.lt_Quotes_in_Project_Nam]}
+        {![var_contains_quotes $project_name]}
+        {[_ intranet-core.lt_Quotes_in_Project_Nam]}
     }
     {parent_id
-	{![string equal $parent_id $project_id]}
-	{"Parent Project = Project"}
+        {![string equal $parent_id $project_id]}
+        {"Parent Project = Project"}
     }
     {end_date
-	{[expr {[template::util::date get_property sql_date $end_date] > [template::util::date get_property sql_date $start_date]}]}
-	{[_ intranet-core.lt_End_date_must_be_afte]}
+        {[expr {[template::util::date get_property sql_date $end_date] > [template::util::date get_property sql_date $start_date]}]}
+        {[_ intranet-core.lt_End_date_must_be_afte]}
     }
     {percent_completed
-	{[expr {$percent_completed <= 100}]}
-	{"Number must be in range (0 .. 100)"}
+        {[expr {$percent_completed <= 100}]}
+        {"Number must be in range (0 .. 100)"}
     }
     {percent_completed
-	{[expr {$percent_completed >= 0}]}
-	{"Number must be in range (0 .. 100)"}
+        {[expr {$percent_completed >= 0}]}
+        {"Number must be in range (0 .. 100)"}
     }
-
+    
 } -on_submit {
-
+    
     # Permission check. Cases include a user with full add_projects rights,
     # but also a freelancer updating an existing project or a freelancer
     # creating a sub-project of a project he or she can admin.
@@ -253,28 +256,28 @@ ad_form -extend -name $form_id -new_request {
     # Check if the user has admin rights on the parent_id
     # to allow freelancers to add sub-projects
     if {"" != $parent_id} {
-	im_project_permissions $user_id $parent_id view read write admin
-	if {$write} { set perm_p 1 }
+        im_project_permissions $user_id $parent_id view read write admin
+        if {$write} { set perm_p 1 }
     }
-
+    
     # Users with "add_projects" privilege can always create new projects...
     if {[im_permission $user_id add_projects]} { set perm_p 1 } 
-
+    
     if {!$perm_p} { 
-	ad_return_complaint "Insufficient Privileges" "<li>You don't have sufficient privileges to see this page."
-	ad_script_abort
+        ad_return_complaint "Insufficient Privileges" "<li>You don't have sufficient privileges to see this page."
+        ad_script_abort
     }
     
     if {[info exists project_nr]} {
-	set project_nr [string tolower [string trim $project_nr]]
+        set project_nr [string tolower [string trim $project_nr]]
     }
 } -new_data {
-
- 
+    
+    
     if {![exists_and_not_null project_path]} {
         set project_path [string tolower [string trim $project_name]]
     }
-
+    
     # Check if the project_nr already exists, if yes, create a new one
     set project_nr_p [db_0or1row select_project_nr {
         SELECT project_id FROM im_projects WHERE project_nr = :project_nr
@@ -284,21 +287,21 @@ ad_form -extend -name $form_id -new_request {
     }
     
     db_transaction {
-	set project_id [project::new \
-			    -project_name $project_name \
-			    -project_nr $project_nr \
-			    -project_path $project_path \
-			    -company_id $company_id \
-			    -parent_id $parent_id \
-			    -project_type_id $project_type_id \
-			    -project_status_id $project_status_id \
-			   ]
-	
-	
-
-
-	if {0 == $project_id || "" == $project_id} {
-	    ad_return_complaint 1 "
+        set project_id [project::new \
+                            -project_name $project_name \
+                            -project_nr $project_nr \
+                            -project_path $project_path \
+                            -company_id $company_id \
+                            -parent_id $parent_id \
+                            -project_type_id $project_type_id \
+                            -project_status_id $project_status_id \
+                           ]
+        
+        
+        
+        
+        if {0 == $project_id || "" == $project_id} {
+            ad_return_complaint 1 "
 	    <b>Error creating project</b>:<br>
 	    We have got an error creating a new project.<br>
 	    There is probably something wrong with the projects's parameters below:<br>&nbsp;<br>
@@ -315,101 +318,101 @@ ad_form -extend -name $form_id -new_request {
 	    <pre>$err_msg</pre>
 	"
             ad_script_abort
-	}
-	
-	# add users to the project as PMs
-	# - current_user (creator/owner)
-	# - project_leader
-	# - supervisor
-
-	set role_id [im_biz_object_role_project_manager]
-	im_biz_object_add_role $user_id $project_id $role_id 
-	if {[exists_and_not_null project_lead_id]} {
-	    im_biz_object_add_role $project_lead_id $project_id $role_id 
-	}
-	
-	
-	# -----------------------------------------------------------------
-	# Create a new Workflow for the project either if:
-	# - specified explicitely in the parameters or
-	# - if there is a WF associated with the project_type
-	
-	# Check if there is a WF associated with the project type
-	if {![exists_and_not_null workflow_key]} {
-	    set wf_key [db_string wf "select aux_string1 from im_categories where category_id = :project_type_id" -default ""]
-	    set wf_exists_p [db_string wf_exists "select count(*) from wf_workflows where workflow_key = :wf_key"]
-	    if {$wf_exists_p} { set workflow_key $wf_key }
-	}
-	
-	if {[exists_and_not_null workflow_key]} {
-	    # Create a new workflow case (instance)
-	    set context_key ""
-
-	    set case_id [wf_case_new \
-			     $workflow_key \
-			     $context_key \
-			     $project_id \
-			    ]
-	    
-	    # Determine the first task in the case to be executed and start+finisch the task.
-	    im_workflow_skip_first_transition -case_id $case_id
-	    
-	}
-	
-	# Set the old project type. Used to detect changes in the project
-	# type and therefore the need to display new DynField fields in a
-	# second page.
-	set previous_project_type_id 0
-    
-	# -----------------------------------------------------------------
-	# Update the Project
-	# -----------------------------------------------------------------
-	# -----------------------------------------------------------------
-	# Store dynamic fields
-
-	ns_log Notice "/intranet-cognovis/projects/project-ae: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
-	if {[info exists start_date]} {
-	    set start_date [template::util::date get_property sql_date $start_date]
-	} else {
-	    set start_date [template::util::date::today]
-	}
-	if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
-
-	im_dynfield::attribute_store \
-	    -object_type $object_type \
-	    -object_id $project_id \
-	    -form_id $form_id
-	
-	set requires_report_p t
-	
-	
-	# Write Audit Trail
-	im_project_audit -project_id $project_id -action after_create
-
-	
-	# -----------------------------------------------------------------
-	# add the creating current_user to the group
-	# ERROR inexistent role
-	if { [exists_and_not_null project_lead_id] } {
-	    im_biz_object_add_role $project_lead_id $project_id [im_biz_object_role_project_manager]
-	}
-	
-	
-	# -----------------------------------------------------------------
-	# Call the "project_create" or "project_update" user_exit
-	
-	im_user_exit_call project_create $project_id
-	
-	
-    
-	# -----------------------------------------------------------------
-	# Flush caches related to the project's information
-	
-	util_memoize_flush_regexp "im_project_has_type_helper.*"
-	util_memoize_flush_regexp "db_list_of_lists company_info.*"
-	
+        }
+        
+        # add users to the project as PMs
+        # - current_user (creator/owner)
+        # - project_leader
+        # - supervisor
+        
+        set role_id [im_biz_object_role_project_manager]
+        im_biz_object_add_role $user_id $project_id $role_id 
+        if {[exists_and_not_null project_lead_id]} {
+            im_biz_object_add_role $project_lead_id $project_id $role_id 
+        }
+        
+        
+        # -----------------------------------------------------------------
+        # Create a new Workflow for the project either if:
+        # - specified explicitely in the parameters or
+        # - if there is a WF associated with the project_type
+        
+        # Check if there is a WF associated with the project type
+        if {![exists_and_not_null workflow_key]} {
+            set wf_key [db_string wf "select aux_string1 from im_categories where category_id = :project_type_id" -default ""]
+            set wf_exists_p [db_string wf_exists "select count(*) from wf_workflows where workflow_key = :wf_key"]
+            if {$wf_exists_p} { set workflow_key $wf_key }
+        }
+        
+        if {[exists_and_not_null workflow_key]} {
+            # Create a new workflow case (instance)
+            set context_key ""
+            
+            set case_id [wf_case_new \
+                             $workflow_key \
+                             $context_key \
+                             $project_id \
+                            ]
+            
+            # Determine the first task in the case to be executed and start+finisch the task.
+            im_workflow_skip_first_transition -case_id $case_id
+            
+        }
+        
+        # Set the old project type. Used to detect changes in the project
+        # type and therefore the need to display new DynField fields in a
+        # second page.
+        set previous_project_type_id 0
+        
+        # -----------------------------------------------------------------
+        # Update the Project
+        # -----------------------------------------------------------------
+        # -----------------------------------------------------------------
+        # Store dynamic fields
+        
+        ns_log Notice "/intranet-cognovis/projects/project-ae: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
+        if {[info exists start_date]} {
+            set start_date [template::util::date get_property sql_date $start_date]
+        } else {
+            set start_date [template::util::date::today]
+        }
+        if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
+        
+        im_dynfield::attribute_store \
+            -object_type $object_type \
+            -object_id $project_id \
+            -form_id $form_id
+        
+        set requires_report_p t
+        
+        
+        # Write Audit Trail
+        im_project_audit -project_id $project_id -action after_create
+        
+        
+        # -----------------------------------------------------------------
+        # add the creating current_user to the group
+        # ERROR inexistent role
+        if { [exists_and_not_null project_lead_id] } {
+            im_biz_object_add_role $project_lead_id $project_id [im_biz_object_role_project_manager]
+        }
+        
+        
+        # -----------------------------------------------------------------
+        # Call the "project_create" or "project_update" user_exit
+        
+        im_user_exit_call project_create $project_id
+        
+        
+        
+        # -----------------------------------------------------------------
+        # Flush caches related to the project's information
+        
+        util_memoize_flush_regexp "im_project_has_type_helper.*"
+        util_memoize_flush_regexp "db_list_of_lists company_info.*"
+        
     }
-
+    
 } -edit_data {
     
     set previous_project_type_id [db_string prev_ptype {} -default 0]	
@@ -421,22 +424,22 @@ ad_form -extend -name $form_id -new_request {
     # Store dynamic fields
     
     ns_log Notice "/intranet/projects/new: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
-    ds_comment "status :: $project_status_id"
+
     im_dynfield::attribute_store \
-	-object_type $object_type \
-	-object_id $project_id \
-	-form_id $form_id
+        -object_type $object_type \
+        -object_id $project_id \
+        -form_id $form_id
     
     # Write Audit Trail
     im_project_audit -project_id $project_id -action after_update
-
+    
     # -----------------------------------------------------------------
     # add the creating current_user to the group
     
     if { [exists_and_not_null project_lead_id] } {
-	im_biz_object_add_role $project_lead_id $project_id [im_biz_object_role_project_manager]
+        im_biz_object_add_role $project_lead_id $project_id [im_biz_object_role_project_manager]
     }
-
+    
     
     # -----------------------------------------------------------------
     # Call the "project_create" or "project_update" user_exit
@@ -478,5 +481,5 @@ if {$edit_existing_project_p && [exists_and_not_null project_id]} {
                         -base_url [export_vars -base "/intranet/projects/view" {project_id}] \
                         $parent_menu_id \
                         $bind_vars "" "pagedesriptionbar" $menu_label \
-		       ]
+                       ]
 }
