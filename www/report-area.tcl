@@ -412,7 +412,7 @@ db_foreach type_hash $type_aggregate_sql {
 
     if {"" == $area_id}			{ set area_id -1000 }
     if {"" == $type_id} 		{ set type_id -1001 }
-    if {"" == $type_level1_id} 	{ set type_level1_id -1002 }
+    if {"" == $type_level1_id}		{ set type_level1_id -1002 }
 
     ns_log Notice "---------------------------------------------------------------"
     ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, type_level1_id=$type_level1_id, type_id=$type_id"
@@ -512,6 +512,136 @@ append footer "<td></td>\n"
 foreach type_id $types_with_values_list {
     set key "$type_id"
     set val [v type_hash($key)]
+    append footer "<td align=right>$val</td>"
+    append footer "<td align=right></td>"
+}
+
+
+
+
+
+# ----------------------------------------------------------------
+# Calculate information by queue
+# ----------------------------------------------------------------
+
+set dimension_vars [list area_id queue_id]
+set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+
+set queue_list_sql "
+	select distinct
+		ticket_queue_id
+	from	im_tickets
+	where	ticket_queue_id is not null
+	order by ticket_queue_id
+"
+set queue_list [list]
+db_foreach queue $queue_list_sql {
+    lappend queue_list $ticket_queue_id
+}
+lappend queue_list -1003
+
+
+set queue_sql "
+	select  coalesce(
+			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
+			t.ticket_area_id
+		) as area_id,
+		t.ticket_queue_id as queue_id
+	from    im_tickets t,
+		im_projects p,
+		acs_objects o
+	where   t.ticket_id = p.project_id and
+		t.ticket_id = o.object_id and
+		o.creation_date >= :start_date and
+		o.creation_date < :end_date
+"
+
+set queue_aggregate_sql "
+	select	count(*) as aggregate,
+		area_id,
+		queue_id
+	from	($queue_sql) t
+	group by
+		area_id,
+		queue_id
+"
+
+db_foreach queue_hash $queue_aggregate_sql {
+
+    if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $queue_id} 		{ set queue_id -1003 }
+
+    ns_log Notice "---------------------------------------------------------------"
+    ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, queue_id=$queue_id"
+    ns_log Notice ""
+
+    foreach perm $dimension_perms {
+	# Add a "$" before every variable
+	set perm_subs [list]
+	foreach p $perm { lappend perm_subs "\$$p" }
+	set key_expr [join $perm_subs "-"]
+	set key [eval "set a \"$key_expr\""]
+	set sum [v queue_hash($key) 0]
+	set sum [expr $sum + $aggregate]
+	set queue_hash($key) $sum
+	ns_log Notice "report-area: key=$key, agg=$aggregate, perm=$perm => sum=$sum"
+    }
+}
+
+# ad_return_complaint 1 [array get queue_hash]
+
+# ----------------------------------------------------------------
+# Calculate the list of queues
+set queues_with_values_list [list]
+foreach queue_id $queue_list {
+    set val [v queue_hash($queue_id) 0]
+    if {0 != $val} {
+	lappend queues_with_values_list $queue_id
+    }
+}
+
+# ad_return_complaint 1 $queues_with_values_list
+
+# ----------------------------------------------------------------
+# Format the data 
+
+append top_header "<td class=rowtitle></td>"
+append header "<td class=rowtitle></td>"
+set cnt 0
+foreach queue_id $queues_with_values_list {
+    set queue [db_string queue "select acs_object__name(:queue_id)"]
+    if {"Employees" == $queue} { set queue "No escalado" }
+    if {"" == $queue} { set queue $queue_id }
+    if {-1003 == $queue} { set queue "N/C" }
+    append header "<td class=rowtitle>$queue<br>$queue_id</td>\n"
+    append header "<td class=rowtitle>%</td>\n"   
+    incr cnt
+}
+append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Escalado</td>\n"
+
+foreach area_id $area_list {
+    set total_ticket_for_area [v queue_hash($area_id) 0]
+
+    # -------------------------------------
+    # Area name (from category)
+    append row($area_id) "<td></td>\n"
+
+    # List of queues
+    foreach queue_id $queues_with_values_list {
+	set key "$area_id-$queue_id"
+	set val [v queue_hash($key) ""]
+	append row($area_id) "<td align=right>$val</td>"
+	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	set perc "$perc%"
+	if {"" == $val} { set perc "" }
+	append row($area_id) "<td align=right>$perc</td>"
+    }
+}
+
+append footer "<td></td>\n"
+foreach queue_id $queues_with_values_list {
+    set key "$queue_id"
+    set val [v queue_hash($key)]
     append footer "<td align=right>$val</td>"
     append footer "<td align=right></td>"
 }
