@@ -10,6 +10,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
+    { perc_p 1 }
 }
 
 
@@ -85,18 +86,37 @@ set area_list_sql "
 		coalesce(
 			(select min(im_category_parents) from im_category_parents(category_id)), 
 			category_id
-		) as category_id
+		) as area_id
 	from	im_categories
 	where	category_type = 'Intranet Sencha Ticket Tracker Area'
-	order by category_id
+	order by area_id
 "
 set area_list [list]
-db_foreach area $area_list_sql {
-    lappend area_list $category_id
+db_foreach area_sql $area_list_sql {
+    lappend area_list $area_id
 }
 lappend area_list -1000
 
 
+set program_list_sql "
+	select
+		coalesce(
+			(select min(im_category_parents) from im_category_parents(c.category_id)), 
+			c.category_id
+		) as area_id,
+		c.category_id as program_id
+	from	im_categories c
+	where	c.category_type = 'Intranet Sencha Ticket Tracker Area'
+	order by area_id, program_id
+"
+db_foreach program_sql $program_list_sql {
+    if {$area_id == $program_id} { continue }
+    set program_list [v program_list_hash($area_id) {}]
+    lappend program_list $program_id
+    set program_list_hash($area_id) $program_list
+}
+
+# ad_return_complaint 1 [array get program_list_hash]
 
 
 # ----------------------------------------------------------------
@@ -117,14 +137,15 @@ append header "<td class=rowtitle></td>"
 append header "<td class=rowtitle>Total</td>\n"
 append header "<td class=rowtitle>Total %</td>\n"
 
-set dimension_vars [list area_id]
+set dimension_vars [list area_id program_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
 
 set total_sql "
 	select  coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
-		) as area_id
+		) as area_id,
+		t.ticket_area_id as program_id
 	from    im_tickets t,
 		im_projects p,
 		acs_objects o
@@ -136,10 +157,12 @@ set total_sql "
 
 set total_aggregate_sql "
 	select	count(*) as aggregate,
-		area_id
+		area_id,
+		program_id
 	from	($total_sql) t
 	group by
-		area_id
+		area_id,
+		program_id
 "
 
 db_foreach total_hash $total_aggregate_sql {
@@ -156,8 +179,11 @@ db_foreach total_hash $total_aggregate_sql {
     }
 }
 
+# The total number of tickets is stored in the bucket
+# without any dimension vars
 set total_tickets [v total_hash() 0]
 
+# Add the total to all areas
 foreach area_id $area_list {
     set row($area_id) ""
     set total_ticket_for_area [v total_hash($area_id) 0]
@@ -172,6 +198,17 @@ foreach area_id $area_list {
     append row($area_id) "<td align=right>$val</td>"
     if {[catch { set perc "[expr round(1000.0 * $val / $total_tickets) / 10.0]%" }]} { set perc "undef" }
     append row($area_id) "<td align=right>$perc</td>"
+
+    # -------------------------------------
+    # Repeat the same procedure for the programs contained in the area
+    set program_list [v program_list_hash($area_id) ""]
+    foreach program_id $program_list {
+	append row($program_id) "<td>[im_category_from_id -translate_p 0 $program_id]</td>\n"
+	set val [v total_hash($program_id)]
+	append row($program_id) "<td align=right>$val</td>"
+	if {[catch { set perc "[expr round(1000.0 * $val / $total_tickets) / 10.0]%" }]} { set perc "undef" }
+	append row($program_id) "<td align=right>$perc</td>"
+    }
 }
 
 append footer "<td>Total</td>\n"
@@ -179,11 +216,14 @@ append footer "<td align=right>$total_tickets</td>\n"
 append footer "<td align=right>100.0%</td>\n"
 
 
+
+
+
 # ----------------------------------------------------------------
 # Calculate information by channel
 # ----------------------------------------------------------------
 
-set dimension_vars [list area_id channel_level1_id channel_id]
+set dimension_vars [list area_id program_id channel_level1_id channel_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
 
 # ----------------------------------------------------------------
@@ -213,6 +253,7 @@ set channel_sql "
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
 		) as area_id,
+		t.ticket_area_id as program_id,
 		coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_incoming_channel_id)), 
 			t.ticket_incoming_channel_id
@@ -230,11 +271,13 @@ set channel_sql "
 set channel_aggregate_sql "
 	select	count(*) as aggregate,
 		area_id,
+		program_id,
 		channel_level1_id,
 		channel_id
 	from	($channel_sql) t
 	group by
 		area_id,
+		program_id,
 		channel_level1_id,
 		channel_id
 "
@@ -243,6 +286,7 @@ set channel_aggregate_sql "
 db_foreach channel_hash $channel_aggregate_sql {
 
     if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $program_id}		{ set program_id -1004 }
     if {"" == $channel_id} 		{ set channel_id -1001 }
     if {"" == $channel_level1_id} 	{ set channel_level1_id -1002 }
 
@@ -272,6 +316,9 @@ foreach channel_id $channel_list {
     if {0 != $val} {
 	lappend channels_with_values_list $channel_id
 
+	# Disable for debugging
+	continue
+
 	# Check for sub-categories with values
 	set subcats [im_sub_categories $channel_id]
 	foreach sub_channel_id $subcats {
@@ -289,13 +336,10 @@ foreach channel_id $channel_list {
 # ----------------------------------------------------------------
 # Format the data 
 
-
 append top_header "<td class=rowtitle></td>\n"
-
 append header "<td class=rowtitle></td>\n"
 set cnt 0
 foreach channel_id $channels_with_values_list {
-
     set channel [im_category_from_id $channel_id]
     if {$channel_id < 1000} { 
 	# Ugly. Restore the category
@@ -304,10 +348,10 @@ foreach channel_id $channels_with_values_list {
     if {$channel_id < 0} { set channel "N/C" }
 
     append header "<td class=rowtitle>$channel</td>\n"
-    append header "<td class=rowtitle>%</td>\n"   
+    if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
     incr cnt
 }
-append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Canal</td>\n"
+append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Canal</td>\n"
 
 
 
@@ -323,17 +367,37 @@ foreach area_id $area_list {
     # -------------------------------------
     # Area empty colum
     append row($area_id) "<td align=right></td>"
-    # append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
 
     # List of category values
     foreach channel_id $channels_with_values_list {
 	set key "$area_id-$channel_id"
 	set val [v channel_hash($key) ""]
 	append row($area_id) "<td align=right>$val</td>"
-	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
-	set perc "$perc%"
-	if {"" == $val} { set perc "" }
-	append row($area_id) "<td align=right>$perc</td>"
+	if {$perc_p} {
+	    if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	    set perc "$perc%"
+	    if {"" == $val} { set perc "" }
+	    append row($area_id) "<td align=right>$perc</td>"
+	}
+    }
+
+    # -------------------------------------
+    # Repeat the same procedure for the programs contained in the area
+    set program_list [v program_list_hash($area_id) ""]
+    foreach program_id $program_list {
+	set total_ticket_for_program [v channel_hash($program_id) 0]
+	append row($program_id) "<td align=right></td>"
+	foreach channel_id $channels_with_values_list {
+	    set key "$program_id-$channel_id"
+	    set val [v channel_hash($key) ""]
+	    append row($program_id) "<td align=right>$val</td>"
+	    if {$perc_p} {
+		if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		append row($program_id) "<td align=right>$perc</td>"
+	    }
+	}
     }
 }
 
@@ -348,13 +412,11 @@ foreach channel_id $channels_with_values_list {
 
 
 
-
-
 # ----------------------------------------------------------------
 # Calculate information by service
 # ----------------------------------------------------------------
 
-set dimension_vars [list area_id type_level1_id type_id]
+set dimension_vars [list area_id program_id type_level1_id type_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
 
 
@@ -380,6 +442,7 @@ set type_sql "
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
 		) as area_id,
+		t.ticket_area_id as program_id,
 		coalesce(
 			(select min(im_category_parents) from im_category_parents(t.ticket_type_id)), 
 			t.ticket_type_id
@@ -397,11 +460,13 @@ set type_sql "
 set type_aggregate_sql "
 	select	count(*) as aggregate,
 		area_id,
+		program_id,
 		type_level1_id,
 		type_id
 	from	($type_sql) t
 	group by
 		area_id,
+		program_id,
 		type_level1_id,
 		type_id
 "
@@ -411,6 +476,7 @@ set type_aggregate_sql "
 db_foreach type_hash $type_aggregate_sql {
 
     if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $program_id}		{ set program_id -1004 }
     if {"" == $type_id} 		{ set type_id -1001 }
     if {"" == $type_level1_id}		{ set type_level1_id -1002 }
 
@@ -466,19 +532,17 @@ append top_header "<td class=rowtitle></td>"
 append header "<td class=rowtitle></td>"
 set cnt 0
 foreach type_id $types_with_values_list {
-
     set type [im_category_from_id $type_id]
     if {$type_id < 1000} { 
 	# Ugly. Restore the category
 	set type "Sub-Cat<br>[im_category_from_id [expr $type_id + 10000000]]"
     }
     if {$type_id < 0} { set type "N/C" }
-
     append header "<td class=rowtitle>$type</td>\n"
-    append header "<td class=rowtitle>%</td>\n"   
+    if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
     incr cnt
 }
-append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Servicio</td>\n"
+append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Servicio</td>\n"
 
 
 set total_tickets [v type_hash() 0]
@@ -501,10 +565,31 @@ foreach area_id $area_list {
 	set key "$area_id-$type_id"
 	set val [v type_hash($key) ""]
 	append row($area_id) "<td align=right>$val</td>"
-	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
-	set perc "$perc%"
-	if {"" == $val} { set perc "" }
-	append row($area_id) "<td align=right>$perc</td>"
+	if {$perc_p} {
+	    if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	    set perc "$perc%"
+	    if {"" == $val} { set perc "" }
+	    append row($area_id) "<td align=right>$perc</td>"
+	}
+    }
+
+    # -------------------------------------
+    # Repeat the same procedure for the programs contained in the area
+    set program_list [v program_list_hash($area_id) ""]
+    foreach program_id $program_list {
+	set total_ticket_for_program [v type_hash($program_id) 0]
+	append row($program_id) "<td></td>\n"
+	foreach type_id $types_with_values_list {
+	    set key "$program_id-$type_id"
+	    set val [v type_hash($key) ""]
+	    append row($program_id) "<td align=right>$val</td>"
+	    if {$perc_p} {
+		if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		append row($program_id) "<td align=right>$perc</td>"
+	    }
+	}
     }
 }
 
@@ -524,7 +609,7 @@ foreach type_id $types_with_values_list {
 # Calculate information by queue
 # ----------------------------------------------------------------
 
-set dimension_vars [list area_id queue_id]
+set dimension_vars [list area_id program_id queue_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
 
 set queue_list_sql "
@@ -546,6 +631,7 @@ set queue_sql "
 			(select min(im_category_parents) from im_category_parents(t.ticket_area_id)), 
 			t.ticket_area_id
 		) as area_id,
+		t.ticket_area_id as program_id,
 		t.ticket_queue_id as queue_id
 	from    im_tickets t,
 		im_projects p,
@@ -559,16 +645,19 @@ set queue_sql "
 set queue_aggregate_sql "
 	select	count(*) as aggregate,
 		area_id,
+		program_id,
 		queue_id
 	from	($queue_sql) t
 	group by
 		area_id,
+		program_id,
 		queue_id
 "
 
 db_foreach queue_hash $queue_aggregate_sql {
 
     if {"" == $area_id}			{ set area_id -1000 }
+    if {"" == $program_id}		{ set program_id -1004 }
     if {"" == $queue_id} 		{ set queue_id -1003 }
 
     ns_log Notice "---------------------------------------------------------------"
@@ -614,10 +703,11 @@ foreach queue_id $queues_with_values_list {
     if {"" == $queue} { set queue $queue_id }
     if {-1003 == $queue} { set queue "N/C" }
     append header "<td class=rowtitle>$queue<br>$queue_id</td>\n"
-    append header "<td class=rowtitle>%</td>\n"   
+    if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
     incr cnt
 }
-append top_header "<td class=rowtitle align=center colspan=[expr 2*$cnt]>Por Escalado</td>\n"
+
+append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Escalado</td>\n"
 
 foreach area_id $area_list {
     set total_ticket_for_area [v queue_hash($area_id) 0]
@@ -630,11 +720,32 @@ foreach area_id $area_list {
     foreach queue_id $queues_with_values_list {
 	set key "$area_id-$queue_id"
 	set val [v queue_hash($key) ""]
-	append row($area_id) "<td align=right>$val</td>"
-	if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
-	set perc "$perc%"
-	if {"" == $val} { set perc "" }
-	append row($area_id) "<td align=right>$perc</td>"
+	append row($area_id) "<td align=right>$queue_id<br>$val</td>"
+	if {$perc_p} {
+	    if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
+	    set perc "$perc%"
+	    if {"" == $val} { set perc "" }
+	    append row($area_id) "<td align=right>$perc</td>"
+	}
+    }
+
+    # -------------------------------------
+    # Repeat the same procedure for the programs contained in the area
+    set program_list [v program_list_hash($area_id) ""]
+    foreach program_id $program_list {
+	set total_ticket_for_program [v queue_hash($program_id) 0]
+	append row($program_id) "<td></td>\n"
+	foreach queue_id $queues_with_values_list {
+	    set key "$program_id-$queue_id"
+	    set val [v queue_hash($key) ""]
+	    append row($program_id) "<td align=right>$val</td>"
+	    if {$perc_p} {
+		if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		append row($program_id) "<td align=right>$perc</td>"
+	    }
+	}
     }
 }
 
@@ -654,7 +765,26 @@ foreach queue_id $queues_with_values_list {
 # ----------------------------------------------------------------
 
 set body ""
+append body "<table cellspacing=5 cellpadding=5>"
+append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
+append body "<tr class=rowtitle valign=top>$header</tr>\n"
 foreach area_id $area_list {
     append body "<tr>$row($area_id)</tr>\n"
 }
+append body "<tr>$footer</tr>\n"
+
+set cnt 0
+foreach area_id $area_list {
+    if {$cnt >= 1} { continue }
+    append body "<tr><td>&nbsp;</td></tr>\n"
+    append body "<tr class=rowtitle><td class=rowtitle colspan=999>[im_category_from_id $area_id]</td></tr>\n"
+    append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
+    append body "<tr class=rowtitle valign=top>$header</tr>\n"
+    set program_list [v program_list_hash($area_id) ""]
+    foreach program_id $program_list {
+	append body "<tr>$row($program_id)</tr>\n"
+    }
+    incr cnt
+}
+append body "</table>\n"
 
