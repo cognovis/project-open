@@ -538,7 +538,7 @@ foreach type_id $types_with_values_list {
 	set type "Sub-Cat<br>[im_category_from_id [expr $type_id + 10000000]]"
     }
     if {$type_id < 0} { set type "N/C" }
-    append header "<td class=rowtitle>$type</td>\n"
+    append header "<td class=rowtitle>$type<br>$type_id</td>\n"
     if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
     incr cnt
 }
@@ -564,7 +564,7 @@ foreach area_id $area_list {
     foreach type_id $types_with_values_list {
 	set key "$area_id-$type_id"
 	set val [v type_hash($key) ""]
-	append row($area_id) "<td align=right>$val</td>"
+	append row($area_id) "<td align=right>$val<br>$type_id</td>"
 	if {$perc_p} {
 	    if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
 	    set perc "$perc%"
