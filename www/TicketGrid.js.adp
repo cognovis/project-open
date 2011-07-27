@@ -344,14 +344,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		var selection = this.selModel.getSelection();
 		var ticketModel = selection[0];
 
-		// Delete the ticket. This triggers a DELETE server request
-		ticketModel.destroy({
-			success: function(record, operation) {
+		// Send a GET request to the server in order to
+		// destroy the ticket. DELETE on REST may cause
+		// problems because session information is not
+		// defined in DELETE
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/delete-ticket',
+			success: function(response) {
 		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
 				ticketStore.remove(ticketModel);
 			},
-			failure: function(record, operation) {
-				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+			failure: function(response) {
+				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', response.responseText);
 			}
 		});
 	},

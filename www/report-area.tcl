@@ -11,6 +11,9 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { perc_p 1 }
+    { channel_p 1 }
+    { type_p 1 }
+    { queue_p 1 }
 }
 
 
@@ -111,12 +114,14 @@ set program_list_sql "
 "
 db_foreach program_sql $program_list_sql {
     if {$area_id == $program_id} { continue }
+    # exclude areas that somehow got into the list
+    if {[lsearch $area_list $program_id] > -1} { continue }
     set program_list [v program_list_hash($area_id) {}]
     lappend program_list $program_id
     set program_list_hash($area_id) $program_list
 }
 
-# ad_return_complaint 1 [array get program_list_hash]
+# ad_return_complaint 1 "<pre>[join [array get program_list_hash] "<br>"]</pre>"
 
 
 # ----------------------------------------------------------------
@@ -190,7 +195,7 @@ foreach area_id $area_list {
 
     # -------------------------------------
     # Area name (from category)
-    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]<br>$area_id</td>\n"
 
     # -------------------------------------
     # Total and Total %
@@ -222,6 +227,8 @@ append footer "<td align=right>100.0%</td>\n"
 # ----------------------------------------------------------------
 # Calculate information by channel
 # ----------------------------------------------------------------
+
+if {$channel_p} {
 
 set dimension_vars [list area_id program_id channel_level1_id channel_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
@@ -372,12 +379,12 @@ foreach area_id $area_list {
     foreach channel_id $channels_with_values_list {
 	set key "$area_id-$channel_id"
 	set val [v channel_hash($key) ""]
-	append row($area_id) "<td align=right>$val</td>"
+	append row($area_id) "<td align=right>x1<br>$channel_id<br>$val</td>"
 	if {$perc_p} {
 	    if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] }]} { set perc "undef" }
 	    set perc "$perc%"
 	    if {"" == $val} { set perc "" }
-	    append row($area_id) "<td align=right>$perc</td>"
+	    append row($area_id) "<td align=right>x2<br>$channel_id<br>$perc</td>"
 	}
     }
 
@@ -390,12 +397,12 @@ foreach area_id $area_list {
 	foreach channel_id $channels_with_values_list {
 	    set key "$program_id-$channel_id"
 	    set val [v channel_hash($key) ""]
-	    append row($program_id) "<td align=right>$val</td>"
+	    append row($program_id) "<td align=right>x3<br>$channel_id<br>$val</td>"
 	    if {$perc_p} {
 		if {[catch { set perc [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] }]} { set perc "undef" }
 		set perc "$perc%"
 		if {"" == $val} { set perc "" }
-		append row($program_id) "<td align=right>$perc</td>"
+		append row($program_id) "<td align=right>x4<br>$channel_id<br>$perc</td>"
 	    }
 	}
     }
@@ -410,11 +417,13 @@ foreach channel_id $channels_with_values_list {
     append footer "<td align=right></td>"
 }
 
-
+}
 
 # ----------------------------------------------------------------
 # Calculate information by service
 # ----------------------------------------------------------------
+
+if {$type_p} {
 
 set dimension_vars [list area_id program_id type_level1_id type_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
@@ -601,13 +610,15 @@ foreach type_id $types_with_values_list {
     append footer "<td align=right></td>"
 }
 
-
+}
 
 
 
 # ----------------------------------------------------------------
 # Calculate information by queue
 # ----------------------------------------------------------------
+
+if {$queue_p} {
 
 set dimension_vars [list area_id program_id queue_id]
 set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
@@ -757,7 +768,7 @@ foreach queue_id $queues_with_values_list {
     append footer "<td align=right></td>"
 }
 
-
+}
 
 
 # ----------------------------------------------------------------
@@ -775,7 +786,7 @@ append body "<tr>$footer</tr>\n"
 
 set cnt 0
 foreach area_id $area_list {
-    if {$cnt >= 1} { continue }
+    if {$cnt >= 0} { continue }
     append body "<tr><td>&nbsp;</td></tr>\n"
     append body "<tr class=rowtitle><td class=rowtitle colspan=999>[im_category_from_id $area_id]</td></tr>\n"
     append body "<tr class=rowtitle valign=top>$top_header</tr>\n"

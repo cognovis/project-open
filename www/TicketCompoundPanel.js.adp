@@ -31,7 +31,6 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     layout:		'border',
     deferredRender:	false,
     split:		true,
-	autoScroll:	true,
 
     items: [{
 	itemId:		'center',
