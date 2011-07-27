@@ -13,8 +13,8 @@ ad_page_contract {
     { locale "es_ES" }
     { perc_p 1 }
     { channel_p 1 }
-    { type_p 1 }
-    { queue_p 1 }
+    { type_p 0 }
+    { queue_p 0 }
 }
 
 
@@ -794,8 +794,10 @@ append body "<tr class=roweven>$footer</tr>\n"
 set cnt 0
 foreach area_id $area_list {
 #    if {$cnt >= 0} { continue }
+    set area_name [im_category_from_id $area_id]
+    if {"" == $area_id || -1000 == $area_id} { set area_name "N/C" }
     append body "<tr><td>&nbsp;</td></tr>\n"
-    append body "<tr class=rowtitle><td class=rowtitle colspan=999>[im_category_from_id $area_id]</td></tr>\n"
+    append body "<tr class=rowtitle><td class=rowtitle colspan=999>$area_name</td></tr>\n"
     append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
     append body "<tr class=rowtitle valign=top>$header</tr>\n"
     set program_list [v program_list_hash($area_id) ""]
