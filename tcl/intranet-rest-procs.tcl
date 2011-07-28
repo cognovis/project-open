@@ -1537,6 +1537,7 @@ ad_proc -private im_rest_delete_object {
 
     if {[catch {
 	set nuke_tcl [list "${nuke_otype}_nuke" -current_user_id $user_id $rest_oid]
+	ns_log Notice "im_rest_delete_object: nuke_tcl=$nuke_tcl"
 	eval $nuke_tcl
 
     } err_msg]} {
