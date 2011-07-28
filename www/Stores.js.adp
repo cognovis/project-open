@@ -198,11 +198,15 @@ Ext.define('PO.data.AreaStore', {
 		ticketAreaStore.each(function(record) {
 			var indent_class = record.get('indent_class');
 			var num = indent_class.substring(indent_class.length-1);
-			if (num  > 0) { 
-				var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
-				var tree_sortkey = record.get('tree_sortkey').substring(0,8);
-				if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
-					areaTicketAreaStore.add(record); 
+			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
+			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
+			if (tree_sortkey_filter == undefined || tree_sortkey_filter.value.indexOf('null') > -1){ //
+				areaTicketAreaStore.add(record); 
+			}else{
+				if (num  > 0) { 
+					if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
+						areaTicketAreaStore.add(record); 
+					}
 				}
 			}
 		});

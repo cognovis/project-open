@@ -47,34 +47,49 @@ Ext.define('TicketBrowser.Main', {
 			dock: 'top',
 			xtype: 'ticketActionBar'
 		}],
-
-		defaults: {
-      listeners: {
-      		activate:  function(){
-      				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
-      		}
-      }		
-		},
-		
+	
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
-			xtype: 'ticketContainer'	
+			xtype: 'ticketContainer',
+      listeners: {
+      		activate:  function(){
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('ticketGrid').selModel.getSelection());     
+      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
+      		}
+      }				
 		}, {
 			itemId: 'company',
 			title: 	'#intranet-sencha-ticket-tracker.Companies#',
-			xtype: 'companyContainer'	
+			xtype: 'companyContainer',
+      listeners: {
+      		activate:  function(){
+							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('companyGrid').selModel.getSelection());
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
+      		}
+      }							
 		}, {
 			itemId: 'contact',
 			title: '#intranet-sencha-ticket-tracker.Contacts#',
-			xtype: 'contactContainer'
+			xtype: 'contactContainer',
+      listeners: {
+      		activate:  function(){
+							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('contactGrid').selModel.getSelection());
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
+      		}
+      }				
 		}, {
 			itemId: 'sample',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel',
       listeners: {
       		activate:  function(){
-      				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',false);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
       		},
           deactivate: function(){
 						// Show a dialog to save changes in ticket
@@ -102,15 +117,22 @@ Ext.define('TicketBrowser.Main', {
 						}
           }
       }			
-		}]
-	}],
-	
-	checkButton: function (component_id,docked_component_id,button_id,disabled){
-		var bar = Ext.getCmp(component_id).getDockedComponent(docked_component_id);
-		var but = bar.getComponent(button_id);
-		but.setDisabled(disabled);		
-	}
+		}, {
+			itemId: 'report',
+			title: '#intranet-sencha-ticket-tracker.Reports#'
+			//xtype: 'ticketCompoundPanel',		
+		}],
 		
+      listeners: {
+      		beforetabchange: function(tabPanel, newCard, oldCard, options){		
+      			if (newCard.itemId == 'report'){
+      				window.open('/intranet-reporting/');
+      				return false;
+      			} 
+      			return true;
+      		}
+      }		
+	}]
 });
 
 

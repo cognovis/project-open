@@ -27,12 +27,12 @@ var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	listeners: {
 		selectionchange: function(sm, selections) {
 			if (selections.length > 0){
-				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',false);
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
 			} else {
-				Ext.getCmp('mainPanel').checkButton('mainTabPanel','ticketActionBar','buttonCopyTicket',true);
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
 			}
-			// var grid = this.view;
-			// grid.down('#removeButton').setDisabled(selections.length == 0);
 		}
 	}
 });
@@ -265,6 +265,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					query = query + ' and company_id in (select company_id from im_companies where lower(vat_number) like \'%' + value + '%\')';
 					key = 'query';
 					value = query;
+					break;
+				case 'ticket_telephone':
+					// The contact's telephone number is not part of the REST. So translate into a query:
+					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
+					key = 'query';
+					value = query;					
 					break;
 				case 'company_type_id':
 					// The customer's company type is not part of the REST ticket fields.

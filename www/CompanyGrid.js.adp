@@ -38,7 +38,16 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 });
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE'
+	mode:	'SINGLE',
+	listeners: {
+		selectionchange: function(sm, selections) {
+			if (selections.length > 0){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+			} else {
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+			}
+		}
+	}	
 });
 
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
@@ -207,7 +216,14 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	},
 
 	onDelete: function() {
-		alert('CompanyGrid.onDelete() not implemented yet');
+		// Get the selected customer (only one!)
+		var selection = this.selModel.getSelection();
+		var customerModel = selection[0];		
+		
+		//Create and show the window to change and delete the customer
+		var changeWindow = new TicketBrowser.TicketChangeCustomerWindow();
+		changeWindow.down('form').getForm().findField('customerDeleteCombo').select(customerModel.get('company_id'));
+		changeWindow.show();
 	},
 
 	onCopy: function() {

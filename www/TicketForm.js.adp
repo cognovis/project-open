@@ -49,7 +49,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 								}
 					}							
 	},
-	
+
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
@@ -285,6 +285,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
 			ticket_file.setValue(rec.get('ticket_file'));
 		}
+		
 			
 		//If Ticket is closed, disable the buttons.
 		var ticket_status_id=rec.get('ticket_status_id');

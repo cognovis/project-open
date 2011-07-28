@@ -36,7 +36,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:		'center',
 	region: 	'center',
 	layout: 	'border',
-	minWidth:	400,
+	minWidth:	200,
 	split:		true,
 
 	items: [{
@@ -62,14 +62,15 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:	'east',
 	region: 'east',
 	layout:	'border',
-	width:	800,
+	width:	1050,
 	split:	true,
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
 		xtype: 'auditGrid',
 		split:	true,
-		region:	'north'
+		region:	'north',
+		minHeight: 100
 	}, {
 		itemId: 'ticketFormRight',
 		title: '',
@@ -81,7 +82,8 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-filestorage.Filestorage#',
 		xtype: 'fileStorageGrid',
 		split:	true,
-		region:	'south'
+		region:	'south',
+		minHeight: 140
 	}]
     }],
 

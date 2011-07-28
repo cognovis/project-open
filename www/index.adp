@@ -1,4 +1,3 @@
-<html> 
 <head> 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
 	<meta name='generator' lang='en' content='OpenACS version 5.6.0'>
@@ -10,6 +9,7 @@
 
 	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
+	<script type="text/javascript" src="/intranet-sencha/js/locale/ext-lang-es.js"></script>
 	<script type="text/javascript" src="POClasses.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 
@@ -41,6 +41,7 @@
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
 	<script type="text/javascript" src="CompanyCompoundPanel.js"></script> 
 	<script type="text/javascript" src="CompanyContainer.js"></script> 
+	<script type="text/javascript" src="TicketChangeCustomerWindow.js"></script> 
 
 	<!-- ------------------------------- Contacts ---------------------------------------- -->
 	<script type="text/javascript" src="ContactForm.js"></script> 
@@ -48,6 +49,7 @@
 	<script type="text/javascript" src="ContactGrid.js"></script> 
 	<script type="text/javascript" src="ContactCompoundPanel.js"></script> 
 	<script type="text/javascript" src="ContactContainer.js"></script> 
+	<script type="text/javascript" src="TicketChangeContactWindow.js"></script> 
 
 	<!-- ------------------------------- Main - Integrating Everything ------------------- -->
 	<script type="text/javascript" src="MainPanel.js"></script> 
