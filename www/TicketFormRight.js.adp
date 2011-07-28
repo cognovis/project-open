@@ -70,7 +70,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-	//		width:		800,
 			flex: 1,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
@@ -124,7 +123,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-		//	width:		'100%',
 			flex: 2,		
 			layout: 	{ 
 		    type: 'hbox',

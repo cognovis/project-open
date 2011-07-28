@@ -18,6 +18,7 @@
   <msg key="button_Save_Changes">Guardar</msg>
   <msg key="button_Search">Buscar</msg>
   <msg key="Cancel">Cancelar</msg>
+  <msg key="Change">Cambiar</msg>
   <msg key="Channel_Details">Detalle Canal Entrada</msg>
   <msg key="Clear">Limpiar</msg>
   <msg key="Clear_Form">Borrar formulario</msg>
@@ -31,6 +32,8 @@
   <msg key="Company_name">Nombre de Entidad</msg>
   <msg key="Company_Type">Tipo de Entidad</msg>
   <msg key="Contact_Mail">Correo</msg>
+  <msg key="Contact_To_Change">Contacto a cambiar</msg>
+  <msg key="Contact_To_Delete">Contacto a borrar</msg>
   <msg key="Contacts">Contactos</msg>
   <msg key="Copy_Ticket">Copiar ticket</msg>
   <msg key="Create_New_Company">Nueva</msg>
@@ -39,9 +42,13 @@
   <msg key="Creation_Date">F.Creación</msg>
   <msg key="Creation_User">Usuario Creador</msg>
   <msg key="Customer_Deadline">Fecha de entrega a cliente</msg>
+  <msg key="Customer_To_Change">Entidad a cambiar</msg>
+  <msg key="Customer_To_Delete">Entidad a borrar</msg>
   <msg key="Date_Since">Desde</msg>
   <msg key="Date_Until">Hasta</msg>
   <msg key="Delete_attachment">Borrar adjunto</msg>
+  <msg key="Delete_Contact">Borrar contacto</msg>
+  <msg key="Delete_Customer">Borrar entidad</msg>
   <msg key="Department">Departamento</msg>
   <msg key="Description">Descripcion</msg>
   <msg key="Displaying_tickets_0_1_of_2_">Viendo tickets {0} - {1} de {2}</msg>
@@ -53,6 +60,7 @@
   <msg key="Failed_to_get_new_ticket_nr">El servidor no ha podido crear un nuevo número de ticket.</msg>
   <msg key="Female">Mujer</msg>
   <msg key="File">Archivo</msg>
+  <msg key="Filter_Companies">Filtrar entidades</msg>
   <msg key="Filter_Companys">Filtro compañias</msg>
   <msg key="Gender">Género</msg>
   <msg key="Group">Grupo</msg>
@@ -84,6 +92,7 @@
   <msg key="Reaction_Date">F. de recepción</msg>
   <msg key="Reject_Button">Rechazar</msg>
   <msg key="Replies">Respuesta</msg>
+  <msg key="Reports">Listados</msg>
   <msg key="Request">Descripción de la solicitud</msg>
   <msg key="Requires_additional_info">Requiere información adicional</msg>
   <msg key="Resolution">Resultado</msg>

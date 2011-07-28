@@ -138,7 +138,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // with only those groups/profiles that are assigned to the program
 		    'change': function() {
 									var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
-									ticket_area_id.reset();
+
 									if (ticket_area_id.store.filters.length > 0) {
 										//Filter value is modified with the new value selected.
 										ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
@@ -146,7 +146,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 										//New filters is created with the value selected
 										ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
 									}
-									ticket_area_id.store.load();
+									if (resetCombo) {
+										ticket_area_id.reset();
+										ticket_area_id.store.load();
+									} else {
+										resetCombo = true;
+									}	
 		    }
 		} 
 	}, {
@@ -164,7 +169,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		listeners: {
-			'change': function() {
+			'change': function(field, values) {
 				// Set the default code for the new ticket
 									var programId = this.getValue();
 									if (null == programId) { return; }
@@ -173,7 +178,19 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 									var programName = programModel.get('category');
 									var programFile = programModel.get('aux_string1');
 									var fileField = this.ownerCt.child('#ticket_file');
-									fileField.setValue(programFile);				
+									fileField.setValue(programFile);			
+									//
+									if (null == values) { this.reset(); } else {
+										var form =  Ext.getCmp('ticketForm').getForm();
+										var record = areaTicketAreaStore.getById(values);
+										var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
+										var program_id = '' + parseInt(tree_sortkey,'10');	
+										var ticket_program_id = form.findField('ticket_program_id')
+										if (ticket_program_id.value != program_id) {
+											resetCombo= false;			
+											form.findField('ticket_program_id').select(program_id);	
+										}
+									}										
 			}
 		}
 	}, {
