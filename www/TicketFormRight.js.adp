@@ -37,7 +37,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	layout: {
 	    type: 'vbox',
 	    align : 'stretch',
-	    pack  : 'start',
+	    pack  : 'start'
 	},
 
 	fieldDefaults: {
