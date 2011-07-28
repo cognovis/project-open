@@ -3,6 +3,10 @@
 ad_page_contract {
     Delete a company and replace all reference to the
     company by another company_id.
+
+    Example:
+    /intranet-sencha-ticket-tracker/company-delete-replace?company_id=88285&company_id_replacement=86662
+
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @author David Blanco (david.blanco@grupoversia.com)
     @creation-date 28 Jul 2011
