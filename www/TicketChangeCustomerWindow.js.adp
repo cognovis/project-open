@@ -26,8 +26,7 @@
  		extend:		'Ext.window.Window',
  		id: 'ticketChangeCustomerWindow',
  		alias:		'widget.ticketChangeCustomerWindow',
-   // title: '#intranet-sencha-ticket-tracker.Change_Customer#',
-    title: 'Borrar entidad',
+    title: '#intranet-sencha-ticket-tracker.Delete_Customer#',
     height: 200,
     width: 500,
     layout: 'fit',
@@ -38,14 +37,14 @@
  			bodyStyle:	'padding:5px 5px 0',
 			fieldDefaults: {
 				msgTarget: 'side',
-				labelWidth: 100
+				labelWidth: 150
 			},
 			defaultType:	'textfield', 			
       items: [
           {
           		id: 'customerDeleteCombo',
               xtype: 'combo',
-             	fieldLabel:	'Entidad a borrar',
+             	fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
               anchor: '100%',
 							allowBlank:	false,
 							store:		companyStore,
@@ -55,7 +54,7 @@
           {
           		id: 'customerChangeCombo',
               xtype: 'combo',
-              fieldLabel:'#intranet-sencha-ticket-tracker.Customer_Change#',
+              fieldLabel:'#intranet-sencha-ticket-tracker.Customer_To_Change#',
               anchor: '100%',
 							allowBlank:	false,
 							store:		companyStore,

@@ -18,6 +18,7 @@
   <msg key="button_Save_Changes">Save Changes</msg>
   <msg key="button_Search">Search</msg>
   <msg key="Cancel">Cancel</msg>
+  <msg key="Change">Change</msg>
   <msg key="Channel_Details">Channel Details</msg>
   <msg key="Clear">Clear</msg>
   <msg key="Clear_Form">Clear Form</msg>
@@ -31,6 +32,8 @@
   <msg key="Company_name">Company Name</msg>
   <msg key="Company_Type">Company Type</msg>
   <msg key="Contact_Mail">Contact Mail</msg>
+  <msg key="Contact_To_Change">Contact to change</msg>
+  <msg key="Contact_To_Delete">Contact to delete</msg>
   <msg key="Contacts">Contacts</msg>
   <msg key="Copy_Ticket">Copy Ticket</msg>
   <msg key="Create_New_Company">Create New Company</msg>
@@ -39,9 +42,14 @@
   <msg key="Creation_Date">Creation Date</msg>
   <msg key="Creation_User">Creation User</msg>
   <msg key="Customer_Deadline">Customer Deadline</msg>
+  <msg key="Customer_To_Change">Customer to change</msg>
+  <msg key="Customer_To_Delete">Customer to delete</msg>
   <msg key="Date_Since">Date_Since</msg>
   <msg key="Date_Until">Date_Until</msg>
   <msg key="Delete_attachment">Delete attachment</msg>
+  <msg key="Delete_Contact">Delete contact</msg>
+  <msg key="Delete_Customer">Delete customer
+</msg>
   <msg key="Department">Department</msg>
   <msg key="Description">Description</msg>
   <msg key="Displaying_tickets_0_1_of_2_">Displaying tickets {0} - {1} of {2}</msg>
@@ -53,6 +61,8 @@
   <msg key="Failed_to_get_new_ticket_nr">Failed to create a new ticket number for the new ticket.</msg>
   <msg key="Female">Female</msg>
   <msg key="File">File</msg>
+  <msg key="Filter_Companies">Filter companies
+</msg>
   <msg key="Filter_Companys">Filter Companys</msg>
   <msg key="Gender">Gender</msg>
   <msg key="Group">Group</msg>
@@ -84,6 +94,7 @@
   <msg key="Reaction_Date">Reaction Date</msg>
   <msg key="Reject_Button">Reject</msg>
   <msg key="Replies">Replies</msg>
+  <msg key="Reports">Reports</msg>
   <msg key="Request">Request</msg>
   <msg key="Requires_additional_info">Requires additional info</msg>
   <msg key="Resolution">Resolution</msg>

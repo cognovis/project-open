@@ -167,9 +167,6 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 				if (null == values) { this.reset(); } else {
 					var form =  Ext.getCmp('ticketFilterForm').getForm();
 					var record = areaTicketAreaStore.getById(values);
-					var indent_class = record.get('indent_class');
-					var num = indent_class.substring(indent_class.length-1);
-					//var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
 					var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
 					var program_id = '' + parseInt(tree_sortkey,'10');	
 					var ticket_program_id = form.findField('ticket_program_id')

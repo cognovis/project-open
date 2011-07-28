@@ -26,8 +26,7 @@
  		extend:		'Ext.window.Window',
  		id: 'ticketChangeContactWindow',
  		alias:		'widget.ticketChangeContactWindow',
-   // title: '#intranet-sencha-ticket-tracker.Change_Contact#',
-    title: 'Borrar contacto',
+    title: '#intranet-sencha-ticket-tracker.Delete_Contact#',
     height: 200,
     width: 500,
     layout: 'fit',
@@ -38,14 +37,14 @@
  			bodyStyle:	'padding:5px 5px 0',
 			fieldDefaults: {
 				msgTarget: 'side',
-				labelWidth: 100
+				labelWidth: 150
 			},
 			defaultType:	'textfield', 			
       items: [
           {
           		id: 'contactDeleteCombo',
               xtype: 'combo',
-             	fieldLabel:	'Contacto a borrar',
+             	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Delete#',
               anchor: '100%',
 							allowBlank:	false,
 							store:		contactGridStore,
@@ -55,7 +54,7 @@
           {
           		id: 'contactChangeCombo',
               xtype: 'combo',
-              fieldLabel:	'Contacto sustituto',
+              fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Change#',
               anchor: '100%',
 							allowBlank:	false,
 							store:		contactGridStore,
@@ -66,7 +65,7 @@
 			buttons: [	          
           {
               xtype: 'button',
-              text: 'Cambiar',
+              text: '#intranet-sencha-ticket-tracker.Change#',
               formBind:	true,
  							handler: function() {
  									//selected contact is changed in all ticket
@@ -76,7 +75,7 @@
           },
           {
               xtype: 'button',
-              text: 'Cancelar',
+              text: '#intranet-sencha-ticket-tracker.Cancel#',
 			        handler: function() {
 			            this.up('window').close();
 			        }              

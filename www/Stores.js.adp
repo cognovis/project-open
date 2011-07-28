@@ -194,7 +194,7 @@ Ext.define('PO.data.AreaStore', {
 	extend: 'Ext.data.Store',
 	load: function(options) {
 		// Delete whatever was there before
-		this.removeAll();
+		areaTicketAreaStore.removeAll();
 		ticketAreaStore.each(function(record) {
 			var indent_class = record.get('indent_class');
 			var num = indent_class.substring(indent_class.length-1);
