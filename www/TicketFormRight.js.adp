@@ -34,6 +34,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	bodyStyle:	'padding:5px 5px 0',
 	width:		800,
 	monitorValid:	true,
+	layout: {
+	    type: 'vbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
 
 	fieldDefaults: {
 		msgTarget:	'side',
@@ -46,7 +51,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		queryMode:	'local',
 		value:		'',
 		displayField:   'pretty_name',
-		valueField:	'id'		
+		valueField:	'id'
 	},
 	items: [
 
@@ -65,9 +70,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
+	//		width:		800,
+			flex: 1,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
+				margin: '0 10 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -117,9 +124,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
-			layout: 	{ type: 'table', columns: 2 },
+		//	width:		'100%',
+			flex: 2,		
+			layout: 	{ 
+		    type: 'hbox',
+    		pack: 'start',
+		    align: 'stretch'		    
+		  },
 			defaults: {		
+				margin: '0 10 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -131,13 +144,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
 				labelAlign:	'top',
-				width:		300
+				flex: 1
 			}, {
 				name:		'ticket_resolution',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
 				labelAlign:	'top',
-				width:		300
+				flex: 1
 			}]
 	
 		}, {
@@ -146,10 +159,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
+		//	width:		800,
+			flex: 1,
 	
 			layout: 	{ type: 'table', columns: 3 },
-			defaults: {		
+			defaults: {	
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -218,9 +232,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
+			flex: 1,
+		//	width:		800,
 			layout: 	{ type: 'table', columns: 2 },
-			defaults: {		
+			defaults: {	
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)

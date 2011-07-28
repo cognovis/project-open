@@ -86,6 +86,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			}
 		}
 	}, {
+		id: 'buttonRemoveSelected',
 		text:		'#intranet-helpdesk.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
 		handler:	function(btn, pressed){
@@ -111,6 +112,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			}
 		}
 	}, '-', {
+		id: 'buttonSummaryTicket',
 		text:		'#intranet-core.Summary#',
 		iconCls:	'icon-summary',
 		enableToggle:	true,
@@ -121,5 +123,25 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			var grid = Ext.getCmp('ticketGrid');
 			grid.onSummaryChange(btn, pressed);
 		}
-	}]
+	}],
+	
+	// Disable, enable,hide or show a button 
+	// variable 'disabled' can be the data selection in a grid. If no data, the button will be disabled.
+	// Variable 'hide' is optional.
+	checkButton: function (button_id,disabled,hide){
+		if (disabled.length == 0) {
+			disabled = true;
+		} if (disabled != true) {
+			disabled =false;
+		}
+		
+		var but = this.getComponent(button_id);
+		but.setDisabled(disabled);	
+		if (hide) {
+			but.hide();
+		} else {
+			but.show();
+		}
+	}
+		
 });

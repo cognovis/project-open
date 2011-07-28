@@ -45,7 +45,16 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE'
+	mode:	'SINGLE',
+	listeners: {
+		selectionchange: function(sm, selections) {
+			if (selections.length > 0){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+			} else {
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+			}
+		}
+	}	
 });
 
 
@@ -234,7 +243,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 	},
 
 	// The user has pressed the "Delete" button in the contact list page
-	onDelete: function() {
+/*	onDelete: function() {
 
 		// Get the selected user (only one!)
 		var selection = this.selModel.getSelection();
@@ -252,7 +261,17 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		});
 
 
-	},
+	},*/
+	onDelete: function() {
+		// Get the selected customer (only one!)
+		var selection = this.selModel.getSelection();
+		var contactModel = selection[0];		
+		
+		//Create and show the window to change and delete the customer
+		var changeWindow = new TicketBrowser.TicketChangeContactWindow();
+		changeWindow.down('form').getForm().findField('contactDeleteCombo').select(contactModel.get('user_id'));
+		changeWindow.show();
+	},	
 
 	onCopy: function() {
 		alert('ContactGrid.onCopy() not implemented yet');
