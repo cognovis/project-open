@@ -25,7 +25,7 @@ ad_page_contract {
 set company_id_exists_p [db_string company_id_exists_p "select count(*) from im_companies where company_id = :company_id"]
 set company_id_replacement_exists_p [db_string company_id_replacement_exists_p "select count(*) from im_companies where company_id = :company_id_replacement"]
 
-if {!$company_id_exists_p || !$company_id_replacement_exists_p} {
+if {!$company_id_exists_p || !$company_id_replacement_exists_p || $company_id == $company_id_replacement} {
     doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	false,
@@ -80,12 +80,14 @@ db_transaction {
 
 }
 
-ns_log Notice "file-add: success"
+ns_log Notice "company-delete-replace: success"
 doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	true,
-		\"message\":	\"Company \#$company_id successfully replaced by \#$company_id_replacement and deleted\"
+		\"message\":	\"Company successfully replaced\",
+		\"data\":	\[{
+			\"company_id\":	\"$company_id\"
+		}\]
     	}
 }"
 ad_script_abort
-
