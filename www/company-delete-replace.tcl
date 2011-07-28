@@ -35,11 +35,11 @@ if {!$company_id_exists_p || !$company_id_replacement_exists_p || $company_id ==
     ad_script_abort
 }
 
-set user_id [im_rest_cookie_auth_user_id]
+set current_user_id [im_rest_cookie_auth_user_id]
 
-im_company_permissions $user_id $company_id view read write admin
+im_company_permissions $current_user_id $company_id view read write admin
 if {!$write} {
-    ns_log Notice "company-delete-replace: failure: User \#$user_id doesn't have write permissions to company \#$company_id"
+    ns_log Notice "company-delete-replace: failure: User \#$current_user_id doesn't have write permissions to company \#$company_id"
     doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	false,
@@ -56,7 +56,7 @@ if {!$write} {
 
 
 # Delete the company completely
-# im_company_nuke -current_user_id $user_id $company_id
+# im_company_nuke -current_user_id $current_user_id $company_id
 db_transaction {
 
     # Replace any ocurrence of company_id by company_id_replacement
