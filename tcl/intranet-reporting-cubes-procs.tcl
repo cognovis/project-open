@@ -1491,14 +1491,18 @@ ad_proc im_reporting_cubes_ticket {
     
     # Select whether to sum or to "avg"
     switch $aggregate {
-	"ticket_resolution_time" { set aggregate_function "avg" }
-	default { set aggregate_function "sum" }
+	"ticket_resolution_time" { 
+	    set aggregate_function "round(10.0 * avg($aggregate)) / 10.0" 
+	}
+	default { 
+	    set aggregate_function "round(10.0 * sum($aggregate)) / 10.0" 
+	}
     }
 
 
     set sql "
     select
-  	${aggregate_function}($aggregate) as aggregate,
+  	$aggregate_function as aggregate,
   	[join $dimension_vars ",\n\t"]
     from
   	($middle_sql) p
