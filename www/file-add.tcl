@@ -11,9 +11,9 @@ ad_page_contract {
     {description "" }
 }
 
-if {"" == $title} { set title $upload_file }
-
-if {![info exists upload_file]} {
+if {[info exists upload_file]} {
+    if {"" == $title} { set title $upload_file }
+} else {
     ns_log Notice "file-add: failure: upload_file does not exist"
     ns_return 200 "text/html" "{
 	\"result\": {
