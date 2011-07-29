@@ -456,5 +456,4 @@ comment on column category_search_results.similarity is '
 
 \i categories-permissions.sql
 
-\i categories-init.sql
 
