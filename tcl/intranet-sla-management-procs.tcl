@@ -329,14 +329,14 @@ ad_proc -public im_sla_ticket_close_resolved_tickets_sweeper {
 	where	t.ticket_status_id = [im_ticket_status_resolved] and
 		t.ticket_done_date + :close_after_seconds 'seconds' < now()
     "
+    set resolved_tickets [db_list resolved_tickets $resolved_tickets_sql]
+    lappend resolved_tickets 0
 
-    db_foreach resolved_tickets $resolved_tickets_sql {
-    	if 
-    }
-
-    im_ticket_status_resolved
-
-
+    db_dml set_resolved "
+	update im_tickets
+	set ticket_status_id = [im_ticket_status_closed]
+	where ticket_id in ([join $resolved_tickets])
+    "
 }
 
 
