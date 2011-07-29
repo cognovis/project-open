@@ -106,12 +106,18 @@ db_foreach limited_sql $limited_sql {
     incr cnt
 }
 
-# Update the ticket with the count
+# Update the ticket with the count and reset 
+# the "dirty" flag, so that the sweeper will do its work
 db_dml update_ticket_actions "
-	update im_tickets
-	set ticket_action_count = :cnt
+	update im_tickets set 
+		ticket_action_count = :cnt,
+		ticket_resolution_time_dirty = null
 	where ticket_id = :object_id
 "
+
+# Re-calculate the resolution time of the ticket
+im_sla_ticket_solution_time_sweeper -ticket_id $object_id -debug_p 1
+
 
 # Paginated Sencha grids require a "total" amount in order to know
 # the total number of pages
