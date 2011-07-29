@@ -195,6 +195,97 @@ ad_proc -public im_ticket_permissions {
 
 
 
+ad_proc -public im_ticket_permission_read_sql {
+    { -user_id "" }
+} {
+    Returns a SQL statement that returns the list of ticket_ids
+    that are readable for the user
+} {
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
+    ns_log Notice "im_ticket_permissions_read_sql: user_id=$user_id"
+
+    # The SQL for admins and users who can read everything
+    set read_all_sql "select ticket_id from im_tickets"
+
+    # Admins can do everything
+    set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    if {$admin_p} { return $read_all_sql }
+
+    # Users with permissions to read any tickets
+    set view_tickets_all_p [im_permission $user_id "view_tickets_all"]
+    if {$view_tickets_all_p} { return $read_all_sql }
+
+    # Determine the list of all groups in which the current user is a member
+    set user_parties [im_profile::profiles_for_user -user_id $user_id]
+    lappend user_parties $user_id
+
+    set read_sql "
+	select	t.ticket_id
+	from	im_tickets t,
+		im_projects p,
+		acs_objects o
+	where	t.ticket_id = p.project_id and
+		t.ticket_id = o.object_id and
+		(t.ticket_assignee_id = :user_id OR
+		t.ticket_customer_contact_id = :user_id OR
+		o.creation_user = :user_id OR
+		exists(
+			-- member of an explicitely assigned ticket_queue
+			select	g.group_id
+			from	acs_rels r, 
+				groups g 
+			where	r.object_id_one = g.group_id and
+				r.object_id_two = :user_id and
+				g.group_id = t.ticket_queue_id			
+		) OR exists (
+			-- member of the ticket - any role_id will do.
+			select	r.object_id_one
+			from	acs_rels r,
+				im_biz_object_members bom
+			where	r.rel_id = bom.rel_id and
+				r.object_id_two in ([join $user_parties ","])
+		) OR exists (
+			-- admin of the ticket
+			select	distinct r.object_id_one
+			from	acs_rels r,
+				im_biz_object_members bom
+			where	r.rel_id = bom.rel_id and
+				r.object_id_two in ([join $user_parties ","]) and
+				bom.object_role_id in (1301, 1302)
+		) OR exists (
+			-- cases with user as task_assignee
+			select	wfc.object_id
+			from	wf_task_assignments wfta,
+				wf_tasks wft,
+				wf_cases wfc
+			where	t.ticket_id = wfc.object_id and
+				wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id and
+				wfta.task_id = wft.task_id and
+				wfta.party_id in (
+					select	group_id
+					from	group_distinct_member_map
+					where	member_id = :user_id
+				    UNION
+					select	:user_id
+				)
+		) OR exists (
+			-- cases with user as task holding_user
+			select	wfc.object_id
+			from	wf_tasks wft,
+				wf_cases wfc
+			where	t.ticket_id = wfc.object_id and
+				wft.holding_user = :user_id and
+				wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id
+		))
+    "
+    return $read_sql
+}
+
+
+
+
 # ----------------------------------------------------------------------
 # Navigation Bar
 # ---------------------------------------------------------------------
