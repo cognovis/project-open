@@ -169,7 +169,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		listeners: {
-			'change': function(field, values) {
+			'change': function(field, newValue, oldValue, options) {
 				// Set the default code for the new ticket
 									var programId = this.getValue();
 									if (null == programId) { return; }
@@ -180,15 +180,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 									var fileField = this.ownerCt.child('#ticket_file');
 									fileField.setValue(programFile);			
 									//
-									if (null == values) { this.reset(); } else {
+									if (null == newValue) { this.reset(); } else {
 										var form =  Ext.getCmp('ticketForm').getForm();
-										var record = areaTicketAreaStore.getById(values);
-										var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
-										var program_id = '' + parseInt(tree_sortkey,'10');	
-										var ticket_program_id = form.findField('ticket_program_id')
-										if (ticket_program_id.value != program_id) {
-											resetCombo= false;			
-											form.findField('ticket_program_id').select(program_id);	
+										var record = areaTicketAreaStore.getById(newValue);
+										if (record != null){
+											var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
+											var program_id = '' + parseInt(tree_sortkey,'10');	
+											var ticket_program_id = form.findField('ticket_program_id')
+											if (ticket_program_id.value != program_id) {
+												resetCombo= false;			
+												form.findField('ticket_program_id').select(program_id);	
+											}
 										}
 									}										
 			}

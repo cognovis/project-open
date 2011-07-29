@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyFilterForm.js.adp,v 1.1 2011/07/14 16:01:54 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -84,6 +84,12 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 			'change': function(field, values) { if (null == values) { this.reset(); }},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
+	}, {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#',
+		name:		'ticket_telephone',	
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}	
 	}, {
 		fieldLabel: '#intranet-helpdesk.Company_Nr#',
 		name: 'project_name',

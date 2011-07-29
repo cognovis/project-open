@@ -42,9 +42,10 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 		defaultType:	'textfield', 			
 		items: [
 		{
-			id:		'customerDeleteCombo',
+			id:		'company_id',
 			name:		'company_id',
 			xtype:		'combo',
+			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
 			anchor:		'100%',
 			allowBlank:	false,
@@ -52,9 +53,10 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 			valueField:	'company_id',
 			displayField:   'company_name'															
 		}, {
-			id: 		'customerChangeCombo',
+			id: 		'company_id_replacement',
 			name:		'company_id_replacement',
 			xtype:		'combo',
+			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Change#',
 			anchor:		'100%',
 			allowBlank:	false,
@@ -82,21 +84,32 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 						url:	'company-delete-replace',
 						method:	'GET',
 						success: function(form, action) {
-							var companyModel = companyStore.findRecord('company_id',company_id);
+							var customer_id_value=form.findField('company_id').getValue();
+							var companyModel = contactGridStore.findRecord('user_id',customer_id_value);
 							companyStore.remove(companyModel);
-							alert('success');
+							Ext.Msg.show({
+							     title :"Exito borrando/replazando entidad:",
+							     msg: 'Borrado y sustitución realizado correctamente',
+							     buttons: Ext.Msg.OK,
+							     icon: Ext.Msg.INFO
+							});		
+							Ext.getCmp('ticketChangeCustomerWindow').close();							
 						},
 						failure: function(form, action) {
 							var status = action.response.status;
-							if (200 == status) {
-								// "Clean" error returned as JSON
-								var message = action.result.result.errors;
-								Ext.Msg.alert("Error borrando/replazando empresa:", message);
+							
+							if (status == 200){
+								var message = action.result.errors;
 							} else {
-								// Internal error on the server side. Error while deleting?
 								var message = action.response.responseText;
-								Ext.Msg.alert("Error borrando/replazando empresa:", message);
 							}
+							Ext.Msg.show({
+							     title : 'Error borrando/replazando entidad:',
+							     msg: message,
+							     buttons: Ext.Msg.OK,
+							     icon: Ext.Msg.ERROR
+							});	
+							Ext.getCmp('ticketChangeCustomerWindow').close();	
 						}
 					});
 			}

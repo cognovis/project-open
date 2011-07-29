@@ -45,13 +45,25 @@ var auditStore = Ext.create('Ext.data.Store', {
     }
 });
 
+auditStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('auditGrid');
+			var num = auditStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
+});
 
 var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.auditGrid',
     id:		'auditGrid',
     store: 	auditStore,
-    iconCls:	'icon-grid',
+    minHeight:	75,
+    
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',

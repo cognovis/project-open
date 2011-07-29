@@ -189,6 +189,18 @@ var fileStorageStore = Ext.create('Ext.data.Store', {
 	}
 });
 
+fileStorageStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('fileStorageGrid');
+			var num = fileStorageStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
+});
+
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 	extend:		'Ext.grid.Panel',
 	alias:		'widget.fileStorageGrid',
