@@ -259,6 +259,7 @@ set left_scale_options [list \
 	"ticket_nr"				"Ticket - Nr" \
 	"ticket_creation_user"			"Ticket - Creation User" \
 	"ticket_creation_user_dept"		"Ticket - Creator's Department" \
+	"hour_of_day"				"Ticket - Creation Hour" \
 	"company_name"				"Company - Name" \
 ]
 
@@ -332,6 +333,7 @@ foreach var $dimension_vars {
 	quarter_of_year { lappend derefs "to_char(p.start_date, 'Q') as quarter_of_year" }
 	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
+	hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') || '&nbsp;' as hour_of_day" }
 
 	ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as ticket_type" }
 	ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as ticket_status" }
