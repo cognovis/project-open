@@ -448,6 +448,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     
 	db_foreach tickets $ticket_sql {
 
+	    # Skip tickets with empty creation date
+	    if {"" == $ticket_creation_julian} { 
+		ns_log Error "im_sla_ticket_solution_time_sweeper: Skipping ticket #$ticket_id because ticket_creation_date is null"
+		continue 
+	    }
+
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Processing ticket_id=$ticket_id"
 	    if {$debug_p} {
 		append debug_html "
