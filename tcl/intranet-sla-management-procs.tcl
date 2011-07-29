@@ -348,9 +348,13 @@ ad_proc -public im_sla_ticket_close_resolved_tickets_sweeper {
 ad_proc -public im_sla_ticket_solution_time_sweeper {
     {-debug_p 0}
     {-ticket_id ""}
+    {-limit 100}
 } {
     Calculates "resolution time" for all open tickets.
+    The procedure takes about a second per ticket, so 
+    the limit is set to 100 by default.
 } {
+    ns_log Notice "im_sla_ticket_solution_time_sweeper: starting"
     # Make sure that only one thread is calculating at a time
 #    if {[nsv_incr intranet_sla_management sweeper_p] > 1} {
 #        nsv_incr intranet_sla_management sweeper_p -1
@@ -366,6 +370,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 
     # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa
     set dow_list [im_sla_day_of_week_list]
+
+    # Count the number of tickets processed
+    set total_tickets_processed 0
+
 
     # ----------------------------------------------------------------
     # Get the list of SLAs to work with
@@ -388,9 +396,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     # ----------------------------------------------------------------
     # Loop through all SLAs
 
+    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through all SLAs with open tickets"
     foreach sla_id $slas_with_open_tickets {
 
 	if {$debug_p} { ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id" }
+	ns_log Notice "im_sla_ticket_solution_time_sweeper: sla_id=$sla_id"
 
 	# ----------------------------------------------------------------
 	# Define the service hours per weekday
@@ -431,10 +441,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 			im_projects p
 		where	t.ticket_id = p.project_id
 			$extra_where
-		order by t.ticket_id
+		order by
+			coalesce(t.ticket_resolution_time_dirty, to_date('2000-01-01', 'YYYY-MM-DD'))
+		LIMIT $limit
 	"
     
 	db_foreach tickets $ticket_sql {
+
+	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Processing ticket_id=$ticket_id"
 	    if {$debug_p} {
 		append debug_html "
 			<li><b>$ticket_id : $project_name</b>
@@ -447,9 +461,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	    set start_julian($ticket_id) $ticket_creation_julian
 	    set start_epoch($ticket_id) $ticket_creation_epoch
 	    set end_julian($ticket_id) $now_julian
-	    set epoch_{$ticket_id}([expr $ticket_creation_epoch - 0.03]) "creation"
+	    set epoch_{$ticket_id}([expr $ticket_creation_epoch - 0.0003]) "creation"
 	    set julian_{$ticket_id}($ticket_creation_julian) "creation"
-	    set epoch_{$ticket_id}([expr $now_epoch + 0.03]) "now"
+	    set epoch_{$ticket_id}([expr $now_epoch + 0.0003]) "now"
 	    set julian_{$ticket_id}($now_julian) "now"
 	    
 	    if {$debug_p} { append time_html "<li>Ticket: $ticket_id, ticket_creation_epoch=$ticket_creation_epoch" }
@@ -547,13 +561,31 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 
 
 	# Loop through all open tickets
+	ns_log Notice "im_sla_ticket_solution_time_sweeper: ticket_list=[array names name]"
 	foreach ticket_id [array names name] {
 	    
+	    incr total_tickets_processed
+	    if {$total_tickets_processed > $limit} { return "" }
+
+	    # Ticket name
 	    set ticket_name $name($ticket_id)
+	    ns_log Notice "im_sla_ticket_solution_time_sweeper: #$total_tickets_processed: Processing events for ticket_id=$ticket_id name=$ticket_name"
     
-	    if {$debug_p} { append time_html "<li><b>$ticket_id : $ticket_name</b>" }
+	    if {$debug_p} { 
+		append time_html "<li><b>$ticket_id : $ticket_name</b>" 
+		append time_html "<table cellspacing=5 cellpadding=5>
+			<tr class=rowtitle>
+			<td class=rowtitle>Epoch</td>
+			<td class=rowtitle>Date</td>
+			<td class=rowtitle>Event</td>
+			<td class=rowtitle>Duration</td>
+			<td class=rowtitle>Count Duration</td>
+			<td class=rowtitle>Resolution Seconds</td>
+			</tr>\n"
+	    }
 
 	    # Copy the epoc_12345 hash into "hash" for easier access.
+	    array unset hash
 	    array set hash [array get epoch_{$ticket_id}]
 	    
 	    # Loop through the hash in time order and process the various events.
@@ -569,9 +601,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	    set last_epoch $start_epoch($ticket_id)
 	    
 	    # Loop through events per ticket
+	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through events for ticket_id=$ticket_id"
 	    foreach e [lsort [array names hash]] {
 		set event_full $hash($e)
 		set event [lindex $event_full 0]
+		ns_log Notice "im_sla_ticket_solution_time_sweeper: event=$event"
 		
 		# Calculate duration since last event
 		set duration_epoch [expr $e - $last_epoch]
@@ -644,15 +678,23 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
-		    append time_html "<li>
-			<font color=$color>
-			$e, [im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e], event=$event, 
-			duration=$duration_epoch, count_duration_p=$count_duration_p, resolution_seconds=$resolution_seconds
-			</font>
+		    append time_html "
+			<tr>
+				<td>$e</td>
+				<td>[im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e]</td>
+				<td><font color=$color>$event</font></td>
+				<td>$duration_epoch</td>
+				<td>$count_duration_p</td>
+				<td>[expr round(10.0 * $resolution_seconds) / 10.0]</td>
+			</tr>
                     "
 		}
 	    
 		set last_epoch $e
+	    }
+
+	    if {$debug_p} {
+		append time_html "</table>\n"
 	    }
 	
 	    # Update the resolution time of the ticket
@@ -667,6 +709,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
 		append time_html "</ul><ul>\n"
 	    }
+		
+	    # End of looping through one ticket
 	}
 
 	# End of looping through one SLA
