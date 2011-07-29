@@ -22,65 +22,92 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
- Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
- 		extend:		'Ext.window.Window',
- 		id: 'ticketChangeCustomerWindow',
- 		alias:		'widget.ticketChangeCustomerWindow',
-    title: '#intranet-sencha-ticket-tracker.Delete_Customer#',
-    height: 200,
-    width: 500,
-    layout: 'fit',
-    items: [{
-    	id: 'ticketChangeCustomerWindowForm',
-    	alias:		'widget.ticketChangeCustomerWindowForm',
- 			xtype: 'form',
- 			bodyStyle:	'padding:5px 5px 0',
-			fieldDefaults: {
-				msgTarget: 'side',
-				labelWidth: 150
-			},
-			defaultType:	'textfield', 			
-      items: [
-          {
-          		id: 'customerDeleteCombo',
-              xtype: 'combo',
-             	fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
-              anchor: '100%',
-							allowBlank:	false,
-							store:		companyStore,
-							valueField:	'company_id',
-							displayField:   'company_name'													          
-          },
-          {
-          		id: 'customerChangeCombo',
-              xtype: 'combo',
-              fieldLabel:'#intranet-sencha-ticket-tracker.Customer_To_Change#',
-              anchor: '100%',
-							allowBlank:	false,
-							store:		companyStore,
-							valueField:	'company_id',
-							displayField:   'company_name'						            
-          }
-      ],    
-			buttons: [	          
-          {
-              xtype: 'button',
-              text: '#intranet-sencha-ticket-tracker.Change#',
-              formBind:	true,
- 							handler: function() {
- 									//selected customer is changed in all ticket
- 									//if the change was OK, selected customer must be deleted
-			            alert('Ops!, not implemented yet');
-			        }                     
-          },
-          {
-              xtype: 'button',
-              text: '#intranet-sencha-ticket-tracker.Cancel#',
-			        handler: function() {
-			            this.up('window').close();
-			        }              
-          }
-      ],
-			renderTo: Ext.getBody()         	
-		}]
+Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
+	extend:		'Ext.window.Window',
+	id: 		'ticketChangeCustomerWindow',
+	alias:		'widget.ticketChangeCustomerWindow',
+	title:		'#intranet-sencha-ticket-tracker.Delete_Customer#',
+	height:		200,
+	width:		500,
+	layout:		'fit',
+	items: [{
+		id: 	'ticketChangeCustomerWindowForm',
+		alias:	'widget.ticketChangeCustomerWindowForm',
+ 		xtype:		'form',
+ 		bodyStyle:	'padding:5px 5px 0',
+		fieldDefaults: {
+			msgTarget: 'side',
+			labelWidth: 150
+		},
+		defaultType:	'textfield', 			
+		items: [
+		{
+			id:		'customerDeleteCombo',
+			name:		'company_id',
+			xtype:		'combo',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
+			anchor:		'100%',
+			allowBlank:	false,
+			store:		companyStore,
+			valueField:	'company_id',
+			displayField:   'company_name'															
+		}, {
+			id: 		'customerChangeCombo',
+			name:		'company_id_replacement',
+			xtype:		'combo',
+			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Change#',
+			anchor:		'100%',
+			allowBlank:	false,
+			store:		companyStore,
+			valueField:	'company_id',
+			displayField:   'company_name'									
+		}
+	],	
+			buttons: [			
+		{
+			xtype: 'button',
+			text: '#intranet-sencha-ticket-tracker.Change#',
+			formBind:	true,
+			handler: function() {
+	 				//selected customer is changed in all ticket
+ 					//if the change was OK, selected customer must be deleted
+
+					// Make sure the form is valid
+					var form = this.up('form').getForm();
+					var company_id = form.findField('company_id');
+					if(!form.isValid()) { return; }
+
+					// Submit to the server side script
+					form.submit({
+						url:	'company-delete-replace',
+						method:	'GET',
+						success: function(form, action) {
+							var companyModel = companyStore.findRecord('company_id',company_id);
+							companyStore.remove(companyModel);
+							alert('success');
+						},
+						failure: function(form, action) {
+							var status = action.response.status;
+							if (200 == status) {
+								// "Clean" error returned as JSON
+								var message = action.result.result.errors;
+								Ext.Msg.alert("Error borrando/replazando empresa:", message);
+							} else {
+								// Internal error on the server side. Error while deleting?
+								var message = action.response.responseText;
+								Ext.Msg.alert("Error borrando/replazando empresa:", message);
+							}
+						}
+					});
+			}
+		}, {
+			xtype: 'button',
+			text: '#intranet-sencha-ticket-tracker.Cancel#',
+			handler: function() {
+				this.up('window').close();
+			}			
+		}
+	],
+	renderTo: Ext.getBody()			
+	}]
 });
