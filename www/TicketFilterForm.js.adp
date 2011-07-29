@@ -179,8 +179,8 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		name: 'ticket_file', 
-		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+		name:		'ticket_file', 
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}

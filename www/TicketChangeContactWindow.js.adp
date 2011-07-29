@@ -20,12 +20,12 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+ */ 
  
- Ext.define('TicketBrowser.TicketChangeContactWindow', {
- 		extend:		'Ext.window.Window',
- 		id: 'ticketChangeContactWindow',
- 		alias:		'widget.ticketChangeContactWindow',
+Ext.define('TicketBrowser.TicketChangeContactWindow', {
+	extend:		'Ext.window.Window',
+ 	id: 'ticketChangeContactWindow',
+ 	alias:		'widget.ticketChangeContactWindow',
     title: '#intranet-sencha-ticket-tracker.Delete_Contact#',
     height: 200,
     width: 500,
@@ -33,54 +33,93 @@
     items: [{
     	id: 'ticketChangeContactWindowForm',
     	alias:		'widget.ticketChangeContactWindowForm',
- 			xtype: 'form',
- 			bodyStyle:	'padding:5px 5px 0',
-			fieldDefaults: {
-				msgTarget: 'side',
-				labelWidth: 150
-			},
-			defaultType:	'textfield', 			
-      items: [
-          {
-          		id: 'contactDeleteCombo',
-              xtype: 'combo',
+ 		xtype: 'form',
+ 		bodyStyle:	'padding:5px 5px 0',
+		fieldDefaults: {
+			msgTarget: 'side',
+			labelWidth: 150
+		},
+		defaultType:	'textfield', 			
+      	items: [
+          	{
+          		id: 'contact_id',
+          		name:		'contact_id',
+              	xtype: 'combo',
+              	forceSelection: true,
              	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Delete#',
-              anchor: '100%',
-							allowBlank:	false,
-							store:		contactGridStore,
-							valueField:	'user_id',
-							displayField:   'name'													          
-          },
-          {
-          		id: 'contactChangeCombo',
-              xtype: 'combo',
-              fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Change#',
-              anchor: '100%',
-							allowBlank:	false,
-							store:		contactGridStore,
-							valueField:	'user_id',
-							displayField:   'name'						            
-          }
-      ],    
-			buttons: [	          
-          {
-              xtype: 'button',
-              text: '#intranet-sencha-ticket-tracker.Change#',
-              formBind:	true,
- 							handler: function() {
- 									//selected contact is changed in all ticket
- 									//if the change was OK, selected contact must be deleted
-			            alert('Ops!, not implemented yet');
-			        }                     
-          },
-          {
-              xtype: 'button',
-              text: '#intranet-sencha-ticket-tracker.Cancel#',
-			        handler: function() {
-			            this.up('window').close();
-			        }              
-          }
-      ],
+              	anchor: '100%',
+				allowBlank:	false,
+				store:		contactGridStore,
+				valueField:	'user_id',
+				displayField:   'name'													          
+          	},
+          	{
+				id: 'contact_id_replacement',
+				name:		'contact_id_replacement',
+              	xtype: 'combo',
+              	forceSelection: true,
+              	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Change#',
+              	anchor: '100%',
+				allowBlank:	false,
+				store:		contactGridStore,
+				valueField:	'user_id',
+				displayField:   'name'						            
+          	}
+    ],    
+	buttons: [	          
+          	{
+              	xtype: 'button',
+              	text: '#intranet-sencha-ticket-tracker.Change#',
+              	formBind:	true,
+ 				handler: function() {
+					// Make sure the form is valid
+					var form = this.up('form').getForm();
+					var company_id = form.findField('contact_id');
+					if(!form.isValid()) { return; }
+
+					// Submit to the server side script
+					form.submit({
+						url:	'contact-delete-replace',
+						method:	'GET',
+						success: function(form, action) {
+							var contact_id_value=form.findField('contact_id').getValue();
+							var contactModel = contactGridStore.findRecord('user_id',contact_id_value);
+							contactGridStore.remove(contactModel);
+							Ext.Msg.show({
+							     title :"Exito borrando/replazando contacto:",
+							     msg: 'Borrado y sustitución realizado correctamente',
+							     buttons: Ext.Msg.OK,
+							     icon: Ext.Msg.INFO
+							});	
+							Ext.getCmp('ticketChangeContactWindow').close();
+						},
+						failure: function(form, action) {
+							var status = action.response.status;
+							
+							if (status == 200){
+								var message = action.result.errors;
+							} else {
+								var message = action.response.responseText;
+							}
+							Ext.Msg.show({
+							     title : 'Error borrando/replazando contacto:',
+							     msg: message,
+							     buttons: Ext.Msg.OK,
+							     icon: Ext.Msg.ERROR
+							});			
+							Ext.getCmp('ticketChangeContactWindow').close();				
+						}
+					});
+			    }                     
+          	},
+          	{
+              	xtype: 'button',
+              	text: '#intranet-sencha-ticket-tracker.Cancel#',
+			    handler: function() {
+			    	this.up('window').close();
+			    }              
+         	}
+    		],
 			renderTo: Ext.getBody()         	
-		}]
+	}]
 });

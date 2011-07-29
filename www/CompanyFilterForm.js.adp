@@ -85,6 +85,12 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#',
+		name:		'ticket_telephone',	
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}	
+	}, {
 		fieldLabel: '#intranet-helpdesk.Company_Nr#',
 		name: 'project_name',
 		listeners: {

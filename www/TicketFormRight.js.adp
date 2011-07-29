@@ -42,7 +42,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 	fieldDefaults: {
 		msgTarget:	'side',
-		labelWidth:	75,
+		labelWidth:	100,
 		typeAhead:	true
 	},
 	defaultType:	'textfield',
@@ -73,7 +73,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			flex: 1,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
-				margin: '0 10 0 0',
+				margin: '5 10 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -130,7 +130,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		    align: 'stretch'		    
 		  },
 			defaults: {		
-				margin: '0 10 0 0',
+				margin: '5 10 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -234,6 +234,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		//	width:		800,
 			layout: 	{ type: 'table', columns: 2 },
 			defaults: {	
+				margin: '5 10 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)

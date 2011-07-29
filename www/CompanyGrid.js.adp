@@ -165,6 +165,11 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 						key = 'query';
 						value = query;
 						break;
+					case 'ticket_telephone':
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
+						key = 'query';
+						value = query;
+						break;							
 					case 'company_name':
 						// The customer's company name is not part of the REST
 						// company fields. So translate into a query:
@@ -222,7 +227,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		
 		//Create and show the window to change and delete the customer
 		var changeWindow = new TicketBrowser.TicketChangeCustomerWindow();
-		changeWindow.down('form').getForm().findField('customerDeleteCombo').select(customerModel.get('company_id'));
+		changeWindow.down('form').getForm().findField('company_id').select(customerModel.get('company_id'));
 		changeWindow.show();
 	},
 

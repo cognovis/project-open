@@ -27,10 +27,8 @@ set company_id_replacement_exists_p [db_string company_id_replacement_exists_p "
 
 if {!$company_id_exists_p || !$company_id_replacement_exists_p || $company_id == $company_id_replacement} {
     doc_return 200 "text/html" "{
-	\"result\": {
 		\"success\":	false,
 		\"errors\":	\"Failure: company_id='$company_id' or company_id_replacement='$company_id_replacement' is not a valid company\"
-    	}
     }"
     ad_script_abort
 }
@@ -41,10 +39,8 @@ im_company_permissions $current_user_id $company_id view read write admin
 if {!$write} {
     ns_log Notice "company-delete-replace: failure: User \#$current_user_id doesn't have write permissions to company \#$company_id"
     doc_return 200 "text/html" "{
-	\"result\": {
 		\"success\":	false,
 		\"errors\":	{\"permission\": \"You do not have permission to write to folder \#$folder_id\"}
-    	}
     }"
     ad_script_abort
 }
@@ -82,12 +78,7 @@ db_transaction {
 
 ns_log Notice "company-delete-replace: success"
 doc_return 200 "text/html" "{
-	\"result\": {
 		\"success\":	true,
-		\"message\":	\"Company successfully replaced\",
-		\"data\":	\[{
-			\"company_id\":	\"$company_id\"
-		}\]
-    	}
+		\"message\":	\"Contact $company_id successfully replaced by $company_id_replacement and deleted\"
 }"
 ad_script_abort

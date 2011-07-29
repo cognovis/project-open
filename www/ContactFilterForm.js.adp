@@ -71,6 +71,12 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
+	},{
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#',
+		name:		'ticket_telephone',	
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}	
 	}, {	
 		name: 'email', 
 		fieldLabel: '#intranet-sencha-ticket-tracker.Email#',

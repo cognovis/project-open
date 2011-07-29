@@ -69,8 +69,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '',
 		xtype: 'auditGrid',
 		split:	true,
-		region:	'north',
-		minHeight: 100
+		region:	'north'
 	}, {
 		itemId: 'ticketFormRight',
 		title: '',
@@ -82,8 +81,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-filestorage.Filestorage#',
 		xtype: 'fileStorageGrid',
 		split:	true,
-		region:	'south',
-		minHeight: 140
+		region:	'south'
 	}]
     }],
 

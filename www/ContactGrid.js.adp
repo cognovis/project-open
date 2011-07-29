@@ -182,6 +182,11 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 						key = 'query';
 						value = query;
 						break;
+					case 'ticket_telephone':
+						query = query + ' and telephone like \'%' + value + '%\'';
+						key = 'query';
+						value = query;
+						break;						
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
@@ -269,7 +274,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		
 		//Create and show the window to change and delete the customer
 		var changeWindow = new TicketBrowser.TicketChangeContactWindow();
-		changeWindow.down('form').getForm().findField('contactDeleteCombo').select(contactModel.get('user_id'));
+		changeWindow.down('form').getForm().findField('contact_id').select(contactModel.get('user_id'));
 		changeWindow.show();
 	},	
 
