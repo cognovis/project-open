@@ -20,7 +20,7 @@ set httpsport                 8443
 # The hostname and address should be set to actual values.
 # setting the address to 0.0.0.0 means aolserver listens on all interfaces
 set hostname                  localhost
-set address                   127.0.0.1
+set address                   0.0.0.0
 
 # Note: If port is privileged (usually < 1024), OpenACS must be
 # started by root, and, in AOLserver 4, the run script have a 
@@ -389,13 +389,12 @@ ns_section "ns/server/${server}/module/nsopenssl"
         # Maximum request time
         ns_param   recvwait           [expr {$max_file_upload_min * 60}] ;# in minutes
 
-#    ns_section "ns/server/${server}/module/nsopenssl/ssldriver/admins"
+    #    ns_section "ns/server/${server}/module/nsopenssl/ssldriver/admins"
     #    ns_param sslcontext            admins
     #    ns_param port                  $httpsport_admins
     #    ns_param port                  $httpsport
     #    ns_param hostname              $hostname
     #    ns_param address               $address
-}
 
 #---------------------------------------------------------------------
 # 
@@ -405,17 +404,17 @@ ns_section "ns/server/${server}/module/nsopenssl"
 #
 #---------------------------------------------------------------------
 ns_section "ns/db/drivers" 
-if { $database eq "oracle" } {
-    ns_param   ora8           ${bindir}/ora8.so
-} else {
-    ns_param   postgres       ${bindir}/nspostgres.so  ;# Load PostgreSQL driver
-}
+    if { $database eq "oracle" } {
+	ns_param   ora8           ${bindir}/ora8.so
+    } else {
+	ns_param   postgres       ${bindir}/nspostgres.so  ;# Load PostgreSQL driver
+    }
 
-if { $database eq "oracle" } {
-    ns_section "ns/db/driver/ora8"
-    ns_param  maxStringLogLength -1
-    ns_param  LobBufferSize      32768
-}
+    if { $database eq "oracle" } {
+	ns_section "ns/db/driver/ora8"
+	ns_param  maxStringLogLength -1
+	ns_param  LobBufferSize      32768
+    }
 
  
 # Database Pools: This is how AOLserver  ``talks'' to the RDBMS. You need 
