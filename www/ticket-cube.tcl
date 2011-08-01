@@ -257,6 +257,8 @@ set left_scale_options [list \
 	"" 					"" \
 	"ticket_name"				"Ticket - Name" \
 	"ticket_nr"				"Ticket - Nr" \
+	"ticket_status"				"Ticket - Status" \
+	"ticket_type"				"Ticket - Type" \
 	"ticket_creation_user"			"Ticket - Creation User" \
 	"ticket_creation_user_dept"		"Ticket - Creator's Department" \
 	"hour_of_day"				"Ticket - Creation Hour" \
