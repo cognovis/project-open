@@ -1490,9 +1490,15 @@ ad_proc im_reporting_cubes_ticket {
     "
     
     # Select whether to sum or to "avg"
+
+ad_return_complaint 1 $aggregate
     switch $aggregate {
 	"ticket_resolution_time" { 
 	    set aggregate_function "round(10.0 * avg($aggregate)) / 10.0" 
+	}
+	"one" { 
+	    # Number of tickets - don't show decimals
+	    set aggregate_function "sum($aggregate)" 
 	}
 	default { 
 	    set aggregate_function "round(10.0 * sum($aggregate)) / 10.0" 
