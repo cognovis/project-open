@@ -30,7 +30,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	cls:		'x-docked-noborder-top',
 
 	items: [{
-		text:		'#intranet-helpdesk.New#',
+		text:		'#intranet-sencha-ticket-tracker.New#',
 		iconCls:	'icon-new-ticket',
 		handler: function(btn, pressed) {
 			// Distribute the event to the selected panel
