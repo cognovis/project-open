@@ -60,6 +60,9 @@ foreign key (last_audit_id) references im_audits;
 -- Create an index for fast access of the changes of an object
 create index im_audits_audit_object_id_idx on im_audits(audit_object_id);
 
+-- Create an index for fast access of the audit date
+create index im_audits_audit_date_idx on im_audits(audit_date);
+
 comment on table im_audits is '
  Generic audit table. A new row is created everytime that the value
  of the object is updated.
