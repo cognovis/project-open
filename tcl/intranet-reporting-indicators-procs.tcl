@@ -365,17 +365,26 @@ ad_proc -public im_indicator_evaluation_sweeper {
 
 	# Check if there was no result for the last x hours
 	if {"" == $result} {
-	    set substitution_list [list user_id $current_user_id object_id $object_id]
-	    set result [im_indicator_evaluate \
-			    -report_id $report_id \
-			    -object_id $object_id \
-			    -report_sql $report_sql \
-			    -substitution_list $substitution_list \
-			   ]
+	    set result "error"
+	    set error_occured [catch {set result [db_string value $report_sql]} err_msg]
+
+	    if {$error_occured} {
+		set result "<pre>$err_msg</pre>" 
+	    } else {
+		if {"" != $result} {
+		    ns_log Notice "im_indicator_evaluation_sweeper: insert value=$result"
+		    db_dml insert "
+			insert into im_indicator_results (
+				result_id,result_indicator_id,result_date,result
+			) values (
+				nextval('im_indicator_results_seq'),:report_id,now(),:result
+			)
+	        "
+		}
+	    }
 	}
     }
-
-}
+}	
 
 
 # ----------------------------------------------------------------------
