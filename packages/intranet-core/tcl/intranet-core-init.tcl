@@ -26,7 +26,6 @@ ns_cache create im_company -timeout [ad_parameter -package_id [im_package_core_i
 
 
 set object_types {
-    im_biz_object_member
     im_company
     im_company_employee_rel
     im_component_plugin
@@ -490,4 +489,12 @@ ad_proc -public -callback im_helpdesk_ticket_new_redirect {
     @param project_id ID of the project 
     @task_status_id This checks what is the current status of a task 
     @ticket_type_id This checks what is the current type of a ticket
+} -
+
+ad_proc -public -callback im_biz_object_member_after_delete {
+    {-object_id:required}
+    {-object_type:required}
+    {-user_id:required}
+} {
+    Hook for executing callbacks after a user was removed from an object. 
 } -

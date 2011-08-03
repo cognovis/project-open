@@ -371,3 +371,30 @@ ad_proc -public -callback intranet_fs::after_project_folder_create {
 	@param project_id ID of the project in which the project folder resides
 	@param folder_id New folder_id of the created folder for the project
 } -
+
+ad_proc -public -callback im_biz_object_member_after_delete {
+    {-object_id:required}
+    {-object_type:required}
+    {-user_id:required}
+} {
+    Hook for executing callbacks after a user was removed from an object. 
+} -
+
+ad_proc -public -callback im_biz_object_member_after_delete -impl intranet_fs_remove_folder_permission {
+    {-object_id:required}
+    {-object_type:required}
+    {-user_id:required}
+} {
+    Hook for executing callbacks after a user was removed from an object. 
+} {
+    if {$object_type eq "im_project"} {
+	set folder_id [intranet_fs::get_project_folder_id -project_id $object_id]
+	if {$folder_id ne ""} {
+	    permission::revoke -party_id $user_id -object_id $folder_id -privilege read
+	    permission::revoke -party_id $user_id -object_id $folder_id -privilege create
+	    permission::revoke -party_id $user_id -object_id $folder_id -privilege write
+	    permission::revoke -party_id $user_id -object_id $folder_id -privilege delete
+	    permission::revoke -party_id $user_id -object_id $folder_id -privilege admin
+	}
+    }
+}
