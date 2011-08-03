@@ -5,7 +5,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketFormRight.js.adp,v 1.39 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -34,10 +34,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	bodyStyle:	'padding:5px 5px 0',
 	width:		800,
 	monitorValid:	true,
+	layout: {
+	    type: 'vbox',
+	    align : 'stretch',
+	    pack  : 'start'
+	},
 
 	fieldDefaults: {
 		msgTarget:	'side',
-		labelWidth:	75,
+		labelWidth:	100,
 		typeAhead:	true
 	},
 	defaultType:	'textfield',
@@ -65,11 +70,29 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
+			flex: 1,
 			layout: 	{ type: 'table', columns: 3 },
+			defaults: {		
+				margin: '5 10 0 0',
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},
 			items :[{
 				name:		'ticket_creation_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_Date#',
+				xtype:		'po_datetimefield_read_only',
+				disabled:	false
+			}, {
+				name:		'ticket_escalation_date',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
+				xtype:		'po_datetimefield_read_only',
+				disabled:	false
+			}, {
+				name:		'ticket_done_date',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false
 			}, {
@@ -87,16 +110,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					}
 				}
 			}, {
-				name:		'ticket_done_date',
-				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
-				xtype:		'po_datetimefield_read_only',
-				disabled:	false
-			}, {
-				name:		'ticket_escalation_date',
-				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalation_Date#',
-				xtype:		'po_datetimefield_read_only',
-				disabled:	false
-			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
 				xtype:		'po_datetimefield_read_only',
@@ -110,20 +123,32 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
-			layout: 	{ type: 'table', columns: 2 },
+			flex: 2,		
+			layout: 	{ 
+		    type: 'hbox',
+    		pack: 'start',
+		    align: 'stretch'		    
+		  },
+			defaults: {		
+				margin: '5 10 0 0',
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},			
 			items :[{
 				name:		'ticket_request',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
 				labelAlign:	'top',
-				width:		300
+				flex: 1
 			}, {
 				name:		'ticket_resolution',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
 				labelAlign:	'top',
-				width:		300
+				flex: 1
 			}]
 	
 		}, {
@@ -132,9 +157,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
+		//	width:		800,
+			flex: 1,
 	
 			layout: 	{ type: 'table', columns: 3 },
+			defaults: {	
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},				
 			items :[{
 				name:		'ticket_closed_in_1st_contact_p',
 				xtype:		'checkbox',
@@ -192,15 +225,22 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			}]
 	
 		}, {
-	
 			xtype:		'fieldset',
 			title:		'',
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			width:		800,
-	
+			flex: 1,
+		//	width:		800,
 			layout: 	{ type: 'table', columns: 2 },
+			defaults: {	
+				margin: '5 10 0 0',
+				listeners: {
+							change: function (field,newValue,oldValue) {
+								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+							}
+				}					
+			},				
 			items :[{
 				fieldLabel:	'#intranet-core.Status#',
 				name:		'ticket_status_id',
@@ -258,7 +298,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							break;
 					};
 
-				    }
+				    },
+					change: function (field,newValue,oldValue) {
+						 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+					}				    
 				}
 			}, {
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Escalated#',
@@ -413,7 +456,18 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			queueField.show();
 			queueField.setValue(ticket_queue_id);
 		}
-
+		
+		//If the Ticket is close, hide the buttons
+		var buttonToolbar = this.getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');	
+		var rejectButton = buttonToolbar.getComponent('rejectButton');		
+		if (ticket_status_id == '30001'){
+			saveButton.hide();
+			rejectButton.hide();
+		} else {
+			saveButton.show();
+			rejectButton.show();			
+		}
 
 		// Calculate the drop-down box for escalation
 		var programId = rec.get('ticket_area_id');

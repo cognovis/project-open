@@ -1,15 +1,15 @@
-<table cellspacing="2" cellpadding="2" border="0">
+<!-- <table cellspacing="2" cellpadding="2" border="0"> -->
   <multiple name=elements>
 
     <if @elements.section@ not nil>
-      <tr class="form-section"><th colspan="2">@elements.section;noquote@</th></tr>
+      <tr class="form-section"><th colspan="2">@elements.section@</th></tr>
     </if>
 
     <group column="section">
-      <if @elements.widget@ eq "hidden">
+      <if @elements.widget@ eq "hidden"> 
         <noparse><formwidget id=@elements.id@></noparse>
       </if>
-
+  
       <else>
 
         <if @elements.widget@ eq "submit">
@@ -35,7 +35,7 @@
               </noparse>
                 @elements.label;noquote@
                 <if @form_properties.show_required_p@ true>
-                  <if @elements.optional@ nil and @elements.mode@ ne "display" and @elements.widget@ ne "inform"><span class="form-required-mark">*</span></if>
+                  <if @elements.optional@ nil and @elements.mode@ ne "display" and @elements.widget@ ne "inform" and @elements.widget@ ne "select"><span class="form-required-mark">*</span></if>
                 </if>
                </td>
             </if>
@@ -100,13 +100,14 @@
     </group>
   </multiple>
 
-</table>
+<!-- </table> -->
 
+<!--
 <multiple name="elements">
   <if @form_properties.show_required_p@ true>
-    <if @elements.optional@ nil and @elements.mode@ ne "display" and @elements.widget@ ne "inform" and @elements.widget@ ne "hidden" and @elements.widget@ ne "submit">
+    <if @elements.optional@ nil and @elements.mode@ ne "display" and @elements.widget@ ne "inform" and @elements.widget@ ne "select" and @elements.widget@ ne "hidden" and @elements.widget@ ne "submit">
        <span class="form-required-mark">*</span> #acs-templating.required# <% break %>
     </if>
   </if>
 </multiple>
-
+-->

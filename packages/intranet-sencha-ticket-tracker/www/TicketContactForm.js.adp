@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactForm.js.adp,v 1.28 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -205,17 +205,19 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			};
 			var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
 			member_model.phantom = true;
-			member_model.save({
-				scope: Ext.getCmp('ticketCompoundPanel'),
-				success: function(record, operation) {
-					// reload the entire form AFTER the relationship was saved
-					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_model);	
-				},
-				failure: function(record, operation) { 
-					Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
-				}
-			});
+			if (75464 != customer_id) {		// Exclude "Anonymous" customer
+				member_model.save({
+					scope: Ext.getCmp('ticketCompoundPanel'),
+					success: function(record, operation) {
+						// reload the entire form AFTER the relationship was saved
+						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+						compoundPanel.loadTicket(ticket_model);	
+					},
+					failure: function(record, operation) { 
+						Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+					}
+				});
+			}
 		}
 	}, {
 		text:		'#intranet-sencha-ticket-tracker.Create_New_Contact#',
@@ -280,16 +282,18 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					};
 					var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
 					member_model.phantom = true;
-					member_model.save({
-						scope: Ext.getCmp('ticketCompoundPanel'),
-						success: function(record, operation) {
-							// reload the entire form AFTER the relationship was saved
-							this.loadTicket(ticket_model);
-						},
-						failure: function(record, operation) { 
-							Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
-						}
-					});
+					if (75464 != customer_id) {		// Don't save for Anonymous
+						member_model.save({
+							scope: Ext.getCmp('ticketCompoundPanel'),
+							success: function(record, operation) {
+								// reload the entire form AFTER the relationship was saved
+								this.loadTicket(ticket_model);
+							},
+							failure: function(record, operation) { 
+								Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+							}
+						});
+					}
 
 					// Add the users to the group "Customers".
 					// This code doesn't need to be synchronized.
@@ -329,6 +333,21 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 		// load the information from the record into the form
 		this.loadUser(contact_record);
+		
+		//If Ticket is closed, disable the buttons.
+		var ticketStatusId=rec.get('ticket_status_id');;
+		var buttonToolbar = Ext.getCmp('ticketContactForm').getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');	
+		var addButton = buttonToolbar.getComponent('addButton');	
+		var createButton = buttonToolbar.getComponent('createButton');	
+
+		if (ticketStatusId == '30001'){
+			saveButton.hide();
+			addButton.hide();
+		} else {
+			saveButton.show();
+			addButton.show();	
+		}		
 	},
 
 	loadUser: function(rec){

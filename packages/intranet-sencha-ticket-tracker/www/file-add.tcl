@@ -2,7 +2,7 @@ ad_page_contract {
     page to add a new file to the system
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: file-add.tcl,v 1.5 2011/06/20 17:09:43 po34demo Exp $
+    @cvs-id $Id$
 } {
     { ticket_id:integer ""}
     upload_file:trim,optional
@@ -11,9 +11,9 @@ ad_page_contract {
     {description "" }
 }
 
-if {"" == $title} { set title $upload_file }
-
-if {![info exists upload_file]} {
+if {[info exists upload_file]} {
+    if {"" == $title} { set title $upload_file }
+} else {
     ns_log Notice "file-add: failure: upload_file does not exist"
     ns_return 200 "text/html" "{
 	\"result\": {

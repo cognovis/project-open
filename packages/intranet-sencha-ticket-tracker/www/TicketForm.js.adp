@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketForm.js.adp,v 1.44 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -42,8 +42,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        value:          '',
 	        displayField:   'pretty_name',
 	        valueField:     'id',
-		typeAhead:	true
+					typeAhead:	true,
+					listeners: {
+								change: function (field,newValue,oldValue) {
+									 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+								}
+					}							
 	},
+
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
@@ -112,15 +118,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		}
 	}, {
-		name:		'ticket_area_id',
-		itemId:		'ticket_area_id',
+		name:		'ticket_program_id',
+		itemId:		'ticket_program_id',
 	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		xtype:		'combobox',
         	width: 		300,
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection: true,
-		store: 		ticketAreaStore,
+		store: 		programTicketAreaStore,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
@@ -131,20 +137,64 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // Now construct a new ProgramGroupStore based on this information
 		    // with only those groups/profiles that are assigned to the program
 		    'change': function() {
+									var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
 
-			// Set the default code for the new ticket
-			var programId = this.getValue();
-			if (null == programId) { return; }
-			var programModel = ticketAreaStore.findRecord('category_id', programId);
-			if (null == programModel) { return; }
-			var programName = programModel.get('category');
-			var programFile = programModel.get('aux_string1');
-			var fileField = this.ownerCt.child('#ticket_file');
-			fileField.setValue(programFile);
+									if (ticket_area_id.store.filters.length > 0) {
+										//Filter value is modified with the new value selected.
+										ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
+									} else {
+										//New filters is created with the value selected
+										ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
+									}
+									if (resetCombo) {
+										ticket_area_id.reset();
+										ticket_area_id.store.load();
+									} else {
+										resetCombo = true;
+									}	
 		    }
+		} 
+	}, {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
+		name:		'ticket_area_id',
+		xtype:		'combobox',
+		displayField:	'category_translated',
+		valueField:	'category_id',
+		store:		areaTicketAreaStore,
+    width: 		300,
+		forceSelection: true,
+		listConfig: {
+			getInnerTpl: function() {
+                		return '<div class={indent_class}>{category_translated}</div>';
+			}
+		},
+		listeners: {
+			'change': function(field, newValue, oldValue, options) {
+				// Set the default code for the new ticket
+									var programId = this.getValue();
+									if (null == programId) { return; }
+									var programModel = ticketAreaStore.findRecord('category_id', programId);
+									if (null == programModel) { return; }
+									var programName = programModel.get('category');
+									var programFile = programModel.get('aux_string1');
+									var fileField = this.ownerCt.child('#ticket_file');
+									fileField.setValue(programFile);			
+									//
+									if (null == newValue) { this.reset(); } else {
+										var form =  Ext.getCmp('ticketForm').getForm();
+										var record = areaTicketAreaStore.getById(newValue);
+										if (record != null){
+											var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
+											var program_id = '' + parseInt(tree_sortkey,'10');	
+											var ticket_program_id = form.findField('ticket_program_id')
+											if (ticket_program_id.value != program_id) {
+												resetCombo= false;			
+												form.findField('ticket_program_id').select(program_id);	
+											}
+										}
+									}										
+			}
 		}
-
-
 	}, {
 		name:		'ticket_file',
 		itemId:		'ticket_file',
@@ -232,10 +282,44 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	}],
 
 	loadTicket: function(rec){
+		var form = this.getForm();
+
 		// Show this ticket, in case it was disabled before
 		this.setDisabled(false);
+						
 		// load the data from the record into the form
 		this.loadRecord(rec);
+
+		//Search the program/area values and recover the ticket file
+		var ticket_program_id = rec.get('ticket_area_id');
+		var ticket_program_model = ticketAreaStore.getById(ticket_program_id);
+		if (ticket_program_model != null && ticket_program_model != undefined){
+			var ticket_program_tree_sortkey = ticket_program_model.get('tree_sortkey');
+			var ticket_program_tree_sortkey_cut = '' + parseInt(ticket_program_tree_sortkey.substring(0,8),'10');
+			form.findField('ticket_program_id').select(ticket_program_tree_sortkey_cut);			// The real "area" field
+			form.findField('ticket_area_id').select(ticket_program_id);					// The real "program" field
+
+			// fraber 110720: Should be stored in Model anyway, right?
+			// dblao 110720: No, 'ticket_file' value is calculated when 'ticket_area_id' changes (event), the real stored value must be reloaded.
+			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
+			ticket_file.setValue(rec.get('ticket_file'));
+		}
+		
+			
+		//If Ticket is closed, disable the buttons.
+		var ticket_status_id=rec.get('ticket_status_id');
+		var buttonToolbar =this.getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');		
+		if (saveButton == null || saveButton == undefined){
+			buttonToolbar =this.getDockedComponent(1);
+			saveButton = buttonToolbar.getComponent('saveButton');	
+		}
+		
+		if (ticket_status_id == '30001') {		// Closed status
+			saveButton.hide();
+		} else {
+			saveButton.show();
+		}		
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -243,6 +327,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	newTicket: function() {
 	        var form = this.getForm();
 	        form.reset();
+		
+		//Enable the buttons.
+		var buttonToolbar =this.getDockedComponent(0);
+		var saveButton = buttonToolbar.getComponent('saveButton');		
+		if (saveButton == null || saveButton == undefined){
+			buttonToolbar =this.getDockedComponent(1);
+			saveButton = buttonToolbar.getComponent('saveButton');	
+		}
+		saveButton.show();
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		

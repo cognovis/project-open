@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: BizObjectMemberGrid.js.adp,v 1.4 2011/06/20 17:09:42 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,13 +33,25 @@ var bizObjectMemberStore = Ext.create('Ext.data.Store', {
     pageSize: 5				// Enable pagination
 });
 
+bizObjectMemberStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('bizObjectMemberGrid');
+			var num = bizObjectMemberStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
+});
+
 var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.bizObjectMemberGrid',
     id:		'bizObjectMemberGrid',
     store: 	bizObjectMemberStore,
     minWidth:	300,
-    minHeight:	200,
+    minHeight:	60,
     frame:	true,
     iconCls:	'icon-grid',
 

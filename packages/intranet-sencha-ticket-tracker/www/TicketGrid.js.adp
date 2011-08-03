@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketGrid.js.adp,v 1.32 2011/07/18 17:49:13 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -26,8 +26,13 @@ var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
 	listeners: {
 		selectionchange: function(sm, selections) {
-			// var grid = this.view;
-			// grid.down('#removeButton').setDisabled(selections.length == 0);
+			if (selections.length > 0){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
+			} else {
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+			}
 		}
 	}
 });
@@ -53,7 +58,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(compoundPanel);
-
+		var sto = bizObjectMemberStore;
 	}
 	},
 
@@ -134,7 +139,9 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				width:	60,
 				sortable:	true, 
 				renderer: function(value, o, record) {
-					return profileStore.name_from_id(record.get('ticket_queue_id'));
+				    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+				    if ('Employees' == queueName) { queueName = ''; }
+				    return queueName;
 				}
 			}, {
 				header:	'#intranet-helpdesk.Creator#',
@@ -259,6 +266,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					key = 'query';
 					value = query;
 					break;
+				case 'ticket_telephone':
+					// The contact's telephone number is not part of the REST. So translate into a query:
+					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
+					key = 'query';
+					value = query;					
+					break;
 				case 'company_type_id':
 					// The customer's company type is not part of the REST ticket fields.
 					query = query + ' and company_id in (select company_id from im_companies where company_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
@@ -337,14 +350,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		var selection = this.selModel.getSelection();
 		var ticketModel = selection[0];
 
-		// Delete the ticket. This triggers a DELETE server request
-		ticketModel.destroy({
-			success: function(record, operation) {
+		// Send a GET request to the server in order to
+		// destroy the ticket. DELETE on REST may cause
+		// problems because session information is not
+		// defined in DELETE
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/delete-ticket',
+			success: function(response) {
 		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
 				ticketStore.remove(ticketModel);
 			},
-			failure: function(record, operation) {
-				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+			failure: function(response) {
+				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', response.responseText);
 			}
 		});
 	},

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Models.js.adp,v 1.40 2011/07/12 08:54:42 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,9 +24,9 @@
 
 // SLA will be used in future versions
 Ext.define('TicketBrowser.Sla', {
-	extend: 'Ext.data.Model',
-	idProperty: 'project_id',		// The primary key of object_id of the SLA project
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'project_id',		// The primary key of object_id of the SLA project
+	fields:	[
 		'project_id',			// The primary key of object_id of the SLA project
 		'project_name',			// The name of the SLA
 		{ name: 'leaf', convert: function(value, record) { return true; } }
@@ -36,23 +36,24 @@ Ext.define('TicketBrowser.Sla', {
 
 
 Ext.define('TicketBrowser.Profile', {
-	extend: 'Ext.data.Model',
-	idProperty: 'group_id',			// The primary key. A Queue is a subtype of "group".
-	fields: [
+	extend:				'Ext.data.Model',
+	idProperty:			'group_id',			// The primary key. A Queue is a subtype of "group".
+	fields:	[
 		'group_id',			// The primary key
 		'group_name',			// The name of the queue
 	],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_profile',
-		appendId: true,
-		extraParams: {
-			format: 'json'		// Tell the ]po[ REST to return JSON data.
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/im_profile',
+		appendId:		true,
+		timeout:		300000,
+		extraParams:	{
+			format:		'json'		// Tell the ]po[ REST to return JSON data.
 		},
-		reader: {
-			type: 'json',		// Tell the Proxy Reader to parse JSON
-			root: 'data',		// Where do the data start in the JSON file?
-			totalProperty: 'total'
+		reader:	{
+			type:		'json',		// Tell the Proxy Reader to parse JSON
+			root:		'data',		// Where do the data start in the JSON file?
+			totalProperty:	'total'
 		}
 	}
 
@@ -63,9 +64,9 @@ Ext.define('TicketBrowser.Profile', {
 
 // A "category" is a kind of constant frequently used for states and types
 Ext.define('TicketBrowser.Category', {
-	extend: 'Ext.data.Model',
-	idProperty: 'category_id',		// The primary key of the category
-	fields: [
+	extend:		'Ext.data.Model',
+	idProperty:	'category_id',		// The primary key of the category
+	fields:	[
 		{type: 'string', name: 'category_id'},
 		{type: 'string', name: 'tree_sortkey'},
 		{type: 'string', name: 'category'},
@@ -89,9 +90,9 @@ Ext.define('TicketBrowser.Category', {
 
 
 Ext.define('TicketBrowser.Ticket', {
-	extend: 'Ext.data.Model',
-	idProperty: 'ticket_id',		// The primary key or object_id of the ticket
-	fields: [
+	extend:		'Ext.data.Model',
+	idProperty:	'ticket_id',		// The primary key or object_id of the ticket
+	fields:	[
 		// Basic ticket fields with special meaning
 		'ticket_id',			// The primary key or object_id of the ticket
 		'project_name',			// The name of the ticket. Ticket is as sub-type of Project, 
@@ -140,7 +141,8 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_incoming_channel_id',	//
 		'ticket_outgoing_channel_id',
 
-		'ticket_area_id',		// Area y programa
+		'ticket_area_id',		// Area
+		'ticket_program_id',		// programa
 		'ticket_file',			// expediente
 		'ticket_request',		// expediente
 		'ticket_resolution',		// expediente
@@ -160,19 +162,20 @@ Ext.define('TicketBrowser.Ticket', {
 	],
 
 	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_ticket',
-		appendId: true,				// Append the object_id: ../im_ticket/<object_id>
+		type:			'rest',
+		url:			'/intranet-rest/im_ticket',
+		appendId:		true,			// Append the object_id: ../im_ticket/<object_id>
+		timeout:		300000,
 		extraParams: {
-			format: 'json'			// Tell the ]po[ REST to return JSON data.
+			format:		'json'			// Tell the ]po[ REST to return JSON data.
 		},
-		reader: {
-			type: 'json',			// Tell the Proxy Reader to parse JSON
-			root: 'data',			// Where do the data start in the JSON file?
-			totalProperty: 'total'		// Total number of tickets for pagination
+		reader:	{
+			type:		'json',			// Tell the Proxy Reader to parse JSON
+			root:		'data',			// Where do the data start in the JSON file?
+			totalProperty:	'total'			// Total number of tickets for pagination
 		},
-		writer: {
-			type: 'json'			// Allow Sencha to write ticket changes
+		writer:	{
+			type:		'json'			// Allow Sencha to write ticket changes
 		}
 	}
 
@@ -180,9 +183,9 @@ Ext.define('TicketBrowser.Ticket', {
 
 
 Ext.define('TicketBrowser.Company', {
-	extend: 'Ext.data.Model',
-	idProperty: 'company_id',		// The primary key or object_id of the company
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'company_id',		// The primary key or object_id of the company
+	fields:	[
 		// Basic company fields with special meaning
 		'company_id',			// The primary key or object_id of the company
 		'company_name',			// The name of the company
@@ -202,20 +205,21 @@ Ext.define('TicketBrowser.Company', {
 		'company_province'		// Custom field "province"
 	],
 
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_company',
-		appendId: true,
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/im_company',
+		appendId:		true,
+		timeout:		300000,
 		extraParams: {
-			format: 'json'		// Tell the ]po[ REST to return JSON data.
+			format:		'json'			// Tell the ]po[ REST to return JSON data.
 		},
-		reader: {
-			type: 'json',		// Tell the Proxy Reader to parse JSON
-			root: 'data',		// Where do the data start in the JSON file?
-			totalProperty: 'total'
+		reader:	{
+			type:		'json',		// Tell the Proxy Reader to parse JSON
+			root:		'data',		// Where do the data start in the JSON file?
+			totalProperty:	'total'
 		},
-		writer: {
-			type: 'json'
+		writer:	{
+			type:		'json'
 		}
 	}
 
@@ -223,9 +227,9 @@ Ext.define('TicketBrowser.Company', {
 
 
 Ext.define('TicketBrowser.User', {
-	extend: 'Ext.data.Model',
-	idProperty: 'user_id',		// The primary key or object_id of the company
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'user_id',		// The primary key or object_id of the company
+	fields:	[
 		'user_id',			// Primary key
 		'first_names',			// First name(s)
 		'last_name',			// Standard last name
@@ -244,21 +248,22 @@ Ext.define('TicketBrowser.User', {
 		}
 	}],
 
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/user',
-		appendId: true,
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/user',
+		appendId:		true,
+		timeout:		300000,
 		extraParams: {
-			format: 'json',
-			format_variant: 'sencha'
+			format:	'json',
+			format_variant:	'sencha'
 		},
-		reader: { 
-			type: 'json', 
-			root: 'data',
-			totalProperty: 'total'
+		reader:	{ 
+			type:		'json', 
+			root:		'data',
+			totalProperty:	'total'
 		},
-		writer: {
-			type: 'json'
+		writer:	{
+			type:		'json'
 		}
 	}
 });
@@ -268,37 +273,38 @@ Ext.define('TicketBrowser.User', {
 // The store primarily loads all member IDs, and then performs a lookup
 // on the users store in order to get the name.
 Ext.define('TicketBrowser.EmployeeMembershipRel', {
-	extend: 'Ext.data.Model',
-	idProperty: 'rel_id',				// The primary key or object_id of the company
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'rel_id',				// The primary key or object_id of the company
+	fields:	[
 		'object_id_one',			// Group ID
 		'object_id_two',			// User ID
-		{ name: 'user_id',			// Calculated user_id
+		{ name:	'user_id',			// Calculated user_id
 			convert: function(value, record) {
 				return record.get('object_id_two');
 			}
 		},
-		{ name: 'name',				// Calculated compound name
+		{ name:	'name',				// Calculated compound name
 			convert: function(value, record) {
 				return userStore.name_from_id(record.get('object_id_two'));
 			}
 		}
 	],
-	proxy: {
-		type:	'rest',
-		url:	'/intranet-rest/membership_rel',
-		appendId: true,
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/membership_rel',
+		appendId:		true,
+		timeout:		300000,
 		extraParams: {
-			format: 'json',
-			object_id_one: employeeGroupId		// Employees group
+			format:	'json',
+			object_id_one:	employeeGroupId		// Employees group
 		},
-		reader: { 
-			type: 'json', 
-			root: 'data',
-			totalProperty: 'total'
+		reader:	{ 
+			type:		'json', 
+			root:		'data',
+			totalProperty:	'total'
 		},
-		writer: {
-			type: 'json'
+		writer:	{
+			type:		'json'
 		}
 	}
 });
@@ -310,37 +316,38 @@ Ext.define('TicketBrowser.EmployeeMembershipRel', {
 // The store primarily loads all member IDs, and then performs a lookup
 // on the users store in order to get the name.
 Ext.define('TicketBrowser.CustomerMembershipRel', {
-	extend: 'Ext.data.Model',
-	idProperty: 'rel_id',				// The primary key or object_id of the company
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'rel_id',				// The primary key or object_id of the company
+	fields:	[
 		'object_id_one',			// Group ID
 		'object_id_two',			// User ID
-		{ name: 'user_id',			// Calculated user_id
+		{ name:	'user_id',			// Calculated user_id
 			convert: function(value, record) {
 				return record.get('object_id_two');
 			}
 		},
-		{ name: 'name',				// Calculated compound name
+		{ name:	'name',				// Calculated compound name
 			convert: function(value, record) {
 				return userStore.name_from_id(record.get('object_id_two'));
 			}
 		}
 	],
-	proxy: {
-		type:	'rest',
-		url:	'/intranet-rest/membership_rel',
-		appendId: true,
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/membership_rel',
+		appendId:		true,
+		timeout:		300000,
 		extraParams: {
-			format: 'json',
-			object_id_one: customerGroupId		// Customers group
+			format:	'json',
+			object_id_one:	customerGroupId		// Customers group
 		},
-		reader: { 
-			type: 'json', 
-			root: 'data',
-			totalProperty: 'total'
+		reader:	{ 
+			type:		'json', 
+			root:		'data',
+			totalProperty:	'total'
 		},
-		writer: {
-			type: 'json'
+		writer:	{
+			type:		'json'
 		}
 	}
 });
@@ -351,9 +358,9 @@ Ext.define('TicketBrowser.CustomerMembershipRel', {
 
 
 Ext.define('TicketBrowser.BizObjectMember', {
-	extend: 'Ext.data.Model',
-	idProperty: 'rel_id',				// The primary key or object_id of the company
-	fields: [
+	extend:		'Ext.data.Model',
+	idProperty:	'rel_id',				// The primary key or object_id of the company
+	fields:	[
 		'rel_id',				// Primary key
 		'rel_type',				// Type of relationship (=im_biz_object_member)
 		'object_id_one',			// Business Object (company, project, ...)
@@ -370,20 +377,21 @@ Ext.define('TicketBrowser.BizObjectMember', {
 			}
 		}
 	],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/im_biz_object_member',
-		appendId: true,
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/im_biz_object_member',
+		appendId:		true,
+		timeout:		300000,
 		extraParams: {
-			format: 'json'
+			format:		'json'
 		},
-		reader: { 
-			type: 'json', 
-			root: 'data',
-			totalProperty: 'total'
+		reader:	{ 
+			type:		'json', 
+			root:		'data',
+			totalProperty:	'total'
 		},
-		writer: {
-			type: 'json'
+		writer:	{
+			type:		'json'
 		}
 	}
 });
@@ -391,9 +399,9 @@ Ext.define('TicketBrowser.BizObjectMember', {
 
 
 Ext.define('TicketBrowser.GroupMember', {
-	extend: 'Ext.data.Model',
-	idProperty: 'rel_id',				// The primary key or object_id of the company
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'rel_id',				// The primary key or object_id of the company
+	fields:	[
 		'rel_id',				// Primary key
 		'rel_type',				// Type of relationship (=im_biz_object_member)
 		'object_id_one',			// Business Object (company, project, ...)
@@ -401,7 +409,7 @@ Ext.define('TicketBrowser.GroupMember', {
 		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
 		'member_state',				// Status of membership (approved|banned)
 		{
-			name:	'member_name',
+			name: 'member_name',
 			convert: function(value, record) {
 				var member_id = record.get('object_id_two');
 				var store = Ext.data.StoreManager.lookup('userStore');
@@ -410,22 +418,23 @@ Ext.define('TicketBrowser.GroupMember', {
 			}
 		}
 	],
-	proxy: {
-		type: 'rest',
-		url: '/intranet-rest/membership_rel',
-		appendId: true,
-		extraParams: { format: 'json' },
-		reader: { type: 'json', root: 'data', totalProperty: 'total' },
-		writer: { type: 'json' }
+	proxy:	{
+		type:		'rest',
+		url:		'/intranet-rest/membership_rel',
+		appendId:	true,
+		timeout:	300000,
+		extraParams:	{ format: 'json' },
+		reader:		{ type: 'json', root: 'data', totalProperty: 'total' },
+		writer:		{ type: 'json' }
 	}
 });
 
 
 
 Ext.define('TicketBrowser.FileStorage', {
-	extend: 'Ext.data.Model',
-	idProperty: 'item_id',		// The primary key or object_id of the filestorage
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'item_id',		// The primary key or object_id of the filestorage
+	fields:	[
 		// Basic filestorage fields with special meaning
 		'item_id',			// The primary key or object_id of the filestorage
 		'name',				// The name of the file.
@@ -442,9 +451,9 @@ Ext.define('TicketBrowser.FileStorage', {
 
 
 Ext.define('TicketBrowser.TicketAudit', {
-	extend: 'Ext.data.Model',
-	idProperty: 'audit_id',		// The primary key or object_id of the filestorage
-	fields: [
+	extend:	'Ext.data.Model',
+	idProperty:	'audit_id',		// The primary key or object_id of the filestorage
+	fields:	[
 		'audit_id',			// The primary key or object_id of the filestorage
 		'audit_object_id',		// The name of the file.
 		'audit_action',			// The ID of the content folder that contains the file
@@ -498,12 +507,12 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'subject_area_id',
 		'supervisor_id',
 
-		'ticket_file',		// expediente
+		'ticket_file',			// expediente
 		'ticket_request',		// expediente
 		'ticket_resolution',		// Expediente
 
-		'ticket_program_id',		//
-		'ticket_area_id',		//
+		'ticket_program_id',		// Program
+		'ticket_area_id',		// Area
 	
 		// fields from im_ticket
 		'ticket_alarm_action',

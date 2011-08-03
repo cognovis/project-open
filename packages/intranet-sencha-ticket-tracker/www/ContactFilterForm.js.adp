@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactFilterForm.js.adp,v 1.2 2011/07/18 12:05:29 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -71,6 +71,12 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
+	},{
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#',
+		name:		'ticket_telephone',	
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}	
 	}, {	
 		name: 'email', 
 		fieldLabel: '#intranet-sencha-ticket-tracker.Email#',

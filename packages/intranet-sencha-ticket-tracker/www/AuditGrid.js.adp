@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.12 2011/07/11 11:04:54 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -45,13 +45,25 @@ var auditStore = Ext.create('Ext.data.Store', {
     }
 });
 
+auditStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('auditGrid');
+			var num = auditStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
+});
 
 var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.auditGrid',
     id:		'auditGrid',
     store: 	auditStore,
-    iconCls:	'icon-grid',
+    minHeight:	75,
+    
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
@@ -108,7 +120,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id_pretty'));
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+	    if ("Employees" == queueName) { queueName = ''; }
+	    return queueName;
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',

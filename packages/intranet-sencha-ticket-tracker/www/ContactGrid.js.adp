@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactGrid.js.adp,v 1.14 2011/07/18 18:37:15 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -45,7 +45,16 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE'
+	mode:	'SINGLE',
+	listeners: {
+		selectionchange: function(sm, selections) {
+			if (selections.length > 0){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+			} else {
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+			}
+		}
+	}	
 });
 
 
@@ -120,16 +129,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		}
 	],
 	dockedItems:	[{
-		xtype:	'toolbar',
-		cls:	'x-docked-noborder-top',
-		items:	[{
-				text:		'#intranet-sencha-ticket-tracker.New_Contact#',
-				iconCls:	'icon-new-ticket',
-				handler: function(){
-					alert('Not implemented');
-				}
-		}] 
-	}, {
 		xtype:		'pagingtoolbar',
 		store:		contactGridStore,
 		dock:		'bottom',
@@ -183,6 +182,11 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 						key = 'query';
 						value = query;
 						break;
+					case 'ticket_telephone':
+						query = query + ' and telephone like \'%' + value + '%\'';
+						key = 'query';
+						value = query;
+						break;						
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
@@ -244,7 +248,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 	},
 
 	// The user has pressed the "Delete" button in the contact list page
-	onDelete: function() {
+/*	onDelete: function() {
 
 		// Get the selected user (only one!)
 		var selection = this.selModel.getSelection();
@@ -262,7 +266,17 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		});
 
 
-	},
+	},*/
+	onDelete: function() {
+		// Get the selected customer (only one!)
+		var selection = this.selModel.getSelection();
+		var contactModel = selection[0];		
+		
+		//Create and show the window to change and delete the customer
+		var changeWindow = new TicketBrowser.TicketChangeContactWindow();
+		changeWindow.down('form').getForm().findField('contact_id').select(contactModel.get('user_id'));
+		changeWindow.show();
+	},	
 
 	onCopy: function() {
 		alert('ContactGrid.onCopy() not implemented yet');

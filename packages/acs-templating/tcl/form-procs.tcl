@@ -715,7 +715,8 @@ ad_proc -public template::form::is_valid { id } {
   upvar #$level $id:submission submission
 
   if { ! $submission } { 
-    return 0 
+      ns_log Notice "new: template::form::is_valid: did not find submission"
+      return 0 
   }
 
   upvar #$level $id:error formerror

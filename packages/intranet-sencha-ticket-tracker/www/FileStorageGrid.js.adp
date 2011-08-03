@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: FileStorageGrid.js.adp,v 1.21 2011/06/23 12:19:02 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -29,123 +29,124 @@ var fileStorageNewForm;
 function showFileStorageNewForm(ticket_id) {
 
 	var msg = function(title, msg) {
-	Ext.Msg.show({
-		title: title,
-		msg: msg,
-		minWidth: 200,
-		modal: true,
-		icon: Ext.Msg.INFO,
-		buttons: Ext.Msg.OK
-	});
+		Ext.Msg.show({
+			title:		title,
+			msg:		msg,
+			minWidth:	200,
+			modal:		true,
+			icon:		Ext.Msg.INFO,
+			buttons:	Ext.Msg.OK
+		});
 	};
 	
 	Ext.define('example.fielderror', {
-	extend: 'Ext.data.Model',
-	fields: ['id', 'msg']
+		extend:	'Ext.data.Model',
+		fields:	['id', 'msg']
 	});
 
 	// Create the upload form if it isn't defined yet:
 	if (!fileStorageNewForm) {
-	var form = Ext.widget('form', {
-		itemId: 'ticketUploadForm',
-		layout: { type: 'vbox', align: 'stretch' },
-		border: false,
-		fieldDefaults: { labelAlign: 'top', labelWidth: 100 },
-		defaults: {	margins: '10 10 10 10' },
-		errorReader: Ext.create('Ext.data.reader.Json', {	// Workaround for Sencha bug parsing JSON replies
-			model:		'example.fielderror',
-			record:		'field',
-			successProperty: 'success'
-		}),
-
-		items: [{
-			name:		'ticket_id',				// We need this field to identify the upload folder
-			xtype:		'hiddenfield'
-		}, {
-			name:		'upload_file',
-			xtype:		'filefield',
-			id:		'file',
-			emptyText:	'#intranet-sencha-ticket-tracker.Select_a_file#',
-			fieldLabel:	'#intranet-sencha-ticket-tracker.File#',
-			buttonText:	'',
-			buttonConfig:	{ iconCls: 'upload-icon' }
-		}, {
-			name:		'description',
-			xtype:		'textfield',
-			id:		'title',
-			emptyText:	'#intranet-sencha-ticket-tracker.Description#',
-			fieldLabel:	'#intranet-sencha-ticket-tracker.Description#'
-		}],
+		var form = Ext.widget('form', {
+			itemId:		'ticketUploadForm',
+			layout:		{ type: 'vbox', align: 'stretch' },
+			border:		false,
+			fieldDefaults:	{ labelAlign: 'top', labelWidth: 100 },
+			defaults:	{ margins: '10 10 10 10' },
+			errorReader: Ext.create('Ext.data.reader.Json', {		// Workaround for Sencha bug parsing JSON replies
+				model:			'example.fielderror',
+				record:			'field',
+				successProperty:	'success'
+			}),
 	
-		buttons: [{
-			text: '#intranet-sencha-ticket-tracker.button_Save#',
-			handler: function(){
-
-				// Get the ticket_id
-				var ticket_form = Ext.getCmp('ticketForm');
-				var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
-	
-				// Store into local form
-				var form = this.up('form').getForm();
-				form.findField('ticket_id').setValue(ticket_id);
-	
-				// Submit the form
-				if(form.isValid()){
-				form.submit({
-					url: 'file-add',
-					method: 'GET',
-					waitMsg: '#intranet-sencha-ticket-tracker.Uploading_your_photo#',
-					success: function(form, action) {
+			items: [{
+				name:		'ticket_id',				// We need this field to identify the upload folder
+				xtype:		'hiddenfield'
+			}, {
+				name:		'upload_file',
+				xtype:		'filefield',
+				id:		'file',
+				emptyText:	'#intranet-sencha-ticket-tracker.Select_a_file#',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.File#',
+				buttonText:	'',
+				buttonConfig:	{ iconCls: 'upload-icon' }
+			}, {
+				name:		'description',
+				xtype:		'textfield',
+				id:		'title',
+				emptyText:	'#intranet-sencha-ticket-tracker.Description#',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Description#'
+			}],
 		
-						// Hide the upload form
-						fileStorageNewForm.hide();
-						
-						// process the result manually
-						try {
-							var resp = Ext.decode(action.response.responseText);
-							var fs_folder_id = resp.result.data[0].fs_folder_id + '';
-							var fs_folder_path = resp.result.data[0].fs_folder_path + '';
-						} catch (ex) {
-							alert('Error creating object: ' + operation.action.responseText);
-							return;
+			buttons: [{
+				text:	'#intranet-sencha-ticket-tracker.button_Save#',
+				handler: function(){
+	
+					// Get the ticket_id
+					var ticket_form = Ext.getCmp('ticketForm');
+					var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
+		
+					// Store into local form
+					var form = this.up('form').getForm();
+					form.findField('ticket_id').setValue(ticket_id);
+		
+					// Submit the form
+					if(form.isValid()){
+					form.submit({
+						url:	'file-add',
+						method:	'GET',
+						waitMsg:	'#intranet-sencha-ticket-tracker.Uploading_your_photo#',
+						success:	function(form, action) {
+			
+							// Hide the upload form
+							fileStorageNewForm.hide();
+							
+							// process the result manually
+							try {
+								var resp = Ext.decode(action.response.responseText);
+								var fs_folder_id = resp.result.data[0].fs_folder_id + '';
+								var fs_folder_path = resp.result.data[0].fs_folder_path + '';
+							} catch (ex) {
+								alert('Error creating object: ' + operation.action.responseText);
+								return;
+							}
+			
+							// Creating a file might have created a new FS folder in the backend.
+							// To get this value, we need to reload the ticket model:
+							var ticket_form = Ext.getCmp('ticketForm');
+							var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
+							var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
+							ticket_model.set('fs_folder_id', fs_folder_id);
+							ticket_model.set('fs_folder_path', fs_folder_path);
+	
+							// Tell all panels to load the data of the newly created object
+							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+							compoundPanel.loadTicket(ticket_model);	
+						},
+							failure: function(form, action) {
+							alert('Error loading file');
+							fileStorageNewForm.hide();
 						}
+					});
 		
-						// Creating a file might have created a new FS folder in the backend.
-						// To get this value, we need to reload the ticket model:
-						var ticket_form = Ext.getCmp('ticketForm');
-						var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
-						var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
-						ticket_model.set('fs_folder_id', fs_folder_id);
-						ticket_model.set('fs_folder_path', fs_folder_path);
-
-						// Tell all panels to load the data of the newly created object
-						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-						compoundPanel.loadTicket(ticket_model);	
-					},
-						failure: function(form, action) {
-						alert('Error loading file');
-						fileStorageNewForm.hide();
+					// reload the store which should update this grid as well
+					fileStorageStore.load();
 					}
-				});
-	
-				// reload the store which should update this grid as well
-				fileStorageStore.load();
 				}
-			}
-		}]
-	});
-
-	fileStorageNewForm = Ext.widget('window', {
-		title: '#intranet-filestorage.Upload_File#',
-		closeAction: 'hide',
-		width: 300,
-		height: 400,
-		minHeight: 200,
-		layout: 'fit',
-		resizable: true,
-		modal: true,
-		items: form
-	});
+			}]
+		});
+	
+		fileStorageNewForm = Ext.widget('window', {
+			title:		'#intranet-filestorage.Upload_File#',
+			closeAction:	'hide',
+			width:		300,
+			height:		400,
+			minHeight:	200,
+			layout:		'fit',
+			resizable:	true,
+			modal:		true,
+			items:		form
+		});
+	
 	}
 
 	var form = fileStorageNewForm.child('#ticketUploadForm');
@@ -170,22 +171,34 @@ var fileStorageGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 // We have to redefine the store every time we show
 // files for a different ticket
 var fileStorageStore = Ext.create('Ext.data.Store', {
-	model: 'TicketBrowser.FileStorage',
-	storeId: 'fileStorageStore',
-	autoLoad: false,
-	remoteSort: true,
-	pageSize: 5,			// Enable pagination
-	sorters: [{
-	property: 'name',
-	direction: 'DESC'
+	model:	'TicketBrowser.FileStorage',
+	storeId:	'fileStorageStore',
+	autoLoad:	false,
+	remoteSort:	true,
+	pageSize:	5,			// Enable pagination
+	sorters:	[{
+	property:	'name',
+	direction:	'DESC'
 	}],
-	proxy: {
-	type: 'rest',
-	url: '/intranet-rest/file_storage_object',
-	appendId: true,
-	extraParams: { format: 'json', parent_id: 0 },
-	reader: { type: 'json', root: 'data' }
+	proxy:	{
+	type:	'rest',
+	url:	'/intranet-rest/file_storage_object',
+	appendId:	true,
+	extraParams:	{ format: 'json', parent_id: 0 },
+	reader:	{ type: 'json', root: 'data' }
 	}
+});
+
+fileStorageStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('fileStorageGrid');
+			var num = fileStorageStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
 });
 
 var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
@@ -202,10 +215,10 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	columns: [
 		  {
-		  header: '#intranet-filestorage.Filename#',
-		  dataIndex: 'name',
-		  flex: 1,
-		  minWidth: 100,
+		  header:	'#intranet-filestorage.Filename#',
+		  dataIndex:	'name',
+		  flex:	1,
+		  minWidth:	100,
 		  renderer: function(value, o, record) {
 			  var name = record.get('name');
 			  var item_id = record.get('item_id');
@@ -224,20 +237,21 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	// inline buttons
 	dockedItems: [{
-		xtype: 'toolbar',
+		id: 'uploadButtonToolbar',
+		xtype:	'toolbar',
 		items: [{
+			id: 'uploadButton',
 			text:'#file-storage.Upload_New_File#',
 			tooltip:'#intranet-sencha-ticket-tracker.Upload_New_Attachment#',
 			iconCls:'add',
 			handler: function() {
-	
-			// Get the ticket_id
-			var ticketForm = Ext.getCmp('ticketForm');
-			var ticket_id_field = ticketForm.getForm().findField('ticket_id');
-			var ticket_id = ticket_id_field.getValue();
-	
-			// Show the upload form
-			showFileStorageNewForm(ticket_id);
+				// Get the ticket_id
+				var ticketForm = Ext.getCmp('ticketForm');
+				var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+				var ticket_id = ticket_id_field.getValue();
+
+				// Show the upload form
+				showFileStorageNewForm(ticket_id);
 			}
 		}]
 	}],
@@ -266,6 +280,17 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 		// Show this portlet (may be hidden before).
 		this.show();
+		
+		//If ticket is closed, the button is disabled
+		var ticket_status_id=rec.get('ticket_status_id');
+		var buttonToolbar = this.getDockedComponent('uploadButtonToolbar');
+		var loadButton = buttonToolbar.getComponent('uploadButton');
+		
+		if (ticket_status_id == '30001'){ //Closed
+				loadButton.setDisabled(true);
+		} else {
+			loadButton.setDisabled(false);
+		}				
 	},
 
 	// Somebody pressed the "New Ticket" button:

@@ -7,7 +7,7 @@ ad_library {
   @author Juanjo Ruiz juanjoruizx@yahoo.es
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.77 $ $Date: 2011/04/06 10:42:49 $
+  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision$ $Date$
 
 }
 
@@ -1020,6 +1020,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	if {!$read_p} { continue }
 
 	set display_mode $default_display_mode
+	if {$advanced_filter_p} {
+	    # In filter mode the user also needs to be able to "write"
+	    # the field, otherwise he won't be able to enter values...
+	    if {!$write_p} { continue }
+	}
+
 
 	# object_subtype_id can be a list, so go through the list
 	# and take the highest one (none - display - edit).

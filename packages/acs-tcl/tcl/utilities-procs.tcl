@@ -2300,6 +2300,10 @@ ad_proc -public ad_returnredirect {
       	util_user_message -message $message -html
     }
 
+    if { [util_exploit_url_p $target_url] } {
+	error "Redirection to invalid URL: '[ns_quotehtml $target_url]'"
+    }
+
     if { [util_complete_url_p $target_url] } {
         # http://myserver.com/foo/bar.tcl style - just pass to ns_returnredirect
         # check if the hostname matches the current host
@@ -4703,6 +4707,8 @@ ad_proc util::external_url_p { url } {
     HTTP or HTTPS port number added or removed from current host name    
    or another hostname that the host responds to (from host_node_map)
 } {
+    return 0
+
     set locations_list [security::locations]
     # there may be as many as 3 valid full urls from one hostname
     set external_url_p [util_complete_url_p $url]

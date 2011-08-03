@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCustomerPanel.js.adp,v 1.29 2011/07/18 11:26:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -32,7 +32,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	fieldDefaults: {
 		msgTarget:	'side',
 		labelWidth:	125,
-		typeAhead:	true
+		typeAhead:	true				
 	},
 	items: [{
 		name:		'company_id',
@@ -71,7 +71,10 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				// Inform the TicketCustomerPanel about the new company
 				var contactPanel = Ext.getCmp('ticketContactPanel');
 				contactPanel.loadCustomer(cust);
-			}
+			},
+			change: function (field,newValue,oldValue) {
+				 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+			}			
 		}
 	}, {
 		name:		'company_name',
@@ -192,9 +195,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				values.company_id = null;
 				var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
 				companyModel.phantom = true;
+
+				// Only use upper case
+				var company_name = form.findField('company_name').getValue();
+				var vat_number = form.findField('vat_number').getValue();
+				companyModel.set('company_name', company_name.toUpperCase());
+				companyModel.set('vat_number', vat_number.toUpperCase());
+
 				companyModel.save({
 					success: function(company_record, operation) {
-	
+
 						// Store the new company in the store that that it can be referenced.
 						companyStore.add(company_record);
 	
@@ -247,7 +257,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// load the customer's information into the form.
 		this.loadRecord(cust);
-
+		
 		// Show the form
 		this.show();
 
@@ -268,6 +278,17 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
+
+		//Disable de buttons if the ticket is closed
+		var ticket_status_id=rec.get('ticket_status_id');
+		if (ticket_status_id == '30001'){
+			saveButton.hide();
+			addButton.hide();
+			createButton.hide();
+		}	else {
+			saveButton.show();
+			addButton.show();		
+		}				
 	}
 
 });

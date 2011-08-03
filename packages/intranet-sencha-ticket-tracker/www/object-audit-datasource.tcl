@@ -76,6 +76,7 @@ set limited_sql "$sql
 	LIMIT $limit
 "
 
+set cnt 0
 set json_list [list]
 db_foreach limited_sql $limited_sql {
 
@@ -102,7 +103,21 @@ db_foreach limited_sql $limited_sql {
     }
 
     lappend json_list "{[join $json_row ", "]}"
+    incr cnt
 }
+
+# Update the ticket with the count and reset 
+# the "dirty" flag, so that the sweeper will do its work
+db_dml update_ticket_actions "
+	update im_tickets set 
+		ticket_action_count = :cnt,
+		ticket_resolution_time_dirty = null
+	where ticket_id = :object_id
+"
+
+# Re-calculate the resolution time of the ticket
+im_sla_ticket_solution_time_sweeper -ticket_id $object_id -debug_p 1
+
 
 # Paginated Sencha grids require a "total" amount in order to know
 # the total number of pages

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyGrid.js.adp,v 1.11 2011/07/18 15:59:23 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -38,7 +38,16 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 });
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE'
+	mode:	'SINGLE',
+	listeners: {
+		selectionchange: function(sm, selections) {
+			if (selections.length > 0){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+			} else {
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+			}
+		}
+	}	
 });
 
 var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
@@ -109,16 +118,6 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
 	],
 	dockedItems: [{
-		xtype: 'toolbar',
-		cls: 'x-docked-noborder-top',
-		items: [{
-			text: '#intranet-sencha-ticket-tracker.New_Company#',
-			iconCls: 'icon-new-ticket',
-			handler: function(){
-			alert('Not implemented');
-			}
-		}] 
-	}, {
 		xtype: 'pagingtoolbar',
 		store: companyGridStore,
 		dock: 'bottom',
@@ -166,6 +165,11 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 						key = 'query';
 						value = query;
 						break;
+					case 'ticket_telephone':
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
+						key = 'query';
+						value = query;
+						break;							
 					case 'company_name':
 						// The customer's company name is not part of the REST
 						// company fields. So translate into a query:
@@ -217,7 +221,14 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	},
 
 	onDelete: function() {
-		alert('CompanyGrid.onDelete() not implemented yet');
+		// Get the selected customer (only one!)
+		var selection = this.selModel.getSelection();
+		var customerModel = selection[0];		
+		
+		//Create and show the window to change and delete the customer
+		var changeWindow = new TicketBrowser.TicketChangeCustomerWindow();
+		changeWindow.down('form').getForm().findField('company_id').select(customerModel.get('company_id'));
+		changeWindow.show();
 	},
 
 	onCopy: function() {

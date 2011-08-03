@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: Stores.js.adp,v 1.40 2011/07/18 12:05:29 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -32,8 +32,6 @@ Ext.data.StoreManager.addListener('add', function(index, store, key) {
 	// console.log('StoreManager: add: ' + storeId);
 });
 
-
-
 // ----------------------------------------------------------------
 // Employees
 // ----------------------------------------------------------------
@@ -44,7 +42,7 @@ Ext.data.StoreManager.addListener('add', function(index, store, key) {
 var employeeMembershipRelStore = Ext.create('Ext.data.Store', {
 	storeId:	'employeeMembershipRelStore',
 	model:		'TicketBrowser.EmployeeMembershipRel',
-	autoLoad: 	false,			// Load ASAP
+	autoLoad: 	true,			// Load ASAP
 	remoteSort:	false,			// Doesn't need sorting
 	remoteFilter:	false,			// Doesn't need filtering
 	pageSize: 	1000000			// Load entire table
@@ -144,6 +142,7 @@ var userStore = Ext.create('PO.data.UserStore', {
 });
 
 
+// ToDo: Start progress bar here
 userStore.load(
 	function(record, operation) {
 		// This code is called once the reply from the server has arrived.
@@ -159,6 +158,8 @@ userStore.load(
 		// The child stores will be sorted in the same order as userStore
 		userEmployeeStore.load();
 		userCustomerStore.load();
+
+		// ToDo: Stop progress bar here
 	}
 );
 
@@ -184,9 +185,59 @@ ticketAreaStore.load(
 	function(record, operation) {
 		// This code is called once the reply from the server has arrived.
 		ticketAreaStore.sort('tree_sortkey');
+		programTicketAreaStore.load();
+		areaTicketAreaStore.load();
 	}
 );
 
+Ext.define('PO.data.AreaStore', {
+	extend: 'Ext.data.Store',
+	load: function(options) {
+		// Delete whatever was there before
+		areaTicketAreaStore.removeAll();
+		ticketAreaStore.each(function(record) {
+			var indent_class = record.get('indent_class');
+			var num = indent_class.substring(indent_class.length-1);
+			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
+			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
+			if (tree_sortkey_filter == undefined || tree_sortkey_filter.value.indexOf('null') > -1){ //
+				areaTicketAreaStore.add(record); 
+			}else{
+				if (num  > 0) { 
+					if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
+						areaTicketAreaStore.add(record); 
+					}
+				}
+			}
+		});
+	}
+});
+
+Ext.define('PO.data.ProgramStore', {
+	extend: 'Ext.data.Store',
+	load: function(options) {
+		// Delete whatever was there before
+		this.removeAll();
+		ticketAreaStore.each(function(record) {
+			var indent_class = record.get('indent_class');
+			var num = indent_class.substring(indent_class.length-1);
+			if (num  == 0) { 
+				programTicketAreaStore.add(record); 
+			}
+		});
+	}
+});
+
+// Create a copy of the ticketAreaStore with filtered values.
+// Performs the filtering once the original store has been loaded.
+var areaTicketAreaStore = Ext.create('PO.data.AreaStore', {
+	storeId: 'areaTicketAreaStore',
+	model: 'TicketBrowser.Category'
+});
+var programTicketAreaStore = Ext.create('PO.data.ProgramStore', {
+	storeId: 'programTicketAreaStore',
+	model: 'TicketBrowser.Category'
+});
 
 var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketTypeStore',
@@ -254,11 +305,10 @@ var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
-	autoLoad:	true,
+	autoLoad:	false,
 	remoteFilter:	true,
-	model: 'TicketBrowser.Category',
+	model:		'TicketBrowser.Category',
 	pageSize:	1000,
-
 	proxy: {
 		type: 'rest',
 		url: '/intranet-rest/im_category',
@@ -270,6 +320,13 @@ var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+companyTypeStore.load(
+      function(record, operation) {
+	      // This code is called once the reply from the server has arrived.
+	      this.sort('tree_sortkey');
+    }
+);
+
 
 
 var ticketPriorityStore = Ext.create('PO.data.CategoryStore', {
@@ -500,4 +557,5 @@ var programGroupStore = Ext.create('PO.data.ProfileStore', {
 var ticketServiceTypeStore = ticketSlaStore;
 var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
 var ticketQueueStore = ticketPriorityStore;
+
 

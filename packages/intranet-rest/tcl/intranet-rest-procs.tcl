@@ -877,6 +877,11 @@ ad_proc -private im_rest_get_object_type {
 	    # file storage object needs additional security
 	    lappend where_clause_unchecked_list "'t' = acs_permission__permission_p(o.object_id, $current_user_id, 'read')"
 	}
+	im_ticket {
+	    # Testing per-ticket permissions
+	    set read_sql [im_ticket_permission_read_sql -user_id $current_user_id]
+	    lappend where_clause_unchecked_list "o.object_id in ($read_sql)"
+	}
     }
 
     # Check that the where_clause elements are valid SQL statements
@@ -1537,6 +1542,7 @@ ad_proc -private im_rest_delete_object {
 
     if {[catch {
 	set nuke_tcl [list "${nuke_otype}_nuke" -current_user_id $user_id $rest_oid]
+	ns_log Notice "im_rest_delete_object: nuke_tcl=$nuke_tcl"
 	eval $nuke_tcl
 
     } err_msg]} {

@@ -19,7 +19,12 @@ create function inline_0 ()
 returns integer as '
 declare
  attr_id acs_attributes.attribute_id%TYPE;
+ v_exists_p 		integer;
 begin
+ select count(*) into v_exists_p
+ from acs_attributes
+ where object_type = ''acs_object'' and attribute_name = ''package_id'';
+ IF 0 = v_exists_p THEN
  attr_id := acs_attribute__create_attribute (
 	''acs_object'',
 	''package_id'',
@@ -35,7 +40,12 @@ begin
 	''type_specific'',
 	''f''
 	);
+ END IF;
 
+ select count(*) into v_exists_p
+ from acs_attributes
+ where object_type = ''acs_object'' and attribute_name = ''title'';
+ IF 0 = v_exists_p THEN
  attr_id := acs_attribute__create_attribute (
 	''acs_object'',
 	''title'',
@@ -51,7 +61,7 @@ begin
 	''type_specific'',
 	''f''
 	);
-
+  END IF;
   return 0;
 end;' language 'plpgsql';
 

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.20 2011/07/18 17:49:13 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -31,13 +31,12 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     layout:		'border',
     deferredRender:	false,
     split:		true,
-	autoScroll:	true,
 
     items: [{
 	itemId:		'center',
 	region: 	'center',
 	layout: 	'border',
-	minWidth:	400,
+	minWidth:	200,
 	split:		true,
 
 	items: [{
@@ -63,7 +62,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	itemId:	'east',
 	region: 'east',
 	layout:	'border',
-	width:	800,
+	width:	1050,
 	split:	true,
 	items: [{
 		itemId: 'auditGrid',
@@ -149,7 +148,26 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
         this.child('#east').child('#fileStorageGrid').loadTicket(rec);
-    }
+        //Inicialize dirty. There is no changes after load.
+				var ticketModel = ticketStore.findRecord('ticket_id',rec.get('ticket_id'));
+				ticketModel.dirty = false;        
+    },
+    
+		//If the field value is diferent from store value, set model dirty variable to true
+		checkTicketField: function(field,newValue,oldValue,store) { 
+			if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
+				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+				var ticket_id = ticket_id_field.getValue();
+				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+				
+				if (ticketModel != null && ticketModel != undefined) {
+					var ticketModelFieldValue =  ticketModel.get(field.name);
+					if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+						ticketModel.setDirty();
+					}
+				}
+			}
+		}    
 
 });
 

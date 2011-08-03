@@ -3,6 +3,10 @@
 SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-4.0.2.0.0-4.0.2.0.1.sql','');
 
 
+-- New action
+SELECT im_category_new(30532, 'Re-Open &amp; notify', 'Intranet Ticket Action');
+
+
 
 create or replace function im_ticket__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
