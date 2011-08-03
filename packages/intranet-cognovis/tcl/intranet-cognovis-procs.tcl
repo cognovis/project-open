@@ -347,11 +347,26 @@ ad_proc -public intranet_cognovis::delete_project {
 } {
     Delete project completely
 } {
+    # Delete the responses from simple survey
     db_dml delete "delete from survsimp_responses where related_object_id = :project_id"
     set item_id [db_string item "select item_id from cr_items where parent_id = $project_id" -default ""]
     if {$item_id ne ""} {
 	db_string delete "select content_item__del($item_id) from dual" -default ""
     }
+
+    # Delete the associated file storage folders
+    # Get the folder_id
+    set folder_id [intranet_fs::get_project_folder_id -project_id $project_id]
+
+    # Now delete the relationship to it
+    set relationship_id [db_string get_relationship_id "select rel_id from acs_rels where object_id_one = :project_id and object_id_two = :folder_id"]
+    if {$relationship_id ne ""} {
+	db_1row delete_relation "select acs_rel__delete($relationship_id) from dual"
+    }
+    # And delete the folder
+    fs::delete_folder -folder_id $folder_id -no_notifications
+
+    # Nuke the project
     ns_log Notice "<li>Nuking project \#$project_id ...<br>\n"
     set error [im_project_nuke $project_id]
     if {"" == $error} {
