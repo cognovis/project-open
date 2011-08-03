@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-reporting-indicators</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-reporting-indicators-4.0.1.0.0.apm">
+    <version name="4.0.2.0.1" url="http://www.project-open.org/download/apm/intranet-reporting-indicators-4.0.2.0.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
@@ -24,6 +24,9 @@
              <parameter datatype="number"  min_n_values="1"  max_n_values="1" name="IndicatorEvaluationIntervalHours" default="24" description="Please specify the length of the interval for evaluation indicators in hours. Shorter intervals will result in more precise information, but may also result in large amounts of unnecessary data. Reasonable intervals are '6' (6 hours, quite short), '24' (1 day, medium) or '168' (one week, quite slow)."/>
 
              <parameter datatype="string"  min_n_values="1"  max_n_values="1" name="CompanySector"  description="Company's sector. Must be one of: &quot;it_consulting&quot; (IT Consulting), &quot;biz_consulting&quot; (Business Consulting), &quot;translation&quot; (Translation, Localization or Technical documentation), &quot;advertizing&quot; (Advertizing agency or department), &quot;engineering&quot; (Engineering and product lifecycle) or &quot;other&quot;."/>
+
+             <parameter datatype="number"  min_n_values="1"  max_n_values="1" name="IndicatorSweeperSecondsInterval" default="3601" description="Re-evaluate the indicators every x seconds. Default value is 3600 for evaluating every hour. Still, IndicatorEvaluationIntervalHours will be used to determine if a value needs to be recalculated"/>
+
         </parameters>
 
     </version>
