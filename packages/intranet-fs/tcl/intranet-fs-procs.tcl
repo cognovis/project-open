@@ -133,6 +133,8 @@ ad_proc -public intranet_fs::create_project_folder {
 } {
     Create and relate folder to project 
     
+    By default the folder will inherit permissions from the project manually
+
     @return folder_id ID of the created folder
 } {
 
@@ -157,7 +159,7 @@ ad_proc -public intranet_fs::create_project_folder {
     set project_name [db_string project_name "select project_name from im_projects where project_id = $project_id" -default ""]
     set folder_name [string tolower [util_text_to_url -text $project_name]]
     
-    # If the parend_folder_id is empty then we usually us -100 for parent
+    # If the parent_folder_id is empty then we usually us -100 for parent
     if {$parent_folder_id ne ""} {
         set folder_id [db_string folder_id "select item_id from cr_items where name = :folder_name and parent_id = :parent_folder_id" -default ""]
     } else {
@@ -169,6 +171,9 @@ ad_proc -public intranet_fs::create_project_folder {
                            -pretty_name $project_name \
                            -parent_id $parent_folder_id
                       ]
+	# Don't inherit permissions from parent_folder but give admin to the creator of this folder
+	permission::set_not_inherit -object_id $folder_id
+	permission::grant -party_id [ad_conn user_id] -object_id $folder_id -privilege "admin"
     }	
     set rel_id [relation_add "project_folder" $project_id $folder_id]
     callback intranet_fs::after_project_folder_create -project_id $project_id -folder_id $folder_id
