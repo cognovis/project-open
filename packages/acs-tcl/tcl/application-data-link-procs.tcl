@@ -246,12 +246,38 @@ ad_proc -public application_data_link::get_links_from {
 
     if {[info exists to_type] && $to_type ne ""} {
 	set to_type_clause [db_map to_type_where_clause]
-        if {[content::type::is_content_type -content_type $to_type]} {
+        if {[content::type::is_content_type -object_type $to_type]} {
 	    set to_type_clause [db_map content_type_where_clause]
 	    set content_type_from_clause [db_map content_type_from_clause]
 	}
     }
     return [db_list links_from {}]
+}
+
+ad_proc -public application_data_link::get_links_to {
+    -object_id:required
+    {-from_type}
+    {-relation_tag ""}
+} {
+    Get a list of objects that are linked to an object,
+    possible using the relation_tag.
+    If from_type is a subtype of content_revision, we lookup 
+    content_items that have that content_type
+
+    @param object_id object_id two, get objects linked to this object
+    @param from_type object_type of the objects to get links from
+} {
+    set from_type_where_clause ""
+    set content_type_from_clause ""
+
+    if {[info exists from_type] && $from_type ne ""} {
+	set from_type_clause [db_map from_type_where_clause]
+        if {[content::type::is_content_type -content_type $from_type]} {
+	    set from_type_clause [db_map content_type_where_clause]
+	    set content_type_from_clause [db_map content_type_from_clause]
+	}
+    }
+    return [db_list links_to {}]
 }
 
 ad_proc -public application_data_link::scan_for_links {

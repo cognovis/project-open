@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: AuditGrid.js.adp,v 1.4 2011/06/15 12:23:18 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -21,16 +21,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-var auditGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-    listeners: {
-	selectionchange: function(sm, selections) {
-	    // var grid = this.view;
-	    // grid.down('#removeButton').setDisabled(selections.length == 0);
-	}
-    }
-});
 
 
 // Local store definition. We have to redefine the store every time we show
@@ -55,17 +45,25 @@ var auditStore = Ext.create('Ext.data.Store', {
     }
 });
 
+auditStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var grid = Ext.getCmp('auditGrid');
+			var num = auditStore.data.length;
+			grid.height = grid.minHeight + num*20;
+        },
+        scope:this
+    }
+});
 
 var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.auditGrid',
     id:		'auditGrid',
     store: 	auditStore,
-    minWidth:	300,
-    minHeight:	300,
-    frame:	true,
-    iconCls:	'icon-grid',
-
+    minHeight:	75,
+    
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
@@ -118,11 +116,13 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Escalated#',
-	dataIndex: 'ticket_queue_id',
+	dataIndex: 'ticket_queue_id_pretty',
 	width: 60,
 	sortable: true, 
 	renderer: function(value, o, record) {
-	    return profileStore.name_from_id(record.get('ticket_queue_id'));
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+	    if ("Employees" == queueName) { queueName = ''; }
+	    return queueName;
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',
@@ -143,6 +143,9 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 	}
+    }, {
+	header: '#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+	dataIndex: 'ticket_file'
     }, {
 	header: '#intranet-sencha-ticket-tracker.Creation_Date#',
 	dataIndex: 'ticket_creation_date'
@@ -174,21 +177,23 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 */
 
     columnLines: true,
-    selModel: auditGridSelModel,
 
     // Load the files for the new ticket
     loadTicket: function(rec){
 
+	// The panel may have been hidden during newTicket()
+	this.show();
+
 	// Save the property in the proxy, which will pass it directly to the REST server
 	var ticket_id = rec.data.ticket_id;
 	auditStore.proxy.extraParams['object_id'] = ticket_id;
-	auditStore.load();
+	auditStore.loadPage(1);
     },
 
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({data: {object_id: 0}});
+	this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
 	this.hide();
     }
 

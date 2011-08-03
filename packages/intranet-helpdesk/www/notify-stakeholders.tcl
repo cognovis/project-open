@@ -67,20 +67,41 @@ db_foreach tickets $ticket_sql {
 }
 
 set subject "undefined"
+switch $action_id {
+    30500 { set action_verb "Closed" }
+    30510 { set action_verb "Closed" }
+    30515 { set action_verb "Frozen" }
+    30520 { set action_verb "Duplicated" }
+    30530 { set action_verb "Opened" }
+    30532 { set action_verb "Opened" }
+    30540 { set action_verb "Associated" }
+    30550 { set action_verb "Escalated" }
+    30552 { set action_verb "Closed" }
+    30560 { set action_verb "Resolved" }
+    30590 { set action_verb "Deleted" }
+    30599 { set action_verb "Nuked" }
+    default {
+	ad_return_complaint 1 "Unknown action_id '$action_id'"
+    }
+}
+
+set action_verb_l10n [lang::message::lookup "" intranet-helpdesk.Action_verb_$action_verb $action_verb]
+set action_verb_lower [string tolower $action_verb]
+
 if {$ticket_count <= 1} {
-    set subject "Closed ticket: $ticket_name"
+    set subject "$action_verb_l10n ticket: $ticket_name"
 } else {
-    set subject "Closed tickets: [join $ticket_nr_list ", "]"
+    set subject "$action_verb_l10n tickets: [join $ticket_nr_list ", "]"
 }
 
 
 
 set ticket_urls [join $ticket_url_list "\n"]
 
-set message [lang::message::lookup "" intranet-helpdesk.Closed_ticket_msg "
+set message [lang::message::lookup "" intranet-helpdesk.${action_verb}_ticket_msg "
 Dear {first_names},
 
-We have closed the following ticket(s):
+We have $action_verb_lower the following ticket(s):
 %ticket_urls%
 
 Best regards

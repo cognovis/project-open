@@ -7,7 +7,7 @@ ad_library {
     @author Cesar Hernandez (cesarhj@galileo.edu)
     @creation-date 2006-07-14
     @arch-tag: 0823E65B-D0B0-417A-AB6F-CA86E0461A8E
-    @cvs-id $Id: test-permissions-procs.tcl,v 1.2 2010/10/19 20:41:47 po34demo Exp $
+    @cvs-id $Id: test-permissions-procs.tcl,v 1.2 2007/01/10 21:22:12 gustafn Exp $
 }
 
 aa_register_case -cats {api smoke} ad_proc_permission_grant_and_revoke {

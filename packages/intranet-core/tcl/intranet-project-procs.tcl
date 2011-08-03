@@ -2247,14 +2247,26 @@ ad_proc im_project_clone_folders {parent_project_id new_project_id} {
 }
 
 
-ad_proc im_project_nuke {project_id} {
-    Nuke (complete delete from the database) a project
+ad_proc im_project_nuke {
+    {-current_user_id 0}
+    project_id
 } {
-    ns_log Notice "im_project_nuke project_id=$project_id"
+    Nuke (complete delete from the database) a project.
+    Returns an empty string if everything was OK or an error
+    string otherwise.
+} {
+    ns_log Notice "im_project_nuke: project_id=$project_id"
     
-    set current_user_id [ad_get_user_id]
+    # Use a predefined user_id to avoid a call to ad_get_user_id.
+    # ad_get_user_id's connection isn't defined during a DELETE REST request.
+    if {0 == $current_user_id} { 
+	ns_log Notice "im_project_nuke: No current_user_id specified - using ad_get_user_id"
+	set current_user_id [ad_get_user_id] 
+    }
+
+    # Check for permissions
     im_project_permissions $current_user_id $project_id view read write admin
-    if {!$admin} { return }
+    if {!$admin} { return "User #$currrent_user_id isn't a system administrator" }
 
     # Write Audit Trail
     im_project_audit -project_id $project_id -action nuke
@@ -2323,6 +2335,17 @@ ad_proc im_project_nuke {project_id} {
 	    # Instead, the referencing im_expense_bundles (data type doesn't exist yet)
 	    # should be deleted with the appropriate destructor method
 	    db_dml expense_cost_link "update im_expenses set bundle_id = null where bundle_id = :cost_id"
+
+	    ns_log Notice "projects/nuke-2: deleting cost: Delete any created_from_item_id references to the items we need to delete"
+	    db_dml created_from_item_id "
+		update im_invoice_items 
+		set created_from_item_id = null 
+		where created_from_item_id in (
+			select	item_id
+			from	im_invoice_items
+			where	invoice_id = :cost_id
+		)
+	    "
 
 	    ns_log Notice "projects/nuke-2: deleting cost: ${object_type}__delete($cost_id)"
 	    im_exec_dml del_cost "${object_type}__delete($cost_id)"
@@ -2612,6 +2635,7 @@ ad_proc im_project_nuke {project_id} {
 	"]
 
 	set im_conf_item_project_rels_exists_p [im_table_exists im_conf_item_project_rels]
+	set im_ticket_ticket_rels_exists_p [im_table_exists im_ticket_ticket_rels]
 
 	# Relationships
 	foreach rel_id $rels {
@@ -2619,6 +2643,8 @@ ad_proc im_project_nuke {project_id} {
 	    db_dml del_rels "delete from im_biz_object_members where rel_id = :rel_id"
 	    db_dml del_rels "delete from membership_rels where rel_id = :rel_id"
 	    if {$im_conf_item_project_rels_exists_p} { db_dml del_rels "delete from im_conf_item_project_rels where rel_id = :rel_id" }
+	    if {$im_ticket_ticket_rels_exists_p} { db_dml del_rels "delete from im_ticket_ticket_rels where rel_id = :rel_id" }
+#	    if {$exists_p} { db_dml del_rels "delete from  where rel_id = :rel_id" }
 
 	    db_dml del_rels "delete from acs_rels where rel_id = :rel_id"
 	    db_dml del_rels "delete from acs_objects where object_id = :rel_id"
@@ -2632,7 +2658,22 @@ ad_proc im_project_nuke {project_id} {
 	db_dml party_approved_member_map "
 		delete from party_approved_member_map 
 		where member_id = :project_id"
+
+
+	ns_log Notice "projects/nuke-2: acs_objecs.context_id"
+	db_dml acs_objects_context_index "
+		update acs_objects set context_id = null
+		where context_id = :project_id";
+	db_dml acs_objects_context_index2 "
+		update acs_objects set context_id = null
+		where object_id = :project_id";
+
 	
+	ns_log Notice "projects/nuke-2: acs_object_context_index"
+	db_dml acs_object_context_index "
+		delete from acs_object_context_index
+		where object_id = :project_id OR ancestor_id = :project_id"
+
 	
 	ns_log Notice "users/nuke2: Main tables"
 	db_dml parent_projects "
@@ -2661,19 +2702,9 @@ ad_proc im_project_nuke {project_id} {
 	    }
 	    
 	}
-	ad_return_error "[_ intranet-core.Failed_to_nuke]" "
-		[_ intranet-core.Failed_to_nuke] Project: $project_id:<br>
-		$detailed_explanation
-		<p>
-		<blockquote>
-		<pre>
-		$errmsg
-		</pre>
-		</blockquote>
-	"
-	return
+	return "$detailed_explanation<br><pre>$errmsg</pre>"
     }
-    set return_to_admin_link "<a href=\"/intranet/projects/\">[_ intranet-core.lt_return_to_user_admini]</a>" 
+    return ""
 }
 
 

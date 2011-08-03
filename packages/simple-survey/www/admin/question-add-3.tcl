@@ -19,7 +19,7 @@ ad_page_contract {
     @author Jin Choi (jsc@arsdigita.com) 
     @author nstrug@arsdigita.com
     @creation-date February 9, 2000
-    @cvs-id $Id: question-add-3.tcl,v 1.1.1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id: question-add-3.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
 } {
     survey_id:integer,notnull
     question_id:integer,notnull

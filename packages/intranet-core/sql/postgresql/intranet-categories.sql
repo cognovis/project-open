@@ -24,7 +24,27 @@
 -- object states and types, instead of a zillion of 
 -- tables like 'im_project_status' and 'im_project_type'.
 
+
+-- Create a fake object type for categories
+-- We willl need this for the REST interface etc.
+select acs_object_type__create_type (
+	'im_category',		-- object_type
+	'PO Category',		-- pretty_name
+	'PO Categories',	-- pretty_plural
+	'acs_object',		-- supertype
+	'im_categories',	-- table_name
+	'category_id',		-- id_column
+	'intranet-core',	-- package_name
+	'f',			-- abstract_p
+	null,			-- type_extension_table
+	'im_category_from_id'	-- name_method
+);
+
+
+
+-- Reserve the first 10000000 category IDs as constants for the system.
 create sequence im_categories_seq start 10000000;
+
 
 create table im_categories (
 	category_id		integer 
@@ -128,6 +148,57 @@ end;' language 'plpgsql';
 
 -- Test query
 -- select * from im_sub_categories(81);
+
+
+
+create or replace function im_category_parents (
+	integer
+) returns setof integer as $body$
+declare
+	p_cat			alias for $1;
+	v_cat			integer;
+	row			RECORD;
+BEGIN
+	FOR row IN
+		select	c.category_id
+		from	im_categories c,
+			im_category_hierarchy h
+		where	c.category_id = h.parent_id and
+			h.child_id = p_cat and
+			(c.enabled_p = 't' OR c.enabled_p is NULL)
+	LOOP
+		RETURN NEXT row.category_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
+
+-- Select out the lowest parent of the category.
+-- This makes sense as a fast approximation, but 
+-- isn't correct. 
+-- ToDo: Pull out the real top-level parent
+--
+create or replace function im_category_min_parent (
+	integer
+) returns integer as $body$
+declare
+	p_cat			alias for $1;
+	v_cat			integer;
+BEGIN
+	select	min(c.category_id) into v_cat
+	from	im_categories c,
+		im_category_hierarchy h
+	where	c.category_id = h.parent_id and
+		h.child_id = p_cat and
+		(c.enabled_p = 't' OR c.enabled_p is NULL);
+
+	RETURN v_cat;
+end;$body$ language 'plpgsql';
+
+
+-- Test query
+select * from im_category_parents(81);
 
 
 

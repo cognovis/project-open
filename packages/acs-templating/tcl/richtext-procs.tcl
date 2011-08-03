@@ -13,6 +13,8 @@ namespace eval template::data::validate {}
 namespace eval template::util {}
 namespace eval template::util::richtext {}
 namespace eval template::widget {}
+namespace eval template::data::to_sql {}
+namespace eval template::data::from_sql {}
 
 ad_proc -public template::util::richtext { command args } {
     Dispatch procedure for the richtext object
@@ -82,7 +84,15 @@ ad_proc -public template::data::validate::richtext {
 
     # enhanced text and HTML needs to be security checked
     if { [lsearch { text/enhanced text/html } $format] != -1 } {
-
+	# don't check, if user is side-wide admin or a package admin
+	# -gustaf neumann
+	if {[acs_user::site_wide_admin_p] ||
+	    ([ns_conn isconnected]
+	     && [ad_conn user_id] != 0
+	     && [permission::permission_p -object_id [ad_conn package_id] -privilege admin \
+		     -party_id [ad_conn user_id]])} {
+	    return 1
+	}
         set check_result [ad_html_security_check $contents]
         if { $check_result ne "" } {
             set message $check_result
@@ -613,3 +623,13 @@ ad_proc -public template::widget::richtext { element_reference tag_attributes } 
     
     return $output
 }
+
+ad_proc template::data::to_sql::richtext { value } {
+
+    Handle richtext transformations using a standardized naming convention.
+
+} {
+    return "'[DoubleApos [list [template::util::richtext::get_property content $value] \
+                               [template::util::richtext::get_property format $value]]]'"
+}
+

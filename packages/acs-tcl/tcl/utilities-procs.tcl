@@ -5,7 +5,7 @@ ad_library {
 
     @author Various (acs@arsdigita.com)
     @creation-date 13 April 2000
-    @cvs-id $Id: utilities-procs.tcl,v 1.17 2011/06/14 14:15:35 po34demo Exp $
+    @cvs-id $Id: utilities-procs.tcl,v 1.127 2010/10/30 21:43:01 gustafn Exp $
 }
 
 namespace eval util {}
@@ -1459,6 +1459,8 @@ ad_proc -public util_httppost {url formvars {timeout 30} {depth 0} {http_referer
 	}
 	set length [ns_set iget $headers content-length]
 	if { "" eq $length } {set length -1}
+      	set type [ns_set iget $headers content-type]
+      	set_encoding $type $rfd
 	set err [catch {
 		while 1 {
 			set buf [_ns_http_read $timeout $rfd $length]
@@ -1529,6 +1531,92 @@ ad_proc -public exists_and_equal { varname value } {
     return [expr { [info exists var] && $var eq $value } ]
 }
 
+ad_proc -private set_encoding {
+  {-text_translation {auto binary}}
+  content_type
+  channel
+} {
+  <p>The ad_http* and util_http* machineries depend on the
+  AOLserver/NaviServer socket I/O layer provided by [ns_sockopen].
+  This proc allows you to request Tcl encoding filtering for
+  ns_sockopen channels (i.e., the read and write channels return by
+  [ns_sockopen]), to be applied right before performing socket I/O
+  operations (i.e., reads).</p>
+
+  <p>The major task is to resolve the corresponding Tcl encoding
+  (e.g.: ascii) for a given IANA/MIME charset name (or alias; e.g.:
+  US-ASCII); the main resolution scheme is implemented by
+  [ns_encodingfortype] which is available bother under AOLserver and
+  NaviServer (see tcl/charsets.tcl). The mappings between Tcl encoding
+  names (as shown by [encoding names]) and IANA/MIME charset names
+  (i.e., names and aliases in the sense of <a
+  href="http://www.iana.org/assignments/character-sets">IANA's
+  charater sets registry</a>) is provided by:</p>
+  
+  <ul>
+  <li>A static, built-in correspondence map: see nsd/encoding.c</li>
+  <li>An extensible correspondence map (i.e., the ns/charsets
+    section in config.tcl).</li>
+  </ul>
+    
+  <p>[ns_encodingfortype] introduces several levels of precedence
+  when resolving the actual IANA/MIME charset and the corresponding
+  Tcl encoding to use:</p>
+  
+  <ol>
+  <li> The "content_type" string contains a charset specification,
+  e.g.: "text/xml; charset=UTF-8". This spec fragment takes the
+  highest precedence.</li>
+  
+  <li> The "content_type" string points to a "text/*" media subtype,
+  but does not specify a charset (e.g., "text/xml"). In this case, the
+  charset defined by ns/parameters/OutputCharset (see config.tcl)
+  applies. If this parameter is missing, the default is
+  "iso-8859-1" (see tcl/charsets.tcl; this follows from <a
+  href="http://tools.ietf.org/html/rfc2616">RFC 2616 (HTTP 1.1)</a>;
+  Section 3.7.1).</li>
+    
+  <li>If neither case 1 or case 2 become effective, the encoding is
+  resolved to "binary".</li>
+  
+  <li>If [ns_encodingfortype] fails to resolve any Tcl encoding name
+  (i.e., returns an empty string), the general fallback is "iso8859-1"
+  for text/* media subtypes and "binary" for any other. This is the
+  case in two situations:
+  
+  <ul>
+  <li>Invalid IANA/MIME charsets: The name in the "charset" parameter
+  of the content type spec is not a valid name or alias in <a
+  href="http://www.iana.org/assignments/character-sets">IANA's
+  charater sets registry</a> (a special variant would be an empty
+  charset value, e.g. "text/plain; charset=")</li>
+  
+  <li>Unknown IANA/MIME charsets: The name in the "charset" parameter
+  of the content type spec does not match any known (= registered)
+  IANA/MIME charset in the MIME/Tcl mappings.</li>
+  </ul>
+  
+  </li>
+  </ol>
+
+  References:
+  <ul>
+  <li><a href="http://www.mail-archive.com/aolserver@listserv.aol.com/msg07261.html">http://www.mail-archive.com/aolserver@listserv.aol.com/msg07261.html</a></li>
+  <li><a href="http://sourceforge.net/tracker/?func=detail&atid=103152&aid=932459&group_id=3152">http://sourceforge.net/tracker/?func=detail&atid=103152&aid=932459&group_id=3152</a></li>
+  <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=962233&group_id=3152&atid=353152">http://sourceforge.net/tracker/index.php?func=detail&aid=962233&group_id=3152&atid=353152</a></li>
+  </ul>
+  
+  @author stefan.sobernig@wu.ac.at
+} {
+  set trl [expr {[string match "text/*" $content_type] ? $text_translation : "binary"}]
+  set enc [ns_encodingfortype $content_type]
+  if {$enc eq ""} {
+    set enc [expr {[string match "text/*" $content_type] ? "iso8859-1" : "binary"}]
+    ns_log debug "--- Resolving a Tcl encoding for the CONTENT-TYPE '$content_type' failed; falling back to '$enc'."
+  }
+  fconfigure $channel -translation $trl -encoding $enc
+}
+
 ad_proc -public ad_httpget {
     -url 
     {-headers ""} 
@@ -1573,8 +1661,11 @@ ad_proc -public ad_httpget {
         close $rfd
     } else { 
         set length [ns_set iget $headers content-length]
-        if { "" eq $length } {set length -1}
-    
+        if { $length eq "" } {set length -1}
+
+	set type [ns_set iget $headers content-type]
+      	set_encoding $type $rfd
+	
         set err [catch {
             while 1 {
                 set buf [_ns_http_read $timeout $rfd $length]
@@ -1738,15 +1829,19 @@ ad_proc -public ReturnHeaders {{content_type text/html}} {
      append content_type "; charset=[ns_config ns/parameters OutputCharset iso-8859-1]"
    }
 
-   set all_the_headers "HTTP/1.0 200 OK
+   if {[ns_info name] eq "NaviServer"} {
+       ns_headers 200 $content_type
+   } else {
+       set all_the_headers "HTTP/1.0 200 OK
 MIME-Version: 1.0
 Content-Type: $content_type\r\n"
-    util_WriteWithExtraOutputHeaders $all_the_headers
-   if {[string match "text/*" $content_type]} {
-      ns_startcontent -type $content_type
-    } else {
-      ns_startcontent
-    }
+       util_WriteWithExtraOutputHeaders $all_the_headers
+       if {[string match "text/*" $content_type]} {
+	   ns_startcontent -type $content_type
+       } else {
+	   ns_startcontent
+       }
+   }
 }
 
 ad_proc -public ad_return_top_of_page {first_part_of_page {content_type text/html}} { 
@@ -1775,7 +1870,7 @@ ad_proc -public safe_eval args {
 	    return -code error "Unsafe argument to safe_eval: $arg"
 	}
     }
-    return [apply uplevel $args]
+    return [ad_apply uplevel $args]
 }
 
 ad_proc -public lmap {list proc_name} {
@@ -2227,7 +2322,6 @@ ad_proc -public ad_returnredirect {
             set url [util_current_location][util_current_directory]$target_url
         }
     }
-
     #Ugly workaround to deal with IE5.0 bug handling multipart/form-data using 
     #Meta Refresh page instead of a redirect. 
     # jbank@arsdigita.com 6/7/2000
@@ -2467,17 +2561,12 @@ ad_proc -public util_current_location {{}} {
     set Host_port [lindex $Hostv 1]
 
     # suppress the configured http port when server is behind a proxy, to keep connection behind proxy
-    # fraber 101118: looking for parameter in the wrong package...
-#    set suppress_port [parameter::get -package_key "acs-tcl" -parameter SuppressHttpPort -default 0]
-    set suppress_port [parameter::get_from_package_key -package_key "acs-tcl" -parameter "SuppressHttpPort" -default 1]
-
-    if { $suppress_port } {
+    set suppress_port [parameter::get -package_id [apm_package_id_from_key acs-tcl] -parameter SuppressHttpPort -default 0]
+    if { $suppress_port && [string equal $port [ns_config -int "ns/server/[ns_info server]/module/nssock" Port]] } {
         ns_log Debug "util_current_location: suppressing http port $Host_port"
         set Host_port ""
         set port ""
     }
-
-    ns_log Notice "util_current_location: suppress_port=$suppress_port, port=$port, Host_port=$Host_port"
 
     # Server config location
     if { ![regexp {^([a-z]+://)?([^:]+)(:[0-9]*)?$} [ad_conn location] match location_proto location_hostname location_port] } {
@@ -3421,6 +3510,8 @@ ad_proc -public util_http_file_upload { -file -data -binary:boolean -filename
         set status [lindex $response 1]
         set length [ns_set iget $headers content-length]
         if { "" eq $length } { set length -1 }
+      	set type [ns_set iget $headers content-type]
+      	set_encoding $type $rfd
         set err [catch {
             while 1 {
                 set buf [_ns_http_read $timeout $rfd $length]

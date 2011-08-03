@@ -8,8 +8,6 @@ ad_library {
   @author Malte Sussdorff (malte.sussdorff@cognovis.de)
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
-
 }
 
 
@@ -1033,9 +1031,45 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             }
         }
 
-        if {$debug} { ns_log Debug "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
-        
-        if {"edit" == $display_mode && "display" == $form_display_mode}  {
+	# Check if the elements as disabled in the layout page
+	if {$page_url_exists_p && "" == $page_url} { continue }
+
+	# Check if the current user has the right to read and write on the dynfield
+	set read_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "read" \
+	]
+	set write_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "write" \
+	]
+	if {!$read_p} { continue }
+
+	set display_mode $default_display_mode
+	if {$advanced_filter_p} {
+	    # In filter mode the user also needs to be able to "write"
+	    # the field, otherwise he won't be able to enter values...
+	    if {!$write_p} { continue }
+	}
+
+
+	# object_subtype_id can be a list, so go through the list
+	# and take the highest one (none - display - edit).
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
+	}
+
+	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+
+	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
         }
         if {"edit" == $display_mode && !$write_p}  {

@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 18 Nov 1998
     @author Allen Pulsifer (pulsifer@mediaone.net)
-    @cvs-id $Id: admin-init.tcl,v 1.3 2011/05/13 12:46:44 po34demo Exp $
+    @cvs-id $Id: admin-init.tcl,v 1.8 2004/06/29 10:17:44 jeffd Exp $
 
 }
 

@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 2002-06-20
     @author Ben Adida <ben@openforce.biz>
-    @cvs-id $Id: notification-email-procs.tcl,v 1.35 2009/04/02 15:57:03 emmar Exp $
+    @cvs-id $Id: notification-email-procs.tcl,v 1.35.6.1 2011/05/27 21:11:20 michaels Exp $
 
 }
 
@@ -137,6 +137,12 @@ namespace eval notification::email {
            append content_html "<p>#notifications.lt_Getting_too_much_emai#</p>"
            set content $content_html
        }
+
+       # DAVEB convert relative URLs to fully qualified URLs
+       set host "[string trimright [ad_url] "/"]/"
+       set re {(href|src)=['\"][^(http|https|mailto:)]/?([^'\"]+?)['\"]}
+       set subspec "\\1='${host}\\2'"
+       set content [regsub -all $re $content $subspec]
 
        # Use this to build up extra mail headers        
        set extra_headers [list]

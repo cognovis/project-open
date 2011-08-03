@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: date-procs.tcl,v 1.45.2.1 2010/06/05 20:51:17 donb Exp $
+# $Id: date-procs.tcl,v 1.48 2011/02/28 01:21:25 donb Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -15,10 +15,14 @@ namespace eval template {}
 namespace eval template::data {}
 namespace eval template::data::validate {}
 namespace eval template::util {}
+namespace eval template::util::time_of_day {}
+namespace eval template::util::timestamp {}
 namespace eval template::util::date {}
 namespace eval template::util::textdate {}
 namespace eval template::widget {}
 namespace eval template::data::transform {}
+namespace eval template::data::to_sql {}
+namespace eval template::data::from_sql {}
 
 ad_proc -public template::util::date { command args } {
     Dispatch procedure for the date object
@@ -274,27 +278,27 @@ ad_proc -public template::util::date::get_property { what date } {
       }
       return 0
     }
-      sql_date {
-          if {1 == [llength $date]} { set date [split $date "-"] }
-          
-          # LARS: Empty date results in NULL value
-          if { [empty_string_p $date] } { return "NULL" }
-          set value ""
-          set format ""
-          set space ""
-          set pad "0000"
-          foreach { index sql_form } { 0 YYYY 1 MM 2 DD 3 HH24 4 MI 5 SS } {
-              set piece [lindex $date $index]
-              if { ![string equal $piece {}] } {
-                  append value "$space[string range $pad [string length $piece] end]$piece"
-                  append format $space
-                  append format $sql_form
-                  set space " "
-              }
-              set pad "00"
-          }
-          return "to_date('$value', '$format')"
-      }
+    sql_date {
+	if {1 == [llength $date]} { set date [split $date "-"] }
+
+	# LARS: Empty date results in NULL value
+	if { [empty_string_p $date] } { return "NULL" }
+	set value ""
+	set format ""
+	set space ""
+	set pad "0000"
+	foreach { index sql_form } { 0 YYYY 1 MM 2 DD 3 HH24 4 MI 5 SS } {
+	    set piece [lindex $date $index]
+	    if { ![string equal $piece {}] } {
+		append value "$space[string range $pad [string length $piece] end]$piece"
+		append format $space
+		append format $sql_form
+		set space " "
+	    }
+	    set pad "00"
+	}
+	return "to_date('$value', '$format')"
+    }
     sql_timestamp {
       # LARS: Empty date results in NULL value
       if { $date eq "" } {
@@ -876,51 +880,58 @@ ad_proc -public template::widget::numericRange { name interval_def size {value "
 }
 
 ad_proc -public template::widget::dateFragment {
-    element_reference fragment size type value {mode edit} {tag_attributes {}} } {
-      Create an input widget for the given date fragment
-      If type is "t", uses a text widget for the fragment, with the given
-      size.
-      Otherwise, determines the proper widget based on the element flags,
-      which may be text or a picklist
+    element_reference 
+    fragment 
+    size 
+    type 
+    value 
+    {mode edit} 
+    {tag_attributes {}} 
 } {
-
-  upvar $element_reference element
+    Create an input widget for the given date fragment
+    If type is "t", uses a text widget for the fragment, with the given size.
+    Otherwise, determines the proper widget based on the element flags,
+    which may be text or a picklist
+} {
+    upvar $element_reference element
   
-  set value [template::util::date::get_property $fragment $value]
-  set value [template::util::leadingTrim $value]
+    set value [template::util::date::get_property $fragment $value]
+    set value [template::util::leadingTrim $value]
 
-  if { $mode ne "edit" } {
-    set output {}
-    append output "<input type=\"hidden\" name=\"$element(name).$fragment\" value=\"[template::util::leadingPad $value $size]\">"
-    append output $value
-    return $output
-  } else {
-    if { [info exists element(${fragment}_interval)] } {
-      set interval $element(${fragment}_interval)
+#    ns_log Notice "template::widget::dateFragment: fragment=$fragment, size=$size, type=$type, value=$value"
+    
+    if { $mode ne "edit" } {
+	set output {}
+	append output "<input type=\"hidden\" name=\"$element(name).$fragment\" value=\"[template::util::leadingPad $value $size]\">"
+	append output $value
+	return $output
     } else {
-       # Display text entry for some elements, or if the type is text
-       if { $type eq "t" ||
-            [regexp "year|short_year" $fragment] } {
-         set output "<input type=\"text\" name=\"$element(name).$fragment\" id=\"$element(name).$fragment\" size=\"$size\""
-         append output " maxlength=\"$size\" value=\"[template::util::leadingPad $value $size]\""
-         array set attributes $tag_attributes
-         foreach attribute_name [array names attributes] {
-           if {$attributes($attribute_name) eq {}} {
-             append output " $attribute_name"
-           } else {
-             append output " $attribute_name=\"$attributes($attribute_name)\""
-           }
-         }
-         append output ">\n"
-         return $output
-       } else {
-         # Use a default range for others
-         set interval [template::util::date::defaultInterval $fragment]
-       }
-     }
-    return [template::widget::numericRange "$element(name).$fragment" \
-       $interval $size $value $tag_attributes]
-  }
+	if { [info exists element(${fragment}_interval)] } {
+	    set interval $element(${fragment}_interval)
+	} else {
+	    # Display text entry for some elements, or if the type is text
+	    if { $type eq "t" ||
+		 [regexp "year|short_year" $fragment] } {
+		set output "<input type=\"text\" name=\"$element(name).$fragment\" id=\"$element(name).$fragment\" size=\"$size\""
+		append output " maxlength=\"$size\" value=\"[template::util::leadingPad $value $size]\""
+		array set attributes $tag_attributes
+		foreach attribute_name [array names attributes] {
+		    if {$attributes($attribute_name) eq {}} {
+			append output " $attribute_name"
+		    } else {
+			append output " $attribute_name=\"$attributes($attribute_name)\""
+		    }
+		}
+		append output ">\n"
+		return $output
+	    } else {
+		# Use a default range for others
+		set interval [template::util::date::defaultInterval $fragment]
+	    }
+	}
+	return [template::widget::numericRange "$element(name).$fragment" \
+		    $interval $size $value $tag_attributes]
+    }
 }
 
 ad_proc -public template::widget::ampmFragment {
@@ -998,6 +1009,7 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
     the array in range_ref determines interval ranges; the keys
     are the date fields and the values are in form {start stop interval}
 } {
+<<<<<<< HEAD
 
   variable ::template::util::date::fragment_widgets
 
@@ -1044,68 +1056,125 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
     set value $element(value)
     foreach v $value {
       lappend trim_value [template::util::leadingTrim $v]
+=======
+    variable ::template::util::date::fragment_widgets
+    
+    upvar $element_reference element
+    
+    if { [info exists element(html)] } {
+	array set attributes $element(html)
+>>>>>>> 9f736edddbd9de6dcbfd2cc83703672a99e2dc4e
     }
-    set value $trim_value
-  } else {
-    set value {}
-  }
-
-  # Keep taking tokens off the top of the string until out
-  # of tokens
-  set format_string $element(format)
-
-  set tokens [list]
-
-  if {[info exists attributes(id)]} {
-       set id_attr_name $attributes(id)
-  }
-
-  while { $format_string ne {} } {
-
-    # Snip off the next token
-    regexp {([^/\-.: ]*)([/\-.: ]*)(.*)} \
-          $format_string match word sep format_string
-    # Extract the trailing "t", if any
-    regexp -nocase $template::util::date::token_exp $word \
-          match token type
-
-    lappend tokens $token
-
-    # Output the widget
-    set fragment_def $template::util::date::fragment_widgets([string toupper $token])
-    set fragment [lindex $fragment_def 1]
-
-    if {[exists_and_not_null id_attr_name]} {
-	  set attributes(id) "${id_attr_name}.${fragment}"
+    
+    array set attributes $tag_attributes
+    
+    set output "<!-- date $element(name) begin -->\n"
+    
+    if { ! [info exists element(format)] } { 
+	set element(format) [_ acs-lang.localization-formbuilder_date_format]
     }
+    
+    ns_log Notice "template::widget::date: element=[array get element]"
+    
+    # Choose a pre-selected format, if any
+    switch $element(format) {
+	long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
+	short    { set element(format) "YYYY/MM/DD"}
+	time     { set element(format) "HH24:MI:SS"}
+	american { set element(format) "MM/DD/YY"}
+	expiration {
+	    set element(format) "MM/YY"
+	    set current_year [clock format [clock seconds] -format "%Y"]
+	    set current_year [expr {$current_year % 100}]
+	    set element(short_year_interval) \
+		[list $current_year [expr {$current_year + 10}] 1]
+	    set element(help) 1 
+	}
+    }
+    
+    # Just remember the format for now - in the future, allow
+    # the user to enter a freeform format
+    append output "<input type=\"hidden\" name=\"$element(name).format\" "
+    append output "value=\"$element(format)\" >\n"
 
-    set widget [template::widget::[lindex $fragment_def 0] \
-                     element \
-                     $fragment \
-                     [lindex $fragment_def 2] \
-                     $type \
-                     $value \
-                     $element(mode) \
-                     [array get attributes]]
+    
+    # Prepare the value to set defaults on the form
+    if { [info exists element(value)] && [template::util::date::get_property not_null $element(value)] } {
+	set value $element(value)
 
-    if { [info exists element(help)] } {
-        append output "<label for=\"$element(id).${fragment}\">[lindex $fragment_def 3] $widget</label>"
+	# Deal with values that are coming directly out of the database
+	# YYYY-MM-DD & YYYY-MM-DD HH24:MI:SS+TZ
+	ns_log Notice "template::widget::date: before date massage: format=$element(format), value=$value"
+	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2})$} $value match year moy dom]} { set value [list $year $moy $dom] }
+	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\+(\d{2})$} $value match year moy dom hod moh som tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
+	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d*)\+(\d{2})$} $value match year moy dom hod moh som secfrac tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
+
+	foreach v $value {
+	    lappend trim_value [template::util::leadingTrim $v]
+	}
+	set value $trim_value
     } else {
-        append output $widget
+	set value {}
     }
 
-    # Output the separator
-    if {$sep eq " "} {
-      append output "&nbsp;"
-    } else {
-      append output "$sep"
+    ns_log Notice "template::widget::date: after date massage: format=$element(format), value=$value"
+
+    # Keep taking tokens off the top of the string until out of tokens
+    set format_string $element(format)
+    
+    set tokens [list]
+    
+    if {[info exists attributes(id)]} {
+	set id_attr_name $attributes(id)
     }
+    
+    while { $format_string ne {} } {
+	
+	# Snip off the next token
+	regexp {([^/\-.: ]*)([/\-.: ]*)(.*)} $format_string match word sep format_string
 
-  }
+	# Extract the trailing "t", if any
+	regexp -nocase $template::util::date::token_exp $word match token type
+	
+	lappend tokens $token
+	
+	# Output the widget
+	set fragment_def $template::util::date::fragment_widgets([string toupper $token])
+	set fragment [lindex $fragment_def 1]
+	
+	if {[exists_and_not_null id_attr_name]} {
+	    set attributes(id) "${id_attr_name}.${fragment}"
+	}
+	
+	ns_log Notice "template::widget::date: template::widget::[lindex $fragment_def 0] element $fragment [lindex $fragment_def 2] $type $value $element(mode) [array get attributes]"
 
-  append output "<!-- date $element(name) end -->\n"
-  
-  return $output
+	set widget [template::widget::[lindex $fragment_def 0] \
+			element \
+			$fragment \
+			[lindex $fragment_def 2] \
+			$type \
+			$value \
+			$element(mode) \
+			[array get attributes]]
+	
+	if { [info exists element(help)] } {
+	    append output "<label for=\"$element(id).${fragment}\">[lindex $fragment_def 3] $widget</label>"
+	} else {
+	    append output $widget
+	}
+	
+	# Output the separator
+	if {$sep eq " "} {
+	    append output "&nbsp;"
+	} else {
+	    append output "$sep"
+	}
+	
+    }
+    
+    append output "<!-- date $element(name) end -->\n"
+    
+    return $output
 
 }
 
@@ -1274,59 +1343,6 @@ ad_proc -public template::data::transform::textdate { element_ref } {
 	return $value
     }
 }
-
-ad_proc -public template::data::validate::textdate {
-    value_ref
-    message_ref
-} {
-  Validate that a submitted textdate if properly formatted.
-
-  @param value_ref Reference variable to the submitted value.
-  @param message_ref Reference variable for returning an error message.
-
-  @return True (1) if valid, false (0) if not.
-} {
-
-    upvar 2 $message_ref message $value_ref textdate
-    set error_msg [list]
-    if { [exists_and_not_null textdate] } {
-	if { [regexp {^[0-9]{4}-[0-9]{2}-[0-9]{2}$} $textdate match] } {
-	    if { [catch { clock scan "${textdate}" }] } {
-		# the textdate is formatted properly the template::data::transform::textdate proc
-		# will only return correctly formatted dates in iso format, but the date is not
-                # valid so they have entered some info incorrectly
-		set datelist [split $textdate "-"]
-		set year  [lindex $datelist 0]
-		set month [::string trimleft [lindex $datelist 1] 0]
-		set day   [::string trimleft [lindex $datelist 2] 0]
-		if { $month < 1 || $month > 12 } {
-		    lappend error_msg [_ acs-templating.Month_must_be_between_1_and_12]
-		} else {		    
-		    set maxdays [template::util::date::get_property days_in_month $datelist]
-		    if { $day < 1 || $day > $maxdays } {
-			set month_pretty [template::util::date::get_property long_month_name $datelist]
-			if { $month == "2" } {
-			    # February has a different number of days depending on the year
-			    append month_pretty " ${year}"
-			}
-			lappend error_msg [_ acs-templating.lt_day_between_for_month_pretty]
-		    }
-		}
-	    }
-	} else {
-	    # the textdate is not formatted properly
-	    set format [::string toupper [template::util::textdate_localized_format]]
-	    lappend error_msg [_ acs-templating.lt_Dates_must_be_formatted_]
-	}
-    }
-    if { [llength $error_msg] > 0 } {
-	set message "[join $error_msg {<br>}]"
-        return 0
-    } else {
-        return 1
-    }
-}
-    
 ad_proc -public template::widget::textdate { element_reference tag_attributes } {
     Implements the textdate widget.
 
@@ -1372,3 +1388,123 @@ ad_proc -public template::widget::textdate { element_reference tag_attributes } 
       
   return $output
 }
+
+# handle date transformations using a standardized naming convention.
+
+ad_proc template::data::to_sql::date { value } {
+} {
+    return [template::util::date::get_property sql_date $value]
+}
+
+ad_proc template::data::from_sql::date { value } {
+} {
+    return [template::util::date::acquire ansi $value]
+}
+
+# The abstract type system includes a timestamp type, so we need to implement one
+# in the template "data type" system (even though in reality it should really just
+# be a widget working on the abstract type "date", or "timestamp" should replace "date")
+
+ad_proc template::data::to_sql::timestamp { value } {
+} {
+    return [template::data::to_sql::date $value]
+}
+
+ad_proc template::data::from_sql::timestamp { value } {
+} {
+    return [template::data::from_sql::date $value]
+}
+
+ad_proc -public template::data::transform::timestamp { element_ref } {
+    Collect a timestamp object from the form
+} {
+    upvar $element_ref element
+    return [template::data::transform::date element]
+}
+
+ad_proc -public template::util::timestamp::set_property { what date value } {
+
+    get a property in a list created by a timestamp  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit from_sql element modifiers.
+
+} {
+    return [template::util::date::set_property $what $date $value]
+}
+
+ad_proc -public template::util::timestamp::get_property { what date } {
+
+    Replace a property in a list created by a timestamp  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit to_sql element modifiers.
+} {
+    return [template::util::date::get_property $what $date]
+}
+
+ad_proc -public template::widget::timestamp { element_reference tag_attributes } {
+    Render a timestamp widget.  Default is the localized version.
+} {
+
+    upvar $element_reference element
+
+    if { ! [info exists element(format)] } { 
+        set element(format) "[_ acs-lang.localization-formbuilder_date_format] [_ acs-lang.localization-formbuilder_time_format]"
+    }
+    return [template::widget::date element $tag_attributes]
+}
+
+# The abstract type system includes a time-of-day type, so we need to implement one
+# in the template "data type" system.
+
+ad_proc template::data::to_sql::time_of_day { value } {
+} {
+    return [template::data::to_sql::date $value]
+}
+
+ad_proc template::data::from_sql::time_of_day { value } {
+} {
+    return [template::data::from_sql::date $value]
+}
+
+ad_proc -public template::data::transform::time_of_day { element_ref } {
+    Collect a time_of_day object from the form
+} {
+    upvar $element_ref element
+    return [template::data::transform::date element]
+}
+
+ad_proc -public template::util::time_of_day::set_property { what date value } {
+
+    get a property in a list created by a time_of_day  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit from_sql element modifiers.
+
+} {
+    return [template::util::date::set_property $what $date $value]
+}
+
+ad_proc -public template::util::time_of_day::get_property { what date } {
+
+    Replace a property in a list created by a time_of_day  widget.  It's the same
+    as the date one.
+
+    This is needed by the form builder to support explicit to_sql element modifiers.
+} {
+    return [template::util::date::get_property $what $date]
+}
+
+ad_proc -public template::widget::time_of_day { element_reference tag_attributes } {
+    Render a time_of_day widget.  Default is the localized version.
+} {
+
+    upvar $element_reference element
+
+    if { ! [info exists element(format)] } { 
+        set element(format) "[_ acs-lang.localization-formbuilder_date_format] [_ acs-lang.localization-formbuilder_time_format]"
+    }
+    return [template::widget::date element $tag_attributes]
+}
+

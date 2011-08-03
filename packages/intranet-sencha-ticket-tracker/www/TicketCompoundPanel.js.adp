@@ -1,10 +1,10 @@
 /**
- * intranet-sencha-ticket-tracker/www/TicketContainer.js
+ * intranet-sencha-ticket-tracker/www/TicketCompoundPanel.js
  * Container for both TicketGrid and TicketForm.
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketCompoundPanel.js.adp,v 1.13 2011/06/15 14:51:39 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -35,44 +35,58 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     items: [{
 	itemId:		'center',
 	region: 	'center',
-	layout: 	'anchor',
-	minWidth:	400,
+	layout: 	'border',
+	minWidth:	200,
+	split:		true,
 
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-core.Ticket#'
+		title: '#intranet-core.Ticket#',
+		split:	true,
+		region:	'north'
 	}, {
-		itemId: 'ticketCustomer',
-		title: '#intranet-sencha-ticket-tracker.Company#',
-		xtype: 'ticketCustomer'
+		itemId:	'ticketCustomerPanel',
+		title:	'#intranet-sencha-ticket-tracker.Company#',
+		xtype:	'ticketCustomerPanel',
+		split:	true,
+		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
-		xtype: 'ticketContactPanel'
-	}, {
-		itemId: 'ticketFilestorage',
-		title: '#intranet-filestorage.Filestorage#',
-		xtype: 'fileStorageGrid'
+		xtype: 'ticketContactPanel',
+		split:	true,
+		region:	'south'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
-	layout:	'anchor',
-	width:	800,
+	layout:	'border',
+	width:	1050,
+	split:	true,
 	items: [{
 		itemId: 'auditGrid',
 		title: '',
-		xtype: 'auditGrid'
+		xtype: 'auditGrid',
+		split:	true,
+		region:	'north'
 	}, {
 		itemId: 'ticketFormRight',
 		title: '',
-		xtype: 'ticketFormRight'
+		xtype: 'ticketFormRight',
+		split:	true,
+		region:	'center'
+	}, {
+		itemId: 'fileStorageGrid',
+		title: '#intranet-filestorage.Filestorage#',
+		xtype: 'fileStorageGrid',
+		split:	true,
+		region:	'south'
 	}]
     }],
 
     // Create a copy of the currrent ticket
-    onCopyTicket: function() {
+    onCopy: function() {
 	var ticketForm = this.child('#center').child('#ticketForm');
 	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
 	var old_ticket_id = ticket_id_field.getValue();
@@ -81,29 +95,79 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Create a new ticket name
 	ticketForm.setNewTicketName();
 
+	// Save the copied ticket(?)
+	// ...
+	
 	// Write out an alert message
 	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
 
-    // Called from the TicketGrid if the user has selected a ticket
-    newTicket: function(rec){
-        this.child('#center').child('#ticketForm').newTicket(rec);
-        this.child('#center').child('#ticketCustomer').newTicket(rec);
-        this.child('#center').child('#ticketContactPanel').newTicket(rec);
-        this.child('#center').child('#ticketFilestorage').newTicket(rec);
-        this.child('#east').child('#auditGrid').newTicket(rec);
-        this.child('#east').child('#ticketFormRight').newTicket(rec);
+    // Delete the selected ticket
+    onDelete: function() {
+	
+	// Get the ID of the current ticket
+	var ticketForm = this.child('#center').child('#ticketForm');
+	var ticket_id_field = ticketForm.getForm().findField('ticket_id');
+	var ticket_id = ticket_id_field.getValue();
+	if (null == ticket_id || '' == ticket_id) { return; }
+
+	// Get the 
+	var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+
+	// Delete the ticket. This triggers a DELETE server request
+	ticketModel.destroy({
+		success: function(record, operation) {
+	 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+			ticketStore.remove(ticketModel);
+		},
+		failure: function(record, operation) {
+			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+		}
+	});
+
+	// Switch back to the ticket list page
+	Ext.getCmp('mainTabPanel').setActiveTab(0);
+    },
+
+    // Called from the TicketGrid or the TicketActionPanel in order to create 
+    // a new ticket
+    newTicket: function(){
+        this.child('#center').child('#ticketForm').newTicket();
+        this.child('#center').child('#ticketCustomerPanel').newTicket();
+        this.child('#center').child('#ticketContactPanel').newTicket();
+        this.child('#east').child('#auditGrid').newTicket();
+        this.child('#east').child('#ticketFormRight').newTicket();
+        this.child('#east').child('#fileStorageGrid').newTicket();
     },
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);
-        this.child('#center').child('#ticketCustomer').loadTicket(rec);
-        this.child('#center').child('#ticketFilestorage').loadTicket(rec);
+        this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
-    }
+        this.child('#east').child('#fileStorageGrid').loadTicket(rec);
+        //Inicialize dirty. There is no changes after load.
+				var ticketModel = ticketStore.findRecord('ticket_id',rec.get('ticket_id'));
+				ticketModel.dirty = false;        
+    },
+    
+		//If the field value is diferent from store value, set model dirty variable to true
+		checkTicketField: function(field,newValue,oldValue,store) { 
+			if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
+				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+				var ticket_id = ticket_id_field.getValue();
+				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+				
+				if (ticketModel != null && ticketModel != undefined) {
+					var ticketModelFieldValue =  ticketModel.get(field.name);
+					if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+						ticketModel.setDirty();
+					}
+				}
+			}
+		}    
 
 });
 

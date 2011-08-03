@@ -4,7 +4,7 @@
 #
 # @creation-date 12 May 2000
 # @author Jon Salz [jsalz@arsdigita.com]
-# @cvs-id $Id: bootstrap.tcl,v 1.30 2008/11/25 17:08:50 donb Exp $
+# @cvs-id $Id: bootstrap.tcl,v 1.31 2011/04/18 16:59:30 donb Exp $
 
 
 # Remember the length of the error log file (so we can easily seek back to this
@@ -143,11 +143,16 @@ set errno [catch {
     # GN: Should be loaded before user packages such they can use
     # the xotcl infrastructure
     # DRB: only do it if xotcl's installed
-    if {[info command ::xotcl::Class] ne "" &&
-        [file isdirectory $root_directory/packages/xotcl-core]} {
-       apm_bootstrap_load_libraries -procs xotcl-core
-       apm_bootstrap_load_libraries -init xotcl-core
-    }
+
+    # Package libraries are now loaded in dependency order, rather than
+    # alphabetically.  This code is obsolete and has been commented out
+    # for 5.7.
+
+    #if {[info command ::xotcl::Class] ne "" &&
+    #    [file isdirectory $root_directory/packages/xotcl-core]} {
+    #   apm_bootstrap_load_libraries -procs xotcl-core
+    #   apm_bootstrap_load_libraries -init xotcl-core
+    #}
 
     # Build the list of subsite packages
     apm_build_subsite_packages_list

@@ -55,76 +55,76 @@ set error_list [list]
 switch $action {
     
     save {
-        set perc_task_list [array names percent_completed]
-        foreach save_task_id $perc_task_list {
-            
-            set task_name [db_string tname "select project_name from im_projects where project_id = :save_task_id" -default ""]
-            set completed $percent_completed($save_task_id)
-            
-            if {"" != $completed} {
-                if {$completed > 100 || $completed < 0} {
-                    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Percent_completed_between_0_and_100 "Completion percentage '%completed%' for task '%task_name%' must be a value between 0 and 100."]"
-                    ad_script_abort
-                }
-            }
-            
-            set planned ""
-            if {[exists_and_not_null planned_units($save_task_id)]} { 
-                set planned $planned_units($save_task_id)
-            }
-            if {"" != $planned} {
-                if {$planned < 0} {
-                    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Planned_units_positive "Planned Units needs to be a positive number"]"
-                    ad_script_abort
-                }
-            }
-            
-            set billable ""
-            if {[info exists billable_units($save_task_id)]} { set billable $billable_units($save_task_id) }
-            if {"" != $billable} {
-                if {$billable < 0} {
-                    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Billable_units_positive "Billable Units needs to be a positive number"]"
-                    ad_script_abort
-                }
-            }
-            
-            set status_id ""
-            if {[info exists task_status_id($save_task_id)]} { set status_id $task_status_id($save_task_id) }
-            if {![string is integer $status_id]} {
-                set status_id ""
-            }
-            
-            if {[catch {
-                db_dml save_tasks_to_project "
-                			update	im_projects
-                            set	percent_completed = round(:completed)
-			                where	project_id = :save_task_id
-		                    "
+	set perc_task_list [array names percent_completed]
+	foreach save_task_id $perc_task_list {
 
-                if {"" != $planned || "" != $billable} {
-                    db_dml save_tasks_to_ts_task "
-                    			update	im_timesheet_tasks
-                                set	planned_units = round(:planned),
-				                billable_units = :billable
-			                    where	task_id = :save_task_id
-		                        "
-                }
+	    set task_name [db_string tname "select project_name from im_projects where project_id = :save_task_id" -default ""]
+	    set completed $percent_completed($save_task_id)
 
-                if {"" != $status_id} {
-                    db_dml save_project_status "
-                    		    update	im_timesheet_tasks
-			                    set	task_status_id = :status_id
-			                    where	task_id = :save_task_id
-		                        "
-                }
-            } errmsg]} {
-                ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Unable_Update_Task "Unable to update task:<br><pre>$errmsg</pre>"]"
-                ad_script_abort
-            }
+	    if {"" != $completed} {
+		if {$completed > 100 || $completed < 0} {
+		    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Percent_completed_between_0_and_100 "Completion percentage '%completed%' for task '%task_name%' must be a value between 0 and 100."]"
+		    ad_script_abort
+		}
+	    }
 
-            # Audit the action
-            im_project_audit -action update -project_id $save_task_id
-        }
+	    set planned ""
+	    if {[info exists planned_units($save_task_id)]} { set planned $planned_units($save_task_id) }
+	    if {"" != $planned} {
+		if {$planned < 0} {
+		    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Planned_units_positive "Planned Units needs to be a positive number"]"
+		    ad_script_abort
+		}
+	    }
+
+	    set billable ""
+	    if {[info exists billable_units($save_task_id)]} { set billable $billable_units($save_task_id) }
+	    if {"" != $billable} {
+		if {$billable < 0} {
+		    ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Billable_units_positive "Billable Units needs to be a positive number"]"
+		    ad_script_abort
+		}
+	    }
+
+	    set status_id ""
+	    if {[info exists task_status_id($save_task_id)]} { set status_id $task_status_id($save_task_id) }
+	    if {![string is integer $status_id]} {
+		set status_id ""
+	    }
+
+	    if {[catch {
+		db_dml save_tasks_to_project "
+			update	im_projects
+			set	percent_completed = :completed
+			where	project_id = :save_task_id
+		"
+
+		if {"" != $planned || "" != $billable} {
+		    db_dml save_tasks_to_ts_task "
+			update	im_timesheet_tasks
+			set	planned_units = :planned,
+				billable_units = :billable
+			where	task_id = :save_task_id
+		    "
+		}
+
+		if {"" != $status_id} {
+		    db_dml save_project_status "
+			update	im_projects
+			set	project_status_id = :status_id
+			where	project_id = :save_task_id
+		    "
+		}
+
+	    } errmsg]} {
+		ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-timesheet2-tasks.Unable_Update_Task "Unable to update task:<br><pre>$errmsg</pre>"]"
+		ad_script_abort
+	    }
+
+	    # Audit the action
+	    im_project_audit -action after_update -project_id $save_task_id
+
+	}
     }
 
     delete {

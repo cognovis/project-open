@@ -6,7 +6,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: MainPanel.js.adp,v 1.7 2011/06/15 08:11:12 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -47,24 +47,91 @@ Ext.define('TicketBrowser.Main', {
 			dock: 'top',
 			xtype: 'ticketActionBar'
 		}],
-
+	
 		items: [{
 			itemId: 'ticket',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
-			xtype: 'ticketContainer'
+			xtype: 'ticketContainer',
+      listeners: {
+      		activate:  function(){
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('ticketGrid').selModel.getSelection());     
+      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
+      		}
+      }				
 		}, {
 			itemId: 'company',
 			title: 	'#intranet-sencha-ticket-tracker.Companies#',
-			xtype: 'companyContainer'
+			xtype: 'companyContainer',
+      listeners: {
+      		activate:  function(){
+							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('companyGrid').selModel.getSelection());
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
+      		}
+      }							
 		}, {
 			itemId: 'contact',
 			title: '#intranet-sencha-ticket-tracker.Contacts#',
-			xtype: 'contactContainer'
+			xtype: 'contactContainer',
+      listeners: {
+      		activate:  function(){
+							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('contactGrid').selModel.getSelection());
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
+      		}
+      }				
 		}, {
 			itemId: 'sample',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
-			xtype: 'ticketCompoundPanel'
-		}]
+			xtype: 'ticketCompoundPanel',
+      listeners: {
+      		activate:  function(){
+      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
+      		},
+          deactivate: function(){
+						// Show a dialog to save changes in ticket
+						var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+						var ticket_id = ticket_id_field.getValue();
+						var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
+						//There is a ticked that is not closed and dirty			
+						if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
+							Ext.Msg.show({
+						     title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+						     msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+						    //'You are closing a tab that has unsaved changes. Would you like to save your changes?',
+						    // buttons: Ext.Msg.YESNO,
+						     //icon: Ext.Msg.QUESTION,
+						     buttons: Ext.Msg.OK,
+						     icon: Ext.Msg.WARNING,
+						     fn: function(btn){
+						     		ticketModel.dirty = false;
+						     		if (btn == 'yes'){
+						     			//Save Ticket
+											ticketModel.dirty = false;     			
+						     		}
+						     }
+							});
+						}
+          }
+      }			
+		}, {
+			itemId: 'report',
+			title: '#intranet-sencha-ticket-tracker.Reports#'
+			//xtype: 'ticketCompoundPanel',		
+		}],
+		
+      listeners: {
+      		beforetabchange: function(tabPanel, newCard, oldCard, options){		
+      			if (newCard.itemId == 'report'){
+      				window.open('/intranet-reporting/');
+      				return false;
+      			} 
+      			return true;
+      		}
+      }		
 	}]
 });
 

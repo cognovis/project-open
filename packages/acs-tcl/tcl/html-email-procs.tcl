@@ -5,7 +5,7 @@ ad_library {
     @author Doug Harris (dharris@worldbank.org)
     @author Janine Sisk (jsisk@mit.edu)
     @creation-date 25 Feb 2002
-    @cvs-id $Id: html-email-procs.tcl,v 1.2 2010/10/19 20:12:55 po34demo Exp $
+    @cvs-id $Id: html-email-procs.tcl,v 1.18 2010/01/13 10:55:33 emmar Exp $
 }
 
 # switched to using tcllib, its required for openacs >= 5.3

@@ -6,7 +6,7 @@ ad_library {
 
     @author oumi@arsdigita.com
     @creation-date 2001-02-06
-    @cvs-id $Id: party-procs.tcl,v 1.7.6.1 2010/05/23 14:02:58 gustafn Exp $
+    @cvs-id $Id: party-procs.tcl,v 1.8 2010/10/17 21:06:09 donb Exp $
 
 }
 

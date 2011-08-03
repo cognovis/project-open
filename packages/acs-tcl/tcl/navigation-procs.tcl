@@ -1,7 +1,7 @@
 ad_library {
     Provides procedures to spit out the navigational parts of the site.
 
-    @cvs-id $Id: navigation-procs.tcl,v 1.2 2010/10/19 20:12:56 po34demo Exp $
+    @cvs-id $Id: navigation-procs.tcl,v 1.29 2010/01/19 23:53:59 torbenb Exp $
     @author philg@mit.edu
     @creation-date 11/5/98 (adapted originally from the Cognet server)     
 }

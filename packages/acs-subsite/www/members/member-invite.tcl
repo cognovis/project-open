@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-02
-    @cvs-id $Id: member-invite.tcl,v 1.9 2007/01/10 21:22:09 gustafn Exp $
+    @cvs-id $Id: member-invite.tcl,v 1.10 2011/04/07 12:08:40 emmar Exp $
 }
 
 subsite::assert_user_may_add_member
@@ -17,6 +17,10 @@ set context [list [list "." "Members"] "Invite"]
 group::get \
     -group_id $group_id \
     -array group_info
+
+# if we are at main site, only show the form for creating a new user
+
+set subsite_p [expr { [subsite::main_site_id] ne [ad_conn package_id] }]
 
 ad_form -name user_search -cancel_url . -form {
     {user_id:search

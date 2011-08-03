@@ -3,7 +3,7 @@ ad_page_contract {
     Select, dependency check, install and enable packages.
 
     @author Bryan Quinn (bquinn@arsdigita.com)
-    @cvs-id $Id: packages-install.tcl,v 1.20.6.1 2010/04/10 14:08:21 donb Exp $
+    @cvs-id $Id: packages-install.tcl,v 1.22 2010/10/17 21:06:07 donb Exp $
 
 } {
     {checked_by_default_p:boolean 0}

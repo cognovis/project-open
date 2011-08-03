@@ -2,7 +2,7 @@ ad_library {
 
   @author rhs@mit.edu
   @creation-date 2000-09-09
-  @cvs-id $Id: acs-kernel-procs.tcl,v 1.2 2010/10/19 20:12:52 po34demo Exp $
+  @cvs-id $Id: acs-kernel-procs.tcl,v 1.9 2004/03/12 18:48:55 jeffd Exp $
 }
 
 ad_proc -public ad_acs_administrator_exists_p {} {

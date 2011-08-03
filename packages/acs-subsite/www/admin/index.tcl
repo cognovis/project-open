@@ -5,7 +5,7 @@ ad_page_contract {
     @author Michael Bryzek (mbryzek@arsdigita.com)
 
     @creation-date August 15, 2000
-    @cvs-id $Id: index.tcl,v 1.18 2009/03/17 01:11:07 donb Exp $
+    @cvs-id $Id: index.tcl,v 1.19 2011/04/15 09:50:52 emmar Exp $
 } {
 } -properties {
     context:onevalue
@@ -17,7 +17,7 @@ ad_page_contract {
 }
 
 array set this_node [site_node::get -url [ad_conn url]]
-set title "$this_node(instance_name) Administration"
+set title "$this_node(instance_name) [_ acs-subsite.Administration]"
 
 set acs_admin_url [apm_package_url_from_key "acs-admin"]
 array set acs_admin_node [site_node::get -url $acs_admin_url]

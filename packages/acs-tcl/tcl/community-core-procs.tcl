@@ -4,7 +4,7 @@ ad_library {
 
     @author Jon Salz (jsalz@arsdigita.com)
     @creation-date 11 Aug 2000
-    @cvs-id $Id: community-core-procs.tcl,v 1.5 2010/10/19 20:12:54 po34demo Exp $
+    @cvs-id $Id: community-core-procs.tcl,v 1.60 2010/03/22 13:16:23 emmar Exp $
 
 }
 

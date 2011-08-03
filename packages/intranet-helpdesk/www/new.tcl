@@ -673,7 +673,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	-form_id helpdesk_ticket
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action update
+    im_project_audit -project_id $ticket_id -action after_update
 
     notification::new \
         -type_id [notification::type::get_type_id -short_name ticket_notif] \

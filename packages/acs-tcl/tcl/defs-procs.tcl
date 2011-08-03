@@ -5,7 +5,7 @@ ad_library {
 
     @author Many others at ArsDigita and in the OpenACS community.
     @creation-date 2 April 1998
-    @cvs-id $Id: defs-procs.tcl,v 1.4 2010/10/19 20:12:54 po34demo Exp $
+    @cvs-id $Id: defs-procs.tcl,v 1.60 2010/03/25 01:02:16 donb Exp $
 }
 
 ad_proc -public ad_acs_version_no_cache {} {

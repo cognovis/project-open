@@ -1,10 +1,10 @@
 /**
- * intranet-sencha-ticket-tracker/www/TicketGrid.js
- * Grid table for ]po[ tickets
+ * intranet-sencha-ticket-tracker/www/TicketActionBar.js
+ * New, Copy and Delete buttons for all tabs
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketActionBar.js.adp,v 1.2 2011/06/14 17:54:13 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -30,57 +30,118 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	cls:		'x-docked-noborder-top',
 
 	items: [{
-	    text: '#intranet-helpdesk.New_Ticket#',
-	    iconCls: 'icon-new-ticket',
-	    handler: function() {
-		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-	        compoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
-		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		mainTabPanel.setActiveTab(compoundPanel);	
-		compoundPanel.newTicket();
-	    }
-	}, {
-	    text: '#intranet-sencha-ticket-tracker.Copy_Ticket#',
-	    iconCls: 'icon-new-ticket',
-	    handler: function(){
-		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		var xtype = mainTabPanel.getActiveTab().xtype;
-		switch (xtype) {
-			// Ticket Container selected - search for selected ticket in Ticket Grid
-			case 'companyContainer':
-			case 'contactContainer':
-				// Ignore the action when working with contacts and companies
-			break;
-			case 'ticketContainer':
-				alert('Copy ticket from grid not implemented yet');
-			break;
-			case 'ticketCompoundPanel':
-				var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-				compoundPanel.onCopyTicket();
-			break;
-			default:
-				alert('Tab not recognized for copying tickets: ' + xtype);
-			break
+		text:		'#intranet-sencha-ticket-tracker.New#',
+		iconCls:	'icon-new-ticket',
+		handler: function(btn, pressed) {
+			// Distribute the event to the selected panel
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			var xtype = mainTabPanel.getActiveTab().xtype;
+			switch (xtype) {
+				case 'companyContainer':
+					// List page for companies - copy the selected company
+					Ext.getCmp('companyGrid').onNew(btn, pressed);
+					break;
+				case 'contactContainer':
+					// List page for contacts - copy the selected contact
+					Ext.getCmp('contactGrid').onNew(btn, pressed);
+					break;
+				case 'ticketContainer':
+				case 'ticketCompoundPanel':
+					// Ticket list or view page
+					var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
+					ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+					var mainTabPanel = Ext.getCmp('mainTabPanel');
+					mainTabPanel.setActiveTab(ticketCompoundPanel);
+					ticketCompoundPanel.newTicket();
+					break;
+				default:
+					alert('Tab not recognized for new operation: ' + xtype);
+				break
+			}
 		}
-	    }
-/*
 	}, {
-	    text: '#intranet-helpdesk.Remove_checked_items#',
-	    iconCls: 'icon-new-ticket',
-	    handler: function(){
-		    alert('Not implemented');
-   	    }
-*/
+		id: 'buttonCopyTicket',
+		text:		'#intranet-sencha-ticket-tracker.Copy_Ticket#',
+		iconCls:	'icon-new-ticket',
+		handler: function(btn, pressed){
+			// Distribute the event to the selected panel
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			var xtype = mainTabPanel.getActiveTab().xtype;
+			switch (xtype) {
+				case 'companyContainer':
+					Ext.getCmp('companyGrid').onCopy(btn, pressed);
+					break;
+				case 'contactContainer':
+					Ext.getCmp('contactGrid').onCopy(btn, pressed);
+					break;
+				case 'ticketContainer':
+					Ext.getCmp('ticketGrid').onCopy(btn, pressed);
+					break;
+				case 'ticketCompoundPanel':
+					Ext.getCmp('ticketCompoundPanel').onCopy(btn, pressed);
+					break;
+				default:
+					alert('Tab not recognized for copy operation: ' + xtype);
+				break
+			}
+		}
+	}, {
+		id: 'buttonRemoveSelected',
+		text:		'#intranet-helpdesk.Remove_checked_items#',
+		iconCls:	'icon-new-ticket',
+		handler:	function(btn, pressed){
+			// Distribute the event to the selected tab
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			var xtype = mainTabPanel.getActiveTab().xtype;
+			switch (xtype) {
+				case 'companyContainer':
+					Ext.getCmp('companyGrid').onDelete(btn, pressed);
+					break;
+				case 'contactContainer':
+					Ext.getCmp('contactGrid').onDelete(btn, pressed);
+					break;
+				case 'ticketContainer':
+					Ext.getCmp('ticketGrid').onDelete(btn, pressed);
+					break;
+				case 'ticketCompoundPanel':
+					Ext.getCmp('ticketCompoundPanel').onDelete(btn, pressed);
+					break;
+				default:
+					alert('Tab not recognized for delete operation: ' + xtype);
+				break
+			}
+		}
 	}, '-', {
-	    text: '#intranet-core.Summary#',
-	    iconCls: 'icon-summary',
-	    enableToggle: true,
-	    pressed: true,
-	    scope: this,
-	    toggleHandler: function(btn, pressed){
-		// Show/hide summary in ticketGrid
-		var grid = Ext.getCmp('ticketGrid');
-		grid.onSummaryChange(btn, pressed);
-	    }
-	}]
+		id: 'buttonSummaryTicket',
+		text:		'#intranet-core.Summary#',
+		iconCls:	'icon-summary',
+		enableToggle:	true,
+		pressed:	true,
+		scope:		this,
+		toggleHandler: function(btn, pressed){
+			// Show/hide summary in ticketGrid
+			var grid = Ext.getCmp('ticketGrid');
+			grid.onSummaryChange(btn, pressed);
+		}
+	}],
+	
+	// Disable, enable,hide or show a button 
+	// variable 'disabled' can be the data selection in a grid. If no data, the button will be disabled.
+	// Variable 'hide' is optional.
+	checkButton: function (button_id,disabled,hide){
+		if (disabled.length == 0) {
+			disabled = true;
+		} if (disabled != true) {
+			disabled =false;
+		}
+		
+		var but = this.getComponent(button_id);
+		but.setDisabled(disabled);	
+		if (hide) {
+			but.hide();
+		} else {
+			but.show();
+		}
+	}
+		
 });

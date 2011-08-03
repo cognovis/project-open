@@ -2,7 +2,7 @@
 create function inline_0 ()
 returns integer as '
 declare
-  one_user_id integer;
+  one_user_id RECORD;
   bio_id integer;
   bio_mime_type_id integer;
   attr_id integer;
@@ -40,14 +40,14 @@ begin
   for one_user_id in select user_id from users loop
     if exists(select attr_value
               from acs_attribute_values
-              where object_id = one_user_id
+              where object_id = one_user_id.user_id
               and attribute_id = bio_id) then
       update persons
       set bio = (select attr_value
                  from acs_attribute_values
-                 where object_id = one_user_id
+                 where object_id = one_user_id.user_id
                  and attribute_id = bio_id)
-      where person_id = one_user_id;
+      where person_id = one_user_id.user_id;
     end if;
   end loop;
 

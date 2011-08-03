@@ -23,7 +23,7 @@
 ad_page_contract { 
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 2011-05
-    @cvs-id $Id: index.tcl,v 1.1 2011/05/31 18:52:14 po34demo Exp $
+    @cvs-id $Id$
 } {
 
 }
@@ -35,4 +35,8 @@ ad_page_contract {
 # Make sure the user is logged in.
 # Otherwise Sencha will get an error in the REST backend.
 set user_id [auth::require_login]
+set user_is_employee_p [im_user_is_employee_p $user_id]
 
+if {!$user_is_employee_p} {
+    # ad_return_complaint 1 "The current user #$user_id is not member of the group Employees"
+}
