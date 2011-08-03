@@ -670,8 +670,10 @@ if { $start_idx > 0 } {
 }
 
 
+# Showing "next page" and the number of tickets shown
 set start_idxpp [expr $start_idx+1]
 set end_idx [expr $start_idx + $how_many]
+if {$end_idx > $total_in_limited} { set end_idx $total_in_limited }
 set table_continuation_html "
 	<tr>
 	  <td align=center colspan=$colspan>
