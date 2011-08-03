@@ -14,3 +14,5 @@ nsv_set intranet_reporting_indicators sweeper_p 0
 
 ad_schedule_proc -thread t [parameter::get_from_package_key -package_key intranet-reporting-indicators -parameter IndicatorSweeperSecondsInterval -default 59] im_indicator_timeline_component
 
+# ad_schedule_proc -thread t 59 im_indicator_timeline_component
+

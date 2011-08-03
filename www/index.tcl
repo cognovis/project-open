@@ -19,6 +19,8 @@ ad_page_contract {
     { return_url "" }
     { object_type "" }
     { object_id "" }
+    { start_date "2000-01-01" }
+    { end_date "2099-12-31" }
 }
 
 # ------------------------------------------------------
@@ -62,10 +64,12 @@ db_foreach history $history_sql {
 
 
 set indicator_html [im_indicator_timeline_component \
+			-start_date $start_date \
+			-end_date $end_date \
 			-object_id $object_id \
 			-object_type $object_type \
 			-indicator_section_id "" \
-			]
+]
 
 
 # ---------------------------------------------------------------
@@ -95,6 +99,14 @@ set filter_html "
 	<form method=get action='$return_url' name=filter_form>
 	[export_form_vars return_url]
 	<table border=0 cellpadding=0 cellspacing=0>
+	<tr>
+	  <td valign=top>[lang::message::lookup "" intranet-reporting-indicators.Start_Date "Start Date"] </td>
+	  <td valign=top><input type=text name=start_date value=\"$start_date\"></td>
+	</tr>
+	<tr>
+	  <td valign=top>[lang::message::lookup "" intranet-reporting-indicators.End_Date "End Date"] </td>
+	  <td valign=top><input type=text name=end_date value=\"$end_date\"></td>
+	</tr>
 	<tr>
 	  <td valign=top>[lang::message::lookup "" intranet-reporting-indicators.Object_Type "Object Type"] </td>
 	  <td valign=top>[im_select object_type $object_type_options {}]</td>
