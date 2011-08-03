@@ -318,6 +318,8 @@ ad_proc -public im_indicator_timeline_component {
     {-indicator_id ""}
     {-show_description_long_p ""}
     {-show_current_value_p ""}
+    {-start_date "" }
+    {-end_date "" }
 } {
     Returns a HTML component with the list of all timeline indicators that the user can see
 } {
@@ -399,12 +401,19 @@ ad_proc -public im_indicator_timeline_component {
 	set value_html $result
 	set history_html ""
 	
+	set start_date_sql ""
+	set end_date_sql ""
+	if {"" != $start_date} { set start_date_sql "and result_date >= :start_date" }
+	if {"" != $end_date} { set end_date_sql "and result_date < :end_date" }
+
 	if {"error" != $result && "" != $result} {
 	    
 	    set indicator_sql "
 	        select	result_date, result
 	        from	im_indicator_results
 	        where	result_indicator_id = :report_id
+			$start_date_sql
+			$end_date_sql
 	        order by result_date
             "
 	    set values [db_list_of_lists results $indicator_sql]
