@@ -669,9 +669,15 @@ if { $start_idx > 0 } {
     set previous_page ""
 }
 
+
+set start_idxpp [expr $start_idx+1]
+set end_idx [expr $start_idx + $how_many]
 set table_continuation_html "
 	<tr>
 	  <td align=center colspan=$colspan>
+	    [lang::message::lookup "" intranet-helpdesk.Viewing_start_end_from_total_in_limited "
+	    Viewing tickets %start_idxpp% to %end_idx% from %total_in_limited%"]
+	    &nbsp;
 	    [im_maybe_insert_link $previous_page $next_page]
 	  </td>
 	</tr>
