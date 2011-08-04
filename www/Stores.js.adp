@@ -32,6 +32,21 @@ Ext.data.StoreManager.addListener('add', function(index, store, key) {
 	// console.log('StoreManager: add: ' + storeId);
 });
 
+/*
+ *	No database data
+ *
+ */
+var provincesStore = Ext.create('Ext.data.Store', {
+    fields: ['id', 'name'],
+    autoLoad: false,
+    load:  function(options) {
+    	provincesStore.removeAll();
+    	provincesStore.add({'name':'Araba/Álava'});
+    	provincesStore.add({'name':'Bizkaia'});
+    	provincesStore.add({'name':'Gipuzkoa'});
+    	provincesStore.add({'name':'Otras'});
+    }
+});
 // ----------------------------------------------------------------
 // Employees
 // ----------------------------------------------------------------
@@ -90,7 +105,7 @@ var customerMembershipRelStore = Ext.create('Ext.data.Store', {
 	remoteFilter:	false,			// Doesn't need filtering
 	pageSize: 	1000000			// Load entire table
 });
-
+/*
 // CustomerStore is a "child store" of userStore
 Ext.define('PO.data.CustomerStore', {
 	extend: 'Ext.data.Store',
@@ -106,17 +121,31 @@ Ext.define('PO.data.CustomerStore', {
 			}
 		});
 	}
-});
+});*/
 
 // Create a copy of the userStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var userCustomerStore = Ext.create('PO.data.CustomerStore', {
+var userCustomerStore = Ext.create('Ext.data.Store', {
 	storeId: 'userCustomerStore',
-	model: 'TicketBrowser.User'
+	model: 'TicketBrowser.User',
+	load: function(options) {
+		// Delete whatever was there before
+		this.removeAll();
+		// Copy values from userStore if the user is member of Customers group
+		userStore.each(function(record) {
+			var user_id = record.get('user_id');
+			var emp_rec = customerMembershipRelStore.findRecord('object_id_two',user_id);
+			if (null != emp_rec) { 
+				userCustomerStore.add(record); 
+			}
+		});
+		userCustomerStore.sort();
+	},
+	sorters: [{
+		property: 'category_translated',
+		direction: 'ASC'
+	}]		
 });
-
-
-
 
 // ----------------------------------------------------------------
 // User Store
@@ -141,10 +170,9 @@ var userStore = Ext.create('PO.data.UserStore', {
 	}]
 });
 
-
-// ToDo: Start progress bar here
 userStore.load(
 	function(record, operation) {
+		
 		// This code is called once the reply from the server has arrived.
 		userStore.sort([{
 			property: 'first_names',
@@ -159,7 +187,8 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		// ToDo: Stop progress bar here
+		//Stop progress
+		Ext.getCmp('ticketActionBar').stopBar();
 	}
 );
 
@@ -190,7 +219,7 @@ ticketAreaStore.load(
 	}
 );
 
-Ext.define('PO.data.AreaStore', {
+/*Ext.define('PO.data.AreaStore', {
 	extend: 'Ext.data.Store',
 	load: function(options) {
 		// Delete whatever was there before
@@ -211,9 +240,9 @@ Ext.define('PO.data.AreaStore', {
 			}
 		});
 	}
-});
+});*/
 
-Ext.define('PO.data.ProgramStore', {
+/*Ext.define('PO.data.ProgramStore', {
 	extend: 'Ext.data.Store',
 	load: function(options) {
 		// Delete whatever was there before
@@ -225,19 +254,66 @@ Ext.define('PO.data.ProgramStore', {
 				programTicketAreaStore.add(record); 
 			}
 		});
+		
 	}
-});
+});*/
 
 // Create a copy of the ticketAreaStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var areaTicketAreaStore = Ext.create('PO.data.AreaStore', {
+var areaTicketAreaStore = Ext.create('Ext.data.Store', {
 	storeId: 'areaTicketAreaStore',
-	model: 'TicketBrowser.Category'
+	model: 'TicketBrowser.Category',
+	load: function(options) {
+		// Delete whatever was there before
+		areaTicketAreaStore.removeAll();
+		ticketAreaStore.each(function(record) {
+			var indent_class = record.get('indent_class');
+			var num = indent_class.substring(indent_class.length-1);
+			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
+			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
+			if (tree_sortkey_filter == undefined || tree_sortkey_filter.value.indexOf('null') > -1){ //
+				areaTicketAreaStore.add(record); 
+			}else{
+				if (num  > 0) { 
+					if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
+						areaTicketAreaStore.add(record); 
+					}
+				}
+			}
+		});
+		areaTicketAreaStore.sort();
+	},
+	sorters: [/*{
+		property: 'tree_sortkey',
+		direction: 'ASC'		
+	},*/ {
+		property: 'category_translated',
+		direction: 'ASC'
+	}]		
 });
-var programTicketAreaStore = Ext.create('PO.data.ProgramStore', {
+
+var programTicketAreaStore = Ext.create('Ext.data.Store', {
 	storeId: 'programTicketAreaStore',
-	model: 'TicketBrowser.Category'
+	model: 'TicketBrowser.Category',
+	load: function(options) {
+		// Delete whatever was there before
+		this.removeAll();
+		ticketAreaStore.each(function(record) {
+			var indent_class = record.get('indent_class');
+			var num = indent_class.substring(indent_class.length-1);
+			if (num  == 0) { 
+				programTicketAreaStore.add(record); 
+			}
+		});
+		programTicketAreaStore.sort();
+	},
+	sorters: [{
+		property: 'category_translated',
+		direction: 'ASC'
+	}]	
 });
+
+
 
 var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketTypeStore',
@@ -483,10 +559,10 @@ var ticketStore = Ext.create('Ext.data.Store', {
 var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',
 	model: 'TicketBrowser.Company',
-	remoteSort: true,
+/*	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 1000000,
-	autoSync: true,				// Write changes to the REST server ASAP
+	autoSync: true,			*/	// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
 		property: 'company_name',

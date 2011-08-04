@@ -70,7 +70,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			flex: 1,
+			flex: 2,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
 				margin: '5 10 0 0',
@@ -123,7 +123,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			flex: 2,		
+			flex: 3,		
 			layout: 	{ 
 		    type: 'hbox',
     		pack: 'start',
@@ -142,13 +142,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
 				labelAlign:	'top',
-				flex: 1
+				flex: 2
 			}, {
 				name:		'ticket_resolution',
 				xtype:		'textareafield',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
 				labelAlign:	'top',
-				flex: 1
+				flex: 2
 			}]
 	
 		}, {
@@ -158,7 +158,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			collapsed:	false,
 			frame:		false,
 		//	width:		800,
-			flex: 1,
+			flex: 2,
 	
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {	
@@ -230,7 +230,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			checkboxToggle: false,
 			collapsed:	false,
 			frame:		false,
-			flex: 1,
+			flex: 2,
 		//	width:		800,
 			layout: 	{ type: 'table', columns: 2 },
 			defaults: {	
@@ -390,6 +390,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				if (values.hasOwnProperty(field)) {
 					value = values[field];
 					if (value == null) { value = ''; }
+					value = espaces(value);
 					ticket_record.set(field, value);
 				}
 			}

@@ -44,25 +44,30 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		xtype: 'ticketForm',
 		title: '#intranet-core.Ticket#',
 		split:	true,
+		collapsible: true,
 		region:	'north'
 	}, {
 		itemId:	'ticketCustomerPanel',
 		title:	'#intranet-sencha-ticket-tracker.Company#',
 		xtype:	'ticketCustomerPanel',
 		split:	true,
+		collapsible: true,
+		height: 200,
 		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel',
 		split:	true,
+		height: 450,
+		collapsible: true,
 		region:	'south'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
 	layout:	'border',
-	width:	1050,
+	width:	1000,
 	split:	true,
 	items: [{
 		itemId: 'auditGrid',
@@ -95,6 +100,17 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Create a new ticket name
 	ticketForm.setNewTicketName();
 
+	// Set the creation data of the new ticket
+	Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/today-date-time',
+		success: function(response) {		// response is the current date-time
+			var form =  Ext.getCmp('ticketFormRight').getForm();
+			var date_time = response.responseText;
+			form.findField('ticket_creation_date').setValue(date_time);
+		}
+	});
+	
 	// Save the copied ticket(?)
 	// ...
 	
@@ -148,9 +164,12 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
         this.child('#east').child('#fileStorageGrid').loadTicket(rec);
+        
         //Inicialize dirty. There is no changes after load.
-				var ticketModel = ticketStore.findRecord('ticket_id',rec.get('ticket_id'));
-				ticketModel.dirty = false;        
+		var ticketModel = ticketStore.findRecord('ticket_id',rec.get('ticket_id'));
+		if (ticketModel != null) { 
+			ticketModel.dirty = false;        
+		}
     },
     
 		//If the field value is diferent from store value, set model dirty variable to true

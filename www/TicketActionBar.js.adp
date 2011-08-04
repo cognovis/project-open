@@ -53,6 +53,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					var mainTabPanel = Ext.getCmp('mainTabPanel');
 					mainTabPanel.setActiveTab(ticketCompoundPanel);
 					ticketCompoundPanel.newTicket();
+					ticketCompoundPanel.tab.show();
 					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
@@ -90,26 +91,37 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		text:		'#intranet-helpdesk.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
 		handler:	function(btn, pressed){
-			// Distribute the event to the selected tab
-			var mainTabPanel = Ext.getCmp('mainTabPanel');
-			var xtype = mainTabPanel.getActiveTab().xtype;
-			switch (xtype) {
-				case 'companyContainer':
-					Ext.getCmp('companyGrid').onDelete(btn, pressed);
-					break;
-				case 'contactContainer':
-					Ext.getCmp('contactGrid').onDelete(btn, pressed);
-					break;
-				case 'ticketContainer':
-					Ext.getCmp('ticketGrid').onDelete(btn, pressed);
-					break;
-				case 'ticketCompoundPanel':
-					Ext.getCmp('ticketCompoundPanel').onDelete(btn, pressed);
-					break;
-				default:
-					alert('Tab not recognized for delete operation: ' + xtype);
-				break
-			}
+			//Confimation message
+			 Ext.Msg.show({
+		     	title:'#intranet-sencha-ticket-tracker.Delete_tittle#',
+		     	msg:	'#intranet-sencha-ticket-tracker.Delete_message#',		     	
+		    	buttons: Ext.Msg.YESNO,
+		    	icon: Ext.MessageBox.QUESTION,
+		     fn: function(btn){
+		     		if (btn == 'yes'){
+						// Distribute the event to the selected tab
+						var mainTabPanel = Ext.getCmp('mainTabPanel');
+						var xtype = mainTabPanel.getActiveTab().xtype;
+						switch (xtype) {
+							case 'companyContainer':
+								Ext.getCmp('companyGrid').onDelete(btn, pressed);
+								break;
+							case 'contactContainer':
+								Ext.getCmp('contactGrid').onDelete(btn, pressed);
+								break;
+							case 'ticketContainer':
+								Ext.getCmp('ticketGrid').onDelete(btn, pressed);
+								break;
+							case 'ticketCompoundPanel':
+								Ext.getCmp('ticketCompoundPanel').onDelete(btn, pressed);
+								break;
+							default:
+								alert('Tab not recognized for delete operation: ' + xtype);
+							break
+						}
+		     		}
+		     }
+			});								
 		}
 	}, '-', {
 		id: 'buttonSummaryTicket',
@@ -122,6 +134,19 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			// Show/hide summary in ticketGrid
 			var grid = Ext.getCmp('ticketGrid');
 			grid.onSummaryChange(btn, pressed);
+		}
+	}, {
+		xtype : 'tbspacer',
+		width: 20
+	}, {
+		xtype: 'progressbar',
+		id: 'progressBar',
+		text: 'Cargando...',
+		width: 400,
+		listeners: {
+			afterrender: function(component,options){
+				Ext.getCmp('ticketActionBar').startBar();
+			}
 		}
 	}],
 	
@@ -142,6 +167,21 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		} else {
 			but.show();
 		}
+	},
+	
+	startBar: function (){
+		var progressbar = this.getComponent('progressBar');
+	   	progressbar.wait({
+	       increment: 60,
+	       text: 'Cargando datos...',
+	       scope: this,
+	    });
+	},
+	
+	stopBar: function (){
+		var progressbar = this.getComponent('progressBar');
+	   	progressbar.reset();
+	   	progressbar.updateText('¡Carga terminada!');
 	}
 		
 });

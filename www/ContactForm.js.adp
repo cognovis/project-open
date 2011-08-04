@@ -120,6 +120,8 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 		var form = this.up('form').getForm();
 		var values = form.getFieldValues();
 		var value;
+		checkValues(values);
+		
 
 		// New or Edit?
 		var user_id = form.findField('user_id').getValue();

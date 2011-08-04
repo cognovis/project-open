@@ -28,17 +28,22 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
 	title:		'#intranet-core.Contact#',
-	layout:		'anchor',
+	layout:		'border',
+	split:	true,
 	deferredRender:	false,
 	items: [{
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'bizObjectMemberGrid',
 		xtype:	'bizObjectMemberGrid',
+		region:	'north',
+		split:	true,
 		preventHeader: true
 	}, {
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'ticketContactForm',
 		xtype:	'ticketContactForm',
+		region:	'center',
+		split:	true,
 		preventHeader: true
 	}],
 
