@@ -49,6 +49,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
+    	this.hide();
         this.child('#bizObjectMemberGrid').newTicket(rec);
         this.child('#ticketContactForm').newTicket(rec);
     },
@@ -57,6 +58,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
     loadTicket: function(rec){
         this.child('#bizObjectMemberGrid').loadTicket(rec);
         this.child('#ticketContactForm').loadTicket(rec);
+        this.show();
     },
 
     // Called from the TicketCustomerContactPanel if the company changed

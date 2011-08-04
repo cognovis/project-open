@@ -283,13 +283,13 @@ var areaTicketAreaStore = Ext.create('Ext.data.Store', {
 		});
 		areaTicketAreaStore.sort();
 	},
-	sorters: [/*{
+	sorters: [{
 		property: 'tree_sortkey',
 		direction: 'ASC'		
-	},*/ {
+	}/*, {
 		property: 'category_translated',
 		direction: 'ASC'
-	}]		
+	}*/]		
 });
 
 var programTicketAreaStore = Ext.create('Ext.data.Store', {
@@ -608,7 +608,8 @@ profileStore.load(
 		var profile = Ext.ModelManager.create(profileVars, 'TicketBrowser.Profile');
 		profileFilteredStore.add(profile);
 
-		// Add all the other groups defined by the user
+		// Add all the other groups defined by the 
+		
 		profileStore.each(function(record) {
 			var groupId = record.get('group_id');
 			if (groupId > 1000) {		// Ignore built-in groups with low IDs
