@@ -12,6 +12,9 @@ ad_page_contract {
 } {
     { order_by "Prio" }
     { mine_p "all" }
+    { start_date "" }
+    { end_date "" }
+    { ticket_name "" }
     { ticket_status_id:integer "[im_ticket_status_open]" } 
     { ticket_type_id:integer 0 } 
     { ticket_queue_id:integer 0 } 
@@ -49,6 +52,10 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage  "" 50]
 }
 set end_idx [expr $start_idx + $how_many]
+
+if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
+if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
+
 
 # ---------------------------------------------------------------
 # Defined Table Fields
@@ -222,9 +229,11 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name letter } \
     -form {
     	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
+	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
+	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+	{ticket_name:text(text),optional {label "[_ intranet-helpdesk.Ticket_Name]"} {html {size 12}}}
     }
 
 if {$view_tickets_all_p} {  
@@ -293,6 +302,23 @@ if { ![empty_string_p $customer_id] && $customer_id != 0 } {
 if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
     lappend criteria "t.ticket_customer_contact_id = :customer_contact_id"
 }
+
+if { ![empty_string_p $start_date] && $start_date != "" } {
+    lappend criteria "o.creation_date >= :start_date::timestamptz"
+}
+if { ![empty_string_p $end_date] && $end_date != "" } {
+    lappend criteria "o.creation_date < :end_date::timestamptz"
+}
+if { ![empty_string_p $ticket_name] && $ticket_name != "" } {
+    if {0 && ![string isalphanum $ticket_name]} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Only_alphanum_allowed "
+		Only alphanumerical characters are allowed for searching for security reasons.
+	"]
+	ad_script_abort
+    }
+    lappend criteria "p.project_name like '%$ticket_name%'"
+}
+
 
 set letter [string toupper $letter]
 
@@ -473,11 +499,13 @@ set sql "
 			LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id),
 			im_tickets t
 			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
-			im_companies c
+			im_companies c,
+			acs_objects o
 			$extra_from
 		WHERE
 			p.company_id = c.company_id
 			and t.ticket_id = p.project_id
+			and t.ticket_id = o.object_id
 			and p.project_type_id = [im_project_type_ticket]
 			and p.project_status_id not in ([join [im_sub_categories [im_project_status_deleted]] ","])
 			$where_clause
@@ -674,12 +702,14 @@ if { $start_idx > 0 } {
 set start_idxpp [expr $start_idx+1]
 set end_idx [expr $start_idx + $how_many]
 if {$end_idx > $total_in_limited} { set end_idx $total_in_limited }
+set viewing_msg [lang::message::lookup "" intranet-helpdesk.Viewing_start_end_from_total_in_limited "
+	    Viewing tickets %start_idxpp% to %end_idx% from %total_in_limited%"]
+if {$total_in_limited < 1} { set viewing_msg "" }
+
 set table_continuation_html "
 	<tr>
 	  <td align=center colspan=$colspan>
-	    [lang::message::lookup "" intranet-helpdesk.Viewing_start_end_from_total_in_limited "
-	    Viewing tickets %start_idxpp% to %end_idx% from %total_in_limited%"]
-	    &nbsp;
+	    $viewing_msg &nbsp;
 	    [im_maybe_insert_link $previous_page $next_page]
 	  </td>
 	</tr>
