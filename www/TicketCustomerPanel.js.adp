@@ -43,7 +43,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		valueField:	'company_id',
 		displayField:   'company_name',
 		store:		companyStore,
-		enableKeyEvents:true,
+		queryMode:	'local',
 		listeners: {
 
 			// The user has selected a customer from the drop-down box.
@@ -56,6 +56,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				}
 				if (cust == null || cust == undefined) { return; }
 
+				// Add the province to the store (province field is now a combobox but data maybe no correct
+				provincesStore.load();
+				var company_province_name = cust.get('company_province');
+				var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
+				if (store_company==null){
+					provincesStore.add({'name': company_province_name});
+				}
+				
 				// load the record into the form
 				this.ownerCt.loadRecord(cust);
 
@@ -74,7 +82,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			},
 			change: function (field,newValue,oldValue) {
 				 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
-			}			
+			}
 		}
 	}, {
 		name:		'company_name',
@@ -101,9 +109,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		}
 	}, {
 		name:		'company_province',
-		xtype:		'textfield',
+		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
-		allowBlank:	false
+		allowBlank:	false,
+		forceSelection: true,
+		store: provincesStore,
+		valueField:	'name',
+		displayField:   'name',		
+		queryMode: 'local'
 	}],
 
 	dockedItems: [{
@@ -151,6 +164,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var values = form.getFieldValues();
 				var company_id = combo.getValue();
 				
+				checkValues(values);	
+							
 				// find the company in the store
 				var company_record = companyStore.findRecord('company_id',company_id);
 				var company_name = form.findField('company_name').getValue();
@@ -190,7 +205,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			handler: function(){
 				var form = this.ownerCt.ownerCt.getForm();
 				var values = form.getFieldValues();
-	
+		
+				checkValues(values);
+			
 				// create a new company
 				values.company_id = null;
 				var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
@@ -255,6 +272,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var cust = companyStore.findRecord('company_id',customer_id);
 		if (cust == null || typeof cust == "undefined") { return; }
 
+		// Add the province to the store (province field is now a combobox but data maybe no correct
+		provincesStore.load();
+		var company_province_name = cust.get('company_province');
+		var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
+		if (store_company==null){
+			provincesStore.add({'name': company_province_name});
+		}
+		
 		// load the customer's information into the form.
 		this.loadRecord(cust);
 		

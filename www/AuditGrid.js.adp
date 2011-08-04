@@ -77,6 +77,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	text: "#intranet-core.Date#", 
 	sortable: true, 
 	minWidth: 50,
+	hidden: true,
 	dataIndex: 'audit_date'
     }, {
 	header: '#intranet-sencha-ticket-tracker.Request#',
@@ -111,6 +112,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	dataIndex: 'ticket_type_id',
 	width: 60,
 	sortable: true, 
+	hidden: true,
 	renderer: function(value, o, record) {
 	    return ticketTypeStore.category_from_id(record.get('ticket_type_id'));
 	}
@@ -127,6 +129,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     }, {
 	header: '#intranet-sencha-ticket-tracker.Area#',
 	width: 60,
+	hidden: true,
 	renderer: function(value, o, record) {
 	    return ticketAreaStore.category_from_id(record.get('ticket_area_id'));
 	}
@@ -134,19 +137,22 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	header: '#intranet-core.Customer#',
 	dataIndex: 'company_id',
 	width: 60,
+	hidden: true,
 	renderer: function(value, o, record) {
 	    return companyStore.name_from_id(record.get('company_id'));
 	}
     }, {
 	header: '#intranet-core.Contact#',
 	dataIndex: 'ticket_customer_contact_id',
+	hidden: true,
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 	}
     }, {
 	header: '#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+	hidden: true,
 	dataIndex: 'ticket_file'
-    }, {
+    },  {
 	header: '#intranet-sencha-ticket-tracker.Creation_Date#',
 	dataIndex: 'ticket_creation_date'
     }, {
@@ -160,7 +166,8 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	dataIndex: 'ticket_done_date'
     }, {
 	header: "#intranet-sencha-ticket-tracker.Audit_User#", 
-	sortable: true, 
+	sortable: true,
+	hidden: true, 
 	renderer: function(value, o, record) {
 	    return userStore.name_from_id(record.get('audit_user_id'));
 	}

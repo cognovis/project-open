@@ -33,7 +33,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	bodyStyle:	'padding:5px 5px 0',
 	fieldDefaults: {
 		msgTarget: 'side',
-		labelWidth: 75
+		labelWidth: 125
 	},
 	defaultType:	'textfield',
 	defaults: {
@@ -100,6 +100,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		name:		'project_name',
 		itemId:		'project_name',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Name#',
+		allowBlank:	false,	
 		disabled:	false,
         	width: 		300
 	}, {
@@ -126,6 +127,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
                 valueField:	'category_id',
                 displayField:	'category_translated',
 		forceSelection: true,
+		allowBlank:	true,	
 		store: 		programTicketAreaStore,
 		listConfig: {
 			getInnerTpl: function() {
@@ -161,7 +163,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		displayField:	'category_translated',
 		valueField:	'category_id',
 		store:		areaTicketAreaStore,
-    width: 		300,
+		allowBlank:	true,
+    	width: 		300,
 		forceSelection: true,
 		listConfig: {
 			getInnerTpl: function() {
@@ -214,6 +217,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var form = this.up('form').getForm();
 		var values = form.getFieldValues();
 		var value;
+		
+		checkValues(values);
 
 		// find out the ticket_id
 		var ticket_id_field = form.findField('ticket_id');
@@ -232,10 +237,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 				success: function(ticket_record, operation) {
 					// This code is called once the reply from the server has arrived.
 					// The server response includes all necessary data for the new object.
-					ticketStore.add(ticket_record);
+					//ticketStore.add(ticket_record); s
 
 					// Tell all panels to load the data of the newly created object
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.tab.setText(ticket_record.get('project_name'));
 					compoundPanel.loadTicket(ticket_record);
 				},
 				failure: function(record, operation) {
@@ -271,12 +277,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.tab.setText(record.get('project_name'));
 					compoundPanel.loadTicket(ticketModel);
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
+			
+			Ext.getCmp('ticketCompoundPanel').tab.setText(record.get('project_name'));	
 		}
 	    }
 	}],

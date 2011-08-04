@@ -85,6 +85,8 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'sample',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel',
+			//disabled: true,
+			hidden: true,
       listeners: {
       		activate:  function(){
       				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
@@ -99,20 +101,50 @@ Ext.define('TicketBrowser.Main', {
 						//There is a ticked that is not closed and dirty			
 						if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
 							Ext.Msg.show({
-						     title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
-						     msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
-						    //'You are closing a tab that has unsaved changes. Would you like to save your changes?',
-						    // buttons: Ext.Msg.YESNO,
-						     //icon: Ext.Msg.QUESTION,
-						     buttons: Ext.Msg.OK,
-						     icon: Ext.Msg.WARNING,
-						     fn: function(btn){
+						     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+						     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+						    	buttons: Ext.Msg.YESNO,
+						    	icon: Ext.MessageBox.QUESTION,
+						     	fn: function(btn){
+						     		var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);	
 						     		ticketModel.dirty = false;
 						     		if (btn == 'yes'){
-						     			//Save Ticket
-											ticketModel.dirty = false;     			
+						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
+						     			var ticketFormRightValues = Ext.getCmp('ticketFormRight').getForm().getFieldValues();
+						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
+						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
+										// Update an existing ticket
+										// Loop through all form fields and store into the ticket store
+										var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+										for(var field in ticketFormValues) {
+											if (ticketFormValues.hasOwnProperty(field)) {
+												value = ticketFormValues[field];
+												ticketModel.set(field, value);
+											}
+										}			
+										for(var field in ticketFormRightValues) {
+											if (ticketFormRightValues.hasOwnProperty(field)) {
+												value = ticketFormRightValues[field];
+												ticketModel.set(field, value);
+											}
+										}													     			
+						     			
+						     			
+						     			
+										ticketModel.save({
+											scope: Ext.getCmp('ticketForm'),
+											success: function(record, operation) {
+												// Refresh all forms to show the updated information
+												var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+												compoundPanel.tab.setText(record.get('project_name'));
+												compoundPanel.loadTicket(ticketModel);
+											},
+											failure: function(record, operation) {
+												Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
+											}
+										});										
 						     		}
-						     }
+						     	}
 							});
 						}
           }
