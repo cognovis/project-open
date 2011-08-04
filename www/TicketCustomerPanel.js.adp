@@ -264,6 +264,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	loadTicket: function(rec){
 
 		this.getForm().reset();
+		// Show the form
+		this.show();		
 
 		// Customer ID, may be NULL
 		var customer_id;
@@ -282,9 +284,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		
 		// load the customer's information into the form.
 		this.loadRecord(cust);
-		
-		// Show the form
-		this.show();
 
 		// Reset button config
 		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');

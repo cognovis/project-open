@@ -44,30 +44,31 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		xtype: 'ticketForm',
 		title: '#intranet-core.Ticket#',
 		split:	true,
-		collapsible: true,
+	//	collapsible: true,
 		region:	'north'
 	}, {
 		itemId:	'ticketCustomerPanel',
 		title:	'#intranet-sencha-ticket-tracker.Company#',
 		xtype:	'ticketCustomerPanel',
 		split:	true,
-		collapsible: true,
+	//	collapsible: true,
 		height: 200,
+		minHeight: 100,
 		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel',
 		split:	true,
-		height: 450,
-		collapsible: true,
+		height: 300,
+	//	collapsible: true,
 		region:	'south'
 	}]
     }, {
 	itemId:	'east',
 	region: 'east',
 	layout:	'border',
-	width:	1000,
+	width:	1200,
 	split:	true,
 	items: [{
 		itemId: 'auditGrid',
@@ -137,7 +138,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			ticketStore.remove(ticketModel);
 		},
 		failure: function(record, operation) {
-			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSólo administradores tienen permiso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
 		}
 	});
 
@@ -159,8 +160,8 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
         this.child('#center').child('#ticketForm').loadTicket(rec);
-        this.child('#center').child('#ticketContactPanel').loadTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
+        this.child('#center').child('#ticketContactPanel').loadTicket(rec);
         this.child('#east').child('#auditGrid').loadTicket(rec);
         this.child('#east').child('#ticketFormRight').loadTicket(rec);
         this.child('#east').child('#fileStorageGrid').loadTicket(rec);
