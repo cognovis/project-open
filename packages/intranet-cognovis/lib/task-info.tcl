@@ -98,7 +98,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
       		LEFT OUTER JOIN (
       			select *
       			from im_dynfield_layout
-      			where page_url = ''
+      			where page_url = 'default'
       		) la ON (a.attribute_id = la.attribute_id)
       where
     a.widget_name = w.widget_name and

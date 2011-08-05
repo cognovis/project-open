@@ -271,7 +271,7 @@ ad_form -extend -name task -on_request {
     set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
     
     set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
-    set task_url [export_vars -base "[im_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
     notification::new \
         -type_id [notification::type::get_type_id -short_name project_notif] \
         -object_id $parent_id \
@@ -307,7 +307,7 @@ ad_form -extend -name task -on_request {
     set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
     
     set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
-    set task_url [export_vars -base "[im_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
     notification::new \
         -type_id [notification::type::get_type_id -short_name project_notif] \
         -object_id $parent_id \
