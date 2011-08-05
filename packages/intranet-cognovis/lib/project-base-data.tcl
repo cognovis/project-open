@@ -130,8 +130,7 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql {
 
     # Special setting for projects (parent_id)
     if {$attribute_name eq "parent_id"} {
-	set project_id $parent_id
-	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
+	set project_url [export_vars -base "[im_url]/projects/view" -url {{project_id $parent_id}}]
 	set value "<a href='$project_url'>$value</a>"
     }
 	
@@ -142,37 +141,30 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql {
 # Notification Subscription Button
 # -----------------------------------
 
-# Currently only for new tasks, so limit to consulting projects
-if {$project_type_id eq [im_project_type_consulting]} {
+# Provide the subscribe / unsubscribe option
+set notification_type_id [notification::type::get_type_id -short_name "project_notif"]
+set notification_request_id [notification::request::get_request_id \
+				 -type_id $notification_type_id \
+				 -object_id $project_id \
+				 -user_id $user_id]
+set notification_return_url [im_url_with_query]
 
-    # Provide the subscribe / unsubscribe option
-    set notification_type_id [notification::type::get_type_id -short_name "project_notif"]
-    set notification_request_id [notification::request::get_request_id \
-				     -type_id $notification_type_id \
-				     -object_id $project_id \
-				     -user_id $user_id]
-    set notification_return_url [im_url_with_query]
-    
-    if { $notification_request_id ne "" } {
-	set notification_url [notification::display::unsubscribe_url -request_id $notification_request_id -url $notification_return_url]
-	set notification_message [_ notifications.lt_Ubsubscribe_Notification_ [list pretty_name "$project_name"]]
-	set notification_button [_ notifications.Unsubscribe]
-    } else {
-	set notification_delivery_method_id  [notification::get_delivery_method_id -name "email"]
-	set notification_interval_id [notification::get_interval_id -name "instant"]
-	set notification_url [export_vars -base "/notifications/request-new?" {
-	    {object_id $project_id} 
-	    {type_id $notification_type_id}
-	    {delivery_method_id $notification_delivery_method_id}
-	    {interval_id $notification_interval_id}
-	    {"form\:id" "subscribe"}
-	    {formbutton\:ok "OK"}
-	    {return_url $notification_return_url}
-	}]
-	set notification_message [_ notifications.lt_Request_Notification_ [list pretty_name "$project_name"]]
-	set notification_button [_ notifications.Request_Notification]
-    }
-    
+if { $notification_request_id ne "" } {
+    set notification_url [notification::display::unsubscribe_url -request_id $notification_request_id -url $notification_return_url]
+    set notification_message [_ notifications.lt_Ubsubscribe_Notification_ [list pretty_name "$project_name"]]
+    set notification_button [_ notifications.Unsubscribe]
 } else {
-    set notification_message ""
+    set notification_delivery_method_id  [notification::get_delivery_method_id -name "email"]
+    set notification_interval_id [notification::get_interval_id -name "instant"]
+    set notification_url [export_vars -base "/notifications/request-new?" {
+	{object_id $project_id} 
+	{type_id $notification_type_id}
+	{delivery_method_id $notification_delivery_method_id}
+	{interval_id $notification_interval_id}
+	{"form\:id" "subscribe"}
+	{formbutton\:ok "OK"}
+	{return_url $notification_return_url}
+    }]
+    set notification_message [_ notifications.lt_Request_Notification_ [list pretty_name "$project_name"]]
+    set notification_button [_ notifications.Request_Notification]
 }

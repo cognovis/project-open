@@ -12,6 +12,7 @@
 	<td align="left" valign="top" class="value">@project_info.value;noquote@</td>
       </tr>
     </multiple>
+    <if @no_write_p@ nil>
     <tr>
       <td>&nbsp; </td>
       <td>
@@ -37,4 +38,5 @@
 	</table>
       </td>
     </tr>
+   </if>
   </table>
