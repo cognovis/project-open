@@ -306,11 +306,14 @@ ad_form -extend -name task -on_request {
 	-object_id $task_id \
 	-form_id task
 
+    # Check closed task
+    if {[im_category_is_a $task_status_id [im_timesheet_task_status_closed]]} {
+	# We need to close the entry in im_projects as well
+	db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :task_id"
+    }
+
     # Write Audit Trail
     im_project_audit -project_id $task_id -action update
-
-    # Check closed task
-    
     
     # Update percent_completed
     im_timesheet_project_advance $parent_id

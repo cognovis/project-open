@@ -481,7 +481,28 @@ ad_form -extend -name $form_id -new_request {
         -notif_subject "Edit Project: $project_name" \
         -notif_html "<h1><a href='$project_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
     
+    # ---------------------------------------
+    # Close subprojects and tasks if needed
+    # ---------------------------------------
     
+    if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
+	
+	# Find the list of tasks in all subprojects and close them
+	# We might need to think about workflows in the future here!
+	set close_task_ids [im_project_subproject_ids -project_id $project_id -type task]
+	foreach close_task_id $close_task_ids {
+	    db_dml close_task "update im_timesheet_tasks set task_status_id = [im_timesheet_task_status_closed] where task_id = :close_task_id"
+	    db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :close_task_id"
+	}
+
+	# Find the list of subprojects
+	set close_subproject_ids [im_project_subproject_ids -project_id $project_id -exclude_self]
+	foreach close_project_id $close_subproject_ids {
+	    db_dml close_task "update im_projects set project_status_id = :project_status_id where project_id = :close_project_id"
+	}
+    }
+	
+	
 } -after_submit {
   
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]
