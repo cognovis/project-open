@@ -56,13 +56,13 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				}
 				if (cust == null || cust == undefined) { return; }
 
-				// Add the province to the store (province field is now a combobox but data maybe no correct
+		/*		// Add the province to the store (province field is now a combobox but data maybe no correct
 				provincesStore.load();
 				var company_province_name = cust.get('company_province');
 				var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 				if (store_company==null){
 					provincesStore.add({'name': company_province_name});
-				}
+				}*/
 				
 				// load the record into the form
 				this.ownerCt.loadRecord(cust);
@@ -107,7 +107,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
 		}
-	}, {
+	}, 	{
+		name:		'company_province',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
+		allowBlank:	false
+	}
+	
+	/* {
 		name:		'company_province',
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
@@ -117,7 +124,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		valueField:	'name',
 		displayField:   'name',		
 		queryMode: 'local'
-	}],
+	}*/],
 
 	dockedItems: [{
 		xtype:		'toolbar',
@@ -224,7 +231,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 						// Store the new company in the store that that it can be referenced.
 						companyStore.add(company_record);
-	
+
 						// Store the new company_id into the current ticket
 						var ticketForm = Ext.getCmp('ticketForm');
 						var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
@@ -274,13 +281,13 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var cust = companyStore.findRecord('company_id',customer_id);
 		if (cust == null || typeof cust == "undefined") { return; }
 
-		// Add the province to the store (province field is now a combobox but data maybe no correct
+/*		// Add the province to the store (province field is now a combobox but data maybe no correct
 		provincesStore.load();
 		var company_province_name = cust.get('company_province');
 		var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 		if (store_company==null){
 			provincesStore.add({'name': company_province_name});
-		}
+		}*/
 		
 		// load the customer's information into the form.
 		this.loadRecord(cust);

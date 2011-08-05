@@ -44,14 +44,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		xtype: 'ticketForm',
 		title: '#intranet-core.Ticket#',
 		split:	true,
-	//	collapsible: true,
+		collapsible: true,
 		region:	'north'
 	}, {
 		itemId:	'ticketCustomerPanel',
 		title:	'#intranet-sencha-ticket-tracker.Company#',
 		xtype:	'ticketCustomerPanel',
 		split:	true,
-	//	collapsible: true,
+		collapsible: true,
 		height: 200,
 		minHeight: 100,
 		region:	'center'
@@ -60,8 +60,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		title: '#intranet-core.Contact#',
 		xtype: 'ticketContactPanel',
 		split:	true,
-		height: 300,
-	//	collapsible: true,
+		height: 450,
+		minHeight: 150,
+		collapsible: true,
 		region:	'south'
 	}]
     }, {
@@ -109,6 +110,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			var form =  Ext.getCmp('ticketFormRight').getForm();
 			var date_time = response.responseText;
 			form.findField('ticket_creation_date').setValue(date_time);
+			Ext.getCmp('ticketForm').getForm().findField('ticket_creation_date').setValue(date_time);
 		}
 	});
 	

@@ -78,6 +78,12 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 		fieldLabel:	'#intranet-core.VAT_Number#'
 	}, {
 		name:		'company_province',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-core.Province#'
+	}
+	
+	/* {
+		name:		'company_province',
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
 		allowBlank:	false,
@@ -86,7 +92,7 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 		valueField:	'name',
 		displayField:   'name',		
 		queryMode: 'local'
-	}],
+	}*/],
 
 	buttons: [{
 	    itemId:	'saveButton',
@@ -171,13 +177,13 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 		// Show this company, in case it was disabled before
 		this.setDisabled(false);
 		
-		// Add the province to the store (province field is now a combobox but data maybe no correct
+	/*	// Add the province to the store (province field is now a combobox but data maybe no correct
 		provincesStore.load();
 		var company_province_name = rec.get('company_province');
 		var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 		if (store_company==null){
 			provincesStore.add({'name': company_province_name});
-		}
+		}*/
 				
 		// load the data from the record into the form
 		this.loadRecord(rec);
