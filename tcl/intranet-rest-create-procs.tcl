@@ -791,6 +791,7 @@ ad_proc -private im_rest_post_object_type_user {
 				    ]
 	ns_log Notice "im_rest_post_object_type_user: after auth::create_user"
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
+	    ns_log Notice "im_rest_post_object_type_user: "User creation unsuccessfull: [array get creation_status]"
 	    return [im_rest_error -format $format -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
 	set new_user_id $creation_info(user_id)
