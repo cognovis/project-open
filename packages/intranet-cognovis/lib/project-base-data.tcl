@@ -64,9 +64,7 @@ if { ![db_0or1row project_info_query "
 		im_projects, 
 		im_companies
         WHERE   im_projects.project_id=:project_id
-		and im_projects.company_id = im_companies.company_id
-
-"] } {
+		and im_projects.company_id = im_companies.company_id"] } {
 	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
 	return
 }
@@ -98,7 +96,7 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql {
       		LEFT OUTER JOIN (
       			select *
       			from im_dynfield_layout
-      			where page_url = ''
+      			where page_url = 'default'
       		) la ON (a.attribute_id = la.attribute_id)
       where
     a.widget_name = w.widget_name and
@@ -128,6 +126,13 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql {
     set value [set $var]
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
+    }
+
+    # Special setting for projects (parent_id)
+    if {$attribute_name eq "parent_id"} {
+	set project_id $parent_id
+	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
+	set value "<a href='$project_url'>$value</a>"
     }
 	
 }

@@ -89,7 +89,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
       		aa.pretty_name,
       		aa.attribute_name,
                 m.section_heading,
-                w.widget
+                w.widget, w.widget_name
       from
       		im_dynfield_widgets w,
       		acs_attributes aa,
@@ -129,7 +129,13 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
     }
-	
+    
+    # Special setting for projects (parent_id)
+    if {$attribute_name eq "parent_id"} {
+	set project_id $parent_id
+	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
+	set value "<a href='$project_url'>$value</a>"
+    }
 }
 
 set current_user_id [ad_conn user_id]
