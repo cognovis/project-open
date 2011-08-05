@@ -257,7 +257,8 @@ im_dynfield::append_attributes_to_form \
     -form_id $form_id \
     -object_id 0 \
     -advanced_filter_p 1 \
-    -search_p 1
+    -search_p 1 \
+    -page_url "/intranet-helpdesk/index"
 
 # Set the form values from the HTTP form variable frame
 set org_mine_p $mine_p
@@ -269,6 +270,9 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -form_id $form_id \
 			       -object_type $object_type
 ]
+
+
+# ad_return_complaint 1 [array get extra_sql_array]
 
 # ---------------------------------------------------------------
 # Generate SQL Query
@@ -518,6 +522,8 @@ set sql "
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
+
+# ad_return_complaint 1 "<pre>$sql</pre>"
 
 if {[string equal $letter "ALL"]} {
     # Set these limits to negative values to deactivate them
