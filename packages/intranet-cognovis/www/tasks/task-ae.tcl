@@ -1,13 +1,25 @@
-# /packages/intranet-cognovis/tasks/task-ae.tcl
+# packages/intranet-cognovis/www/tasks/task-ae.tcl
 #
-# Copyright (c) 2003-2008 ]project-open[
+# Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# All rights reserved. Please check
-# http://www.project-open.com/license/ for details.
-
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+ 
 ad_page_contract {
-    @param form_mode edit or display
-    @author frank.bergmann@project-open.com
+    
+    Form for editing tasks
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-08-05
 } {
     task_id:integer,optional
     { parent_id:integer 0 }
@@ -266,6 +278,19 @@ ad_form -extend -name task -on_request {
     
     # Update percent_completed
     im_timesheet_project_advance $task_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "New Task: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
+
 } -edit_data {
 
     if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
@@ -289,6 +314,19 @@ ad_form -extend -name task -on_request {
     
     # Update percent_completed
     im_timesheet_project_advance $parent_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    set type_id  [notification::type::get_type_id -short_name project_notif]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "Edit: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
 
 } -on_submit {
 

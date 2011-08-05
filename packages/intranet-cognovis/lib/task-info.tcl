@@ -89,7 +89,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
       		aa.pretty_name,
       		aa.attribute_name,
                 m.section_heading,
-                w.widget
+                w.widget, w.widget_name
       from
       		im_dynfield_widgets w,
       		acs_attributes aa,
@@ -98,7 +98,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
       		LEFT OUTER JOIN (
       			select *
       			from im_dynfield_layout
-      			where page_url = ''
+      			where page_url = 'default'
       		) la ON (a.attribute_id = la.attribute_id)
       where
     a.widget_name = w.widget_name and
@@ -129,7 +129,13 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
     }
-	
+    
+    # Special setting for projects (parent_id)
+    if {$attribute_name eq "parent_id"} {
+	set project_id $parent_id
+	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
+	set value "<a href='$project_url'>$value</a>"
+    }
 }
 
 set current_user_id [ad_conn user_id]
@@ -137,4 +143,8 @@ im_project_permissions $current_user_id $task_id view read write admin
 
 if {$write eq 0} {
     im_project_permissions $current_user_id $parent_id view_project read_project write admin_project
+}
+
+if {[exists_and_not_null no_write_p]} {
+    set write 0
 }
