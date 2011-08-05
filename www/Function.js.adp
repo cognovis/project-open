@@ -6,6 +6,10 @@
 		Trims whitespace from either end of a string.
 */
 function espaces(text){
+	if (!Ext.isString(text)){
+		return text;
+	} 
+
 	var ar_word= text.split(' ');
 	var new_text = "";
 	

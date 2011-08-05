@@ -57,6 +57,7 @@ Ext.define('TicketBrowser.Main', {
       				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('ticketGrid').selModel.getSelection());     
       				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
       				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
+      				Ext.getCmp('ticketFilterForm').onSearch()
       		}
       }				
 		}, {

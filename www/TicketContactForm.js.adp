@@ -63,7 +63,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			// load the values of the user into the form
 			this.ownerCt.loadRecord(user_record);
 
-			// Enable/Disable the "Save" button for anonymous
+			/*// Enable/Disable the "Save" button for anonymous
 			var buttonToolbar = this.ownerCt.getDockedComponent(0);
 			var saveButton = buttonToolbar.getComponent('saveButton');
 			var username = user_record.get('username');
@@ -71,7 +71,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 				saveButton.hide();
 			} else {
 				saveButton.show();
-			}
+			}*/
 
 		 }
 		}
@@ -371,13 +371,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		createButton.hide();
 		var saveButton = buttonToolbar.getComponent('saveButton');
 
-		var username = rec.get('username');
+		//DBA What is this? 
+		/*var username = rec.get('username');
 		if (username.indexOf('anon') >= 0) {
 			saveButton.hide();
 		} else {
 			saveButton.show();
-		}
-
+		}*/
 		var form = this.getForm();
 		contactField = form.findField('ticket_customer_contact_p');
 		contactField.setValue(true);

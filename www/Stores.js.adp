@@ -382,7 +382,6 @@ var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
 	autoLoad:	false,
-	remoteFilter:	true,
 	model:		'TicketBrowser.Category',
 	pageSize:	1000,
 	proxy: {
@@ -581,7 +580,7 @@ var profileStore = Ext.create('PO.data.ProfileStore', {
 	pageSize: 1000,				// There should never be more then dozen groups or so...
 	sorters: [{
 		property: 'group_name',
-		direction: 'DESC'
+		direction: 'ASC'
 	}]
 });
 

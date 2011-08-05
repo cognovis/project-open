@@ -237,7 +237,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 				success: function(ticket_record, operation) {
 					// This code is called once the reply from the server has arrived.
 					// The server response includes all necessary data for the new object.
-					//ticketStore.add(ticket_record); s
+					ticketStore.add(ticket_record); 
 
 					// Tell all panels to load the data of the newly created object
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
@@ -284,8 +284,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
 				}
 			});
-			
-			Ext.getCmp('ticketCompoundPanel').tab.setText(record.get('project_name'));	
 		}
 	    }
 	}],
