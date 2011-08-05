@@ -122,7 +122,7 @@ create table im_tickets (
 	ticket_quote_comment		text,
 	ticket_telephony_request_type_id integer,
 	ticket_telephony_old_number 	text,
-	ticket_telephony_new_number 	text,
+	ticket_telephony_new_number 	text
 );
 
 -- Create indices on type and status to speedup queries
