@@ -138,3 +138,7 @@ im_project_permissions $current_user_id $task_id view read write admin
 if {$write eq 0} {
     im_project_permissions $current_user_id $parent_id view_project read_project write admin_project
 }
+
+if {[exists_and_not_null no_write_p]} {
+    set write 0
+}

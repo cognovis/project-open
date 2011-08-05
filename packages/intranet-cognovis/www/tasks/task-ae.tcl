@@ -266,6 +266,19 @@ ad_form -extend -name task -on_request {
     
     # Update percent_completed
     im_timesheet_project_advance $task_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[im_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "New Task: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
+
 } -edit_data {
 
     if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
@@ -289,6 +302,18 @@ ad_form -extend -name task -on_request {
     
     # Update percent_completed
     im_timesheet_project_advance $parent_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[im_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "Edit: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
 
 } -on_submit {
 
