@@ -691,9 +691,6 @@ im_report_render_row \
     -cell_class $class \
     -upvar_level 1
 
-
-# ad_return_complaint 1 $exchange_rate_err_p	
-
 switch $output_format {
     html {
 	ns_write "</table>\n[im_footer]\n"
