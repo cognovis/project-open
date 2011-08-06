@@ -21,7 +21,9 @@ ad_page_contract {
     intranet_expense_payment_type_id:integer,optional
 }
 # ------------------------------------------------------------
-# Security
+# Security & Defaults
+# ------------------------------------------------------------
+
 
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
@@ -33,6 +35,8 @@ set read_p [db_string report_perms "
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
+
+set exchange_rate_err_p 0  
 
 if {![string equal "t" $read_p]} {
     set msg [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
@@ -70,6 +74,9 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
+
+set is_freelancer_p [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $current_user_id]
+set view_expenses_all_p [im_permission $current_user_id view_expenses_all] 
 
 # ------------------------------------------------------------
 # Page Settings
@@ -164,7 +171,7 @@ if {[info exists project_id] && "" != $project_id } {
 	set project_id ""
 }
 
-if {[info exists user_id] && "" != $user_id} {
+if {[info exists user_id] && "" != $user_id && !$is_freelancer_p} {
     lappend criteria "u.user_id in ([join $user_id ","])"
 } else {
         set user_id ""
@@ -174,6 +181,10 @@ if {[info exists intranet_expense_payment_type_id] && "" != $intranet_expense_pa
     	lappend criteria "e.expense_payment_type_id = :intranet_expense_payment_type_id"
 } else {
         set intranet_expense_payment_type_id ""
+}
+
+if { $is_freelancer_p} {
+    lappend criteria "c.provider_id = $current_user_id"
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -291,7 +302,7 @@ set employee_subtotal_vat_reimburse 0
 	set report_def [list \
 		group_by employee_id \
 		header {
-			"\#colspan=16 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+			"\#colspan=17 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
 			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 			<b><a href=$user_url$employee_id>$employee_name</a></b>"
 		} \
@@ -299,7 +310,7 @@ set employee_subtotal_vat_reimburse 0
 			group_by project_customer_id \
 			header {
 				""
-				"\#colspan=16 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+				"\#colspan=17 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
 				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 				<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 				""
@@ -310,7 +321,7 @@ set employee_subtotal_vat_reimburse 0
 				header {
 					""
 					""
-					"\#colspan=16 <a href=$this_url&project_id=$project_id&level_of_detail=4
+					"\#colspan=17 <a href=$this_url&project_id=$project_id&level_of_detail=4
 					target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 					<b><a href=$project_url$project_id>$project_name</a></b>"
 					""
@@ -325,6 +336,7 @@ set employee_subtotal_vat_reimburse 0
 						"$expense_type"
 						"$external_company_name"
 						"$expense_payment_type"
+                                                "\#align='right' <nobr>$amount $currency</nobr>"
                                                 "\#align='right' <nobr>$amount_incl_vat_formatted $currency</nobr>"
 						"\#align='center' $reimbursable"
 					        "\#align='right' $amount_reimbursable $currency"
@@ -336,14 +348,14 @@ set employee_subtotal_vat_reimburse 0
 				] \
 				footer {
 					"\#colspan=3"
-				        "\#colspan=7 <nobr><b>Total Project</b>"
+				        "\#colspan=8 <nobr><b>Total Project</b>"
 					"\#align='right' <b>$project_subtotal $default_currency</b></nobr><br><br>"
 				        "\#colspan=3"
 				} \
 			] \
 			footer {
                                         "\#colspan=1"
-                                        "\#colspan=9 <nobr><b>Total Customer</b></nobr>"
+                                        "\#colspan=10 <nobr><b>Total Customer</b></nobr>"
                                         "\#align='right' <nobr><b>$customer_subtotal $default_currency</b></nobr><br><br>"
 			                "\#colspan=3"
 			} \
@@ -351,7 +363,7 @@ set employee_subtotal_vat_reimburse 0
 		footer {  
 
                          "<nobr><b>Total Employee</b></nobr>"
-			 "\#colspan=9"
+			 "\#colspan=10"
                          "\#align='right' <nobr><b>$employee_subtotal_vat_reimburse $default_currency</b></nobr>"
                          "\#colspan=2"
 		} \
@@ -359,7 +371,7 @@ set employee_subtotal_vat_reimburse 0
 
 	# Global header/footer
 	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Type" "Ext<br>Company" \
-			 "Pay<br>Type" "Amount incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted" "Ref." "Note"}
+			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted" "Ref." "Note"}
 	set footer0 { }
 	
         set employee_subtotal_vat_reimburse_counter [list \
@@ -395,7 +407,6 @@ set employee_subtotal_vat_reimburse 0
 
 	]
 
-
 # ------------------------------------------------------------
 # Constants
 #
@@ -414,12 +425,11 @@ set levels {1 "User" 2 "User+Client" 3 "User-Client-Project" 4 "All Details"}
 im_report_write_http_headers -output_format $output_format
 
 # Add the HTML select box to the head of the page
-switch $output_format {
-    html {
-        ns_write "
+
+
+set header_html "
 	[im_header]
 	[im_navbar]
-	
 	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top>
 	<td>
@@ -432,28 +442,54 @@ switch $output_format {
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
 		</tr>
+" 
+
+if { !$is_freelancer_p } {
+	set company_select [im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] company_id $company_id]
+	append header_html "
 		<tr>
 		  <td class=form-label>Customer</td>
 		  <td class=form-widget>
-			[im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] company_id $company_id]
+			$company_select
 		  </td>
-		</tr>
-                <tr>
+		</tr>"
+}
+
+append header_html "
+               <tr>
                   <td class=form-label>Project</td>
                   <td class=form-widget>
-			[im_project_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id]	
+"
+
+if { $is_freelancer_p } {
+	set project_select [im_project_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id]
+} else {
+	set project_select [im_project_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id member_user_id $current_user_id]	
+}
+
+append header_html "
+		   $project_select
                   </td>
                 </tr>
+"
+
+if { !$is_freelancer_p } {
+        append header_html "
                 <tr>
                   <td class=form-label>User</td>
                   <td class=form-widget>
                         [im_employee_select_multiple user_id $user_id 6 multiple]
                   </td>
                 </tr>
+"
+}
+
+set im_category_select [im_category_select -include_empty_p 1 "Intranet Expense Payment Type" intranet_expense_payment_type_id $intranet_expense_payment_type_id]
+append header_html "
                 <tr>
                   <td class=form-label>Expense Type</td>
                   <td class=form-widget>
-                        [im_category_select -include_empty_p 1 "Intranet Expense Payment Type" intranet_expense_payment_type_id $intranet_expense_payment_type_id]
+                        $im_category_select
                   </td>
                 </tr>
 		<tr>
@@ -471,7 +507,7 @@ switch $output_format {
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
-                    [im_report_output_format_select output_format "" $output_format]
+                    [im_report_output_format_select output_format \"\" $output_format]
                   </td>
                 </tr>
                 <tr>
@@ -498,9 +534,15 @@ switch $output_format {
 	</tr>
 	</table>
 <br><br>	
-	<table border=0 cellspacing=2 cellpadding=2>\n"
-    }
+	<table border=0 cellspacing=2 cellpadding=2>\n
+
+"
+
+
+switch $output_format {
+    html { ns_write $header_html}
 }
+
 	
 im_report_render_row \
     -output_format $output_format \
@@ -524,6 +566,10 @@ set tmp_output ""
 
 
 db_foreach sql $sql {
+
+	if { [ info exists amount_reimbursable_converted ] && "" == $amount_reimbursable_converted } {
+		set exchange_rate_err_p 1
+	}
 
 	if {[string length $expense_payment_type] > $expense_payment_type_length} {
 	    set expense_payment_type "[string range $expense_payment_type 0 $expense_payment_type_length] ..."
@@ -600,6 +646,7 @@ db_foreach sql $sql {
 	}
 }
 
+
 set reimbursement_output_table "-----------------------------------------------------------------------------------<br><h2>&nbsp;&nbsp;&nbsp;&nbsp;Reimbursement Employee/Currency:</h2>"
 append reimbursement_output_table "<table cellpadding='3' cellspacing='3' border='0'>" 
 set bak_key "" 
@@ -645,12 +692,18 @@ im_report_render_row \
     -upvar_level 1
 
 
+# ad_return_complaint 1 $exchange_rate_err_p	
 
 switch $output_format {
-
-    html  {ns_write "</table>\n[im_footer]\n"}
+    html {
+	ns_write "</table>\n[im_footer]\n"
+	if { $exchange_rate_err_p } {
+		 ns_write "<script type='text/javascript'>\n"
+                 ns_write "<!--\n"
+                 ns_write "alert('CAUTION: Incomplete data and erroneous results due to missing exchange rates. Please update Exchange Rates');\n//-->\n"
+                 ns_write "</script>"
+	}
+	if { !$is_freelancer_p } { ns_write [append reimbursement_output_table "<br><br><br>"] }
+    }
 }
-
-ns_write [append reimbursement_output_table "<br><br><br>"]
-
 
