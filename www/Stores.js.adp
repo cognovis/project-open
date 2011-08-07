@@ -140,11 +140,7 @@ var userCustomerStore = Ext.create('Ext.data.Store', {
 			}
 		});
 		userCustomerStore.sort();
-	},
-	sorters: [{
-		property: 'category_translated',
-		direction: 'ASC'
-	}]		
+	}
 });
 
 // ----------------------------------------------------------------
@@ -271,11 +267,11 @@ var areaTicketAreaStore = Ext.create('Ext.data.Store', {
 			var num = indent_class.substring(indent_class.length-1);
 			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
 			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
-			if (tree_sortkey_filter == undefined || tree_sortkey_filter.value.indexOf('null') > -1){ //
+			if (tree_sortkey_filter == undefined || Ext.isEmpty(Ext.String.trim(tree_sortkey_filter.value)) || tree_sortkey_filter.value.indexOf('null')  > -1 ){ //
 				areaTicketAreaStore.add(record); 
 			}else{
 				if (num  > 0) { 
-					if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
+					if (tree_sortkey_filter.value == tree_sortkey){
 						areaTicketAreaStore.add(record); 
 					}
 				}
@@ -558,10 +554,10 @@ var ticketStore = Ext.create('Ext.data.Store', {
 var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',
 	model: 'TicketBrowser.Company',
-/*	remoteSort: true,
-	remoteFilter:	true,
+	/*remoteSort: true,
+	remoteFilter:	true,*/
 	pageSize: 1000000,
-	autoSync: true,			*/	// Write changes to the REST server ASAP
+	autoSync: true,				// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
 		property: 'company_name',

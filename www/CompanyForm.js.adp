@@ -29,7 +29,7 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 	id:		'companyForm',
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-core.Company#',
+	title: 		'#intranet-sencha-ticket-tracker.Company#',
 	bodyStyle:	'padding:5px 5px 0',
 	fieldDefaults: {
 		msgTarget: 'side',
@@ -75,14 +75,13 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 	}, {
 		name:		'vat_number',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.VAT_Number#'
-	}, {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.VAT_Number#'
+	},/* {
 		name:		'company_province',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.Province#'
-	}
-	
-	/* {
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#'
+	}*/
+	 {
 		name:		'company_province',
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
@@ -92,19 +91,22 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 		valueField:	'name',
 		displayField:   'name',		
 		queryMode: 'local'
-	}*/],
+	}],
 
 	buttons: [{
 	    itemId:	'saveButton',
-            text:	'#intranet-sencha-ticket-tracker.button_Save#',
-            disabled:	false,
-            formBind:	true,			// Disable if form is invalid
+        text:	'#intranet-sencha-ticket-tracker.button_Save#',
+        disabled:	false,
+        formBind:	true,			// Disable if form is invalid
 	    handler: function(){
 
 		// get the form and all of its values
 		var form = this.up('form').getForm();
 		var values = form.getFieldValues();
 		var value;
+		
+		values.company_name = values.company_name.toUpperCase();
+		values.vat_number = values.vat_number.toUpperCase();
 		
 		checkValues(values);
 
@@ -177,13 +179,13 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 		// Show this company, in case it was disabled before
 		this.setDisabled(false);
 		
-	/*	// Add the province to the store (province field is now a combobox but data maybe no correct
+		// Add the province to the store (province field is now a combobox but data maybe no correct
 		provincesStore.load();
 		var company_province_name = rec.get('company_province');
 		var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 		if (store_company==null){
 			provincesStore.add({'name': company_province_name});
-		}*/
+		}
 				
 		// load the data from the record into the form
 		this.loadRecord(rec);
@@ -194,7 +196,10 @@ var companyForm = Ext.define('TicketBrowser.CompanyForm', {
 	newCompany: function() {
 	        var form = this.getForm();
 	        form.reset();
-
+		
+		// Add the province to the store 
+		provincesStore.load();
+		
 		// Ask the server to provide a new company name
 		this.setNewCompanyName();		
 

@@ -22,6 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var resetCombo = true;
 
 var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	extend: 	'Ext.form.Panel',	
@@ -32,8 +33,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	title: 		'#intranet-core.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	fieldDefaults: {
-		msgTarget: 'side',
-		labelWidth: 125
+		msgTarget: 'side'
+	//	labelWidth: 125
 	},
 	defaultType:	'textfield',
 	defaults: {
@@ -107,9 +108,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        fieldLabel:	'#intranet-helpdesk.Ticket_type#',
 		name:		'ticket_type_id',
 		xtype:		'combobox',
-        	width: 		300,
-                valueField:	'category_id',
-                displayField:	'category_translated',
+        width: 		300,
+        valueField:	'category_id',
+        displayField:	'category_translated',
 		forceSelection: true,
 		store: 		ticketTypeStore,
 		allowBlank:	false,			// Require a value for this one
@@ -121,14 +122,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	}, {
 		name:		'ticket_program_id',
 		itemId:		'ticket_program_id',
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
+	    fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		xtype:		'combobox',
-        	width: 		300,
-                valueField:	'category_id',
-                displayField:	'category_translated',
+        width: 		300,
+        valueField:	'category_id',
+        displayField:	'category_translated',
 		forceSelection: true,
-		allowBlank:	true,	
 		store: 		programTicketAreaStore,
+		queryMode:	'local',
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
@@ -138,24 +139,25 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // The user has selected a program/area from the drop-down box.
 		    // Now construct a new ProgramGroupStore based on this information
 		    // with only those groups/profiles that are assigned to the program
-		    'change': function() {
-									var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
+		    'change': function(field, values) {
+		    	if (null == values) { this.reset();}
+				var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
 
-									if (ticket_area_id.store.filters.length > 0) {
-										//Filter value is modified with the new value selected.
-										ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
-									} else {
-										//New filters is created with the value selected
-										ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
-									}
-									if (resetCombo) {
-										ticket_area_id.reset();
-										ticket_area_id.store.load();
-									} else {
-										resetCombo = true;
-									}	
+				if (ticket_area_id.store.filters.length > 0) {
+					//Filter value is modified with the new value selected.
+					ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(values,8,"0");
+				} else {
+					//New filters is created with the value selected
+					ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(values,8,"0"));
+				}
+				if (resetCombo) {
+					ticket_area_id.reset();
+					ticket_area_id.store.load();
+				} else {
+					resetCombo = true;
+				}							
 		    }
-		} 
+		}
 	}, {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Program#',
 		name:		'ticket_area_id',
@@ -163,9 +165,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		displayField:	'category_translated',
 		valueField:	'category_id',
 		store:		areaTicketAreaStore,
-		allowBlank:	true,
     	width: 		300,
 		forceSelection: true,
+		queryMode:	'local',
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
@@ -173,31 +175,51 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		},
 		listeners: {
 			'change': function(field, newValue, oldValue, options) {
-				// Set the default code for the new ticket
-									var programId = this.getValue();
-									if (null == programId) { return; }
-									var programModel = ticketAreaStore.findRecord('category_id', programId);
-									if (null == programModel) { return; }
-									var programName = programModel.get('category');
-									var programFile = programModel.get('aux_string1');
-									var fileField = this.ownerCt.child('#ticket_file');
-									fileField.setValue(programFile);			
-									//
-									if (null == newValue) { this.reset(); } else {
-										var form =  Ext.getCmp('ticketForm').getForm();
-										var record = areaTicketAreaStore.getById(newValue);
-										if (record != null){
-											var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
-											var program_id = '' + parseInt(tree_sortkey,'10');	
-											var ticket_program_id = form.findField('ticket_program_id')
-											if (ticket_program_id.value != program_id) {
-												resetCombo= false;			
-												form.findField('ticket_program_id').select(program_id);	
-											}
-										}
-									}										
+				/*// Set the default code for the new ticket
+				var programId = this.getValue();
+				if (null == programId) { return; }
+				var programModel = ticketAreaStore.findRecord('category_id', programId);
+				if (null == programModel) { return; }
+				var programName = programModel.get('category');
+				var programFile = programModel.get('aux_string1');
+				var fileField = this.ownerCt.child('#ticket_file');
+				fileField.setValue(programFile);*/
+					
+				var programId = this.getValue();
+				if (null != programId) {
+					var programModel = ticketAreaStore.findRecord('category_id', programId);
+					if (null != programModel) { 
+						var programName = programModel.get('category');
+						var programFile = programModel.get('aux_string1');
+						var fileField = this.ownerCt.child('#ticket_file');
+						fileField.setValue(programFile);
+					}
+				}
+				
+				if (null == newValue) { this.reset(); } else {
+					var form =  Ext.getCmp('ticketForm').getForm();
+					var record = areaTicketAreaStore.getById(newValue);
+					if (record != null){
+						var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
+						var program_id = '' + parseInt(tree_sortkey,'10');	
+						var ticket_program_id = form.findField('ticket_program_id')
+						if (ticket_program_id.value != program_id) {
+							resetCombo = false;			
+							form.findField('ticket_program_id').select(program_id);	
+						}
+					}
+				}										
 			}
-		}
+		}/*,
+		validator: function(value){
+			if ('' == Ext.String.trim(value)) {
+				return true;
+			}
+			var record = this.store.getById(this.value);
+			if (!validateLevel(record,this.store,'tree_sortkey')){
+				return 'Valor no permitido';
+			}
+		}		*/
 	}, {
 		name:		'ticket_file',
 		itemId:		'ticket_file',

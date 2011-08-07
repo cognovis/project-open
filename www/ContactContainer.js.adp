@@ -33,7 +33,7 @@ Ext.define('TicketBrowser.ContactContainer', {
 		xtype:	'contactFilterForm',
 		region:	'west',
 		width:	300,
-		title:	'#intranet-helpdesk.Filter_Contacts#',
+		title:	'#intranet-sencha-ticket-tracker.Filter_Contacts#',
 		split:	true,
 		margins: '5 0 5 5'
 	}, {

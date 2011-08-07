@@ -88,7 +88,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		}
 	}, {
 		id: 'buttonRemoveSelected',
-		text:		'#intranet-helpdesk.Remove_checked_items#',
+		text:		'#intranet-sencha-ticket-tracker.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
 		handler:	function(btn, pressed){
 			//Confimation message
@@ -125,7 +125,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		}
 	}, '-', {
 		id: 'buttonSummaryTicket',
-		text:		'#intranet-core.Summary#',
+		text:		'#intranet-sencha-ticket-tracker.Summary#',
 		iconCls:	'icon-summary',
 		enableToggle:	true,
 		pressed:	true,
@@ -141,7 +141,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	}, {
 		xtype: 'progressbar',
 		id: 'progressBar',
-		text: 'Cargando...',
+		text: '#intranet-sencha-ticket-tracker.Loading___#',
 		width: 400,
 		listeners: {
 			afterrender: function(component,options){
@@ -173,7 +173,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		var progressbar = this.getComponent('progressBar');
 	   	progressbar.wait({
 	       increment: 60,
-	       text: 'Cargando datos...',
+	       text: '#intranet-sencha-ticket-tracker.Loading___#',
 	       scope: this,
 	    });
 	},

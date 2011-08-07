@@ -35,7 +35,7 @@ var contactCompoundPanel = Ext.define('TicketBrowser.ContactCompoundPanel', {
 	items: [{
 		itemId: 'contactForm',
 		xtype: 'contactForm',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		split:	true,
 		region:	'center'
 /*

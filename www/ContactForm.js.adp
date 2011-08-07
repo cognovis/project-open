@@ -29,7 +29,7 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 	id:		'contactForm',
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-core.Contact#',
+	title: 		'#intranet-sencha-ticket-tracker.Contact#',
 	bodyStyle:	'padding:5px 5px 0',
 	minHeight:	250,
 	fieldDefaults: {
@@ -51,12 +51,12 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 	}, {
 		name:		'first_names',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.First_names#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.First_names#',
 		allowBlank:	false
 	}, {
 		name:		'last_name',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.Last_name#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_name#',
 		allowBlank:	false
 	}, {
 		name:		'last_name2',
@@ -120,8 +120,11 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 		var form = this.up('form').getForm();
 		var values = form.getFieldValues();
 		var value;
-		checkValues(values);
+		values.first_names = values.first_names.toUpperCase();
+		values.last_name = values.last_name.toUpperCase();
+		values.last_name2 = values.last_name2.toUpperCase();
 		
+		checkValues(values);
 
 		// New or Edit?
 		var user_id = form.findField('user_id').getValue();

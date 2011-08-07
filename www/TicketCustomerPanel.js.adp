@@ -37,7 +37,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	items: [{
 		name:		'company_id',
 		xtype:		'combobox',
-		fieldLabel:	'#intranet-core.Customer#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Customer#',
 		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
 		value:		'#intranet-core.New_Customer#',
 		valueField:	'company_id',
@@ -56,13 +56,13 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				}
 				if (cust == null || cust == undefined) { return; }
 
-		/*		// Add the province to the store (province field is now a combobox but data maybe no correct
+				// Add the province to the store (province field is now a combobox but data maybe no correct
 				provincesStore.load();
 				var company_province_name = cust.get('company_province');
 				var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 				if (store_company==null){
 					provincesStore.add({'name': company_province_name});
-				}*/
+				}
 				
 				// load the record into the form
 				this.ownerCt.loadRecord(cust);
@@ -92,7 +92,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	}, {
 		name:		'vat_number',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.VAT_Number#'
+		fieldLabel:	'#intranet-sencha-ticket-tracker.VAT_Number#'
 	},{
 		name:		'company_type_id',
 		xtype:		'combobox',
@@ -107,14 +107,14 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
 		}
-	}, 	{
+	}, /*	{
 		name:		'company_province',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
 		allowBlank:	false
-	}
+	}*/
 	
-	/* {
+	{
 		name:		'company_province',
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
@@ -124,7 +124,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		valueField:	'name',
 		displayField:   'name',		
 		queryMode: 'local'
-	}*/],
+	}],
 
 	dockedItems: [{
 		xtype:		'toolbar',
@@ -163,7 +163,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			}
 		}, {
 			itemId:		'saveButton',
-			text: 		'#intranet-core.Save_Changes#',
+			text: 		'#intranet-sencha-ticket-tracker.Save_Changes#',
 			width: 		120,
 			handler: function(){
 				var form = this.ownerCt.ownerCt.getForm();
@@ -264,6 +264,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var form = this.getForm();
 		form.reset();
 
+		provincesStore.load();
+		
 		// Don't show this form for new tickets
 		this.hide();
 	},
@@ -281,13 +283,13 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var cust = companyStore.findRecord('company_id',customer_id);
 		if (cust == null || typeof cust == "undefined") { return; }
 
-/*		// Add the province to the store (province field is now a combobox but data maybe no correct
+		// Add the province to the store (province field is now a combobox but data maybe no correct
 		provincesStore.load();
 		var company_province_name = cust.get('company_province');
 		var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
 		if (store_company==null){
 			provincesStore.add({'name': company_province_name});
-		}*/
+		}
 		
 		// load the customer's information into the form.
 		this.loadRecord(cust);
