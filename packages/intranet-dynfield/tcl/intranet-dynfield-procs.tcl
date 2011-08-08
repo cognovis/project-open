@@ -1168,12 +1168,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         
         # set the value
         upvar $attribute_name x
-
-        if {[info exists x]} {
-	    ds_comment "$attribute_id | $attribute_name | $x"
-        } else {
-	    ds_comment "$attribute_name"
-	}
         
         im_dynfield::append_attribute_to_form \
             -attribute_name $attribute_name \
@@ -1380,10 +1374,6 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     if {$tcl_pos == 0} {
         set tcl_code [lindex $default_value 1]
         set default_value [eval $tcl_code]
-    }
-
-    if {$default_value ne ""} {
-	ds_comment "$pretty_name :: $default_value"
     }
 
     switch $widget {
