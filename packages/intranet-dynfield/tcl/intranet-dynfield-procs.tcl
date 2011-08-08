@@ -1793,6 +1793,7 @@ ad_proc -public im_dynfield::object_array {
     set attribute_names [list]
     set category_attribute_names [list]
     set deref_attribute_names [list]
+    set date_attribute_names [list]
 
     db_foreach column_list_sql {
 	select	w.deref_plpgsql_function,
@@ -1806,16 +1807,21 @@ ad_proc -public im_dynfield::object_array {
       		a.acs_attribute_id = aa.attribute_id and
       		aa.object_type = :object_type
     }  {
-	lappend selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref, ${table_name}.$attribute_name"
-	
 	switch $widget {
 	    im_category_tree {
+		lappend selects "${table_name}.$attribute_name"
 		lappend category_attribute_names $attribute_name
+	    }
+	    date {
+		lappend selects "to_char(${table_name}.$attribute_name,'YYYY-MM-DD HH24:MM:SS') as $attribute_name"
+		lappend date_attribute_names $attribute_name
 	    }
 	    default {
 		if {$deref_plpgsql_function eq ""} {
+		    lappend selects "${table_name}.$attribute_name"
 		    lappend attribute_names $attribute_name
 		} else {
+		    lappend selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref, ${table_name}.$attribute_name"
 		    lappend deref_attribute_names $attribute_name
 		}
 	    }
@@ -1843,6 +1849,12 @@ ad_proc -public im_dynfield::object_array {
 	set array_val($attribute_name) [set ${attribute_name}_deref]	
 	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
     }
+    
+    foreach attribute_name $date_attribute_names {
+	set array_val($attribute_name) [lc_time_fmt [set $attribute_name] %q]	
+	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
+    }
+    
     
     foreach attribute_name $category_attribute_names {
 	set array_val($attribute_name) [im_category_from_id [set $attribute_name]]
