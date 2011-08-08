@@ -244,10 +244,12 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		t.table_name as object_type_table_name,
 		t.id_column as object_type_id_column,
 		at.table_name as attribute_table,
-		at.object_type as attr_object_type
+		at.object_type as attr_object_type,
+		dw.widget
 	from
 		acs_object_type_attributes a,
 		im_dynfield_attributes aa,
+		im_dynfield_widgets dw,
 		acs_attributes at,
 		acs_object_types t
 	where
@@ -255,6 +257,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		and t.object_type = a.ancestor_type
 		and a.attribute_id = aa.acs_attribute_id
 		and a.attribute_id = at.attribute_id
+		and aa.widget_name = dw.widget_name
 		and (aa.also_hard_coded_p is NULL or aa.also_hard_coded_p = 'f')
 	order by
 		attribute_id
@@ -284,13 +287,39 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     db_foreach attributes $attributes_sql {
 	
 	# Check whether the attribute is part of the form
-        if {[lsearch $form_elements $attribute_name] >= 0} {
-            set value [template::element::get_value $form_id $attribute_name]
-            if {"" == $value} { continue }
-            if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
-            ns_set put $bind_vars $attribute_name $value
-            lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-        }
+	if {[lsearch $form_elements $attribute_name] >= 0} {
+	    set value [template::element::get_value $form_id $attribute_name]
+	    ns_log Notice "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
+	    if {"" == $value || 0 == $value} {
+		ns_log Notice "search_sql_criteria_from_form: Skipping"
+		continue
+	    }
+	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
+	    ns_set put $bind_vars $attribute_name $value
+
+	    # Special logic for each of the TCL widgets
+	    switch $widget {
+		text - textarea - richtext {
+		    # Create a "like" search
+		    lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
+		}
+		date {
+		    # Not supported yet
+		    # We actually neeed to create two search fields, 
+		    # one for start and one for end...
+		    continue
+		}
+		checkbox {
+			# Here we would need a three-way select for
+			# "true", "false" and "no filter". No idea
+			# yet how to do that.
+			continue
+		}
+		default {
+		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		}
+	    }
+	}
     }
     
     set where_clause [join $criteria " and\n            "]
@@ -865,7 +894,11 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set return_url [im_url_with_query]
 
     # Does the specified layout page exist? Otherwise use "default".
-    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    set page_url_exists_p [db_string exists "
+	select	count(*)
+	from	im_dynfield_layout_pages
+	where	object_type = :object_type and page_url = :page_url
+    "]
     if {!$page_url_exists_p} { set page_url "default" }
     set form_page_url $page_url
 
@@ -940,12 +973,31 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     "
 
     set extra_wheres [list "1=1"]
+
+    # ------------------------------------------------------
+    # In "Advanced Filter" mode the form is used to display
+    # a list of filters for the /index.tcl page. In these
+    # filters a special logic applies:
+    # textarea: Doesn't make sense
     if {$advanced_filter_p} {
-        lappend extra_wheres "aw.widget in (
-		'select', 'generic_sql', 
-		'im_category_tree', 'im_cost_center_tree',
-		'checkbox'
-	)"
+	if {"default" == $page_url} {
+		# By default only show filters for drop-down type
+		# of fields
+		lappend extra_wheres "aw.widget in (
+			'select', 'generic_sql', 
+			'im_category_tree', 'im_cost_center_tree',
+			'checkbox'
+		)"
+	} else {
+		# The user has specified a specific "page_url"
+		# in order to specify a custom layout of the filters.
+		# Now exclude only Textarea fields. They are long and ugly...
+		lappend extra_wheres "aw.widget not in (
+			'textarea', 		-- Too long...
+			'date',			-- We need start and end date for ranges
+			'checkbox'		-- We would need a three-way select here
+		)"		
+	}
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
 

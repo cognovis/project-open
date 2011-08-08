@@ -3,7 +3,7 @@
 
     @creation-date 2006-08-08
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-utility-procs.tcl,v 1.17 2010/11/22 12:19:19 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -143,7 +143,7 @@ namespace eval ::xowiki {
     @param edit_interval delete entries, which never become older than this interval (in seconds, default 300)
     @param older_than delete only entries, which were modified longer than the provided time ago
   } {
-    set extra_cause ""
+    set extra_clause ""
     if {[info exists package_id]} {
       append extra_clause " and o.package_id = $package_id"
     }

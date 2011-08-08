@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactContainer.js.adp,v 1.5 2011/07/18 11:26:17 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -33,7 +33,7 @@ Ext.define('TicketBrowser.ContactContainer', {
 		xtype:	'contactFilterForm',
 		region:	'west',
 		width:	300,
-		title:	'#intranet-helpdesk.Filter_Contacts#',
+		title:	'#intranet-sencha-ticket-tracker.Filter_Contacts#',
 		split:	true,
 		margins: '5 0 5 5'
 	}, {

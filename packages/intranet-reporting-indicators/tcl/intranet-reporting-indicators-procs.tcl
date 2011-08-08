@@ -306,22 +306,108 @@ ad_proc im_indicator_horizontal_bar {
 
 
 # ----------------------------------------------------------------------
+# Sweeper
+# ---------------------------------------------------------------------
+
+ad_proc -public im_indicator_evaluation_sweeper { 
+} {
+    Periodically runs and pre-calculates the values for the indicators
+} {
+    ns_log Notice "im_indicator_evaluation_sweeper: starting"
+
+    # The first user in the system is the System Administrator...
+    set current_user_id [db_string default_user "
+        select  min(person_id)
+        from    persons
+        where   person_id > 0
+    "]
+
+    # Evaluate indicators every X hours:
+    set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
+
+    # Only evaluate indicators not related to a specific object type
+    set object_type_sql "and (indicator_object_type is null OR indicator_object_type = '')"
+    set object_id ""
+
+    # No permission problems as a sweeper...
+    set permission_sql ""
+
+    # No section selected
+    set section_sql ""
+
+    set sql "
+	select
+		r.*,
+		i.*,
+		im_category_from_id(i.indicator_section_id) as section,
+		ir.result
+	from
+		im_reports r,
+		im_indicators i
+		LEFT OUTER JOIN (
+			select	avg(result) as result,
+				result_indicator_id
+			from	im_indicator_results
+			where	result_date >= now() - '$eval_interval_hours hours'::interval
+			group by result_indicator_id
+		) ir ON (i.indicator_id = ir.result_indicator_id)
+	where
+		r.report_id = i.indicator_id and
+		r.report_type_id = [im_report_type_indicator]
+		$object_type_sql
+		$permission_sql
+		$section_sql
+	order by 
+		section
+    "
+    db_foreach indicator_values $sql {
+	ns_log Notice "im_indicator_evaluation_sweeper: indicator=$report_name"
+
+	# Check if there was no result for the last x hours
+	if {"" == $result} {
+	    set result "error"
+	    set error_occured [catch {set result [db_string value $report_sql]} err_msg]
+
+	    if {$error_occured} {
+		set result "<pre>$err_msg</pre>" 
+	    } else {
+		if {"" != $result} {
+		    ns_log Notice "im_indicator_evaluation_sweeper: insert value=$result"
+		    db_dml insert "
+			insert into im_indicator_results (
+				result_id,result_indicator_id,result_date,result
+			) values (
+				nextval('im_indicator_results_seq'),:report_id,now(),:result
+			)
+	        "
+		}
+	    }
+	}
+    }
+}	
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 
 
-
 ad_proc -public im_indicator_timeline_component { 
+    {-current_user_id "" }
     {-object_id ""}
     {-object_type ""}
     {-indicator_section_id ""}
     {-indicator_id ""}
     {-show_description_long_p ""}
     {-show_current_value_p ""}
+    {-start_date "" }
+    {-end_date "" }
 } {
     Returns a HTML component with the list of all timeline indicators that the user can see
 } {
-    set current_user_id [ad_get_user_id]
+    ns_log Notice "im_indicator_timeline_component: start_date=$start_date, end_date=$end_date"
+
+    if {"" == $current_user_id} { set current_user_id [ad_get_user_id] }
     set view_reports_all_p [im_permission $current_user_id "view_reports_all"]
     set add_reports_p [im_permission $current_user_id "add_reports"]
     set wiki_url "http://www.project-open.org/documentation"
@@ -399,12 +485,19 @@ ad_proc -public im_indicator_timeline_component {
 	set value_html $result
 	set history_html ""
 	
+	set start_date_sql ""
+	set end_date_sql ""
+	if {"" != $start_date} { set start_date_sql "and result_date >= :start_date" }
+	if {"" != $end_date} { set end_date_sql "and result_date < :end_date" }
+
 	if {"error" != $result && "" != $result} {
 	    
 	    set indicator_sql "
 	        select	result_date, result
 	        from	im_indicator_results
 	        where	result_indicator_id = :report_id
+			$start_date_sql
+			$end_date_sql
 	        order by result_date
             "
 	    set values [db_list_of_lists results $indicator_sql]
@@ -511,6 +604,7 @@ ad_proc -public im_indicator_timeline_component {
 
     return $list_html
 }
+
 
 
 

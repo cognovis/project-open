@@ -23,12 +23,15 @@
  */
 
 var ticketGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE',
+	//mode:	'SINGLE',
 	listeners: {
 		selectionchange: function(sm, selections) {
-			if (selections.length > 0){
+			if (selections.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
-				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);				
+			} else if (selections.length > 1){
+				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
 				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
@@ -55,10 +58,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		compoundPanel.loadTicket(record);
 		var title = record.get('project_name');
 		compoundPanel.tab.setText(title);
+		compoundPanel.tab.show();
 	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(compoundPanel);
-		var sto = bizObjectMemberStore;
 	}
 	},
 
@@ -147,6 +150,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				header:	'#intranet-helpdesk.Creator#',
 				dataIndex:	'creation_user',
 				width:	100,
+				hidden: true,
 				renderer: function(value, o, record) {
 					return userStore.name_from_id(record.get('creation_user'));
 				}

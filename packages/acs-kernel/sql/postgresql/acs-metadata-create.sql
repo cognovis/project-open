@@ -12,7 +12,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: acs-metadata-create.sql,v 1.38.2.1 2011/05/30 08:51:16 victorg Exp $
+-- @cvs-id $Id$
 
 -- ******************************************************************
 -- * KNOWLEDGE LEVEL

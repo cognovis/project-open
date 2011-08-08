@@ -102,6 +102,12 @@ callback im_helpdesk_ticket_new_redirect -ticket_id $callback_ticket_id \
 # Default & Security
 # ------------------------------------------------------------------
 
+# By default return to the existing ticket
+# IF we are editing an existing ticket (ticket_id exists and is not empty)
+if {[info exists ticket_id] && "" != $ticket_id} {
+    set return_url [export_vars -base "/intranet-helpdesk/new" {ticket_id {form_mode display}} ]
+}
+
 ns_log Notice "new: after ad_page_contract"
 
 set current_user_id [ad_maybe_redirect_for_registration]

@@ -116,7 +116,7 @@ db_dml update_ticket_actions "
 "
 
 # Re-calculate the resolution time of the ticket
-im_sla_ticket_solution_time_sweeper -ticket_id $object_id -debug_p 1
+im_sla_ticket_solution_time_sweeper -ticket_id $object_id -debug_p 0
 
 
 # Paginated Sencha grids require a "total" amount in order to know
