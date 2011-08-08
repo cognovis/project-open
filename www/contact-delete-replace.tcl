@@ -33,10 +33,9 @@ if {!$contact_id_exists_p || !$contact_id_replacement_exists_p} {
     ad_script_abort
 }
 
-set user_id [im_rest_cookie_auth_user_id]
-
-im_user_permissions $user_id $user_id view read write admin 
-if {!$write} {
+set current_user_id [auth::require_login]
+im_user_permissions $current_user_id $contact_id view read write admin 
+if {!$admin} {
     ns_log Notice "contact-delete-replace: failure: User \#$user_id doesn't have write permissions to contact \#$contact_id"
     doc_return 200 "text/html" "{
 		\"success\":	false,
