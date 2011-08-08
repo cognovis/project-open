@@ -44,23 +44,25 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 		{
 			id:		'company_id',
 			name:		'company_id',
-			xtype:		'combo',
+			xtype:		'combobox',
 			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
 			anchor:		'100%',
 			allowBlank:	false,
 			store:		companyStore,
+			queryMode:	'local',
 			valueField:	'company_id',
 			displayField:   'company_name'															
 		}, {
 			id: 		'company_id_replacement',
 			name:		'company_id_replacement',
-			xtype:		'combo',
+			xtype:		'combobox',
 			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Change#',
 			anchor:		'100%',
 			allowBlank:	false,
 			store:		companyStore,
+			queryMode:	'local',
 			valueField:	'company_id',
 			displayField:   'company_name'									
 		}

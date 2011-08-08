@@ -92,12 +92,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		iconCls:	'icon-new-ticket',
 		handler:	function(btn, pressed){
 			//Confimation message
-			 Ext.Msg.show({
-		     	title:'#intranet-sencha-ticket-tracker.Delete_tittle#',
+			Ext.Msg.show({
+		    	title:'#intranet-sencha-ticket-tracker.Delete_tittle#',
 		     	msg:	'#intranet-sencha-ticket-tracker.Delete_message#',		     	
 		    	buttons: Ext.Msg.YESNO,
 		    	icon: Ext.MessageBox.QUESTION,
-		     fn: function(btn){
+		     	fn: function(btn){
 		     		if (btn == 'yes'){
 						// Distribute the event to the selected tab
 						var mainTabPanel = Ext.getCmp('mainTabPanel');
@@ -120,7 +120,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 							break
 						}
 		     		}
-		     }
+		     	}
 			});								
 		}
 	}, '-', {
@@ -157,7 +157,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	}, {
 		id: 'buttonLogout',
 		text:		'#intranet-sencha-ticket-tracker.Logout#',
-		//iconCls:	'icon-new-ticket',
+		iconCls:	'icon-logout',
 		handler:	function(btn, pressed){		
 			//Confirmation message
 			Ext.Msg.show({

@@ -109,6 +109,12 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}	
+	}, {	
+		name: 'email', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Email#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Area#',
 		name:		'ticket_program_id',

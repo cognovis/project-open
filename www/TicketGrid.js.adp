@@ -276,6 +276,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					key = 'query';
 					value = query;					
 					break;
+				case 'email':
+					// Fuzzy search
+					value = value.toLowerCase();
+					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(email) like \'%' + value + '%\'))';
+					key = 'query';
+					value = query;
+					break;					
 				case 'company_type_id':
 					// The customer's company type is not part of the REST ticket fields.
 					query = query + ' and company_id in (select company_id from im_companies where company_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';

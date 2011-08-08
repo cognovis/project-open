@@ -49,7 +49,8 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
              	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Delete#',
               	anchor: '100%',
 				allowBlank:	false,
-				store:		contactGridStore,
+				store:		userCustomerStore,
+				queryMode:	'local',
 				valueField:	'user_id',
 				displayField:   'name'													          
           	},
@@ -61,7 +62,8 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
               	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Change#',
               	anchor: '100%',
 				allowBlank:	false,
-				store:		contactGridStore,
+				store:		userCustomerStore,
+				queryMode:	'local',
 				valueField:	'user_id',
 				displayField:   'name'						            
           	}

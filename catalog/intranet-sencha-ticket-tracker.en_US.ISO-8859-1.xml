@@ -29,6 +29,7 @@
   <msg key="Company">Company</msg>
   <msg key="Company_Name">Company Name</msg>
   <msg key="Company_name">Company Name</msg>
+  <msg key="Company_Nr">Company Nr</msg>
   <msg key="Company_Type">Company Type</msg>
   <msg key="Contact">Contact</msg>
   <msg key="Contact_Filters">Contact Filters</msg>
@@ -44,10 +45,12 @@
   <msg key="Create_New_User">Create New User</msg>
   <msg key="Creation_Date">Creation Date</msg>
   <msg key="Creation_User">Creation User</msg>
+  <msg key="Creator">Creator</msg>
   <msg key="Customer">Customer</msg>
   <msg key="Customer_Deadline">Customer Deadline</msg>
   <msg key="Customer_To_Change">Customer to change</msg>
   <msg key="Customer_To_Delete">Customer to delete</msg>
+  <msg key="Date">Fecha</msg>
   <msg key="Date_Since">Date_Since</msg>
   <msg key="Date_Until">Date_Until</msg>
   <msg key="Delete_attachment">Delete attachment</msg>
@@ -67,6 +70,8 @@
   <msg key="Failed_to_get_new_ticket_nr">Failed to create a new ticket number for the new ticket.</msg>
   <msg key="Female">Female</msg>
   <msg key="File">File</msg>
+  <msg key="Filename">Nombre de archivo</msg>
+  <msg key="Filestorage">Filestorage</msg>
   <msg key="Filter_Companies">Filter companies</msg>
   <msg key="Filter_Contacts">Filter contacts</msg>
   <msg key="Finish_Load">Finish Load</msg>
@@ -82,6 +87,9 @@
   <msg key="Last_Name2">Last Name 2</msg>
   <msg key="Last_Updated">Last Updated</msg>
   <msg key="Loading___">Loading...</msg>
+  <msg key="Logout">Logout</msg>
+  <msg key="Logout_message">You will logout. Are you sure? (All unsave changes will be missed)</msg>
+  <msg key="Logout_tittle">Logout</msg>
   <msg key="Male">Male</msg>
   <msg key="MIME_Type">MIME Type</msg>
   <msg key="Mobile">Mobile</msg>
@@ -90,6 +98,7 @@
   <msg key="New_Company">New Company</msg>
   <msg key="New_Company_Prefix">Company</msg>
   <msg key="New_Contact">New Contact</msg>
+  <msg key="New_ticket">New ticket</msg>
   <msg key="New_Ticket_Prefix">Ticket #</msg>
   <msg key="New_User">Nuevo</msg>
   <msg key="No_items">No items</msg>
@@ -100,6 +109,7 @@
   <msg key="Primary_Contact">Primary Contact</msg>
   <msg key="Program">Program</msg>
   <msg key="Province">Province</msg>
+  <msg key="Queue">Escalado</msg>
   <msg key="Reaction_Date">Reaction Date</msg>
   <msg key="Reject_Button">Reject</msg>
   <msg key="Remove_checked_items">Remove checked</msg>
@@ -124,6 +134,7 @@
   <msg key="Show_Ticket">Show Ticket</msg>
   <msg key="Sort_Ascending">Sort Ascending</msg>
   <msg key="Sort_Descending">Sort Descending</msg>
+  <msg key="Status">Status</msg>
   <msg key="Summary">Summary</msg>
   <msg key="Telephone">Telephone</msg>
   <msg key="Ticket">Ticket</msg>
@@ -133,7 +144,9 @@
   <msg key="Ticket_Language">Ticket_Language</msg>
   <msg key="Ticket_Name">Ticket Name</msg>
   <msg key="Ticket_Type">Ticket Type</msg>
+  <msg key="Ticket_type">Ticket type</msg>
   <msg key="Tickets">Tickets</msg>
+  <msg key="Type">Tipo</msg>
   <msg key="Upload_New_Attachment">Upload New Attachment</msg>
   <msg key="Uploading_your_photo">Uploading your photo</msg>
   <msg key="User">User</msg>
