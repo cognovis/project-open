@@ -61,12 +61,17 @@ db_transaction {
 	
 
     # Delete the contact from the various tables where it exists
-    db_dml delete_acs_rels "delete from im_biz_object_members where rel_id in (select rel_id from acs_rels where object_id_two = :contact_id)"
-    db_dml delete_acs_rels	"delete from acs_rels where object_id_two = :contact_id" 
+    db_dml delete_acs_rels "delete from im_biz_object_members where rel_id in (select rel_id from acs_rels where object_id_one = :contact_id or object_id_two = :contact_id)"
+    db_dml delete_acs_rels "delete from membership_rels where rel_id in (select rel_id from acs_rels where object_id_one = :contact_id or object_id_two = :contact_id)"
+    db_dml delete_geidx "delete from group_element_index where rel_id in (select rel_id from acs_rels where object_id_one = :contact_id or object_id_two = :contact_id)"
+    db_dml delete_acs_rels "delete from acs_rels where object_id_two = :contact_id" 
+    db_dml delete_acs_rels "delete from acs_rels where object_id_one = :contact_id" 
     db_dml delete_im_freelancers "delete from im_freelancers where user_id = :contact_id"
     db_dml delete_users "delete from users where user_id = :contact_id"
     db_dml delete_users_contact "delete from users_contact where user_id = :contact_id"
     db_dml delete_persons "delete from persons where person_id = :contact_id"
+    db_dml delete_parties "delete from parties where party_id = :contact_id"
+    db_dml delete_acs_perms "delete from acs_permissions where object_id = :contact_id"
     db_dml delete_acs_obj "delete from acs_objects where object_id = :contact_id"
 
 }
