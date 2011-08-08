@@ -136,7 +136,7 @@ function showFileStorageNewForm(ticket_id) {
 		});
 	
 		fileStorageNewForm = Ext.widget('window', {
-			title:		'#intranet-filestorage.Upload_File#',
+			title:		'#intranet-sencha-ticket-tracker.Upload_File#',
 			closeAction:	'hide',
 			width:		300,
 			height:		400,
@@ -215,7 +215,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	columns: [
 		  {
-		  header:	'#intranet-filestorage.Filename#',
+		  header:	'#intranet-sencha-ticket-tracker.Filename#',
 		  dataIndex:	'name',
 		  flex:	1,
 		  minWidth:	100,

@@ -3,7 +3,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyCompoundPanel.js.adp,v 1.1 2011/07/17 15:32:28 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -35,7 +35,7 @@ var companyCompoundPanel = Ext.define('TicketBrowser.CompanyCompoundPanel', {
 	items: [{
 		itemId: 'companyForm',
 		xtype: 'companyForm',
-		title: '#intranet-core.Company#',
+		title: '#intranet-sencha-ticket-tracker.Company#',
 		split:	true,
 		region:	'center'
 /*
@@ -47,7 +47,7 @@ var companyCompoundPanel = Ext.define('TicketBrowser.CompanyCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'companyContactPanel',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		xtype: 'companyContactPanel',
 		split:	true,
 		region:	'south'

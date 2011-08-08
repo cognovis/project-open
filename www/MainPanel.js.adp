@@ -152,8 +152,7 @@ Ext.define('TicketBrowser.Main', {
       }			
 		}, {
 			itemId: 'report',
-			title: '#intranet-sencha-ticket-tracker.Reports#'
-			//xtype: 'ticketCompoundPanel',		
+			title: '#intranet-sencha-ticket-tracker.Reports#'	
 		}],
 		
       listeners: {

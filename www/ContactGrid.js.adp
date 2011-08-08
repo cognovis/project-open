@@ -88,10 +88,10 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					'</a>';
 			}
 		}, {
-			header:		'#intranet-core.First_names#',
+			header:		'#intranet-sencha-ticket-tracker.First_names#',
 			dataIndex:	'first_names'
 		}, {
-			header:		'#intranet-core.Last_name#',
+			header:		'#intranet-sencha-ticket-tracker.Last_name#',
 			dataIndex:	'last_name'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Last_Name2#',
@@ -101,7 +101,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			dataIndex:	'email',
 			minWidth:	150
 		}, {
-			header:	'#intranet-core.Telephone#',
+			header:	'#intranet-sencha-ticket-tracker.Telephone#',
 			dataIndex:	'contact_telephone'
 		}, {
 			header:	'#intranet-sencha-ticket-tracker.Language#',

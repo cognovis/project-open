@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: POClasses.js.adp,v 1.4 2011/07/12 08:54:43 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -38,7 +38,6 @@ Ext.define('PO.data.CategoryStore', {
 		return rec.get('category_translated'); 
 	}
 });
-
 
 /*
  * Create a specific store for users of all type.

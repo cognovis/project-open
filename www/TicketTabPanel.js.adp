@@ -4,7 +4,7 @@ b/**
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketTabPanel.js.adp,v 1.10 2011/06/13 11:09:34 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -36,15 +36,15 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	title: '#intranet-sencha-ticket-tracker.View_Ticket#'
     }, {
 	itemId: 'ticketCustomer',
-	title: '#intranet-core.Customer#',
+	title: '#intranet-sencha-ticket-tracker.Customer#',
 	xtype: 'ticketCustomer'
     }, {
 	itemId: 'ticketContact',
-	title: '#intranet-core.Contact#',
+	title: '#intranet-sencha-ticket-tracker.Contact#',
 	xtype: 'ticketContactPanel'
     }, {
 	itemId: 'ticketFilestorage',
-	title: '#intranet-filestorage.Filestorage#',
+	title: '#intranet-sencha-ticket-tracker.Filestorage#',
 	xtype: 'fileStorageGrid'
     }],
 

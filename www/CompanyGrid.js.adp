@@ -69,7 +69,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
 	columns: [
 		{
-			header: '#intranet-core.Company_Name#',
+			header: '#intranet-sencha-ticket-tracker.Company_Name#',
 			dataIndex: 'company_name',
 			flex: 1,
 			minWidth: 150,
@@ -81,13 +81,13 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 					'</a>';
 			}
 		}, {
-			header: '#intranet-core.VAT_Number#',
+			header: '#intranet-sencha-ticket-tracker.VAT_Number#',
 			dataIndex: 'vat_number'
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Province#',
 			dataIndex: 'company_province'
 		}, {
-			header: '#intranet-core.Primary_contact#',
+			header: '#intranet-sencha-ticket-tracker.Primary_contact#',
 			dataIndex: 'primary_contact_id',
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('primary_contact_id'));
@@ -109,7 +109,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 				valueField: 'category_id'
 			}
 		}, {
- 			header: '#intranet-helpdesk.Type#',
+ 			header: '#intranet-sencha-ticket-tracker.Type#',
 			dataIndex: 'company_type_id',
 			renderer: function(value, o, record) {
 				return companyTypeStore.category_from_id(record.get('company_type_id'));

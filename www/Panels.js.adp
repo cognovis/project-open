@@ -79,7 +79,7 @@ Ext.define('TEC.panel.TicketEntidad', {
             },
             items :[
                 {
-                    fieldLabel: '#intranet-core.First_names#',
+                    fieldLabel: '#intranet-sencha-ticket-tracker.First_names#',
                     name:       'ticket_first_contact_name',
                     allowBlank: false
                 },

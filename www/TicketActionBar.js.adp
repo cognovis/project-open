@@ -49,7 +49,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 				case 'ticketCompoundPanel':
 					// Ticket list or view page
 					var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
-					ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+					ticketCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Ticket#');
 					var mainTabPanel = Ext.getCmp('mainTabPanel');
 					mainTabPanel.setActiveTab(ticketCompoundPanel);
 					ticketCompoundPanel.newTicket();
@@ -148,6 +148,30 @@ Ext.define('TicketBrowser.TicketActionBar', {
 				Ext.getCmp('ticketActionBar').startBar();
 			}
 		}
+	}, {
+		xtype : 'tbspacer',
+		width: 20
+	}, '-', {
+		xtype : 'tbspacer',
+		width: 20
+	}, {
+		id: 'buttonLogout',
+		text:		'#intranet-sencha-ticket-tracker.Logout#',
+		//iconCls:	'icon-new-ticket',
+		handler:	function(btn, pressed){		
+			//Confirmation message
+			Ext.Msg.show({
+				title:'#intranet-sencha-ticket-tracker.Logout_tittle#',
+		     	msg:	'#intranet-sencha-ticket-tracker.Logout_message#',
+		    	buttons: Ext.Msg.YESNO,
+		    	icon: Ext.MessageBox.QUESTION,
+		     	fn: function(btn){
+		     		if (btn == 'yes'){
+		     			location.href='../register/logout';
+		     		}
+		     	}
+		    });			
+		}
 	}],
 	
 	// Disable, enable,hide or show a button 
@@ -181,7 +205,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	stopBar: function (){
 		var progressbar = this.getComponent('progressBar');
 	   	progressbar.reset();
-	   	progressbar.updateText('¡Carga terminada!');
+	   	progressbar.updateText('#intranet-sencha-ticket-tracker.Finish_Load#');
 	}
 		
 });

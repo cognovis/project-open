@@ -39,7 +39,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Customer#',
 		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
-		value:		'#intranet-core.New_Customer#',
+		value:		'#intranet-sencha-ticket-tracker.New_Customer#',
 		valueField:	'company_id',
 		displayField:   'company_name',
 		store:		companyStore,
@@ -171,7 +171,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var values = form.getFieldValues();
 				var company_id = combo.getValue();
 				
-				checkValues(values);	
+				Function_checkValues(values);	
 							
 				// find the company in the store
 				var company_record = companyStore.findRecord('company_id',company_id);
@@ -213,7 +213,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var form = this.ownerCt.ownerCt.getForm();
 				var values = form.getFieldValues();
 		
-				checkValues(values);
+				Function_checkValues(values);
 			
 				// create a new company
 				values.company_id = null;

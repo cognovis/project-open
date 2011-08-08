@@ -2,7 +2,7 @@
  * intranet-sencha-ticket-tracker/www/Function.js
  * General Functions
  *
- * @author David Blancon (david.blanco@grupoversia.com)
+ * @author David Blanco (david.blanco@grupoversia.com)
  * @creation-date 2011-08
  * @cvs-id $Id$
  *
@@ -27,7 +27,7 @@
 		Only one whitespace between words is correct.
 		Trims whitespace from either end of a string.
 */
-function espaces(text){
+function Function_espaces(text){
 	if (!Ext.isString(text)){
 		return text;
 	} 
@@ -48,16 +48,21 @@ function espaces(text){
 	Check all the values removing whiteespaces with 'espaces' function
 
 */
-function checkValues(values){
+function Function_checkValues(values){
 	for(var field in values) {
 		if (values.hasOwnProperty(field)) {
-			values[field]=espaces(values[field]);
+			values[field] = Function_espaces(values[field]);
 		}
 	}
 }
 
+/**
+ *	Validate field´s level
+ *	return: Valid value return 'true'.
+ *
+ */
 
-function validateLevel(record,store,field){
+function Function_validateLevel(record,store,field){
 	var record_field_value = record.get(field);
 	var record_field_length = record_field_value.length;
 	var validate = true;

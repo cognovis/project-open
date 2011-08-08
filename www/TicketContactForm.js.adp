@@ -162,7 +162,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_id = combo.getValue();
 			var values = form.getFieldValues();
 
-			checkValues(values);
+			Function_checkValues(values);
 		
 			// Update the model with the form variables and save
 			var userModel = userStore.findRecord('user_id',user_id);
@@ -235,7 +235,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			values.last_name = values.last_name.toUpperCase();
 			values.last_name2 = values.last_name2.toUpperCase();
 
-			checkValues(values);		
+			Function_checkValues(values);		
 			
 			// Deugging help...
 			// values.first_names = values.first_names + Math.random();

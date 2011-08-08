@@ -30,7 +30,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	id:		'ticketForm',
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-core.Ticket#',
+	title: 		'#intranet-sencha-ticket-tracker.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	fieldDefaults: {
 		msgTarget: 'side'
@@ -105,7 +105,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		disabled:	false,
         	width: 		300
 	}, {
-	        fieldLabel:	'#intranet-helpdesk.Ticket_type#',
+	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_type#',
 		name:		'ticket_type_id',
 		xtype:		'combobox',
         width: 		300,
@@ -240,7 +240,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var values = form.getFieldValues();
 		var value;
 		
-		checkValues(values);
+		Function_checkValues(values);
 
 		// find out the ticket_id
 		var ticket_id_field = form.findField('ticket_id');
