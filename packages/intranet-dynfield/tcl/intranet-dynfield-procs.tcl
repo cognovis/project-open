@@ -1851,11 +1851,13 @@ ad_proc -public im_dynfield::object_array {
 
     foreach attribute_name $deref_attribute_names {
 	set array_val($attribute_name) [set ${attribute_name}_deref]	
+	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
     }
     
     foreach attribute_name $category_attribute_names {
 	set array_val($attribute_name) [im_category_from_id [set $attribute_name]]
     }
-    
+
+    set array_val(object_type_id) [set $type_column]
     return 1
 }

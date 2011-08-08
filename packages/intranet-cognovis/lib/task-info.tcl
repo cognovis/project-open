@@ -14,8 +14,7 @@ im_project_permissions $user_id $task_id view read write admin
 # Get Everything about the task
 # ---------------------------------------------------------------------
 im_dynfield::object_array -array_name task -object_id $task_id
-set object_type_id $task($task(object_type_column))
-ds_comment "$object_type_id"
+set object_type_id $task(object_type_id)
 
 # ---------------------------------------------------------------------
 # Add DynField Columns to the display
@@ -39,7 +38,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
                 da.attribute_id = tam.attribute_id and
                 tam.object_type_id = :object_type_id and
                 la.attribute_id = da.attribute_id and
-                acs_permission__permission_p(da.attribute_id,:user_id,'read') = 1 and
+                acs_permission__permission_p(da.attribute_id,:user_id,'read') = 't' and
                 tam.display_mode in ('edit','display')
       order by la.pos_y
 " {
@@ -62,7 +61,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
     
     # Special setting for projects (parent_id)
     if {$attribute_name eq "parent_id"} {
-	set project_id $parent_id
+	set project_id $task(parent_id_orig)
 	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
 	set value "<a href='$project_url'>$value</a>"
     }
