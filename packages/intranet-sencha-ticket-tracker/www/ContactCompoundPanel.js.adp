@@ -3,7 +3,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactCompoundPanel.js.adp,v 1.1 2011/07/18 11:26:17 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -35,7 +35,7 @@ var contactCompoundPanel = Ext.define('TicketBrowser.ContactCompoundPanel', {
 	items: [{
 		itemId: 'contactForm',
 		xtype: 'contactForm',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		split:	true,
 		region:	'center'
 /*

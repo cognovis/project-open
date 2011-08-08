@@ -137,3 +137,101 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     return $folder_id
 }
 
+
+ad_proc -callback im_ticket_after_update -impl im_sencha_ticket_tracker {
+    -object_id
+    -status_id
+    -type_id
+} {
+    Callback to be executed after the creation of any ticket.
+    The call back checks if the ticket was newly assigned to a
+    queue with external users.
+    In this case the callback will send out email notifications
+    to all members of the queue
+} {
+    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: Entering callback code"
+
+    set found_p [db_0or1row ticket_info "
+	select	t.*,
+		p.*
+	from	im_tickets t,
+		im_projects p
+	where	t.ticket_id = p.project_id and
+		t.ticket_id = :object_id
+    "]
+    
+    if {!$found_p} {
+	ns_log Error "im_ticket_after_update -impl im_sencha_ticket_tracker -object_id=$object_id: Didn't find object, skipping"
+	return ""
+    }
+
+    # Don't send mails to "Employees", "SAC" and "SACE"
+    switch $ticket_queue_id {
+	463 - 73363 -  73369 {
+	    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: Assigned to internal group \#$ticket_queue_id, not sending messages"
+	    return "" 
+	}
+    }
+
+    # Don't send out the mail if the queue was assigned already before.
+    # Here we check that there is no audit before. This means that we
+    # won't send out a 2nd mail if the ticket was assigned to the queue
+    # previously.
+    set audit_sql "
+	select	count(*)
+	from
+		(select	audit_id,
+			audit_date,
+			substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as ticket_queue_id
+		from	im_audits
+		where	audit_object_id = :object_id
+		) t
+	where	audit_date < now() - '0.1 seconds'::interval
+    "
+
+    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 1"
+
+    set already_assigned_p [db_string audit $audit_sql]
+
+    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 2"
+    if {$already_assigned_p} {
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: The ticket was already assigned to queue '$ticket_queue_id'"
+	return "" 
+    }
+
+    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 3"
+
+    # Select out the name of the queue
+    set queue_name [db_string queue_name "select group_name from groups where group_id = :ticket_queue_id" -default "undefined"]
+
+    # Who is the currently connect user?
+    set owner_email [db_string owner_mail "select im_email_from_user_id([ad_get_user_id])"]
+
+
+    # Send out notification mail to all members of the queue
+    set member_sql "
+	select	member_id,
+		im_name_from_id(member_id) as member_name,
+		im_email_from_id(member_id) as member_email
+	from	group_distinct_member_map gdmm
+	where	group_id = :ticket_queue_id
+    "
+    set member_list {}
+    db_foreach {
+	lappend member_list $member_name
+    }
+
+    set subject [lang::message::lookup "" intranet-sencha-ticket-tracker.Notification_Subject "SPRI: %project_name%"]
+    set body [lang::message::lookup "" intranet-sencha-ticket-tracker.Notification_Subject "\
+El grupo %group_name% ha sido asignado al ticket %project_name%.
+Tambien estan en este grupo:
+- [join $member_list "\n- "]
+    "]
+
+    # Write the mail into the mail queue
+    # acs_mail_lite::sendmail $member_email owner_email $subject $body
+    ns_log Notice "acs_mail_lite::sendmail $member_email owner_email $subject $body"
+
+}
+
+

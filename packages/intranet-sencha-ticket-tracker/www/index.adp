@@ -10,6 +10,7 @@
 	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
 	<script type="text/javascript" src="/intranet-sencha/js/locale/ext-lang-es.js"></script>
+	<script type="text/javascript" src="Function.js"></script>
 	<script type="text/javascript" src="POClasses.js"></script> 
 	<script type="text/javascript" src="Models.js"></script> 
 	<script type="text/javascript" src="Stores.js"></script> 

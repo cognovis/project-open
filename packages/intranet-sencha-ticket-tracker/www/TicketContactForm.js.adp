@@ -38,9 +38,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	items: [{
 		name:			'user_id',
 		xtype:			'combobox',
-		fieldLabel:		'#intranet-core.User#',
-		value:			'#intranet-core.New_User#',
+		fieldLabel:		'#intranet-sencha-ticket-tracker.User#',
+		value:			'#intranet-sencha-ticket-tracker.New_User#',
 		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
+		queryMode:	'local',
 		valueField:		'user_id',
 		displayField:   	'name',
 		store:			userCustomerStore,
@@ -66,7 +67,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var buttonToolbar = this.ownerCt.getDockedComponent(0);
 			var saveButton = buttonToolbar.getComponent('saveButton');
 			var username = user_record.get('username');
-			if (username.indexOf('anon') >= 0) {
+			if (username.indexOf('anonimo') >= 0) {
 				saveButton.hide();
 			} else {
 				saveButton.show();
@@ -77,12 +78,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	}, {
 		name:		'first_names',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.First_names#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.First_names#',
 		allowBlank:	false
 	}, {
 		name:		'last_name',
 		xtype:		'textfield',
-		fieldLabel:	'#intranet-core.Last_name#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_name#',
 		allowBlank:	false
 	}, {
 		name:		'last_name2',
@@ -161,6 +162,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_id = combo.getValue();
 			var values = form.getFieldValues();
 
+			checkValues(values);
+		
 			// Update the model with the form variables and save
 			var userModel = userStore.findRecord('user_id',user_id);
 			userModel.set(values);
@@ -232,6 +235,8 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			values.last_name = values.last_name.toUpperCase();
 			values.last_name2 = values.last_name2.toUpperCase();
 
+			checkValues(values);		
+			
 			// Deugging help...
 			// values.first_names = values.first_names + Math.random();
 			// values.last_name = values.last_name + Math.random();
@@ -313,10 +318,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 							Ext.Msg.alert('Failed to create group membership relationship.', operation.request.scope.reader.jsonData["message"]); 
 						}
 					});
+					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+					compoundPanel.loadTicket(ticket_model);						
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
-				}
+				}					
 			});
 		}
 	}],
@@ -345,7 +352,13 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			saveButton.hide();
 			addButton.hide();
 		} else {
-			saveButton.show();
+			// Enable/Disable the "Save" button for anonymous
+			var username = contact_record.get('username');
+			if (username.indexOf('anonimo') >= 0) {
+				saveButton.hide();
+			} else {
+				saveButton.show();
+			}			
 			addButton.show();	
 		}		
 	},
@@ -365,13 +378,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
 		var saveButton = buttonToolbar.getComponent('saveButton');
-
-		var username = rec.get('username');
-		if (username.indexOf('anon') >= 0) {
-			saveButton.hide();
-		} else {
-			saveButton.show();
-		}
 
 		var form = this.getForm();
 		contactField = form.findField('ticket_customer_contact_p');

@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContactPanel.js.adp,v 1.19 2011/06/17 11:29:10 po34demo Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -28,22 +28,28 @@ Ext.define('TicketBrowser.TicketContactPanel', {
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
 	title:		'#intranet-core.Contact#',
-	layout:		'anchor',
+	layout:		'border',
+	split:	true,
 	deferredRender:	false,
 	items: [{
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'bizObjectMemberGrid',
 		xtype:	'bizObjectMemberGrid',
+		region:	'north',
+		split:	true,
 		preventHeader: true
 	}, {
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		itemId:	'ticketContactForm',
 		xtype:	'ticketContactForm',
+		region:	'center',
+		split:	true,
 		preventHeader: true
 	}],
 
     // Called from the TicketGrid if the user has selected a ticket
     newTicket: function(rec){
+    	this.hide();
         this.child('#bizObjectMemberGrid').newTicket(rec);
         this.child('#ticketContactForm').newTicket(rec);
     },
@@ -52,6 +58,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
     loadTicket: function(rec){
         this.child('#bizObjectMemberGrid').loadTicket(rec);
         this.child('#ticketContactForm').loadTicket(rec);
+        this.show();
     },
 
     // Called from the TicketCustomerContactPanel if the company changed

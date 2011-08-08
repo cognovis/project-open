@@ -55,13 +55,13 @@ var contactFilterForm = Ext.define('TicketBrowser.ContactFilterForm', {
 		}
 	}, {
 		name: 'first_names', 
-		fieldLabel: '#intranet-core.First_names#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.First_names#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {	
 		name: 'last_name', 
-		fieldLabel: '#intranet-core.Last_name#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Last_name#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
