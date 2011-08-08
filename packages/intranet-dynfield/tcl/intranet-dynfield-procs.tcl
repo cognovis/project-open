@@ -1705,3 +1705,157 @@ ad_proc -public im_dynfield::dynfields {
     }
     return $dynfield_attributes
 }
+
+ad_proc -public im_dynfield::sorted_attributes {
+    -object_type:required
+    {-object_type_id ""}
+    {-page_url "default"}
+    {-privilege ""}
+    {-user_id ""}
+} {
+    Returns the list of dynfield_attribute names for an object_type in the order given by the page_url
+    
+    @param object_type Object Type for which we return the attributes
+    @param object_type_id Category ID of the subtype for which we want the dynfield attributes
+    @param privilege Privilege for which we need to check. Default to "" which means we return all privileges
+    @param page_url Page_Url from im_dynfield_layout which contains the sort_order
+} {
+    if {$object_type_id eq ""} {
+        set attribute_sql "
+         	select aa.attribute_name, da.attribute_id
+        	from im_dynfield_attributes da, acs_attributes aa, im_dynfield_layout la
+            where da.acs_attribute_id = aa.attribute_id
+            and da.attribute_id = la.attribute_id
+            and la.page_url = :page_url
+            and object_type = :object_type
+            order by pos_y"
+    } else {
+        set attribute_sql "
+         	select aa.attribute_name, da.attribute_id
+        	from im_dynfield_attributes da, acs_attributes aa, im_dynfield_layout la, im_dynfield_type_attribute_map tam
+            where da.acs_attribute_id = aa.attribute_id
+            and da.attribute_id = la.attribute_id
+            and la.page_url = :page_url
+            and tam.object_type_id = :object_type_id
+            order by pos_y"
+    }
+    
+    if {$user_id eq ""} {
+        set user_id [ad_conn user_id]
+    }
+    set dynfield_attributes [list]
+    db_foreach dynfield $attribute_sql {
+        if {$privilege ne ""} {
+            if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
+                lappend dynfield_attributes $attribute_name
+            }
+        } else {
+            lappend dynfield_attributes $attribute_name
+        }
+    }
+    return $dynfield_attributes
+}
+
+ad_proc -public im_dynfield::object_array {
+    {-array_name:required}
+    {-object_id:required}
+    {-publish_status "live"}
+} {
+    Sets an array in the calling environment with the values of the object.
+    It takes all the possible values (so no filtering by object_type_id) and runs I18N over them
+    
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-08-08
+    
+    @param array_name Name of the array which we are going to use
+    @param object_id object_id for which we need to retrieve 
+    @param publish_status one of 'live', 'ready', or 'production'
+    
+    @error 
+} {
+
+    upvar 1 $array_name array_val
+    if { [info exists array_val] } {
+	unset array_val
+    }
+
+    set object_type [acs_object_type $object_id]
+    if {$object_type eq "user"} {
+        set object_type "person"
+    }
+
+    # Get the object type tables and id_columns
+    db_1row object_type_info "select id_column, table_name,type_column,status_type_table from acs_object_types where object_type = :object_type"
+
+    set array_val(object_type_column) $type_column
+    set ref_column "${table_name}.${id_column}"
+    set tables [list $table_name]
+    set wheres [list "$ref_column = :object_id"]
+    set selects [list "${status_type_table}.$type_column"]
+
+    foreach type [ams::object_parents -object_type $object_type -hide_current] {
+	db_1row object_type_info "select id_column, table_name from acs_object_types where object_type = :type"
+	lappend tables "$table_name"
+	lappend wheres "$ref_column = ${table_name}.${id_column}"
+    }
+
+
+    set attribute_names [list]
+    set category_attribute_names [list]
+    set deref_attribute_names [list]
+
+    db_foreach column_list_sql {
+	select	w.deref_plpgsql_function,
+                aa.attribute_name,
+		aa.table_name,
+	        w.widget
+	from   	im_dynfield_widgets w,
+      		im_dynfield_attributes a,
+      		acs_attributes aa
+	where   a.widget_name = w.widget_name and
+      		a.acs_attribute_id = aa.attribute_id and
+      		aa.object_type = :object_type
+    }  {
+	lappend selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref, ${table_name}.$attribute_name"
+	
+	switch $widget {
+	    im_category_tree {
+		lappend category_attribute_names $attribute_name
+	    }
+	    default {
+		if {$deref_plpgsql_function eq ""} {
+		    lappend attribute_names $attribute_name
+		} else {
+		    lappend deref_attribute_names $attribute_name
+		}
+	    }
+	}
+    }
+
+    # Retreive the data
+    if { ![db_0or1row project_info_query "
+	select [join $selects ",\n"]
+	from [join $tables ",\n"]
+        WHERE [join $wheres "\n and "]"]
+     } {
+	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	return
+    }
+
+    # Now that the data is set, loop through the ns_set and put the
+    # values into the array.
+    
+    foreach attribute_name $attribute_names {
+	set array_val($attribute_name) [set $attribute_name]
+    }
+
+    foreach attribute_name $deref_attribute_names {
+	set array_val($attribute_name) [set ${attribute_name}_deref]	
+    }
+    
+    foreach attribute_name $category_attribute_names {
+	set array_val($attribute_name) [im_category_from_id [set $attribute_name]]
+    }
+    
+    return 1
+}

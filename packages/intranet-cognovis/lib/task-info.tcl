@@ -13,110 +13,41 @@ im_project_permissions $user_id $task_id view read write admin
 # ---------------------------------------------------------------------
 # Get Everything about the task
 # ---------------------------------------------------------------------
-
-set extra_selects [list "0 as zero"]
-  
-
-
-db_foreach column_list_sql {
-      select	w.deref_plpgsql_function,
-                aa.attribute_name,
-		aa.table_name
-      from    	im_dynfield_widgets w,
-      		im_dynfield_attributes a,
-      		acs_attributes aa
-      where   	a.widget_name = w.widget_name and
-      		a.acs_attribute_id = aa.attribute_id and
-      		aa.object_type = 'im_timesheet_task'
-      
-
-}  {
-	lappend extra_selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref"
-}
-    
-set extra_select [join $extra_selects ",\n\t"]
-
-if {[exists_and_not_null extra_select]} {
-    set extra_where  "AND im_timesheet_tasks.task_id = im_projects.project_id"
-}
-
-if { ![db_0or1row project_info_query "
-	select
-		im_projects.*,
-		im_companies.*,
-                im_timesheet_tasks.*,
-		to_char(im_projects.end_date, 'HH24:MI') as end_date_time,
-		to_char(im_projects.start_date, 'YYYY-MM-DD') as start_date_formatted,
-		to_char(im_projects.end_date, 'YYYY-MM-DD') as end_date_formatted,
-		to_char(im_projects.percent_completed, '999990.9%') as percent_completed_formatted,
-		im_companies.primary_contact_id as company_contact_id,
-		im_name_from_user_id(im_companies.primary_contact_id) as company_contact,
-		im_email_from_user_id(im_companies.primary_contact_id) as company_contact_email,
-		im_name_from_user_id(im_projects.project_lead_id) as project_lead,
-		im_name_from_user_id(im_projects.supervisor_id) as supervisor,
-		im_name_from_user_id(im_companies.manager_id) as manager,
-		$extra_select
-	from
-		im_projects, 
-		im_companies,
-                im_timesheet_tasks
-        WHERE   im_projects.project_id=:task_id
-		and im_projects.company_id = im_companies.company_id
-        $extra_where      
-
-"] } {
-	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
-	return
-}
-
-set task_type [im_category_from_id $task_type_id]
-set task_status [im_category_from_id $task_status_id]
-
-# Get the parent project's name
-if {"" == $parent_id} { set parent_id 0 }
-set parent_name [util_memoize [list db_string parent_name "select project_name from im_projects where project_id = $parent_id" -default ""]]
-
-if {$task_type_id eq ""} {
-    set task_type_id 9500
-}
+im_dynfield::object_array -array_name task -object_id $task_id
+set object_type_id $task($task(object_type_column))
+ds_comment "$object_type_id"
 
 # ---------------------------------------------------------------------
 # Add DynField Columns to the display
-
 set old_section ""
-db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
+
+db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
       select
       		aa.pretty_name,
       		aa.attribute_name,
-                m.section_heading,
+                tam.section_heading,
                 w.widget, w.widget_name
       from
       		im_dynfield_widgets w,
       		acs_attributes aa,
-                im_dynfield_type_attribute_map m,
-      		im_dynfield_attributes a
-      		LEFT OUTER JOIN (
-      			select *
-      			from im_dynfield_layout
-      			where page_url = 'default'
-      		) la ON (a.attribute_id = la.attribute_id)
+                im_dynfield_type_attribute_map tam,
+      		im_dynfield_attributes da, 
+                im_dynfield_layout la
       where
-    a.widget_name = w.widget_name and
-    a.acs_attribute_id = aa.attribute_id and
-    aa.object_type = 'im_timesheet_task' and
-    a.attribute_id = m.attribute_id and
-    object_type_id = :task_type_id and
-    display_mode in ('edit','display')
-    order by la.pos_y
-    
-} {
+                da.widget_name = w.widget_name and
+                da.acs_attribute_id = aa.attribute_id and
+                da.attribute_id = tam.attribute_id and
+                tam.object_type_id = :object_type_id and
+                la.attribute_id = da.attribute_id and
+                acs_permission__permission_p(da.attribute_id,:user_id,'read') = 1 and
+                tam.display_mode in ('edit','display')
+      order by la.pos_y
+" {
 
-    set heading ""
-    
+    set heading ""    
     if {$old_section != $section_heading} {
         set heading $section_heading
         set old_section $section_heading
-        
     }   
    
     # Set the field name
@@ -124,8 +55,7 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql {
     set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
 
     # Set the value
-    set var ${attribute_name}_deref
-    set value [set $var]
+    set value $task($attribute_name)
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
     }
