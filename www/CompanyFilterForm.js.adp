@@ -90,6 +90,12 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}	
+	}, {	
+		name: 'email', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Email#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
 		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Nr#',
 		name: 'project_name',

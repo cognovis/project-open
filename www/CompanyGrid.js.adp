@@ -169,7 +169,14 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
 						key = 'query';
 						value = query;
-						break;							
+						break;		
+					case 'email':
+						// Fuzzy search
+						value = value.toLowerCase();
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(email) like \'%' + value + '%\'))';
+						key = 'query';
+						value = query;
+						break;											
 					case 'company_name':
 						// The customer's company name is not part of the REST
 						// company fields. So translate into a query:

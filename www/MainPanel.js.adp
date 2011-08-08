@@ -104,6 +104,12 @@ Ext.define('TicketBrowser.Main', {
 							Ext.Msg.show({
 						     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
 						     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+						    	buttons: Ext.Msg.OK,
+						    	icon: Ext.MessageBox.WARNING,
+							});
+							/*Ext.Msg.show({
+						     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+						     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
 						    	buttons: Ext.Msg.YESNO,
 						    	icon: Ext.MessageBox.QUESTION,
 						     	fn: function(btn){
@@ -146,7 +152,7 @@ Ext.define('TicketBrowser.Main', {
 										});										
 						     		}
 						     	}
-							});
+							});*/
 						}
           }
       }			

@@ -76,7 +76,9 @@ img.x-tree-icon-parent {
 .icon-summary {
     background-image: url(images/details.gif) !important;
 }
-
+.icon-logout {
+	background-image: url(images/logout.png) !important;
+}
 
 
 

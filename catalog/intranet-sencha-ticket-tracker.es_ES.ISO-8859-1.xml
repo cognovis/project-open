@@ -29,6 +29,7 @@
   <msg key="Company">Entidad</msg>
   <msg key="Company_Name">Entidad</msg>
   <msg key="Company_name">Nombre de Entidad</msg>
+  <msg key="Company_Nr">Nº Entidad</msg>
   <msg key="Company_Type">Tipo de Entidad</msg>
   <msg key="Contact">Persona de contacto</msg>
   <msg key="Contact_Filters">Filtrar contactos</msg>
@@ -38,14 +39,16 @@
   <msg key="Contacts">Contactos</msg>
   <msg key="Copy_Ticket">Copiar ticket</msg>
   <msg key="Create_New_Company">Nueva</msg>
-  <msg key="Create_New_Contact">Nuevo</msg>
+  <msg key="Create_New_Contact">Guardar nuevo</msg>
   <msg key="Create_New_User">Nuevo</msg>
   <msg key="Creation_Date">F.Creación</msg>
   <msg key="Creation_User">Usuario Creador</msg>
+  <msg key="Creator">Creador</msg>
   <msg key="Customer">Cliente</msg>
   <msg key="Customer_Deadline">Fecha de entrega a cliente</msg>
   <msg key="Customer_To_Change">Entidad a cambiar</msg>
   <msg key="Customer_To_Delete">Entidad a borrar</msg>
+  <msg key="Date">Fecha</msg>
   <msg key="Date_Since">Desde</msg>
   <msg key="Date_Until">Hasta</msg>
   <msg key="Delete_attachment">Borrar adjunto</msg>
@@ -65,6 +68,8 @@
   <msg key="Failed_to_get_new_ticket_nr">El servidor no ha podido crear un nuevo número de ticket.</msg>
   <msg key="Female">Mujer</msg>
   <msg key="File">Archivo</msg>
+  <msg key="Filename">Nombre de archivo</msg>
+  <msg key="Filestorage">Archivos</msg>
   <msg key="Filter_Companies">Filtrar compañias</msg>
   <msg key="Filter_Contacts">Filtrar contactos</msg>
   <msg key="Finish_Load">Carga completa</msg>
@@ -80,6 +85,9 @@
   <msg key="Last_Name2">Apellido 2</msg>
   <msg key="Last_Updated">Última actualización</msg>
   <msg key="Loading___">Cargando...</msg>
+  <msg key="Logout">Logout</msg>
+  <msg key="Logout_message">¿Desea finalizar la sesión? (Se perderán todos los cambios no salvados)</msg>
+  <msg key="Logout_tittle">Desconexión</msg>
   <msg key="Male">Hombre</msg>
   <msg key="MIME_Type">Tipo de archivo</msg>
   <msg key="Mobile">Móvil</msg>
@@ -88,6 +96,7 @@
   <msg key="New_Company">Nueva</msg>
   <msg key="New_Company_Prefix">Entidad</msg>
   <msg key="New_Contact">Nuevo contacto</msg>
+  <msg key="New_ticket">Nuevo ticket</msg>
   <msg key="New_Ticket_Prefix">Ticket </msg>
   <msg key="New_User">Nuevo</msg>
   <msg key="No_items">No hay elementos que mostrar</msg>
@@ -98,6 +107,7 @@
   <msg key="Primary_Contact">Contacto</msg>
   <msg key="Program">Programa</msg>
   <msg key="Province">Provincia</msg>
+  <msg key="Queue">Escalado</msg>
   <msg key="Reaction_Date">F.Recepción (mail/buzón)</msg>
   <msg key="Reject_Button">Rechazar</msg>
   <msg key="Remove_checked_items">Borrar selección</msg>
@@ -107,7 +117,7 @@
   <msg key="Requires_additional_info">Requiere información adicional</msg>
   <msg key="Resolution">Resultado</msg>
   <msg key="Save_Changes">Guardar</msg>
-  <msg key="Save_changes_message">Hay cambios no guardados. ¿Desea guardar los cambios?</msg>
+  <msg key="Save_changes_message">Hay cambios no guardados.</msg>
   <msg key="Save_changes_tittle">Guardar cambios</msg>
   <msg key="Save_New_Company">Guardar Entidad</msg>
   <msg key="Saving_Data">Guardando Fecha</msg>
@@ -121,6 +131,7 @@
   <msg key="Show_Ticket">Ver ticket</msg>
   <msg key="Sort_Ascending">Ordenar Ascendente</msg>
   <msg key="Sort_Descending">Ordenar Descendente</msg>
+  <msg key="Status">Estado</msg>
   <msg key="Summary">Ver detalle</msg>
   <msg key="Telephone">Teléfono</msg>
   <msg key="Ticket">Ticket</msg>
@@ -130,7 +141,9 @@
   <msg key="Ticket_Language">Idioma</msg>
   <msg key="Ticket_Name">Número de Ticket</msg>
   <msg key="Ticket_Type">Tipo de ticket</msg>
+  <msg key="Ticket_type">Tipo de Ticket</msg>
   <msg key="Tickets">Tickets</msg>
+  <msg key="Type">Tipo</msg>
   <msg key="Upload_New_Attachment">Subir nuevo adjunto</msg>
   <msg key="Uploading_your_photo">Subiendo fichero</msg>
   <msg key="User">Usuario</msg>
