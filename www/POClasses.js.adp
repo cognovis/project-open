@@ -125,4 +125,5 @@ var currentUserId = <%= [ad_get_user_id] %>;
 var employeeGroupId = '463';		// String!
 var customerGroupId = '461';		// String!
 
-
+// Check if the current user is an admin
+var currentUserIsAdmin = <%= [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] %>;	// Integer!
