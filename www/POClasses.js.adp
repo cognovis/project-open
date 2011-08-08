@@ -39,7 +39,6 @@ Ext.define('PO.data.CategoryStore', {
 	}
 });
 
-
 /*
  * Create a specific store for users of all type.
  * The subclass contains a special lookup function.

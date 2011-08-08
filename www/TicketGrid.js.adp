@@ -96,13 +96,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				dataIndex:	'ticket_creation_date',
 				width:	80
 			}, {
-				header:	'#intranet-core.VAT_Number#',
+				header:	'#intranet-sencha-ticket-tracker.VAT_Number#',
 				dataIndex:	'vat_number',
 				renderer: function(value, o, record) {
 					return companyStore.vat_id_from_id(record.get('company_id'));
 				}
 			}, {
-				header:	'#intranet-core.Customer#',
+				header:	'#intranet-sencha-ticket-tracker.Customer#',
 				dataIndex:	'company_id',
 				renderer: function(value, o, record) {
 					return companyStore.name_from_id(record.get('company_id'));
@@ -120,7 +120,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
 				}
 			}, {
-				header:	'#intranet-helpdesk.Status#',
+				header:	'#intranet-sencha-ticket-tracker.Status#',
 				dataIndex:	'ticket_status_id',
 				width:	60,
 				renderer: function(value, o, record) {
@@ -137,7 +137,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					valueField:	'category_id'
 				}
 			}, {
-				header:	'#intranet-helpdesk.Queue#',
+				header:	'#intranet-sencha-ticket-tracker.Queue#',
 				dataIndex:	'ticket_queue_id',
 				width:	60,
 				sortable:	true, 
@@ -147,7 +147,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				    return queueName;
 				}
 			}, {
-				header:	'#intranet-helpdesk.Creator#',
+				header:	'#intranet-sencha-ticket-tracker.Creator#',
 				dataIndex:	'creation_user',
 				width:	100,
 				hidden: true,
@@ -161,7 +161,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				header:	'#intranet-sencha-ticket-tracker.Resolution#',
 				dataIndex:	'ticket_resolution'
 			}, {
-				header:	'#intranet-core.Contact#',
+				header:	'#intranet-sencha-ticket-tracker.Contact#',
 				dataIndex:	'ticket_customer_contact_id',
 				renderer: function(value, o, record) {
 					return userStore.name_from_id(record.get('ticket_customer_contact_id'));

@@ -38,20 +38,6 @@ var contactCompoundPanel = Ext.define('TicketBrowser.ContactCompoundPanel', {
 		title: '#intranet-sencha-ticket-tracker.Contact#',
 		split:	true,
 		region:	'center'
-/*
-	}, {
-		itemId:	'contactCustomerPanel',
-		title:	'#intranet-sencha-ticket-tracker.Contact#',
-		xtype:	'contactCustomerPanel',
-		split:	true,
-		region:	'center'
-	}, {
-		itemId: 'contactContactPanel',
-		title: '#intranet-core.Contact#',
-		xtype: 'contactContactPanel',
-		split:	true,
-		region:	'south'
-*/
 	}],
 
 	// Called from the ContactGrid if the user has selected a contact

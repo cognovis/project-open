@@ -183,7 +183,12 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		//Stop progress
+		//Stop progressBar
+		var count = 0;
+		//To avoid infinite loading when the load is faster than grafical
+		while (Ext.getCmp('ticketActionBar') == undefined) {
+			count = count + 1;
+		}
 		Ext.getCmp('ticketActionBar').stopBar();
 	}
 );

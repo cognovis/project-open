@@ -30,7 +30,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	id:		'ticketFormRight',
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-core.Ticket#',
+	title: 		'#intranet-sencha-ticket-tracker.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	width:		800,
 	monitorValid:	true,
@@ -73,7 +73,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			flex: 2,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
-				margin: '5 10 0 0',
+				margin: '5 50 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -242,7 +242,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				}					
 			},				
 			items :[{
-				fieldLabel:	'#intranet-core.Status#',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Status#',
 				name:		'ticket_status_id',
 				xtype:		'combobox',
 				valueField:	'category_id',
@@ -390,7 +390,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				if (values.hasOwnProperty(field)) {
 					value = values[field];
 					if (value == null) { value = ''; }
-					value = espaces(value);
+					value = Function_espaces(value);
 					ticket_record.set(field, value);
 				}
 			}

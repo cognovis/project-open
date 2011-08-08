@@ -549,7 +549,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_telephony_new_number',
 		'ticket_telephony_old_number',
 		'ticket_telephony_request_type_id',
-		'ticket_type_id'
+		'ticket_type_id',
+		'ticket_incoming_channel_id'
 	]
 });
 

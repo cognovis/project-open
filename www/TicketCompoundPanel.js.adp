@@ -42,7 +42,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-core.Ticket#',
+		title: '#intranet-sencha-ticket-tracker.Ticket#',
 		split:	true,
 	//	collapsible: true,
 		region:	'north'
@@ -57,7 +57,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		xtype: 'ticketContactPanel',
 		split:	true,
 		height: 370,
@@ -85,7 +85,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'fileStorageGrid',
-		title: '#intranet-filestorage.Filestorage#',
+		title: '#intranet-sencha-ticket-tracker.Filestorage#',
 		xtype: 'fileStorageGrid',
 		split:	true,
 		region:	'south'

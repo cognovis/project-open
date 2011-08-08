@@ -74,7 +74,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		}
 	}, {
 		name: 'vat_number', 
-		fieldLabel: '#intranet-core.VAT_Number#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.VAT_Number#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
@@ -201,13 +201,13 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel: '#intranet-helpdesk.Ticket_Nr#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Ticket_Name#',
 		name: 'project_name',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel:	'#intranet-helpdesk.Status#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Status#',
 		name:		'ticket_status_id',
 		xtype:		'combobox',
                 valueField:	'category_id',

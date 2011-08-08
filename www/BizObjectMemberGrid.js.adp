@@ -79,7 +79,7 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
     columns: [{
-	header:		'#intranet-core.Contact#',
+	header:		'#intranet-sencha-ticket-tracker.Contact#',
 	minWidth:	100,
 	flex:		1,
 	renderer: function(value, o, record) {

@@ -35,7 +35,7 @@ var companyCompoundPanel = Ext.define('TicketBrowser.CompanyCompoundPanel', {
 	items: [{
 		itemId: 'companyForm',
 		xtype: 'companyForm',
-		title: '#intranet-core.Company#',
+		title: '#intranet-sencha-ticket-tracker.Company#',
 		split:	true,
 		region:	'center'
 /*
@@ -47,7 +47,7 @@ var companyCompoundPanel = Ext.define('TicketBrowser.CompanyCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'companyContactPanel',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		xtype: 'companyContactPanel',
 		split:	true,
 		region:	'south'

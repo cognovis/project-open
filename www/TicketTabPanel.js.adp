@@ -36,15 +36,15 @@ Ext.define('TicketBrowser.TicketTabPanel', {
 	title: '#intranet-sencha-ticket-tracker.View_Ticket#'
     }, {
 	itemId: 'ticketCustomer',
-	title: '#intranet-core.Customer#',
+	title: '#intranet-sencha-ticket-tracker.Customer#',
 	xtype: 'ticketCustomer'
     }, {
 	itemId: 'ticketContact',
-	title: '#intranet-core.Contact#',
+	title: '#intranet-sencha-ticket-tracker.Contact#',
 	xtype: 'ticketContactPanel'
     }, {
 	itemId: 'ticketFilestorage',
-	title: '#intranet-filestorage.Filestorage#',
+	title: '#intranet-sencha-ticket-tracker.Filestorage#',
 	xtype: 'fileStorageGrid'
     }],
 
