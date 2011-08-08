@@ -18,8 +18,8 @@
 		:material_id,		-- material_id,
 		null,			-- cost_center_id,
 		:uom_id,		-- uom_id,
-		:project_type_id,
-		:project_status_id,
+		:task_type_id,
+		:task_status_id,
 		null			-- note
 	);
 

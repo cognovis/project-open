@@ -20,9 +20,9 @@ limit 1
   <fullquery name="insert_task">
     <querytext>
 		insert into im_timesheet_tasks (
-			task_id, material_id, uom_id
+			task_id, material_id, uom_id, task_type_id
 		) values (
-			:task_id, :default_material_id, [im_uom_hour]
+			:task_id, :default_material_id, [im_uom_hour], :task_type_id
 		)
 
     </querytext>

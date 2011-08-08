@@ -253,12 +253,14 @@ ad_form -extend -name task -on_request {
 	set material_id $default_material_id
     }
 
-    ds_comment "material:: $material_id"
+    if {![exists_and_not_null task_type_id]} {
+	set task_type_id 9500
+    }
+
     db_string task_insert {}
 
     if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
     if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
-    
     
     im_dynfield::attribute_store \
 	-object_type "im_timesheet_task" \
