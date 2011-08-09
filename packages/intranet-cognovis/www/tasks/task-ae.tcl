@@ -29,11 +29,15 @@ ad_page_contract {
     { edit_p "" }
     { message "" }
     { project_status_id 76}
+    { task_status_id ""}
 }
 
 # This is a task !
 set project_type_id 100
 
+if {$task_status_id eq ""} {
+    unset task_status_id
+}
 
 # ------------------------------------------------------------------
 # Default & Security
