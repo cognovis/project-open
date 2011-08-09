@@ -15,7 +15,7 @@ ad_page_contract {
     { edit_p "" }
     { message "" }
     { form_mode "display" }
-    { task_status_id:integer 76 }
+    { task_status_id "" }
 }
 
 # ------------------------------------------------------------------
