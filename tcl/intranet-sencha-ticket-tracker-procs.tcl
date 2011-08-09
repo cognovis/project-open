@@ -191,24 +191,17 @@ ad_proc -callback im_ticket_after_update -impl im_sencha_ticket_tracker {
 		audit_date < now() - '1 seconds'::interval
     "
 
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 1"
-
     set already_assigned_p [db_string audit $audit_sql]
-
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 2"
     if {$already_assigned_p} {
 	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: The ticket was already assigned to queue '$ticket_queue_id'"
 	return "" 
     }
-
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 3"
 
     # Select out the name of the queue
     set queue_name [db_string queue_name "select group_name from groups where group_id = :ticket_queue_id" -default "undefined"]
 
     # Who is the currently connect user?
     set owner_email [db_string owner_mail "select im_email_from_user_id([im_rest_cookie_auth_user_id])"]
-
 
     # Send out notification mail to all members of the queue
     set member_sql "
@@ -237,5 +230,4 @@ Tambien estan en este grupo:
     }
 
 }
-
 
