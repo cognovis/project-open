@@ -186,7 +186,7 @@ userStore.load(
 		//Stop progressBar
 		var count = 0;
 		//To avoid infinite loading when the load is faster than grafical
-		while (Ext.getCmp('ticketActionBar') == undefined) {
+		while (Ext.getCmp('ticketActionBar') == undefined && count < 9999999) {
 			count = count + 1;
 		}
 		Ext.getCmp('ticketActionBar').stopBar();
@@ -261,22 +261,24 @@ ticketAreaStore.load(
 
 // Create a copy of the ticketAreaStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var areaTicketAreaStore = Ext.create('Ext.data.Store', {
+var areaTicketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId: 'areaTicketAreaStore',
 	model: 'TicketBrowser.Category',
 	load: function(options) {
 		// Delete whatever was there before
 		areaTicketAreaStore.removeAll();
+		ticketAreaStore.fill_tree_category_translated(ticketAreaStore);
 		ticketAreaStore.each(function(record) {
 			var indent_class = record.get('indent_class');
 			var num = indent_class.substring(indent_class.length-1);
 			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
-			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
+			var tree_sortkey_source = record.get('tree_sortkey').substring(0,8);	
+				
 			if (tree_sortkey_filter == undefined || Ext.isEmpty(Ext.String.trim(tree_sortkey_filter.value)) || tree_sortkey_filter.value.indexOf('null')  > -1 ){ //
 				areaTicketAreaStore.add(record); 
 			}else{
 				if (num  > 0) { 
-					if (tree_sortkey_filter.value == tree_sortkey){
+					if (tree_sortkey_filter.value == tree_sortkey_source){
 						areaTicketAreaStore.add(record); 
 					}
 				}
@@ -285,12 +287,9 @@ var areaTicketAreaStore = Ext.create('Ext.data.Store', {
 		areaTicketAreaStore.sort();
 	},
 	sorters: [{
-		property: 'tree_sortkey',
-		direction: 'ASC'		
-	}/*, {
-		property: 'category_translated',
+		property: 'tree_category_translated',
 		direction: 'ASC'
-	}*/]		
+	}]				
 });
 
 var programTicketAreaStore = Ext.create('Ext.data.Store', {
@@ -358,7 +357,11 @@ var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Status\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'category_translated',
+		direction: 'ASC'
+	}]		
 });
 
 var companyStatusStore = Ext.create('PO.data.CategoryStore', {
@@ -394,12 +397,16 @@ var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Company Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'tree_category_translated',
+		direction: 'ASC'
+	}]		
 });
 companyTypeStore.load(
-      function(record, operation) {
-	      // This code is called once the reply from the server has arrived.
-	      this.sort('tree_sortkey');
+	function(record, operation) {
+		this.fill_tree_category_translated(this);
+	    this.sort();
     }
 );
 
@@ -427,8 +434,8 @@ var ticketPriorityStore = Ext.create('PO.data.CategoryStore', {
 // Incoming and Outgoing channels are both 'Intranet Ticket Origin' category
 var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketOriginStore',
-	autoLoad:	true,
-	remoteFilter:	true,
+	//autoLoad:	true,
+	//remoteFilter:	true,
 	model:		'TicketBrowser.Category',
 	pageSize:	1000,
 	proxy: {
@@ -440,7 +447,16 @@ var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Origin\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'tree_category_translated',
+		direction: 'ASC'
+	}]				
+});
+
+ticketOriginStore.load(function (record, operation){
+	this.fill_tree_category_translated(this);
+	this.sort();
 });
 
 
@@ -632,7 +648,7 @@ var programGroupStore = Ext.create('PO.data.ProfileStore', {
 
 // fake store while developing
 var ticketServiceTypeStore = ticketSlaStore;
-var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
+//var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
 var ticketQueueStore = ticketPriorityStore;
 
 

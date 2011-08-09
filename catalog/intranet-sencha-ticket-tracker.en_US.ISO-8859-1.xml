@@ -79,6 +79,7 @@
   <msg key="Gender">Gender</msg>
   <msg key="Group">Group</msg>
   <msg key="Incoming_Channel">Incoming Channel</msg>
+  <msg key="Incoming_Channel_Detail">Incoming Channel Detail</msg>
   <msg key="IP_Address">IP Address</msg>
   <msg key="lang_es_ES">Spanish</msg>
   <msg key="lang_eu_ES">Euskera</msg>
@@ -107,6 +108,7 @@
   <msg key="Outgoing_Channel">Outgoing Channel</msg>
   <msg key="Page">Page</msg>
   <msg key="Primary_Contact">Primary Contact</msg>
+  <msg key="Primary_contact">Primary contact</msg>
   <msg key="Program">Program</msg>
   <msg key="Province">Province</msg>
   <msg key="Queue">Escalado</msg>

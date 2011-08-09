@@ -33,6 +33,25 @@ var bizObjectMemberStore = Ext.create('Ext.data.Store', {
     pageSize: 5				// Enable pagination
 });
 
+// It is necesary because the filter bizObjectMemberStore no update the total record count
+var bizObjectMemberStoreFilter = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'bizObjectMemberStoreFilter',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+    pageSize: 5,	
+    load: function(options) {
+		this.removeAll();
+		bizObjectMemberStore.each(function(record) {
+			var role = record.get('object_role_id');
+			if (role == '1300') {
+				bizObjectMemberStoreFilter.add(record);
+		}
+		});
+	}
+});
+
 bizObjectMemberStore.on({
     'load':{
         fn: function(store, records, options){
@@ -125,13 +144,26 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 	// Save the property in the proxy, which will pass it directly to the REST server
 	bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
 	bizObjectMemberStore.load();
+	//bizObjectMemberStoreFilter.load();
 
+	/*bizObjectMemberStore.each(function(record) {
+		var role = record.get('object_role_id');
+		if (role != '1300') {
+			bizObjectMemberStore.remove(record);
+		}
+	});*/
+	
+	
 	// We need to filter manually because the Store's "filters" config doesn't work in Ext 4.0.1
 	bizObjectMemberStore.filter(new Ext.util.Filter({
 		filterFn: function(item) {
 			// Only show "Full Member" objects in order to include Key Accounts etc.
 			var role = item.get('object_role_id');
-			return (role == '1300');
+			if (role == '1300'){
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}));
     },

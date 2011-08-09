@@ -348,7 +348,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		var addButton = buttonToolbar.getComponent('addButton');	
 		var createButton = buttonToolbar.getComponent('createButton');	
 
-		if (ticketStatusId == '30001'){
+		if (ticketStatusId == '30001'  && currentUserIsAdmin != 1){
 			saveButton.hide();
 			addButton.hide();
 		} else {

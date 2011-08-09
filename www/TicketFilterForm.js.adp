@@ -233,7 +233,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
                 displayField:	'category_translated',
 		forceSelection: true,
 		queryMode:	'local',
-		store: ticketChannelStore,
+		store: ticketOriginStore,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';

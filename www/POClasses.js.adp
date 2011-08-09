@@ -36,6 +36,19 @@ Ext.define('PO.data.CategoryStore', {
 		var	rec = this.findRecord('category_id',category_id);
 		if (rec == null || typeof rec == "undefined") { return result; }
 		return rec.get('category_translated'); 
+	},
+	fill_tree_category_translated: 	function(store) {
+		store.each(function(record){
+			var tree_sortkey = record.get('tree_sortkey');
+			var lon = record.get('tree_sortkey').length;
+			var tree_category = '';
+			
+			while (lon > 0) {
+				lon = lon - 8;
+				tree_category = store.findRecord('category_id','' + parseInt(tree_sortkey.substr(lon,8),10)).get('category_translated') +  tree_category;
+			}						
+			record.set('tree_category_translated', tree_category);					
+		});
 	}
 });
 

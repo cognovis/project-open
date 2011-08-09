@@ -34,7 +34,7 @@
   <msg key="Contact">Persona de contacto</msg>
   <msg key="Contact_Filters">Filtrar contactos</msg>
   <msg key="Contact_Mail">Correo</msg>
-  <msg key="Contact_To_Change">Contacto a cambair</msg>
+  <msg key="Contact_To_Change">Contacto a cambiar</msg>
   <msg key="Contact_To_Delete">Contacto a borrar</msg>
   <msg key="Contacts">Contactos</msg>
   <msg key="Copy_Ticket">Copiar ticket</msg>
@@ -77,6 +77,7 @@
   <msg key="Gender">Género</msg>
   <msg key="Group">Grupo</msg>
   <msg key="Incoming_Channel">Canal Entrada</msg>
+  <msg key="Incoming_Channel_Detail">Incoming Channel Detail</msg>
   <msg key="IP_Address">Dirección IP</msg>
   <msg key="lang_es_ES">Español</msg>
   <msg key="lang_eu_ES">Euskera</msg>
@@ -85,7 +86,7 @@
   <msg key="Last_Name2">Apellido 2</msg>
   <msg key="Last_Updated">Última actualización</msg>
   <msg key="Loading___">Cargando...</msg>
-  <msg key="Logout">Logout</msg>
+  <msg key="Logout">Finalizar sesión</msg>
   <msg key="Logout_message">¿Desea finalizar la sesión? (Se perderán todos los cambios no salvados)</msg>
   <msg key="Logout_tittle">Desconexión</msg>
   <msg key="Male">Hombre</msg>
@@ -105,6 +106,7 @@
   <msg key="Outgoing_Channel">Canal de salida</msg>
   <msg key="Page">Página</msg>
   <msg key="Primary_Contact">Contacto</msg>
+  <msg key="Primary_contact">Persona de contacto principal</msg>
   <msg key="Program">Programa</msg>
   <msg key="Province">Provincia</msg>
   <msg key="Queue">Escalado</msg>

@@ -175,9 +175,23 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	header: "#intranet-sencha-ticket-tracker.Incoming_Channel#", 
 	dataIndex: 'ticket_incoming_channel_id',
 	renderer: function(value, o, record) {
-	    return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
+		var ticket_incoming_channel_id = record.get('ticket_incoming_channel_id');
+		
+		if (!Ext.isEmpty(ticket_incoming_channel_id)) {
+			var channel_record = ticketOriginStore.findRecord('category_id',ticket_incoming_channel_id);
+			var tree_sort_key_channel_record_father = channel_record.get('tree_sortkey').substring(0,8);
+			
+			return ticketOriginStore.category_from_id(tree_sort_key_channel_record_father);
+		}
+	    return '';
 	}
     }, {
+	header: "#intranet-sencha-ticket-tracker.Incoming_Channel_Detail#", 
+	dataIndex: 'ticket_incoming_channel_id',
+	renderer: function(value, o, record) {
+	    return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
+	}
+    },{
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	hidden: true, 
 	dataIndex: 'audit_ip'

@@ -102,8 +102,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode: 	'remote',
-				store: 		ticketChannelStore,
+				queryMode: 	'local',
+				store: 		ticketOriginStore,
 				listConfig: {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
@@ -215,8 +215,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode: 	'remote',
-				store: 		ticketChannelStore,
+				queryMode: 	'local',
+				store: 		ticketOriginStore,
 				listConfig: {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
@@ -462,7 +462,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var buttonToolbar = this.getDockedComponent(0);
 		var saveButton = buttonToolbar.getComponent('saveButton');	
 		var rejectButton = buttonToolbar.getComponent('rejectButton');		
-		if (ticket_status_id == '30001'){
+		if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
 			saveButton.hide();
 			rejectButton.hide();
 		} else {
