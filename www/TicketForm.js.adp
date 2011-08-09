@@ -344,7 +344,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			saveButton = buttonToolbar.getComponent('saveButton');	
 		}
 		
-		if (ticket_status_id == '30001') {		// Closed status
+		if (ticket_status_id == '30001'  && currentUserIsAdmin != 1) {		// Closed status
 			saveButton.hide();
 		} else {
 			saveButton.show();

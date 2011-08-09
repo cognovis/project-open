@@ -76,13 +76,16 @@ Ext.define('TicketBrowser.Category', {
 		{type: 'string', name: 'category_translated'},
 		{type: 'string', name: 'indent_class',
 
-		// Determine the indentation level for each element in the tree
-		convert: function(value, record) {
-			var category = record.get('category_translated');
-			var indent = (record.get('tree_sortkey').length / 8) - 1;
-			return 'extjs-indent-level-' + indent;
-		}
-	}]
+			// Determine the indentation level for each element in the tree
+			convert: function(value, record) {
+				var category = record.get('category_translated');
+				var indent = (record.get('tree_sortkey').length / 8) - 1;
+				return 'extjs-indent-level-' + indent;
+			}
+		},
+		{type: 'string', name: 'tree_category_translated'}
+		
+	]
 	// Category can't have a proxy defined here
 	// because the proxy config depends on the type of category.
 });
@@ -383,7 +386,8 @@ Ext.define('TicketBrowser.BizObjectMember', {
 		appendId:		true,
 		timeout:		300000,
 		extraParams: {
-			format:		'json'
+			format:		'json',
+			object_role_id: '1300'
 		},
 		reader:	{ 
 			type:		'json', 
