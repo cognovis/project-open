@@ -160,6 +160,7 @@ ad_proc im_category_select_helper {
 
     # Read the categories into the a hash cache
     # Initialize parent and level to "0"
+    set category_list_sorted [list]
     set sql "
         select
                 category_id,
@@ -173,11 +174,12 @@ ad_proc im_category_select_helper {
                 category_type = :category_type
 		and (enabled_p = 't' OR enabled_p is NULL)
 		$super_category_sql
-        order by lower(category)
+        order by sort_order
     "
     db_foreach category_select $sql {
         set cat($category_id) [list $category_id $category $category_description $parent_only_p $enabled_p]
         set level($category_id) 0
+	lappend category_list_sorted $category_id
     }
 
     # Get the hierarchy into a hash cache
@@ -258,8 +260,8 @@ ad_proc im_category_select_helper {
 
     # Sort the category list's top level. We currently sort by category_id,
     # but we could do alphabetically or by sort_order later...
-    set category_list [array names cat]
-    set category_list_sorted [lsort $category_list]
+#    set category_list [array names cat]
+#    set category_list_sorted [lsort $category_list]
 
     # Now recursively descend and draw the tree, starting
     # with the top level
@@ -269,7 +271,7 @@ ad_proc im_category_select_helper {
 	if {"f" == $enabled_p} { continue }
         set p_level $level($p)
         if {0 == $p_level} {
-            append html [im_category_select_branch -translate_p $translate_p -package_key $package_key -locale $locale $p $default $base_level [array get cat] [array get direct_parent]]
+            append html [im_category_select_branch -translate_p $translate_p -package_key $package_key -locale $locale -category_list_sorted $category_list_sorted $p $default $base_level [array get cat] [array get direct_parent]]
         }
     }
 
@@ -294,6 +296,7 @@ ad_proc im_category_select_branch {
     {-translate_p 0}
     {-package_key "intranet-core" }
     {-locale "" }
+    {-category_list_sorted:required}
     parent 
     default 
     level 
@@ -329,13 +332,9 @@ ad_proc im_category_select_branch {
     }
 
 
-    # Sort by category_id, but we could do alphabetically or by sort_order later...
-    set category_list [array names cat]
-    set category_list_sorted [lsort $category_list]
-
     foreach cat_id $category_list_sorted {
 	if {[info exists direct_parent($cat_id)] && $parent == $direct_parent($cat_id)} {
-	    append html [im_category_select_branch -translate_p $translate_p -package_key $package_key -locale $locale $cat_id $default $level $cat_array $direct_parent_array]
+	    append html [im_category_select_branch -translate_p $translate_p -package_key $package_key -locale $locale -category_list_sorted $category_list_sorted $cat_id $default $level $cat_array $direct_parent_array]
 	}
     }
 
