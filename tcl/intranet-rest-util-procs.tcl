@@ -696,7 +696,7 @@ ad_proc -public im_rest_valid_sql {
     }
 
     # Add rules for every variable saying that it's a var.
-    lappend variables member_id user_id group_id
+    lappend variables member_id user_id group_id object_id_one object_id_two
     foreach var $variables {
 	lappend rules val
 	lappend rules $var
