@@ -261,16 +261,14 @@ if {[im_permission $user_id "view_projects_all"]} {
         set project_perm_sql ""
 }
 
+
 # --------------------- Companies ----------------------------------
 set company_perm_sql "
 			and c.company_id in (
-			        select
-			                c.company_id
-			        from
-			                im_companies c,
+			        select	c.company_id
+			        from	im_companies c,
 			                acs_rels r
-			        where
-			                r.object_id_one = c.company_id
+			        where	r.object_id_one = c.company_id
 			                and r.object_id_two = :current_user_id
 					and c.company_status_id not in ([im_company_status_deleted])
 			)"
@@ -278,6 +276,25 @@ set company_perm_sql "
 if {[im_permission $user_id "view_companies_all"]} {
         set company_perm_sql "
 			and c.company_status_id not in ([im_company_status_deleted])
+	"
+}
+
+
+
+# --------------------- Conf Items ----------------------------------
+set conf_item_perm_sql "
+			and c.conf_item_id in (
+			        select	c.conf_item_id
+			        from	im_conf_items c,
+			                acs_rels r
+			        where	r.object_id_one = c.conf_item_id
+			                and r.object_id_two = :current_user_id
+					and c.conf_item_status_id not in ([im_conf_item_status_deleted])
+			)"
+
+if {[im_permission $user_id "view_conf_items_all"]} {
+        set conf_item_perm_sql "
+			and c.conf_item_status_id not in ([im_conf_item_status_deleted])
 	"
 }
 
@@ -321,13 +338,10 @@ if {![im_user_is_freelance_p $user_id]} { set provider_sql "select 0 as company_
 
 set invoice_perm_sql "
 			and i.invoice_id in (
-				select
-					i.invoice_id
-				from
-					im_invoices i,
+				select	i.invoice_id
+				from	im_invoices i,
 					im_costs c
-				where
-					i.invoice_id = c.cost_id
+				where	i.invoice_id = c.cost_id
 					and (
 					    c.customer_id in ($customer_sql)
 					OR
@@ -338,9 +352,6 @@ set invoice_perm_sql "
 if {[im_permission $user_id "view_invoices"]} {
 	set invoice_perm_sql ""
 }
-
-# ad_return_complaint 1 $invoice_perm_sql
-
 
 
 # --------------------- Users -----------------------------------
@@ -443,6 +454,18 @@ if {[string equal "all" $type]} {
 # Main SQL
 # -----------------------------------------------------------
 
+set conf_item_union ""
+if {[im_table_exists im_conf_items]} {
+    set conf_item_union "
+		    UNION
+			select	conf_item_id as object_id,
+				'im_conf_item' as object_type
+			from	im_conf_items c
+			where	1=1
+				$conf_item_perm_sql
+    "
+}
+
 set sql "
 	select
 		acs_object__name(so.object_id) as name,
@@ -493,6 +516,7 @@ set sql "
                                 'content_item' as object_type
                         from    cr_items c
                         where   1=1
+		    $conf_item_union
 		) readable_biz_objs,
 		acs_objects o
 		LEFT OUTER JOIN (
