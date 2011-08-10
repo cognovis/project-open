@@ -263,6 +263,7 @@ select
 	to_char((c.amount * c.vat/100) + c.amount, :cur_format) as amount_incl_vat_formatted,
 	to_char(((c.amount * c.vat/100) + c.amount)*e.reimbursable/100,:cur_format) as amount_reimbursable,
 	to_char(cc.expense_amount_converted *e.reimbursable/100, :cur_format) as amount_reimbursable_converted,
+	to_char(cc.amount_converted *e.reimbursable/100, :cur_format) as amount_reimbursable_net_converted,
 	to_char(cc.amount_converted, :cur_format) as amount_converted_formatted,
 	to_char(o.creation_date, :date_format) as cost_creation_date_formatted,
 	cust.company_path as customer_nr,
@@ -297,6 +298,8 @@ order by
 set total 0
 set employee_subtotal 0
 set employee_subtotal_vat_reimburse 0
+set employee_subtotal_net_reimburse 0
+
 
 	# -------------------------------------------------------------------------------------------------
 	set report_def [list \
@@ -340,7 +343,7 @@ set employee_subtotal_vat_reimburse 0
                                                 "\#align='right' <nobr>$amount_incl_vat_formatted $currency</nobr>"
 						"\#align='center' $reimbursable"
 					        "\#align='right' $amount_reimbursable $currency"
-                                                "\#align='right' $amount_reimbursable_converted $default_currency"
+                                                "\#align='right' $amount_reimbursable_converted $default_currency" 
 					    	"$receipt_reference"
 						"$note"
 					} \
@@ -349,7 +352,7 @@ set employee_subtotal_vat_reimburse 0
 				footer {
 					"\#colspan=3"
 				        "\#colspan=8 <nobr><b>Total Project</b>"
-					"\#align='right' <b>$project_subtotal $default_currency</b></nobr><br><br>"
+					"\#align='right' <b>$project_subtotal $default_currency / $project_subtotal_net $default_currency</b></nobr><br><br>"
 				        "\#colspan=3"
 				} \
 			] \
@@ -364,47 +367,63 @@ set employee_subtotal_vat_reimburse 0
 
                          "<nobr><b>Total Employee</b></nobr>"
 			 "\#colspan=10"
-                         "\#align='right' <nobr><b>$employee_subtotal_vat_reimburse $default_currency</b></nobr>"
+                         "\#align='right' <nobr><b>$employee_subtotal_vat_reimburse $default_currency / $employee_subtotal_net_reimburse $default_currency</b></nobr>"
                          "\#colspan=2"
 		} \
 	]
 
 	# Global header/footer
 	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Type" "Ext<br>Company" \
-			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted" "Ref." "Note"}
+			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted (Pre-tax/net)" "Ref." "Note"}
 	set footer0 { }
 	
         set employee_subtotal_vat_reimburse_counter [list \
-                pretty_name "Invoice Amount" \
-                var employee_subtotal_vat_reimburse \
+                pretty_name "" \
+                var employee_subtotal_net_reimburse \
                 reset "\$employee_id" \
                 expr "\$amount_reimbursable_converted+0" \
         ]
 
+        set employee_subtotal_net_reimburse_counter [list \
+                pretty_name "" \
+                var employee_subtotal_vat_reimburse \
+                reset "\$employee_id" \
+                expr "\$amount_reimbursable_net_converted+0" \
+        ]
+
 	set employee_subtotal_counter [list \
-	        pretty_name "Invoice Amount" \
+	        pretty_name "" \
 	        var employee_subtotal \
 	        reset "\$employee_id" \
 	        expr "\$amount_reimbursable_converted+0" \
 	]
 	set customer_subtotal_counter [list \
-	        pretty_name "Invoice Amount" \
+	        pretty_name "" \
 	        var customer_subtotal \
 	        reset "\$employee_id+\$project_customer_id" \
 	        expr "\$amount_reimbursable_converted+0" \
 	]
 	set project_subtotal_counter [list \
-	        pretty_name "Invoice Amount" \
+	        pretty_name "" \
 	        var project_subtotal \
 	        reset "\$employee_id+\$project_customer_id+\$project_id" \
 	        expr "\$amount_reimbursable_converted+0" \
 	]
+
+	set project_subtotal_net_counter [list \
+                pretty_name "" \
+                var project_subtotal_net \
+                reset "\$employee_id+\$project_customer_id+\$project_id" \
+                expr "\$amount_reimbursable_net_converted+0" \
+	]
+
 	set counters [list \
 		$employee_subtotal_vat_reimburse_counter \
 		$project_subtotal_counter \
 		$customer_subtotal_counter \
 		$employee_subtotal_counter \
-
+		$project_subtotal_net_counter \
+		$employee_subtotal_net_reimburse_counter \
 	]
 
 # ------------------------------------------------------------
