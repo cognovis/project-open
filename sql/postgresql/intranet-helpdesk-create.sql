@@ -295,6 +295,46 @@ end;' language 'plpgsql';
 
 
 -----------------------------------------------------------
+-- Full-Text Search for Tickets
+-----------------------------------------------------------
+
+
+insert into im_search_object_types values (8,'im_ticket',0.7);
+
+create or replace function im_tickets_tsearch ()
+returns trigger as '
+declare
+	v_string	varchar;
+begin
+	select  coalesce(p.project_name, '''') || '' '' ||
+		coalesce(p.project_nr, '''') || '' '' ||
+		coalesce(p.project_path, '''') || '' '' ||
+		coalesce(p.description, '''') || '' '' ||
+		coalesce(p.note, '''') || '' '' ||
+		coalesce(t.ticket_note, '''') || '' '' ||
+		coalesce(t.ticket_description, '''')
+	into    v_string
+	from    im_tickets t,
+		im_projects p
+	where   p.project_id = new.ticket_id and
+		t.ticket_id = p.project_id;
+
+	perform im_search_update(new.ticket_id, ''im_ticket'', new.ticket_id, v_string);
+
+	return new;
+end;' language 'plpgsql';
+
+
+CREATE TRIGGER im_tickets_tsearch_tr
+AFTER INSERT or UPDATE
+ON im_tickets
+FOR EACH ROW
+EXECUTE PROCEDURE im_tickets_tsearch();
+
+
+
+
+-----------------------------------------------------------
 -- Relationship between Tickets
 -----------------------------------------------------------
 --

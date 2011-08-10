@@ -63,7 +63,7 @@ begin
 	where	object_type_id = 8;
 	IF 0 != v_count THEN return 0; END IF;
 
-	insert into im_search_object_types values (8,'im_ticket',0.7);
+	insert into im_search_object_types values (8, ''im_ticket'', 0.7);
 
 	return 0;
 end;' language 'plpgsql';
