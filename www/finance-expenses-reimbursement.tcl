@@ -24,6 +24,8 @@ ad_page_contract {
 # Security & Defaults
 # ------------------------------------------------------------
 
+set rounding_precision 2
+set locale "en_US"
 
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
@@ -352,7 +354,7 @@ set employee_subtotal_net_reimburse 0
 				footer {
 					"\#colspan=3"
 				        "\#colspan=8 <nobr><b>Total Project</b>"
-					"\#align='right' <b>$project_subtotal $default_currency / $project_subtotal_net $default_currency</b></nobr><br><br>"
+					"\#align='right' <b> $project_subtotal $default_currency / $project_subtotal_net $default_currency</b></nobr><br><br>"
 				        "\#colspan=3"
 				} \
 			] \
@@ -374,7 +376,7 @@ set employee_subtotal_net_reimburse 0
 
 	# Global header/footer
 	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Type" "Ext<br>Company" \
-			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted (Pre-tax/net)" "Ref." "Note"}
+			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted (net/pre-tax)" "Ref." "Note"}
 	set footer0 { }
 	
         set employee_subtotal_vat_reimburse_counter [list \
@@ -622,7 +624,27 @@ db_foreach sql $sql {
 	    -cell_class $class
 	
 	im_report_update_counters -counters $counters
-	
+
+        if { [ info exists project_subtotal ] && "" != $project_subtotal } {
+		set project_subtotal [lc_numeric [im_numeric_add_trailing_zeros [expr $project_subtotal+0] $rounding_precision] "" $locale]
+        }
+
+        if { [ info exists project_subtotal_net ] && "" != $project_subtotal_net } {
+                set project_subtotal_net [lc_numeric [im_numeric_add_trailing_zeros [expr $project_subtotal_net+0] $rounding_precision] "" $locale]
+        }
+
+        if { [ info exists customer_subtotal ] && "" != $customer_subtotal } {
+                set customer_subtotal [lc_numeric [im_numeric_add_trailing_zeros [expr $customer_subtotal+0] $rounding_precision] "" $locale]
+        }
+
+        if { [ info exists employee_subtotal_vat_reimburse ] && "" != $employee_subtotal_vat_reimburse } {
+                set employee_subtotal_vat_reimburse [lc_numeric [im_numeric_add_trailing_zeros [expr $employee_subtotal_vat_reimburse+0] $rounding_precision] "" $locale]
+        }
+
+        if { [ info exists employee_subtotal_net_reimburse ] && "" != $employee_subtotal_net_reimburse } {
+                set employee_subtotal_net_reimburse [lc_numeric [im_numeric_add_trailing_zeros [expr $employee_subtotal_net_reimburse+0] $rounding_precision] "" $locale]
+        }
+
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
 	    -group_def $report_def \
