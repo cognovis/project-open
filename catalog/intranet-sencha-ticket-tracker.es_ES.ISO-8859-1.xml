@@ -77,7 +77,7 @@
   <msg key="Gender">Género</msg>
   <msg key="Group">Grupo</msg>
   <msg key="Incoming_Channel">Canal Entrada</msg>
-  <msg key="Incoming_Channel_Detail">Incoming Channel Detail</msg>
+  <msg key="Incoming_Channel_Detail">Detalle canal</msg>
   <msg key="IP_Address">Dirección IP</msg>
   <msg key="lang_es_ES">Español</msg>
   <msg key="lang_eu_ES">Euskera</msg>
@@ -97,6 +97,8 @@
   <msg key="New_Company">Nueva</msg>
   <msg key="New_Company_Prefix">Entidad</msg>
   <msg key="New_Contact">Nuevo contacto</msg>
+  <msg key="New_Customer">Nueva entidad</msg>
+  <msg key="New_Ticket">Nuevo ticket</msg>
   <msg key="New_ticket">Nuevo ticket</msg>
   <msg key="New_Ticket_Prefix">Ticket </msg>
   <msg key="New_User">Nuevo</msg>
@@ -146,6 +148,7 @@
   <msg key="Ticket_type">Tipo de Ticket</msg>
   <msg key="Tickets">Tickets</msg>
   <msg key="Type">Tipo</msg>
+  <msg key="Upload_File">Subir archivo</msg>
   <msg key="Upload_New_Attachment">Subir nuevo adjunto</msg>
   <msg key="Uploading_your_photo">Subiendo fichero</msg>
   <msg key="User">Usuario</msg>

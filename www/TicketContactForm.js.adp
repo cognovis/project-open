@@ -62,17 +62,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 			// load the values of the user into the form
 			this.ownerCt.loadRecord(user_record);
-
-			// Enable/Disable the "Save" button for anonymous
-			var buttonToolbar = this.ownerCt.getDockedComponent(0);
-			var saveButton = buttonToolbar.getComponent('saveButton');
-			var username = user_record.get('username');
-			if (username.indexOf('anonimo') >= 0) {
-				saveButton.hide();
-			} else {
-				saveButton.show();
-			}
-
 		 }
 		}
 	}, {
@@ -164,18 +153,20 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 			Function_checkValues(values);
 		
-			// Update the model with the form variables and save
+			// Update the model with the form variables and save. NO save anonymous
 			var userModel = userStore.findRecord('user_id',user_id);
-			userModel.set(values);
-			userModel.save({
-				scope: Ext.getCmp('ticketContactForm'),
-				success: function(record, operation) {
-					this.loadUser(userModel);
-				},
-				failure: function(record, operation) {
-					Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
-				}
-			});
+			if (userModel.get('username').indexOf('anonimo') == -1) {	
+				userModel.set(values);
+				userModel.save({
+					scope: Ext.getCmp('ticketContactForm'),
+					success: function(record, operation) {
+						this.loadUser(userModel);
+					},
+					failure: function(record, operation) {
+						Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
+					}
+				});
+			}
 
 			// Get the ticket
 			var ticketForm = Ext.getCmp('ticketForm');
@@ -235,7 +226,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			values.last_name = values.last_name.toUpperCase();
 			values.last_name2 = values.last_name2.toUpperCase();
 
-			Function_checkValues(values);		
+			//Function_checkValues(values);		
 			
 			// Deugging help...
 			// values.first_names = values.first_names + Math.random();
@@ -352,13 +343,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			saveButton.hide();
 			addButton.hide();
 		} else {
-			// Enable/Disable the "Save" button for anonymous
-			var username = contact_record.get('username');
-			if (username.indexOf('anonimo') >= 0) {
-				saveButton.hide();
-			} else {
-				saveButton.show();
-			}			
+			saveButton.show();		
 			addButton.show();	
 		}		
 	},

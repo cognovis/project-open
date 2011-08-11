@@ -247,7 +247,7 @@ Ext.define('TicketBrowser.User', {
 		'language',			// es_ES or eu_ES
 		{ name: 'name',			// Calculated compound name
 		convert: function(value, record) {
-			return record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2');
+			return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
 		}
 	}],
 
@@ -387,12 +387,12 @@ Ext.define('TicketBrowser.BizObjectMember', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',
-			object_role_id: '1300'
+			object_role_id: '1300'	
 		},
 		reader:	{ 
 			type:		'json', 
 			root:		'data',
-			totalProperty:	'total'
+			totalProperty:	'total'		
 		},
 		writer:	{
 			type:		'json'

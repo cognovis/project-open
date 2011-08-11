@@ -66,15 +66,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				
 				// load the record into the form
 				this.ownerCt.loadRecord(cust);
-
-				// Disable the Save button if we show the anonymous customer
-				var buttonToolbar = this.ownerCt.getDockedComponent('ticketCustomerPanelButtonToolbar');
-				var saveButton = buttonToolbar.getComponent('saveButton');
-				if (customer_id == anonimo_company_id) {
-					saveButton.hide();
-				} else {
-					saveButton.show();
-				}
 			
 				// Inform the TicketCustomerPanel about the new company
 				var contactPanel = Ext.getCmp('ticketContactPanel');
@@ -178,13 +169,15 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var company_name = form.findField('company_name').getValue();
 				var vat_number = form.findField('vat_number').getValue();
 
-				company_record.set('company_name', company_name.toUpperCase());
-				company_record.set('vat_number', vat_number.toUpperCase());
-				company_record.set('company_type_id', form.findField('company_type_id').getValue());
-				company_record.set('company_province', form.findField('company_province').getValue());
-	
-				// Tell the store to update the server via it's REST proxy
-				companyStore.sync();
+				if (company_id != anonimo_company_id) { //No save anonymous
+					company_record.set('company_name', company_name.toUpperCase());
+					company_record.set('vat_number', vat_number.toUpperCase());
+					company_record.set('company_type_id', form.findField('company_type_id').getValue());
+					company_record.set('company_province', form.findField('company_province').getValue());
+		
+					// Tell the store to update the server via it's REST proxy
+					companyStore.sync();
+				}
 	
 				// Write the new company (if any...) to the ticket store
 				var ticket_form = Ext.getCmp('ticketForm');
@@ -301,13 +294,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
 		var saveButton = buttonToolbar.getComponent('saveButton');
-
-		// Disable the Save button if we show the anonymous customer
-		if (customer_id == anonimo_company_id) {
-			saveButton.hide();
-		} else {
-			saveButton.show();
-		}
 
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();

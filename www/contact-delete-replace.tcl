@@ -55,7 +55,7 @@ db_transaction {
 
 	# Replace any ocurrence of contact_id by contact_id_replacement
 	db_dml update_im_ticket "update im_tickets set ticket_customer_contact_id = :contact_id_replacement where ticket_customer_contact_id = :contact_id"
-	db_dml update_acs_rels	"update acs_rels set object_id_two = :contact_id_replacement where object_id_two = :contact_id and object_id_one not in (select object_id_one from acs_rels where object_id_two= :contact_id  )" 
+	db_dml update_acs_rels	"update acs_rels set object_id_two = :contact_id_replacement where object_id_two = :contact_id and object_id_one not in (select object_id_one from acs_rels where object_id_two= :contact_id_replacement)" 
 	db_dml update_acs_acs_objects "update acs_objects set creation_user = :contact_id_replacement where creation_user = :contact_id" 
 	
 
