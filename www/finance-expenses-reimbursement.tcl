@@ -376,7 +376,7 @@ set employee_subtotal_net_reimburse 0
 
 	# Global header/footer
 	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Type" "Ext<br>Company" \
-			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted (net/pre-tax)" "Ref." "Note"}
+			 "Pay<br>Type" "Amount" "Amount<br>incl. VAT" "% Reimbursable" "Amount<br>Reimbursable" "Amount Reimbursable<br>converted (pre-tax/net)" "Ref." "Note"}
 	set footer0 { }
 	
         set employee_subtotal_vat_reimburse_counter [list \
