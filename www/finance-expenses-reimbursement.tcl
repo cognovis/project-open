@@ -354,7 +354,7 @@ set employee_subtotal_net_reimburse 0
 				footer {
 					"\#colspan=3"
 				        "\#colspan=8 <nobr><b>Total Project</b>"
-					"\#align='right' <b> $project_subtotal $default_currency / $project_subtotal_net $default_currency</b></nobr><br><br>"
+					"\#align='right'<b> $project_subtotal_net $default_currency / $project_subtotal $default_currency </b></nobr><br><br>"
 				        "\#colspan=3"
 				} \
 			] \
