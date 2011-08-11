@@ -88,12 +88,11 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Company_Type#',
 		name:		'company_type_id',
 		xtype:		'combobox',
-                valueField:	'category_id',
-                displayField:	'category_translated',
+        valueField:	'category_id',
+        displayField:	'category_translated',
 		forceSelection: true,
 		queryMode:	'local',
 		store:		companyTypeStore,
-		typeAhead:	true,
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';

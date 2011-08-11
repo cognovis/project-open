@@ -99,6 +99,8 @@
   <msg key="New_Company">New Company</msg>
   <msg key="New_Company_Prefix">Company</msg>
   <msg key="New_Contact">New Contact</msg>
+  <msg key="New_Customer">New Customer</msg>
+  <msg key="New_Ticket">New ticket</msg>
   <msg key="New_ticket">New ticket</msg>
   <msg key="New_Ticket_Prefix">Ticket #</msg>
   <msg key="New_User">Nuevo</msg>
@@ -149,6 +151,7 @@
   <msg key="Ticket_type">Ticket type</msg>
   <msg key="Tickets">Tickets</msg>
   <msg key="Type">Tipo</msg>
+  <msg key="Upload_File">Upload File</msg>
   <msg key="Upload_New_Attachment">Upload New Attachment</msg>
   <msg key="Uploading_your_photo">Uploading your photo</msg>
   <msg key="User">User</msg>
