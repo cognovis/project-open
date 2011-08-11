@@ -322,7 +322,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		text:			'#intranet-sencha-ticket-tracker.Reject_Button#',
 		itemId:			'rejectButton',
 		id:			'ticketFormRightRejectButton',
-		hidden:			false,		// ToDo: Hide and enable only if rejectable (last_queue_id is set)
+		hidden:			false,	
 		formBind:		true,
 		handler: function() {
 
@@ -437,11 +437,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var ticket_org_queue_field = form.findField('ticket_org_queue_id');
 		ticket_org_queue_field.setValue(ticket_queue_field.getValue());
 
-		// Enable the "Reject" button if last_queue_id exists
-		if ('' != ticket_last_queue_field.getValue()) {
-			// ToDo: enable the reject button
-		}
-
 		// Disable the read-only date fields
 		// form.findField('ticket_creation_date').setDisabled(true);
 		// form.findField('ticket_escalation_date').setDisabled(true);
@@ -467,8 +462,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			rejectButton.hide();
 		} else {
 			saveButton.show();
-			rejectButton.show();			
+			// Enable the "Reject" button if last_queue_id exists
+			if (Ext.isEmpty(ticket_last_queue_field.getValue())){
+				rejectButton.hide();
+			} else {
+				rejectButton.show();
+			}
 		}
+		
 
 		// Calculate the drop-down box for escalation
 		var programId = rec.get('ticket_area_id');
