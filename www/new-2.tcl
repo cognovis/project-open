@@ -535,6 +535,10 @@ order by
     set task_title ""
     db_foreach task_sum_query $task_sum_sql {
 
+        if { ![info exists file_type_id] } {
+            set file_type_id ""
+        }
+
 	# Check if a material for the select parameter combination exists
 	# or create new material
 	set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation]]
