@@ -683,6 +683,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {[a-z_]+ @@ val}
 	cond {val is not null}
 	cond {val in \( val \)}
 	cond {val in \( query \)}
