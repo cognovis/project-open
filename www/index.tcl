@@ -97,6 +97,8 @@ set elements_list {
 
 
 set main_sql_select ""
+set group_list [list]
+
 if {$reports_exist_p && $user_admin_p} {
     lappend elements_list \
         edit {
@@ -125,11 +127,8 @@ if {$reports_exist_p && $user_admin_p} {
                 and o.object_type = 'im_profile'
     }
 
-    set group_list [list]
     db_foreach group_list $group_list_sql {
-	
 	lappend group_list $group_id
-	
 	lappend elements_list \
 	    p${group_id}_read_p [list \
 				     label "[im_gif $profile_gif $group_name]" \
