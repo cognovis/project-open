@@ -96,6 +96,7 @@ set elements_list {
 }
 
 
+set main_sql_select ""
 if {$reports_exist_p && $user_admin_p} {
     lappend elements_list \
         edit {
@@ -125,7 +126,6 @@ if {$reports_exist_p && $user_admin_p} {
     }
 
     set group_list [list]
-    set main_sql_select ""
     db_foreach group_list $group_list_sql {
 	
 	lappend group_list $group_id
