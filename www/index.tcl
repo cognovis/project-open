@@ -82,6 +82,7 @@ set elements_list {
     name {
 	label $page_title
 	display_template {
+	    <nobr>
 	    <if @reports.indent_level@ gt 4>
 	    @reports.indent_spaces;noquote@ 
 	    <a href="@reports.url@">@reports.name@</a>
@@ -89,6 +90,7 @@ set elements_list {
 	    <else>
 	    <b>@reports.name@</b>
 	    </else>
+	    </nobr>
 	}
     }
 }
@@ -103,12 +105,11 @@ if {$reports_exist_p && $user_admin_p} {
             }
         }
     
-}
 
-# ---------------------------------------------------
-# Add columns for each of the profiles
+    # ---------------------------------------------------
+    # Add columns for each of the profiles
 
-set group_list_sql {
+    set group_list_sql {
         select DISTINCT
                 g.group_name,
                 g.group_id,
@@ -121,22 +122,25 @@ set group_list_sql {
                 g.group_id = o.object_id
                 and g.group_id = p.profile_id
                 and o.object_type = 'im_profile'
+    }
+
+    set group_list [list]
+    set main_sql_select ""
+    db_foreach group_list $group_list_sql {
+	
+	lappend group_list $group_id
+	
+	lappend elements_list \
+	    p${group_id}_read_p [list \
+				     label "[im_gif $profile_gif $group_name]" \
+				     display_template "@reports.p${group_id}_read_p;noquote@" \
+				    ]
+	
+	append main_sql_select "\tim_object_permission_p(m.menu_id, $group_id, 'read') as p${group_id}_read_p,\n"
+    }
+
 }
 
-set group_list [list]
-set main_sql_select ""
-db_foreach group_list $group_list_sql {
-    
-    lappend group_list $group_id
-
-    lappend elements_list \
-        p${group_id}_read_p [list \
-            label "[im_gif $profile_gif $group_name]" \
-            display_template "@reports.p${group_id}_read_p;noquote@" \
-	]
-
-    append main_sql_select "\tim_object_permission_p(m.menu_id, $group_id, 'read') as p${group_id}_read_p,\n"
-}
 
 # ---------------------------------------------------
 # 
