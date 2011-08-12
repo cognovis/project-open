@@ -8,7 +8,7 @@ ad_page_contract {
     { return_url "/intranet-reporting-indicators/index" }
 }
 
-set current_user_id [auth::require]
+set current_user_id [auth::require_login]
 set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 if {!$admin_p} { 
     ad_return_complaint 1 "You are not an Administrator"
