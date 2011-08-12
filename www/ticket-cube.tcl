@@ -22,9 +22,9 @@ ad_page_contract {
     { customer_type_id:integer "" }
     { customer_id:integer "" }
     { aggregate "one" }
-
     { left_vars "" }
     { top_vars "" }
+    { extended_filtering_p 1 }
 }
 
 # ------------------------------------------------------------
@@ -360,11 +360,11 @@ ns_write "
 [im_navbar]
 <table cellspacing=0 cellpadding=0 border=0>
 <form>
-[export_form_vars ticket_id]
+[export_form_vars ticket_id extended_filtering_p]
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Start_Date "Start Date"]</td>
+	  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Start_Date "Start Date"]</nobr></td>
 	  <td class=form-widget colspan=3>
 	    <input type=textfield name=start_date value=$start_date>
 	  </td>
@@ -375,6 +375,9 @@ ns_write "
 	    <input type=textfield name=end_date value=$end_date>
 	  </td>
 	</tr>
+"
+if {$extended_filtering_p} {
+    ns_write "
 	<tr>
 	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Type "Ticket Type"]</td>
 	  <td class=form-widget colspan=3>
@@ -399,6 +402,9 @@ ns_write "
 	    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
 	  </td>
 	</tr>
+    "
+}
+ns_write "
 	<tr>
 	  <td class=form-widget colspan=4 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Aggregate Aggregate]</td>
 	</tr>
