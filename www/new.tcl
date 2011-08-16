@@ -47,6 +47,36 @@ if {"edit" == $form_mode} { set show_components_p 0 }
 
 set edit_param_status_p [im_permission $current_user_id edit_param_status]
 
+
+
+
+# ---------------------------------------------------------------
+# Delete action
+# ---------------------------------------------------------------
+
+set button_pressed [template::form get_action form]
+if {"delete" == $button_pressed} {
+    if {[catch {
+	db_transaction {
+	    set rel_ids [db_list sla_param_rels "
+		select pri.rel_id
+		from acs_rels r, im_sla_param_indicator_rels pir
+		where r.rel_id = pir.rel_id and object_id_one = :param_id
+	    "]
+	    foreach rel_id $rel_ids {
+		db_dml del_rels "select im_sla_param_indicator_rel__delete(:rel_id)"
+	    }
+	    db_dml del_param "select im_sla_parameter__delete(:param_id)"
+	}
+    } err_msg]} {
+	ad_return_complaint 1 "<b>Error deleting Parameter</b>:<p>
+	<pre>$err_msg</pre>"
+	ad_script_abort
+    }
+    ad_returnredirect $return_url
+
+}
+
 # ---------------------------------------------------------------
 # Create the Form
 # ---------------------------------------------------------------
