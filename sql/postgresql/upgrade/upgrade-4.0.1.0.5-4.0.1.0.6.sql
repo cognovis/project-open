@@ -13,13 +13,19 @@ DECLARE
 BEGIN
 	select count(*) into v_count from user_tab_columns
 	where  lower(table_name) = 'im_tickets' and lower(column_name) = 'ticket_resolution_time';
-	IF v_count > 0 THEN return 0; END IF;
+	IF v_count = 0 THEN
+		alter table im_tickets
+		add ticket_resolution_time numeric(12,2);
+	END IF;
 
-	alter table im_tickets
-	add ticket_resolution_time numeric(12,2);
 
-	alter table im_tickets
-	add ticket_resolution_time_dirty timestamptz;
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_tickets' and lower(column_name) = 'ticket_resolution_time_dirty';
+	IF v_count = 0 THEN
+		alter table im_tickets
+		add ticket_resolution_time_dirty timestamptz;
+	END IF;
+
 
 	SELECT im_dynfield_attribute_new (
 		'im_ticket', 'ticket_resolution_time', 'Resolution Time', 'numeric', 'integer', 'f', 9000, 'f', 'im_tickets'
