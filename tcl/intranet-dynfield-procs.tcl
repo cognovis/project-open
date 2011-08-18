@@ -302,7 +302,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		text - textarea - richtext {
 		    # Create a "like" search
 		    # lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
-		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {}} \[im_opt_val $attribute_name\]\]\]%'"
+		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
 		}
 		date {
 		    # Not supported yet
