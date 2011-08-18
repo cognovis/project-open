@@ -255,14 +255,14 @@ set top_vars_options [list \
 
 set left_scale_options [list \
 	"" 					"" \
-	"ticket_name"				"Ticket - Name" \
-	"ticket_nr"				"Ticket - Nr" \
-	"ticket_status"				"Ticket - Status" \
-	"ticket_type"				"Ticket - Type" \
-	"ticket_creation_user"			"Ticket - Creation User" \
-	"ticket_creation_user_dept"		"Ticket - Creator's Department" \
-	"hour_of_day"				"Ticket - Creation Hour" \
-	"company_name"				"Company - Name" \
+	"ticket_name"				"Ticket - [lang::message::lookup "" intranet-core.Name Name]" \
+	"ticket_nr"				"Ticket - [lang::message::lookup "" intranet-core.Nr Nr]" \
+	"ticket_status"				"Ticket - [lang::message::lookup "" intranet-core.Status Status]" \
+	"ticket_type"				"Ticket - [lang::message::lookup "" intranet-core.Type Type]" \
+	"ticket_creation_user"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_User "Creation User"]" \
+	"ticket_creation_user_dept"		"Ticket - [lang::message::lookup "" intranet-reporting.Creators_Dept "Creator's Department"]" \
+	"hour_of_day"				"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Hour "Creation Hour"]" \
+	"company_name"				"[lang::message::lookup "" intranet-core.Company "Company"] - [lang::message::lookup "" intranet-core.Name Name]" \
 ]
 
 
