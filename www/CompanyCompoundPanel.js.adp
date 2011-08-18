@@ -37,50 +37,7 @@ var companyCompoundPanel = Ext.define('TicketBrowser.CompanyCompoundPanel', {
 		xtype: 'companyForm',
 		title: '#intranet-sencha-ticket-tracker.Company#',
 		split:	true,
-		region:	'center'
-/*
-	}, {
-		itemId:	'companyCustomerPanel',
-		title:	'#intranet-sencha-ticket-tracker.Company#',
-		xtype:	'companyCustomerPanel',
-		split:	true,
-		region:	'center'
-	}, {
-		itemId: 'companyContactPanel',
-		title: '#intranet-sencha-ticket-tracker.Contact#',
-		xtype: 'companyContactPanel',
-		split:	true,
-		region:	'south'
-*/
 	}],
-
-	// Called from the CompanyGrid if the user has selected a company
-	newCompany: function(rec){
-		var companyForm = this.child('#companyForm');
-		companyForm.newCompany(rec);
-
-/*		this.child('#center').child('#companyCustomerPanel').newCompany(rec);
-		this.child('#center').child('#companyContactPanel').newCompany(rec);
-		this.child('#east').child('#auditGrid').newCompany(rec);
-		this.child('#east').child('#companyFormRight').newCompany(rec);
-		this.child('#east').child('#fileStorageGrid').newCompany(rec);
-*/
-	},
-
-	// Called from the CompanyGrid if the user has selected a company
-	loadCompany: function(rec){
-		var companyForm = this.child('#companyForm');
-		companyForm.loadCompany(rec);
-
-/*
-		this.child('#center').child('#companyContactPanel').loadCompany(rec);
-		this.child('#center').child('#companyCustomerPanel').loadCompany(rec);
-		this.child('#east').child('#auditGrid').loadCompany(rec);
-		this.child('#east').child('#companyFormRight').loadCompany(rec);
-		this.child('#east').child('#fileStorageGrid').loadCompany(rec);
-*/
-	}
-
 });
 
 

@@ -93,17 +93,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		displayField:   'category_translated',
 		allowBlank:	false,
 		store:		companyTypeStore,
+		queryMode:	'local',
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
-		}
-	}, /*	{
-		name:		'company_province',
-		xtype:		'textfield',
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
-		allowBlank:	false
-	}*/
+		},
+		validator: function(value){
+			return this.store.validateLevel(this.value,this.allowBlank)
+		}				
+	}, 
 	
 	{
 		name:		'company_province',
@@ -122,7 +121,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		dock:		'bottom',
 		itemId:		'ticketCustomerPanelButtonToolbar',
 		defaults:	{ minWidth: 100 },
-		items: ['->', {
+		items: ['->',/* {
 			itemId:		'viewButton',
 			text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
 			handler:	function() {
@@ -131,7 +130,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var redirect = '/intranet/companies/view?company_id='+company_id; 
 				window.open(redirect, '_blank');
 			}
-		}, {
+		},*/ {
 			itemId:		'addButton',
 			text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
 			width: 		120,
@@ -143,11 +142,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				var createButton = this.ownerCt.child('#createButton');
 				createButton.show();
 				
-				// Disable the "Save Changes" and "View Company" button
+				// Disable the "Save Changes"  button
 				var createButton = this.ownerCt.child('#saveButton');
 				createButton.hide();
-				var viewButton = this.ownerCt.child('#viewButton');
-				viewButton.hide();
 				
 				// Diable this button
 				this.hide();
@@ -156,18 +153,21 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			itemId:		'saveButton',
 			text: 		'#intranet-sencha-ticket-tracker.Save_Changes#',
 			width: 		120,
+			formBind:	true,
 			handler: function(){
 				var form = this.ownerCt.ownerCt.getForm();
 				var combo = form.findField('company_id');
 				var values = form.getFieldValues();
 				var company_id = combo.getValue();
-				
+								
 				Function_checkValues(values);	
 							
 				// find the company in the store
 				var company_record = companyStore.findRecord('company_id',company_id);
-				var company_name = form.findField('company_name').getValue();
-				var vat_number = form.findField('vat_number').getValue();
+			/*	var company_name = form.findField('company_name').getValue();
+				var vat_number = form.findField('vat_number').getValue();*/
+				var company_name = values.company_name;
+				var vat_number = values.vat_number;				
 
 				if (company_id != anonimo_company_id) { //No save anonymous
 					company_record.set('company_name', company_name.toUpperCase());
@@ -202,6 +202,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 			itemId:		'createButton',
 			text: 		'#intranet-sencha-ticket-tracker.Save_New_Company#',
 			hidden:		true,			// only show when in "adding mode"
+			formBind:	true,			
 			handler: function(){
 				var form = this.ownerCt.ownerCt.getForm();
 				var values = form.getFieldValues();
@@ -289,8 +290,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 
 		// Reset button config
 		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');
-		var viewButton = buttonToolbar.getComponent('addButton');
-		viewButton.show();
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
 		var saveButton = buttonToolbar.getComponent('saveButton');

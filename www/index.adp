@@ -36,21 +36,30 @@
 	<script type="text/javascript" src="TicketCompoundPanel.js"></script> 
 	<script type="text/javascript" src="TicketPreviewPlugin.js"></script> 
 
+	
+	
 	<!-- ------------------------------- Companies ---------------------------------------- -->
 	<script type="text/javascript" src="CompanyForm.js"></script> 
 	<script type="text/javascript" src="CompanyFilterForm.js"></script> 
 	<script type="text/javascript" src="CompanyGrid.js"></script> 
-	<script type="text/javascript" src="CompanyCompoundPanel.js"></script> 
-	<script type="text/javascript" src="CompanyContainer.js"></script> 
+	
+	<script type="text/javascript" src="CompanyPanel.js"></script> 
 	<script type="text/javascript" src="TicketChangeCustomerWindow.js"></script> 
 
 	<!-- ------------------------------- Contacts ---------------------------------------- -->
 	<script type="text/javascript" src="ContactForm.js"></script> 
 	<script type="text/javascript" src="ContactFilterForm.js"></script> 
 	<script type="text/javascript" src="ContactGrid.js"></script> 
-	<script type="text/javascript" src="ContactCompoundPanel.js"></script> 
-	<script type="text/javascript" src="ContactContainer.js"></script> 
+	<script type="text/javascript" src="ContactPanel.js"></script> 
 	<script type="text/javascript" src="TicketChangeContactWindow.js"></script> 
+	
+	<!-- ------------------------------- Companies/Contacts ---------------------------------------- -->
+	<script type="text/javascript" src="CompanyContactContainer.js"></script> 
+	<script type="text/javascript" src="CompanyContactCustomerPanel.js"></script> 
+	<script type="text/javascript" src="CompanyContactContactPanel.js"></script> 
+	<script type="text/javascript" src="CompanyContactCompoundPanel.js"></script> 
+	<script type="text/javascript" src="CompanyContactBizObjectMemberGrid.js"></script>  
+	<script type="text/javascript" src="CompanyContactContactForm.js"></script> 		
 
 	<!-- ------------------------------- Main - Integrating Everything ------------------- -->
 	<script type="text/javascript" src="MainPanel.js"></script> 
@@ -68,7 +77,8 @@
 			'Ext.layout.container.Border'
 		]);
 		Ext.onReady(function(){
-			Ext.QuickTips.init();
+			// Init the singleton.  Any tag-based quick tips will start working.
+			Ext.tip.QuickTipManager.init();			
 			new TicketBrowser.Main();
 		});
 	</script> 

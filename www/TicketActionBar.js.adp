@@ -55,6 +55,15 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					ticketCompoundPanel.newTicket();
 					ticketCompoundPanel.tab.show();
 					break;
+				case 'companyContactContainer':
+				case 'companyContactCompoundPanel':
+					var companyContactCompoundPanel = Ext.getCmp('companyContactCompoundPanel');
+					companyContactCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Company#');
+					var mainTabPanel = Ext.getCmp('mainTabPanel');
+					mainTabPanel.setActiveTab(companyContactCompoundPanel);
+					companyContactCompoundPanel.newCompany();
+					companyContactCompoundPanel.tab.show();
+					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
 				break
@@ -115,6 +124,16 @@ Ext.define('TicketBrowser.TicketActionBar', {
 							case 'ticketCompoundPanel':
 								Ext.getCmp('ticketCompoundPanel').onDelete(btn, pressed);
 								break;
+							case 'companyContactContainer':
+								var companyGrid = Ext.getCmp('companyGrid');
+								if (companyGrid.getSelectionModel().getSelection().length > 0){
+									companyGrid.onDelete();
+								}
+								var contactGrid =  Ext.getCmp('contactGrid');
+								if (contactGrid.getSelectionModel().getSelection().length > 0){
+									contactGrid.onDelete();
+								}								
+								break;								
 							default:
 								alert('Tab not recognized for delete operation: ' + xtype);
 							break
@@ -123,7 +142,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		     	}
 			});								
 		}
-	}, '-', {
+	}, {id: 'buttonSummaryTicketSeparator', xtype: 'tbseparator'}, {
 		id: 'buttonSummaryTicket',
 		text:		'#intranet-sencha-ticket-tracker.Summary#',
 		iconCls:	'icon-summary',
@@ -135,7 +154,60 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			var grid = Ext.getCmp('ticketGrid');
 			grid.onSummaryChange(btn, pressed);
 		}
-	}, {
+	}, {id: 'buttonSaveSeparator', xtype: 'tbseparator'},  {
+		xtype : 'tbspacer',
+		width: 20
+	},   {
+		id: 'buttonSave',
+		text:		'#intranet-sencha-ticket-tracker.button_Save#',
+		iconCls:	'icon-save',
+		handler: function(btn, pressed) {
+			// Distribute the event to the selected panel
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			var xtype = mainTabPanel.getActiveTab().xtype;
+			switch (xtype) {
+				case 'companyContactCompoundPanel':
+					
+					//Comprobar si los datos del los formularios son validos ¿Desabilitar botón mejor?
+						//var company_name = Ext.getCmp('companyContactCustomerPanel').getForm().findField('company_id').getRawValue();
+						var companyValues = Ext.getCmp('companyContactCustomerPanel').getValues();
+						var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
+						var contactValues =  Ext.getCmp('companyContactContactForm').getValues();
+						
+						Ext.getCmp('companyContactCompoundPanel').disable();
+						if (Ext.isEmpty(companyRecord)) {
+							//Create new company
+							Function_newCompany(companyValues);
+						} else {
+							//Update company
+							Function_updateCompany(companyValues);
+						}
+						
+						
+						if (!Ext.isEmpty(contactValues.first_names) && !Ext.isEmpty(contactValues.last_name)) {
+							if (contactValues.checkNew) {
+								//Create new contact
+								Function_newContact(contactValues, companyRecord.get('company_id'));
+							} else {
+								//Update contact
+								Function_updateContact(contactValues, companyRecord.get('company_id'));
+							}
+						} else {
+							if (!Ext.isEmpty(companyValues.company_id)){
+								var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
+								Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
+							}
+						}
+						
+						Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name);  //Update tab name with company name
+					break;
+				default:
+					alert('Tab not recognized for new operation: ' + xtype);
+				break
+			}
+		}		
+
+	}, {xtype: 'tbseparator'},  {
 		xtype : 'tbspacer',
 		width: 20
 	}, {
@@ -151,7 +223,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	}, {
 		xtype : 'tbspacer',
 		width: 20
-	}, '-', {
+	}, {xtype: 'tbseparator'}, {
 		xtype : 'tbspacer',
 		width: 20
 	}, {
@@ -185,12 +257,20 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		}
 		
 		var but = this.getComponent(button_id);
+		var sep = this.getComponent(button_id + 'Separator'); //Separator
 		but.setDisabled(disabled);	
 		if (hide) {
 			but.hide();
 		} else {
 			but.show();
 		}
+		if (!Ext.isEmpty(sep)){
+			if (hide) {
+				sep.hide();
+			} else {
+				sep.show();
+			}			
+		}		
 	},
 	
 	startBar: function (){

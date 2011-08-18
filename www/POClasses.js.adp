@@ -37,7 +37,7 @@ Ext.define('PO.data.CategoryStore', {
 		if (rec == null || typeof rec == "undefined") { return result; }
 		return rec.get('category_translated'); 
 	},
-	fill_tree_category_translated: 	function(store) {
+	fill_tree_category_translated: 	function(store) { // Concat the tree category names. It is useful to order by name and level
 		store.each(function(record){
 			var tree_sortkey = record.get('tree_sortkey');
 			var lon = record.get('tree_sortkey').length;
@@ -49,7 +49,37 @@ Ext.define('PO.data.CategoryStore', {
 			}						
 			record.set('tree_category_translated', tree_category);					
 		});
+	},
+	validateLevel: function(value,nullvalid) { //Validate the combo value. No level with sublevel is permitted. 
+		if (nullvalid && Ext.isEmpty(value)) {
+			return true;
+		}
+		if (!nullvalid && Ext.isEmpty(value)) {
+			return 'Obligatorio';
+		}
+
+		var validate = true;
+		var record = this.getById(value);
+		var record_field_value = record.get('tree_sortkey');
+		var record_field_length = record_field_value.length;		
+		
+		this.each(function(record){
+				var store_field_value = record.get('tree_sortkey');
+				var store_field_length = store_field_value.length;
+				if (store_field_length > record_field_length && store_field_value.substring(0,record_field_length) == record_field_value) {
+					validate = 'No permitido';
+					return validate;
+				}
+			}
+		);
+		return validate;	
+	},
+	addBlank:  function() { // Add blank value tothe store. It is used to white selecction in comboboxes
+		var categoryVars = {category_id: '', category_translated: null};
+		var category = Ext.ModelManager.create(categoryVars, 'TicketBrowser.Category');
+		this.add(category);	
 	}
+	
 });
 
 /*

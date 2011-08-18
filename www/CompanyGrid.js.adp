@@ -28,7 +28,7 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 	model: 'TicketBrowser.Company',
 	remoteSort: true,
 	remoteFilter:	true,
-	pageSize: 20,
+	pageSize: 12,
 	autoSync: true,				// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
@@ -38,15 +38,27 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 });
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-	mode:	'SINGLE',
+//	mode:	'SINGLE',
+	checkOnly: true,
 	listeners: {
-		selectionchange: function(sm, selections) {
-			if (selections.length > 0){
+		selectionchange: function(view,selections,options)		{
+			//One selection select contact in contactGrid
+			if (selections.length == 1) {
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(selections[0].get('company_id'));
+			} else {
+				//Other selection view all contact un contactGrid
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
+			}
+			
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
+			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
-			}
-		}
+			}			
+			
+			Ext.getCmp('contactFilterForm').onSearch();
+		}		
 	}	
 });
 
@@ -58,13 +70,32 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	store:		companyGridStore,
 	selModel:	companyGridSelModel,
 
-	listeners: {
+	listeners: {	
 		itemdblclick: function(view, record, item, index, e) {
-	
-			// Load the company into the CompanyCompoundPanel
-			var compoundPanel = Ext.getCmp('companyCompoundPanel');
+			//ToDo: open tab companyContact details
+			var compoundPanel = Ext.getCmp('companyContactCompoundPanel');
 			compoundPanel.loadCompany(record);
-		}
+			var title = record.get('company_name');
+			compoundPanel.tab.setText(title);
+			compoundPanel.tab.show();
+		
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);			
+		}/*,
+		selectionchange: function(view,selections,options)		{
+			//One selection select contact in contactGrid
+			if (selections.length == 1) {
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(selections[0].get('company_id'));
+			} else {
+				//Other selection view all contact un contactGrid
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
+			}
+			
+			//TODO: control action bar buttons depend of selection in two grid (company and contact)
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel();
+			
+			Ext.getCmp('contactFilterForm').onSearch();
+		}*/
 	},
 
 	columns: [

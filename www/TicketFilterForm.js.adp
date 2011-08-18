@@ -44,8 +44,8 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	{	name:		'assigned_queue_id', 
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Group#',
 		xtype:		'combobox',
-                valueField:	'group_id',
-                displayField:	'group_name',
+        valueField:	'group_id',
+        displayField:	'group_name',
 		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
 		value:		'my_groups',
 		forceSelection:	true,
@@ -59,11 +59,11 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 	}, {
 		name: 'creation_user',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_User#',
-                xtype:          'combobox',
-                valueField:     'user_id',
-                displayField:   'name',
+         xtype:          'combobox',
+        valueField:     'user_id',
+        displayField:   'name',
 		queryMode:	'local',
-                store:          userEmployeeStore,
+        store:          userEmployeeStore,
 		listeners: {
 			'change': function(field, values) { 
 				if (null == values) { this.reset(); }
@@ -131,22 +131,23 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		},
 		listeners: {
 			'change': function(field, values) { 
-				if (null == values) { this.reset();}
-				var ticket_area_id =  Ext.getCmp('ticketFilterForm').getForm().findField('ticket_area_id');
-	
-				if (ticket_area_id.store.filters.length > 0) {
-					//Filter value is modified with the new value selected.
-					ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
-				} else {
-					//New filters is created with the value selected
-					ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
-				}
-				if (resetCombo) {
-					ticket_area_id.reset();
-					ticket_area_id.store.load();
-				} else {
-					resetCombo = true;
-				}															
+		//		if (Ext.isEmpty(values)) { this.reset();} else {
+					var ticket_area_id =  Ext.getCmp('ticketFilterForm').getForm().findField('ticket_area_id');
+		
+					if (ticket_area_id.store.filters.length > 0) {
+						//Filter value is modified with the new value selected.
+						ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(this.value,8,"0");
+					} else {
+						//New filters is created with the value selected
+						ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(this.value,8,"0"));
+					}
+					if (resetCombo) {
+						ticket_area_id.reset();
+						ticket_area_id.store.load();
+					} else {
+						resetCombo = true;
+					}							
+				//}								
 			},
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
@@ -167,15 +168,20 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		},
 		listeners: {
 			'change': function(field, values) {
-				if (null == values) { this.reset(); } else {
+		//		if (Ext.isEmpty(values)) { this.reset(); } else {
+				if (!Ext.isEmpty(values)) {
 					var form =  Ext.getCmp('ticketFilterForm').getForm();
 					var record = areaTicketAreaStore.getById(values);
-					var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
-					var program_id = '' + parseInt(tree_sortkey,'10');	
-					var ticket_program_id = form.findField('ticket_program_id')
-					if (ticket_program_id.value != program_id) {
-						resetCombo= false;			
-						form.findField('ticket_program_id').select(program_id);	
+					if (record != null) {
+						var tree_sortkey = record.get('tree_sortkey').substring(0,8);				
+						var program_id = '' + parseInt(tree_sortkey,'10');	
+						if (program_id != 'NaN'){
+							var ticket_program_id = form.findField('ticket_program_id')
+							if (ticket_program_id.value != program_id) {
+								resetCombo= false;			
+								form.findField('ticket_program_id').select(program_id);	
+							}
+						}
 					}
 				}	
 			},
@@ -191,8 +197,8 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_Type#',
 		name:		'ticket_type_id',
 		xtype:		'combobox',
-                valueField:	'category_id',
-                displayField:	'category_translated',
+        valueField:	'category_id',
+        displayField:	'category_translated',
 		forceSelection:	true,
 		queryMode:	'local',
 		store:		ticketTypeStore,

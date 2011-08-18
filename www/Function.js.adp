@@ -45,8 +45,7 @@ function Function_espaces(text){
 }
 
 /**
-	Check all the values removing whiteespaces with 'espaces' function
-
+ *	Check all the values removing whiteespaces with 'espaces' function
 */
 function Function_checkValues(values){
 	for(var field in values) {
@@ -57,23 +56,158 @@ function Function_checkValues(values){
 }
 
 /**
- *	Validate field´s level
- *	return: Valid value return 'true'.
- *
+ *	Create a new company
  */
-
-function Function_validateLevel(record,store,field){
-	var record_field_value = record.get(field);
-	var record_field_length = record_field_value.length;
-	var validate = true;
+function Function_newCompany(values){
+	Function_checkValues(values);
+	values.company_id = null;
+	values.company_name = values.company_name.toUpperCase();
+	values.vat_number = values.vat_number.toUpperCase();
 	
-	store.each(function(record){
-			var store_field_value = record.get(field);
-			var store_field_length = store_field_value.length;
-			if (store_field_length > record_field_length && store_field_value.substring(0,record_field_length) == record_field_value) {
-				validate = false;
-			}
+	var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
+	companyModel.phantom = true;
+	
+	companyModel.save({
+		scope: this,
+		success: function(company_record, operation) {
+			// Store the new company in the store that that it can be referenced.
+			companyStore.add(company_record);
+			Ext.getCmp('companyContactCompoundPanel').loadCompany(company_record);
+		},
+		failure: function(company_record, operation) {
+			Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
 		}
-	);
-	return validate;
+	});
+}
+
+/**
+ *	Update a company
+ */
+function Function_updateCompany(values){
+	Function_checkValues(values);	
+				
+	// find the company in the store
+	var company_record = companyStore.findRecord('company_id',values.company_id);
+
+	if (values.company_id != anonimo_company_id) { //No save anonymous
+		company_record.set('company_name', values.company_name.toUpperCase());
+		company_record.set('vat_number', values.vat_number.toUpperCase());
+		company_record.set('company_type_id', values.company_type_id);
+		company_record.set('company_province', values.company_province);
+		company_record.set('spri_company_telephone', values.spri_company_telephone);
+		company_record.set('spri_company_email', values.spri_company_email);
+		
+		companyStore.sync();		// Tell the store to update the server via it's REST proxy
+	}
+}
+
+/**
+ *	Create a new contact
+ */
+function Function_newContact(values,company_id){
+	Function_checkValues(values);	
+	values.user_id = null;
+	values.first_names = values.first_names.toUpperCase();
+	values.last_name = values.last_name.toUpperCase();
+	values.last_name2 = values.last_name2.toUpperCase();
+
+	var userModel = Ext.ModelManager.create(values, 'TicketBrowser.User');
+	userModel.phantom = true;
+	userModel.save({
+		scope: this,
+		success: function(user_record, operation) {
+			// Add the new user to the user store to make it accessible
+			userStore.add(user_record);
+			userCustomerStore.add(user_record);
+			
+			var contact_id = user_record.get('user_id');
+			
+			// Add the users to the group "Customers".
+			// This code doesn't need to be synchronized.
+			// The record will establish a "relationship" between the users and a group
+			var groupMember = {
+				object_id_one:	461,		// group_id for Customers
+				object_id_two:	contact_id,
+				rel_type:	'membership_rel',
+				member_state:	'approved'
+			};
+
+			var groupMemberModel = Ext.ModelManager.create(groupMember, 'TicketBrowser.GroupMember');
+			groupMemberModel.phantom = true;
+			groupMemberModel.save({
+				scope: this,
+				success: function(record, operation) { 
+					if (!Ext.isEmpty(company_id)){
+						Function_newRelationCompanyContact(company_id, contact_id, true);
+					}	
+				},			
+				failure: function(record, operation) { 
+					Ext.Msg.alert('Failed to create group membership relationship.', operation.request.scope.reader.jsonData["message"]); 
+				}
+			});					
+		},
+		failure: function(record, operation) {
+			Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
+		}					
+	});
+}
+
+/**
+ *	Create reletion between company and contact
+ */
+function Function_newRelationCompanyContact(company_id, contact_id, loadCompanyContactCompoundPanel){
+	if (!Ext.isEmpty(company_id) && !Ext.isEmpty(contact_id)) {
+		if (75464 != company_id) {		// Don't save for Anonymous
+			// Create an object_member relationship between the user and the company
+			var memberValues = {
+				object_id_one:	company_id,
+				object_id_two:	contact_id,
+				rel_type:	'im_biz_object_member',
+				object_role_id:	1300,
+				percentage:	''
+			};
+			var member_model = Ext.ModelManager.create(memberValues, 'TicketBrowser.BizObjectMember');
+			member_model.phantom = true;
+		
+			member_model.save({
+				scope: this,
+				success: function(record, operation) { 
+					if (loadCompanyContactCompoundPanel) {
+						companyRecord = companyStore.findRecord('company_id',company_id,0,false,false,true);
+						Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
+					}	
+				},
+				failure: function(record, operation) { 
+					Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+				}
+			});
+		}
+	}
+}
+
+/**
+ *	Update a contact
+ */
+function Function_updateContact(values,company_id){
+	Function_checkValues(values);	
+	values.first_names = values.first_names.toUpperCase();
+	values.last_name = values.last_name.toUpperCase();
+	values.last_name2 = values.last_name2.toUpperCase();
+
+	// Update the model with the form variables and save. NO save anonymous
+	var userModel = userStore.findRecord('user_id',values.user_id);
+	if (userModel.get('username').indexOf('anonimo') == -1) {	
+		userModel.set(values);
+		userModel.save({
+			scope: this,
+			success: function(contact_record, operation) {
+				if (!Ext.isEmpty(company_id)){
+					Function_newRelationCompanyContact(company_id, contact_record.get('user_id'), true);
+				}
+			},
+			failure: function(record, operation) {
+				Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
+			}
+		});
+	}
 }

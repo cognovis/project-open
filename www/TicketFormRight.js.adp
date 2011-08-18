@@ -108,7 +108,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
-				}
+				},
+				validator: function(value){
+					return this.store.validateLevel(this.value,this.allowBlank)
+				}						
 			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
@@ -221,7 +224,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
-				}
+				},
+				validator: function(value){
+					return this.store.validateLevel(this.value,this.allowBlank)
+				}						
 			}]
 	
 		}, {
@@ -248,7 +254,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode:	'remote',
+				queryMode:	'local',
+				allowBlank: false,
 				store:		ticketStatusStore,
 				width:		200,
 				listeners:{
