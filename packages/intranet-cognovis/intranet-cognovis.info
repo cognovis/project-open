@@ -9,13 +9,13 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
-    <version name="4.0.1.0.1" url="http://openacs.org/repository/download/apm/intranet-cognovis-4.0.1.0.1.apm">
+    <version name="4.0.1.0.2" url="http://openacs.org/repository/download/apm/intranet-cognovis-4.0.1.0.2.apm">
         <owner url="mailto:sysadmin@tigerpond.com">System Administrator</owner>
         <summary>intranet-cognovis plugins</summary>
         <description format="text/html">Intranet Cognovis plugins to cognovis work ]po[</description>
         <maturity>0</maturity>
 
-        <provides url="intranet-cognovis" version="4.0.1.0.1"/>
+        <provides url="intranet-cognovis" version="4.0.1.0.2"/>
         <requires url="intranet-core" version="4.0.1.0.0"/>
         <requires url="intranet-dynfield" version="4.0.1.0.0"/>
         <requires url="intranet-fs" version="0.1"/>
