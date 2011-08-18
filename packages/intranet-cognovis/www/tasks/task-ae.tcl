@@ -206,7 +206,7 @@ im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
     -object_id $my_task_id \
-    -object_subtype_id 100
+    -object_subtype_id 9500
 
 
 ad_form -extend -name task -on_request {
@@ -218,6 +218,7 @@ ad_form -extend -name task -on_request {
 	set cost_center_id [db_string default_cost_center {} -default ""]
     }
 
+} -new_request {
 } -edit_request {
 
 } -new_data {
@@ -270,13 +271,19 @@ ad_form -extend -name task -on_request {
 	-object_type "im_timesheet_task" \
 	-object_id $task_id \
 	-form_id task
-    
-    # Add the users of the parent_project to the ts-task
-    set pm_role_id [im_biz_object_role_project_manager]
-    im_biz_object_add_role $current_user_id $task_id $pm_role_id
 
-    db_foreach select_members {} {
-	im_biz_object_add_role $user_id $task_id $role_id
+    set role_id [im_biz_object_role_generic]    
+
+    if {[exists_and_not_null task_assignee_id]} {
+	# We have an task_assignee_id, work with this one
+	im_biz_object_add_role $task_assignee_id $task_id $role_id
+    } else {
+	# Add the users of the parent_project to the ts-task
+	im_biz_object_add_role $current_user_id $task_id $role_id
+
+	db_foreach select_members {} {
+	    im_biz_object_add_role $user_id $task_id $role_id
+	}
     }
     
     # Write Audit Trail
@@ -316,6 +323,13 @@ ad_form -extend -name task -on_request {
     if {[im_category_is_a $task_status_id [im_timesheet_task_status_closed]]} {
 	# We need to close the entry in im_projects as well
 	db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :task_id"
+    }
+
+    set role_id [im_biz_object_role_generic]    
+
+    if {[exists_and_not_null task_assignee_id]} {
+	# We have an task_assignee_id, work with this one
+	im_biz_object_add_role $task_assignee_id $task_id $role_id
     }
 
     # Write Audit Trail

@@ -36,11 +36,38 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 	return "Generic SQL Widget: Error: Didn't find 'sql' parameter"
     }
 
-    # The "memoize_max_age" adds an empty line
-    set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
-    set memoize_max_age_pos [lsearch $params "memoize_max_age"]
-    if { $memoize_max_age_pos >= 0 } {
-        set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
+    set switch_pos [lsearch $params switch_p]
+    if {$switch_pos >= 0} {
+        set switch_p [lindex $params [expr $switch_pos +1]]
+    } else {
+        set switch_p 0
+    }
+    
+    # Deal with global variables being pushed through
+    set global_var_pos [lsearch $params global_var]
+    if {$global_var_pos >= 0} {
+        set global_var_name [lindex $params [expr $global_var_pos +1]]
+	if {[info exists ::$global_var_name]} {
+	    set $global_var_name [set ::$global_var_name]
+	} else {
+	    return ""
+	}
+    }
+    
+    set memoize_pos [lsearch $params memoize_p]
+    if {$memoize_pos >= 0} {
+        set memoize_p [lindex $params [expr $memoize_pos +1]]
+    } else {
+        set memoize_p 1
+    }
+    
+    if {$memoize_p} {
+        # The "memoize_max_age" adds an empty line
+        set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
+        set memoize_max_age_pos [lsearch $params "memoize_max_age"]
+        if { $memoize_max_age_pos >= 0 } {
+            set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
+        }
     }
 
     # The "include_empty_p" adds an empty line

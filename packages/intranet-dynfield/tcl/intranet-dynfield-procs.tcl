@@ -1053,36 +1053,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
-        # Check if the elements as disabled in the layout page
-        if {$page_url_exists_p && "" == $page_url} { continue }
-        
-        # Check if the current user has the right to read and write on the dynfield
-        set read_p [im_object_permission \
-                        -object_id $dynfield_attribute_id \
-                        -user_id $user_id \
-                        -privilege "read" \
-                       ]
-        set write_p [im_object_permission \
-                         -object_id $dynfield_attribute_id \
-                         -user_id $user_id \
-                         -privilege "write" \
-                        ]
-        if {!$read_p} { continue }
-        
-        set display_mode $default_display_mode
-        
-        # object_subtype_id can be a list, so go through the list
-        # and take the highest one (none - display - edit).
-        foreach subtype_id $object_subtype_id {
-            set key "$dynfield_attribute_id.$subtype_id"
-            if {[info exists display_mode_hash($key)]} { 
-                switch $display_mode_hash($key) {
-                    edit { set display_mode "edit" }
-                    display { if {$display_mode == "none"} { set display_mode "display" } }
-                }
-            }
-        }
-
 	# Check if the elements as disabled in the layout page
 	if {$page_url_exists_p && "" == $page_url} { continue }
 
