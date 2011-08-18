@@ -205,7 +205,9 @@ Ext.define('TicketBrowser.Company', {
 		'vat_number',			// Company's VAT ID
 		'company_group_id',		// Does the company belong to a group structure?
 		'business_sector_id',		// Business sector of the company
-		'company_province'		// Custom field "province"
+		'company_province',		// Custom field "province"
+		'spri_company_telephone',
+		'spri_company_email'
 	],
 
 	proxy:	{

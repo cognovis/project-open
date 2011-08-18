@@ -43,12 +43,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	        value:          '',
 	        displayField:   'pretty_name',
 	        valueField:     'id',
-					typeAhead:	true,
-					listeners: {
-								change: function (field,newValue,oldValue) {
-									 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
-								}
-					}							
+			typeAhead:	true,
+			listeners: {
+				change: function (field,newValue,oldValue) {
+					 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+				}
+			}							
 	},
 
 	items: [
@@ -118,7 +118,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
-		}
+		},
+		validator: function(value){
+			return this.store.validateLevel(this.value,this.allowBlank)
+		}		
 	}, {
 		name:		'ticket_program_id',
 		itemId:		'ticket_program_id',
@@ -174,17 +177,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		listeners: {
-			'change': function(field, newValue, oldValue, options) {
-				/*// Set the default code for the new ticket
-				var programId = this.getValue();
-				if (null == programId) { return; }
-				var programModel = ticketAreaStore.findRecord('category_id', programId);
-				if (null == programModel) { return; }
-				var programName = programModel.get('category');
-				var programFile = programModel.get('aux_string1');
-				var fileField = this.ownerCt.child('#ticket_file');
-				fileField.setValue(programFile);*/
-					
+			'change': function(field, newValue, oldValue, options) {			
 				var programId = this.getValue();
 				if (null != programId) {
 					var programModel = ticketAreaStore.findRecord('category_id', programId);
@@ -210,29 +203,22 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					}
 				}										
 			}
-		}/*,
+		},
 		validator: function(value){
-			if ('' == Ext.String.trim(value)) {
-				return true;
-			}
-			var record = this.store.getById(this.value);
-			if (!validateLevel(record,this.store,'tree_sortkey')){
-				return 'Valor no permitido';
-			}
-		}		*/
+			return this.store.validateLevel(this.value,this.allowBlank)
+		}		
 	}, {
 		name:		'ticket_file',
 		itemId:		'ticket_file',
-	        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
-        	width: 		300,
-	        xtype:		'textfield'
+        fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
+    	width: 		300,
+        xtype:		'textfield'
 	}],
 
 	buttons: [{
 	    itemId:	'saveButton',
-            text:	'#intranet-sencha-ticket-tracker.button_Save#',
-            disabled:	false,
-            formBind:	true,			// Disable if form is invalid
+        text:	'#intranet-sencha-ticket-tracker.button_Save#',
+        formBind:	true,			// Disable if form is invalid
 	    handler: function(){
 
 		// get the form and all of its values

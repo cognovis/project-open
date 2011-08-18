@@ -103,6 +103,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					id: 0,
 					fields: ['iso', 'language'],
 					data: [
+						['', null],
 						['es_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
 						['eu_ES', '#intranet-sencha-ticket-tracker.lang_eu_ES#']
 					]
@@ -144,6 +145,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		text:		'#intranet-sencha-ticket-tracker.Save_Changes#',
 		itemId:		'saveButton',
 		width:		120,
+		formBind:	true,
 		handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
@@ -221,17 +223,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		handler: function() {
 			var form = this.ownerCt.ownerCt.getForm();
 			var values = form.getFieldValues();
+			Function_checkValues(values);		
 			values.user_id = null;
 			values.first_names = values.first_names.toUpperCase();
 			values.last_name = values.last_name.toUpperCase();
 			values.last_name2 = values.last_name2.toUpperCase();
-
-			//Function_checkValues(values);		
-			
-			// Deugging help...
-			// values.first_names = values.first_names + Math.random();
-			// values.last_name = values.last_name + Math.random();
-			// values.email = values.first_names + '.' + values.last_name + '@asdf.com';
 
 			// create a new user
 			var userModel = Ext.ModelManager.create(values, 'TicketBrowser.User');

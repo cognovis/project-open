@@ -56,17 +56,17 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
     iconCls:	'icon-grid',
 
     listeners: {
-	itemdblclick: function(view, record, item, index, e) {
-		// Open the User in the TicketContactForm
-		var contact_id = record.get('object_id_two');
-
-                var contact_record = userStore.findRecord('user_id',contact_id);
-                if (contact_record == null || typeof contact_record == "undefined") { return; }
-
-                // load the information from the record into the form
-		var ticketContactForm = Ext.getCmp('ticketContactForm');
-		ticketContactForm.loadUser(contact_record);
-	}
+		itemdblclick: function(view, record, item, index, e) {
+			// Open the User in the TicketContactForm
+			var contact_id = record.get('object_id_two');
+	
+	        var contact_record = userStore.findRecord('user_id',contact_id);
+	        if (contact_record == null || typeof contact_record == "undefined") { return; }
+	
+	        // load the information from the record into the form
+			var ticketContactForm = Ext.getCmp('ticketContactForm');
+			ticketContactForm.loadUser(contact_record);
+		}
     },
 
     dockedItems: [{
@@ -123,6 +123,7 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 	}
 
 	// Save the property in the proxy, which will pass it directly to the REST server
+	bizObjectMemberStore.removeAll();
 	bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
 	bizObjectMemberStore.load();
 	

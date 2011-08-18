@@ -175,21 +175,21 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		}
     },
     
-		//If the field value is diferent from store value, set model dirty variable to true
-		checkTicketField: function(field,newValue,oldValue,store) { 
-			if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
-				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
-				var ticket_id = ticket_id_field.getValue();
-				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-				
-				if (ticketModel != null && ticketModel != undefined) {
-					var ticketModelFieldValue =  ticketModel.get(field.name);
-					if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
-						ticketModel.setDirty();
-					}
+	//If the field value is diferent from store value, set model dirty variable to true
+	checkTicketField: function(field,newValue,oldValue,store) { 
+		if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
+			var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+			var ticket_id = ticket_id_field.getValue();
+			var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+			
+			if (ticketModel != null && ticketModel != undefined) {
+				var ticketModelFieldValue =  ticketModel.get(field.name);
+				if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+					ticketModel.setDirty();
 				}
 			}
-		}    
+		}
+	}    
 
 });
 
