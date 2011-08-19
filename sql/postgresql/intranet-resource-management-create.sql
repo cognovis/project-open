@@ -137,3 +137,79 @@ SELECT im_component_plugin__new (
 	'lang::message::lookup "" intranet-ganttproject.Resource_Availability "Resource Availability"'
 );
 
+
+CREATE OR REPLACE FUNCTION im_absences_working_days_period(integer, character varying, character varying)
+  RETURNS SETOF record AS
+'
+
+-- Returns dates of "work days" for a given period (record of type 'date') 
+-- whereas: "work days" = Number of days in period - absences - bank holidays - weekends (Sat/Sun) 
+-- Expects start_date and end_date in ANSI/ISO format YYYY-MM-DD
+
+declare
+        v_user_id               ALIAS FOR $1;
+        v_start_date            ALIAS FOR $2;
+        v_end_date              ALIAS FOR $3;
+        v_count                 integer;
+        v_seperator             CHAR DEFAULT ''-'';
+        v_date_weekday          date;
+        v_dow                   integer; 		 
+        sql_result              record;
+        r                       record;
+begin
+	FOR r in
+	
+	SELECT
+        	result.all_days_in_period as working_day
+	FROM
+		(
+		        (SELECT
+                		*
+			FROM
+        	        	im_day_enumerator(to_date(v_start_date,''yyyy-mm-dd''), to_date(v_end_date,''yyyy-mm-dd''))
+	       		AS
+        	        	all_days_in_period
+			) series
+
+        LEFT JOIN
+
+	        (SELECT
+        	        d as absence_day
+	        from
+        	        im_user_absences a,
+                	users u,
+	                (select im_day_enumerator as d from im_day_enumerator(to_date(v_start_date,''yyyy-mm-dd''), to_date(v_end_date,''yyyy-mm-dd''))) d
+	        where
+        	        a.owner_id = u.user_id and
+                	a.start_date <=  to_date(v_start_date,''yyyy-mm-dd'')::date and
+	                a.end_date >= to_date(v_start_date,''yyyy-mm-dd'')::date and
+        	        d.d between a.start_date and a.end_date and
+                	u.user_id = v_user_id
+	        UNION
+        	        SELECT
+                	        d as absence_day
+	                FROM
+        	                im_user_absences a,
+                	        (select im_day_enumerator as d from im_day_enumerator(to_date(v_start_date,''yyyy-mm-dd''), to_date(v_end_date,''yyyy-mm-dd''))) d
+	                WHERE
+        	                a.start_date <=  to_date(v_end_date,''yyyy-mm-dd'')::date and
+                	        a.end_date >= to_date(v_start_date,''yyyy-mm-dd'')::date and
+                        	d.d between a.start_date and a.end_date and
+	                        a.absence_type_id = 5005
+                ) absence_days_month
+        ON
+                series.all_days_in_period = absence_days_month.absence_day
+	) result
+
+	WHERE
+        	result.absence_day IS NULL
+	LOOP
+        	-- v_date_weekday = v_year || v_seperator || v_month || v_seperator || r.working_day;
+	        -- select into v_dow extract (dow from v_date_weekday);
+	        select into v_dow extract (dow from r.working_day);
+        	IF v_dow <> 0 AND v_dow <> 6 THEN
+                	return next r;
+	        END IF;
+	END LOOP;
+end;'
+  LANGUAGE 'plpgsql' VOLATILE;
