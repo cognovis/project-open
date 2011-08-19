@@ -46,6 +46,7 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
+	allowDeselect: true,
 	checkOnly: true,
 	listeners: {
 		selectionchange: function(sm, selections) {

@@ -205,8 +205,12 @@ Ext.define('TicketBrowser.Main', {
 					    	buttons: Ext.Msg.OK,
 					    	icon: Ext.MessageBox.WARNING,
 						});
-						companyModel.dirty = false;
-						contactModel.dirty = false;
+						if (companyModel != undefined) {
+							companyModel.dirty = false;
+						}
+						if (contactModel != undefined) {
+							contactModel.dirty = false;
+						}
 					}		
 			  	}				
 			}		

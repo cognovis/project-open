@@ -39,6 +39,7 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
+	allowDeselect: true,
 	checkOnly: true,
 	listeners: {
 		selectionchange: function(view,selections,options)		{
