@@ -292,8 +292,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
-		//var saveButton = buttonToolbar.getComponent('saveButton');
-
+		var saveButton = buttonToolbar.getComponent('saveButton');
+		saveButton.show();
+		
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
 
