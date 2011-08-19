@@ -207,8 +207,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 						
 						if (!Ext.isEmpty(contactValues.first_names) && !Ext.isEmpty(contactValues.last_name)) {
 							if (contactValues.checkNew) {
-								//Create new contact
-								Function_newContact(contactValues, companyRecord.get('company_id'));
+								if (Function_validateNewContact(contactValues)){
+									//Create new contact
+									Function_newContact(contactValues, companyRecord.get('company_id'));
+								} else {
+									Ext.getCmp('companyContactCompoundPanel').enable();
+								}
 							} else {
 								//Update contact
 								Function_updateContact(contactValues, companyRecord.get('company_id'));
@@ -219,7 +223,6 @@ Ext.define('TicketBrowser.TicketActionBar', {
 								Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
 							}
 						}
-						
 						Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name.toUpperCase());  //Update tab name with company name
 					break;
 				default:

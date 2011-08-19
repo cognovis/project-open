@@ -76,6 +76,7 @@ function Function_newCompany(values){
 		},
 		failure: function(company_record, operation) {
 			Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
+			Ext.getCmp('companyContactCompoundPanel').enable();
 		}
 	});
 }
@@ -142,12 +143,14 @@ function Function_newContact(values,company_id){
 					}	
 				},			
 				failure: function(record, operation) { 
-					Ext.Msg.alert('Failed to create group membership relationship.', operation.request.scope.reader.jsonData["message"]); 
+					Ext.Msg.alert('Failed to create group membership relationship.', operation.request.scope.reader.jsonData["message"]);
+					Ext.getCmp('companyContactCompoundPanel').enable(); 
 				}
 			});					
 		},
 		failure: function(record, operation) {
 			Ext.Msg.alert("Error durante la creacion de un nuevo contacto", operation.request.scope.reader.jsonData["message"]);
+			Ext.getCmp('companyContactCompoundPanel').enable();
 		}					
 	});
 }
@@ -179,6 +182,7 @@ function Function_newRelationCompanyContact(company_id, contact_id, loadCompanyC
 				},
 				failure: function(record, operation) { 
 					Ext.Msg.alert('Failed to create company-user relationship', operation.request.scope.reader.jsonData["message"]); 
+					Ext.getCmp('companyContactCompoundPanel').enable();
 				}
 			});
 		}
@@ -207,7 +211,26 @@ function Function_updateContact(values,company_id){
 			},
 			failure: function(record, operation) {
 				Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
+				Ext.getCmp('companyContactCompoundPanel').enable();
 			}
 		});
 	}
+}
+
+/**
+ *	Update a contact
+ */
+function Function_validateNewContact(values){
+	var userModelmail = userStore.findRecord('email',values.email);
+	var userModelusername = userStore.findRecord('username',Ext.String.trim(values.first_names + ' ' + values.last_name));
+	if (!Ext.isEmpty(userModelmail) || !Ext.isEmpty(userModelusername)) {
+		Ext.Msg.show({
+	     	title:	'El contacto ya existe',
+	     	msg:	'Ya existe un contacto con ese nombre o email',
+	    	buttons: Ext.Msg.OK,
+	    	icon: Ext.MessageBox.ERROR
+		});		
+		return false;
+	}
+	return true;
 }
