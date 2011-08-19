@@ -565,7 +565,7 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	/*remoteSort: true,
 	remoteFilter:	true,*/
 	pageSize: 1000000,
-	autoSync: true,				// Write changes to the REST server ASAP
+//	autoSync: true,				// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
 		property: 'company_name',

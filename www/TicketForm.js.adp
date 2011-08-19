@@ -54,13 +54,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	items: [
 
 	// Variables for the new.tcl page to recognize an ad_form
-	{ name: 'ticket_id',			xtype: 'hiddenfield' },
+	{ name: 'ticket_id',				xtype: 'hiddenfield' },
 	{ name: 'ticket_creation_date', 	xtype: 'hiddenfield' },
-	{ name: 'ticket_status_id',		xtype: 'hiddenfield', value: 30000 },	// Open by default
-	{ name: 'ticket_queue_id',		xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
+	{ name: 'ticket_status_id',			xtype: 'hiddenfield', value: 30000 },	// Open by default
+	{ name: 'ticket_queue_id',			xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
 	{ name: 'ticket_last_queue_id',		xtype: 'hiddenfield' },			// 
-	{ name: 'fs_folder_id',			xtype: 'hiddenfield' },			// Assign to Employees by default
-	{ name: 'project_nr',			xtype: 'hiddenfield' },
+	{ name: 'fs_folder_id',				xtype: 'hiddenfield' },			// Assign to Employees by default
+	{ name: 'project_nr',				xtype: 'hiddenfield' },
 
 	// Optional fields start here
 	{ name: 'ticket_request',		xtype: 'hiddenfield' },
@@ -143,7 +143,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // Now construct a new ProgramGroupStore based on this information
 		    // with only those groups/profiles that are assigned to the program
 		    'change': function(field, values) {
-		    	if (null == values) { this.reset();}
+		    //	if (null == values) { this.reset();}
 				var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
 
 				if (ticket_area_id.store.filters.length > 0) {
@@ -189,7 +189,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					}
 				}
 				
-				if (null == newValue) { this.reset(); } else {
+				//if (null == newValue) { this.reset(); } else {
+				if (!Ext.isEmpty(newValue)) {
 					var form =  Ext.getCmp('ticketForm').getForm();
 					var record = areaTicketAreaStore.getById(newValue);
 					if (record != null){
@@ -212,7 +213,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		itemId:		'ticket_file',
         fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
     	width: 		300,
-        xtype:		'textfield'
+        xtype:		'textfield'        
 	}],
 
 	buttons: [{
@@ -327,13 +328,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var saveButton = buttonToolbar.getComponent('saveButton');		
 		if (saveButton == null || saveButton == undefined){
 			buttonToolbar =this.getDockedComponent(1);
-			saveButton = buttonToolbar.getComponent('saveButton');	
+			//saveButton = buttonToolbar.getComponent('saveButton');	
 		}
 		
 		if (ticket_status_id == '30001'  && currentUserIsAdmin != 1) {		// Closed status
-			saveButton.hide();
+			buttonToolbar.disable();
+			//saveButton.hide();
 		} else {
-			saveButton.show();
+			buttonToolbar.enable();
+			//saveButton.show();
 		}		
 	},
 
@@ -348,9 +351,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		var saveButton = buttonToolbar.getComponent('saveButton');		
 		if (saveButton == null || saveButton == undefined){
 			buttonToolbar =this.getDockedComponent(1);
-			saveButton = buttonToolbar.getComponent('saveButton');	
+			//saveButton = buttonToolbar.getComponent('saveButton');	
 		}
-		saveButton.show();
+		buttonToolbar.enable();
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		

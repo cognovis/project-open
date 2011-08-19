@@ -122,7 +122,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		valueField:	'category_id',
 		store:		programTicketAreaStore,
 		queryMode:	'local',
-        	width: 		300,
+        width: 		300,
 		forceSelection: true,
 		listConfig: {
 			getInnerTpl: function() {
@@ -159,7 +159,7 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		valueField:	'category_id',
 		store:		areaTicketAreaStore,
 		queryMode:	'local',
-        	width: 		300,
+        width: 		300,
 		forceSelection: true,
 		listConfig: {
 			getInnerTpl: function() {

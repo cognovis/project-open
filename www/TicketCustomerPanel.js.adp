@@ -37,7 +37,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 	items: [{
 		name:		'company_id',
 		xtype:		'combobox',
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Customer#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.CompanySearch#',
 		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
 		value:		'#intranet-sencha-ticket-tracker.New_Customer#',
 		valueField:	'company_id',
@@ -143,8 +143,8 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				createButton.show();
 				
 				// Disable the "Save Changes"  button
-				var createButton = this.ownerCt.child('#saveButton');
-				createButton.hide();
+				var saveButton = this.ownerCt.child('#saveButton');
+				saveButton.hide();
 				
 				// Diable this button
 				this.hide();
@@ -292,7 +292,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');
 		var addButton = buttonToolbar.getComponent('addButton');
 		addButton.show();
-		var saveButton = buttonToolbar.getComponent('saveButton');
+		//var saveButton = buttonToolbar.getComponent('saveButton');
 
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
@@ -300,12 +300,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		//Disable de buttons if the ticket is closed
 		var ticket_status_id=rec.get('ticket_status_id');
 		if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
-			saveButton.hide();
-			addButton.hide();
-			createButton.hide();
+			buttonToolbar.disable();
 		}	else {
-			saveButton.show();
-			addButton.show();		
+			buttonToolbar.enable();
 		}				
 	}
 

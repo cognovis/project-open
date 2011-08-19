@@ -40,6 +40,7 @@ Ext.define('TicketBrowser.CompanyPanel', {
 		title:	'#intranet-sencha-ticket-tracker.Companies#',
 		region:	'center',
 		split:	true,
+		layout: 'fit',
 		items:	[{
 			itemId:	'companyGrid',
 			xtype:	'companyGrid'

@@ -38,7 +38,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	items: [{
 		name:			'user_id',
 		xtype:			'combobox',
-		fieldLabel:		'#intranet-sencha-ticket-tracker.User#',
+		fieldLabel:		'#intranet-sencha-ticket-tracker.NameSearch#',
 		value:			'#intranet-sencha-ticket-tracker.New_User#',
 		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
 		queryMode:	'local',
@@ -331,16 +331,14 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		//If Ticket is closed, disable the buttons.
 		var ticketStatusId=rec.get('ticket_status_id');;
 		var buttonToolbar = Ext.getCmp('ticketContactForm').getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');	
+		/*var saveButton = buttonToolbar.getComponent('saveButton');	
 		var addButton = buttonToolbar.getComponent('addButton');	
-		var createButton = buttonToolbar.getComponent('createButton');	
+		var createButton = buttonToolbar.getComponent('createButton');	*/
 
 		if (ticketStatusId == '30001'  && currentUserIsAdmin != 1){
-			saveButton.hide();
-			addButton.hide();
+			buttonToolbar.disable();
 		} else {
-			saveButton.show();		
-			addButton.show();	
+			buttonToolbar.enable();		
 		}		
 	},
 
@@ -358,12 +356,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		addButton.show();
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
-		var saveButton = buttonToolbar.getComponent('saveButton');
 
 		var form = this.getForm();
 		contactField = form.findField('ticket_customer_contact_p');
 		contactField.setValue(true);
-		
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel

@@ -80,7 +80,21 @@ Ext.define('TicketBrowser.CompanyContactCompoundPanel', {
 				companyModel.setDirty();
 			}
 		}
-	}    
+	},
+	
+	//If the field value is diferent from store value, set model dirty variable to true
+	checkContactField: function(field,newValue,oldValue,store) { 
+		var contact_id_field = Ext.getCmp('companyContactContactForm').getForm().findField('user_id');
+		var contact_id = contact_id_field.getValue();
+		var contactModel = userCustomerStore.findRecord('user_id',contact_id);
+		
+		if (contactModel != null && contactModel != undefined) {
+			var contactModelFieldValue =  contactModel.get(field.name);
+			if (contactModelFieldValue != null && contactModelFieldValue != undefined && newValue != contactModelFieldValue) {						
+				contactModel.setDirty();
+			}
+		}
+	}    	
       
 });
 

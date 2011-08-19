@@ -58,7 +58,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 				case 'companyContactContainer':
 				case 'companyContactCompoundPanel':
 					var companyContactCompoundPanel = Ext.getCmp('companyContactCompoundPanel');
-					companyContactCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Company#');
+					companyContactCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Customer#');
 					var mainTabPanel = Ext.getCmp('mainTabPanel');
 					mainTabPanel.setActiveTab(companyContactCompoundPanel);
 					companyContactCompoundPanel.newCompany();
@@ -157,7 +157,28 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	}, {id: 'buttonSaveSeparator', xtype: 'tbseparator'},  {
 		xtype : 'tbspacer',
 		width: 20
-	},   {
+	}, {
+		id: 'buttonReject',
+		text: '#intranet-sencha-ticket-tracker.Reject_Button#',
+		iconCls:	'icon-reject',
+		handler: function(btn, pressed) {
+			Ext.getCmp('ticketFormRight').getForm();
+			// Get the field information
+			var form = Ext.getCmp('ticketFormRight').getForm();
+			var ticket_queue_field = form.findField('ticket_queue_id');
+			var ticket_last_queue_field = form.findField('ticket_last_queue_id');
+			var ticket_last_queue_id = ticket_last_queue_field.getValue();
+
+			// Check that the store contains the value for rejection
+			var lastQueueRecord = programGroupStore.findRecord('group_id', ticket_last_queue_id);
+			if (null == lastQueueRecord || undefined == lastQueueRecord) {
+				// We need to add the group to the store
+                var profileModel = profileStore.findRecord('group_id', ticket_last_queue_id);
+				programGroupStore.insert(0, profileModel);
+			}
+			ticket_queue_field.setValue(ticket_last_queue_id);			
+		}
+	}, {
 		id: 'buttonSave',
 		text:		'#intranet-sencha-ticket-tracker.button_Save#',
 		iconCls:	'icon-save',
@@ -199,7 +220,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 							}
 						}
 						
-						Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name);  //Update tab name with company name
+						Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name.toUpperCase());  //Update tab name with company name
 					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
@@ -259,10 +280,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		var but = this.getComponent(button_id);
 		var sep = this.getComponent(button_id + 'Separator'); //Separator
 		but.setDisabled(disabled);	
-		if (hide) {
-			but.hide();
-		} else {
-			but.show();
+		if (!Ext.isEmpty(hide)){
+			if (hide) {
+				but.hide();
+			} else {
+				but.show();
+			}
 		}
 		if (!Ext.isEmpty(sep)){
 			if (hide) {

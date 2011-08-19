@@ -37,7 +37,7 @@ Ext.define('TicketBrowser.CompanyContactContainer', {
 		itemID:	'contactPanel',
 		xtype:	'contactPanel',
 		split:	true,
-		height: 400,
+		height: '50%',
 		region: 'south'		
 	}]
 });

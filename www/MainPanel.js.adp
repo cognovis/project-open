@@ -58,6 +58,7 @@ Ext.define('TicketBrowser.Main', {
 					Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
 					Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
 					Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);
+					Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);
 					Ext.getCmp('ticketFilterForm').onSearch()
 				}
 			}				
@@ -70,7 +71,8 @@ Ext.define('TicketBrowser.Main', {
 					Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
 	  				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('contactGrid').selModel.getSelection());
 	  				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true); 
-	  				Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);     				
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);  
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);   				
 	      		}
       		}			
 		}/*,{
@@ -181,14 +183,22 @@ Ext.define('TicketBrowser.Main', {
 						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
+						Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);
 				},
 				deactivate: function(){
 					// Show a dialog to save changes in ticket
 					var company_id_field = Ext.getCmp('companyContactCustomerPanel').getForm().findField('company_id');
 					var company_id = company_id_field.getValue();
 					var companyModel = companyStore.findRecord('company_id',company_id);			
-					//There is a ticked that is not closed and dirty			
-					if (companyModel != undefined && companyModel.dirty) {
+					
+					var contactNew = Ext.getCmp('companyContactContactForm').getForm().findField('checkNew').getValue(); 
+					if (!contactNew) {			
+						var contact_id_field = Ext.getCmp('companyContactContactForm').getForm().findField('user_id');
+						var contact_id = contact_id_field.getValue();
+						var contactModel = userCustomerStore.findRecord('user_id',contact_id);							
+					}					
+						
+					if ((companyModel != undefined && companyModel.dirty) || (contactModel != undefined && contactModel.dirty)) {
 						Ext.Msg.show({
 					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
 					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
@@ -196,7 +206,8 @@ Ext.define('TicketBrowser.Main', {
 					    	icon: Ext.MessageBox.WARNING,
 						});
 						companyModel.dirty = false;
-					}
+						contactModel.dirty = false;
+					}		
 			  	}				
 			}		
 		}, {

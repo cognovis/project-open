@@ -45,7 +45,7 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-//	mode:	'SINGLE',
+	mode:	'SINGLE',
 	checkOnly: true,
 	listeners: {
 		selectionchange: function(sm, selections) {
@@ -79,14 +79,14 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			header:		'#intranet-sencha-ticket-tracker.Contacts#',
 			dataIndex:	'name',
 			flex:		1,
-			minWidth:	150,
+			minWidth:	150/*,
 			renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				return '<a href="/intranet/users/view?user_id=' + 
 					record.get('user_id') + 
 					'" target="_blank">' + 
 					value +
 					'</a>';
-			}
+			}*/
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.First_names#',
 			dataIndex:	'first_names'
