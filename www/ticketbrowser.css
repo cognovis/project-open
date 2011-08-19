@@ -82,6 +82,9 @@ img.x-tree-icon-parent {
 .icon-save {
 	background-image: url(images/save.png) !important;
 }
+.icon-reject {
+	background-image: url(images/reject.png) !important;
+}
 
 
 

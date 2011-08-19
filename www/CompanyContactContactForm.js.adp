@@ -38,7 +38,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	defaults: {
 		listeners: {
 			change: function (field,newValue,oldValue) {
-				 Ext.getCmp('companyContactCompoundPanel').checkCompanyField(field,newValue,oldValue)
+				 Ext.getCmp('companyContactCompoundPanel').checkContactField(field,newValue,oldValue)
 			}
 		}
 	},		
@@ -46,7 +46,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		name: 'checkNew',
 		xtype: 'checkbox',
 		value: true,
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Create_New_User#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.CreateNew#',
 		listeners:{
 			change: function(field, newValue, oldValue, options) {
 				if (newValue) {
@@ -59,7 +59,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	}, {
 		name:			'user_id',
 		xtype:			'combobox',
-		fieldLabel:		'#intranet-sencha-ticket-tracker.User#',
+		fieldLabel:		'#intranet-sencha-ticket-tracker.NameSearch#',
 		value:			'#intranet-sencha-ticket-tracker.New_User#',
 		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
 		queryMode:	'local',
@@ -148,17 +148,17 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	}],
 
 	loadUser: function(rec){
-
 		// load the information from the record into the form
 		this.loadRecord(rec);
-
+		
+        //Inicialize dirty. There is no changes after load.
+		var contactModel =userCustomerStore.findRecord('user_id',rec.get('user_id'));
+		if (contactModel != null) { 
+			contactModel.dirty = false;        
+		}
+		
 		// Show (might have been hidden when creating a new ticket)
 		this.show();
-
-		var form = this.getForm();
-		contactField = form.findField('ticket_customer_contact_p');
-		contactField.setValue(true);
-		
 	},
 
 	loadCompany: function(customerModel){

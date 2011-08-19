@@ -31,6 +31,8 @@
   <msg key="Company_name">Company Name</msg>
   <msg key="Company_Nr">Company Nr</msg>
   <msg key="Company_Type">Company Type</msg>
+  <msg key="CompanyContact">Company/Contact</msg>
+  <msg key="CompanySearch">Company Search</msg>
   <msg key="Contact">Contact</msg>
   <msg key="Contact_Filters">Contact Filters</msg>
   <msg key="Contact_Mail">Contact Mail</msg>
@@ -43,6 +45,7 @@
   <msg key="Create_New_Company">Create New Company</msg>
   <msg key="Create_New_Contact">Create New Contact</msg>
   <msg key="Create_New_User">Create New User</msg>
+  <msg key="CreateNew">¿New?</msg>
   <msg key="Creation_Date">Creation Date</msg>
   <msg key="Creation_User">Creation User</msg>
   <msg key="Creator">Creator</msg>
@@ -63,6 +66,7 @@
   <msg key="Displaying_tickets_0_1_of_2_">Displaying tickets {0} - {1} of {2}</msg>
   <msg key="Displaying_versions_0_1_of_2_">Displaying versions {0} - {1} of {2}</msg>
   <msg key="Do_not_modify_anonimo">You can't modify the anonymous company.</msg>
+  <msg key="EditCompanyContact">EditCompanyContact</msg>
   <msg key="Email">Email</msg>
   <msg key="Escalated">Escalated</msg>
   <msg key="Escalation_Date">Escalation Date</msg>
@@ -95,6 +99,7 @@
   <msg key="MIME_Type">MIME Type</msg>
   <msg key="Mobile">Mobile</msg>
   <msg key="My_Groups">My Groups</msg>
+  <msg key="NameSearch">Name Search</msg>
   <msg key="New">New</msg>
   <msg key="New_Company">New Company</msg>
   <msg key="New_Company_Prefix">Company</msg>

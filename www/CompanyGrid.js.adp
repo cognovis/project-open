@@ -38,7 +38,7 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 });
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
-//	mode:	'SINGLE',
+	mode:	'SINGLE',
 	checkOnly: true,
 	listeners: {
 		selectionchange: function(view,selections,options)		{
@@ -103,14 +103,14 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 			header: '#intranet-sencha-ticket-tracker.Company_Name#',
 			dataIndex: 'company_name',
 			flex: 1,
-			minWidth: 150,
+			minWidth: 150/*,
 			renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				return '<a href="/intranet/companies/view?company_id=' + 
 					record.get('company_id') + 
 					'" target="_blank">' + 
 					value +
 					'</a>';
-			}
+			}*/
 		}, {
 			header: '#intranet-sencha-ticket-tracker.VAT_Number#',
 			dataIndex: 'vat_number'

@@ -40,6 +40,7 @@ Ext.define('TicketBrowser.ContactPanel', {
 		title:	'#intranet-sencha-ticket-tracker.Contacts#',
 		region:	'center',
 		split:	true,
+		layout: 'fit',
 		items:	[{
 			itemId:	'contactGrid',
 			xtype:	'contactGrid'

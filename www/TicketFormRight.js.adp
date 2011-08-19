@@ -325,7 +325,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		}
 	],
 	
-	buttons: [{
+	buttons: [/*{
 		text:			'#intranet-sencha-ticket-tracker.Reject_Button#',
 		itemId:			'rejectButton',
 		id:			'ticketFormRightRejectButton',
@@ -348,7 +348,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			}
 			ticket_queue_field.setValue(ticket_last_queue_id);
 		}
-	}, {
+	},*/ {
 		text:			'#intranet-sencha-ticket-tracker.button_Save#',
 		itemId:			'saveButton',
 		id:			'ticketFormRightSaveButton',
@@ -462,18 +462,18 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		
 		//If the Ticket is close, hide the buttons
 		var buttonToolbar = this.getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');	
-		var rejectButton = buttonToolbar.getComponent('rejectButton');		
+		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject')	
+		rejectButton.show();
 		if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
-			saveButton.hide();
-			rejectButton.hide();
+			buttonToolbar.disable();
+			rejectButton.disable();
 		} else {
-			saveButton.show();
+			buttonToolbar.enable();
 			// Enable the "Reject" button if last_queue_id exists
 			if (Ext.isEmpty(ticket_last_queue_field.getValue())){
-				rejectButton.hide();
+				rejectButton.disable();
 			} else {
-				rejectButton.show();
+				rejectButton.enable();
 			}
 		}
 		
