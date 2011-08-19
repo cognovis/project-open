@@ -3,6 +3,7 @@
 
   <msg key="A_new_ticket_has_been_created">Nuevo ticket creado</msg>
   <msg key="Add_New_Contact">Nuevo</msg>
+  <msg key="Address">Dirección</msg>
   <msg key="Alarm_Action">Acción siguiente</msg>
   <msg key="Alarm_Date">Fecha de alarma</msg>
   <msg key="Application">Aplicación</msg>
@@ -20,6 +21,7 @@
   <msg key="Cancel">Cancelar</msg>
   <msg key="Change">Cambiar</msg>
   <msg key="Channel_Details">Detalle Canal Entrada</msg>
+  <msg key="City">Población</msg>
   <msg key="Clear">Borrar</msg>
   <msg key="Clear_Form">Borrar formulario</msg>
   <msg key="Close_Date">F.Cierre</msg>
@@ -70,6 +72,7 @@
   <msg key="Escalation_Date">F. Escalado</msg>
   <msg key="Failed_to_get_new_company_nr">Error Nueva Entidad</msg>
   <msg key="Failed_to_get_new_ticket_nr">El servidor no ha podido crear un nuevo número de ticket.</msg>
+  <msg key="Fax">Fax</msg>
   <msg key="Female">Mujer</msg>
   <msg key="File">Archivo</msg>
   <msg key="Filename">Nombre de archivo</msg>
@@ -112,6 +115,7 @@
   <msg key="Options">Opciones</msg>
   <msg key="Outgoing_Channel">Canal de salida</msg>
   <msg key="Page">Página</msg>
+  <msg key="PC">Código postal</msg>
   <msg key="Primary_Contact">Contacto</msg>
   <msg key="Primary_contact">Persona de contacto principal</msg>
   <msg key="Program">Programa</msg>

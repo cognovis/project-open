@@ -97,6 +97,10 @@ function Function_updateCompany(values){
 		company_record.set('company_province', values.company_province);
 		company_record.set('spri_company_telephone', values.spri_company_telephone);
 		company_record.set('spri_company_email', values.spri_company_email);
+		company_record.set('spri_company_fax', values.spri_company_fax);
+		company_record.set('spri_company_pc', values.spri_company_pc);
+		company_record.set('spri_company_address', values.spri_company_address);
+		company_record.set('spri_company_city', values.spri_company_city);
 		
 		companyStore.sync();		// Tell the store to update the server via it's REST proxy
 	}

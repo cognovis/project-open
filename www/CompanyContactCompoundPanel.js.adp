@@ -44,7 +44,7 @@ Ext.define('TicketBrowser.CompanyContactCompoundPanel', {
 		title: '#intranet-sencha-ticket-tracker.Contact#',
 		xtype: 'companyContactContactPanel',
 		split:	true,
-		height: '70%',
+		height: '60%',
 		width: '50%',
 		minHeight: 150,
 		region:	'south'

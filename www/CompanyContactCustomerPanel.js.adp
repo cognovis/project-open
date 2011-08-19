@@ -81,9 +81,25 @@ Ext.define('TicketBrowser.CompanyContactCustomerPanel', {
 		displayField:   'name',		
 		queryMode: 'local'
 	}, {
+		name:		'spri_company_address',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Address#',
+	}, {
+		name:		'spri_company_city',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.City#',
+	}, {
+		name:		'spri_company_pc',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.PC#',
+	}, {
 		name:		'spri_company_telephone',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Telephone#',
+	}, {
+		name:		'spri_company_fax',
+		xtype:		'textfield',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Fax#',
 	}, {
 		name:		'spri_company_email',
 		xtype:		'textfield',

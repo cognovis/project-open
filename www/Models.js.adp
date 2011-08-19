@@ -207,7 +207,11 @@ Ext.define('TicketBrowser.Company', {
 		'business_sector_id',		// Business sector of the company
 		'company_province',		// Custom field "province"
 		'spri_company_telephone',
-		'spri_company_email'
+		'spri_company_email',
+		'spri_company_address',
+		'spri_company_pc',
+		'spri_company_city',
+		'spri_company_fax'				
 	],
 
 	proxy:	{
