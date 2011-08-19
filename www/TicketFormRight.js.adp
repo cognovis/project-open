@@ -493,7 +493,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	
 				// Get the row with the list of groups enabled for this area:
 				var programName = programModel.get('category');
-	                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
+	            var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
 				if (null == mapRow) {
 					alert('Configuration Error:\nProgram "'+programName+'" not found');
 					return;
