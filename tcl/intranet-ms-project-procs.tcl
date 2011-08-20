@@ -305,6 +305,15 @@ ad_proc -public im_ms_project_write_task {
 	    }
 	}
 
+	# Special logic for elements
+	switch $element {
+	    FixedCostAccrual {
+		# I'm not sure what this field is good for, 
+		# but any value except for 3 gives an error...
+		set value 3
+	    }
+	}
+
 	ns_log Notice "im_ms_project_write_task: Adding element='$element' with value='$value'"
 	$task_node appendFromList [list $element {} [list [list \#text $value]]]
     }
