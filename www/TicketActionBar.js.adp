@@ -188,42 +188,52 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			var xtype = mainTabPanel.getActiveTab().xtype;
 			switch (xtype) {
 				case 'companyContactCompoundPanel':
+					//var company_name = Ext.getCmp('companyContactCustomerPanel').getForm().findField('company_id').getRawValue();
+					var companyValues = Ext.getCmp('companyContactCustomerPanel').getValues();
+					var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
+					var contactValues =  Ext.getCmp('companyContactContactForm').getValues();
 					
-					//Comprobar si los datos del los formularios son validos ¿Desabilitar botón mejor?
-						//var company_name = Ext.getCmp('companyContactCustomerPanel').getForm().findField('company_id').getRawValue();
-						var companyValues = Ext.getCmp('companyContactCustomerPanel').getValues();
-						var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
-						var contactValues =  Ext.getCmp('companyContactContactForm').getValues();
-						
-						Ext.getCmp('companyContactCompoundPanel').disable();
-						if (Ext.isEmpty(companyRecord)) {
-							//Create new company
-							Function_newCompany(companyValues);
-						} else {
-							//Update company
-							Function_updateCompany(companyValues);
+					if (Ext.isEmpty(companyRecord)) {
+						if (!Function_validateNewCompany(companyValues)) {
+							break;
 						}
-						
-						
-						if (!Ext.isEmpty(contactValues.first_names) && !Ext.isEmpty(contactValues.last_name)) {
-							if (contactValues.checkNew) {
-								if (Function_validateNewContact(contactValues)){
-									//Create new contact
-									Function_newContact(contactValues, companyRecord.get('company_id'));
-								} else {
-									Ext.getCmp('companyContactCompoundPanel').enable();
-								}
-							} else {
-								//Update contact
-								Function_updateContact(contactValues, companyRecord.get('company_id'));
-							}
+					} else {
+						if (!Function_validateCompany(companyValues)) {
+							break;
+						}							
+					}
+					if (!Ext.isEmpty(contactValues.first_names) || !Ext.isEmpty(contactValues.last_name)) {
+						if (contactValues.checkNew) {	
+							if (!Function_validateNewContact(contactValues)){
+								break;
+							}	
 						} else {
-							if (!Ext.isEmpty(companyValues.company_id)){
-								var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
-								Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
+							if (!Function_validateContact(contactValues)){
+								break;
 							}
 						}
-						Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name.toUpperCase());  //Update tab name with company name
+					}												
+					
+					Ext.getCmp('companyContactCompoundPanel').disable();
+					if (Ext.isEmpty(companyRecord)) {
+						Function_newCompany(companyValues);	//Create new company
+					} else {
+						Function_updateCompany(companyValues);	//Update company
+					}
+					
+					if (!Ext.isEmpty(contactValues.first_names) || !Ext.isEmpty(contactValues.last_name)) {
+						if (contactValues.checkNew) {
+							Function_newContact(contactValues, companyRecord.get('company_id'));	//Create new contact
+						} else {
+							Function_updateContact(contactValues, companyRecord.get('company_id'));	//Update contact
+						}
+					} else {
+						if (!Ext.isEmpty(companyValues.company_id)){
+							var companyRecord = companyStore.findRecord('company_id',companyValues.company_id,0,false,false,true);
+							Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
+						}
+					}
+					Ext.getCmp('companyContactCompoundPanel').tab.setText(companyValues.company_name.toUpperCase());  //Update tab name with company name
 					break;
 				default:
 					alert('Tab not recognized for new operation: ' + xtype);
