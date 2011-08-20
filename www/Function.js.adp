@@ -220,17 +220,75 @@ function Function_updateContact(values,company_id){
 		});
 	}
 }
+/**
+ *	Validate a new contact
+ */
+function Function_validateContact(values){
+	if (Ext.isEmpty(values.first_names)  ||  Ext.isEmpty(values.last_name)) {
+		Ext.Msg.show({
+	     	title:	'Contacto no válido',
+	     	msg:	'Debe introducir un nombre y apellido para el contacto',
+	    	buttons: Ext.Msg.OK,
+	    	icon: Ext.MessageBox.ERROR
+		});		
+		return false;		
+	}
+	return true;	
+}
+
 
 /**
- *	Update a contact
+ *	Validate a new contact
  */
 function Function_validateNewContact(values){
-	var userModelmail = userStore.findRecord('email',values.email);
-	var userModelusername = userStore.findRecord('username',Ext.String.trim(values.first_names + ' ' + values.last_name));
-	if (!Ext.isEmpty(userModelmail) || !Ext.isEmpty(userModelusername)) {
+	if (!Function_validateContact(values)){
+		return false;
+	}
+	
+	var userModelmail = userStore.findRecord('email',values.email,0,false,false,true);
+	//var userModelusername = userStore.findRecord('username',Ext.String.trim(values.first_names + ' ' + values.last_name));
+	//if (!Ext.isEmpty(userModelmail) || !Ext.isEmpty(userModelusername)) {
+	if (!Ext.isEmpty(userModelmail)) {
 		Ext.Msg.show({
 	     	title:	'El contacto ya existe',
 	     	msg:	'Ya existe un contacto con ese nombre o email',
+	    	buttons: Ext.Msg.OK,
+	    	icon: Ext.MessageBox.ERROR
+		});		
+		return false;
+	}
+	return true;
+}
+
+/**
+ *	Validate a company
+ */
+function Function_validateCompany(values){
+	if (Ext.isEmpty(values.company_name)  ||  Ext.isEmpty(values.company_type_id)  ||  Ext.isEmpty(values.company_province)) {
+		Ext.Msg.show({
+	     	title:	'Entidad no válida',
+	     	msg:	'Debe introducir un nombre, tipo y provincia para la entidad',
+	    	buttons: Ext.Msg.OK,
+	    	icon: Ext.MessageBox.ERROR
+		});		
+		return false;		
+	}
+	return true;
+}
+
+/**
+ *	Validate a new company
+ */
+function Function_validateNewCompany(values){
+	if (!Function_validateCompany(values)){
+		return false;
+	}
+	
+	var comanyModelname = companyStore.findRecord('company_name',values.company_name,0,false,false,true);
+	if (!Ext.isEmpty(comanyModelname)) {
+		Ext.Msg.show({
+	     	title:	'La compañia ya existe',
+	     	msg:	'Ya existe una compañia con ese nombre',
 	    	buttons: Ext.Msg.OK,
 	    	icon: Ext.MessageBox.ERROR
 		});		

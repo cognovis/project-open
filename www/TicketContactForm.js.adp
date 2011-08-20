@@ -219,6 +219,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		text:		'#intranet-sencha-ticket-tracker.Create_New_Contact#',
 		itemId:		'createButton',
 		width: 		120,
+		formBind:	true,
 		hidden:		true,
 		handler: function() {
 			var form = this.ownerCt.ownerCt.getForm();

@@ -164,7 +164,7 @@ var userStore = Ext.create('PO.data.UserStore', {
 	remoteSort:	false,
 	remoteFilter:	true,
 	autoLoad: 	false,			// Load manually below in order to create child stores.
-	autoSync: 	true,			// Write changes to the REST server ASAP
+//	autoSync: 	true,			// Write changes to the REST server ASAP
 	// Load all users into this table, this is rarely more than 2000...
 	// ToDo: Replace this with a server-side search function plus cache(?)
 	pageSize: 	1000000,
