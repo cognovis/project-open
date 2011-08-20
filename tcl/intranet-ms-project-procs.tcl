@@ -157,10 +157,14 @@ ad_proc -public im_ms_project_write_task {
 		RemainingDuration
 		DurationFormat
 		CalendarUID 
-		PredecessorLink
 		PercentComplete
 		FixedCostAccrual
 	}
+    }
+
+    # Add the following elements to the xml_elements always
+    if {[lsearch $xml_elements "PredecessorLink"] < 0} {
+	lappend xml_elements "PredecessorLink"
     }
 
     set predecessors_done 0
@@ -201,7 +205,8 @@ ad_proc -public im_ms_project_write_task {
 			# Add dependencies to predecessors 
 			set dependency_sql "
 				SELECT DISTINCT
-					gp.xml_uid
+					gp.xml_uid as xml_uid_ms_project,
+					gp.project_id as xml_uid
 				FROM	im_timesheet_task_dependencies ttd
 					LEFT OUTER JOIN im_gantt_projects gp ON (ttd.task_id_two = gp.project_id)
 				WHERE	ttd.task_id_one = :task_id and
