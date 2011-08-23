@@ -80,6 +80,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_signoff_date',		xtype: 'hiddenfield' },
 	// Optional fields end here
 
+	// Audit field
+	{ name: 'datetime',	xtype: 'hiddenfield' },
+	//end audit_field
+	
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
@@ -251,7 +255,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					// Tell all panels to load the data of the newly created object
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.tab.setText(ticket_record.get('project_name'));
-					compoundPanel.loadTicket(ticket_record);
+					//compoundPanel.loadTicket(ticket_record);
+					
+					Function_insertAction(ticket_record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), ticket_record);
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert("Error durante la creacion de un nuevo ticket", operation.request.scope.reader.jsonData["message"]);
@@ -287,7 +293,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 					compoundPanel.tab.setText(record.get('project_name'));
-					compoundPanel.loadTicket(ticketModel);
+				//	compoundPanel.loadTicket(ticketModel);
+					
+					Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
@@ -338,6 +346,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			buttonToolbar.enable();
 			//saveButton.show();
 		}		
+/*		var datetime = form.findField('datetime');
+		var ran = form.findField('random');
+		alert(datetime.getValue());
+		alert(ran.getValue());*/
 	},
 
 	// Somebody pressed the "New Ticket" button:
@@ -372,6 +384,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		// Set the default value for ticket_type
 		var form = this.getForm();
 		form.findField('ticket_type_id').setValue('10000191');
+		
+		// SEt datetime for actions
+		var date = new Date();
+		form.findField('datetime').setValue(date.getTime());		
 	},
 	
 	// Determine the new of the new ticket. Send an async AJAX request

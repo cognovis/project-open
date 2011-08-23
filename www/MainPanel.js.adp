@@ -108,6 +108,9 @@ Ext.define('TicketBrowser.Main', {
 						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);
+						var date = new Date();
+						Ext.getCmp('ticketForm').getForm().findField('datetime').setValue(date.getTime());
+//						Ext.getCmp('ticketForm').getForm().findField('random').setValue(parseInt(Math.random()*10000000));
 				},
 				deactivate: function(){
 					// Show a dialog to save changes in ticket

@@ -296,3 +296,24 @@ function Function_validateNewCompany(values){
 	}
 	return true;
 }
+
+/**
+ *	Ajax call to insert new action in audit.
+ */
+function Function_insertAction(object_id, act, record){
+	Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/audit-insert?object_id=' + object_id + '&action=' + act ,
+		success: function(response) {		
+			if (!Ext.isEmpty(record)){
+				Ext.getCmp('ticketCompoundPanel').loadTicket(record);
+			}
+		},
+		failure: function(response) {	
+			alert('Error al crear accion del ticket');	
+			if (!Ext.isEmpty(record)){
+				Ext.getCmp('ticketCompoundPanel').loadTicket(record);
+			}			
+		}
+	});
+}

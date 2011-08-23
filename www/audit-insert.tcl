@@ -10,82 +10,136 @@ ad_page_contract {
 	{ status_id "" }
 	{ type_id "" }
 	{ action }
+	{ comment "" }
 }
 
-if {[info exists upload_file]} {
-    if {"" == $title} { set title $upload_file }
-} else {
-    ns_log Notice "file-add: failure: upload_file does not exist"
-    ns_return 200 "text/html" "{
-	\"result\": {
-		\"success\":	false,
-		\"errors\":	{\"upload_file\": \"You have to specify a file to upload\"}
-    	}
-    }"
-    ad_script_abort
-}
+ns_log Notice "audit-insert: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action"
+# ----------------------------------------------------------------------
+# Main Audit Procedure
+# ----------------------------------------------------------------------
 
+ad_proc -private im_audit_impl_nodiff { 
+    -object_id:required
+    {-user_id "" }
+    {-object_type "" }
+    {-status_id "" }
+    {-type_id "" }
+    {-action "after_update" }
+    {-comment "" }
+} {
+    Creates a new audit item, no check the diference.
+} {
+    ns_log Notice "im_audit_impl_nodiff: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
+
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
+    set peeraddr [ns_conn peeraddr]
+
+    # Are we behind a firewall or behind a reverse proxy?
+    if {"127.0.0.1" == $peeraddr} {
+
+		# Get the IP of the browser of the user
+		set header_vars [ns_conn headers]
+		set x_forwarded_for [ns_set get $header_vars "X-Forwarded-For"]
+		if {"" != $x_forwarded_for} {
+		    set peeraddr $x_forwarded_for
+		}
+    }
+
+    # Get information about the audit object
+    set object_type ""
+    set old_value ""
+    set last_audit_id ""
+    db_0or1row last_info "
+	select	a.audit_value as old_value,
+		o.object_type,
+		o.last_audit_id
+	from	im_audits a,
+		acs_objects o
+	where	o.object_id = :object_id and
+		o.last_audit_id = a.audit_id
+    "
+
+    # Get the new value from the database
+    set new_value [im_audit_object_value -object_id $object_id -object_type $object_type]
+
+    # Calculate the "diff" between old and new value.
+    # Return "" if nothing has changed:
+    set diff [im_audit_calculate_diff -old_value $old_value -new_value $new_value]
+
+    if {"" == $diff} {
+    	set diff "no diff"
+    }
+    
+	# Something has changed...
+	# Create a new im_audit entry and associate it to the object.
+	set new_audit_id [db_nextval im_audit_seq]
+	set audit_ref_object_id ""
+	set audit_note $comment
+	set audit_hash ""
+
+	db_dml insert_audit "
+		insert into im_audits (
+			audit_id,
+			audit_object_id,
+			audit_object_status_id,
+			audit_action,
+			audit_user_id,
+			audit_date,
+			audit_ip,
+			audit_last_id,
+			audit_ref_object_id,
+			audit_value,
+			audit_diff,
+			audit_note,
+			audit_hash
+		) values (
+			:new_audit_id,
+			:object_id,
+			im_biz_object__get_status_id(:object_id),
+			:action,
+			:user_id,
+			now(),
+			:peeraddr,
+			:last_audit_id,
+			:audit_ref_object_id,
+			:new_value,
+			:diff,
+			:audit_note,
+			:audit_hash
+		)
+	"
+
+	db_dml update_object "
+		update acs_objects set
+			last_audit_id = :new_audit_id,
+			last_modified = now(),
+			modifying_user = :user_id,
+			modifying_ip = :peeraddr
+		where object_id = :object_id
+	"
+	
+    return $diff
+}
 # -------------------------------------------------------------
 # Security
 # -------------------------------------------------------------
+# ToDo: ¿Security actiosn?
 
-set user_id [im_rest_cookie_auth_user_id]
-# Get package. ad_conn package_id doesn't seem to work...
-set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
-set mime_type [cr_filename_to_mime_type -create -- $upload_file]
-set folder_id [im_fs_content_folder_for_object -object_id $ticket_id]
-ns_log Notice "file-add: user_id=$user_id, ticket_id=$ticket_id, mime_type=$mime_type, folder_id=$folder_id, upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}"
-
-set permission_p [permission::permission_p \
-    -object_id $folder_id \
-    -party_id $user_id \
-    -privilege "write" \
-]
-ns_log Notice "file-add: permission_p=$permission_p"
-
-if {1 != $permission_p} {
-    ns_log Notice "file-add: failure: User \#$user_id doesn't have write permissions to folder \#$folder_id"
-    doc_return 200 "text/html" "{
-	\"result\": {
-		\"success\":	false,
-		\"errors\":	{\"permission\": \"You do not have permission to write to folder \#$folder_id\"}
-    	}
-    }"
-    ad_script_abort
-}
 
 # -------------------------------------------------------------
-# Create the new file in the FS
+# Insert new record in im_audits
 # -------------------------------------------------------------
-
-if {"" != $upload_file} {
-    set this_file_id ""
-
-    fs::add_file \
-	-name $upload_file \
-	-parent_id $folder_id \
-	-tmp_filename ${upload_file.tmpfile}\
-	-creation_user $user_id \
-	-creation_ip [ad_conn peeraddr] \
-	-title $title \
-	-description $description \
-	-package_id $package_id \
-	-mime_type $mime_type
-    
+set result "true"
+if {[catch {
+    set err_msg [im_audit_impl_nodiff -user_id $user_id -object_id $object_id -object_type $object_type -status_id $status_id -action $action -comment $comment]
+} err_msg]} {
+    ns_log Notice "audit-insert Error: Error executing im_audit_impl_nodiff: $err_msg"
+    set result "false"
 }
 
-set folder_path [db_string folder_path "select fs_folder_path from im_biz_objects where object_id = :ticket_id"]
-
-ns_log Notice "file-add: success"
 doc_return 200 "text/html" "{
 	\"result\": {
-		\"success\":	true,
-		\"message\":	\"File successfully created\",
-		\"data\":	\[{
-			\"fs_folder_id\":	$folder_id,
-			\"fs_folder_path\":	\"$folder_path\"
-		}\]
+		\"success\":	$result,
+		\"message\":	$err_msg
     	}
 }"
-ad_script_abort
-

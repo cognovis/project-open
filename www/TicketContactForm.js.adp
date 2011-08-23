@@ -184,6 +184,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					scope: Ext.getCmp('ticketContactForm'),
 					success: function(record, operation) {
 						// Tell all panels to refresh
+						Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue());					
 					},
 					failure: function(record, operation) {
 						Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
@@ -257,7 +258,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						ticket_model.set('ticket_customer_contact_id', user_id);
 						ticket_model.save({
 							success: function(record, operation) { 
-								// Ext.Msg.alert('ticket_customer_contact_id saved.', operation.request.scope.reader.jsonData["message"]); 
+								Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue());																
 							},
 							failure: function(record, operation) { 
 								Ext.Msg.alert('Failed to save ticket_customer_contact_id.', operation.request.scope.reader.jsonData["message"]);
