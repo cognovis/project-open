@@ -42,24 +42,24 @@ var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	allowDeselect: true,
 	checkOnly: true,
 	listeners: {
-		selectionchange: function(view,selections,options)		{
-			//One selection select contact in contactGrid
-			if (selections.length == 1) {
-				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(selections[0].get('company_id'));
-			} else {
-				//Other selection view all contact un contactGrid
-				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
-			}
+		select: function (component,record,index, eOpts ){
+			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(record.get('company_id'));
+			setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',500);
 			
+		}, 
+		deselect: function (component,record,index, eOpts ){
+			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
+			Ext.getCmp('contactFilterForm').onSearch();
+			
+		},
+		selectionchange: function(view,selections,options)		{
 			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
 			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
 			}			
-			
-			Ext.getCmp('contactFilterForm').onSearch();
-		}		
+		}	
 	}	
 });
 
@@ -73,7 +73,6 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 
 	listeners: {	
 		itemdblclick: function(view, record, item, index, e) {
-			//ToDo: open tab companyContact details
 			var compoundPanel = Ext.getCmp('companyContactCompoundPanel');
 			compoundPanel.loadCompany(record);
 			var title = record.get('company_name');

@@ -422,7 +422,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_record);
+					//compoundPanel.loadTicket(ticket_record);
+
+					Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);									
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);

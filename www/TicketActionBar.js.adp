@@ -59,7 +59,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 				case 'companyContactCompoundPanel':
 					var companyContactCompoundPanel = Ext.getCmp('companyContactCompoundPanel');
 					companyContactCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Customer#');
-					var mainTabPanel = Ext.getCmp('mainTabPanel');
+					var mainTabPanel = Ext.getCmp('mainTabPanel');					
 					mainTabPanel.setActiveTab(companyContactCompoundPanel);
 					companyContactCompoundPanel.newCompany();
 					companyContactCompoundPanel.tab.show();

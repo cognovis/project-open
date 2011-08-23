@@ -177,7 +177,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticketModel);
+					//compoundPanel.loadTicket(ticketModel);
+					
+					Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);														
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);
@@ -220,7 +222,9 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 						success: function(record, operation) {
 							// Tell all panels to load the data of the newly created object
 							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-							compoundPanel.loadTicket(ticket_model);	
+							//compoundPanel.loadTicket(ticket_model);	
+							
+							Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);												
 						},
 						failure: function(record, operation) { 
 							Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);

@@ -117,6 +117,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Save the copied ticket(?)
 	// ...
 	
+	// Set datetime for actions
+	var date = new Date();
+	ticketForm.getForm().findField('datetime').setValue(date.getTime());			
+
 	// Write out an alert message
 	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
