@@ -33,6 +33,8 @@ ad_proc -private im_package_reporting_cubes_id_helper {} {
 # ----------------------------------------------------------------------
 
 ad_proc im_reporting_cubes_cube {
+    {-output_format "html" }
+    {-number_locale "en_US" }
     -cube_name
     { -start_date "1900-01-01" }
     { -end_date "2099-12-31" }
@@ -171,6 +173,8 @@ ad_proc im_reporting_cubes_cube {
 	}
 	ticket {
 	    set cube_array [im_reporting_cubes_ticket \
+		-output_format $output_format \
+		-number_locale $number_locale \
 		-start_date $start_date \
 		-end_date "2099-12-31" \
 		-left_vars $left_vars \
@@ -958,6 +962,8 @@ ad_proc im_reporting_cubes_survsimp {
 # ----------------------------------------------------------------------
 
 ad_proc im_reporting_cubes_display {
+    {-output_format "html" }
+    {-number_locale "en_US" }
     -hash_array
     -top_vars
     -left_vars
@@ -979,7 +985,10 @@ ad_proc im_reporting_cubes_display {
     set rowclass(1) "rowodd"
     
     set gray "gray"
-    set sigma "&Sigma;"
+    switch $output_format {
+	html { set sigma "&Sigma;" }
+	csv  { set sigma "Sum"	   }
+    }
     
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
@@ -1017,7 +1026,7 @@ ad_proc im_reporting_cubes_display {
 	You need to specify atleast one variable for the left dimension.
 	"]
 	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
-    "
+        "
 	return ""
     }
     
@@ -1051,10 +1060,16 @@ ad_proc im_reporting_cubes_display {
     
     set header ""
     for {set row 0} {$row < $top_scale_pretty_rows} { incr row } {
-    
-	append header "<tr class=rowtitle>\n"
-	append header "<td colspan=$left_scale_pretty_size></td>\n"
-    
+
+	switch $output_format {
+	    html {
+		append header "<tr class=rowtitle>\n"
+		append header "<td colspan=$left_scale_pretty_size></td>\n"
+	    }
+	    csv {
+		for {set i 0 } { $i < $left_scale_pretty_size } { incr i} { append header "\"\";" }
+	    }
+	}
 	for {set col 0} {$col <= [expr [llength $top_scale_pretty]-1]} { incr col } {
     
 	    set scale_pretty_entry [lindex $top_scale_pretty $col]
@@ -1067,7 +1082,10 @@ ad_proc im_reporting_cubes_display {
 	    # Check for the "sigma" sign. We want to display the sigma
 	    # every time (disable the colspan logic)
 	    if {$scale_pretty_item == $sigma} { 
-		append header "\t<td class=rowtitle>$scale_pretty_item</td>\n"
+		switch $output_format {
+		    html { append header "\t<td class=rowtitle>$scale_pretty_item</td>\n" }
+		    csv  { append header "\"$scale_pretty_item\";" }
+		}
 		continue
 	    }
 	    
@@ -1083,10 +1101,18 @@ ad_proc im_reporting_cubes_display {
 		incr next_col
 		incr colspan
 	    }
-	    append header "\t<td class=rowtitle colspan=$colspan>$scale_pretty_item</td>\n"	    
-	    
+	    switch $output_format {
+		html { append header "\t<td class=rowtitle colspan=$colspan>$scale_pretty_item</td>\n" }
+		csv  { 
+		    append header "\"$scale_pretty_item\";" 
+		    for {set i 0 } { $i < [expr $colspan-1] } { incr i} { append header "\"\";" }
+		}
+	    }    
 	}
-	append header "</tr>\n"
+	switch $output_format {
+	    html { append header "</tr>\n" }
+	    csv  { append header "\"\"\n" }
+	}
     }
     
     
@@ -1101,8 +1127,17 @@ ad_proc im_reporting_cubes_display {
 	incr ctr
     
 	# Start the row and show the left_scale_pretty values at the left
-	append body "<tr class=$class>\n"
-	foreach val $left_entry { append body "<td>$val</td>\n" }
+	switch $output_format {
+	    html { append body "<tr class=$class>\n" }
+	    csv  { }
+	}
+
+	foreach val $left_entry { 
+	    switch $output_format {
+		html { append body "<td>$val</td>\n"  }
+		csv  { append body "\"$val\";" }
+	    }
+	}
     
 	# Write the left_scale_pretty values to their corresponding local 
 	# variables so that we can access them easily when calculating
@@ -1132,22 +1167,41 @@ ad_proc im_reporting_cubes_display {
 	    }
 	    set key_expr "\$[join $key_expr_list "-\$"]"
 	    set key [eval "set a \"$key_expr\""]
+
 	    
-	    set val "&nbsp;"
+	    switch $output_format {
+		html { set val "&nbsp;" }
+		csv  { set val "" }
+	    }
 	    if {[info exists hash($key)]} { set val $hash($key) }
 	    
-	    append body "<td>$val</td>\n"
+	    switch $output_format {
+		html { append body "<td>$val</td>\n" }
+		csv  { append body "\"$val\";" }
+	    }
 	    
 	}
-	append body "</tr>\n"
+	switch $output_format {
+	    html { append body "</tr>\n" }
+	    csv  { append body "\"\"\n" }
+	}
+	
+    }
+
+    switch $output_format {
+	html { 
+	    return "
+		<table border=0 cellspacing=1 cellpadding=1>
+		$header
+		$body
+		</table>
+            "
+	}
+	csv  { 
+	    return "${header}${body}"
+	}
     }
     
-    return "
-	<table border=0 cellspacing=1 cellpadding=1>
-	$header
-	$body
-	</table>
-    "
 }
 
 
@@ -1388,6 +1442,8 @@ ad_proc im_reporting_cubes_project {
 # ----------------------------------------------------------------------
 
 ad_proc im_reporting_cubes_ticket {
+    {-output_format "html" }
+    {-number_locale "en_US" }
     { -start_date "1900-01-01" }
     { -end_date "2099-12-31" }
     { -left_vars "customer_name" }
@@ -1407,8 +1463,11 @@ ad_proc im_reporting_cubes_ticket {
     # ------------------------------------------------------------
     # Defaults
     
-    set sigma "&Sigma;"
-    
+    switch $output_format {
+	html { set sigma "&Sigma;" }
+	csv  { set sigma "Sum"	   }
+    }
+
     # The complete set of dimensions - used as the key for
     # the "cell" hash. Subtotals are calculated by dropping on
     # or more of these dimensions

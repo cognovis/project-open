@@ -17,6 +17,8 @@ ad_page_contract {
     { left_var1 "company_name" }
     { left_var2 "" }
     { left_var3 "" }
+    { output_format "html" }
+    { number_locale "" }
     { ticket_status_id:multiple "" }
     { ticket_type_id "" }
     { customer_type_id:integer "" }
@@ -29,6 +31,8 @@ ad_page_contract {
 
 # ------------------------------------------------------------
 # Define Dimensions
+
+if {"" == $number_locale} { set number_locate [lang::user::locale] }
 
 # Left Dimension - defined by users selects
 set left {}
@@ -168,7 +172,6 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set gray "gray"
-set sigma "&Sigma;"
 set days_in_past 365
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
@@ -262,6 +265,7 @@ set left_scale_options [list \
 	"ticket_creation_user"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_User "Creation User"]" \
 	"ticket_creation_user_dept"		"Ticket - [lang::message::lookup "" intranet-reporting.Creators_Dept "Creator's Department"]" \
 	"hour_of_day"				"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Hour "Creation Hour"]" \
+	"half_hour_of_day"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Hour "Creation Half Hour"]" \
 	"company_name"				"[lang::message::lookup "" intranet-core.Company "Company"] - [lang::message::lookup "" intranet-core.Name Name]" \
 ]
 
@@ -335,7 +339,8 @@ foreach var $dimension_vars {
 	quarter_of_year { lappend derefs "to_char(p.start_date, 'Q') as quarter_of_year" }
 	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
-	hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') || '&nbsp;' as hour_of_day" }
+	hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') as hour_of_day" }
+	half_hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') || ':' ||  trunc(to_char(p.start_date, 'MI')::integer / 30.0) * 3 || '0' as half_hour_of_day" }
 
 	ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as ticket_type" }
 	ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as ticket_status" }
@@ -353,127 +358,151 @@ if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
 #
 
 # Write out HTTP header, considering CSV/MS-Excel formatting
-im_report_write_http_headers -output_format "html"
+im_report_write_http_headers -output_format $output_format
 
-ns_write "
-[im_header]
-[im_navbar]
-<table cellspacing=0 cellpadding=0 border=0>
-<form>
-[export_form_vars ticket_id extended_filtering_p]
-<tr valign=top><td>
-	<table border=0 cellspacing=1 cellpadding=1>
-	<tr>
-	  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Start_Date "Start Date"]</nobr></td>
-	  <td class=form-widget colspan=3>
-	    <input type=textfield name=start_date value=$start_date>
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.End_Date "End Date"]</td>
-	  <td class=form-widget colspan=3>
-	    <input type=textfield name=end_date value=$end_date>
-	  </td>
-	</tr>
-"
-if {$extended_filtering_p} {
-    ns_write "
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Type "Ticket Type"]</td>
-	  <td class=form-widget colspan=3>
-	    [im_category_select -include_empty_p 1 "Intranet Ticket Type" ticket_type_id $ticket_type_id]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Status "Ticket Status"]</td>
-	  <td class=form-widget colspan=3>
-	    [im_category_select -include_empty_p 1 "Intranet Ticket Status" ticket_status_id $ticket_status_id]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer_Type "Customer Type"]</td>
-	  <td class=form-widget colspan=3>
-	    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer Customer]</td>
-	  <td class=form-widget colspan=3>
-	    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
-	  </td>
-	</tr>
-    "
+# Add the HTML select box to the head of the page
+switch $output_format {
+    html {
+        ns_write "
+		[im_header]
+		[im_navbar]
+		<table cellspacing=0 cellpadding=0 border=0>
+		<form>
+		[export_form_vars ticket_id extended_filtering_p]
+		<tr valign=top><td>
+			<table border=0 cellspacing=1 cellpadding=1>
+			<tr>
+			  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Start_Date "Start Date"]</nobr></td>
+			  <td class=form-widget colspan=3>
+			    <input type=textfield name=start_date value=$start_date>
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.End_Date "End Date"]</td>
+			  <td class=form-widget colspan=3>
+			    <input type=textfield name=end_date value=$end_date>
+			  </td>
+			</tr>
+		"
+		if {$extended_filtering_p} {
+		    ns_write "
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Type "Ticket Type"]</td>
+			  <td class=form-widget colspan=3>
+			    [im_category_select -include_empty_p 1 "Intranet Ticket Type" ticket_type_id $ticket_type_id]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Status "Ticket Status"]</td>
+			  <td class=form-widget colspan=3>
+			    [im_category_select -include_empty_p 1 "Intranet Ticket Status" ticket_status_id $ticket_status_id]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer_Type "Customer Type"]</td>
+			  <td class=form-widget colspan=3>
+			    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer Customer]</td>
+			  <td class=form-widget colspan=3>
+			    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
+			  </td>
+			</tr>
+	                <tr>
+	                  <td class=form-label>[lang::message::lookup "" intranet-reporting.Format Format]</td>
+	                  <td class=form-widget>
+	                    [im_report_output_format_select output_format "" $output_format]
+	                  </td>
+	                </tr>
+		    "
+		}
+set ttt {
+	                <tr>
+	                  <td class=form-label>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</td>
+	                  <td class=form-widget>
+			    [im_report_number_locale_select number_locale $number_locale]
+	                  </td>
+	                </tr>
 }
-ns_write "
-	<tr>
-	  <td class=form-widget colspan=4 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Aggregate Aggregate]</td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Show Show]</td>
-	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 aggregate $aggregate_options $aggregate]
-	</td>
-	<tr>
-	  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Left_Dimension Left-Dimension]</td>
-	  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Top_Dimension Top-Dimension]</td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left1 "Left 1"]</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 left_var1 $left_scale_options $left_var1]
-	  </td>
 
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Date_Dimension "Date Dimension"]</td>
-	    <td class=form-widget>
-	      [im_select -translate_p 0 top_var1 $top_vars_options $top_var1]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left2 "Left 2"]</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 left_var2 $left_scale_options $left_var2]
-	  </td>
+		ns_write "
+			<tr>
+			  <td class=form-widget colspan=4 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Aggregate Aggregate]</td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Show Show]</td>
+			  <td class=form-widget colspan=3>
+			    [im_select -translate_p 1 aggregate $aggregate_options $aggregate]
+			</td>
+			<tr>
+			  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Left_Dimension Left-Dimension]</td>
+			  <td class=form-widget colspan=2 align=center>&nbsp;<br>[lang::message::lookup "" intranet-reporting.Top_Dimension Top-Dimension]</td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left1 "Left 1"]</td>
+			  <td class=form-widget>
+			    [im_select -translate_p 0 left_var1 $left_scale_options $left_var1]
+			  </td>
+		
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Date_Dimension "Date Dimension"]</td>
+			    <td class=form-widget>
+			      [im_select -translate_p 0 top_var1 $top_vars_options $top_var1]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left2 "Left 2"]</td>
+			  <td class=form-widget>
+			    [im_select -translate_p 0 left_var2 $left_scale_options $left_var2]
+			  </td>
+		
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top1 "Top 1"]</td>
+			  <td class=form-widget>
+			    [im_select -translate_p 0 top_var2 $left_scale_options $top_var2]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left3 "Left 3"]</td>
+			  <td class=form-widget>
+			    [im_select -translate_p 0 left_var3 $left_scale_options $left_var3]
+			  </td>
+			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top2 "Top 2"]</td>
+			  <td class=form-widget>
+			    [im_select -translate_p 0 top_var3 $left_scale_options $top_var3]
+			  </td>
+			</tr>
+			<tr>
+			  <td class=form-label></td>
+			  <td class=form-widget colspan=3><input type=submit value=[lang::message::lookup "" intranet-core.Submit Submit]></td>
+			</tr>
+			</table>
+		</td>
+		<td>
+			<table>
+			</table>
+		</td>
+		<td>
+			<table cellspacing=2 width=90%>
+			<tr><td>$help_text</td></tr>
+			</table>
+		</td>
+		</tr>
+		</form>
+		</table>
+	"
+    }
+}
 
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top1 "Top 1"]</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 top_var2 $left_scale_options $top_var2]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Left3 "Left 3"]</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 left_var3 $left_scale_options $left_var3]
-	  </td>
-	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Top2 "Top 2"]</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 top_var3 $left_scale_options $top_var3]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label></td>
-	  <td class=form-widget colspan=3><input type=submit value=[lang::message::lookup "" intranet-core.Submit Submit]></td>
-	</tr>
-	</table>
-</td>
-<td>
-	<table>
-	</table>
-</td>
-<td>
-	<table cellspacing=2 width=90%>
-	<tr><td>$help_text</td></tr>
-	</table>
-</td>
-</tr>
-</form>
-</table>
-"
+
 
 # ------------------------------------------------------------
 # Get the cube data
 #
 
 set cube_array [im_reporting_cubes_cube \
+    -output_format $output_format \
+    -number_locale $number_locale \
     -cube_name "ticket" \
     -start_date $start_date \
     -end_date $end_date \
@@ -501,6 +530,8 @@ if {"" != $cube_array} {
     # Display the Cube Table
     
     ns_write [im_reporting_cubes_display \
+	      -output_format $output_format \
+	      -number_locale $number_locale \
 	      -hash_array [array get hash] \
 	      -left_vars $left \
 	      -top_vars $top \
@@ -513,6 +544,9 @@ if {"" != $cube_array} {
 # ------------------------------------------------------------
 # Finish up the table
 
-ns_write "[im_footer]\n"
-
+switch $output_format {
+    html {
+	ns_write "[im_footer]\n"
+    }
+}
 
