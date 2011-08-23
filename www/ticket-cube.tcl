@@ -410,14 +410,17 @@ switch $output_format {
 			    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
 			  </td>
 			</tr>
+		    "
+		}
+		ns_write "
 	                <tr>
 	                  <td class=form-label>[lang::message::lookup "" intranet-reporting.Format Format]</td>
 	                  <td class=form-widget>
 	                    [im_report_output_format_select output_format "" $output_format]
 	                  </td>
 	                </tr>
-		    "
-		}
+		"
+
 set ttt {
 	                <tr>
 	                  <td class=form-label>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</td>
