@@ -143,7 +143,7 @@ ad_proc -callback im_ticket_after_update -impl im_sencha_ticket_tracker {
     -status_id
     -type_id
 } {
-    Callback to be executed after the creation of any ticket.
+    Callback to be executed after the update of any ticket.
     The call back checks if the ticket was newly assigned to a
     queue with external users.
     In this case the callback will send out email notifications
@@ -186,52 +186,48 @@ ad_proc -callback im_ticket_after_update -impl im_sencha_ticket_tracker {
 		from	im_audits
 		where	audit_object_id = :object_id
 		) t
-	where	audit_date < now() - '0.1 seconds'::interval
+	where	
+		ticket_queue_id = :ticket_queue_id and
+		audit_date < now() - '1 seconds'::interval
     "
 
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 1"
-
     set already_assigned_p [db_string audit $audit_sql]
-
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 2"
     if {$already_assigned_p} {
 	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: The ticket was already assigned to queue '$ticket_queue_id'"
 	return "" 
     }
 
-    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: 3"
-
     # Select out the name of the queue
     set queue_name [db_string queue_name "select group_name from groups where group_id = :ticket_queue_id" -default "undefined"]
 
     # Who is the currently connect user?
-    set owner_email [db_string owner_mail "select im_email_from_user_id([ad_get_user_id])"]
-
+    set owner_email [db_string owner_mail "select im_email_from_user_id([im_rest_cookie_auth_user_id])"]
 
     # Send out notification mail to all members of the queue
     set member_sql "
 	select	member_id,
-		im_name_from_id(member_id) as member_name,
-		im_email_from_id(member_id) as member_email
+		im_name_from_user_id(member_id) as member_name,
+		im_email_from_user_id(member_id) as member_email
 	from	group_distinct_member_map gdmm
 	where	group_id = :ticket_queue_id
     "
     set member_list {}
-    db_foreach {
+    db_foreach members $member_sql {
 	lappend member_list $member_name
     }
 
-    set subject [lang::message::lookup "" intranet-sencha-ticket-tracker.Notification_Subject "SPRI: %project_name%"]
-    set body [lang::message::lookup "" intranet-sencha-ticket-tracker.Notification_Subject "\
-El grupo %group_name% ha sido asignado al ticket %project_name%.
+    set subject "SPRI: $project_name"
+    set body "El grupo $queue_name ha sido asignado al ticket $project_name.
 Tambien estan en este grupo:
 - [join $member_list "\n- "]
-    "]
+"
 
     # Write the mail into the mail queue
-    # acs_mail_lite::sendmail $member_email owner_email $subject $body
-    ns_log Notice "acs_mail_lite::sendmail $member_email owner_email $subject $body"
+    db_foreach send_email $member_sql {
+	# acs_mail_lite::sendmail $member_email $owner_email $subject $body
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: "
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: acs_mail_lite::sendmail $member_email $owner_email $subject $body"
+    }
 
 }
-
 

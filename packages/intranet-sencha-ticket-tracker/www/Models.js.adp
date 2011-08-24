@@ -76,13 +76,16 @@ Ext.define('TicketBrowser.Category', {
 		{type: 'string', name: 'category_translated'},
 		{type: 'string', name: 'indent_class',
 
-		// Determine the indentation level for each element in the tree
-		convert: function(value, record) {
-			var category = record.get('category_translated');
-			var indent = (record.get('tree_sortkey').length / 8) - 1;
-			return 'extjs-indent-level-' + indent;
-		}
-	}]
+			// Determine the indentation level for each element in the tree
+			convert: function(value, record) {
+				var category = record.get('category_translated');
+				var indent = (record.get('tree_sortkey').length / 8) - 1;
+				return 'extjs-indent-level-' + indent;
+			}
+		},
+		{type: 'string', name: 'tree_category_translated'}
+		
+	]
 	// Category can't have a proxy defined here
 	// because the proxy config depends on the type of category.
 });
@@ -202,7 +205,13 @@ Ext.define('TicketBrowser.Company', {
 		'vat_number',			// Company's VAT ID
 		'company_group_id',		// Does the company belong to a group structure?
 		'business_sector_id',		// Business sector of the company
-		'company_province'		// Custom field "province"
+		'company_province',		// Custom field "province"
+		'spri_company_telephone',
+		'spri_company_email',
+		'spri_company_address',
+		'spri_company_pc',
+		'spri_company_city',
+		'spri_company_fax'				
 	],
 
 	proxy:	{
@@ -244,7 +253,7 @@ Ext.define('TicketBrowser.User', {
 		'language',			// es_ES or eu_ES
 		{ name: 'name',			// Calculated compound name
 		convert: function(value, record) {
-			return record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2');
+			return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
 		}
 	}],
 
@@ -383,12 +392,13 @@ Ext.define('TicketBrowser.BizObjectMember', {
 		appendId:		true,
 		timeout:		300000,
 		extraParams: {
-			format:		'json'
+			format:		'json',
+			object_role_id: '1300'	
 		},
 		reader:	{ 
 			type:		'json', 
 			root:		'data',
-			totalProperty:	'total'
+			totalProperty:	'total'		
 		},
 		writer:	{
 			type:		'json'
@@ -549,7 +559,8 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_telephony_new_number',
 		'ticket_telephony_old_number',
 		'ticket_telephony_request_type_id',
-		'ticket_type_id'
+		'ticket_type_id',
+		'ticket_incoming_channel_id'
 	]
 });
 

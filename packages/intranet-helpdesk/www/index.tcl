@@ -523,6 +523,10 @@ set sql "
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
 
+# The SQL can contain commands [..] that need to be
+# evaluated in the context of this page.
+eval "set sql \"$sql\""
+
 # ad_return_complaint 1 "<pre>$sql</pre>"
 
 if {[string equal $letter "ALL"]} {

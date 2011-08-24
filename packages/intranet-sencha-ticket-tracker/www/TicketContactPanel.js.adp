@@ -27,7 +27,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	extend:		'Ext.panel.Panel',
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
-	title:		'#intranet-core.Contact#',
+	title:		'#intranet-sencha-ticket-tracker.Contact#',
 	layout:		'border',
 	split:	true,
 	deferredRender:	false,

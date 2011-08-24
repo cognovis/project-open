@@ -3,7 +3,7 @@ ad_library {
   
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @creation-date 2007-09-24
-  @cvs-id $Id: 06-package-procs.tcl,v 1.28 2010/06/25 08:46:27 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {
@@ -72,6 +72,7 @@ namespace eval ::xo {
     {-init_url true}
     {-keep_cc false}
     {-form_parameter}
+    {-export_vars true}
   } {
     Create the connection context ::xo::cc and a package object 
     if these are none defined yet. The connection context ::xo::cc
@@ -134,7 +135,7 @@ namespace eval ::xo {
       auth::require_login
     }
 
-    ::xo::cc export_vars -level 2
+    if {$export_vars} {::xo::cc export_vars -level 2}
     return $package_id
   }
 

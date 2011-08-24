@@ -42,7 +42,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	items: [{
 		itemId: 'ticketForm',
 		xtype: 'ticketForm',
-		title: '#intranet-core.Ticket#',
+		title: '#intranet-sencha-ticket-tracker.Ticket#',
 		split:	true,
 	//	collapsible: true,
 		region:	'north'
@@ -57,7 +57,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'ticketContactPanel',
-		title: '#intranet-core.Contact#',
+		title: '#intranet-sencha-ticket-tracker.Contact#',
 		xtype: 'ticketContactPanel',
 		split:	true,
 		height: 370,
@@ -85,7 +85,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		region:	'center'
 	}, {
 		itemId: 'fileStorageGrid',
-		title: '#intranet-filestorage.Filestorage#',
+		title: '#intranet-sencha-ticket-tracker.Filestorage#',
 		xtype: 'fileStorageGrid',
 		split:	true,
 		region:	'south'
@@ -117,6 +117,10 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	// Save the copied ticket(?)
 	// ...
 	
+	// Set datetime for actions
+	var date = new Date();
+	ticketForm.getForm().findField('datetime').setValue(date.getTime());			
+
 	// Write out an alert message
 	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
     },
@@ -175,21 +179,21 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		}
     },
     
-		//If the field value is diferent from store value, set model dirty variable to true
-		checkTicketField: function(field,newValue,oldValue,store) { 
-			if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
-				var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
-				var ticket_id = ticket_id_field.getValue();
-				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-				
-				if (ticketModel != null && ticketModel != undefined) {
-					var ticketModelFieldValue =  ticketModel.get(field.name);
-					if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
-						ticketModel.setDirty();
-					}
+	//If the field value is diferent from store value, set model dirty variable to true
+	checkTicketField: function(field,newValue,oldValue,store) { 
+		if (field.xtype != 'po_datetimefield_read_only'){ //Exclude date read only
+			var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+			var ticket_id = ticket_id_field.getValue();
+			var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
+			
+			if (ticketModel != null && ticketModel != undefined) {
+				var ticketModelFieldValue =  ticketModel.get(field.name);
+				if (ticketModelFieldValue != null && ticketModelFieldValue != undefined && newValue != ticketModelFieldValue) {						
+					ticketModel.setDirty();
 				}
 			}
-		}    
+		}
+	}    
 
 });
 

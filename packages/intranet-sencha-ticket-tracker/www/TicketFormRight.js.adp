@@ -30,7 +30,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	id:		'ticketFormRight',
 	standardsubmit:	false,
 	frame:		true,
-	title: 		'#intranet-core.Ticket#',
+	title: 		'#intranet-sencha-ticket-tracker.Ticket#',
 	bodyStyle:	'padding:5px 5px 0',
 	width:		800,
 	monitorValid:	true,
@@ -73,7 +73,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			flex: 2,
 			layout: 	{ type: 'table', columns: 3 },
 			defaults: {		
-				margin: '5 10 0 0',
+				margin: '5 50 0 0',
 				listeners: {
 							change: function (field,newValue,oldValue) {
 								 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -102,13 +102,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode: 	'remote',
-				store: 		ticketChannelStore,
+				queryMode: 	'local',
+				store: 		ticketOriginStore,
 				listConfig: {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
-				}
+				},
+				validator: function(value){
+					return this.store.validateLevel(this.value,this.allowBlank)
+				}						
 			}, {
 				name:		'ticket_reaction_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Reaction_Date#',
@@ -215,13 +218,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode: 	'remote',
-				store: 		ticketChannelStore,
+				queryMode: 	'local',
+				store: 		ticketOriginStore,
 				listConfig: {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
 					}
-				}
+				},
+				validator: function(value){
+					return this.store.validateLevel(this.value,this.allowBlank)
+				}						
 			}]
 	
 		}, {
@@ -242,13 +248,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				}					
 			},				
 			items :[{
-				fieldLabel:	'#intranet-core.Status#',
+				fieldLabel:	'#intranet-sencha-ticket-tracker.Status#',
 				name:		'ticket_status_id',
 				xtype:		'combobox',
 				valueField:	'category_id',
 				displayField:	'category_translated',
 				forceSelection: true,
-				queryMode:	'remote',
+				queryMode:	'local',
+				allowBlank: false,
 				store:		ticketStatusStore,
 				width:		200,
 				listeners:{
@@ -318,11 +325,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		}
 	],
 	
-	buttons: [{
+	buttons: [/*{
 		text:			'#intranet-sencha-ticket-tracker.Reject_Button#',
 		itemId:			'rejectButton',
 		id:			'ticketFormRightRejectButton',
-		hidden:			false,		// ToDo: Hide and enable only if rejectable (last_queue_id is set)
+		hidden:			false,	
 		formBind:		true,
 		handler: function() {
 
@@ -341,7 +348,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			}
 			ticket_queue_field.setValue(ticket_last_queue_id);
 		}
-	}, {
+	},*/ {
 		text:			'#intranet-sencha-ticket-tracker.button_Save#',
 		itemId:			'saveButton',
 		id:			'ticketFormRightSaveButton',
@@ -390,7 +397,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				if (values.hasOwnProperty(field)) {
 					value = values[field];
 					if (value == null) { value = ''; }
-					value = espaces(value);
+					value = Function_espaces(value);
 					ticket_record.set(field, value);
 				}
 			}
@@ -415,7 +422,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				success: function(record, operation) {
 					// Refresh all forms to show the updated information
 					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.loadTicket(ticket_record);
+					//compoundPanel.loadTicket(ticket_record);
+
+					Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);									
 				},
 				failure: function(record, operation) {
 					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
@@ -437,11 +446,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		var ticket_org_queue_field = form.findField('ticket_org_queue_id');
 		ticket_org_queue_field.setValue(ticket_queue_field.getValue());
 
-		// Enable the "Reject" button if last_queue_id exists
-		if ('' != ticket_last_queue_field.getValue()) {
-			// ToDo: enable the reject button
-		}
-
 		// Disable the read-only date fields
 		// form.findField('ticket_creation_date').setDisabled(true);
 		// form.findField('ticket_escalation_date').setDisabled(true);
@@ -460,15 +464,21 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		
 		//If the Ticket is close, hide the buttons
 		var buttonToolbar = this.getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');	
-		var rejectButton = buttonToolbar.getComponent('rejectButton');		
-		if (ticket_status_id == '30001'){
-			saveButton.hide();
-			rejectButton.hide();
+		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject')	
+		rejectButton.show();
+		if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
+			buttonToolbar.disable();
+			rejectButton.disable();
 		} else {
-			saveButton.show();
-			rejectButton.show();			
+			buttonToolbar.enable();
+			// Enable the "Reject" button if last_queue_id exists
+			if (Ext.isEmpty(ticket_last_queue_field.getValue())){
+				rejectButton.disable();
+			} else {
+				rejectButton.enable();
+			}
 		}
+		
 
 		// Calculate the drop-down box for escalation
 		var programId = rec.get('ticket_area_id');
@@ -485,7 +495,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	
 				// Get the row with the list of groups enabled for this area:
 				var programName = programModel.get('category');
-	                        var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
+	            var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
 				if (null == mapRow) {
 					alert('Configuration Error:\nProgram "'+programName+'" not found');
 					return;

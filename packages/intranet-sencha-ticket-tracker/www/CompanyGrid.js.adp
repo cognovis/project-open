@@ -28,7 +28,7 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 	model: 'TicketBrowser.Company',
 	remoteSort: true,
 	remoteFilter:	true,
-	pageSize: 20,
+	pageSize: 12,
 	autoSync: true,				// Write changes to the REST server ASAP
 	autoLoad: true,
 	sorters: [{
@@ -39,14 +39,27 @@ var companyGridStore = Ext.create('PO.data.CompanyStore', {
 
 var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
+	allowDeselect: true,
+	checkOnly: true,
 	listeners: {
-		selectionchange: function(sm, selections) {
-			if (selections.length > 0){
+		select: function (component,record,index, eOpts ){
+			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(record.get('company_id'));
+			setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',500);
+			
+		}, 
+		deselect: function (component,record,index, eOpts ){
+			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
+			Ext.getCmp('contactFilterForm').onSearch();
+			
+		},
+		selectionchange: function(view,selections,options)		{
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
+			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
-			}
-		}
+			}			
+		}	
 	}	
 });
 
@@ -58,36 +71,54 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 	store:		companyGridStore,
 	selModel:	companyGridSelModel,
 
-	listeners: {
+	listeners: {	
 		itemdblclick: function(view, record, item, index, e) {
-	
-			// Load the company into the CompanyCompoundPanel
-			var compoundPanel = Ext.getCmp('companyCompoundPanel');
+			var compoundPanel = Ext.getCmp('companyContactCompoundPanel');
 			compoundPanel.loadCompany(record);
-		}
+			var title = record.get('company_name');
+			compoundPanel.tab.setText(title);
+			compoundPanel.tab.show();
+		
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);			
+		}/*,
+		selectionchange: function(view,selections,options)		{
+			//One selection select contact in contactGrid
+			if (selections.length == 1) {
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(selections[0].get('company_id'));
+			} else {
+				//Other selection view all contact un contactGrid
+				Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
+			}
+			
+			//TODO: control action bar buttons depend of selection in two grid (company and contact)
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel();
+			
+			Ext.getCmp('contactFilterForm').onSearch();
+		}*/
 	},
 
 	columns: [
 		{
-			header: '#intranet-core.Company_Name#',
+			header: '#intranet-sencha-ticket-tracker.Company_Name#',
 			dataIndex: 'company_name',
 			flex: 1,
-			minWidth: 150,
+			minWidth: 150/*,
 			renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				return '<a href="/intranet/companies/view?company_id=' + 
 					record.get('company_id') + 
 					'" target="_blank">' + 
 					value +
 					'</a>';
-			}
+			}*/
 		}, {
-			header: '#intranet-core.VAT_Number#',
+			header: '#intranet-sencha-ticket-tracker.VAT_Number#',
 			dataIndex: 'vat_number'
 		}, {
 			header: '#intranet-sencha-ticket-tracker.Province#',
 			dataIndex: 'company_province'
 		}, {
-			header: '#intranet-core.Primary_contact#',
+			header: '#intranet-sencha-ticket-tracker.Primary_contact#',
 			dataIndex: 'primary_contact_id',
 			renderer: function(value, o, record) {
 				return userStore.name_from_id(record.get('primary_contact_id'));
@@ -109,7 +140,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 				valueField: 'category_id'
 			}
 		}, {
- 			header: '#intranet-helpdesk.Type#',
+ 			header: '#intranet-sencha-ticket-tracker.Type#',
 			dataIndex: 'company_type_id',
 			renderer: function(value, o, record) {
 				return companyTypeStore.category_from_id(record.get('company_type_id'));
@@ -169,7 +200,14 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where telephone like \'%' + value + '%\'))';
 						key = 'query';
 						value = query;
-						break;							
+						break;		
+					case 'email':
+						// Fuzzy search
+						value = value.toLowerCase();
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
+						key = 'query';
+						value = query;
+						break;											
 					case 'company_name':
 						// The customer's company name is not part of the REST
 						// company fields. So translate into a query:

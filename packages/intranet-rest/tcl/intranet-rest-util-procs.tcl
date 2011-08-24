@@ -660,9 +660,9 @@ ad_proc -public im_rest_valid_sql {
     # ------------------------------------------------------
     # Rules have a format LHS <- RHS (Left Hand Side <- Right Hand Side)
     set rules {
-	query {select [a-z_]+}
-	query {from [a-z_]+}
-	query {where [a-z_]+ in \( query \)}
+	query {select [[:alnum:]_]+}
+	query {from [[:alnum:]_]+}
+	query {where [[:alnum:]_]+ in \( query \)}
 	query {where cond}
 	query {query query}
 	query {query where val}
@@ -675,7 +675,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {\( cond \)}
 	cond {val = val}
 	cond {val like val}
-	cond {[a-z_]+ like val}
+	cond {[[:alnum:]_]+ like val}
 	cond {val > val}
 	cond {val >= val}
 	cond {val < val}
@@ -683,20 +683,21 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {[[:alnum:]_]+ @@ val}
 	cond {val is not null}
 	cond {val in \( val \)}
 	cond {val in \( query \)}
 	val  {val , val}
 	val  {val val}
 	val  {[0-9]+}
-	val  {[0-9a-z\_]+\.[0-9a-z\_]+}
+	val  {[[:alnum:]_]+\.[[:alnum:]_]+}
 	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
-	val  {\'[a-z0-9_\ \-\%\@\.]*\'}
-	val  {[a-z0-9_]+ \( [a-z0-9_]+ \)}
+	val  {\'[[:alnum:]_\ \-\%\@\.]*\'}
+	val  {[[:alnum:]_]+ \( [[:alnum:]_]+ \)}
     }
 
     # Add rules for every variable saying that it's a var.
-    lappend variables member_id user_id group_id
+    lappend variables member_id user_id group_id object_id_one object_id_two
     foreach var $variables {
 	lappend rules val
 	lappend rules $var

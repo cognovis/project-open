@@ -44,7 +44,10 @@ create table im_search_object_types (
 -- 4 | im_invoice     | 1
 -- 5 | emails (in CR) | 0.2
 -- 6 | im_fs_files    | 0.1
--- 7 | content-type   | 0.5
+-- 7 | content_item   | 0.5
+-- 8 | im_ticket      | 0.7
+-- 9 | im_conf_item   | 0.8
+
 
 
 
@@ -414,28 +417,33 @@ returns trigger as '
 declare
 	v_string	varchar;
 	v_string2	varchar;
+	v_object_type	varchar;
 begin
 	select  coalesce(project_name, '''') || '' '' ||
 		coalesce(project_nr, '''') || '' '' ||
 		coalesce(project_path, '''') || '' '' ||
 		coalesce(description, '''') || '' '' ||
-		coalesce(note, '''')
-	into    v_string
-	from    im_projects
-	where   project_id = new.project_id;
+		coalesce(note, ''''),
+		o.object_type
+	into    v_string, v_object_type
+	from    im_projects p,
+		acs_objects o
+	where   p.project_id = new.project_id and
+		p.project_id = o.object_id;
+
+	-- Skip if this is a ticket. There is a special trigger for tickets.
+	-- im_timesheet_task is still handled as a project.
+	IF ''im_ticket'' = v_object_type THEN return new; END IF;
 
 	v_string2 := '''';
-	if column_exists(''im_projects'', ''company_project_nr'') then
-
+	IF column_exists(''im_projects'', ''company_project_nr'') THEN
 		select  coalesce(company_project_nr, '''') || '' '' ||
 			coalesce(final_company, '''')
 		into    v_string2
 		from    im_projects
 		where   project_id = new.project_id;
-
 		v_string := v_string || '' '' || v_string2;
-
-	end if;
+	END IF;
 
 	perform im_search_update(new.project_id, ''im_project'', new.project_id, v_string);
 

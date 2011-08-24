@@ -33,7 +33,7 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 	remoteFilter:	true,
 	autoLoad: 	false,			// Don't load manually
 	autoSync: 	true,			// Write changes to the REST server ASAP
-	pageSize: 	20,			// 
+	pageSize: 	12,			// 
 	sorters: [{
 		property: 'first_names',
 		direction: 'ASC'
@@ -46,13 +46,16 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
+	allowDeselect: true,
+	checkOnly: true,
 	listeners: {
 		selectionchange: function(sm, selections) {
-			if (selections.length > 0){
+			var otherSel = Ext.getCmp('companyGrid').getSelectionModel().getSelection();
+			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
-			}
+			}	
 		}
 	}	
 });
@@ -68,9 +71,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 
 	listeners: {
 		itemdblclick: function(view, record, item, index, e) {
-			// Load the contact into the ContactCompoundPanel
-			var compoundPanel = Ext.getCmp('contactCompoundPanel');
-			compoundPanel.loadContact(record);
+			// no debe hacer nada
 		}
 	},
 
@@ -79,19 +80,19 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			header:		'#intranet-sencha-ticket-tracker.Contacts#',
 			dataIndex:	'name',
 			flex:		1,
-			minWidth:	150,
+			minWidth:	150/*,
 			renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				return '<a href="/intranet/users/view?user_id=' + 
 					record.get('user_id') + 
 					'" target="_blank">' + 
 					value +
 					'</a>';
-			}
+			}*/
 		}, {
-			header:		'#intranet-core.First_names#',
+			header:		'#intranet-sencha-ticket-tracker.First_names#',
 			dataIndex:	'first_names'
 		}, {
-			header:		'#intranet-core.Last_name#',
+			header:		'#intranet-sencha-ticket-tracker.Last_name#',
 			dataIndex:	'last_name'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Last_Name2#',
@@ -101,7 +102,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			dataIndex:	'email',
 			minWidth:	150
 		}, {
-			header:	'#intranet-core.Telephone#',
+			header:	'#intranet-sencha-ticket-tracker.Telephone#',
 			dataIndex:	'contact_telephone'
 		}, {
 			header:	'#intranet-sencha-ticket-tracker.Language#',
@@ -161,6 +162,11 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		
 					// special treatment for special filter variables
 					switch (key) {
+					case 'company_id':
+						query = query + ' and b.person_id in (select object_id_two from acs_rels where object_id_one in (' + value + '))';
+						key = 'query';
+						value = query;
+						break;					
 					case 'first_names':
 						// Fuzzy search
 						value = value.toLowerCase();

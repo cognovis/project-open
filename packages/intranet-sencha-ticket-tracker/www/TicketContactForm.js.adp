@@ -38,7 +38,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	items: [{
 		name:			'user_id',
 		xtype:			'combobox',
-		fieldLabel:		'#intranet-sencha-ticket-tracker.User#',
+		fieldLabel:		'#intranet-sencha-ticket-tracker.NameSearch#',
 		value:			'#intranet-sencha-ticket-tracker.New_User#',
 		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
 		queryMode:	'local',
@@ -62,17 +62,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 
 			// load the values of the user into the form
 			this.ownerCt.loadRecord(user_record);
-
-			// Enable/Disable the "Save" button for anonymous
-			var buttonToolbar = this.ownerCt.getDockedComponent(0);
-			var saveButton = buttonToolbar.getComponent('saveButton');
-			var username = user_record.get('username');
-			if (username.indexOf('anonimo') >= 0) {
-				saveButton.hide();
-			} else {
-				saveButton.show();
-			}
-
 		 }
 		}
 	}, {
@@ -114,6 +103,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					id: 0,
 					fields: ['iso', 'language'],
 					data: [
+						['', null],
 						['es_ES', '#intranet-sencha-ticket-tracker.lang_es_ES#'], 
 						['eu_ES', '#intranet-sencha-ticket-tracker.lang_eu_ES#']
 					]
@@ -155,6 +145,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		text:		'#intranet-sencha-ticket-tracker.Save_Changes#',
 		itemId:		'saveButton',
 		width:		120,
+		formBind:	true,
 		handler: function(){
 			// Get the values of this form into the "values" object
 			var form = this.ownerCt.ownerCt.getForm();
@@ -162,20 +153,22 @@ Ext.define('TicketBrowser.TicketContactForm', {
 			var user_id = combo.getValue();
 			var values = form.getFieldValues();
 
-			checkValues(values);
+			Function_checkValues(values);
 		
-			// Update the model with the form variables and save
+			// Update the model with the form variables and save. NO save anonymous
 			var userModel = userStore.findRecord('user_id',user_id);
-			userModel.set(values);
-			userModel.save({
-				scope: Ext.getCmp('ticketContactForm'),
-				success: function(record, operation) {
-					this.loadUser(userModel);
-				},
-				failure: function(record, operation) {
-					Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
-				}
-			});
+			if (userModel.get('username').indexOf('anonimo') == -1) {	
+				userModel.set(values);
+				userModel.save({
+					scope: Ext.getCmp('ticketContactForm'),
+					success: function(record, operation) {
+						this.loadUser(userModel);
+					},
+					failure: function(record, operation) {
+						Ext.Msg.alert('Failed to save user', operation.request.scope.reader.jsonData["message"]);
+					}
+				});
+			}
 
 			// Get the ticket
 			var ticketForm = Ext.getCmp('ticketForm');
@@ -191,6 +184,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 					scope: Ext.getCmp('ticketContactForm'),
 					success: function(record, operation) {
 						// Tell all panels to refresh
+						Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue());					
 					},
 					failure: function(record, operation) {
 						Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
@@ -226,21 +220,16 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		text:		'#intranet-sencha-ticket-tracker.Create_New_Contact#',
 		itemId:		'createButton',
 		width: 		120,
+		formBind:	true,
 		hidden:		true,
 		handler: function() {
 			var form = this.ownerCt.ownerCt.getForm();
 			var values = form.getFieldValues();
+			Function_checkValues(values);		
 			values.user_id = null;
 			values.first_names = values.first_names.toUpperCase();
 			values.last_name = values.last_name.toUpperCase();
 			values.last_name2 = values.last_name2.toUpperCase();
-
-			checkValues(values);		
-			
-			// Deugging help...
-			// values.first_names = values.first_names + Math.random();
-			// values.last_name = values.last_name + Math.random();
-			// values.email = values.first_names + '.' + values.last_name + '@asdf.com';
 
 			// create a new user
 			var userModel = Ext.ModelManager.create(values, 'TicketBrowser.User');
@@ -269,7 +258,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						ticket_model.set('ticket_customer_contact_id', user_id);
 						ticket_model.save({
 							success: function(record, operation) { 
-								// Ext.Msg.alert('ticket_customer_contact_id saved.', operation.request.scope.reader.jsonData["message"]); 
+								Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue());																
 							},
 							failure: function(record, operation) { 
 								Ext.Msg.alert('Failed to save ticket_customer_contact_id.', operation.request.scope.reader.jsonData["message"]);
@@ -344,22 +333,14 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		//If Ticket is closed, disable the buttons.
 		var ticketStatusId=rec.get('ticket_status_id');;
 		var buttonToolbar = Ext.getCmp('ticketContactForm').getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');	
+		/*var saveButton = buttonToolbar.getComponent('saveButton');	
 		var addButton = buttonToolbar.getComponent('addButton');	
-		var createButton = buttonToolbar.getComponent('createButton');	
+		var createButton = buttonToolbar.getComponent('createButton');	*/
 
-		if (ticketStatusId == '30001'){
-			saveButton.hide();
-			addButton.hide();
+		if (ticketStatusId == '30001'  && currentUserIsAdmin != 1){
+			buttonToolbar.disable();
 		} else {
-			// Enable/Disable the "Save" button for anonymous
-			var username = contact_record.get('username');
-			if (username.indexOf('anonimo') >= 0) {
-				saveButton.hide();
-			} else {
-				saveButton.show();
-			}			
-			addButton.show();	
+			buttonToolbar.enable();		
 		}		
 	},
 
@@ -377,12 +358,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		addButton.show();
 		var createButton = buttonToolbar.getComponent('createButton');
 		createButton.hide();
-		var saveButton = buttonToolbar.getComponent('saveButton');
 
 		var form = this.getForm();
 		contactField = form.findField('ticket_customer_contact_p');
 		contactField.setValue(true);
-		
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
