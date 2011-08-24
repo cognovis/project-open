@@ -20,6 +20,18 @@ ad_proc -public im_audit_component {
     Generic portlet component to show the audit trail for the given
     Object
 } {
+    set return_url [im_url_with_query]
+
+    db_1row audit_object_info "
+	select	o.*
+	from	acs_objects o
+	where	o.object_id = :object_id
+    "
+
+    set attribute_l10n [lang::message::lookup "" intranet-core.Attribute Attribute]
+    set value_l10n [lang::message::lookup "" intranet-core.Value Value]
+
+    # Define how the data should be rendered on the screen
     template::list::create \
 	-name audit_list \
 	-multirow audit_multirow \
@@ -59,11 +71,24 @@ ad_proc -public im_audit_component {
 	    audit_object_status {
 		label "[lang::message::lookup {} intranet-audit.Object_Status {Status}]"
 	    }
-	    audit_diff {
+	    audit_diff_pretty {
 		label "[lang::message::lookup {} intranet-audit.Diff {Diff}]"
+	        display_template {
+		    @audit_multirow.audit_diff_pretty;noquote@
+		}
 	    }
 	}    
 
+    # ----------------------------------------------------------------
+    # Prepare data
+
+    # Initialize the hash with pretty names with some static values
+    array set pretty_name_hash [im_audit_attribute_pretty_names -object_type $object_type]
+    array set ignore_hash [im_audit_attribute_ignore -object_type $object_type]
+    array set deref_hash [im_audit_attribute_deref -object_type $object_type]
+
+    # ----------------------------------------------------------------
+    # Get the data from im_audits and write out a "multirow" with the data
     set audit_sql "
 	select	*,
 		to_char(audit_date, 'YYYY-MM-DD HH24:MI:SS') as audit_date_pretty,
@@ -71,25 +96,75 @@ ad_proc -public im_audit_component {
 		im_initials_from_user_id(audit_user_id) as audit_user_initials,
 		im_name_from_user_id(audit_user_id) as audit_user_name
 	from	im_audits
-	where	audit_object_id = :object_id
+	where	audit_object_id = :object_id and
+		audit_date > :creation_date::timestamptz + '1 second'::interval -- ignore initial audit
 	order by audit_id DESC
     "
     
     set cnt 0
-    db_multirow -extend { audit_details_url audit_user_url audit_ip_url audit_action_gif } audit_multirow audit_list $audit_sql {
-	set audit_details_url [export_vars -base "/intranet-audit/view" {audit_id}]
+    db_multirow -extend { audit_details_url audit_user_url audit_ip_url audit_action_gif audit_diff_pretty } audit_multirow audit_list $audit_sql {
+	set audit_details_url [export_vars -base "/intranet-audit/view" {audit_id return_url}]
 	set audit_user_url [export_vars -base "/intranet/users/view" {{user_id $audit_user_id}}]
 	set audit_ip_url ""
 
 	switch $audit_action {
-	    create { set audit_action_abbrev "c" }
-	    update { set audit_action_abbrev "u" }
-	    delete { set audit_action_abbrev "d" }
-	    nuke { set audit_action_abbrev "n" }
-	    default { set audit_action_abbrev "" }
+	    create 		{ set audit_action_abbrev "c" }
+	    before_create	{ set audit_action_abbrev "c" }
+	    after_create	{ set audit_action_abbrev "c" }
+	    update		{ set audit_action_abbrev "u" }
+	    before_update	{ set audit_action_abbrev "u" }
+	    after_update	{ set audit_action_abbrev "u" }
+	    delete		{ set audit_action_abbrev "d" }
+	    before_delete	{ set audit_action_abbrev "d" }
+	    nuke		{ set audit_action_abbrev "n" }
+	    before_nuke		{ set audit_action_abbrev "n" }
+	    default		{ set audit_action_abbrev "cog" }
 	}
 	set audit_action_msg [lang::message::lookup "" intranet-audit.Action_${audit_action}_help $audit_action]
 	set audit_action_gif [im_gif $audit_action_abbrev $audit_action_msg]
+
+	# Prettyfy the audit_diff.
+	# Go through values and dereference them.
+	set audit_diff_pretty ""
+	foreach field [split $audit_diff "\n"] {
+	    set attribute_name [lindex $field 0]
+	    set attribute_value [lrange $field 1 end]
+
+	    if {[regexp {^acs_rel} $attribute_name match]} { 
+		catch {
+		    set attribute_value [im_audit_format_rel_value -object_id $object_id -value $attribute_value]
+		}
+	    }
+
+	    # Should we ignore this field?
+	    if {[info exists ignore_hash($attribute_name)]} { continue }
+
+	    # Determine the pretty_name for the field
+	    set pretty_name $attribute_name
+	    if {[info exists pretty_name_hash($attribute_name)]} { set pretty_name $pretty_name_hash($attribute_name) }
+
+	    # Determine the pretty_value for the field
+	    set pretty_value $attribute_value
+
+	    # Apply the dereferencing function if available
+	    # This function will pull out the object name for an ID
+	    # or the category for a category_id
+	    if {[info exists deref_hash($attribute_name)]} { 
+		set deref_function $deref_hash($attribute_name)
+		set pretty_value [db_string deref "select ${deref_function}(:attribute_value)"]
+	    }
+
+	    # Skip the field if the attribute_name is empty.
+	    # This could be the last line of the audit_diff or audit_value field
+	    if {"" == $attribute_name} { continue }
+
+	    if {"" != $audit_diff_pretty} { append audit_diff_pretty ",\n<br>" }
+	    append audit_diff_pretty "$pretty_name = $pretty_value"
+	}
+
+	# Skip the entire line if it's empty.
+	if {"" == $audit_diff_pretty} { continue }
+
 	incr cnt
     }
 
@@ -98,9 +173,230 @@ ad_proc -public im_audit_component {
     set list_html $__adp_output
 
     return $list_html
+}
 
-#    set title [lang::message::lookup "" intranet-audit.Audit_Trail "Audit Trail"]
-#    return [im_table_with_title $title $list_html]
+
+ad_proc -public im_audit_format_rel_value {
+    -object_id:required
+    -value:required
+} {
+    Returns a formatted pretty string representing a relationship
+} {
+    ns_log Notice "im_audit_format_rel_value: object_id=$object_id, value='$value'"
+    array set rel_hash $value
+
+    set object_id_one ""
+    if {[info exists rel_hash(object_id_one)]} { 
+	set object_id_one $rel_hash(object_id_one) 
+	unset rel_hash(object_id_one)
+    }
+
+    set object_id_two ""
+    if {[info exists rel_hash(object_id_two)]} { 
+	set object_id_two $rel_hash(object_id_two) 
+	unset rel_hash(object_id_two)
+    }
+
+    set rel_type ""
+    if {[info exists rel_hash(rel_type)]} { 
+	set rel_type $rel_hash(rel_type) 
+	unset rel_hash(rel_type)
+    }
+
+    if {$object_id_one == $object_id} {
+	set arrow [im_gif arrow_left]
+	set other_object_id $object_id_two
+    } else {
+	set arrow [im_gif arrow_right]
+	set other_object_id $object_id_one
+    }
+
+    set other_object_name "undefined"
+    if {"" != $other_object_id && [string is integer $other_object_id]} {
+        set other_object_name [util_memoize [list db_string object_name "select acs_object__name($other_object_id)"]]
+    }
+    set result "$rel_type $arrow $other_object_name"
+    set list ""
+    foreach key [lsort [array names rel_hash]] {
+	lappend list "$key $rel_hash($key)"
+    }
+    return $result
+}
+
+
+ad_proc -public im_audit_attribute_pretty_names {
+    -object_type:required
+} {
+    Returns a key-value list of pretty names for object attributes
+} {
+    return [im_audit_attribute_pretty_names_helper -object_type $object_type]
+    return [util_memoize [list im_audit_attribute_pretty_names_helper -object_type $object_type]]
+}
+
+
+ad_proc -public im_audit_attribute_pretty_names_helper {
+    -object_type:required
+} {
+    Returns a key-value list of pretty names for object attributes
+} {
+    # Get the list of all define DynField names
+    set dynfield_sql "
+	select	*
+	from	acs_attributes aa,
+		im_dynfield_attributes da
+	where	aa.attribute_id = da.acs_attribute_id and
+		aa.object_type = :object_type
+    "
+    db_foreach dynfields $dynfield_sql {
+	set pretty_name_hash($attribute_name) $pretty_name
+    }
+
+    set pretty_name_hash(project_id) [lang::message::lookup "" intranet-core.Project_ID "Project ID"]
+    set pretty_name_hash(project_name) [lang::message::lookup "" intranet-core.Project_Name "Project Name"]
+    set pretty_name_hash(project_nr) [lang::message::lookup "" intranet-core.Project_Nr "Project Nr"]
+    set pretty_name_hash(project_path) [lang::message::lookup "" intranet-core.Project_Path "Project Path"]
+    set pretty_name_hash(project_type_id) [lang::message::lookup "" intranet-core.Project_Type "Project Type"]
+    set pretty_name_hash(project_status_id) [lang::message::lookup "" intranet-core.Project_Status "Project Status"]
+    set pretty_name_hash(project_lead_id) [lang::message::lookup "" intranet-core.Project_Manager "Project Manager"]
+    
+    # Project standard fields
+    set pretty_name_hash(start_date) [lang::message::lookup "" intranet-core.Start_Date "Start Date"]
+    set pretty_name_hash(end_date) [lang::message::lookup "" intranet-core.End_Date "End Date"]
+    set pretty_name_hash(description) [lang::message::lookup "" intranet-core.Description "Description"]
+    set pretty_name_hash(note) [lang::message::lookup "" intranet-core.Note "Note"]
+    set pretty_name_hash(parent_id) [lang::message::lookup "" intranet-core.Parent_ID "Parent"]
+    set pretty_name_hash(company_id) [lang::message::lookup "" intranet-core.Company_ID "Company"]
+    set pretty_name_hash(template_p) [lang::message::lookup "" intranet-core.Template_p "Template?"]
+    
+    # Project Cost Cache
+    set pretty_name_hash(cost_bills_cache) [lang::message::lookup "" intranet-core.Cost_Bills_Cache "Bills Cache"]
+    set pretty_name_hash(cost_delivery_notes_cache) [lang::message::lookup "" intranet-core.Cost_Delivery_Notes_Cache "Delivery Notes Cache"]
+    set pretty_name_hash(cost_expenses_logged_cache) [lang::message::lookup "" intranet-core.Cost_Expenses_Logged_Cache "Expenses Logged Cache"]
+    set pretty_name_hash(cost_expenses_planned_cache) [lang::message::lookup "" intranet-core.Cost_Expenses_Planned_Cache "Expenses Planned Cache"]
+    set pretty_name_hash(cost_invoices_cache) [lang::message::lookup "" intranet-core.Cost_Invoices_Cache "Invoices Cache"]
+    set pretty_name_hash(cost_purchase_orders_cache) [lang::message::lookup "" intranet-core.Cost_Purchase_Orders_Cache "Purchase Orders Cache"]
+    set pretty_name_hash(cost_quotes_cache) [lang::message::lookup "" intranet-core.Cost_Quotes_Cache "Quotes Cache"]
+    set pretty_name_hash(cost_timesheet_logged_cache) [lang::message::lookup "" intranet-core.Cost_Timesheet_Logged_Cache "Timesheet Logged Cache"]
+    set pretty_name_hash(cost_timesheet_planned_cache) [lang::message::lookup "" intranet-core.Cost_Timesheet_Planned_Cache "Timesheet Planned Cache"]
+    set pretty_name_hash(reported_days_cache) [lang::message::lookup "" intranet-core.Cost_Reported_Days_Cache "Reported Days Cache"]
+    set pretty_name_hash(reported_hours_cache) [lang::message::lookup "" intranet-core.Cost_Reported_Days_Cache "Reported Days Cache"]
+
+
+    # Ticket fields
+    set pretty_name_hash(ticket_done_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Done_Date "Ticket Done Date"]
+    set pretty_name_hash(ticket_creation_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Creation_Date "Ticket Creation Date"]
+    set pretty_name_hash(ticket_alarm_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Alarm_Date "Ticket Alarm Date"]
+    set pretty_name_hash(ticket_reaction_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Reaction_Date "Ticket Reaction Date"]
+    set pretty_name_hash(ticket_confirmation_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Confirmation_Date "Ticket Confirmation Date"]
+    set pretty_name_hash(ticket_signoff_date) [lang::message::lookup "" intranet-helpdesk.Ticket_Signoff_Date "Ticket Signoff Date"]
+
+    return [array get pretty_name_hash]
+}
+
+
+
+
+ad_proc -public im_audit_attribute_ignore {
+    -object_type:required
+} {
+    Returns a hash of attributes to be ignored in the audit package
+} {
+#    return [util_memoize [list im_audit_attribute_ignore_helper -object_type $object_type]]
+    return [im_audit_attribute_ignore_helper -object_type $object_type]
+}
+
+
+ad_proc -public im_audit_attribute_ignore_helper {
+    -object_type:required
+} {
+    Returns a hash of attributes to be ignored in the audit package
+} {
+    # Project Cost Cache (automatically updated)
+    set ignore_hash(cost_bills_cache) 1
+    set ignore_hash(cost_delivery_notes_cache) 1
+    set ignore_hash(cost_expense_logged_cache) 1
+    set ignore_hash(cost_expense_planned_cache) 1
+    set ignore_hash(cost_invoices_cache) 1
+    set ignore_hash(cost_purchase_orders_cache) 1
+    set ignore_hash(cost_quotes_cache) 1
+    set ignore_hash(cost_timesheet_logged_cache) 1
+    set ignore_hash(cost_timesheet_planned_cache) 1
+
+    set ignore_hash(reported_days_cache) 1
+    set ignore_hash(reported_hours_cache) 1
+    set ignore_hash(cost_cache_dirty) 1
+
+    # Obsolete project fields
+    set ignore_hash(corporate_sponsor) 1
+    set ignore_hash(percent_completed) 1
+    set ignore_hash(requires_report_p) 1
+    set ignore_hash(supervisor_id) 1
+    set ignore_hash(team_size) 1
+    set ignore_hash(trans_project_hours) 1
+    set ignore_hash(trans_project_words) 1
+    set ignore_hash(trans_size) 1
+
+
+    # Ticket automatically updated fields
+    set ignore_hash(ticket_resolution_time) 1
+
+    return [array get ignore_hash]
+}
+
+
+
+
+
+ad_proc -public im_audit_attribute_deref {
+    -object_type:required
+} {
+    Returns a hash of deref functions for important attributes
+} {
+#    return [util_memoize [list im_audit_attribute_deref_helper -object_type $object_type]]
+    return [im_audit_attribute_deref_helper -object_type $object_type]
+}
+
+
+ad_proc -public im_audit_attribute_deref_helper {
+    -object_type:required
+} {
+    Returns a hash of deref functions for important attributes
+} {
+    # Get DynField meta-information and write into a hash array
+    set dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name,
+		dw.deref_plpgsql_function
+	from	acs_attributes aa,
+		im_dynfield_attributes da,
+		im_dynfield_widgets dw
+	where	aa.attribute_id = da.acs_attribute_id and
+		da.widget_name = dw.widget_name and
+		aa.object_type = :object_type
+    "
+    db_foreach dynfields $dynfield_sql {
+	set deref_hash($attribute_name) $deref_plpgsql_function
+    }
+
+    # Manually add a few frequently used deref functions
+
+    set deref_hash(project_id) "acs_object__name"
+    set deref_hash(company_id) "acs_object__name"
+    set deref_hash(ticket_id) "acs_object__name"
+
+    set deref_hash(status_id) "im_category_from_id"
+    set deref_hash(project_status_id) "im_category_from_id"
+    set deref_hash(ticket_status_id) "im_category_from_id"
+    set deref_hash(type_id) "im_category_from_id"
+    set deref_hash(project_type_id) "im_category_from_id"
+    set deref_hash(ticket_type_id) "im_category_from_id"
+
+    set deref_hash(ticket_prio_id) "im_category_from_id"
+    set deref_hash(ticket_customer_contact_id) "im_name_from_user_id"
+    set deref_hash(ticket_assignee_id) "acs_object__name"
+    set deref_hash(ticket_queue_id) "acs_object__name"
+
+    return [array get deref_hash]
 }
 
 
@@ -155,6 +451,84 @@ UNION
     return $sql
 }
 
+
+ad_proc -public im_audit_object_rels_sql { 
+} {
+    Returns the SQL for pulling out all relationships for an object
+} {
+    ns_log Notice "im_audit_object_rels_sql:"
+
+    # Get the list of all sub relationships, together with their meta-information
+    set sub_rel_sql "
+	select	aot.*
+	from	acs_object_types aot
+	where	aot.supertype = 'relationship'
+    "
+    set outer_joins ""
+    db_foreach sub_rels $sub_rel_sql {
+	if {![im_table_exists $table_name]} { continue }
+	append outer_joins "LEFT OUTER JOIN $table_name ON (r.rel_id = $table_name.$id_column)\n\t\t"
+    }
+
+    set sql "
+	select	*
+	from	acs_rels r
+		$outer_joins
+	where	(r.object_id_one = :object_id or r.object_id_two = :object_id)
+	order by
+		r.rel_id
+    "
+
+    return $sql
+}
+
+
+ad_proc -public im_audit_object_rels { 
+    -object_id:required
+} {
+    Creates a single string for the object's relationships with other objects.
+} {
+    ns_log Notice "im_audit_object_rels: object_id=$object_id"
+
+    # Get the SQL for pulling out all rels of an object
+    set sql [util_memoize [list im_audit_object_rels_sql]]
+
+    # Execute the sql. As a result we get "col_names" with list of columns and "lol" with the result list of lists
+    set col_names ""
+    db_with_handle db {
+	set selection [db_exec select $db query $sql 1]
+	set lol [list]
+	while { [db_getrow $db $selection] } {
+	    set col_names [ad_ns_set_keys $selection]
+	    set this_result [list]
+	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		lappend this_result [ns_set value $selection $i]
+	    }
+	    lappend lol $this_result
+	}
+    }
+    db_release_unused_handles
+
+    if {![info exists col_names]} {
+	ns_log Error "im_audit_object_value: For some reason we didn't find any record matching sql=$sql"
+	return ""
+    }
+
+    set result_list ""
+    foreach col_values $lol {
+	set value_list ""
+	for {set i 0} {$i < [llength $col_names]} {incr i} {
+	    set var [lindex $col_names $i]
+	    set val [lindex $col_values $i]
+	    if {"" == $val} { continue }
+	    lappend value_list $var $val
+	}
+	# The result list is an "array" type of key-value list.
+	lappend result_list [join $value_list " "]
+    }
+
+    return $result_list
+}
 
 
 ad_proc -public im_audit_object_value { 
@@ -215,6 +589,26 @@ ad_proc -public im_audit_object_value {
 
 	# Add the line to the "value"
 	append value "$var	$val\n"
+    }
+
+    # Add information about the object's relationships
+    set audit_rels_p [parameter::get_from_package_key \
+		-package_key intranet-audit \
+		-parameter AuditObjectRelationshipsP \
+		-default 1 \
+    ]
+    if {$audit_rels_p} {
+	foreach rel_record [im_audit_object_rels -object_id $object_id] {
+	    array unset rel_hash
+	    array set rel_hash $rel_record
+	    set rel_id $rel_hash(rel_id)
+	    unset rel_hash(rel_id)
+	    set list ""
+	    foreach key [lsort [array names rel_hash]] {
+		lappend list "$key $rel_hash($key)"
+	    }
+	    append value "acs_rel-$rel_id	[join $list " "]\n"
+	}
     }
 
     return $value

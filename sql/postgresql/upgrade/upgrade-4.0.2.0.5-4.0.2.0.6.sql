@@ -3,6 +3,7 @@
 SELECT acs_log__debug('/packages/intranet-audit/sql/postgresql/upgrade/upgrade-4.0.2.0.5-4.0.2.0.6.sql','');
 
 
+
 create or replace function inline_0 ()
 returns integer as $body$
 DECLARE

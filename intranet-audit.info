@@ -22,6 +22,7 @@
         </callbacks>
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditProjectFakeHistoryIntervalHours" default="0" description="Should the system fake the project's history im_projects_audit records? This is useful for demo servers. Set to '0' to disable this feature in production servers. Set to '1' or '2' with demo servers."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditObjectRelationshipsP" default="0" description="Should we audit the acs_rels between the audit object and other objects? Set this parameter to '1' in order to track user group memberships, project assignments etc. Set this parameter to '0' if you run into performance issues with audit."/>
         </parameters>
 
     </version>
