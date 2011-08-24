@@ -504,7 +504,7 @@ db_foreach sql $sql {
     }
 
     # Find out if these are absences. Then the company_id is 9999999
-    if {$company_id eq "9999999"} {
+    if {$company_id == "9999999"} {
 	set company_name_pretty "\#colspan=8 <b>$company_name</b>"
 	set project_name_pretty "\#colspan=7 <b>$project_name</b>"
     } else {
@@ -512,7 +512,7 @@ db_foreach sql $sql {
 	set project_name_pretty "\#colspan=7 <b><a href=$project_url$project_id>$project_name</a></b>"
     }
 
-    if {$previous_user_id eq ""} {
+    if {$previous_user_id == ""} {
 	set previous_user_id $user_id
 	set previous_user_name $user_name
     }
