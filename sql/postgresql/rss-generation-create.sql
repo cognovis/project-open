@@ -106,7 +106,7 @@ create table rss_gen_subscrs (
 				  not null
 				  constraint rss_gen_subscrs_impl_fk
 				  references acs_sc_impls(impl_id),
-   summary_context_id		  varchar(100)
+   summary_context_id		  integer
 				  constraint rss_gen_subscrs_ctx_nn
 				  not null
 				  constraint rss_gen_subscrs_ctx_fk
