@@ -33,7 +33,7 @@ contracts and the RSS can be recreated from a scheduled procedure.
 &lt;/ul&gt;
 </description>
 
-        <provides url="rss-support" version="0.3d6"/>
+        <provides url="rss-support" version="0.3"/>
 
         <callbacks>
         </callbacks>
