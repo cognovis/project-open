@@ -16,7 +16,7 @@
         general categorization of arbitrary objects and tracks which package instances use which category trees.  Also supports localization.</description>
         <maturity>0</maturity>
 
-        <provides url="categories" version="1.1.2d4"/>
+        <provides url="categories" version="1.1.2"/>
         <requires url="acs-kernel" version="5.5.0"/>
 
         <callbacks>
