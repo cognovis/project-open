@@ -15,7 +15,7 @@
         <vendor>OpenACS</vendor>
         <description format="text/html">An interface to the tDAV webDAV package. oacs-dav provides services to offer webDAV access to content repository data.</description>
 
-        <provides url="oacs-dav" version="1.2.0d2"/>
+        <provides url="oacs-dav" version="1.2.0"/>
 
         <callbacks>
             <callback type="after-install"  proc="oacs_dav::install::package_install"/>
