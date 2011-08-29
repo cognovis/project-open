@@ -7,7 +7,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
     
-    <version name="0.6d3" url="http://openacs.org/repository/download/apm/acs-events-0.6d3.apm">
+    <version name="0.6" url="http://openacs.org/repository/download/apm/acs-events-0.6.apm">
         <owner url="http://openacs.org">OpenACS</owner>
         <summary>API support for relationships between intervals in time, activities, and parties.</summary>
         <release-date>2006-02-18</release-date>
@@ -15,7 +15,7 @@
         <description format="text/html">The events service is primarily intended for use by writers of application packages and other service packages. The service allows developers to specify and manipulate relationships (possibly recurring) between an object and another object.</description>
         <maturity>0</maturity>
 
-        <provides url="acs-events" version="0.6d3"/>
+        <provides url="acs-events" version="0.6"/>
         <requires url="acs-kernel" version="5.5.0"/>
 
         <callbacks>
