@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>webdav-support</auto-mount>
 
-    <version name="1.2.0d2" url="http://openacs.org/repository/download/apm/oacs-dav-1.2.0d2.apm">
+    <version name="1.2.0" url="http://openacs.org/repository/download/apm/oacs-dav-1.2.0.apm">
         <owner url="mailto:dave@thedesignexperience.org">Dave Bauer</owner>
         <summary>Provides services to enable webDAV access to content repository items.</summary>
         <release-date>2004-09-27</release-date>
