@@ -320,7 +320,7 @@ ad_form -extend -name $form_id -new_request {
 
     db_multirow -extend {company_html user_url delete_url contact_type action_html} contact_multirow get_similar_contacts $contact_sql {
 
-	set user_url [export_vars -base "/intranet/users/new" { user_id return_url }]
+	set user_url [export_vars -base "/intranet/users/view" { user_id return_url }]
 	set delete_url [export_vars -base "contact-del" { object_type page_url }]
 	set contact_type ""
 	if {"" != $empl_group_id} { append contact_type [lang::message::lookup "" intranet-core.Employee "Employee"] }
