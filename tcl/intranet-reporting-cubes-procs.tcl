@@ -1534,11 +1534,6 @@ ad_proc im_reporting_cubes_ticket {
   	select
   		p.*,
   		substring(p.ticket_name, 1, 14) as ticket_name_cut,
-  		to_char(p.end_date, 'YYYY') as end_year,
-  		to_char(p.end_date, 'MM') as end_month_of_year,
-  		to_char(p.end_date, 'Q') as end_quarter_of_year,
-  		to_char(p.end_date, 'IW') as end_week_of_year,
-  		to_char(p.end_date, 'DD') as end_day_of_month,
 		cust.company_name,
                 [join $derefs ",\n\t\t"]
   	from
