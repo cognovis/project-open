@@ -42,7 +42,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 			}
 		}
 	},		
-	items: [{ 
+	items: [/*{ 
 		name: 'checkNew',
 		xtype: 'checkbox',
 		value: true,
@@ -56,12 +56,13 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 				}
 			}
 		}
-	}, {
+	}, */{
 		name:			'user_id',
 		xtype:			'combobox',
 		fieldLabel:		'#intranet-sencha-ticket-tracker.NameSearch#',
-		value:			'#intranet-sencha-ticket-tracker.New_User#',
-		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',
+	/*	value:			'#intranet-sencha-ticket-tracker.New_User#',
+		valueNotFoundText:	'#intranet-sencha-ticket-tracker.Create_New_User#',*/
+		value: '',
 		queryMode:	'local',
 		valueField:		'user_id',
 		displayField:   	'name',
@@ -73,14 +74,17 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		 // The user has selected a user from the drop-down box.
 		 // Lookup the user and fill the form with the fields.
 		 'blur': function(field, event) {
-
 			var user_id = this.getValue();
-			var user_record = userStore.findRecord('user_id',user_id);
-			if (user_record == null || user_record == undefined) { 
-				var user_record = userStore.findRecord('name',user_id);
+			var user_record = userCustomerStore.findRecord('user_id',user_id);
+			
+			if (Ext.isEmpty(user_record)) {
+				var user_record = userCustomerStore.findRecord('name',this.getRawValue());
+				//var user_record = userCustomerStore.findRecord('user_id',anonimo_user_id);
 			}
-			if (user_record == null || user_record == undefined) { return; }
-
+			if (Ext.isEmpty(user_record)) {
+				return;
+			}			
+			
 			// load the values of the user into the form
 			this.ownerCt.loadRecord(user_record);
 		 }
@@ -151,23 +155,26 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		// load the information from the record into the form
 		this.loadRecord(rec);
 		
-        //Inicialize dirty. There is no changes after load.
-		var contactModel =userCustomerStore.findRecord('user_id',rec.get('user_id'));
-		if (contactModel != null) { 
-			contactModel.dirty = false;        
-		}
+		rec.dirty = false; 
 		
 		// Show (might have been hidden when creating a new ticket)
 		this.show();
 	},
 
 	loadCompany: function(customerModel){
-		var form = this.getForm();
-		form.reset();
+		userCustomerStore.clearFilter();
+		var contactModel = userCustomerStore.findRecord('user_id', customerModel.get('primary_contact_id'));
+		if (Ext.isEmpty(contactModel)){
+			this.getForm().reset();
+		} else {
+			this.loadUser(contactModel);
+		}
 	},
 
 	newCompany: function() {
-		var form = this.getForm();
-		form.reset();
+	/*	var form = this.getForm();
+		form.reset();*/
+		userCustomerStore.clearFilter();
+		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));
 	}
 });

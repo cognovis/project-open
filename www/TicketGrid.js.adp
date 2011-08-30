@@ -373,7 +373,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				ticketStore.remove(ticketModel);
 			},
 			failure: function(response) {
-				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar tickets.', response.responseText);
+				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permiso para borrar tickets.', response.responseText);
 			}
 		});
 	},
@@ -385,6 +385,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 		// Ticket list or view page
 		var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
 		ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+		ticketCompoundPanel.tab.show();
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(ticketCompoundPanel);
 

@@ -64,7 +64,7 @@
     },
     
     newCompany: function(rec){
-    	this.hide();
+    	//this.hide();
         this.child('#companyContactBizObjectMemberGrid').newCompany(rec);
         this.child('#companyContactContactForm').newCompany(rec);
     }
