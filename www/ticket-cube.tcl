@@ -334,13 +334,14 @@ db_foreach dynfield_attributes $dynfield_sql {
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
 foreach var $dimension_vars {
     switch $var {
-	year { lappend derefs "to_char(p.start_date, 'YYYY') as year" }
-	month_of_year { lappend derefs "to_char(p.start_date, 'MM') as month_of_year" }
-	quarter_of_year { lappend derefs "to_char(p.start_date, 'Q') as quarter_of_year" }
-	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
-	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
-	hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') as hour_of_day" }
-	half_hour_of_day { lappend derefs "to_char(p.start_date, 'HH24') || ':' ||  trunc(to_char(p.start_date, 'MI')::integer / 30.0) * 3 || '0' as half_hour_of_day" }
+
+	year { lappend derefs "to_char(o.creation_date, 'YYYY') as year" }
+	month_of_year { lappend derefs "to_char(o.creation_date, 'MM') as month_of_year" }
+	quarter_of_year { lappend derefs "to_char(o.creation_date, 'Q') as quarter_of_year" }
+	week_of_year { lappend derefs "to_char(o.creation_date, 'IW') as week_of_year" }
+	day_of_month { lappend derefs "to_char(o.creation_date, 'DD') as day_of_month" }
+	hour_of_day { lappend derefs "to_char(o.creation_date, 'HH24') || '&nbsp;' as hour_of_day" }
+	half_hour_of_day { lappend derefs "to_char(o.creation_date, 'HH24') || ':' ||  trunc(to_char(o.creation_date, 'MI')::integer / 30.0) * 3 || '0' as half_hour_of_day" }
 
 	ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as ticket_type" }
 	ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as ticket_status" }
