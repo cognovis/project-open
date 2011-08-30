@@ -1514,6 +1514,7 @@ ad_proc im_reporting_cubes_ticket {
 			p.project_name as ticket_name,
 			p.project_nr as ticket_nr,
 			o.creation_user as creation_user_id,
+			o.creation_date,
 			1 as one
   		from
   			im_tickets t,
