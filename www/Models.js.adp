@@ -155,7 +155,7 @@ Ext.define('TicketBrowser.Ticket', {
 	],
 
 	validations: [
-	//	{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_reaction_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_confirmation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_escalation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },

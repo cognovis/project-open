@@ -22,7 +22,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     extend:		'Ext.container.Container',
     alias:		'widget.ticketCompoundPanel',
@@ -155,6 +154,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid or the TicketActionPanel in order to create 
     // a new ticket
     newTicket: function(){
+    	this.enable();
         this.child('#center').child('#ticketForm').newTicket();
         this.child('#center').child('#ticketCustomerPanel').newTicket();
         this.child('#center').child('#ticketContactPanel').newTicket();
@@ -165,6 +165,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
+    	this.enable();
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);

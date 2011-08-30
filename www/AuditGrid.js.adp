@@ -73,13 +73,17 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 		emptyMsg: '#intranet-sencha-ticket-tracker.No_items#',
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
-    columns: [/*{
-	text: "#intranet-sencha-ticket-tracker.Date#", 
-	sortable: true, 
-	minWidth: 50,
-	hidden: true,
-	dataIndex: 'audit_date'
-    },*/ {
+    columns: [{
+		text: "#intranet-sencha-ticket-tracker.Audit_Date#", 
+		sortable: true, 
+		minWidth: 50,
+		hidden: true,
+		dataIndex: 'audit_date',
+		renderer: function(value, o, record) {
+			// Only seconds
+		    return value.substring(0,19);
+		}	
+    }, {
 	header: '#intranet-sencha-ticket-tracker.Request#',
 	dataIndex: 'ticket_request',
 	sortable: false, 
@@ -209,20 +213,20 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Load the files for the new ticket
     loadTicket: function(rec){
 
-	// The panel may have been hidden during newTicket()
-	this.show();
-
-	// Save the property in the proxy, which will pass it directly to the REST server
-	var ticket_id = rec.data.ticket_id;
-	auditStore.proxy.extraParams['object_id'] = ticket_id;
-	auditStore.loadPage(1);
-    },
+		// The panel may have been hidden during newTicket()
+		this.show();
+	
+		// Save the property in the proxy, which will pass it directly to the REST server
+		var ticket_id = rec.data.ticket_id;
+		auditStore.proxy.extraParams['object_id'] = ticket_id;
+		auditStore.loadPage(1);
+	    },
 
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
-	this.hide();
+		this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
+		//this.hide();
     }
 
 });
