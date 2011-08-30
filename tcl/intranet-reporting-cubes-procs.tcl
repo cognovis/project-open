@@ -124,7 +124,7 @@ ad_proc im_reporting_cubes_cube {
 	finance {
 	    set cube_array [im_reporting_cubes_finance \
 		-start_date $start_date \
-		-end_date "2099-12-31" \
+		-end_date $end_date \
 		-left_vars $left_vars \
 		-top_vars $top_vars \
 		-cost_type_id $cost_type_id \
@@ -137,7 +137,7 @@ ad_proc im_reporting_cubes_cube {
 	price {
 	    set cube_array [im_reporting_cubes_price \
 		-start_date $start_date \
-		-end_date "2099-12-31" \
+		-end_date $end_date \
 		-left_vars $left_vars \
 		-top_vars $top_vars \
 		-cost_type_id $cost_type_id \
@@ -148,7 +148,7 @@ ad_proc im_reporting_cubes_cube {
         survsimp {
             set cube_array [im_reporting_cubes_survsimp \
                 -start_date $start_date \
-                -end_date "2099-12-31" \
+                -end_date $end_date \
                 -left_vars $left_vars \
                 -top_vars $top_vars \
                 -survey_id $survey_id \
@@ -160,7 +160,7 @@ ad_proc im_reporting_cubes_cube {
 	project {
 	    set cube_array [im_reporting_cubes_project \
 		-start_date $start_date \
-		-end_date "2099-12-31" \
+		-end_date $end_date \
 		-left_vars $left_vars \
 		-top_vars $top_vars \
 		-project_type_id $project_type_id \
@@ -176,7 +176,7 @@ ad_proc im_reporting_cubes_cube {
 		-output_format $output_format \
 		-number_locale $number_locale \
 		-start_date $start_date \
-		-end_date "2099-12-31" \
+		-end_date $end_date \
 		-left_vars $left_vars \
 		-top_vars $top_vars \
 		-ticket_type_id $ticket_type_id \
