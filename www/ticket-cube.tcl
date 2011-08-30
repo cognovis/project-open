@@ -159,9 +159,10 @@ set context ""
 set help_text "<strong>$page_title</strong><br>
 [lang::message::lookup "" intranet-reporting.Ticket_Cube_Help "
 This Pivot Table ('cube') is a kind of report that shows 
-a number of characteristics of helpdesk tickets.
-This cube effectively replaces a dozen of specific reports and allows
-you to 'drill down' into results.
+a number of characteristics of helpdesk tickets.<br>
+Start date is 'inclusive' while end date is exclusive.
+Example: 2011-08-01 - 2011-09-01 will return all tickets
+in August 2011
 "]"
 
 
