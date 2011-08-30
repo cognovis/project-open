@@ -1522,9 +1522,9 @@ ad_proc im_reporting_cubes_ticket {
   		where
 			t.ticket_id = p.project_id
 			and t.ticket_id = o.object_id
-  			and p.start_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
-  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  			and o.creation_date >= to_date(:start_date, 'YYYY-MM-DD')
+  			and o.creation_date < to_date(:end_date, 'YYYY-MM-DD')
+  			and o.creation_date::data < to_date(:end_date, 'YYYY-MM-DD')
 			$where_clause
     "
 
