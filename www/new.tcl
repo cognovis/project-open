@@ -198,37 +198,34 @@ if {"edit" == $form_mode && [info exists ticket_id]} {
     "]
 
     # Check that we've found the value
-    if {!$exists_p} {
-        ad_return_complaint 1 "<li>Object #$ticket_id doesn't exist."
-        ad_script_abort
-    }
+    if {$exists_p && "" != $lock_user} {
 
-    # Write out a warning if the ticket was modified by a different
-    # user in the last 10 minutes
-    set max_lock_seconds [ad_parameter -package_id [im_package_core_id] LockMaxLockSeconds "" 600]
-    set max_lock_seconds [ad_parameter -package_id [im_package_helpdesk_id] LockMaxLockSeconds "" $max_lock_seconds]
-    if {$lock_seconds < $max_lock_seconds && $lock_user != $current_user_id} {
-
-	set msg [lang::message::lookup "" intranet-helpdesk.Ticket_Recently_Edited "This ticket was locked by %lock_user_name% %lock_minutes% minutes and %lock_seconds% seconds ago."]
-	set message_html "
+	# Write out a warning if the ticket was modified by a different
+	# user in the last 10 minutes
+	set max_lock_seconds [ad_parameter -package_id [im_package_core_id] LockMaxLockSeconds "" 600]
+	set max_lock_seconds [ad_parameter -package_id [im_package_helpdesk_id] LockMaxLockSeconds "" $max_lock_seconds]
+	if {$lock_seconds < $max_lock_seconds && $lock_user != $current_user_id} {
+	    
+	    set msg [lang::message::lookup "" intranet-helpdesk.Ticket_Recently_Edited "This ticket was locked by %lock_user_name% %lock_minutes% minutes and %lock_seconds% seconds ago."]
+	    set message_html "
 		<script type=\"text/javascript\">
 			alert('$msg');
 		</script>
-	"
+	    "
 
-    } else {
-
-	# Set the lock on the ticket
-	db_dml set_lock "
+	} else {
+	    
+	    # Set the lock on the ticket
+	    db_dml set_lock "
 		update im_biz_objects set
 			lock_ip = '[ns_conn peeraddr]',
 			lock_date = now(),
 			lock_user = :current_user_id
 		where object_id = :ticket_id
-        "
+            "
+	}
     }
 }
-
 
 # ---------------------------------------------
 # The base form. Define this early so we can extract the form status
