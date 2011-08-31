@@ -10,9 +10,8 @@ CREATE OR REPLACE FUNCTION im_absences_working_days_period_weekend_only(characte
 -- Expects start_date and end_date as YYYY/MM/DD
 
 declare
-        v_user_id               ALIAS FOR $1;
-        v_start_date            ALIAS FOR $2;
-        v_end_date              ALIAS FOR $3;
+        v_start_date            ALIAS FOR $1;
+        v_end_date              ALIAS FOR $2;
         v_count                 integer;
         v_seperator             CHAR DEFAULT ''-'';
         v_date_weekday          date;
