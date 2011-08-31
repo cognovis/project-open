@@ -45,15 +45,15 @@ set acs_datatype_options [im_dynfield::datatype_options]
 set widget_options [im_dynfield::widget_options]
 
 set deref_options [list \
-	[list "Generic Default (im_name_from_id)" "im_name_from_id"] \
-	[list "Category (im_category_from_id)" "im_category_from_id"] \
-	[list "Integer (im_integer_from_id)" "im_integer_from_id"] \
-	[list "User Name (im_name_from_user_id)" "im_name_from_user_id"] \
-	[list "User Email (im_email_from_user_id)" "im_email_from_user_id"] \
-	[list "Generic Object Link (im_link_from_id)" "im_link_from_id"] \
-	[list "Traffic Light (im_traffic_light_from_id)" "im_traffic_light_from_id"] \
-	[list "Cost Center Name (im_cost_center_name_from_id)" "im_cost_center_name_from_id"] \
-	[list "Numeric (im_numeric_from_id)" "im_numeric_from_id"] \
+	[list "Generic Default (im_name_from_id) - Please choose this if in doubt." "im_name_from_id"] \
+	[list "Category (im_category_from_id) - Converts a category_id to a translated string." "im_category_from_id"] \
+	[list "Integer (im_integer_from_id) - Doesn't convert integers or other numbers." "im_integer_from_id"] \
+	[list "User Name (im_name_from_user_id) - Returns a pretty user name." "im_name_from_user_id"] \
+	[list "User Email (im_email_from_user_id) - Returns the user's email address." "im_email_from_user_id"] \
+	[list "Object Link (im_link_from_id) - Returns a link to the object's page. Only works with business objects." "im_link_from_id"] \
+	[list "Traffic Light (im_traffic_light_from_id) - Returns a red, yellow or green GIF for traffic light status of projects." "im_traffic_light_from_id"] \
+	[list "Cost Center Name (im_cost_center_name_from_id) - Returns the cost center's name." "im_cost_center_name_from_id"] \
+	[list "Numeric (im_numeric_from_id) - Returns a float value." "im_numeric_from_id"] \
 ]
 
 
