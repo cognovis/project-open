@@ -142,7 +142,7 @@ CREATE OR REPLACE FUNCTION im_absences_working_days_period(integer, character va
   RETURNS SETOF record AS
 '
 
--- Returns dates of "work days" for a given period (record of type 'date') 
+-- Returns dates of "work days" for a given period (record of type --date--) 
 -- whereas: "work days" = Number of days in period - absences - bank holidays - weekends (Sat/Sun) 
 -- Expects start_date and end_date in ANSI/ISO format YYYY-MM-DD
 
@@ -219,7 +219,7 @@ CREATE OR REPLACE FUNCTION im_absences_working_days_period_weekend_only(characte
   RETURNS SETOF record AS
 '
 
--- Returns the "work days" for a given period 
+-- Returns the --work days-- for a given period 
 -- whereas: "work days" = Number of days in period - absences - bank holidays - weekends 
 -- Expects start_date and end_date as YYYY/MM/DD
 
