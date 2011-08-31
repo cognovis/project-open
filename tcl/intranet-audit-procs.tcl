@@ -97,7 +97,7 @@ ad_proc -public im_audit_component {
 		im_name_from_user_id(audit_user_id) as audit_user_name
 	from	im_audits
 	where	audit_object_id = :object_id and
-		audit_date > :creation_date::timestamptz + '1 second'::interval -- ignore initial audit
+		audit_date > :creation_date::timestamptz + '5 second'::interval -- ignore initial audit
 	order by audit_id DESC
     "
     
