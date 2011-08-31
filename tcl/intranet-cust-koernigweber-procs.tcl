@@ -13,146 +13,79 @@ ad_library {
 # Show the members of the Admin Group of the current Business Object.
 # ---------------------------------------------------------------------
 
-ad_proc -public im_group_member_component_employee_customer_price_list { 
+ad_proc -public im_customer_price_list { 
     {-debug 0}
     object_id 
-    current_user_id 
+    user_id
     { add_admin_links 0 } 
     { return_url "" } 
     { limit_to_users_in_group_id "" } 
     { dont_allow_users_in_group_id "" } 
     { also_add_to_group_id "" } 
 } {
-    Returns an portlet to view and manage companies price matrix 
+    Returns an portlet to view and manage prices  
 } {
+    set current_user_id $user_id
     # Check if there is a percentage column from intranet-ganttproject
-    set show_percentage_p [im_column_exists im_biz_object_members percentage]
+    # set show_percentage_p [im_column_exists im_biz_object_members percentage]
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
-    if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
+
+    # if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
+    set show_percentage_p 0
 
     # ------------------ limit_to_users_in_group_id ---------------------
-    if { [empty_string_p $limit_to_users_in_group_id] } {
-	set limit_to_group_id_sql ""
-    } else {
-	set limit_to_group_id_sql "
-	and exists (select 1 
-		from 
-			group_member_map map2,
-		        membership_rels mr,
-			groups ug
-		where 
-			map2.group_id = ug.group_id
-			and map2.rel_id = mr.rel_id
-			and mr.member_state = 'approved'
-			and map2.member_id = u.user_id 
-			and map2.group_id = :limit_to_users_in_group_id
-		)
-	"
-    } 
+    # if { [empty_string_p $limit_to_users_in_group_id] } {
+    #	set limit_to_group_id_sql ""
+    # } else {
+    #	set limit_to_group_id_sql "
+    #	and exists (select 1 
+    #		from 
+    #			group_member_map map2,
+    #		        membership_rels mr,
+    #			groups ug
+    #		where 
+    #			map2.group_id = ug.group_id
+    #			and map2.rel_id = mr.rel_id
+    #			and mr.member_state = 'approved'
+    #			and map2.member_id = u.user_id 
+    #			and map2.group_id = :limit_to_users_in_group_id
+    #		)
+    #	"
+    # } 
 
     # ------------------ dont_allow_users_in_group_id ---------------------
-    if { [empty_string_p $dont_allow_users_in_group_id] } {
-	set dont_allow_sql ""
-    } else {
-	set dont_allow_sql "
-	and not exists (
-		select 1 
-		from 
-			group_member_map map2, 
-			membership_rels mr,
-			groups ug
-		where 
-			map2.group_id = ug.group_id
-			and map2.rel_id = mr.rel_id
-			and mr.member_state = 'approved'
-			and map2.member_id = u.user_id 
-			and map2.group_id = :dont_allow_users_in_group_id
-		)
-	"
-    } 
+#    if { [empty_string_p $dont_allow_users_in_group_id] } {
+#	set dont_allow_sql ""
+#    } else {
+#	set dont_allow_sql "
+#	and not exists (
+#		select 1 
+#		from 
+#			group_member_map map2, 
+#			membership_rels mr,
+#			groups ug
+#		where 
+#			map2.group_id = ug.group_id
+#			and map2.rel_id = mr.rel_id
+#			and mr.member_state = 'approved'
+#			and map2.member_id = u.user_id 
+#			and map2.group_id = :dont_allow_users_in_group_id
+#		)
+#	"
+#    } 
 
-    set bo_rels_percentage_sql ""
-    if {$show_percentage_p} {
-	set bo_rels_percentage_sql ",round(bo_rels.percentage) as percentage"
-    }
+#    set bo_rels_percentage_sql ""
+#    if {$show_percentage_p} {
+#	set bo_rels_percentage_sql ",round(bo_rels.percentage) as percentage"
+#    }
 
-    # ------------------ Main SQL ----------------------------------------
-    # fraber: Abolished the "distinct" because the role assignment page 
-    # now takes care that a user is assigned only once to a group.
-    # We neeed this if we want to show the role of the user.
-    #
-
-    set sql_query "
-        select
-                u.user_id,
-                u.user_id as party_id,
-                im_email_from_user_id(u.user_id) as email,
-                im_name_from_user_id(u.user_id) as name,
-                im_category_from_id(c.category_id) as member_role,
-                c.category_gif as role_gif,
-                c.category_description as role_description,
-                (select amount from im_emp_cust_price_list where company_id=object_id_one and user_id = u.user_id) as amount
-                $bo_rels_percentage_sql
-        from
-                users u,
-                acs_rels rels
-                LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
-                LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
-                group_member_map m,
-                membership_rels mr
-        where
-                rels.object_id_one = $object_id
-                and rels.object_id_two = u.user_id
-                and mr.member_state = 'approved'
-                and u.user_id = m.member_id
-                and mr.member_state = 'approved'
-                and m.group_id = acs__magic_object_id('registered_users'::character varying)
-                and m.rel_id = mr.rel_id
-                and m.container_id = m.group_id
-                and m.rel_type = 'membership_rel'
-                $limit_to_group_id_sql
-                $dont_allow_sql
-        order by lower(im_name_from_user_id(u.user_id))
-    "
-
-
-  	  set sql_query "
-		select 
-			r.object_id_two as user_id,
-			im_name_from_user_id(r.object_id_two) as name,
-		 	(select amount from im_emp_cust_price_list where company_id=object_id_one and user_id = u.user_id) as amount
-		from 
-		    acs_rels r 
-		where 
-		    object_id_one = :object_id
-		    and rel_type = 'im_biz_object_member';
-	"
-
-  set sql_query "
-	select distinct
-		r.object_id_two as user_id,
-		im_name_from_user_id(r.object_id_two) as name,
-                (select amount from im_emp_cust_price_list where company_id=:object_id and user_id = r.object_id_two) as amount
-	from 
-		acs_rels r 
-	where 
-		object_id_one in 
-	
-	(select 
-		project_id 
-	from 
-		im_projects 
-	where 
-		company_id = :object_id
-	)
-		and rel_type = 'im_biz_object_member'
-	"
     # ------------------ Format the table header ------------------------
     set colspan 2
     set header_html "
       <tr> 
 	<td class=rowtitle align=middle>[_ intranet-core.Name]</td>
-	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Price "Price"]</td>
+	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
+	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Price "Price"]</td>
     "
     if {$show_percentage_p} {
         incr colspan
@@ -173,62 +106,223 @@ ad_proc -public im_group_member_component_employee_customer_price_list {
     set body_html ""
 
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-  
+
+
+    # get all object members  
+    if { "im_company" == $object_type } {
+	    set sql_query "
+		select distinct
+			r.object_id_two as user_id
+		from 
+			acs_rels r 
+		where 
+			object_id_one in 
+				(select project_id from im_projects where company_id = :object_id)
+		and rel_type = 'im_biz_object_member'
+    	     "
+    } else {
+            set sql_query "
+		        select distinct
+                		r.object_id_two as user_id
+			from
+		                acs_rels r
+		        where
+                		object_id_one = $object_id
+		                and rel_type = 'im_biz_object_member'
+	     "
+    }
+
+    set project_member_list [list]
     db_foreach users_in_group $sql_query {
+	lappend project_member_list $user_id
+    }
+ 
+    # 
+    foreach project_member $project_member_list {
 
-	set show_user [im_show_user_style $user_id $current_user_id $object_id]
-	if {$debug} { ns_log Notice "im_group_member_component: user_id=$user_id, show_user=$show_user" }
-	if {$show_user == 0} { continue }
-
-	append body_html "
-		<tr $td_class([expr $count % 2])>
-		  <input type=hidden name=member_id value=$user_id>
-  		<td>"
-	if {$show_user > 0} {
-		append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
+    	if { "im_company" == $object_type } {
+		set inner_sql "
+			select 
+				user_id, 
+				object_id as price_object_id,
+				acs_object_util__get_object_type(object_id) as object_type,
+				amount,
+				currency,
+				project_type_id,			
+				im_name_from_user_id(user_id) as name
+			from 
+				im_customer_prices 
+			where 	
+				user_id = $project_member 
+				and object_id = :object_id
+				and acs_object_util__get_object_type(object_id) = 'im_company'    
+    			"
 	} else {
-		append body_html $name
+		set project_type_id [db_string get_data "select project_type_id from im_projects where project_id=:object_id" -default 0]	
+		set project_customer_id [db_string get_data "select company_id from im_projects where project_id=:object_id" -default 0]
+                set inner_sql "
+                        select
+                                user_id,
+                                object_id as price_object_id,
+                                amount,
+                                currency,
+                                project_type_id,
+                                im_name_from_user_id(user_id) as name
+                        from
+                                im_customer_prices
+                        where
+                                (user_id = $project_member and project_type_id = $project_type_id and project_type_id = $project_type_id) OR 
+				(user_id = $project_member and object_id=$object_id ) 
+                 "
 	}
+
+	db_foreach records_to_list $inner_sql {
+		set show_currency_p 1
+		set show_user [im_show_user_style $user_id $current_user_id $price_object_id]
+
+		if {$debug} { ns_log Notice "im_group_member_component: user_id=$user_id, show_user=$show_user" }
+		if {$show_user == 0} { continue }
+
+		# First Column: user
+		append body_html "
+			<tr $td_class([expr $count % 2])>
+			  <input type=hidden name=member_id value=$user_id>
+  			<td>"
+		if {$show_user > 0} {
+			append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
+		} else {
+			append body_html $name
+		}
 	
-	append body_html "</td>"
+		append body_html "</td>"
 
-        if { [im_permission $current_user_id "admin_company_price_matrix"]} {
-            append body_html "
-                  <td align=middle>
-                    <input type=input size=6 maxlength=6 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
-                  </td>
-            "
-	} else {
-	    if { ""==$amount } {set amount "-"}
-            append body_html "
-                  <td align=middle>
-                    $amount $currency
-                  </td>
-            "
-        }
+        	# Set "Project Type"		
+		if { ![info exists project_type_id] } { set project_type_id "" }	
 
-	append body_html "</td>"
+		# Decide about mode (view/edit)
+        	if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
+		    # User has permission to edit company prices  
+        	    append body_html "
+                	  <td align=middle>
+				[im_project_type_select "project_type_id.${user_id}_$project_type_id" $project_type_id] 
+	                  </td>
+        	    "
+	        } else {
+		    # user has no permission to edit, show only 
+	            append body_html "
+        	          <td align=middle>
+				[im_category_from_id $project_type_id]
+	                  </td>
+        	    "
+        	}
+	
+		# Set price (edit/view)
+	        if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
 
-	if {$add_admin_links} {
-	    append body_html "
-		  <td align=middle>
-		    <input type=checkbox name=delete_user value=$user_id>
-		  </td>
-	    "
+		    set var_amount "amount.${user_id}_$project_type_id" 
+		    set var_currency "currency.${user_id}_$project_type_id"
+
+        	    append body_html "
+                	  <td align=right>
+	                    <input type=input size=6 maxlength=6 name=\"$var_amount\" value=\"$amount\">[im_currency_select $var_currency $currency]
+        	          </td>
+	            "
+		} else {
+	            if { "" == $amount } { 
+			set amount [lang::message::lookup "" intranet-core.Not_Set "Not set"] 
+			set show_currency_p 0
+		    } 
+        	    append body_html "<td align=right>$amount"
+		    if { $show_currency_p } {append body_html "$currency "}
+        	    append body_html "</td>"
+        	}
+
+		append body_html "</td>"
+
+		if {$add_admin_links} {
+		    set var_delete_price [concat "delete_price" "." $user_id "_" "project_type_id"
+		    append body_html "
+			  <td align=right>
+			    <input type=checkbox name='$var_delete_price' value=''>
+			  </td>
+		    "
+		}
+		append body_html "</tr>"
 	}
-	append body_html "</tr>"
     }
 
     if { [empty_string_p $body_html] } {
 	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
-    }
+    } 
+
+    # ------------------ Add form to create new record ------------
+
+        if { "im_company" == $object_type } {
+	    set select_box_user_sql " 
+	        select distinct
+                	r.object_id_two as user_id,
+        	        im_name_from_user_id(r.object_id_two) as name
+	        from
+        	        acs_rels r
+	        where
+        	        object_id_one in
+	        		(select
+		        	        project_id
+	        		from
+		        	        im_projects
+	        		where
+		                	company_id = $object_id
+        		)
+	     and rel_type = 'im_biz_object_member';
+    	   "
+	} else {
+            set select_box_user_sql "
+                select distinct
+                        r.object_id_two as user_id,
+                        im_name_from_user_id(r.object_id_two) as name
+                from
+                        acs_rels r
+                where
+                        object_id_one = $object_id
+		        and rel_type = 'im_biz_object_member';
+           "
+	}
+
+     append body_html "
+        <tr $td_class([expr $count % 2])>
+                <td colspan='5'>
+			<br> 
+			<b>[lang::message::lookup "" intranet-cust-koernig-weber.CreateNewPriceRecord "Create new price record"]:</b>
+                </td>
+        </tr>
+
+        <tr $td_class([expr $count % 2])>
+		<td>
+                      [im_selection_to_select_box "" new_user_id $select_box_user_sql new_user_id ""]
+                </td>
+                <td align=middle>
+     "
+
+     if { "im_project" == $object_type } {
+	 append body_html [ im_category_from_id $project_type_id ]
+     } else {
+	 append body_html [im_project_type_select "new_project_type_id" ""]
+     }
+
+     append body_html "
+                 </td>
+                 <td align=right>
+                    <input type=input size=6 maxlength=6 name=\"new_amount\" value=\"\">[im_currency_select new_currency $currency]
+                 </td>
+	</tr>
+     "
 
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
 	append footer_html "
 	    <tr>
-	      <td align=right colspan=$colspan>
-		<input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
+	      <td align=left colspan=$colspan>
+		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
 	      </td>
 	    </tr>
 	    "

@@ -124,50 +124,46 @@ end;'
   LANGUAGE 'plpgsql' VOLATILE;
 
 
+-- -----------------------------------------------------------------
+-- CUSTOMER PRICES
+-- -----------------------------------------------------------------
+
 -- create table to manage Employee/Customer Price Matrix 
 
-create table im_emp_cust_price_list (
+create table im_customer_prices (
         id                      integer
                                 primary key,
-        user_id			integer
-				constraint im_employee_customer_price_list_user_fk
+        user_id                 integer
+                                constraint im_customer_prices_user_fk
                                 references users,
-        company_id              integer not null
-                                constraint im_employee_customer_price_list_company_fk 
-				references im_companies,
+        object_id               integer not null,
         amount                  numeric(12,2),
         currency                char(3)
                                 constraint im_costs_currency_fk
                                 references currency_codes(iso),
-	unique(user_id, company_id)
+        project_type_id         integer,
+        unique(user_id, object_id, project_type_id)
 );
 
-create index emp_cust_price_list_idx on im_emp_cust_price_list(id);
+create index im_customer_prices_idx on im_customer_prices(id);
 
 select acs_object_type__create_type (
         'im_employee_customer_price',           -- object_type
         'Employee Customer Price',              -- pretty_name
         'Employee Customer Price',             	-- pretty_plural
         'im_biz_object',        		-- supertype
-        'im_emp_cust_price_list',      		-- table_name
+        'im_customer_prices',      		-- table_name
         'id',           			-- id_column
-        'im_emp_cust_price_list',      		-- package_name
+        'im_customer_prices',      		-- package_name
         'f',                  			-- abstract_p
         null,                  			-- type_extension_table
         'im_emp_cust_price__name'      		-- name_method
 );
 
 insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_employee_customer_price', 'im_emp_cust_price_list', 'id');
+values ('im_employee_customer_price', 'im_customer_prices', 'id');
 
--- check if required
--- update acs_object_types set
---        status_type_table = 'im_projects',
---        status_column = 'project_status_id',
---        type_column = 'project_type_id'
--- where object_type = 'im_project';
-
-create or replace function im_employee_customer_price__update(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar) returns int4 as '
+create or replace function im_employee_customer_price__update(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar, int) returns int4 as '
         DECLARE
                 p_id              alias for $1;
                 p_object_type     alias for $2;
@@ -177,15 +173,20 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
                 p_context_id      alias for $6;
 
                 p_user_id         alias for $7;
-                p_company_id      alias for $8;
+                p_object_id       alias for $8;
                 p_amount          alias for $9;
                 p_currency        alias for $10;
+		p_project_type_id alias for $11;
+
                 v_id              integer;
                 v_count           integer;
         BEGIN
-                select count(*) into v_count from im_emp_cust_price_list where user_id = p_user_id and company_id = p_company_id;
+                RAISE NOTICE ''KHD: user_id: %; object_id: %; project_type_id:%; '', p_user_id, p_object_id, p_project_type_id;  
+                select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_project_type_id;
+                RAISE NOTICE ''KHD: Count: %'', v_count;  
+
                 IF v_count > 0 THEN
-                        update im_emp_cust_price_list set amount = p_amount where company_id = p_company_id and user_id = p_user_id;
+                        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id;
                 ELSE
                         v_id := acs_object__new (
                                 p_id,
@@ -196,10 +197,10 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
                                 p_context_id
                         );
 
-                        insert into im_emp_cust_price_list (
-                                id, user_id, company_id, amount, currency
+                        insert into im_customer_prices (
+                                id, user_id, object_id, amount, currency, project_type_id
                         ) values (
-                                v_id, p_user_id, p_company_id, p_amount, p_currency
+                                v_id, p_user_id, p_object_id, p_amount, p_currency, p_project_type_id
                         );
                 END IF;
                 return v_id;
@@ -214,19 +215,74 @@ SELECT im_component_plugin__new (
         null,                           -- creation_user
         null,                           -- creation_ip
         null,                           -- context_id
-        'Employee Customer Price List', -- plugin_name
+        'Price List (Company)',			 -- plugin_name
         'intranet-cust-koernigweber',   -- package_name
         'right',                        -- location
         '/intranet/companies/view',     -- page_url
         null,                           -- view_name
         15,                             -- sort_order
-        'im_group_member_component_employee_customer_price_list $company_id $user_id 0 $return_url "" "" $also_add_to_group' -- component_tcl
+        'im_customer_price_list $company_id $user_id 0 $return_url "" "" $also_add_to_group' -- component_tcl
 );
 
 update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
-where plugin_name = 'Employee/Customer Price List';
+where plugin_name = 'Employee Customer Price List';
 
+
+-- Create a plugin for the Project View Page.
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'im_component_plugin',          -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Price List (Project)',		-- plugin_name
+        'intranet-cust-koernigweber',   -- package_name
+        'right',                        -- location
+        '/intranet/projects/view',      -- page_url
+        null,                           -- view_name
+        15,                             -- sort_order
+        'im_customer_price_list $project_id $user_id 0 $return_url "" "" ""' -- component_tcl
+);
+
+
+-- set permissions for above Plugins
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_plugin_id                  integer;
+	v_project_managers	     integer;
+begin
+        select group_id into v_project_managers from groups where group_name = ''Project Managers'';
+
+        select  plugin_id
+        into    v_plugin_id
+        from    im_component_plugins pl
+        where   plugin_name = ''Price List (Project)'';
+
+        PERFORM acs_permission__grant_permission(v_plugin_id, v_project_managers, ''read'');
+
+        select  plugin_id
+        into    v_plugin_id
+        from    im_component_plugins pl
+        where   plugin_name = ''Price List (Company)'';
+
+        PERFORM acs_permission__grant_permission(v_plugin_id, v_project_managers, ''read'');
+
+        return 0;
+end;' 
+language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+
+
+-- -----------------------------------------------------------------
+-- TIMESHEET CONFIRMATION WF 
+-- -----------------------------------------------------------------
 
 -- create menu item for managing timesheet confirmation workflow
 
