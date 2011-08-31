@@ -9,13 +9,13 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-resource-management</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.1.0.0.apm">
+    <version name="4.0.1.0.1" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.1.0.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Resource Management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Contains a fast and flexible report summarizing most resource assignments to projects, timesheet tasks and translation tasks.</description>
 
-        <provides url="intranet-resource-management" version="3.4.0.8.0"/>
+        <provides url="intranet-resource-management" version="4.0.1.0.1"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-timesheet2" version="3.4.0.0.0"/>
 	<requires url="intranet-translation" version="3.4.0.0.0"/>
