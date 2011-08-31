@@ -185,7 +185,7 @@ if {[exists_and_not_null ticket_id]} {
 }
 
 # Check if the ticket was changed recently by another user
-if {"edit" == $form_mode} {
+if {"edit" == $form_mode && [info exists ticket_id]} {
     set exists_p [db_0or1row recently_changed "
 	select	(now() - lock_date)::interval as lock_interval,
 		trunc(extract(epoch from now() - lock_date))::integer % 60 as lock_seconds,
