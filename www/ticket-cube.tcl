@@ -391,25 +391,25 @@ switch $output_format {
 			<tr>
 			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Type "Ticket Type"]</td>
 			  <td class=form-widget colspan=3>
-			    [im_category_select -include_empty_p 1 "Intranet Ticket Type" ticket_type_id $ticket_type_id]
+			    [im_category_select -include_empty_p 1 -include_empty_name "" "Intranet Ticket Type" ticket_type_id $ticket_type_id]
 			  </td>
 			</tr>
 			<tr>
 			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Ticket_Status "Ticket Status"]</td>
 			  <td class=form-widget colspan=3>
-			    [im_category_select -include_empty_p 1 "Intranet Ticket Status" ticket_status_id $ticket_status_id]
+			    [im_category_select -include_empty_p 1 -include_empty_name "" "Intranet Ticket Status" ticket_status_id $ticket_status_id]
 			  </td>
 			</tr>
 			<tr>
 			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer_Type "Customer Type"]</td>
 			  <td class=form-widget colspan=3>
-			    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+			    [im_category_select -include_empty_p 1 -include_empty_name "" "Intranet Company Type" customer_type_id $customer_type_id]
 			  </td>
 			</tr>
 			<tr>
 			  <td class=form-label>[lang::message::lookup "" intranet-reporting.Customer Customer]</td>
 			  <td class=form-widget colspan=3>
-			    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
+			    [im_company_select -include_empty_p 1 -include_empty_name "" customer_id $customer_id]
 			  </td>
 			</tr>
 		    "
