@@ -195,13 +195,7 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		//Stop progressBar
-		var count = 0;
-		//To avoid infinite loading in progressBar when the load is faster than grafical
-		while (Ext.getCmp('ticketActionBar') == undefined && count < 30) {
-			 setTimeout("count = count + 1", 1000);
-		}
-		Ext.getCmp('ticketActionBar').stopBar();
+		Function_StopBar();
 	}
 );
 
@@ -436,13 +430,16 @@ var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	},
 	sorters: [{
-		property: 'tree_category_translated',
+		property: 'sort_order',
 		direction: 'ASC'
-	}]				
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 
 ticketOriginStore.load(function (record, operation){
-	this.fill_tree_category_translated(this);
+	//this.fill_tree_category_translated(this);
 	this.addBlank();
 	this.sort();
 });

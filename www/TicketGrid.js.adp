@@ -282,7 +282,13 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
 					key = 'query';
 					value = query;
-					break;					
+					break;	
+				case 'search_text':
+					value = value.toLowerCase();
+					query = query + ' and ( lower(ticket_request) like \'%' + value + '%\' or lower(ticket_resolution) like \'%' + value + '%\' )';
+					key = 'query';
+					value = query;							
+					break;	
 				case 'company_type_id':
 					// The customer's company type is not part of the REST ticket fields.
 					query = query + ' and company_id in (select company_id from im_companies where company_type_id in (select im_sub_categories from im_sub_categories(' + value + ')))';
@@ -373,7 +379,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				ticketStore.remove(ticketModel);
 			},
 			failure: function(response) {
-				Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSolo administradores tienen permiso para borrar tickets.', response.responseText);
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), response.responseText);
 			}
 		});
 	},
@@ -384,7 +390,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 		// Ticket list or view page
 		var ticketCompoundPanel = Ext.getCmp('ticketCompoundPanel');
-		ticketCompoundPanel.tab.setText('#intranet-helpdesk.New_Ticket#');
+		ticketCompoundPanel.tab.setText('#intranet-sencha-ticket-tracker.New_Ticket#');
 		ticketCompoundPanel.tab.show();
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(ticketCompoundPanel);

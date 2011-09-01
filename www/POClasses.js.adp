@@ -75,7 +75,7 @@ Ext.define('PO.data.CategoryStore', {
 		return validate;	
 	},
 	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
-		var categoryVars = {category_id: '', category_translated: null};
+		var categoryVars = {category_id: '', category_translated: null, sort_order: '0'};
 		var category = Ext.ModelManager.create(categoryVars, 'TicketBrowser.Category');
 		this.add(category);	
 	}
@@ -170,7 +170,7 @@ Ext.define('PO.form.field.DateTimeReadOnly', {
 var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
 var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
 var anonimo_company_id = '<%= [db_string anon_company "select company_id from im_companies where company_path = \'anonimo\'" -default 0] %>';
-var anonimo_user_id = '<%= [db_string anon "select user_id from users where username = \'anonimo\'" -default 624] %>';
+var anonimo_user_id = '<%= [db_string anon "select user_id from users where username = \'anonimo\'" -default 75028] %>';
 var anonimo_sla = '<%= [db_string anon "select project_id from im_projects where project_nr = \'anonimo\'" -default 0] %>'
 
 // Use TCL template language to get the current user_id

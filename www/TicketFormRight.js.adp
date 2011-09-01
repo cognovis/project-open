@@ -85,7 +85,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false,
 				validator: function(value){
-					if (!dateFormat(value)) {
+					if (!dateFormat.test(value)) {
 						return 'Formato no válido';
 					}
 					return true;
@@ -96,7 +96,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false,
 				validator: function(value){
-					if (!dateFormat(value)) {
+					if (!dateFormat.test(value)) {
 						return 'Formato no válido';
 					}
 					return true;
@@ -107,7 +107,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false,
 				validator: function(value){
-					if (!dateFormat(value)) {
+					if (!dateFormat.test(value)) {
 						return 'Formato no válido';
 					}
 					return true;
@@ -135,7 +135,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				xtype:		'po_datetimefield_read_only',
 				disabled:	false,
 				validator: function(value){
-					if (!dateFormat(value)) {
+					if (!dateFormat.test(value)) {
 						return 'Formato no válido';
 					}
 					return true;

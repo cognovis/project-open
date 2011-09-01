@@ -240,7 +240,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			scope: this,
 			callback: function(record, operation) {
 				if (!operation.wasSuccessful()) {
-					Ext.Msg.alert('Error buscando por un contacto', operation.request.scope.reader.jsonData["message"]);
+					Function_errorMessage('#intranet-sencha-ticket-tracker.Search_Contact_Error_Title#', '#intranet-sencha-ticket-tracker.Search_Contact_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 				}
 			}
 		});
@@ -254,25 +254,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 	},
 
 	// The user has pressed the "Delete" button in the contact list page
-/*	onDelete: function() {
-
-		// Get the selected user (only one!)
-		var selection = this.selModel.getSelection();
-		var userModel = selection[0];
-
-		// Delete the user. This triggers a DELETE server request
-		userModel.destroy({
-			success: function(record, operation) {
-				contactGridStore.remove(userModel);
-				userStore.remove(userModel);
-			},
-			failure: function(record, operation) {
-				Ext.Msg.alert('Error borrando User #'+userModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar users.', operation.request.scope.reader.jsonData["message"]);
-			}
-		});
-
-
-	},*/
 	onDelete: function() {
 		// Get the selected customer (only one!)
 		var selection = this.selModel.getSelection();
