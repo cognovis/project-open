@@ -266,7 +266,7 @@ set left_scale_options [list \
 	"ticket_creation_user"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_User "Creation User"]" \
 	"ticket_creation_user_dept"		"Ticket - [lang::message::lookup "" intranet-reporting.Creators_Dept "Creator's Department"]" \
 	"hour_of_day"				"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Hour "Creation Hour"]" \
-	"half_hour_of_day"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Hour "Creation Half Hour"]" \
+	"half_hour_of_day"			"Ticket - [lang::message::lookup "" intranet-reporting.Creation_Half_Hour "Creation Half Hour"]" \
 	"company_name"				"[lang::message::lookup "" intranet-core.Company "Company"] - [lang::message::lookup "" intranet-core.Name Name]" \
 ]
 
