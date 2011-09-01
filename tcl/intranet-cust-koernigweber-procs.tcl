@@ -13,6 +13,37 @@ ad_library {
 # Show the members of the Admin Group of the current Business Object.
 # ---------------------------------------------------------------------
 
+ad_proc find_sales_price_defined_on_project_level {
+	user_id
+	project_id
+} {
+    Returns the sales price that has defined for a particular user
+    on an arbitrary project level above    
+} {
+    # Check if there's a price defined on the project itself
+    ns_log NOTICE "KHD: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id"
+    set amount_sales_price [db_string get_data "select amount from im_customer_prices where user_id = $user_id and object_id = $project_id" -default 0]
+    ns_log NOTICE "KHD: Found $amount_sales_price"
+
+    if { 0 != $amount_sales_price } {
+        ns_log NOTICE "KHD: returning "
+	return $amount_sales_price
+    } else {
+        ns_log NOTICE "KHD: No price found in project: $project_id for user: $user_id"
+	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
+        ns_log NOTICE "KHD: Found parent project: $parent_project_id" 
+	if { ""  == $parent_project_id } {
+	        ns_log NOTICE "KHD: No parent project found, breaking up"
+		# This is the super project, if no price is found here we can stop searching 
+		return ""
+    	} else {
+                ns_log NOTICE "KHD: Parent project found: $parent_project_id"
+                ns_log NOTICE "KHD: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id"
+		return [find_sales_price_defined_on_project_level $user_id $parent_project_id]
+	}
+     }
+}
+
 ad_proc -public im_customer_price_list { 
     {-debug 0}
     object_id 
@@ -423,104 +454,103 @@ ad_proc -public im_koernigweber_next_project_nr {
 
 	    
 
-ad_proc im_timesheet_price_component { user_id company_id return_url} {
-    Returns a formatted HTML table representing the 
-    prices for the current company
-} {
 
-    if {![im_permission $user_id view_costs]} {
-        return ""
-    }
-
-    set bgcolor(0) " class=roweven "
-    set bgcolor(1) " class=rowodd "
-#    set price_format "000.00"
-    set price_format "%0.2f"
-
-    set colspan 7
-    set price_list_html "
-<form action=/intranet-timesheet2-invoices/price-lists/price-action method=POST>
-[export_form_vars company_id return_url]
-<table border=0>
-<tr><td colspan=$colspan class=rowtitle align=center>[_ intranet-timesheet2-invoices.Price_List]</td></tr>
-<tr class=rowtitle> 
-	  <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM]</td>
-	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Type]</td>
-	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
-	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
-	  <td class=rowtitle>[im_gif del "Delete"]</td>
-</tr>"
-
-    set price_sql "
-select
-	p.*,
-	c.company_path as company_short_name,
-	im_category_from_id(uom_id) as uom,
-	im_category_from_id(task_type_id) as task_type,
-	im_material_nr_id(material_id) as material
-from
-	im_timesheet_prices p,
-	im_companies c
-where 
-	p.company_id=:company_id
-	and p.company_id=c.company_id
-order by
-	currency,
-	uom_id,
-	task_type_id desc
-"
-
-    set price_rows_html ""
-    set ctr 1
-    set old_currency ""
-    db_foreach prices $price_sql {
-
-	if {"" != $old_currency && ![string equal $old_currency $currency]} {
-	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
-	}
-
-	append price_rows_html "
-        <tr $bgcolor([expr $ctr % 2]) nobreak>
-	  <td>$uom</td>
-	  <td>$task_type</td>
-	  <td>$material</td>
-          <td>[format $price_format $price] $currency</td>
-          <td><input type=checkbox name=price_id.$price_id></td>
-	</tr>"
-	incr ctr
-	set old_currency $currency
-    }
-
-    if {$price_rows_html != ""} {
-	append price_list_html $price_rows_html
-    } else {
-	append price_list_html "<tr><td colspan=$colspan align=center><i>[_ intranet-timesheet2-invoices.No_prices_found]</i></td></tr>\n"
-    }
-
-    set sample_pracelist_link "<a href=/intranet-timesheet2-invoices/price-lists/pricelist_sample.csv>[_ intranet-timesheet2-invoices.lt_sample_pricelist_CSV_]</A>"
-
-    append price_list_html "
-<tr>
-  <td colspan=$colspan align=right>
-    <input type=submit name=add_new value=\"[_ intranet-timesheet2-invoices.Add_New]\">
-    <input type=submit name=del value=\"[_ intranet-timesheet2-invoices.Del]\">
-  </td>
-</tr>
-</table>
-</form>
-<ul>
-  <li>
-    <a href=/intranet-timesheet2-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
-      [_ intranet-timesheet2-invoices.Upload_prices]</A>
-    [_ intranet-timesheet2-invoices.lt_for_this_company_via_]
-  <li>
-    [_ intranet-timesheet2-invoices.lt_Check_this_sample_pra]
-    [_ intranet-timesheet2-invoices.lt_It_contains_some_comm]
-</ul>\n"
-    return $price_list_html
-}
-
-
+# ad_proc im_timesheet_price_component { user_id company_id return_url} {
+#     Returns a formatted HTML table representing the 
+#     prices for the current company
+# } {
+# 
+#     if {![im_permission $user_id view_costs]} {
+#         return ""
+#     }
+# 
+#     set bgcolor(0) " class=roweven "
+#     set bgcolor(1) " class=rowodd "
+# #    set price_format "000.00"
+#     set price_format "%0.2f"
+# 
+#     set colspan 7
+#     set price_list_html "
+# <form action=/intranet-timesheet2-invoices/price-lists/price-action method=POST>
+# [export_form_vars company_id return_url]
+# <table border=0>
+# <tr><td colspan=$colspan class=rowtitle align=center>[_ intranet-timesheet2-invoices.Price_List]</td></tr>
+# <tr class=rowtitle> 
+# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM]</td>
+# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Type]</td>
+# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
+# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
+# 	  <td class=rowtitle>[im_gif del "Delete"]</td>
+# </tr>"
+# 
+#     set price_sql "
+# select
+# 	p.*,
+# 	c.company_path as company_short_name,
+# 	im_category_from_id(uom_id) as uom,
+# 	im_category_from_id(task_type_id) as task_type,
+# 	im_material_nr_id(material_id) as material
+# from
+# 	im_timesheet_prices p,
+# 	im_companies c
+# where 
+# 	p.company_id=:company_id
+# 	and p.company_id=c.company_id
+# order by
+# 	currency,
+# 	uom_id,
+# 	task_type_id desc
+# "
+# 
+#     set price_rows_html ""
+#     set ctr 1
+#     set old_currency ""
+#     db_foreach prices $price_sql {
+# 
+# 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
+# 	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
+# 	}
+# 
+# 	append price_rows_html "
+#         <tr $bgcolor([expr $ctr % 2]) nobreak>
+# 	  <td>$uom</td>
+# 	  <td>$task_type</td>
+# 	  <td>$material</td>
+#           <td>[format $price_format $price] $currency</td>
+#           <td><input type=checkbox name=price_id.$price_id></td>
+# 	</tr>"
+# 	incr ctr
+# 	set old_currency $currency
+#     }
+# 
+#     if {$price_rows_html != ""} {
+# 	append price_list_html $price_rows_html
+#     } else {
+# 	append price_list_html "<tr><td colspan=$colspan align=center><i>[_ intranet-timesheet2-invoices.No_prices_found]</i></td></tr>\n"
+#     }
+# 
+#     set sample_pracelist_link "<a href=/intranet-timesheet2-invoices/price-lists/pricelist_sample.csv>[_ intranet-timesheet2-invoices.lt_sample_pricelist_CSV_]</A>"
+# 
+#     append price_list_html "
+# <tr>
+#   <td colspan=$colspan align=right>
+#     <input type=submit name=add_new value=\"[_ intranet-timesheet2-invoices.Add_New]\">
+#     <input type=submit name=del value=\"[_ intranet-timesheet2-invoices.Del]\">
+#   </td>
+# </tr>
+# </table>
+# </form>
+# <ul>
+#   <li>
+#     <a href=/intranet-timesheet2-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
+#       [_ intranet-timesheet2-invoices.Upload_prices]</A>
+#     [_ intranet-timesheet2-invoices.lt_for_this_company_via_]
+#   <li>
+#     [_ intranet-timesheet2-invoices.lt_Check_this_sample_pra]
+#     [_ intranet-timesheet2-invoices.lt_It_contains_some_comm]
+# </ul>\n"
+#     return $price_list_html
+# }
 
 # ------------------------------------------------------
 # The list of hours per project
@@ -662,8 +692,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	
 	set task_checked ""
 	set task_disabled ""	
-	if {0 == [llength $include_task]} {
-	    
+	if {0 == [llength $include_task]} {   
 	    # Called from the Wizard Page - Enabled tasks
 	    # according to the task's material.
 	    if {"f" != $material_billable_p} {
@@ -671,7 +700,6 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	    }
 		
 	} else {
-
 	    # View from the Invoice page
 	    # disable the checkbox (because it is not editable anymore).
 	    if {[lsearch $include_task $project_id] > -1} {
@@ -680,22 +708,30 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	    set task_disabled "disabled"
 	}
 
-	switch $uom_id {
-	    321 {
+	if { "321" == $uom_id } {
 		set all_reported_units $all_reported_days
 		set units_in_interval $days_in_interval
 		set unbilled_units $unbilled_days
-	    }
-	    320 {
+	} elseif { "320" == $uom_id } {
 		set all_reported_units $all_reported_hours
 		set units_in_interval $hours_in_interval
 		set unbilled_units $unbilled_hours
-	    }
-	    default {
+	} elseif { "" == $uom_id } {
+                # We assume hours logged directly on a project instead of a task
+                set all_reported_units $all_reported_hours
+                set units_in_interval $hours_in_interval
+                set unbilled_units $unbilled_hours
+		if { "" != $units_in_interval || "" != $all_reported_hours || "" != $unbilled_hours } {
+			set uom_name "<span style='color: red'>" 
+			append uom_name [lang::message::lookup "" intranet-core.Hour "Hour"]
+                	append uom_name "</span>&nbsp;<img src='/intranet/images/help.gif' title='No UOM provided so we assume HOURS, please verify' 
+			         alt='No UOM provided so we assume HOURS, please verify' border='0' height='16' width='16'>
+			"
+		}
+        } else  {
 		set all_reported_units "-"
 		set units_in_interval "-"
 		set unbilled_units "-"
-	    }
 	}
 
 	append task_table_rows "
@@ -705,7 +741,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	  <td align=right>$all_reported_units</td>
 	  <td align=right>$units_in_interval</td>
 	  <td align=right>$unbilled_units</td>
-	  <td align=right>$uom_name</td>
+	  <td align=left>$uom_name</td>
 	  <td>$project_status</td>
 	</tr>
 	"
