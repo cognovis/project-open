@@ -164,11 +164,11 @@ set reports_ctr $ctr
 # ---------------------------------------------------------------
 
 set form_id "cost_filter"
-set action_url "/intranet-helpdesk/index"
+set action_url "/intranet-invoices/list"
 set form_mode "edit"
 set object_type "im_invoice"
 
-set cost_creator_options [list]
+set cost_creator_options [list "" ""]
 db_foreach creator_option "
 	select	distinct
 		im_name_from_user_id(creation_user) as creator_name,
