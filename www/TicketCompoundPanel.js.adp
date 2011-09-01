@@ -120,8 +120,13 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	var date = new Date();
 	ticketForm.getForm().findField('datetime').setValue(date.getTime());			
 
-	// Write out an alert message
-	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
+	// Write out an info message
+	Ext.Msg.show({
+	     title:	'',
+	     msg: '#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#',
+	     buttons: Ext.Msg.OK,
+	     icon: Ext.Msg.INFO
+	});	
     },
 
     // Delete the selected ticket
@@ -143,7 +148,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			ticketStore.remove(ticketModel);
 		},
 		failure: function(record, operation) {
-			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSólo administradores tienen permiso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
 		}
 	});
 

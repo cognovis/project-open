@@ -107,7 +107,6 @@ function Function_saveCompany(companyValues, contactValues, ticketValues, ticket
 		companyModel.save({
 			scope: this,
 			success: function(company_record, operation) {
-				//alert('DBA: Compañia guardada correctamente');
 				// Store the new company in the store that that it can be referenced.
 				company_id = company_record.get('company_id');
 				if (newCompany) {
@@ -126,7 +125,7 @@ function Function_saveCompany(companyValues, contactValues, ticketValues, ticket
 				}
 			},
 			failure: function(company_record, operation) {
-				Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Company_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Company_Error_Message# ', operation.request.scope.reader.jsonData["message"]);
 				if (loadCompanyContact) {
 					Ext.getCmp('companyContactCompoundPanel').enable();
 				}
@@ -163,7 +162,6 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 		contactModel.save({
 			scope: this,
 			success: function(contact_record, operation) {	
-				//alert('DBA: Contacto guardado correctamente');
 				contact_id = contact_record.get('user_id');
 				
 				if (loadTicket){
@@ -190,11 +188,10 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 					groupMemberModel.save({
 						scope: this,
 						success: function(record, operation) { 
-							//alert('DBA: Contacto añadido al grupo cliente');
 							Function_saveCompany(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
 						},			
 						failure: function(record, operation) { 
-							Ext.Msg.alert('Error al crear al añadir el contacto al grupo cliente', operation.request.scope.reader.jsonData["message"]);
+							Function_errorMessage('#intranet-sencha-ticket-tracker.Contact_Group_Error_Title#', '#intranet-sencha-ticket-tracker..Contact_Group_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 							if (loadCompanyContact){
 								Ext.getCmp('companyContactCompoundPanel').enable(); 
 							}
@@ -206,7 +203,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 				}
 			},
 			failure: function(record, operation) {
-				Ext.Msg.alert('Error al guardar contacto', operation.request.scope.reader.jsonData["message"]);
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Contact_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Contact_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 				if (loadCompanyContact){
 					Ext.getCmp('companyContactCompoundPanel').enable();
 				}
@@ -246,7 +243,6 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 	ticketModel.save({
 		scope: this,
 		success: function(ticket_record, operation) {
-			//alert('DBA: Ticket guardado correctamente');
 			var ticket_id = ticket_record.get('ticket_id');
 			if (newTicket) {
 				ticketValues.ticket_id = ticket_id;
@@ -257,7 +253,7 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 			Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
 		},
 		failure: function(record, operation) {
-			Ext.Msg.alert('Error al guardar ticket', operation.request.scope.reader.jsonData["message"]);					
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Ticket_Error_Message#', operation.request.scope.reader.jsonData["message"]);				
 			if (loadTicket) {
 				Ext.getCmp('ticketCompoundPanel').enable();
 			}					
@@ -284,14 +280,13 @@ function Function_relationCompanyContact(company_id, contact_id, loadCompanyCont
 		member_model.save({
 			scope: this,
 			success: function(record, operation) { 
-				//alert('DBA: Relación compania-contacto creada correctamente');
 				if (loadCompanyContact) {
 					companyRecord = companyStore.findRecord('company_id',company_id,0,false,false,true);
 					Ext.getCmp('companyContactCompoundPanel').loadCompany(companyRecord);
 				}	
 			},
 			failure: function(record, operation) { 
-				Ext.Msg.alert('Error al crear la relación entre contacto y entidad', operation.request.scope.reader.jsonData["message"]); 
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Relationship_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Relationship_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 				if (loadCompanyContact) {
 					Ext.getCmp('companyContactCompoundPanel').enable();
 				}
@@ -392,16 +387,14 @@ function Function_insertAction(object_id, act, record){
 		url:	'/intranet-sencha-ticket-tracker/audit-insert?object_id=' + object_id + '&action=' + act ,
 		success: function(response) {	
 			if (response.responseText.indexOf('false') > 0) {
-				alert('Error al crear accion del ticket: ' + response.responseText);	
-			} else {
-				//alert('DBA: Action del ticket creada correctamente');	
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
 			}
 			if (!Ext.isEmpty(record)){
 				Ext.getCmp('ticketCompoundPanel').loadTicket(record);
 			}
 		},
 		failure: function(response) {	
-			alert('Error al crear accion del ticket:' + response.responseText);	
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
 			if (!Ext.isEmpty(record)){
 				Ext.getCmp('ticketCompoundPanel').loadTicket(record);
 			}			
@@ -428,7 +421,8 @@ function Funtion_calculateEscalation(ticket_area_id){
 			var programName = programModel.get('category');
             var mapRow = SPRIProgramGroupMap.findRecord('Programa', programName);
 			if (null == mapRow) {
-				alert('Error de configuración:\nPrograma "'+programName+'" no encontrado');
+				//alert('Error de configuración:\nPrograma "'+programName+'" no encontrado');
+				console.log('Error de configuración:\nPrograma "'+programName+'" no encontrado');
 				return;
 			}
 
@@ -443,6 +437,28 @@ function Funtion_calculateEscalation(ticket_area_id){
 				}
 			}
 	    }
-	}	
-	
+	}		
+}
+
+/**
+ *	Show generic error messagge, especific error will be write in console
+ */
+function Function_errorMessage(e_title, e_msg, e_log){
+		Ext.Msg.show({
+	     	title:	e_title,
+	     	msg:	e_msg,
+	    	buttons: Ext.Msg.OK,
+	    	icon: Ext.MessageBox.ERROR
+		});		
+		console.error(e_log);
+}
+
+
+function Function_StopBar() {
+		//To avoid infinite loading in progressBar when the load is faster than grafical
+		if (Ext.getCmp('ticketActionBar') == undefined) {
+			setTimeout("Function_StopBar()", 3000);
+		} else {
+			setTimeout("Ext.getCmp(\'ticketActionBar\').stopBar()", 2000);
+		}
 }

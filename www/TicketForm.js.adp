@@ -268,7 +268,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue('10000191');
+		form.findField('ticket_type_id').setValue('10000183');
 		
 		// SEt datetime for actions
 		var date = new Date();
@@ -291,7 +291,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			    form.findField('project_name').setValue(ticket_name);
 			},
 			failure: function(response) {
-			    alert('#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#');
+				Function_errorMessage('', '#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#', response.responseText);
 			}
 	    });
 	}

@@ -65,7 +65,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					companyContactCompoundPanel.tab.show();
 					break;
 				default:
-					alert('Tab not recognized for new operation: ' + xtype);
+					alert('Pestaña no reconocida para la operación: ' + xtype);
 				break
 			}
 		}
@@ -91,7 +91,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 					Ext.getCmp('ticketCompoundPanel').onCopy(btn, pressed);
 					break;
 				default:
-					alert('Tab not recognized for copy operation: ' + xtype);
+					alert('Pestaña no reconocida para la operación: ' + xtype);
 				break
 			}
 		}
@@ -135,7 +135,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 								}								
 								break;								
 							default:
-								alert('Tab not recognized for delete operation: ' + xtype);
+								alert('Pestaña no reconocida para la operación: ' + xtype);
 							break
 						}
 		     		}
@@ -284,7 +284,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	   	progressbar.wait({
 	       increment: 60,
 	       text: '#intranet-sencha-ticket-tracker.Loading___#',
-	       scope: this,
+	       scope: this
 	    });
 	},
 	
