@@ -479,7 +479,18 @@ template::multirow foreach project_list {
 
 	set sum_hours 0
 	db_foreach col $sql {
-		set sum_hours [expr $sum_hours + [find_sales_price $user_id $project_id $company_id] * $hours ]
+	    	set sales_price [find_sales_price $user_id $project_id $company_id ""]
+		if { "" == $sales_price || 0 == $sales_price } {
+			# ad_return_complaint 1 "$user_id $project_id $company_id"
+			set err_mess "<br>"
+			append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "Report not available, please provide price for user/project:<br>"]
+			append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>" 
+                        append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
+			append err_mess "</a><br><br>"
+			ad_return_complaint 1 $err_mess
+	    	} else {
+			set sum_hours [expr $sum_hours + [expr $sales_price * $hours]]						
+		}
 	}
 
 	# template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]

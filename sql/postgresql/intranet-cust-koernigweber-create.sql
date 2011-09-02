@@ -42,17 +42,78 @@ SELECT im_lang_add_message('en_US','intranet-cust-koernigweber','AbsenceTimefram
 SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','AbsenceTimeframe','Zeitraum');
 
 
+-- -----------------------------------------------------------------
+-- CUSTOMER PROJECT TYPES
+-- -----------------------------------------------------------------
+
+-- create table to manage information which project types are allowed 
+
+create table im_customer_project_type (
+        id                      integer
+                                primary key,
+        company_id              integer
+                                constraint im_customer_project_type_fk
+                                references im_companies,
+        project_type_id         integer not null,
+        unique(company_id, project_type_id)
+);
+
+create index im_customer_project_type_idx on im_customer_project_type(id);
+
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'im_component_plugin',          -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Allowed Project Types',        -- plugin_name
+        'intranet-cust-koernigweber',   -- package_name
+        'right',                        -- location
+        '/intranet/companies/view',     -- page_url
+        null,                           -- view_name
+        15,                             -- sort_order
+        'im_allowed_company_types $company_id ' -- component_tcl
+);
+
+
+-- set permissions for above Plugin
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_plugin_id                  integer;
+        v_project_managers           integer;
+begin
+        select group_id into v_project_managers from groups where group_name = ''Project Managers'';
+
+        select  plugin_id
+        into    v_plugin_id
+        from    im_component_plugins pl
+        where   plugin_name = ''Allowed Project Types'';
+
+        PERFORM acs_permission__grant_permission(v_plugin_id, v_project_managers, ''read'');
+        return 0;
+end;'
+language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+-- -----------------------------------------------------------------
+-- Customer Approval WF 
+-- -----------------------------------------------------------------
+
 select acs_object_type__create_type (
         'project_approval2_wf',           -- object_type
-        'Project Close Approval',              -- pretty_name
-        'Project Close Approval',            -- pretty_plural
-        'workflow',        -- supertype
-        'project_approval2_wf_cases',         -- table_name
-        'case_id',           -- id_column
+        'Project Close Approval',         -- pretty_name
+        'Project Close Approval',         -- pretty_plural
+        'workflow',        		  -- supertype
+        'project_approval2_wf_cases',     -- table_name
+        'case_id',           		  -- id_column
         'project_approval2_wf',           -- package_name
-        'f',                    -- abstract_p
-        null,                   -- type_extension_table
-        'null'      -- name_method
+        'f',                    	  -- abstract_p
+        null,                   	  -- type_extension_table
+        'null'      			  -- name_method
 );
 
 insert into acs_object_type_tables (object_type,table_name,id_column) values ('project_approval2_wf', 'project_approval2_wf_cases', 'case_id');

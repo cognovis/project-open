@@ -282,7 +282,7 @@ foreach project_id $in_clause_list {
 	"
 	
 	db_foreach users_in_group $user_sql {
-	     set hourly_rate [find_sales_price $user_id $project_id $customer_id]
+	     set hourly_rate [find_sales_price $user_id $project_id $customer_id ""]
 	     append task_sum_html "
                 <tr>\n
           		<td colspan='1'><input type=text name=item_sort_order.$ctr size=2 value='$ctr'></td>

@@ -13,31 +13,75 @@ ad_library {
 # Show the members of the Admin Group of the current Business Object.
 # ---------------------------------------------------------------------
 
+
+ad_proc im_allowed_company_types {
+	company_id
+} {
+	Returns portlet ... 
+} {
+	return [im_allowed_company_types $company_id]
+}
+
+
 ad_proc find_sales_price {
 	user_id
 	project_id
 	company_id
+        project_type_id 
 } {
     Returns the sales price that has defined for a particular user
     on an arbitrary project level above    
 } {
-    # Check if there's a price defined on the project itself
-    ns_log NOTICE "KHD: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id"
-    set amount_sales_price [db_string get_data "select amount from im_customer_prices where user_id = $user_id and object_id = $project_id" -default 0]
-    ns_log NOTICE "KHD: Found $amount_sales_price"
+    
+    # Make sure you look for price based on project_type_id of the (sub-)project of level 'n'  
+    if { "" == $project_type_id } {
+	set project_type_id [db_string get_data "select project_type_id from im_projects where project_id = $project_id" -default 0]
+	# check if task -> no prices are defined for tasks 
+        ns_log NOTICE "KHD: No project_type_id passed. Found: $project_type_id"
+	if { 100 == $project_type_id } {    
+	    set project_type_id ""
+	}
+    }
 
-    if { 0 != $amount_sales_price } {
+    set amount_sales_price 0
+    if { "" != $project_type_id } {
+	ns_log NOTICE "KHD: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id and project_type_id=$project_type_id ([im_category_from_id $project_type_id])"
+	# Check if there's a price defined on the project itself
+	set sql "
+		select 
+			amount 
+		from 
+			im_customer_prices 
+		where 
+			user_id = $user_id 
+			and object_id = $project_id
+			-- and project_type_id = $project_type_id
+    	"
+	set amount_sales_price [db_string get_data $sql -default 0]
+    } 	
+
+    if { 0 != $amount_sales_price} {
         ns_log NOTICE "KHD: Price found: $amount_sales_price"
         ns_log NOTICE "KHD: -----------------------------------------------------------"
 	return $amount_sales_price
     } else {
-        ns_log NOTICE "KHD: No price found in project: $project_id for user: $user_id"
+        ns_log NOTICE "KHD: No price found in project: $project_id for user: $user_id and project_type_id: $project_type_id ([im_category_from_id $project_type_id])"
 	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
         ns_log NOTICE "KHD: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
 	        ns_log NOTICE "KHD: No parent project found, now looking for price defined on customer level:"
 		# This is the super project, if no price is found, lets check if a price is defined on the company level 
-	    	set sales_price [db_string get_data "select amount from im_customer_prices where user_id = $user_id and object_id = $company_id" -default 0]
+		set sql "
+		        select
+		        	amount
+		        from
+	                	im_customer_prices
+		        where
+        	        	user_id = $user_id
+			        and object_id = $company_id
+                		and project_type_id in (select project_type_id from im_projects where project_id = $project_id)
+    		"
+	    	set sales_price [db_string get_data $sql -default 0]
 		if { 0 == $sales_price } {
                         ns_log NOTICE "KHD: No price found for customer neither, returning empty string"
                         ns_log NOTICE "KHD: -----------------------------------------------------------" 
@@ -49,11 +93,108 @@ ad_proc find_sales_price {
 		}
     	} else {
                 ns_log NOTICE "KHD: Parent project found: $parent_project_id"
-                ns_log NOTICE "KHD: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id"
-		return [find_sales_price $user_id $parent_project_id $company_id]
+                ns_log NOTICE "KHD: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $project_type_id ([im_category_from_id $project_type_id])"
+		return [find_sales_price $user_id $parent_project_id $company_id $project_type_id]
 	}
      }
 }
+
+
+ad_proc -public im_allowed_company_types { 
+    company_id
+} {
+    Returns an portlet to view and manage prices  
+} {
+
+    # ------------------ Format the table header ------------------------
+    set colspan 2
+    set add_admin_links 1  
+    set header_html "
+      <tr> 
+	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
+    "
+    if { $add_admin_links } {
+        incr colspan
+        append header_html "<td class=rowtitle align=middle>[im_gif delete]</td>"
+    }
+    append header_html "
+      </tr>"
+
+    # ------------------ Format the table body ----------------
+    set td_class(0) "class=roweven"
+    set td_class(1) "class=rowodd"
+    set found 0
+    set count 0
+    set body_html ""
+
+    set sql_query "
+	select 
+		project_type_id 
+	from
+	        im_customer_project_type
+	where
+        	company_id = $company_id
+    "
+
+    db_foreach project_type $sql_query {
+		# First Column: user
+		append body_html "
+			<tr $td_class([expr $count % 2])>
+			  [im_category_from_id $project_type_id]
+  			<td>"
+
+		if {$add_admin_links} {
+		    append body_html "
+			  <td align=right>
+			    <input type=checkbox name='project_type_id value='$project_type_id'>
+			  </td>
+		    "
+		}
+		append body_html "</tr>"
+    }
+
+    if { [empty_string_p $body_html] } {
+	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
+    } 
+
+    # ------------------ Add form to create new record ------------
+
+     append body_html "
+        <tr $td_class([expr $count % 2])>
+                <td colspan='5'>
+			<br> 
+			<b>[lang::message::lookup "" intranet-cust-koernig-weber.AllowNewProjectType "Allow new Project Type"]:</b>
+                </td>
+        </tr>
+        <tr $td_class([expr $count % 2])>
+		<td>
+                      [im_project_type_select "new_project_type_id" ""]
+                </td>
+        </tr>
+      "
+    # ------------------ Format the table footer with buttons ------------
+    set footer_html ""
+	append footer_html "
+	    <tr>
+	      <td align=left colspan=$colspan>
+		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
+	      </td>
+	    </tr>
+	    "
+    # ------------------ Join table header, body and footer ----------------
+    set html "
+	<form method=POST action=/intranet-cust-koernigweber/update_project_types>
+	[export_form_vars return_url]
+	    <table bgcolor=white cellpadding=1 cellspacing=1 border=0>
+	      $header_html
+	      $body_html
+	      $footer_html
+	    </table>
+	</form>
+    "
+    return $html
+}
+
 
 ad_proc -public im_customer_price_list { 
     {-debug 0}
@@ -74,52 +215,6 @@ ad_proc -public im_customer_price_list {
 
     # if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
     set show_percentage_p 0
-
-    # ------------------ limit_to_users_in_group_id ---------------------
-    # if { [empty_string_p $limit_to_users_in_group_id] } {
-    #	set limit_to_group_id_sql ""
-    # } else {
-    #	set limit_to_group_id_sql "
-    #	and exists (select 1 
-    #		from 
-    #			group_member_map map2,
-    #		        membership_rels mr,
-    #			groups ug
-    #		where 
-    #			map2.group_id = ug.group_id
-    #			and map2.rel_id = mr.rel_id
-    #			and mr.member_state = 'approved'
-    #			and map2.member_id = u.user_id 
-    #			and map2.group_id = :limit_to_users_in_group_id
-    #		)
-    #	"
-    # } 
-
-    # ------------------ dont_allow_users_in_group_id ---------------------
-#    if { [empty_string_p $dont_allow_users_in_group_id] } {
-#	set dont_allow_sql ""
-#    } else {
-#	set dont_allow_sql "
-#	and not exists (
-#		select 1 
-#		from 
-#			group_member_map map2, 
-#			membership_rels mr,
-#			groups ug
-#		where 
-#			map2.group_id = ug.group_id
-#			and map2.rel_id = mr.rel_id
-#			and mr.member_state = 'approved'
-#			and map2.member_id = u.user_id 
-#			and map2.group_id = :dont_allow_users_in_group_id
-#		)
-#	"
-#    } 
-
-#    set bo_rels_percentage_sql ""
-#    if {$show_percentage_p} {
-#	set bo_rels_percentage_sql ",round(bo_rels.percentage) as percentage"
-#    }
 
     # ------------------ Format the table header ------------------------
     set colspan 2
@@ -148,7 +243,6 @@ ad_proc -public im_customer_price_list {
     set body_html ""
 
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-
 
     # get all object members  
     if { "im_company" == $object_type } {
@@ -815,20 +909,160 @@ proc filter_conncontext { conn arg why } {
 }
 
 
+ad_proc im_project_type_table {
+    {-translate_p 1}
+    {-package_key "intranet-cust-koernigweber" }
+    {-locale "" }
+} {
+    Returns a formatted HTML table with enabled "Project Types" and a select box  
+    Based on "im_category_select_helper"
+} {
 
+    set category_type "Intranet Project Type"
 
+    # Read the categories into the a hash cache
+    # Initialize parent and level to "0"
+    set sql "
+        select
+                category_id,
+                category,
+                category_description,
+                parent_only_p,
+                enabled_p
+        from
+                im_categories
+        where
+                category_type = :category_type
+		and (enabled_p = 't' OR enabled_p is NULL)
+        order by lower(category)
+    "
+    db_foreach category_select $sql {
+        set cat($category_id) [list $category_id $category $category_description $parent_only_p $enabled_p]
+        set level($category_id) 0
+    }
 
+    # Get the hierarchy into a hash cache
+    set sql "
+        select
+                h.parent_id,
+                h.child_id
+        from
+                im_categories c,
+                im_category_hierarchy h
+        where
+                c.category_id = h.parent_id
+                and c.category_type = :category_type
+        order by lower(category)
+    "
 
+    # setup maps child->parent and parent->child for
+    # performance reasons
+    set children [list]
+    db_foreach hierarchy_select $sql {
+	if {![info exists cat($parent_id)]} { continue}
+	if {![info exists cat($child_id)]} { continue}
+        lappend children [list $parent_id $child_id]
+    }
 
+    set count 0
+    set modified 1
+    while {$modified} {
+        set modified 0
+        foreach rel $children {
+            set p [lindex $rel 0]
+            set c [lindex $rel 1]
+            set parent_level $level($p)
+            set child_level $level($c)
+            if {[expr $parent_level+1] > $child_level} {
+                set level($c) [expr $parent_level+1]
+                set direct_parent($c) $p
+                set modified 1
+            }
+        }
+        incr count
+        if {$count > 1000} {
+            ad_return_complaint 1 "Infinite loop in 'im_category_select'<br>
+            The category type '$category_type' is badly configured and contains
+            and infinite loop. Please notify your system administrator."
+            return "Infinite Loop Error"
+        }
+    }
 
+    set base_level 0
+    set html "<table>"
 
+    # Sort the category list's top level. We currently sort by category_id,
+    # but we could do alphabetically or by sort_order later...
+    set category_list [array names cat]
+    set category_list_sorted [lsort $category_list]
 
+    # Now recursively descend and draw the tree, starting
+    # with the top level
+    foreach p $category_list_sorted {
+        set p [lindex $cat($p) 0]
+        set enabled_p [lindex $cat($p) 4]
+	if {"f" == $enabled_p} { continue }
+        set p_level $level($p)
+        if {0 == $p_level} {
+            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $p "" $base_level [array get cat] [array get direct_parent]]
+        }
+    }
 
+    return "$html</table>"
 
+}
 
+ad_proc im_category_select_branch_kw {
+    {-translate_p 0}
+    {-package_key "intranet-core" }
+    {-locale "" }
+    parent
+    default
+    level
+    cat_array
+    direct_parent_array
+} {
+    Returns a list of html "options" displaying an options hierarchy.
+} {
 
+    if {$level > 10} { return "" }
 
+    array set cat $cat_array
+    array set direct_parent $direct_parent_array
 
+    set category [lindex $cat($parent) 1]
+    if {$translate_p} {
+        set category_key "$package_key.[lang::util::suggest_key $category]"
+        set category [lang::message::lookup $locale $category_key $category]
+    }
+
+    set parent_only_p [lindex $cat($parent) 3]
+
+    set spaces ""
+    for {set i 0} { $i < $level} { incr i} {
+        append spaces "&nbsp; &nbsp; &nbsp; &nbsp; "
+    }
+
+    set selected ""
+    if {$parent == $default} { set selected "selected" }
+    set html ""
+    if {"f" == $parent_only_p} {
+        set html "<tr><td>$spaces $category</td><td><input type='checkbox' value='$parent'/></td></tr>\n"
+        incr level
+    }
+
+    # Sort by category_id, but we could do alphabetically or by sort_order later...
+    set category_list [array names cat]
+    set category_list_sorted [lsort $category_list]
+
+    foreach cat_id $category_list_sorted {
+        if {[info exists direct_parent($cat_id)] && $parent == $direct_parent($cat_id)} {
+            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $cat_id $default $level $cat_array $direct_parent_array]
+        }
+    }
+
+    return $html
+}
 
 
 
