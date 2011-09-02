@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cust-koernigweber" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="AbsenceTimeframe">Zeitraum</msg>
+  <msg key="Day">Tag</msg>
+  <msg key="Emp_Cust_Costs_Based_On_Price_Matrix">Kosten lt. Preis-Matrix</msg>
+  <msg key="Emp_Cust_Internal_costs">Interne Kosten</msg>
+  <msg key="Hour">Stunden</msg>
+  <msg key="Mail_Reminder_Log_Hours">Erinnerung:
+ Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe
+ Mit freundlichen Gr&amp;uumlssen;
+ %current_user_name%</msg>
+  <msg key="Mail_Reminder_Log_Hours_Subject">Erinnerung: Stundenerfassung</msg>
+  <msg key="Mail_Reminder_Log_Hours_Text">Bitte erfassen Sie Ihre Stunden und erteilen Sie die Freigabe
+ Mit freundlichen Gruessen;
+ %current_user_name%</msg>
+  <msg key="TS_WF_Approved">Best&amp;auml;tigt</msg>
+  <msg key="TS_WF_Not_Yet_Confirmed">Zu best&amp;auml;tigen</msg>
+  <msg key="TS_WF_Remind">Erinnern</msg>
+</message_catalog>

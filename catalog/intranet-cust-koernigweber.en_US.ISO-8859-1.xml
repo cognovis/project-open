@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cust-koernigweber" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="AbsenceTimeframe">Timeframe</msg>
+  <msg key="Day">Day</msg>
+  <msg key="Emp_Cust_Costs_Based_On_Price_Matrix">Costs based on Price Matrix</msg>
+  <msg key="Emp_Cust_Internal_costs">Internal Costs</msg>
+  <msg key="Hour">Hour</msg>
+  <msg key="Mail_Reminder_Log_Hours_Subject">Reminder: Time sheet </msg>
+  <msg key="Mail_Reminder_Log_Hours_Text">Please log your hours
+Best regards
+%current_user_name%</msg>
+  <msg key="TS_WF_Approved">Confirmed</msg>
+  <msg key="TS_WF_Not_Yet_Confirmed">To be confirmed</msg>
+  <msg key="TS_WF_Remind">Remind</msg>
+</message_catalog>
