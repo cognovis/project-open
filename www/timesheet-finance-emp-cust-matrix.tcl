@@ -445,41 +445,45 @@ set i 1
 set sum_hours_matrix 0
 
 template::multirow foreach project_list {    
-	set sql_str "
-		select 
-			round(sum(sub.sum_amount) :: numeric, 2) as total_invoiceable
-		from 
-			(
- 	        	   select
-	        	        sum(hours) as hours,
-        	        	ho.user_id,
-			        (select amount from im_emp_cust_price_list where user_id = ho.user_id and company_id = company_id) * hours as sum_amount
-		            from
-        		        im_hours ho,
-                		im_emp_cust_price_list p
-		            where
-	        	        ho.project_id in (
-        	        	        select  
-						children.project_id as sub_project_id
-                        		from    
-						im_projects parents,
-	                                	im_projects children
-		                        where
-        		                        children.tree_sortkey between
-							parents.tree_sortkey
-							and tree_right(parents.tree_sortkey)
-							and parents.project_id = $child_id
-		                              UNION
-							select $child_id as sub_project_id
+	set sql "
+ 	           select
+	                sum(hours) as hours,
+        	       	ho.user_id,
+			ho.project_id,
+			(select company_id from im_projects where project_id = ho.project_id) as company_id
+		        -- (select amount from im_customer_prices where user_id = ho.user_id and object_id = company_id) * hours as sum_amount
+		   from
+        	        im_hours ho
+		   where
+	                ho.project_id in (
+        	       	        select  
+					children.project_id as sub_project_id
+                       		from    
+					im_projects parents,
+	                               	im_projects children
+		                       where
+        	                        children.tree_sortkey between
+						parents.tree_sortkey
+						and tree_right(parents.tree_sortkey)
+						and parents.project_id = $child_id
+		                             UNION
+						select $child_id as sub_project_id
                 		        )
-	                	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-	        	        and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-        	  	   group by
-            		  	ho.user_id,
-        	          	hours
-	     		) sub
+	               	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+	                and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+        	   group by
+            	 	ho.user_id,
+        	       	hours,
+			ho.project_id
 	"
-	template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
+
+	set sum_hours 0
+	db_foreach col $sql {
+		set sum_hours [expr $sum_hours + [find_sales_price $user_id $project_id $company_id] * $hours ]
+	}
+
+	# template::multirow set project_list $i "sum_hours_matrix" [db_string get_total_invoicable "$sql_str" -default 0]
+	template::multirow set project_list $i "sum_hours_matrix" $sum_hours
 
 	set sql_str "
 		select 

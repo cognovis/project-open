@@ -14,13 +14,10 @@
 @include_task_html;noquote@
 
   <!-- Invoice Data and Receipient Tables -->
-  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
+  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0>
     <tr valign=top> 
       <td>
-
-        <table border=0 cellPadding=0 cellspacing=2>
-
-
+        <table border=0 cellpadding=0 cellspacing=2>
 	<!-- Invoice Data -->
         <tr>
 	  <td align=middle class=rowtitle colspan=2>
@@ -81,7 +78,7 @@
       <td></td>
       <td align=right>
 
-        <table border=0 cellspacing=2 cellpadding=0 >
+        <table border=0 cellspacing=2 cellpadding=0>
         <tr>
 	  <td align=center valign=top class=rowtitle colspan=2>
 	    #intranet-timesheet2-invoices.Recipient#
@@ -114,33 +111,24 @@
 	  </td>
 	</tr>
         </table>
-
+    </td>
     </tr>
   </table>
 
-  <!-- the list of tasks (invoicable items) -->
-  <div align=right>
-  <table cellpadding=2 cellspacing=2 border=0>
-
-  </table>
-  </div>
-
   <!-- the list of task sums, distinguised by type and UOM -->
-  <table width=100%>
+  <table>
     <tr>
-      <td align=right><table border=0 cellspacing=2 cellpadding=1>
+      <td align=left><table border=0 cellspacing=2 cellpadding=1 width=757px>
         @task_sum_html;noquote@
-
-
 	<!-- grand_total -->
         <tr>
           <td></td>
-<if @material_enabled_p@>
-          <td></td>
-</if>
-<if @project_type_enabled_p@>
-          <td></td>
-</if>
+	  <if @material_enabled_p@>
+	          <td></td>
+		</if>
+		<if @project_type_enabled_p@>
+	          <td></td>
+		</if>
           <td colspan=4 align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
@@ -181,10 +169,6 @@
               <input type=submit name=submit value='@button_text@'>
           </td>
         </tr>
-
-
-
-
       </td>
     </tr>
   </table>

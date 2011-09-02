@@ -21,6 +21,8 @@ ad_page_contract {
     @param invoice_currency: EUR or USD
 
     @author frank.bergmann@project-open.com
+    @author klaus.hofeditz@project-open.com
+
 } {
     include_task:multiple
     company_id:integer
@@ -268,7 +270,7 @@ foreach project_id $in_clause_list {
                		sum(h.hours) as sum_hours,
 			h.user_id,
         		(select im_name_from_id(h.user_id)) as user_name,
-                	(select amount from im_emp_cust_price_list where user_id = h.user_id and company_id in (select company_id from im_projects where project_id=$project_id)) as hourly_rate
+			(select company_id from im_projects where project_id = $project_id) as customer_id
 	        from
         	        im_hours h
 	        where
@@ -278,15 +280,16 @@ foreach project_id $in_clause_list {
         	group by
                 	h.user_id
 	"
-
-	 db_foreach users_in_group $user_sql {
+	
+	db_foreach users_in_group $user_sql {
+	     set hourly_rate [find_sales_price $user_id $project_id $customer_id]
 	     append task_sum_html "
                 <tr>\n
           		<td colspan='1'><input type=text name=item_sort_order.$ctr size=2 value='$ctr'></td>
 			<td colspan='1'><A href=/intranet/users/view?user_id=$user_id>$user_name</A></td>\n
-			<td colspan='1'><input size=3 type=text name='sum_hours.$ctr' value='$sum_hours'></td>\n
-			<td colspan='1'>Stunden</td>\n
-			<td colspan='1'><input size=3 type=text name='hourly_rate.$ctr' value='$hourly_rate'>\n
+			<td colspan='1' align=right><input size=3 type=text name='sum_hours.$ctr' value='$sum_hours'></td>\n
+			<td colspan='1' align=right>Stunden</td>\n
+			<td colspan='1' align=right><input size=3 type=text name='hourly_rate.$ctr' value='$hourly_rate'>\n
 			<input type=hidden name='item_name.$ctr' value='$user_name'>\n
 			<input type=hidden name='item_units.$ctr' value='$sum_hours'>\n
 			<input type=hidden name='item_rate.$ctr' value='$hourly_rate'>\n
