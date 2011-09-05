@@ -9,7 +9,7 @@ delete from im_view_columns where view_id = 90;
 
 -- Allow translation tasks to be checked/unchecked all together
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl, extra_select, extra_where, sort_order, visible_for)
-values (9000,90,NULL,'<input type=checkbox name=_dummy onclick=\\"acs_ListCheckAll(''task'',this.checked)\\">','$del_checkbox','','', 0,'expr $project_write');
+values (9000,90,NULL,'<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''task'',this.checked)">','$del_checkbox','','', 0,'expr $project_write');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for)
 values (9010,90,NULL,'Task Name','$task_name_splitted','','',100,'');
@@ -68,18 +68,64 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 values (9086,90,NULL,'[im_gif open "Upload files"]','$upload_link','','',860,'');
 
 
-
-
 -- Add DynFields with default values for the new surcharge/discount/pm_fee fields of FinDocs
-alter table im_companies add default_pm_fee_perc numeric(12,2);
-alter table im_companies add default_surcharge_perc numeric(12,2);
-alter table im_companies add default_discount_perc numeric(12,2);
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+
+        select count(*) into v_count from information_schema.columns where 
+              table_name = ''im_companies'' 
+              and column_name = ''default_pm_fee_perc'';
+        IF v_count > 0 THEN return 1; END IF;
+	alter table im_companies add default_pm_fee_perc numeric(12,2);
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+
+        select count(*) into v_count from information_schema.columns where
+              table_name = ''im_companies''
+              and column_name = ''default_surcharge_perc'';
+        IF v_count > 0 THEN return 1; END IF;
+        alter table im_companies add default_surcharge_perc numeric(12,2);
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+
+        select count(*) into v_count from information_schema.columns where
+              table_name = ''im_companies''
+              and column_name = ''default_discount_perc'';
+        IF v_count > 0 THEN return 1; END IF;
+        alter table im_companies add default_discount_perc numeric(12,2);
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 SELECT im_dynfield_attribute_new ('im_company', 'default_pm_fee_perc', 'Default PM Fee Percentage', 'numeric', 'float', 'f');
 SELECT im_dynfield_attribute_new ('im_company', 'default_surcharge_perc', 'Default Surcharge Percentage', 'numeric', 'float', 'f');
 SELECT im_dynfield_attribute_new ('im_company', 'default_discount_perc', 'Default Discount Percentage', 'numeric', 'float', 'f');
-
-
-
 
 SELECT im_dynfield_attribute_new ('im_company', 'default_tax', 'Default TAX', 'numeric', 'float', 'f');
 
