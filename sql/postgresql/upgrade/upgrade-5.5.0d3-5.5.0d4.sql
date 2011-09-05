@@ -42,7 +42,7 @@ declare
 begin
 	select count(*) into v_count from user_tab_columns where table_name = ''acs_object_types'' and column_name = ''implements_subsite_p'';
         IF v_count > 0 THEN return 1; END IF;
-	alter table apm_package_types add implements_subsite_p boolean default 'f';
+	alter table apm_package_types add implements_subsite_p boolean default ''f'';
         RETURN 1;
 
 end;' language 'plpgsql';
