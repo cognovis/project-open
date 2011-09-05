@@ -35,7 +35,20 @@ begin
    
 end;' language 'plpgsql';
 
-alter table apm_package_types add implements_subsite_p boolean default 'f';
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from user_tab_columns where table_name = ''acs_object_types'' and column_name = ''implements_subsite_p'';
+        IF v_count > 0 THEN return 1; END IF;
+	alter table apm_package_types add implements_subsite_p boolean default 'f';
+        RETURN 1;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 update apm_package_types set implements_subsite_p = 't' where package_key = 'acs-subsite';
 
 alter table apm_package_types add inherit_templates_p boolean default 't';
