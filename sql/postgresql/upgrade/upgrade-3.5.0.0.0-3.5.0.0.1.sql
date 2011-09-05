@@ -9,7 +9,7 @@ declare
         v_count         integer;
 begin
 
-	select count(*) from information_schema.columns where 
+	select count(*) into v_count from information_schema.columns where 
 		table_name = ''im_employees''
 		and column_name = ''personnel_number'';
 
