@@ -137,7 +137,6 @@ set inner_sql "
 select
 	h.day::date as date,
 	h.user_id,
-	t.task_id,
         p.parent_id as project_id,
 	p2.company_id,
 	h.hours as hours,
@@ -160,6 +159,30 @@ where
         and p2.project_id = p.parent_id
         and t.task_id = p.project_id
 	$where_clause
+UNION
+select
+	h.day::date as date,
+	h.user_id,
+        p.project_id as project_id,
+	p.company_id,
+	h.hours as hours,
+	e.availability,
+        p.project_type_id
+from
+	im_hours h,
+	im_projects p,
+	users u
+	LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
+where
+	h.project_id = p.project_id
+	and p.project_status_id not in ([im_project_status_deleted])
+	and h.user_id = u.user_id
+	and h.day >= to_date(:start_date, 'YYYY-MM')
+	and h.day <= to_date(:end_date, 'YYYY-MM-DD')
+	and :start_date = to_char(h.day, 'YYYY-MM')
+        and project_type_id != [im_project_type_task]
+	$where_clause
+
 "
 
 if {$level_of_detail == 5} {
@@ -504,7 +527,7 @@ db_foreach sql $sql {
     }
 
     # Find out if these are absences. Then the company_id is 9999999
-    if {$company_id eq "9999999"} {
+    if {$company_id == "9999999"} {
 	set company_name_pretty "\#colspan=8 <b>$company_name</b>"
 	set project_name_pretty "\#colspan=7 <b>$project_name</b>"
     } else {
@@ -512,7 +535,7 @@ db_foreach sql $sql {
 	set project_name_pretty "\#colspan=7 <b><a href=$project_url$project_id>$project_name</a></b>"
     }
 
-    if {$previous_user_id eq ""} {
+    if {$previous_user_id == ""} {
 	set previous_user_id $user_id
 	set previous_user_name $user_name
     }

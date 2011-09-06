@@ -7,6 +7,7 @@
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
+@message_html;noquote@
 
 <if @message@ not nil>
     <div class="general-message">@message@</div>

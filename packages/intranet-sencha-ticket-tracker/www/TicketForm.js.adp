@@ -87,17 +87,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ 	// Anonimous User
 		name: 'ticket_customer_contact_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select user_id from users where username = 'anonimo'" -default 624] %>
+		value: anonimo_user_id
 	},
 	{ 	// Anonimous SLA
 		name: 'parent_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select project_id from im_projects where project_nr = 'anonimo'" -default 0] %>
+		value: anonimo_sla
 	},
 	{ 	// Anonimous Company
 		name: 'company_id',
 		xtype: 'hiddenfield',
-		value: <%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>
+		value: anonimo_company_id
 	},
 
 	// Main ticket fields
@@ -205,6 +205,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 							resetCombo = false;			
 							form.findField('ticket_program_id').select(program_id);	
 						}
+						Funtion_calculateEscalation(newValue);
 					}
 				}										
 			}
@@ -218,91 +219,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         fieldLabel:	'#intranet-sencha-ticket-tracker.Ticket_File_Number#',
     	width: 		300,
         xtype:		'textfield'        
-	}],
-
-	buttons: [{
-	    itemId:	'saveButton',
-        text:	'#intranet-sencha-ticket-tracker.button_Save#',
-        formBind:	true,			// Disable if form is invalid
-	    handler: function(){
-
-		// get the form and all of its values
-		var form = this.up('form').getForm();
-		var values = form.getFieldValues();
-		var value;
-		
-		Function_checkValues(values);
-
-		// find out the ticket_id
-		var ticket_id_field = form.findField('ticket_id');
-		var ticket_id = ticket_id_field.getValue();
-
-		if ('' == ticket_id) {
-
-			// Disable the form until the ticket_id has arrived
-			Ext.getCmp('ticketForm').setDisabled(true);
-
-			// create a new ticket
-			var ticketModel = Ext.ModelManager.create(values, 'TicketBrowser.Ticket');
-			ticketModel.phantom = true;
-			ticketModel.save({
-				scope: Ext.getCmp('ticketForm'),
-				success: function(ticket_record, operation) {
-					// This code is called once the reply from the server has arrived.
-					// The server response includes all necessary data for the new object.
-					ticketStore.add(ticket_record); 
-
-					// Tell all panels to load the data of the newly created object
-					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.tab.setText(ticket_record.get('project_name'));
-					//compoundPanel.loadTicket(ticket_record);
-					
-					Function_insertAction(ticket_record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), ticket_record);
-				},
-				failure: function(record, operation) {
-					Ext.Msg.alert("Error durante la creacion de un nuevo ticket", operation.request.scope.reader.jsonData["message"]);
-					// Re-enable this form
-					Ext.getCmp('ticketForm').setDisabled(true);
-
-					// Return to the main tickets Tab
-					var ticketContainer = Ext.getCmp('ticketContainer');
-					var mainTabPanel = Ext.getCmp('mainTabPanel');
-					mainTabPanel.setActiveTab(ticketContainer);
-				}
-			});
-
-		} else {
-
-			// Update an existing ticket
-			// Loop through all form fields and store into the ticket store
-			var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-			for(var field in values) {
-				if (values.hasOwnProperty(field)) {
-					value = values[field];
-					ticketModel.set(field, value);
-				}
-			}
-	
-			// Disable this form to indicate the request is working
-			Ext.getCmp('ticketForm').setDisabled(true);
-
-			// Tell the store to update the server via it's REST proxy
-			ticketModel.save({
-				scope: Ext.getCmp('ticketForm'),
-				success: function(record, operation) {
-					// Refresh all forms to show the updated information
-					var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-					compoundPanel.tab.setText(record.get('project_name'));
-				//	compoundPanel.loadTicket(ticketModel);
-					
-					Function_insertAction(record.get('ticket_id'), Ext.getCmp('ticketForm').getForm().findField('datetime').getValue(), record);
-				},
-				failure: function(record, operation) {
-					Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
-				}
-			});
-		}
-	    }
 	}],
 
 	loadTicket: function(rec){
@@ -328,44 +244,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			var ticket_file = Ext.getCmp('ticketForm').getForm().findField('ticket_file')
 			ticket_file.setValue(rec.get('ticket_file'));
 		}
-		
-			
-		//If Ticket is closed, disable the buttons.
-		var ticket_status_id=rec.get('ticket_status_id');
-		var buttonToolbar =this.getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');		
-		if (saveButton == null || saveButton == undefined){
-			buttonToolbar =this.getDockedComponent(1);
-			//saveButton = buttonToolbar.getComponent('saveButton');	
-		}
-		
-		if (ticket_status_id == '30001'  && currentUserIsAdmin != 1) {		// Closed status
-			buttonToolbar.disable();
-			//saveButton.hide();
-		} else {
-			buttonToolbar.enable();
-			//saveButton.show();
-		}		
-/*		var datetime = form.findField('datetime');
-		var ran = form.findField('random');
-		alert(datetime.getValue());
-		alert(ran.getValue());*/
 	},
 
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
 	newTicket: function() {
-	        var form = this.getForm();
-	        form.reset();
-		
-		//Enable the buttons.
-		var buttonToolbar =this.getDockedComponent(0);
-		var saveButton = buttonToolbar.getComponent('saveButton');		
-		if (saveButton == null || saveButton == undefined){
-			buttonToolbar =this.getDockedComponent(1);
-			//saveButton = buttonToolbar.getComponent('saveButton');	
-		}
-		buttonToolbar.enable();
+        var form = this.getForm();
+        form.reset();	
 
 		// Ask the server to provide a new ticket name
 		this.setNewTicketName();		
@@ -383,7 +268,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue('10000191');
+		form.findField('ticket_type_id').setValue('10000183');
 		
 		// SEt datetime for actions
 		var date = new Date();
@@ -395,19 +280,19 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	// into the project_name field in this form.
 	setNewTicketName: function() {
 	    Ext.Ajax.request({
-		scope:	this,
-		url:	'/intranet-sencha-ticket-tracker/ticket-next-nr',
-		success: function(response) {
-		    // ticket-next-nr just returns a string which represents the name
-		    var ticket_nr = response.responseText;
-		    var form = this.getForm();
-		    form.findField('project_nr').setValue(ticket_nr);
-		    var ticket_name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ticket_nr;
-		    form.findField('project_name').setValue(ticket_name);
-		},
-		failure: function(response) {
-		    alert('#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#');
-		}
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/ticket-next-nr',
+			success: function(response) {
+			    // ticket-next-nr just returns a string which represents the name
+			    var ticket_nr = response.responseText;
+			    var form = this.getForm();
+			    form.findField('project_nr').setValue(ticket_nr);
+			    var ticket_name = '#intranet-sencha-ticket-tracker.New_Ticket_Prefix#' + ticket_nr;
+			    form.findField('project_name').setValue(ticket_name);
+			},
+			failure: function(response) {
+				Function_errorMessage('', '#intranet-sencha-ticket-tracker.Failed_to_get_new_ticket_nr#', response.responseText);
+			}
 	    });
 	}
 });

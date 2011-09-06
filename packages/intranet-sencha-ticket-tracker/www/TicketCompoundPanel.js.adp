@@ -22,7 +22,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     extend:		'Ext.container.Container',
     alias:		'widget.ticketCompoundPanel',
@@ -121,8 +120,13 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 	var date = new Date();
 	ticketForm.getForm().findField('datetime').setValue(date.getTime());			
 
-	// Write out an alert message
-	alert('#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#')
+	// Write out an info message
+	Ext.Msg.show({
+	     title:	'',
+	     msg: '#intranet-sencha-ticket-tracker.A_new_ticket_has_been_created#',
+	     buttons: Ext.Msg.OK,
+	     icon: Ext.Msg.INFO
+	});	
     },
 
     // Delete the selected ticket
@@ -144,7 +148,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			ticketStore.remove(ticketModel);
 		},
 		failure: function(record, operation) {
-			Ext.Msg.alert('Error borrando Ticket #'+ticketModel.get('project_nr')+':\nSólo administradores tienen permiso para borrar tickets.', operation.request.scope.reader.jsonData["message"]);
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
 		}
 	});
 
@@ -155,6 +159,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
     // Called from the TicketGrid or the TicketActionPanel in order to create 
     // a new ticket
     newTicket: function(){
+    	this.enable();
         this.child('#center').child('#ticketForm').newTicket();
         this.child('#center').child('#ticketCustomerPanel').newTicket();
         this.child('#center').child('#ticketContactPanel').newTicket();
@@ -165,6 +170,7 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 
     // Called from the TicketGrid if the user has selected a ticket
     loadTicket: function(rec){
+    	this.enable();
         this.child('#center').child('#ticketForm').loadTicket(rec);
         this.child('#center').child('#ticketCustomerPanel').loadTicket(rec);
         this.child('#center').child('#ticketContactPanel').loadTicket(rec);

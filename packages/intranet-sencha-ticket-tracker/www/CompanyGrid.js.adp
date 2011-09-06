@@ -44,7 +44,7 @@ var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	listeners: {
 		select: function (component,record,index, eOpts ){
 			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(record.get('company_id'));
-			setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',500);
+			setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',1000);
 			
 		}, 
 		deselect: function (component,record,index, eOpts ){

@@ -231,6 +231,12 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
+		fieldLabel: '#intranet-sencha-ticket-tracker.Search_Text#',
+		name: 'search_text',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
+	}, {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
 		name:		'ticket_incoming_channel_id',
 		xtype:		'combobox',

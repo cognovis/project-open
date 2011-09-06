@@ -14,6 +14,13 @@ ad_page_contract {
 }
 
 ns_log Notice "audit-insert: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action"
+
+# -------------------------------------------------------------
+# Security
+# -------------------------------------------------------------
+# ToDo: ¿Security actions?
+
+
 # ----------------------------------------------------------------------
 # Main Audit Procedure
 # ----------------------------------------------------------------------
@@ -120,11 +127,6 @@ ad_proc -private im_audit_impl_nodiff {
 	
     return $diff
 }
-# -------------------------------------------------------------
-# Security
-# -------------------------------------------------------------
-# ToDo: ¿Security actiosn?
-
 
 # -------------------------------------------------------------
 # Insert new record in im_audits

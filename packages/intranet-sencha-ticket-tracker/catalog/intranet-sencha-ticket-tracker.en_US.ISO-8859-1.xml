@@ -10,6 +10,7 @@
   <msg key="Area">Area</msg>
   <msg key="Assigned_to">Assigned To</msg>
   <msg key="Audit_Action">Action</msg>
+  <msg key="Audit_Date">Audit date</msg>
   <msg key="Audit_User">Audit User</msg>
   <msg key="button_Cancel">Cancel</msg>
   <msg key="button_New_Company">New Company</msg>
@@ -37,6 +38,8 @@
   <msg key="CompanySearch">Company Search</msg>
   <msg key="Contact">Contact</msg>
   <msg key="Contact_Filters">Contact Filters</msg>
+  <msg key="Contact_Group_Error_Message">Contact_Group_Error_Message</msg>
+  <msg key="Contact_Group_Error_Title">Contact Group Error Title</msg>
   <msg key="Contact_Mail">Contact Mail</msg>
   <msg key="Contact_To_Change">Contact to change
 </msg>
@@ -47,6 +50,8 @@
   <msg key="Create_New_Company">Create New Company</msg>
   <msg key="Create_New_Contact">Create New Contact</msg>
   <msg key="Create_New_User">Create New User</msg>
+  <msg key="Create_Object_Error_Message">Create_Object_Error_Message</msg>
+  <msg key="Create_Object_Error_Title">Create_Object_Error_Title</msg>
   <msg key="CreateNew">¿New?</msg>
   <msg key="Creation_Date">Creation Date</msg>
   <msg key="Creation_User">Creation User</msg>
@@ -62,6 +67,9 @@
   <msg key="Delete_Contact">Delete contact</msg>
   <msg key="Delete_Customer">Delete customer</msg>
   <msg key="Delete_message">Selection will be deleted. Continue?</msg>
+  <msg key="Delete_Ticket_Error_Message">Delete Ticket Error Message
+</msg>
+  <msg key="Delete_Ticket_Error_Title">Delete Ticket Error Title</msg>
   <msg key="Delete_tittle">Delete selection</msg>
   <msg key="Department">Department</msg>
   <msg key="Description">Description</msg>
@@ -94,6 +102,8 @@
   <msg key="Last_name">Last name</msg>
   <msg key="Last_Name2">Last Name 2</msg>
   <msg key="Last_Updated">Last Updated</msg>
+  <msg key="Load_File_Error_Message">Load_File_Error_Message</msg>
+  <msg key="Load_File_Error_Title">Load_File_Error_Title</msg>
   <msg key="Loading___">Loading...</msg>
   <msg key="Logout">Logout</msg>
   <msg key="Logout_message">You will logout. Are you sure? (All unsave changes will be missed)</msg>
@@ -131,13 +141,26 @@
   <msg key="Request">Request</msg>
   <msg key="Requires_additional_info">Requires additional info</msg>
   <msg key="Resolution">Resolution</msg>
+  <msg key="Save_Action_Error_Message">Save_Action_Error_Message</msg>
+  <msg key="Save_Action_Error_Title">Save_Action_Error_Title</msg>
   <msg key="Save_Changes">Save
 </msg>
   <msg key="Save_changes_message">You are closing a tab that has unsaved changes. Would you like to save your changes?</msg>
   <msg key="Save_changes_tittle">Save changes</msg>
+  <msg key="Save_Company_Error_Message">Save Company Error Message</msg>
+  <msg key="Save_Company_Error_Title">Save Company Error Title</msg>
+  <msg key="Save_Contact_Error_Message">Save_Contact_Error_Message</msg>
+  <msg key="Save_Contact_Error_Title">Save_Contact_Error_Title</msg>
   <msg key="Save_New_Company">Save New Company</msg>
+  <msg key="Save_Relationship_Error_Message">Save_Relationship_Error_Message</msg>
+  <msg key="Save_Relationship_Error_Title">Save_Relationship_Error_Title</msg>
+  <msg key="Save_Ticket_Error_Message">Save_Ticket_Error_Message</msg>
+  <msg key="Save_Ticket_Error_Title">Save_Ticket_Error_Title</msg>
   <msg key="Saving_Data">Saving Data</msg>
   <msg key="Saving_data_">Saving data...</msg>
+  <msg key="Search_Contact_Error_Message">Search_Contact_Error_Message</msg>
+  <msg key="Search_Contact_Error_Title">Search_Contact_Error_Title</msg>
+  <msg key="Search_Text">Search Text</msg>
   <msg key="Select_a_file">Select a file</msg>
   <msg key="Service">Service</msg>
   <msg key="Service_Type">Service Type</msg>

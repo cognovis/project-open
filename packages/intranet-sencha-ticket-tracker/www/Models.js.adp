@@ -74,6 +74,7 @@ Ext.define('TicketBrowser.Category', {
 		{type: 'string', name: 'aux_string2'},
 		{type: 'string', name: 'category_type'},
 		{type: 'string', name: 'category_translated'},
+		{type: 'string', name: 'sort_order'},
 		{type: 'string', name: 'indent_class',
 
 			// Determine the indentation level for each element in the tree
@@ -155,7 +156,7 @@ Ext.define('TicketBrowser.Ticket', {
 	],
 
 	validations: [
-	//	{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
+		{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_reaction_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_confirmation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_escalation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },

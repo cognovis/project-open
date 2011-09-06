@@ -91,10 +91,10 @@ Ext.define('PO.data.EmployeeStore', {
 				userEmployeeStore.add(record); 
 			}
 		});
-		this.addBlank();
+		userEmployeeStore.addBlank();
 		this.sort();
 	},
-	addBlank:  function() { // Add blank value tothe store. It is used to white selecction in comboboxes
+	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
 		var userVars = {user_id: '', name: null};
 		var user = Ext.ModelManager.create(userVars, 'TicketBrowser.User');
 		this.add(user);	
@@ -136,7 +136,7 @@ var customerMembershipRelStore = Ext.create('Ext.data.Store', {
 
 // Create a copy of the userStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var userCustomerStore = Ext.create('Ext.data.Store', {
+var userCustomerStore = Ext.create('PO.data.UserStore', {
 	storeId: 'userCustomerStore',
 	model: 'TicketBrowser.User',
 	load: function(options) {
@@ -150,6 +150,7 @@ var userCustomerStore = Ext.create('Ext.data.Store', {
 				userCustomerStore.add(record); 
 			}
 		});
+		userCustomerStore.addBlank();
 		userCustomerStore.sort();
 	}
 });
@@ -194,13 +195,7 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		//Stop progressBar
-		var count = 0;
-		//To avoid infinite loading in progressBar when the load is faster than grafical
-		while (Ext.getCmp('ticketActionBar') == undefined && count < 30) {
-			 setTimeout("count = count + 1", 1000);
-		}
-		Ext.getCmp('ticketActionBar').stopBar();
+		Function_StopBar();
 	}
 );
 
@@ -435,13 +430,16 @@ var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	},
 	sorters: [{
-		property: 'tree_category_translated',
+		property: 'sort_order',
 		direction: 'ASC'
-	}]				
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 
 ticketOriginStore.load(function (record, operation){
-	this.fill_tree_category_translated(this);
+	//this.fill_tree_category_translated(this);
 	this.addBlank();
 	this.sort();
 });
@@ -571,6 +569,11 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 		property: 'company_name',
 		direction: 'ASC'
 	}]
+});
+
+companyStore.load(function (record, operation){
+	this.addBlank();
+	this.sort();
 });
 
 

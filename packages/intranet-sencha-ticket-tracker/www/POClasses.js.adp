@@ -74,8 +74,8 @@ Ext.define('PO.data.CategoryStore', {
 		);
 		return validate;	
 	},
-	addBlank:  function() { // Add blank value tothe store. It is used to white selecction in comboboxes
-		var categoryVars = {category_id: '', category_translated: null};
+	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
+		var categoryVars = {category_id: '', category_translated: null, sort_order: '0'};
 		var category = Ext.ModelManager.create(categoryVars, 'TicketBrowser.Category');
 		this.add(category);	
 	}
@@ -95,7 +95,12 @@ Ext.define('PO.data.UserStore', {
 		var	rec = this.findRecord('user_id',user_id);
 		if (rec == null || typeof rec == "undefined") { return result; }
 		return rec.get('name');
-	}
+	},
+	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
+		var userVars = {user_id: '', first_names: 'Nuevo contacto'};
+		var user = Ext.ModelManager.create(userVars, 'TicketBrowser.User');
+		this.add(user);	
+	}	
 });
 
 /*
@@ -130,7 +135,12 @@ Ext.define('PO.data.CompanyStore', {
 		var rec = this.findRecord('company_id',company_id);
 		if (rec == null || typeof rec == "undefined") { return ''; }
 		return rec.get('vat_number');
-	}
+	},
+	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
+		var companyVars = {company_id: '', company_name: 'Nueva entidad'};
+		var company = Ext.ModelManager.create(companyVars, 'TicketBrowser.Company');
+		this.add(company);	
+	}		
 
 });
 
@@ -159,7 +169,9 @@ Ext.define('PO.form.field.DateTimeReadOnly', {
 // ToDo: Update the date in regular intervals
 var today_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD\') from dual"] %>';
 var today_date_time = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\') from dual"] %>';
-var anonimo_company_id = '<%= [db_string anon "select company_id from im_companies where company_path = 'anonimo'" -default 0] %>';
+var anonimo_company_id = '<%= [db_string anon_company "select company_id from im_companies where company_path = \'anonimo\'" -default 0] %>';
+var anonimo_user_id = '<%= [db_string anon "select user_id from users where username = \'anonimo\'" -default 75028] %>';
+var anonimo_sla = '<%= [db_string anon "select project_id from im_projects where project_nr = \'anonimo\'" -default 0] %>'
 
 // Use TCL template language to get the current user_id
 var currentUserId = <%= [ad_get_user_id] %>;
@@ -170,3 +182,7 @@ var customerGroupId = '461';		// String!
 
 // Check if the current user is an admin
 var currentUserIsAdmin = <%= [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] %>;	// Integer!
+
+
+//Check date format
+dateFormat = /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ ;
