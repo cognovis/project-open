@@ -362,6 +362,22 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
+		// Get the selected ticket (only one!)
+		var selection = this.selModel.getSelection();
+		var ticketModel = selection[0];
+		
+		ticketModel.destroy({
+			success: function(record, operation) {
+		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
+				ticketStore.remove(ticketModel);
+			},
+			failure: function(record, operation) {
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
+			}
+		});				
+	},
+	
+/*	onDelete: function(btn, pressed){
 
 		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
@@ -382,7 +398,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), response.responseText);
 			}
 		});
-	},
+	},*/
 
 	onCopy: function() {
 		var selection = this.selModel.getSelection();

@@ -42,21 +42,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 			}
 		}
 	},		
-	items: [/*{ 
-		name: 'checkNew',
-		xtype: 'checkbox',
-		value: true,
-		fieldLabel:	'#intranet-sencha-ticket-tracker.CreateNew#',
-		listeners:{
-			change: function(field, newValue, oldValue, options) {
-				if (newValue) {
-					Ext.getCmp('companyContactContactForm').getForm().findField('user_id').disable();
-				} else {
-					Ext.getCmp('companyContactContactForm').getForm().findField('user_id').enable();					
-				}
-			}
-		}
-	}, */{
+	items: [{
 		name:			'user_id',
 		xtype:			'combobox',
 		fieldLabel:		'#intranet-sencha-ticket-tracker.NameSearch#',
@@ -66,7 +52,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		queryMode:	'local',
 		valueField:		'user_id',
 		displayField:   	'name',
-		store:			userCustomerStore,
+		store:			userCustomerContactStore,
 		enableKeyEvents:	true,
 		triggerAction:		'all',
 		listeners:{
@@ -75,10 +61,10 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		 // Lookup the user and fill the form with the fields.
 		 'blur': function(field, event) {
 			var user_id = this.getValue();
-			var user_record = userCustomerStore.findRecord('user_id',user_id);
+			var user_record = userCustomerContactStore.findRecord('user_id',user_id);
 			
 			if (Ext.isEmpty(user_record)) {
-				var user_record = userCustomerStore.findRecord('name',this.getRawValue());
+				var user_record = userCustomerContactStore.findRecord('name',this.getRawValue());
 				//var user_record = userCustomerStore.findRecord('user_id',anonimo_user_id);
 			}
 			if (Ext.isEmpty(user_record)) {
@@ -93,7 +79,16 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		name:		'first_names',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.First_names#',
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				return "Obligatorio";
+			}
+			if (value.substring(0,14).toLowerCase() == "nuevo contacto"){
+				return "No válido";
+			}
+			return true;
+		}		
 	}, {
 		name:		'last_name',
 		xtype:		'textfield',
@@ -162,19 +157,20 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	},
 
 	loadCompany: function(customerModel){
-		userCustomerStore.clearFilter();
-		var contactModel = userCustomerStore.findRecord('user_id', customerModel.get('primary_contact_id'));
-		if (Ext.isEmpty(contactModel)){
-			this.getForm().reset();
-		} else {
-			this.loadUser(contactModel);
-		}
+		var company_id = customerModel.get('company_id');
+		if (Ext.isEmpty(company_id)) {
+			company_id = 'null';
+		}		
+		userCustomerContactRelationStore.removeAll();
+		userCustomerContactRelationStore.proxy.extraParams['object_id_one'] = company_id;
+		userCustomerContactRelationStore.load();	
 	},
 
 	newCompany: function() {
 	/*	var form = this.getForm();
 		form.reset();*/
-		userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));
+		userCustomerContactRelationStore.removeAll();
+		userCustomerContactRelationStore.proxy.extraParams['object_id_one'] = "null";
+		userCustomerContactRelationStore.load();	
 	}
 });

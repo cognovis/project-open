@@ -81,11 +81,18 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 	Function_checkValues(ticketValues);
 	Function_checkValues(ticketRightValues);
 	
+	/*if (companyValues.company_name.substring(0,13) == "Nueva entidad"){
+		companyValues.company_name = companyValues.company_name.substring(13)
+	}	
+	if (contactValues.first_names.substring(0,14) == "Nuevo contacto"){
+		contactValues.first_names = contactValues.first_names.substring(14)
+	}	*/	
 	companyValues.company_name = companyValues.company_name.toUpperCase();
 	companyValues.vat_number = companyValues.vat_number.toUpperCase();
 	contactValues.first_names = contactValues.first_names.toUpperCase();
 	contactValues.last_name = contactValues.last_name.toUpperCase();
 	contactValues.last_name2 = contactValues.last_name2.toUpperCase();
+
 	
 	Function_saveContact(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
 }
@@ -129,6 +136,9 @@ function Function_saveCompany(companyValues, contactValues, ticketValues, ticket
 				if (loadCompanyContact) {
 					Ext.getCmp('companyContactCompoundPanel').enable();
 				}
+				if (loadTicket){
+					Ext.getCmp('ticketCompoundPanel').enable();
+				}				
 			}
 		});		
 	} else {

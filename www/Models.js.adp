@@ -33,8 +33,6 @@ Ext.define('TicketBrowser.Sla', {
 	]
 });
 
-
-
 Ext.define('TicketBrowser.Profile', {
 	extend:				'Ext.data.Model',
 	idProperty:			'group_id',			// The primary key. A Queue is a subtype of "group".
@@ -56,11 +54,7 @@ Ext.define('TicketBrowser.Profile', {
 			totalProperty:	'total'
 		}
 	}
-
 });
-
-
-
 
 // A "category" is a kind of constant frequently used for states and types
 Ext.define('TicketBrowser.Category', {
@@ -90,8 +84,6 @@ Ext.define('TicketBrowser.Category', {
 	// Category can't have a proxy defined here
 	// because the proxy config depends on the type of category.
 });
-
-
 
 Ext.define('TicketBrowser.Ticket', {
 	extend:		'Ext.data.Model',
@@ -171,7 +163,8 @@ Ext.define('TicketBrowser.Ticket', {
 		appendId:		true,			// Append the object_id: ../im_ticket/<object_id>
 		timeout:		300000,
 		extraParams: {
-			format:		'json'			// Tell the ]po[ REST to return JSON data.
+			format:		'json',			// Tell the ]po[ REST to return JSON data.
+			deref_p:	'1'
 		},
 		reader:	{
 			type:		'json',			// Tell the Proxy Reader to parse JSON
@@ -221,7 +214,8 @@ Ext.define('TicketBrowser.Company', {
 		appendId:		true,
 		timeout:		300000,
 		extraParams: {
-			format:		'json'			// Tell the ]po[ REST to return JSON data.
+			format:		'json',			// Tell the ]po[ REST to return JSON data.
+			gzip_p:    '1'
 		},
 		reader:	{
 			type:		'json',		// Tell the Proxy Reader to parse JSON
@@ -232,9 +226,7 @@ Ext.define('TicketBrowser.Company', {
 			type:		'json'
 		}
 	}
-
 });
-
 
 Ext.define('TicketBrowser.User', {
 	extend:	'Ext.data.Model',
@@ -265,7 +257,8 @@ Ext.define('TicketBrowser.User', {
 		timeout:		300000,
 		extraParams: {
 			format:	'json',
-			format_variant:	'sencha'
+			format_variant:	'sencha',
+			gzip_p:    '1'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -564,4 +557,3 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_incoming_channel_id'
 	]
 });
-

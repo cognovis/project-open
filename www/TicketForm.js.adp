@@ -263,6 +263,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 				var form = this.getForm();
 				var date_time = response.responseText;
 				form.findField('ticket_creation_date').setValue(date_time);
+				Ext.getCmp('ticketFormRight').getForm().findField('ticket_creation_date').setValue(date_time);
 			}
 		});
 
