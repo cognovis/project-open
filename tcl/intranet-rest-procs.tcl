@@ -794,6 +794,7 @@ ad_proc -private im_rest_get_object_type {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$current_user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
+    set rest_columns [im_rest_get_rest_columns $query_hash_pairs]
 
     # -------------------------------------------------------
     # Get some more information about the current object type
@@ -968,7 +969,7 @@ ad_proc -private im_rest_get_object_type {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { 
+	    xml {
 		append result "<object_id id=\"$rest_oid\" href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" 
 	    }
 	    json {
@@ -976,6 +977,12 @@ ad_proc -private im_rest_get_object_type {
 		if {0 == $obj_ctr} { set komma "" }
 		set dereferenced_result ""
 		foreach v $valid_vars {
+
+		    if {{} != $rest_columns} {
+			# Skip the column unless it is explicitely mentioned in the rest_columns list
+			if {![info exists rest_columns($v)]} { continue }
+		    }
+
 		    eval "set a $$v"
 		    regsub -all {\n} $a {\n} a
 		    regsub -all {\r} $a {} a

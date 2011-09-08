@@ -38,6 +38,29 @@ ad_proc -public im_rest_doc_return {args} {
 }
 
 
+ad_proc -public im_rest_get_rest_columns {
+    query_hash_pairs
+} {
+    Reads the "columns" URL variable and returns the 
+    list of selected REST columns or an empty list 
+    if the variable was not specified.
+} {
+    set rest_columns [list]
+    set rest_column_arg ""
+    array set query_hash $query_hash_pairs
+    if {[info exists query_hash(columns)]} { set rest_column_arg $query_hash(columns) }
+    if {"" != $rest_column_arg} {
+        # Accept both space (" ") and komma (",") separated columns
+	set rest_columns [split $rest_column_arg " "]
+	if {[llength $rest_columns] <= 1} {
+	    set rest_columns [split $rest_column_arg ","]
+	}
+    }
+
+    return $rest_columns
+}
+
+
 ad_proc -private im_rest_header_extra_stuff {
     {-debug 1}
 } {
