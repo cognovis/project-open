@@ -795,6 +795,11 @@ ad_proc -private im_rest_get_object_type {
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
 
+    # Should we return the results in gzip format?
+    set gzip_p 0
+    if {[info exists query_hash(gzip_p)]} { set gzip_p $query_hash(gzip_p) }
+
+
     # -------------------------------------------------------
     # Get some more information about the current object type
     db_1row rest_otype_info "
@@ -1010,7 +1015,15 @@ ad_proc -private im_rest_get_object_type {
 	    # Calculate the total number of objects
 	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
 	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"im_rest_get_object_type: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
-	    doc_return 200 "text/html" $result
+
+	    # Return the results. Check if compressed
+	    if {$gzip_p} {
+		db_release_unused_handles
+		ad_http_cache_control
+		ns_returnz 200 "text/html" $result
+	    } else {
+		doc_return 200 "text/html" $result
+	    }
 	    return
 	}
 	default {
