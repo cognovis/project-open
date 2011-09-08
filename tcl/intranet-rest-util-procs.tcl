@@ -15,6 +15,29 @@ ad_library {
 # Auxillary functions
 # --------------------------------------------------------
 
+ad_proc -public im_rest_doc_return {args} {
+    This is a replacement for doc_return that values if the
+    gzip_p URL parameters has been set.
+} {
+    # Perform some magic work
+    db_release_unused_handles
+    ad_http_cache_control
+
+    # find out if we should compress or not
+    set query_set [ns_conn form]
+    set gzip_p [ns_set get $query_set gzip_p]
+    ns_log Notice "im_rest_doc_return: gzip_p=$gzip_p"
+
+    # Return the data
+    if {"1" == $gzip_p} {
+	return [eval "ns_returnz $args"]
+    } else {
+	return [eval "ns_return $args"]
+    }
+
+}
+
+
 ad_proc -private im_rest_header_extra_stuff {
     {-debug 1}
 } {
