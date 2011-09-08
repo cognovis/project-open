@@ -42,7 +42,7 @@ companyContactBizObjectMemberStore.on({
 	}
 });
 
-var CompanyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContactBizObjectMemberGrid', {
+var companyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContactBizObjectMemberGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.companyContactBizObjectMemberGrid',
     id:		'companyContactBizObjectMemberGrid',
@@ -118,6 +118,8 @@ var CompanyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContact
     },
 
     newCompany: function() {
-
+    	companyContactBizObjectMemberStore.removeAll();
+		companyContactBizObjectMemberStore.proxy.extraParams['object_id_one'] = "null";
+		companyContactBizObjectMemberStore.load();
     }
 });

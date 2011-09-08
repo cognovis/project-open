@@ -97,9 +97,11 @@ Ext.define('PO.data.UserStore', {
 		return rec.get('name');
 	},
 	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
-		var userVars = {user_id: '', first_names: 'Nuevo contacto'};
-		var user = Ext.ModelManager.create(userVars, 'TicketBrowser.User');
-		this.add(user);	
+		if (Ext.isEmpty(this.findRecord('first_names', 'Nuevo contacto',0,false,true,true))){
+			var userVars = {user_id: '', first_names: 'Nuevo contacto'};
+			var user = Ext.ModelManager.create(userVars, 'TicketBrowser.User');
+			this.add(user);	
+		}
 	}	
 });
 
@@ -137,9 +139,11 @@ Ext.define('PO.data.CompanyStore', {
 		return rec.get('vat_number');
 	},
 	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
-		var companyVars = {company_id: '', company_name: 'Nueva entidad'};
-		var company = Ext.ModelManager.create(companyVars, 'TicketBrowser.Company');
-		this.add(company);	
+		if (Ext.isEmpty(this.findRecord('company_name', 'Nueva entidad',0,false,true,true))){
+			var companyVars = {company_id: '', company_name: 'Nueva entidad'};
+			var company = Ext.ModelManager.create(companyVars, 'TicketBrowser.Company');
+			this.add(company);	
+		}
 	}		
 
 });

@@ -65,7 +65,7 @@
     
     newCompany: function(rec){
     	//this.hide();
-        this.child('#companyContactBizObjectMemberGrid').newCompany(rec);
-        this.child('#companyContactContactForm').newCompany(rec);
+        this.child('#companyContactBizObjectMemberGrid').newCompany();
+        this.child('#companyContactContactForm').newCompany();
     }
 });
