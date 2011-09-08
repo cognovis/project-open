@@ -74,11 +74,15 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
     columns: [{
-	text: "#intranet-core.Date#", 
-	sortable: true, 
-	minWidth: 50,
-	hidden: true,
-	dataIndex: 'audit_date'
+		text: "#intranet-sencha-ticket-tracker.Audit_Date#", 
+		sortable: true, 
+		minWidth: 50,
+		hidden: true,
+		dataIndex: 'audit_date',
+		renderer: function(value, o, record) {
+			// Only seconds
+		    return value.substring(0,19);
+		}	
     }, {
 	header: '#intranet-sencha-ticket-tracker.Request#',
 	dataIndex: 'ticket_request',
@@ -100,7 +104,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	    return name;
 	}
     }, {
-	header: '#intranet-helpdesk.Status#',
+	header: '#intranet-sencha-ticket-tracker.Status#',
 	dataIndex: 'ticket_status_id',
 	width: 60,
 	sortable: true, 
@@ -108,7 +112,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	    return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
 	}
     }, {
-	header: '#intranet-helpdesk.Type#',
+	header: '#intranet-sencha-ticket-tracker.Type#',
 	dataIndex: 'ticket_type_id',
 	width: 60,
 	sortable: true, 
@@ -134,7 +138,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	    return ticketAreaStore.category_from_id(record.get('ticket_area_id'));
 	}
     }, {
-	header: '#intranet-core.Customer#',
+	header: '#intranet-sencha-ticket-tracker.Customer#',
 	dataIndex: 'company_id',
 	width: 60,
 	hidden: true,
@@ -165,13 +169,33 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	header: '#intranet-sencha-ticket-tracker.Close_Date#',
 	dataIndex: 'ticket_done_date'
     }, {
-	header: "#intranet-sencha-ticket-tracker.Audit_User#", 
-	sortable: true,
-	hidden: true, 
+	header: '#intranet-sencha-ticket-tracker.Contact#',
+	dataIndex: 'ticket_customer_contact_id',
+	hidden: true,
 	renderer: function(value, o, record) {
-	    return userStore.name_from_id(record.get('audit_user_id'));
+	    return userStore.name_from_id(record.get('ticket_customer_contact_id'));
 	}
     }, {
+	header: "#intranet-sencha-ticket-tracker.Incoming_Channel#", 
+	dataIndex: 'ticket_incoming_channel_id',
+	renderer: function(value, o, record) {
+		var ticket_incoming_channel_id = record.get('ticket_incoming_channel_id');
+		
+		if (!Ext.isEmpty(ticket_incoming_channel_id)) {
+			var channel_record = ticketOriginStore.findRecord('category_id',ticket_incoming_channel_id);
+			var tree_sort_key_channel_record_father = channel_record.get('tree_sortkey').substring(0,8);
+			
+			return ticketOriginStore.category_from_id(tree_sort_key_channel_record_father);
+		}
+	    return '';
+	}
+    }, {
+	header: "#intranet-sencha-ticket-tracker.Incoming_Channel_Detail#", 
+	dataIndex: 'ticket_incoming_channel_id',
+	renderer: function(value, o, record) {
+	    return ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id'));
+	}
+    },{
 	header: "#intranet-sencha-ticket-tracker.IP_Address#", 
 	hidden: true, 
 	dataIndex: 'audit_ip'
@@ -189,20 +213,20 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     // Load the files for the new ticket
     loadTicket: function(rec){
 
-	// The panel may have been hidden during newTicket()
-	this.show();
-
-	// Save the property in the proxy, which will pass it directly to the REST server
-	var ticket_id = rec.data.ticket_id;
-	auditStore.proxy.extraParams['object_id'] = ticket_id;
-	auditStore.loadPage(1);
-    },
+		// The panel may have been hidden during newTicket()
+		this.show();
+	
+		// Save the property in the proxy, which will pass it directly to the REST server
+		var ticket_id = rec.data.ticket_id;
+		auditStore.proxy.extraParams['object_id'] = ticket_id;
+		auditStore.loadPage(1);
+	    },
 
     // Somebody pressed the "New Ticket" button:
     // Prepare the form for entering a new ticket
     newTicket: function() {
-	this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
-	this.hide();
+		this.loadTicket({data: {object_id: 0}});		// Really necessary? Reset the proxy.
+		//this.hide();
     }
 
 });

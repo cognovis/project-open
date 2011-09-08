@@ -641,6 +641,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    }
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
+		continue
 	    }
 	    "outlinelevel" - "id" - "calendaruid" {
 		# ignored 
@@ -2513,6 +2514,11 @@ ad_proc -public im_ganttproject_add_import {
     name
 } {
     set column_name "xml_$name"
+
+    # Check if column exists
+    set column_exists_p [im_column_exists ${object_type}s $column_name]
+    if {$column_exists_p} { return }
+
     set field_present_command "attribute::exists_p $object_type $column_name"
     set field_present [util_memoize $field_present_command]
     if {!$field_present} {

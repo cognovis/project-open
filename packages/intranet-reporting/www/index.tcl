@@ -82,6 +82,7 @@ set elements_list {
     name {
 	label $page_title
 	display_template {
+	    <nobr>
 	    <if @reports.indent_level@ gt 4>
 	    @reports.indent_spaces;noquote@ 
 	    <a href="@reports.url@">@reports.name@</a>
@@ -89,10 +90,14 @@ set elements_list {
 	    <else>
 	    <b>@reports.name@</b>
 	    </else>
+	    </nobr>
 	}
     }
 }
 
+
+set main_sql_select ""
+set group_list [list]
 
 if {$reports_exist_p && $user_admin_p} {
     lappend elements_list \
@@ -102,8 +107,42 @@ if {$reports_exist_p && $user_admin_p} {
                 @reports.edit_html;noquote@
             }
         }
+    
+
+    # ---------------------------------------------------
+    # Add columns for each of the profiles
+
+    set group_list_sql {
+        select DISTINCT
+                g.group_name,
+                g.group_id,
+                p.profile_gif
+        from
+                acs_objects o,
+                groups g,
+                im_profiles p
+        where
+                g.group_id = o.object_id
+                and g.group_id = p.profile_id
+                and o.object_type = 'im_profile'
+    }
+
+    db_foreach group_list $group_list_sql {
+	lappend group_list $group_id
+	lappend elements_list \
+	    p${group_id}_read_p [list \
+				     label "[im_gif $profile_gif $group_name]" \
+				     display_template "@reports.p${group_id}_read_p;noquote@" \
+				    ]
+	
+	append main_sql_select "\tim_object_permission_p(m.menu_id, $group_id, 'read') as p${group_id}_read_p,\n"
+    }
+
 }
 
+
+# ---------------------------------------------------
+# 
 
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
@@ -123,6 +162,7 @@ list::create \
 db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	select
 		r.report_id,
+		$main_sql_select
 		m.*,
 	        length(tree_sortkey) as indent_level,
 	        (9-length(tree_sortkey)) as colspan_level
@@ -144,12 +184,32 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
     for {set i 0} {$i < $indent_level} {incr i} {
 	append indent_spaces "&nbsp;"
     }
-    
+
+    # Show an "edit" icon for dynamic reports
     set edit_html "<a href='[export_vars -base "new" {report_id}]'>[im_gif "wrench"]</a>"
     if {"" == $report_id} { 
 	set edit_html "" 
     } else {
 	set url [export_vars -base "view" {report_id}]
+    }
+
+    # Format the group permission display
+    foreach gid $group_list {
+
+	set varname "p${gid}_read_p"
+	set t_or_f [set $varname]
+	if {"t" == $t_or_f} {
+	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action remove_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
+	    set p${gid}_read_p "<a href='$toggle_url'><b>R</b></a>\n"
+	} else {
+	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action add_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
+	    set p${gid}_read_p "<a href='$toggle_url'>r</a>\n"
+	}
+
+	if {$indent_level < 5} {
+	    set p${gid}_read_p ""
+	}
+
     }
 }
 

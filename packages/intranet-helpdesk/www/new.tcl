@@ -77,7 +77,6 @@ if {![info exists task]} {
     # ad_returnredirect $return_url
 
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" { {ticket_id $task(object_id)} {form_mode display}} ]
-
 }
 
 # Callback to redirect the new pages
@@ -127,6 +126,8 @@ set user_can_create_new_customer_contact_p 1
 set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
 set copy_from_ticket_name ""
 
+# message_html allows us to add a warning popup etc.
+set message_html ""
 
 # ------------------------------------------------------------------
 # Create ticket as a copy of another ticket.
@@ -201,6 +202,48 @@ if {[exists_and_not_null ticket_id]} {
 
 }
 
+# Check if the ticket was changed recently by another user
+if {"edit" == $form_mode && [info exists ticket_id]} {
+    set exists_p [db_0or1row recently_changed "
+	select	(now() - lock_date)::interval as lock_interval,
+		trunc(extract(epoch from now() - lock_date))::integer % 60 as lock_seconds,
+		trunc(extract(epoch from now() - lock_date) / 60.0)::integer as lock_minutes,
+		lock_user,
+		im_name_from_user_id(lock_user) as lock_user_name,
+		lock_ip
+	from	im_biz_objects
+	where	object_id = :ticket_id
+    "]
+
+    # Check that we've found the value
+    if {$exists_p && "" != $lock_user} {
+
+	# Write out a warning if the ticket was modified by a different
+	# user in the last 10 minutes
+	set max_lock_seconds [ad_parameter -package_id [im_package_core_id] LockMaxLockSeconds "" 600]
+	set max_lock_seconds [ad_parameter -package_id [im_package_helpdesk_id] LockMaxLockSeconds "" $max_lock_seconds]
+	if {$lock_seconds < $max_lock_seconds && $lock_user != $current_user_id} {
+	    
+	    set msg [lang::message::lookup "" intranet-helpdesk.Ticket_Recently_Edited "This ticket was locked by %lock_user_name% %lock_minutes% minutes and %lock_seconds% seconds ago."]
+	    set message_html "
+		<script type=\"text/javascript\">
+			alert('$msg');
+		</script>
+	    "
+
+	} else {
+	    
+	    # Set the lock on the ticket
+	    db_dml set_lock "
+		update im_biz_objects set
+			lock_ip = '[ns_conn peeraddr]',
+			lock_date = now(),
+			lock_user = :current_user_id
+		where object_id = :ticket_id
+            "
+	}
+    }
+}
 
 # ---------------------------------------------
 # The base form. Define this early so we can extract the form status
@@ -695,6 +738,16 @@ ad_form -extend -name helpdesk_ticket -on_request {
 } -after_submit {
 
     ns_log Notice "new: after_submit"
+
+    # Reset the lock on the ticket
+    db_dml set_lock "
+	update im_biz_objects set
+		lock_ip = null,
+		lock_date = null,
+		lock_user = null
+	where object_id = :ticket_id
+    "
+
     if {"json" == $format} { 
 	doc_return 200 "application/json" "{\"success\": true}" 
 	ad_script_abort

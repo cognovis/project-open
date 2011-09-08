@@ -212,6 +212,10 @@ declare
   v_id_column                         acs_object_types.id_column%TYPE;
   v_table_name                        acs_object_types.table_name%TYPE;
 begin
+    select count(*) into v_count from acs_object_types
+    where object_type = create_type__object_type;
+    if v_count > 0 then return 0; end if;
+
     v_idx := position(''.'' in p_name_method);
     if v_idx <> 0 then
          v_name_method := substr(p_name_method,1,v_idx - 1) || 

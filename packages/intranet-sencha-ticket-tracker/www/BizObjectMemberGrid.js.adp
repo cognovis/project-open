@@ -56,17 +56,17 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
     iconCls:	'icon-grid',
 
     listeners: {
-	itemdblclick: function(view, record, item, index, e) {
-		// Open the User in the TicketContactForm
-		var contact_id = record.get('object_id_two');
-
-                var contact_record = userStore.findRecord('user_id',contact_id);
-                if (contact_record == null || typeof contact_record == "undefined") { return; }
-
-                // load the information from the record into the form
-		var ticketContactForm = Ext.getCmp('ticketContactForm');
-		ticketContactForm.loadUser(contact_record);
-	}
+		itemdblclick: function(view, record, item, index, e) {
+			// Open the User in the TicketContactForm
+			var contact_id = record.get('object_id_two');
+	
+	        var contact_record = userStore.findRecord('user_id',contact_id);
+	        if (contact_record == null || typeof contact_record == "undefined") { return; }
+	
+	        // load the information from the record into the form
+			var ticketContactForm = Ext.getCmp('ticketContactForm');
+			ticketContactForm.loadUser(contact_record);
+		}
     },
 
     dockedItems: [{
@@ -79,7 +79,7 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 		beforePageText: '#intranet-sencha-ticket-tracker.Page#'
     }],
     columns: [{
-	header:		'#intranet-core.Contact#',
+	header:		'#intranet-sencha-ticket-tracker.Contact#',
 	minWidth:	100,
 	flex:		1,
 	renderer: function(value, o, record) {
@@ -96,19 +96,24 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 
     // Load new data if the user has selected a new ticket
     loadTicket: function(rec){
-	// Show this list of members. A new ticket doesn't need this list...
-	this.show();
-
-	// Load the company's contacts into the form.
-	var customer_id = rec.get('company_id');
-	this.loadCustomer(customer_id);
+		// Show this list of members. A new ticket doesn't need this list...
+		this.show();
+	
+		// Load the company's contacts into the form.
+	/*	var customer_id = rec.get('company_id');
+		this.loadCustomer(customer_id);*/
+		this.loadCustomer(rec);
     },
 
     // Load new data if the user has selected a new customer
     loadCustomer: function(customer){
-
-	// Deal with both a single value and a customer model
-	var customer_id = '';
+		var customer_id = customer.get('company_id');
+		
+		if (Ext.isEmpty(customer_id)){
+			customer_id = 'null';
+		}
+/*	// Deal with both a single value and a customer model
+	var customer_id = 'null';
 	switch (typeof customer) {
 		case 'string':
 			customer_id = customer;
@@ -119,27 +124,32 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 		default:
 			// We probably got the entire customer_model here
 			var customer_id = customer.get('company_id');
-		break;
-	}
-
-	// Save the property in the proxy, which will pass it directly to the REST server
-	bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
-	bizObjectMemberStore.load();
-
-	// We need to filter manually because the Store's "filters" config doesn't work in Ext 4.0.1
-	bizObjectMemberStore.filter(new Ext.util.Filter({
-		filterFn: function(item) {
-			// Only show "Full Member" objects in order to include Key Accounts etc.
-			var role = item.get('object_role_id');
-			return (role == '1300');
-		}
-	}));
+			break;
+	}*/
+	
+		// Save the property in the proxy, which will pass it directly to the REST server
+		bizObjectMemberStore.removeAll();
+		bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
+		bizObjectMemberStore.load();
+		
+		// We need to filter manually because the Store's "filters" config doesn't work in Ext 4.0.1
+		bizObjectMemberStore.filter(new Ext.util.Filter({
+			filterFn: function(item) {
+				// Only show "Full Member" objects in order to include Key Accounts etc.
+				var role = item.get('object_role_id');
+				if (role == '1300'){
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}));
     },
 
     // Somebody pressed the "New Ticket" button:
     // We don't have to show this list until the object has been created.
     newTicket: function() {
-	this.hide();
+		//this.hide();
     }
 
 });

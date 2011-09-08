@@ -106,7 +106,7 @@ function showFileStorageNewForm(ticket_id) {
 								var fs_folder_id = resp.result.data[0].fs_folder_id + '';
 								var fs_folder_path = resp.result.data[0].fs_folder_path + '';
 							} catch (ex) {
-								alert('Error creating object: ' + operation.action.responseText);
+								Function_errorMessage('#intranet-sencha-ticket-tracker.Create_Object_Error_Title#', '#intranet-sencha-ticket-tracker.Create_Object_Error_Message#', operation.action.responseText);
 								return;
 							}
 			
@@ -122,8 +122,8 @@ function showFileStorageNewForm(ticket_id) {
 							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 							compoundPanel.loadTicket(ticket_model);	
 						},
-							failure: function(form, action) {
-							alert('Error loading file');
+						failure: function(form, action) {
+							Function_errorMessage('#intranet-sencha-ticket-tracker.Load_File_Error_Title#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#');
 							fileStorageNewForm.hide();
 						}
 					});
@@ -136,7 +136,7 @@ function showFileStorageNewForm(ticket_id) {
 		});
 	
 		fileStorageNewForm = Ext.widget('window', {
-			title:		'#intranet-filestorage.Upload_File#',
+			title:		'#intranet-sencha-ticket-tracker.Upload_File#',
 			closeAction:	'hide',
 			width:		300,
 			height:		400,
@@ -215,7 +215,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	columns: [
 		  {
-		  header:	'#intranet-filestorage.Filename#',
+		  header:	'#intranet-sencha-ticket-tracker.Filename#',
 		  dataIndex:	'name',
 		  flex:	1,
 		  minWidth:	100,

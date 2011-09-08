@@ -44,26 +44,9 @@ set direction $sorter_hash(direction)
 
 # Define the main SQL to check for
 set sql "
-	select	a.*,
-		t.ticket_queue_id_pretty
-	from	im_audits a,
-		(select	max(audit_id) as audit_id,
-			audit_object_status_id,
-			ticket_queue_id_pretty
-		from	(select	*,
-				CASE WHEN 463=ticket_queue_id THEN '' ELSE ticket_queue_id END as ticket_queue_id_pretty
-			from	(select	audit_id,
-					audit_object_status_id,
-					substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as ticket_queue_id
-				from	im_audits
-				where	audit_object_id = :object_id
-				) t
-			) t
-		group by
-			audit_object_status_id,
-			ticket_queue_id_pretty
-		) t
-	where	a.audit_id = t.audit_id
+	select * from im_audits where audit_id in (
+		select max(audit_id) as audit_id from im_audits where audit_object_id = :object_id and audit_action != 'after_update' and audit_action != 'before_update' group by audit_action
+	)
 	order by $property $direction
 "
 

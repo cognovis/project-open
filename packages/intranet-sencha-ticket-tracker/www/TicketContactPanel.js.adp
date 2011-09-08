@@ -27,7 +27,7 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	extend:		'Ext.panel.Panel',
         alias:		'widget.ticketContactPanel',
         id:		'ticketContactPanel',
-	title:		'#intranet-core.Contact#',
+	title:		'#intranet-sencha-ticket-tracker.Contact#',
 	layout:		'border',
 	split:	true,
 	deferredRender:	false,
@@ -48,10 +48,10 @@ Ext.define('TicketBrowser.TicketContactPanel', {
 	}],
 
     // Called from the TicketGrid if the user has selected a ticket
-    newTicket: function(rec){
-    	this.hide();
-        this.child('#bizObjectMemberGrid').newTicket(rec);
-        this.child('#ticketContactForm').newTicket(rec);
+    newTicket: function(){
+    	//this.hide();
+        this.child('#bizObjectMemberGrid').loadTicket(companyStore.findRecord('company_id', anonimo_company_id));
+        this.child('#ticketContactForm').newTicket();
     },
 
     // Called from the TicketGrid if the user has selected a ticket

@@ -301,7 +301,8 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	    switch $widget {
 		text - textarea - richtext {
 		    # Create a "like" search
-		    lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
+		    # lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
+		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
 		}
 		date {
 		    # Not supported yet
@@ -1097,6 +1098,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
+<<<<<<< HEAD
         
         if {$debug} { ns_log Debug "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
         
@@ -1108,6 +1110,15 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         #	    continue
         #        }
         
+	# Resize the size and parameters of some widgets for the filter form
+	if {$advanced_filter_p} {
+	    switch $widget {
+		text {
+		    # Adapt the size of the textbox to filters
+		    set parameters [list [list html [list size 16]]]
+		}
+	    }
+	}
         
         if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
         

@@ -871,7 +871,23 @@ ad_proc -private im_rest_get_object_type {
     #
     switch $rest_otype {
 	user - person - party {
-	    set table_name "(select * from users u, parties pa, persons pe where u.user_id = pa.party_id and u.user_id = pe.person_id )"
+	    set table_name "(
+		select	*
+		from	users u, parties pa, persons pe
+		where	u.user_id = pa.party_id and u.user_id = pe.person_id and
+			u.user_id in (
+				SELECT  o.object_id
+				FROM    acs_objects o,
+				        group_member_map m,
+				        membership_rels mr
+				WHERE   m.member_id = o.object_id AND
+				        m.group_id = acs__magic_object_id('registered_users'::character varying) AND
+				        m.rel_id = mr.rel_id AND
+				        m.container_id = m.group_id AND
+				        m.rel_type::text = 'membership_rel'::text AND
+				        mr.member_state = 'approved'
+			)
+		)"
 	}
 	file_storage_object {
 	    # file storage object needs additional security

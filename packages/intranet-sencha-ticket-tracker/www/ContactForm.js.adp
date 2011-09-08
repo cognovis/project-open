@@ -124,7 +124,7 @@ var contactForm = Ext.define('TicketBrowser.ContactForm', {
 		values.last_name = values.last_name.toUpperCase();
 		values.last_name2 = values.last_name2.toUpperCase();
 		
-		checkValues(values);
+		Function_checkValues(values);
 
 		// New or Edit?
 		var user_id = form.findField('user_id').getValue();

@@ -22,7 +22,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 Ext.define('TicketBrowser.TicketCustomerPanel', {
 	extend:		'Ext.form.Panel',
 	alias:		'widget.ticketCustomerPanel',
@@ -34,29 +33,43 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		labelWidth:	125,
 		typeAhead:	true				
 	},
-	items: [{
+	items: [/*{ 
+		name: 'checkNew',
+		xtype: 'checkbox',
+		value: true,
+		fieldLabel:	'#intranet-sencha-ticket-tracker.CreateNew#',
+		listeners:{
+			change: function(field, newValue, oldValue, options) {
+				if (newValue) {
+					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_id').disable();
+				} else {
+					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_id').enable();					
+				}
+			}
+		}
+	},*/ {
 		name:		'company_id',
 		xtype:		'combobox',
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Customer#',
-		valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
-		value:		'#intranet-core.New_Customer#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.CompanySearch#',
+		//valueNotFoundText: '#intranet-sencha-ticket-tracker.Create_New_Company#',
+		//value:		'#intranet-sencha-ticket-tracker.New_Customer#',
+		value: '',
 		valueField:	'company_id',
 		displayField:   'company_name',
 		store:		companyStore,
 		queryMode:	'local',
 		listeners: {
-
 			// The user has selected a customer from the drop-down box.
 			// Lookup the customer and fill the form with the fields.
 			'blur': function() {
 				var customer_id = this.getValue();
 				var cust = companyStore.findRecord('company_id',customer_id);
 				if (cust == null || cust == undefined) { 
-					cust = companyStore.findRecord('company_name',customer_id);
+					cust = companyStore.findRecord('company_name',this.getRawValue());
 				}
-				if (cust == null || cust == undefined) { return; }
+				if (Ext.isEmpty(cust)) { return; }
 
-				// Add the province to the store (province field is now a combobox but data maybe no correct
+				// Add the province to the store (province field is now a combobox but old data maybe no correct)
 				provincesStore.load();
 				var company_province_name = cust.get('company_province');
 				var store_company = provincesStore.findRecord('name',company_province_name,0,false,true,true);
@@ -64,21 +77,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 					provincesStore.add({'name': company_province_name});
 				}
 				
+				if (Ext.isEmpty(cust.get('company_id'))){
+					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_name').show();					
+				} else {
+					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_name').hide();
+				}
 				// load the record into the form
 				this.ownerCt.loadRecord(cust);
-
-				// Disable the Save button if we show the anonymous customer
-				var buttonToolbar = this.ownerCt.getDockedComponent('ticketCustomerPanelButtonToolbar');
-				var saveButton = buttonToolbar.getComponent('saveButton');
-				if (customer_id == anonimo_company_id) {
-					saveButton.hide();
-				} else {
-					saveButton.show();
-				}
 			
 				// Inform the TicketCustomerPanel about the new company
-				var contactPanel = Ext.getCmp('ticketContactPanel');
-				contactPanel.loadCustomer(cust);
+				Ext.getCmp('ticketContactPanel').loadCustomer(cust);
 			},
 			change: function (field,newValue,oldValue) {
 				 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
@@ -88,6 +96,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		name:		'company_name',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Company_name#',
+		hidden: true,
 		allowBlank:	false
 	}, {
 		name:		'vat_number',
@@ -102,17 +111,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		displayField:   'category_translated',
 		allowBlank:	false,
 		store:		companyTypeStore,
+		queryMode:	'local',
 		listConfig: {
 			getInnerTpl: function() {
                 		return '<div class={indent_class}>{category_translated}</div>';
 			}
-		}
-	}, /*	{
-		name:		'company_province',
-		xtype:		'textfield',
-		fieldLabel:	'#intranet-sencha-ticket-tracker.Province#',
-		allowBlank:	false
-	}*/
+		},
+		validator: function(value){
+			return this.store.validateLevel(this.value,this.allowBlank)
+		}				
+	}, 
 	
 	{
 		name:		'company_province',
@@ -126,139 +134,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		queryMode: 'local'
 	}],
 
-	dockedItems: [{
-		xtype:		'toolbar',
-		dock:		'bottom',
-		itemId:		'ticketCustomerPanelButtonToolbar',
-		defaults:	{ minWidth: 100 },
-		items: ['->', {
-			itemId:		'viewButton',
-			text: 		'#intranet-sencha-ticket-tracker.Show_Customer#',
-			handler:	function() {
-				var form = this.ownerCt.ownerCt.getForm();
-				var company_id = form.findField('company_id').getValue();
-				var redirect = '/intranet/companies/view?company_id='+company_id; 
-				window.open(redirect, '_blank');
-			}
-		}, {
-			itemId:		'addButton',
-			text: 		'#intranet-sencha-ticket-tracker.button_New_Company#',
-			width: 		120,
-			handler: function(){
-				var form = this.ownerCt.ownerCt.getForm();
-				form.reset();		// empty fields to allow for entry of new contact
-	
-				// Enable the button to save the new company
-				var createButton = this.ownerCt.child('#createButton');
-				createButton.show();
-				
-				// Disable the "Save Changes" and "View Company" button
-				var createButton = this.ownerCt.child('#saveButton');
-				createButton.hide();
-				var viewButton = this.ownerCt.child('#viewButton');
-				viewButton.hide();
-				
-				// Diable this button
-				this.hide();
-			}
-		}, {
-			itemId:		'saveButton',
-			text: 		'#intranet-sencha-ticket-tracker.Save_Changes#',
-			width: 		120,
-			handler: function(){
-				var form = this.ownerCt.ownerCt.getForm();
-				var combo = form.findField('company_id');
-				var values = form.getFieldValues();
-				var company_id = combo.getValue();
-				
-				checkValues(values);	
-							
-				// find the company in the store
-				var company_record = companyStore.findRecord('company_id',company_id);
-				var company_name = form.findField('company_name').getValue();
-				var vat_number = form.findField('vat_number').getValue();
-
-				company_record.set('company_name', company_name.toUpperCase());
-				company_record.set('vat_number', vat_number.toUpperCase());
-				company_record.set('company_type_id', form.findField('company_type_id').getValue());
-				company_record.set('company_province', form.findField('company_province').getValue());
-	
-				// Tell the store to update the server via it's REST proxy
-				companyStore.sync();
-	
-				// Write the new company (if any...) to the ticket store
-				var ticket_form = Ext.getCmp('ticketForm');
-				var ticket_id = ticket_form.getForm().findField('ticket_id').getValue();
-				var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-				ticketModel.set('company_id', company_id);
-	
-				// Update the ticket model and tell the form to refresh everything
-				ticketModel.save({
-					scope: Ext.getCmp('ticketForm'),
-					success: function(record, operation) {
-						// Refresh all forms to show the updated information
-						var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-						compoundPanel.loadTicket(ticketModel);
-					},
-					failure: function(record, operation) {
-						Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);
-					}
-				});
-			}
-		}, {
-			itemId:		'createButton',
-			text: 		'#intranet-sencha-ticket-tracker.Save_New_Company#',
-			hidden:		true,			// only show when in "adding mode"
-			handler: function(){
-				var form = this.ownerCt.ownerCt.getForm();
-				var values = form.getFieldValues();
-		
-				checkValues(values);
-			
-				// create a new company
-				values.company_id = null;
-				var companyModel = Ext.ModelManager.create(values, 'TicketBrowser.Company');
-				companyModel.phantom = true;
-
-				// Only use upper case
-				var company_name = form.findField('company_name').getValue();
-				var vat_number = form.findField('vat_number').getValue();
-				companyModel.set('company_name', company_name.toUpperCase());
-				companyModel.set('vat_number', vat_number.toUpperCase());
-
-				companyModel.save({
-					success: function(company_record, operation) {
-
-						// Store the new company in the store that that it can be referenced.
-						companyStore.add(company_record);
-
-						// Store the new company_id into the current ticket
-						var ticketForm = Ext.getCmp('ticketForm');
-						var ticket_id = ticketForm.getForm().findField('ticket_id').getValue();
-						var ticket_model = ticketStore.findRecord('ticket_id',ticket_id);
-						var company_id = company_record.get('company_id');
-						ticket_model.set('company_id', company_id);
-						ticket_model.save({
-							success: function(record, operation) {
-								// Tell all panels to load the data of the newly created object
-								var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-								compoundPanel.loadTicket(ticket_model);	
-							},
-							failure: function(record, operation) { 
-								Ext.Msg.alert("Failed to save ticket", operation.request.scope.reader.jsonData["message"]);
-							}
-						});
-					},
-					failure: function(user_record, operation) {
-						Ext.Msg.alert("Error durante la creacion de una nueva entidad", operation.request.scope.reader.jsonData["message"]);
-					}
-
-				});
-			}
-		}]
-	}],
-
-
 	// For a new ticket reset the values of the form.
 	newTicket: function() {
 		var form = this.getForm();
@@ -267,11 +142,12 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		provincesStore.load();
 		
 		// Don't show this form for new tickets
-		this.hide();
+		//this.hide();
+		companyStore.clearFilter();
+		this.loadRecord(companyStore.findRecord('company_id', anonimo_company_id));
 	},
 
 	loadTicket: function(rec){
-
 		this.getForm().reset();
 		// Show the form
 		this.show();		
@@ -280,6 +156,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		var customer_id;
 		if (rec.data.hasOwnProperty('company_id')) { customer_id = rec.data.company_id; }
 
+		companyStore.clearFilter();
 		var cust = companyStore.findRecord('company_id',customer_id);
 		if (cust == null || typeof cust == "undefined") { return; }
 
@@ -293,35 +170,6 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		
 		// load the customer's information into the form.
 		this.loadRecord(cust);
-
-		// Reset button config
-		var buttonToolbar = this.getDockedComponent('ticketCustomerPanelButtonToolbar');
-		var viewButton = buttonToolbar.getComponent('addButton');
-		viewButton.show();
-		var addButton = buttonToolbar.getComponent('addButton');
-		addButton.show();
-		var saveButton = buttonToolbar.getComponent('saveButton');
-
-		// Disable the Save button if we show the anonymous customer
-		if (customer_id == anonimo_company_id) {
-			saveButton.hide();
-		} else {
-			saveButton.show();
-		}
-
-		var createButton = buttonToolbar.getComponent('createButton');
-		createButton.hide();
-
-		//Disable de buttons if the ticket is closed
-		var ticket_status_id=rec.get('ticket_status_id');
-		if (ticket_status_id == '30001'){
-			saveButton.hide();
-			addButton.hide();
-			createButton.hide();
-		}	else {
-			saveButton.show();
-			addButton.show();		
-		}				
 	}
 
 });

@@ -9,7 +9,10 @@ declare
         v_count         integer;
 begin
 
-	select count(*) into v_count from user_tab_columns where table_name = ''im_employees'' and column_name = ''personnel_number'';
+	select count(*) into v_count from information_schema.columns where 
+		table_name = ''im_employees''
+		and column_name = ''personnel_number'';
+
         IF v_count > 0 THEN return 1; END IF;
 
         alter table im_employees add column personnel_number character varying(10);
@@ -18,5 +21,3 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
-
-
