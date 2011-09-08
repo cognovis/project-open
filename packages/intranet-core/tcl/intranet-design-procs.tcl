@@ -1262,6 +1262,11 @@ ad_proc -public im_header {
 
 	template::head::add_css -href "/resources/acs-subsite/default-master.css" -media "all"
 
+	set header_html ""
+	if {[im_openacs54_p]} {
+	    set header_html [template::get_header_html]
+	}
+
 	# Extract multirows for header META, CSS, STYLE & SCRIPT etc. from global variables
 	template::head::prepare_multirows
 	set event_handlers [template::get_body_event_handlers]
@@ -1379,11 +1384,6 @@ ad_proc -public im_header {
 
     
     im_performance_log -location im_header_end
-
-    set header_html ""
-    if {[im_openacs54_p]} {
-	set header_html [template::get_header_html]
-    }
 
     return "
 	[ad_header $page_title $extra_stuff_for_document_head]
