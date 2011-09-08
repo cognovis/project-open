@@ -13,216 +13,146 @@ ad_library {
 # Show the members of the Admin Group of the current Business Object.
 # ---------------------------------------------------------------------
 
-
-ad_proc im_allowed_company_types {
-	company_id
-} {
-	Returns portlet ... 
-} {
-	return [im_allowed_company_types $company_id]
-}
-
-
-ad_proc find_sales_price {
-	user_id
-	project_id
-	company_id
-        project_type_id 
-} {
-    Returns the sales price that has defined for a particular user
-    on an arbitrary project level above    
-} {
-    
-    # Make sure you look for price based on project_type_id of the (sub-)project of level 'n'  
-    if { "" == $project_type_id } {
-	set project_type_id [db_string get_data "select project_type_id from im_projects where project_id = $project_id" -default 0]
-	# check if task -> no prices are defined for tasks 
-        ns_log NOTICE "KHD: No project_type_id passed. Found: $project_type_id"
-	if { 100 == $project_type_id } {    
-	    set project_type_id ""
-	}
-    }
-
-    set amount_sales_price 0
-    if { "" != $project_type_id } {
-	ns_log NOTICE "KHD: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id and project_type_id=$project_type_id ([im_category_from_id $project_type_id])"
-	# Check if there's a price defined on the project itself
-	set sql "
-		select 
-			amount 
-		from 
-			im_customer_prices 
-		where 
-			user_id = $user_id 
-			and object_id = $project_id
-			-- and project_type_id = $project_type_id
-    	"
-	set amount_sales_price [db_string get_data $sql -default 0]
-    } 	
-
-    if { 0 != $amount_sales_price} {
-        ns_log NOTICE "KHD: Price found: $amount_sales_price"
-        ns_log NOTICE "KHD: -----------------------------------------------------------"
-	return $amount_sales_price
-    } else {
-        ns_log NOTICE "KHD: No price found in project: $project_id for user: $user_id and project_type_id: $project_type_id ([im_category_from_id $project_type_id])"
-	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
-        ns_log NOTICE "KHD: Found parent project: $parent_project_id" 
-	if { ""  == $parent_project_id || 0 == $parent_project_id } {
-	        ns_log NOTICE "KHD: No parent project found, now looking for price defined on customer level:"
-		# This is the super project, if no price is found, lets check if a price is defined on the company level 
-		set sql "
-		        select
-		        	amount
-		        from
-	                	im_customer_prices
-		        where
-        	        	user_id = $user_id
-			        and object_id = $company_id
-                		and project_type_id in (select project_type_id from im_projects where project_id = $project_id)
-    		"
-	    	set sales_price [db_string get_data $sql -default 0]
-		if { 0 == $sales_price } {
-                        ns_log NOTICE "KHD: No price found for customer neither, returning empty string"
-                        ns_log NOTICE "KHD: -----------------------------------------------------------" 
-			return ""
-		} else {
-                        ns_log NOTICE "KHD: Price found for customer: $sales_price"
-                        ns_log NOTICE "KHD: -----------------------------------------------------------" 			
-			return $sales_price
-		}
-    	} else {
-                ns_log NOTICE "KHD: Parent project found: $parent_project_id"
-                ns_log NOTICE "KHD: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $project_type_id ([im_category_from_id $project_type_id])"
-		return [find_sales_price $user_id $parent_project_id $company_id $project_type_id]
-	}
-     }
-}
-
-
-ad_proc -public im_allowed_company_types { 
-    company_id
-} {
-    Returns an portlet to view and manage prices  
-} {
-
-    # ------------------ Format the table header ------------------------
-    set colspan 2
-    set add_admin_links 1  
-    set header_html "
-      <tr> 
-	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
-    "
-    if { $add_admin_links } {
-        incr colspan
-        append header_html "<td class=rowtitle align=middle>[im_gif delete]</td>"
-    }
-    append header_html "
-      </tr>"
-
-    # ------------------ Format the table body ----------------
-    set td_class(0) "class=roweven"
-    set td_class(1) "class=rowodd"
-    set found 0
-    set count 0
-    set body_html ""
-
-    set sql_query "
-	select 
-		project_type_id 
-	from
-	        im_customer_project_type
-	where
-        	company_id = $company_id
-    "
-
-    db_foreach project_type $sql_query {
-		# First Column: user
-		append body_html "
-			<tr $td_class([expr $count % 2])>
-			  [im_category_from_id $project_type_id]
-  			<td>"
-
-		if {$add_admin_links} {
-		    append body_html "
-			  <td align=right>
-			    <input type=checkbox name='project_type_id value='$project_type_id'>
-			  </td>
-		    "
-		}
-		append body_html "</tr>"
-    }
-
-    if { [empty_string_p $body_html] } {
-	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
-    } 
-
-    # ------------------ Add form to create new record ------------
-
-     append body_html "
-        <tr $td_class([expr $count % 2])>
-                <td colspan='5'>
-			<br> 
-			<b>[lang::message::lookup "" intranet-cust-koernig-weber.AllowNewProjectType "Allow new Project Type"]:</b>
-                </td>
-        </tr>
-        <tr $td_class([expr $count % 2])>
-		<td>
-                      [im_project_type_select "new_project_type_id" ""]
-                </td>
-        </tr>
-      "
-    # ------------------ Format the table footer with buttons ------------
-    set footer_html ""
-	append footer_html "
-	    <tr>
-	      <td align=left colspan=$colspan>
-		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
-	      </td>
-	    </tr>
-	    "
-    # ------------------ Join table header, body and footer ----------------
-    set html "
-	<form method=POST action=/intranet-cust-koernigweber/update_project_types>
-	[export_form_vars return_url]
-	    <table bgcolor=white cellpadding=1 cellspacing=1 border=0>
-	      $header_html
-	      $body_html
-	      $footer_html
-	    </table>
-	</form>
-    "
-    return $html
-}
-
-
-ad_proc -public im_customer_price_list { 
+ad_proc -public im_group_member_component_employee_customer_price_list { 
     {-debug 0}
     object_id 
-    user_id
+    current_user_id 
     { add_admin_links 0 } 
     { return_url "" } 
     { limit_to_users_in_group_id "" } 
     { dont_allow_users_in_group_id "" } 
     { also_add_to_group_id "" } 
 } {
-    Returns an portlet to view and manage prices  
+    Returns an portlet to view and manage companies price matrix 
 } {
-    set current_user_id $user_id
     # Check if there is a percentage column from intranet-ganttproject
-    # set show_percentage_p [im_column_exists im_biz_object_members percentage]
+    set show_percentage_p [im_column_exists im_biz_object_members percentage]
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
+    if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
 
-    # if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
-    set show_percentage_p 0
+    # ------------------ limit_to_users_in_group_id ---------------------
+    if { [empty_string_p $limit_to_users_in_group_id] } {
+	set limit_to_group_id_sql ""
+    } else {
+	set limit_to_group_id_sql "
+	and exists (select 1 
+		from 
+			group_member_map map2,
+		        membership_rels mr,
+			groups ug
+		where 
+			map2.group_id = ug.group_id
+			and map2.rel_id = mr.rel_id
+			and mr.member_state = 'approved'
+			and map2.member_id = u.user_id 
+			and map2.group_id = :limit_to_users_in_group_id
+		)
+	"
+    } 
 
+    # ------------------ dont_allow_users_in_group_id ---------------------
+    if { [empty_string_p $dont_allow_users_in_group_id] } {
+	set dont_allow_sql ""
+    } else {
+	set dont_allow_sql "
+	and not exists (
+		select 1 
+		from 
+			group_member_map map2, 
+			membership_rels mr,
+			groups ug
+		where 
+			map2.group_id = ug.group_id
+			and map2.rel_id = mr.rel_id
+			and mr.member_state = 'approved'
+			and map2.member_id = u.user_id 
+			and map2.group_id = :dont_allow_users_in_group_id
+		)
+	"
+    } 
+
+    set bo_rels_percentage_sql ""
+    if {$show_percentage_p} {
+	set bo_rels_percentage_sql ",round(bo_rels.percentage) as percentage"
+    }
+
+    # ------------------ Main SQL ----------------------------------------
+    # fraber: Abolished the "distinct" because the role assignment page 
+    # now takes care that a user is assigned only once to a group.
+    # We neeed this if we want to show the role of the user.
+    #
+
+    set sql_query "
+        select
+                u.user_id,
+                u.user_id as party_id,
+                im_email_from_user_id(u.user_id) as email,
+                im_name_from_user_id(u.user_id) as name,
+                im_category_from_id(c.category_id) as member_role,
+                c.category_gif as role_gif,
+                c.category_description as role_description,
+                (select amount from im_emp_cust_price_list where company_id=object_id_one and user_id = u.user_id) as amount
+                $bo_rels_percentage_sql
+        from
+                users u,
+                acs_rels rels
+                LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
+                LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
+                group_member_map m,
+                membership_rels mr
+        where
+                rels.object_id_one = $object_id
+                and rels.object_id_two = u.user_id
+                and mr.member_state = 'approved'
+                and u.user_id = m.member_id
+                and mr.member_state = 'approved'
+                and m.group_id = acs__magic_object_id('registered_users'::character varying)
+                and m.rel_id = mr.rel_id
+                and m.container_id = m.group_id
+                and m.rel_type = 'membership_rel'
+                $limit_to_group_id_sql
+                $dont_allow_sql
+        order by lower(im_name_from_user_id(u.user_id))
+    "
+
+
+  	  set sql_query "
+		select 
+			r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as name,
+		 	(select amount from im_emp_cust_price_list where company_id=object_id_one and user_id = u.user_id) as amount
+		from 
+		    acs_rels r 
+		where 
+		    object_id_one = :object_id
+		    and rel_type = 'im_biz_object_member';
+	"
+
+  set sql_query "
+	select distinct
+		r.object_id_two as user_id,
+		im_name_from_user_id(r.object_id_two) as name,
+                (select amount from im_emp_cust_price_list where company_id=:object_id and user_id = r.object_id_two) as amount
+	from 
+		acs_rels r 
+	where 
+		object_id_one in 
+	
+	(select 
+		project_id 
+	from 
+		im_projects 
+	where 
+		company_id = :object_id
+	)
+		and rel_type = 'im_biz_object_member'
+	"
     # ------------------ Format the table header ------------------------
     set colspan 2
     set header_html "
       <tr> 
 	<td class=rowtitle align=middle>[_ intranet-core.Name]</td>
-	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
-	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Price "Price"]</td>
+	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Price "Price"]</td>
     "
     if {$show_percentage_p} {
         incr colspan
@@ -243,222 +173,62 @@ ad_proc -public im_customer_price_list {
     set body_html ""
 
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-
-    # get all object members  
-    if { "im_company" == $object_type } {
-	    set sql_query "
-		select distinct
-			r.object_id_two as user_id
-		from 
-			acs_rels r 
-		where 
-			object_id_one in 
-				(select project_id from im_projects where company_id = :object_id)
-		and rel_type = 'im_biz_object_member'
-    	     "
-    } else {
-            set sql_query "
-		        select distinct
-                		r.object_id_two as user_id
-			from
-		                acs_rels r
-		        where
-                		object_id_one = $object_id
-		                and rel_type = 'im_biz_object_member'
-	     "
-    }
-
-    set project_member_list [list]
+  
     db_foreach users_in_group $sql_query {
-	lappend project_member_list $user_id
-    }
- 
-    # 
-    foreach project_member $project_member_list {
 
-    	if { "im_company" == $object_type } {
-		set inner_sql "
-			select 
-				user_id, 
-				object_id as price_object_id,
-				acs_object_util__get_object_type(object_id) as object_type,
-				amount,
-				currency,
-				project_type_id,			
-				im_name_from_user_id(user_id) as name
-			from 
-				im_customer_prices 
-			where 	
-				user_id = $project_member 
-				and object_id = :object_id
-				and acs_object_util__get_object_type(object_id) = 'im_company'    
-    			"
+	set show_user [im_show_user_style $user_id $current_user_id $object_id]
+	if {$debug} { ns_log Notice "im_group_member_component: user_id=$user_id, show_user=$show_user" }
+	if {$show_user == 0} { continue }
+
+	append body_html "
+		<tr $td_class([expr $count % 2])>
+		  <input type=hidden name=member_id value=$user_id>
+  		<td>"
+	if {$show_user > 0} {
+		append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
 	} else {
-		set project_type_id [db_string get_data "select project_type_id from im_projects where project_id=:object_id" -default 0]	
-		set project_customer_id [db_string get_data "select company_id from im_projects where project_id=:object_id" -default 0]
-                set inner_sql "
-                        select
-                                user_id,
-                                object_id as price_object_id,
-                                amount,
-                                currency,
-                                project_type_id,
-                                im_name_from_user_id(user_id) as name
-                        from
-                                im_customer_prices
-                        where
-                                (user_id = $project_member and project_type_id = $project_type_id and project_type_id = $project_type_id) OR 
-				(user_id = $project_member and object_id=$object_id ) 
-                 "
+		append body_html $name
 	}
-
-	db_foreach records_to_list $inner_sql {
-		set show_currency_p 1
-		set show_user [im_show_user_style $user_id $current_user_id $price_object_id]
-
-		if {$debug} { ns_log Notice "im_group_member_component: user_id=$user_id, show_user=$show_user" }
-		if {$show_user == 0} { continue }
-
-		# First Column: user
-		append body_html "
-			<tr $td_class([expr $count % 2])>
-			  <input type=hidden name=member_id value=$user_id>
-  			<td>"
-		if {$show_user > 0} {
-			append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
-		} else {
-			append body_html $name
-		}
 	
-		append body_html "</td>"
+	append body_html "</td>"
 
-        	# Set "Project Type"		
-		if { ![info exists project_type_id] } { set project_type_id "" }	
+        if { [im_permission $current_user_id "admin_company_price_matrix"]} {
+            append body_html "
+                  <td align=middle>
+                    <input type=input size=6 maxlength=6 name=\"amount.$user_id\" value=\"$amount\">[im_currency_select currency.$user_id $currency]
+                  </td>
+            "
+	} else {
+	    if { ""==$amount } {set amount "-"}
+            append body_html "
+                  <td align=middle>
+                    $amount $currency
+                  </td>
+            "
+        }
 
-		# Decide about mode (view/edit)
-        	if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
-		    # User has permission to edit company prices  
-        	    append body_html "
-                	  <td align=middle>
-				[im_project_type_select "project_type_id.${user_id}_$project_type_id" $project_type_id] 
-	                  </td>
-        	    "
-	        } else {
-		    # user has no permission to edit, show only 
-	            append body_html "
-        	          <td align=middle>
-				[im_category_from_id $project_type_id]
-	                  </td>
-        	    "
-        	}
-	
-		# Set price (edit/view)
-	        if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
+	append body_html "</td>"
 
-		    set var_amount "amount.${user_id}_$project_type_id" 
-		    set var_currency "currency.${user_id}_$project_type_id"
-
-        	    append body_html "
-                	  <td align=right>
-	                    <input type=input size=6 maxlength=6 name=\"$var_amount\" value=\"$amount\">[im_currency_select $var_currency $currency]
-        	          </td>
-	            "
-		} else {
-	            if { "" == $amount } { 
-			set amount [lang::message::lookup "" intranet-core.Not_Set "Not set"] 
-			set show_currency_p 0
-		    } 
-        	    append body_html "<td align=right>$amount"
-		    if { $show_currency_p } {append body_html "$currency "}
-        	    append body_html "</td>"
-        	}
-
-		append body_html "</td>"
-
-		if {$add_admin_links} {
-		    set var_delete_price [concat "delete_price" "." $user_id "_" "project_type_id"
-		    append body_html "
-			  <td align=right>
-			    <input type=checkbox name='$var_delete_price' value=''>
-			  </td>
-		    "
-		}
-		append body_html "</tr>"
+	if {$add_admin_links} {
+	    append body_html "
+		  <td align=middle>
+		    <input type=checkbox name=delete_user value=$user_id>
+		  </td>
+	    "
 	}
+	append body_html "</tr>"
     }
 
     if { [empty_string_p $body_html] } {
 	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
-    } 
-
-    # ------------------ Add form to create new record ------------
-
-        if { "im_company" == $object_type } {
-	    set select_box_user_sql " 
-	        select distinct
-                	r.object_id_two as user_id,
-        	        im_name_from_user_id(r.object_id_two) as name
-	        from
-        	        acs_rels r
-	        where
-        	        object_id_one in
-	        		(select
-		        	        project_id
-	        		from
-		        	        im_projects
-	        		where
-		                	company_id = $object_id
-        		)
-	     and rel_type = 'im_biz_object_member';
-    	   "
-	} else {
-            set select_box_user_sql "
-                select distinct
-                        r.object_id_two as user_id,
-                        im_name_from_user_id(r.object_id_two) as name
-                from
-                        acs_rels r
-                where
-                        object_id_one = $object_id
-		        and rel_type = 'im_biz_object_member';
-           "
-	}
-
-     append body_html "
-        <tr $td_class([expr $count % 2])>
-                <td colspan='5'>
-			<br> 
-			<b>[lang::message::lookup "" intranet-cust-koernig-weber.CreateNewPriceRecord "Create new price record"]:</b>
-                </td>
-        </tr>
-
-        <tr $td_class([expr $count % 2])>
-		<td>
-                      [im_selection_to_select_box "" new_user_id $select_box_user_sql new_user_id ""]
-                </td>
-                <td align=middle>
-     "
-
-     if { "im_project" == $object_type } {
-	 append body_html [ im_category_from_id $project_type_id ]
-     } else {
-	 append body_html [im_project_type_select "new_project_type_id" ""]
-     }
-
-     append body_html "
-                 </td>
-                 <td align=right>
-                    <input type=input size=6 maxlength=6 name=\"new_amount\" value=\"\">[im_currency_select new_currency $currency]
-                 </td>
-	</tr>
-     "
+    }
 
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
 	append footer_html "
 	    <tr>
-	      <td align=left colspan=$colspan>
-		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
+	      <td align=right colspan=$colspan>
+		<input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
 	      </td>
 	    </tr>
 	    "
@@ -559,103 +329,104 @@ ad_proc -public im_koernigweber_next_project_nr {
 
 	    
 
+ad_proc im_timesheet_price_component { user_id company_id return_url} {
+    Returns a formatted HTML table representing the 
+    prices for the current company
+} {
 
-# ad_proc im_timesheet_price_component { user_id company_id return_url} {
-#     Returns a formatted HTML table representing the 
-#     prices for the current company
-# } {
-# 
-#     if {![im_permission $user_id view_costs]} {
-#         return ""
-#     }
-# 
-#     set bgcolor(0) " class=roweven "
-#     set bgcolor(1) " class=rowodd "
-# #    set price_format "000.00"
-#     set price_format "%0.2f"
-# 
-#     set colspan 7
-#     set price_list_html "
-# <form action=/intranet-timesheet2-invoices/price-lists/price-action method=POST>
-# [export_form_vars company_id return_url]
-# <table border=0>
-# <tr><td colspan=$colspan class=rowtitle align=center>[_ intranet-timesheet2-invoices.Price_List]</td></tr>
-# <tr class=rowtitle> 
-# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM]</td>
-# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Type]</td>
-# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
-# 	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
-# 	  <td class=rowtitle>[im_gif del "Delete"]</td>
-# </tr>"
-# 
-#     set price_sql "
-# select
-# 	p.*,
-# 	c.company_path as company_short_name,
-# 	im_category_from_id(uom_id) as uom,
-# 	im_category_from_id(task_type_id) as task_type,
-# 	im_material_nr_id(material_id) as material
-# from
-# 	im_timesheet_prices p,
-# 	im_companies c
-# where 
-# 	p.company_id=:company_id
-# 	and p.company_id=c.company_id
-# order by
-# 	currency,
-# 	uom_id,
-# 	task_type_id desc
-# "
-# 
-#     set price_rows_html ""
-#     set ctr 1
-#     set old_currency ""
-#     db_foreach prices $price_sql {
-# 
-# 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
-# 	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
-# 	}
-# 
-# 	append price_rows_html "
-#         <tr $bgcolor([expr $ctr % 2]) nobreak>
-# 	  <td>$uom</td>
-# 	  <td>$task_type</td>
-# 	  <td>$material</td>
-#           <td>[format $price_format $price] $currency</td>
-#           <td><input type=checkbox name=price_id.$price_id></td>
-# 	</tr>"
-# 	incr ctr
-# 	set old_currency $currency
-#     }
-# 
-#     if {$price_rows_html != ""} {
-# 	append price_list_html $price_rows_html
-#     } else {
-# 	append price_list_html "<tr><td colspan=$colspan align=center><i>[_ intranet-timesheet2-invoices.No_prices_found]</i></td></tr>\n"
-#     }
-# 
-#     set sample_pracelist_link "<a href=/intranet-timesheet2-invoices/price-lists/pricelist_sample.csv>[_ intranet-timesheet2-invoices.lt_sample_pricelist_CSV_]</A>"
-# 
-#     append price_list_html "
-# <tr>
-#   <td colspan=$colspan align=right>
-#     <input type=submit name=add_new value=\"[_ intranet-timesheet2-invoices.Add_New]\">
-#     <input type=submit name=del value=\"[_ intranet-timesheet2-invoices.Del]\">
-#   </td>
-# </tr>
-# </table>
-# </form>
-# <ul>
-#   <li>
-#     <a href=/intranet-timesheet2-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
-#       [_ intranet-timesheet2-invoices.Upload_prices]</A>
-#     [_ intranet-timesheet2-invoices.lt_for_this_company_via_]
-#   <li>
-#     [_ intranet-timesheet2-invoices.lt_Check_this_sample_pra]
-#     [_ intranet-timesheet2-invoices.lt_It_contains_some_comm]
-# </ul>\n"
-#     return $price_list_html
-# }
+    if {![im_permission $user_id view_costs]} {
+        return ""
+    }
+
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+#    set price_format "000.00"
+    set price_format "%0.2f"
+
+    set colspan 7
+    set price_list_html "
+<form action=/intranet-timesheet2-invoices/price-lists/price-action method=POST>
+[export_form_vars company_id return_url]
+<table border=0>
+<tr><td colspan=$colspan class=rowtitle align=center>[_ intranet-timesheet2-invoices.Price_List]</td></tr>
+<tr class=rowtitle> 
+	  <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM]</td>
+	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Type]</td>
+	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
+	  <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
+	  <td class=rowtitle>[im_gif del "Delete"]</td>
+</tr>"
+
+    set price_sql "
+select
+	p.*,
+	c.company_path as company_short_name,
+	im_category_from_id(uom_id) as uom,
+	im_category_from_id(task_type_id) as task_type,
+	im_material_nr_id(material_id) as material
+from
+	im_timesheet_prices p,
+	im_companies c
+where 
+	p.company_id=:company_id
+	and p.company_id=c.company_id
+order by
+	currency,
+	uom_id,
+	task_type_id desc
+"
+
+    set price_rows_html ""
+    set ctr 1
+    set old_currency ""
+    db_foreach prices $price_sql {
+
+	if {"" != $old_currency && ![string equal $old_currency $currency]} {
+	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
+	}
+
+	append price_rows_html "
+        <tr $bgcolor([expr $ctr % 2]) nobreak>
+	  <td>$uom</td>
+	  <td>$task_type</td>
+	  <td>$material</td>
+          <td>[format $price_format $price] $currency</td>
+          <td><input type=checkbox name=price_id.$price_id></td>
+	</tr>"
+	incr ctr
+	set old_currency $currency
+    }
+
+    if {$price_rows_html != ""} {
+	append price_list_html $price_rows_html
+    } else {
+	append price_list_html "<tr><td colspan=$colspan align=center><i>[_ intranet-timesheet2-invoices.No_prices_found]</i></td></tr>\n"
+    }
+
+    set sample_pracelist_link "<a href=/intranet-timesheet2-invoices/price-lists/pricelist_sample.csv>[_ intranet-timesheet2-invoices.lt_sample_pricelist_CSV_]</A>"
+
+    append price_list_html "
+<tr>
+  <td colspan=$colspan align=right>
+    <input type=submit name=add_new value=\"[_ intranet-timesheet2-invoices.Add_New]\">
+    <input type=submit name=del value=\"[_ intranet-timesheet2-invoices.Del]\">
+  </td>
+</tr>
+</table>
+</form>
+<ul>
+  <li>
+    <a href=/intranet-timesheet2-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
+      [_ intranet-timesheet2-invoices.Upload_prices]</A>
+    [_ intranet-timesheet2-invoices.lt_for_this_company_via_]
+  <li>
+    [_ intranet-timesheet2-invoices.lt_Check_this_sample_pra]
+    [_ intranet-timesheet2-invoices.lt_It_contains_some_comm]
+</ul>\n"
+    return $price_list_html
+}
+
+
 
 # ------------------------------------------------------
 # The list of hours per project
@@ -797,7 +568,8 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	
 	set task_checked ""
 	set task_disabled ""	
-	if {0 == [llength $include_task]} {   
+	if {0 == [llength $include_task]} {
+	    
 	    # Called from the Wizard Page - Enabled tasks
 	    # according to the task's material.
 	    if {"f" != $material_billable_p} {
@@ -805,6 +577,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	    }
 		
 	} else {
+
 	    # View from the Invoice page
 	    # disable the checkbox (because it is not editable anymore).
 	    if {[lsearch $include_task $project_id] > -1} {
@@ -813,30 +586,22 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	    set task_disabled "disabled"
 	}
 
-	if { "321" == $uom_id } {
+	switch $uom_id {
+	    321 {
 		set all_reported_units $all_reported_days
 		set units_in_interval $days_in_interval
 		set unbilled_units $unbilled_days
-	} elseif { "320" == $uom_id } {
+	    }
+	    320 {
 		set all_reported_units $all_reported_hours
 		set units_in_interval $hours_in_interval
 		set unbilled_units $unbilled_hours
-	} elseif { "" == $uom_id } {
-                # We assume hours logged directly on a project instead of a task
-                set all_reported_units $all_reported_hours
-                set units_in_interval $hours_in_interval
-                set unbilled_units $unbilled_hours
-		if { "" != $units_in_interval || "" != $all_reported_hours || "" != $unbilled_hours } {
-			set uom_name "<span style='color: red'>" 
-			append uom_name [lang::message::lookup "" intranet-core.Hour "Hour"]
-                	append uom_name "</span>&nbsp;<img src='/intranet/images/help.gif' title='No UOM provided so we assume HOURS, please verify' 
-			         alt='No UOM provided so we assume HOURS, please verify' border='0' height='16' width='16'>
-			"
-		}
-        } else  {
+	    }
+	    default {
 		set all_reported_units "-"
 		set units_in_interval "-"
 		set unbilled_units "-"
+	    }
 	}
 
 	append task_table_rows "
@@ -846,7 +611,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
 	  <td align=right>$all_reported_units</td>
 	  <td align=right>$units_in_interval</td>
 	  <td align=right>$unbilled_units</td>
-	  <td align=left>$uom_name</td>
+	  <td align=right>$uom_name</td>
 	  <td>$project_status</td>
 	</tr>
 	"
@@ -909,160 +674,20 @@ proc filter_conncontext { conn arg why } {
 }
 
 
-ad_proc im_project_type_table {
-    {-translate_p 1}
-    {-package_key "intranet-cust-koernigweber" }
-    {-locale "" }
-} {
-    Returns a formatted HTML table with enabled "Project Types" and a select box  
-    Based on "im_category_select_helper"
-} {
 
-    set category_type "Intranet Project Type"
 
-    # Read the categories into the a hash cache
-    # Initialize parent and level to "0"
-    set sql "
-        select
-                category_id,
-                category,
-                category_description,
-                parent_only_p,
-                enabled_p
-        from
-                im_categories
-        where
-                category_type = :category_type
-		and (enabled_p = 't' OR enabled_p is NULL)
-        order by lower(category)
-    "
-    db_foreach category_select $sql {
-        set cat($category_id) [list $category_id $category $category_description $parent_only_p $enabled_p]
-        set level($category_id) 0
-    }
 
-    # Get the hierarchy into a hash cache
-    set sql "
-        select
-                h.parent_id,
-                h.child_id
-        from
-                im_categories c,
-                im_category_hierarchy h
-        where
-                c.category_id = h.parent_id
-                and c.category_type = :category_type
-        order by lower(category)
-    "
 
-    # setup maps child->parent and parent->child for
-    # performance reasons
-    set children [list]
-    db_foreach hierarchy_select $sql {
-	if {![info exists cat($parent_id)]} { continue}
-	if {![info exists cat($child_id)]} { continue}
-        lappend children [list $parent_id $child_id]
-    }
 
-    set count 0
-    set modified 1
-    while {$modified} {
-        set modified 0
-        foreach rel $children {
-            set p [lindex $rel 0]
-            set c [lindex $rel 1]
-            set parent_level $level($p)
-            set child_level $level($c)
-            if {[expr $parent_level+1] > $child_level} {
-                set level($c) [expr $parent_level+1]
-                set direct_parent($c) $p
-                set modified 1
-            }
-        }
-        incr count
-        if {$count > 1000} {
-            ad_return_complaint 1 "Infinite loop in 'im_category_select'<br>
-            The category type '$category_type' is badly configured and contains
-            and infinite loop. Please notify your system administrator."
-            return "Infinite Loop Error"
-        }
-    }
 
-    set base_level 0
-    set html "<table>"
 
-    # Sort the category list's top level. We currently sort by category_id,
-    # but we could do alphabetically or by sort_order later...
-    set category_list [array names cat]
-    set category_list_sorted [lsort $category_list]
 
-    # Now recursively descend and draw the tree, starting
-    # with the top level
-    foreach p $category_list_sorted {
-        set p [lindex $cat($p) 0]
-        set enabled_p [lindex $cat($p) 4]
-	if {"f" == $enabled_p} { continue }
-        set p_level $level($p)
-        if {0 == $p_level} {
-            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $p "" $base_level [array get cat] [array get direct_parent]]
-        }
-    }
 
-    return "$html</table>"
 
-}
 
-ad_proc im_category_select_branch_kw {
-    {-translate_p 0}
-    {-package_key "intranet-core" }
-    {-locale "" }
-    parent
-    default
-    level
-    cat_array
-    direct_parent_array
-} {
-    Returns a list of html "options" displaying an options hierarchy.
-} {
 
-    if {$level > 10} { return "" }
 
-    array set cat $cat_array
-    array set direct_parent $direct_parent_array
 
-    set category [lindex $cat($parent) 1]
-    if {$translate_p} {
-        set category_key "$package_key.[lang::util::suggest_key $category]"
-        set category [lang::message::lookup $locale $category_key $category]
-    }
-
-    set parent_only_p [lindex $cat($parent) 3]
-
-    set spaces ""
-    for {set i 0} { $i < $level} { incr i} {
-        append spaces "&nbsp; &nbsp; &nbsp; &nbsp; "
-    }
-
-    set selected ""
-    if {$parent == $default} { set selected "selected" }
-    set html ""
-    if {"f" == $parent_only_p} {
-        set html "<tr><td>$spaces $category</td><td><input type='checkbox' value='$parent'/></td></tr>\n"
-        incr level
-    }
-
-    # Sort by category_id, but we could do alphabetically or by sort_order later...
-    set category_list [array names cat]
-    set category_list_sorted [lsort $category_list]
-
-    foreach cat_id $category_list_sorted {
-        if {[info exists direct_parent($cat_id)] && $parent == $direct_parent($cat_id)} {
-            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $cat_id $default $level $cat_array $direct_parent_array]
-        }
-    }
-
-    return $html
-}
 
 
 
