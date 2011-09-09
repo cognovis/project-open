@@ -795,6 +795,7 @@ ad_proc -private im_rest_get_object_type {
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
     set rest_columns [im_rest_get_rest_columns $query_hash_pairs]
+    foreach col $rest_columns { set rest_columns_hash($col) 1 }
 
     # -------------------------------------------------------
     # Get some more information about the current object type
@@ -978,10 +979,8 @@ ad_proc -private im_rest_get_object_type {
 		set dereferenced_result ""
 		foreach v $valid_vars {
 
-		    if {{} != $rest_columns} {
-			# Skip the column unless it is explicitely mentioned in the rest_columns list
-			if {![info exists rest_columns($v)]} { continue }
-		    }
+		    # Skip the column unless it is explicitely mentioned in the rest_columns list
+		    if {{} != $rest_columns} { if {![info exists rest_columns_hash($v)]} { continue } }
 
 		    eval "set a $$v"
 		    regsub -all {\n} $a {\n} a
