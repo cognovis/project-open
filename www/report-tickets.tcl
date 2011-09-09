@@ -131,6 +131,7 @@ set report_sql "
 		im_category_from_id(t.ticket_outgoing_channel_id) as ticket_outgoing_channel,
 		im_category_from_id(t.ticket_area_id) as ticket_program,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_type_id)) as ticket_type_parent,
 
 		p.*,
 		g.group_name as ticket_queue,
@@ -230,6 +231,7 @@ set header0 {
 	"Telefono"
 	"Area"
 	"Programa"
+	"Tema Level 1"
 	"Tema"
 	"Expediente"
 	"Detalle"
@@ -266,6 +268,7 @@ set report_def [list \
 	$contact_telephone
 	$ticket_area
 	$ticket_program
+	$ticket_type_parent
 	$ticket_type
 	$ticket_file
 	$ticket_request
@@ -419,6 +422,15 @@ db_foreach sql $report_sql {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
             set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
         }
+        if {"" != $ticket_type_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_type_parent]"
+            set ticket_type_parent [lang::message::lookup $locale $category_key $ticket_type_parent]
+        }
+        if {"" != $company_type} {
+            set category_key "intranet-core.[lang::util::suggest_key $company_type]"
+            set company_type [lang::message::lookup $locale $category_key $company_type]
+        }
+
         if {"Employees" == $ticket_queue} { set ticket_queue "" }
 
         # Columnas "padre": Canal entrada, Canal salida, tipo de ticket/tema
