@@ -73,7 +73,7 @@ SELECT im_component_plugin__new (
         '/intranet/companies/view',     -- page_url
         null,                           -- view_name
         15,                             -- sort_order
-        'im_allowed_company_types $company_id ' -- component_tcl
+        'im_allowed_project_types $company_id ' -- component_tcl
 );
 
 
