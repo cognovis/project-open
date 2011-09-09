@@ -49,16 +49,12 @@ SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','AbsenceTimefram
 -- create table to manage information which project types are allowed 
 
 create table im_customer_project_type (
-        id                      integer
-                                primary key,
         company_id              integer
-                                constraint im_customer_project_type_fk
                                 references im_companies,
         project_type_id         integer not null,
         unique(company_id, project_type_id)
 );
 
-create index im_customer_project_type_idx on im_customer_project_type(id);
 
 SELECT im_component_plugin__new (
         null,                           -- plugin_id
@@ -208,6 +204,7 @@ create table im_customer_prices (
 
 create index im_customer_prices_idx on im_customer_prices(id);
 
+
 select acs_object_type__create_type (
         'im_employee_customer_price',           -- object_type
         'Employee Customer Price',              -- pretty_name
@@ -286,8 +283,8 @@ SELECT im_component_plugin__new (
 );
 
 update im_component_plugins
-set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Employee/Customer Price List"'
-where plugin_name = 'Employee Customer Price List';
+set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Price List"'
+where plugin_name = 'Price List (Company)';
 
 
 -- Create a plugin for the Project View Page.
@@ -306,6 +303,10 @@ SELECT im_component_plugin__new (
         15,                             -- sort_order
         'im_customer_price_list $project_id $user_id 0 $return_url "" "" ""' -- component_tcl
 );
+
+update im_component_plugins
+set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletProjectPriceList "Price List"'
+where plugin_name = 'Price List (Project)';
 
 
 -- set permissions for above Plugins
