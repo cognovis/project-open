@@ -133,6 +133,9 @@ set report_sql "
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_type_id)) as ticket_type_parent,
 
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_incoming_channel)) as ticket_incoming_channel_parent,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_outgoing_channel)) as ticket_outgoing_channel_parent,
+
 		p.*,
 		g.group_name as ticket_queue,
 		im_category_from_id(t.ticket_status_id) as ticket_status,
@@ -220,7 +223,9 @@ set header0 {
 	"Hora Escalacion"
 	"Fecha Cierre"
 	"Hora Cierre"
+	"Canal Entrada Level 1"
 	"Canal Entrada"
+	"Canal Salida Level 1"
 	"Canal Salida"
 	"NIF"
 	"Empresa"
@@ -257,7 +262,9 @@ set report_def [list \
 	$ticket_escalation_date_time
 	$ticket_done_date_date
 	$ticket_done_date_time
+	$ticket_incoming_channel_parent
 	$ticket_incoming_channel
+	$ticket_outgoing_channel_parent
 	$ticket_outgoing_channel
 	$vat_number
 	$company_name
@@ -433,7 +440,7 @@ db_foreach sql $report_sql {
 
         if {"Employees" == $ticket_queue} { set ticket_queue "" }
 
-        # Columnas "padre": Canal entrada, Canal salida, tipo de ticket/tema
+        # Columnas "padre": Canal entrada, Canal salida
         # duracion:
 
 
