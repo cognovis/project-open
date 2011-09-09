@@ -417,14 +417,24 @@ db_foreach sql $report_sql {
 
 
         # Data Customization
+        if {"" != $ticket_incoming_channel_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel_parent]"
+            set ticket_incoming_channel_parent [lang::message::lookup $locale $category_key $ticket_incoming_channel_parent]
+        }
         if {"" != $ticket_incoming_channel} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel]"
             set ticket_incoming_channel [lang::message::lookup $locale $category_key $ticket_incoming_channel]
+        }
+
+        if {"" != $ticket_outgoing_channel_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_outgoing_channel_parent]"
+            set ticket_outgoing_channel_parent [lang::message::lookup $locale $category_key $ticket_outgoing_channel_parent]
         }
         if {"" != $ticket_outgoing_channel} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_outgoing_channel]"
             set ticket_outgoing_channel [lang::message::lookup $locale $category_key $ticket_outgoing_channel]
         }
+
         if {"" != $ticket_type} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
             set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
@@ -433,6 +443,7 @@ db_foreach sql $report_sql {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_type_parent]"
             set ticket_type_parent [lang::message::lookup $locale $category_key $ticket_type_parent]
         }
+
         if {"" != $company_type} {
             set category_key "intranet-core.[lang::util::suggest_key $company_type]"
             set company_type [lang::message::lookup $locale $category_key $company_type]
