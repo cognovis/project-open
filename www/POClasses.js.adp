@@ -63,6 +63,7 @@ Ext.define('PO.data.CategoryStore', {
 		var record_field_value = record.get('tree_sortkey');
 		var record_field_length = record_field_value.length;		
 		
+		this.clearFilter()
 		this.each(function(record){
 				var store_field_value = record.get('tree_sortkey');
 				var store_field_length = store_field_value.length;

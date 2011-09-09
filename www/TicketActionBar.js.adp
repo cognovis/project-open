@@ -297,6 +297,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	checkButtons: function (rec){
 		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject');
 		var buttonSave = Ext.getCmp('ticketActionBar').getComponent('buttonSave');
+		
 		rejectButton.show();
 		buttonSave.show();		
 		if (Ext.isEmpty(rec)){
@@ -305,6 +306,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		} else {
 			//If the Ticket is close, hide the buttons
 			var ticket_status_id = rec.get('ticket_status_id');
+			var ticket_last_queue_field = rec.get('ticket_last_queue_id');
 		
 			if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
 				rejectButton.disable();
@@ -312,7 +314,7 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			} else {
 				buttonSave.enable();
 				// Enable the "Reject" button if last_queue_id exists
-				if (Ext.isEmpty(ticket_last_queue_field.getValue())){
+				if (Ext.isEmpty(ticket_last_queue_field)){
 					rejectButton.disable();
 				} else {
 					rejectButton.enable();
