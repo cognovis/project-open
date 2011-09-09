@@ -411,7 +411,7 @@ if {$channel_p} {
 	if {$channel_id < 1000} { 
 	    # Ugly. Restore the category
 	    switch $output_format {
-		html { set channel "$sub_cat_string<br>[im_category_from_id [expr $channel_id + 10000000]]" }
+		html { set channel "$sub_cat_string[im_category_from_id [expr $channel_id + 10000000]]" }
 		csv  { set channel "$sub_cat_string[im_category_from_id [expr $channel_id + 10000000]]" }
 	    }
 	}
@@ -675,7 +675,7 @@ if {$type_p} {
 	set type [im_category_from_id $type_id]
 	if {$type_id < 1000} { 
 	    # Ugly. Restore the category
-	    set type "$sub_cat_string<br>[im_category_from_id [expr $type_id + 10000000]]"
+	    set type "$sub_cat_string[im_category_from_id [expr $type_id + 10000000]]"
 	}
 	if {$type_id < 0} { set type "N/C" }
 	switch $output_format {
