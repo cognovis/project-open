@@ -407,17 +407,17 @@ Ext.define('TicketBrowser.BizObjectMember', {
 });
 
 
-/*
+
 Ext.define('TicketBrowser.GroupMember', {
 	extend:	'Ext.data.Model',
 	idProperty:	'rel_id',				// The primary key or object_id of the company
 	fields:	[
-//		'rel_id',				// Primary key
-//		'rel_type',				// Type of relationship (=im_biz_object_member)
+		'rel_id',				// Primary key
+		'rel_type',				// Type of relationship (=im_biz_object_member)
 		'object_id_one',			// Business Object (company, project, ...)
 		'object_id_two',			// User who is a member
-//		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
-//		'member_state',				// Status of membership (approved|banned)
+		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
+		'member_state',				// Status of membership (approved|banned)
 		{
 			name: 'member_name',
 			convert: function(value, record) {
@@ -448,7 +448,7 @@ Ext.define('TicketBrowser.GroupMember', {
 					},
 		writer:		{ type: 'json' }
 	}
-});*/
+});
 
 
 
