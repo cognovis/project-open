@@ -38,7 +38,7 @@ Ext.define('TicketBrowser.Profile', {
 	idProperty:			'group_id',			// The primary key. A Queue is a subtype of "group".
 	fields:	[
 		'group_id',			// The primary key
-		'group_name',			// The name of the queue
+		'group_name'			// The name of the queue
 	],
 	proxy:	{
 		type:			'rest',
@@ -51,7 +51,8 @@ Ext.define('TicketBrowser.Profile', {
 		reader:	{
 			type:		'json',		// Tell the Proxy Reader to parse JSON
 			root:		'data',		// Where do the data start in the JSON file?
-			totalProperty:	'total'
+			totalProperty:	'total',
+			columns:		'group_id,group_name'
 		}
 	}
 });
@@ -146,7 +147,7 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_observations',		// Observaciones
 		'replycount'			// Number of ticket replies - not supported at the moment
 	],
-
+/*
 	validations: [
 		{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_reaction_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
@@ -156,7 +157,7 @@ Ext.define('TicketBrowser.Ticket', {
 		{ field: 'ticket_done_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
 		{ field: 'ticket_signoff_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ }
 	],
-
+*/
 	proxy: {
 		type:			'rest',
 		url:			'/intranet-rest/im_ticket',
@@ -186,19 +187,19 @@ Ext.define('TicketBrowser.Company', {
 		// Basic company fields with special meaning
 		'company_id',			// The primary key or object_id of the company
 		'company_name',			// The name of the company
-		'company_path',			// Short name and path to the company's filestorage
-		'main_office_id',		// The company's main office
+//		'company_path',			// Short name and path to the company's filestorage
+//		'main_office_id',		// The company's main office
 						// project that handles the financials of the company.
 		'company_status_id',		// Lifecycle control: Current Status
 		'company_type_id',		// Type of company: Controls presence/absence of DynFields
 		'primary_contact_id',		// Main customer contact
-		'accounting_contact_id',	// Customer contact for accounting purposes
-		'note',				// Free text note for company, full-text indexed
-		'referral_source',		// How have we heard about the company first?
-		'annual_revenue_id',		// How much turnover do we have with company?
+//		'accounting_contact_id',	// Customer contact for accounting purposes
+//		'note',				// Free text note for company, full-text indexed
+//		'referral_source',		// How have we heard about the company first?
+//		'annual_revenue_id',		// How much turnover do we have with company?
 		'vat_number',			// Company's VAT ID
-		'company_group_id',		// Does the company belong to a group structure?
-		'business_sector_id',		// Business sector of the company
+//		'company_group_id',		// Does the company belong to a group structure?
+//		'business_sector_id',		// Business sector of the company
 		'company_province',		// Custom field "province"
 		'spri_company_telephone',
 		'spri_company_email',
@@ -215,7 +216,8 @@ Ext.define('TicketBrowser.Company', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
-			gzip_p:    '1'
+			gzip_p:    '1',
+			columns:	'company_id,company_name,company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
 		},
 		reader:	{
 			type:		'json',		// Tell the Proxy Reader to parse JSON
@@ -236,9 +238,9 @@ Ext.define('TicketBrowser.User', {
 		'first_names',			// First name(s)
 		'last_name',			// Standard last name
 		'username',			// Windows username
-		'url',				// Web site URL
-		'authority_id',			// Windows domain
-		'member_state',			// "approved" or "banned"?
+//		'url',				// Web site URL
+//		'authority_id',			// Windows domain
+//		'member_state',			// "approved" or "banned"?
 		'last_name2',			// Spanish 2nd last name
 		'telephone',			// Telephone
 		'email',			// Just email txt
@@ -258,7 +260,8 @@ Ext.define('TicketBrowser.User', {
 		extraParams: {
 			format:	'json',
 			format_variant:	'sencha',
-			gzip_p:    '1'
+			gzip_p:    '1',
+			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -299,7 +302,8 @@ Ext.define('TicketBrowser.EmployeeMembershipRel', {
 		timeout:		300000,
 		extraParams: {
 			format:	'json',
-			object_id_one:	employeeGroupId		// Employees group
+			object_id_one:	employeeGroupId,		// Employees group
+			columns:	'object_id_one,object_id_two'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -342,7 +346,8 @@ Ext.define('TicketBrowser.CustomerMembershipRel', {
 		timeout:		300000,
 		extraParams: {
 			format:	'json',
-			object_id_one:	customerGroupId		// Customers group
+			object_id_one:	customerGroupId,		// Customers group
+			columns:	'object_id_one,object_id_two'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -364,12 +369,12 @@ Ext.define('TicketBrowser.BizObjectMember', {
 	extend:		'Ext.data.Model',
 	idProperty:	'rel_id',				// The primary key or object_id of the company
 	fields:	[
-		'rel_id',				// Primary key
-		'rel_type',				// Type of relationship (=im_biz_object_member)
+//		'rel_id',				// Primary key
+//		'rel_type',				// Type of relationship (=im_biz_object_member)
 		'object_id_one',			// Business Object (company, project, ...)
 		'object_id_two',			// User who is a member
-		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
-		'percentage',				// Membership percentage 
+//		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
+//		'percentage',				// Membership percentage 
 		{
 			name:	'member_name',
 			convert: function(value, record) {
@@ -387,7 +392,8 @@ Ext.define('TicketBrowser.BizObjectMember', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',
-			object_role_id: '1300'	
+			object_role_id: '1300',
+			columns:	'object_id_one,object_id_two'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -401,17 +407,17 @@ Ext.define('TicketBrowser.BizObjectMember', {
 });
 
 
-
+/*
 Ext.define('TicketBrowser.GroupMember', {
 	extend:	'Ext.data.Model',
 	idProperty:	'rel_id',				// The primary key or object_id of the company
 	fields:	[
-		'rel_id',				// Primary key
-		'rel_type',				// Type of relationship (=im_biz_object_member)
+//		'rel_id',				// Primary key
+//		'rel_type',				// Type of relationship (=im_biz_object_member)
 		'object_id_one',			// Business Object (company, project, ...)
 		'object_id_two',			// User who is a member
-		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
-		'member_state',				// Status of membership (approved|banned)
+//		'object_role_id',			// Role (1300=Full Member, 1301=Project Manager, ...)
+//		'member_state',				// Status of membership (approved|banned)
 		{
 			name: 'member_name',
 			convert: function(value, record) {
@@ -420,7 +426,13 @@ Ext.define('TicketBrowser.GroupMember', {
 				var name = store.name_from_id(member_id);
 				return name;
 			}
-		}
+		},
+		{
+			name:	'object_role_id',
+			convert: function(value, record) {
+				return '1300';
+			}			
+		}		
 	],
 	proxy:	{
 		type:		'rest',
@@ -428,10 +440,15 @@ Ext.define('TicketBrowser.GroupMember', {
 		appendId:	true,
 		timeout:	300000,
 		extraParams:	{ format: 'json' },
-		reader:		{ type: 'json', root: 'data', totalProperty: 'total' },
+		reader:		{ 
+						type: 'json', 
+						root: 'data', 
+						totalProperty: 'total',
+						columns:	'object_id_one,object_id_two'
+					},
 		writer:		{ type: 'json' }
 	}
-});
+});*/
 
 
 

@@ -201,7 +201,7 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
-	autoLoad:	true,
+	autoLoad:	false,
 	pageSize:	1000,
 	proxy: {
 		type: 'rest',
@@ -343,7 +343,7 @@ ticketStatusStore.load(
 
 var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyStatusStore',
-	autoLoad:	true,
+	autoLoad:	false,
 	remoteFilter:	true,
 	model: 		'TicketBrowser.Category',
 	pageSize:	1000,
@@ -359,6 +359,7 @@ var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+companyStatusStore.load();
 
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
@@ -480,7 +481,7 @@ var requestAreaProgramStore = Ext.create('PO.data.CategoryStore', {
 	}
 });
 
-
+/*
 var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'bizObjectRoleStore',
 	autoLoad:	true,
@@ -498,7 +499,7 @@ var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
-
+*/
 
 var programStore = Ext.create('Ext.data.Store', {
 	storeId:	'programStore',
@@ -561,7 +562,7 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	remoteFilter:	true,*/
 	pageSize: 1000000,
 //	autoSync: true,				// Write changes to the REST server ASAP
-	autoLoad: true,
+	autoLoad: false,
 	sorters: [{
 		property: 'company_name',
 		direction: 'ASC'

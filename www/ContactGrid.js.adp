@@ -124,9 +124,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					default:	return value;
 				}
 			}
-		}, {
-			header:		'#intranet-sencha-ticket-tracker.Last_Updated#',
-			dataIndex:	'last_modified'
 		}
 	],
 	dockedItems:	[{
