@@ -106,66 +106,60 @@ ad_proc -public im_allowed_project_types {
     set header_html "
       <tr> 
 	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
-    "
-    if { $add_admin_links } {
-        incr colspan
-        append header_html "<td class=rowtitle align=middle>[im_gif delete]</td>"
-    }
-    append header_html "
       </tr>"
 
-    # ------------------ Format the table body ----------------
-    set td_class(0) "class=roweven"
-    set td_class(1) "class=rowodd"
-    set found 0
-    set count 0
-    set body_html ""
-
-    set sql_query "
-	select 
-		project_type_id 
-	from
-	        im_customer_project_type
-	where
-        	company_id = $company_id
-    "
-
-    db_foreach project_type $sql_query {
-		# First Column: user
-		append body_html "
-			<tr $td_class([expr $count % 2])>
-			  [im_category_from_id $project_type_id]
-  			<td>"
-
-		if {$add_admin_links} {
-		    append body_html "
-			  <td align=right>
-			    <input type=checkbox name='project_type_id value='$project_type_id'>
-			  </td>
-		    "
-		}
-		append body_html "</tr>"
-    }
-
-    if { [empty_string_p $body_html] } {
-	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
-    } 
-
-    # ------------------ Add form to create new record ------------
-
-     append body_html "
-        <tr $td_class([expr $count % 2])>
-                <td colspan='5'>
-			<br> 
-			<b>[lang::message::lookup "" intranet-cust-koernig-weber.AllowNewProjectType "Allow new Project Type"]:</b>
-                </td>
-        </tr>
-        <tr $td_class([expr $count % 2])>
-		<td>
-                      [im_category_select_multiple -translate_p 1 "Intranet Project Type" "new_project_type_id" "" "" 1]
-                </td>
-        </tr>
-      "
+#    # ------------------ Format the table body ----------------
+#    set td_class(0) "class=roweven"
+#    set td_class(1) "class=rowodd"
+#    set found 0
+#    set count 0
+#    set body_html ""
+#
+#    set sql_query "
+#	select 
+#		project_type_id 
+#	from
+#	        im_customer_project_type
+#	where
+#        	company_id = $company_id
+#    "
+#
+#    db_foreach project_type $sql_query {
+#		# First Column: user
+#		append body_html "
+#			<tr $td_class([expr $count % 2])>
+#			  [im_category_from_id $project_type_id]
+#  			<td>"
+#
+#		if {$add_admin_links} {
+#		    append body_html "
+#			  <td align=right>
+#			    <input type=checkbox name='project_type_id value='$project_type_id'>
+#			  </td>
+#		    "
+#		}
+#		append body_html "</tr>"
+#    }
+#
+#    if { [empty_string_p $body_html] } {
+#	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
+#    } 
+#
+#    # ------------------ Add form to create new record ------------
+#
+#     append body_html "
+#        <tr $td_class([expr $count % 2])>
+#                <td colspan='5'>
+#			<br> 
+#			<b>[lang::message::lookup "" intranet-cust-koernig-weber.AllowNewProjectType "Allow new Project Type"]:</b>
+#                </td>
+#        </tr>
+#        <tr $td_class([expr $count % 2])>
+#		<td>
+#                      [im_category_select_multiple -translate_p 1 "Intranet Project Type" "new_project_type_id" "" "" 1]
+#                </td>
+#        </tr>
+#      "
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
 	append footer_html "
@@ -173,8 +167,7 @@ ad_proc -public im_allowed_project_types {
 	    "
 
     # ------------------ Join table header, body and footer ----------------
-    set body_html [im_project_type_table]
-
+    set body_html [im_project_type_table $company_id]
 
     # ------------------ Join table header, body and footer ----------------
     set html "
@@ -903,11 +896,11 @@ proc filter_conncontext { conn arg why } {
     return filter_ok
 }
 
-
 ad_proc im_project_type_table {
     {-translate_p 1}
     {-package_key "intranet-cust-koernigweber" }
     {-locale "" }
+    company_id 
 } {
     Returns a formatted HTML table with enabled "Project Types" and a select box  
     Based on "im_category_select_helper"
@@ -999,7 +992,7 @@ ad_proc im_project_type_table {
 	if {"f" == $enabled_p} { continue }
         set p_level $level($p)
         if {0 == $p_level} {
-            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $p "" $base_level [array get cat] [array get direct_parent]]
+            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $p "" $base_level [array get cat] [array get direct_parent] $company_id]
         }
     }
 
@@ -1016,9 +1009,11 @@ ad_proc im_category_select_branch_kw {
     level
     cat_array
     direct_parent_array
+    company_id
 } {
     Returns a list of html "options" displaying an options hierarchy.
 } {
+
 
     if {$level > 10} { return "" }
 
@@ -1042,7 +1037,13 @@ ad_proc im_category_select_branch_kw {
     if {$parent == $default} { set selected "selected" }
     set html ""
     if {"f" == $parent_only_p} {
-        set html "<tr><td>$spaces $category</td><td><input type='checkbox' name='project_type_id' value='$parent'/></td></tr>\n"
+	set checked [db_string get_data "select count(*) from im_customer_project_type where company_id = $company_id and project_type_id = $parent" -default 0]
+	if { "0" == $checked } {
+	    set checked_tag ""
+	} else {
+	    set checked_tag "checked"
+	}
+        set html "<tr><td>$spaces $category</td><td><input type='checkbox' $checked_tag name='project_type_id' value='$parent'/></td></tr>\n"
         incr level
     }
 
@@ -1052,7 +1053,7 @@ ad_proc im_category_select_branch_kw {
 
     foreach cat_id $category_list_sorted {
         if {[info exists direct_parent($cat_id)] && $parent == $direct_parent($cat_id)} {
-            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $cat_id $default $level $cat_array $direct_parent_array]
+            append html [im_category_select_branch_kw -translate_p $translate_p -package_key $package_key -locale $locale $cat_id $default $level $cat_array $direct_parent_array $company_id]
         }
     }
 
