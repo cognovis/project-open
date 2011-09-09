@@ -371,6 +371,9 @@ if {$channel_p} {
 	    
 	    # Disable for debugging
 	    # continue
+
+	    # Don't show the sub-categories of "telefonia"
+	    if {10000036 == $channel_id} { continue }
 	    
 	    # Check for sub-categories with values
 	    set subcats [im_sub_categories $channel_id]
