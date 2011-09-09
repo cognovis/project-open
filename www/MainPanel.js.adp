@@ -88,7 +88,6 @@ Ext.define('TicketBrowser.Main', {
 						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
 						var date = new Date();
 						Ext.getCmp('ticketForm').getForm().findField('datetime').setValue(date.getTime());
-//						Ext.getCmp('ticketForm').getForm().findField('random').setValue(parseInt(Math.random()*10000000));
 				},
 				deactivate: function(){
 					// Show a dialog to save changes in ticket
@@ -97,12 +96,6 @@ Ext.define('TicketBrowser.Main', {
 					var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
 					//There is a ticked that is not closed and dirty			
 					if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
-					/*	Ext.Msg.show({
-					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
-					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
-					    	buttons: Ext.Msg.OK,
-					    	icon: Ext.MessageBox.WARNING,
-						});*/
 						ticketModel.dirty = false;
 						Ext.Msg.show({
 					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',

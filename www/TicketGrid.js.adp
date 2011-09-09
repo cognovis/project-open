@@ -62,6 +62,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(compoundPanel);
+		Ext.getCmp('ticketActionBar').checkButtons(record);
 	}
 	},
 
