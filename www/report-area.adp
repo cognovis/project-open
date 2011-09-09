@@ -1,7 +1,7 @@
 <if "html" eq @output_format@>
 <master>
 <form>
-<%= [export_form_vars invoice_id] %>
+<%= [export_form_vars invoice_id locale perc_p channel_p type_p queue_p] %>
 <table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 		  <td class=rowtitle colspan=2 align=center>#intranet-core.Date#</td>
