@@ -36,6 +36,8 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
+set locale [lang::user::locale -user_id $current_user_id]
+
 # ------------------------------------------------------------
 # Check Parameters
 
@@ -402,6 +404,26 @@ db_foreach sql $report_sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
+
+
+        # Data Customization
+        if {"" != $ticket_incoming_channel} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel]"
+            set ticket_incoming_channel [lang::message::lookup $locale $category_key $ticket_incoming_channel]
+        }
+        if {"" != $ticket_outgoing_channel} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_outgoing_channel]"
+            set ticket_outgoing_channel [lang::message::lookup $locale $category_key $ticket_outgoing_channel]
+        }
+        if {"" != $ticket_type} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
+            set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
+        }
+        if {"Employees" == $ticket_queue} { set ticket_queue "" }
+
+        # Columnas "padre": Canal entrada, Canal salida, tipo de ticket/tema
+        # duracion:
+
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
