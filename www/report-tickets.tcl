@@ -133,8 +133,8 @@ set report_sql "
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_type_id)) as ticket_type_parent,
 
-		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_incoming_channel)) as ticket_incoming_channel_parent,
-		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_outgoing_channel)) as ticket_outgoing_channel_parent,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_incoming_channel_id)) as ticket_incoming_channel_parent,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_outgoing_channel_id)) as ticket_outgoing_channel_parent,
 
 		p.*,
 		g.group_name as ticket_queue,
