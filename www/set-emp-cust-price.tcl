@@ -54,7 +54,6 @@ ns_log Notice "member-update: submit=$submit"
  	    set rate_currency [string trim $currency($user_id_project_type_id)]
 	    set user_id [string range $user_id_project_type_id 0 [expr [string first "_" $user_id_project_type_id] -1]]
 	    set project_type [string range $user_id_project_type_id [expr [string first "_" $user_id_project_type_id] +1] [string length user_id_project_type_id]]
-
 	    if {![string is double $rate_amount]} { 
 		ad_return_complaint 1 "
 		     <b>[lang::message::lookup "" intranet-core.Price_not_a_number "Price is not a number"]</b>:<br>
@@ -80,14 +79,24 @@ ns_log Notice "member-update: submit=$submit"
 	    if { "" != $rate_amount} { 
 		ns_log NOTICE "ERR_ NULL, 'im_employee_customer_price', now()::date, NULL, '', NULL, $user_id, $object_id, $rate_amount, '$rate_currency' [string length $rate_amount]"
 		# update employee/customer price matrix 
-	        set sql "
+		if { "" == $project_type } {set project_type_db NULL } else { set project_type_db $project_type }
+		    set sql "
 			select 
 				im_employee_customer_price__update(NULL, 
 				'im_employee_customer_price', now()::date, 
 				NULL, '', NULL, $user_id, $object_id, 
-				$rate_amount, '$rate_currency',$project_type)
-		"
+				$rate_amount, '$rate_currency',$project_type_db)
+			"
+
 		set foo [db_string get_view_id $sql -default 0]
+	    }
+
+	    if { [info exists delete_price(${user_id}_${project_type})] } {
+		if { "customer" == $object_type } { 
+		    db_dml sql "delete from im_customer_prices where object_id = :object_id and user_id = $user_id and project_type_id = $project_type"
+		} else {
+		    db_dml sql "delete from im_customer_prices where object_id = :object_id and user_id = $user_id"		    
+		}
 	    }
 	}
 
@@ -99,7 +108,7 @@ ns_log Notice "member-update: submit=$submit"
                         im_employee_customer_price__update(NULL,
                         'im_employee_customer_price', now()::date,
                         NULL, '', NULL, :new_user_id, $object_id,
-                        :new_amount, :new_currency, NULL)
+                        :new_amount, :new_currency, 0)
                 "
 	    } else {
               set sql "

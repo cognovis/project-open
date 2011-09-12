@@ -108,58 +108,6 @@ ad_proc -public im_allowed_project_types {
 	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
       </tr>"
 
-#    # ------------------ Format the table body ----------------
-#    set td_class(0) "class=roweven"
-#    set td_class(1) "class=rowodd"
-#    set found 0
-#    set count 0
-#    set body_html ""
-#
-#    set sql_query "
-#	select 
-#		project_type_id 
-#	from
-#	        im_customer_project_type
-#	where
-#        	company_id = $company_id
-#    "
-#
-#    db_foreach project_type $sql_query {
-#		# First Column: user
-#		append body_html "
-#			<tr $td_class([expr $count % 2])>
-#			  [im_category_from_id $project_type_id]
-#  			<td>"
-#
-#		if {$add_admin_links} {
-#		    append body_html "
-#			  <td align=right>
-#			    <input type=checkbox name='project_type_id value='$project_type_id'>
-#			  </td>
-#		    "
-#		}
-#		append body_html "</tr>"
-#    }
-#
-#    if { [empty_string_p $body_html] } {
-#	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
-#    } 
-#
-#    # ------------------ Add form to create new record ------------
-#
-#     append body_html "
-#        <tr $td_class([expr $count % 2])>
-#                <td colspan='5'>
-#			<br> 
-#			<b>[lang::message::lookup "" intranet-cust-koernig-weber.AllowNewProjectType "Allow new Project Type"]:</b>
-#                </td>
-#        </tr>
-#        <tr $td_class([expr $count % 2])>
-#		<td>
-#                      [im_category_select_multiple -translate_p 1 "Intranet Project Type" "new_project_type_id" "" "" 1]
-#                </td>
-#        </tr>
-#      "
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
 	append footer_html "
@@ -188,7 +136,7 @@ ad_proc -public im_customer_price_list {
     {-debug 0}
     object_id 
     user_id
-    { add_admin_links 0 } 
+    { add_admin_links 1 } 
     { return_url "" } 
     { limit_to_users_in_group_id "" } 
     { dont_allow_users_in_group_id "" } 
@@ -324,25 +272,26 @@ ad_proc -public im_customer_price_list {
 		if { ![info exists project_type_id] } { set project_type_id "" }	
 
 		# Decide about mode (view/edit)
-        	if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
+        	# if  [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type 
 		    # User has permission to edit company prices  
-        	    append body_html "
-                	  <td align=middle>
-				[im_project_type_select "project_type_id.${user_id}_$project_type_id" $project_type_id] 
-	                  </td>
-        	    "
-	        } else {
-		    # user has no permission to edit, show only 
+        	#    append body_html "
+                #	  <td align=middle>
+		#		[im_project_type_select "project_type_id.${user_id}_$project_type_id" $project_type_id] 
+	        #          </td>
+        	#    "
+	        #  else 
+		#    # user has no permission to edit, show only 
 	            append body_html "
         	          <td align=middle>
 				[im_category_from_id $project_type_id]
 	                  </td>
         	    "
-        	}
+        	# end if
 	
 		# Set price (edit/view)
-	        if { [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type } {
-
+	        # if [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type 
+	    
+	    	if { ("" != $project_type_id && "im_company" == $object_type) || ("0" == $project_type_id && "im_project" == $object_type ) } {
 		    set var_amount "amount.${user_id}_$project_type_id" 
 		    set var_currency "currency.${user_id}_$project_type_id"
 
@@ -351,7 +300,7 @@ ad_proc -public im_customer_price_list {
 	                    <input type=input size=6 maxlength=6 name=\"$var_amount\" value=\"$amount\">[im_currency_select $var_currency $currency]
         	          </td>
 	            "
-		} else {
+		 } else {
 	            if { "" == $amount } { 
 			set amount [lang::message::lookup "" intranet-core.Not_Set "Not set"] 
 			set show_currency_p 0
@@ -359,12 +308,13 @@ ad_proc -public im_customer_price_list {
         	    append body_html "<td align=right>$amount"
 		    if { $show_currency_p } {append body_html "$currency "}
         	    append body_html "</td>"
-        	}
+        	 }
 
 		append body_html "</td>"
 
-		if {$add_admin_links} {
-		    set var_delete_price [concat "delete_price" "." $user_id "_" "project_type_id"
+		# if $add_admin_links && "" == $project_type_id
+		if { ("" != $project_type_id && "im_company" == $object_type) || ("0" == $project_type_id && "im_project" == $object_type ) } {
+		    set var_delete_price "delete_price.${user_id}_${project_type_id}"
 		    append body_html "
 			  <td align=right>
 			    <input type=checkbox name='$var_delete_price' value=''>
