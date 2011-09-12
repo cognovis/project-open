@@ -27,7 +27,7 @@ set page_title [lang::message::lookup "" intranet-sencha-ticket-tracker.Report_T
 set sigma "&Sigma;"
 set days_in_past 0
 set sub_cat_string ""
-
+set tecnicos_group_id [db_string tecnicos "select group_id from groups where group_name = 'Connect'"]
 
 db_1row todays_date "
 select
@@ -166,7 +166,7 @@ switch $output_format {
 
 
 set dimension_vars [list area_id program_id]
-set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
 set total_sql "
 	select  coalesce(
@@ -195,7 +195,7 @@ set total_aggregate_sql "
 
 db_foreach total_hash $total_aggregate_sql {
     if {"" == $area_id} { set area_id -1000 }
-    foreach perm $dimension_perms {
+    foreach perm $dimension_permutations {
 	# Add a "$" before every variable
 	set perm_subs [list]
 	foreach p $perm { lappend perm_subs "\$$p" }
@@ -283,7 +283,7 @@ switch $output_format {
 if {$channel_p} {
 
     set dimension_vars [list area_id program_id channel_level1_id channel_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
     
     # ----------------------------------------------------------------
     # Get the list of all channels
@@ -344,12 +344,12 @@ if {$channel_p} {
     # Write the values from the SQL into a hash array and aggregate
     db_foreach channel_hash $channel_aggregate_sql {
 
-	if {"" == $area_id}			{ set area_id -1000 }
+	if {"" == $area_id}		{ set area_id -1000 }
 	if {"" == $program_id}		{ set program_id -1004 }
 	if {"" == $channel_id} 		{ set channel_id -1001 }
 	if {"" == $channel_level1_id} 	{ set channel_level1_id -1002 }
 	
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
@@ -557,7 +557,7 @@ if {$channel_p} {
 if {$type_p} {
 
     set dimension_vars [list area_id program_id type_level1_id type_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
     set type_list_sql "
 	select distinct
@@ -617,7 +617,7 @@ if {$type_p} {
 	if {"" == $type_id} 		{ set type_id -1001 }
 	if {"" == $type_level1_id}		{ set type_level1_id -1002 }
 
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
@@ -817,13 +817,16 @@ if {$type_p} {
 if {$queue_p} {
 
     set dimension_vars [list area_id program_id queue_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
     set queue_list_sql "
 	select distinct
 		ticket_queue_id
 	from	im_tickets
 	where	ticket_queue_id is not null
+
+	UNION
+	select	$tecnicos_group_id
 	order by ticket_queue_id
     "
     set queue_list [list]
@@ -863,15 +866,19 @@ if {$queue_p} {
 
     db_foreach queue_hash $queue_aggregate_sql {
 	
-	if {"" == $area_id}			{ set area_id -1000 }
+	# Fix special categories
+	if {"" == $area_id}		{ set area_id -1000 }
 	if {"" == $program_id}		{ set program_id -1004 }
 	if {"" == $queue_id} 		{ set queue_id -1003 }
 	
+	# Summarize all "Tecnios" in a single group.
+	if {$queue_id > 73375}		{ set queue_id tecnicos_group_id }
+
 	ns_log Notice "---------------------------------------------------------------"
 	ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, queue_id=$queue_id"
 	ns_log Notice ""
 	
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
