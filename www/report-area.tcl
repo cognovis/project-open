@@ -872,7 +872,7 @@ if {$queue_p} {
 	if {"" == $queue_id} 		{ set queue_id -1003 }
 	
 	# Summarize all "Tecnios" in a single group.
-	if {$queue_id > 73375}		{ set queue_id tecnicos_group_id }
+	if {$queue_id > 73375}		{ set queue_id $tecnicos_group_id }
 
 	ns_log Notice "---------------------------------------------------------------"
 	ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, queue_id=$queue_id"
