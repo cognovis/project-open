@@ -91,11 +91,11 @@ Ext.define('TicketBrowser.Ticket', {
 	idProperty:	'ticket_id',		// The primary key or object_id of the ticket
 	fields:	[
 		// Basic ticket fields with special meaning
-		'id',			// The primary key or object_id of the ticket
-		'object_name',			// The name of the ticket. Ticket is as sub-type of Project, 
+		'ticket_id',			// The primary key or object_id of the ticket
+		'project_name',			// The name of the ticket. Ticket is as sub-type of Project, 
 						// so the ticket name is stored as project_name.
 		'project_nr',			// The short name of the ticket.
-//		'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
+		'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
 						// project that handles the financials of the ticket.
 		'company_id',			// Company for whom the ticket has been created
 		'creation_user',		// User_id of the guy creating the ticket
@@ -146,18 +146,6 @@ Ext.define('TicketBrowser.Ticket', {
 //		'ticket_answer',		// Respuesta
 //		'ticket_observations',		// Observaciones
 //		'replycount'			// Number of ticket replies - not supported at the moment
-		{
-			name: 'ticket_id',			
-			convert: function(value, record) {
-				return record.get('id');
-			}			
-		}, 
-		{
-			name: 'project_name',			
-			convert: function(value, record) {
-				return record.get('object_name');
-			}			
-		}		
 	],
 
 	proxy: {
@@ -168,7 +156,7 @@ Ext.define('TicketBrowser.Ticket', {
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
 			deref_p:	'1',
-			columns: 	'ticket_id,project_name,project_nr,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution'
+			columns: 	'ticket_id,project_name,project_nr,parent_id,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution'
 		},
 		reader:	{
 			type:		'json',			// Tell the Proxy Reader to parse JSON
