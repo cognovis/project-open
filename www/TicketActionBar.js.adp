@@ -99,6 +99,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		id: 'buttonRemoveSelected',
 		text:		'#intranet-sencha-ticket-tracker.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
+		disable:	function (){
+						if (currentUserIsAdmin != 1) {
+							return true;
+						}
+						return false;
+					},
 		handler:	function(btn, pressed){
 			//Confimation message
 			Ext.Msg.show({

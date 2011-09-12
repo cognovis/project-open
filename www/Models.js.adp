@@ -91,11 +91,11 @@ Ext.define('TicketBrowser.Ticket', {
 	idProperty:	'ticket_id',		// The primary key or object_id of the ticket
 	fields:	[
 		// Basic ticket fields with special meaning
-		'ticket_id',			// The primary key or object_id of the ticket
-		'project_name',			// The name of the ticket. Ticket is as sub-type of Project, 
+		'id',			// The primary key or object_id of the ticket
+		'object_name',			// The name of the ticket. Ticket is as sub-type of Project, 
 						// so the ticket name is stored as project_name.
 		'project_nr',			// The short name of the ticket.
-		'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
+//		'parent_id',			// The parent_id of the ticket is the Service Level Agreement (SLA)
 						// project that handles the financials of the ticket.
 		'company_id',			// Company for whom the ticket has been created
 		'creation_user',		// User_id of the guy creating the ticket
@@ -107,32 +107,32 @@ Ext.define('TicketBrowser.Ticket', {
 		'fs_folder_path',		// File-storage folder path for this ticket
 	
 		// Main ticket fields
-		'ticket_prio_id',		// Priority
-		'ticket_assignee_id',		// Who is assigned to the work?
-		'ticket_dept_id',		// Which department?
-		'ticket_service_type_id',
-		'ticket_hardware_id',
-		'ticket_application_id',
+//		'ticket_prio_id',		// Priority
+//		'ticket_assignee_id',		// Who is assigned to the work?
+//		'ticket_dept_id',		// Which department?
+//		'ticket_service_type_id',
+//		'ticket_hardware_id',
+//		'ticket_application_id',
 		'ticket_queue_id',		// Assignee queue (currently not used)
 		'ticket_last_queue_id',		// Last queue before escalation
-		'ticket_conf_item_id',
-		'ticket_component_id',
-		'ticket_description',		// Initial description of the ticket
-		'ticket_resolution_time',	// 
+//		'ticket_conf_item_id',
+//		'ticket_component_id',
+//		'ticket_description',		// Initial description of the ticket
+//		'ticket_resolution_time',	// 
 		'ticket_closed_in_1st_contact_p',
 	
 		// Alarm mechanism - not supported yet
-		'ticket_alarm_date',
-		'ticket_alarm_action',
+//		'ticket_alarm_date',
+//		'ticket_alarm_action',
 	
 		// Ticket lifecycle tracking	
 		'ticket_creation_date',		// 
 		'ticket_reaction_date',		// 
-		'ticket_confirmation_date',	// 
-		'ticket_escalation_date',	// 
-		'ticket_resolution_date',	// 
+//		'ticket_confirmation_date',	// 
+//		'ticket_escalation_date',	// 
+//		'ticket_resolution_date',	// 
 		'ticket_done_date',		// 
-		'ticket_signoff_date',		//
+//		'ticket_signoff_date',		//
 	
 		'ticket_requires_addition_info_p',
 		'ticket_incoming_channel_id',	//
@@ -143,21 +143,23 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_file',			// expediente
 		'ticket_request',		// expediente
 		'ticket_resolution',		// expediente
-		'ticket_answer',		// Respuesta
-		'ticket_observations',		// Observaciones
-		'replycount'			// Number of ticket replies - not supported at the moment
+//		'ticket_answer',		// Respuesta
+//		'ticket_observations',		// Observaciones
+//		'replycount'			// Number of ticket replies - not supported at the moment
+		{
+			name: 'ticket_id',			
+			convert: function(value, record) {
+				return record.get('id');
+			}			
+		}, 
+		{
+			name: 'project_name',			
+			convert: function(value, record) {
+				return record.get('object_name');
+			}			
+		}		
 	],
-/*
-	validations: [
-		{ field: 'ticket_creation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_reaction_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_confirmation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_escalation_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_resolution_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_done_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ },
-		{ field: 'ticket_signoff_date', type: 'format', matcher: /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ }
-	],
-*/
+
 	proxy: {
 		type:			'rest',
 		url:			'/intranet-rest/im_ticket',
@@ -165,7 +167,8 @@ Ext.define('TicketBrowser.Ticket', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
-			deref_p:	'1'
+			deref_p:	'1',
+			columns: 	'ticket_id,project_name,project_nr,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution'
 		},
 		reader:	{
 			type:		'json',			// Tell the Proxy Reader to parse JSON
@@ -179,34 +182,33 @@ Ext.define('TicketBrowser.Ticket', {
 
 });
 
-
 Ext.define('TicketBrowser.Company', {
 	extend:	'Ext.data.Model',
 	idProperty:	'company_id',		// The primary key or object_id of the company
 	fields:	[
-		// Basic company fields with special meaning
-		'company_id',			// The primary key or object_id of the company
-		'company_name',			// The name of the company
-//		'company_path',			// Short name and path to the company's filestorage
-//		'main_office_id',		// The company's main office
-						// project that handles the financials of the company.
+		'id',
+		'object_name',
 		'company_status_id',		// Lifecycle control: Current Status
 		'company_type_id',		// Type of company: Controls presence/absence of DynFields
 		'primary_contact_id',		// Main customer contact
-//		'accounting_contact_id',	// Customer contact for accounting purposes
-//		'note',				// Free text note for company, full-text indexed
-//		'referral_source',		// How have we heard about the company first?
-//		'annual_revenue_id',		// How much turnover do we have with company?
 		'vat_number',			// Company's VAT ID
-//		'company_group_id',		// Does the company belong to a group structure?
-//		'business_sector_id',		// Business sector of the company
 		'company_province',		// Custom field "province"
 		'spri_company_telephone',
 		'spri_company_email',
 		'spri_company_address',
 		'spri_company_pc',
 		'spri_company_city',
-		'spri_company_fax'				
+		'spri_company_fax',
+		{ 	name: 'company_id',			
+			convert: function(value, record) {
+				return record.get('id');
+			}
+		},
+		{ 	name: 'company_name',		
+			convert: function(value, record) {
+				return record.get('object_name');
+			}
+		}						
 	],
 
 	proxy:	{
@@ -217,7 +219,7 @@ Ext.define('TicketBrowser.Company', {
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
 			gzip_p:    '1',
-			columns:	'company_id,company_name,company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
+			columns:	'company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
 		},
 		reader:	{
 			type:		'json',		// Tell the Proxy Reader to parse JSON
@@ -234,23 +236,25 @@ Ext.define('TicketBrowser.User', {
 	extend:	'Ext.data.Model',
 	idProperty:	'user_id',		// The primary key or object_id of the company
 	fields:	[
-		'user_id',			// Primary key
+		'id',			// Primary key
 		'first_names',			// First name(s)
 		'last_name',			// Standard last name
 		'username',			// Windows username
-//		'url',				// Web site URL
-//		'authority_id',			// Windows domain
-//		'member_state',			// "approved" or "banned"?
 		'last_name2',			// Spanish 2nd last name
 		'telephone',			// Telephone
 		'email',			// Just email txt
 		'gender',			// male or female
 		'language',			// es_ES or eu_ES
-		{ name: 'name',			// Calculated compound name
-		convert: function(value, record) {
-			return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
+		{	name: 'name',			// Calculated compound name
+			convert: function(value, record) {
+				return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
+			}
+		},{	name: 'user_id',			
+			convert: function(value, record) {
+				return record.get('id');
+			}
 		}
-	}],
+	],
 
 	proxy:	{
 		type:			'rest',
@@ -261,7 +265,7 @@ Ext.define('TicketBrowser.User', {
 			format:	'json',
 			format_variant:	'sencha',
 			gzip_p:    '1',
-			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language'
+			columns: 	'first_names,last_name,username,last_name2,telephone,email,gender,language'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -473,19 +477,19 @@ Ext.define('TicketBrowser.FileStorage', {
 
 Ext.define('TicketBrowser.TicketAudit', {
 	extend:	'Ext.data.Model',
-	idProperty:	'audit_id',		// The primary key or object_id of the filestorage
+	idProperty:	'id',		// The primary key or object_id of the filestorage
 	fields:	[
-		'audit_id',			// The primary key or object_id of the filestorage
-		'audit_object_id',		// The name of the file.
-		'audit_action',			// The ID of the content folder that contains the file
-		'audit_user_id',		// MIME type of the file, i.e. "image/jpeg", ...
+//		'audit_id',			// The primary key or object_id of the filestorage
+//		'audit_object_id',		// The name of the file.
+//		'audit_action',			// The ID of the content folder that contains the file
+//		'audit_user_id',		// MIME type of the file, i.e. "image/jpeg", ...
 		'audit_date',			// Manual description of the file
 		'audit_ip',			// Date of creation
-		'audit_object_status_id',	// The user who created the file
+//		'audit_object_status_id',	// The user who created the file
 	
 		// Fields from im_company
 		'company_id',
-		'company_project_nr',
+/*		'company_project_nr',
 		'confirm_date',
 		'corporate_sponsor',
 		'cost_bills_cache',
@@ -526,7 +530,7 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'sort_order',
 		'start_date',
 		'subject_area_id',
-		'supervisor_id',
+		'supervisor_id',*/
 
 		'ticket_file',			// expediente
 		'ticket_request',		// expediente
@@ -536,41 +540,53 @@ Ext.define('TicketBrowser.TicketAudit', {
 		'ticket_area_id',		// Area
 	
 		// fields from im_ticket
-		'ticket_alarm_action',
+/*		'ticket_alarm_action',
 		'ticket_alarm_date',
 		'ticket_application_id',
 		'ticket_assignee_id',
 		'ticket_closed_in_1st_contact_p',
 		'ticket_component_id',
 		'ticket_conf_item_id',
-		'ticket_confirmation_date',
+		'ticket_confirmation_date',*/
 		'ticket_creation_date',
 		'ticket_escalation_date',
-		'ticket_resolution_date',
+//		'ticket_resolution_date',
 		'ticket_customer_contact_id',
-		'ticket_customer_deadline',
+/*		'ticket_customer_deadline',
 		'ticket_dept_id',
-		'ticket_description',
+		'ticket_description',*/
 		'ticket_done_date',
-		'ticket_hardware_id',
-		'ticket_id',
+//		'ticket_hardware_id',
+/*		'ticket_id',
 		'ticket_note',
-		'ticket_prio_id',
+		'ticket_prio_id',*/
 		'ticket_queue_id',
 		'ticket_queue_id_pretty',
-		'ticket_quote_comment',
-		'ticket_quoted_days',
+//		'ticket_quote_comment',
+//		'ticket_quoted_days',
 		'ticket_reaction_date',
-		'ticket_resolution_time',
-		'ticket_resolution_time_dirty',
-		'ticket_service_id',
-		'ticket_signoff_date',
-		'ticket_sla_id',
+//		'ticket_resolution_time',
+//		'ticket_resolution_time_dirty',
+//		'ticket_service_id',
+//		'ticket_signoff_date',
+//		'ticket_sla_id',
 		'ticket_status_id',
-		'ticket_telephony_new_number',
+/*		'ticket_telephony_new_number',
 		'ticket_telephony_old_number',
-		'ticket_telephony_request_type_id',
+		'ticket_telephony_request_type_id',*/
 		'ticket_type_id',
 		'ticket_incoming_channel_id'
-	]
+	],
+
+    proxy: {
+		type: 'rest',
+		url: '/intranet-sencha-ticket-tracker/object-audit-datasource',
+		appendId: true,
+		extraParams: { 
+			format: 'json', 
+			object_id: 0,
+			columns: 'audit_date,ticket_request,ticket_resolution,ticket_status_id,ticket_type_id,ticket_queue_id_pretty,company_id,ticket_area_id,ticket_queue_id,ticket_customer_contact_id,ticket_file,ticket_creation_date,ticket_reaction_date,ticket_escalation_date,ticket_done_date,ticket_customer_contact_id,ticket_incoming_channel_id,audit_ip'
+		},
+		reader: { type: 'json', root: 'data' }
+    }	
 });
