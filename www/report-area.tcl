@@ -27,7 +27,7 @@ set page_title [lang::message::lookup "" intranet-sencha-ticket-tracker.Report_T
 set sigma "&Sigma;"
 set days_in_past 0
 set sub_cat_string ""
-set tecnicos_group_id [db_string tecnicos "select group_id from groups where group_name = 'Connect'"]
+set tecnicos_group_id [db_string tecnicos "select group_id from groups where group_name = 'Tecnicos'" -default 473]
 
 db_1row todays_date "
 select
