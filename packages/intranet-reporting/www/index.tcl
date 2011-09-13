@@ -234,5 +234,6 @@ set left_navbar_html "
 		<li><a href=\"[export_vars -base "/intranet-reporting/new" {{form_mode edit}}]\">[_ intranet-reporting.New_Report]</a>
 		</ul>
         </div>
-      <hr/>
+	<hr/>
 "
+if {!$user_admin_p} { set left_navbar_html "" }

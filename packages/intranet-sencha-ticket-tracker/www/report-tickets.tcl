@@ -36,6 +36,8 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
+set locale [lang::user::locale -user_id $current_user_id]
+
 # ------------------------------------------------------------
 # Check Parameters
 
@@ -129,6 +131,10 @@ set report_sql "
 		im_category_from_id(t.ticket_outgoing_channel_id) as ticket_outgoing_channel,
 		im_category_from_id(t.ticket_area_id) as ticket_program,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_type_id)) as ticket_type_parent,
+
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_incoming_channel_id)) as ticket_incoming_channel_parent,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_outgoing_channel_id)) as ticket_outgoing_channel_parent,
 
 		p.*,
 		g.group_name as ticket_queue,
@@ -217,7 +223,9 @@ set header0 {
 	"Hora Escalacion"
 	"Fecha Cierre"
 	"Hora Cierre"
+	"Canal Entrada Level 1"
 	"Canal Entrada"
+	"Canal Salida Level 1"
 	"Canal Salida"
 	"NIF"
 	"Empresa"
@@ -228,6 +236,7 @@ set header0 {
 	"Telefono"
 	"Area"
 	"Programa"
+	"Tema Level 1"
 	"Tema"
 	"Expediente"
 	"Detalle"
@@ -253,7 +262,9 @@ set report_def [list \
 	$ticket_escalation_date_time
 	$ticket_done_date_date
 	$ticket_done_date_time
+	$ticket_incoming_channel_parent
 	$ticket_incoming_channel
+	$ticket_outgoing_channel_parent
 	$ticket_outgoing_channel
 	$vat_number
 	$company_name
@@ -264,6 +275,7 @@ set report_def [list \
 	$contact_telephone
 	$ticket_area
 	$ticket_program
+	$ticket_type_parent
 	$ticket_type
 	$ticket_file
 	$ticket_request
@@ -402,6 +414,46 @@ db_foreach sql $report_sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
+
+
+        # Data Customization
+        if {"" != $ticket_incoming_channel_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel_parent]"
+            set ticket_incoming_channel_parent [lang::message::lookup $locale $category_key $ticket_incoming_channel_parent]
+        }
+        if {"" != $ticket_incoming_channel} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel]"
+            set ticket_incoming_channel [lang::message::lookup $locale $category_key $ticket_incoming_channel]
+        }
+
+        if {"" != $ticket_outgoing_channel_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_outgoing_channel_parent]"
+            set ticket_outgoing_channel_parent [lang::message::lookup $locale $category_key $ticket_outgoing_channel_parent]
+        }
+        if {"" != $ticket_outgoing_channel} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_outgoing_channel]"
+            set ticket_outgoing_channel [lang::message::lookup $locale $category_key $ticket_outgoing_channel]
+        }
+
+        if {"" != $ticket_type} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
+            set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
+        }
+        if {"" != $ticket_type_parent} {
+            set category_key "intranet-core.[lang::util::suggest_key $ticket_type_parent]"
+            set ticket_type_parent [lang::message::lookup $locale $category_key $ticket_type_parent]
+        }
+
+        if {"" != $company_type} {
+            set category_key "intranet-core.[lang::util::suggest_key $company_type]"
+            set company_type [lang::message::lookup $locale $category_key $company_type]
+        }
+
+        if {"Employees" == $ticket_queue} { set ticket_queue "" }
+
+        # Columnas "padre": Canal entrada, Canal salida
+        # duracion:
+
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \

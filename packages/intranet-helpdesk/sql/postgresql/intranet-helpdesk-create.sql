@@ -585,7 +585,7 @@ SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type'
 -- 30500-30599	Intranet Ticket Action (100)
 -- 30600-30699	Intranet Ticket Telephony Request Type
 -- 31000-31999	Intranet Ticket Class (1000)
--- 32000-32999	reserved (1000)
+-- 32000-32999	Intranet Service Catalog (Extension 1000)
 -- 33000-33999	reserved (1000)
 -- 34000-34999	reserved (1000)
 -- 35000-39999	reserved (5000)

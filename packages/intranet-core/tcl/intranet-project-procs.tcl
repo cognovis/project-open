@@ -376,6 +376,7 @@ ad_proc -public im_next_project_nr {
 
     # Check for a custom project_nr generator
     set project_nr_generator [parameter::get -package_id [im_package_core_id] -parameter "CustomProjectNrGenerator" -default ""]
+
     if {"" != $project_nr_generator} {
 	return [eval $project_nr_generator -customer_id $customer_id -nr_digits $nr_digits -date_format $date_format]
     }
@@ -2270,7 +2271,7 @@ ad_proc im_project_nuke {
 
     # Write Audit Trail
     ns_log Notice "im_project_nuke: before im_project_audit"
-    im_project_audit -project_id $project_id -action nuke
+    im_project_audit -user_id $current_user_id -project_id $project_id -action nuke
 
     # ---------------------------------------------------------------
     # Delete
@@ -2521,7 +2522,6 @@ ad_proc im_project_nuke {
 
 	# Helpdesk
 	if {[im_table_exists im_tickets]} {
-	    
 	    ns_log Notice "projects/nuke-2: im_tickets"
 	    db_dml tickets "
 		    delete from im_tickets
@@ -2531,7 +2531,6 @@ ad_proc im_project_nuke {
 
 	# GanttProject
 	if {[im_table_exists im_timesheet_task_dependencies]} {
-	
 	    ns_log Notice "projects/nuke-2: im_timesheet_task_dependencies"
 	    db_dml del_dependencies "
 		delete from im_timesheet_task_dependencies
@@ -2540,7 +2539,6 @@ ad_proc im_project_nuke {
 	}
 
 	if {[im_table_exists im_gantt_projects]} {
-	
 	    ns_log Notice "projects/nuke-2: im_gantt_projects"
 	    db_dml del_gantt_projects "
 		delete from im_gantt_projects
@@ -2639,6 +2637,25 @@ ad_proc im_project_nuke {
 	set im_conf_item_project_rels_exists_p [im_table_exists im_conf_item_project_rels]
 	set im_ticket_ticket_rels_exists_p [im_table_exists im_ticket_ticket_rels]
 
+        # TS Configuration Objects
+        if {[im_table_exists im_timesheet_conf_objects]} {
+
+            ns_log Notice "projects/nuke-2: im_timesheet_conf_objects"
+            db_dml del_dependencies "
+                delete from im_timesheet_conf_objects
+                where conf_project_id = :project_id
+            "
+        }
+	
+        # Survey responses
+        if {[im_table_exists survsimp_responses]} {
+            ns_log Notice "projects/nuke-2: survsimp_responses"
+            db_dml del_dependencies "
+                delete from survsimp_responses
+                where related_object_id = :project_id or related_context_id = :project_id
+            "
+        }
+
 	# Relationships
 	foreach rel_id $rels {
 	    db_dml del_rels "delete from group_element_index where rel_id = :rel_id"
@@ -2652,7 +2669,6 @@ ad_proc im_project_nuke {
 	    db_dml del_rels "delete from acs_objects where object_id = :rel_id"
 	}
 
-	
 	ns_log Notice "projects/nuke-2: party_approved_member_map"
 	db_dml party_approved_member_map "
 		delete from party_approved_member_map 

@@ -106,10 +106,14 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 		scope:	this,
 		url:	'/intranet-sencha-ticket-tracker/today-date-time',
 		success: function(response) {		// response is the current date-time
-			var form =  Ext.getCmp('ticketFormRight').getForm();
 			var date_time = response.responseText;
-			form.findField('ticket_creation_date').setValue(date_time);
+			Ext.getCmp('ticketFormRight').getForm().findField('ticket_creation_date').setValue(date_time);
 			Ext.getCmp('ticketForm').getForm().findField('ticket_creation_date').setValue(date_time);
+			var ticket_escalation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').getValue();
+			if (!Ext.isEmpty(ticket_escalation_date)){
+				Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(date_time);
+				Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').setValue(date_time);				
+			}
 		}
 	});
 	

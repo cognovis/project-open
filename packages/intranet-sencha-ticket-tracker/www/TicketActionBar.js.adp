@@ -99,6 +99,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		id: 'buttonRemoveSelected',
 		text:		'#intranet-sencha-ticket-tracker.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
+		disable:	function (){
+						if (currentUserIsAdmin != 1) {
+							return true;
+						}
+						return false;
+					},
 		handler:	function(btn, pressed){
 			//Confimation message
 			Ext.Msg.show({
@@ -292,6 +298,35 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		var progressbar = this.getComponent('progressBar');
 	   	progressbar.reset();
 	   	progressbar.updateText('#intranet-sencha-ticket-tracker.Finish_Load#');
-	}
+	},
 		
+	checkButtons: function (rec){
+		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject');
+		var buttonSave = Ext.getCmp('ticketActionBar').getComponent('buttonSave');
+		
+		rejectButton.show();
+		buttonSave.show();		
+		if (Ext.isEmpty(rec)){
+			rejectButton.disable();
+			buttonSave.enable();				
+		} else {
+			//If the Ticket is close, hide the buttons
+			var ticket_status_id = rec.get('ticket_status_id');
+			var ticket_last_queue_field = rec.get('ticket_last_queue_id');
+		
+			if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
+				rejectButton.disable();
+				buttonSave.disable();
+			} else {
+				buttonSave.enable();
+				// Enable the "Reject" button if last_queue_id exists
+				if (Ext.isEmpty(ticket_last_queue_field)){
+					rejectButton.disable();
+				} else {
+					rejectButton.enable();
+				}
+			}		
+		}
+	}		
+	
 });
