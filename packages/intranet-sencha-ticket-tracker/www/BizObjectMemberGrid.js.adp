@@ -86,12 +86,6 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 	    return userStore.name_from_id(record.get('object_id_two'));
 	},
 	sortable:	false
-    }, {
-	header: 	'#intranet-sencha-ticket-tracker.Object_Member_Role#',
-	renderer: function(value, o, record) {
-	    return bizObjectRoleStore.category_from_id(record.get('object_role_id'));
-	},
-	sortable:	false
     }],
 
     // Load new data if the user has selected a new ticket
@@ -131,19 +125,6 @@ var bizObjectMemberGrid = Ext.define('TicketBrowser.BizObjectMemberGrid', {
 		bizObjectMemberStore.removeAll();
 		bizObjectMemberStore.proxy.extraParams['object_id_one'] = customer_id;
 		bizObjectMemberStore.load();
-		
-		// We need to filter manually because the Store's "filters" config doesn't work in Ext 4.0.1
-		bizObjectMemberStore.filter(new Ext.util.Filter({
-			filterFn: function(item) {
-				// Only show "Full Member" objects in order to include Key Accounts etc.
-				var role = item.get('object_role_id');
-				if (role == '1300'){
-					return true;
-				} else {
-					return false;
-				}
-			}
-		}));
     },
 
     // Somebody pressed the "New Ticket" button:

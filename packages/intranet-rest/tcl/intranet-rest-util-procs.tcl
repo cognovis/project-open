@@ -15,6 +15,52 @@ ad_library {
 # Auxillary functions
 # --------------------------------------------------------
 
+ad_proc -public im_rest_doc_return {args} {
+    This is a replacement for doc_return that values if the
+    gzip_p URL parameters has been set.
+} {
+    # Perform some magic work
+    db_release_unused_handles
+    ad_http_cache_control
+
+    # find out if we should compress or not
+    set query_set [ns_conn form]
+    set gzip_p [ns_set get $query_set gzip_p]
+    ns_log Notice "im_rest_doc_return: gzip_p=$gzip_p"
+
+    # Return the data
+    if {"1" == $gzip_p} {
+	return [eval "ns_returnz $args"]
+    } else {
+	return [eval "ns_return $args"]
+    }
+
+}
+
+
+ad_proc -public im_rest_get_rest_columns {
+    query_hash_pairs
+} {
+    Reads the "columns" URL variable and returns the 
+    list of selected REST columns or an empty list 
+    if the variable was not specified.
+} {
+    set rest_columns [list]
+    set rest_column_arg ""
+    array set query_hash $query_hash_pairs
+    if {[info exists query_hash(columns)]} { set rest_column_arg $query_hash(columns) }
+    if {"" != $rest_column_arg} {
+        # Accept both space (" ") and komma (",") separated columns
+	set rest_columns [split $rest_column_arg " "]
+	if {[llength $rest_columns] <= 1} {
+	    set rest_columns [split $rest_column_arg ","]
+	}
+    }
+
+    return $rest_columns
+}
+
+
 ad_proc -private im_rest_header_extra_stuff {
     {-debug 1}
 } {

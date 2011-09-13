@@ -33,16 +33,9 @@ var auditStore = Ext.create('Ext.data.Store', {
     remoteFilter: true,
     pageSize: 5,			// Enable pagination
     sorters: [{
-	property: 'audit_date',
-	direction: 'DESC'
-    }],
-    proxy: {
-	type: 'rest',
-	url: '/intranet-sencha-ticket-tracker/object-audit-datasource',
-	appendId: true,
-	extraParams: { format: 'json', object_id: 0 },
-	reader: { type: 'json', root: 'data' }
-    }
+		property: 'audit_date',
+		direction: 'DESC'
+    }]
 });
 
 auditStore.on({
@@ -200,13 +193,6 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	hidden: true, 
 	dataIndex: 'audit_ip'
     }],
-
-/*
-	'ticket_confirmation_date',	// 
-	'ticket_escalation_date',	// 
-	'ticket_resolution_date',	// 
-	'ticket_done_date',		// 
-*/
 
     columnLines: true,
 

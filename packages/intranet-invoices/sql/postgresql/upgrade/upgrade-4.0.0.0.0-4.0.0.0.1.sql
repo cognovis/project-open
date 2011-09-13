@@ -7,8 +7,10 @@ returns integer as '
 declare
         v_count         integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_invoice_items'' and lower(column_name) = ''item_source_invoice_id'';
+        select count(*) into v_count from information_schema.columns where 
+              table_name = ''im_invoice_items'' 
+              and column_name = ''item_source_invoice_id'';
+
         IF v_count > 0 THEN return 1; END IF;
 
         alter table im_invoice_items

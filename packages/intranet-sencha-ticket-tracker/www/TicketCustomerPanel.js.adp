@@ -33,21 +33,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		labelWidth:	125,
 		typeAhead:	true				
 	},
-	items: [/*{ 
-		name: 'checkNew',
-		xtype: 'checkbox',
-		value: true,
-		fieldLabel:	'#intranet-sencha-ticket-tracker.CreateNew#',
-		listeners:{
-			change: function(field, newValue, oldValue, options) {
-				if (newValue) {
-					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_id').disable();
-				} else {
-					Ext.getCmp('ticketCustomerPanel').getForm().findField('company_id').enable();					
-				}
-			}
-		}
-	},*/ {
+	items: [{
 		name:		'company_id',
 		xtype:		'combobox',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.CompanySearch#',
@@ -97,7 +83,16 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Company_name#',
 		hidden: true,
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				return "Obligatorio";
+			}
+			if (value.substring(0,13).toLowerCase() == "nueva entidad"){
+				return "No válido";
+			}
+			return true;
+		}
 	}, {
 		name:		'vat_number',
 		xtype:		'textfield',
@@ -144,6 +139,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		// Don't show this form for new tickets
 		//this.hide();
 		companyStore.clearFilter();
+		companyStore.addBlank();
 		this.loadRecord(companyStore.findRecord('company_id', anonimo_company_id));
 	},
 
@@ -157,6 +153,7 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		if (rec.data.hasOwnProperty('company_id')) { customer_id = rec.data.company_id; }
 
 		companyStore.clearFilter();
+		companyStore.addBlank();
 		var cust = companyStore.findRecord('company_id',customer_id);
 		if (cust == null || typeof cust == "undefined") { return; }
 

@@ -121,6 +121,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				forceSelection: true,
 				queryMode: 	'local',
 				store: 		ticketOriginStore,
+				allowBlank: false,
 				listConfig: {
 					getInnerTpl: function() {
 						return '<div class={indent_class}>{category_translated}</div>';
@@ -375,7 +376,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		}
 		
 		//If the Ticket is close, hide the buttons
-		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject')	
+		/*var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject')	
 		rejectButton.show();
 		var buttonSave = Ext.getCmp('ticketActionBar').getComponent('buttonSave')	
 		buttonSave.show();		
@@ -390,7 +391,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			} else {
 				rejectButton.enable();
 			}
-		}
+		}*/
+		Ext.getCmp('ticketActionBar').checkButtons(rec);
 
 		Funtion_calculateEscalation(rec.get('ticket_area_id'));
 
@@ -404,11 +406,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		form.reset();
 
 		// Pre-set the creation date
-		var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
+		//var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
+		//var creation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_creation_date').getValue();
 		//form.findField('ticket_creation_date').setValue(name);
-		form.findField('ticket_creation_date').setValue(creation_date);
+		//form.findField('ticket_creation_date').setValue(creation_date);
 		form.findField('ticket_status_id').setValue('30000');		//Open
-
+		Ext.getCmp('ticketActionBar').checkButtons(null);
 		//this.hide();
 	}
 });

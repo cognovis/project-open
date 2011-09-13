@@ -231,17 +231,17 @@ if {"edit" == $form_mode && [info exists ticket_id]} {
 		</script>
 	    "
 
-	} else {
+	}
+    } else {
 	    
-	    # Set the lock on the ticket
-	    db_dml set_lock "
+	# Set the lock on the ticket
+	db_dml set_lock "
 		update im_biz_objects set
 			lock_ip = '[ns_conn peeraddr]',
 			lock_date = now(),
 			lock_user = :current_user_id
 		where object_id = :ticket_id
-            "
-	}
+        "
     }
 }
 

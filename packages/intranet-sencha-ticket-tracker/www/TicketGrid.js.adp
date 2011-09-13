@@ -62,6 +62,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	
 		var mainTabPanel = Ext.getCmp('mainTabPanel');
 		mainTabPanel.setActiveTab(compoundPanel);
+		Ext.getCmp('ticketActionBar').checkButtons(record);
 	}
 	},
 
@@ -362,26 +363,19 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
-
 		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
 		var ticketModel = selection[0];
-
-		// Send a GET request to the server in order to
-		// destroy the ticket. DELETE on REST may cause
-		// problems because session information is not
-		// defined in DELETE
-		Ext.Ajax.request({
-			scope:	this,
-			url:	'/intranet-sencha-ticket-tracker/delete-ticket',
-			success: function(response) {
+		
+		ticketModel.destroy({
+			success: function(record, operation) {
 		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
 				ticketStore.remove(ticketModel);
 			},
-			failure: function(response) {
-				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), response.responseText);
+			failure: function(record, operation) {
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
 			}
-		});
+		});				
 	},
 
 	onCopy: function() {

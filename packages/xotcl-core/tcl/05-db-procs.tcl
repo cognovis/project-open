@@ -3,7 +3,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2006-12-28
-  @cvs-id $Id: 05-db-procs.tcl,v 1.93 2011/07/05 10:00:05 gustafn Exp $
+  @cvs-id $Id$
 }
 
 
@@ -623,7 +623,8 @@ namespace eval ::xo::db {
       }
       set ::xo::db::sql::fnargs($last_function) $function_args
       #puts stderr "$last_function [list $function_args]"
-      ns_log notice "loaded [array size ::xo::db::sql::fnargs] definitions from function args [lsort [array names ::xo::db::sql::fnargs *__*]]"
+      ns_log notice "loaded [array size ::xo::db::sql::fnargs] definitions from function args"
+      #ns_log notice "... [lsort [array names ::xo::db::sql::fnargs *__*]]"
 
       #
       # Get all package functions (package name, object name) from PostgreSQL

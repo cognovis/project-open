@@ -115,9 +115,6 @@ var userEmployeeStore = Ext.create('PO.data.EmployeeStore', {
 	model: 'TicketBrowser.User'
 });
 
-
-
-
 // ----------------------------------------------------------------
 // Customers
 // ----------------------------------------------------------------
@@ -204,7 +201,7 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
-	autoLoad:	true,
+	autoLoad:	false,
 	pageSize:	1000,
 	proxy: {
 		type: 'rest',
@@ -346,7 +343,7 @@ ticketStatusStore.load(
 
 var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyStatusStore',
-	autoLoad:	true,
+	autoLoad:	false,
 	remoteFilter:	true,
 	model: 		'TicketBrowser.Category',
 	pageSize:	1000,
@@ -362,6 +359,7 @@ var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+companyStatusStore.load();
 
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
@@ -483,7 +481,7 @@ var requestAreaProgramStore = Ext.create('PO.data.CategoryStore', {
 	}
 });
 
-
+/*
 var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'bizObjectRoleStore',
 	autoLoad:	true,
@@ -501,7 +499,7 @@ var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
-
+*/
 
 var programStore = Ext.create('Ext.data.Store', {
 	storeId:	'programStore',
@@ -549,7 +547,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 12,				// Enable pagination
-	// autoSync: true,			// Write changes to the REST server ASAP
+	autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
 		property: 'creation_date',
 		direction: 'DESC'
@@ -564,7 +562,7 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	remoteFilter:	true,*/
 	pageSize: 1000000,
 //	autoSync: true,				// Write changes to the REST server ASAP
-	autoLoad: true,
+	autoLoad: false,
 	sorters: [{
 		property: 'company_name',
 		direction: 'ASC'
@@ -625,8 +623,6 @@ profileStore.load(
 	}
 );
 
-
-
 // Store for keeping the filtered groups per program.
 // Initialize to an empty store. There is a procedure
 // updating its values depending on the "program/area".
@@ -642,3 +638,92 @@ var ticketServiceTypeStore = ticketSlaStore;
 var ticketQueueStore = ticketPriorityStore;
 
 
+var userCustomerContactRelationStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'userCustomerContactRelationStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+    pageSize: 	1000000		// Load entire table
+});
+
+userCustomerContactRelationStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var company_id;
+            userCustomerContactStore.removeAll();
+			store.each(function(record) {
+				userCustomerContactStore.add(userStore.findRecord('user_id', record.get('object_id_two')));
+			});
+			userCustomerContactStore.addBlank();
+			if (Ext.isEmpty(userCustomerContactStore.findRecord('user_id', anonimo_user_id))){
+				userCustomerContactStore.add(userStore.findRecord('user_id', anonimo_user_id));
+			}
+			userCustomerContactStore.sort();    
+			
+			var customerModel = companyStore.findRecord('company_id', store.proxy.extraParams['object_id_one']);
+			var contactModel = null;
+			if (!Ext.isEmpty(customerModel)) {
+				contactModel = userCustomerContactStore.findRecord('user_id', customerModel.get('primary_contact_id'));
+			}			
+			if (Ext.isEmpty(contactModel)){
+				Ext.getCmp('companyContactContactForm').loadUser(userCustomerContactStore.findRecord('user_id' ,anonimo_user_id));
+			} else {
+				Ext.getCmp('companyContactContactForm').loadUser(contactModel);
+			}			
+        },
+        scope:this
+    }
+});
+
+var userCustomerContactStore = Ext.create('PO.data.UserStore', {
+    model: 'TicketBrowser.User',
+    storeId: 'userCustomerContactStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+	sorters: [{
+		property: 'name',
+		direction: 'ASC'
+	}]
+});
+
+var userCustomerTicketRelationStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'userCustomerTicketRelationStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+    pageSize: 	1000000		// Load entire table
+});
+
+userCustomerTicketRelationStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var company_id;
+            userCustomerContactStore.removeAll();
+			store.each(function(record) {
+				userCustomerContactStore.add(userStore.findRecord('user_id', record.get('object_id_two')));
+			});
+			userCustomerContactStore.addBlank();
+			if (Ext.isEmpty(userCustomerContactStore.findRecord('user_id', anonimo_user_id))){
+				userCustomerContactStore.add(userStore.findRecord('user_id', anonimo_user_id));
+			}
+			userCustomerContactStore.sort();    
+
+			var customerModel = companyStore.findRecord('company_id', store.proxy.extraParams['object_id_one']);
+			var contactModel = null;
+			if (!Ext.isEmpty(customerModel)) {
+				contactModel = userCustomerContactStore.findRecord('user_id', customerModel.get('primary_contact_id'));
+			}
+			if (Ext.isEmpty(contactModel)){
+				Ext.getCmp('ticketContactForm').loadUser(userCustomerContactStore.findRecord('user_id' ,anonimo_user_id));
+			} else {
+				Ext.getCmp('ticketContactForm').loadUser(contactModel);
+			}			
+        },
+        scope:this
+    }
+});

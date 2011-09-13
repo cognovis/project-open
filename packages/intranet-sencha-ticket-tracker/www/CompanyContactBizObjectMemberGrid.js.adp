@@ -42,7 +42,7 @@ companyContactBizObjectMemberStore.on({
 	}
 });
 
-var CompanyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContactBizObjectMemberGrid', {
+var companyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContactBizObjectMemberGrid', {
     extend:	'Ext.grid.Panel',
     alias:	'widget.companyContactBizObjectMemberGrid',
     id:		'companyContactBizObjectMemberGrid',
@@ -82,12 +82,6 @@ var CompanyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContact
 	    return userStore.name_from_id(record.get('object_id_two'));
 	},
 	sortable:	false
-    }, {
-	header: 	'#intranet-sencha-ticket-tracker.Object_Member_Role#',
-	renderer: function(value, o, record) {
-	    return bizObjectRoleStore.category_from_id(record.get('object_role_id'));
-	},
-	sortable:	false
     }],
 
     loadCompany: function(rec){
@@ -118,6 +112,8 @@ var CompanyContactBizObjectMemberGrid = Ext.define('TicketBrowser.CompanyContact
     },
 
     newCompany: function() {
-
+    	companyContactBizObjectMemberStore.removeAll();
+		companyContactBizObjectMemberStore.proxy.extraParams['object_id_one'] = "null";
+		companyContactBizObjectMemberStore.load();
     }
 });
