@@ -25,7 +25,7 @@ BEGIN
 
     SELECT count(*) INTO v_count FROM user_tab_columns
     WHERE lower(table_name) = 'fnbl_pim_calendar' AND lower(column_name) = 'po_id';
-    IF v_count = 0 THEN
+    IF v_count = 1 THEN
 	ALTER TABLE fnbl_pim_calendar DROP COLUMN po_id;
     END IF;
 
