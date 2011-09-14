@@ -19,13 +19,13 @@ DECLARE
 BEGIN
     SELECT count(*) INTO v_count FROM user_tab_columns
     WHERE lower(table_name) = 'fnbl_user' AND lower(column_name) = 'po_id';
-    IF v_count 1 0 THEN
+    IF v_count = 1 THEN
 	ALTER TABLE fnbl_user DROP COLUMN po_id integer;
     END IF;
 
     SELECT count(*) INTO v_count FROM user_tab_columns
     WHERE lower(table_name) = 'fnbl_pim_calendar' AND lower(column_name) = 'po_id';
-    IF v_count 1 0 THEN
+    IF v_count = 0 THEN
 	ALTER TABLE fnbl_pim_calendar DROP COLUMN po_id integer;
     END IF;
 
@@ -33,8 +33,6 @@ BEGIN
 END;$$ language 'plpgsql';
 select inline_0();
 drop function inline_0();
-
-
 
 drop function fnbl_next_id (varchar);
 drop function fnbl_to_po_task_status (integer);
