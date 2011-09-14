@@ -432,7 +432,7 @@ UNION
     "
 
     set letters {a b c d e f g h i j k l m n o p q r s t u v w x y z}
-    set from {}
+    set froms {}
     set wheres { "1=1" }
     set cnt 0
     db_foreach tables $tables_sql {
