@@ -13,6 +13,7 @@ ad_page_contract {
     { end_date "" }
     { locale "es_ES" }
     { perc_p 1 }
+    { perca_p 1 }
     { channel_p 1 }
     { type_p 0 }
     { queue_p 0 }
@@ -429,15 +430,21 @@ if {$channel_p} {
 		csv  { append header "\"%\";"  }
 	    }
 	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
     switch $output_format {
 	html { 
-	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Canal</td>\n" 
+	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Canal</td>\n" 
 	}
 	csv  { 
 	    append top_header "\"Por Canal\";"
-	    for {set i 0} {$i < [expr (1+$perc_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
 	}
     }
     
@@ -494,12 +501,30 @@ if {$channel_p} {
 		    }
 		}
 	    }
+
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
 	# Repeat the same procedure for the programs contained in the area
 	set program_list [v program_list_hash($area_id) ""]
 	foreach program_id $program_list {
+	    # !!!
 	    set total_ticket_for_program [v channel_hash($program_id) 0]
 	    switch $output_format {
 		html { append row($program_id) "<td align=right></td>" }
@@ -513,6 +538,7 @@ if {$channel_p} {
 		    html { append row($program_id) "<td align=right>$val</td>" }
 		    csv  { append row($program_id) "\"$val\";" }
 		}
+
 		if {$perc_p} {
 		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
 		    set perc "$perc%"
@@ -522,6 +548,17 @@ if {$channel_p} {
 			csv  { append row($program_id) "\"$perc\";" }
 		    }
 		}
+
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
+
 	    }
 	}
     }
@@ -540,6 +577,12 @@ if {$channel_p} {
 	    csv  { append footer "\"$val\";" }
 	}
 	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
 	    switch $output_format {
 		html { append footer "<td align=right></td>"  }
 		csv  { append footer "\"\";"  }
@@ -689,13 +732,19 @@ if {$type_p} {
 		csv  { append header "\"%\";"  }
 	    }
 	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
     switch $output_format {
-	html { append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Servicio</td>\n" }
+	html { append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Servicio</td>\n" }
 	csv  { 
 	    append top_header "\"Por Servicio\";" 
-	    for {set i 0} {$i < [expr (1+$perc_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
 	}
     }
     
@@ -740,6 +789,7 @@ if {$type_p} {
 		    append area_footer($area_id) "\"$val\";"
 		}
 	    }
+
 	    if {$perc_p} {
 		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
 		set perc "$perc%"
@@ -754,8 +804,24 @@ if {$type_p} {
 			append area_footer($area_id) "\"$perc\";"		    
 		    }
 		}
-
 	    }
+
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"		    
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"		    
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
@@ -783,6 +849,16 @@ if {$type_p} {
 			csv  { append row($program_id) "\"$perc\";" }
 		    }
 		}
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
+
 	    }
 	}
     }
@@ -800,6 +876,12 @@ if {$type_p} {
 	    csv  { append footer "\"$val\";" }
 	}
 	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
 	    switch $output_format {
 		html { append footer "<td align=right></td>"  }
 		csv  { append footer "\"\";"  }
@@ -935,16 +1017,22 @@ if {$queue_p} {
 		csv  { append header "\"%\";"  }
 	    }
 	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
     
     switch $output_format {
 	html { 
-	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Escalado</td>\n" 
+	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Escalado</td>\n" 
 	}
 	csv  { 
 	    append top_header "\"Por Escalado\";" 
-	    for {set i 0} {$i < [expr (1+$perc_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
 	}
     }
     
@@ -994,6 +1082,22 @@ if {$queue_p} {
 		    }
 		}
 	    }
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
@@ -1021,6 +1125,15 @@ if {$queue_p} {
 			csv  { append row($program_id) "\"$perc\";" }
 		    }
 		}
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
 	    }
 	}
     }
@@ -1037,6 +1150,12 @@ if {$queue_p} {
 	    csv  { append footer "\"$val\";" }
 	}
 	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
 	    switch $output_format {
 		html { append footer "<td align=right></td>"  }
 		csv  { append footer "\"\";"  }
