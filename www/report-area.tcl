@@ -550,7 +550,7 @@ if {$channel_p} {
 		}
 
 		if {$perca_p} {
-		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
 		    set perc "$perc%"
 		    if {"" == $val} { set perc "" }
 		    switch $output_format {
