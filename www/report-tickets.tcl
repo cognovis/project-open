@@ -451,10 +451,6 @@ db_foreach sql $report_sql {
 
         if {"Employees" == $ticket_queue} { set ticket_queue "" }
 
-        # Columnas "padre": Canal entrada, Canal salida
-        # duracion:
-
-
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
 	    -group_def $report_def \
