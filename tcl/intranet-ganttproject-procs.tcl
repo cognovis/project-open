@@ -590,14 +590,15 @@ ad_proc -public im_gp_save_tasks2 {
     set priority		[$task_node getAttribute priority ""]
     set expand_p		[$task_node getAttribute expand ""]
     set end_date		[db_string end_date "select :start_date::date + :duration::integer"]
-    set is_null 0
-    set note ""
-    set task_nr ""
-    set task_id 0
-    set has_subobjects_p 0
+    set is_null			0
+    set milestone_p		""
+    set note			""
+    set task_nr			""
+    set task_id			0
+    set has_subobjects_p	0
 
-    set outline_number ""
-    set remaining_duration ""
+    set outline_number		""
+    set remaining_duration	""
 
     set gantt_field_update {}
     set xml_elements {}
@@ -637,8 +638,14 @@ ad_proc -public im_gp_save_tasks2 {
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
 		    "188744007" { set task_id $fieldvalue }
+		    default {
+			# Any other extended attribute is ignored as specified
+			# in the MS-Project integration docu
+			continue
+		    }
 		}
 	    }
+	    "milestone"		{ if {"1" == [$taskchild text]} { set milestone_p "t" }}
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
 		continue
@@ -650,6 +657,11 @@ ad_proc -public im_gp_save_tasks2 {
 		# these are from ganttproject. see below
 		continue 
 	    }
+	    "timephaseddata" {
+                # This is a timephased data assignment directly for a task.
+	        # ]po[ can't handle this type of assignments yet.
+                continue
+            }
 	    default {
 		# Nothing
 	    }
@@ -660,7 +672,6 @@ ad_proc -public im_gp_save_tasks2 {
 	im_ganttproject_add_import "im_gantt_project" $nodeName
 	set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 	lappend gantt_field_update "$column_name = '[db_quote $nodeText]'"
-	    
 	lappend xml_elements $nodeName
     }
 
@@ -780,12 +791,19 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # -----------------------------------------------------
-    # Check if a task with the task_nr exists in the DB
+    # Check if a task with the task_nr or the task_name exists in the DB
     if {0 == $task_id} {
 	set task_id [db_string task_id_from_nr "
 		select	task_id 
 		from	im_timesheet_tasks_view
 		where	project_id = :parent_id and task_nr = :task_nr
+        " -default 0]
+    }
+    if {0 == $task_id} {
+	set task_id [db_string task_id_from_name "
+		select	task_id 
+		from	im_timesheet_tasks_view
+		where	project_id = :parent_id and lower(task_name) = lower(:task_name)
         " -default 0]
     }
 
@@ -813,15 +831,15 @@ ad_proc -public im_gp_save_tasks2 {
 			null,			-- creation_user
 			null,			-- creation_ip
 			null,			-- context_id
-			:task_nr,
-			:task_name,
-			:parent_id,
-			:material_id,
-			:cost_center_id,
-			:uom_id,
-			:task_type_id,
-			:task_status_id,
-			:note
+			:task_nr,		-- task_nr
+			:task_name,		-- task_name
+			:parent_id,		-- parent_id
+			:material_id,		-- material_id
+			:cost_center_id,	-- cost_center_id
+			:uom_id,		-- uom_id
+			:task_type_id,		-- task_type_id
+			:task_status_id,	-- task_status_id
+			:note			-- note
 		)"
 	    ]
 
@@ -922,6 +940,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
+		milestone_p		= :milestone_p,
 		note			= :note,
 		sort_order		= :my_sort_order,
 		percent_completed	= :percent_completed
@@ -953,7 +972,7 @@ ad_proc -public im_gp_save_tasks2 {
 	
 	db_dml gantt_project_update "
 	    update im_gantt_projects set
-                [join $gantt_field_update ,]
+                [join $gantt_field_update ",\n\t\t"]
 	    where
 		project_id = :task_id
         " 
@@ -2082,15 +2101,12 @@ ad_proc -public im_ganttproject_gantt_component {
 		where
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
-		        and child.tree_sortkey 
-				between parent.tree_sortkey 
-				and tree_right(parent.tree_sortkey)
-		        and d.d 
-				between child.start_date 
-				and child.end_date
+		        and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		        and d.d between child.start_date and child.end_date
 			$where_clause
     "
 
+	# Add milestones as milestones
 
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
