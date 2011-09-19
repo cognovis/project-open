@@ -270,6 +270,8 @@ set resources_to_assign_p 0
 set resource_html ""
 foreach rid [array names resource_hash] {
     set v $resource_hash($rid)
+
+    # Skip if we correctly found an (integer) value for the resource
     if {[string is integer $v]} { continue }
 
     set resources_to_assign_p 1
