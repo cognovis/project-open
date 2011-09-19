@@ -190,9 +190,9 @@ ad_proc -public im_ms_project_write_task {
 			set value "PT$duration_hours\H0M0S" 
 			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
 		}
-		DurationFormat		{ set value 5 }
+		DurationFormat		{ set value 7 }
 		RemainingDuration {
-			set remaining_duration_hours [expr $duration_hours * (100.0 - $percent_completed)]
+			set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
 			set value "PT$remaining_duration_hours\H0M0S" 
 			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
 		}
