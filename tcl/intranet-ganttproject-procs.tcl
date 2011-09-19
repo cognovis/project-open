@@ -933,6 +933,12 @@ ad_proc -public im_gp_save_tasks2 {
     }
     if {$debug_p} { ns_write "</ul>\n" }
 
+
+    set milestone_sql ""
+    if {[im_column_exists im_projects milestone_p]} {
+	set milestone_sql "milestone_p	=	:milestone_p,"
+    }
+
     db_dml project_update "
 	update im_projects set
 		project_name		= :task_name,
@@ -940,7 +946,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
-		milestone_p		= :milestone_p,
+		$milestone_sql
 		note			= :note,
 		sort_order		= :my_sort_order,
 		percent_completed	= :percent_completed
