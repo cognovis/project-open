@@ -905,12 +905,13 @@ ad_proc -public im_resource_mgmt_resource_planning {
 					set user_percentage [lindex [lindex $user_percentage_list $user_ctr] 1]
         	                        # Sanity check: Percentage assignment required
 	                                if { "" == $user_percentage || ![info exists user_percentage] } {
-                        	                ad_return_complaint 1 "</br></br>No assignment found for user:
-                                	                <a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a>
-                                        	        on project task:<a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>.<br>
-							Please <a href='/intranet/projects/view?project_id=$project_id'>assign a occupation</a> for each task and try again</a>. 
-							</br></br>
-                                        	"
+					    set user_percentage 100
+					    # ad_return_complaint 1 "</br></br>No assignment found for user:
+                                	    #            <a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a>
+                                            #	        on project task:<a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>.<br>
+					    #		Please <a href='/intranet/projects/view?project_id=$project_id'>assign a occupation</a> for each task and try again</a>. 
+					    #		</br></br>
+                                            # "
                 	                }
 
         	                        set user_day_task_array($user_id-$days_julian-$project_id) [expr $hours_per_day * $user_percentage/100]
