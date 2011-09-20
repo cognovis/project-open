@@ -24,8 +24,8 @@ ad_page_contract {
 
     security_token:optional
     inquiry_id:integer,optional
-    reset_p:optional
-    cancel_p:optional
+    { reset_p:optional "" }
+    { cancel_p:optional "" }
 }
 
 # ad_return_complaint 1 "KHD: inquiry_id: $inquiry_id"

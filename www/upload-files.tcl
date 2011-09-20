@@ -153,7 +153,7 @@ if { "" == $reset_p } { set reset_p 0 }
 if { "" == $cancel_p } { set cancel_p 0 }
 
 if {[im_openacs54_p]} {
-    template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token&reset=$reset_p&cancel_p=$cancel_p" -order 2
+    template::head::add_javascript -src "/intranet-customer-portal/resources/js/upload-files-form.js?inquiry_id=$inquiry_id&security_token=$security_token" -order 2
     set js_include ""
 } else {
     

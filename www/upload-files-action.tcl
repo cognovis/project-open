@@ -286,7 +286,7 @@ if { "submit"==$btn_value } {
 	}
 
 	db_dml del "delete from im_inquiries_files where inquiry_id = :inquiry_id"
-	ns_returnredirect "upload-files.tcl?reset_p=1&cancel_p=1"
+	ns_returnredirect "upload-files.tcl"
 }
 
 
