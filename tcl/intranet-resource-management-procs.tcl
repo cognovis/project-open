@@ -1436,7 +1436,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		# Show planned hours 
 		if {$calc_day_p} {
 		    # Determine availability of user (hours/day)  
-    		    set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]
+    		    set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]		    
+		    if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
 		    set hours_availability_user [expr $hours_per_day * $availability_user_perc / 100 ]
                     set key "$user_id-$julian_date-$project_id"
 		    if { [info exists user_day_task_array($key)] } { 
