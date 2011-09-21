@@ -469,7 +469,7 @@ SELECT im_component_plugin__new (
 				where	tic.ticket_id = pro.project_id
 			) t
 		group by old_status_id, new_status_id
-	" -description "Shows the status changes of tickets in the last 24 hours.
+	" -description "Shows how many tickets have changed their status in the last 24h hours.
 	" -status_list [db_list status_list "select distinct ticket_status_id from im_tickets order by ticket_status_id"]',
 	'lang::message::lookup "" intranet-reporting-dashboard.Daily_Ticket_Status_Change "Daily Ticket Status Change"'
 );
@@ -509,7 +509,7 @@ SELECT im_component_plugin__new (
 			where	parent.parent_id is null
 			) t
 		group by old_status_id, new_status_id
-	" -description "Shows the status changes of projects in the last 30 days.
+	" -description "Shows how many projects have changed their status in the last 30 days.
 	" -status_list [db_list status_list "select distinct project_status_id from im_projects order by project_status_id"]',
 	'lang::message::lookup "" intranet-reporting-dashboard.Monthly_Project_Status_Changes "30 Day Status Changes"'
 );
