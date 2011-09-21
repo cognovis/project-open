@@ -21,3 +21,8 @@ end; $body$ language 'plpgsql';
 select inline_0();
 drop function inline_0();
 
+
+
+-- Drop the NOT NULL constraint
+alter table im_audits alter column audit_diff DROP not null;
+
