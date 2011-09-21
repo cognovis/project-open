@@ -13,6 +13,8 @@ namespace eval template::data::validate {}
 namespace eval template::util {}
 namespace eval template::util::richtext {}
 namespace eval template::widget {}
+namespace eval template::data::to_sql {}
+namespace eval template::data::from_sql {}
 
 ad_proc -public template::util::richtext { command args } {
     Dispatch procedure for the richtext object
@@ -565,7 +567,11 @@ ad_proc -public template::widget::richtext { element_reference tag_attributes } 
                         set config_value [lindex $config_pair 1]
                     }
                     ns_log debug "tinymce: key $config_key value $config_value"
-                    lappend pairslist "${config_key}:\"${config_value}\""
+                    if  {$config_value eq "true" || $config_value eq "false"} {
+                        lappend pairslist "${config_key}:${config_value}"
+                    } else {
+                        lappend pairslist "${config_key}:\"${config_value}\""
+                    }
                 }
 
                 foreach name [array names options] {
@@ -613,3 +619,13 @@ ad_proc -public template::widget::richtext { element_reference tag_attributes } 
     
     return $output
 }
+
+ad_proc template::data::to_sql::richtext { value } {
+
+    Handle richtext transformations using a standardized naming convention.
+
+} {
+    return "'[DoubleApos [list [template::util::richtext::get_property content $value] \
+                               [template::util::richtext::get_property format $value]]]'"
+}
+

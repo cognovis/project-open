@@ -1,9 +1,11 @@
 
--- 
-alter table im_tickets
-add column ticket_fs_folder_id integer
+
+alter table im_biz_objects
+add column fs_folder_id integer
 constraint im_tickets_fs_folder_fk references cr_items;
 
+alter table im_biz_objects
+add column fs_folder_path text;
 
 
 alter table im_tickets
@@ -115,13 +117,13 @@ add column ticket_closed_in_1st_contact_p text;
 
 alter table im_tickets alter column ticket_requires_addition_info_p type text;
 
-alter table im_tickets alter column ticket_creation_date type date;
-alter table im_tickets alter column ticket_reaction_date type date;
-alter table im_tickets alter column ticket_confirmation_date type date;
-alter table im_tickets alter column ticket_done_date type date;
-alter table im_tickets alter column ticket_signoff_date type date;
-alter table im_tickets alter column ticket_escalation_date type date;
-alter table im_tickets alter column ticket_resolution_date type date;
+alter table im_tickets alter column ticket_creation_date type timestamptz;
+alter table im_tickets alter column ticket_reaction_date type timestamptz;
+alter table im_tickets alter column ticket_confirmation_date type timestamptz;
+alter table im_tickets alter column ticket_done_date type timestamptz;
+alter table im_tickets alter column ticket_signoff_date type timestamptz;
+alter table im_tickets alter column ticket_escalation_date type timestamptz;
+alter table im_tickets alter column ticket_resolution_date type timestamptz;
 
 
 
@@ -177,6 +179,23 @@ SELECT im_category_new(76024, 'Maquina Herramienta', 'Intranet Sencha Ticket Tra
 SELECT im_category_new(76026, 'MEP', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76028, 'Sucesiones', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76030, 'Transmision Empresarial y Emprendizaje', 'Intranet Sencha Ticket Tracker Area');
+
+update im_categories set aux_string1 = 'BE-XXXX-2011' where category_id = 76002;
+update im_categories set aux_string1 = 'BE-XXXX-2011' where category_id = 76004;
+update im_categories set aux_string1 = 'CET-XX-2011' where category_id = 76006;
+update im_categories set aux_string1 = 'CEU-XX-2011' where category_id = 76008;
+update im_categories set aux_string1 = 'BA-XX-2011' where category_id = 76010;
+update im_categories set aux_string1 = 'GZI-XXXX-2011' where category_id = 76012;
+update im_categories set aux_string1 = 'GZIMP-XXXX-2011' where category_id = 76012;
+update im_categories set aux_string1 = 'GZT-XXXX-2011' where category_id = 76016;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76018;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76020;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76022;
+update im_categories set aux_string1 = 'MH-XXXX-11' where category_id = 76024;
+update im_categories set aux_string1 = 'MEP-XXXX-2011' where category_id = 76026;
+update im_categories set aux_string1 = 'XXX-11' where category_id = 76028;
+update im_categories set aux_string1 = 'XXXXXXXXXXXXXXXXXX' where category_id = 76030;
+
 SELECT im_category_hierarchy_new(76002, 76000);
 SELECT im_category_hierarchy_new(76004, 76000);
 SELECT im_category_hierarchy_new(76006, 76000);
@@ -193,9 +212,12 @@ SELECT im_category_hierarchy_new(76026, 76000);
 SELECT im_category_hierarchy_new(76028, 76000);
 SELECT im_category_hierarchy_new(76030, 76000);
 
+
 SELECT im_category_new(76200, 'Sociedad de la Informacion', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76202, 'Mejora + Digital@', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76204, 'Asociacion + Digital@', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'XXXXX-11' where category_id = 76202;
+update im_categories set aux_string1 = 'XXXX-11' where category_id = 76204;
 SELECT im_category_hierarchy_new(76202, 76200);
 SELECT im_category_hierarchy_new(76204, 76200);
 
@@ -205,6 +227,11 @@ SELECT im_category_new(76404, 'Compite Agentes Comercio', 'Intranet Sencha Ticke
 SELECT im_category_new(76406, 'Compite Empresas', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76408, 'Itinerarios', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76410, 'Aldatu', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'AD-2011-XXXX' where category_id = 76402;
+update im_categories set aux_string1 = 'AT-2011-XXXX' where category_id = 76404;
+update im_categories set aux_string1 = 'AB-2011-XXXX' where category_id = 76406;
+update im_categories set aux_string1 = 'YYY-XXXX-10' where category_id = 76408;
+update im_categories set aux_string1 = 'AL-2011-XXXX' where category_id = 76410;
 SELECT im_category_hierarchy_new(76402, 76400);
 SELECT im_category_hierarchy_new(76404, 76400);
 SELECT im_category_hierarchy_new(76406, 76400);
@@ -215,6 +242,9 @@ SELECT im_category_new(76600, 'Tecnologia y Innovacion', 'Intranet Sencha Ticket
 SELECT im_category_new(76602, 'Gaitek', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76604, 'Hedatu', 'Intranet Sencha Ticket Tracker Area');
 SELECT im_category_new(76606, 'Nets', 'Intranet Sencha Ticket Tracker Area');
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76602;
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76604;
+update im_categories set aux_string1 = 'IG-2011-XXXX' where category_id = 76606;
 SELECT im_category_hierarchy_new(76602, 76600);
 SELECT im_category_hierarchy_new(76604, 76600);
 SELECT im_category_hierarchy_new(76606, 76600);
@@ -225,6 +255,9 @@ alter table persons
 add column last_name2 text;
 SELECT im_dynfield_attribute_new ('person', 'last_name2', 'Last Name 2', 'textbox_medium', 'string', 'f');
 
+alter table persons
+add column telephone text;
+SELECT im_dynfield_attribute_new ('person', 'telephone', 'Telephone', 'textbox_medium', 'string', 'f');
 
 alter table persons
 add column gender text;
@@ -234,3 +267,63 @@ alter table persons
 add column language text;
 SELECT im_dynfield_attribute_new ('person', 'language', 'Language', 'textbox_medium', 'string', 'f');
 
+alter table persons
+add column asterisk_user_id text;
+SELECT im_dynfield_attribute_new ('person', 'asterisk_user_id', 'Asterisk User ID', 'textbox_medium', 'string', 'f');
+update persons set asterisk_user_id = person_id;
+
+
+
+
+-- Custom Ticket Full-Text Search function
+
+create or replace function im_tickets_tsearch ()
+returns trigger as $body$
+declare
+	v_string	varchar;
+begin
+	select  coalesce(p.project_name, '') || ' ' ||
+		coalesce(p.project_nr, '') || ' ' ||
+		coalesce(p.project_path, '') || ' ' ||
+		coalesce(p.description, '') || ' ' ||
+		coalesce(p.note, '') || ' ' ||
+		coalesce(t.ticket_note, '') || ' ' ||
+		coalesce(t.ticket_description, '') || ' ' ||
+		coalesce(t.ticket_file, '') || ' ' ||
+		coalesce(im_category_from_id(t.ticket_origin), '') || ' ' ||
+		coalesce(im_category_from_id(t.ticket_area_id), '') || ' ' ||
+		coalesce(im_category_from_id(t.ticket_incoming_channel_id), '') || ' ' ||
+		coalesce(im_category_from_id(t.ticket_outgoing_channel_id), '') || ' ' ||
+
+		coalesce(im_name_from_user_id(cc_pers.person_id), '') || ' ' ||
+		coalesce(cc_pers.telephone, '') || ' ' ||
+		coalesce(cc_part.email, '') || ' ' ||
+
+		coalesce(cust.company_name, '') || ' ' ||
+		coalesce(cust.vat_number, '') || ' ' ||
+		coalesce(cust.company_province, '') || ' ' ||
+
+		coalesce(t.ticket_request, '') || ' ' ||
+		coalesce(t.ticket_resolution, '') || ' ' ||
+		coalesce(t.ticket_observations, '') || ' ' ||
+		coalesce(t.ticket_answer, '')
+	into    v_string
+	from    im_tickets t
+		LEFT OUTER JOIN persons cc_pers ON (t.ticket_customer_contact_id = cc_pers.person_id)
+		LEFT OUTER JOIN parties cc_part ON (t.ticket_customer_contact_id = cc_part.party_id),
+		im_projects p
+		LEFT OUTER JOIN im_companies cust ON (p.company_id = cust.company_id),
+		im_companies c
+	where   
+		t.ticket_id = p.project_id and
+		p.company_id = c.company_id and
+		p.project_id = new.ticket_id
+	;
+
+	perform im_search_update(new.ticket_id, 'im_ticket', new.ticket_id, v_string);
+
+	return new;
+end;$body$ language 'plpgsql';
+
+
+update im_tickets set ticket_status_id = ticket_status_id;

@@ -2,7 +2,7 @@ ad_page_contract {
     @author Bryan Quinn (bquinn@arsdigita.com)
 
     @creation-date August 15, 2000
-    @cvs-id $Id: index.tcl,v 1.14.2.1 2010/09/05 20:31:43 donb Exp $
+    @cvs-id $Id: index.tcl,v 1.15 2010/10/17 21:06:07 donb Exp $
 }
 
 set page_title [ad_conn instance_name]

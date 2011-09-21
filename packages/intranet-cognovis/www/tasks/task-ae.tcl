@@ -1,13 +1,25 @@
-# /packages/intranet-cognovis/tasks/task-ae.tcl
+# packages/intranet-cognovis/www/tasks/task-ae.tcl
 #
-# Copyright (c) 2003-2008 ]project-open[
+# Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# All rights reserved. Please check
-# http://www.project-open.com/license/ for details.
-
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+ 
 ad_page_contract {
-    @param form_mode edit or display
-    @author frank.bergmann@project-open.com
+    
+    Form for editing tasks
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-08-05
 } {
     task_id:integer,optional
     { parent_id:integer 0 }
@@ -17,11 +29,15 @@ ad_page_contract {
     { edit_p "" }
     { message "" }
     { project_status_id 76}
+    { task_status_id ""}
 }
 
 # This is a task !
 set project_type_id 100
 
+if {$task_status_id eq ""} {
+    unset task_status_id
+}
 
 # ------------------------------------------------------------------
 # Default & Security
@@ -190,7 +206,7 @@ im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
     -object_id $my_task_id \
-    -object_subtype_id 100
+    -object_subtype_id 9500
 
 
 ad_form -extend -name task -on_request {
@@ -202,6 +218,7 @@ ad_form -extend -name task -on_request {
 	set cost_center_id [db_string default_cost_center {} -default ""]
     }
 
+} -new_request {
 } -edit_request {
 
 } -new_data {
@@ -241,24 +258,32 @@ ad_form -extend -name task -on_request {
 	set material_id $default_material_id
     }
 
-    ds_comment "material:: $material_id"
+    if {![exists_and_not_null task_type_id]} {
+	set task_type_id 9500
+    }
+
     db_string task_insert {}
 
     if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
     if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
     
-    
     im_dynfield::attribute_store \
 	-object_type "im_timesheet_task" \
 	-object_id $task_id \
 	-form_id task
-    
-    # Add the users of the parent_project to the ts-task
-    set pm_role_id [im_biz_object_role_project_manager]
-    im_biz_object_add_role $current_user_id $task_id $pm_role_id
 
-    db_foreach select_members {} {
-	im_biz_object_add_role $user_id $task_id $role_id
+    set role_id [im_biz_object_role_generic]    
+
+    if {[exists_and_not_null task_assignee_id]} {
+	# We have an task_assignee_id, work with this one
+	im_biz_object_add_role $task_assignee_id $task_id $role_id
+    } else {
+	# Add the users of the parent_project to the ts-task
+	im_biz_object_add_role $current_user_id $task_id $role_id
+
+	db_foreach select_members {} {
+	    im_biz_object_add_role $user_id $task_id $role_id
+	}
     }
     
     # Write Audit Trail
@@ -266,6 +291,19 @@ ad_form -extend -name task -on_request {
     
     # Update percent_completed
     im_timesheet_project_advance $task_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "New Task: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
+
 } -edit_data {
 
     if {!$project_write && ![im_permission $user_id "add_timesheet_tasks"]} {
@@ -281,14 +319,37 @@ ad_form -extend -name task -on_request {
 	-object_id $task_id \
 	-form_id task
 
+    # Check closed task
+    if {[im_category_is_a $task_status_id [im_timesheet_task_status_closed]]} {
+	# We need to close the entry in im_projects as well
+	db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :task_id"
+    }
+
+    set role_id [im_biz_object_role_generic]    
+
+    if {[exists_and_not_null task_assignee_id]} {
+	# We have an task_assignee_id, work with this one
+	im_biz_object_add_role $task_assignee_id $task_id $role_id
+    }
+
     # Write Audit Trail
     im_project_audit -project_id $task_id -action update
-
-    # Check closed task
-    
     
     # Update percent_completed
     im_timesheet_project_advance $parent_id
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-cognovis/tasks/view" -url {task_id}]
+    set type_id  [notification::type::get_type_id -short_name project_notif]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $parent_id \
+        -response_id "" \
+        -notif_subject "Edit: $project_name" \
+        -notif_html "<h1><a href='$task_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
 
 } -on_submit {
 

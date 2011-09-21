@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author Jin Choi (jsc@arsdigita.com)
     @author nstrug@arsdigita.com
-    @cvs-id $Id: response-editable-toggle.tcl,v 1.1.1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id: response-editable-toggle.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
 } {
 
     survey_id:integer

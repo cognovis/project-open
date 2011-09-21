@@ -10,7 +10,7 @@ ad_page_contract {
     @author  philg@mit.edu
     @author  nstrug@arsdigita.com
     @creation-date    28th September 2000
-    @cvs-id  $Id: one-respondent.tcl,v 1.1.1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id  $Id: one-respondent.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
 } {
 
     survey_id:integer

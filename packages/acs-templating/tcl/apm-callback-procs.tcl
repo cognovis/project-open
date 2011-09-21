@@ -3,7 +3,7 @@ ad_library {
     
     @creation-date 2003-09-22
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.5.2.1 2010/04/22 08:17:07 victorg Exp $
+    @cvs-id $Id: apm-callback-procs.tcl,v 1.6 2010/10/17 21:06:09 donb Exp $
 }
 
 namespace eval template {}

@@ -3,7 +3,7 @@ ad_library {
     
     @author Neophytos Demetriou
     @creation-date 2001-09-01
-    @cvs-id $Id: acs-service-contract-procs.tcl,v 1.23.6.1 2010/10/30 21:45:51 gustafn Exp $
+    @cvs-id $Id: acs-service-contract-procs.tcl,v 1.24 2010/10/30 21:43:01 gustafn Exp $
 }
 
 namespace eval acs_sc {}

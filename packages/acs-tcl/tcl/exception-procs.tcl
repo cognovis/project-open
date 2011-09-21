@@ -2,7 +2,7 @@ ad_library {
 
   @author rhs@mit.edu
   @creation-date 2000-09-09
-  @cvs-id $Id: exception-procs.tcl,v 1.2 2010/10/19 20:12:55 po34demo Exp $
+  @cvs-id $Id: exception-procs.tcl,v 1.3 2007/01/10 21:22:12 gustafn Exp $
 }
 
 ad_proc -private ad_raise {exception {value ""}} {

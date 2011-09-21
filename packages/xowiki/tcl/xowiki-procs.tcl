@@ -3,7 +3,7 @@
 
     @creation-date 2006-01-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-procs.tcl,v 1.438 2011/06/03 10:28:36 victorg Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -1212,6 +1212,7 @@ namespace eval ::xowiki {
 		    -use_package_path true \
 		    -use_site_wide_pages true \
 		    -use_prototype_pages true \
+		    -default_lang [my lang] \
 		    -parent_id [my parent_id] $page_name]
       
       if {$page ne "" && ![$page exists __decoration]} {
@@ -2977,7 +2978,7 @@ namespace eval ::xowiki {
     } elseif {$from_package_ids eq "*"} {
       set package_clause ""
     } else {
-      set package_clause "and object_package_id in ([$join $from_package_ids ,])"
+      set package_clause "and object_package_id in ([join $from_package_ids ,])"
     }
 
     if {$parent_id eq "*"} {

@@ -29,6 +29,11 @@ foreach css $css_list {
 	set package_key $path_root
 	set file_location "[acs_package_root_dir $package_key]/www/[join [lrange $css_path_list 2 end] /]"
 	set edit_location [export_vars -base "css-edit" -url {file_location return_url {css_location $css}}]
+    } elseif {$path_root eq "intranet"} {
+	# THis is a package key, but not resources directory
+	set package_key "intranet-core"
+	set file_location "[acs_package_root_dir $package_key]/www/[join [lrange $css_path_list 2 end] /]"
+	set edit_location [export_vars -base "css-edit" -url {file_location return_url {css_location $css}}]
     } else {
 	set file_location $css
 	set edit_location ""

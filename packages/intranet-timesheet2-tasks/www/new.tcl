@@ -15,7 +15,7 @@ ad_page_contract {
     { edit_p "" }
     { message "" }
     { form_mode "display" }
-    { task_status_id:integer 76 }
+    { task_status_id "" }
 }
 
 # ------------------------------------------------------------------
@@ -42,12 +42,14 @@ set current_user_id $user_id
 
 set normalize_project_nr_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NormalizeProjectNrP" -default 1]
 
-
 # Check if this is really a task.
 if {[info exists task_id]} {
 
     set object_type_id [db_string otype "select p.project_type_id from im_projects p where p.project_id = :task_id" -default ""]
     switch $object_type_id {
+	"" {
+	    # New timesheet task: Just continue 
+	}
 	100 {
 	    # This is a timesheet task: Just continue
 	}
@@ -65,8 +67,11 @@ if {[info exists task_id]} {
 
 }
 
+
+
 # Check the case if there is no project specified. 
 # This is only OK if there is a task_id specified (new task for project).
+
 
 if {0 == $project_id} {
 
@@ -78,6 +83,8 @@ if {0 == $project_id} {
 	return
     }
 }
+
+
 
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default "Unknown"]
 append page_title " for '$project_name'"
@@ -403,12 +410,11 @@ ad_form -extend -name task -on_request {
 	-object_id $task_id \
 	-form_id task
 
-    # Write Audit Trail
-    im_project_audit -project_id $task_id -action update
-
     # Update percent_completed
     im_timesheet_project_advance $task_id
 
+    # Write Audit Trail
+    im_project_audit -project_id $task_id -action after_update
 
 } -on_submit {
 	ns_log Notice "new: on_submit"

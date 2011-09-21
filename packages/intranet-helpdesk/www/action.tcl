@@ -50,7 +50,7 @@ switch $action_id {
 		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
 		im_ticket::close_workflow	-ticket_id $ticket_id
 		im_ticket::close_forum		-ticket_id $ticket_id
-		im_ticket::audit		-ticket_id $ticket_id -action "update"
+		im_ticket::audit		-ticket_id $ticket_id -action "after_update"
 	    }
 
 	    if {$action_id == 30510} {
@@ -58,12 +58,17 @@ switch $action_id {
 		ad_returnredirect [export_vars -base "/intranet-helpdesk/notify-stakeholders" {tid action_id return_url}]
 	    }
 	}
-	30530 {
+	30530 - 30532 {
 	    # Reopen
 	    foreach ticket_id $tid {
 		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
 		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_open]
 		im_ticket::audit		-ticket_id $ticket_id -action "update"
+	    }
+
+	    if {$action_id == 30532} {
+		# Reopen & Notify - Notify all stakeholders
+		ad_returnredirect [export_vars -base "/intranet-helpdesk/notify-stakeholders" {tid action_id return_url}]
 	    }
 	}
 	30540 {

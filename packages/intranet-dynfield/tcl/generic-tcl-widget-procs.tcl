@@ -51,21 +51,11 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     set global_var_pos [lsearch $params global_var]
     if {$global_var_pos >= 0} {
         set global_var_name [lindex $params [expr $global_var_pos +1]]
-        set $global_var_name [set ::$global_var_name]
-    }
-    
-    set switch_pos [lsearch $params switch_p]
-    if {$switch_pos >= 0} {
-        set switch_p [lindex $params [expr $switch_pos +1]]
-    } else {
-        set switch_p 0
-    }
-    
-    # Deal with global variables being pushed through
-    set global_var_pos [lsearch $params global_var]
-    if {$global_var_pos >= 0} {
-        set global_var_name [lindex $params [expr $global_var_pos +1]]
-        set $global_var_name [set ::$global_var_name]
+	if {[info exists ::$global_var_name]} {
+	    set $global_var_name [set ::$global_var_name]
+	} else {
+	    return ""
+	}
     }
     
     set memoize_pos [lsearch $params memoize_p]

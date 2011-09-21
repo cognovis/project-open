@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-05
--- @cvs-id $Id: site-nodes-create.sql,v 1.6 2004/03/12 18:48:49 jeffd Exp $
+-- @cvs-id $Id: site-nodes-create.sql,v 1.8 2010/11/24 18:58:45 victorg Exp $
 --
 
 begin

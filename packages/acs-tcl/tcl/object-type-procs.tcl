@@ -4,7 +4,7 @@ ad_library {
 
     @author Yonatan Feldman (yon@arsdigita.com)
     @creation-date August 13, 2000
-    @cvs-id $Id: object-type-procs.tcl,v 1.2 2010/10/19 20:12:56 po34demo Exp $
+    @cvs-id $Id: object-type-procs.tcl,v 1.9 2011/04/18 16:56:12 emmar Exp $
 
 }
 
@@ -48,7 +48,7 @@ ad_proc -public acs_object_type_hierarchy {
 	    append result $join_string
 	}
 	incr i
-	append result "\n    $indent<a href=./one?[export_url_vars object_type]>[lang::util::localize $pretty_name]</a>"
+	append result [subst {\n    $indent<a href="./one?[export_url_vars object_type]">[lang::util::localize $pretty_name]</a>}]
 	append result $additional_html
 
     }

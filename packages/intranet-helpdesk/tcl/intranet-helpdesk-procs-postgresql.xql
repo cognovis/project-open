@@ -12,8 +12,8 @@
 		:current_user_id,	-- creation_user
 		'0.0.0.0',		-- creation_ip
 		null,			-- context_id
-
-		:ticket_name,
+		:ticket_name, 
+		:ticket_nr,
 		:ticket_customer_id,
 		:ticket_type_id,
 		:ticket_status_id

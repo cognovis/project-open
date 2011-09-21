@@ -377,7 +377,7 @@ set address                127.0.0.1 </programlisting>
     <sect1 id="maintenance-deploy">
   <title>Staged Deployment for Production Networks</title>
     <authorblurb>
-  <para><phrase role="cvstag">($Id: maintenance.xml,v 1.29.8.1 2010/12/12 00:07:03 ryang Exp $)</phrase></para>      
+  <para><phrase role="cvstag">($Id: maintenance.xml,v 1.30 2010/12/11 23:36:32 ryang Exp $)</phrase></para>      
 <para>By <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
     </authorblurb>
   <para>This section describes two minimal-risk methods for deploying changes on a production network.  The important characteristics of a safe change deployment include:  (THIS SECTION IN DEVELOPMENT)</para>

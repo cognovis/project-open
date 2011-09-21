@@ -2,7 +2,7 @@ ad_page_contract {
     page to add a new file to the system
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: file-add.tcl,v 1.3 2011/06/07 15:51:42 po34demo Exp $
+    @cvs-id $Id$
 } {
     { ticket_id:integer ""}
     upload_file:trim,optional
@@ -11,8 +11,10 @@ ad_page_contract {
     {description "" }
 }
 
-if {![info exists upload_file]} {
-    ns_log Notice "file-add: failure"
+if {[info exists upload_file]} {
+    if {"" == $title} { set title $upload_file }
+} else {
+    ns_log Notice "file-add: failure: upload_file does not exist"
     ns_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	false,
@@ -26,13 +28,12 @@ if {![info exists upload_file]} {
 # Security
 # -------------------------------------------------------------
 
-set user_id [ad_conn user_id]
+set user_id [im_rest_cookie_auth_user_id]
 # Get package. ad_conn package_id doesn't seem to work...
 set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
 set mime_type [cr_filename_to_mime_type -create -- $upload_file]
 set folder_id [im_fs_content_folder_for_object -object_id $ticket_id]
-
-ns_log Notice "file-add: upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}, mime_type=$mime_type, package_id=$package_id, folder_id=$folder_id"
+ns_log Notice "file-add: user_id=$user_id, ticket_id=$ticket_id, mime_type=$mime_type, folder_id=$folder_id, upload_file=[im_opt_val upload_file], title=$title, upload_file.tmpfile=${upload_file.tmpfile}"
 
 set permission_p [permission::permission_p \
     -object_id $folder_id \
@@ -40,9 +41,6 @@ set permission_p [permission::permission_p \
     -privilege "write" \
 ]
 ns_log Notice "file-add: permission_p=$permission_p"
-
-# set permission_p "1"
-
 
 if {1 != $permission_p} {
     ns_log Notice "file-add: failure: User \#$user_id doesn't have write permissions to folder \#$folder_id"
@@ -75,11 +73,17 @@ if {"" != $upload_file} {
     
 }
 
+set folder_path [db_string folder_path "select fs_folder_path from im_biz_objects where object_id = :ticket_id"]
+
 ns_log Notice "file-add: success"
 doc_return 200 "text/html" "{
 	\"result\": {
 		\"success\":	true,
-		\"errors\":	{\"email\": \"already taken\"}
+		\"message\":	\"File successfully created\",
+		\"data\":	\[{
+			\"fs_folder_id\":	$folder_id,
+			\"fs_folder_path\":	\"$folder_path\"
+		}\]
     	}
 }"
 ad_script_abort

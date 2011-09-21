@@ -4,7 +4,7 @@ ad_library {
     
     @author Eric Lorenzo (eric@openforce.net)
     @creation-date 22 March 2002
-    @cvs-id $Id: acs-mail-lite-procs.tcl,v 1.87.2.1 2010/05/23 14:02:58 gustafn Exp $
+    @cvs-id $Id: acs-mail-lite-procs.tcl,v 1.90 2011/05/04 10:27:40 emmar Exp $
 
 }
 
@@ -407,7 +407,7 @@ namespace eval acs_mail_lite {
         set message_date [acs_mail_lite::utils::build_date]
 
         # Build the message body
-        set tokens [acs_mail_lite::utils::build_body -mime_type $mime_type $body]
+        set tokens [acs_mail_lite::utils::build_body -mime_type $mime_type -- $body]
 
         # Add attachments if any
         if {[exists_and_not_null file_ids]} {
@@ -441,7 +441,8 @@ namespace eval acs_mail_lite {
 
         # Set the subject
         if { $subject ne "" } {
-            mime::setheader $tokens Subject [acs_mail_lite::utils::build_subject $subject]
+            set encoded_subject [acs_mail_lite::utils::build_subject $subject]
+            mime::setheader $tokens Subject $encoded_subject
         }
 
         # Add extra headers

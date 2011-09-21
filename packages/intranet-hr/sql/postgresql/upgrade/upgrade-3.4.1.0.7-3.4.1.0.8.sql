@@ -2,7 +2,28 @@
 
 SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.4.1.0.7-3.4.1.0.8.sql','');
 
-DROP VIEW IF EXISTS im_employees_active; 
+
+
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count         integer;
+begin
+
+	select count(*) into v_count from pg_class
+	where relname = 'im_employees_active';
+        IF v_count = 0 THEN return 1; END IF;
+
+	DROP VIEW im_employees_active; 
+        RETURN 0;
+
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
 
 create or replace view im_employees_active as
 select

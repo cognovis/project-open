@@ -12,6 +12,9 @@ ad_page_contract {
 } {
     { order_by "Prio" }
     { mine_p "all" }
+    { start_date "" }
+    { end_date "" }
+    { ticket_name "" }
     { ticket_status_id:integer "[im_ticket_status_open]" } 
     { ticket_type_id:integer "" } 
     { ticket_queue_id:integer 0 } 
@@ -49,6 +52,10 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage  "" 50]
 }
 set end_idx [expr $start_idx + $how_many]
+
+if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
+if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
+
 
 # ---------------------------------------------------------------
 # Defined Table Fields
@@ -165,6 +172,19 @@ if {$view_tickets_all_p} {
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
 
+# Add custom searches to drop-down
+if {[im_table_exists im_sql_selectors]} {
+    set selector_sql "
+	select	s.name, s.short_name
+	from	im_sql_selectors s
+	where	s.object_type = 'im_ticket'
+    "
+    db_foreach selectors $selector_sql {
+	lappend mine_p_options [list $name $short_name]
+    }
+}
+
+
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 	select  distinct
 		im_name_from_user_id(object_id_two) as user_name,
@@ -222,9 +242,11 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name letter } \
     -form {
     	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
+	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
+	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+	{ticket_name:text(text),optional {label "[_ intranet-helpdesk.Ticket_Name]"} {html {size 12}}}
     }
 
 if {$view_tickets_all_p} {  
@@ -248,7 +270,8 @@ im_dynfield::append_attributes_to_form \
     -form_id $form_id \
     -object_id 0 \
     -advanced_filter_p 1 \
-    -search_p 1
+    -search_p 1 \
+    -page_url "/intranet-helpdesk/index"
 
 # Set the form values from the HTTP form variable frame
 set org_mine_p $mine_p
@@ -260,6 +283,9 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -form_id $form_id \
 			       -object_type $object_type
 ]
+
+
+# ad_return_complaint 1 [array get extra_sql_array]
 
 # ---------------------------------------------------------------
 # Generate SQL Query
@@ -293,6 +319,23 @@ if { ![empty_string_p $customer_id] && $customer_id != 0 } {
 if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
     lappend criteria "t.ticket_customer_contact_id = :customer_contact_id"
 }
+
+if { ![empty_string_p $start_date] && $start_date != "" } {
+    lappend criteria "o.creation_date >= :start_date::timestamptz"
+}
+if { ![empty_string_p $end_date] && $end_date != "" } {
+    lappend criteria "o.creation_date < :end_date::timestamptz"
+}
+if { ![empty_string_p $ticket_name] && $ticket_name != "" } {
+    if {0 && ![string isalphanum $ticket_name]} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Only_alphanum_allowed "
+		Only alphanumerical characters are allowed for searching for security reasons.
+	"]
+	ad_script_abort
+    }
+    lappend criteria "p.project_name like '%$ticket_name%'"
+}
+
 
 set letter [string toupper $letter]
 
@@ -364,12 +407,26 @@ switch $mine_p {
 				wft.case_id = wfc.case_id and
 				wft.holding_user = :current_user_id
 		)
+    		OR :current_user_id in (
+                        select  object_id_two
+                        from    acs_rels r
+                        where   r.object_id_one = t.ticket_id and 
+			r.rel_type = 'im_biz_object_member'
+                )
 	)"
     }
-    "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
+    "default" { 
+	# The short name of a SQL selector
+	set selector_sql [db_string selector_sql "select selector_sql from im_sql_selectors where short_name = :mine_p" -default ""]
+	if {"" == $selector_sql} {
+	    ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" 
+	    ad_script_abort
+	}
+
+	lappend criteria "t.ticket_id in ($selector_sql)"
+    }
 }
 
-# ad_return_complaint 1 $order_by
 
 set order_by_clause "order by lower(t.ticket_id) DESC"
 switch [string tolower $order_by] {
@@ -467,22 +524,31 @@ set sql "
 			LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id),
 			im_tickets t
 			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
-			im_companies c
+			im_companies c,
+			acs_objects o
 			$extra_from
 		WHERE
 			p.company_id = c.company_id
 			and t.ticket_id = p.project_id
+			and t.ticket_id = o.object_id
 			and p.project_type_id = [im_project_type_ticket]
 			and p.project_status_id not in ([join [im_sub_categories [im_project_status_deleted]] ","])
 			$where_clause
 			$extra_where
 		$order_by_clause
-"
 
+
+"
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
+
+# The SQL can contain commands [..] that need to be
+# evaluated in the context of this page.
+eval "set sql \"$sql\""
+
+# ad_return_complaint 1 "<pre>$sql</pre>"
 
 if {[string equal $letter "ALL"]} {
     # Set these limits to negative values to deactivate them
@@ -662,9 +728,19 @@ if { $start_idx > 0 } {
     set previous_page ""
 }
 
+
+# Showing "next page" and the number of tickets shown
+set start_idxpp [expr $start_idx+1]
+set end_idx [expr $start_idx + $how_many]
+if {$end_idx > $total_in_limited} { set end_idx $total_in_limited }
+set viewing_msg [lang::message::lookup "" intranet-helpdesk.Viewing_start_end_from_total_in_limited "
+	    Viewing tickets %start_idxpp% to %end_idx% from %total_in_limited%"]
+if {$total_in_limited < 1} { set viewing_msg "" }
+
 set table_continuation_html "
 	<tr>
 	  <td align=center colspan=$colspan>
+	    $viewing_msg &nbsp;
 	    [im_maybe_insert_link $previous_page $next_page]
 	  </td>
 	</tr>

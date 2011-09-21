@@ -5,7 +5,7 @@ ad_library {
     @author Rob Mayoff [mayoff@arsdigita.com]
     @author Nada Amin [namin@arsdigita.com]
     @creation-date June 28, 2000
-    @cvs-id $Id: 10-charset-compat-procs.tcl,v 1.2 2010/10/19 20:12:51 po34demo Exp $
+    @cvs-id $Id: 10-charset-compat-procs.tcl,v 1.1 2001/04/12 16:58:18 donb Exp $
 }
 
 set compat_procs [list ns_startcontent ns_encodingfortype]

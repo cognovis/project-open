@@ -731,7 +731,7 @@ ad_proc -public im_timesheet_task_list_component {
 	<table width='100%'>
 	<tr>
 	<td align=left>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\"
+		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id task_status_id return_url]\"
 		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
 	</td>
 	<td align=right>

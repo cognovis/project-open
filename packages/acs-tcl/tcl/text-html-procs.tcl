@@ -4,7 +4,7 @@ ad_library {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 19 July 2000
-    @cvs-id $Id: text-html-procs.tcl,v 1.2 2010/10/19 20:12:58 po34demo Exp $
+    @cvs-id $Id: text-html-procs.tcl,v 1.65 2010/03/11 11:20:48 gustafn Exp $
 }
 
 

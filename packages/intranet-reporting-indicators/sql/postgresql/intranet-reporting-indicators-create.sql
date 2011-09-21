@@ -253,6 +253,7 @@ select im_category_new (15235, 'Human Resources Management', 'Intranet Indicator
 select im_category_new (15240, 'Other', 'Intranet Indicator Section');
 select im_category_new (15245, 'System Usage', 'Intranet Indicator Section');
 select im_category_new (15250, 'SLA Management', 'Intranet Indicator Section');
+select im_category_new (15255, 'Helpdesk', 'Intranet Indicator Section');
 
 
 create or replace view im_indicator_sections as
@@ -356,6 +357,11 @@ select im_grant_permission (
 
 
 -- Import some sample indicators
-\i intranet-reporting-indicators-indicators.sql
-
+\i intranet-reporting-indicators-crm.sql
+\i intranet-reporting-indicators-finance.sql
+\i intranet-reporting-indicators-helpdesk.sql
+\i intranet-reporting-indicators-hr.sql
+\i intranet-reporting-indicators-projects.sql
+\i intranet-reporting-indicators-timesheet.sql
+\i intranet-reporting-indicators-other.sql
 

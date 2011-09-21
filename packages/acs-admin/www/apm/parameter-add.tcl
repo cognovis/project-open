@@ -2,7 +2,7 @@ ad_page_contract {
     Adds a parameter to a version.
     @author Todd Nightingale [tnight@arsdigita.com]
     @creation-date 17 April 2000
-    @cvs-id $Id: parameter-add.tcl,v 1.8 2010/03/30 22:19:45 donb Exp $
+    @cvs-id $Id: parameter-add.tcl,v 1.9 2010/10/04 21:59:20 victorg Exp $
 } {
     version_id:naturalnum,notnull
     {section_name ""}
@@ -11,11 +11,7 @@ ad_page_contract {
 set user_id [ad_get_user_id]
 
 set parameter_id [db_nextval acs_object_id_seq]
-db_1row apm_get_name { 
-  select package_key, pretty_name, version_name
-  from apm_package_version_info
-  where version_id = :version_id
-}
+db_1row apm_get_name {}
 db_release_unused_handles
 
 set page_title "Add Parameter"

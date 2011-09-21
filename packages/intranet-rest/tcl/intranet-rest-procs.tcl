@@ -56,6 +56,7 @@ ad_proc -private im_rest_call_delete {} {
 
 ad_proc -private im_rest_call_get {
     {-http_method GET }
+    {-format "xml" }
 } {
     Handler for GET rest calls
 } {
@@ -87,12 +88,14 @@ ad_proc -private im_rest_call_get {
 	}
     }
 
+    if {[info exists query_hash(format)]} { set format $query_hash(format) }
+
     # Determine the authenticated user_id. 0 means not authenticated.
-    array set auth_hash [im_rest_authenticate -query_hash_pairs [array get query_hash]]
-    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
+    array set auth_hash [im_rest_authenticate -format $format -query_hash_pairs [array get query_hash]]
+    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
     set auth_user_id $auth_hash(user_id)
     set auth_method $auth_hash(method)
-    if {0 == $auth_user_id} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
+    if {0 == $auth_user_id} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
 
     # Default format are:
     # - "html" for cookie authentication
@@ -102,12 +105,12 @@ ad_proc -private im_rest_call_get {
 	basic { set format "xml" }
 	cookie { set format "html" }
 	token { set format "xml" }
-	default { return [im_rest_error -http_status 401 -message "Invalid authentication method '$auth_method'."] }
+	default { return [im_rest_error -format $format -http_status 401 -message "Invalid authentication method '$auth_method'."] }
     }
     # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
     set valid_formats {xml html json}
-    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
 
     # Call the main request processing routine
     if {[catch {
@@ -123,7 +126,7 @@ ad_proc -private im_rest_call_get {
     } err_msg]} {
 
 	ns_log Notice "im_rest_call_get: im_rest_call returned an error: $err_msg"
-	return [im_rest_error -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
+	return [im_rest_error -format $format -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
 
     }
     
@@ -168,7 +171,7 @@ ad_proc -private im_rest_call {
 	from	acs_object_types union
 	select	'im_category'
     "]]
-    if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
+    if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
 
     # -------------------------------------------------------
     switch $method  {
@@ -311,8 +314,32 @@ ad_proc -private im_rest_call {
 		}
 	    }
 	}
+	DELETE {
+	    # Is the post operation performed on a particular object or on the object_type?
+	    if {"" != $rest_oid && 0 != $rest_oid} {
+
+		if {[catch {
+		    # DELETE with object_id => delete operation
+		    ns_log Notice "im_rest_call: Found a DELETE operation on object_type=$rest_otype with object_id=$rest_oid"
+		    im_rest_delete_object \
+			-format $format \
+			-user_id $user_id \
+			-rest_otype $rest_otype \
+			-rest_oid $rest_oid \
+			-query_hash_pairs $query_hash_pairs
+
+		} err_msg]} {
+		    ns_log Error "im_rest_call: Error during DELETE operation: $err_msg"
+		}
+
+	    } else {
+		# DELETE without object_id is not allowed - you can only destroy a known object
+		ns_log Error "im_rest_call: You have to specify an object to DELETE."
+	    }
+	}
+
 	default {
-	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
+	    return [im_rest_error -format $format -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST|PUT|DELETE}."]
 	}
     }
 }
@@ -394,7 +421,7 @@ ad_proc -private im_rest_get_object {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -469,7 +496,7 @@ ad_proc -private im_rest_get_im_category {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Category: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Category: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -554,7 +581,7 @@ ad_proc -private im_rest_get_im_dynfield_attribute {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Dynfield Attribute: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Dynfield Attribute: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -631,7 +658,7 @@ ad_proc -private im_rest_get_im_invoice_item {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Invoice Item: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Invoice Item: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -709,7 +736,7 @@ ad_proc -private im_rest_get_im_hour {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Timesheet Hour: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Timesheet Hour: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -763,7 +790,8 @@ ad_proc -private im_rest_get_object_type {
     Handler for GET rest calls on a whole object type -
     mapped to queries on the specified object type
 } {
-    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+    set current_user_id $user_id
+    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$current_user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
 
@@ -775,12 +803,15 @@ ad_proc -private im_rest_get_object_type {
 	where	object_type = :rest_otype
     "
 
-    set base_url "[im_rest_system_url]/intranet-rest"
+    if {"" == $table_name} {
+	im_rest_error -format $format -http_status 500 -message "Invalid DynField configuration: Object type '$rest_otype' doesn't have a table_name specified in table acs_object_types."
+    }
 
+    set base_url "[im_rest_system_url]/intranet-rest"
 
     # -------------------------------------------------------
     # Check for generic permissions to read all objects of this type
-    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $current_user_id -privilege "read"]
 
     # Deny completely access to the object type?
     set rest_otype_read_none_p 0
@@ -789,17 +820,17 @@ ad_proc -private im_rest_get_object_type {
 	# There are "view_xxx_all" permissions allowing a user to see all objects:
 	switch $rest_otype {
 	    bt_bug		{ }
-	    im_company		{ set rest_otype_read_all_p [im_permission $user_id "view_companies_all"] }
-	    im_cost		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_conf_item	{ set rest_otype_read_all_p [im_permission $user_id "view_conf_items_all"] }
-	    im_invoices		{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_project		{ set rest_otype_read_all_p [im_permission $user_id "view_projects_all"] }
-	    im_user_absence	{ set rest_otype_read_all_p [im_permission $user_id "view_absences_all"] }
-	    im_office		{ set rest_otype_read_all_p [im_permission $user_id "view_offices_all"] }
-	    im_ticket		{ set rest_otype_read_all_p [im_permission $user_id "view_tickets_all"] }
-	    im_timesheet_task	{ set rest_otype_read_all_p [im_permission $user_id "view_timesheet_tasks_all"] }
-	    im_timesheet_invoices { set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
-	    im_trans_invoices	{ set rest_otype_read_all_p [im_permission $user_id "view_finance"] }
+	    im_company		{ set rest_otype_read_all_p [im_permission $current_user_id "view_companies_all"] }
+	    im_cost		{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_conf_item	{ set rest_otype_read_all_p [im_permission $current_user_id "view_conf_items_all"] }
+	    im_invoices		{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_project		{ set rest_otype_read_all_p [im_permission $current_user_id "view_projects_all"] }
+	    im_user_absence	{ set rest_otype_read_all_p [im_permission $current_user_id "view_absences_all"] }
+	    im_office		{ set rest_otype_read_all_p [im_permission $current_user_id "view_offices_all"] }
+	    im_ticket		{ set rest_otype_read_all_p [im_permission $current_user_id "view_tickets_all"] }
+	    im_timesheet_task	{ set rest_otype_read_all_p [im_permission $current_user_id "view_timesheet_tasks_all"] }
+	    im_timesheet_invoices { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+	    im_trans_invoices	{ set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
 	    im_translation_task	{ }
 	    user		{ }
 	    default { 
@@ -807,6 +838,7 @@ ad_proc -private im_rest_get_object_type {
 		# Well, no object type except the ones above has a custom procedure,
 		# so we can deny access here:
 		set rest_otype_read_none_p 1
+		ns_log Notice "im_rest_get_object_type: Denying access to $rest_otype"
 	    }
 	}
     }
@@ -815,8 +847,12 @@ ad_proc -private im_rest_get_object_type {
     # Check if there is a where clause specified in the URL
     # and validate the clause.
     set where_clause ""
+    set where_clause_list [list]
+    set where_clause_unchecked_list [list]
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    if {"" != $where_clause} { lappend where_clause_list $where_clause }
 
+    # Fraber 110612:
     # Decoding the where clause messes up a value like '%123%' (searching for vat_id)
     # set where_clause [ns_urldecode $where_clause]
     ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
@@ -826,7 +862,6 @@ ad_proc -private im_rest_get_object_type {
     # Check if there are "valid_vars" specified in the HTTP header
     # and add these vars to the SQL clause
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
-    set where_clause_list [list]
     foreach v $valid_vars {
 	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
     }
@@ -836,26 +871,50 @@ ad_proc -private im_rest_get_object_type {
     #
     switch $rest_otype {
 	user - person - party {
-	    set table_name "(select * from users u, parties pa, persons pe where u.user_id = pa.party_id and u.user_id = pe.person_id )"
+	    set table_name "(
+		select	*
+		from	users u, parties pa, persons pe
+		where	u.user_id = pa.party_id and u.user_id = pe.person_id and
+			u.user_id in (
+				SELECT  o.object_id
+				FROM    acs_objects o,
+				        group_member_map m,
+				        membership_rels mr
+				WHERE   m.member_id = o.object_id AND
+				        m.group_id = acs__magic_object_id('registered_users'::character varying) AND
+				        m.rel_id = mr.rel_id AND
+				        m.container_id = m.group_id AND
+				        m.rel_type::text = 'membership_rel'::text AND
+				        mr.member_state = 'approved'
+			)
+		)"
 	}
 	file_storage_object {
 	    # file storage object needs additional security
-	    lappend where_clause_list "'t' = acs_permission__permission_p(o.object_id, $user_id, 'read')"
+	    lappend where_clause_unchecked_list "'t' = acs_permission__permission_p(o.object_id, $current_user_id, 'read')"
+	}
+	im_ticket {
+	    # Testing per-ticket permissions
+	    set read_sql [im_ticket_permission_read_sql -user_id $current_user_id]
+	    lappend where_clause_unchecked_list "o.object_id in ($read_sql)"
+	}
+    }
+
+    # Check that the where_clause elements are valid SQL statements
+    foreach where_clause $where_clause_list {
+	set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+	if {!$valid_sql_where} {
+	    im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	    return
 	}
     }
 
     # Build the complete where clause
+    set where_clause_list [concat $where_clause_list $where_clause_unchecked_list]
     if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
-    append where_clause [join $where_clause_list " and "]
-
- 
-    # Check that the query is a valid SQL where clause
-    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
-    if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
-	return
-    }
+    append where_clause [join $where_clause_list " and\n\t\t"]
     if {"" != $where_clause} { set where_clause "and $where_clause" }
+    # ad_return_complaint 1 "<pre>$where_clause</pre>"
 
 
     # -------------------------------------------------------
@@ -888,8 +947,8 @@ ad_proc -private im_rest_get_object_type {
 
 	# Skip objects with empty object name
 	if {"" == $object_name} { 
-	    ns_log Notice "im_rest_get_object_type: Skipping object #$object_id because object_name is empty."
-	    continue 
+	    ns_log Error "im_rest_get_object_type: Skipping object #$object_id because object_name is empty."
+	    continue
 	}
 
 	# -------------------------------------------------------
@@ -903,7 +962,7 @@ ad_proc -private im_rest_get_object_type {
 	if {!$read_p} {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
-	    eval "${rest_otype}_permissions $user_id $rest_oid view_p read_p write_p admin_p"
+	    eval "${rest_otype}_permissions $current_user_id $rest_oid view_p read_p write_p admin_p"
 	}
 	if {!$read_p} { continue }
 
@@ -950,7 +1009,7 @@ ad_proc -private im_rest_get_object_type {
 	json {  
 	    # Calculate the total number of objects
 	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
-	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"im_rest_get_object_type: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/html" $result
 	    return
 	}
@@ -988,7 +1047,7 @@ ad_proc -private im_rest_get_im_invoice_items {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1093,7 +1152,7 @@ ad_proc -private im_rest_get_im_hours {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1200,7 +1259,7 @@ ad_proc -private im_rest_get_im_categories {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1221,6 +1280,7 @@ ad_proc -private im_rest_get_im_categories {
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
+    set value ""
     set result ""
     set obj_ctr 0
     db_foreach objects $sql {
@@ -1279,7 +1339,7 @@ ad_proc -private im_rest_get_im_categories {
 	}
 	json {  
 	    # Deal with different JSON variants for different AJAX frameworks
-	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    set result "{\"success\": true,\n\"message\": \"im_rest_get_im_categories: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
 	    doc_return 200 "text/html" $result
 	    return
 	}
@@ -1313,7 +1373,7 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
-	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	im_rest_error -format $format -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -1411,13 +1471,21 @@ ad_proc -private im_rest_post_object_type {
     if {0 != [llength [info commands im_rest_post_object_type_$rest_otype]]} {
 	
 	ns_log Notice "im_rest_post_object_type: Before calling im_rest_post_object_type_$rest_otype"
-	set rest_oid [eval [list im_rest_post_object_type_$rest_otype \
+	array set hash_array [eval [list im_rest_post_object_type_$rest_otype \
 		  -format $format \
 		  -user_id $user_id \
 		  -content $content \
 		  -rest_otype $rest_otype \
 	]]
-	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype. rest_oid=$rest_oid"
+
+	# Extract the object's id from the return array and write into object_id in case a client needs the info
+	if {![info exists hash_array(rest_oid)]} {
+	    # Probably after an im_rest_error
+	    ns_log Error "im_rest_post_object_type: Didn't find hash_array(rest_oid): This should never happened"
+	}
+	set rest_oid $hash_array(rest_oid)
+	set hash_array(object_id) $rest_oid
+	ns_log Notice "im_rest_post_object_type: After calling im_rest_post_object_type_$rest_otype: rest_oid=$rest_oid, hash_array=[array get hash_array]"
 
 	switch $format {
 	    html { 
@@ -1429,9 +1497,16 @@ ad_proc -private im_rest_post_object_type {
 		</table>[im_footer]
 		"
 	    }
-	    json { 
-		set data "{\"object_id\": $rest_oid}"
-		set result "{\"success\": true,\n\"message\": \"Object created\",\n\"data\": $data\n\n}"
+	    json {
+		# Return a JSON structure with all fields of the object.
+		set data_list [list]
+		foreach key [array names hash_array] {
+		    set value $hash_array($key)
+		    lappend data_list "\"$key\": \"[im_quotejson $value]\""
+		}
+		
+		set data "\[{[join $data_list ", "]}\]"
+		set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
 		doc_return 200 "text/html" $result
 	    }
 	    xml {  
@@ -1444,7 +1519,80 @@ ad_proc -private im_rest_post_object_type {
 
     } else {
 	ns_log Notice "im_rest_post_object_type: Create for '$rest_otype' not implemented yet"
-	im_rest_error -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
+	im_rest_error -format $format -http_status 404 -message "Object creation for object type '$rest_otype' not implemented yet."
+    }
+    return
+}
+
+ad_proc -private im_rest_delete_object {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid 0 }
+    { -query_hash_pairs {} }
+    { -debug 0 }
+} {
+    Handler for DELETE rest calls to an individual object:
+    Update the specific object using a generic update procedure
+} {
+    ns_log Notice "im_rest_delete_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, format='$format', query_hash=$query_hash_pairs"
+
+    # Get the content of the HTTP DELETE request
+    set content [im_rest_get_content]
+    ns_log Notice "im_rest_delete_object: content=$content"
+
+    # Only administrators have the right to DELETE
+    if {![im_user_is_admin_p $user_id]} {
+	im_rest_error -format $format -http_status 401 -message "User #$user_id is not a system administrator. You need admin rights to perform a DELETE."
+    }
+
+    # Deal with certain subtypes
+    switch $rest_otype {
+	im_ticket {
+	    set nuke_otype "im_project"
+	}
+	default {
+	    set nuke_otype $rest_otype
+	}
+    }
+
+    if {[catch {
+	set nuke_tcl [list "${nuke_otype}_nuke" -current_user_id $user_id $rest_oid]
+	ns_log Notice "im_rest_delete_object: nuke_tcl=$nuke_tcl"
+	eval $nuke_tcl
+
+    } err_msg]} {
+	im_rest_error -format $format -http_status 404 -message "DELETE for object #$rest_oid of type '$rest_otype' returned an error: $err_msg"
+    }
+
+    # The update was successful - return a suitable message.
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
+		<tr<td>$rest_oid</td></tr>
+		</table>[im_footer]
+	    "
+	}
+	json {
+	    # Empty data: The empty array is necessary for Sencha in order to call callbacks
+	    # without error. However, adding data here will create empty records in the store later,
+	    # so the array needs to be empty.
+	    set data_list [list]
+	    foreach key [array names hash_array] {
+		set value $hash_array($key)
+		lappend data_list "\"$key\": \"[im_quotejson $value]\""
+	    }
+
+	    set data "\[{[join $data_list ", "]}\]"
+	    set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
+	    doc_return 200 "text/html" $result
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" 
+	}
     }
     return
 }
@@ -1493,6 +1641,7 @@ ad_proc -private im_rest_post_object {
     # of a database constraint violation
     ns_log Notice "im_rest_post_object: Before im_rest_object_type_update_sql"
     im_rest_object_type_update_sql \
+	-format $format \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
 	-hash_array [array get hash_array]
@@ -1514,7 +1663,17 @@ ad_proc -private im_rest_post_object {
 	    "
 	}
 	json {
-	    set result "{\"success\": true,\n\"message\": \"Data loaded\",\n}"
+	    # Empty data: The empty array is necessary for Sencha in order to call callbacks
+	    # without error. However, adding data here will create empty records in the store later,
+	    # so the array needs to be empty.
+	    set data_list [list]
+	    foreach key [array names hash_array] {
+		set value $hash_array($key)
+		lappend data_list "\"$key\": \"[im_quotejson $value]\""
+	    }
+
+	    set data "\[{[join $data_list ", "]}\]"
+	    set result "{\"success\": \"true\",\"message\": \"Object updated\",\"data\": $data}"
 	    doc_return 200 "text/html" $result
 	}
 	xml {  

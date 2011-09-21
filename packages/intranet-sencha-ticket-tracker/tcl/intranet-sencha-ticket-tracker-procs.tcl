@@ -20,7 +20,8 @@ ad_proc -public im_fs_content_folder_for_object {
     object. Creates necessary folders on the fly.
     @parm path Optional path within the object's FS
 } {
-    return [util_memoize [list im_fs_content_folder_for_object_helper -object_id $object_id -path $path]]
+    return [im_fs_content_folder_for_object_helper -object_id $object_id -path $path]
+#    return [util_memoize [list im_fs_content_folder_for_object_helper -object_id $object_id -path $path]]
 }
 
 
@@ -33,6 +34,7 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     object. Creates necessary folders on the fly.
     @parm path Optional path within the object's FS
 } {
+    ns_log Notice "im_fs_content_folder_for_object_helper: object_id=$object_id, path=$path"
     # Check if the folder already exists and return it
     set folder_id [db_string fs_folder "
         select  fs_folder_id
@@ -41,8 +43,8 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     " -default ""]
     if {"" != $folder_id} { return $folder_id }
 
-    # Prepare the variables that we need in order to create
-    # a new folder
+    # Prepare the variables that we need in order to create a new folder
+    ns_log Notice "im_fs_content_folder_for_object_helper: Prepare to create new folder"
     set user_id [ad_maybe_redirect_for_registration]
     set package_id [db_string package "select min(package_id) from apm_packages where package_key = 'file-storage'"]
     db_0or1row object_info "
@@ -64,6 +66,7 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     if {"" == $root_folder_id} {
 	set root_folder_id [fs::new_root_folder -package_id $package_id]
     }
+    ns_log Notice "im_fs_content_folder_for_object_helper: root_folder_id=$root_folder_id"
 
     # Default folder name for the object: Append the object's unique ID
     # to the object's pretty name
@@ -95,15 +98,29 @@ ad_proc -public im_fs_content_folder_for_object_helper {
     set file_paths [concat $object_paths $file_paths]
     set file_paths [linsert $file_paths 0 $object_pretty_plural]
 
+    ns_log Notice "im_fs_content_folder_for_object_helper: file_paths=$file_paths"
+
     set path ""
     set parent_folder_id $root_folder_id
     foreach p $file_paths {
 	append path "/${p}"
-	set folder_id [content::item::get_id -item_path $path -root_folder_id $parent_folder_id]
+	ns_log Notice "im_fs_content_folder_for_object_helper: path='$path'"
+
+	ns_log Notice "im_fs_content_folder_for_object_helper: content::item::get_id -item_path $path -root_folder_id $root_folder_id"
+	set folder_id [content::item::get_id -item_path $path -root_folder_id $root_folder_id]
+	ns_log Notice "im_fs_content_folder_for_object_helper: folder_id='$folder_id'"
+
 	if {"" == $folder_id} {
-	    // create the folder and grant "Admin" to employees
+
+	    # create the folder and grant "Admin" to employees
+	    ns_log Notice "im_fs_content_folder_for_object_helper: content::folder::new -parent_id $parent_folder_id -name $p -label $p"
 	    set folder_id [content::folder::new -parent_id $parent_folder_id -name $p -label $p]
-	    permission::grant -party_id [im_profile_employees] -object_id folder_id -privilege "admin"
+
+	    # All the folder to contain FS files
+	    content::folder::register_content_type -folder_id $folder_id -content_type "file_storage_object"
+
+	    # Allow all employees to admin the new folder
+	    permission::grant -party_id [im_profile_employees] -object_id $folder_id -privilege "admin"
 	}
 	ns_log Notice "im_fs_content_folder_for_object: oid=$object_id: path=$path, parent_id=$parent_folder_id => folder_id=$folder_id"
 	set parent_folder_id $folder_id
@@ -111,11 +128,106 @@ ad_proc -public im_fs_content_folder_for_object_helper {
 
     # Save the new folder to the biz_object table
     db_dml project_folder_save "
-	update im_biz_objects
-	set fs_folder_id = :folder_id
+	update im_biz_objects set 
+		fs_folder_id = :folder_id,
+		fs_folder_path = :path
 	where object_id = :object_id
     "
 
     return $folder_id
+}
+
+
+ad_proc -callback im_ticket_after_update -impl im_sencha_ticket_tracker {
+    -object_id
+    -status_id
+    -type_id
+} {
+    Callback to be executed after the update of any ticket.
+    The call back checks if the ticket was newly assigned to a
+    queue with external users.
+    In this case the callback will send out email notifications
+    to all members of the queue
+} {
+    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: Entering callback code"
+
+    set found_p [db_0or1row ticket_info "
+	select	t.*,
+		p.*
+	from	im_tickets t,
+		im_projects p
+	where	t.ticket_id = p.project_id and
+		t.ticket_id = :object_id
+    "]
+    
+    if {!$found_p} {
+	ns_log Error "im_ticket_after_update -impl im_sencha_ticket_tracker -object_id=$object_id: Didn't find object, skipping"
+	return ""
+    }
+
+    # Don't send mails to "Employees", "SAC" and "SACE"
+    switch $ticket_queue_id {
+	463 - 73363 -  73369 {
+	    ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: Assigned to internal group \#$ticket_queue_id, not sending messages"
+	    return "" 
+	}
+    }
+
+    # Don't send out the mail if the queue was assigned already before.
+    # Here we check that there is no audit before. This means that we
+    # won't send out a 2nd mail if the ticket was assigned to the queue
+    # previously.
+    set audit_sql "
+	select	count(*)
+	from
+		(select	audit_id,
+			audit_date,
+			substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as ticket_queue_id
+		from	im_audits
+		where	audit_object_id = :object_id
+		) t
+	where	
+		ticket_queue_id = :ticket_queue_id and
+		audit_date < now() - '1 seconds'::interval
+    "
+
+    set already_assigned_p [db_string audit $audit_sql]
+    if {$already_assigned_p} {
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: The ticket was already assigned to queue '$ticket_queue_id'"
+	return "" 
+    }
+
+    # Select out the name of the queue
+    set queue_name [db_string queue_name "select group_name from groups where group_id = :ticket_queue_id" -default "undefined"]
+
+    # Who is the currently connect user?
+    set owner_email [db_string owner_mail "select im_email_from_user_id([im_rest_cookie_auth_user_id])"]
+
+    # Send out notification mail to all members of the queue
+    set member_sql "
+	select	member_id,
+		im_name_from_user_id(member_id) as member_name,
+		im_email_from_user_id(member_id) as member_email
+	from	group_distinct_member_map gdmm
+	where	group_id = :ticket_queue_id
+    "
+    set member_list {}
+    db_foreach members $member_sql {
+	lappend member_list $member_name
+    }
+
+    set subject "SPRI: $project_name"
+    set body "El grupo $queue_name ha sido asignado al ticket $project_name.
+Tambien estan en este grupo:
+- [join $member_list "\n- "]
+"
+
+    # Write the mail into the mail queue
+    db_foreach send_email $member_sql {
+	# acs_mail_lite::sendmail $member_email $owner_email $subject $body
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: "
+	ns_log Notice "im_ticket_after_update -impl im_sencha_ticket_tracker: acs_mail_lite::sendmail $member_email $owner_email $subject $body"
+    }
+
 }
 

@@ -109,6 +109,7 @@ ad_proc -private im_rest_debug_headers {
 
 ad_proc -private im_rest_authenticate {
     {-debug 1}
+    {-format "xml" }
     -query_hash_pairs:required
 } {
     Determine the autenticated user
@@ -151,7 +152,7 @@ ad_proc -private im_rest_authenticate {
 	set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
 	if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
     }
-    if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password, basic_auth_user_id=$basic_auth_user_id, basic_auth_password_ok_p=$basic_auth_password_ok_p" }
+    if {$debug} { ns_log Notice "im_rest_authenticate: format=$format, basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password, basic_auth_user_id=$basic_auth_user_id, basic_auth_password_ok_p=$basic_auth_password_ok_p" }
 
 
     # --------------------------------------------------------
@@ -172,12 +173,12 @@ ad_proc -private im_rest_authenticate {
 	token { set auth_user_id $token_user_id }
 	basic { set auth_user_id $basic_auth_user_id }
 	default { 
-	    return [im_rest_error -http_status 401 -message "No authentication found ('$auth_method')."] 
+	    return [im_rest_error -format $format -http_status 401 -message "No authentication found ('$auth_method')."] 
 	}
     }
 
     if {"" == $auth_user_id} { set auth_user_id 0 }
-    ns_log Notice "im_rest_authenticate: auth_method=$auth_method, auth_user_id=$auth_user_id"
+    ns_log Notice "im_rest_authenticate: format=$format, auth_method=$auth_method, auth_user_id=$auth_user_id"
 
     return [list user_id $auth_user_id method $auth_method]
 }
@@ -518,6 +519,7 @@ ad_proc -public im_rest_object_type_index_columns {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_rest_object_type_update_sql { 
+    { -format "xml" }
     -rest_otype:required
     -rest_oid:required
     -hash_array:required
@@ -525,7 +527,7 @@ ad_proc -public im_rest_object_type_update_sql {
     Updates all the object's tables with the information from the
     hash array.
 } {
-    ns_log Notice "im_rest_object_type_update_sql: rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=$hash_array"
+    ns_log Notice "im_rest_object_type_update_sql: format=$format, rest_otype=$rest_otype, rest_oid=$rest_oid, hash_array=[array get hash_array]"
 
     # Stuff the list of variables into a hash
     array set hash $hash_array
@@ -602,7 +604,7 @@ ad_proc -public im_rest_object_type_update_sql {
 	if {[catch {
 	    db_dml sql_$table $update_sql -bind [array get hash]
 	} err_msg]} {
-	    return [im_rest_error -http_status 404 -message "Error updating $rest_otype: '$err_msg'"]
+	    return [im_rest_error -format $format -http_status 404 -message "Error updating $rest_otype: '$err_msg'"]
 	}
     }
 
@@ -658,9 +660,9 @@ ad_proc -public im_rest_valid_sql {
     # ------------------------------------------------------
     # Rules have a format LHS <- RHS (Left Hand Side <- Right Hand Side)
     set rules {
-	query {select [a-z_]+}
-	query {from [a-z_]+}
-	query {where [a-z_]+ in \( query \)}
+	query {select [[:alnum:]_]+}
+	query {from [[:alnum:]_]+}
+	query {where [[:alnum:]_]+ in \( query \)}
 	query {where cond}
 	query {query query}
 	query {query where val}
@@ -673,7 +675,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {\( cond \)}
 	cond {val = val}
 	cond {val like val}
-	cond {[a-z_]+ like val}
+	cond {[[:alnum:]_]+ like val}
 	cond {val > val}
 	cond {val >= val}
 	cond {val < val}
@@ -681,20 +683,21 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {[[:alnum:]_]+ @@ val}
 	cond {val is not null}
 	cond {val in \( val \)}
 	cond {val in \( query \)}
 	val  {val , val}
 	val  {val val}
 	val  {[0-9]+}
-	val  {[0-9a-z\_]+\.[0-9a-z\_]+}
+	val  {[[:alnum:]_]+\.[[:alnum:]_]+}
 	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
-	val  {\'[a-z0-9_\ \-\%\@\.]*\'}
-	val  {[a-z0-9_]+ \( [a-z0-9_]+ \)}
+	val  {\'[[:alnum:]_\ \-\%\@\.]*\'}
+	val  {[[:alnum:]_]+ \( [[:alnum:]_]+ \)}
     }
 
     # Add rules for every variable saying that it's a var.
-    lappend variables member_id user_id group_id
+    lappend variables member_id user_id group_id object_id_one object_id_two
     foreach var $variables {
 	lappend rules val
 	lappend rules $var
@@ -720,7 +723,7 @@ ad_proc -public im_rest_valid_sql {
 
     set string [string trim $string]
     set result 0
-    if {"" == $string || "cond" == $string || "query" == $string} { set result 1 }
+    if {"" == $string || "cond" == $string || "query" == $string || "val" == $string} { set result 1 }
 
     # Show the application of rules for debugging
     if {$debug} { 
@@ -739,11 +742,12 @@ ad_proc -public im_rest_valid_sql {
 
 ad_proc -public im_rest_error {
     { -http_status 404 }
+    { -format "xml" }
     { -message "" }
 } {
     Returns a suitable REST error message
 } {
-    ns_log Notice "im_rest_error: http_status=$http_status, message=$message"
+    ns_log Notice "im_rest_error: http_status=$http_status, format=$format, message=$message"
     set url [im_url_with_query]
 
     switch $http_status {
@@ -760,15 +764,36 @@ ad_proc -public im_rest_error {
 	default { set status_message "Unknown http_status '$http_status'." }
     }
 
+    set page_title [lindex [split $status_message ":"] 0]
+
+    switch $format {
+	html { 
+	    doc_return 200 "text/html" "
+		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle><td>$status_message</td></tr>
+		</table>[im_footer]
+	    " 
+	}
+	xml {  
     doc_return $http_status "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
 <error>
 <http_status>$http_status</http_status>
 <http_status_message>$status_message</http_status_message>
 <request>[ns_quotehtml $url]</request>
 <message>$message</message>
-</error>
-"
-    return
+</error>"
+	}
+	json {  
+	    # Calculate the total number of objects
+	    set result "{\"success\": false,\n\"message\": \"[im_quotejson $message]\"\n}"
+	    doc_return 200 "text/html" $result
+	}
+	default {
+	     ad_return_complaint 1 "Invalid format1: '$format'"
+	}
+    }
+
+    ad_script_abort
 }
 
 
@@ -813,7 +838,7 @@ ad_proc -public im_rest_parse_xml_json_content {
     # Parse the HTTP content
     switch $format {
 	json {
-	    ns_log Notice "im_rest_parse_xml_jason_content: going to parse json content=$content"
+	    ns_log Notice "im_rest_parse_xml_json_content: going to parse json content=$content"
 	    # {"id":8799,"email":"bbigboss@tigerpond.com","first_names":"Ben","last_name":"Bigboss"}
 	    array set parsed_json [util::json::parse $content]
 	    set json_list $parsed_json(_object_)
@@ -827,7 +852,7 @@ ad_proc -public im_rest_parse_xml_json_content {
 	}
 	xml {
 	    # store the key-value pairs into a hash array
-	    ns_log Notice ""im_rest_parse_xml_jason_content: going to parse xml content=$content"
+	    ns_log Notice "im_rest_parse_xml_json_content: going to parse xml content=$content"
 	    if {[catch {set doc [dom parse $content]} err_msg]} {
 		return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
 	    }
@@ -845,5 +870,23 @@ ad_proc -public im_rest_parse_xml_json_content {
 	}
     }
     return [array get hash_array]
+}
+
+
+
+
+
+
+ad_proc -public im_quotejson { str } {
+    Quote a JSON string. In particular this means escaping
+    single and double quotes, as well as new lines, tabs etc.
+    @author Frank Bergmann
+} {
+    regsub -all {\\} $str {\\\\} str
+    regsub -all {'} $str {\'} str
+    regsub -all {"} $str {\"} str
+    regsub -all {\n} $str {\\n} str
+    regsub -all {\t} $str {\\t} str
+    return $str
 }
 

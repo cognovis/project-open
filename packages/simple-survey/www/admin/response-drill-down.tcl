@@ -11,7 +11,7 @@ ad_page_contract {
   @author  jsc@arsdigita.com
   @author  nstrug@arsdigita.com
   @creation-date    February 16, 2000
-  @cvs-id  $Id: response-drill-down.tcl,v 1.1.1.1 2005/12/31 23:52:30 cvs Exp $
+  @cvs-id  $Id: response-drill-down.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
 
 } {
 

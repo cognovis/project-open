@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 17 April 2000
-    @cvs-id $Id: package-add-2.tcl,v 1.9.4.1 2010/04/10 16:53:53 donb Exp $
+    @cvs-id $Id: package-add-2.tcl,v 1.10 2010/10/17 21:06:07 donb Exp $
 } {
     package_key
     pretty_name

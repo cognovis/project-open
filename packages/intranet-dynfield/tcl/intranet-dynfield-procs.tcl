@@ -8,8 +8,6 @@ ad_library {
   @author Malte Sussdorff (malte.sussdorff@cognovis.de)
   @creation-date 2004-09-28
 
-  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision: 1.74 $ $Date: 2011/03/07 20:26:25 $
-
 }
 
 
@@ -246,10 +244,12 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		t.table_name as object_type_table_name,
 		t.id_column as object_type_id_column,
 		at.table_name as attribute_table,
-		at.object_type as attr_object_type
+		at.object_type as attr_object_type,
+		dw.widget
 	from
 		acs_object_type_attributes a,
 		im_dynfield_attributes aa,
+		im_dynfield_widgets dw,
 		acs_attributes at,
 		acs_object_types t
 	where
@@ -257,6 +257,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		and t.object_type = a.ancestor_type
 		and a.attribute_id = aa.acs_attribute_id
 		and a.attribute_id = at.attribute_id
+		and aa.widget_name = dw.widget_name
 		and (aa.also_hard_coded_p is NULL or aa.also_hard_coded_p = 'f')
 	order by
 		attribute_id
@@ -286,13 +287,40 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     db_foreach attributes $attributes_sql {
 	
 	# Check whether the attribute is part of the form
-        if {[lsearch $form_elements $attribute_name] >= 0} {
-            set value [template::element::get_value $form_id $attribute_name]
-            if {"" == $value} { continue }
-            if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
-            ns_set put $bind_vars $attribute_name $value
-            lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-        }
+	if {[lsearch $form_elements $attribute_name] >= 0} {
+	    set value [template::element::get_value $form_id $attribute_name]
+	    ns_log Notice "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
+	    if {"" == $value || 0 == $value} {
+		ns_log Notice "search_sql_criteria_from_form: Skipping"
+		continue
+	    }
+	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
+	    ns_set put $bind_vars $attribute_name $value
+
+	    # Special logic for each of the TCL widgets
+	    switch $widget {
+		text - textarea - richtext {
+		    # Create a "like" search
+		    # lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
+		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+		}
+		date {
+		    # Not supported yet
+		    # We actually neeed to create two search fields, 
+		    # one for start and one for end...
+		    continue
+		}
+		checkbox {
+			# Here we would need a three-way select for
+			# "true", "false" and "no filter". No idea
+			# yet how to do that.
+			continue
+		}
+		default {
+		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		}
+	    }
+	}
     }
     
     set where_clause [join $criteria " and\n            "]
@@ -870,7 +898,11 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set return_url [im_url_with_query]
 
     # Does the specified layout page exist? Otherwise use "default".
-    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    set page_url_exists_p [db_string exists "
+	select	count(*)
+	from	im_dynfield_layout_pages
+	where	object_type = :object_type and page_url = :page_url
+    "]
     if {!$page_url_exists_p} { set page_url "default" }
     set form_page_url $page_url
 
@@ -945,12 +977,31 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     "
 
     set extra_wheres [list "1=1"]
+
+    # ------------------------------------------------------
+    # In "Advanced Filter" mode the form is used to display
+    # a list of filters for the /index.tcl page. In these
+    # filters a special logic applies:
+    # textarea: Doesn't make sense
     if {$advanced_filter_p} {
-        lappend extra_wheres "aw.widget in (
-		'select', 'generic_sql', 
-		'im_category_tree', 'im_cost_center_tree',
-		'checkbox'
-	)"
+	if {"default" == $page_url} {
+		# By default only show filters for drop-down type
+		# of fields
+		lappend extra_wheres "aw.widget in (
+			'select', 'generic_sql', 
+			'im_category_tree', 'im_cost_center_tree',
+			'checkbox'
+		)"
+	} else {
+		# The user has specified a specific "page_url"
+		# in order to specify a custom layout of the filters.
+		# Now exclude only Textarea fields. They are long and ugly...
+		lappend extra_wheres "aw.widget not in (
+			'textarea', 		-- Too long...
+			'date',			-- We need start and end date for ranges
+			'checkbox'		-- We would need a three-way select here
+		)"		
+	}
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
 
@@ -1006,44 +1057,51 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
-        # Check if the elements as disabled in the layout page
-        if {$page_url_exists_p && "" == $page_url} { continue }
-        
-        # Check if the current user has the right to read and write on the dynfield
-        set read_p [im_object_permission \
-                        -object_id $dynfield_attribute_id \
-                        -user_id $user_id \
-                        -privilege "read" \
-                       ]
-        set write_p [im_object_permission \
-                         -object_id $dynfield_attribute_id \
-                         -user_id $user_id \
-                         -privilege "write" \
-                        ]
-        if {!$read_p} { continue }
-        
-        set display_mode $default_display_mode
-        
-        # object_subtype_id can be a list, so go through the list
-        # and take the highest one (none - display - edit).
-        foreach subtype_id $object_subtype_id {
-            set key "$dynfield_attribute_id.$subtype_id"
-            if {[info exists display_mode_hash($key)]} { 
-                switch $display_mode_hash($key) {
-                    edit { set display_mode "edit" }
-                    display { if {$display_mode == "none"} { set display_mode "display" } }
-                }
-            }
-        }
+	# Check if the elements as disabled in the layout page
+	if {$page_url_exists_p && "" == $page_url} { continue }
 
-        if {$debug} { ns_log Debug "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
-        
-        if {"edit" == $display_mode && "display" == $form_display_mode}  {
+	# Check if the current user has the right to read and write on the dynfield
+	set read_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "read" \
+	]
+	set write_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "write" \
+	]
+	if {!$read_p} { continue }
+
+	set display_mode $default_display_mode
+	if {$advanced_filter_p} {
+	    # In filter mode the user also needs to be able to "write"
+	    # the field, otherwise he won't be able to enter values...
+	    if {!$write_p} { continue }
+	}
+
+
+	# object_subtype_id can be a list, so go through the list
+	# and take the highest one (none - display - edit).
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
+	}
+
+	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+
+	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
         }
         if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
+<<<<<<< HEAD
         
         if {$debug} { ns_log Debug "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
         
@@ -1055,6 +1113,15 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         #	    continue
         #        }
         
+	# Resize the size and parameters of some widgets for the filter form
+	if {$advanced_filter_p} {
+	    switch $widget {
+		text {
+		    # Adapt the size of the textbox to filters
+		    set parameters [list [list html [list size 16]]]
+		}
+	    }
+	}
         
         if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
         
@@ -1085,12 +1152,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         
         # set the value
         upvar $attribute_name x
-
-        if {[info exists x]} {
-	    ds_comment "$attribute_id | $attribute_name | $x"
-        } else {
-	    ds_comment "$attribute_name"
-	}
         
         im_dynfield::append_attribute_to_form \
             -attribute_name $attribute_name \
@@ -1311,10 +1372,6 @@ ad_proc -public im_dynfield::append_attribute_to_form {
     if {$tcl_pos == 0} {
         set tcl_code [lindex $default_value 1]
         set default_value [eval $tcl_code]
-    }
-
-    if {$default_value ne ""} {
-	ds_comment "$pretty_name :: $default_value"
     }
 
     switch $widget {
@@ -1635,4 +1692,172 @@ ad_proc -public im_dynfield::dynfields {
         }
     }
     return $dynfield_attributes
+}
+
+ad_proc -public im_dynfield::sorted_attributes {
+    -object_type:required
+    {-object_type_id ""}
+    {-page_url "default"}
+    {-privilege ""}
+    {-user_id ""}
+} {
+    Returns the list of dynfield_attribute names for an object_type in the order given by the page_url
+    
+    @param object_type Object Type for which we return the attributes
+    @param object_type_id Category ID of the subtype for which we want the dynfield attributes
+    @param privilege Privilege for which we need to check. Default to "" which means we return all privileges
+    @param page_url Page_Url from im_dynfield_layout which contains the sort_order
+} {
+    if {$object_type_id eq ""} {
+        set attribute_sql "
+         	select aa.attribute_name, da.attribute_id
+        	from im_dynfield_attributes da, acs_attributes aa, im_dynfield_layout la
+            where da.acs_attribute_id = aa.attribute_id
+            and da.attribute_id = la.attribute_id
+            and la.page_url = :page_url
+            and object_type = :object_type
+            order by pos_y"
+    } else {
+        set attribute_sql "
+         	select aa.attribute_name, da.attribute_id
+        	from im_dynfield_attributes da, acs_attributes aa, im_dynfield_layout la, im_dynfield_type_attribute_map tam
+            where da.acs_attribute_id = aa.attribute_id
+            and da.attribute_id = la.attribute_id
+            and la.page_url = :page_url
+            and tam.object_type_id = :object_type_id
+            order by pos_y"
+    }
+    
+    if {$user_id eq ""} {
+        set user_id [ad_conn user_id]
+    }
+    set dynfield_attributes [list]
+    db_foreach dynfield $attribute_sql {
+        if {$privilege ne ""} {
+            if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
+                lappend dynfield_attributes $attribute_name
+            }
+        } else {
+            lappend dynfield_attributes $attribute_name
+        }
+    }
+    return $dynfield_attributes
+}
+
+ad_proc -public im_dynfield::object_array {
+    {-array_name:required}
+    {-object_id:required}
+    {-publish_status "live"}
+} {
+    Sets an array in the calling environment with the values of the object.
+    It takes all the possible values (so no filtering by object_type_id) and runs I18N over them
+    
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-08-08
+    
+    @param array_name Name of the array which we are going to use
+    @param object_id object_id for which we need to retrieve 
+    @param publish_status one of 'live', 'ready', or 'production'
+    
+    @error 
+} {
+
+    upvar 1 $array_name array_val
+    if { [info exists array_val] } {
+	unset array_val
+    }
+
+    set object_type [acs_object_type $object_id]
+    if {$object_type eq "user"} {
+        set object_type "person"
+    }
+
+    # Get the object type tables and id_columns
+    db_1row object_type_info "select id_column, table_name,type_column,status_type_table from acs_object_types where object_type = :object_type"
+
+    set array_val(object_type_column) $type_column
+    set ref_column "${table_name}.${id_column}"
+    set tables [list $table_name]
+    set wheres [list "$ref_column = :object_id"]
+    set selects [list "${status_type_table}.$type_column"]
+
+    foreach type [ams::object_parents -object_type $object_type -hide_current] {
+	db_1row object_type_info "select id_column, table_name from acs_object_types where object_type = :type"
+	lappend tables "$table_name"
+	lappend wheres "$ref_column = ${table_name}.${id_column}"
+    }
+
+
+    set attribute_names [list]
+    set category_attribute_names [list]
+    set deref_attribute_names [list]
+    set date_attribute_names [list]
+
+    db_foreach column_list_sql {
+	select	w.deref_plpgsql_function,
+                aa.attribute_name,
+		aa.table_name,
+	        w.widget
+	from   	im_dynfield_widgets w,
+      		im_dynfield_attributes a,
+      		acs_attributes aa
+	where   a.widget_name = w.widget_name and
+      		a.acs_attribute_id = aa.attribute_id and
+      		aa.object_type = :object_type
+    }  {
+	switch $widget {
+	    im_category_tree {
+		lappend selects "${table_name}.$attribute_name"
+		lappend category_attribute_names $attribute_name
+	    }
+	    date {
+		lappend selects "to_char(${table_name}.$attribute_name,'YYYY-MM-DD HH24:MM:SS') as $attribute_name"
+		lappend date_attribute_names $attribute_name
+	    }
+	    default {
+		if {$deref_plpgsql_function eq ""} {
+		    lappend selects "${table_name}.$attribute_name"
+		    lappend attribute_names $attribute_name
+		} else {
+		    lappend selects "${deref_plpgsql_function}(${table_name}.$attribute_name) as ${attribute_name}_deref, ${table_name}.$attribute_name"
+		    lappend deref_attribute_names $attribute_name
+		}
+	    }
+	}
+    }
+
+    # Retreive the data
+    if { ![db_0or1row project_info_query "
+	select [join $selects ",\n"]
+	from [join $tables ",\n"]
+        WHERE [join $wheres "\n and "]"]
+     } {
+	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	return
+    }
+
+    # Now that the data is set, loop through the ns_set and put the
+    # values into the array.
+    
+    foreach attribute_name $attribute_names {
+	set array_val($attribute_name) [set $attribute_name]
+    }
+
+    foreach attribute_name $deref_attribute_names {
+	set array_val($attribute_name) [set ${attribute_name}_deref]	
+	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
+    }
+    
+    foreach attribute_name $date_attribute_names {
+	set array_val($attribute_name) [lc_time_fmt [set $attribute_name] %q]	
+	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
+    }
+    
+    
+    foreach attribute_name $category_attribute_names {
+	set array_val($attribute_name) [im_category_from_id [set $attribute_name]]
+    }
+
+    set array_val(object_type_id) [set $type_column]
+    return 1
 }

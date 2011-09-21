@@ -1,8 +1,25 @@
 # /packages/intranet-cogonovis/www/projects/project-ae.tcl
 #
-
+# Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+ 
 ad_page_contract {
+    
     Purpose: form to add a new project or edit an existing one
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
+    @creation-date 2011-08-05
 } {
     {project_type_id ""}
     {project_status_id ""}
@@ -451,8 +468,41 @@ ad_form -extend -name $form_id -new_request {
     # Flush caches related to the project's information
     util_memoize_flush_regexp "im_project_has_type_helper.*"
     util_memoize_flush_regexp "db_list_of_lists company_info.*"
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-cognovis/"]  [list project_id $project_id] [list return_url ""] [list no_write_p 1]]
     
+    set result [ad_parse_template -params $params "/packages/intranet-cognovis/lib/project-base-data"]
+    set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $project_id \
+        -response_id "" \
+        -notif_subject "Edit Project: $project_name" \
+        -notif_html "<h1><a href='$project_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
     
+    # ---------------------------------------
+    # Close subprojects and tasks if needed
+    # ---------------------------------------
+    
+    if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
+	
+	# Find the list of tasks in all subprojects and close them
+	# We might need to think about workflows in the future here!
+	set close_task_ids [im_project_subproject_ids -project_id $project_id -type task]
+	foreach close_task_id $close_task_ids {
+	    db_dml close_task "update im_timesheet_tasks set task_status_id = [im_timesheet_task_status_closed] where task_id = :close_task_id"
+	    db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :close_task_id"
+	}
+
+	# Find the list of subprojects
+	set close_subproject_ids [im_project_subproject_ids -project_id $project_id -exclude_self]
+	foreach close_project_id $close_subproject_ids {
+	    db_dml close_task "update im_projects set project_status_id = :project_status_id where project_id = :close_project_id"
+	}
+    }
+	
+	
 } -after_submit {
   
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]

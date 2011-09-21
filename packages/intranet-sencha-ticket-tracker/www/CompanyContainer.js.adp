@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: CompanyContainer.js.adp,v 1.3 2011/06/09 22:28:30 mcordova Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -24,15 +24,68 @@
 
 
 Ext.define('TicketBrowser.CompanyContainer', {
-    extend: 'Ext.container.Container',
-    alias: 'widget.companyContainer',
-    title: '#intranet-sencha-ticket-tracker.Loading___#',
+	extend: 'Ext.container.Container',
+	alias: 'widget.companyContainer',
+	title: '#intranet-sencha-ticket-tracker.Loading___#',
 
-    layout: 'border',
+	layout: 'border',
 
-    items: [{
-	itemId: 'grid',
-	xtype: 'companyGrid',
-	region: 'center'
-    }]
+	items: [{
+		itemID:	'companyFilter',
+		xtype:	'companyFilterForm',
+		region:	'west',
+		width:	300,
+		title:	'#intranet-sencha-ticket-tracker.Filter_Companies#',
+		split:	true,
+		margins: '5 0 5 5'
+	}, {
+		itemId:	'main3',
+		title:	'#intranet-sencha-ticket-tracker.Companies#',
+		region:	'center',
+		layout:	'border',
+		split:	true,
+		items:	[{
+			itemId:	'companyGrid',
+			xtype:	'companyGrid',
+			region:	'center'
+		}, {
+			itemId:	'companyCompoundPanel',
+			xtype:	'companyCompoundPanel',
+			region:	'south'
+		}]
+	}],
+
+	initComponent: function(){
+		this.callParent();
+	},
+
+	afterLayout: function() {
+		this.callParent();
+		// IE6 likes to make the content disappear, hack around it...
+		if (Ext.isIE6) { this.el.repaint(); }
+	},
+	
+	filterTickets: function(filterValues) {
+		this.tab.setText('Filtered Tickets');
+		this.child('#ticketGrid').filterTickets(filterValues);
+	},
+	
+	togglePreview: function(show){
+		var preview = this.child('#preview');
+		if (show) {
+			preview.show();
+		} else {
+			preview.hide();
+		}
+	},
+
+	toggleGrid: function(show){
+		var grid = this.child('#ticketGrid');
+		if (show) {
+			grid.show();
+		} else {
+			grid.hide();
+		}
+	}
+
 });

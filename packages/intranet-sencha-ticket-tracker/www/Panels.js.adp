@@ -79,7 +79,7 @@ Ext.define('TEC.panel.TicketEntidad', {
             },
             items :[
                 {
-                    fieldLabel: '#intranet-core.First_names#',
+                    fieldLabel: '#intranet-sencha-ticket-tracker.First_names#',
                     name:       'ticket_first_contact_name',
                     allowBlank: false
                 },
@@ -159,14 +159,14 @@ Ext.define('TEC.panel.TickeContacto', {
             layout:         'hbox',
             items: [{
                     xtype:      'datefield',
-                    fieldLabel: 'Fecha de Recepción (mail o buzón)',
+                    fieldLabel: 'Reception Date',
                     name:       'fecha_recepcion',
                     anchor:     '100%'
                 },
                 {
                     xtype:          'combo',
                     fieldLabel:     'Canal de entrada',
-                    name:           'ticket_origin',
+                    name:           'ticket_incoming_channel_id',
                     mode:           'local',
                     value:          '',
                     triggerAction:  'all',
@@ -176,12 +176,6 @@ Ext.define('TEC.panel.TickeContacto', {
                     valueField:     'id',
                     queryMode:      'local',
                     store:          'TEC.store.TicketOrigin'
-                }, 
-                {
-                    xtype:      'textfield',
-                    fieldLabel: 'Detalle Canal Entrada',
-                    name:       'ticket_origin_detail',
-                    anchor:     '100%'
                 }]
         }, 
         {

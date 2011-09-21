@@ -236,12 +236,16 @@ begin
 		task_id,
 		material_id,
 		uom_id,
-		cost_center_id
+		cost_center_id,
+		task_type_id,
+		task_status_id
 	) values (
 		v_task_id,
 		p_material_id,
 		p_uom_id,
-		p_cost_center_id
+		p_cost_center_id,
+		p_task_type_id,
+		p_task_status_id
 	);
 
 	return v_task_id;

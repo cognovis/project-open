@@ -2,7 +2,7 @@ ad_page_contract {
     Adds a package to the package manager.
     @author Jon Salz (jsalz@arsdigita.com)
     @creation-date 17 April 2000
-    @cvs-id $Id: package-add.tcl,v 1.10 2009/04/13 23:10:27 donb Exp $
+    @cvs-id $Id: package-add.tcl,v 1.12 2010/04/09 20:55:00 torbenb Exp $
 } {
 }
 
@@ -236,8 +236,9 @@ for URLs, in which case you should precede them with <tt>mailto:</tt> (e.g.,
   <td></td>
   <td>
     <table><tr valign=baseline><td><input type=checkbox name=install_p value=1 checked></td><td>
-Write a package specification file for this package.
-(You almost certainly want to leave this checked.)</td></tr></table>
+Write a package specification file for this package by executing <a href=\"/api-doc/proc-view?proc=apm_package_install_spec\" target=\"_blank\">apm_package_install_spec</a> (opens in new window). 
+(You almost certainly want to leave this checked.) 
+</td></tr></table>
   </td>
 </tr>
 

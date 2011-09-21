@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 15 Apr 2000
     @author Jon Salz (jsalz@arsdigita.com)
-    @cvs-id $Id: 00-database-procs.tcl,v 1.2 2010/10/19 20:12:51 po34demo Exp $
+    @cvs-id $Id: 00-database-procs.tcl,v 1.80 2010/10/17 21:06:09 donb Exp $
 }
 
 # Database caching.

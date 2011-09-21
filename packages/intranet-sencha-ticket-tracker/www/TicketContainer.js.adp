@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: TicketContainer.js.adp,v 1.11 2011/06/13 14:12:11 po34demo Exp $
+ * @cvs-id $Id: TicketContainer.js.adp,v 1.12 2011/07/18 15:59:24 po34demo Exp $
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -83,10 +83,10 @@ var ticketContainer = Ext.define('TicketBrowser.TicketContainer', {
 
 	// Inform the TicketInfo Panel to clear values for 
 	// entering a new ticket
-	onNewTicket: function(){
+	onNew: function(){
 		var preview = this.child('#preview');
 		var infoPanel = preview.child('#ticket');
-		infoPanel.onNewTicket();
+		infoPanel.onNew();
 	},
 
 	toggleGrid: function(show){

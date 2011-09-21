@@ -4,7 +4,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: types-create.sql,v 1.3 2006/07/27 20:09:33 victorg Exp $
+-- $Id: types-create.sql,v 1.4.2.2 2011/05/09 16:55:08 donb Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -281,6 +281,22 @@ begin
    datatype => 'text',
    pretty_name => 'Language',
    pretty_plural => 'Language'
+ );
+
+ attr_id := content_type.create_attribute (
+   content_type   => 'content_revision',
+   attribute_name => 'item_id',
+   datatype => 'integer',
+   pretty_name => 'Item id',
+   pretty_plural => 'Item ids'
+ );
+
+ attr_id := content_type.create_attribute (
+   content_type   => 'content_revision',
+   attribute_name => 'content',
+   datatype => 'text',
+   pretty_name => 'content',
+   pretty_plural => 'content'
  );
 
 end;

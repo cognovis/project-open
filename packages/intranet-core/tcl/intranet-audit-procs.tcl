@@ -45,8 +45,8 @@ ad_proc -public im_audit  {
 		Update is the default.
 		Delete refers to a "soft" delete, marking the object as deleted
 		Nuke represents complete object deletion - should only be used for demo data.
-		Before_update represents checks before the update of important objects (im_costs,
-		im_project). This way the system can detect changes from outside the system.
+		Before_update represents checks before the update of important objects im_costs,
+		im_project. This way the system can detect changes from outside the system.
 } {
     # Deal with old action names during the transition period
     if {""       == $action} { set action "after_update" }
@@ -55,7 +55,7 @@ ad_proc -public im_audit  {
     if {"delete" == $action} { set action "after_delete" }
     if {"nuke"   == $action} { set action "after_delete" }
 
-    # ToDo: Remove these checks
+    # ToDo: Remove these checks once 4.0 final is out
     if {"pre_update" == $action} { set action "before_update" }
     if {"before_view" == $action} { set action "before_update" }
     if {"after_view" == $action} { set action "after_update" }
@@ -103,6 +103,7 @@ ad_proc -public im_audit  {
 
     return $err_msg
 }
+
 
 
 ad_proc -public im_project_audit  {

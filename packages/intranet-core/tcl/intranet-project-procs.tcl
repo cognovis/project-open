@@ -116,6 +116,7 @@ ad_proc -public im_project_permissions {
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $project_id
 } {
+    ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id"
     upvar $view_var view
     upvar $read_var read
     upvar $write_var write
@@ -126,6 +127,7 @@ ad_proc -public im_project_permissions {
     set write 0
     set admin 0
 
+    ns_log Notice "im_project_permissions: before user_is_admin_p"
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
     set user_is_group_member_p [im_biz_object_member_p $user_id $project_id]
@@ -134,11 +136,13 @@ ad_proc -public im_project_permissions {
 
     # empty project_id would give errors below
     if {"" == $project_id} { set project_id 0 }
+    ns_log Notice "im_project_permissions: before im_security_alert_check_integer"
     im_security_alert_check_integer -location "im_project_permissions" -value $project_id
 
 
     # Treat the project mangers_fields
     # A user man for some reason not be the group PM
+    ns_log Notice "im_project_permissions: before project_manager"
     if {!$user_is_group_admin_p} {
 	set project_manager_id [db_string project_manager "select project_lead_id from im_projects where project_id = :project_id" -default 0]
 	if {$user_id == $project_manager_id} {
@@ -147,6 +151,7 @@ ad_proc -public im_project_permissions {
     }
     
     # Admin permissions to global + intranet admins + group administrators
+    ns_log Notice "im_project_permissions: user_admin_p"
     set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
     set user_admin_p [expr $user_admin_p || $user_is_wheel_p]
 
@@ -155,6 +160,7 @@ ad_proc -public im_project_permissions {
 
     # Get the projects's company and the project status
     # Use caching because this procedure is queried very frequently!
+    ns_log Notice "im_project_permissions: company info"
     set query "
 	select	company_id, 
 		lower(im_category_from_id(project_status_id)) as project_status 
@@ -192,12 +198,14 @@ ad_proc -public im_project_permissions {
 
 
     # Allow customer' Members to see their customer's projects
+    ns_log Notice "im_project_permissions: customer members"
     if {$user_is_company_member_p && $user_is_employee_p} { 
 	set view 1
 	set read 1
     }
     
     # Allow Key Account Managers to see their customer's projects
+    ns_log Notice "im_project_permissions: company_admin"
     if {$user_is_company_admin_p && $user_is_employee_p} { 
 	set read 1
 	set write 1
@@ -209,10 +217,12 @@ ad_proc -public im_project_permissions {
 	set read 1
     }
 
+    ns_log Notice "im_project_permissions: view_projects_all"
     if {[im_permission $user_id view_projects_all]} { 
 	set read 1
     }
 
+    ns_log Notice "im_project_permissions: edit_projects_all"
     if {[im_permission $user_id edit_projects_all]} { 
 	set read 1
 	set write 1
@@ -221,6 +231,7 @@ ad_proc -public im_project_permissions {
 
     # companies and freelancers are not allowed to see non-open projects.
     # 76 = open
+    ns_log Notice "im_project_permissions: view_projects_history"
     if {![im_permission $user_id view_projects_history] && ![string equal $project_status "open"]} {
 	# Except their own projects...
 	if {!$user_is_company_member_p} {
@@ -1843,6 +1854,14 @@ ad_proc im_project_clone_costs {
 	set cost_id [db_exec_plsql cost_insert "$cost_insert_query"]
 	set new_cost_id $cost_id
 
+	# Update variables not passed through im_cost__new.
+	# Currently this is only cost_center_id.
+	db_dml update_cost "
+		update im_costs set
+			cost_center_id = :cost_center_id
+		where cost_id = :cost_id
+	"
+
 	# ------------------------------------------------------
 	# creation invoice project relation
 	if {"" == $org_cost_project_id} {
@@ -2247,16 +2266,31 @@ ad_proc im_project_clone_folders {parent_project_id new_project_id} {
 }
 
 
-ad_proc im_project_nuke {project_id} {
-    Nuke (complete delete from the database) a project
+ad_proc im_project_nuke {
+    {-current_user_id 0}
+    project_id
 } {
-    ns_log Notice "im_project_nuke project_id=$project_id"
+    Nuke (complete delete from the database) a project.
+    Returns an empty string if everything was OK or an error
+    string otherwise.
+} {
+    ns_log Notice "im_project_nuke: project_id=$project_id"
     
-    set current_user_id [ad_get_user_id]
+    # Use a predefined user_id to avoid a call to ad_get_user_id.
+    # ad_get_user_id's connection isn't defined during a DELETE REST request.
+    ns_log Notice "im_project_nuke: before ad_get_user_id"
+    if {0 == $current_user_id} { 
+	ns_log Notice "im_project_nuke: No current_user_id specified - using ad_get_user_id"
+	set current_user_id [ad_get_user_id] 
+    }
+
+    # Check for permissions
+    ns_log Notice "im_project_nuke: before im_project_permissions"
     im_project_permissions $current_user_id $project_id view read write admin
-    if {!$admin} { return }
+    if {!$admin} { return "User #$currrent_user_id isn't a system administrator" }
 
     # Write Audit Trail
+    ns_log Notice "im_project_nuke: before im_project_audit"
     im_project_audit -project_id $project_id -action nuke
 
     # ---------------------------------------------------------------
@@ -2266,6 +2300,7 @@ ad_proc im_project_nuke {project_id} {
     # if this fails, it will probably be because the installation has 
     # added tables that reference the users table
 
+    ns_log Notice "im_project_nuke: before db_transaction"
     db_transaction {
     
 	# Helpdesk Tickets
@@ -2323,6 +2358,17 @@ ad_proc im_project_nuke {project_id} {
 	    # Instead, the referencing im_expense_bundles (data type doesn't exist yet)
 	    # should be deleted with the appropriate destructor method
 	    db_dml expense_cost_link "update im_expenses set bundle_id = null where bundle_id = :cost_id"
+
+	    ns_log Notice "projects/nuke-2: deleting cost: Delete any created_from_item_id references to the items we need to delete"
+	    db_dml created_from_item_id "
+		update im_invoice_items 
+		set created_from_item_id = null 
+		where created_from_item_id in (
+			select	item_id
+			from	im_invoice_items
+			where	invoice_id = :cost_id
+		)
+	    "
 
 	    ns_log Notice "projects/nuke-2: deleting cost: ${object_type}__delete($cost_id)"
 	    im_exec_dml del_cost "${object_type}__delete($cost_id)"
@@ -2612,6 +2658,7 @@ ad_proc im_project_nuke {project_id} {
 	"]
 
 	set im_conf_item_project_rels_exists_p [im_table_exists im_conf_item_project_rels]
+	set im_ticket_ticket_rels_exists_p [im_table_exists im_ticket_ticket_rels]
 
 	# Relationships
 	foreach rel_id $rels {
@@ -2619,6 +2666,8 @@ ad_proc im_project_nuke {project_id} {
 	    db_dml del_rels "delete from im_biz_object_members where rel_id = :rel_id"
 	    db_dml del_rels "delete from membership_rels where rel_id = :rel_id"
 	    if {$im_conf_item_project_rels_exists_p} { db_dml del_rels "delete from im_conf_item_project_rels where rel_id = :rel_id" }
+	    if {$im_ticket_ticket_rels_exists_p} { db_dml del_rels "delete from im_ticket_ticket_rels where rel_id = :rel_id" }
+#	    if {$exists_p} { db_dml del_rels "delete from  where rel_id = :rel_id" }
 
 	    db_dml del_rels "delete from acs_rels where rel_id = :rel_id"
 	    db_dml del_rels "delete from acs_objects where object_id = :rel_id"
@@ -2632,7 +2681,22 @@ ad_proc im_project_nuke {project_id} {
 	db_dml party_approved_member_map "
 		delete from party_approved_member_map 
 		where member_id = :project_id"
+
+
+	ns_log Notice "projects/nuke-2: acs_objecs.context_id"
+	db_dml acs_objects_context_index "
+		update acs_objects set context_id = null
+		where context_id = :project_id";
+	db_dml acs_objects_context_index2 "
+		update acs_objects set context_id = null
+		where object_id = :project_id";
+
 	
+	ns_log Notice "projects/nuke-2: acs_object_context_index"
+	db_dml acs_object_context_index "
+		delete from acs_object_context_index
+		where object_id = :project_id OR ancestor_id = :project_id"
+
 	
 	ns_log Notice "users/nuke2: Main tables"
 	db_dml parent_projects "
@@ -2661,19 +2725,9 @@ ad_proc im_project_nuke {project_id} {
 	    }
 	    
 	}
-	ad_return_error "[_ intranet-core.Failed_to_nuke]" "
-		[_ intranet-core.Failed_to_nuke] Project: $project_id:<br>
-		$detailed_explanation
-		<p>
-		<blockquote>
-		<pre>
-		$errmsg
-		</pre>
-		</blockquote>
-	"
-	return
+	return "$detailed_explanation<br><pre>$errmsg</pre>"
     }
-    set return_to_admin_link "<a href=\"/intranet/projects/\">[_ intranet-core.lt_return_to_user_admini]</a>" 
+    return ""
 }
 
 

@@ -9,11 +9,11 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-timesheet2-tasks</auto-mount>
 
-    <version name="4.0.1.0.5" url="http://www.project-open.org/download/apm/intranet-timesheet2-tasks-4.0.1.0.5.apm">
+    <version name="4.0.1.0.6" url="http://www.project-open.org/download/apm/intranet-timesheet2-tasks-4.0.1.0.6.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
-        <provides url="intranet-timesheet2-tasks" version="4.0.1.0.5"/>
+        <provides url="intranet-timesheet2-tasks" version="4.0.1.0.6"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
         <requires url="intranet-cost" version="3.4.0.0.0"/>
         <requires url="intranet-invoices" version="3.4.0.0.0"/>

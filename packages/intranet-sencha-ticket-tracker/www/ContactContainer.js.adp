@@ -4,7 +4,7 @@
  *
  * @author Frank Bergmann (frank.bergmann@project-open.com)
  * @creation-date 2011-05
- * @cvs-id $Id: ContactContainer.js.adp,v 1.4 2011/06/09 22:28:30 mcordova Exp $
+ * @cvs-id $Id$
  *
  * Copyright (C) 2011, ]project-open[
  *
@@ -22,17 +22,69 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 Ext.define('TicketBrowser.ContactContainer', {
-    extend: 'Ext.container.Container',
-    alias: 'widget.contactContainer',
-    title: '#intranet-sencha-ticket-tracker.Loading___#',
+	extend: 'Ext.container.Container',
+	alias: 'widget.contactContainer',
+	title: '#intranet-sencha-ticket-tracker.Loading___#',
+	layout: 'border',
 
-    layout: 'border',
+	items: [{
+		itemID:	'contactFilter',
+		xtype:	'contactFilterForm',
+		region:	'west',
+		width:	300,
+		title:	'#intranet-sencha-ticket-tracker.Filter_Contacts#',
+		split:	true,
+		margins: '5 0 5 5'
+	}, {
+		itemId:	'main3',
+		title:	'#intranet-sencha-ticket-tracker.Contacts#',
+		region:	'center',
+		layout:	'border',
+		split:	true,
+		items:	[{
+			itemId:	'contactGrid',
+			xtype:	'contactGrid',
+			region:	'center'
+		}, {
+			itemId:	'contactCompoundPanel',
+			xtype:	'contactCompoundPanel',
+			region:	'south'
+		}]
+	}],
 
-    items: [{
-        itemId: 'grid',
-        xtype: 'contactGrid',
-        region: 'center'
-    }]
+	initComponent: function(){
+		this.callParent();
+	},
+
+	afterLayout: function() {
+		this.callParent();
+		// IE6 likes to make the content disappear, hack around it...
+		if (Ext.isIE6) { this.el.repaint(); }
+	},
+	
+	filterTickets: function(filterValues) {
+		this.tab.setText('Filtered Tickets');
+		this.child('#ticketGrid').filterTickets(filterValues);
+	},
+	
+	togglePreview: function(show){
+		var preview = this.child('#preview');
+		if (show) {
+			preview.show();
+		} else {
+			preview.hide();
+		}
+	},
+
+	toggleGrid: function(show){
+		var grid = this.child('#ticketGrid');
+		if (show) {
+			grid.show();
+		} else {
+			grid.hide();
+		}
+	}
+
 });
+

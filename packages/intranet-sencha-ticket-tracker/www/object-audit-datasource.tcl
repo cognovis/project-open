@@ -44,34 +44,13 @@ set direction $sorter_hash(direction)
 
 # Define the main SQL to check for
 set sql "
-	select	
-		min(audit_id) as audit_id,
-		min(audit_user_id) as audit_user_id,
-		min(audit_action) as audit_action,
-		min(audit_date) as audit_date,
-		min(audit_ip) as audit_ip,
-		audit_object_id,
-		audit_object_status_id,
-		audit_value
-	from
-		( select	*
-		  from	im_audits a
-		  where	a.audit_object_id = :object_id
-		) t
-	group by
-		audit_object_id,
-		audit_object_status_id,
-		audit_value
-	order by
-		$property $direction
+	select * from im_audits where audit_id in (
+		select max(audit_id) as audit_id from im_audits where audit_object_id = :object_id and audit_action != 'after_update' and audit_action != 'before_update' group by audit_action
+	)
+	order by $property $direction
 "
 
-set simp_sql "
-	select	*
-	from	im_audits a
-	where	a.audit_object_id = :object_id
-	order by audit_date
-"
+
 
 # The AuditGrid uses pagination, so we only want to 
 # return the first N elements
@@ -80,6 +59,7 @@ set limited_sql "$sql
 	LIMIT $limit
 "
 
+set cnt 0
 set json_list [list]
 db_foreach limited_sql $limited_sql {
 
@@ -102,11 +82,25 @@ db_foreach limited_sql $limited_sql {
 	set el [split $line "\t"]
 	set key [lindex $el 0]
 	set val [lindex $el 1]
-	lappend json_row "\"$key\": \"[ns_quotehtml $val]\""
+	lappend json_row "\"$key\": \"[im_quotejson $val]\""
     }
 
     lappend json_list "{[join $json_row ", "]}"
+    incr cnt
 }
+
+# Update the ticket with the count and reset 
+# the "dirty" flag, so that the sweeper will do its work
+db_dml update_ticket_actions "
+	update im_tickets set 
+		ticket_action_count = :cnt,
+		ticket_resolution_time_dirty = null
+	where ticket_id = :object_id
+"
+
+# Re-calculate the resolution time of the ticket
+im_sla_ticket_solution_time_sweeper -ticket_id $object_id -debug_p 0
+
 
 # Paginated Sencha grids require a "total" amount in order to know
 # the total number of pages

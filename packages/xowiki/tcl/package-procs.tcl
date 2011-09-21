@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: package-procs.tcl,v 1.246 2011/05/27 13:17:01 victorg Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -52,11 +52,11 @@ namespace eval ::xowiki {
 			-item_id $item_id \
 			-revision_id $revision_id]
     ::xo::Package initialize \
+	-export_vars false \
 	-package_id $package_id \
 	-init_url false -actual_query "" \
 	-parameter $parameter \
 	-user_id $user_id
-
     set page [::xo::db::CrClass get_instance_from_db -item_id $item_id -revision_id $revision_id]
     ::$package_id set_url -url [$page pretty_link]
     return $page
@@ -854,7 +854,7 @@ namespace eval ::xowiki {
   Package instproc package_path {} {
     # 
     # Compute a list fo package objects which should be used for
-    # resolving ("inheriance of objects from other instances").
+    # resolving ("inheritance of objects from other instances").
     #
     set packages [list]
     set package_url [string trimright [my package_url] /]
@@ -1015,8 +1015,10 @@ namespace eval ::xowiki {
     # (we can handle only one unknown at a time).
     set nr_elements [llength $elements]
     set n 0
+    set ref_ids {}
     foreach element $elements {
       set (last_parent_id) $parent_id
+      lappend ref_ids $parent_id
       array set "" [my simple_item_ref \
                         -normalize_name $normalize_name \
                         -use_package_path $use_package_path \
@@ -1036,7 +1038,7 @@ namespace eval ::xowiki {
 
     return [list link $link link_type $(link_type) form $(form) \
                 prefix $(prefix) stripped_name $(stripped_name) \
-                item_id $(item_id) parent_id $(parent_id)]
+                item_id $(item_id) parent_id $(parent_id) ref_ids $ref_ids]
   }
 
   Package instproc simple_item_ref {
