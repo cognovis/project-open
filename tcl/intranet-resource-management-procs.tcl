@@ -1438,7 +1438,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		    # Determine availability of user (hours/day)  
     		    set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]		    
 		    if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
-		    set hours_availability_user [expr $hours_per_day * $availability_user_perc / 100 ]
+		    # Client request: make it 100% when no value found.
+		    # ToDo: Print hint on bottom of report 
+		    if { "" == $availability_user_perc } { set availability_user_perc 100 }
+		    set hours_availability_user [expr $hours_per_day_glob * $availability_user_perc / 100 ]
+
                     set key "$user_id-$julian_date-$project_id"
 		    if { [info exists user_day_task_array($key)] } { 
 			set val [expr 100 * $user_day_task_array($key) / $hours_availability_user ] 
@@ -1502,7 +1506,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			# Only if this row shows an employee, we add the number of hours
 			# to the total units available for this UOM (day/week/month) 
 			if { $row_shows_employee_p } {
+
 			    set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]
+			    if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
+			    if { "" == $availability_user_perc } { set availability_user_perc 100 }
+			    set hours_availability_user [expr $hours_per_day * $availability_user_perc / 100 ]
+
 			    set hours_availability_user [expr $hours_per_day_glob * $availability_user_perc / 100 ]
 			    if { [info exists totals_availability_arr($column_ctr)] } {
 				set totals_availability_arr($column_ctr) [expr $totals_availability_arr($column_ctr) + $hours_availability_user]
@@ -1657,10 +1666,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    # Check if column is a weekend 
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars [lindex $top_scale $col]]]
 	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
-	    if {0 == $day_of_week} { set day_of_week 7 }
-	    
-	    # ad_return_complaint 1 $day_of_week
-	    
+	    if {0 == $day_of_week} { set day_of_week 7 }    
+    
 	    if { "6" != $day_of_week && "7" != $day_of_week  } { 
 		if { [info exists totals_planned_hours_arr($col)] } {
 		    set total_planned_hours $totals_planned_hours_arr($col)
@@ -1681,8 +1688,13 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	        }
 
 		# Calculate availability
-		set val [expr 100 - [expr ($total_planned_hours+$total_absences) * 100 / $total_availability]] 
-		
+
+		if { "0" != $total_availability } {
+		    set val [expr 100 - [expr ($total_planned_hours+$total_absences) * 100 / $total_availability]] 
+		} else {
+		    set val 0
+		}
+
 		# <70%: green; >70% & <100%: yellow; >= 100%: red
 		# ff0000:red; ffff00:yellow; 33ff00:green 
 		
