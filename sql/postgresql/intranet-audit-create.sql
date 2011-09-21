@@ -427,3 +427,50 @@ SELECT acs_permission__grant_permission(
 	'read'
 );
 
+
+
+
+-- Ticket Status Change Matrix
+--
+
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Daily Ticket Status Change',		-- plugin_name
+	'intranet-reporting-dashboard',		-- package_name
+	'right',				-- location
+	'/intranet-helpdesk/index',		-- page_url
+	null,					-- view_name
+	180,					-- sort_order
+	'im_dashboard_status_matrix -max_category_len 3 -sql "
+		select	count(*) as cnt,
+			old_status_id,
+			new_status_id
+		from	(	select	tic.ticket_id,
+					pro.project_nr,
+					tic.ticket_status_id as new_status_id,
+					coalesce(max_audit_a.audit_object_status_id, 0) as old_status_id
+				from	im_projects pro,
+					im_tickets tic
+					LEFT OUTER JOIN (
+						select	t.ticket_id,
+							max(a.audit_date) as max_audit_date
+						from	im_tickets t,
+							im_projects p
+							LEFT OUTER JOIN im_audits a ON (p.project_id = a.audit_object_id and a.audit_date < now() - ''24 hours''::interval)
+						where	t.ticket_id = p.project_id
+						group by t.ticket_id
+					) max_audit_date ON (tic.ticket_id = max_audit_date.ticket_id)
+					LEFT OUTER JOIN im_audits max_audit_a ON (max_audit_a.audit_object_id = tic.ticket_id and max_audit_a.audit_date = max_audit_date.max_audit_date)
+				where	tic.ticket_id = pro.project_id
+			) t
+		group by old_status_id, new_status_id
+	" -description "Shows the status changes of tickets in the last 24 hours.
+	" -status_list [db_list status_list "select distinct ticket_status_id from im_tickets order by ticket_status_id"]',
+	'lang::message::lookup "" intranet-reporting-dashboard.Daily_Ticket_Status_Change "Daily Ticket Status Change"'
+);
+
