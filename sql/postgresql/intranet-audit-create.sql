@@ -40,9 +40,7 @@ create table im_audits (
 	audit_value		text
 				constraint im_audits_value_nn
 				not null,
-	audit_diff		text
-				constraint im_audits_diff_nn
-				not null,
+	audit_diff		text,
 	audit_note		text,
 	audit_hash		text
 );
@@ -121,6 +119,62 @@ comment on column im_audits.audit_hash is '
  In the case of a complete recalculation of all hashs,
  the PostgreSQL OIDs will witness these changes.
 ';
+
+
+-------------------------------------------------------------
+-- Audit for im_projects
+--
+-- The table and audit trigger definition will in future be
+-- defined by the intranet-dynfield module to take care of
+-- dynamic extensions of data types
+
+create table im_projects_audit (
+	audit_id			integer,
+        modifying_action		varchar(20),
+        last_modified			timestamptz,
+        last_modifying_user		integer,
+	last_modifying_ip		varchar(50),
+
+	project_id			integer,
+	project_name			text,
+	project_nr			text,
+	project_path			text,
+	parent_id			integer,
+	company_id			integer,
+	project_type_id			integer,
+	project_status_id		integer,
+	description			text,
+	billing_type_id			integer,
+	note				text,
+	project_lead_id			integer,
+	supervisor_id			integer,
+	project_budget			float,
+	corporate_sponsor		integer,
+	percent_completed		float,
+	on_track_status_id		integer,
+	project_budget_currency		character(3),
+	project_budget_hours		float,
+	end_date			timestamptz,
+	start_date			timestamptz,
+	company_contact_id		integer,
+	company_project_nr		text,
+	final_company			text,
+	cost_invoices_cache		float,	
+	cost_quotes_cache		float,		
+	cost_delivery_notes_cache	float,
+	cost_bills_cache		float,	
+	cost_purchase_orders_cache	float,	
+	cost_timesheet_planned_cache	float,	
+	cost_timesheet_logged_cache	float,
+	cost_expense_planned_cache	float,	
+	cost_expense_logged_cache	float,
+	reported_hours_cache		float
+);
+
+create index im_projects_audit_project_id_idx on im_projects_audit(project_id);
+
+
+
 
 -----------------------------------------------------------
 -- Component Plugins
