@@ -131,15 +131,20 @@ ad_proc -public im_dashboard_status_matrix {
     { -border_color "" }
     { -background_color "" }
     { -text_color "" }
-    { -max_category_len 2 }
+    { -max_category_len 3 }
 } {
     Returns a matrix that shows how many objects have changed their status
     in the given time period. 
     @param sql: A SQL statement returning the three columns "cnt", "old_status_id" 
                 and "new_status_id".
     @param status_list: An order list of the IDs of states to be shown.
-    of the states to be shown.
-
+    @param description: A description text to appear below the matrix.
+    @param cache_seconds: How long should the results of the SQL evaluation be cached? Default is 3600 (1 hour).
+    @param border_color: The HTML color of the table border.
+    @param background_color: The HTML color of the table background.
+    @param text_color: The HTML color of the matrix text.
+    @param max_category_len: Should we shorten the names of the states in the 
+           table header? Set 0 to disable. Set to 3 for a narrow matrix. Default is 3.
 } {
     if {"" == $border_color} { set border_color [im_dashboard_color -type bar_color] }
     if {"" == $text_color} { set text_color [im_dashboard_color -type bar_text_color] }
