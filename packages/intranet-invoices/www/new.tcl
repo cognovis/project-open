@@ -145,6 +145,9 @@ set tax_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInv
 set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemMaterialFieldP" "" 0]
 set project_type_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemProjectTypeFieldP" "" 1]
 
+# Show dynfields?
+set show_dynfield_tab_p [ad_parameter -package_id [im_package_invoices_id] "DynamicFieldSupport" "" "0"]
+
 # Tricky case: Sombebody has called this page from a project
 # So we need to find out the company of the project and create
 # an invoice from scratch, invoicing all project elements.
@@ -527,3 +530,43 @@ set sub_navbar [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list]]
 
 db_release_unused_handles
 
+
+# ---------------------------------------------------------------
+# Set Dynfields
+# ---------------------------------------------------------------
+
+
+set form_id "invoices_dynfield"
+
+template::form::create $form_id -has_submit 1
+template::form::section $form_id ""
+
+set object_type "im_invoice"
+set dynfield_project_type_id [im_opt_val project_type_id]
+if {[info exists project_id]} {
+    set existing_project_type_id [db_string ptype "select project_type_id from im_projects where project_id = :project_id" -default 0]
+    if {0 != $existing_project_type_id && "" != $existing_project_type_id} {
+        set dynfield_project_type_id $existing_project_type_id
+    }
+}
+
+set dynfield_invoice_id 0
+if {[info exists invoice_id]} { set dynfield_invoice_id $invoice_id }
+
+set apd ""
+
+# ad_return_complaint 1 $dynfield_project_type_id
+
+set dynfield_project_type_id ""
+
+set field_cnt [im_dynfield::append_attributes_to_form \
+    -object_subtype_id $dynfield_project_type_id \
+    -object_type $object_type \
+    -form_id $form_id \
+    -object_id $dynfield_invoice_id \
+		   ]
+if {![info exists ajax_post_data]} { 
+    set ajax_post_data ""
+}
+
+# ad_return_complaint 1 $ajax_post_data
