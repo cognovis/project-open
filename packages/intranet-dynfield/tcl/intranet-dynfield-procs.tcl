@@ -890,6 +890,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     <li>Extracting the values of the attributes from a number of storage tables.
     </ul>
 } {
+    upvar 1 ajax_post_data ajax_post_data_build
+    set ajax_post_data ""
+
     if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
     set user_id [ad_get_user_id]
     set return_url [im_url_with_query]
@@ -1162,7 +1165,21 @@ ad_proc -public im_dynfield::append_attributes_to_form {
             -help_text $help_message \
             -default_value $default_message \
             -admin_html $admin_html
-        
+                if { 0 != $field_cnt } {
+            append ajax_post_data_build " + "
+        }
+        if { "date" == $widget } {
+            append ajax_post_data_build "\"<$attribute_name>\""
+            append ajax_post_data_build " + evalReturnValue('date', "
+            append ajax_post_data_build " document.invoices_dynfield\['$attribute_name.year'\].value + \"-\" + document.invoices_dynfield\['$attribute_name.month'\].value + \"-\" + document.invoices_dynfield\['$attribute_name.day'\].value, "
+            append ajax_post_data_build "'$required_p'"
+            append ajax_post_data_build ") "
+            append ajax_post_data_build " + \"</$attribute_name>\""
+
+        } else {
+            append ajax_post_data_build "\"<$attribute_name>\" + evalReturnValue('text', document.invoices_dynfield.$attribute_name.value, '$required_p') + \"</$attribute_name>\""
+        }
+
         if {[info exists x]} {
             template::element::set_value $form_id $attribute_name $x
         }

@@ -3,6 +3,17 @@
 <property name="main_navbar_label">finance</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
+<if @show_dynfield_tab_p@ eq 1>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/element/element-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/tabview/tabview-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/yahoo/yahoo-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/event/event-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/connection/connection_core-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.2r1/build/button/button-min.js"></script>
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.2r1/build/tabview/assets/skins/sam/tabview.css">
+</if>
+
 <% 
     # Determine a security token to authenticate the AJAX function
     set auto_login [im_generate_auto_login -user_id [ad_get_user_id]] 
@@ -10,6 +21,95 @@
 
 <script type="text/javascript">
 
+
+
+var global_eval = true;
+
+function evalReturnValue(type, value, mandatory_p) {
+        switch (type)
+        {
+        case "date":
+                if ('--' == value && 'f' == mandatory_p) {
+                        return "";
+                } else  if (isValidDate(value,'yyyy/mm/dd')){
+                        return value;
+                } else {
+                        alert('Please verify date');
+                        global_eval = false;
+                        return "";
+                }
+        case "text":
+                if ('' == value && 't' == mandatory_p) {
+                        alert('Please provide value - mandatory fields');
+                        global_eval = false;
+                        return "";
+                } else {
+                        return value;
+                }
+        default:
+                return value;
+        }
+}
+function isValidDate(date_string, format) {
+    //http://lawrence.ecorp.net/inet/samples/regexp-validate.php
+    var days = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+    var year, month, day, date_parts = null;
+    var rtrn = false;
+    var decisionTree = {
+        'm/d/y':{
+            're':/^(\d{1,2})[./-](\d{1,2})[./-](\d{2}|\d{4})$/,
+            'month': 1,'day': 2, year: 3
+        },
+        'mm/dd/yy':{
+            're':/^(\d{1,2})[./-](\d{1,2})[./-](\d{2})$/,
+            'month': 1,'day': 2, year: 3
+        },
+        'mm/dd/yyyy':{
+            're':/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/,
+            'month': 1,'day': 2, year: 3
+        },
+        'y/m/d':{
+            're':/^(\d{2}|\d{4})[./-](\d{1,2})[./-](\d{1,2})$/,
+            'month': 2,'day': 3, year: 1
+        },
+        'yy/mm/dd':{
+            're':/^(\d{1,2})[./-](\d{1,2})[./-](\d{1,2})$/,
+            'month': 2,'day': 3, year: 1
+        },
+        'yyyy/mm/dd':{
+            're':/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/,
+            'month': 2,'day': 3, year: 1
+        }
+    };
+    var test = decisionTree[format];
+    if (test) {
+        date_parts = date_string.match(test.re);
+        if (date_parts) {
+            year = date_parts[test.year];
+            month = date_parts[test.month];
+            day = date_parts[test.day];
+
+            test = (month == 2 &&
+                    isLeapYear() &&
+                    29 ||
+                    days[month] || 0);
+
+            rtrn = 1 <= day && day <= test;
+        }
+    }
+    function isLeapYear() {
+        return (year % 4 != 0 ? false :
+            ( year % 100 != 0? true:
+            ( year % 1000 != 0? false : true)));
+    }
+    return rtrn;
+}//eof isValidDate
+
+
+// YUI Tabs 
+var myTabs = new YAHOO.widget.TabView("demo");
+
+// 
 
 function ltrim(str, chars) {
 	chars = chars || "\\s";
@@ -86,6 +186,19 @@ function ajaxFunction() {
 }
 </script>
 
+<if @show_dynfield_tab_p@ eq 1>
+<div class="yui-skin-sam">
+
+<div id="demo" class="yui-navset">
+    <ul class="yui-nav">
+        <li class="selected"><a href="#tab1"><em>Invoice</em></a></li>
+        <li><a href="#tab2"><em>Dynamic Invoice Elements</em></a></li>
+    </ul>            
+
+<div class="yui-content">
+<div>
+
+</if>
 
 <form action=new-2 name=invoice method=POST>
 <%= [export_form_vars invoice_id return_url] %>
@@ -300,3 +413,52 @@ function ajaxFunction() {
 
 </form>
 
+</div>
+
+
+<div>
+
+
+<if @show_dynfield_tab_p@ eq 1>
+	<formtemplate id="invoices_dynfield"></formtemplate>
+	<input type="button" id="btn_save_dynfields" name="btn_save_dynfields" value="Save"> 
+
+	<script type="text/javascript">
+	var sUrl = ""
+	var postData = ""
+
+	function saveDynfields(p_oEvent) {
+		sUrl = "/intranet-rest/im_invoice/@invoice_id;noquote@"
+		postData = "<?xml version='1.0'?><im_invoice>" + @ajax_post_data;noquote@ + "</im_invoice>";
+		var request = YAHOO.util.Connect.asyncRequest('POST', sUrl, callback, postData); 
+	}
+
+	// Button  
+	var oPushButton2 = new YAHOO.widget.Button("btn_save_dynfields"); 
+	oPushButton2.on("click", saveDynfields); 
+
+	var handleSuccess = function(o){
+		alert("Successfully saved");
+		window.location = "/intranet-invoices/view?invoice_id=" + @invoice_id;noquote@;
+	}
+
+	var handleFailure = function(o){
+		alert("Failure transmitting data, please review data")
+	}	
+
+
+	var callback =
+	{
+	  success:handleSuccess,
+	  failure: handleFailure,
+	  argument: ['foo','bar']
+	};
+
+	</script>
+
+	</div>
+	</div>
+</if>
+
+</div>
+</div>

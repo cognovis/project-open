@@ -85,11 +85,15 @@ set invoice_currency [db_string cur "select currency from im_costs where cost_id
 set rf 100
 catch {set rf [db_string rf "select rounding_factor from currency_codes where iso = :invoice_currency" -default 100]}
 
+# Show dynfields?
+set show_dynfield_tab_p [ad_parameter -package_id [im_package_invoices_id] "DynamicFieldSupport" "" "0"]
+
 # Where is the template found on the disk?
 set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
 
 # Invoice Variants showing or not certain fields.
 # Please see the parameters for description.
+set discount_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceDiscountFieldP" "" 0]
 set surcharge_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceSurchargeFieldP" "" 0]
 set surcharge_enabled_p 1
 set canned_note_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceCannedNoteP" "" 0]
@@ -463,6 +467,29 @@ if {[catch {
 
 ns_log Notice "view.tcl: locale=$locale"
 ns_log Notice "view.tcl: template_type=$template_type"
+
+
+# ----------------------------------------------------------------------------------------
+# Check if there are Dynamic Fields of type date and localize them 
+# ----------------------------------------------------------------------------------------
+
+set date_fields [list]
+set column_sql "
+        select  w.widget_name,
+                aa.attribute_name
+        from    im_dynfield_widgets w,
+                im_dynfield_attributes a,
+                acs_attributes aa
+        where   a.widget_name = w.widget_name and
+                a.acs_attribute_id = aa.attribute_id and
+                aa.object_type = 'im_invoice' and
+                w.widget_name = 'date'
+"
+db_foreach column_list_sql $column_sql {
+    set y ${attribute_name}
+    set z [lc_time_fmt [subst $${y}] "%x" $locale]
+    set ${attribute_name} $z
+}
 
 
 # ---------------------------------------------------------------
@@ -1122,6 +1149,7 @@ set subtotal_item_html "
 "
 
 
+
 if {"" != $vat && 0 != $vat} {
     append subtotal_item_html "
         <tr>
@@ -1465,3 +1493,90 @@ if { "" != $err_mess } {
     set err_mess [lang::message::lookup "" $err_mess "Document Nr. not available anymore, please note and verify newly assigned number"]
 }
 
+
+# ---------------------------------------------------------------------
+# Dynfields
+# ---------------------------------------------------------------------
+
+set extra_selects [list "0 as zero"]
+set date_fields [list]
+
+set column_sql "
+        select  w.deref_plpgsql_function,
+                aa.attribute_name,
+		w.widget_name
+        from    im_dynfield_widgets w,
+                im_dynfield_attributes a,
+                acs_attributes aa
+        where   a.widget_name = w.widget_name and
+                a.acs_attribute_id = aa.attribute_id and
+                aa.object_type = 'im_invoice'
+"
+db_foreach column_list_sql $column_sql {
+	if { "date" == $widget_name } {
+	   lappend date_fields $attribute_name      
+	}
+	lappend extra_selects "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
+}
+
+set extra_selects [join $extra_selects ",\n\t"]
+
+set query "
+select
+        $extra_selects
+from
+        im_invoices p
+where
+        p.invoice_id=:invoice_id
+
+"
+
+if { ![db_0or1row invoice_info_query $query] } {
+    # no dynfields - deactivate tab view 
+}
+
+set project_base_data_html "
+                        <table border=0 cellpadding='10px' cellspacing='10px'>
+                          <tr>
+                            <!--<td>[_ intranet-core.Project_name]</td>-->
+                            <td><b>Attribute</b></td>
+                            <td><b>Value</b></td>
+                          </tr>"
+set column_sql "
+        select
+                aa.pretty_name,
+                aa.attribute_name
+        from
+                im_dynfield_widgets w,
+                acs_attributes aa,
+                im_dynfield_attributes a
+                LEFT OUTER JOIN (
+                        select *
+                        from im_dynfield_layout
+                        where page_url = ''
+                ) la ON (a.attribute_id = la.attribute_id)
+        where
+                a.widget_name = w.widget_name and
+                a.acs_attribute_id = aa.attribute_id and
+                aa.object_type = 'im_invoice'
+        order by
+                coalesce(la.pos_y,0), coalesce(la.pos_x,0)
+"
+
+
+db_foreach column_list_sql $column_sql {
+    set var ${attribute_name}_deref
+# ad_return_complaint 1 $var
+    set value [expr $$var]
+    if {"" != [string trim $value]} {
+                append project_base_data_html "
+                  <tr>
+                    <td>[lang::message::lookup "" intranet-core.$attribute_name $pretty_name]</td>
+                    <td>$value</td>
+                  </tr>
+                "
+    }
+}
+
+
+append project_base_data_html "</table>"
