@@ -25,12 +25,25 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-baseline.New_Baselines "New Baseline"]
+set page_title [lang::message::lookup "" intranet-baseline.New_Baseline "New Baseline"]
 if {[info exists baseline_id]} { 
-    set baseline_name [db_string name "select baseline_name from im_baselines where baseline_id = :baseline_id" -default ""]
+    set baseline_name ""
+    set baseline_project_id 0
+    db_0or1row baseline_info "
+	select	*
+	from	im_baselines
+	where	baseline_id = :baseline_id
+    "
     if {"" != $baseline_name} {
 	set page_title [lang::message::lookup "" intranet-baseline.Baseline "Baseline %baseline_name%"] 
     }
+
+    im_project_permissions $current_user_id $baseline_project_id view read write admin
+    if {!$read} { 
+	ad_return_complaint 1 "You don't have the permissions to see this baseline"
+	ad_script_abort
+    }
+
 }
 set context_bar [im_context_bar $page_title]
 
@@ -52,9 +65,11 @@ ad_form \
     -export "baseline_project_id return_url" \
     -form {
 	baseline_id:key
-	{baseline_name:text(text) {label "[lang::message::lookup {} intranet-baseline.Baselines_Baseline Baseline]"} {html {size 40}}}
-	{baseline_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-baseline.Baseline_Status Status]"} {custom {category_type "Intranet Baselines Status" translate_p 1 package_key intranet-baseline include_empty_p 0}} }
-	{baseline_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-baseline.Baseline_Type Type]"} {custom {category_type "Intranet Baselines Type" translate_p 1 package_key intranet-baseline include_empty_p 0}} }
+	{baseline_name:text(text) {label "[lang::message::lookup {} intranet-baseline.Baseline_Name {Baseline Name}]"} {html {size 40}}}
+	{baseline_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-baseline.Baseline_Status {Baseline Status}]"} \
+		{custom {category_type "Intranet Baseline Status" translate_p 1 package_key intranet-baseline include_empty_p 0}} }
+	{baseline_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-baseline.Baseline_Type {Baseline Type}]"} \
+		{custom {category_type "Intranet Baseline Type" translate_p 1 package_key intranet-baseline include_empty_p 0}} }
     }
 
 # Add DynFields to the form
@@ -78,6 +93,14 @@ ad_form -extend -name $form_id \
 	where	baseline_id = :baseline_id
 
     } -new_data {
+
+	# Check permissions
+	im_project_permissions $current_user_id $baseline_project_id view read write admin
+	set add_baselines_p [im_permission $current_user_id "add_baselines"]
+	if {!$admin || !$add_baselines_p} { 
+	    ad_return_complaint 1 "You need to be a project manager and to have add_baselines permissions in order to create a add or modify baselines".
+	    ad_script_abort
+	}
 
         set baseline [string trim $baseline]
         set duplicate_baseline_sql "
@@ -116,17 +139,25 @@ ad_form -extend -name $form_id \
 
 	# Create a version of the current project tree
 	set project_tree_sql "
-		select	child.*
+		select	child.project_id as child_project_id
 		from	im_projects child,
 			im_projects parent
 		where	parent.project_id = :baseline_project_id and
 			child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
 	"
 	db_foreach project_tree $project_tree_sql {
-	    im_project_audit_impl -project_id $project_id -action "baseline"
+	    im_project_audit_impl -project_id $child_project_id -baseline_id $baseline_id -action "baseline"
 	}
 
     } -edit_data {
+
+	# Check permissions
+	im_project_permissions $current_user_id $baseline_project_id view read write admin
+	set add_baselines_p [im_permission $current_user_id "add_baselines"]
+	if {!$admin || !$add_baselines_p} { 
+	    ad_return_complaint 1 "You need to be a project manager and to have add_baselines permissions in order to create a add or modify baselines".
+	    ad_script_abort
+	}
 
         set baseline [string trim $baseline]
 	db_dml edit_baseline "

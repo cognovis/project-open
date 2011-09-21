@@ -4,15 +4,19 @@
 	  <%= [export_form_vars return_url] %>
 	  <tr class="rowtitle">
 	    <th>&nbsp;</td>
-	    <th><%= [lang::message::lookup "" intranet-baseline.Baseline_Type "Type"] %></th>
 	    <th><%= [lang::message::lookup "" intranet-baseline.Baselines_Baseline "Baseline"] %></th>
+	    <th><%= [lang::message::lookup "" intranet-baseline.Baseline_Type "Type"] %></th>
+	    <th><%= [lang::message::lookup "" intranet-baseline.Baseline_Status "Status"] %></th>
+	    <th><%= [lang::message::lookup "" intranet-baseline.Baseline_Creation_Date "Creation Date"] %></th>
 	  </tr>
 	  <multiple name="baselines">
 	    <if @baselines.rownum@ odd><tr class="roweven"></if>
 	    <else><tr class="rowodd"></else>
 		<td><input type=checkbox name=baseline.@baselines.baseline_id@></td>
-		<td><a href="@baselines.baselines_edit_url;noquote@">@baselines.baseline_type@</a></td>
-		<td><a href="@baselines.baselines_edit_url;noquote@">@baselines.baseline_name@</a></td>
+		<td><a href="@baselines.baselines_view_url;noquote@">@baselines.baseline_name@</a></td>
+		<td>@baselines.baseline_type@</td>
+		<td>@baselines.baseline_status@</td>
+		<td>@baselines.baseline_creation_date_pretty@</td>
 	    </tr>
 	  </multiple>
 

@@ -249,18 +249,24 @@ end;' language 'plpgsql';
 -- request a range of constants for your own packages.
 --
 -- 71000-71999  Intranet Baseline (1000)
--- 71000-71099	Intranet Baselines Status
--- 71100-71199  Intranet Baselines Type
+-- 71000-71099	Intranet Baseline Status
+-- 71100-71199  Intranet Baseline Type
 -- 71200-71999	reserved for future extensions
 
 -- Status
-SELECT im_category_new (71000, 'Active', 'Intranet Baselines Status');
-SELECT im_category_new (71002, 'Deleted', 'Intranet Baselines Status');
-SELECT im_category_new (71004, 'Requested', 'Intranet Baselines Status');
-SELECT im_category_new (71006, 'Rejected', 'Intranet Baselines Status');
+SELECT im_category_new (71000, 'Active', 'Intranet Baseline Status');
+SELECT im_category_new (71002, 'Deleted', 'Intranet Baseline Status');
+SELECT im_category_new (71004, 'Requested', 'Intranet Baseline Status');
+SELECT im_category_new (71006, 'Rejected', 'Intranet Baseline Status');
 
 -- Type
-SELECT im_category_new (71100, 'Default', 'Intranet Baselines Type');
+SELECT im_category_new (71110, 'Project Proposal', 'Intranet Baseline Type');
+SELECT im_category_new (71120, 'Budget Approved', 'Intranet Baseline Type');
+SELECT im_category_new (71130, 'Detailed Planning', 'Intranet Baseline Type');
+SELECT im_category_new (71140, 'Project Start', 'Intranet Baseline Type');
+SELECT im_category_new (71150, 'Project Revision', 'Intranet Baseline Type');
+SELECT im_category_new (71170, 'Customer Delivery', 'Intranet Baseline Type');
+SELECT im_category_new (71190, 'Project Wrapup', 'Intranet Baseline Type');
 
 
 -----------------------------------------------------------
@@ -271,13 +277,13 @@ SELECT im_category_new (71100, 'Default', 'Intranet Baselines Type');
 create or replace view im_baseline_states as
 select	category_id as baseline_status_id, category as baseline_status
 from	im_categories
-where	category_type = 'Intranet Baselines Status'
+where	category_type = 'Intranet Baseline Status'
 	and enabled_p = 't';
 
 create or replace view im_baseline_types as
 select	category_id as baseline_type_id, category as baseline_type
 from	im_categories
-where	category_type = 'Intranet Baselines Type'
+where	category_type = 'Intranet Baseline Type'
 	and enabled_p = 't';
 
 
@@ -296,12 +302,15 @@ where	category_type = 'Intranet Baselines Type'
 -- is a sub-privilege of "admin". This way the SysAdmins always
 -- have the right to view baselines.
 
-select acs_privilege__create_privilege('view_baselines','View Baselines','View Baselines');
-select acs_privilege__add_child('admin', 'view_baselines');
+-- Who has the right to add new baselines?
+-- Project members may view baselines anyway.
+select acs_privilege__create_privilege('add_baselines','Add Baselines','Add Baselines');
+select acs_privilege__add_child('admin', 'add_baselines');
+select im_priv_create('add_baselines','Employees');
 
--- Allow all employees to view baselines. You can add new groups in 
--- the Admin -> Profiles page.
-select im_priv_create('view_baselines','Employees');
+select acs_privilege__create_privilege('del_baselines','Del Baselines','Del Baselines');
+select acs_privilege__add_child('admin', 'del_baselines');
+select im_priv_create('del_baselines','Employees');
 
 
 -----------------------------------------------------------

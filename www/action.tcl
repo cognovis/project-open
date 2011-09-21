@@ -28,9 +28,20 @@ if {0 == [llength $baseline_list]} { ad_returnredirect $return_url }
 switch $action {
     del_baselines {
 	foreach baseline_id $baseline_list {
-	    db_dml del_audit "delete from im_audits where audit_id in (select audit_id from im_projects_audit where baseline_id = :baseline_id)"
-	    db_dml del_projects_audit "delete from im_projects_audit where baseline_id = :baseline_id"
-	    db_string del_baselines "select im_baseline__delete(:baseline_id)"
+
+	    set project_id [db_string baseline_pid "select baseline_project_id from im_baselines where baseline_id = :baseline_id" -default 0]
+	    im_project_permissions $user_id $project_id view read write admin
+	    set del_baselines_p [im_permission $user_id "del_baselines"]
+	    if {!$admin || !$del_baselines_p} {
+		ad_return_complaint 1 "You don't have permissions to delete this baseline"
+		ad_script_abort
+	    }
+
+	    db_transaction {
+		db_dml del_audit "delete from im_audits where audit_id in (select audit_id from im_projects_audit where baseline_id = :baseline_id)"
+		db_dml del_projects_audit "delete from im_projects_audit where baseline_id = :baseline_id"
+		db_string del_baselines "select im_baseline__delete(:baseline_id)"
+	    }
 	}
     }
     default {

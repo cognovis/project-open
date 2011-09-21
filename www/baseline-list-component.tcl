@@ -41,14 +41,18 @@ if {$object_read} {
     set baselines_sql "
 	select	b.*,
 		im_category_from_id(b.baseline_type_id) as baseline_type,
-		im_category_from_id(b.baseline_status_id) as baseline_status
-	from	im_baselines b
-	where	b.baseline_project_id = :project_id
+		im_category_from_id(b.baseline_status_id) as baseline_status,
+		to_char(o.creation_date, 'YYYY-MM-DD') as baseline_creation_date_pretty
+	from	im_baselines b,
+		acs_objects o
+	where	b.baseline_project_id = :project_id and
+		b.baseline_id = o.object_id
     "
     
-    db_multirow -extend { baseline_formatted baselines_edit_url } baselines baselines_query $baselines_sql {
+    db_multirow -extend { baseline_formatted baselines_edit_url  baselines_view_url} baselines baselines_query $baselines_sql {
 
 	set baselines_edit_url [export_vars -base "/intranet-baseline/new" {baseline_id return_url}]
+	set baselines_view_url [export_vars -base "/intranet-baseline/new" {baseline_id return_url {form_mode display}}]
 
 	regsub -all {[^0-9a-zA-Z]} $baseline_type "_" baseline_type_key
 	set baseline_type [lang::message::lookup "" intranet-baseline.$baseline_type_key $baseline_type]
