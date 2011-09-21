@@ -10,6 +10,22 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+# ----------------------------------------------------------------
+# Dereferencing Function
+# ----------------------------------------------------------------
+
+ad_proc -public v {
+    var_name
+    {undef "-"}
+} {
+    Acts like a "$" to evaluate a variable, but
+    returns "-" if the variable is not defined
+    instead of an error.
+} {
+    upvar $var_name var
+    if [exists_and_not_null var] { return $var }
+    return $undef
+}
 
 
 # ----------------------------------------------------------------------
@@ -102,6 +118,88 @@ ad_proc -public im_dashboard_generic_component {
 }
 
 
+# ----------------------------------------------------------------------
+# Generic Status Change Matrix
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_dashboard_status_matrix {
+    -sql:required
+    -status_list:required
+    { -description "" }
+    { -cache_seconds 3600 }
+    { -border_color "" }
+    { -background_color "" }
+    { -text_color "" }
+    { -max_category_len 2 }
+} {
+    Returns a matrix that shows how many objects have changed their status
+    in the given time period. 
+    @param sql: A SQL statement returning the three columns "cnt", "old_status_id" 
+                and "new_status_id".
+    @param status_list: An order list of the IDs of states to be shown.
+    of the states to be shown.
+
+} {
+    if {"" == $border_color} { set border_color [im_dashboard_color -type bar_color] }
+    if {"" == $text_color} { set text_color [im_dashboard_color -type bar_text_color] }
+    if {"" == $background_color} { set background_color [im_dashboard_color -type bar_bg_color] }
+
+    # Cache calculating the matrix of data because it could be 
+    # relatively slow when using the audit package
+    set data_matrix [util_memoize [list im_dashboard_status_matrix_helper -sql $sql] $cache_seconds]
+    array set matrix_hash $data_matrix
+
+    # Format the table header
+    set from_to_msg [lang::message::lookup "" intranet-reporting_dashboard.From_to "From \\ To"]
+    set new_msg [lang::message::lookup "" intranet-reporting_dashboard.Status_New_Object "&lt;New&gt;"]
+    set html "<table border=2 bordercolor=$border_color>\n"
+    append html "<tr><td><b>$from_to_msg</b></td>\n"
+    foreach stid $status_list {
+	set status [im_category_from_id -empty_default $new_msg $stid]
+	if {0 != $max_category_len} { 
+	    set status [string range $status 0 [expr $max_category_len-1]] 
+	}
+	append html "<td><b>$status</b></td>\n"
+    }
+    append html "</tr>\n"
+
+    # Format the table body
+    set from_status_list [linsert $status_list 0 0]
+    foreach from_stid $from_status_list {
+	append html "<tr><td><b>[im_category_from_id -empty_default $new_msg $from_stid]</b></td>\n"
+	foreach to_stid $status_list {
+	    set key "$from_stid-$to_stid"
+	    set val [v matrix_hash($key) ""]
+	    append html "<td>$val</td>\n"
+	}
+	append html "</tr>\n"
+    }
+    if {"" != $description} {
+	set colspan [expr [llength $status_list] + 1]
+	append html "<tr><td colspan=$colspan align=center>\n$description\n</td></tr>\n"
+    }
+    append html "</table>\n"
+
+    return $html
+}
+
+ad_proc -public im_dashboard_status_matrix_helper {
+    -sql:required
+} {
+    Evaluates an SQL that returns cnt, old_status_id and new_status_id
+    and returns the values as list suitable for a hash array with 
+    key = $old_status_id-$new_status_id
+} {
+    array set hash {}
+    db_foreach im_dashboard_status $sql {
+	if {"" == $old_status_id} { set old_status_id 0 }
+	if {"" == $new_status_id} { set new_status_id 0 }
+	set key "$old_status_id-$new_status_id"
+	set hash($key) $cnt
+    }
+    return [array get hash]
+}
 
 
 # ----------------------------------------------------------------------
