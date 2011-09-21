@@ -872,7 +872,7 @@ where	category_type = 'Intranet Ticket Type'
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -900,7 +900,7 @@ SELECT acs_permission__grant_permission(
 -- Timesheet plugin
 select im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creattion_ip
@@ -954,7 +954,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1012,7 +1012,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1067,7 +1067,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1121,7 +1121,7 @@ drop function inline_0 ();
 -- List of Tickets at the home page
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1148,7 +1148,7 @@ SELECT acs_permission__grant_permission(
 -- Workflow Actions in the object's View Page
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1194,7 +1194,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1222,7 +1222,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1249,7 +1249,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
