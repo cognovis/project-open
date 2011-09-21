@@ -292,6 +292,9 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	       text: '#intranet-sencha-ticket-tracker.Loading___#',
 	       scope: this
 	    });
+	    if (GLOBAL_STOP_BAR) {
+	    	this.stopBar();
+	    }
 	},
 	
 	stopBar: function (){

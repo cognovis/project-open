@@ -86,6 +86,7 @@ Ext.define('TicketBrowser.Main', {
 						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
+						//ToDo: si el ticket esta cerrado y no es admin desabilitar boton de salvar
 						var date = new Date();
 						Ext.getCmp('ticketForm').getForm().findField('datetime').setValue(date.getTime());
 				},

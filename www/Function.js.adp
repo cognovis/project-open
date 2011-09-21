@@ -204,7 +204,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 							Function_saveCompany(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
 						},			
 						failure: function(record, operation) { 
-							Function_errorMessage('#intranet-sencha-ticket-tracker.Contact_Group_Error_Title#', '#intranet-sencha-ticket-tracker..Contact_Group_Error_Message#', operation.request.scope.reader.jsonData["message"]);
+							Function_errorMessage('#intranet-sencha-ticket-tracker.Contact_Group_Error_Title#', '#intranet-sencha-ticket-tracker.Contact_Group_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 							if (loadCompanyContact){
 								Ext.getCmp('companyContactCompoundPanel').enable(); 
 							}
@@ -262,6 +262,7 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 				ticketRightValues.ticket_id = ticket_id;
 				ticketStore.add(ticket_record);
 			}
+			Function_sendMail(ticket_id);
 			Function_insertAction(ticket_id, ticketValues.datetime, ticket_record);
 			Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
 		},
@@ -467,11 +468,30 @@ function Function_errorMessage(e_title, e_msg, e_log){
 }
 
 
-function Function_StopBar() {
+function Function_stopBar() {
 		//To avoid infinite loading in progressBar when the load is faster than grafical
 		if (Ext.getCmp('ticketActionBar') == undefined) {
-			setTimeout("Function_StopBar()", 3000);
+			//setTimeout("Function_StopBar()", 3000);
+			GLOBAL_STOP_BAR = 1;
 		} else {
 			setTimeout("Ext.getCmp(\'ticketActionBar\').stopBar()", 2000);
 		}
+}
+
+function Function_sendMail(ticket_id) {
+	/* Comprobar si ya estaba escalado en las acciones, sino mandar mail en el tcl*/
+	
+	Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id,
+		success: function(response) {	
+			if (response.responseText.indexOf('false') > 0) {
+				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
+			}
+		},
+		failure: function(response) {	
+			/* ToDo mail error message*/
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);		
+		}
+	});	
 }
