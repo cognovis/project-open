@@ -652,6 +652,7 @@ ad_proc -public im_audit_calculate_diff {
 
 ad_proc -public im_audit_impl { 
     -object_id:required
+    {-baseline_id "" }
     {-user_id "" }
     {-object_type "" }
     {-status_id "" }
@@ -660,6 +661,10 @@ ad_proc -public im_audit_impl {
     {-comment "" }
 } {
     Creates a new audit item for object after an update.
+    @param baseline_id A baseline is a version of a project.
+           baseline_id != "" means that we have to write a new version.
+	   The baseline_id is stored in im_projects_audit.baseline_id,
+	   because baselines always refer to projects.
 } {
     ns_log Notice "im_audit_impl: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
 
@@ -700,7 +705,8 @@ ad_proc -public im_audit_impl {
     # Return "" if nothing has changed:
     set diff [im_audit_calculate_diff -old_value $old_value -new_value $new_value]
 
-    if {"" != $diff} {
+    set new_audit_id ""
+    if {"" != $diff || "" != $baseline_id} {
 	# Something has changed...
 	# Create a new im_audit entry and associate it to the object.
 	set new_audit_id [db_nextval im_audit_seq]
@@ -740,18 +746,23 @@ ad_proc -public im_audit_impl {
 		)
 	"
 
-	db_dml update_object "
+	if {"" == $baseline_id} {
+	    # Update the last_audit_id ONLY if this was not a baseline.
+	    # Baselines can be deleted, and the foreign key constraint
+	    # would give trouble with that.
+	    db_dml update_object "
 		update acs_objects set
 			last_audit_id = :new_audit_id,
 			last_modified = now(),
 			modifying_user = :user_id,
 			modifying_ip = :peeraddr
 		where object_id = :object_id
-	"
+	    "
+	}
 
     }
 
-    return $diff
+    return $new_audit_id
 }
 
 
@@ -822,32 +833,49 @@ ad_proc -public im_audit_sweeper { } {
 
 ad_proc -public im_project_audit_impl  {
     -project_id:required
+    {-baseline_id "" }
     {-user_id "" }
     {-action after_update }
     {-comment "" }
 } {
-    Creates an audit entry of the specified project
+    Creates an audit entry of the specified project.
+    @param baseline_id A Baseline is a version of the project.
 } {
+    ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id"
+
     # Call the normal audit function
     if {"" == $user_id} { set user_id [ad_get_user_id] }
-    im_audit_impl -object_id $project_id -user_id $user_id
+    set audit_id [im_audit_impl -object_id $project_id -user_id $user_id -baseline_id $baseline_id]
+
+    # Skip writing a project audit record if nothing has changed...
+    if {"" == $audit_id} { 
+    	ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id: Skipping because audit_id is null"
+	return "" 
+    }
 
     # No audit for non-existing projects
-    if {"" == $project_id} { return "project_id is empty" }
-    if {0 == $project_id} { return "project_id = 0" }
+    if {"" == $project_id} { 
+	ns_log Notice "im_project_audit_impl: project_id is empty" 
+	return ""
+    }
+    if {0 == $project_id} { 
+	ns_log Notice "im_project_audit_impl: project_id = 0"
+	return ""
+    }
 
     # Make sure the table exists (compatibility)
     set audit_exists_p [im_table_exists im_projects_audit]
-    if {!$audit_exists_p} { return "Audit table doesn't exist" }
-
-    # No audit for tasks
-    set project_type_id [util_memoize "db_string ptype \"select project_type_id from im_projects where project_id=$project_id\" -default 0"]
-    if {$project_type_id == [im_project_type_task]} { return "Project is a task" }
+    if {!$audit_exists_p} { 
+	ns_log Notice "im_project_audit_impl: Audit table doesn't exist" 
+	return ""
+    }
 
     # Parameter to enable/disable project audit
     set audit_projects_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "AuditProjectsP" -default 1]
-    if {!$audit_projects_p} { return "Audit not enabled" }
-
+    if {!$audit_projects_p} { 
+	ns_log Notice "im_project_audit_impl: Audit not enabled"
+	return ""
+    }
 
     # Who is modifying? Use empty values when called from schedules proc sweeper
     set peeraddr "0.0.0.0"
@@ -855,11 +883,20 @@ ad_proc -public im_project_audit_impl  {
     set modifying_user $user_id
     set modifying_ip $peeraddr
 
-    catch {
+    # Add a baseline_id if specified.
+    if {"" != $baseline_id && [im_column_exists im_projects_audit baseline_id]} {
+	set baseline_var_sql ",baseline_id"
+	set baseline_val_sql ",:baseline_id as baseline_id"
+    } else {
+	set baseline_var_sql ""
+	set baseline_val_sql ""
+    }
 
+    ns_log Notice "im_project_audit_impl: About to write im_projects_audit log"
+    catch {
 	db_dml audit "
 	    insert into im_projects_audit (
-		modifying_action,
+		modifying_action,	audit_id,
 		last_modified,		last_modifying_user,		last_modifying_ip,
 		project_id,		project_name,			project_nr,
 		project_path,		parent_id,			company_id,
@@ -873,9 +910,10 @@ ad_proc -public im_project_audit_impl  {
 		cost_bills_cache,	cost_purchase_orders_cache,	reported_hours_cache,
 		cost_timesheet_planned_cache,	cost_timesheet_logged_cache,
 		cost_expense_planned_cache,	cost_expense_logged_cache
+		$baseline_var_sql
 	    ) 
 	    select
-		:action,		
+		:action,		:audit_id,
 		now(),			:modifying_user,		:modifying_ip,
 		project_id,		project_name,			project_nr,
 		project_path,		parent_id,			company_id,
@@ -889,6 +927,7 @@ ad_proc -public im_project_audit_impl  {
 		cost_bills_cache,	cost_purchase_orders_cache,	reported_hours_cache,
 		cost_timesheet_planned_cache,	cost_timesheet_logged_cache,
 		cost_expense_planned_cache,	cost_expense_logged_cache
+		$baseline_val_sql
 	    from	im_projects
 	    where	project_id = :project_id
         "
