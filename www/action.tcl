@@ -28,6 +28,8 @@ if {0 == [llength $baseline_list]} { ad_returnredirect $return_url }
 switch $action {
     del_baselines {
 	foreach baseline_id $baseline_list {
+	    db_dml del_audit "delete from im_audits where audit_id in (select audit_id from im_projects_audit where baseline_id = :baseline_id)"
+	    db_dml del_projects_audit "delete from im_projects_audit where baseline_id = :baseline_id"
 	    db_string del_baselines "select im_baseline__delete(:baseline_id)"
 	}
     }
