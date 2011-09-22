@@ -1533,7 +1533,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		# Show planned hours 
 		if {$calc_day_p} {
 		    # Determine availability of user (hours/day)  
-    		    set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]		    
+    		    set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
+
 		    if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
 
 		    # Make it 100% when no value found.
@@ -1562,7 +1563,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		    if { "planned_hours" == $calculation_mode } {
 
 			# General settings 
-			set availability_user_perc [db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]
+			set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
                         set absence_key "$julian_date-$user_id"			
 
 			# Start building cell 
