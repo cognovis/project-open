@@ -208,6 +208,7 @@ declare
   v_name_method                       varchar;
   v_idx                               integer;
   v_temp_p                            boolean;
+  v_count			      integer;
   v_supertype_table                   acs_object_types.table_name%TYPE;
   v_id_column                         acs_object_types.id_column%TYPE;
   v_table_name                        acs_object_types.table_name%TYPE;
