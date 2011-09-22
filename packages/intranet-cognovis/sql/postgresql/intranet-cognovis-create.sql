@@ -1,9 +1,5 @@
 -- intranet-cognovis-create.sql                                                                                                                           
 
-SELECT acs_log__debug('/packages/intranet-cognovis/sql/postgresql/intranet-cognovis-create.sql','');
-
-
-
 -- Project Base Data Component                                                                                                                              
 SELECT im_component_plugin__new (
        null, 
@@ -285,7 +281,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -354,7 +350,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -424,7 +420,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -493,7 +489,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -564,7 +560,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -633,7 +629,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -703,7 +699,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -773,7 +769,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -842,7 +838,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -914,7 +910,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -984,7 +980,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1053,7 +1049,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1123,7 +1119,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1193,7 +1189,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1262,7 +1258,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1330,7 +1326,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -1399,7 +1395,7 @@ BEGIN
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
-	       ''plain''				-- label_style
+	       ''plain'',				-- label_style
 	       ''f'',					-- also_hard_coded_p   
 	       ''t''					-- include_in_search_p
 	  );
@@ -2451,75 +2447,6 @@ DROP FUNCTION inline_0 ();
 
 
 
-
-
-
-CREATE OR REPLACE FUNCTION inline_0 ()
-RETURNS integer AS '
-DECLARE
-	v_attribute_id		integer;
-BEGIN
-	-- source_language_id
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''source_language_id'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-	
-	-- bt_fix_for_version_id
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''bt_fix_for_version_id'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- bt_found_in_version_id
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''bt_found_in_version_id'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- bt_project_id
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''bt_project_id'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- confirm_date
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''confirm_date'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- milestone_p
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''milestone_p'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-	
-	-- presales_probability
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''presales_probability'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- presales_value
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''presales_value'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- program_id
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''program_id'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-	-- release_item_p
-	SELECT attribute_id INTO v_attribute_id FROM acs_attributes WHERE object_type = ''im_project'' AND attribute_name = ''release_item_p'';
-	SELECT attribute_id INTO v_attribute_id FROM im_dynfield_attributes WHERE acs_attribute_id = v_attribute_id;
-	PERFORM im_dynfield_attribute__del (v_attribute_id);
-
-
-	RETURN 0;
-
-END;' language 'plpgsql';
-
-SELECT inline_0 ();
-DROP FUNCTION inline_0 ();
-
-
-
-
 -- Add more html tags in the acs-kernel parameter
 UPDATE apm_parameter_values SET attr_value = 'A ADDRESS B BLOCKQUOTE BR CODE DIV DD DL DT EM FONT HR I LI OL P PRE SPAN STRIKE STRONG SUB SUP TABLE TBODY TD TR TT U UL EMAIL FIRST_NAMES LAST_NAME GROUP_NAME H1 H2 H3 H4 H5 H6' WHERE parameter_id = (SELECT parameter_id FROM apm_parameters WHERE parameter_name = 'AllowedTag');
 
@@ -2904,7 +2831,7 @@ DECLARE
 BEGIN
 	SELECT plugin_id INTO v_plugin_id FROM im_component_plugins WHERE plugin_name = ''Project Translation Wizard'' AND page_url = ''/intranet/projects/view'';
 
-	SELECT im_component_plugin__delete(v_plugin_id);
+	PERFORM im_component_plugin__delete(v_plugin_id);
 
 	RETURN 0;
 END;' language 'plpgsql';
@@ -3454,5 +3381,24 @@ SELECT im_component_plugin__new (
 
 update im_component_plugins set page_url = '/intranet-cognovis/tickets/view' where page_url = '/intranet-helpdesk/new';
 update im_component_plugins set enabled_p = 'f' where plugin_name = 'Filestorage' and page_url = '/intranet-cognovis/tickets/view';
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'task_assignees', 'Task Assignees', 'Task Assignees',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {		select	object_id_two as user_id,
+			im_name_from_id(object_id_two) as user_name
+		from	acs_rels r,
+			im_biz_object_members bom
+		where	r.rel_id = bom.rel_id and
+			object_id_one = $super_project_id
+	} global_var super_project_id}}'
+);
+
+SELECT im_dynfield_attribute_new ('im_timesheet_task', 'task_assignee_id', 'Assignee', 'task_assignees', 'integer', 'f');
+
+update im_dynfield_type_attribute_map set default_value = 'tcl {ad_conn user_id}' where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'task_assignee_id');
+
+alter table im_timesheet_tasks add column task_assignee_id integer references users(user_id);
 
 \i notifications-create.sql;
