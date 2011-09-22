@@ -13,7 +13,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
     @author klaus.hofeditz@project-open.com
 
-    This report has been developed under heavy time/budget constrains and is therfor marked as BETA  
+    This report has been developed under heavy time/budget constrains and is therfore marked as BETA  
     Code is based on [im_timesheet_task_list_component .. ]
     Please set menu permissions accordingly to avoid missuse 
 	To-Do:
@@ -37,10 +37,16 @@ ad_page_contract {
     { cost_center_id "" }
     { mine_p "" }
     { user_id:integer 0}
+    { task_member_id:integer 0}
     { auto_login "" }
-
+    { employee_cost_center_id "" }
+    { only_uncompleted_tasks_p ""}
 }
-
+	if { "1"==$only_uncompleted_tasks_p } {
+		set only_uncompleted_tasks_checked "checked"
+	} else {
+		set only_uncompleted_tasks_checked ""
+	} 
 	set report_id 0
 	set page_title "Project-Tasks \[BETA\]"
 	set current_url "intranet-reporting/project-tasks.tcl"
@@ -105,6 +111,8 @@ ad_page_contract {
     		set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
 	}
 	ns_log Notice "im_timesheet_task_component: view_id=$view_id"
+
+	set table_body_html ""
 
 
 	# ---------------------- Get Columns ----------------------------------
@@ -273,6 +281,14 @@ db_foreach main_project_sql $main_project_sql {
 	set extra_where [join $extra_wheres "and\n\t"]
 	if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
 
+	if { 1 == $only_uncompleted_tasks_p } {
+		set extra_where " and  \n\t percent_completed_rounded < 100"
+	}
+
+	if { "" != $task_member_id } {
+		set extra_where " and  \n\t t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"
+	}
+
 	# ---------------------- Inner Permission Query -------------------------
 
 	# Check permissions for showing subprojects
@@ -396,7 +412,6 @@ db_foreach main_project_sql $main_project_sql {
 	ns_log Notice "timesheet-tree: "
 
 	# Render the multirow
-	# set table_body_html ""
 	set ctr 0
 	set idx $start_idx
 	set old_project_id 0
@@ -501,23 +516,15 @@ template::multirow foreach task_list_multirow {
 
 	# ----------------------------------------------------
 	# Show a reasonable message when there are no result rows:
-	if { [empty_string_p $table_body_html] } {
-		set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]"
-	        set table_body_html "
-                <tr class=table_list_page_plain>
-                        <td colspan=$colspan align=left>
-			<b>[_ intranet-timesheet2-tasks.There_are_no_active_tasks]</b>
-                        </td>
-                </tr>
-                <tr>
-                        <td colspan=$colspan>
-                        <ul>
-				<li><a href=\"$new_task_url\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
-                        </ul>
-                        </td>
-                </tr>
-        	"
-    }
+	# if { [empty_string_p $table_body_html] } {
+	#        set table_body_html "
+        #        <tr class=table_list_page_plain>
+        #                <td colspan=$colspan align=left>
+	#		<b>[_ intranet-timesheet2-tasks.There_are_no_active_tasks]</b>
+        #                </td>
+        #        </tr>
+        #	"
+        # }
     set project_id $restrict_to_project_id
 
     set total_in_limited 0
@@ -548,6 +555,7 @@ template::multirow foreach task_list_multirow {
     } else {
         set previous_page_html ""
     }
+
     # ---------------------- Format the action bar at the bottom ------------
 
     set table_footer_action "
@@ -571,6 +579,74 @@ template::multirow foreach task_list_multirow {
         </tr>
         <tfoot>
     "
+
+    # ---------------------- Format filter ------------
+
+    # set employee_cost_center_id [db_string current_user_cc "
+    #            select  department_id as employee_cost_center_id
+    #            from    im_employees
+    #            where   employee_id = :user_id
+    # " -default ""]
+ 
+    set left_navbar_html "
+        <form>
+        <table border=0 cellspacing=1 cellpadding=1>
+        <tr valign=top>
+	    <td>
+                <table border=0 cellspacing=1 cellpadding=1>
+                <!--
+		<tr>
+                  <td class=form-label>Start Date</td>
+                  <td class=form-widget>
+                    <input type=textfield name=start_date value=$start_date>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>End Date</td>
+                  <td class=form-widget>
+                    <input type=textfield name=end_date value=$end_date>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Customer</td>
+                  <td class=form-widget>
+                    [im_company_select company_id $company_id]
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Project Manager</td>
+                  <td class=form-widget>
+                    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" project_lead_id $project_lead_id]
+                  </td>
+                </tr>
+		-->
+                <tr>
+                  <td class=form-label>Task Member</td>
+                  <td class=form-widget>
+                    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" task_member_id $task_member_id]
+                  </td>
+                </tr>
+	        <tr>
+	    	    <td class=form-label>[_ intranet-core.Department]:</td>
+		    <td class=form-widget>[im_cost_center_select -include_empty 1 -include_empty_name "All" -department_only_p 1 employee_cost_center_id $employee_cost_center_id]</td>
+		</tr>
+		 <tr>
+		        <td class=form-label valign=top>[lang::message::lookup "" intranet-reporting.OnlyUncompletedTasks "Only uncompleted Tasks:"]</td>
+			<td class=form-widget valign=top>
+	                <input name=only_uncompleted_tasks_p type=checkbox value='1' $only_uncompleted_tasks_checked>
+	        </td>
+		</tr>
+
+                <tr>
+                  <td class=form-label></td>
+                  <td class=form-widget><input type=submit value=Submit></td>
+                </tr>
+                </table>
+    	    </td>
+     </tr>
+     </table>
+     </form>
+     "
     # ---------------------- Join all parts together ------------------------
 
     # Restore the original value of project_id

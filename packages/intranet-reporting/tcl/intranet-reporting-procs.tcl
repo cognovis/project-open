@@ -738,10 +738,6 @@ ad_proc im_report_write_http_headers {
 } {
     set content_type [im_report_content_type -output_format $output_format]
     set http_encoding [im_report_http_encoding -output_format $output_format]
-
-    # ad_return_complaint 1 $http_encoding
-    # set content_type "text/html"
-
     append content_type "; charset=$http_encoding"
     
     set all_the_headers "HTTP/1.0 200 OK
