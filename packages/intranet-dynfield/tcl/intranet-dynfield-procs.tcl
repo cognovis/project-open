@@ -1101,7 +1101,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
-<<<<<<< HEAD
         
         if {$debug} { ns_log Debug "append_attributes_to_form3: name=$attribute_name, display_mode=$display_mode" }
         

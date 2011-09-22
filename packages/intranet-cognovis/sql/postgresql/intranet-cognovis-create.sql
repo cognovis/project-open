@@ -283,7 +283,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -348,7 +352,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -414,7 +422,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''project_parent_options'',		-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -479,7 +491,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -546,7 +562,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''customers'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -611,7 +631,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''project_leads'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -677,7 +701,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''project_type'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -743,7 +771,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''project_status'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -808,7 +840,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''date'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -876,7 +912,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''date'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -942,7 +982,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''on_track_status'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1007,7 +1051,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''numeric'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1073,7 +1121,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''numeric'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1139,7 +1191,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''numeric'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1204,7 +1260,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''currencies'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1268,7 +1328,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''textbox_medium'',			-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
@@ -1333,7 +1397,11 @@ BEGIN
 	       v_acs_attribute_id,			-- acs_attribute_id
 	       ''richtext'',				-- widget
 	       ''f'',					-- deprecated_p
-	       ''t''					-- already_existed_p
+	       ''t'',					-- already_existed_p
+	       null,					-- pos_y
+	       ''plain''				-- label_style
+	       ''f'',					-- also_hard_coded_p   
+	       ''t''					-- include_in_search_p
 	  );
 	ELSE
 	  v_attribute_id := im_dynfield_attribute_new (
