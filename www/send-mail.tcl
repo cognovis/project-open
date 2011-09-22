@@ -7,7 +7,7 @@ ad_page_contract {
 	set err_msg ""
 	
     set found_p [db_0or1row ticket_info "
-	select	*, to_char(ticket_creation_date,'YYYY-MM-DD HH24:MI') as creation_date
+	select	*, to_char(ticket_creation_date,'YYYY-MM-DD HH24:MI') as creation_date,to_char(ticket_escalation_date,'YYYY-MM-DD HH24:MI') as escalation_date
 	from	im_tickets,
 		im_projects
 	where	ticket_id = project_id and
@@ -21,6 +21,7 @@ ad_page_contract {
 #	order by audit_id DESC 
 #	"
 	
+	set old_ticket_queue_id ""
 	set audit_sql "
 	select *,substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as old_ticket_queue_id from im_audits 
 	where audit_object_id = :object_id and audit_action != 'after_update' and audit_action != 'before_update'
@@ -43,32 +44,37 @@ ad_page_contract {
 		lappend member_list_mail $member_email
     }
 
-
 	set channel [im_category_from_id -locale "es_ES" $ticket_incoming_channel_id ]
 	set program [im_category_from_id -locale "es_ES" $ticket_area_id ]
 	set type [im_category_from_id -locale "es_ES" $ticket_type_id ]
 	set usr [im_name_from_user_id [db_string search-creation-user "select object_id_two from acs_rels where object_id_one = :ticket_id and rel_type = 'im_biz_object_member'"]]
+	set cutomer_p [db_0or1row search-customer "select * from persons,parties where person_id=:ticket_customer_contact_id and party_id=person_id"]
 
 	set subject "SPRI: $project_name"
 	set body "
-	$ticket_queue_id $old_ticket_queue_id
-	Fecha y hora: $creation_date
+	Fecha y hora: $escalation_date
 	Canal: $channel
 	Programa: $program 
 	Tipo de ticket: $type
 	Expediente: $ticket_file
-	Nombre creador: $usr
-	Telefono: 678731687 
-	Email: oficina@viverospagola.com 
+	Contacto: $first_names $last_name $last_name2
+	Telefono: $telephone
+	Email: $email
 	Detalle: $ticket_request 
+	
+	
+	Reciba un saludo,
+	
+	SACE SPRI
+	902 702 142	
 	"
 
-	if {$found_audit_p && $old_ticket_queue_id!=$ticket_queue_id} {
+	if {($found_audit_p && $old_ticket_queue_id!=$ticket_queue_id) || !$found_audit_p} {
 		if {463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id} {
 				# Only resiste
 				if {73621==$ticket_queue_id } {
 				    db_foreach send_email $member_sql {
-						#acs_mail_lite::send -from_addr "cau@cau.es" -to_addr $member_email -subject $subject -body $body
+						acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr $member_email -subject $subject -body $body
 				}
 			}
 		}
