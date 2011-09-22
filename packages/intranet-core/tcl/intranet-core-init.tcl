@@ -3,7 +3,7 @@ ad_library {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 16 August, 2007
-    @cvs-id $Id: intranet-core-init.tcl,v 1.14 2011/06/16 18:27:48 po34demo Exp $
+    @cvs-id $Id$
 }
 
 # Create a global cache for im_profile entries.
@@ -27,6 +27,7 @@ ns_cache create im_company -timeout [ad_parameter -package_id [im_package_core_i
 
 set object_types {
     im_biz_object_member
+    im_baseline
     im_company
     im_company_employee_rel
     im_component_plugin
