@@ -22,6 +22,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var GLOBAL_STOP_BAR = 0;
+
 /*
  * Status Engine for the StoreManager
  * There are dependencies with stores,
@@ -192,7 +194,7 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		Function_StopBar();
+		Function_stopBar();
 	}
 );
 
@@ -554,6 +556,14 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	}]
 });
 	
+ticketStore.on({
+    'load':{
+        fn: function(store, records, options){
+			var var1 = this;
+        },
+        scope:this
+    }
+});
 
 var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',
