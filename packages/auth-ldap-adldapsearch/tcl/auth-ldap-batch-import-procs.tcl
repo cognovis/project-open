@@ -26,6 +26,7 @@ namespace eval auth::ldap::batch_import {}
 
 ad_proc -private auth::ldap::batch_import::read_ldif_file {
     {-object_class "*" }
+    {-ldap_query "" }
     {-attributes ""}
     {parameters {}}
     {authority_id {}}
@@ -59,7 +60,11 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    # Active Directory
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file Active Directory"
 
-	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (objectClass=$object_class) $attributes"
+	    set query "(objectClass=$object_class)"
+	    if {"" != $ldap_query} {
+		set query (&${query}$ldap_query)
+	    }
+	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
 
 	    # Bind as "Adminstrator" and retreive the userPassword field for
@@ -107,6 +112,9 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 
 
 ad_proc -private auth::ldap::batch_import::read_ldif_objects {
+    {-debug_p 1}
+    {-ldap_query "" }
+    {-object_class "group" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -120,7 +128,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     Two "objects" are separated by an empty line.
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects"
-    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class "group" $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class $object_class -ldap_query $ldap_query $parameters $authority_id]
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result_hash(result)"
 
     if {0 == $result_hash(result)} {
@@ -143,7 +151,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	# Get the current line
 	set line [lindex $lines $line_ctr]
 	set next_line [lindex $lines [expr $line_ctr + 1]]
-	ns_log Notice "auth::ldap::batch_import::read_ldif_objects: line \#$line_ctr=$line"
+	if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: line \#$line_ctr=$line" }
 	incr line_ctr
 
 	if {"#" == [string range $line 0 0]} { 
@@ -172,7 +180,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # In this case we need to append the next line to the current one.
 	    set first_char [string range $next_line 0 0]
 	    while {" " == $first_char} {
-		ns_log Notice "auth::ldap::batch_import::read_ldif_objects: Cont. at \#$line_ctr: $next_line"
+		if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: Cont. at \#$line_ctr: $next_line" }
 		append line [string trim $next_line]
 		incr line_ctr
 		set next_line [lindex $lines [expr $line_ctr + 1]]
@@ -187,10 +195,10 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # Base64 encoded DN:
 	    if {[regexp {^dn:: (.*)$} $line match dn_var_base64]} { 
 
-		ns_log Notice "auth::ldap::batch_import::read_ldif_objects: base64 encoded dn: $line"
+		if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: base64 encoded dn: $line" }
 		if {[catch {
 		    set dn [::base64::decode $dn_var_base64]
-		    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: dn=$dn"
+		    if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: dn=$dn" }
 		} err_msg]} {
 		    ad_return_complaint 1 "Error:<pre>$err_msg</pre><br><pre>$dn_var_base64"
 		}
@@ -298,7 +306,8 @@ ad_proc -private auth::ldap::batch_import::import_users {
     ns_log Notice "auth::ldap::batch_import::import_users: parameters=$parameters"
     set debug ""
 
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects $parameters $authority_id]
+    set ldap_query "(memberOf=cn=PO-IntegracionUsuarios,cn=Users,dc=lagunaro,dc=local)"
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -object_class "person" -ldap_query $ldap_query $parameters $authority_id]
     if {0 == $result_hash(result)} {
         # Found some errors
         return [list result 0 debug $result_hash(debug) groups {}]
@@ -329,6 +338,9 @@ ad_proc -private auth::ldap::batch_import::import_users {
 	# Get the list of LDAP attributes
 	set key_value_list $objects_hash($user_dn)
 	set key_value_list_len [llength $key_value_list]
+
+	# List of group memberships
+	set group_list {}
 	
 	for {set i 0} {$i < $key_value_list_len} { incr i 2} {
 	    set key [lindex $key_value_list $i]
@@ -346,6 +358,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		description	{ set user_hash(description) $value }
 		homePhone	{ set user_hash(home_phone) $value }
 		mail		{ set user_hash(email) $value }
+		memberOf	{ lappend group_list $value }
 		mobile		{ set user_hash(mobile_phone) "" }
 		name		{ set user_hash(display_name) $value }
 		objectClass {
@@ -370,21 +383,25 @@ ad_proc -private auth::ldap::batch_import::import_users {
 	}
 
 	if {$user_p} { 
-
 	    # Insert the user into the databaes
+	    ns_log Notice "auth::ldap::batch_import::import_users: Found a user: $user_dn"
 	    array set user_result_hash [auth::ldap::batch_import::parse_user \
 					    -authority_id $authority_id \
 					    -parameters $parameters \
 					    -dn $user_dn \
-					    -keys_values [array get user_hash]\
+					    -keys_values [array get user_hash] \
+					    -group_list $group_list \
 					   ]
 	    append debug $user_result_hash(debug)
+	} else {
+	    ns_log Notice "auth::ldap::batch_import::import_users: Not a user: $user_dn"
 	}
     }
     return [list result 1 debug $debug]
 }
 
 ad_proc -private auth::ldap::batch_import::parse_user {
+    {-group_list "" }
     -authority_id:required
     -parameters:required
     -dn:required
@@ -533,6 +550,31 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 			email = :email
 		where party_id = :user_id
     "
+
+
+    # Add the user to the respective groups
+    set group_pairs $params(GroupMap)
+    array set group_map $group_pairs
+    foreach g $group_list {
+	set group_id 0
+	if {[info exists group_map($g)]} { set group_id $group_map($g) }
+	if {[regexp -nocase {^cn=([^\,\=]+)} $g match group_body]} {
+	    if {[info exists group_map($group_body)]} { set group_id $group_map($group_body) }
+	}
+        set rel_exists_p [db_string member_of_group "
+                select  count(*)
+                from    group_member_map m, membership_rels mr
+                where   m.member_id = :user_id
+                        and m.group_id = :group_id
+                        and m.rel_id = mr.rel_id
+                        and m.container_id = m.group_id
+                        and m.rel_type = 'membership_rel'
+        "]
+        if {!$rel_exists_p} {
+            relation_add -member_state "approved" "membership_rel" $group_id $user_id
+        }
+    }
+
     return [list result 1 oid 0 debug $debug]
 }
 
