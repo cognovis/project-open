@@ -1,5 +1,7 @@
 ad_page_contract {
     @author David Blanco (david.blanco@grupoversia.com)
+    @creation-date 21 Sep 2011
+    @cvs-id $Id$
 } {
     { object_id:integer ""}
 }
