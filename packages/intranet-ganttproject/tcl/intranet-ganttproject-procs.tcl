@@ -590,14 +590,15 @@ ad_proc -public im_gp_save_tasks2 {
     set priority		[$task_node getAttribute priority ""]
     set expand_p		[$task_node getAttribute expand ""]
     set end_date		[db_string end_date "select :start_date::date + :duration::integer"]
-    set is_null 0
-    set note ""
-    set task_nr ""
-    set task_id 0
-    set has_subobjects_p 0
+    set is_null			0
+    set milestone_p		""
+    set note			""
+    set task_nr			""
+    set task_id			0
+    set has_subobjects_p	0
 
-    set outline_number ""
-    set remaining_duration ""
+    set outline_number		""
+    set remaining_duration	""
 
     set gantt_field_update {}
     set xml_elements {}
@@ -637,8 +638,14 @@ ad_proc -public im_gp_save_tasks2 {
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
 		    "188744007" { set task_id $fieldvalue }
+		    default {
+			# Any other extended attribute is ignored as specified
+			# in the MS-Project integration docu
+			continue
+		    }
 		}
 	    }
+	    "milestone"		{ if {"1" == [$taskchild text]} { set milestone_p "t" }}
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
 		continue
@@ -650,6 +657,11 @@ ad_proc -public im_gp_save_tasks2 {
 		# these are from ganttproject. see below
 		continue 
 	    }
+	    "timephaseddata" {
+                # This is a timephased data assignment directly for a task.
+	        # ]po[ can't handle this type of assignments yet.
+                continue
+            }
 	    default {
 		# Nothing
 	    }
@@ -660,7 +672,6 @@ ad_proc -public im_gp_save_tasks2 {
 	im_ganttproject_add_import "im_gantt_project" $nodeName
 	set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 	lappend gantt_field_update "$column_name = '[db_quote $nodeText]'"
-	    
 	lappend xml_elements $nodeName
     }
 
@@ -780,12 +791,19 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # -----------------------------------------------------
-    # Check if a task with the task_nr exists in the DB
+    # Check if a task with the task_nr or the task_name exists in the DB
     if {0 == $task_id} {
 	set task_id [db_string task_id_from_nr "
 		select	task_id 
 		from	im_timesheet_tasks_view
 		where	project_id = :parent_id and task_nr = :task_nr
+        " -default 0]
+    }
+    if {0 == $task_id} {
+	set task_id [db_string task_id_from_name "
+		select	task_id 
+		from	im_timesheet_tasks_view
+		where	project_id = :parent_id and lower(task_name) = lower(:task_name)
         " -default 0]
     }
 
@@ -813,15 +831,15 @@ ad_proc -public im_gp_save_tasks2 {
 			null,			-- creation_user
 			null,			-- creation_ip
 			null,			-- context_id
-			:task_nr,
-			:task_name,
-			:parent_id,
-			:material_id,
-			:cost_center_id,
-			:uom_id,
-			:task_type_id,
-			:task_status_id,
-			:note
+			:task_nr,		-- task_nr
+			:task_name,		-- task_name
+			:parent_id,		-- parent_id
+			:material_id,		-- material_id
+			:cost_center_id,	-- cost_center_id
+			:uom_id,		-- uom_id
+			:task_type_id,		-- task_type_id
+			:task_status_id,	-- task_status_id
+			:note			-- note
 		)"
 	    ]
 
@@ -915,6 +933,12 @@ ad_proc -public im_gp_save_tasks2 {
     }
     if {$debug_p} { ns_write "</ul>\n" }
 
+
+    set milestone_sql ""
+    if {[im_column_exists im_projects milestone_p]} {
+	set milestone_sql "milestone_p	=	:milestone_p,"
+    }
+
     db_dml project_update "
 	update im_projects set
 		project_name		= :task_name,
@@ -922,6 +946,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
+		$milestone_sql
 		note			= :note,
 		sort_order		= :my_sort_order,
 		percent_completed	= :percent_completed
@@ -953,7 +978,7 @@ ad_proc -public im_gp_save_tasks2 {
 	
 	db_dml gantt_project_update "
 	    update im_gantt_projects set
-                [join $gantt_field_update ,]
+                [join $gantt_field_update ",\n\t\t"]
 	    where
 		project_id = :task_id
         " 
@@ -982,19 +1007,24 @@ ad_proc -public im_gp_save_allocations {
 } {
     Saves allocation information from GanttProject
 } {
+    ns_log Notice "im_gp_save_allocations: task_hash_array='$task_hash_array', resource_hash_array='$resource_hash_array'"
+
     array set task_hash $task_hash_array
     array set resource_hash $resource_hash_array
 
     foreach child [$allocations_node childNodes] {
+	ns_log Notice "im_gp_save_allocations: nodeName=[$child nodeName]"
 	switch [$child nodeName] {
 	    "allocation" - "Assignment" {
 		
+		# Check for GanttProject specific format
 		set task_id [$child getAttribute task-id ""]
 		set resource_id [$child getAttribute resource-id ""]
 		set function [$child getAttribute function ""]
 		set responsible [$child getAttribute responsible ""]
 		set percentage [$child getAttribute load "0"]
-		
+
+		# Check for MS-Project specific format
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
@@ -1004,19 +1034,25 @@ ad_proc -public im_gp_save_allocations {
 			"Units" { set percentage [expr round(100.0*$nodeText)] }
 		    }
 		}
+		ns_log Notice "im_gp_save_allocations: iter: task_uid=$task_id, resource_uid=$resource_id, function=$function, percentage=$percentage, responsible=$responsible"
 
 		if {![info exists task_hash($task_id)]} {
+		    ns_log Notice "im_gp_save_allocations: Didn't find task_id='$task_id' in task_hash."
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n" }
 		    continue
 		}
 		set task_id $task_hash($task_id)
 
 		if {![info exists resource_hash($resource_id)]} {
+		    ns_log Notice "im_gp_save_allocations: Didn't find resource_id='$resource_id' in resource_hash"
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n" }
 		    continue
 		}
 		set resource_id $resource_hash($resource_id)
-		if {![string is integer $resource_id]} { continue }
+		if {![string is integer $resource_id]} { 
+		    ns_log Notice "im_gp_save_allocations: found invalid resource_id='$resource_id'"
+		    continue 
+		}
 
 		set role_id [im_biz_object_role_full_member]
 		if {[string equal "Default:1" $function]} { 
@@ -1024,12 +1060,15 @@ ad_proc -public im_gp_save_allocations {
 		}
 
 		# Add the dude to the task with a given percentage
+		ns_log Notice "im_gp_save_allocations: Adding user=$resource_id to task=$task_id in role=$role_id"
 		im_biz_object_add_role -percentage $percentage $resource_id $task_id $role_id
 
-		set user_name [im_name_from_user_id $resource_id]
-		set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
-		if {$debug_p} { ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n" }
-		ns_log Notice "im_gp_save_allocations: [$child asXML]"
+		if {$debug_p} {
+		    set user_name [im_name_from_user_id $resource_id]
+		    set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
+		    ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n"
+		    ns_log Notice "im_gp_save_allocations: [$child asXML]"
+		}
 
 	    }
 	    default { }
@@ -1049,6 +1088,18 @@ ad_proc -public im_gp_save_allocations {
 
 
 ad_proc -public im_gp_find_person_for_name { 
+    -name
+    -email
+} {
+    Tries to determine the person_id for a name string.
+    Uses all kind of fuzzy matching trying to be intuitive...
+    Returns "" if it didn't find the name.
+} {
+    # Remember just for 30 seconds - that's what it takes to import the MS-Project file...
+    return [util_memoize [list im_gp_find_person_for_name_helper -name $name -email $email] 30]
+}
+
+ad_proc -public im_gp_find_person_for_name_helper { 
     -name
     -email
 } {
@@ -1081,13 +1132,14 @@ ad_proc -public im_gp_find_person_for_name {
         set person_id [db_string resource_id "
 		select	min(person_id)
 		from	persons
-		where	:name = lower(im_name_from_user_id(person_id))
+		where	lower(im_name_from_user_id(person_id)) = :name
         " -default ""]		
     }
 
     # Check if we get a single match looking for the pieces of the
     # resources name
-    if {"" == $person_id} {
+    # Fraber 110830: Disable, because "Architect" matches "Laura Leadarchitect"
+    if {0 && "" == $person_id} {
 	set name_pieces [split $name " "]
 	# Initialize result to the list of all persons
 	set result [db_list all_resources "
@@ -1129,11 +1181,14 @@ ad_proc -public im_gp_save_resources {
     foreach child [$resources_node childNodes] {
 	switch [$child nodeName] {
 	    "resource" - "Resource" {
+
+		# Check for GanttProject resource format
 		set resource_id [$child getAttribute id ""]
 		set name [$child getAttribute name ""]
 		set function [$child getAttribute function ""]
 		set email [$child getAttribute contacts ""]
 
+		# Check of MS-Project resource format
 		foreach attr [$child childNodes] {
 		    switch [$attr nodeName] {
 			"UID" { set resource_id [$attr text] }
@@ -2052,15 +2107,12 @@ ad_proc -public im_ganttproject_gantt_component {
 		where
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
-		        and child.tree_sortkey 
-				between parent.tree_sortkey 
-				and tree_right(parent.tree_sortkey)
-		        and d.d 
-				between child.start_date 
-				and child.end_date
+		        and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		        and d.d between child.start_date and child.end_date
 			$where_clause
     "
 
+	# Add milestones as milestones
 
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
