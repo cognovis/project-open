@@ -25,9 +25,12 @@ ad_page_contract {
 # Returns inquiries as JSON 
 # ---------------------------------------------------------------
 
-# todo: improve 
+# security 
 set user_id [ad_maybe_redirect_for_registration]
+
+# defaults 
 set row_count 0
+set cost_type_id_invoice set data [db_string get_data "select category_id from im_categories where category_type = 'Customer Invoice'" -default 3700] 
 
 # we assume that user is member of only one company 
 set sql "
@@ -42,7 +45,7 @@ set sql "
 "
 
 if { [catch {
-            db_1row get_company_data $sql
+        db_1row get_company_data $sql
 } err_msg] } {
 	ns_return 200 text/html "\{\"totalCount\":\"0\"\}"
 }
@@ -80,14 +83,12 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 	        and i.customer_id=c.company_id
 	        and i.provider_id=p.company_id
 		and c.company_id = $company_id
+		and i.cost_type_id = $cost_type_id_invoice
 	order by 
 		i.invoice_id
 	limit   :limit
 	offset  :start 
-	
-	
 	"
-	
 	db_multirow -extend { invoice_status } docs doc_query $doc_query {
 	    	set invoice_status [im_category_from_id $status_id]
 	
@@ -116,9 +117,8 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 	        and i.customer_id=c.company_id
 	        and i.provider_id=p.company_id
 	        and c.company_id = $company_id
+                and i.cost_type_id = $cost_type_id_invoice
 	"
-	
-	
 	if { 0 == $row_count} {
 		set docs_count 0
 	} else {
