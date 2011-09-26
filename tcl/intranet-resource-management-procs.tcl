@@ -160,13 +160,14 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 	    catch {
 		if {1 == [string length $month_of_year]} { set month_of_year "0$month_of_year" }
 		if {1 == [string length $day_of_month]} { set day_of_month "0$day_of_month" }
-		set julian [db_string jul "select to_char('$year-$month_of_year-$day_of_month'::date,'J')"]
+		set julian [dt_ansi_to_julian_single_arg "$year-$month_of_year-$day_of_month"]
+
 	    }
 	}
 	"year month_of_year" {
 	    catch {
 		if {1 == [string length $month_of_year]} { set month_of_year "0$month_of_year" }
-		set julian [db_string jul "select to_char('$year-$month_of_year-01'::date,'J')"]
+                set julian [dt_ansi_to_julian_single_arg "$year-$month_of_year-01"]
 	    }
 	}
     }
@@ -889,7 +890,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
                 }
 		# Add one to end date since this day is included  
 		set end_date_julian_planned_hours [expr $end_date_julian_planned_hours + 1]
-		set end_date [db_string julian_date_select "select to_char( to_date($end_date_julian_planned_hours,'J'), 'YYYY-MM-DD') from dual"]
+		# set end_date [db_string julian_date_select "select to_char( to_date($end_date_julian_planned_hours,'J'), 'YYYY-MM-DD') from dual"]
+                set end_date [im_date_julian_to_ansi  "$end_date_julian_planned_hours"]
 
                 # Sanity Check: Is there at least one user assigned to this task? 
 		if { "0" == $user_ctr } { 
@@ -910,12 +912,16 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		if { "0" == $no_workdays } {
 			if { $start_date != $end_date} {
 				# Find next workday - should be no longer than 2 days from start_date
-				set next_julian_end_date [db_string get_next_julian_end_date "select to_char( to_date('[expr $end_date_julian_planned_hours + 2]','J'), 'YYYY-MM-DD') from dual" -default 0]
+
+				# set next_julian_end_date [db_string get_next_julian_end_date "select to_char( to_date('[expr $end_date_julian_planned_hours + 2]','J'), 'YYYY-MM-DD') from dual" -default 0]
+			    	set next_julian_end_date [im_date_julian_to_ansi [expr $end_date_julian_planned_hours + 2]] 				
+
 				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', 'next_julian_end_date') as series_days (days date) limit 1" -default 0]
-				set days_julian-startdate-ne-end-date [db_string get_days_julian "select to_char( to_date('next_workday','J'), 'YYYY-MM-DD') from dual" -default 0]
+				# set days_julian-startdate-ne-end-date [db_string get_days_julian "select to_char( to_date('next_workday','J'), 'YYYY-MM-DD') from dual" -default 0]
+				set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
 			} else { 
 				ns_log NOTICE "Found start_date=end_date: $project_id,$user_id<br>"				
-				set days_julian [db_string get_days_julian-startdate-eq-end-date "select to_char('$start_date'::date,'J')" -default 0]
+                                set days_julian [dt_ansi_to_julian_single_arg "$start_date"]
 			}
 
                         set user_ctr 0
@@ -942,8 +948,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			# Distribute hours over workdays 
 			set hours_per_day [expr $planned_units.0 / $no_workdays.0 ]
 			set column_sql "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" 
+
+			# set data [db_string get_data "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" -default 0] 
+			# ns_log NOTICE "KHD: $data"
+
 			db_foreach column_list_sql $column_sql {		
-			    	set days_julian [db_string set-days-julian-distribute-hours-over-workday "select to_char('$days'::date,'J')" -default 0]
+			    	set days_julian [dt_ansi_to_julian_single_arg "$days"]
 				set user_ctr 0
 	                        foreach user_id $user_percentage_list {
 					set user_id [lindex [lindex $user_percentage_list $user_ctr] 0]
@@ -1313,9 +1323,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # ------------------------------------------------------------
     # ------------------------------------------------------------
 
-
     set row_ctr 0
     foreach left_entry $left_scale {
+
+	# ns_log NOTICE "KHD: $row_ctr"
 
 	# This boolean is needed to calculate the total of hours available for the minimum UOM (day/week/month)
         set row_shows_employee_p 0
@@ -1329,7 +1340,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# Extract user and project. An empty project indicates 
 	# an entry for a person only.
 	set user_id [lindex $left_entry 0]
-	set user_department_id [set data [db_string get_user_department_id "select department_id from im_employees where employee_id = $user_id" -default 0]]
+
+	set user_department_id [util_memoize [list db_string get_data "select department_id from im_employees where employee_id = $user_id" -default 0]]
+        set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
+
 
 	set project_id [lindex $left_entry 1]
 
@@ -1533,7 +1547,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		# Show planned hours 
 		if {$calc_day_p} {
 		    # Determine availability of user (hours/day)  
-    		    set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
+    		    # set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
 
 		    if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
 
@@ -1563,7 +1577,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		    if { "planned_hours" == $calculation_mode } {
 
 			# General settings 
-			set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
+			# set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
                         set absence_key "$julian_date-$user_id"			
 
 			# Start building cell 
