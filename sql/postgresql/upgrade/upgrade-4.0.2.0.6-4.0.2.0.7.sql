@@ -101,7 +101,7 @@ SELECT im_component_plugin__new (
 					select	p.project_id,
 						max(a.audit_date) as max_audit_date
 					from	im_projects p
-						LEFT OUTER JOIN im_audits a ON (p.project_id = a.audit_object_id and a.audit_date < now() - '30 days'::interval)
+						LEFT OUTER JOIN im_audits a ON (p.project_id = a.audit_object_id and a.audit_date < now() - ''30 days''::interval)
 					where	p.parent_id is null
 					group by p.project_id, p.project_status_id
 				) max_audit_date ON (parent.project_id = max_audit_date.project_id)
