@@ -38,3 +38,10 @@ end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+
+-- Fix "checkbox" widget in Widget Gallery
+update im_dynfield_widgets
+set parameters = '{options {{"" t}}}'
+where widget_name = 'checkbox';
+
