@@ -561,6 +561,13 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	if {[regexp -nocase {^cn=([^\,\=]+)} $g match group_body]} {
 	    if {[info exists group_map($group_body)]} { set group_id $group_map($group_body) }
 	}
+
+        if {0 == $group_id} {
+            ns_log Notice "auth::ldap::batch_import::parse_user: did not find group '$g' - skipping"
+            continue
+        }
+        ns_log Notice "auth::ldap::batch_import::parse_user: Found group '$g' -> $group_id"
+
         set rel_exists_p [db_string member_of_group "
                 select  count(*)
                 from    group_member_map m, membership_rels mr
