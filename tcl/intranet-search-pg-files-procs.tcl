@@ -460,10 +460,9 @@ ad_proc intranet_search_pg_files_search_indexer {
 	    set unindexed_projects_sql "
 		select	project_id 
 		from	im_projects
-		where	project_id not in (
-				select object_id 
-				from im_search_pg_file_biz_objects
-		)
+		EXCEPT
+		select	object_id
+		from	im_search_pg_file_biz_objects
 	    "
 	    db_foreach unindexed_projects $unindexed_projects_sql {
 		db_dml insert_project "
