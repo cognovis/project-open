@@ -157,19 +157,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = rec.get('company_id');
 		userCustomerTicketRelationStore.load();			
-		
-		
-		/*// Customer contact ID, may be NULL
-		var contact_id;
-		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { 
-			contact_id = rec.data.ticket_customer_contact_id; 
-		}
-
-		var contact_record = userStore.findRecord('user_id',contact_id);
-		if (contact_record == null || typeof contact_record == "undefined") { return; }
-
-		// load the information from the record into the form
-		this.loadUser(contact_record);*/
 	},
 
 	loadUser: function(rec){
@@ -191,16 +178,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
-	loadCustomer: function(customerModel){
-	/*	var form = this.getForm();
-		form.reset();*/
-		
+	loadCustomer: function(customerModel){		
 		//Load anonymus contact
-		/*userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));*/
 		var company_id = customerModel.get('company_id');
 		if (Ext.isEmpty(company_id)) {
-			company_id = 'null';
+			company_id = '1';
 		}
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = company_id;
@@ -214,12 +196,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
 	newTicket: function() {
-	/*	var form = this.getForm();
-		form.reset();
-		this.hide();
-		userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));*/
-		
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = anonimo_company_id;
 		userCustomerTicketRelationStore.load();				

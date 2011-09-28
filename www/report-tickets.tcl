@@ -124,29 +124,39 @@ set levels {2 "Customers" 3 "Customers+Projects"}
 # Report SQL - This SQL statement defines the raw data 
 # that are to be shown.
 
+
 set report_sql "
 	select
 		t.*,
 		im_category_from_id(t.ticket_incoming_channel_id) as ticket_incoming_channel,
 		im_category_from_id(t.ticket_outgoing_channel_id) as ticket_outgoing_channel,
+		t.ticket_incoming_channel_id as ticket_incoming_channel_raw_id,
+		t.ticket_outgoing_channel_id as ticket_outgoing_channel_raw_id,
 		im_category_from_id(t.ticket_area_id) as ticket_program,
+		t.ticket_area_id as ticket_program_raw_id,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area,
+		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_area_id)) as ticket_area_raw_id,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_type_id)) as ticket_type_parent,
-
+		
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_incoming_channel_id)) as ticket_incoming_channel_parent,
 		(select im_category_from_id(min(im_category_parents)) from im_category_parents(t.ticket_outgoing_channel_id)) as ticket_outgoing_channel_parent,
 
 		p.*,
 		g.group_name as ticket_queue,
+		g.group_id as ticket_queue_raw_id,
 		im_category_from_id(t.ticket_status_id) as ticket_status,
 		im_category_from_id(t.ticket_type_id) as ticket_type,
+		t.ticket_type_id as ticket_type_raw_id,
 		cust.company_id,
 		cust.company_name,
 		cust.vat_number,
 		cust.company_province,
 		im_category_from_id(cust.company_type_id) as company_type,
+		cust.company_type_id as company_type_raw_id,
 
+		t.ticket_queue_id as ticket_resuelto_raw_id,
 		CASE WHEN t.ticket_queue_id = 463 THEN 'SI' ELSE 'NO' END as ticket_resuelto,
+		t.ticket_requires_addition_info_p as ticket_requires_addition_info_raw_id,
 		CASE WHEN t.ticket_requires_addition_info_p = 'true' THEN 'SI' ELSE 'NO' END as ticket_requires_addition_info,
 
 		p_creator.person_id as creation_user_id,
@@ -202,6 +212,8 @@ set report_sql "
 	order by
 		lower(cust.company_path),
 		lower(p.project_nr)
+		
+
 "
 
 
@@ -225,25 +237,35 @@ set header0 {
 	"Hora Cierre"
 	"Canal Entrada Level 1"
 	"Canal Entrada"
+	"Canal Entrada Id"
 	"Canal Salida Level 1"
 	"Canal Salida"
+	"Canal Salida Id"
 	"NIF"
 	"Empresa"
+	"Empresa Id"
 	"Tipo Empresa"
+	"Tipo Empresa Id"
 	"Provincia"
 	"Contacto Nombre"
 	"Contacto Mail"
 	"Telefono"
 	"Area"
+	"Area Id"
 	"Programa"
+	"Programa Id"
 	"Tema Level 1"
 	"Tema"
+	"Tema Id"
 	"Expediente"
 	"Detalle"
 	"Respuesta"
 	"Resuelto"
+	"Resuelto Id"
 	"Apoyo Mail"
+	"Apoyo Mail Id"
 	"Escalado"
+	"Escalado Id"
 }
 
 # The entries in this list include <a HREF=...> tags
@@ -264,25 +286,35 @@ set report_def [list \
 	$ticket_done_date_time
 	$ticket_incoming_channel_parent
 	$ticket_incoming_channel
+	$ticket_incoming_channel_raw_id
 	$ticket_outgoing_channel_parent
 	$ticket_outgoing_channel
+	$ticket_outgoing_channel_raw_id
 	$vat_number
 	$company_name
+	$company_id
 	$company_type
+	$company_type_raw_id
 	$company_province
 	$contact_name
 	$contact_email
 	$contact_telephone
 	$ticket_area
+	$ticket_area_raw_id
 	$ticket_program
+	$ticket_program_raw_id
 	$ticket_type_parent
 	$ticket_type
+	$ticket_type_raw_id
 	$ticket_file
 	$ticket_request
 	$ticket_resolution
 	$ticket_resuelto
+	$ticket_resuelto_raw_id
 	$ticket_requires_addition_info
+	$ticket_requires_addition_info_raw_id
 	$ticket_queue
+	$ticket_queue_raw_id
     } \
     content {} \
     footer {} \
@@ -381,6 +413,15 @@ switch $output_format {
 		<col id=datecol>
 		<col id=datecol>
 		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=datecol>
 	</colgroup>
 	"
     }
@@ -415,8 +456,17 @@ db_foreach sql $report_sql {
 	    -row_class $class \
 	    -cell_class $class
 
-
         # Data Customization
+		
+		if {"" != $ticket_area_raw_id} {
+		
+			set lista_parents [im_category_parents $ticket_program_raw_id]
+			set parent [lindex $lista_parents 0]
+			set ticket_area_raw_id $parent
+			
+		}	
+			
+			
         if {"" != $ticket_incoming_channel_parent} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel_parent]"
             set ticket_incoming_channel_parent [lang::message::lookup $locale $category_key $ticket_incoming_channel_parent]
