@@ -549,20 +549,11 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 12,				// Enable pagination
-	autoSync: true,			// Write changes to the REST server ASAP
+//	autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
 		property: 'creation_date',
 		direction: 'DESC'
 	}]
-});
-	
-ticketStore.on({
-    'load':{
-        fn: function(store, records, options){
-			var var1 = this;
-        },
-        scope:this
-    }
 });
 
 var companyStore = Ext.create('PO.data.CompanyStore', {
