@@ -477,10 +477,9 @@ ad_proc intranet_search_pg_files_search_indexer {
 	    set unindexed_companies_sql "
 		select	company_id 
 		from	im_companies
-		where	company_id not in (
-				select object_id 
-				from im_search_pg_file_biz_objects
-		)
+		EXCEPT
+		select	object_id
+		from	im_search_pg_file_biz_objects
 	    "
 	    db_foreach unindexed_companies $unindexed_companies_sql {
 		db_dml insert_company "
@@ -495,9 +494,9 @@ ad_proc intranet_search_pg_files_search_indexer {
 	    set unindexed_persons_sql "
 		select	person_id 
 		from	persons
-		where	person_id not in (
-				select object_id 
-				from im_search_pg_file_biz_objects
+		EXCEPT
+		select	object_id
+		from	im_search_pg_file_biz_objects
 		)
 	    "
 	    db_foreach unindexed_persons $unindexed_persons_sql {
