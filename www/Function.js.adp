@@ -61,7 +61,21 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 			//do nothing
 			return;
 		}
+
+		Function_checkValues(companyValues);
+		Function_checkValues(contactValues);
+		Function_checkValues(ticketValues);
+		Function_checkValues(ticketRightValues);
 		
+		companyValues.company_name = companyValues.company_name.toUpperCase();
+		companyValues.vat_number = companyValues.vat_number.toUpperCase();
+		contactValues.first_names = contactValues.first_names.toUpperCase();
+		contactValues.last_name = contactValues.last_name.toUpperCase();
+		contactValues.last_name2 = contactValues.last_name2.toUpperCase();
+		
+		ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
+		ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");
+				
 		//Company and contacts validations
 		if (Ext.isEmpty(companyValues.company_id) && !Function_validateNewCompany(companyValues)) {
 			return;							
@@ -76,20 +90,6 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 		if (loadTicket) {	
 			Ext.getCmp('ticketCompoundPanel').disable();
 		}
-		
-		Function_checkValues(companyValues);
-		Function_checkValues(contactValues);
-		Function_checkValues(ticketValues);
-		Function_checkValues(ticketRightValues);
-		
-		companyValues.company_name = companyValues.company_name.toUpperCase();
-		companyValues.vat_number = companyValues.vat_number.toUpperCase();
-		contactValues.first_names = contactValues.first_names.toUpperCase();
-		contactValues.last_name = contactValues.last_name.toUpperCase();
-		contactValues.last_name2 = contactValues.last_name2.toUpperCase();
-		
-		ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
-		ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");
 		
 		Function_saveContact(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
 	} catch(err) {		

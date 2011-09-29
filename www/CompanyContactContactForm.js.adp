@@ -144,6 +144,12 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
+	}, {
+		name:		'spri_consultant',
+		xtype:		'checkbox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Consultant#',
+		uncheckedValue:	'0',
+		inputValue: '1'
 	}],
 
 	loadUser: function(rec){
