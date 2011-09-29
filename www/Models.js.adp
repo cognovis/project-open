@@ -223,6 +223,7 @@ Ext.define('TicketBrowser.User', {
 		'email',			// Just email txt
 		'gender',			// male or female
 		'language',			// es_ES or eu_ES
+		'spri_consultant',
 		{	name: 'name',			// Calculated compound name
 			convert: function(value, record) {
 				return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
@@ -239,7 +240,7 @@ Ext.define('TicketBrowser.User', {
 			format:	'json',
 			format_variant:	'sencha',
 			gzip_p:    '1',
-			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language'
+			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language,spri_consultant'
 		},
 		reader:	{ 
 			type:		'json', 

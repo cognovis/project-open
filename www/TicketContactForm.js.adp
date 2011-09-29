@@ -86,9 +86,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		allowBlank:	false,
 		validator: function(value){
 			if (Ext.isEmpty(value)){
+				this.show();
 				return "Obligatorio";
 			}
 			if (value.substring(0,14).toLowerCase() == "nuevo contacto"){
+				this.show();
 				return "No válido";
 			}
 			return true;
@@ -98,7 +100,14 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_name#',
 		hidden: true,
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				this.show();
+				return "Obligatorio";
+			}
+			return true;
+		}			
 	}, {
 		name:		'last_name2',
 		xtype:		'textfield',
@@ -151,6 +160,12 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
+	}, {
+		name:		'spri_consultant',
+		xtype:		'checkbox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Consultant#',
+		uncheckedValue:	'0',
+		inputValue: '1'
 	}],
 
 	loadTicket: function(rec){
