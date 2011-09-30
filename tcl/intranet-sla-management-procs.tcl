@@ -575,7 +575,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			a.audit_object_id as ticket_id,
 			extract(epoch from a.audit_date) as audit_date_epoch,
 			to_char(a.audit_date, 'J') as audit_date_julian,
-			im_category_from_id(audit_object_status_id) as audit_object_status
+			im_category_from_id(audit_object_status_id) as audit_object_status,
+			substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as audit_ticket_queue_id,
+			substring(audit_value from 'ticket_assignee_id\\t(\[^\\n\]*)') as audit_ticket_assignee_id
 		from	im_audits a
 		where	audit_object_id in (
 				select	t.ticket_id
@@ -589,11 +591,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	"
 	db_foreach audit $audit_sql {
 	    if {"" == $audit_object_status} { set audit_object_status "NULL" }
-	    if {$debug_p} {	append debug_html "
-		<li>$ticket_id: $audit_date: $audit_object_status
-	    " }
+	    if {$debug_p} { append debug_html "<li>$ticket_id: $audit_date: $audit_object_status" }
 	    set epoch_{$ticket_id}($audit_date_epoch) $audit_object_status_id
 	    set julian_{$ticket_id}($audit_date_julian) $audit_object_status_id
+	    set queue_{$ticket_id}($audit_date_epoch) $audit_ticket_queue_id
 	}
 
 
@@ -622,6 +623,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			<td class=rowtitle>Event</td>
 			<td class=rowtitle>Duration<br>Seconds</td>
 			<td class=rowtitle>Count<br>Duration?</td>
+			<td class=rowtitle>Queue</td>
 			<td class=rowtitle>Resolution<br>Seconds</td>
 			<td class=rowtitle>Resolution<br>Minutes</td>
 			<td class=rowtitle>Resolution<br>Hours</td>
@@ -631,7 +633,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    # Copy the epoc_12345 hash into "hash" for easier access.
 	    array unset hash
 	    array set hash [array get epoch_{$ticket_id}]
-	    
+
+	    # Copy assignments hash into "assig" for easier access.
+	    array unset queue_hash
+	    array set queue_hash [array get queue_{$ticket_id}]
+
+	    # Array of counters per assigned queue or group
+	    array unset queue_resolution_time
+
 	    # Loop through the hash in time order and process the various events.
 	    set resolution_seconds 0.000
 	    
@@ -643,6 +652,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    
 	    # Counter from last, reset by "creation" event, this is just a default.
 	    set last_epoch $start_epoch($ticket_id)
+
+	    # Initialize counter for different queues
+	    set queue_id ""
 	    
 	    # Loop through events per ticket
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through events for ticket_id=$ticket_id"
@@ -653,46 +665,41 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		
 		# Calculate duration since last event
 		set duration_epoch [expr $e - $last_epoch]
-		
+
+		# Who is responsible for the time passed?
+	        if {[info exists queue_hash($e)]} { set queue_id $queue_hash($e) }
+		set queue_name ""
+		if {"" != $queue_id} {
+		    set queue_name "[im_profile::profile_name_from_id -profile_id $queue_id]"
+		}
+
 		# Event can be a ticket_status_id or {creation service_start service_end now}
 		switch $event {
 		    creation {
-			# creation of ticket. Assume that it's open now and that it's created
+			# Creation of ticket. Assume that it's open now and that it's created
 			# during service hours (otherwise the taximeter will run until the next day...)
 			set resolution_seconds 0.000
+			set count_duration_p 0
 			set last_epoch $e
 			set ticket_lifetime_p 1
 			set ticket_service_hour_p [im_sla_management_epoch_in_service_hours $e $service_hours_list]
 			set ticket_open_p 1	
 		    }
 		    service_start {
-			
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
-			if {$count_duration_p} {
-			    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
-			}
-			
 			# Start counting the time from now on.
 			set ticket_service_hour_p 1
 		    }
 		    service_end {
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
-			if {$count_duration_p} {
-			    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
-			}
-			
 			# Don't count time from now on until the next service_start
 			set ticket_service_hour_p 0
 		    }
 		    now {
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
-			if {$count_duration_p} {
-			    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
-			}
-			
 			# Current time. Don't count from here into the future...
 			set ticket_lifetime_p 0
 		    }
@@ -701,14 +708,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		    default {
 			# We assume a valid ticket_status_id here, otherwise we will skip...
-			if {![string is integer $event]} { ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" }
-			
+			if {![string is integer $event]} { 
+			    ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" 
+			}
+
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
-			if {$count_duration_p} {
-			    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
-			}
-			
+
+			# Determine ticket status			
 			if {[im_category_is_a $event 30000]} { 
 			    # Open status: continue counting...
 			    set ticket_open_p 1
@@ -718,7 +725,21 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			}
 		    }
 		}
-		
+
+		# Advance the time counter
+		if {$count_duration_p} {
+		    # Total resolution time counter
+		    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+
+		    # Resolution time per queue
+		    if {"" != $queue_id} {
+			set seconds 0.0
+			if {[info exists queue_resolution_time($queue_id)]} { set seconds $queue_resolution_time($queue_id) }
+			set seconds [expr $seconds + $duration_epoch]
+			set queue_resolution_time($queue_id) $seconds
+		    }
+		}
+
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
@@ -731,6 +752,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 				<td><font color=$color><nobr>$event $event_pretty</nobr></font></td>
 				<td align=right>[expr round(10.0 * $duration_epoch) / 10.0]</td>
 				<td align=right>$count_duration_p</td>
+				<td>$queue_name</td>
 				<td align=right>[expr round(10.0 * $resolution_seconds) / 10.0]</td>
 				<td align=right>[expr round(100.0 * $resolution_seconds / 60.0) / 100.0 ]</td>
 				<td align=right>[expr round(100.0 * $resolution_seconds / 3600.0) / 100.0]</td>
@@ -752,6 +774,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			ticket_resolution_time_dirty = now()
 		where ticket_id = :ticket_id
 	    "
+
+	    # ToDo: Take the queue_resolution_time and store it as an array with the ticket
 
 	    if {$debug_p} {
 		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
