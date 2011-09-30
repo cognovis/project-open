@@ -355,12 +355,42 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     the limit is set to 100 by default.
 } {
     ns_log Notice "im_sla_ticket_solution_time_sweeper: starting"
+
     # Make sure that only one thread is calculating at a time
-#    if {[nsv_incr intranet_sla_management sweeper_p] > 1} {
-#        nsv_incr intranet_sla_management sweeper_p -1
-#        ns_log Notice "im_sla_ticket_solution_time: Aborting. There is another process running"
-#        return
-#    }
+    if {[nsv_incr intranet_sla_management sweeper_p] > 1} {
+        nsv_incr intranet_sla_management sweeper_p -1
+        ns_log Error "im_sla_ticket_solution_time_sweeper: Aborting. There is another process running"
+        return
+    }
+
+    # Catch possible errors in order to make sure the semaphore gets
+    # set correctly.
+    set result ""
+    if {[catch {
+	set result [im_sla_ticket_solution_time_sweeper_helper -debug_p $debug_p -ticket_id $ticket_id -limit $limit]
+    } err_msg]} {
+	set result "<pre>$err_msg</pre>"
+    }
+
+    # De-block the execution of this procedure for a 2nd thread
+    nsv_incr intranet_sla_management sweeper_p -1
+
+    if {$debug_p} {
+	ad_return_complaint 1 $result
+    }
+    return $result
+}
+
+ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
+    {-debug_p 0}
+    {-ticket_id ""}
+    {-limit 100}
+} {
+    Calculates "resolution time" for all open tickets.
+    The procedure takes about a second per ticket, so 
+    the limit is set to 100 by default.
+} {
+    ns_log Notice "im_sla_ticket_solution_time_sweeper_helper: starting"
 
     # Deal with timezone offsets for epoch calculation...
     set tz_offset_seconds [util_memoize "db_string tz_offset {select extract(timezone from now())}"]
@@ -368,7 +398,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     set debug_html ""
     set time_html ""
 
-    # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa
+    # Returns a list with weekday names from 0=Su, 1=Mo to 6=Sa:
+    # {Sunday Monday Tuesday Wednesday Thursday Friday Saturday}
     set dow_list [im_sla_day_of_week_list]
 
     # Count the number of tickets processed
@@ -376,7 +407,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 
 
     # ----------------------------------------------------------------
-    # Get the list of SLAs to work with
+    # Get the list of SLAs to work with.
+    # Include all open tickets or tickets with dirty resolution_time.
+    #
     set slas_with_open_tickets [db_list sla_list "
 	select	p.project_id
 	from	im_projects p
@@ -393,6 +426,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 		)
     "]
 
+
     # ----------------------------------------------------------------
     # Loop through all SLAs
 
@@ -403,7 +437,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	ns_log Notice "im_sla_ticket_solution_time_sweeper: sla_id=$sla_id"
 
 	# ----------------------------------------------------------------
-	# Define the service hours per weekday
+	# Define the service hours per weekday.
+	# (0 {} 1 {09:00 21:00} 2 {09:00 21:00} 3 {09:00 21:00} 4 {09:00 21:00} 5 {09:00 21:00} 6 {}
 	#
 	set service_hours_sql "
 	        select  *
@@ -419,17 +454,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	if {$debug_p} { ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id, service_hours=$service_hours_list" }
 
 	# ----------------------------------------------------------------
-	# Get the list of all selected ticket
-	# (open tickets or dirty ones)
+	# Get the list of all selected ticket (open or dirty ones)
 	#
 	set extra_where "and (
 		t.ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])
 		OR t.ticket_resolution_time_dirty is NULL
 		)
 	"
-	if {"" != $ticket_id} { 
-	    set extra_where "and t.ticket_id = :ticket_id"
-	}
+	if {"" != $ticket_id} { set extra_where "and t.ticket_id = :ticket_id" }
 	set ticket_sql "
 		select	*,
 			extract(epoch from t.ticket_creation_date) as ticket_creation_epoch,
@@ -445,7 +477,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 			coalesce(t.ticket_resolution_time_dirty, to_date('2000-01-01', 'YYYY-MM-DD'))
 		LIMIT $limit
 	"
-    
 	db_foreach tickets $ticket_sql {
 
 	    # Skip tickets with empty creation date
@@ -476,9 +507,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	    
 	    # Loop through all days between start and end and add the start
 	    # and end of the business hours this day.
-	    if {$debug_p} { append debug_html "<li>Starting to loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian]\n" }
-	    for {set j $ticket_creation_julian} {$j < $now_julian} {incr j} {
-		
+	    if {$debug_p} { append debug_html "<li>Starting to loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian])\n" }
+	    for {set j $ticket_creation_julian} {$j <= $now_julian} {incr j} {
+
 		# Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
 		# service_hours are like {09:00 18:00}
 		set dow [expr ($j + 1) % 7]
@@ -571,7 +602,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	foreach ticket_id [array names name] {
 	    
 	    incr total_tickets_processed
-	    if {$total_tickets_processed > $limit} { return "" }
+	    if {$total_tickets_processed > $limit} { 
+		return "
+			<ul>$debug_html</ul><br>
+			<ul>$time_html</ul><br>
+		"
+	    }
 
 	    # Ticket name
 	    set ticket_name $name($ticket_id)
@@ -579,14 +615,16 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     
 	    if {$debug_p} { 
 		append time_html "<li><b>$ticket_id : $ticket_name</b>" 
-		append time_html "<table cellspacing=5 cellpadding=5>
+		append time_html "<table cellspacing=1 cellpadding=1>
 			<tr class=rowtitle>
 			<td class=rowtitle>Epoch</td>
 			<td class=rowtitle>Date</td>
 			<td class=rowtitle>Event</td>
-			<td class=rowtitle>Duration</td>
-			<td class=rowtitle>Count Duration</td>
-			<td class=rowtitle>Resolution Seconds</td>
+			<td class=rowtitle>Duration<br>Seconds</td>
+			<td class=rowtitle>Count<br>Duration?</td>
+			<td class=rowtitle>Resolution<br>Seconds</td>
+			<td class=rowtitle>Resolution<br>Minutes</td>
+			<td class=rowtitle>Resolution<br>Hours</td>
 			</tr>\n"
 	    }
 
@@ -684,14 +722,18 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
+		    set event_pretty [im_category_from_id -empty_default "" $event]
+		    if {$event == $event_pretty} { set event_pretty "" } else { set event_pretty "($event_pretty)" }
 		    append time_html "
 			<tr>
-				<td>$e</td>
+				<td>[expr round(10.0 * $e) / 10.0]</td>
 				<td>[im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e]</td>
-				<td><font color=$color>$event</font></td>
-				<td>$duration_epoch</td>
-				<td>$count_duration_p</td>
-				<td>[expr round(10.0 * $resolution_seconds) / 10.0]</td>
+				<td><font color=$color><nobr>$event $event_pretty</nobr></font></td>
+				<td align=right>[expr round(10.0 * $duration_epoch) / 10.0]</td>
+				<td align=right>$count_duration_p</td>
+				<td align=right>[expr round(10.0 * $resolution_seconds) / 10.0]</td>
+				<td align=right>[expr round(100.0 * $resolution_seconds / 60.0) / 100.0 ]</td>
+				<td align=right>[expr round(100.0 * $resolution_seconds / 3600.0) / 100.0]</td>
 			</tr>
                     "
 		}
@@ -722,15 +764,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
 	# End of looping through one SLA
     }
 
-    # De-block the execution of this procedure for a 2nd thread
-    nsv_incr intranet_sla_management sweeper_p -1
-
-    if {$debug_p} {
-	ad_return_complaint 1 "
-		<ul>$debug_html</ul><br>
-		<ul>$time_html</ul><br>
-        "
-    }
+    return "
+	<ul>$debug_html</ul><br>
+	<ul>$time_html</ul><br>
+    "
 
 }
 
