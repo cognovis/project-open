@@ -18,8 +18,7 @@ ad_library {
 ad_proc -public im_cost_center_type_cost_center {} { return 3001 }
 ad_proc -public im_cost_center_type_profit_center {} { return 3002 }
 ad_proc -public im_cost_center_type_investment_center {} { return 3003 }
-ad_proc -public im_cost_center_type_cost_center {} { return 3004 }
-ad_proc -public im_cost_center_type_subdepartment {} { return 3005 }
+ad_proc -public im_cost_center_type_subdepartment {} { return 3004 }
 
 
 ad_proc -public im_cost_center_status_active {} { return 3101 }
