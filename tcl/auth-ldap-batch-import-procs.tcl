@@ -441,7 +441,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	set val ""
 	if {[info exists hash($var)]} { set val $hash($var) }
 	if {"" == $val} {
-	    ns_log Notice "auth::ldap::batch_import::parse_user: found empty variable '$var', skipping"
+	    ns_log Error "auth::ldap::batch_import::parse_user: found empty variable '$var', skipping"
 	    append debug "Skpping: dn=$dn\n"
 	    append debug "Skipping because: Found empty variable '$var'\n"
 	    set ok_p 0
