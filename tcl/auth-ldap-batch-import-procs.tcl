@@ -25,6 +25,7 @@ namespace eval auth::ldap::batch_import {}
 
 
 ad_proc -private auth::ldap::batch_import::read_ldif_file {
+    {-debug_p 1}
     {-object_class "*" }
     {-attributes ""}
     {parameters {}}
@@ -39,6 +40,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     </ul>
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_file $parameters $authority_id"
+    set debug "Starting to read LDAP document with parameters=$parameters\n"
 
     # Parameters
     array set params $parameters
@@ -63,10 +65,12 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 
 	    set query "(objectClass=$object_class)"
 	    if {"" != $search_filter} {
+		append debug "Found an custom SearchFilter=$search_filter\n"
 		set query (&${query}$search_filter)
 	    }
 	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
+	    append debug "Going to execute command: $cmd\n"
 
 	    # Bind as "Adminstrator" and retreive the userPassword field for
 	    set fl [open "| $cmd"]
@@ -76,12 +80,13 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 		close $fl
 	    } err_msg]} {
 		ns_log Notice "auth::ldap::batch_import::read_ldif_file: Error executing cmd: $err_msg"
+		append debug "Error execution cmd: $err_msg\n"
 	    }
 
 	    if {"" == $data} {
-		return [list result 0 debug $err_msg ldif ""]
+		return [list result 0 debug $debug ldif ""]
 	    } else {
-		return [list result 1 debug "" ldif $data]
+		return [list result 1 debug $debug ldif $data]
 	    }
 	}
 	ol {
@@ -90,6 +95,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    # check if we can construct the same hash
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file OpenLDAP"
 	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=$object_class)' $attributes"
+	    append debug "Going to execute command: ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (objectClass=$object_class) $attributes\n"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
 		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=$object_class) $attributes"
@@ -97,9 +103,10 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file return_code=$return_code, msg=$err_msg"
 
 	    if {1 == $return_code} {
-		return [list result 0 debug $err_msg ldif ""]
+		append debug "Found an error: $err_msg\n"
+		return [list result 0 debug $debug ldif ""]
 	    } else {
-		return [list result 1 debug "" ldif $err_msg]
+		return [list result 1 debug $debug ldif $err_msg]
 	    }
 	}
     }
@@ -129,14 +136,15 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects"
     array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class $object_class $parameters $authority_id]
-    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result_hash(result)"
+    set result $result_hash(result)
+    set debug $result_hash(debug)
+    ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result"
 
-    if {0 == $result_hash(result)} {
-	return [list result 0 debug $result_hash(debug) objects {}]
+    if {0 == $result} {
+	return [list result 0 debug $debug objects {}]
     }
 
     # Parse the LDIF
-    set debug ""
     set lines [split $result_hash(ldif) "\n"]
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects: [llength $lines] lines"
 
@@ -166,7 +174,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # start off a new object
 	    if {"" != $dn} {
 		set objects_hash($dn) $object_keys_values
-		# if {$line_ctr > 15000} { return [list result 1 debug $debug objects [array get objects_hash]] }
+		if {$line_ctr > 30000} { return [list result 1 debug $debug objects [array get objects_hash]] }
 	    }
 	    # Reset variables for the next object
 	    set object_keys_values {}
@@ -225,6 +233,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 
 
 ad_proc -private auth::ldap::batch_import::read_ldif_groups {
+    {-debug_p 1}
     {parameters {}}
     {authority_id {}}
 } {
@@ -233,12 +242,12 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
     Returns a hash with the values result, debug and objects.
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_groups: parameters=$parameters"
-    set debug ""
 
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p $parameters $authority_id]
+    set debug $result_hash(debug)
     if {0 == $result_hash(result)} {
         # Found some errors
-        return [list result 0 debug $result_hash(debug) objects {}]
+        return [list result 0 debug $debug objects {}]
     }
 
     # Loop through the list of objects and extract the ones that are some
@@ -283,10 +292,12 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 	    }
 	}
 
-	if {$group_p} { lappend groups $group_name $objects_hash($group_dn) }
+	if {$group_p} { 
+	    lappend groups $group_name $objects_hash($group_dn) 
+	}
     }
 
-    return [list result 1 debug [string range $debug 0 1000] objects $groups]
+    return [list result 1 debug $debug objects $groups]
 }
 
 
@@ -296,6 +307,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 
 
 ad_proc -private auth::ldap::batch_import::import_users {
+    {debug_p 1}
     {parameters {}}
     {authority_id {}}
 } {
@@ -304,12 +316,13 @@ ad_proc -private auth::ldap::batch_import::import_users {
     Returns a hash with the values result and debug
 } {
     ns_log Notice "auth::ldap::batch_import::import_users: parameters=$parameters"
-    set debug ""
 
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects -object_class "person" $parameters $authority_id]
-    if {0 == $result_hash(result)} {
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p -object_class "person" $parameters $authority_id]
+    set debug $result_hash(debug)
+    set result $result_hash(result)
+    if {0 == $result} {
         # Found some errors
-        return [list result 0 debug $result_hash(debug) groups {}]
+        return [list result $result debug $debug groups {}]
     }
 
     # Loop through the list of objects and extract the ones that are some
@@ -320,6 +333,8 @@ ad_proc -private auth::ldap::batch_import::import_users {
     foreach user_dn [array names objects_hash] {
 	
 	ns_log Notice "auth::ldap::batch_import::import_users: user_cnt=$user_cnt, dn=$user_dn"
+	if {$debug_p} { append debug "Parsing a new user: dn=$user_nd, cnt=$user_cnt\n" }
+
 	if {[regexp {\$} $user_dn match]} { 
 	    # A "$" indicates a computer name instead of a user
 	    continue 
@@ -385,7 +400,9 @@ ad_proc -private auth::ldap::batch_import::import_users {
 	if {$user_p} { 
 	    # Insert the user into the databaes
 	    ns_log Notice "auth::ldap::batch_import::import_users: Found a user: $user_dn"
+	    if {$debug_p} { append debug "Going to parse user: $user_dn\n" }
 	    array set user_result_hash [auth::ldap::batch_import::parse_user \
+					    -debug_p $debug_p \
 					    -authority_id $authority_id \
 					    -parameters $parameters \
 					    -dn $user_dn \
@@ -401,6 +418,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 }
 
 ad_proc -private auth::ldap::batch_import::parse_user {
+    {debug_p 1}
     {-group_list "" }
     -authority_id:required
     -parameters:required
@@ -448,6 +466,9 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	}
     }
 
+    if {$debug_p} { append debug "Found user: first_names=$hash(first_names), last_name=$hash(last_name), email=$hash(email)\n" }
+
+
     # Skip if something was wrong.
     if {!$ok_p} { return [list result 0 oid 0 debug $debug] }
 
@@ -476,8 +497,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	
 	# The user doesn't exist yet. Create the user.
 	ns_log Notice "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name"
-	append debug "Creating new user: dn=$dn\n"
-	append debug "Creating new user '$first_names $last_name'\n"
+	append debug "Creating new user: dn=$dn, '$first_names $last_name'\n"
 
 	# Random password...
 	set pwd [expr rand()]
