@@ -94,9 +94,9 @@ set internal_company_id [im_company_internal]
 set levels {1 "User Only" 2 "User+Company" 3 "User+Company+Project" 4 "All Details" 5 "Absences"} 
 set num_format "999,990.99"
 
-set label_diff_worked_workable_hours  [lang::message::lookup "" intranet-reporting.DiffWorkedWorkableHours "Create'"]
-set label_compensation_hours  [lang::message::lookup "" intranet-reporting.CompensationHours "Create'"]
-set label_ratio_workable_hours_to_external_hours  [lang::message::lookup "" intranet-reporting.RatioWorkableExternal "Create'"]
+set label_diff_worked_workable_hours  [lang::message::lookup "" intranet-reporting.DiffWorkedWorkableHours "Workable-Worked"]
+set label_compensation_hours  [lang::message::lookup "" intranet-reporting.CompensationHours "Compensation Hours"]
+set label_ratio_workable_hours_to_external_hours  [lang::message::lookup "" intranet-reporting.RatioWorkableExternal "Ratio: Workable/External"]
 
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
@@ -553,10 +553,6 @@ db_foreach sql $sql {
 	-cell_class $class
 
     # Figure out if we are already changing the user
-
-    set label_diff_worked_workable_hours  [lang::message::lookup "" intranet-reporting.DiffWorkedWorkableHours "Workable-Worked"]
-    set label_compensation_hours  [lang::message::lookup "" intranet-reporting.CompensationHours "Compensation Hours"]
-    set label_ratio_workable_hours_to_external_hours  [lang::message::lookup "" intranet-reporting.RatioWorkableExternal "Ratio: Workable/External"]
 
     if {$user_id ne $previous_user_id} {
 	set previous_user_id $user_id
