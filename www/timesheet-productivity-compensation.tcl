@@ -94,6 +94,9 @@ set internal_company_id [im_company_internal]
 set levels {1 "User Only" 2 "User+Company" 3 "User+Company+Project" 4 "All Details" 5 "Absences"} 
 set num_format "999,990.99"
 
+set label_diff_worked_workable_hours  [lang::message::lookup "" intranet-reporting.DiffWorkedWorkableHours "Create'"]
+set label_compensation_hours  [lang::message::lookup "" intranet-reporting.CompensationHours "Create'"]
+set label_ratio_workable_hours_to_external_hours  [lang::message::lookup "" intranet-reporting.RatioWorkableExternal "Create'"]
 
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
@@ -289,19 +292,19 @@ set report_def [list \
     content [list  \
 	group_by company_id \
 	header {
-	    $user_name
+	    ""
 	    $company_name_pretty
 	} \
 	content [list \
 	    group_by project_id \
 	    header {
-		$user_name
+		""
 		""
 		$project_name_pretty
 	    } \
 	    content [list \
 		    header {
-			$user_name
+			"" 
 			""
 			""
 			"" ""
@@ -313,7 +316,7 @@ set report_def [list \
 		    content {} \
 	    ] \
 	    footer {
-		$user_name
+		"" 
 		""
 		""
 		"" ""
@@ -324,7 +327,7 @@ set report_def [list \
 	    } \
 	] \
 	footer {
-	    $user_name 
+	    "" 
 	    "" "" "" ""
 	    "<i>$hours_company_intl_subtotal</i>" 
 	    "<i>$hours_company_extl_subtotal</i>" 
@@ -333,7 +336,7 @@ set report_def [list \
 	} \
     ] \
     footer {
-	$user_name 
+	"" 
 	"" "" "" 
 	"<b>$availability %</b> &nbsp;"
 	"<b>$hours_user_intl_subtotal</b>" 
@@ -550,6 +553,11 @@ db_foreach sql $sql {
 	-cell_class $class
 
     # Figure out if we are already changing the user
+
+    set label_diff_worked_workable_hours  [lang::message::lookup "" intranet-reporting.DiffWorkedWorkableHours "Workable-Worked"]
+    set label_compensation_hours  [lang::message::lookup "" intranet-reporting.CompensationHours "Compensation Hours"]
+    set label_ratio_workable_hours_to_external_hours  [lang::message::lookup "" intranet-reporting.RatioWorkableExternal "Ratio: Workable/External"]
+
     if {$user_id ne $previous_user_id} {
 	set previous_user_id $user_id
 	# Now display the additional row for the last user as well
@@ -559,14 +567,14 @@ db_foreach sql $sql {
 	set hours_diff [expr $hours_user_subtotal - $workable_hours]
 	im_report_render_row \
 	    -output_format $output_format \
-	    -row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$hours_diff</b>"] \
+	    -row [list "$label_diff_worked_workable_hours" "" "" "" "" "" "" "" "<b>$hours_diff</b>"] \
 	    -row_class "rowodd" \
 	    -cell_class "rowodd"
 	
 	set compensation_hours [expr $hours_diff - $hours_user_no_assignment_subtotal]
 	im_report_render_row \
 	    -output_format $output_format \
-	    -row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$compensation_hours</b>"] \
+	    -row [list "$label_compensation_hours" "" "" "" "" "" "" "" "<b>$compensation_hours</b>"] \
 	    -row_class "rowodd" \
 	    -cell_class "rowodd"
 	
@@ -574,7 +582,7 @@ db_foreach sql $sql {
 	
 	im_report_render_row \
 	    -output_format $output_format \
-	    -row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$working_percent</b>"] \
+	    -row [list "$label_ratio_workable_hours_to_external_hours" "" "" "" "" "" "" "" "<b>$working_percent</b>"] \
 	    -row_class "rowodd" \
 	    -cell_class "rowodd"
 	
@@ -621,14 +629,14 @@ if {[info exists hours_company_absence_subtotal]} {
     set hours_diff [expr $hours_user_subtotal - $workable_hours]
     im_report_render_row \
 	-output_format $output_format \
-	-row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$hours_diff</b>"] \
+	-row [list "$label_diff_worked_workable_hours" "" "" "" "" "" "" "" "<b>$hours_diff</b>"] \
 	-row_class "rowodd" \
 	-cell_class "rowodd"
     
     set compensation_hours [expr $hours_diff - $hours_user_no_assignment_subtotal]
     im_report_render_row \
 	-output_format $output_format \
-	-row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$compensation_hours</b>"] \
+	-row [list "$label_compensation_hours" "" "" "" "" "" "" "" "<b>$compensation_hours</b>"] \
 	-row_class "rowodd" \
 	-cell_class "rowodd"
     
@@ -636,7 +644,7 @@ if {[info exists hours_company_absence_subtotal]} {
     
     im_report_render_row \
 	-output_format $output_format \
-	-row [list "$previous_user_name" "" "" "" "" "" "" "" "<b>$working_percent</b>"] \
+	-row [list "$label_ratio_workable_hours_to_external_hours" "" "" "" "" "" "" "" "<b>$working_percent</b>"] \
 	-row_class "rowodd" \
 	-cell_class "rowodd"
     
