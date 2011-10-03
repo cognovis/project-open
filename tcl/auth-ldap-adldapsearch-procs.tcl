@@ -319,6 +319,8 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # "ad" = Active Directory, "ol" = OpenLDAP
     set server_type "ad"
     catch { set server_type $params(ServerType) }
+    set search_filter ""
+    catch { set search_filter $params(SearchFilter) }
     # One of {uid|sAMAccountName}
     set username_attribute ""
     catch { set username_attribute $params(UsernameAttribute) }
@@ -497,12 +499,13 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
     ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::GetParameters"
 
     return {
-        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
-        BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
-        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
-	BindPW "The password for the BindDN. Leave empty if this is not necessary."
+        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com:389"
+        BaseDN "Base DN when searching for users. Typically something like 'dc=project-open,dc=com'"
+        BindDN "LDAP DN (user id) in order to access the server. Example: 'cn=Administrator,cn=Users,dc=project-open,dc=com'. Leave empty if your LDAP allows anonymous access."
+	BindPW "The password for the BindDN. Leave empty if no password is required."
 	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
         GroupMap "A TCL list represnting a map form LDAP groups to PO groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and Windows 'Administrators' to PO Admins."
+	SearchFilter "An optional LDAP expression to limit the users to be imported. Example: '(memberOf=cn=PO-Users,cn=Users,dc=project-open,dc=com)' would only import users who are member of the LDAP group 'PO-Users'."
     }
 }
 
@@ -536,6 +539,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     set bind_dn $params(BindDN)
     set bind_pw $params(BindPW)
     set server_type $params(ServerType)
+    set search_filter $params(SearchFilter)
     set group_map $params(GroupMap)
     # Write the group map into a Hash and normalize group names
     array set group_map_hash $group_map

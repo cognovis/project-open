@@ -26,7 +26,6 @@ namespace eval auth::ldap::batch_import {}
 
 ad_proc -private auth::ldap::batch_import::read_ldif_file {
     {-object_class "*" }
-    {-ldap_query "" }
     {-attributes ""}
     {parameters {}}
     {authority_id {}}
@@ -53,6 +52,8 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     set bind_dn $params(BindDN)
     set bind_pw $params(BindPW)
     set server_type $params(ServerType)
+    set search_filter ""
+    if {[info exists params(SearchFilter)]} { set search_filter $params(SearchFilter) }
 
     switch $server_type {
 	ad {
@@ -61,8 +62,8 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file Active Directory"
 
 	    set query "(objectClass=$object_class)"
-	    if {"" != $ldap_query} {
-		set query (&${query}$ldap_query)
+	    if {"" != $search_filter} {
+		set query (&${query}$search_filter)
 	    }
 	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
@@ -113,7 +114,6 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 
 ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     {-debug_p 1}
-    {-ldap_query "" }
     {-object_class "group" }
     {parameters {}}
     {authority_id {}}
@@ -128,7 +128,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     Two "objects" are separated by an empty line.
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects"
-    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class $object_class -ldap_query $ldap_query $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class $object_class $parameters $authority_id]
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result_hash(result)"
 
     if {0 == $result_hash(result)} {
@@ -166,7 +166,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # start off a new object
 	    if {"" != $dn} {
 		set objects_hash($dn) $object_keys_values
-		if {$line_ctr > 15000} { return [list result 1 debug $debug objects [array get objects_hash]] }
+		# if {$line_ctr > 15000} { return [list result 1 debug $debug objects [array get objects_hash]] }
 	    }
 	    # Reset variables for the next object
 	    set object_keys_values {}
@@ -306,8 +306,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
     ns_log Notice "auth::ldap::batch_import::import_users: parameters=$parameters"
     set debug ""
 
-    set ldap_query "(memberOf=cn=PO-IntegracionUsuarios,cn=Users,dc=lagunaro,dc=local)"
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects -object_class "person" -ldap_query $ldap_query $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -object_class "person" $parameters $authority_id]
     if {0 == $result_hash(result)} {
         # Found some errors
         return [list result 0 debug $result_hash(debug) groups {}]
@@ -355,6 +354,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		l		{ set user_hash(city) $value }
 		countryCode	{ set user_hash(country_code_numeric) $value }
 		co		{ set user_hash(country_name) $value }
+		department	{ set user_hash(department) $value }
 		description	{ set user_hash(description) $value }
 		homePhone	{ set user_hash(home_phone) $value }
 		mail		{ set user_hash(email) $value }
@@ -469,7 +469,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     set user_id [db_string uid "
 	select	user_id
 	from	cc_users
-	where	lower(username) = :username OR lower(email) = :email
+	where	lower(username) = lower(:username) OR lower(email) = lower(:email)
     " -default 0]
 
     if {0 == $user_id} {
@@ -580,6 +580,90 @@ ad_proc -private auth::ldap::batch_import::parse_user {
         if {!$rel_exists_p} {
             relation_add -member_state "approved" "membership_rel" $group_id $user_id
         }
+    }
+
+    # Add the user to a compyn if a company_name is defined
+    set company_name ""
+    if {[info exists hash(company_name)]} { set company_name $hash(company_name) }
+    if {"" != $company_name} {
+	set company_id [db_string uid "
+		select	company_id
+		from	im_companies
+		where	lower(company_name) = lower(:company_name) OR 
+			lower(company_path) = lower(:company_name)
+	" -default 0]
+
+	if {0 != $company_id} {
+	    im_biz_object_add_role $user_id $company_id [im_biz_object_role_full_member]
+	}
+
+    }
+
+    # Set the user's department if defined
+    set department_name ""
+    if {[info exists hash(department)]} { set department_name $hash(department) }
+    if {[string length $department_name] > 2} {
+	set department_id [db_string uid "
+		select	cost_center_id
+		from	im_cost_centers
+		where	lower(cost_center_name) = lower(:department_name) OR
+			lower(cost_center_label) = lower(:department_name) OR
+			lower(cost_center_code) = lower(:department_name)
+	" -default 0]
+
+	# Create a cost center if it didn't exist yet
+	if {"" == $department_id || 0 == $department_id} {
+
+	    set department_name [string trim $department_name]
+	    set department_label [string tolower $department_name]
+	    regsub -all -nocase {[^a-zA-Z0-9]} $department_label "_" department_label
+	    set department_code "Co[string range $department_name 0 0][string range $department_label 1 1]"
+	    set exists_p [db_string ccex "select count(*) from im_cost_centers where cost_center_code = :department_code"]
+	    set ctr 0
+	    while {$exists_p && $ctr < 20} {
+		set department_code "Co[expr int(rand() * 10.0)][expr int(rand() * 10.0)]"
+		set exists_p [db_string ccex "select count(*) from im_cost_centers where cost_center_code = :department_code"]
+		incr ctr
+	    }
+	    ns_log Notice "auth::ldap::batch_import::parse_user: department_name=$department_name, department_label=$department_label, department_code=$department_code"
+
+	    set department_id [db_string new_dept "
+		select im_cost_center__new(
+			null,					-- cost_center_id default null
+			'im_cost_center',			-- object_type default 'im_cost_center'
+			now(),					-- creation_date default now()
+			[ad_get_user_id],			-- creation_user default null
+			'[ns_conn peeraddr]',			-- creation_ip default null
+			null,					-- context_id default null
+			:department_name,			-- cost_center_name
+			:department_label,			-- cost_center_label
+			:department_code,			-- cost_center_code
+			[im_cost_center_type_cost_center],	-- type_id
+			[im_cost_center_status_active],		-- status_id
+			[im_cost_center_company],		-- parent_id
+			null,					-- manager_id default null
+			't',					-- department_p default 't'
+			'Automatically created from LDAP Import',	-- description default null
+			null					-- note default null
+		)
+	    "]
+	}
+
+	# Make sure an entry exists in im_employees to store the dept.
+	set exists_p [db_string employee_exists_p "
+		select	count(*)
+		from    im_employees
+		where	employee_id = :user_id
+	"]
+	if {!$exists_p} {
+	    db_dml insert_employee "insert into im_employees (employee_id) values (:user_id)"
+	}
+
+	db_dml update_emp_dept "
+		update im_employees
+		set department_id = :department_id
+		where employee_id = :user_id
+	"
     }
 
     return [list result 1 oid 0 debug $debug]
