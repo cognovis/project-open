@@ -205,7 +205,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 
 		if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: base64 encoded dn: $line" }
 		if {[catch {
-		    set dn [::base64::decode $dn_var_base64]
+		    set dn [encoding convertfrom utf-8 [::base64::decode $dn_var_base64]]
 		    if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: dn=$dn" }
 		} err_msg]} {
 		    ad_return_complaint 1 "Error:<pre>$err_msg</pre><br><pre>$dn_var_base64"
@@ -220,7 +220,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    }
 	    if {[regexp {^([a-zA-Z0-9]+):: (.*)$} $line match key value]} {
 		set key [string trim $key]
-		set value [::base64::decode $value]
+		set value [encoding convertfrom utf-8 [::base64::decode $value]]
 		lappend object_keys_values $key $value
 	    }
 
