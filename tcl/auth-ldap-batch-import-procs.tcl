@@ -174,7 +174,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # start off a new object
 	    if {"" != $dn} {
 		set objects_hash($dn) $object_keys_values
-		if {$line_ctr > 30000} { return [list result 1 debug $debug objects [array get objects_hash]] }
+		# if {$line_ctr > 30000} { return [list result 1 debug $debug objects [array get objects_hash]] }
 	    }
 	    # Reset variables for the next object
 	    set object_keys_values {}
@@ -469,6 +469,17 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     if {!$ok_p} { return [list result 0 oid 0 debug $debug] }
 
     # Write hash variables to local variables
+    set url ""
+    set country_code ""
+    set country_name ""
+    set work_phone ""
+    set home_phone ""
+    set cell_phone ""
+    set address_line1 ""
+    set city ""
+    set postal_code ""
+    set state ""
+    set description ""
     foreach var [array names hash] {
 	set $var $hash($var)
     }
@@ -551,22 +562,41 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     # Update fiels of both existing or new user.
     db_dml update_user "
 		update users set
-			username = :username,
-			authority_id = :authority_id
+			username	= :username,
+			authority_id	= :authority_id
 		where user_id = :user_id
     "
     db_dml update_person "
 		update persons set
-			first_names = :first_names,
-			last_name = :last_name
+			first_names	= :first_names,
+			last_name	= :last_name
 		where person_id = :user_id
     "
     db_dml update_parties "
 		update parties set
-			email = :email
+			email		= :email,
+			url		= :url
 		where party_id = :user_id
     "
 
+    set po_country_code [auth::ldap::batch_import::parse_ad_country_code \
+			     -country_code_numeric $country_code_numeric \
+			     -country_code $country_code \
+			     -country_name $country_name \
+    ]
+    db_dml update_parties "
+		update users_contact set
+			work_phone	= :work_phone,
+			home_phone	= :home_phone,
+			cell_phone	= :cell_phone,
+			wa_line1	= :address_line1,
+			wa_city		= :city,
+			wa_postal_code	= :postal_code,
+			wa_state	= :state,
+			wa_country_code	= :po_country_code,
+			note		= :description
+		where user_id = :user_id
+    "
 
     # Add the user to the respective groups
     set group_pairs $params(GroupMap)
@@ -686,6 +716,25 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 }
 
 
+
+
+ad_proc auth::ldap::batch_import::parse_ad_country_code {
+    {-country_code_numeric ""}
+    {-country_code "" }
+    {-country_name ""}
+} {
+    Convert Active Directory country specs into a PO country codes.
+    AD apparently stores country information in all of the three 
+    fields "c", "co" and "countryName", so we only have to check
+    for one of them.
+} {
+    set cc [string tolower $country_code]
+    set exists_p [util_memoize [list db_string ccex "select count(*) from country_codes where iso='$cc'"]]
+    if {$exists_p} { return $cc }
+
+    # Not Found
+    return ""
+}
 
 
 
