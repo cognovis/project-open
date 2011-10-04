@@ -26,6 +26,7 @@ namespace eval auth::ldap::batch_import {}
 
 ad_proc -private auth::ldap::batch_import::read_ldif_file {
     {-debug_p 1}
+    {-size_limit ""}
     {-object_class "*" }
     {-attributes ""}
     {parameters {}}
@@ -68,7 +69,9 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 		append debug "Found an custom SearchFilter=$search_filter\n"
 		set query (&${query}$search_filter)
 	    }
-	    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
+	    set sl ""
+	    if {"" != $size_limit} { set sl "-z $size_limit" }
+	    set cmd "ldapsearch $sl -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
 	    append debug "Going to execute command: $cmd\n"
 
@@ -174,7 +177,6 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 	    # start off a new object
 	    if {"" != $dn} {
 		set objects_hash($dn) $object_keys_values
-		# if {$line_ctr > 30000} { return [list result 1 debug $debug objects [array get objects_hash]] }
 	    }
 	    # Reset variables for the next object
 	    set object_keys_values {}
@@ -191,7 +193,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 		if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: Cont. at \#$line_ctr: $next_line" }
 		append line [string trim $next_line]
 		incr line_ctr
-		set next_line [lindex $lines [expr $line_ctr + 1]]
+		set next_line [lindex $lines $line_ctr]
 		set first_char [string range $next_line 0 0]
 	    }
 	    
@@ -219,6 +221,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 		lappend object_keys_values $key $value
 	    }
 	    if {[regexp {^([a-zA-Z0-9]+):: (.*)$} $line match key value]} {
+		if {$debug_p} { ns_log Notice "auth::ldap::batch_import::read_ldif_objects: base64 encoded non-dn: $line" }
 		set key [string trim $key]
 		set value [encoding convertfrom utf-8 [::base64::decode $value]]
 		lappend object_keys_values $key $value
