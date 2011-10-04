@@ -307,7 +307,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 
 
 ad_proc -private auth::ldap::batch_import::import_users {
-    {debug_p 1}
+    {-debug_p 1}
     {parameters {}}
     {authority_id {}}
 } {
@@ -333,7 +333,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
     foreach user_dn [array names objects_hash] {
 	
 	ns_log Notice "auth::ldap::batch_import::import_users: user_cnt=$user_cnt, dn=$user_dn"
-	if {$debug_p} { append debug "Parsing a new user: dn=$user_nd, cnt=$user_cnt\n" }
+	if {$debug_p} { append debug "Parsing a new user: dn=$user_dn, cnt=$user_cnt\n" }
 
 	if {[regexp {\$} $user_dn match]} { 
 	    # A "$" indicates a computer name instead of a user
@@ -400,7 +400,6 @@ ad_proc -private auth::ldap::batch_import::import_users {
 	if {$user_p} { 
 	    # Insert the user into the databaes
 	    ns_log Notice "auth::ldap::batch_import::import_users: Found a user: $user_dn"
-	    if {$debug_p} { append debug "Going to parse user: $user_dn\n" }
 	    array set user_result_hash [auth::ldap::batch_import::parse_user \
 					    -debug_p $debug_p \
 					    -authority_id $authority_id \
@@ -418,7 +417,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 }
 
 ad_proc -private auth::ldap::batch_import::parse_user {
-    {debug_p 1}
+    {-debug_p 1}
     {-group_list "" }
     -authority_id:required
     -parameters:required
@@ -465,9 +464,6 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	    set ok_p 0
 	}
     }
-
-    if {$debug_p} { append debug "Found user: first_names=$hash(first_names), last_name=$hash(last_name), email=$hash(email)\n" }
-
 
     # Skip if something was wrong.
     if {!$ok_p} { return [list result 0 oid 0 debug $debug] }
