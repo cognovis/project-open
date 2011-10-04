@@ -58,7 +58,10 @@ ad_proc -public im_resource_mgmt_resource_planning_cell {
 	} else {
 	    set percentage [expr $percentage/5]
 	}
-	set result "<img src='/intranet/images/cleardot.gif' title='$title $appendix' alt='$title $appendix' border='0' height='$percentage' width='15' style='background-color:$color_code'>"
+	set result "<span class='img-cap' title='$title'>
+			<img src='/intranet/images/cleardot.gif' title='$title' alt='$title $appendix' border='0' height='$percentage' width='15' style='background-color:$color_code'>
+			<cite>$appendix</cite>
+		</span>"
     }
     return $result
 }
@@ -112,7 +115,10 @@ ad_proc -public im_date_julian_to_components { julian_date } {
 } {
     set ansi [dt_julian_to_ansi $julian_date]
     regexp {(....)-(..)-(..)} $ansi match year month_of_year day_of_month
-    set month_of_year [string trim $month_of_year 0]
+
+    # Trim zero for months JAN-SEPT
+    if { $month_of_year < 10  } { set month_of_year [string trim $month_of_year 0]}	
+
     set first_year_julian [dt_ansi_to_julian $year 1 1]
     set day_of_year [expr $julian_date - $first_year_julian + 1]
     set quarter_of_year [expr 1 + int(($month_of_year-1) / 3)]
@@ -242,8 +248,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
     	- excluded_group_ids currently only accepts a single int
 
 } {
-
-    # ad_return_complaint 1 $employee_cost_center_id
 
     if { ![info exists show_departments_only_p] || "" == $show_departments_only_p } { set show_departments_only_p 0 }
 
@@ -482,7 +486,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			child.project_id,
 			parent.project_id as main_project_id,
 			u.user_id,
-			trunc(m.percentage) as percentage,
+			CASE m.percentage IS NULL
+	                	WHEN true THEN
+				0 
+                		ELSE
+				trunc(m.percentage)
+		        END as percentage,
 			to_char(child.start_date, 'J') as child_start_date_julian,
 			to_char(child.end_date, 'J') as child_end_date_julian
 		from
@@ -502,7 +511,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			and r.rel_id = m.rel_id
 			and r.object_id_one = child.project_id
 			and r.object_id_two = u.user_id
-			and m.percentage is not null
+			-- and m.percentage is not null
 			$where_clause
     "
 
@@ -593,7 +602,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			and r.rel_id = m.rel_id
 			and r.object_id_one = child.project_id
 			and r.object_id_two = u.user_id
-			and m.percentage is not null
+			-- and m.percentage is not null
 			and u.user_id = e.employee_id
 			$where_clause
 		$show_users_sql
@@ -1068,7 +1077,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # through the project hierarchy x looping through the date dimension  
 
     db_foreach percentage_loop $percentage_sql {
-
+	
+	# sanity check for empty start/end date
+	if {""==$start_date_julian || ""==$end_date_julian} {
+		ad_return_complaint 1 "Empty date found. Please verify start/end date of Project ID: <a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>" 
+	}
+	
 	# Loop through the days between start_date and end_data
 	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
 
@@ -1079,7 +1093,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set pid $project_id
 	    set continue 1
 	    while {$continue} {
-
 		# Aggregate per day
 		if {$calc_day_p} {
 		    set key "$user_id-$pid-$i"
@@ -1344,6 +1357,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	}
     }
 
+
     set clicks([clock clicks -milliseconds]) top_scale
 
     # Determine how many date rows (year, month, day, ...) we've got
@@ -1398,7 +1412,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # |  | Show rows employees              |
     # |  |------------------------------------------------------
     # |  |
-    # |  | 
+    # |  |  tbc. ... 
 
 
 
@@ -1587,6 +1601,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set last_click [clock clicks]
 
 	    # Calculate the julian date for today from top_vars
+# ad_return_complaint 1 "$top_vars $top_entry"		
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars $top_entry]]
 	    if {$julian_date == $last_julian} {
 		# We're with the second ... seventh entry of a week.
@@ -1733,17 +1748,19 @@ ad_proc -public im_resource_mgmt_resource_planning {
  			        if { $row_shows_employee_p } {
 				    # Create bar for planned hours 
 				    if { "0" != $acc_hours } { 
-					# set bar_color [im_resource_mgmt_get_bar_color $bar_type $acc_hours]
-					set bar_value [expr 100*$acc_hours/$hours_availability_user]
+		   		        # if absence exist, add hours of absence  
+					if {[info exists absences_hash($absence_key)]} { set acc_hours [expr $acc_hours + $hours_availability_user] }
+					set bar_value [expr 100*$acc_hours/$hours_availability_user]				
 					set bar_color [im_resource_mgmt_get_bar_color "gradient" $bar_value]
-					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color "$acc_hours" "" 1]
-				    }
+					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color $acc_hours "" 1]
+				    }  
 				    # Create bar in case an absence is found 
 				    if {[info exists absences_hash($absence_key)]} {
 					set bar_color [im_absence_mix_colors $absences_hash($absence_key)]
 					set bar_value [lindex $absence_list $absences_hash($absence_key)]
-					append cell_html [im_resource_mgmt_resource_planning_cell "custom" 100 $bar_color $bar_value "" 1]
+					append cell_html [im_resource_mgmt_resource_planning_cell "custom" 100 $bar_color $bar_value "a" 1]
 				    }
+
 				    if { ![info exists absences_hash($absence_key)] && "0" == $acc_hours } {
 					# Neither absences nor planned hours -> show full availability  
 					set bar_color [im_resource_mgmt_get_bar_color "gradient" 0]
