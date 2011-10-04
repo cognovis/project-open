@@ -218,6 +218,12 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 		set value [string trim $value]
 		lappend object_keys_values $key $value
 	    }
+	    if {[regexp {^([a-zA-Z0-9]+):: (.*)$} $line match key value]} {
+		set key [string trim $key]
+		set value [::base64::decode $value]
+		lappend object_keys_values $key $value
+	    }
+
 	}
     }
 
