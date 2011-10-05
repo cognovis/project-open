@@ -248,8 +248,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
     	- excluded_group_ids currently only accepts a single int
 
 } {
-
     if { ![info exists show_departments_only_p] || "" == $show_departments_only_p } { set show_departments_only_p 0 }
+
+    if {"" == $excluded_group_ids} { set excluded_group_ids 0 }
 
     set limit_height 1
     set bar_type "traffic_light"
