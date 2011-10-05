@@ -18,6 +18,8 @@ and press "Next" below.<br>
 <input type=hidden name=domain value="@domain;noquote@">
 <input type=hidden name=binddn value="@binddn;noquote@">
 <input type=hidden name=bindpw value="@bindpw;noquote@">
+<input type=hidden name=system_binddn value="@system_binddn;noquote@">
+<input type=hidden name=system_bindpw value="@system_bindpw;noquote@">
 <input type=hidden name=authority_id value="@authority_id@">
 <input type=hidden name=authority_name value="@authority_name@">
 <input type=hidden name=group_map value="@group_map;noquote@">
