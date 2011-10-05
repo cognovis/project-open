@@ -339,6 +339,7 @@ ad_proc -public im_audit_attribute_ignore_helper {
 
     # Ticket automatically updated fields
     set ignore_hash(ticket_resolution_time) 1
+    set ignore_hash(ticket_resolution_time_per_queue) 1
     set ignore_hash(ticket_resolution_time_dirty) 1
 
     return [array get ignore_hash]
