@@ -63,6 +63,22 @@ drop function inline_0();
 
 
 
+create or replace function inline_0 ()
+returns integer as $body$
+DECLARE
+	v_count		integer;
+	v_attribute_id	integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_tickets' and lower(column_name) = 'ticket_resolution_time_per_queue';
+	IF v_count > 0 THEN return 1; END IF;
+
+	alter table im_tickets add ticket_resolution_time_per_queue numeric(12,2)[];
+
+	return 0;
+end; $body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 

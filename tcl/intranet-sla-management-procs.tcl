@@ -405,6 +405,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     # Count the number of tickets processed
     set total_tickets_processed 0
 
+    # Calculate a list of groups for storing resolution times per group
+    set group_list [db_list group_list "select group_id from groups where group_id > 0 order by group_id"]
+
 
     # ----------------------------------------------------------------
     # Get the list of SLAs to work with.
@@ -767,15 +770,23 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		append time_html "</table>\n"
 	    }
 	
+	    # Calculate the array of resolution times per queue
+	    set restimes {}
+	    foreach gid $group_list {
+		set r 0.0
+		if {[info exists queue_resolution_time($gid)]} { set r $queue_resolution_time($gid) }
+		lappend restimes $r
+	    }
+	    set restime_per_queue [join $restimes ","]
+
 	    # Update the resolution time of the ticket
 	    db_dml update_resolution_time "
 		update im_tickets set 
 			ticket_resolution_time = [expr $resolution_seconds / 3600.0],
-			ticket_resolution_time_dirty = now()
+			ticket_resolution_time_dirty = now(),
+			ticket_resolution_time_per_queue = '{$restime_per_queue}'
 		where ticket_id = :ticket_id
 	    "
-
-	    # ToDo: Take the queue_resolution_time and store it as an array with the ticket
 
 	    if {$debug_p} {
 		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
