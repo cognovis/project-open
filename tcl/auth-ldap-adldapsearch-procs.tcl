@@ -262,7 +262,7 @@ ad_proc -private auth::ldap::set_password {
 
 
 ad_proc -private auth::ldap::authentication::Authenticate {
-    {-disable_password_check_p 1}
+    {-disable_password_check_p 0}
     username
     password
     {parameters {}}
