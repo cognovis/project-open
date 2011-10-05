@@ -360,7 +360,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		set auth_info(auth_status) "ok"
 		set auth_info(user_id) $uid
 		set auth_info(auth_message) "Login Successful"
-		
+
 		# Sync the user with the LDAP information, with username as primary key
 		set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
 		array set auth_info $auth_info_array
@@ -501,7 +501,9 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com:389"
         BaseDN "Base DN when searching for users. Typically something like 'dc=project-open,dc=com'"
-        BindDN "LDAP DN (user id) in order to access the server. Example: 'cn=Administrator,cn=Users,dc=project-open,dc=com'. Leave empty if your LDAP allows anonymous access."
+        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
+        SystemBindDN "DN of an LDAP system user that allows PO to access the LDAP for batch synchronization. Example: 'cn=Administrator,cn=Users,dc=project-open,dc=com'. Leave empty if your LDAP allows anonymous access."
+        SystemBindPW "Password for the SystemBindDN."
 	BindPW "The password for the BindDN. Leave empty if no password is required."
 	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
         GroupMap "A TCL list represnting a map form LDAP groups to PO groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and Windows 'Administrators' to PO Admins."
@@ -536,8 +538,8 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
-    set bind_dn $params(BindDN)
-    set bind_pw $params(BindPW)
+    set system_bind_dn $params(SystemBindDN)
+    set system_bind_pw $params(SystemBindPW)
     set server_type $params(ServerType)
     set search_filter $params(SearchFilter)
     set group_map $params(GroupMap)
@@ -546,7 +548,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     # -------------------------------------------------------------------
     # Get the LDAP user information
-    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
+    set cmd "ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
     set return_code [catch {
         ns_log Notice "auth::ldap::authentication::Sync: cmd='$cmd'"
 	eval "exec $cmd"
@@ -557,11 +559,12 @@ ad_proc -public auth::ldap::authentication::Sync {
     if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
+
     ns_log Notice "auth::ldap::authentication::Sync: return_code=$return_code, msg_first_line=$msg_first_line"
     if {0 != $return_code} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
-	set auth_info(auth_message) "LDAP error:<br>$msg_first_line"
+	set auth_info(auth_message) "LDAP error during sync with user '$system_bind_dn':<br>$msg_first_line"
 	set auth_info(account_status) "ok"
 	set auth_info(account_message) ""
 	return [array get auth_info]
