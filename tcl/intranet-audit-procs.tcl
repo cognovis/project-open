@@ -839,14 +839,12 @@ ad_proc -public im_project_audit_impl  {
     {-action after_update }
     {-comment "" }
 } {
-    Creates an audit entry of the specified project.
+    Additional(!) functionality when auditing a project.
+    Writes a record to im_projects_audit.
     @param baseline_id A Baseline is a version of the project.
 } {
     ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id"
-
-    # Call the normal audit function
     if {"" == $user_id} { set user_id [ad_get_user_id] }
-    set audit_id [im_audit_impl -object_id $project_id -user_id $user_id -baseline_id $baseline_id]
 
     # Skip writing a project audit record if nothing has changed...
     if {"" == $audit_id} { 
