@@ -47,12 +47,12 @@ Please select LDAP server type:
 <td>@domain@</td>
 </tr>
 <tr>
-<td>BindDN<br>(username):</td>
-<td><input type=text name=binddn size=50 value='@binddn;noquote@'></td>
+<td>SystemBindDN<br>(username):</td>
+<td><input type=text name=system_binddn size=50 value='@system_binddn;noquote@'></td>
 </tr>
 <tr>
-<td>Password:</td>
-<td><input type=text name=bindpw size=20 value='@bindpw;noquote@'></td>
+<td>SystemBindPassword:</td>
+<td><input type=text name=system_bindpw size=20 value='@system_bindpw;noquote@'></td>
 </tr>
 </table>
 

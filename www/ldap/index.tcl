@@ -18,6 +18,8 @@ ad_page_contract {
     { domain "" }
     { binddn "" }
     { bindpw "" }
+    { system_binddn "" }
+    { system_bindpw "" }
     { authority_name "" }
     { authority_id "" }
     { group_map "" }
