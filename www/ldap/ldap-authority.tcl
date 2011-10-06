@@ -30,18 +30,15 @@ regsub -all -nocase {dc\=} $domain "" default_authority_name
 regsub -all -nocase {,} $default_authority_name "." default_authority_name
 
 switch $ldap_type {
-    ad { 
-	append default_authority_name " (Active Directory)"
-    }
-    ol { 
-	append default_authority_name " (OpenLDAP)"
-    }
+    ad { append default_authority_name " (Active Directory)" }
+    ol { append default_authority_name " (OpenLDAP)" }
     default { set default_authority_name "Invalid Authority Type" }
-
 }
 
+# ad_return_complaint 1 "$ldap_type, $default_authority_name"
 
-if {"" == $authority_name} { set authority_name $default_authority_name }
+
+set authority_name $default_authority_name
 
 # ---------------------------------------------------------------
 # Frequently used variables

@@ -28,7 +28,10 @@
 </tr>
 <tr>
 <td>Type:</td>
-<td><if "ad" eq @ldap_type@>Microsoft Active Directory</if><else>OpenLDAP<else></td>
+<td>
+	<if "ad" eq @ldap_type@>Microsoft Active Directory</if>
+	<else>OpenLDAP</else>
+</td>
 </tr>
 <tr>
 <td>Domain:</td>
@@ -39,7 +42,7 @@
 <td>@system_binddn@</td>
 </tr>
 <tr>
-<td>Password:</td>
+<td>SystemBindPassword:</td>
 <td>@system_bindpw@</td>
 </tr>
 
