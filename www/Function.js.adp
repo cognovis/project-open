@@ -482,7 +482,7 @@ function Function_errorMessage(e_title, e_msg, e_log){
 	    	buttons: Ext.Msg.OK,
 	    	icon: Ext.MessageBox.ERROR
 		});		
-		if (Ext.isEmpty(e_log)){
+		if (!Ext.isEmpty(e_log)){
 			console.error(e_log);
 		}
 }
