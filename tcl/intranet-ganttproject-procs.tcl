@@ -525,7 +525,8 @@ ad_proc -public im_gp_save_tasks {
     array set task_hash $task_hash_array
 
     ns_log Notice "im_gp_save_tasks: Starting to iterate through task nodes"
-    foreach child [$tasks_node childNodes] {
+    set child_nodes [$tasks_node childNodes]
+    foreach child $child_nodes {
 	if {$debug_p} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [string tolower [$child nodeName]] {
@@ -811,14 +812,15 @@ ad_proc -public im_gp_save_tasks2 {
     # Check if the task exists in the DB
     set task_exists_p [db_string task_exists_p "
 	select	count(*)
-	from	im_timesheet_tasks
-	where	task_id = :task_id
+	from	im_projects
+	where	project_id = :task_id
     "]
 
     # -----------------------------------------------------
     # Create a new task if:
     # - if task_id=0 (new task created in GanttProject)
     # - if there is a task_id, but it's not in the DB (import from GP)
+    set task_created_p 0
     if {0 == $task_id || !$task_exists_p} {
 
 	if {$create_tasks} {
@@ -843,8 +845,9 @@ ad_proc -public im_gp_save_tasks2 {
 		)"
 	    ]
 
-	    # Write Audit Trail
-	    im_project_audit -action create -project_id $task_id
+	    # Remember that we have created the task, so that we can
+	    # call the right im_audit action below.
+	    set task_created_p 1
 	}
 
     } else {
@@ -858,7 +861,6 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_hash($gantt_project_id) $task_id
 	set task_hash(o$outline_number) $task_id
     }
-
 
     # -----------------------------------------------------
     # we have the proper task_id now, we can do the dependencies
@@ -903,9 +905,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    }
 	    depend { 
 		if {$save_dependencies} {
-
 		    if {$debug_p} { ns_write "<li>Creating dependency relationship\n" }
-
 		    im_project_create_dependency \
 			-task_id_one [$taskchild getAttribute id] \
 			-task_id_two [$task_node getAttribute id] \
@@ -913,7 +913,6 @@ ad_proc -public im_gp_save_tasks2 {
 			-difference [$taskchild getAttribute difference] \
 			-hardness [$taskchild getAttribute hardness] \
 			-task_hash_array [array get task_hash]
-
 		}
 	    }
 	    customproperty { }
@@ -934,6 +933,10 @@ ad_proc -public im_gp_save_tasks2 {
     if {$debug_p} { ns_write "</ul>\n" }
 
 
+    # ------------------------------------------------------
+    # Save the detailed task information
+
+    # "Milestone" is just a characteristic of the task.
     set milestone_sql ""
     if {[im_column_exists im_projects milestone_p]} {
 	set milestone_sql "milestone_p	=	:milestone_p,"
@@ -985,10 +988,68 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # Write audit trail
-    im_project_audit -project_id $task_id
+    if {$task_created_p} { set task_action "after_create" } else { set task_action "after_update" }
+    im_project_audit -object_type "im_timesheet_task" -project_id $task_id -status_id $task_status_id -type_id $task_type_id -action $task_action
 
     return [array get task_hash]
 }
+
+
+
+ad_proc -public im_gp_save_tasks_fix_structure { 
+    {-debug_p 0}
+    project_id
+} {
+    Checks the entire project structure and assures that:
+    <ul>
+    <li>Tasks with sub-tasks become projects and
+    <li>Tasks without sub-tasks are of type im_timesheet_task
+    </ul>.
+} {
+    ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id"
+    db_1row project_info "
+	select	project_type_id
+	from	im_projects
+	where	project_id = :project_id
+    "
+    set sub_tasks [db_list sub_tasks "
+	select	project_id
+	from	im_projects
+	where	parent_id = :project_id
+    "]
+
+    ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id, project_type_id=$project_type_id, sub_tasks=$sub_tasks"
+
+    if {[llength $sub_tasks] > 0} {
+	# The task has children. Make sure it has the object type "im_project"
+	if {[im_project_type_consulting] != $project_type_id} {
+	    if {$debug_p} { ns_write "<li>Setting the project_type_id to 'Consulting project' because there are children\n" }
+	    db_dml update_import_field "
+		UPDATE	im_projects
+		SET	project_type_id = [im_project_type_consulting]
+		WHERE	project_id = :project_id
+            "
+	}
+    } else {
+	# The task has no sub-tasks, make it a "im_timeheet_task"
+	if {[im_project_type_task] != $project_type_id} {
+	    if {$debug_p} { ns_write "<li>Setting the object type to 'im_timesheet_task' because there are NO children\n" }
+	    db_dml update_import_field "
+		UPDATE	im_projects
+		SET	project_type_id = [im_project_type_task]
+		WHERE	project_id = :project_id
+            "
+	}
+    }
+
+    # Recursively descend
+    foreach tid $sub_tasks {
+	im_gp_save_tasks_fix_structure -debug_p $debug_p $tid
+    }
+
+}
+
+
 
 
 # ----------------------------------------------------------------------
