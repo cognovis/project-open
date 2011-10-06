@@ -105,7 +105,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				name:		'ticket_done_date',
 				fieldLabel:	'#intranet-sencha-ticket-tracker.Close_Date#',
 				xtype:		'po_datetimefield_read_only',
-				disabled:	false,
+				disabled:	false,		
 				validator: function(value){
 					if (!dateFormat.test(value)) {
 						return 'Formato no válido';
@@ -352,18 +352,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	loadTicket: function(rec){
 		var form = this.getForm();
 		this.loadRecord(rec);
-
+		this.dateCheck();
 		// Save the originalqueue_id from the DB. This value will become the 
 		// value of ticket_last_queue_id if the user selected a different queue.
 		var ticket_queue_field = form.findField('ticket_queue_id');
 		var ticket_last_queue_field = form.findField('ticket_last_queue_id');
 		var ticket_org_queue_field = form.findField('ticket_org_queue_id');
 		ticket_org_queue_field.setValue(ticket_queue_field.getValue());
-
-		// Disable the read-only date fields
-		// form.findField('ticket_creation_date').setDisabled(true);
-		// form.findField('ticket_escalation_date').setDisabled(true);
-		// form.findField('ticket_done_date').setDisabled(true);
 
 		var queueField = form.findField('ticket_queue_id');
 		var ticket_status_id = rec.get('ticket_status_id');
@@ -375,23 +370,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			queueField.setValue(ticket_queue_id);
 		}
 		
-		//If the Ticket is close, hide the buttons
-		/*var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject')	
-		rejectButton.show();
-		var buttonSave = Ext.getCmp('ticketActionBar').getComponent('buttonSave')	
-		buttonSave.show();		
-		if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
-			rejectButton.disable();
-			buttonSave.disable();
-		} else {
-			buttonSave.enable();
-			// Enable the "Reject" button if last_queue_id exists
-			if (Ext.isEmpty(ticket_last_queue_field.getValue())){
-				rejectButton.disable();
-			} else {
-				rejectButton.enable();
-			}
-		}*/
 		Ext.getCmp('ticketActionBar').checkButtons(rec);
 
 		Funtion_calculateEscalation(rec.get('ticket_area_id'));
@@ -404,15 +382,17 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	newTicket: function() {
 		var form = this.getForm();
 		form.reset();
+		this.dateCheck();
 
-		// Pre-set the creation date
-		//var creation_date = '<%= [db_string date "select to_char(now(), \'YYYY-MM-DD HH24:MI\')"] %>';
-		//var creation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_creation_date').getValue();
-		//form.findField('ticket_creation_date').setValue(name);
-		//form.findField('ticket_creation_date').setValue(creation_date);
 		form.findField('ticket_status_id').setValue('30000');		//Open
 		Ext.getCmp('ticketActionBar').checkButtons(null);
-		//this.hide();
+	},
+	
+	dateCheck: function() {
+		if (!currentUserIsAdmin) {
+			this.getForm().findField('ticket_creation_date').readOnly = true;
+			this.getForm().findField('ticket_escalation_date').readOnly = true;
+			this.getForm().findField('ticket_done_date').readOnly = true;
+		}
 	}
 });
-

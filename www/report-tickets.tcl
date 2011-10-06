@@ -173,6 +173,7 @@ set report_sql "
 		p_contact.vip_p as contact_vip_p,
 		p_contact.gender as contact_gender,
 		p_contact.language as contact_language,
+		regexp_replace(p_contact.spri_consultant, '1', 'S') as contact_consultant,
 
 		to_char(o.creation_date, 'YYYY-MM-DD') as creation_date_date,
 		to_char(o.creation_date, 'HH24:MI') as creation_date_time,
@@ -216,7 +217,6 @@ set report_sql "
 
 "
 
-
 # ------------------------------------------------------------
 # Report Definition
 #
@@ -250,6 +250,7 @@ set header0 {
 	"Contacto Nombre"
 	"Contacto Mail"
 	"Telefono"
+	"Consultor"
 	"Area"
 	"Area Id"
 	"Programa"
@@ -299,6 +300,7 @@ set report_def [list \
 	$contact_name
 	$contact_email
 	$contact_telephone
+	$contact_consultant
 	$ticket_area
 	$ticket_area_raw_id
 	$ticket_program

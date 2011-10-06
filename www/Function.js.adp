@@ -73,8 +73,10 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 		contactValues.last_name = contactValues.last_name.toUpperCase();
 		contactValues.last_name2 = contactValues.last_name2.toUpperCase();
 		
-		ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
-		ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");
+		if (ticketRightValues) {
+			ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
+			ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");	
+		}
 				
 		//Company and contacts validations
 		if (Ext.isEmpty(companyValues.company_id) && !Function_validateNewCompany(companyValues)) {
@@ -480,7 +482,9 @@ function Function_errorMessage(e_title, e_msg, e_log){
 	    	buttons: Ext.Msg.OK,
 	    	icon: Ext.MessageBox.ERROR
 		});		
-		console.error(e_log);
+		if (Ext.isEmpty(e_log)){
+			console.error(e_log);
+		}
 }
 
 
