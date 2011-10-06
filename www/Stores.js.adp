@@ -551,7 +551,7 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	pageSize: 12,				// Enable pagination
 //	autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
-		property: 'creation_date',
+		property: 'ticket_creation_date',
 		direction: 'DESC'
 	}]
 });

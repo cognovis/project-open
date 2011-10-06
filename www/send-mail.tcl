@@ -5,6 +5,8 @@ ad_page_contract {
 } {
     { object_id:integer ""}
 }
+
+	ns_log Notice "send-mail.tcl Inicio: object_id=$object_id"
 	set result "true"
 	set err_msg ""
 	
@@ -74,14 +76,23 @@ ad_page_contract {
 	if {($found_audit_p && $old_ticket_queue_id!=$ticket_queue_id) || !$found_audit_p} {
 		if {463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id} {
 				# Only resiste
-				if {73621==$ticket_queue_id } {
+				#if {73621==$ticket_queue_id } {
 				    db_foreach send_email $member_sql {
 						acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr $member_email -subject $subject -body $body
-				}
+				#}
 			}
+		} else {
+			#Si ha cambiado de estado SACE a SAC
+			if (73369==$old_ticket_queue_id && 73363==$ticket_queue_id ) {
+				ns_log Notice "send-mail: Cambio cola SACE a SAC envio a responsable"
+				acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr "david.blanco@grupoversia.com" -subject "Tiene un ticket escalado de SACE ($project_name)"
+				#acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr [email_image::get_email -user_id 59673] -subject "Tiene un ticket escalado de SACE ($project_name)"
+			}
+			
 		}
-    }	
+    } 
     
+    ns_log Notice "send-mail.tcl Fin"
 	#doc_return 200 "text/html" "$subject<br>$body$member_list<br>$member_list_mail"
     doc_return 200 "text/html" "{
 	\"result\": {
