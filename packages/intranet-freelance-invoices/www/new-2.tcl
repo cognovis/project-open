@@ -541,7 +541,7 @@ order by
 
 	# Check if a material for the select parameter combination exists
 	# or create new material
-#	set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation]]
+	set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation]]
 set material_id ""
 	# insert intermediate headers for every project
 	if {$old_project_id != $project_id} {

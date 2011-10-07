@@ -622,7 +622,7 @@ db_foreach task_sum_query $task_sum_sql {
     # Make sure the material exists.
     # The procedure will peek variables defined in DynFields of im_material
     # from the current stack environment
-#    set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation] -debug 1]
+    set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation] -debug 1]
 
 set material_id ""
     # insert intermediate headers for every project
