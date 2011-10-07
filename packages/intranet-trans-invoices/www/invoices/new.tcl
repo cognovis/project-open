@@ -191,7 +191,7 @@ if {$project_id != 0} {
 					between parent.tree_sortkey 
 					and tree_right(parent.tree_sortkey)
 				and parent.project_id = :project_id
-		)
+		) or p.project_id = :project_id
 	"
 
     } else {
