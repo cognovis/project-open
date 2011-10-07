@@ -196,7 +196,7 @@ Ext.define('TicketBrowser.Company', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
-			gzip_p:    '0',
+			gzip_p:    '1',
 			columns:	'company_id,company_name,company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
 		},
 		reader:	{
@@ -223,6 +223,7 @@ Ext.define('TicketBrowser.User', {
 		'email',			// Just email txt
 		'gender',			// male or female
 		'language',			// es_ES or eu_ES
+		'spri_consultant',
 		{	name: 'name',			// Calculated compound name
 			convert: function(value, record) {
 				return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
@@ -238,8 +239,8 @@ Ext.define('TicketBrowser.User', {
 		extraParams: {
 			format:	'json',
 			format_variant:	'sencha',
-			gzip_p:    '0',
-			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language'
+			gzip_p:    '1',
+			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language,spri_consultant'
 		},
 		reader:	{ 
 			type:		'json', 

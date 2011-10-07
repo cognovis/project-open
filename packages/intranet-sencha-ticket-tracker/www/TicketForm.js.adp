@@ -135,6 +135,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
         valueField:	'category_id',
         displayField:	'category_translated',
 		forceSelection: true,
+		allowBlank:	false,
 		store: 		programTicketAreaStore,
 		queryMode:	'local',
 		listConfig: {
@@ -174,6 +175,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		store:		areaTicketAreaStore,
     	width: 		300,
 		forceSelection: true,
+		allowBlank:	false,
 		queryMode:	'local',
 		listConfig: {
 			getInnerTpl: function() {

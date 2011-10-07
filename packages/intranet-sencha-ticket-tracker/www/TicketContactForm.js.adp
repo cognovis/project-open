@@ -86,9 +86,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		allowBlank:	false,
 		validator: function(value){
 			if (Ext.isEmpty(value)){
+				this.show();
 				return "Obligatorio";
 			}
 			if (value.substring(0,14).toLowerCase() == "nuevo contacto"){
+				this.show();
 				return "No válido";
 			}
 			return true;
@@ -98,7 +100,14 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_name#',
 		hidden: true,
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				this.show();
+				return "Obligatorio";
+			}
+			return true;
+		}			
 	}, {
 		name:		'last_name2',
 		xtype:		'textfield',
@@ -151,25 +160,18 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
+	}, {
+		name:		'spri_consultant',
+		xtype:		'checkbox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Consultant#',
+		uncheckedValue:	'0',
+		inputValue: '1'
 	}],
 
 	loadTicket: function(rec){
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = rec.get('company_id');
 		userCustomerTicketRelationStore.load();			
-		
-		
-		/*// Customer contact ID, may be NULL
-		var contact_id;
-		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { 
-			contact_id = rec.data.ticket_customer_contact_id; 
-		}
-
-		var contact_record = userStore.findRecord('user_id',contact_id);
-		if (contact_record == null || typeof contact_record == "undefined") { return; }
-
-		// load the information from the record into the form
-		this.loadUser(contact_record);*/
 	},
 
 	loadUser: function(rec){
@@ -191,16 +193,11 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
-	loadCustomer: function(customerModel){
-	/*	var form = this.getForm();
-		form.reset();*/
-		
+	loadCustomer: function(customerModel){		
 		//Load anonymus contact
-		/*userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));*/
 		var company_id = customerModel.get('company_id');
 		if (Ext.isEmpty(company_id)) {
-			company_id = 'null';
+			company_id = '1';
 		}
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = company_id;
@@ -214,12 +211,6 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
 	newTicket: function() {
-	/*	var form = this.getForm();
-		form.reset();
-		this.hide();
-		userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));*/
-		
 		userCustomerTicketRelationStore.removeAll();
 		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = anonimo_company_id;
 		userCustomerTicketRelationStore.load();				
