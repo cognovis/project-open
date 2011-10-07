@@ -260,6 +260,7 @@ if {"" != $expense_type_id  & 0 != $expense_type_id} {
 set personal_only_sql "and provider_id = :user_id"
 if {$view_expenses_all_p} { set personal_only_sql "" }
 
+
 switch $unassigned {
     "todo" { set unassigned_sql "and (c.project_id is null OR e.bundle_id is null)" }
     "unassigned" { set unassigned_sql "and c.project_id is null" }
@@ -375,7 +376,7 @@ set ttt {
 # Allow accounting guys to see all expense items,
 # not just their own ones...
 set personal_only_sql "and provider_id = :user_id"
-if {$create_bundle_p} { set personal_only_sql "" }
+if {$view_expenses_all_p} { set personal_only_sql "" }
 
 # Allow the project manager to see all expense bundles
 if {1 == $user_is_pm_p} { set personal_only_sql "" }
