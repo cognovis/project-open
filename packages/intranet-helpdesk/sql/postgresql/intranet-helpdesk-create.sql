@@ -1573,6 +1573,7 @@ SELECT im_dynfield_widget__new (
 );
 
 
+
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_assignees', 'Ticket Assignees', 'Ticket Assignees',
@@ -1588,10 +1589,24 @@ SELECT im_dynfield_widget__new (
 
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_queues', 'Ticket Queues', 'Ticket Queues',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+		select	g.group_id, g.group_name
+		from	groups g,
+			acs_objects o
+		where	o.object_type = ''im_ticket_queue'' and
+			g.group_id = o.object_id
+		order by lower(g.group_name)
+	}}}'
+);
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_po_components', 'Ticket &#93;po&#91; Components', 'Ticket &#93;po&#91; Components',
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {
-
 select	ci.conf_item_id,
 	ci.conf_item_name
 from	im_conf_items ci

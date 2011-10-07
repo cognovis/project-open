@@ -672,7 +672,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action create
+    im_project_audit -project_id $ticket_id -action after_create
 
     # fraber 100928: Disabling return_url.
     # For a new ticket it makes sense to be sent to the new ticket page...
