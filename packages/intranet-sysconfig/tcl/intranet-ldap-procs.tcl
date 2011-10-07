@@ -63,8 +63,10 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     -ldap_domain:required
     -ldap_binddn:required
     -ldap_bindpw:required
+    -ldap_system_binddn:required
+    -ldap_system_bindpw:required
 } {
-    Tries to bind to the LDAP server using the selected binddn/bindpw (username/password).
+    Tries to bind to the LDAP server using the selected system_binddn/system_bindpw (username/password).
     Returns a list of key-value pairs suitable for an "array set" operation.
     The key "success" contains "1" if the bind was successfull and "0" otherwise.
     The key "debug" contains additional text lines from the Perl script
@@ -73,7 +75,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     array set hash {}
     
     set bind_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
-    set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_domain $ldap_binddn $ldap_bindpw"
+    set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_domain $ldap_system_binddn $ldap_system_bindpw"
     ns_log Notice "im_sysconfig_ldap_check_bind: $cmd"
 
     set debug ""
