@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: file-add.tcl,v 1.16 2007/06/15 17:40:28 matthewg Exp $
+    @cvs-id $Id$
 } {
     file_id:integer,optional,notnull
     folder_id:integer,optional,notnull
@@ -208,7 +208,7 @@ ad_form -extend -form {} -select_query_name {get_file} -new_data {
 	
 	if {![empty_string_p $existing_item_id]} {
 	    # file with the same name already exists in this folder
-            if { [ad_parameter "BehaveLikeFilesystemP" -package_id [ad_conn package_id]] } {
+            if { [parameter::get -parameter "BehaveLikeFilesystemP" -package_id [ad_conn package_id]] } {
                 # create a new revision -- in effect, replace the existing file
                 set this_file_id $existing_item_id
                 permission::require_permission \
@@ -288,7 +288,7 @@ if {[empty_string_p $title]} {
     set lock_title_p 0
 }
 
-if { [ad_parameter "BehaveLikeFilesystemP" -package_id [ad_conn package_id]] } {
+if { [parameter::get -parameter "BehaveLikeFilesystemP" -package_id [ad_conn package_id]] } {
     set instructions "[_ file-storage.Add_Dup_As_Revision]"
 } else {
     set instructions "[_ file-storage.Add_Dup_As_New_File]"
