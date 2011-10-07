@@ -483,7 +483,7 @@ ad_proc -public im_dynfield::set_local_form_vars_from_http {
 
 
 ad_proc -public im_dynfield::attribute_store {
-    -object_type:required
+    {-object_type ""}
     -object_id:required
     -form_id:required
     {-user_id ""}
@@ -503,19 +503,47 @@ ad_proc -public im_dynfield::attribute_store {
     if {"" == $user_id} { set user_id [ad_get_user_id] }
     set current_user_id $user_id
 
+    # Get object_type main table and column id
+    # fraber 111004: Also get other object fields. These are now obsolete in the arglist...
+    db_1row get_main_table "
+	select	ot.table_name as main_table,
+		ot.id_column as main_table_id_column,
+		o.object_type,
+		im_biz_object__get_type_id(o.object_id) as object_subtype_id
+	from	acs_object_types ot,
+		acs_objects o
+	where 	o.object_id = :object_id and
+		o.object_type = ot.object_type
+    "
+
     set object_id_org $object_id
     set object_type_org $object_type
 
     # Get the list of all variables of the form
     template::form get_values $form_id
 
-    # Get object_type main table and column id
-    db_1row get_main_table "
-	select	table_name as main_table,
-		id_column as main_table_id_column
-	from	acs_object_types
-	where 	object_type = :object_type_org
+    # -------------------------------------------------
+    # Pull out display mode per attribute
+    # -------------------------------------------------
+
+    # Get display mode per attribute and object_type_id
+    set sql "
+       select	m.attribute_id,
+                m.object_type_id as ot,
+                m.display_mode as dm,
+		m.help_text as ht
+        from	im_dynfield_type_attribute_map m,
+                im_dynfield_attributes a,
+                acs_attributes aa
+        where	m.attribute_id = a.attribute_id
+                and a.acs_attribute_id = aa.attribute_id
+                and aa.object_type = :object_type
     "
+
+    db_foreach attribute_table_map $sql {
+	set key "$attribute_id.$ot"
+	set display_mode_hash($key) [string tolower $dm]
+    }
 
     # -------------------------------------------------
     # Create the update SQL statement
@@ -546,6 +574,25 @@ ad_proc -public im_dynfield::attribute_store {
 	# Empty table name? Ugly, but that's the main table then...
 	if {[empty_string_p $table_name]} { set table_name $main_table }
 
+        # object_subtype_id can be a list, so go through the list
+        # and take the highest one (none - display - edit).
+	set display_mode "undefined"
+        foreach subtype_id $object_subtype_id {
+            set key "$dynfield_attribute_id.$subtype_id"
+            if {[info exists display_mode_hash($key)]} {
+                switch $display_mode_hash($key) {
+                    edit { set display_mode "edit" }
+                    display { if {"edit" != $display_mode} { set display_mode "display" } }
+                    none { if {"edit" != $display_mode && "display" != $display_mode} { set display_mode "display" } }
+                }
+            }
+        }
+	if {"edit" != $display_mode} { 
+	    ns_log Notice "im_dynfield::attribute_store: Skipping writing attribute $object_type.$attribute_name because display_mode='$display_mode'"
+	    continue 
+	}
+
+
 	# Is this a multi-value field?
 	set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
 	if {[empty_string_p $multiple_p]} { set multiple_p 0 }	
@@ -555,11 +602,14 @@ ad_proc -public im_dynfield::attribute_store {
 
 	    # Special treatment for certain types of widgets
 	    set widget_element [template::element::get_property $form_id $attribute_name widget]
+
+	    ns_log Notice "im_dynfield::attribute_store: attribute=$object_type.$attribute_name, widget_element=$widget_element"
+
 	    switch $widget_element {
 		date {
 		    set ulines [list]
 		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
-		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_date [set $attribute_name]]"
+		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_timestamp [set $attribute_name]]"
 		    set update_lines($table_name) $ulines
 		}
 		default {
