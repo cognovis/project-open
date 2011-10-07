@@ -4,7 +4,7 @@
 
     @creation-date 2006-04-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-www-procs.tcl,v 1.296 2011/05/28 17:12:42 gustafn Exp $
+    @cvs-id $Id$
 }
 
 ::xo::library require xowiki-procs
@@ -890,7 +890,7 @@ namespace eval ::xowiki {
     my set_form_data $form_fields
     if {$disable_input_fields} {
       # (a) disable explicit input fields
-      foreach f $form_fields {$f disabled disabled}
+      foreach f $form_fields {$f disabled 1}
       # (b) disable input in HTML-specified fields
       set disabled [Form dom_disable_input_fields $rootNode]
       #
@@ -1158,6 +1158,7 @@ namespace eval ::xowiki {
     set admin_link  [$context_package_id make_link -privilege admin -link admin/ $context_package_id {} {}] 
     set index_link  [$context_package_id make_link -privilege public -link "" $context_package_id {} {}]
     set import_link [$context_package_id make_link -privilege admin -link "" $context_package_id {} {}]
+    set page_show_link [$page_package_id make_link -privilege admin [self] show-object return_url]
 
     set notification_subscribe_link ""
     if {[$context_package_id get_parameter "with_notifications" 1]} {
@@ -1210,7 +1211,10 @@ namespace eval ::xowiki {
           -item [list text #xowiki.revisions# url $rev_link]
       $mb add_menu_item -name Page.Delete \
           -item [list text #xowiki.delete# url $delete_link]
-
+      if {[acs_user::site_wide_admin_p]} {
+	$mb add_menu_item -name Page.Show \
+	    -item [list text "Show Object" url $page_show_link]
+      }
     }
     
     # the content may be passed by other methods (e.g. edit) to 
@@ -1332,6 +1336,9 @@ namespace eval ::xowiki {
 	set meta(keywords) ""
 	if {[my istype ::xowiki::FormPage]} {
 	  set meta(keywords) [string trim [my property keywords]]
+	  if {[my property html_title] ne ""} {
+	    ::xo::Page set_property doc title [my property html_title]
+	  }
 	}
 	if {$meta(keywords) eq ""} {
 	  set meta(keywords) [$context_package_id get_parameter keywords ""]
@@ -1871,14 +1878,27 @@ namespace eval ::xowiki {
         incr validation_errors
       }
     }
-    my log validation_errors=$validation_errors
     if {$validation_errors == 0} {
       #
       # Postprocess based on form fields based on form-fields methods.
       #
       foreach f $form_fields {
-        $f convert_to_internal
-      }        
+	$f convert_to_internal
+      }
+    } else {
+      my log validation_errors=$validation_errors
+
+      # There were validation erros.  Reset the value for form-fields
+      # of type "file" to avoid confusions, since a file-name was
+      # provided, but the file was not uploaded due to the validation
+      # error. If we would not reset the value, the provided name
+      # would cause an interpretation of an uploaded empty file. Maybe
+      # a new method "reset-to-default" would be a good idea.
+      foreach f $form_fields {
+	if {[$f type] eq "file"} {
+	  $f set value ""
+        }
+      }
     }
 
     my instance_attributes [array get __ia]
