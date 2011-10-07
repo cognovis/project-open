@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="--Select--">-- Bitte auswählen --</msg>
+  <msg key="Add_a_new_RFQ">Neue Ausschreibung hinzufügen</msg>
+  <msg key="Add_Required_Skills">Erforderliche Skills hinzufügen</msg>
+  <msg key="All">Alle</msg>
+  <msg key="All_Source_Languages">Alle Ausgangssprachen</msg>
+  <msg key="All_Target_Languages">Alle Zielsprachen</msg>
+  <msg key="Amount">Betrag</msg>
+  <msg key="Answer_Accepted">Antwort akzeptiert?</msg>
+  <msg key="Answer_Status">Status d. Antwort</msg>
+  <msg key="Available_Variables">Folgende Variablen können Sie in Ihrer Nachricht verwenden:&amp;lt;br&amp;gt;
+&amp;lt;tt&amp;gt;%email_vars%&amp;lt;/tt&amp;gt;</msg>
+  <msg key="Body">Ausschreibungstext</msg>
+  <msg key="Close">Schließen</msg>
+  <msg key="Comment">Kommentar</msg>
+  <msg key="Confirm_RFQ">Ausschreibung bestätigen</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Body">Hallo %first_names%,
+
+hiermit bestätigen wir Deine Teilnahme in unserer %rfq_type% für Projekt '%project_name%'.
+
+Ich werde mich bald mit weiteren Einzelheiten melden.
+
+Viele Grüße,
+%current_user_first_names%</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Header">Bestätigung für: %rfq_name%</msg>
+  <msg key="Create_a_new_RFQ">Neue Ausschreibung anlegen</msg>
+  <msg key="Create_New_RFQ">Neue Ausschreibung</msg>
+  <msg key="Currency">Währung</msg>
+  <msg key="Decline_RFQ">Ausschreibung ablehnen</msg>
+  <msg key="Declined_for_RFQ_of_Project_Body">Lieber %first_names%,
+
+leider wurdest Du nicht für %rfq_type% in Projekt '%project_name%' ausgewählt.
+
+Bei Rückfragen stehe ich jederzeit zur Verfügung.
+
+Viele Grüße,
+%current_user_first_names%</msg>
+  <msg key="Declined_for_RFQ_of_Project_Header">Abgelehnt: %rfq_name%</msg>
+  <msg key="Delete">Löschen</msg>
+  <msg key="Delete_RFQ">Ausschreibung löschen</msg>
+  <msg key="Delete_Skill">Skill löschen</msg>
+  <msg key="Description">Beschreibung</msg>
+  <msg key="Dont_Send_Invitations">Einladungen nicht abschicken</msg>
+  <msg key="End">Ende</msg>
+  <msg key="End_Date">Ende</msg>
+  <msg key="End_date">Endedatum</msg>
+  <msg key="Experience">Erfahrung</msg>
+  <msg key="Filter_RFQs">Ausschreibungen filtern</msg>
+  <msg key="General_Outcome">Allgemeines Ergebnis</msg>
+  <msg key="general_outcome">Allgemeines Ergebnis</msg>
+  <msg key="Header">Betreff</msg>
+  <msg key="Invite_Candidates">Kandidaten einladen</msg>
+  <msg key="Invite_Participants">Kandidaten einladen</msg>
+  <msg key="Invite_Users">Kandidaten einladen</msg>
+  <msg key="Invited_for_RFQ_of_Project_Body">Lieber %first_names%,
+
+wir laden Dich ein, an unserer Ausschreibung %rfq_type% für Projekt '%project_name%' teilzunehmen.
+
+Bitte klicke auf unten stehenden Link und befolge die Anweisungen auf folgender Seite:
+
+%rfq_url%
+
+Viele Grüße,
+%current_user_first_names%</msg>
+  <msg key="Invited_for_RFQ_of_Project_Header">Einladung zu: %rfq_name%</msg>
+  <msg key="Minimum_Skill_Level">Minimum Skill Level</msg>
+  <msg key="Name">Name</msg>
+  <msg key="New_Freelance_RFQ">Neue Ausschreibung</msg>
+  <msg key="New_Trans_RFQ">Neue Übersetzungsausschreibung</msg>
+  <msg key="No_decline">Nein, ich lehne ab.</msg>
+  <msg key="No_I_decline">Nein, ich lehne ab.</msg>
+  <msg key="Note">Notiz</msg>
+  <msg key="Num_Conf_Explanation">Anzahl bestätigter Kandidaten</msg>
+  <msg key="Num_Confirmations">#Best</msg>
+  <msg key="Num_Conformations">#Best</msg>
+  <msg key="Num_Decl">#Abgel</msg>
+  <msg key="Num_Decl_Explanation">Anzahl abgelehnter Kandidaten</msg>
+  <msg key="Num_Declinations">#Abgel</msg>
+  <msg key="Num_Inv">#Eingel</msg>
+  <msg key="Num_Inv_Explanation">Anzahl Einladungen</msg>
+  <msg key="Num_Invitations">#Einl</msg>
+  <msg key="Num_Rem_Explanation">Anzahl der Kandidaten, die entweder abgelehnt oder bestätigt werden müssen</msg>
+  <msg key="Num_Remaining">#Verbl</msg>
+  <msg key="Overall_Status">Gesamtstatus</msg>
+  <msg key="Price">Preis</msg>
+  <msg key="Project">Projekt</msg>
+  <msg key="Required_RFQ_Skills">Erforderliche Skills</msg>
+  <msg key="RFQ">Ausschreibung</msg>
+  <msg key="RFQ_Base_Data">Basisdaten d. Ausschreibung</msg>
+  <msg key="RFQ_Candidates">Ausschreibungskandidaten</msg>
+  <msg key="RFQ_Details">Einzelheiten der Ausschreibung</msg>
+  <msg key="RFQ_Name">Name d. Ausschreibung</msg>
+  <msg key="RFQ_Status">Ausschreibungsstatus</msg>
+  <msg key="RFQ_Type">Ausschreibungstyp</msg>
+  <msg key="RFQs">Ausschreibungen</msg>
+  <msg key="RFQs_Items">Ausschreibungsposten</msg>
+  <msg key="Score">Bewertungsergebnis</msg>
+  <msg key="Send_Invitations">Einladungen abschicken</msg>
+  <msg key="Send_me_a_copy">Eine Kopie an mich?</msg>
+  <msg key="Skill">Skill</msg>
+  <msg key="Skill_Type">Skill Typ</msg>
+  <msg key="Skill_Weight">Skill Gewichtung</msg>
+  <msg key="Source">Ausgangssprache</msg>
+  <msg key="Start">Start</msg>
+  <msg key="Start_Date">Beginn</msg>
+  <msg key="Start_date">Startdatum</msg>
+  <msg key="Subject_Areas">Fachgebiete</msg>
+  <msg key="Target">Zielsprache</msg>
+  <msg key="Task_State">Taskstatus</msg>
+  <msg key="Transition">Übergang</msg>
+  <msg key="Units">Einheiten</msg>
+  <msg key="UoM">Abrechnungseinheiten</msg>
+  <msg key="User">Benutzer</msg>
+  <msg key="Weight">Gewichtung</msg>
+  <msg key="Workflow">Workflow</msg>
+  <msg key="Yes_I_can_do">Ja, ich kann die ausgeschriebene Aufgabe pünktlich liefern.</msg>
+  <msg key="Your_Answer">Deine Antwort</msg>
+</message_catalog>
