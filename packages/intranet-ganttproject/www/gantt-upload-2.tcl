@@ -176,6 +176,11 @@ if {[catch {
 			     $root_node \
 			     $project_id \
 			    ]
+
+    ns_log Notice "Pass3: Make sure that tasks with sub-tasks become im_project"
+    im_gp_save_tasks_fix_structure $project_id
+
+
 } err_msg]} {
     
     global errorInfo
