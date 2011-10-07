@@ -15,4 +15,4 @@ ad_page_contract {
 }
 
 ad_user_login -forever 624
-ad_return_redirect http://kolibri.cognovis.de/acs-admin
+ad_returnredirect http://kolibri.cognovis.de/acs-admin
