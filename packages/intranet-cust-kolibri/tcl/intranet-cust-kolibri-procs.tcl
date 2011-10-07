@@ -40,12 +40,13 @@ ad_proc -public -callback im_invoice_before_update -impl kolibri_set_vars {
     upvar 2 quote_no quote_no
     upvar 2 quote_date quote_date
     upvar 2 delivery2_date delivery_date
+    upvar 2 company_project_nr company_project_nr
 
     set project_id [db_string project_id "select project_id from im_costs where cost_id = :object_id" -default 0]
     if {$project_id} {
-	db_0or1row quote_information "select cost_nr, effective_date, end_date from im_costs c, im_projects p where p.project_id = :project_id and p.project_id = c.project_id and cost_type_id = 3702 order by effective_date desc limit 1"
+	db_0or1row quote_information "select company_project_nr,cost_nr, effective_date, end_date from im_costs c, im_projects p where p.project_id = :project_id and p.project_id = c.project_id and cost_type_id = 3702 order by effective_date desc limit 1"
 	set quote_no $cost_nr
 	set quote_date [lc_time_fmt $effective_date %q]
-	set delivery_date [lc_time_fmt $end_date "%q %X"]
+	set delivery_date [lc_time_fmt $end_date "%q"]
     }
 } 
