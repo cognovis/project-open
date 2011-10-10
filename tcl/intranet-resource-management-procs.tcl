@@ -248,8 +248,15 @@ ad_proc -public im_resource_mgmt_resource_planning {
     	- excluded_group_ids currently only accepts a single int
 
 } {
-    if { ![info exists show_departments_only_p] || "" == $show_departments_only_p } { set show_departments_only_p 0 }
 
+    # ---------------------------------------
+    # DEFAULTS
+    # ---------------------------------------
+
+    # Department to use, when user is not assigned to one 
+    set default_department [parameter::get -package_id [apm_package_id_from_key intranet-resource-management] -parameter "DefaultCostCenterId" -default 525]
+
+    if { ![info exists show_departments_only_p] || "" == $show_departments_only_p } { set show_departments_only_p 0 }
     if {"" == $excluded_group_ids} { set excluded_group_ids 0 }
 
     set limit_height 1
@@ -1025,7 +1032,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
                         }
 		} else {
 			# Distribute hours over workdays 
-			set hours_per_day [expr $planned_units.0 / $no_workdays.0 ]
+		    	if { [string first "." $planned_units] == -1 } { set planned_units $planned_units.0 }  
+		    	if { [string first "." $no_workdays] == -1 } { set no_workdays $no_workdays.0 }  
+			set hours_per_day [expr $planned_units / $no_workdays ]
+
 			set column_sql "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" 
 			set no_users [db_string get_number_users "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" -default 1] 
 
@@ -1436,6 +1446,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set user_id [lindex $left_entry 0]
 
 	set user_department_id [util_memoize [list db_string get_data "select department_id from im_employees where employee_id = $user_id" -default 0]]
+	if { ""==$user_department_id } { set user_department_id $default_department }
 
 	# -----------------------------------------------
         # Determine availability of user (hours/day)  
@@ -1846,7 +1857,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			    if { $val_hours == 0  } {
 				set cell_html ""
 			    } else {
-			        set cell_html ${val_hours}h
+				set val_hours_output [format "%0.2f" $val_hours]
+			        set cell_html ${val_hours_output}h
 			    }
 			} else {
 			        set cell_html "&nbsp;"
@@ -2018,7 +2030,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
 		# Create bar chart 
                 set bar_color [im_resource_mgmt_get_bar_color "traffic_light" [expr $val - 100]]
-                set bar_chart [im_resource_mgmt_resource_planning_cell "custom" 0 $bar_color "[expr $val - 100]" "" $limit_height]
+                set bar_chart [im_resource_mgmt_resource_planning_cell "custom" 0 $bar_color [expr 100-$val] "" $limit_height]
 
 	        append header "\t<td class='rowtitle' valign='bottom'>$bar_chart</td>\n"
         	# append header "\t<td class='rowtitle' valign='bottom'>$bar_chart<br>PH:$total_planned_hours<br>AB:$total_absences<br>AV:$total_availability</td>\n"
@@ -2234,7 +2246,9 @@ ad_proc -private write_department_row {
         array set totals_department_availability_arr_loc $totals_department_availability_arr
 
 	set row_html ""
+
         set department_name [db_string get_department_name "select cost_center_name from im_cost_centers where cost_center_id = $department_id" -default ""]
+
 	append row_html "<tr><td><b>[lang::message::lookup "" intranet-reporting.SubTotalDepartment "Department"]: $department_name</b></td>"
 	set ctr 0
 
@@ -2252,13 +2266,15 @@ ad_proc -private write_department_row {
 	            if { 0 == $total_department_occupancy } {
 	                # no planned hours & no absences -> full availability
 	                set bar_color [im_resource_mgmt_get_bar_color "traffic_light" 0]
+			set par_hint "Abs.&Planned Hours:0 / Total Hours Dep. Avail.:$totals_department_availability_arr_loc($ctr) / Occ.:0%"
 	                append row_html "<td>[im_resource_mgmt_resource_planning_cell "custom" 0 $bar_color "0/0%" "" $limit_height]</td>\n"
 	            } else {
 	                # We have absences and planned hours -> Calculate availability
 	                set total_hours_department_occupancy [expr $totals_department_planned_hours_arr_loc($ctr) + $totals_department_absences_arr_loc($ctr)]
 	                set percentage_occupancy [expr 100 * $total_hours_department_occupancy / $totals_department_availability_arr_loc($ctr)]
 	                set bar_color [im_resource_mgmt_get_bar_color "traffic_light" $percentage_occupancy]
-	                append row_html "<td>[im_resource_mgmt_resource_planning_cell "custom" $percentage_occupancy $bar_color "$total_hours_department_occupancy/$percentage_occupancy" "" $limit_height]</td>\n"
+			set par_hint "Abs.&Planned Hours:$total_hours_department_occupancy / Total Hours Dep. Avail.:$totals_department_availability_arr_loc($ctr) / Occ.:$percentage_occupancy%"
+	                append row_html "<td>[im_resource_mgmt_resource_planning_cell "custom" $percentage_occupancy $bar_color $par_hint "" $limit_height]</td>\n"
 	            }
 	    } else {
 	            append row_html "<td></td>"
@@ -2274,7 +2290,6 @@ ad_proc -private write_department_row {
 	    return "$row_html$department_row_html"
 	}
 }
-
 
 ad_proc -private hsv2hex {h s v} {
 	# http://code.activestate.com/recipes/133527/ (
