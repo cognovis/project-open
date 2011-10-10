@@ -152,6 +152,7 @@ ad_proc -public im_ms_project_write_task {
 		Name Type 
 		OutlineNumber OutlineLevel Priority 
 		Start Finish 
+	        IsNull
 		Work RemainingWork
 		Duration 
 		RemainingDuration
@@ -179,6 +180,7 @@ ad_proc -public im_ms_project_write_task {
 						set value 0 
 					    }
 					}
+	        IsNull			{ set value 0 }
 		OutlineNumber		{ set value $outline_number }
 		OutlineLevel		{ set value $outline_level }
 		Priority		{ set value 500 }
