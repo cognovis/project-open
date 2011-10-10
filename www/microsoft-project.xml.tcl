@@ -392,7 +392,7 @@ set project_allocations_sql "
 		gp.xml_uid::integer as xml_uid,
 		object_id_one AS task_id,
 		object_id_two AS user_id,
-		coalesce(bom.percentage, 0.0) as percentage_assigned,
+		bom.percentage as percentage_assigned,
 		p.percent_completed,
 		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
 		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
@@ -430,6 +430,12 @@ set assignment_ctr 0
 db_foreach project_allocations $project_allocations_sql {
 
     ns_log Notice "microsoft-project: xml_uid=$xml_uid"
+    if {"" == $percentage_assigned} {
+	# Don't export empty assignments.
+	# These assignments are created by assignments of
+	# resources to sub-tasks in ]po[
+	continue
+    }
 
     $allocations_node appendXML "
 	<Assignment>
