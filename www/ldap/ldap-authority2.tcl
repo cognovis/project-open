@@ -49,7 +49,6 @@ set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span>
 set param_hash(Attributes) ""
 set param_hash(BaseDN) $domain
 set param_hash(BindDN) $binddn
-set param_hash(BindPW) $bindpw
 set param_hash(SystemBindDN) $system_binddn
 set param_hash(SystemBindPW) $system_bindpw
 set param_hash(DNPattern) ""
