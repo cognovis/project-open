@@ -314,8 +314,6 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # This is a fixed account for OpenLDAP ("cn=Manager,dc=project-open,dc=com"),
     # while Active Directory needs the DN of the user ("{username}@project-open.com")
     set bind_dn $params(BindDN)
-    set bind_pw ""
-    catch { set bind_pw $params(BindPW) }
     # "ad" = Active Directory, "ol" = OpenLDAP
     set server_type "ad"
     catch { set server_type $params(ServerType) }
@@ -392,10 +390,10 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
 	    # check if we can construct the same hash
 	    ns_log Notice "auth::ldap::authentication::Authenticate: OpenLDAP"
-	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '$username_attribute=$username' userPassword"
+	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $password -b $base_dn '$username_attribute=$username' userPassword"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "$username_attribute=$username" userPassword
+		exec ldapsearch -x -H $uri -D $bind_dn -w $password -b $base_dn "$username_attribute=$username" userPassword
 	    } err_msg]
 	    ns_log Notice "auth::ldap::authentication::Authenticate: return_code=$return_code, msg=$err_msg"
 
@@ -504,7 +502,6 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
         BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         SystemBindDN "DN of an LDAP system user that allows PO to access the LDAP for batch synchronization. Example: 'cn=Administrator,cn=Users,dc=project-open,dc=com'. Leave empty if your LDAP allows anonymous access."
         SystemBindPW "Password for the SystemBindDN."
-	BindPW "The password for the BindDN. Leave empty if no password is required."
 	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
         GroupMap "A TCL list represnting a map form LDAP groups to PO groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and Windows 'Administrators' to PO Admins."
 	SearchFilter "An optional LDAP expression to limit the users to be imported. Example: '(memberOf=cn=PO-Users,cn=Users,dc=project-open,dc=com)' would only import users who are member of the LDAP group 'PO-Users'."

@@ -52,8 +52,8 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     # The LDAP server like: "ldap://localhost"
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
-    set bind_dn $params(BindDN)
-    set bind_pw $params(BindPW)
+    set system_bind_dn $params(SystemBindDN)
+    set system_bind_pw $params(SystemBindPW)
     set server_type $params(ServerType)
     set search_filter ""
     if {[info exists params(SearchFilter)]} { set search_filter $params(SearchFilter) }
@@ -71,7 +71,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    }
 	    set sl ""
 	    if {"" != $size_limit} { set sl "-z $size_limit" }
-	    set cmd "ldapsearch $sl -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn $query $attributes"
+	    set cmd "ldapsearch $sl -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn $query $attributes"
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file: cmd=$cmd"
 	    append debug "Going to execute command: $cmd\n"
 
@@ -97,11 +97,11 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
 	    # check if we can construct the same hash
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file OpenLDAP"
-	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '(objectClass=$object_class)' $attributes"
-	    append debug "Going to execute command: ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (objectClass=$object_class) $attributes\n"
+	    ns_log Notice "ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn '(objectClass=$object_class)' $attributes"
+	    append debug "Going to execute command: ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn (objectClass=$object_class) $attributes\n"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "(objectClass=$object_class) $attributes"
+		exec ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn "(objectClass=$object_class) $attributes"
 	    } err_msg]
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file return_code=$return_code, msg=$err_msg"
 
@@ -375,6 +375,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		company		{ set user_hash(company_name) $value }
 		gecos		{ set user_hash(display_name) $value }
 		givenName	{ set user_hash(first_names) $value }
+		facsimileTelephoneNumber	{ set user_hash(fax) $value }
 		l		{ set user_hash(city) $value }
 		countryCode	{ set user_hash(country_code_numeric) $value }
 		co		{ set user_hash(country_name) $value }
@@ -383,7 +384,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		homePhone	{ set user_hash(home_phone) $value }
 		mail		{ set user_hash(email) $value }
 		memberOf	{ lappend group_list $value }
-		mobile		{ set user_hash(mobile_phone) "" }
+		mobile		{ set user_hash(mobile_phone) $value }
 		name		{ set user_hash(display_name) $value }
 		objectClass {
 		    ns_log Notice "auth::ldap::batch_import::import_users: objectClass='$value'"
@@ -394,6 +395,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 			organizationalPerson { set user_p 1 }
 		    }
 		}
+		pager		{ set user_hash(pager) $value }
 		physicalDeliveryOfficeName { set user_hash(office_name) $value }
 		postalCode	{ set user_hash(postal_code) $value }
 		sAMAccountName	{ set user_hash(username) $value }
@@ -401,8 +403,9 @@ ad_proc -private auth::ldap::batch_import::import_users {
 		st		{ set user_hash(state) $value }
 		streetAddress	{ set user_hash(address_line1) $value }
 		telephoneNumber { set user_hash(work_phone) $value }
+		title		{ set user_hash(job_title) $value }
 		uid		{ set user_hash(username) $value }
-		wWWHomePage { set user_hash(url) $value }
+		wWWHomePage	{ set user_hash(url) $value }
 	    }
 	}
 
@@ -439,6 +442,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     set debug ""
     array set params $parameters
     array set hash $keys_values
+    set current_user_id [ad_get_user_id]
     
     # display_name logic: Fill in first_names and last name if empty.
     if {[info exists hash(display_name)]} {
@@ -477,18 +481,25 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     # Skip if something was wrong.
     if {!$ok_p} { return [list result 0 oid 0 debug $debug] }
 
-    # Write hash variables to local variables
+    # Set default values for values not available in LDAP
     set url ""
+    set company_name ""
     set country_code ""
     set country_name ""
     set work_phone ""
     set home_phone ""
-    set cell_phone ""
+    set mobile_phone ""
+    set pager ""
+    set fax ""
     set address_line1 ""
     set city ""
+    set office_name ""
     set postal_code ""
     set state ""
+    set job_title ""
     set description ""
+
+    # Write hash variables to local variables
     foreach var [array names hash] {
 	set $var $hash($var)
     }
@@ -534,15 +545,20 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 
 	set creation_status $creation_info(creation_status)
 	if {"ok" != $creation_status} {
+
+	    set creation_message $creation_info(creation_message)
+	    append creation_message $creation_info(element_messages)
 	    ns_log Notice "auth::ldap::batch_import::parse_user: dn=$dn: Failed to create user dn=$dn: [array get creation_info]"
 	    append debug "Failed to create user dn=$dn\n"
-	    append debug "Failed to create reason: $creation_info(creation_message)\n"
+	    append debug "Failed to create reason: $creation_message\n"
+
+	    return [list result 0 oid 0 debug $debug]
 	}
 
 	# Set creation user
 	db_dml update_creation_user_id "
                 update acs_objects
-                set creation_user = [ad_get_user_id]
+                set creation_user = :current_user_id
                 where object_id = :user_id
         "
 
@@ -593,11 +609,14 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 			     -country_code $country_code \
 			     -country_name $country_name \
     ]
+
     db_dml update_parties "
 		update users_contact set
 			work_phone	= :work_phone,
 			home_phone	= :home_phone,
-			cell_phone	= :cell_phone,
+			cell_phone	= :mobile_phone,
+			pager		= :pager,
+			fax		= :fax,
 			wa_line1	= :address_line1,
 			wa_city		= :city,
 			wa_postal_code	= :postal_code,
@@ -637,9 +656,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
         }
     }
 
-    # Add the user to a compyn if a company_name is defined
-    set company_name ""
-    if {[info exists hash(company_name)]} { set company_name $hash(company_name) }
+    # Add the user to a company and office if a company_name and office_name are defined
     if {"" != $company_name} {
 	set company_id [db_string uid "
 		select	company_id
@@ -651,8 +668,20 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	if {0 != $company_id} {
 	    im_biz_object_add_role $user_id $company_id [im_biz_object_role_full_member]
 	}
-
     }
+    if {"" != $office_name} {
+	set office_id [db_string uid "
+		select	office_id
+		from	im_offices
+		where	lower(office_name) = lower(:office_name) OR 
+			lower(office_path) = lower(:office_name)
+	" -default 0]
+
+	if {0 != $office_id} {
+	    im_biz_object_add_role $user_id $office_id [im_biz_object_role_full_member]
+	}
+    }
+
 
     # Set the user's department if defined
     set department_name ""
@@ -715,8 +744,9 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 	}
 
 	db_dml update_emp_dept "
-		update im_employees
-		set department_id = :department_id
+		update im_employees set 
+			department_id = :department_id,
+			job_title = :job_title
 		where employee_id = :user_id
 	"
     }
