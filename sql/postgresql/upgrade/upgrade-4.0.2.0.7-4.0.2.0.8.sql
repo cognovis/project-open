@@ -20,3 +20,31 @@ where label in (
 	'openacs_auth',
 	'openacs_l10n'
 );
+
+
+
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-core',				-- package_name
+	'project_admin_filter_advanced',		-- label
+	'Advanced Filtering',				-- name
+	'/intranet/projects/index?filter_advanced_p=1',	-- url
+	70,						-- sort_order
+	(select menu_id from im_menus where label = 'projects_admin'),
+	null						-- p_visible_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'project_admin_filter_advanced'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+
