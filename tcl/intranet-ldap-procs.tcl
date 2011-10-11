@@ -62,7 +62,6 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     -ldap_type:required
     -ldap_domain:required
     -ldap_binddn:required
-    -ldap_bindpw:required
     -ldap_system_binddn:required
     -ldap_system_bindpw:required
 } {
@@ -210,6 +209,27 @@ ad_proc -public im_sysconfig_create_edit_authority {
 	}
     }
 
+    # ---------------------------------------------------------------
+    # Calculate the user BindDN
+    # The user will authentication in Active Directory with {username}@<domain>.
+    #
+    if {[info exists param_hash(BaseDN)]} {
+	set base_dn [string tolower $param_hash(BaseDN)]
+	set domain_pieces [split $base_dn ","]
+	set domain_list {}
+	foreach d $domain_pieces {
+	    if {[regexp {dc=(.+)} $d match piece]} {
+		lappend domain_list $piece
+	    }
+	}
+	set domain [join $domain_list "."]
+	set param_hash(BindDN) "{username}@$domain"
+    }
+
+    # Store the parameter values into the various "implementations"
+    # for authority parameters. No idea why this is like this, I
+    # just copied the code from acs-authentication...
+    #
     foreach element_name [array names param_hash] {
 	
 	# Make sure we have a parameter element
