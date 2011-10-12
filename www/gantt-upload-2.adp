@@ -18,7 +18,7 @@
 	   with resources such as timesheet hours, expenses, forum discussions, files <br>etc.</p>
 	<p><b>Reassign Resources</b>: Please select the tasks to be deleted and choose<br>
 	   where to reassign its resources.</p>
-	<p><b>Or</b>: Just <a href='@return_url;noquote@'>Return to the previous page</a> 
+	<p><b>Or</b>: Just <a href='%return_url%'>Return to the previous page</a> 
 	   in order to keep these task and their <br>resources.</p>
 	"] %>
 
