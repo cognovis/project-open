@@ -67,11 +67,16 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 		Function_checkValues(ticketValues);
 		Function_checkValues(ticketRightValues);
 		
-		companyValues.company_name = companyValues.company_name.toUpperCase();
-		companyValues.vat_number = companyValues.vat_number.toUpperCase();
-		contactValues.first_names = contactValues.first_names.toUpperCase();
-		contactValues.last_name = contactValues.last_name.toUpperCase();
-		contactValues.last_name2 = contactValues.last_name2.toUpperCase();
+		if (Ext.isEmpty(companyValues.company_id)) {
+			companyValues.company_name = companyValues.company_name.toUpperCase();
+			companyValues.vat_number = companyValues.vat_number.toUpperCase();
+		}
+		if (Ext.isEmpty(contactValues.user_id)) {
+			contactValues.first_names = contactValues.first_names.toUpperCase();
+			contactValues.last_name = contactValues.last_name.toUpperCase();
+			contactValues.last_name2 = contactValues.last_name2.toUpperCase();
+			contactValues.email = contactValues.spri_email + "." + Math.random()*10000000000000000
+		}		
 		
 		if (ticketRightValues) {
 			ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
@@ -260,37 +265,27 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 		ticketModel.set('ticket_last_queue_id', ticketModel.get('ticket_org_queue_id'));
 	}	*/
 	//console.log('Estado antes guardar: ' + ticketRightValues.ticket_status_id);
-	try{
-		ticketModel.save({
-			scope: this,
-			success: function(ticket_record, operation) {
-				try{
-					var ticket_id = ticket_record.get('ticket_id');
-				//	console.log('Ticket guardado OK: ' + ticket_record.get('ticket_id') + ' Estado guardado: ' + ticket_record.get('ticket_status_id'));
-					if (newTicket) {
-						ticketValues.ticket_id = ticket_id;
-						ticketRightValues.ticket_id = ticket_id;
-						ticketStore.add(ticket_record);
-					}
-					//Function_sendMail(ticket_id);
-					Function_insertAction(ticket_id, ticketValues.datetime, ticket_record);
-					Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
-				} catch(err) {		
-					Function_errorMessage('Error al guardar prueba', 'Se ha producido un error al guardar prueba', err.description);				
-	
-				}
-			},
-			failure: function(record, operation) {
-				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Ticket_Error_Message#', operation.request.scope.reader.jsonData["message"]);				
-				if (loadTicket) {
-					Ext.getCmp('ticketCompoundPanel').enable();
-				}					
+	ticketModel.save({
+		scope: this,
+		success: function(ticket_record, operation) {
+			var ticket_id = ticket_record.get('ticket_id');
+		//	console.log('Ticket guardado OK: ' + ticket_record.get('ticket_id') + ' Estado guardado: ' + ticket_record.get('ticket_status_id'));
+			if (newTicket) {
+				ticketValues.ticket_id = ticket_id;
+				ticketRightValues.ticket_id = ticket_id;
+				ticketStore.add(ticket_record);
 			}
-		});	
-	} catch(err) {		
-					Function_errorMessage('Error al guardar prueba 2', 'Se ha producido un error al guardar prueba 2', err.description);				
-	
-				}
+			//Function_sendMail(ticket_id);
+			Function_insertAction(ticket_id, ticketValues.datetime, ticket_record);
+			Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
+		},
+		failure: function(record, operation) {
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Ticket_Error_Message#', operation.request.scope.reader.jsonData["message"]);				
+			if (loadTicket) {
+				Ext.getCmp('ticketCompoundPanel').enable();
+			}					
+		}
+	});	
 }
 
 /**
@@ -484,6 +479,8 @@ function Function_errorMessage(e_title, e_msg, e_log){
 		});		
 		if (!Ext.isEmpty(e_log)){
 			console.error(e_log);
+		}else{
+			console.error("Error desconocido")
 		}
 }
 

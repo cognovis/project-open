@@ -79,8 +79,20 @@ Ext.define('PO.data.CategoryStore', {
 		var categoryVars = {category_id: '', category_translated: null, sort_order: '0'};
 		var category = Ext.ModelManager.create(categoryVars, 'TicketBrowser.Category');
 		this.add(category);	
+	},
+	getParent: function(value) {//Get category parent ID
+		if (!Ext.isEmpty(value)) {
+			var record = this.getById(value);
+			if (!Ext.isEmpty(record)) {
+				var record_field_value = record.get('tree_sortkey');
+				var record_field_length = record_field_value.length;	
+				this.clearFilter();
+				var parent_id = this.findRecord('tree_sortkey','' + parseInt(record_field_value.substr(0,record_field_length - 8),10)).get('category_id');
+				return parent_id;
+			}
+		}
+		return '';
 	}
-	
 });
 
 /*
@@ -188,6 +200,7 @@ var customerGroupId = '461';		// String!
 // Check if the current user is an admin
 var currentUserIsAdmin = <%= [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] %>;	// Integer!
 
+var serviceId = '10000152';
 
 //Check date format
 dateFormat = /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ ;

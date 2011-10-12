@@ -99,7 +99,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			dataIndex:	'last_name2'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Contact_Mail#',
-			dataIndex:	'email',
+			dataIndex:	'spri_email',
 			minWidth:	150
 		}, {
 			header:	'#intranet-sencha-ticket-tracker.Telephone#',
@@ -193,7 +193,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and lower(email) like \'%' + value + '%\'';
+						query = query + ' and lower(spri_email) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;

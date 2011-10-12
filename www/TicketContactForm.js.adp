@@ -114,7 +114,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_Name2#',
 		hidden: true
 	}, {
-		name:		'email',
+		name:		'spri_email',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Email#'
 	}, {

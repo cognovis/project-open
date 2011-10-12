@@ -203,7 +203,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(spri_email) like \'%' + value + '%\'))';
 						key = 'query';
 						value = query;
 						break;											
