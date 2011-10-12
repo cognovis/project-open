@@ -314,6 +314,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		to_char(:end_date::date, 'J') as end_date_julian
     "
 
+
     # ------------------------------------------------------------
     # URLs to different parts of the system
 
@@ -1093,7 +1094,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	if {""==$start_date_julian || ""==$end_date_julian} {
 		ad_return_complaint 1 "Empty date found. Please verify start/end date of Project ID: <a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>" 
 	}
-	
+
+	# Skip if no data
+	if {"" == $child_start_date_julian} { continue }
+	if {"" == $child_end_date_julian} { continue }
+
 	# Loop through the days between start_date and end_data
 	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
 
