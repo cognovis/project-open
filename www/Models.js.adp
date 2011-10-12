@@ -220,7 +220,8 @@ Ext.define('TicketBrowser.User', {
 		'username',			// Windows username
 		'last_name2',			// Spanish 2nd last name
 		'telephone',			// Telephone
-		'email',			// Just email txt
+		'email',
+		'spri_email',			// Just email txt
 		'gender',			// male or female
 		'language',			// es_ES or eu_ES
 		'spri_consultant',
@@ -240,7 +241,7 @@ Ext.define('TicketBrowser.User', {
 			format:	'json',
 			format_variant:	'sencha',
 			gzip_p:    '1',
-			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,gender,language,spri_consultant'
+			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,spri_email,gender,language,spri_consultant'
 		},
 		reader:	{ 
 			type:		'json', 

@@ -34,6 +34,7 @@ ad_page_contract {
 	set found_audit_p [db_0or1row audit-last-record $audit_sql]	
 
     # Send out notification mail to all members of the queue
+    #im_email_from_user_id(member_id) as member_email
     set member_sql "
 	select	member_id,
 		im_name_from_user_id(member_id) as member_name,
@@ -75,18 +76,16 @@ ad_page_contract {
 
 	if {($found_audit_p && $old_ticket_queue_id!=$ticket_queue_id) || !$found_audit_p} {
 		if {463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id} {
-				# Only resiste
-				#if {73621==$ticket_queue_id } {
-				    db_foreach send_email $member_sql {
-						acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr $member_email -subject $subject -body $body
-				#}
+		    db_foreach members $member_sql {
+		    	ns_log Notice "send-mail: Envio mail tipo 2: $member_email"
+				acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr $member_email -subject $subject -body $body
 			}
 		} else {
 			#Si ha cambiado de estado SACE a SAC
-			if (73369==$old_ticket_queue_id && 73363==$ticket_queue_id ) {
+			if {73369==$old_ticket_queue_id && 73363==$ticket_queue_id } {
 				ns_log Notice "send-mail: Cambio cola SACE a SAC envio a responsable"
-				acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr "david.blanco@grupoversia.com" -subject "Tiene un ticket escalado de SACE ($project_name)"
-				#acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr [email_image::get_email -user_id 59673] -subject "Tiene un ticket escalado de SACE ($project_name)"
+				#acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr "david.blanco@grupoversia.com" -subject "Tiene un ticket escalado de SACE ($project_name)" -body ""
+				acs_mail_lite::send -from_addr "SACSPRI@sicsa.es" -to_addr [email_image::get_email -user_id 59673] -subject "Tiene un ticket escalado de SACE ($project_name)" -body ""
 			}
 			
 		}

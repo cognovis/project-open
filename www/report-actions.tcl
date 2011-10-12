@@ -133,15 +133,19 @@ set report_sql "
 			substring(audit_value from 'ticket_resolution\\t(\[^\\n\]*)') as resultado,
 			substring(audit_value from 'ticket_status_id\\t(\[^\\n\]*)') as estado,
 			substring(audit_value from 'ticket_type_id\\t(\[^\\n\]*)') as tipo,
-			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as escalado,
+			substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as escalado,
 			substring(audit_value from 'ticket_program_id\\t(\[^\\n\]*)') as area,
 			substring(audit_value from 'company_id\\t(\[^\\n\]*)') as cliente,
 			substring(audit_value from 'user_id\\t(\[^\\n\]*)') as contacto,
 			substring(audit_value from 'ticket_file\\t(\[^\\n\]*)') as exp,
-			to_date(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechacre,
-			to_date(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fecharec,
-			to_date(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechaescalado,
-			to_date(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechacierre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechacre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timecre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fecharec,
+			to_char(to_timestamp(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timerec,
+			to_char(to_timestamp(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechaescalado,
+			to_char(to_timestamp(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timeescalado,						
+			to_char(to_timestamp(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechacierre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timecierre,						
 			substring(audit_value from 'ticket_incoming_channel_id\\t(\[^\\n\]*)') as canal,
 			substring(audit_value from 'ticket_incoming_channel_id\\t(\[^\\n\]*)') as detalle,
 			project_nr as numero
@@ -156,7 +160,9 @@ set report_sql "
 			audit_action != 'before_update' and 
 			audit_id in (
 				select max(audit_id) as audit_id from im_audits where audit_action != 'after_update' and audit_action != 'before_update' group by audit_action
-			)
+			) and 
+			ticket_creation_date >= :start_date and
+			ticket_creation_date <= :end_date			
 
 	order by 	project_nr asc,
 				audit_date asc	
@@ -185,9 +191,13 @@ set header0 {
 	"Contacto"
 	"Expediente"
 	"Fecha Creacion"
+	"Hora Creacion"
 	"Fecha Recepcion"
+	"Hora Recepcion"
 	"Fecha Escalado"
+	"Hora Escalado"
 	"Fecha Cierre"
+	"Hora Cierre"
 	"Canal"
 	"Detalle Canal"
 }
@@ -211,9 +221,13 @@ set report_def [list \
 	$contacto
 	$exp
 	$fechacre
+	$timecre
 	$fecharec
+	$timerec
 	$fechaescalado
+	$timeescalado
 	$fechacierre
+	$timecierre
 	$canal
 	$detalle
     } \
@@ -342,7 +356,14 @@ db_foreach sql $report_sql {
 		
 		set tipo [im_category_from_id $tipo]
 		
-		set escalado [im_category_from_id $escalado]
+		#set escalado [im_category_from_id $escalado]
+		
+		set escalado [db_0or1row serach-group-name "select group_name from groups where group_id=:escalado and group_id!=463"]
+		if {!$escalado} {
+			set escalado ""
+		} else {
+			set escalado $group_name
+		}
 		
 		set lista_parents [im_category_parents $canal]
 		set parent [lindex $lista_parents 0]	
@@ -361,21 +382,27 @@ db_foreach sql $report_sql {
 				
 		# Control de fechas vacias tras "to_date" cuando un substring del audit viene vacio para la fecha
 		
-		if {"0001-01-01 BC" == $fechacre} {
+		if {"0001-01-01" == $fechacre} {
             set fechacre ""
+            set timecre ""
         }
 		
-		if {"0001-01-01 BC" == $fecharec} {
+		if {"0001-01-01" == $fecharec} {
             set fecharec ""
+            set timerec ""
         }
 		
-		if {"0001-01-01 BC" == $fechaescalado} {
+		if {"0001-01-01" == $fechaescalado} {
             set fechaescalado ""
+            set timeescalado ""
         }
 		
-		if {"0001-01-01 BC" == $fechacierre} {
+		if {"0001-01-01" == $fechacierre} {
             set fechacierre ""
+            set timecierre ""
         }
+        
+        
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \

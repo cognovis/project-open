@@ -168,7 +168,7 @@ set report_sql "
 		coalesce(p_contact.first_names,'') || ' ' || 
 			coalesce(p_contact.last_name, '') || ' ' || 
 			coalesce(p_contact.last_name2, '') as contact_name,
-		pa_contact.email as contact_email,
+		p_contact.spri_email as contact_email,
 		p_contact.telephone as contact_telephone,
 		p_contact.vip_p as contact_vip_p,
 		p_contact.gender as contact_gender,
@@ -181,6 +181,9 @@ set report_sql "
 		to_char(t.ticket_creation_date, :date_time_format) as ticket_creation_date_pretty,
 		to_char(t.ticket_creation_date, 'YYYY-MM-DD') as ticket_creation_date_date,
 		to_char(t.ticket_creation_date, 'HH24:MI') as ticket_creation_date_time,
+
+		to_char(t.ticket_reaction_date, 'YYYY-MM-DD') as ticket_reaction_date_date,
+		to_char(t.ticket_reaction_date, 'HH24:MI') as ticket_reaction_date_time,
 
 		to_char(t.ticket_escalation_date, 'YYYY-MM-DD') as ticket_escalation_date_date,
 		to_char(t.ticket_escalation_date, 'HH24:MI') as ticket_escalation_date_time,
@@ -208,8 +211,8 @@ set report_sql "
 	where
 		t.ticket_id = o.object_id and
 		t.ticket_id = p.project_id and
-		o.creation_date >= :start_date and
-		o.creation_date <= :end_date
+		t.ticket_creation_date >= :start_date and
+		t.ticket_creation_date <= :end_date
 	order by
 		lower(cust.company_path),
 		lower(p.project_nr)
@@ -229,6 +232,8 @@ set header0 {
 	"Ticket ID"
 	"Fecha Sistema"
 	"Hora Sistema"
+	"Fecha Creacion"
+	"Hora Creacion"	
 	"Fecha Recepcion"
 	"Hora Recepcion"
 	"Fecha Escalacion"
@@ -281,6 +286,8 @@ set report_def [list \
 	$creation_date_time
 	$ticket_creation_date_date
 	$ticket_creation_date_time
+	$ticket_reaction_date_date
+	$ticket_reaction_date_time	
 	$ticket_escalation_date_date
 	$ticket_escalation_date_time
 	$ticket_done_date_date
@@ -468,6 +475,18 @@ db_foreach sql $report_sql {
 			
 		}	
 			
+		set lista_parents [im_category_parents $ticket_incoming_channel_raw_id]
+		set parent [lindex $lista_parents 0]	
+		set ticket_incoming_channel_parent [im_category_from_id $parent]
+		if {"" == $ticket_incoming_channel_parent} {
+			set ticket_incoming_channel_parent [im_category_from_id $ticket_incoming_channel_raw_id]
+		}			
+		set lista_parents [im_category_parents $ticket_outgoing_channel_raw_id]
+		set parent [lindex $lista_parents 0]	
+		set ticket_outgoing_channel_parent [im_category_from_id $parent]
+		if {"" == $ticket_outgoing_channel_parent} {
+			set ticket_outgoing_channel_parent [im_category_from_id $ticket_outgoing_channel_raw_id]
+		}			
 			
         if {"" != $ticket_incoming_channel_parent} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel_parent]"

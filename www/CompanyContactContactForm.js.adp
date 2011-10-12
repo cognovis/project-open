@@ -99,7 +99,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_Name2#'
 	}, {
-		name:		'email',
+		name:		'spri_email',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Email#'
 	}, {

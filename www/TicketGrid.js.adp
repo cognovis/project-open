@@ -280,7 +280,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				case 'email':
 					// Fuzzy search
 					value = value.toLowerCase();
-					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
+					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(spri_email) like \'%' + value + '%\'))';
 					key = 'query';
 					value = query;
 					break;	
@@ -363,19 +363,21 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
-		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
-		var ticketModel = selection[0];
+		//var ticketModel = selection[0];
 		
-		ticketModel.destroy({
-			success: function(record, operation) {
-		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
-				ticketStore.remove(ticketModel);
-			},
-			failure: function(record, operation) {
-				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
-			}
-		});				
+		for(var i=0;i < selection.length;i++) {
+			var ticketModel = selection[i];
+			ticketModel.destroy({
+				success: function(record, operation) {
+			 		console.log('Ticket #' + operation.records[0].get('project_nr')+' was destroyed.');
+					ticketStore.remove(operation.records[0]);
+				},
+				failure: function(record, operation) {
+					Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
+				}
+			});				
+		}
 	},
 
 	onCopy: function() {
