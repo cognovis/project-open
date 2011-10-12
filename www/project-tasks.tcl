@@ -438,7 +438,7 @@ template::multirow foreach task_list_multirow {
 		default { set reported_units_cache "-" }
     	}
 
-        # ns_log Notice "im_timesheet_task_list_component: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache"
+        # ns_log Notice "project-tasks: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache"
 
         set indent_html ""
         set indent_short_html ""
