@@ -1,4 +1,3 @@
-BEGIN;
 
 --Be careful !!!
 --script drops all indices, triggers and columns with types defined
@@ -62,4 +61,3 @@ DROP FUNCTION reset_tsearch();
 DROP FUNCTION tsearch2() CASCADE;
 DROP FUNCTION _get_parser_from_curcfg();
 
-END;
