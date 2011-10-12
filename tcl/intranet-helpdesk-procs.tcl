@@ -992,7 +992,7 @@ ad_proc -public im_helpdesk_ticket_sla_options {
 
     # Can the user see all projects?
     set permission_sql ""
-    if {![im_permission $user_id "view_project_all"]} {
+    if {![im_permission $user_id "view_projects_all"]} {
 	set include_create_sla_p 0
 	set permission_sql "and p.project_id in (
 		select object_id_one from acs_rels where object_id_two = :user_id UNION 
