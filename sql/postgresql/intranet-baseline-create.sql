@@ -50,9 +50,9 @@ values ('im_baseline', 'im_baselines', 'baseline_id');
 -- These URLs are used by the Full-Text Search Engine and the Workflow
 -- to show links to the object type.
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_baseline','view','/intranet-baselines/new?display_mode=display&baseline_id=');
+'im_baseline','view','/intranet-baseline/new?display_mode=display&baseline_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_baseline','edit','/intranet-baselines/new?display_mode=edit&baseline_id=');
+'im_baseline','edit','/intranet-baseline/new?display_mode=edit&baseline_id=');
 
 
 
@@ -330,13 +330,13 @@ select im_priv_create('del_baselines','Employees');
 -- Create a Baselines plugin for the ProjectViewPage.
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
 	'Project Baselines',		-- plugin_name
-	'intranet-baselines',		-- package_name
+	'intranet-baseline',		-- package_name
 	'right',			-- location
 	'/intranet/projects/view',	-- page_url
 	null,				-- view_name
@@ -347,5 +347,25 @@ SELECT im_component_plugin__new (
 update im_component_plugins 
 set title_tcl = 'lang::message::lookup "" intranet-baselines.Project_Baselines "Project Baselines"'
 where plugin_name = 'Project Baselines';
+
+
+
+-- Baseline components in the actual baseline page
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Budget Comparison',		-- plugin_name
+	'intranet-baseline',		-- package_name
+	'right',			-- location
+	'/intranet-baseline/new',	-- page_url
+	null,				-- view_name
+	100,				-- sort_order
+	'im_baseline_budget_comparison_component -baseline_id $baseline_id'	-- component_tcl
+);
+
 
 

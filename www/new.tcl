@@ -53,6 +53,10 @@ if {[info exists baseline_id] && "" == $baseline_project_id} {
     set baseline_project_id [db_string oid "select baseline_project_id from im_baselines where baseline_id = :baseline_id" -default ""]
 }
 
+# Show the ADP component plugins?
+set show_components_p 1
+if {"edit" == $form_mode} { set show_components_p 0 }
+
 
 # ---------------------------------------------------------------
 # Create the Form
@@ -178,4 +182,7 @@ ad_form -extend -name $form_id \
 	ad_script_abort
     }
 
+
+set sub_navbar ""
+set left_navbar_html ""
 
