@@ -846,12 +846,6 @@ ad_proc -public im_project_audit_impl  {
     ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id"
     if {"" == $user_id} { set user_id [ad_get_user_id] }
 
-    # Skip writing a project audit record if nothing has changed...
-    if {"" == $audit_id} { 
-    	ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id: Skipping because audit_id is null"
-	return "" 
-    }
-
     # No audit for non-existing projects
     if {"" == $project_id} { 
 	ns_log Notice "im_project_audit_impl: project_id is empty" 
