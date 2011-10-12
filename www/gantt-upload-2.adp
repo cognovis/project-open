@@ -41,7 +41,7 @@
 </p>
 <p>
 <%= [lang::message::lookup "" intranet-ganttproject.Click_here_to_go_to_your_project "Please click here to go to your project."] %>:
-<a href='/intranet/projects/view?project_id=@project_id@'>@project_name@</a><br>
+<a href='/intranet/projects/view?project_id=@org_project_id@'>@org_project_name@</a><br>
 </p>
 
 

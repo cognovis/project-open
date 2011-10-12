@@ -47,6 +47,13 @@ set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Titl
 # Write audit trail
 im_project_audit -project_id $project_id -action before_update
 
+db_1row project_info "
+	select	project_id as org_project_id,
+		project_name as org_project_name
+	from	im_projects
+	where	project_id = :project_id
+"
+
 
 # -------------------------------------------------------------------
 # Get the file from the user.
