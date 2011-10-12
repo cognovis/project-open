@@ -172,7 +172,12 @@ if {[catch {
 			     $project_id \
 			    ]
     array set task_hash $task_hash_array
-    
+
+    set debug ""
+    foreach k [lsort [array names task_hash]] { append debug "$k	$task_hash($k)\n" }
+#    ad_return_complaint 1 "<pre>$debug</pre>"
+
+     
     #ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
     set task_hash_array [im_gp_save_tasks \
 			     -format $format \

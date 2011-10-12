@@ -614,9 +614,7 @@ ad_proc -public im_gp_save_tasks2 {
             "name"              { set task_name [$taskchild text] }
 	    "uid"               { set gantt_project_id [$taskchild text] }
 	    "isnull"		{ set is_null [$taskchild text] }
-	    "duration"          { 
-		set duration [$taskchild text] 
-	    }
+	    "duration"          { set duration [$taskchild text] }
 	    "remainingduration" { set remaining_duration [$taskchild text] }
 	    "start"             { set start_date [$taskchild text] }
 	    "finish"            { set end_date [$taskchild text] }
@@ -678,9 +676,7 @@ ad_proc -public im_gp_save_tasks2 {
 
 
     # If no percent_completed is given explicitely (GanttProject(?))
-    # then calculate based on remaining duration.
-    # ToDo: Can we delete this piece?
-
+    # then calculate based on remaining duration. ToDo: Can we delete this piece?
     if {"" != $duration} {
     	set duration_seconds [im_gp_ms_project_time_to_seconds $duration]
     } else {
