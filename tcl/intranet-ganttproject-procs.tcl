@@ -1008,10 +1008,14 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 } {
     ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id"
     db_1row project_info "
-	select	project_type_id
-	from	im_projects
-	where	project_id = :project_id
+	select	p.project_type_id,
+		o.object_type
+	from	im_projects p,
+		acs_objects o
+	where	p.project_id = :project_id and
+		p.project_id = o.object_id
     "
+
     set sub_tasks [db_list sub_tasks "
 	select	project_id
 	from	im_projects
@@ -1021,6 +1025,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
     ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id, project_type_id=$project_type_id, sub_tasks=$sub_tasks"
 
     if {[llength $sub_tasks] > 0} {
+
 	# The task has children. Make sure it has the object type "im_project"
 	if {[im_project_type_consulting] != $project_type_id} {
 	    if {$debug_p} { ns_write "<li>Setting the project_type_id to 'Consulting project' because there are children\n" }
@@ -1030,7 +1035,17 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		WHERE	project_id = :project_id
             "
 	}
+	if {"im_project" != $object_type} {
+	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
+	    db_dml update_otype "
+		UPDATE	acs_objects
+		SET	object_type = 'im_project'
+		WHERE	object_id = :project_id
+            "
+	}
+
     } else {
+
 	# The task has no sub-tasks, make it a "im_timeheet_task"
 	if {[im_project_type_task] != $project_type_id} {
 	    if {$debug_p} { ns_write "<li>Setting the object type to 'im_timesheet_task' because there are NO children\n" }
@@ -1040,6 +1055,15 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		WHERE	project_id = :project_id
             "
 	}
+	if {"im_timesheet_task" != $object_type} {
+	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
+	    db_dml update_otype "
+		UPDATE	acs_objects
+		SET	object_type = 'im_timesheet_task'
+		WHERE	object_id = :project_id
+            "
+	}
+
     }
 
     # Recursively descend
