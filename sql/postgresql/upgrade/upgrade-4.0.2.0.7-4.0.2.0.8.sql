@@ -47,4 +47,8 @@ SELECT acs_permission__grant_permission(
 );
 
 
+-- Fix timesheet home component
+update im_component_plugins
+set component_tcl = 'im_timesheet_task_list_component  -max_entries_per_page 20 -view_name im_timesheet_task_list_short -restrict_to_mine_p mine'
+where component_tcl = 'im_timesheet_task_list_component  -max_entries_per_page 20 -view_name im_timesheet_task_list_short -restrict_to_status_id 9600 -restrict_to_mine_p mine';
 
