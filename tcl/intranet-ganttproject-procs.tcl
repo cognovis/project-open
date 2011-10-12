@@ -317,6 +317,27 @@ ad_proc -public im_gp_extract_db_tree {
 } {
     Returns a list of all task_ids below a top project.
 } {
+    set task_sql "
+	select	child.project_id
+	from	im_projects parent,
+		im_projects child
+	where	parent.project_id = :project_id and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+    "
+    set result {}
+    db_foreach sub_tasks $task_sql {
+	lappend result $project_id
+    }
+
+    return $result
+}
+
+ad_proc -public im_gp_extract_db_tree_old_bad { 
+    project_id 
+} {
+    Returns a list of all task_ids below a top project.
+    We can filter out the sub-projects in a different way...
+} {
     # We can't use the tree_sortkey query here because we need
     # to deal with sub-projects somewhere in the middel of the
     # structure.

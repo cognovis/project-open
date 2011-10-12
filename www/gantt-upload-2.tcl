@@ -324,12 +324,15 @@ if {$allocations_node != ""} {
 
 # Get all the tasks about the current project
 array set db_task_ids {} 
+
 foreach i [im_gp_extract_db_tree $project_id] {
     set db_task_ids($i) 1
 }
 
 # we don't want to delete the project (which never is in the xml)
-unset db_task_ids($project_id)
+if {[info exists db_task_ids($project_id)]} {
+    unset db_task_ids($project_id)
+}
 
 # Remove all tasks from the GanttProject .gan file
 array set task_hash $task_hash_array
