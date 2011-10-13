@@ -215,16 +215,19 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		validator: function(value){
-			var ticket_type_field = Ext.getCmp('ticketForm').getForm().findField('ticket_type_id');
-			if (this.store.data.length > 0 && !Ext.isEmpty(this.value)) {
-				var string_2_program = this.store.findRecord('category_id',this.value).get('aux_string2');
-				var string_2_type = ticket_type_field.store.findRecord('category_id',ticket_type_field.getValue()).get('aux_string2');
-				if (Ext.String.trim(string_2_program).toLowerCase()!=Ext.String.trim(string_2_type).toLowerCase()) {
-					return 'Tipo de ticket no válido para el programa indicado'; 
+			try{
+				var ticket_type_field = Ext.getCmp('ticketForm').getForm().findField('ticket_type_id');
+				if (this.store.data.length > 0 && !Ext.isEmpty(this.value) && !Ext.isEmpty(ticket_type_field.store.findRecord('category_id',ticket_type_field.getValue())) ) {
+					var string_2_program = this.store.findRecord('category_id',this.value).get('aux_string2');
+					var string_2_type = ticket_type_field.store.findRecord('category_id',ticket_type_field.getValue()).get('aux_string2');
+					if (Ext.String.trim(string_2_program).toLowerCase()!=Ext.String.trim(string_2_type).toLowerCase()) {
+						return 'Tipo de ticket no válido para el programa indicado'; 
+					}
 				}
+			} catch(err) {
+				return this.store.validateLevel(this.value,this.allowBlank);
 			}
 			return this.store.validateLevel(this.value,this.allowBlank);
-			
 			/*
 			var levelv = this.store.validateLevel(this.value,this.allowBlank);
 			if (levelv==true) {
