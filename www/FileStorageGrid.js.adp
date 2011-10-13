@@ -121,6 +121,7 @@ function showFileStorageNewForm(ticket_id) {
 							/*// Tell all panels to load the data of the newly created object
 							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
 							compoundPanel.loadTicket(ticket_model);	*/
+							ticket_form.getForm().findField('fs_folder_id').setValue(fs_folder_id);
 							Ext.getCmp('fileStorageGrid').loadTicket(ticket_model);
 							
 						},

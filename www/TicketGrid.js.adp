@@ -365,6 +365,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	onDelete: function(btn, pressed){
 		var selection = this.selModel.getSelection();
 		//var ticketModel = selection[0];
+		var count_delete = 0;
 		
 		for(var i=0;i < selection.length;i++) {
 			var ticketModel = selection[i];
@@ -372,6 +373,10 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				success: function(record, operation) {
 			 		console.log('Ticket #' + operation.records[0].get('project_nr')+' was destroyed.');
 					ticketStore.remove(operation.records[0]);
+					count_delete++;
+					if (count_delete==i){
+						Ext.getCmp('ticketFilterForm').onSearch();
+					}
 				},
 				failure: function(record, operation) {
 					Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
