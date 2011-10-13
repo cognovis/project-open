@@ -688,7 +688,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     if {[info exists hash(department)]} { set department_name $hash(department) }
     if {[string length $department_name] > 2} {
 	set department_id [db_string uid "
-		select	cost_center_id
+		select	min(cost_center_id)
 		from	im_cost_centers
 		where	lower(cost_center_name) = lower(:department_name) OR
 			lower(cost_center_label) = lower(:department_name) OR
