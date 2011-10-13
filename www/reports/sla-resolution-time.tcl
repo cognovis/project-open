@@ -52,9 +52,9 @@ set form_mode display
 set days_in_past 7
 db_1row todays_date "
 select
-        to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
-        to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
-        to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
+	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
+	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
+	to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
 from dual
 "
 
@@ -64,9 +64,9 @@ if {"" == $start_date} {
 
 db_1row end_date "
 select
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
 from dual
 "
 
@@ -125,6 +125,153 @@ set levels {2 "Customers" 3 "Customers+Projects"}
 
 
 # ------------------------------------------------------------
+# Report Definition
+#
+# Reports are defined in a "declarative" style. The definition
+# consists of a number of fields for header, lines and footer.
+
+# Global Header Line
+set header0 [list \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Customer "Customer"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_SLA "SLA"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Customer_Contact "Customer<br>Contact"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Name "Ticket<br>Name"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Type "Ticket<br>Type"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Status "Ticket<br>Status"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Priority "Ticket<br>Prio"]  \
+		 [lang::message::lookup "" intranet-sla-management.Creation_User "Creation<br>User"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
+		 [lang::message::lookup "" intranet-sla-management.Creation_Date "Creation<br>Date"]  \
+		 [lang::message::lookup "" intranet-sla-management.Reaction_Date "Reaction<br>Date"]  \
+		 [lang::message::lookup "" intranet-sla-management.Confirmation_Date "Confirmation<br>Date"]  \
+		 [lang::message::lookup "" intranet-sla-management.Done_Date "Done<br>Date"]  \
+		 [lang::message::lookup "" intranet-sla-management.Sign_Off_Date "Sign-Off<br>Date"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
+		]
+
+set customer_header {
+	"\#colspan=99 <b><a href=[export_vars -base $company_url {{company_id $company_id}}]>$company_name</a></b>"
+}
+
+set sla_header {
+	""
+	"\#colspan=98 <b><a href=[export_vars -base $project_url {{project_id $sla_id}}]>$sla_name</a></b>"
+}
+
+set ticket_header {
+	"$company_path"
+	"$sla_nr"
+	"<a href=[export_vars -base $user_url {{user_id $ticket_customer_contact_id}}]>$ticket_customer_contact_name</a>"
+	"<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
+	$ticket_type
+	$ticket_status
+	$ticket_prio
+	"<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
+	$ticket_queue
+	$ticket_assignee
+	$creation_date_pretty
+	$ticket_creation_date_pretty
+	$ticket_reaction_date_pretty
+	$ticket_confirmation_date_pretty
+	$ticket_done_date_pretty
+	"\#align=right $ticket_resolution_time"
+}
+
+
+
+# ------------------------------------------------------------
+# Add all Project and Company DynFields to list
+
+set dynfield_sql "
+	select  aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
+	from	im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where	a.widget_name = w.widget_name and
+		a.acs_attribute_id = aa.attribute_id and
+		aa.object_type = 'im_ticket' and
+		aa.attribute_name not like 'default%' and
+		(also_hard_coded_p is null OR also_hard_coded_p = 'f') and
+		aa.attribute_name not in (
+			-- Fields already hard coded in the report
+			'ticket_customer_contact_id'
+		)
+	order by aa.object_type, aa.sort_order
+"
+
+set derefs [list]
+db_foreach dynfield_attributes $dynfield_sql {
+
+    # Avoid DynField configuration errors.
+    if {![im_column_exists "im_tickets" $attribute_name]} { continue }
+
+    # Calculate the "dereference" DynField value
+    set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
+    if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
+    regsub -all {[^a-zA-Z0-9\ \-\.]} $pretty_name {} pretty_name
+    lappend header0 $pretty_name
+    lappend derefs $deref
+    set var_name "\$${attribute_name}_deref"
+    lappend ticket_header $var_name
+}
+
+
+# ----------------------------------------------------------------
+# Add the ticket resolution time per group
+# ----------------------------------------------------------------
+
+# Calculate a list of groups for storing resolution times per group
+set group_sql "
+	select	g.*
+	from	groups g
+	where	g.group_id > 0
+	order by g.group_id
+"
+set cnt 0
+db_foreach groups $group_sql {
+    lappend header0 $group_name
+    set var_name "group${group_id}_restime"
+    lappend ticket_header "\$$var_name"
+    set deref "t.ticket_resolution_time_per_queue\[$cnt\] as $var_name"
+    lappend derefs $deref
+    incr cnt
+}
+
+
+
+# ----------------------------------------------------------------
+# The entries in this list include <a HREF=...> tags
+# in order to link the entries to the rest of the system (New!)
+# ----------------------------------------------------------------
+#
+set report_def [list \
+		    group_by company_id \
+		    header $customer_header \
+		    content [list \
+				 group_by sla_id \
+				 header $sla_header \
+				 content [list \
+					      group_by ticket_id \
+					      header $ticket_header \
+					      content {} \
+					      footer {} \
+					     ] \
+				 footer {} \
+				 ]\
+		    ]
+
+
+# Global Footer Line
+set footer0 {}
+
+
+
+# ------------------------------------------------------------
 # Report SQL - This SQL statement defines the raw data 
 # that are to be shown.
 
@@ -145,17 +292,23 @@ set report_sql "
 		to_char(t.ticket_reaction_date, :date_time_format) as ticket_reaction_date_pretty,
 		to_char(t.ticket_confirmation_date, :date_time_format) as ticket_confirmation_date_pretty,
 		to_char(t.ticket_signoff_date, :date_time_format) as ticket_signoff_date_pretty,
+		im_name_from_user_id(t.ticket_customer_contact_id) as ticket_customer_contact_name,
 		p.*,
 		substring(p.project_name for 30) as project_name_pretty,
 		g.*,
 		g.group_name as ticket_queue,
 		cust.*,
-		im_category_from_id(cust.company_type_id) as company_type
+		im_category_from_id(cust.company_type_id) as company_type,
+		sla_project.project_id as sla_id,
+		sla_project.project_nr as sla_nr,
+		sla_project.project_name as sla_name,
+		[join $derefs "\t,\n"]
 	from
 		acs_objects o,
 		im_projects p
 		LEFT OUTER JOIN im_companies cust ON (p.company_id = cust.company_id)
-		LEFT OUTER JOIN im_offices office ON (office.office_id = cust.main_office_id),
+		LEFT OUTER JOIN im_offices office ON (office.office_id = cust.main_office_id)
+		LEFT OUTER JOIN im_projects sla_project ON (p.parent_id = sla_project.project_id),
 		im_tickets t
 		LEFT OUTER JOIN persons p_contact ON (t.ticket_customer_contact_id = p_contact.person_id)
 		LEFT OUTER JOIN parties pa_contact ON (t.ticket_customer_contact_id = pa_contact.party_id)
@@ -172,64 +325,7 @@ set report_sql "
 
 "
 
-# ------------------------------------------------------------
-# Report Definition
-#
-# Reports are defined in a "declarative" style. The definition
-# consists of a number of fields for header, lines and footer.
-
-# Global Header Line
-set header0 [list \
-		 [lang::message::lookup "" intranet-sla-management.Creation_User "Creation User"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket "Ticket"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Type "Type"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Status "Status"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Priority "Prio"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Closed_in_1st_Contact "Closed<br>in 1st<br>Contact"]  \
-		 [lang::message::lookup "" intranet-sla-management.Creation_Date "Creation<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Reaction_Date "Reaction<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Confirmation_Date "Confirmation<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Done_Date "Done<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Sign_Off_Date "Sign-Off<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
-		]
-
-
-
-
-# The entries in this list include <a HREF=...> tags
-# in order to link the entries to the rest of the system (New!)
-#
-set report_def [list \
-    group_by ticket_id \
-    header {
-	"<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
-	"<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
-	$ticket_type
-	$ticket_status
-	$ticket_prio
-	$ticket_queue
-	$ticket_assignee
-	$ticket_closed_in_1st_contact_p
-	$creation_date_pretty
-	$ticket_creation_date_pretty
-	$ticket_reaction_date_pretty
-	$ticket_confirmation_date_pretty
-	$ticket_done_date_pretty
-	$ticket_resolution_time
-    } \
-    content {} \
-    footer {} \
-]
-
-
-
-# Global Footer Line
-set footer0 {}
-
-
+# --------------------------------------------------------
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format $output_format
 
@@ -285,7 +381,7 @@ switch $output_format {
     printer {
 	ns_write "
 	<link rel=StyleSheet type='text/css' href='/intranet-reporting/printer-friendly.css' media=all>
-        <div class=\"fullwidth-list\">
+	<div class=\"fullwidth-list\">
 	<table border=0 cellspacing=1 cellpadding=1 rules=all>
 	<colgroup>
 		<col id=datecol>
@@ -360,17 +456,17 @@ db_foreach sql $report_sql {
 	    -row_class $class \
 	    -cell_class $class
 
-        if {"" != $ticket_type} {
-            set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
-            set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
-        }
+	if {"" != $ticket_type} {
+	    set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
+	    set ticket_type [lang::message::lookup $locale $category_key $ticket_type]
+	}
 
-        if {"" != $company_type} {
-            set category_key "intranet-core.[lang::util::suggest_key $company_type]"
-            set company_type [lang::message::lookup $locale $category_key $company_type]
-        }
+	if {"" != $company_type} {
+	    set category_key "intranet-core.[lang::util::suggest_key $company_type]"
+	    set company_type [lang::message::lookup $locale $category_key $company_type]
+	}
 
-        if {"Employees" == $ticket_queue} { set ticket_queue "" }
+	if {"Employees" == $ticket_queue} { set ticket_queue "" }
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
