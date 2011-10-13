@@ -300,7 +300,7 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
 	sorters: [{
 		property: 'sort_order',
 		direction: 'ASC'

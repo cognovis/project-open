@@ -116,7 +116,9 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			Ext.getCmp('ticketFormRight').getForm().findField('ticket_done_date').setValue('');
 			Ext.getCmp('ticketForm').getForm().findField('ticket_done_date').setValue('');	
 			Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').setValue('30000');
-			Ext.getCmp('ticketForm').getForm().findField('ticket_status_id').setValue('30000');		
+			Ext.getCmp('ticketForm').getForm().findField('ticket_status_id').setValue('30000');	
+			Ext.getCmp('ticketForm').getForm().findField('fs_folder_id').setValue('');	
+			Ext.getCmp('ticketActionBar').checkButtons(null);
 			Ext.getCmp('fileStorageGrid').newTicket();	
 			
 		/*	var ticket_escalation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').getValue();
