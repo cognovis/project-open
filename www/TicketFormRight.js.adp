@@ -352,7 +352,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	loadTicket: function(rec){
 		var form = this.getForm();
 		this.loadRecord(rec);
-		this.dateCheck();
+		//this.dateCheck();
 		// Save the originalqueue_id from the DB. This value will become the 
 		// value of ticket_last_queue_id if the user selected a different queue.
 		var ticket_queue_field = form.findField('ticket_queue_id');
@@ -382,7 +382,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 	newTicket: function() {
 		var form = this.getForm();
 		form.reset();
-		this.dateCheck();
+		//this.dateCheck();
 
 		form.findField('ticket_status_id').setValue('30000');		//Open
 		Ext.getCmp('ticketActionBar').checkButtons(null);

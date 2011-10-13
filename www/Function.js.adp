@@ -504,7 +504,7 @@ function Function_sendMail(ticket_id) {
 		success: function(response) {	
 			if (response.responseText.indexOf('false') > 0) {
 				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
-			}
+			} 
 		},
 		failure: function(response) {	
 			/* ToDo mail error message*/
