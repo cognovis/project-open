@@ -515,7 +515,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     # but this is a special that that we want to ignore here.
     # 
     set user_id [db_string uid "
-	select	user_id
+	select	min(user_id)
 	from	cc_users
 	where	lower(username) = lower(:username) OR lower(email) = lower(:email)
     " -default 0]
