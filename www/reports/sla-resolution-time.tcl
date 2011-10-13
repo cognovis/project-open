@@ -211,8 +211,8 @@ db_foreach dynfield_attributes $dynfield_sql {
     if {![im_column_exists "im_tickets" $attribute_name]} { continue }
 
     # Calculate the "dereference" DynField value
-    set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
-    if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
+    set deref "substring(${deref_plpgsql_function}($attribute_name)::text for 100) as ${attribute_name}_deref"
+    if {"" == $deref} { set deref "substring($attribute_name::text for 100) as ${attribute_name}_deref" }
     regsub -all {[^a-zA-Z0-9\ \-\.]} $pretty_name {} pretty_name
     lappend header0 $pretty_name
     lappend derefs $deref
@@ -319,10 +319,10 @@ set report_sql "
 		t.ticket_creation_date >= :start_date and
 		t.ticket_creation_date <= :end_date
 	order by
-		lower(cust.company_path),
+		lower(cust.company_name),
+		lower(sla_project.project_name),
+		lower(im_name_from_user_id(o.creation_user)),
 		lower(p.project_nr)
-		
-
 "
 
 # --------------------------------------------------------
