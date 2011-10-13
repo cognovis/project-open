@@ -301,12 +301,19 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 		},
 		reader: { type: 'json', root: 'data' }
 	}
+	sorters: [{
+		property: 'sort_order',
+		direction: 'ASC'
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 ticketTypeStore.load(
       function(record, operation) {
       // This code is called once the reply from the server has arrived.
       this.addBlank();
-      ticketTypeStore.sort('tree_sortkey');
+      ticketTypeStore.sort();
     }
 );
 
