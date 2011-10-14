@@ -747,10 +747,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		}
 
+		ns_log Notice "im_sla_ticket_solution_time_sweeper: Write out debug info"
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
-		    set event_pretty [im_category_from_id -empty_default "" $event]
+		    set event_pretty [util_memoize [list db_string cat "select im_category_from_id($category_id) from dual"]]
 		    if {$event == $event_pretty} { set event_pretty "" } else { set event_pretty "($event_pretty)" }
 		    append time_html "
 			<tr>
