@@ -730,7 +730,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		}
 
-		# Advance the time counter
+		ns_log Notice "im_sla_ticket_solution_time_sweeper: Advance the time counter"
 		if {$count_duration_p} {
 		    # Total resolution time counter
 		    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
@@ -771,7 +771,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		append time_html "</table>\n"
 	    }
 	
-	    # Calculate the array of resolution times per queue
+	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Calculate the array of resolution times per queue"
 	    set restimes {}
 	    foreach gid $group_list {
 		set r 0.0

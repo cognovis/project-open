@@ -12,6 +12,8 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail:integer 3 }
     { customer_id:integer 0 }
+    { ticket_type_id:integer 0 }
+    { show_dynfields:multiple ""}
     { output_format "html" }
 }
 
@@ -136,19 +138,19 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_SLA "SLA"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Customer_Contact "Customer<br>Contact"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Name "Ticket<br>Name"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Type "Ticket<br>Type"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Status "Ticket<br>Status"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Priority "Ticket<br>Prio"]  \
 		 [lang::message::lookup "" intranet-sla-management.Creation_User "Creation<br>User"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
+		]
+
+set ttt {
 		 [lang::message::lookup "" intranet-sla-management.Creation_Date "Creation<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Reaction_Date "Reaction<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Confirmation_Date "Confirmation<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Done_Date "Done<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Sign_Off_Date "Sign-Off<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
-		]
+}
 
 set customer_header {
 	"\#colspan=99 <b><a href=[export_vars -base $company_url {{company_id $company_id}}]>$company_name</a></b>"
@@ -164,20 +166,19 @@ set ticket_header {
 	"$sla_nr"
 	"<a href=[export_vars -base $user_url {{user_id $ticket_customer_contact_id}}]>$ticket_customer_contact_name</a>"
 	"<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
-	$ticket_type
-	$ticket_status
-	$ticket_prio
 	"<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
 	$ticket_queue
 	$ticket_assignee
+	"\#align=right $ticket_resolution_time"
+}
+
+set ttt {
 	$creation_date_pretty
 	$ticket_creation_date_pretty
 	$ticket_reaction_date_pretty
 	$ticket_confirmation_date_pretty
 	$ticket_done_date_pretty
-	"\#align=right $ticket_resolution_time"
 }
-
 
 
 # ------------------------------------------------------------
@@ -196,19 +197,35 @@ set dynfield_sql "
 		a.acs_attribute_id = aa.attribute_id and
 		aa.object_type = 'im_ticket' and
 		aa.attribute_name not like 'default%' and
-		(also_hard_coded_p is null OR also_hard_coded_p = 'f') and
 		aa.attribute_name not in (
 			-- Fields already hard coded in the report
 			'ticket_customer_contact_id'
 		)
-	order by aa.object_type, aa.sort_order
+	order by 
+		a.also_hard_coded_p DESC,
+		aa.object_type, 
+		aa.sort_order
 "
 
+ns_log Notice "sla-resolution-time: show_dynfields=$show_dynfields"
+
 set derefs [list]
+set dynfield_options {}
 db_foreach dynfield_attributes $dynfield_sql {
 
-    # Avoid DynField configuration errors.
+    # Skip the DynField completely if the columns doesn't exist (Dynfield configuration errors)
     if {![im_column_exists "im_tickets" $attribute_name]} { continue }
+
+    # Add the dynfield to the list of options
+    append dynfield_options "\t\t<option value=$attribute_name>$pretty_name</option>\n"
+
+    # Has the Dynfield been selected to be shown?
+    if {[lsearch $show_dynfields $attribute_name] < 0} { 
+	ns_log Notice "sla-resolution-time: skipping $attribute_name"
+	continue 
+    } else {
+	ns_log Notice "sla-resolution-time: showing $attribute_name"
+    }
 
     # Calculate the "dereference" DynField value
     set deref "substring(${deref_plpgsql_function}($attribute_name)::text for 100) as ${attribute_name}_deref"
@@ -218,6 +235,7 @@ db_foreach dynfield_attributes $dynfield_sql {
     lappend derefs $deref
     set var_name "\$${attribute_name}_deref"
     lappend ticket_header $var_name
+
 }
 
 
@@ -275,6 +293,15 @@ set footer0 {}
 # Report SQL - This SQL statement defines the raw data 
 # that are to be shown.
 
+set criteria [list]
+
+if {0 != $customer_id && "" != $customer_id} {
+    lappend criteria "p.company_id = :customer_id"
+}
+
+set where_clause [join $criteria " and\n\t\t"]
+if { ![empty_string_p $where_clause] } { set where_clause " and $where_clause" }
+
 
 set report_sql "
 	select
@@ -284,7 +311,6 @@ set report_sql "
 		t.*,
 		im_category_from_id(t.ticket_status_id) as ticket_status,
 		im_category_from_id(t.ticket_type_id) as ticket_type,
-		im_category_from_id(t.ticket_prio_id) as ticket_prio,
 		im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee,
 		to_char(t.ticket_creation_date, :date_time_format) as ticket_creation_date_pretty,
 		to_char(t.ticket_reaction_date, :date_time_format) as ticket_reaction_date_pretty,
@@ -318,6 +344,7 @@ set report_sql "
 		t.ticket_id = p.project_id and
 		t.ticket_creation_date >= :start_date and
 		t.ticket_creation_date <= :end_date
+		$where_clause
 	order by
 		lower(cust.company_name),
 		lower(sla_project.project_name),
@@ -334,11 +361,11 @@ switch $output_format {
 	ns_write "
 	[im_header]
 	[im_navbar]
-	<table cellspacing=0 cellpadding=0 border=0>
+	<form>
+	<table cellspacing=10 cellpadding=0 border=0>
 	<tr valign=top>
-	  <td width='30%'>
+	  <td>
 		<!-- 'Filters' - Show the Report parameters -->
-		<form>
 		<table cellspacing=2>
 		<tr class=rowtitle>
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
@@ -352,6 +379,10 @@ switch $output_format {
 		  <td><input type=text name=end_date value='$end_date'></td>
 		</tr>
 		<tr>
+		  <td>[lang::message::lookup "" intranet-sla-management.Customer "Customer"]</td>
+		  <td>[im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] customer_id $customer_id]</td>
+		</tr>
+		<tr>
 		  <td class=form-label>Format</td>
 		  <td class=form-widget>
 		    [im_report_output_format_select output_format "" $output_format]
@@ -362,10 +393,25 @@ switch $output_format {
 		  <td><input type=submit value='Submit'></td>
 		</tr>
 		</table>
-		</form>
 	  </td>
 	  <td align=center>
-		<table cellspacing=2 width='90%'>
+		<table cellspacing=2>
+		<tr class=rowtitle>
+		  <td class=rowtitle align=center>
+			[lang::message::lookup "" intranet-sla-management.Ticket_Fields "Ticket Fields"]
+		  </td>
+		</tr>
+		<tr>
+		  <td>
+			<select name=show_dynfields size=6 multiple>
+			$dynfield_options
+			</select>
+		  </td>
+		</tr>
+		</table>
+	  </td>
+	  <td align=center>
+		<table cellspacing=2>
 		<tr>
 		  <td>$help_text</td>
 		</tr>
@@ -373,6 +419,7 @@ switch $output_format {
 	  </td>
 	</tr>
 	</table>
+	</form>
 	
 	<!-- Here starts the main report table -->
 	<table border=0 cellspacing=1 cellpadding=1>
