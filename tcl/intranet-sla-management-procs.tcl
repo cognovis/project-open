@@ -396,6 +396,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     # Deal with timezone offsets for epoch calculation...
     set tz_offset_seconds [util_memoize "db_string tz_offset {select extract(timezone from now())}"]
 
+    # User to act as
+    set current_user_id [db_string cuid "select min(user_id) from users where user_id > 0"]
+
     set debug_html ""
     set time_html ""
 
@@ -674,7 +677,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	        if {[info exists queue_hash($e)]} { set queue_id $queue_hash($e) }
 		set queue_name ""
 		if {"" != $queue_id} {
-		    set queue_name "[im_profile::profile_name_from_id -profile_id $queue_id]"
+		    set queue_name "[im_profile::profile_name_from_id -current_user_id $current_user_id -profile_id $queue_id]"
 		}
 
 		# Event can be a ticket_status_id or {creation service_start service_end now}
