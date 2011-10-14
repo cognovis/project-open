@@ -670,14 +670,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through events for ticket_id=$ticket_id"
 	    foreach e [lsort [array names hash]] {
 
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: e=$e"
 		set event_full $hash($e)
 		set event [lindex $event_full 0]
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: event=$event"
 		
 		# Calculate duration since last event
 		set duration_epoch [expr $e - $last_epoch]
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: duration_epoch=$duration_epoch"
 
 		# Who is responsible for the time passed?
 	        if {[info exists queue_hash($e)]} { set queue_id $queue_hash($e) }
@@ -685,7 +682,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		if {"" != $queue_id} {
 		    set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]]
 		}
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: queue_name='$queue_name'"
 
 		# Event can be a ticket_status_id or {creation service_start service_end now}
 		switch $event {
@@ -721,7 +717,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			# No event. Should not occur. But then just ignore...
 		    }
 		    default {
-			ns_log Notice "im_sla_ticket_solution_time: Probably found a status change here"
+			# Probably found a status change here"
 			if {![string is integer $event]} { 
 			    ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" 
 			    continue
@@ -730,8 +726,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
 
-			ns_log Notice "im_sla_ticket_solution_time: Determine ticket status"
-
+			# Determine ticket status"
 			if {[lsearch $ticket_open_states $event] > -1} {
 			    # Open status: continue counting...
 			    set ticket_open_p 1
@@ -742,7 +737,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		}
 
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: Advance the time counter"
 		if {$count_duration_p} {
 		    # Total resolution time counter
 		    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
@@ -756,7 +750,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		}
 
-		ns_log Notice "im_sla_ticket_solution_time_sweeper: Write out debug info"
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
