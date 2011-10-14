@@ -369,6 +369,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     if {[catch {
 	set result [im_sla_ticket_solution_time_sweeper_helper -debug_p $debug_p -ticket_id $ticket_id -limit $limit]
     } err_msg]} {
+	ns_log Error "im_sla_ticket_solution_time_sweeper: Found error: $err_msg"
 	set result "<pre>$err_msg</pre>"
     }
 
