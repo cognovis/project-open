@@ -450,91 +450,91 @@ ad_proc intranet_search_pg_files_search_indexer {
 	return
     }
 
-    catch {
+    set ctr 0
+    if {[catch {
 
-
-	    if {0 == $max_files} {
-		set max_files [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexerMaxFiles -default 100]
-	    }
+	if {0 == $max_files} {
+	    set max_files [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexerMaxFiles -default 100]
+	}
 	
-	    set unindexed_projects_sql "
+	set unindexed_projects_sql "
 		select	project_id 
 		from	im_projects
 		EXCEPT
 		select	object_id
 		from	im_search_pg_file_biz_objects
-	    "
-	    db_foreach unindexed_projects $unindexed_projects_sql {
-		db_dml insert_project "
+	"
+	db_foreach unindexed_projects $unindexed_projects_sql {
+	    db_dml insert_project "
 			insert into im_search_pg_file_biz_objects (
 				object_id, last_update
 			) values (
 				:project_id, (now()::date - 365)::timestamptz
 			)
-	        "
-	    }
+	    "
+	}
 	
-	    set unindexed_companies_sql "
+	set unindexed_companies_sql "
 		select	company_id 
 		from	im_companies
 		EXCEPT
 		select	object_id
 		from	im_search_pg_file_biz_objects
-	    "
-	    db_foreach unindexed_companies $unindexed_companies_sql {
-		db_dml insert_company "
+	"
+	db_foreach unindexed_companies $unindexed_companies_sql {
+	    db_dml insert_company "
 			insert into im_search_pg_file_biz_objects (
 				object_id, last_update
 			) values (
 				:company_id, (now()::date - 365)::timestamptz
 			)
-	        "
-	    }
+	    "
+	}
 	
-	    set unindexed_persons_sql "
+	set unindexed_persons_sql "
 		select	person_id 
 		from	persons
 		EXCEPT
 		select	object_id
 		from	im_search_pg_file_biz_objects
-		)
-	    "
-	    db_foreach unindexed_persons $unindexed_persons_sql {
-		db_dml insert_person "
+	"
+	db_foreach unindexed_persons $unindexed_persons_sql {
+	    db_dml insert_person "
 			insert into im_search_pg_file_biz_objects (
 				object_id, last_update
 			) values (
 				:person_id, (now()::date - 365)::timestamptz
 			)
-	        "
-	    }
+	    "
+	}
 	
-	
-	    # Index ONLY the oldest biz object
-	    set oldest_object_sql "
+	# Index ONLY the oldest biz object
+	set oldest_object_sql "
 		select	object_id as search_object_id
 		from	im_search_pg_file_biz_objects
 		order by last_update
 		limit :max_files
-	    "
-	    set ctr 0
-	    db_foreach oldest_objects $oldest_object_sql {
+	"
+	set ctr 0
+	db_foreach oldest_objects $oldest_object_sql {
 	
-		set result [intranet_search_pg_files_index_object -object_id $search_object_id]
-		set nfiles [lindex $result 0]
-		
-		# Mark the last object as the last object...
-		db_dml update_oldest_object "
+	    set result [intranet_search_pg_files_index_object -object_id $search_object_id]
+	    set nfiles [lindex $result 0]
+	    
+	    # Mark the last object as the last object...
+	    db_dml update_oldest_object "
 			update im_search_pg_file_biz_objects
 			set last_update = now()
 			where object_id = :search_object_id
-	        "
+	    "
 	
-		set ctr [expr $ctr + $nfiles]
-		if {$ctr > $max_files} { break }
-	    }
+	    set ctr [expr $ctr + $nfiles]
+	    if {$ctr > $max_files} { break }
+	}
 	
-    } errmsg	
+    } errmsg]} {
+	ns_log Error "intranet_search_pg_files_search_indexer: Error: $errmsg"
+    }
 	
     nsv_incr intranet_search_pg_files search_indexer_p -1
 
