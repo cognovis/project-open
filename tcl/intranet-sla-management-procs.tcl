@@ -398,6 +398,9 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
     # User to act as
     set current_user_id [db_string cuid "select min(user_id) from users where user_id > 0"]
+    
+    # Calculate the list of "open" ticket states
+    set ticket_open_states [db_list ostate "select * from im_sub_categories([im_ticket_status_open])"]
 
     set debug_html ""
     set time_html ""
@@ -714,16 +717,18 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			# No event. Should not occur. But then just ignore...
 		    }
 		    default {
-			# We assume a valid ticket_status_id here, otherwise we will skip...
+			ns_log Error "im_sla_ticket_solution_time: Probably found a status change here"
 			if {![string is integer $event]} { 
 			    ns_log Error "im_sla_ticket_solution_time: found invalid integer for ticket_status_id: $event" 
+			    continue
 			}
 
 			# Check if we were to count the duration until now
 			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
 
-			# Determine ticket status			
-			if {[im_category_is_a $event 30000]} { 
+			ns_log Error "im_sla_ticket_solution_time: Determine ticket status"
+
+			if {[lsearch $ticket_open_states $event] > -1} {
 			    # Open status: continue counting...
 			    set ticket_open_p 1
 			} else {
@@ -751,7 +756,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		set color black
 		if {!$count_duration_p} { set color red }
 		if {$debug_p} {
-		    set event_pretty [util_memoize [list db_string cat "select im_category_from_id($category_id) from dual"]]
+		    set event_pretty $event
+		    if {[string is integer $event]} {
+			set event_pretty [util_memoize [list db_string cat "select category from im_categories where category_id = $event" -default ""]]
+		    }
 		    if {$event == $event_pretty} { set event_pretty "" } else { set event_pretty "($event_pretty)" }
 		    append time_html "
 			<tr>
