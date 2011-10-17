@@ -211,7 +211,7 @@ set dynfield_sql "
 
 ns_log Notice "sla-resolution-time: show_dynfields=$show_dynfields"
 
-set derefs {1 as one}
+set derefs [list "1 as one"]
 set dynfield_options {}
 db_foreach dynfield_attributes $dynfield_sql {
 
