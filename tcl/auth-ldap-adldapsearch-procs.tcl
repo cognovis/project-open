@@ -527,6 +527,41 @@ ad_proc -public auth::ldap::authentication::Sync {
 } {
     ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync username=$username, auth=$authority_id, params='$parameters'"
 
+    array set hash [auth::ldap::batch_import::import_users -debug_p 0 -extra_filter "(sAMAccountName=$username)" $parameters $authority_id ]
+
+    set result $hash(result)
+    set debug $hash(debug)
+    ns_log Notice "auth::ldap::authentication::Sync: result=$result"
+
+    if {1 == $result} {
+	set uid [db_string uid "select user_id from users where lower(username) = :username" -default 0]
+	set auth_info(auth_status) "ok"
+	set auth_info(info_status) "ok"
+	set auth_info(user_id) $uid
+	set auth_info(auth_message) "Login Successful"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    } else {
+	set auth_info(auth_status) "sync_error"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "LDAP error during sync with user '$system_bind_dn':<br><pre>$debug</pre>"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    }
+}
+
+ad_proc -public auth::ldap::authentication::Sync_disabled {
+    username 
+    parameters 
+    authority_id
+} {
+    Creates a new ]po[ user from LDAP information.
+    Returns 0 if the user can't be created
+} {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync username=$username, auth=$authority_id, params='$parameters'"
+
     # Parameters
     array set params $parameters
 

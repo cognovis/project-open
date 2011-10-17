@@ -29,6 +29,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     {-size_limit ""}
     {-object_class "*" }
     {-attributes ""}
+    {-extra_filter "" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -39,6 +40,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     <li>debug: Some debug message suitable for "pre" formatting
     <li>ldif: The contents of the LDIF file
     </ul>
+    @param extra_filter Additional query filter to further limit the LDIF result set
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_file $parameters $authority_id"
     set debug "Starting to read LDAP document with parameters=$parameters\n"
@@ -58,17 +60,24 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
     set search_filter ""
     if {[info exists params(SearchFilter)]} { set search_filter $params(SearchFilter) }
 
+    # -----------------------------------------------------------------
+    # Compose the query
+    set query "(objectClass=$object_class)"
+    if {"" != $search_filter} {
+	append debug "Found an custom SearchFilter=$search_filter\n"
+	set query (&${query}$search_filter)
+    }
+    if {"" != $extra_filter} {
+	append debug "Found an extra_filter =$extra_filter\n"
+	set query (&${query}$extra_filter)
+    }
+
     switch $server_type {
 	ad {
 	    # ------------------------------------------------------------------------------
 	    # Active Directory
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file Active Directory"
 
-	    set query "(objectClass=$object_class)"
-	    if {"" != $search_filter} {
-		append debug "Found an custom SearchFilter=$search_filter\n"
-		set query (&${query}$search_filter)
-	    }
 	    set sl ""
 	    if {"" != $size_limit} { set sl "-z $size_limit" }
 	    set cmd "ldapsearch $sl -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn $query $attributes"
@@ -97,11 +106,11 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
 	    # check if we can construct the same hash
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file OpenLDAP"
-	    ns_log Notice "ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn '(objectClass=$object_class)' $attributes"
+	    ns_log Notice "ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn $query $attributes"
 	    append debug "Going to execute command: ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn (objectClass=$object_class) $attributes\n"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn "(objectClass=$object_class) $attributes"
+		exec ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn $query $attributes
 	    } err_msg]
 	    ns_log Notice "auth::ldap::batch_import::read_ldif_file return_code=$return_code, msg=$err_msg"
 
@@ -125,6 +134,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_file {
 ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     {-debug_p 1}
     {-object_class "group" }
+    {-extra_filter "" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -138,7 +148,14 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
     Two "objects" are separated by an empty line.
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects"
-    array set result_hash [auth::ldap::batch_import::read_ldif_file -object_class $object_class $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_file \
+			       -debug_p $debug_p \
+			       -object_class $object_class \
+			       -extra_filter $extra_filter \
+			       $parameters \
+			       $authority_id \
+			      ]
+
     set result $result_hash(result)
     set debug $result_hash(debug)
     ns_log Notice "auth::ldap::batch_import::read_ldif_objects: result=$result"
@@ -243,6 +260,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_objects {
 
 ad_proc -private auth::ldap::batch_import::read_ldif_groups {
     {-debug_p 1}
+    {-extra_filter "" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -252,7 +270,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 } {
     ns_log Notice "auth::ldap::batch_import::read_ldif_groups: parameters=$parameters"
 
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p -extra_filter $extra_filter $parameters $authority_id]
     set debug $result_hash(debug)
     if {0 == $result_hash(result)} {
         # Found some errors
@@ -317,6 +335,7 @@ ad_proc -private auth::ldap::batch_import::read_ldif_groups {
 
 ad_proc -private auth::ldap::batch_import::import_users {
     {-debug_p 1}
+    {-extra_filter "" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -326,7 +345,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
 } {
     ns_log Notice "auth::ldap::batch_import::import_users: parameters=$parameters"
 
-    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p -object_class "person" $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_objects -debug_p $debug_p -extra_filter $extra_filter -object_class "person" $parameters $authority_id]
     set debug $result_hash(debug)
     set result $result_hash(result)
     if {0 == $result} {
@@ -342,7 +361,7 @@ ad_proc -private auth::ldap::batch_import::import_users {
     foreach user_dn [array names objects_hash] {
 	
 	ns_log Notice "auth::ldap::batch_import::import_users: user_cnt=$user_cnt, dn=$user_dn"
-	if {$debug_p} { append debug "Parsing a new user: dn=$user_dn, cnt=$user_cnt\n" }
+	if {$debug_p} { append debug "Parsing user: dn=$user_dn, cnt=$user_cnt\n" }
 
 	if {[regexp {\$} $user_dn match]} { 
 	    # A "$" indicates a computer name instead of a user
@@ -369,23 +388,23 @@ ad_proc -private auth::ldap::batch_import::import_users {
 	    set key [lindex $key_value_list $i]
 	    set value [string trim [lindex $key_value_list [expr $i+1]]]
 	    switch $key {
-		c		{ set user_hash(country_code) $value }
-		cn		{ set user_hash(display_name) $value }
-		displayName	{ set user_hash(display_name) $value }
-		company		{ set user_hash(company_name) $value }
-		gecos		{ set user_hash(display_name) $value }
-		givenName	{ set user_hash(first_names) $value }
-		facsimileTelephoneNumber	{ set user_hash(fax) $value }
-		l		{ set user_hash(city) $value }
-		countryCode	{ set user_hash(country_code_numeric) $value }
-		co		{ set user_hash(country_name) $value }
-		department	{ set user_hash(department) $value }
-		description	{ set user_hash(description) $value }
-		homePhone	{ set user_hash(home_phone) $value }
-		mail		{ set user_hash(email) $value }
-		memberOf	{ lappend group_list $value }
-		mobile		{ set user_hash(mobile_phone) $value }
-		name		{ set user_hash(display_name) $value }
+		c			{ set user_hash(country_code) $value }
+		cn			{ set user_hash(display_name) $value }
+		displayName		{ set user_hash(display_name) $value }
+		company			{ set user_hash(company_name) $value }
+		gecos			{ set user_hash(display_name) $value }
+		givenName		{ set user_hash(first_names) $value }
+		facsimileTelephoneNumber { set user_hash(fax) $value }
+		l			{ set user_hash(city) $value }
+		countryCode		{ set user_hash(country_code_numeric) $value }
+		co			{ set user_hash(country_name) $value }
+		department		{ set user_hash(department) $value }
+		description		{ set user_hash(description) $value }
+		homePhone		{ set user_hash(home_phone) $value }
+		mail			{ set user_hash(email) $value }
+		memberOf		{ lappend group_list $value }
+		mobile			{ set user_hash(mobile_phone) $value }
+		name			{ set user_hash(display_name) $value }
 		objectClass {
 		    ns_log Notice "auth::ldap::batch_import::import_users: objectClass='$value'"
 		    switch $value {
@@ -395,17 +414,18 @@ ad_proc -private auth::ldap::batch_import::import_users {
 			organizationalPerson { set user_p 1 }
 		    }
 		}
-		pager		{ set user_hash(pager) $value }
+		pager			{ set user_hash(pager) $value }
 		physicalDeliveryOfficeName { set user_hash(office_name) $value }
-		postalCode	{ set user_hash(postal_code) $value }
-		sAMAccountName	{ set user_hash(username) $value }
-		sn		{ set user_hash(last_name) $value }
-		st		{ set user_hash(state) $value }
-		streetAddress	{ set user_hash(address_line1) $value }
-		telephoneNumber { set user_hash(work_phone) $value }
-		title		{ set user_hash(job_title) $value }
-		uid		{ set user_hash(username) $value }
-		wWWHomePage	{ set user_hash(url) $value }
+		postalCode		{ set user_hash(postal_code) $value }
+		sAMAccountName		{ set user_hash(username) $value }
+		sn			{ set user_hash(last_name) $value }
+		st			{ set user_hash(state) $value }
+		streetAddress		{ set user_hash(address_line1) $value }
+		telephoneNumber 	{ set user_hash(work_phone) $value }
+		title			{ set user_hash(job_title) $value }
+		uid			{ set user_hash(username) $value }
+		userAccountControl	{ set user_hash(disabled_state) $value }
+		wWWHomePage		{ set user_hash(url) $value }
 	    }
 	}
 
@@ -443,6 +463,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     array set params $parameters
     array set hash $keys_values
     set current_user_id [ad_get_user_id]
+    set registered_users [im_registered_users_group_id]
     
     # display_name logic: Fill in first_names and last name if empty.
     if {[info exists hash(display_name)]} {
@@ -498,6 +519,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     set state ""
     set job_title ""
     set description ""
+    set disabled_state ""
 
     # Write hash variables to local variables
     foreach var [array names hash] {
@@ -568,7 +590,6 @@ ad_proc -private auth::ldap::batch_import::parse_user {
         catch { db_dml add_users_contact "insert into users_contact (user_id) values (:user_id)" } errmsg
 
 	# Add the user to the "Registered Users" group, because (s)he would get strange problems otherwise
-        set registered_users [im_registered_users_group_id]
         set reg_users_rel_exists_p [db_string member_of_reg_users "
                 select  count(*)
                 from    group_member_map m, membership_rels mr
@@ -585,6 +606,24 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     } else {
 	append debug "Update existing user: dn=$dn\n"
     }
+
+    # Deal with users disabled in Active directory
+    if {514 == $disabled_state} {
+	# Windows hardcoded status "disabled"
+	append debug "Found a disabled user, disabling dn=$dn\n"
+	set member_state "banned"
+    } else {
+	set member_state "approved"
+    }
+    
+    set rel_id [db_string auth "
+		select	rel_id
+		from	acs_rels
+		where	object_id_one = :registered_users and object_id_two = :user_id
+    " -default 0]
+    db_dml update_relation "update membership_rels set member_state= :member_state where rel_id=:rel_id"
+
+
 
     # Update fiels of both existing or new user.
     db_dml update_user "
@@ -785,6 +824,8 @@ ad_proc auth::ldap::batch_import::parse_ad_country_code {
 
 
 ad_proc -private auth::ldap::batch_import::import_groups {
+    {-debug_p 1}
+    {-extra_filter "" }
     {parameters {}}
     {authority_id {}}
 } {
@@ -794,7 +835,7 @@ ad_proc -private auth::ldap::batch_import::import_groups {
 } {
     ns_log Notice "auth::ldap::batch_import::import_groups: parameters=$parameters"
     array set params $parameters
-    array set result_hash [auth::ldap::batch_import::read_ldif_groups $parameters $authority_id]
+    array set result_hash [auth::ldap::batch_import::read_ldif_groups -extra_filter $extra_filter -debug_p $debug_p $parameters $authority_id]
     if {0 == $result_hash(result)} {
         # Found some errors
         return [list result 0 debug $result_hash(debug) groups {}]
@@ -847,3 +888,4 @@ ad_proc -private auth::ldap::batch_import::import_groups {
     }
     return [list result 0 debug $debug]   
 }
+
