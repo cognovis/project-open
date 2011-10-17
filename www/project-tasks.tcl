@@ -41,7 +41,15 @@ ad_page_contract {
     { auto_login "" }
     { employee_cost_center_id "" }
     { only_uncompleted_tasks_p ""}
+    { only_uncompleted_tasks_p ""}
+    { start_date_form ""}
+    { end_date_form ""}
 }
+
+	# ------------------------------------------------------------
+	# Defaults
+	# ------------------------------------------------------------
+
 	if { "1"==$only_uncompleted_tasks_p } {
 		set only_uncompleted_tasks_checked "checked"
 	} else {
@@ -61,8 +69,12 @@ ad_page_contract {
 	set restrict_to_mine_p 0
 	set restrict_to_with_member_id 0
 	set restrict_to_type_id 0
-
 	set menu_label "reporting-project-tasks"
+
+	# ------------------------------------------------------------
+	# Permissions & Validation 
+	# ------------------------------------------------------------
+
 	set current_user_id [ad_maybe_redirect_for_registration]
 	set read_p [db_string report_perms "
         	select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -82,7 +94,43 @@ ad_page_contract {
 	# Check if the user can see all timesheet tasks
 	if {![im_permission $user_id "view_timesheet_tasks_all"]} { set restrict_to_mine_p "mine" }
 
+	# Check that Start & End-Date have correct format
+	if {"" != $start_date_form && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date_form]} {
+	    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+	    Current value: '$start_date_form'<br>
+	    Expected format: 'YYYY-MM-DD'"
+	}
+
+	if {"" != $end_date_form && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date_form]} {
+	    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+	    Current value: '$end_date_form'<br>
+	    Expected format: 'YYYY-MM-DD'"
+	}
+
 	# ---------------------- Defaults ----------------------------------
+	db_1row todays_date "
+	select
+        	to_char(sysdate::date, 'YYYY') as todays_year,
+	        to_char(sysdate::date, 'MM') as todays_month,
+        	to_char(sysdate::date, 'DD') as todays_day
+	from dual
+	"
+
+	if {"" == $start_date_form} {
+	    set start_date_form "$todays_year-$todays_month-01"
+	}
+
+	db_1row end_date "
+	select
+        	to_char(to_date(:start_date_form, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
+	        to_char(to_date(:start_date_form, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
+        	to_char(to_date(:start_date_form, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+	from dual
+	"
+
+	if {"" == $end_date_form} {
+	    set end_date_form "$end_year-$end_month-01"
+	}
 
 	# Get parameters from HTTP session
 	# Don't trust the container page to pass-on that value...
@@ -113,6 +161,8 @@ ad_page_contract {
 	ns_log Notice "im_timesheet_task_component: view_id=$view_id"
 
 	set table_body_html ""
+
+
 
 
 	# ---------------------- Get Columns ----------------------------------
@@ -355,7 +405,9 @@ db_foreach main_project_sql $main_project_sql {
                 $extra_from
         where
                 parent.project_id = :restrict_to_project_id and
-                child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+                child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+        	parent.start_date >= to_timestamp(:start_date_form, 'YYYY-MM-DD') and
+	        parent.end_date < to_timestamp(:end_date_form, 'YYYY-MM-DD') 
                 $extra_where
         order by
                 child.tree_sortkey
@@ -462,15 +514,16 @@ template::multirow foreach task_list_multirow {
 	
 	switch $project_type_id {
 	100 {
-                # Timesheet Task
+            # Timesheet Task
 	    set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
 	}
 	101 {
-                # Ticket
+            # Ticket
 	    set object_url [export_vars -base "/intranet-helpdesk/new" {{ticket_id $child_project_id} return_url}]
 	}
 	default {
-                # Project
+            # Project
+	    set task_id $project_id
 	    set object_url [export_vars -base "/intranet/projects/view" {{project_id $child_project_id} return_url}]
 	}
     }
@@ -594,32 +647,32 @@ template::multirow foreach task_list_multirow {
         <tr valign=top>
 	    <td>
                 <table border=0 cellspacing=1 cellpadding=1>
-                <!--
 		<tr>
                   <td class=form-label>Start Date</td>
                   <td class=form-widget>
-                    <input type=textfield name=start_date value=$start_date>
+                    <input type=textfield name=start_date_form value=$start_date_form>
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label>End Date</td>
                   <td class=form-widget>
-                    <input type=textfield name=end_date value=$end_date>
+                    <input type=textfield name=end_date_form value=$end_date_form>
                   </td>
                 </tr>
+<!--
                 <tr>
                   <td class=form-label>Customer</td>
                   <td class=form-widget>
-                    [im_company_select company_id $company_id]
+                    [im_company_select company_id DOLLARcompany_id]
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label>Project Manager</td>
                   <td class=form-widget>
-                    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" project_lead_id $project_lead_id]
+                    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" project_lead_id DOLLARproject_lead_id]
                   </td>
                 </tr>
-		-->
+-->
                 <tr>
                   <td class=form-label>Task Member</td>
                   <td class=form-widget>
