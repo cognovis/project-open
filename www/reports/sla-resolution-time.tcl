@@ -139,12 +139,13 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Customer_Contact "Customer<br>Contact"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Name "Ticket<br>Name"]  \
 		 [lang::message::lookup "" intranet-sla-management.Creation_User "Creation<br>User"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
 		]
 
 set ttt {
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
+		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
+
 		 [lang::message::lookup "" intranet-sla-management.Creation_Date "Creation<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Reaction_Date "Reaction<br>Date"]  \
 		 [lang::message::lookup "" intranet-sla-management.Confirmation_Date "Confirmation<br>Date"]  \
@@ -167,12 +168,13 @@ set ticket_header {
 	"<a href=[export_vars -base $user_url {{user_id $ticket_customer_contact_id}}]>$ticket_customer_contact_name</a>"
 	"<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
 	"<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
-	$ticket_queue
-	$ticket_assignee
 	"\#align=right $ticket_resolution_time"
 }
 
 set ttt {
+	$ticket_queue
+	$ticket_assignee
+
 	$creation_date_pretty
 	$ticket_creation_date_pretty
 	$ticket_reaction_date_pretty
@@ -217,7 +219,8 @@ db_foreach dynfield_attributes $dynfield_sql {
     if {![im_column_exists "im_tickets" $attribute_name]} { continue }
 
     # Add the dynfield to the list of options
-    append dynfield_options "\t\t<option value=$attribute_name>$pretty_name</option>\n"
+    if {[lsearch $show_dynfields $attribute_name] > -1} { set selected "selected" } else { set selected "" }
+    append dynfield_options "\t\t<option value=$attribute_name $selected>$pretty_name</option>\n"
 
     # Has the Dynfield been selected to be shown?
     if {[lsearch $show_dynfields $attribute_name] < 0} { 
@@ -241,7 +244,32 @@ db_foreach dynfield_attributes $dynfield_sql {
 
 # ----------------------------------------------------------------
 # Add the ticket resolution time per group
+# First we have to find out if there are times logged for the
+# specific group, then we can add the group to the list headers.
 # ----------------------------------------------------------------
+
+# find out the groups that do have resolution time in the system
+set group_sql "
+	select	g.*
+	from	groups g
+	where	g.group_id > 0
+	order by g.group_id
+"
+set cnt 1
+set group_selects {}
+db_foreach groups $group_sql {
+    lappend group_selects "sum(t.ticket_resolution_time_per_queue\[$cnt\]) as rtime_$cnt"
+    incr cnt
+}
+
+set group_sum_sql "
+	select	[join $group_selects ",\n\t\t"]
+	from	im_tickets t
+	where	t.ticket_creation_date >= :start_date and
+		t.ticket_creation_date < :end_date
+"
+db_1row group_sum $group_sum_sql
+
 
 # Calculate a list of groups for storing resolution times per group
 set group_sql "
@@ -250,8 +278,15 @@ set group_sql "
 	where	g.group_id > 0
 	order by g.group_id
 "
-set cnt 0
+set cnt 1
 db_foreach groups $group_sql {
+
+    # Check if there has been some resolution time spent for in this group
+    if {![info exists rtime_$cnt]} { ad_return_complaint 1 "Error: didn't find 'rtime_$cnt'" }
+    set rtime [expr "\$rtime_$cnt"]
+    if {"" == $rtime} { ad_return_complaint 1 "Error: rtime is '' for cnt=$cnt" }
+    if {$rtime < 0.01} { continue }
+
     lappend header0 $group_name
     set var_name "group${group_id}_restime"
     lappend ticket_header "\$$var_name"
@@ -343,7 +378,7 @@ set report_sql "
 		t.ticket_id = o.object_id and
 		t.ticket_id = p.project_id and
 		t.ticket_creation_date >= :start_date and
-		t.ticket_creation_date <= :end_date
+		t.ticket_creation_date < :end_date
 		$where_clause
 	order by
 		lower(cust.company_name),
