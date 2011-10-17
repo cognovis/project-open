@@ -515,12 +515,14 @@ ad_proc -private auth::ldap::batch_import::parse_user {
     # but this is a special that that we want to ignore here.
     # 
     set user_id [db_string uid "
-	select	min(user_id)
-	from	cc_users
-	where	lower(username) = lower(:username) OR lower(email) = lower(:email)
+	select	min(u.user_id)
+	from	users u,
+		parties pa
+	where	u.user_id = pa.party_id and
+		(lower(username) = lower(:username) OR lower(email) = lower(:email))
     " -default 0]
 
-    if {0 == $user_id} {
+    if {"" == $user_id || 0 == $user_id} {
 	
 	# The user doesn't exist yet. Create the user.
 	ns_log Notice "auth::ldap::batch_import::parse_user: Creating new user: dn=$dn, username=$username, email=$email, first_names=$first_names, last_name=$last_name"
