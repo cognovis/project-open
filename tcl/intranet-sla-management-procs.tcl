@@ -377,7 +377,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     nsv_incr intranet_sla_management sweeper_p -1
 
     if {$debug_p} {
-	ad_return_complaint 1 $result
+	# ad_return_complaint 1 $result
     }
     return $result
 }
@@ -437,7 +437,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     "]
 
     # Debugging: Only calculate a single ticket
-    if {"" == $ticket_id} {
+    if {"" != $ticket_id} {
         set slas_with_open_tickets [db_list sla_list "
                 select  p.parent_id
                 from    im_projects p
@@ -642,10 +642,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			<td class=rowtitle>Event</td>
 			<td class=rowtitle>Duration<br>Seconds</td>
 			<td class=rowtitle>Count<br>Duration?</td>
+			<td class=rowtitle>Last<br>Queue</td>
 			<td class=rowtitle>Queue</td>
 			<td class=rowtitle>Resolution<br>Seconds</td>
 			<td class=rowtitle>Resolution<br>Minutes</td>
 			<td class=rowtitle>Resolution<br>Hours</td>
+			<td class=rowtitle>Resolution time per Group</td>
 			</tr>\n"
 	    }
 
@@ -674,6 +676,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	    # Initialize counter for different queues
 	    set queue_id ""
+	    set last_queue_id ""
 	    
 	    # Loop through events per ticket
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through events for ticket_id=$ticket_id"
@@ -686,10 +689,17 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		set duration_epoch [expr $e - $last_epoch]
 
 		# Who is responsible for the time passed?
-	        if {[info exists queue_hash($e)]} { set queue_id $queue_hash($e) }
+	        if {[info exists queue_hash($e)]} { 
+		    set last_queue_id $queue_id
+		    set queue_id $queue_hash($e) 
+		}
 		set queue_name ""
+		set last_queue_name ""
 		if {"" != $queue_id} {
 		    set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]]
+		}
+		if {"" != $last_queue_id} {
+		    set last_queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $last_queue_id" -default ""]]
 		}
 
 		# Event can be a ticket_status_id or {creation service_start service_end now}
@@ -749,13 +759,15 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		if {$count_duration_p} {
 		    # Total resolution time counter
 		    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
+		}
 
-		    # Resolution time per queue
-		    if {"" != $queue_id} {
+		# Resolution time per queue
+		if {$count_duration_p} {
+		    if {"" != $last_queue_id} {
 			set seconds 0.0
-			if {[info exists queue_resolution_time($queue_id)]} { set seconds $queue_resolution_time($queue_id) }
+			if {[info exists queue_resolution_time($last_queue_id)]} { set seconds $queue_resolution_time($last_queue_id) }
 			set seconds [expr $seconds + $duration_epoch]
-			set queue_resolution_time($queue_id) $seconds
+			set queue_resolution_time($last_queue_id) $seconds
 		    }
 		}
 
@@ -767,17 +779,24 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			set event_pretty [util_memoize [list db_string cat "select category from im_categories where category_id = $event" -default ""]]
 		    }
 		    if {$event == $event_pretty} { set event_pretty "" } else { set event_pretty "($event_pretty)" }
+		    set restime_html ""
+		    foreach q [lsort -integer [array names queue_resolution_time]] {
+			set q_name [util_memoize [list db_string queue "select group_name from groups where group_id = $q" -default ""]]
+			append restime_html "$q_name=[expr round(100 * $queue_resolution_time($q)) / 100.0], "
+		    }
 		    append time_html "
 			<tr>
-				<td>[expr round(10.0 * $e) / 10.0]</td>
+				<td>[expr round(100.0 * $e) / 100.0]</td>
 				<td>[im_date_epoch_to_ansi $e] [im_date_epoch_to_time $e]</td>
 				<td><font color=$color><nobr>$event $event_pretty</nobr></font></td>
-				<td align=right>[expr round(10.0 * $duration_epoch) / 10.0]</td>
+				<td align=right>[expr round(100.0 * $duration_epoch) / 100.0]</td>
 				<td align=right>$count_duration_p</td>
+				<td>$last_queue_name</td>
 				<td>$queue_name</td>
-				<td align=right>[expr round(10.0 * $resolution_seconds) / 10.0]</td>
+				<td align=right>[expr round(100.0 * $resolution_seconds) / 100.0]</td>
 				<td align=right>[expr round(100.0 * $resolution_seconds / 60.0) / 100.0 ]</td>
 				<td align=right>[expr round(100.0 * $resolution_seconds / 3600.0) / 100.0]</td>
+				<td>$restime_html</td>
 			</tr>
                     "
 		}
