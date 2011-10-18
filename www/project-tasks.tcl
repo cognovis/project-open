@@ -653,40 +653,40 @@ template::multirow foreach task_list_multirow {
     set empty_name [lang::message::lookup "" intranet-core.All "All"]
     set left_navbar_html "
 	<div class='filter-block'>
-        <div class='filter-title'>Filter Projects</div>
+        <div class='filter-title'>[lang::message::lookup "" intranet-reporting.FilterTasks "Filter Tasks"]</div>
         <form>
         <table border=0 cellspacing=1 cellpadding=1>
         <tr valign=top>
 	    <td>
                 <table border=0 cellspacing=1 cellpadding=1>
 		<tr>
-                  <td class=form-label>Start Date</td>
+                  <td class=form-label>[lang::message::lookup "" intranet-reporting.StartDate "Start Date"]:</td>
                   <td class=form-widget>
                     <input type=textfield name=start_date_form value=$start_date_form>
                   </td>
                 </tr>
                 <tr>
-                  <td class=form-label>End Date</td>
+                  <td class=form-label>[lang::message::lookup "" intranet-reporting.EndDate "End Date"]:</td>
                   <td class=form-widget>
                     <input type=textfield name=end_date_form value=$end_date_form>
                   </td>
                 </tr>
                 <tr>
-                  <td class=form-label>Project:</td>
+                  <td class=form-label>[lang::message::lookup "" intranet-core.Project "Project"]:</td>
                   <td class=form-widget>
                     [im_project_select -include_empty_p 1 -include_empty_name $empty_name -exclude_status_id [im_project_status_closed] project_id $project_id_form]
                   </td>
                 </tr>
 <!--
                 <tr>
-                  <td class=form-label>Project Manager</td>
+                  <td class=form-label>[lang::message::lookup "" intranet-core.ProjectManager "Project Manager"]:</td>
                   <td class=form-widget>
                     [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" project_lead_id DOLLARproject_lead_id]
                   </td>
                 </tr>
 -->
                 <tr>
-                  <td class=form-label>Task Member</td>
+                  <td class=form-label>[lang::message::lookup "" intranet-core.TaskManager "Task Manager"]:</td>
                   <td class=form-widget>
                     [im_user_select -include_empty_p 1 -include_empty_name $empty_name task_member_id $task_member_id]
                   </td>
