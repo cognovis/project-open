@@ -15,6 +15,7 @@ ad_page_contract {
     { ticket_type_id:integer 0 }
     { show_dynfields:multiple ""}
     { output_format "html" }
+    { locale "es_ES" }
 }
 
 
@@ -42,6 +43,14 @@ set locale [lang::user::locale -user_id $current_user_id]
 
 set form_mode display
 
+switch $locale {
+    en_US {
+	set number_format "999999999999.00"
+    }
+    default {
+	set number_format "999999999999,00"
+    }
+}
 
 # ------------------------------------------------------------
 # Check Parameters
@@ -66,9 +75,9 @@ if {"" == $start_date} {
 
 db_1row end_date "
 select
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + '2 month'::interval, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + '2 month'::interval, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + '2 month'::interval, 'DD') as end_day
 from dual
 "
 
@@ -104,6 +113,12 @@ set page_title "Ticket Resolution Time"
 set context_bar [im_context_bar $page_title]
 set help_text "
 	<strong>$page_title</strong><br>
+	The report shows the 'resolution time' per ticket and ticket queue
+	together with median values per SLA and for all selected tickets.<br>
+	The start- and end date act on the creation date of the ticket,
+	including start date but excluding end date.<br>
+	The report excludes tickets in the current status of 'canceled' and
+	'deleted'.
 "
 
 
@@ -123,7 +138,7 @@ set user_url "/intranet/users/view"
 set this_url [export_vars -base "/intranet-sla-management/reports/sla-resolution-time" {start_date end_date} ]
 
 # Level of Details
-set levels {2 "Customers" 3 "Customers+Projects"} 
+set levels {2 "Customer+SLA" 3 "All Details"} 
 
 
 # ------------------------------------------------------------
@@ -142,25 +157,15 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-sla-management.Ticket_Resolution_Time "Resolution<br>Time"]  \
 		]
 
-set ttt {
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Queue "Last<br>Queue"]  \
-		 [lang::message::lookup "" intranet-sla-management.Ticket_Last_Assignee "Last<br>Assignee"]  \
-
-		 [lang::message::lookup "" intranet-sla-management.Creation_Date "Creation<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Reaction_Date "Reaction<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Confirmation_Date "Confirmation<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Done_Date "Done<br>Date"]  \
-		 [lang::message::lookup "" intranet-sla-management.Sign_Off_Date "Sign-Off<br>Date"]  \
-}
-
 # Global Footer Line
 set footer0 {
+    "$ticket_resolution_time_total_count"
     ""
     ""
     ""
     ""
-    ""
-    ""
+    "\#align=right \[lc_numeric \[expr round(100.0 * \$ticket_resolution_time_total_sum / \$ticket_resolution_time_total_count) / 100.0\] {} \$locale\] (=\[expr round(100.0*\$ticket_resolution_time_total_sum)/100.0\] / \$ticket_resolution_time_total_count)"
+
 }
 
 
@@ -174,37 +179,31 @@ set sla_header {
 }
 
 set sla_footer {
-    ""
+    "$ticket_resolution_time_sla_count"
     "$sla_nr"
     ""
     ""
     ""
-    ""
+    "\#align=right [lc_numeric [expr round(100.0 * $ticket_resolution_time_sla_sum / $ticket_resolution_time_sla_count) / 100.0] {} $locale] (=[expr round(100.0*$ticket_resolution_time_sla_sum)/100.0] / $ticket_resolution_time_sla_count)"
 }
 
 set ticket_header {
-	"$company_path"
-	"$sla_nr"
-	"<a href=[export_vars -base $user_url {{user_id $ticket_customer_contact_id}}]>$ticket_customer_contact_name</a>"
-	"<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
-	"<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
-	"\#align=right $ticket_resolution_time"
-}
-
-set ttt {
-	$ticket_queue
-	$ticket_assignee
-
-	$creation_date_pretty
-	$ticket_creation_date_pretty
-	$ticket_reaction_date_pretty
-	$ticket_confirmation_date_pretty
-	$ticket_done_date_pretty
+    "$ticket_resolution_time_sla_count"
+    "$sla_nr"
+    "<a href=[export_vars -base $user_url {{user_id $ticket_customer_contact_id}}]>$ticket_customer_contact_name</a>"
+    "<a href=[export_vars -base $ticket_url {{ticket_id $ticket_id} form_mode}]>$project_nr - $project_name_pretty</a>"
+    "<a href=[export_vars -base $user_url {{user_id $creation_user}}]>$creation_user_name</a>"
+    "\#align=right \[lc_numeric $ticket_resolution_time {} $locale\]"
 }
 
 set counters [list]
 
+# Counters for resolution time per SLA and total
+lappend counters [list pretty_name "Solution Time SLA Sum" var ticket_resolution_time_sla_sum reset "\$sla_id" expr "\$ticket_resolution_time"]
+lappend counters [list pretty_name "Solution Time SLA Count" var ticket_resolution_time_sla_count reset "\$sla_id" expr "1"]
 
+lappend counters [list pretty_name "Solution Time Total Sum" var ticket_resolution_time_total_sum reset 0 expr "\$ticket_resolution_time"]
+lappend counters [list pretty_name "Solution Time Total Count" var ticket_resolution_time_total_count reset 0 expr "1"]
 
 
 # ------------------------------------------------------------
@@ -311,19 +310,19 @@ db_foreach groups $group_sql {
 
     lappend header0 $group_name
     set var_name "group${group_id}_restime"
-    lappend ticket_header "\$$var_name"
+    lappend ticket_header "\#align=right \[lc_numeric \$$var_name {} $locale \]"
     set deref "t.ticket_resolution_time_per_queue\[$cnt\] as $var_name"
     lappend derefs $deref
 
     # Total Counters
     lappend counters [list pretty_name "$group_name Total Sum" var "${var_name}_total_sum" reset 0 expr "\$$var_name+0"]
     lappend counters [list pretty_name "$group_name Total Count" var "${var_name}_total_count" reset 0 expr "1"]
-    lappend footer0 "\[expr round(10.0 * \$${var_name}_total_sum / \$${var_name}_total_count\) / 10.0]"
+    lappend footer0 "\#align=right \[lc_numeric \[expr round(100.0 * \$${var_name}_total_sum / \$${var_name}_total_count\) / 100.0\] {} $locale\]"
 
     # Por SLA
     lappend counters [list pretty_name "$group_name SLA Sum" var "${var_name}_sla_sum" reset "\$sla_id" expr "\$$var_name+0"]
     lappend counters [list pretty_name "$group_name SLA Count" var "${var_name}_sla_count" reset "\$sla_id" expr "1"]
-    lappend sla_footer "\[expr round(10.0 * \$${var_name}_sla_sum / \$${var_name}_sla_count\) / 10.0]"
+    lappend sla_footer "\#align=right \[lc_numeric \[expr round(100.0 * \$${var_name}_sla_sum / \$${var_name}_sla_count\) / 100.0\] {} $locale\] (= \$${var_name}_sla_sum / \$${var_name}_sla_count)"
 
 }
 
@@ -406,7 +405,11 @@ set report_sql "
 		t.ticket_id = o.object_id and
 		t.ticket_id = p.project_id and
 		t.ticket_creation_date >= :start_date and
-		t.ticket_creation_date < :end_date
+		t.ticket_creation_date < :end_date and
+		t.ticket_status_id not in (
+			[im_ticket_status_deleted],
+			[im_ticket_status_canceled]
+		)
 		$where_clause
 	order by
 		lower(cust.company_name),
@@ -432,6 +435,12 @@ switch $output_format {
 		<table cellspacing=2>
 		<tr class=rowtitle>
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
+		</tr>
+		<tr>
+		  <td class=form-label>Level of Details</td>
+		  <td class=form-widget>
+		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+		  </td>
 		</tr>
 		<tr>
 		  <td><nobr>Start Date:</nobr></td>
