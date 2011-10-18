@@ -153,6 +153,17 @@ set ttt {
 		 [lang::message::lookup "" intranet-sla-management.Sign_Off_Date "Sign-Off<br>Date"]  \
 }
 
+# Global Footer Line
+set footer0 {
+    ""
+    ""
+    ""
+    ""
+    ""
+    ""
+}
+
+
 set customer_header {
 	"\#colspan=99 <b><a href=[export_vars -base $company_url {{company_id $company_id}}]>$company_name</a></b>"
 }
@@ -160,6 +171,15 @@ set customer_header {
 set sla_header {
 	""
 	"\#colspan=98 <b><a href=[export_vars -base $project_url {{project_id $sla_id}}]>$sla_name</a></b>"
+}
+
+set sla_footer {
+    ""
+    "$sla_nr"
+    ""
+    ""
+    ""
+    ""
 }
 
 set ticket_header {
@@ -181,6 +201,10 @@ set ttt {
 	$ticket_confirmation_date_pretty
 	$ticket_done_date_pretty
 }
+
+set counters [list]
+
+
 
 
 # ------------------------------------------------------------
@@ -235,6 +259,8 @@ db_foreach dynfield_attributes $dynfield_sql {
     if {"" == $deref} { set deref "substring($attribute_name::text for 100) as ${attribute_name}_deref" }
     regsub -all {[^a-zA-Z0-9\ \-\.]} $pretty_name {} pretty_name
     lappend header0 $pretty_name
+    lappend footer0 ""
+    lappend sla_footer ""
     lappend derefs $deref
     set var_name "\$${attribute_name}_deref"
     lappend ticket_header $var_name
@@ -255,11 +281,11 @@ set group_sql "
 	where	g.group_id > 0
 	order by g.group_id
 "
-set cnt 1
+set cnt 0
 set group_selects {}
 db_foreach groups $group_sql {
-    lappend group_selects "sum(t.ticket_resolution_time_per_queue\[$cnt\]) as rtime_$cnt"
     incr cnt
+    lappend group_selects "sum(t.ticket_resolution_time_per_queue\[$cnt\]) as rtime_$cnt"
 }
 
 set group_sum_sql "
@@ -272,19 +298,15 @@ db_1row group_sum $group_sum_sql
 
 
 # Calculate a list of groups for storing resolution times per group
-set group_sql "
-	select	g.*
-	from	groups g
-	where	g.group_id > 0
-	order by g.group_id
-"
-set cnt 1
+set cnt 0
 db_foreach groups $group_sql {
+    incr cnt
 
     # Check if there has been some resolution time spent for in this group
     if {![info exists rtime_$cnt]} { ad_return_complaint 1 "Error: didn't find 'rtime_$cnt'" }
     set rtime [expr "\$rtime_$cnt"]
-    if {"" == $rtime} { ad_return_complaint 1 "Error: rtime is '' for cnt=$cnt" }
+    if {"" == $rtime} { set rtime 0.00 }
+    ns_log Notice "sla-resolution-time: cnt=$cnt, rtime=$rtime"
     if {$rtime < 0.01} { continue }
 
     lappend header0 $group_name
@@ -292,10 +314,18 @@ db_foreach groups $group_sql {
     lappend ticket_header "\$$var_name"
     set deref "t.ticket_resolution_time_per_queue\[$cnt\] as $var_name"
     lappend derefs $deref
-    incr cnt
+
+    # Total Counters
+    lappend counters [list pretty_name "$group_name Total Sum" var "${var_name}_total_sum" reset 0 expr "\$$var_name+0"]
+    lappend counters [list pretty_name "$group_name Total Count" var "${var_name}_total_count" reset 0 expr "1"]
+    lappend footer0 "\[expr round(10.0 * \$${var_name}_total_sum / \$${var_name}_total_count\) / 10.0]"
+
+    # Por SLA
+    lappend counters [list pretty_name "$group_name SLA Sum" var "${var_name}_sla_sum" reset "\$sla_id" expr "\$$var_name+0"]
+    lappend counters [list pretty_name "$group_name SLA Count" var "${var_name}_sla_count" reset "\$sla_id" expr "1"]
+    lappend sla_footer "\[expr round(10.0 * \$${var_name}_sla_sum / \$${var_name}_sla_count\) / 10.0]"
+
 }
-
-
 
 # ----------------------------------------------------------------
 # The entries in this list include <a HREF=...> tags
@@ -314,13 +344,11 @@ set report_def [list \
 					      content {} \
 					      footer {} \
 					     ] \
-				 footer {} \
+				 footer $sla_footer \
 				 ]\
+		    footer {} \
 		    ]
 
-
-# Global Footer Line
-set footer0 {}
 
 
 
@@ -537,6 +565,8 @@ db_foreach sql $report_sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
+
+	im_report_update_counters -counters $counters
 
 	if {"" != $ticket_type} {
 	    set category_key "intranet-core.[lang::util::suggest_key $ticket_type]"
