@@ -587,12 +587,11 @@ template::multirow foreach task_list_multirow {
         #        </tr>
         #	"
         # }
-    set project_id $restrict_to_project_id
 
+    set project_id $restrict_to_project_id
     set total_in_limited 0
 
-        append table_body_html "<tr><td colspan=999>&nbsp;</td></tr>"
-
+    # append table_body_html "<tr><td colspan=999>&nbsp;</td></tr>"
 }
 
 
@@ -653,6 +652,8 @@ template::multirow foreach task_list_multirow {
 	
     set empty_name [lang::message::lookup "" intranet-core.All "All"]
     set left_navbar_html "
+	<div class='filter-block'>
+        <div class='filter-title'>Filter Projects</div>
         <form>
         <table border=0 cellspacing=1 cellpadding=1>
         <tr valign=top>
@@ -710,6 +711,7 @@ template::multirow foreach task_list_multirow {
      </tr>
      </table>
      </form>
+     </div>
      "
     # ---------------------- Join all parts together ------------------------
 
