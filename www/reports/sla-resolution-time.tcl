@@ -39,10 +39,9 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
-set locale [lang::user::locale -user_id $current_user_id]
-
 set form_mode display
 
+# set locale [lang::user::locale -user_id $current_user_id]
 switch $locale {
     en_US {
 	set number_format "999999999999.00"
