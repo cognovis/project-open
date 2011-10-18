@@ -44,6 +44,7 @@ ad_page_contract {
     { only_uncompleted_tasks_p ""}
     { start_date_form ""}
     { end_date_form ""}
+    { project_id_form ""}
 }
 
 	# ------------------------------------------------------------
@@ -107,7 +108,10 @@ ad_page_contract {
 	    Expected format: 'YYYY-MM-DD'"
 	}
 
-	# ---------------------- Defaults ----------------------------------
+	# ------------------------------------------------------------
+	# Defaults  
+	# ------------------------------------------------------------
+
 	db_1row todays_date "
 	select
         	to_char(sysdate::date, 'YYYY') as todays_year,
@@ -262,9 +266,7 @@ ad_page_contract {
         </thead>
     	"
 
-	
 	set project_type_ids [join [im_sub_categories 2501] ","]
-
 
         set main_project_sql "
 		select
@@ -277,6 +279,13 @@ ad_page_contract {
 			p.parent_id is null and
 			tree_level(p.tree_sortkey) <= 1
         "
+	if { "" != $project_id_form  } {
+		append main_project_sql "and p.project_id = :project_id_form"
+	}
+
+	
+
+
 
 db_foreach main_project_sql $main_project_sql {
 
@@ -335,7 +344,7 @@ db_foreach main_project_sql $main_project_sql {
 		set extra_where " and  \n\t percent_completed_rounded < 100"
 	}
 
-	if { "" != $task_member_id } {
+	if { "" != $task_member_id && 0 != $task_member_id } {
 		set extra_where " and  \n\t t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"
 	}
 
@@ -640,7 +649,9 @@ template::multirow foreach task_list_multirow {
     #            from    im_employees
     #            where   employee_id = :user_id
     # " -default ""]
- 
+
+	
+    set empty_name [lang::message::lookup "" intranet-core.All "All"]
     set left_navbar_html "
         <form>
         <table border=0 cellspacing=1 cellpadding=1>
@@ -659,13 +670,13 @@ template::multirow foreach task_list_multirow {
                     <input type=textfield name=end_date_form value=$end_date_form>
                   </td>
                 </tr>
-<!--
                 <tr>
-                  <td class=form-label>Customer</td>
+                  <td class=form-label>Project:</td>
                   <td class=form-widget>
-                    [im_company_select company_id DOLLARcompany_id]
+                    [im_project_select -include_empty_p 1 -include_empty_name $empty_name -exclude_status_id [im_project_status_closed] project_id $project_id_form]
                   </td>
                 </tr>
+<!--
                 <tr>
                   <td class=form-label>Project Manager</td>
                   <td class=form-widget>
@@ -676,7 +687,7 @@ template::multirow foreach task_list_multirow {
                 <tr>
                   <td class=form-label>Task Member</td>
                   <td class=form-widget>
-                    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" task_member_id $task_member_id]
+                    [im_user_select -include_empty_p 1 -include_empty_name $empty_name task_member_id $task_member_id]
                   </td>
                 </tr>
 	        <tr>
