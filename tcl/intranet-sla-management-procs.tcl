@@ -436,6 +436,15 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		)
     "]
 
+    # Debugging: Only calculate a single ticket
+    if {"" == $ticket_id} {
+        set slas_with_open_tickets [db_list sla_list "
+                select  p.parent_id
+                from    im_projects p
+                where   p.project_id = :ticket_id
+        "]
+    }
+
 
     # ----------------------------------------------------------------
     # Loop through all SLAs
