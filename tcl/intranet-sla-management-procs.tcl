@@ -399,8 +399,19 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     # User to act as
     set current_user_id [db_string cuid "select min(user_id) from users where user_id > 0"]
     
-    # Calculate the list of "open" ticket states
-    set ticket_open_states [db_list ostate "select * from im_sub_categories([im_ticket_status_open])"]
+    # Calculate the list of "open" ticket states (when to advance the restime counter)
+    # Exclude the status "customer_review" (no work to be done by the helpdesk)
+    set ticket_open_states [db_list ostate "
+	select	*
+	from	im_sub_categories([im_ticket_status_open])
+	where	im_sub_categories not in (
+			[im_ticket_status_customer_review]
+		)
+    "]
+
+    # SISLA code: ToDo: remove for production
+    # Add "rejected" to "open" states
+    lappend ticket_open_states [im_ticket_status_rejected]
 
     set debug_html ""
     set time_html ""
