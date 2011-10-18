@@ -166,9 +166,6 @@ ad_page_contract {
 
 	set table_body_html ""
 
-
-
-
 	# ---------------------- Get Columns ----------------------------------
 	# Define the column headers and column contents that
 	# we want to show:
@@ -279,13 +276,10 @@ ad_page_contract {
 			p.parent_id is null and
 			tree_level(p.tree_sortkey) <= 1
         "
+
 	if { "" != $project_id_form  } {
 		append main_project_sql "and p.project_id = :project_id_form"
 	}
-
-	
-
-
 
 db_foreach main_project_sql $main_project_sql {
 
@@ -674,7 +668,7 @@ template::multirow foreach task_list_multirow {
                 <tr>
                   <td class=form-label>[lang::message::lookup "" intranet-core.Project "Project"]:</td>
                   <td class=form-widget>
-                    [im_project_select -include_empty_p 1 -include_empty_name $empty_name -exclude_status_id [im_project_status_closed] project_id $project_id_form]
+                    [im_project_select -include_empty_p 1 -include_empty_name $empty_name -exclude_status_id [im_project_status_closed] project_id_form $project_id_form]
                   </td>
                 </tr>
 <!--
