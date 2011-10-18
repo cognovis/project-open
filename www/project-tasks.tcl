@@ -409,8 +409,19 @@ db_foreach main_project_sql $main_project_sql {
         where
                 parent.project_id = :restrict_to_project_id and
                 child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-        	child.start_date >= to_timestamp(:start_date_form, 'YYYY-MM-DD') and
-	        child.end_date < to_timestamp(:end_date_form, 'YYYY-MM-DD') 
+		(
+	        	( 
+			child.start_date >= to_timestamp(:start_date_form, 'YYYY-MM-DD')
+			AND	
+			child.start_date <= to_timestamp(:end_date_form, 'YYYY-MM-DD')
+			) 
+		OR 
+			( 
+			child.start_date <= to_timestamp(:start_date_form, 'YYYY-MM-DD')
+			AND	
+			child.end_date >= to_timestamp(:end_date_form, 'YYYY-MM-DD')
+			)
+		)
                 $extra_where
         order by
                 child.tree_sortkey
