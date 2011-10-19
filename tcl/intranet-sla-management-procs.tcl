@@ -465,11 +465,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	if {$debug_p} { 
 	    ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id" 
-	    append debug_html "
-		</ul>
-		<h1>SLA=$sla_id</h1>
-		<ul>
-	    "
+	    append debug_html "</ul><h1>SLA=$sla_id</h1><ul>"
+	    append time_html "</ul><h1>SLA=$sla_id</h1><ul>"
 	}
 
 	# ----------------------------------------------------------------
@@ -846,7 +843,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	    if {$debug_p} {
 		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
-		append time_html "</ul><h1>End SLA=$sla_id</h1><ul>\n"
 	    }
 		
 	    # End of looping through one ticket
