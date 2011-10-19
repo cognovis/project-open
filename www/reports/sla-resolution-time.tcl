@@ -163,7 +163,7 @@ set footer0 {
     ""
     ""
     ""
-    "\#align=right \[lc_numeric \[expr round(100.0 * \$ticket_resolution_time_total_sum / \$ticket_resolution_time_total_count) / 100.0\] {} \$locale\] (=\[expr round(100.0*\$ticket_resolution_time_total_sum)/100.0\] / \$ticket_resolution_time_total_count)"
+    "\#align=right \[lc_numeric \[expr round(100.0 * \$ticket_resolution_time_total_median) / 100.0\] {} \$locale\]"
 
 }
 
@@ -183,7 +183,7 @@ set sla_footer {
     ""
     ""
     ""
-    "\#align=right [lc_numeric [expr round(100.0 * $ticket_resolution_time_sla_sum / $ticket_resolution_time_sla_count) / 100.0] {} $locale] (=[expr round(100.0*$ticket_resolution_time_sla_sum)/100.0] / $ticket_resolution_time_sla_count)"
+    "\#align=right [lc_numeric [expr round(100.0 * $ticket_resolution_time_sla_sum / $ticket_resolution_time_sla_count) / 100.0] {} $locale]"
 }
 
 set ticket_header {
@@ -204,6 +204,9 @@ lappend counters [list pretty_name "Solution Time SLA Count" var ticket_resoluti
 lappend counters [list pretty_name "Solution Time Total Sum" var ticket_resolution_time_total_sum reset 0 expr "\$ticket_resolution_time"]
 lappend counters [list pretty_name "Solution Time Total Count" var ticket_resolution_time_total_count reset 0 expr "1"]
 
+
+set ticket_resolution_time_total_sum 0
+set ticket_resolution_time_total_count 0
 
 # ------------------------------------------------------------
 # Add all Project and Company DynFields to list
@@ -321,7 +324,7 @@ db_foreach groups $group_sql {
     # Por SLA
     lappend counters [list pretty_name "$group_name SLA Sum" var "${var_name}_sla_sum" reset "\$sla_id" expr "\$$var_name+0"]
     lappend counters [list pretty_name "$group_name SLA Count" var "${var_name}_sla_count" reset "\$sla_id" expr "1"]
-    lappend sla_footer "\#align=right \[lc_numeric \[expr round(100.0 * \$${var_name}_sla_sum / \$${var_name}_sla_count\) / 100.0\] {} $locale\] (= \$${var_name}_sla_sum / \$${var_name}_sla_count)"
+    lappend sla_footer "\#align=right \[lc_numeric \[expr round(100.0 * \$${var_name}_sla_sum / \$${var_name}_sla_count\) / 100.0\] {} $locale\]"
 
 }
 
@@ -358,6 +361,10 @@ set criteria [list]
 
 if {0 != $customer_id && "" != $customer_id} {
     lappend criteria "p.company_id = :customer_id"
+}
+
+if {0 != $ticket_type_id && "" != $ticket_type_id} {
+    lappend criteria "t.ticket_type_id in (select * from im_sub_categories(:ticket_type_id))"
 }
 
 set where_clause [join $criteria " and\n\t\t"]
@@ -449,6 +456,12 @@ switch $output_format {
 		  <td>End Date:</td>
 		  <td><input type=text name=end_date value='$end_date'></td>
 		</tr>
+	        <tr>
+	          <td class=form-label>Ticket Type</td>
+	          <td class=form-widget>
+	            [im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] "Intranet Ticket Type" ticket_type_id $ticket_type_id]
+	          </td>
+	        </tr>
 		<tr>
 		  <td>[lang::message::lookup "" intranet-sla-management.Customer "Customer"]</td>
 		  <td>[im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] customer_id $customer_id]</td>
@@ -618,6 +631,12 @@ im_report_display_footer \
     -display_all_footers_p 1 \
     -row_class $class \
     -cell_class $class
+
+
+# Calculate fields for totoal (footer0)
+# which can be undefined.
+set ticket_resolution_time_total_median 0.00
+catch { set ticket_resolution_time_total_median [expr $ticket_resolution_time_total_sum / $ticket_resolution_time_total_count] }
 
 im_report_render_row \
     -output_format $output_format \
