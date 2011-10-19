@@ -71,6 +71,7 @@ ad_page_contract {
 	set restrict_to_with_member_id 0
 	set restrict_to_type_id 0
 	set menu_label "reporting-project-tasks"
+	set restrict_to_project_id ""
 
 	# ------------------------------------------------------------
 	# Permissions & Validation 
@@ -339,6 +340,7 @@ db_foreach main_project_sql $main_project_sql {
 	}
 
 	if { "" != $task_member_id && 0 != $task_member_id } {
+		# set extra_where " and  \n\t (t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)) OR (parent.project_id = :restrict_to_project_id)"
 		set extra_where " and  \n\t t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"
 	}
 
@@ -481,7 +483,6 @@ db_foreach main_project_sql $main_project_sql {
 	set ctr 0
 	set idx $start_idx
 	set old_project_id 0
-
 	# ----------------------------------------------------
 	# Render the list of tasks
 
@@ -600,6 +601,10 @@ template::multirow foreach task_list_multirow {
 }
 
 
+set previous_page_html ""
+set next_page_html ""
+
+if { [info exists ctr] } {
     # Deal with pagination
     if {$ctr == $max_entries_per_page && $end_idx < [expr $total_in_limited - 1]} {
         # This means that there are rows that we decided not to return
@@ -608,8 +613,6 @@ template::multirow foreach task_list_multirow {
         set task_max_entries_per_page $max_entries_per_page
         set next_page_url  "$current_page_url?[export_url_vars project_id task_object_id task_max_entries_per_page order_by]&task_start_idx=$next_start_idx&$pass_through_vars_html"
         set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
-    } else {
-        set next_page_html ""
     }
 
     if { $start_idx > 0 } {
@@ -618,9 +621,8 @@ template::multirow foreach task_list_multirow {
         set previous_start_idx [expr $start_idx - $max_entries_per_page]
         if { $previous_start_idx < 0 } { set previous_start_idx 0 }
         set previous_page_html "<A href=$current_page_url?[export_url_vars project_id]&$pass_through_vars_html&order_by=$order_by&task_start_idx=$previous_start_idx>&lt;&lt;</a>"
-    } else {
-        set previous_page_html ""
     }
+}
 
     # ---------------------- Format the action bar at the bottom ------------
 
@@ -731,9 +733,3 @@ template::multirow foreach task_list_multirow {
           $table_footer
         </table>
     "
-
-
-
-
-
-
