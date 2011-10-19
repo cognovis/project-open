@@ -332,17 +332,27 @@ db_foreach main_project_sql $main_project_sql {
 	set extra_from [join $extra_froms ",\n\t"]
 	if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
 
-	set extra_where [join $extra_wheres "and\n\t"]
-	if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+        if { 1 == $only_uncompleted_tasks_p } {
+                lappend extra_wheres "child.percent_completed < 100"
+        }
 
-	if { 1 == $only_uncompleted_tasks_p } {
-		set extra_where " and  \n\t percent_completed_rounded < 100"
-	}
+        if { "" != $task_member_id && 0 != $task_member_id } {
+                lappend extra_wheres "
+                                        (
+                                                t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+                                        OR
+                                                (
+                                                parent.project_id = :restrict_to_project_id and
+                                                parent.project_name = child.project_name and
+                                                parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+                                                )
+                                        )
+                "
+        }
 
-	if { "" != $task_member_id && 0 != $task_member_id } {
-		# set extra_where " and  \n\t (t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)) OR (parent.project_id = :restrict_to_project_id)"
-		set extra_where " and  \n\t t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"
-	}
+        set extra_where [join $extra_wheres "and\n\t"]
+        if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+
 
 	# ---------------------- Inner Permission Query -------------------------
 
