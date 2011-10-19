@@ -463,8 +463,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through all SLAs with open tickets"
     foreach sla_id $slas_with_open_tickets {
 
-	if {$debug_p} { ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id" }
-	ns_log Notice "im_sla_ticket_solution_time_sweeper: sla_id=$sla_id"
+	if {$debug_p} { 
+	    ns_log Notice "im_sla_ticket_solution_time: sla_id=$sla_id" 
+	    append debug_html "
+		</ul>
+		<h1>SLA=$sla_id</h1>
+		<ul>
+	    "
+	}
 
 	# ----------------------------------------------------------------
 	# Define the service hours per weekday.
