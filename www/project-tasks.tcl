@@ -10,18 +10,16 @@
 # ---------------------------------------------------------------
 
 ad_page_contract {
+
     @author frank.bergmann@project-open.com
     @author klaus.hofeditz@project-open.com
 
     This report has been developed under heavy time/budget constrains and is therfore marked as BETA  
     Code is based on [im_timesheet_task_list_component .. ]
-    Please set menu permissions accordingly to avoid missuse 
+    Please set access permissions accordingly to avoid missuse 
+
 	To-Do:
 		- pagination 
-		- additional filters: 
-			- show only "my" projects/all projects 
-			- only tasks where logged units > planned units 
-			- Consulting sub-type
 		- optimizing SQL 
 		
 } {
@@ -333,15 +331,24 @@ db_foreach main_project_sql $main_project_sql {
 	if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
 
         if { 1 == $only_uncompleted_tasks_p } {
-                lappend extra_wheres "child.percent_completed < 100"
+                lappend extra_wheres "child.percent_completed < 100 "
         }
 
         if { "" != $task_member_id && 0 != $task_member_id } {
                 lappend extra_wheres "
 			t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+                "
+        }
+
+        set extra_where [join $extra_wheres "and\n\t"]
+        if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+
+        if { "" != $task_member_id && 0 != $task_member_id } {
+		append extra_where " 
 			UNION
 	                select
         	                t.*,
+				0 as child_percent_completed,
                 	        parent.*,
                         	parent.project_nr as task_nr,
 	                        parent.project_name as task_name,
@@ -368,11 +375,8 @@ db_foreach main_project_sql $main_project_sql {
         	        where
                 	        parent.project_id = :restrict_to_project_id and 
 				parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
-                "
-        }
-
-        set extra_where [join $extra_wheres "and\n\t"]
-        if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+	"
+	}
 
 	# ---------------------- Inner Permission Query -------------------------
 
@@ -412,6 +416,7 @@ db_foreach main_project_sql $main_project_sql {
     set sql "
         select
                 t.*,
+		child.percent_completed as child_percent_completed,
                 child.*,
                 child.project_nr as task_nr,
                 child.project_name as task_name,
