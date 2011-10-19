@@ -504,7 +504,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			to_char(now(), 'J') as now_julian
 		from	im_tickets t,
 			im_projects p
-		where	t.ticket_id = p.project_id
+		where	t.ticket_id = p.project_id and
+			p.parent_id = :sla_id
 			$extra_where
 		order by
 			coalesce(t.ticket_resolution_time_dirty, to_date('2000-01-01', 'YYYY-MM-DD'))
@@ -602,7 +603,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	}
 
 	# ----------------------------------------------------------------
-	# Get all audit records for the open tickets.
+	# Get all audit records for the open tickets of this SLA
 	#
 	set audit_sql "
 		select	*,
@@ -615,8 +616,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		from	im_audits a
 		where	audit_object_id in (
 				select	t.ticket_id
-				from	im_tickets t
-				where	1=1
+				from	im_tickets t,
+					im_projects p
+				where	p.project_id = t.ticket_id and
+					p.parent_id = :sla_id
 					$extra_where
 			)
 		order by
