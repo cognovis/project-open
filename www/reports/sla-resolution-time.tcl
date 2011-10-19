@@ -313,7 +313,7 @@ db_foreach groups $group_sql {
     lappend header0 $group_name
     set var_name "group${group_id}_restime"
     lappend ticket_header "\#align=right \[lc_numeric \$$var_name {} $locale \]"
-    set deref "to_char(t.ticket_resolution_time_per_queue\[$cnt\] / 3600.0, :number_format) as $var_name"
+    set deref "t.ticket_resolution_time_per_queue\[$cnt\] as $var_name"
     lappend derefs $deref
 
     # Total Counters
