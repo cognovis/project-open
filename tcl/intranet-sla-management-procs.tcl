@@ -398,6 +398,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
     # User to act as
     set current_user_id [db_string cuid "select min(user_id) from users where user_id > 0"]
+
+    set limit_to_ticket_id $ticket_id
     
     # Calculate the list of "open" ticket states (when to advance the restime counter)
     # Exclude the status "customer_review" (no work to be done by the helpdesk)
@@ -448,11 +450,11 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     "]
 
     # Debugging: Only calculate a single ticket
-    if {"" != $ticket_id} {
+    if {"" != $limit_to_ticket_id} {
         set slas_with_open_tickets [db_list sla_list "
                 select  p.parent_id
                 from    im_projects p
-                where   p.project_id = :ticket_id
+                where   p.project_id = :limit_to_ticket_id
         "]
     }
 
@@ -494,7 +496,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		OR t.ticket_resolution_time_dirty is NULL
 		)
 	"
-	if {"" != $ticket_id} { set extra_where "and t.ticket_id = :ticket_id" }
+	if {"" != $limit_to_ticket_id} { set extra_where "and t.ticket_id = :limit_to_ticket_id" }
 	set ticket_sql "
 		select	*,
 			extract(epoch from t.ticket_creation_date) as ticket_creation_epoch,
@@ -538,11 +540,13 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    set epoch_{$ticket_id}([expr $now_epoch + 0.0003]) "now"
 	    set julian_{$ticket_id}($now_julian) "now"
 	    
-	    if {$debug_p} { append time_html "<li>Ticket: $ticket_id, ticket_creation_epoch=$ticket_creation_epoch" }
+	    if {$debug_p} { append time_html "<li>sla_id=$sla_id, $ticket_id: ticket_creation_epoch=$ticket_creation_epoch" }
 	    
 	    # Loop through all days between start and end and add the start
 	    # and end of the business hours this day.
-	    if {$debug_p} { append debug_html "<li>Starting to loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian])\n" }
+	    if {$debug_p} { 
+		append debug_html "<li>Starting to loop through julian dates from ticket_creation_julian=$ticket_creation_julian to now_julian=$now_julian ([im_date_julian_to_ansi $ticket_creation_julian] to [im_date_julian_to_ansi $now_julian])\n" 
+	    }
 	    for {set j $ticket_creation_julian} {$j <= $now_julian} {incr j} {
 
 		# Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
@@ -633,7 +637,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    set julian_{$ticket_id}($audit_date_julian) $audit_object_status_id
 	    set queue_{$ticket_id}($audit_date_epoch) $audit_ticket_queue_id
 	}
-
 
 	# Loop through all open tickets
 	ns_log Notice "im_sla_ticket_solution_time_sweeper: ticket_list=[array names name]"
