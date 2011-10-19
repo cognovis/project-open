@@ -338,21 +338,41 @@ db_foreach main_project_sql $main_project_sql {
 
         if { "" != $task_member_id && 0 != $task_member_id } {
                 lappend extra_wheres "
-                                        (
-                                                t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
-                                        OR
-                                                (
-                                                parent.project_id = :restrict_to_project_id and
-                                                parent.project_name = child.project_name and
-                                                parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
-                                                )
-                                        )
+			t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+			UNION
+	                select
+        	                t.*,
+                	        parent.*,
+                        	parent.project_nr as task_nr,
+	                        parent.project_name as task_name,
+        	                0 as task_status_id,
+                	        0 as task_type_id,
+                        	0 as child_project_id,
+	                        0 as child_parent_id,
+        	                null as uom,
+                	        null as material_nr,
+                        	null as percent_completed_rounded,
+	                        null as cost_center_name,
+        	                null as cost_center_code,
+                	        0 as subproject_id,
+                        	null as subproject_nr,
+	                        null as subproject_name,
+        	                0 as subproject_status_id,
+                	        null as subproject_status,
+                        	null as subproject_type,
+	                        0 as subproject_level,
+        	                null as red_p
+                	from
+                        	im_projects parent
+	                        left outer join im_timesheet_tasks t on (t.task_id = :restrict_to_project_id )
+        	        where
+                	        parent.project_id = :restrict_to_project_id and 
+				parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
                 "
         }
 
         set extra_where [join $extra_wheres "and\n\t"]
         if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
-
 
 	# ---------------------- Inner Permission Query -------------------------
 
@@ -435,8 +455,9 @@ db_foreach main_project_sql $main_project_sql {
 			)
 		)
                 $extra_where
+
         order by
-                child.tree_sortkey
+                tree_sortkey
     "
 
 	db_multirow task_list_multirow task_list_sql $sql {
