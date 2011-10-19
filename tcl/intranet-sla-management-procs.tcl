@@ -474,7 +474,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	# ----------------------------------------------------------------
 	# Define the service hours per weekday.
-	# (0 {} 1 {09:00 21:00} 2 {09:00 21:00} 3 {09:00 21:00} 4 {09:00 21:00} 5 {09:00 21:00} 6 {}
+	# (0 {} 1 {09:00 21:00} 2 {09:00 21:00} 3 {09:00 21:00} 4 {09:00 21:00} 5 {09:00 21:00} 6 {})
 	#
 	set service_hours_sql "
 	        select  *
@@ -513,6 +513,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			coalesce(t.ticket_resolution_time_dirty, to_date('2000-01-01', 'YYYY-MM-DD'))
 		LIMIT $limit
 	"
+
 	db_foreach tickets $ticket_sql {
 
 	    # Skip tickets with empty creation date
@@ -845,7 +846,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	    if {$debug_p} {
 		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
-		append time_html "</ul><ul>\n"
+		append time_html "</ul><h1>End SLA=$sla_id</h1><ul>\n"
 	    }
 		
 	    # End of looping through one ticket
