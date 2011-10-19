@@ -523,7 +523,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Processing ticket_id=$ticket_id"
 	    if {$debug_p} {
 		append debug_html "
-			<li><b>$ticket_id : $project_name</b>
+			<li><b>sla_id=$sla_id, $ticket_id : $project_name</b>
 			<li>ticket_creation_date: $ticket_creation_date
 			<li>ticket_creation_julian: $ticket_creation_julian
 			<li>ticket_creation_epoch: $ticket_creation_epoch
@@ -628,7 +628,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	"
 	db_foreach audit $audit_sql {
 	    if {"" == $audit_object_status} { set audit_object_status "NULL" }
-	    if {$debug_p} { append debug_html "<li>$ticket_id: $audit_date: $audit_object_status" }
+	    if {$debug_p} { append debug_html "<li>sla_id=$sla_id, $ticket_id: $audit_date: $audit_object_status" }
 	    set epoch_{$ticket_id}($audit_date_epoch) $audit_object_status_id
 	    set julian_{$ticket_id}($audit_date_julian) $audit_object_status_id
 	    set queue_{$ticket_id}($audit_date_epoch) $audit_ticket_queue_id
@@ -652,7 +652,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: #$total_tickets_processed: Processing events for ticket_id=$ticket_id name=$ticket_name"
     
 	    if {$debug_p} { 
-		append time_html "<li><b>$ticket_id : $ticket_name</b>" 
+		append time_html "<li><b>sla_id=$sla_id, $ticket_id : $ticket_name</b>" 
 		append time_html "<table cellspacing=1 cellpadding=1>
 			<tr class=rowtitle>
 			<td class=rowtitle>Epoch</td>
@@ -845,7 +845,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    "
 
 	    if {$debug_p} {
-		append time_html "<li><b>$ticket_id : $ticket_name</b>: $resolution_seconds\n"
+		append time_html "<li><b>sla_id=$sla_id, $ticket_id : $ticket_name</b>: $resolution_seconds\n"
 	    }
 		
 	    # End of looping through one ticket
