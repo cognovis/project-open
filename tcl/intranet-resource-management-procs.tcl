@@ -78,8 +78,8 @@ ad_proc -public im_resource_mgmt_get_bar_color {
 	switch $mode {
  		"traffic_light" {
 			set bar_chart_color "\#33ff00"
-		        if { $val > 50 } { set bar_chart_color "\#FFFF00" }
-		        if { $val > 70 } { set bar_chart_color "\#ff0000" }
+		        if { $val > 70 } { set bar_chart_color "\#FFFF00" }
+		        if { $val > 100 } { set bar_chart_color "\#ff0000" }
 		}
 		"gradient" {
 		    # http://stackoverflow.com/questions/340209/generate-colors-between-red-and-green-for-a-power-meter
@@ -942,7 +942,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     db_foreach planned_hours_loop $planned_hours_sql {
 
-	if {$calc_day_p} {
+	# Check the number of tasks this task is parent to  
+	set no_parents [db_string get_data "select count(*) from im_projects where parent_id = $project_id" -default 0]
+
+	if { "0" == $no_parents } {
+	    # There are no tasks having this task as a parent, so we pick only planned hours for those
+	    if {$calc_day_p} {
 		# Determine members of task:  
 		set user_list [list]
 		set user_ctr 0 
@@ -1070,7 +1075,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
                 	        }
         		}
 			ns_log NOTICE "$project_id, $start_date, $end_date, workdays: $no_workdays, users: $user_list, Planned Units: $planned_units<br>$out"
-		}	
+		    }	
 	}
 
 	# Evaluate min/max date to determine the start and end date of report 
@@ -1081,6 +1086,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# if { $end_date > $max_date } { set max_date $end_date }
 	# if { $next_workday > $max_date } { set max_date $next_workday }
 
+	}
     }
 
 
@@ -1098,7 +1104,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# Skip if no data
 	if {"" == $child_start_date_julian} { continue }
 	if {"" == $child_end_date_julian} { continue }
-
+	
 	# Loop through the days between start_date and end_data
 	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
 
@@ -1460,6 +1466,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
         if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
         # Make it 100% when no value found -> ToDo: Print hint on bottom of report 
 	if { "" == $availability_user_perc } { set availability_user_perc 100 }
+
 	set hours_availability_user [expr $hours_per_day_glob * $availability_user_perc / 100 ]
 
 	set project_id [lindex $left_entry 1]
@@ -1618,7 +1625,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set last_click [clock clicks]
 
 	    # Calculate the julian date for today from top_vars
-# ad_return_complaint 1 "$top_vars $top_entry"		
+
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars $top_entry]]
 	    if {$julian_date == $last_julian} {
 		# We're with the second ... seventh entry of a week.
@@ -1653,7 +1660,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
                     set key "$user_id-$julian_date-$project_id"
 		    # Are there any planned hours for this day and this user?   
 		    if { [info exists user_day_task_arr($key)] } { 
-			set val [expr 100 * $user_day_task_arr($key) / $hours_availability_user ] 
+			if { 0 == $hours_availability_user } {
+			     set val 0
+			} else {
+			    set val [expr 100 * $user_day_task_arr($key) / $hours_availability_user ] 
+			}
 			set val_hours $user_day_task_arr($key)
 		    }
                 } else {
@@ -1767,7 +1778,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				    if { "0" != $acc_hours } { 
 		   		        # if absence exist, add hours of absence  
 					if {[info exists absences_hash($absence_key)]} { set acc_hours [expr $acc_hours + $hours_availability_user] }
-					set bar_value [expr 100*$acc_hours/$hours_availability_user]				
+					if { 0 == $hours_availability_user } {
+					    set bar_value 0
+					} else {
+					    set bar_value [expr 100*$acc_hours/$hours_availability_user]
+					}
 					set bar_color [im_resource_mgmt_get_bar_color "gradient" $bar_value]
 					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color $acc_hours "" 1]
 				    }  
@@ -1805,7 +1820,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				    }    
 	
 	                            set bar_color [im_resource_mgmt_get_bar_color "traffic_light" $percent_hours_occupied]
-				    set perc_occupation_user_total [expr 100 * $occupation_user_total / $hours_availability_user]
+
+				    if { 0 == $hours_availability_user } {
+                                        set perc_occupation_user_total 0
+				    } else {
+					set perc_occupation_user_total [expr 100 * $occupation_user_total / $hours_availability_user]
+				    }
 	                            append cell_html [im_resource_mgmt_resource_planning_cell "custom" $percent_hours_occupied $bar_color "$hours_occupied_total/$perc_occupation_user_total%" "" $limit_height]
 				}
 			}
