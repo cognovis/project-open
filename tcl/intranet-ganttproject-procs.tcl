@@ -618,6 +618,7 @@ ad_proc -public im_gp_save_tasks2 {
     set task_nr			""
     set task_id			0
     set has_subobjects_p	0
+    set work			0
 
     set outline_number		""
     set remaining_duration	""
@@ -666,6 +667,7 @@ ad_proc -public im_gp_save_tasks2 {
 		}
 	    }
 	    "milestone"		{ if {"1" == [$taskchild text]} { set milestone_p "t" }}
+	    "work"		{ set work [$taskchild text] }
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
 		continue
@@ -696,14 +698,21 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
 
-    # If no percent_completed is given explicitely (GanttProject(?))
-    # then calculate based on remaining duration. ToDo: Can we delete this piece?
+    # Calculate the effective duration
     if {"" != $duration} {
     	set duration_seconds [im_gp_ms_project_time_to_seconds $duration]
     } else {
 	set duration_seconds 0
     }
 
+    # Calculate the effective work
+    set work_seconds ""
+    if {"" != $work} {
+    	set work_seconds [im_gp_ms_project_time_to_seconds $work]
+    }
+
+    # If no percent_completed is given explicitely (GanttProject(?))
+    # then calculate based on remaining duration. ToDo: Can we delete this piece?
     if {"" == $percent_completed} {
 	if {$remaining_duration != "" && $duration != "" && 0 != $duration_seconds} {
 	    set remaining_seconds [im_gp_ms_project_time_to_seconds $remaining_duration]
@@ -715,6 +724,7 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
 
+    ns_log Notice "im_gp_save_tasks2: $task_name: work=$work"
     ns_log Notice "im_gp_save_tasks2: $task_name: duration=$duration"
     ns_log Notice "im_gp_save_tasks2: $task_name: percent_completed=$percent_completed"
 
@@ -974,11 +984,21 @@ ad_proc -public im_gp_save_tasks2 {
 		project_id = :task_id
     "
 
+    set units_sql "
+		planned_units = :duration_seconds / 3600.0,
+		billable_units = :duration_seconds / 3600.0
+    "
+    if {"" != $work_seconds} {
+	set units_sql "
+		planned_units = :work_seconds / 3600.0,
+		billable_units = :work_seconds / 3600.0
+	"
+    }
+
     db_dml update_task "
 	update im_timesheet_tasks set
-		planned_units = :duration_seconds / 3600.0,
-		billable_units = :duration_seconds / 3600.0,
-		uom_id = [im_uom_hour]
+		uom_id = [im_uom_hour],
+		$units_sql
 	where
 		task_id = :task_id
     "
