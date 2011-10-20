@@ -366,14 +366,17 @@ db_foreach project_dynfield_attributes $project_dynfield_sql {
 
     # Catch the generic ones - We know how to dereferentiate integer references of these fields.
     if {"" != $deref_plpgsql_function} {
-	lappend derefs "${deref_plpgsql_function} (p.$attribute_name) as ${attribute_name}_deref"
+	lappend derefs "${deref_plpgsql_function} (mainp.$attribute_name) as ${attribute_name}_deref"
     } else {
-	lappend derefs "p.$attribute_name as ${attribute_name}_deref"
+	lappend derefs "mainp.$attribute_name as ${attribute_name}_deref"
     }
 }
 
 
 if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
+
+
+# ad_return_complaint 1 $derefs
 
 
 for {set i 0} {$i < [llength $left_scale_options]} {incr i 2} {
