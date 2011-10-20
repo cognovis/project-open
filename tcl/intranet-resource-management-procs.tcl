@@ -2263,25 +2263,21 @@ ad_proc -private write_department_row {
 } {
     - writes department row
 } {
-
 	set limit_height 1
-
 	array set totals_department_absences_arr_loc $totals_department_absences_arr
         array set totals_department_planned_hours_arr_loc $totals_department_planned_hours_arr
         array set totals_department_availability_arr_loc $totals_department_availability_arr
-
 	set row_html ""
-
         set department_name [db_string get_department_name "select cost_center_name from im_cost_centers where cost_center_id = $department_id" -default ""]
-
 	append row_html "<tr><td><b>[lang::message::lookup "" intranet-reporting.SubTotalDepartment "Department"]: $department_name</b></td>"
 	set ctr 0
 
 	# Sanity check: Make sure we have a value vor each column
-	if { ![info exists totals_department_absences_arr_loc($ctr)] } { set totals_department_absences_arr_loc($ctr) 0 }
-	if { ![info exists totals_department_planned_hours_arr_loc($ctr)] } { set totals_department_planned_hours_arr_loc($ctr) 0 }
-	if { ![info exists totals_department_availability_arr_loc($ctr)] } { set totals_department_availability_arr_loc($ctr) 0 }
 	foreach top_entry $top_scale {
+	    if {![info exists totals_department_absences_arr_loc($ctr)]} { set totals_department_absences_arr_loc($ctr) 0 }
+	    if {![info exists totals_department_planned_hours_arr_loc($ctr)]} { set totals_department_planned_hours_arr_loc($ctr) 0 }
+	    if {![info exists totals_department_availability_arr_loc($ctr)]} { set totals_department_availability_arr_loc($ctr) 0 }
+
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars $top_entry]]
 	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
 	    if {0 == $day_of_week} { set day_of_week 7 }
