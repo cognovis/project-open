@@ -2055,8 +2055,8 @@ ad_proc im_task_component {
 	<table border=0>
 	<tr>
     "
-
     foreach col $column_headers {
+	regsub -all {"} $col {,} col
         set header ""
 	set header_cmd "set header \"$col\""
 	eval $header_cmd
