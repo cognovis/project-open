@@ -233,8 +233,6 @@ ad_page_contract {
 	}
 	set pass_through_vars_html [join $params "&"]
 
-
-
 	# ---------------------- Format Header ----------------------------------
 	# Set up colspan to be the number of headers + 1 for the # column
 	set colspan [expr [llength $column_headers] + 1]
@@ -283,7 +281,7 @@ ad_page_contract {
 db_foreach main_project_sql $main_project_sql {
 
 	set restrict_to_project_id $project_id
-
+	set where_union ""
 	# Check horizontal permissions -
 	# Is the user allowed to see this project?
 	# im_project_permissions $user_id $restrict_to_project_id view read write admin
@@ -334,17 +332,24 @@ db_foreach main_project_sql $main_project_sql {
                 lappend extra_wheres "child.percent_completed < 100 "
         }
 
+        if { "" != $employee_cost_center_id && 0 != $employee_cost_center_id } {
+        	lappend extra_wheres "t.task_id in (select object_id_one from acs_rels where object_id_two in (select employee_id from im_employees where department_id = :employee_cost_center_id))"
+        }
+
         if { "" != $task_member_id && 0 != $task_member_id } {
                 lappend extra_wheres "
-			t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+			t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id) and
+			parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
                 "
+		set where_union "and parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"				
         }
 
         set extra_where [join $extra_wheres "and\n\t"]
         if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
 
-        if { "" != $task_member_id && 0 != $task_member_id } {
-		append extra_where " 
+	# ------------------------------------------------------------------------------
+
+	append extra_where " 
 			UNION
 	                select
         	                t.*,
@@ -373,10 +378,10 @@ db_foreach main_project_sql $main_project_sql {
                         	im_projects parent
 	                        left outer join im_timesheet_tasks t on (t.task_id = :restrict_to_project_id )
         	        where
-                	        parent.project_id = :restrict_to_project_id and 
-				parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+                	        parent.project_id = :restrict_to_project_id
+				$where_union
 	"
-	}
+
 
 	# ---------------------- Inner Permission Query -------------------------
 
@@ -445,6 +450,7 @@ db_foreach main_project_sql $main_project_sql {
                 $extra_from
         where
                 parent.project_id = :restrict_to_project_id and
+		child.project_id <> parent.project_id and 
                 child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
 		(
 	        	( 
