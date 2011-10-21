@@ -68,6 +68,13 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql "
 	set project_url [export_vars -base "[im_url]/projects/view" -url {{project_id $parent_project_id}}]
 	set value "<a href='$project_url'>$value</a>"
     }
+
+    # Special setting for projects (company_id)
+    if {$attribute_name eq "company_id"} {
+	set company_url [export_vars -base "[im_url]/companies/view" -url {{company_id $project(company_id_orig)}}]
+	set value "<a href='$company_url'>$value</a>"
+    }
+
 }
 
 
