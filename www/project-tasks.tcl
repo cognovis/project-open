@@ -282,6 +282,7 @@ db_foreach main_project_sql $main_project_sql {
 
 	set restrict_to_project_id $project_id
 	set where_union ""
+
 	# Check horizontal permissions -
 	# Is the user allowed to see this project?
 	# im_project_permissions $user_id $restrict_to_project_id view read write admin
@@ -338,8 +339,9 @@ db_foreach main_project_sql $main_project_sql {
 
         if { "" != $task_member_id && 0 != $task_member_id } {
                 lappend extra_wheres "
-			t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id) and
-			parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+			( t.task_id in (select object_id_one from acs_rels where object_id_two = :task_member_id) OR  
+			  child.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)
+			) 
                 "
 		set where_union "and parent.project_id in (select object_id_one from acs_rels where object_id_two = :task_member_id)"				
         }
@@ -417,7 +419,9 @@ db_foreach main_project_sql $main_project_sql {
                         where   1=1
                                 $restriction_clause"
 	}
+
     # ---------------------- Get the SQL Query -------------------------
+
     set sql "
         select
                 t.*,
@@ -452,19 +456,8 @@ db_foreach main_project_sql $main_project_sql {
                 parent.project_id = :restrict_to_project_id and
 		child.project_id <> parent.project_id and 
                 child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-		(
-	        	( 
-			child.start_date >= to_timestamp(:start_date_form, 'YYYY-MM-DD')
-			AND	
-			child.start_date <= to_timestamp(:end_date_form, 'YYYY-MM-DD')
-			) 
-		OR 
-			( 
-			child.start_date <= to_timestamp(:start_date_form, 'YYYY-MM-DD')
-			AND	
-			child.end_date >= to_timestamp(:end_date_form, 'YYYY-MM-DD')
-			)
-		)
+                child.end_date >= to_timestamp(:start_date_form, 'YYYY-MM-DD') and 
+                child.start_date <= to_timestamp(:end_date_form, 'YYYY-MM-DD')  
                 $extra_where
 
         order by
@@ -528,101 +521,103 @@ db_foreach main_project_sql $main_project_sql {
 	# ----------------------------------------------------
 	# Render the list of tasks
 
-template::multirow foreach task_list_multirow {
+	template::multirow foreach task_list_multirow {
 
-	# Skip this entry completely if the parent of this project is closed
-	if {[info exists closed_projects_hash($child_parent_id)]} { continue }
+		# Skip this entry completely if the parent of this project is closed
+		if {[info exists closed_projects_hash($child_parent_id)]} { continue }
 
-        # Replace "0" by "" to make lists better readable
-	if {0 == $reported_hours_cache} { set reported_hours_cache "" }
-	if {0 == $reported_days_cache} { set reported_days_cache "" }
-
-        # Select the "reported_units" depending on the Unit of Measure
-        # of the task. 320="Hour", 321="Day". Don't show anything if
-        # UoM is not hour or day.
-
-	switch $uom_id {
-		320 { set reported_units_cache $reported_hours_cache }
-		321 { set reported_units_cache $reported_days_cache }
-		default { set reported_units_cache "-" }
-    	}
-
-        # ns_log Notice "project-tasks: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache"
-
-        set indent_html ""
-        set indent_short_html ""
-    for {set i 0} {$i < $subproject_level} {incr i} {
-	append indent_html "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-	append indent_short_html "&nbsp;&nbsp;&nbsp;"
-    }
-
-        ns_log Notice "timesheet-tree: child_project_id=$child_project_id"
-	if {[info exists closed_projects_hash($child_project_id)]} {
-            # Closed project
-		set gif_html ""
-	} else {
-        	# So this is an open task - show a "(-)", unless the project is a leaf.
-		set gif_html ""
-		# if {[info exists leafs_hash($child_project_id)]} { set gif_html "&nbsp;" }
-    	}
-
-        # In theory we can find any of the sub-types of project
-        # here: Ticket and Timesheet Task.
+	        # Replace "0" by "" to make lists better readable
+		if {0 == $reported_hours_cache} { set reported_hours_cache "" }
+		if {0 == $reported_days_cache} { set reported_days_cache "" }
 	
-	switch $project_type_id {
-	100 {
-            # Timesheet Task
-	    set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
-	}
-	101 {
-            # Ticket
-	    set object_url [export_vars -base "/intranet-helpdesk/new" {{ticket_id $child_project_id} return_url}]
-	}
-	default {
-            # Project
-	    set task_id $project_id
-	    set object_url [export_vars -base "/intranet/projects/view" {{project_id $child_project_id} return_url}]
-	}
-    }
+	        # Select the "reported_units" depending on the Unit of Measure
+        	# of the task. 320="Hour", 321="Day". Don't show anything if
+	        # UoM is not hour or day.
 
-        # Table fields for timesheet tasks
-        set percent_done $percent_completed_rounded
-        set billable_hours $billable_units
-	set status_select $task_status_id
-        set planned_hours $planned_units
+		switch $uom_id {
+			320 { set reported_units_cache $reported_hours_cache }
+			321 { set reported_units_cache $reported_days_cache }
+			default { set reported_units_cache "-" }
+		}
 
-        # Table fields for projects and others (tickets?)
-	if {$project_type_id != [im_project_type_task]} {
-	        # A project doesn't have a "material" and a UoM.
-	        # Just show "hour" and "default" material here
-		set uom_id [im_uom_hour]
-		set uom [im_category_from_id $uom_id]
-		set material_id [im_material_default_material_id]
-	        set reported_units_cache $reported_hours_cache
-	        set percent_done $percent_completed_rounded
-	        set billable_hours ""
-        	set status_select ""
-	        set planned_hours ""
-    	}
+	        # ns_log Notice "project-tasks: project_id=$project_id, hours=$reported_hours_cache, days=$reported_days_cache, units=$reported_units_cache"
 
-	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+	        set indent_html ""
+        	set indent_short_html ""
+		for {set i 0} {$i < $subproject_level} {incr i} {
+			append indent_html "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+			append indent_short_html "&nbsp;&nbsp;&nbsp;"
+    	    	}
 
-        # We've got a task.
-        # Write out a line with task information
-	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
-	foreach column_var $column_vars {
-            append table_body_html "\t<td valign=top>"
-            set cmd "append table_body_html $column_var"
-            eval $cmd
-            append table_body_html "</td>\n"
-    	}
-        append table_body_html "</tr>\n"
-        # Update the counter.
-        incr ctr
-	if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
-            break
-    	}
-}
+	        ns_log Notice "timesheet-tree: child_project_id=$child_project_id"
+
+		if {[info exists closed_projects_hash($child_project_id)]} {
+	            	# Closed project
+			set gif_html ""
+		} else {
+        		# So this is an open task - show a "(-)", unless the project is a leaf.
+			set gif_html ""
+			# if {[info exists leafs_hash($child_project_id)]} { set gif_html "&nbsp;" }
+    		}
+
+	        # In theory we can find any of the sub-types of project
+        	# here: Ticket and Timesheet Task.
+	
+		switch $project_type_id {
+			100 {
+	        	    # Timesheet Task
+			    set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
+			}
+			101 {
+        		    # Ticket
+			    set object_url [export_vars -base "/intranet-helpdesk/new" {{ticket_id $child_project_id} return_url}]
+			}
+			default {
+        		    # Project
+			    set task_id $project_id
+			    set object_url [export_vars -base "/intranet/projects/view" {{project_id $child_project_id} return_url}]
+			}
+	        }
+
+	        # Table fields for timesheet tasks
+        	set percent_done $percent_completed_rounded
+	        set billable_hours $billable_units
+		set status_select $task_status_id
+	        set planned_hours $planned_units
+
+        	# Table fields for projects and others (tickets?)
+		if {$project_type_id != [im_project_type_task]} {
+		        # A project doesn't have a "material" and a UoM.
+		        # Just show "hour" and "default" material here
+			set uom_id [im_uom_hour]
+			set uom [im_category_from_id $uom_id]
+			set material_id [im_material_default_material_id]
+	        	set reported_units_cache $reported_hours_cache
+		        set percent_done $percent_completed_rounded
+		        set billable_hours ""
+ 	       		set status_select ""
+		        set planned_hours ""
+    		}
+
+		set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+	
+        	# We've got a task.
+	        # Write out a line with task information
+		append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
+		foreach column_var $column_vars {
+        	    append table_body_html "\t<td valign=top>"
+	            set cmd "append table_body_html $column_var"
+        	    eval $cmd
+	            append table_body_html "</td>\n"
+    		}
+        	append table_body_html "</tr>\n"
+
+	        # Update the counter.
+        	incr ctr
+		if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
+        	    break
+    		}
+	}; # END FOR EACH TASK 
 
 	# ----------------------------------------------------
 	# Show a reasonable message when there are no result rows:
@@ -636,11 +631,10 @@ template::multirow foreach task_list_multirow {
         #	"
         # }
 
-    set project_id $restrict_to_project_id
-    set total_in_limited 0
-
-    # append table_body_html "<tr><td colspan=999>&nbsp;</td></tr>"
-}
+	set project_id $restrict_to_project_id
+    	set total_in_limited 0
+	set extra_wheres ""	
+}; 
 
 
 set previous_page_html ""
