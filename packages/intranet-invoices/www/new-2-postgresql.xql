@@ -24,8 +24,8 @@
                 :payment_method_id,	-- payment_method_id
                 :payment_days,		-- payment_days
                 0,			-- amount
-                :vat,			-- vat
-                :tax,			-- tax
+                to_number(:vat,:vat_format),			-- vat
+                to_number(:tax,:tax_format),			-- tax
                 :note			-- note
             )
         </querytext>

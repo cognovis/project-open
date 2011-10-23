@@ -28,8 +28,8 @@ ad_page_contract {
     { payment_days:integer ""}
     { payment_method_id:integer "" }
     template_id:integer
-    vat:trim,float
-    tax:trim,float
+    vat:trim
+    tax:trim
     { discount_perc "0" }
     { surcharge_perc "0" }
     { discount_text "" }
@@ -50,6 +50,9 @@ ad_page_contract {
     { return_url "/intranet-invoices/" }
 }
 
+
+set tax_format [im_l10n_sql_currency_format -style simple]
+set vat_format [im_l10n_sql_currency_format -style simple]
 
 set auto_increment_invoice_nr_p [parameter::get -parameter InvoiceNrAutoIncrementP -package_id [im_package_invoices_id] -default 0]
 
@@ -259,8 +262,8 @@ set
 			    from im_start_months 
 			    where start_block < :invoice_date),
 	payment_days	= :payment_days,
-	vat		= :vat,
-	tax		= :tax,
+	vat		= to_number(:vat,:vat_format),
+	tax		= to_number(:tax,:tax_format),
 	note		= :note,
 	variable_cost_p = 't',
 	amount		= null,
