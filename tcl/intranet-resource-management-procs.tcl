@@ -253,6 +253,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # DEFAULTS
     # ---------------------------------------
 
+    set start_date_request $start_date
+    set end_date_request $end_date
+
+    # Write iregularities to protocoll
+    set err_protocoll ""
+
     # Department to use, when user is not assigned to one 
     set default_department [parameter::get -package_id [apm_package_id_from_key intranet-resource-management] -parameter "DefaultCostCenterId" -default 525]
 
@@ -273,7 +279,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
     set rowclass(0) "roweven"
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
-    set page_url "/intranet-resource-management/gantt-resources-planning"
+    # set page_url "/intranet-resource-management/gantt-resources-planning"
+    set page_url "/intranet-cust-lippokwolf/resources-planning"
+
     set current_user_id [ad_get_user_id]
     set return_url [im_url_with_query]
 
@@ -753,7 +761,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set pid $project_id
 	while {$level >= 0} {
 	    lappend hierarchy_row $pid
-	    set pid $parent_hash($pid)
+
+	    if { [info exists parent_hash($pid)] } {
+		set pid $parent_hash($pid)
+	    } else {
+		ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+	    }
 	    incr level -1
 	}
 
@@ -845,7 +858,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    # Iterate through the project_path, looking for:
 	    # - the name of the project to display and
 	    # - if any of the parents has been closed
-	    ns_log Notice "gantt-resources-planning: pid=$project_id, name=$project_name, path=$project_path, row=$row"
+	    ns_log Notice "intranet-resource-management: pid=$project_id, name=$project_name, path=$project_path, row=$row"
 	    set collapse_control_oid 0
 	    set closed_p "c"
 	    if {[info exists collapse_hash($user_id)]} { set closed_p $collapse_hash($user_id) }
@@ -946,7 +959,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set no_parents [db_string get_data "select count(*) from im_projects where parent_id = $project_id" -default 0]
 
 	if { "0" == $no_parents } {
-	    # There are no tasks having this task as a parent, so we pick only planned hours for those
+
+	    # There are no other tasks having this task as a parent, so we pick only planned hours for those:
 	    if {$calc_day_p} {
 		# Determine members of task:  
 		set user_list [list]
@@ -987,8 +1001,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
 		# Over how many work days do we have to distribute the planned hours,  
 		set no_workdays [db_string get_view_id "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as foo (days date)" -default 1]
-
-
 		
 		ns_log NOTICE "<br>no_workdays for project: $project_id: $no_workdays<br>"
 
@@ -1140,7 +1152,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		if {"" == $pid} { 
 		    set continue 0 
 		} else {
-		    set pid $parent_hash($pid)
+		    if { [info exists parent_hash($pid)] } {
+			set pid $parent_hash($pid)
+		    } else {
+			ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+		    }
 		}
 	    }
 	}
@@ -1341,7 +1357,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		if {"" == $pid} { 
 		    set continue 0 
 		} else {
-		    set pid $parent_hash($pid)
+		    if { [info exists parent_hash($pid)] } {
+			set pid $parent_hash($pid)
+		    } else {
+			ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+		    }
 		}
 	    }
 	}
@@ -1417,11 +1437,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
     "
     db_foreach absence $absence_sql { lappend absence_list $category }
 
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------
     # Create OUTPUT
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------
 
     # -----------------------------------------------------------
     # | For all elements left column (employees)
@@ -1436,11 +1456,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # |  |
     # |  |  tbc. ... 
 
-
-
     set row_ctr 0
-    foreach left_entry $left_scale {
+    set show_row_task_p 0 
 
+    foreach left_entry $left_scale {
 	# example for left scale: {8892 {}} {624 {}} {30730 {}} {29622 {}} {29622 29946} ... 
 
 	# This boolean is needed to calculate the total of hours available for the minimum UOM (day/week/month)
@@ -1483,9 +1502,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set row_shows_employee_p 1
 	}
 
-	# ---------------------------------------------------------
-	# Write department block 
-	# ---------------------------------------------------------
+	# --------------------------------------------------------------------
+	# Write department Row when user_department_id has changed ...   
+	# -------------------------------------------------------------------
 
 	if { $row_shows_employee_p } {
 	    if { 0 == $row_ctr } {
@@ -1519,7 +1538,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# Start the row and show the left_scale values at the left
 
 	set class $rowclass([expr $row_ctr % 2])
-	append department_row_html "<tr class=$class valign=bottom>\n"
+	append department_row_html_tmp "<tr class=$class valign=bottom>\n"
 
 	if {[info exists object_type_hash($oid)]} { set otype $object_type_hash($oid) }
 
@@ -1578,7 +1597,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set indent_html ""
 	for {set i 0} {$i < $indent_level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; " }
 
-	append department_row_html "<td><nobr>$indent_html$cell_html</nobr></td>\n"
+	append department_row_html_tmp "<td><nobr>$indent_html$cell_html</nobr></td>\n"
 
 	set left_clicks(left) [expr $left_clicks(left) + [clock clicks] - $last_click]
 	set last_click [clock clicks]
@@ -1608,7 +1627,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# topscale example: {2011 9 01} {2011 9 02}
 	
 	foreach top_entry $top_scale {
-
+	    
 	    set left_clicks(top_scale_start) [expr $left_clicks(top_scale_start) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
 
@@ -1725,7 +1744,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			    set totals_department_planned_hours_arr($column_ctr) $acc_hours
 			}
 
-			ns_log NOTICE "KHD: totals_department_planned_hours_arr for col: $column_ctr and user: $user_id -> [array get totals_department_planned_hours_arr]"
+			# ns_log NOTICE "KHD: totals_department_planned_hours_arr for col: $column_ctr and user: $user_id -> [array get totals_department_planned_hours_arr]"
 			
 			# Accumulations planned hours user total  
 			if { "0" != $acc_hours } {
@@ -1766,15 +1785,17 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			# END: Calculate Totals
 			# --------------------------------------------------------------------------------------------
 
+
 			# --------------------------------------------------------------------------------------------
-			# START: Create Bar 
+			# START: Create Bars 
 			# --------------------------------------------------------------------------------------------
 
 			# Show bar for user rows (only weekdays) 
 		        if { "6" != $day_of_week && "7" != $day_of_week  } {
-				# if  $seperate_bars_for_plannedhours_and_absences_p 
  			        if { $row_shows_employee_p } {
-				    # Create bar for planned hours 
+
+				    # Bar is composed of multiple bars  
+
 				    if { "0" != $acc_hours } { 
 		   		        # if absence exist, add hours of absence  
 					if {[info exists absences_hash($absence_key)]} { set acc_hours [expr $acc_hours + $hours_availability_user] }
@@ -1785,12 +1806,14 @@ ad_proc -public im_resource_mgmt_resource_planning {
 					}
 					set bar_color [im_resource_mgmt_get_bar_color "gradient" $bar_value]
 					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color $acc_hours "" 1]
+					set cell_flag 1
 				    }  
 				    # Create bar in case an absence is found 
 				    if {[info exists absences_hash($absence_key)]} {
 					set bar_color [im_absence_mix_colors $absences_hash($absence_key)]
 					set bar_value [lindex $absence_list $absences_hash($absence_key)]
 					append cell_html [im_resource_mgmt_resource_planning_cell "custom" 100 $bar_color $bar_value "a" 1]
+					set cell_flag 1
 				    }
 
 				    if { ![info exists absences_hash($absence_key)] && "0" == $acc_hours } {
@@ -1799,7 +1822,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	                                append cell_html [im_resource_mgmt_resource_planning_cell "custom" 0 $bar_color 0 "" 1]
 				    }
 			        } else {
-				    # We show an uni-color bar:   
+				    # Show Uni-color bar   
+
 				    # Calculate hours for absences 
 				    set hours_occupied_absence 0
 	                            if { [info exists absences_hash($absence_key)] } {
@@ -1829,6 +1853,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	                            append cell_html [im_resource_mgmt_resource_planning_cell "custom" $percent_hours_occupied $bar_color "$hours_occupied_total/$perc_occupation_user_total%" "" $limit_height]
 				}
 			}
+
 			# --------------------------------------------------------------------------------------------
 			# END: Writing bar 
 			# --------------------------------------------------------------------------------------------
@@ -1847,31 +1872,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			    set totals_department_absences_arr($column_ctr) $occupation_user     			    
 			}
 
-
-			# ------------------------------------------------------------------------------------------------------
-
-			# At this point we know hours planned & absences for this particular UOM(day/week), now we        
-			# evaluate percentage of occupation and write it as a text  
-			# set perc_occupation_user_total [expr 100 * $occupation_user_total / $hours_availability_user]	
-
-			# if { $perc_occupation_user_total > 100 } {
-			#	set perc_occupation_user_total_color #ff3300 
-			#} else {
-			#	set perc_occupation_user_total_color #000000
-			#} 
-
-			#if { $perc_occupation_user_total != 0 } {
-			#	set perc_occupation_user_total [expr int($perc_occupation_user_total)]
-			#    append cell_html "<span style='font-size:; color:$perc_occupation_user_total_color'><br>$perc_occupation_user_total</span>"
-			#}
-
 			append cell_html "</div>"
 
 		   } else {
 			set cell_html "&nbsp;"    
 		   }
 		}   
-		# end switch otype    
 
 	        default {
                     if { "percentage" == $calculation_mode } {
@@ -1884,13 +1890,14 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			    } else {
 				set val_hours_output [format "%0.2f" $val_hours]
 			        set cell_html ${val_hours_output}h
+				set show_row_task_p 1
 			    }
 			} else {
 			        set cell_html "&nbsp;"
 			}
 		    }
 		}
-	    }
+	    }; # END SWITCH OTYPE
 
 	    set left_clicks(top_scale_cell) [expr $left_clicks(top_scale_cell) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
@@ -1922,7 +1929,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set left_clicks(top_scale_color) [expr $left_clicks(top_scale_color) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
 
-	    append department_row_html "<td $col_attrib>$cell_html</td>\n"
+	    append department_row_html_tmp "<td $col_attrib>$cell_html</td>\n"
 
 	    set left_clicks(top_scale_append) [expr $left_clicks(top_scale_append) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
@@ -1935,12 +1942,74 @@ ad_proc -public im_resource_mgmt_resource_planning {
     
 	set left_clicks(top_scale) [expr $left_clicks(top_scale) + [clock clicks] - $last_click]
 	set last_click [clock clicks]
-        append department_row_html "</tr>\n"
+        append department_row_html_tmp "</tr>\n"
+
+	# ---------------------------------------------------------------
+	# Decide if we need  to show this row 
+	# ----------------------------------------------------------------
+	
+        switch $otype {
+            person {
+		append department_row_html $department_row_html_tmp
+            }
+            im_project {
+		# Is user even member of this project?  
+	        set user_is_project_member_p [db_string get_data "select count(*) from acs_rels where object_id_one = $oid and object_id_two =$user_id" -default 0]
+		if { $user_is_project_member_p } {
+		    # Does this project contain a task with planned hours for the given period where the user is a member of 
+		    set show_this_row_sql "
+				select count(*) from (
+			                select
+						distinct parent.project_id
+			                from
+                        			im_projects parent,
+			                        im_projects child,
+						im_timesheet_tasks t, 
+						acs_rels rel
+					where
+						NOT EXISTS (select NULL from im_projects ip where ip.parent_id = child.project_id)
+						and parent.project_status_id not in (77,78,79,81,82,83)
+			                        -- and parent.parent_id is null
+                        			and parent.end_date >= to_date(:start_date_request, 'YYYY-MM-DD')
+			                        and parent.start_date <= to_date(:end_date_request, 'YYYY-MM-DD')
+						and t.task_id = child.project_id
+                        			and child.end_date >= to_date(:start_date_request, 'YYYY-MM-DD')
+			                        and child.start_date <= to_date(:end_date_request, 'YYYY-MM-DD')
+                        			and child.tree_sortkey
+		                                between parent.tree_sortkey
+                		                and tree_right(parent.tree_sortkey)
+						and t.planned_units is not null 
+						and t.task_id in (select object_id_one from acs_rels where object_id_two = :user_id)  
+						and parent.project_id = $oid
+					) isql
+		    "
+		    set found_task_p [db_string get_data $show_this_row_sql -default 0]
+		    if { $found_task_p } {
+			 append department_row_html $department_row_html_tmp	
+		    }	 
+		}
+            }
+            im_timesheet_task {
+		if { $show_row_task_p } {
+		    append department_row_html $department_row_html_tmp
+		}
+            }
+            im_trans_task {
+		append department_row_html $department_row_html_tmp
+            }
+            default {
+		append department_row_html $department_row_html_tmp
+            }
+        }
+
+	set department_row_html_tmp ""
+	set show_row_task_p 0
+
 	incr row_ctr
 
-    }; # end loop 
+    }; # end loop user/project/task rows 
 
-	# ad_return_complaint 1 "$totals_department_planned_hours_arr(0)<br>$totals_department_planned_hours_arr(1)<br>"
+    # ad_return_complaint 1 "$totals_department_planned_hours_arr(0)<br>$totals_department_planned_hours_arr(1)<br>"
 
     append html [write_department_row \
 	$department_row_html \
@@ -1961,6 +2030,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     set header ""
     for {set row 0} {$row < $top_scale_rows} { incr row } {
+
 	
 	append header "<tr class=rowtitle>\n"
 	set col_l10n [lang::message::lookup "" "intranet-resource-management.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
@@ -2118,7 +2188,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     }
 
     set clicks([clock clicks -milliseconds]) close_table
-    return $html
+    return "$html <br> $err_protocoll"
 }
 
 
