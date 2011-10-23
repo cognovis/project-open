@@ -246,7 +246,7 @@ ad_form -extend -name $form_id -new_request {
         {"Parent Project = Project"}
     }
     {end_date
-        {[expr {[template::util::date get_property sql_date $end_date] > [template::util::date get_property sql_date $start_date]}]}
+        {[expr {[template::util::date get_property sql_date $end_date] >= [template::util::date get_property sql_date $start_date]}]}
         {[_ intranet-core.lt_End_date_must_be_afte]}
     }
     {percent_completed
