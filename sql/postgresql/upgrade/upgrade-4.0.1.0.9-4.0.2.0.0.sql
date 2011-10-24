@@ -3,6 +3,14 @@
 SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-4.0.1.0.9-4.0.2.0.0.sql','');
 
 
+
+
+SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Effort Driven Type');
+SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Effort Driven Type');
+SELECT im_category_new(9722,'Fixed Fixed Work', 'Intranet Timesheet Task Effort Driven Type');
+
+
+
 -- Create MS-Project field for effort_driven_p and
 -- effort_driven_type_id.
 ---
