@@ -614,6 +614,8 @@ ad_proc -public im_gp_save_tasks2 {
     set end_date		[db_string end_date "select :start_date::date + :duration::integer"]
     set is_null			0
     set milestone_p		""
+    set effort_driven_p		"t"
+    set effort_driven_type_id	0
     set note			""
     set task_nr			""
     set task_id			0
@@ -633,17 +635,18 @@ ad_proc -public im_gp_save_tasks2 {
 	ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
 
         switch [string tolower $nodeName] {
-            "name"              { set task_name [$taskchild text] }
-	    "uid"               { set gantt_project_id [$taskchild text] }
-	    "isnull"		{ set is_null [$taskchild text] }
-	    "duration"          { set duration [$taskchild text] }
-	    "remainingduration" { set remaining_duration [$taskchild text] }
-	    "start"             { set start_date [$taskchild text] }
-	    "finish"            { set end_date [$taskchild text] }
-	    "priority"          { set priority [$taskchild text] }
-	    "notes"             { set note [$taskchild text] }
-	    "outlinenumber"     { set outline_number [$taskchild text] }
-	    "percentcomplete"	{ set percent_completed [$taskchild text] }
+            "name"              { set task_name $nodeText }
+	    "uid"               { set gantt_project_id $nodeText }
+	    "isnull"		{ set is_null $nodeText }
+	    "duration"          { set duration $nodeText }
+	    "remainingduration" { set remaining_duration $nodeText }
+	    "effortdriven"	{ if {"1" == $nodeText} { set effort_driven_p "t" } else { set effort_driven_p "f" } }
+	    "start"             { set start_date $nodeText }
+	    "finish"            { set end_date $nodeText }
+	    "priority"          { set priority $nodeText }
+	    "notes"             { set note $nodeText }
+	    "outlinenumber"     { set outline_number $nodeText }
+	    "percentcomplete"	{ set percent_completed $nodeText }
 	    "extendedattribute" {
 		set fieldid ""
 		set fieldvalue ""
@@ -666,8 +669,16 @@ ad_proc -public im_gp_save_tasks2 {
 		    }
 		}
 	    }
-	    "milestone"		{ if {"1" == [$taskchild text]} { set milestone_p "t" }}
-	    "work"		{ set work [$taskchild text] }
+	    "milestone"		{ if {"1" == $nodeText} { set milestone_p "t" }}
+	    "type"	{
+		switch $nodeText {
+			0	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_units] }
+			1	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_duration] }
+			2	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_work] }
+			default { ad_return_complaint 1 "im_gp_save_tasks2: Unknown task type '$nodeText'" }
+		}
+	    }
+	    "work"		{ set work $nodeText }
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
 		continue
@@ -997,6 +1008,8 @@ ad_proc -public im_gp_save_tasks2 {
 
     db_dml update_task "
 	update im_timesheet_tasks set
+		effort_driven_p = :effort_driven_p,
+		effort_driven_type_id = :effort_driven_type_id,
 		uom_id = [im_uom_hour],
 		$units_sql
 	where
