@@ -23,7 +23,7 @@ create table im_audits (
 	audit_object_status_id	integer,
 	audit_action		text
 				constraint im_audits_action_ck
-				check (audit_action in ('after_create','before_update','after_update','before_nuke')),
+				check (audit_action in ('after_create','before_update','after_update','before_nuke', 'baseline')),
 	audit_user_id		integer
 				constraint im_audits_user_nn
 				not null,
