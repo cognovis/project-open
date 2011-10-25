@@ -33,6 +33,6 @@ update im_audits set audit_action = 'after_create' where audit_action = 'create'
 
 alter table im_audits
 add constraint im_audits_action_ck
-check (audit_action in ('after_create','before_update','after_update','before_nuke'));
+check (audit_action in ('after_create','before_update','after_update','before_nuke', 'baseline'));
 
 

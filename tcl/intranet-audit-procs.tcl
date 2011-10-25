@@ -836,6 +836,9 @@ ad_proc -public im_project_audit_impl  {
     -project_id:required
     {-baseline_id "" }
     {-user_id "" }
+    {-object_type "" }
+    {-status_id "" }
+    {-type_id "" }
     {-action after_update }
     {-comment "" }
 } {
@@ -876,6 +879,16 @@ ad_proc -public im_project_audit_impl  {
     set modifying_user $user_id
     set modifying_ip $peeraddr
 
+    # Write a generic audit record
+    set audit_id [im_audit_impl \
+                -user_id $user_id \
+                -object_id $project_id \
+                -object_type $object_type \
+		-baseline_id $baseline_id \
+                -action $action \
+                -comment $comment \
+    ]
+
     # Add a baseline_id if specified.
     if {"" != $baseline_id && [im_column_exists im_projects_audit baseline_id]} {
 	set baseline_var_sql ",baseline_id"
@@ -886,8 +899,8 @@ ad_proc -public im_project_audit_impl  {
     }
 
     ns_log Notice "im_project_audit_impl: About to write im_projects_audit log"
-    catch {
-	db_dml audit "
+    if {[catch {
+	db_dml audit_insert "
 	    insert into im_projects_audit (
 		modifying_action,	audit_id,
 		last_modified,		last_modifying_user,		last_modifying_ip,
@@ -924,7 +937,12 @@ ad_proc -public im_project_audit_impl  {
 	    from	im_projects
 	    where	project_id = :project_id
         "
-    } err_msg
+    } err_msg]} {
+	ns_log Error "im_project_audit_impl: Error creating an im_projects_audit entry: $err_msg"
+	ad_return_complaint 1 "im_project_audit_impl: Error creating an im_projects_audit entry:<br><pre>$err_msg</pre>"
+	
+    }
+    ns_log Notice "im_project_audit_impl: After writing im_projects_audit log"
 
     return $err_msg
 }
