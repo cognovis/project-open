@@ -903,7 +903,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		end_date_julian_planned_hours,
 		start_date,
 		end_date,
-		planned_units
+		planned_units,
+		percent_completed
 	from 
                 (
                 select
@@ -915,6 +916,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
                         to_char(child.end_date, 'J') as end_date_julian_planned_hours,
     			child.start_date, 
 			child.end_date,
+			child.percent_completed,
 			tt.planned_units
                 from
                         im_projects parent,
@@ -959,6 +961,11 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set no_parents [db_string get_data "select count(*) from im_projects where parent_id = $project_id" -default 0]
 
 	if { "0" == $no_parents } {
+
+	    # Consider completion status of task 
+	    if { [info exists percent_completed] && $percent_completed > 0 } {
+		set planned_units [expr $planned_units - [expr $planned_units * $percent_completed / 100]]
+	    }
 
 	    # There are no other tasks having this task as a parent, so we pick only planned hours for those:
 	    if {$calc_day_p} {
@@ -1719,7 +1726,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			# How many hours in total are planned for this user? 
 			set acc_hours 0 	
 
-			# Get planned Hours fro this user 
+			# Get planned Hours for this user 
 			if { [info exists user_day_total_plannedhours_arr($user_jdate_key)] } {
 				set acc_hours $user_day_total_plannedhours_arr($user_jdate_key)
 			} else {
