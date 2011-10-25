@@ -23,7 +23,7 @@ SELECT acs_object_type__create_type (
 	'acs_object',			-- supertype - "acs_object" is topmost object type.
 	'im_baselines',			-- table_name - where to store data for this object?
 	'baseline_id',			-- id_column - where to store object_id in the table?
-	'intranet-baselines',		-- package_name - name of this package
+	'intranet-baseline',		-- package_name - name of this package
 	'f',				-- abstract_p - abstract class or not
 	null,				-- type_extension_table
 	'im_baseline__name'		-- name_method - a PL/SQL procedure that
@@ -345,7 +345,7 @@ SELECT im_component_plugin__new (
 );
 
 update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-baselines.Project_Baselines "Project Baselines"'
+set title_tcl = 'lang::message::lookup "" intranet-baseline.Project_Baselines "Project Baselines"'
 where plugin_name = 'Project Baselines';
 
 
