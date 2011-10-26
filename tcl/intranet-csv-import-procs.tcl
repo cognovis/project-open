@@ -33,27 +33,51 @@ ad_proc -public im_id_from_user_name { name } {
     return $user_id
 }
 
-ad_proc -public im_csv_import_parser_date_european { arg } {
+ad_proc -public im_csv_import_parser_date_european { 
+    {-parser_args "" }
+    arg 
+} {
     Parses a European date format like '08.06.2011' as the 8th of June, 2011
 } {
-   if {[regexp {^(.+)\.(.+)\.(....)$} $arg match dom month year]} { 
-       if {1 == [string length $dom]} { set dom "0$dom" }
-       if {1 == [string length $month]} { set dom "0$month" }
-       return [list "$year-$month-$dom" ""] 
-   }
-   return [list "" "Error parsing European date format '$arg': expected 'dd.mm.yyyy'"]
+    if {[regexp {^(.+)\.(.+)\.(....)$} $arg match dom month year]} { 
+	if {1 == [string length $dom]} { set dom "0$dom" }
+	if {1 == [string length $month]} { set dom "0$month" }
+	return [list "$year-$month-$dom" ""] 
+    }
+    return [list "" "Error parsing European date format '$arg': expected 'dd.mm.yyyy'"]
 }
 
 
-ad_proc -public im_csv_import_parser_date_american { arg } {
+ad_proc -public im_csv_import_parser_date_american { 
+    {-parser_args "" }
+    arg 
+} {
     Parses a American date format like '12/31/2011' as the 31st of December, 2011
 } {
-   if {[regexp {^(.+)\/(.+)\/(....)$} $arg match month dom year]} { 
-       if {1 == [string length $dom]} { set dom "0$dom" }
-       if {1 == [string length $month]} { set dom "0$month" }
-       return [list "$year-$month-$dom" ""] 
-   }
-   return [list "" "Error parsing American date format '$arg': expected 'dd.mm.yyyy'"]
+    if {[regexp {^(.+)\/(.+)\/(....)$} $arg match month dom year]} { 
+	if {1 == [string length $dom]} { set dom "0$dom" }
+	if {1 == [string length $month]} { set dom "0$month" }
+	return [list "$year-$month-$dom" ""] 
+    }
+    return [list "" "Error parsing American date format '$arg': expected 'dd.mm.yyyy'"]
+}
+
+ad_proc -public im_csv_import_parser_category { 
+    {-parser_args "" }
+    arg 
+} {
+    Parses a category into a category_id
+} {
+    # Empty input - empty output
+    if {"" == $arg} { return [list "" ""] }
+
+    # Parse the category
+    set result [im_id_from_category $arg $parser_args]
+    if {"" == $result} {
+	return [list "" "Category parser: We did not find a value='$arg' in category type '$parser_args'."]
+    } else {
+	return [list $result ""]
+    }
 }
 
 # ----------------------------------------------------------------------
@@ -164,6 +188,7 @@ ad_proc -public im_csv_import_parsers {
 		no_change	"No Change"
 		date_european	"European Date Parser (DD.MM.YYYY)"
 		date_american	"American Date Parser (MM/DD/YYYY)"
+		category	"Category Parser"
 	    }
 	}
 	default {
@@ -185,12 +210,17 @@ ad_proc -public im_csv_import_guess_parser {
     -object_type:required
     -field_name:required
 } {
-    Returns the best guess for a parser for the given field
+    Returns the best guess for a parser for the given field as
+    a list with 1. the parser name and 2. the parser args
 } {
+    # --------------------------------------------------------
     # Abort if there are not enough values
-    if {[llength $sample_values] < 2} { return "" }
+    if {[llength $sample_values] < 2} { return [list "" ""] }
 
-    # Available parsers
+
+    # --------------------------------------------------------
+    # Date parsers
+    #
     set date_european_p 1
     set date_american_p 1
     set number_plain_p 1
@@ -199,18 +229,41 @@ ad_proc -public im_csv_import_guess_parser {
 
     # set the parserst to 0 if one of the values doesn't fit
     foreach val $sample_values { 
-
 	if {![regexp {^(.+)\.(.+)\.(....)$} $val match]} { set date_european_p 0 } 
 	if {![regexp {^(.+)\/(.+)\/(....)$} $val match]} { set date_american_p 0 } 
 	if {![regexp {^[0-9]+$} $val match]} { set number_plain 0 } 
-
     }
 
-    if {$date_european_p} { return "date_european" }
-    if {$date_american_p} { return "date_american" }
-    if {$number_plain_p} { return "number_plain" }
+    if {$date_european_p} { return [list "date_european" ""] }
+    if {$date_american_p} { return [list "date_american" ""]}
 
-    return ""
+
+    # --------------------------------------------------------
+    # Parsing for DynFields
+    if {[db_0or1row dynfield_info {
+	select	dw.widget as tcl_widget,
+		dw.parameters as tcl_widget_parameters,
+		substring(dw.parameters from 'category_type "(.*)"') as category_type
+	from	acs_attributes aa,
+		im_dynfield_attributes da,
+		im_dynfield_widgets dw
+	where	aa.object_type = :object_type and
+		aa.attribute_name = :field_name and
+		aa.attribute_id = da.acs_attribute_id and
+		da.widget_name = dw.widget_name
+    }]} {
+	switch $tcl_widget {
+	    "im_category_tree" {
+		return [list "category" $category_type]		
+	    }
+	    default {
+		# Default: No specific parser
+		return [list "" ""]
+	    }
+	}
+    }
+
+    return [list "" ""]
 }
 
 

@@ -77,7 +77,6 @@ if {[catch {
 # Extract the header line from the file
 set lines [split $lines_content "\n"]
 if {"" == $lines} { ad_return_complaint 1 "<b>You didn't select a file in the screen before.</b>" }
-
 set separator [im_csv_guess_separator $lines]
 # ad_return_complaint 1 $separator
 set lines_len [llength $lines]
@@ -103,13 +102,13 @@ set parser_pairs [im_csv_import_parsers -object_type $object_type]
 # ---------------------------------------------------------------------
 
 # Setup the multirow with some sample rows
-multirow create mapping field_name column map parser
+multirow create mapping field_name column map parser parser_args
 for {set i 1} {$i < $max_row} {incr i} {
     multirow extend mapping "row_$i"
 }
 
-set object_type_pairs [list]
-foreach field $object_fields { lappend object_type_pairs $field $field }
+set object_type_pairs [list "" ""]
+foreach field $object_fields { lappend object_type_pairs [string tolower $field] [string tolower $field] }
 
 set cnt 0
 foreach header_name $headers {
@@ -118,7 +117,7 @@ foreach header_name $headers {
     set column "<input type=hidden name=column.$cnt value=\"$header_name\">"
 
     # Mapping - Map to which object field?
-    set default_map $header_name
+    set default_map [string tolower $header_name]
     set map [im_select map.$cnt $object_type_pairs $default_map]
 
     # Parser - convert the value from CSV values to ]po[ values
@@ -128,12 +127,14 @@ foreach header_name $headers {
 	set val [lindex [set $row_name] $cnt]
 	if {"" != $val} { lappend parser_sample_values $val }
     }
-    set default_parser [im_csv_import_guess_parser -object_type $object_type -field_name $header_name -sample_values $parser_sample_values]
-    set parser [im_select parser.$cnt $parser_pairs $default_parser]
+    set defs [im_csv_import_guess_parser -object_type $object_type -field_name $header_name -sample_values $parser_sample_values]
+    set default_parser [lindex $defs 0]
+    set default_parser_args [lindex $defs 1]
 
-    set first_val [lindex $row_1 $cnt]
-    set second_val [lindex $row_2 $cnt]
-    multirow append mapping $header_name $column $map $parser $first_val $second_val
+    set parser [im_select parser.$cnt $parser_pairs $default_parser]
+    set args "<input type=text name=parser_args.$cnt value=\"$default_parser_args\">\n"
+
+    multirow append mapping $header_name $column $map $parser $args [lindex $row_1 $cnt] [lindex $row_2 $cnt] [lindex $row_3 $cnt] [lindex $row_4 $cnt] [lindex $row_5 $cnt]
 
     incr cnt
 }

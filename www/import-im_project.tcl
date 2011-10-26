@@ -18,6 +18,7 @@ ad_page_contract {
     column:array
     map:array
     parser:array
+    parser_args:array
 }
 
 # ---------------------------------------------------------------------
@@ -70,9 +71,10 @@ set values_list_of_lists [im_csv_get_values $lines_content $separator]
 # Get DynFields
 
 set dynfield_sql {
-	select	aa.*,
-		a.*,
-		w.*,
+	select distinct
+		aa.attribute_name,
+		aa.object_type,
+		w.parameters,
 		w.widget as tcl_widget,
 		substring(w.parameters from 'category_type "(.*)"') as category_type
 	from	im_dynfield_widgets w,
@@ -84,6 +86,12 @@ set dynfield_sql {
 		(also_hard_coded_p is null OR also_hard_coded_p = 'f')
 }
 
+set attribute_names [db_list attribute_names "
+	select	distinct
+		attribute_name
+	from	($dynfield_sql) t
+	order by attribute_name
+"]
 
 # ------------------------------------------------------------
 # Render Result Header
@@ -147,14 +155,13 @@ foreach csv_line_fields $values_list_of_lists {
     set priority		""
     set sort_order		""
 
-    db_foreach initiate_dynfields $dynfield_sql {
+    foreach attribute_name $attribute_names {
 	set $attribute_name	""
     }
 
     # -------------------------------------------------------
     # Extract variables from the CSV file
     #
-
     set var_name_list [list]
     for {set j 0} {$j < $header_len} {incr j} {
 
@@ -182,43 +189,12 @@ foreach csv_line_fields $values_list_of_lists {
 	set result [eval $cmd]
     }
 
-
-    # -------------------------------------------------------
-    # Transform DynFields
-
-    db_foreach initiate_dynfields $dynfield_sql {
-	set value [set $attribute_name]
-	if {"" != $value} {
-	    switch $tcl_widget {
-	        "im_category_tree" {
-		    set result [im_id_from_category $value $category_type]
-		    if {"" != $result} {
-		        # ns_write "<li>DynField im_category_tree: parse '$value' with category type '$category_type': '$result'\n"
-		    } else {
-			if {$ns_write_p} {
-			    ns_write "<li><font color=brown>Warning: 
-				 Failed to parse category '$value' for category type '$category_type'</font>\n"
-			}
-		    }
-		    set $attribute_name $result
-		}
-		default {
-		    if {$ns_write_p} {
-			ns_write "<li><font color=brown>Warning: 
-			 DynField parser for widget '$tcl_widget' not implemented yet - using literal value</font>\n"
-		    }
-		}
-	    }
-	}
-    }
-
     # -------------------------------------------------------
     # Transform the variables
-
     set i 0
     foreach varname $var_name_list {
-
 	set p $parser($i)
+	set p_args $parser_args($i)
 	switch $p {
 	    no_change { }
 	    default {
@@ -226,16 +202,20 @@ foreach csv_line_fields $values_list_of_lists {
 		if {[catch {
 		    set val [set $varname]
 		    if {"" != $val} {
-			    set result [$proc_name $val]
+			    set result [$proc_name -parser_args $p_args $val]
 			    set res [lindex $result 0]
 			    set err [lindex $result 1]
 			    if {"" != $err} {
-				if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err</pre></font>\n" }
+				if {$ns_write_p} { 
+				    ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err</pre></font>\n" 
+				}
 			    }
 			    set $varname $res
 		    }
 		} err_msg]} {
-		    if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err_msg</pre></font>" }
+		    if {$ns_write_p} { 
+			ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err_msg</pre></font>" 
+		    }
 		}
 	    }
 	}
@@ -300,8 +280,12 @@ foreach csv_line_fields $values_list_of_lists {
     set project_priority_id [im_id_from_category [list $project_priority] "Intranet Department Planner Project Priority"]
 
     # customer_id
-    if {"" == $customer_id } { set customer_id [db_string cust "select company_id from im_companies where lower(company_name) = trim(lower(:customer_name))" -default ""] }
-    if {"" == $customer_id } { set customer_id [db_string cust "select company_id from im_companies where lower(company_path) = trim(lower(:customer_name))" -default ""] }
+    if {"" == $customer_id } { 
+	set customer_id [db_string cust "select company_id from im_companies where lower(company_name) = trim(lower(:customer_name))" -default ""] 
+    }
+    if {"" == $customer_id } { 
+	set customer_id [db_string cust "select company_id from im_companies where lower(company_path) = trim(lower(:customer_name))" -default ""] 
+    }
     if {"" == $customer_id } { 
 	if {$ns_write_p} {
 	    ns_write "<li><font color=red>Error: Didn't find customer for '$customer_name'.<br>
@@ -360,13 +344,13 @@ foreach csv_line_fields $values_list_of_lists {
 	if {$ns_write_p} { ns_write "<li>Going to create project: name='$project_name', nr='$project_nr'\n" }
 	if {[catch {
 		set project_id [project::new \
-			    -project_name       $project_name \
-			    -project_nr	 $project_nr \
-			    -project_path       $project_path \
-			    -company_id	 $customer_id \
-			    -parent_id	  $parent_id \
-			    -project_type_id    $project_type_id \
-			    -project_status_id  $project_status_id \
+			    -project_name	$project_name \
+			    -project_nr		$project_nr \
+			    -project_path	$project_path \
+			    -company_id		$customer_id \
+			    -parent_id		$parent_id \
+			    -project_type_id	$project_type_id \
+			    -project_status_id	$project_status_id \
 			   ]
 	} err_msg]} {
 	    if {$ns_write_p} { ns_write "<li><font color=red>Error: Creating new project:<br><pre>$err_msg</pre></font>\n" }
@@ -378,7 +362,6 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
     if {$ns_write_p} { ns_write "<li>Going to update the project.\n" }
-    if {$ns_write_p} { ns_write "<li>parent_id='$parent_id'\n" }
     if {[catch {
 	db_dml update_project "
 		update im_projects set
@@ -409,7 +392,6 @@ foreach csv_line_fields $values_list_of_lists {
 	if {$ns_write_p} { ns_write "<li><font color=red>Error: Error updating project:<br><pre>$err_msg</pre></font>" }
 	continue	    
     }
-    if {$ns_write_p} { ns_write "<li>Project successfully updated.\n" }
 
     
     # -------------------------------------------------------
@@ -506,8 +488,7 @@ foreach csv_line_fields $values_list_of_lists {
 	}
     }
 
-#    ad_return_complaint 1 "<pre>project_dynfield_updates:\n[join $project_dynfield_updates "\n"]\n\n\ntask_dynfield_updates:\n$task_dynfield_updates</pre>"
-
+    if {$ns_write_p} { ns_write "<li>Going to update im_project DynFields.\n" }
     if {"" != $project_dynfield_updates} {
 	set project_update_sql "
 		update im_projects set
@@ -517,10 +498,11 @@ foreach csv_line_fields $values_list_of_lists {
 	if {[catch {
 	    db_dml project_dynfield_update $project_update_sql
 	} err_msg]} {
-	    if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error updating dynfields:<br><pre>$err_msg</pre>" }
+	    if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error updating im_project dynfields:<br><pre>$err_msg</pre></font>" }
 	}
     }
 
+    if {$ns_write_p} { ns_write "<li>Going to update im_timesheet_task DynFields.\n" }
     if {"" != $task_dynfield_updates} {
 	set task_update_sql "
 		update im_timesheet_tasks set
@@ -530,7 +512,7 @@ foreach csv_line_fields $values_list_of_lists {
 	if {[catch {
             db_dml task_dynfield_update $task_update_sql
 	} err_msg]} {
-	    if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error updating dynfields:<br><pre>$err_msg</pre>" }
+	    if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Error updating im_timesheet_task dynfields:<br><pre>$err_msg</pre></font>" }
 	}
 
     }

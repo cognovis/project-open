@@ -11,8 +11,11 @@
      <td class=rowtitle>Field Name</td>
      <td class=rowtitle>Row 1</td>
      <td class=rowtitle>Row 2</td>
-     <td class=rowtitle>Mapping</td>
+     <td class=rowtitle>Row 3</td>
+     <td class=rowtitle>Row 4</td>
+     <td class=rowtitle>Map to Field</td>
      <td class=rowtitle>Transformation</td>
+     <td class=rowtitle>Parameters</td>
      </tr>
 
      <multiple name=mapping>
@@ -23,20 +26,25 @@
      <td>@mapping.field_name@ @mapping.column;noquote@</td>
      <td>@mapping.row_1@</td>
      <td>@mapping.row_2@</td>
+     <td>@mapping.row_3@</td>
+     <td>@mapping.row_4@</td>
      <td>@mapping.map;noquote@</td>
      <td>@mapping.parser;noquote@</td>
+     <td>@mapping.parser_args;noquote@</td>
      </tr>
      </multiple>
      </table>
 
      <table>
+<!--
      <tr>
      <td>Save Mapping as:</td>
      <td><input type=text name=mapping_name></td>
      </tr>
+-->
      <tr>
      <td></td>
-     <td><input type=submit value="#intranet-csv-import.Import_CVS#"></td>
+     <td><input type=submit value="<%= [lang::message::lookup "" intranet-csv-import.Import_CSV "Import CSV"] %>"></td>
      </tr>
      </table>
 
