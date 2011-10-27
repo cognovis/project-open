@@ -80,6 +80,32 @@ ad_proc -public im_csv_import_parser_category {
     }
 }
 
+ad_proc -public im_csv_import_parser_cost_center { 
+    {-parser_args "" }
+    arg 
+} {
+    Parses a cost center into a cost_center_id
+} {
+    # Empty input - empty output
+    if {"" == $arg} { return [list "" ""] }
+
+    # Parse the category
+    set arg [string trim [string tolower $arg]]
+    set ccids [db_list ccid1 "
+	select	cost_center_id
+	from	im_cost_centers
+	where	lower(cost_center_code) = :arg OR 
+		lower(cost_center_label) = :arg OR 
+		lower(cost_center_name) = :arg order by cost_center_id
+    "]
+    set result [lindex $ccids 0]
+    if {"" == $result} {
+	return [list "" "Cost Center parser: We did not find any cost center with label, code or name matching the value='$arg'."]
+    } else {
+	return [list $result ""]
+    }
+}
+
 # ----------------------------------------------------------------------
 # 
 # ----------------------------------------------------------------------
@@ -189,6 +215,7 @@ ad_proc -public im_csv_import_parsers {
 		date_european	"European Date Parser (DD.MM.YYYY)"
 		date_american	"American Date Parser (MM/DD/YYYY)"
 		category	"Category Parser"
+		cost_center	"Cost Center"
 	    }
 	}
 	default {
@@ -255,6 +282,9 @@ ad_proc -public im_csv_import_guess_parser {
 	switch $tcl_widget {
 	    "im_category_tree" {
 		return [list "category" $category_type]		
+	    }
+	    "im_cost_center_tree" {
+		return [list "cost_center" ""]		
 	    }
 	    default {
 		# Default: No specific parser
