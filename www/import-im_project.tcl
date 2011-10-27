@@ -207,14 +207,14 @@ foreach csv_line_fields $values_list_of_lists {
 			    set err [lindex $result 1]
 			    if {"" != $err} {
 				if {$ns_write_p} { 
-				    ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err</pre></font>\n" 
+				    ns_write "<li><font color=brown>Warning: Error parsing field='$varname' using parser '$p':<pre>$err</pre></font>\n" 
 				}
 			    }
 			    set $varname $res
 		    }
 		} err_msg]} {
 		    if {$ns_write_p} { 
-			ns_write "<li><font color=brown>Warning: Error parsing field='[set $varname]' using parser '$p':<pre>$err_msg</pre></font>" 
+			ns_write "<li><font color=brown>Warning: Error parsing field='$varname' using parser '$p':<pre>$err_msg</pre></font>" 
 		    }
 		}
 	    }

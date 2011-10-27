@@ -215,7 +215,7 @@ ad_proc -public im_csv_import_parsers {
 		date_european	"European Date Parser (DD.MM.YYYY)"
 		date_american	"American Date Parser (MM/DD/YYYY)"
 		category	"Category Parser"
-		cost_center	"Cost Center"
+		cost_center	"Cost Center Parser"
 	    }
 	}
 	default {
