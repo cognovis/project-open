@@ -132,7 +132,7 @@ ad_proc -public im_allowed_project_types {
 }
 
 
-ad_proc -public im_customer_price_list { 
+ad_proc -public im_price_list { 
     {-debug 0}
     object_id 
     user_id
@@ -154,12 +154,16 @@ ad_proc -public im_customer_price_list {
 
     # ------------------ Format the table header ------------------------
     set colspan 2
-    set header_html "
-      <tr> 
-	<td class=rowtitle align=middle>[_ intranet-core.Name]</td>
-	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
-	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Price "Price"]</td>
+    set header_html "<tr>"
+    if { "user" != $object_type  } {
+		append header_html "<td class=rowtitle align=middle>[_ intranet-core.Name]</td>"
+    }
+    append header_html "
+	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
+	<td class=rowtitle align=right>[lang::message::lookup "" intranet-core.Price "Price"]</td>
     "
+
+
     if {$show_percentage_p} {
         incr colspan
         append header_html "<td class=rowtitle align=middle>[_ intranet-core.Perc]</td>"
@@ -177,21 +181,19 @@ ad_proc -public im_customer_price_list {
     set found 0
     set count 0
     set body_html ""
-
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
     # get all object members  
     if { "im_company" == $object_type } {
-	    set sql_query "
-		select distinct
-			r.object_id_two as user_id
-		from 
-			acs_rels r 
-		where 
-			object_id_one in 
-				(select project_id from im_projects where company_id = :object_id)
-		and rel_type = 'im_biz_object_member'
-    	     "
+            set sql_query "
+                select distinct
+                        r.object_id_two as user_id
+                from
+                        acs_rels r
+                where
+                        object_id_one = :object_id 
+                	and rel_type = 'im_key_account_rel'
+             "
     } else {
             set sql_query "
 		        select distinct
@@ -204,15 +206,22 @@ ad_proc -public im_customer_price_list {
 	     "
     }
 
-    set project_member_list [list]
-    db_foreach users_in_group $sql_query {
-	lappend project_member_list $user_id
-    }
- 
-    # 
-    foreach project_member $project_member_list {
+    set person_list [list]
 
-    	if { "im_company" == $object_type } {
+    # Create lists for Companies & Projects based on member-relationships
+    if { "im_company" == $object_type || "im_project" == $object_type } {
+	db_foreach users_in_group $sql_query {
+	    lappend person_list $user_id
+	}
+    } else {
+	lappend person_list $user_id
+    }
+
+
+    foreach person_id $person_list {
+
+	switch $object_type {
+	    "im_company" {
 		set inner_sql "
 			select 
 				user_id, 
@@ -225,13 +234,60 @@ ad_proc -public im_customer_price_list {
 			from 
 				im_customer_prices 
 			where 	
-				user_id = $project_member 
+				user_id = $person_id 
 				and object_id = :object_id
 				and acs_object_util__get_object_type(object_id) = 'im_company'    
     			"
-	} else {
-		set project_type_id [db_string get_data "select project_type_id from im_projects where project_id=:object_id" -default 0]	
-		set project_customer_id [db_string get_data "select company_id from im_projects where project_id=:object_id" -default 0]
+	    }
+	    "im_project" {
+	        db_1row sender_get_info_1 "
+	                select
+        	                project_type_id,
+                	        project_budget_currency
+	                from
+        	                im_projects
+                	where
+	                       project_id=:object_id
+                "
+
+                set inner_sql "
+			select 
+		                user_id,
+        		       	object_id as price_object_id,
+                		amount,
+		                currency,
+        		        project_type_id,
+                		im_name_from_user_id(user_id) as name
+			from 
+				im_customer_prices
+			where 
+				id in 
+				(
+				 -- Get project related prices 
+        		                select
+                        		        id 
+		                        from
+                		                im_customer_prices
+		                        where
+                		                object_id = :object_id and 
+						user_id = :person_id and
+						(project_type_id = $project_type_id OR project_type_id is null) and 
+						currency = :project_budget_currency
+					and id not in ( 
+			                        select
+	                		                id
+			                        from
+                			                im_customer_prices
+		        	                where
+							user_id = :person_id and 
+							project_type_id = $project_type_id and
+							currency = :project_budget_currency
+					) 
+ 				)
+                 "
+	    }
+
+	    "user" {
                 set inner_sql "
                         select
                                 user_id,
@@ -243,10 +299,15 @@ ad_proc -public im_customer_price_list {
                         from
                                 im_customer_prices
                         where
-                                (user_id = $project_member and project_type_id = $project_type_id and project_type_id = $project_type_id) OR 
-				(user_id = $project_member and object_id=$object_id ) 
-                 "
+                                object_id = $person_id 
+		"
+	    }
+
+	    default {
+		ad_return_complaint 1 "No object type found, please contact your System Adminsitrator"
+	    }
 	}
+
 
 	db_foreach records_to_list $inner_sql {
 		set show_currency_p 1
@@ -256,17 +317,17 @@ ad_proc -public im_customer_price_list {
 		if {$show_user == 0} { continue }
 
 		# First Column: user
-		append body_html "
-			<tr $td_class([expr $count % 2])>
-			  <input type=hidden name=member_id value=$user_id>
-  			<td>"
-		if {$show_user > 0} {
-			append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
-		} else {
-			append body_html $name
+		append body_html "<tr $td_class([expr $count % 2])>"
+
+		if { "user" != $object_type  } {
+			append body_html "<td><input type=hidden name=member_id value=$user_id>"
+			if {$show_user > 0} {
+				append body_html "<A HREF=/intranet/users/view?user_id=$user_id>$name</A>"
+			} else {
+				append body_html $name
+			}
+			append body_html "</td>"
 		}
-	
-		append body_html "</td>"
 
         	# Set "Project Type"		
 		if { ![info exists project_type_id] } { set project_type_id "" }	
@@ -282,7 +343,7 @@ ad_proc -public im_customer_price_list {
 	        #  else 
 		#    # user has no permission to edit, show only 
 	            append body_html "
-        	          <td align=middle>
+        	          <td align=left>
 				[im_category_from_id $project_type_id]
 	                  </td>
         	    "
@@ -297,7 +358,7 @@ ad_proc -public im_customer_price_list {
 
         	    append body_html "
                 	  <td align=right>
-	                    <input type=input size=6 maxlength=6 name=\"$var_amount\" value=\"$amount\">[im_currency_select $var_currency $currency]
+	                    <input type=input size=6 maxlength=6 name=\"$var_amount\" value=\"$amount\">&nbsp;[im_currency_select $var_currency $currency]
         	          </td>
 	            "
 		 } else {
@@ -306,7 +367,7 @@ ad_proc -public im_customer_price_list {
 			set show_currency_p 0
 		    } 
         	    append body_html "<td align=right>$amount"
-		    if { $show_currency_p } {append body_html "$currency "}
+		    if { $show_currency_p } {append body_html "&nbsp;$currency "}
         	    append body_html "</td>"
         	 }
 
@@ -322,8 +383,9 @@ ad_proc -public im_customer_price_list {
 		    "
 		}
 		append body_html "</tr>"
-	}
-    }
+	}; # switch object_type
+    } ; # db_foreach person 
+
 
     if { [empty_string_p $body_html] } {
 	set body_html "<tr><td colspan=$colspan><i>[_ intranet-core.none]</i></td></tr>\n"
@@ -333,22 +395,15 @@ ad_proc -public im_customer_price_list {
 
         if { "im_company" == $object_type } {
 	    set select_box_user_sql " 
-	        select distinct
-                	r.object_id_two as user_id,
-        	        im_name_from_user_id(r.object_id_two) as name
-	        from
-        	        acs_rels r
-	        where
-        	        object_id_one in
-	        		(select
-		        	        project_id
-	        		from
-		        	        im_projects
-	        		where
-		                	company_id = $object_id
-        		)
-	     and rel_type = 'im_biz_object_member';
-    	   "
+                select distinct
+                        r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as name
+                from
+                        acs_rels r
+                where
+                        object_id_one = $object_id
+                        and rel_type = 'im_key_account_rel'
+             "
 	} else {
             set select_box_user_sql "
                 select distinct
@@ -369,14 +424,19 @@ ad_proc -public im_customer_price_list {
 			<b>[lang::message::lookup "" intranet-cust-koernig-weber.CreateNewPriceRecord "Create new price record"]:</b>
                 </td>
         </tr>
-
         <tr $td_class([expr $count % 2])>
+     " 
+
+     if { "im_company" == $object_type || "im_project" == $object_type } {
+	append body_html "
 		<td>
                       [im_selection_to_select_box "" new_user_id $select_box_user_sql new_user_id ""]
                 </td>
-                <td align=middle>
-     "
+     	"
+     }
 
+     append body_html "<td align=middle>"
+ 
      if { "im_project" == $object_type } {
 	 append body_html [ im_category_from_id $project_type_id ]
      } else {
@@ -409,11 +469,13 @@ ad_proc -public im_customer_price_list {
 	      $body_html
 	      $footer_html
 	    </table>
-	</form>
     "
+    if { "user" == $object_type } {
+	    append html "<input type='hidden' name='new_user_id' value='$user_id' />"
+    }
+    append html "</form>"
     return $html
 }
-
 
 
 ad_proc -public im_koernigweber_next_project_nr {
@@ -426,8 +488,6 @@ ad_proc -public im_koernigweber_next_project_nr {
     the customer, four digits indicating the year the project starts and a 4 digit 
     consecutive number 
 } {
-
-   # set customer_id 54735
 
     set date_format "YY"
     ns_log Notice "im_koernig_weber_next_project_nr: customer_id=$customer_id, nr_digits=$nr_digits, date_format=$date_format"
@@ -446,7 +506,10 @@ ad_proc -public im_koernigweber_next_project_nr {
     } errmsg
     ns_log Notice "im_koernigweber_next_project_nr: koernigweber_customer_code=$koernigweber_customer_code"
 
-    if {[string length $company_code] != 4} {
+    if { ![info exists company_code] } { set company_code "" }
+    if { ![info exists company_name] } { set company_name "" }
+ 
+    if {[string length $company_code] != 4 || "" == $company_code } {
         ad_return_complaint 1 "<b>Unable to find 'Customer Code'</b>:
         <p>
         The customer <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
