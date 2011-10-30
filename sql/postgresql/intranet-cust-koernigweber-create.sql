@@ -199,6 +199,7 @@ create table im_customer_prices (
                                 constraint im_costs_currency_fk
                                 references currency_codes(iso),
         project_type_id         integer,
+	source_object_type	char(20),
         unique(user_id, object_id, project_type_id)
 );
 
@@ -266,25 +267,25 @@ end;' language 'plpgsql';
 
 
 -- Create a plugin for the Company View Page.
-SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'im_component_plugin',          -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Price List (Company)',			 -- plugin_name
-        'intranet-cust-koernigweber',   -- package_name
-        'right',                        -- location
-        '/intranet/companies/view',     -- page_url
-        null,                           -- view_name
-        15,                             -- sort_order
-        'im_customer_price_list $company_id $user_id 0 $return_url "" "" $also_add_to_group' -- component_tcl
-);
+-- SELECT im_component_plugin__new (
+--        null,                           -- plugin_id
+--        'im_component_plugin',          -- object_type
+--        now(),                          -- creation_date
+--        null,                           -- creation_user
+--        null,                           -- creation_ip
+--        null,                           -- context_id
+--        'Price List (Company)',			 -- plugin_name
+--        'intranet-cust-koernigweber',   -- package_name
+--        'right',                        -- location
+--        '/intranet/companies/view',     -- page_url
+--        null,                           -- view_name
+--        15,                             -- sort_order
+--        'im_customer_price_list $company_id $user_id 0 $return_url "" "" $also_add_to_group' -- component_tcl
+-- );
 
-update im_component_plugins
-set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Price List"'
-where plugin_name = 'Price List (Company)';
+-- update im_component_plugins
+-- set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletEmployeeCustomerPriceList "Price List"'
+-- where plugin_name = 'Price List (Company)';
 
 
 -- Create a plugin for the Project View Page.
@@ -298,7 +299,7 @@ SELECT im_component_plugin__new (
         'Price List (Project)',		-- plugin_name
         'intranet-cust-koernigweber',   -- package_name
         'right',                        -- location
-        '/intranet/projects/view',      -- page_url
+        '/intranet/projects/view',         -- page_url
         null,                           -- view_name
         15,                             -- sort_order
         'im_customer_price_list $project_id $user_id 0 $return_url "" "" ""' -- component_tcl
@@ -308,6 +309,27 @@ update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletProjectPriceList "Price List"'
 where plugin_name = 'Price List (Project)';
 
+
+-- Create a plugin for the User View Page.
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'im_component_plugin',          -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Price List (User)',	        -- plugin_name
+        'intranet-cust-koernigweber',   -- package_name
+        'right',                        -- location
+        '/intranet/users/view',      -- page_url
+        null,                           -- view_name
+        15,                             -- sort_order
+        'im_price_list $user_id $user_id 0 $return_url "" "" ""' -- component_tcl
+);
+
+update im_component_plugins
+set title_tcl = 'lang::message::lookup "" intranet-cust-koernigweber.TitlePortletProjectPriceList "Price List"'
+where plugin_name = 'Price List (User)';
 
 -- set permissions for above Plugins
 
