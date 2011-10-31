@@ -555,12 +555,18 @@ drop function inline_1();
 
 
 
-select acs_privilege__create_privilege('admin_company_price_matrix','Admin Company Price Matrix','Admin Company Price Matrix');
-select acs_privilege__add_child('admin', 'admin_company_price_matrix');
+select acs_privilege__create_privilege('admin_employee_price_list','Admin Employee Price List','Admin Employee Price List');
+select acs_privilege__add_child('admin', 'admin_employee_price_list');
 
-select im_priv_create('admin_company_price_matrix', 'Accounting');
-select im_priv_create('admin_company_price_matrix', 'P/O Admins');
-select im_priv_create('admin_company_price_matrix', 'Senior Managers');
+select im_priv_create('admin_employee_price_list', 'P/O Admins');
+select im_priv_create('admin_employee_price_list', 'Technical Office');
+
+
+select acs_privilege__create_privilege('admin_project_price_list','Admin Project Price List','Admin Project Price List');
+select acs_privilege__add_child('admin', 'admin_project_price_list');
+
+select im_priv_create('admin_project_price_list', 'P/O Admins');
+select im_priv_create('admin_project_price_list', 'Technical Office');
 
 
 -- Absences 
