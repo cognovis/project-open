@@ -431,7 +431,8 @@ ad_proc -public im_project_create_dependency {
 ad_proc -public im_gp_ms_project_time_to_seconds {
     time 
 } {
-    converts the ms project time string to seconds
+    Converts a MS-Project time string to seconds.
+    Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
 } {
     set days 0
     if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds]} {
@@ -445,6 +446,21 @@ ad_proc -public im_gp_ms_project_time_to_seconds {
     }
 
     error "im_gp_ms_project_time_to_seconds: unable to parse data='$time'"
+}
+
+
+ad_proc -public im_gp_seconds_to_ms_project_time {
+    seconds
+} {
+    Converts a number of seconds into a MS-Project time string.
+    Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
+} {
+    set minutes [expr int($seconds / 60.0)]
+    set seconds [expr int($seconds - ($minutes * 60))]
+    set hours [expr int($minutes / 60.0)]
+    set minutes [expr int($minutes - ($hours * 60))]
+    
+    return "PT${hours}H${minutes}M${seconds}S"
 }
 
 
@@ -548,6 +564,7 @@ ad_proc -public im_gp_save_tasks {
     ns_log Notice "im_gp_save_tasks: Starting to iterate through task nodes"
     set child_nodes [$tasks_node childNodes]
     foreach child $child_nodes {
+
 	if {$debug_p} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [string tolower [$child nodeName]] {
