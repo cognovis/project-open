@@ -193,15 +193,17 @@ ad_proc -public im_ms_project_write_task {
 		Start			{ set value $start_date }
 		Finish			{ set value $end_date }
 		Duration {
-			# Check if we've got a duration defined in the xml_elements.
-			# Otherwise (export without import...) generate a duration.
-			set value "PT$duration_hours\H0M0S" 
+		    # Check if we've got a duration defined in the xml_elements.
+		    # Otherwise (export without import...) generate a duration.
+		    set seconds [expr $duration_hours * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
 		DurationFormat		{ set value 7 }
 		EffortDriven		{ if {"t" == $effort_driven_p} { set value 1 } else { set value 0 } }
 		RemainingDuration {
-			set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
-			set value "PT$remaining_duration_hours\H0M0S" 
+		    set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
+		    set seconds [expr $remaining_duration_hours * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
 		Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
 		Notes			{ set value $note }
@@ -236,7 +238,10 @@ ad_proc -public im_ms_project_write_task {
 			continue
 		}
 		UID			{ set value $org_project_id }
-		Work			{ set value "PT${planned_units}\H0M0S" }
+		Work			{ 
+		    set seconds [expr $planned_units * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		}
 		ACWP - \
 		ActualCost - \
 		ActualDuration - \
