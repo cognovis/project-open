@@ -136,7 +136,7 @@ ad_proc -public im_price_list {
     {-debug 0}
     object_id 
     user_id
-    { add_admin_links 1 } 
+    { add_admin_links 0 } 
     { return_url "" } 
     { limit_to_users_in_group_id "" } 
     { dont_allow_users_in_group_id "" } 
@@ -144,13 +144,35 @@ ad_proc -public im_price_list {
 } {
     Returns an portlet to view and manage prices  
 } {
+
+    # ------------------ DEFAULTS ------------------------
+
     set current_user_id $user_id
-    # Check if there is a percentage column from intranet-ganttproject
-    # set show_percentage_p [im_column_exists im_biz_object_members percentage]
+    set admin_p 0
+
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
 
-    # if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
-    set show_percentage_p 0
+    if { "im_project" == $object_type } {
+	# set global vars for project_type and budget 
+        db_1row sender_get_info_1 "
+        	select
+                	project_type_id as glob_project_type_id,
+                        project_budget_currency as glob_project_budget_currency
+                from
+                        im_projects
+                where
+                        project_id=:object_id
+                "
+
+	if { [im_permission $current_user_id "admin_project_price_list"]} {
+		set admin_p 1  		
+	}
+	
+    } elseif { "user" == $object_type } {
+        if { [im_permission $current_user_id "admin_employee_price_list"]} {
+                set admin_p 1
+        }
+    } 
 
     # ------------------ Format the table header ------------------------
     set colspan 2
@@ -162,13 +184,7 @@ ad_proc -public im_price_list {
 	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
 	<td class=rowtitle align=right>[lang::message::lookup "" intranet-core.Price "Price"]</td>
     "
-
-
-    if {$show_percentage_p} {
-        incr colspan
-        append header_html "<td class=rowtitle align=middle>[_ intranet-core.Perc]</td>"
-    }
-    if {$add_admin_links} {
+    if { $admin_p } {
         incr colspan
         append header_html "<td class=rowtitle align=middle>[im_gif delete]</td>"
     }
@@ -217,13 +233,13 @@ ad_proc -public im_price_list {
 	lappend person_list $user_id
     }
 
-
-    foreach person_id $person_list {
-
+    foreach project_member_id $person_list {
+	
 	switch $object_type {
 	    "im_company" {
 		set inner_sql "
 			select 
+				id as id_price_table,
 				user_id, 
 				object_id as price_object_id,
 				acs_object_util__get_object_type(object_id) as object_type,
@@ -234,24 +250,42 @@ ad_proc -public im_price_list {
 			from 
 				im_customer_prices 
 			where 	
-				user_id = $person_id 
+				user_id = $project_member_id 
 				and object_id = :object_id
 				and acs_object_util__get_object_type(object_id) = 'im_company'    
     			"
 	    }
+
 	    "im_project" {
-	        db_1row sender_get_info_1 "
-	                select
-        	                project_type_id,
-                	        project_budget_currency
-	                from
-        	                im_projects
-                	where
-	                       project_id=:object_id
-                "
+
+		# Check if we have project related price record for this project_member_id 
+		set sql "
+			select count(*) from im_customer_prices 
+			where 
+				object_id = :object_id and 
+				user_id = :project_member_id and 
+				currency = :glob_project_budget_currency
+		"	
+
+		set project_related_price_exists [db_string get_data $sql -default 0]
+
+		if { $project_related_price_exists } {
+			set where_clause "
+                                object_id = :object_id and
+                                user_id = :project_member_id and
+                                currency = :glob_project_budget_currency
+			"
+		} else {
+                        set where_clause "
+				project_type_id = $glob_project_type_id and
+	                        user_id = :project_member_id and
+	                        currency = :glob_project_budget_currency
+			"
+		}
 
                 set inner_sql "
 			select 
+				id as id_price_table,
 		                user_id,
         		       	object_id as price_object_id,
                 		amount,
@@ -261,35 +295,16 @@ ad_proc -public im_price_list {
 			from 
 				im_customer_prices
 			where 
-				id in 
-				(
-				 -- Get project related prices 
-        		                select
-                        		        id 
-		                        from
-                		                im_customer_prices
-		                        where
-                		                object_id = :object_id and 
-						user_id = :person_id and
-						(project_type_id = $project_type_id OR project_type_id is null) and 
-						currency = :project_budget_currency
-					and id not in ( 
-			                        select
-	                		                id
-			                        from
-                			                im_customer_prices
-		        	                where
-							user_id = :person_id and 
-							project_type_id = $project_type_id and
-							currency = :project_budget_currency
-					) 
- 				)
+				$where_clause 
+			order by 
+				name
                  "
 	    }
 
 	    "user" {
                 set inner_sql "
                         select
+				id as id_price_table,
                                 user_id,
                                 object_id as price_object_id,
                                 amount,
@@ -299,7 +314,7 @@ ad_proc -public im_price_list {
                         from
                                 im_customer_prices
                         where
-                                object_id = $person_id 
+                                object_id = $project_member_id 
 		"
 	    }
 
@@ -309,6 +324,7 @@ ad_proc -public im_price_list {
 	}
 
 
+	
 	db_foreach records_to_list $inner_sql {
 		set show_currency_p 1
 		set show_user [im_show_user_style $user_id $current_user_id $price_object_id]
@@ -329,6 +345,7 @@ ad_proc -public im_price_list {
 			append body_html "</td>"
 		}
 
+
         	# Set "Project Type"		
 		if { ![info exists project_type_id] } { set project_type_id "" }	
 
@@ -342,6 +359,7 @@ ad_proc -public im_price_list {
         	#    "
 	        #  else 
 		#    # user has no permission to edit, show only 
+
 	            append body_html "
         	          <td align=left>
 				[im_category_from_id $project_type_id]
@@ -374,8 +392,9 @@ ad_proc -public im_price_list {
 		append body_html "</td>"
 
 		# if $add_admin_links && "" == $project_type_id
-		if { ("" != $project_type_id && "im_company" == $object_type) || ("0" == $project_type_id && "im_project" == $object_type ) } {
-		    set var_delete_price "delete_price.${user_id}_${project_type_id}"
+		if { (("" != $project_type_id && "user" == $object_type) || ("" == $project_type_id && "im_project" == $object_type )) && $admin_p } {
+ } {
+		    set var_delete_price "delete_price.$id_price_table"
 		    append body_html "
 			  <td align=right>
 			    <input type=checkbox name='$var_delete_price' value=''>
@@ -437,6 +456,10 @@ ad_proc -public im_price_list {
 
      append body_html "<td align=middle>"
  
+     if { ![info exists project_type_id ] } {
+	set project_type_id $glob_project_type_id
+     }
+
      if { "im_project" == $object_type } {
 	 append body_html [ im_category_from_id $project_type_id ]
      } else {
@@ -456,7 +479,7 @@ ad_proc -public im_price_list {
 	append footer_html "
 	    <tr>
 	      <td align=left colspan=$colspan>
-		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply></td>
+		<br><input type=submit value='[lang::message::lookup "" intranet-core.SaveRemove "Save/Remove"]' name=submit_apply></td>
 	      </td>
 	    </tr>
 	    "
