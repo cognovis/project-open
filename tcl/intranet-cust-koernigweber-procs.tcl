@@ -1,7 +1,6 @@
-# /packages/intranet-cust-koernigweber/tcl/intranet-cust-koernigweber-procs.tcl
+c# /packages/intranet-cust-koernigweber/tcl/intranet-cust-koernigweber-procs.tcl
 #
 # Copyright (C) 1998-2011 
-
 
 ad_library {
     
@@ -146,8 +145,8 @@ ad_proc -public im_price_list {
 } {
 
     # ------------------ DEFAULTS ------------------------
+    set current_user_id [ad_maybe_redirect_for_registration]
 
-    set current_user_id $user_id
     set admin_p 0
 
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
@@ -178,7 +177,7 @@ ad_proc -public im_price_list {
     set colspan 2
     set header_html "<tr>"
     if { "user" != $object_type  } {
-		append header_html "<td class=rowtitle align=middle>[_ intranet-core.Name]</td>"
+		append header_html "<td class=rowtitle align=left>[_ intranet-core.Name]</td>"
     }
     append header_html "
 	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
@@ -392,8 +391,7 @@ ad_proc -public im_price_list {
 		append body_html "</td>"
 
 		# if $add_admin_links && "" == $project_type_id
-		if { (("" != $project_type_id && "user" == $object_type) || ("" == $project_type_id && "im_project" == $object_type )) && $admin_p } {
- } {
+		if { (("user" == $object_type) || ("" == $project_type_id && "im_project" == $object_type )) && $admin_p } {
 		    set var_delete_price "delete_price.$id_price_table"
 		    append body_html "
 			  <td align=right>
@@ -456,11 +454,8 @@ ad_proc -public im_price_list {
 
      append body_html "<td align=middle>"
  
-     if { ![info exists project_type_id ] } {
-	set project_type_id $glob_project_type_id
-     }
-
      if { "im_project" == $object_type } {
+	 if { ![info exists project_type_id ] } { set project_type_id $glob_project_type_id }
 	 append body_html [ im_category_from_id $project_type_id ]
      } else {
 	 append body_html [im_project_type_select "new_project_type_id" ""]
@@ -479,7 +474,7 @@ ad_proc -public im_price_list {
 	append footer_html "
 	    <tr>
 	      <td align=left colspan=$colspan>
-		<br><input type=submit value='[lang::message::lookup "" intranet-core.SaveRemove "Save/Remove"]' name=submit_apply></td>
+		<br><input type=submit value='[lang::message::lookup "" intranet-core.Submit "Submit"]' name=submit_apply></td>
 	      </td>
 	    </tr>
 	    "
