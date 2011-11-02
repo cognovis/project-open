@@ -136,8 +136,9 @@ foreach csv_line_fields $values_list_of_lists {
     set description		""
     set note			""
 
-    set company_contact_id	""
-    set company_project_nr	""
+    set customer_contact	""
+    set customer_contact_id	""
+    set customer_project_nr	""
     set confirm_date		""
     set expected_quality_id	""
     set final_company		""
@@ -299,8 +300,8 @@ foreach csv_line_fields $values_list_of_lists {
 	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find project manager '$project_manager'.</font>\n" }
     }
 
-    set company_contact_id [im_id_from_user_name $customer_contact]
-    if {"" == $company_contact_id && "" != $customer_contact} {
+    set customer_contact_id [im_id_from_user_name $customer_contact]
+    if {"" == $customer_contact_id && "" != $customer_contact} {
 	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find customer contact '$customer_contact'.</font>\n"	}
     }
 
@@ -381,7 +382,7 @@ foreach csv_line_fields $values_list_of_lists {
 			project_budget_currency	= :project_budget_currency,
 			project_budget_hours	= :project_budget_hours,
 			project_priority_id	= :project_priority_id,
-			company_contact_id	= :company_contact_id,
+			company_contact_id	= :customer_contact_id,
 			company_project_nr	= :customer_project_nr,
 			note			= :note,
 			description		= :description
