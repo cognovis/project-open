@@ -112,6 +112,7 @@ foreach field $object_fields { lappend object_type_pairs [string tolower $field]
 
 set cnt 0
 foreach header_name $headers {
+    ns_log Notice "import-2: otype=$object_type, field_name=$header_name"
 
     # Column - Name of the CSV colum
     set column "<input type=hidden name=column.$cnt value=\"$header_name\">"
@@ -128,6 +129,7 @@ foreach header_name $headers {
 	if {"" != $val} { lappend parser_sample_values $val }
     }
     set defs [im_csv_import_guess_parser -object_type $object_type -field_name $header_name -sample_values $parser_sample_values]
+    ns_log Notice "import-2: otype=$object_type, field_name=$header_name => parser=$defs"
     set default_parser [lindex $defs 0]
     set default_parser_args [lindex $defs 1]
 
@@ -139,3 +141,13 @@ foreach header_name $headers {
     incr cnt
 }
 
+
+# Redirect to a specific page for the import
+switch $object_type {
+    im_timesheet_task - im_ticket { 
+	set redirect_object_type "im_project" 
+    }
+    default {
+	set redirect_object_type $object_type
+    }
+}

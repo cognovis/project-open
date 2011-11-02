@@ -73,6 +73,7 @@ ad_proc -public im_csv_import_parser_category {
 
     # Parse the category
     set result [im_id_from_category $arg $parser_args]
+
     if {"" == $result} {
 	return [list "" "Category parser: We did not find a value='$arg' in category type '$parser_args'."]
     } else {
@@ -130,72 +131,64 @@ ad_proc -public im_csv_import_label_from_object_type {
 ad_proc -public im_csv_import_object_fields {
     -object_type:required
 } {
-    Returns the main navbar lable for the object_type
+    Returns a list of database columns for the specified object type.
 } {
-    switch $object_type {
-	im_project {
-	    set object_fields {
-		customer_name
-		parent_nrs
-		project_nr
-		project_name
-		project_status
-		project_type
-		start_date
-		end_date
-		customer_contact
-		on_track_status
-		percent_completed
-		project_manager
-		project_priority
-		program
-		milestone_p
-		description
-		note
-		material
-		uom
-		planned_units
-		billable_units
-		cost_center_code
-		timesheet_task_priority
-		sort_order
-		project_budget
-		project_budget_currency
-		project_budget_hours
-		presales_probability
-		presales_value
-		project_path
-		confirm_date
-		source_language
-		subject_area
-		final_company
-		expected_quality
-		customer_project_nr
+    # Get the list of super-types for object_type, including object_type
+    # and remove "acs_object" from the list
+    set super_types [im_object_super_types -object_type $object_type]
+    set s [list]
+    foreach t $super_types {
+	if {$t == "acs_object"} { continue }
+	lappend s $t
+    }
+    set super_types $s
+
+    # ---------------------------------------------------------------
+    # Get the list of tables associated with the object type and its super types
+
+    set tables_sql "
+	select	*
+	from	(
+		select	table_name, id_column, 1 as sort_order
+		from	acs_object_types
+		where	object_type in ('[join $super_types "', '"]')
+	UNION
+		select	table_name, id_column, 2 as sort_order
+		from	acs_object_type_tables
+		where	object_type in ('[join $super_types "', '"]')
+		) t
+	order by t.sort_order
+    "
+
+    set columns_sql "
+	select	lower(column_name) as column_name
+	from	user_tab_columns
+	where	lower(table_name) = lower(:table_name)
+    "
+
+    set selected_columns {}
+    set selected_tables {}
+    set cnt 0
+    db_foreach tables $tables_sql {
+
+	if {[lsearch $selected_tables $table_name] >= 0} { 
+	    ns_log Notice "im_csv_import_object_fields: found duplicate table: $table_name"
+	    continue 
+	}
+
+	db_foreach columns $columns_sql {
+	    if {[lsearch $selected_columns $column_name] >= 0} { 
+		ns_log Notice "im_csv_import_object_fields: found ambiguous field: $table_name.$column_name"
+		continue 
 	    }
+	    lappend selected_columns $column_name
 	}
-	default {
-	    ad_return_complaint 1 "Unknown object type '$object_type'"
-	    ad_script_abort
-	}
+
+	lappend selected_tables $table_name
+	incr cnt
     }
 
-    set dynfield_sql "
-	select	aa.*,
-		a.*,
-		w.*
-	from	im_dynfield_widgets w,
-		im_dynfield_attributes a,
-		acs_attributes aa
-	where	a.widget_name = w.widget_name and
-		a.acs_attribute_id = aa.attribute_id and
-		aa.object_type in ('im_project', 'im_timesheet_task') and
-		(also_hard_coded_p is null OR also_hard_coded_p = 'f')
-    "
-    db_foreach dynfields $dynfield_sql {
-	lappend object_fields $attribute_name
-    }    
-
-    return $object_fields
+    return $selected_columns
 }
 
 
@@ -209,7 +202,7 @@ ad_proc -public im_csv_import_parsers {
     Returns the list of available parsers
 } {
     switch $object_type {
-	im_project {
+	im_project - im_timesheet_task - im_ticket {
 	    set parsers {
 		no_change	"No Change"
 		date_european	"European Date Parser (DD.MM.YYYY)"
@@ -219,7 +212,7 @@ ad_proc -public im_csv_import_parsers {
 	    }
 	}
 	default {
-	    ad_return_complaint 1 "Unknown object type '$object_type'"
+	    ad_return_complaint 1 "im_csv_import_parsers: Unknown object type '$object_type'"
 	    ad_script_abort
 	}
     }
@@ -240,60 +233,81 @@ ad_proc -public im_csv_import_guess_parser {
     Returns the best guess for a parser for the given field as
     a list with 1. the parser name and 2. the parser args
 } {
-    # --------------------------------------------------------
-    # Abort if there are not enough values
-    if {[llength $sample_values] < 2} { return [list "" ""] }
-
 
     # --------------------------------------------------------
     # Date parsers
     #
-    set date_european_p 1
-    set date_american_p 1
-    set number_plain_p 1
-    set number_european_p 1
-    set number_american_p 1
+    # Abort if there are not enough values
+    if {[llength $sample_values] > 1} { 
 
-    # set the parserst to 0 if one of the values doesn't fit
-    foreach val $sample_values { 
-	if {![regexp {^(.+)\.(.+)\.(....)$} $val match]} { set date_european_p 0 } 
-	if {![regexp {^(.+)\/(.+)\/(....)$} $val match]} { set date_american_p 0 } 
-	if {![regexp {^[0-9]+$} $val match]} { set number_plain 0 } 
+	set date_european_p 1
+	set date_american_p 1
+	set number_plain_p 1
+	set number_european_p 1
+	set number_american_p 1
+	
+	# set the parserst to 0 if one of the values doesn't fit
+	foreach val $sample_values { 
+	    if {![regexp {^(.+)\.(.+)\.(....)$} $val match]} { set date_european_p 0 } 
+	    if {![regexp {^(.+)\/(.+)\/(....)$} $val match]} { set date_american_p 0 } 
+	    if {![regexp {^[0-9]+$} $val match]} { set number_plain 0 } 
+	}
+	
+	if {$date_european_p} { return [list "date_european" ""] }
+	if {$date_american_p} { return [list "date_american" ""]}
     }
-
-    if {$date_european_p} { return [list "date_european" ""] }
-    if {$date_american_p} { return [list "date_american" ""]}
 
 
     # --------------------------------------------------------
+    # Get the list of super-types for object_type, including object_type
+    # and remove "acs_object" from the list
+    set super_types [im_object_super_types -object_type $object_type]
+    set s [list]
+    foreach t $super_types {
+	if {$t == "acs_object"} { continue }
+	lappend s $t
+    }
+    set super_types $s
+
+    ns_log Notice "im_csv_import_guess_parser: field_name=$field_name, super_types=$super_types"
+
+    # --------------------------------------------------------
     # Parsing for DynFields
-    if {[db_0or1row dynfield_info {
+    #
+    # There can be 0, 1 or multiple dynfields with the field_name,
+    # unfortunately.
+    set dynfield_sql "
 	select	dw.widget as tcl_widget,
 		dw.parameters as tcl_widget_parameters,
-		substring(dw.parameters from 'category_type "(.*)"') as category_type
+		substring(dw.parameters from 'category_type \"(.*)\"') as category_type
 	from	acs_attributes aa,
 		im_dynfield_attributes da,
 		im_dynfield_widgets dw
-	where	aa.object_type = :object_type and
-		aa.attribute_name = :field_name and
+	where	aa.object_type in ('[join $super_types "','"]') and
+		lower(aa.attribute_name) = lower(trim(:field_name)) and
 		aa.attribute_id = da.acs_attribute_id and
 		da.widget_name = dw.widget_name
-    }]} {
+    "
+    set result [list "" ""]
+    set ttt_widget ""
+    db_foreach dynfields $dynfield_sql {
+	set ttt_widget $tcl_widget
 	switch $tcl_widget {
 	    "im_category_tree" {
-		return [list "category" $category_type]		
+		set result [list "category" $category_type]		
 	    }
 	    "im_cost_center_tree" {
-		return [list "cost_center" ""]		
+		set result [list "cost_center" ""]		
 	    }
 	    default {
 		# Default: No specific parser
-		return [list "" ""]
+		set result [list "" ""]
 	    }
 	}
     }
 
-    return [list "" ""]
+    ns_log Notice "im_csv_import_guess_parser: field_name=$field_name, tcl_widget=$ttt_widget => $result"
+    return $result
 }
 
 

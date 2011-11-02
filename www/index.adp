@@ -11,7 +11,7 @@
      <tr> 
 	<td>#intranet-csv-import.Object_Type#</td>
 	<td> 
-	  <%= [im_select object_type [list im_project "Project" im_company "Company" person "User"] $object_type] %>
+	  <%= [im_select object_type [list im_project "Project" im_timesheet_task "Timesheet Task" im_company "Company" person "User"] $object_type] %>
 	</td>
      </tr>
 

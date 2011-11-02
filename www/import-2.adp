@@ -3,7 +3,7 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">@main_navbar_label@</property>
 
-<form enctype="multipart/form-data" method=POST action="import-@object_type@.tcl">
+<form enctype="multipart/form-data" method=POST action="import-@redirect_object_type@.tcl">
 <%= [export_form_vars object_type return_url import_filename] %>
 
      <table>
