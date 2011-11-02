@@ -240,12 +240,25 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
                 v_id              integer;
                 v_count           integer;
         BEGIN
-                RAISE NOTICE ''KHD: user_id: %; object_id: %; project_type_id:%; '', p_user_id, p_object_id, p_project_type_id;  
+                -- RAISE NOTICE ''KHD: user_id: %; object_id: %; project_type_id:%; '', p_user_id, p_object_id, p_project_type_id;  
+
+		IF p_project_type_id IS NULL THEN 
+			-- RAISE NOTICE ''KHD: p_project_type_id IS NULL'';
+			select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id IS NULL;
+		ELSE 
+			-- RAISE NOTICE ''KHD: p_project_type_id IS NOT NULL'';
+			select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_project_type_id;				
+		END IF; 
+
                 select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_project_type_id;
-                RAISE NOTICE ''KHD: Count: %'', v_count;  
+                -- RAISE NOTICE ''KHD: Count: %'', v_count;  
 
                 IF v_count > 0 THEN
-                        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id;
+			IF p_project_type_id IS NULL THEN 
+				update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id IS NULL;
+			ELSE 
+				update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id = p_project_type_id; 
+			END IF;
                 ELSE
                         v_id := acs_object__new (
                                 p_id,
@@ -560,7 +573,6 @@ select acs_privilege__add_child('admin', 'admin_employee_price_list');
 
 select im_priv_create('admin_employee_price_list', 'P/O Admins');
 select im_priv_create('admin_employee_price_list', 'Technical Office');
-
 
 select acs_privilege__create_privilege('admin_project_price_list','Admin Project Price List','Admin Project Price List');
 select acs_privilege__add_child('admin', 'admin_project_price_list');
