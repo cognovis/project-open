@@ -90,36 +90,35 @@ ns_log Notice "member-update: submit=$submit"
 
 		set foo [db_string get_view_id $sql -default 0]
 	    }
-
-	    if { [info exists delete_price(${user_id}_${project_type})] } {
-		if { "customer" == $object_type } { 
-		    db_dml sql "delete from im_customer_prices where object_id = :object_id and user_id = $user_id and project_type_id = $project_type"
-		} else {
-		    db_dml sql "delete from im_customer_prices where object_id = :object_id and user_id = $user_id"		    
-		}
-	    }
 	}
 
 	# In case there's a new record write it 
-	if { "" != $new_user_id } {
-	    if { ![info exists new_project_type_id] } { 
-              set sql "
-                select
-                        im_employee_customer_price__update(NULL,
-                        'im_employee_customer_price', now()::date,
-                        NULL, '', NULL, :new_user_id, $object_id,
-                        :new_amount, :new_currency, 0)
-                "
-	    } else {
-              set sql "
-                select
-                        im_employee_customer_price__update(NULL,
-                        'im_employee_customer_price', now()::date,
-                        NULL, '', NULL, :new_user_id, $object_id,
-                        :new_amount, :new_currency, :new_project_type_id)
-                "
-	    }
-            set foo [db_string write_new_price $sql -default 0]
+        if { "" != $new_amount } {
+		if { "" != $new_user_id } {
+		    if { ![info exists new_project_type_id] } { 
+	              set sql "
+	                select
+        	                im_employee_customer_price__update(NULL,
+        	                'im_employee_customer_price', now()::date,
+                	        NULL, '', NULL, :new_user_id, $object_id,
+                        	:new_amount, :new_currency, NULL)
+	                "
+		    } else {
+	              set sql "
+        	        select
+                	        im_employee_customer_price__update(NULL,
+                        	'im_employee_customer_price', now()::date,
+	                        NULL, '', NULL, :new_user_id, $object_id,
+        	                :new_amount, :new_currency, :new_project_type_id)
+                	"
+		    }
+        	    set foo [db_string write_new_price $sql -default 0]
+		}
+	}
+
+       	# Check fro price records to delete 
+	foreach price_id [array names delete_price] {
+		if {[catch { db_dml delete_price_record " delete from im_customer_prices where id = :price_id" } errmsg ]} {}
 	}
 
 ad_returnredirect $return_url
