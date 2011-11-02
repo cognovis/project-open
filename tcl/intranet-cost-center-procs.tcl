@@ -26,6 +26,19 @@ ad_proc -public im_cost_center_status_inactive {} { return 3102 }
 
 
 # -----------------------------------------------------------
+# 
+# -----------------------------------------------------------
+
+ad_proc -public im_cost_center_name { 
+    cost_center_id
+} {
+    Returns the cached name of a cost center
+} {
+    if {"" == $cost_center_id || ![string is integer $cost_center_id]} { set cost_center_id 0}
+    return [util_memoize [list db_string ccname "select cost_center_name from im_cost_centers where cost_center_id = $cost_center_id" -default ""]]
+}
+
+# -----------------------------------------------------------
 # Options & Selects
 # -----------------------------------------------------------
 
