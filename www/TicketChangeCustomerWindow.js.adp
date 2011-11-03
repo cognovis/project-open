@@ -87,8 +87,9 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 						method:	'GET',
 						success: function(form, action) {
 							var customer_id_value=form.findField('company_id').getValue();
-							var companyModel = contactGridStore.findRecord('user_id',customer_id_value);
+							var companyModel = companyStore.findRecord('company_id',customer_id_value);
 							companyStore.remove(companyModel);
+							companyGridStore.remove(companyModel);
 							Ext.Msg.show({
 							     title :"Exito borrando/replazando entidad:",
 							     msg: 'Borrado y sustitución realizado correctamente',

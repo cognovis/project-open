@@ -75,7 +75,11 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 			contactValues.first_names = contactValues.first_names.toUpperCase();
 			contactValues.last_name = contactValues.last_name.toUpperCase();
 			contactValues.last_name2 = contactValues.last_name2.toUpperCase();
-			contactValues.email = contactValues.spri_email + "." + Math.random()*10000000000000000
+			if (!Ext.isEmpty(contactValues.spri_email)) {
+				contactValues.email = contactValues.spri_email + Math.random()*1000000000000000000
+			} else {
+				contactValues.email = "nowhere@nowhere.es" + Math.random()*1000000000000000000
+			}
 		}		
 		
 		if (ticketRightValues) {
@@ -197,6 +201,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 					contactValues.user_id = contact_id;
 					userStore.add(contact_record);
 					userCustomerContactStore.add(contact_record);	
+					userCustomerStore.add(contact_record);
 						
 					// Add the users to the group "Customers".
 					// This code doesn't need to be synchronized.
@@ -275,7 +280,9 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 				ticketRightValues.ticket_id = ticket_id;
 				ticketStore.add(ticket_record);
 			}
-			//Function_sendMail(ticket_id);
+			if (0 != sendmailparameter) {
+				Function_sendMail(ticket_id);
+			}
 			Function_insertAction(ticket_id, ticketValues.datetime, ticket_record);
 			Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
 		},
