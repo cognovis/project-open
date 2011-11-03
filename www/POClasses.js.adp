@@ -204,3 +204,5 @@ var serviceId = '10000152';
 
 //Check date format
 dateFormat = /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ ;
+
+var sendmailparameter = <%= [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter SendMail -default 0] %>;
