@@ -120,7 +120,9 @@ foreach csv_line_fields $values_list_of_lists {
     set customer_id		""
     set parent_nrs		""
     set parent_id		""
+    set project_status		""
     set project_status_id	""
+    set project_type		""
     set project_type_id	 	""
 
     set project_lead_id	 	""
@@ -143,7 +145,6 @@ foreach csv_line_fields $values_list_of_lists {
     set expected_quality_id	""
     set final_company		""
     set milestone_p		""
-    set project_priority	""
     set sort_order		""
     set source_language_id	""
     set subject_area_id		""
@@ -151,6 +152,7 @@ foreach csv_line_fields $values_list_of_lists {
 
     set cost_center		""
     set uom			""
+    set material		""
     set planned_units		""
     set billable_units		""
     set priority		""
@@ -196,6 +198,9 @@ foreach csv_line_fields $values_list_of_lists {
     foreach varname $var_name_list {
 	set p $parser($i)
 	set p_args $parser_args($i)
+	set target_varname $map($i)
+	ns_log Notice "import-im_project: Parser: $varname -> $target_varname"
+
 	switch $p {
 	    no_change { }
 	    default {
@@ -206,16 +211,17 @@ foreach csv_line_fields $values_list_of_lists {
 			    set result [$proc_name -parser_args $p_args $val]
 			    set res [lindex $result 0]
 			    set err [lindex $result 1]
+			    ns_log Notice "import-im_project: Parser: '$p -args $p_args $val' -> $target_varname=$res, err=$err"
 			    if {"" != $err} {
 				if {$ns_write_p} { 
-				    ns_write "<li><font color=brown>Warning: Error parsing field='$varname' using parser '$p':<pre>$err</pre></font>\n" 
+				    ns_write "<li><font color=brown>Warning: Error parsing field='$target_varname' using parser '$p':<pre>$err</pre></font>\n" 
 				}
 			    }
-			    set $varname $res
+			    set $target_varname $res
 		    }
 		} err_msg]} {
 		    if {$ns_write_p} { 
-			ns_write "<li><font color=brown>Warning: Error parsing field='$varname' using parser '$p':<pre>$err_msg</pre></font>" 
+			ns_write "<li><font color=brown>Warning: Error parsing field='$target_varname' using parser '$p':<pre>$err_msg</pre></font>" 
 		    }
 		}
 	    }
@@ -276,9 +282,6 @@ foreach csv_line_fields $values_list_of_lists {
 
     # On track status can be NULL without problems
     set on_track_status_id [im_id_from_category [list $on_track_status] "Intranet Project On Track Status"]
-
-    # Priority has been introduced by department planner...
-    set project_priority_id [im_id_from_category [list $project_priority] "Intranet Department Planner Project Priority"]
 
     # customer_id
     if {"" == $customer_id } { 
@@ -381,7 +384,6 @@ foreach csv_line_fields $values_list_of_lists {
 			project_budget		= :project_budget,
 			project_budget_currency	= :project_budget_currency,
 			project_budget_hours	= :project_budget_hours,
-			project_priority_id	= :project_priority_id,
 			company_contact_id	= :customer_contact_id,
 			company_project_nr	= :customer_project_nr,
 			note			= :note,
@@ -409,7 +411,9 @@ foreach csv_line_fields $values_list_of_lists {
 			)
 	    " -default ""]
 	    if {"" == $material_id} {
-		if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find material '$material', using 'Default'.</font>\n" }
+		if {$ns_write_p} { 
+		    ns_write "<li><font color=brown>Warning: Didn't find material '$material', using 'Default'.</font>\n" 
+		}
 	    }
 	}
 	if {"" == $material_id} {

@@ -109,6 +109,7 @@ for {set i 1} {$i < $max_row} {incr i} {
 
 set object_type_pairs [list "" ""]
 foreach field $object_fields { lappend object_type_pairs [string tolower $field] [string tolower $field] }
+lappend object_type_pairs "hard_coded" "Hard Coded Functionality"
 
 set cnt 0
 foreach header_name $headers {
@@ -116,10 +117,6 @@ foreach header_name $headers {
 
     # Column - Name of the CSV colum
     set column "<input type=hidden name=column.$cnt value=\"$header_name\">"
-
-    # Mapping - Map to which object field?
-    set default_map [string tolower $header_name]
-    set map [im_select map.$cnt $object_type_pairs $default_map]
 
     # Parser - convert the value from CSV values to ]po[ values
     set parser_sample_values [list]
@@ -132,9 +129,15 @@ foreach header_name $headers {
     ns_log Notice "import-2: otype=$object_type, field_name=$header_name => parser=$defs"
     set default_parser [lindex $defs 0]
     set default_parser_args [lindex $defs 1]
-
+    set override_map [lindex $defs 2]
     set parser [im_select parser.$cnt $parser_pairs $default_parser]
     set args "<input type=text name=parser_args.$cnt value=\"$default_parser_args\">\n"
+
+    # Mapping - Map to which object field?
+    set default_map [string tolower $header_name]
+    if {"" != $override_map} { set default_map $override_map }
+    set map [im_select map.$cnt $object_type_pairs $default_map]
+    if {"hard_coded" == $default_parser} { set map [im_select map.$cnt $object_type_pairs "hard_coded"] }
 
     multirow append mapping $header_name $column $map $parser $args [lindex $row_1 $cnt] [lindex $row_2 $cnt] [lindex $row_3 $cnt] [lindex $row_4 $cnt] [lindex $row_5 $cnt]
 
