@@ -107,6 +107,16 @@ ad_proc -public im_csv_import_parser_cost_center {
     }
 }
 
+ad_proc -public im_csv_import_parser_hard_coded { 
+    {-parser_args "" }
+    arg 
+} {
+   Empty parser - returns the argument
+} {
+    return [list $arg ""]
+}
+
+
 # ----------------------------------------------------------------------
 # 
 # ----------------------------------------------------------------------
@@ -188,7 +198,7 @@ ad_proc -public im_csv_import_object_fields {
 	incr cnt
     }
 
-    return $selected_columns
+    return [lsort $selected_columns]
 }
 
 
@@ -205,6 +215,7 @@ ad_proc -public im_csv_import_parsers {
 	im_project - im_timesheet_task - im_ticket {
 	    set parsers {
 		no_change	"No Change"
+		hard_coded	"Hard Coded Functionality"
 		date_european	"European Date Parser (DD.MM.YYYY)"
 		date_american	"American Date Parser (MM/DD/YYYY)"
 		category	"Category Parser"
@@ -231,8 +242,30 @@ ad_proc -public im_csv_import_guess_parser {
     -field_name:required
 } {
     Returns the best guess for a parser for the given field as
-    a list with 1. the parser name and 2. the parser args
+    a list with:
+    <ul>
+    <li>The parser name,
+    <li>the parser args and
+    <li>the field name to map to
+    </ul>
 } {
+    # --------------------------------------------------------
+    # Hard Coded Mappings
+
+    switch $object_type {
+	im_project - im_timesheet_task - im_ticket {
+	    switch $field_name {
+		parent_nrs { return [list "hard_coded" "" ""] }
+		customer_name { return [list "hard_coded" "" ""] }
+		project_status { return [list "hard_coded" "" "project_status_id"] }
+		project_type { return [list "hard_coded" "" "project_type_id"] }
+		on_track_status { return [list "hard_coded" "" "on_track_status_id"] }
+		customer_contact { return [list "" "" "company_contact_id"] }
+		project_manager { return [list "hard_coded" "" "project_lead_id"] }
+	    }
+	}
+    }
+
 
     # --------------------------------------------------------
     # Date parsers
@@ -253,8 +286,8 @@ ad_proc -public im_csv_import_guess_parser {
 	    if {![regexp {^[0-9]+$} $val match]} { set number_plain 0 } 
 	}
 	
-	if {$date_european_p} { return [list "date_european" ""] }
-	if {$date_american_p} { return [list "date_american" ""]}
+	if {$date_european_p} { return [list "date_european" "" ""] }
+	if {$date_american_p} { return [list "date_american" "" ""]}
     }
 
 
@@ -279,29 +312,32 @@ ad_proc -public im_csv_import_guess_parser {
     set dynfield_sql "
 	select	dw.widget as tcl_widget,
 		dw.parameters as tcl_widget_parameters,
-		substring(dw.parameters from 'category_type \"(.*)\"') as category_type
+		substring(dw.parameters from 'category_type \"(.*)\"') as category_type,
+		aa.attribute_name
 	from	acs_attributes aa,
 		im_dynfield_attributes da,
 		im_dynfield_widgets dw
 	where	aa.object_type in ('[join $super_types "','"]') and
-		lower(aa.attribute_name) = lower(trim(:field_name)) and
 		aa.attribute_id = da.acs_attribute_id and
-		da.widget_name = dw.widget_name
+		da.widget_name = dw.widget_name and
+		(lower(aa.attribute_name) = lower(trim(:field_name)) OR
+		lower(aa.attribute_name) = lower(trim(:field_name))||'_id'
+		)
     "
-    set result [list "" ""]
+    set result [list "" "" ""]
     set ttt_widget ""
     db_foreach dynfields $dynfield_sql {
 	set ttt_widget $tcl_widget
 	switch $tcl_widget {
 	    "im_category_tree" {
-		set result [list "category" $category_type]		
+		set result [list "category" $category_type $attribute_name]
 	    }
 	    "im_cost_center_tree" {
-		set result [list "cost_center" ""]		
+		set result [list "cost_center" "" $attribute_name]
 	    }
 	    default {
 		# Default: No specific parser
-		set result [list "" ""]
+		set result [list "" "" $attribute_name]
 	    }
 	}
     }
