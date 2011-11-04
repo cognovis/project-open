@@ -11,7 +11,7 @@
     <table width="100%">
 	<tr valign="top">
 	<td width="50%">
-		<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Ticket_Details "Ticket Details"]] %>
+		<%= [im_box_header [lang::message::lookup "" intranet-baseline.Baseline_Details "Baseline Details"]] %>
 		<formtemplate id=form></formtemplate>
 		<%= [im_box_footer] %>
 		<%= [im_component_bay left] %>
