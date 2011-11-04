@@ -34,7 +34,8 @@ db_1row baseline_baseline_info "
 	from	im_audits a,
 		im_projects_audit pa
 	where	a.audit_object_id = :main_project_id and
-		a.audit_id = pa.audit_id
+		a.audit_id = pa.audit_id and
+		pa.baseline_id = :baseline_id
 "
 
 set undef [lang::message::lookup "" intranet-baseline.Undef "<undef>"]

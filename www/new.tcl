@@ -16,6 +16,7 @@ ad_page_contract {
     baseline_id:integer,optional
     {baseline_project_id:integer ""}
     {baseline ""}
+    {baseline_name ""}
     {return_url "/intranet-baseline/index"}
     {form_mode "edit"}
 }
@@ -35,7 +36,7 @@ if {[info exists baseline_id]} {
 	where	baseline_id = :baseline_id
     "
     if {"" != $baseline_name} {
-	set page_title [lang::message::lookup "" intranet-baseline.Baseline "Baseline %baseline_name%"] 
+	set page_title [lang::message::lookup "" intranet-baseline.Baseline__baseline_ "Baseline '%baseline_name%'"] 
     }
 
     im_project_permissions $current_user_id $baseline_project_id view read write admin
@@ -43,7 +44,6 @@ if {[info exists baseline_id]} {
 	ad_return_complaint 1 "You don't have the permissions to see this baseline"
 	ad_script_abort
     }
-
 }
 set context_bar [im_context_bar $page_title]
 
@@ -57,6 +57,10 @@ if {[info exists baseline_id] && "" == $baseline_project_id} {
 set show_components_p 1
 if {"edit" == $form_mode} { set show_components_p 0 }
 
+
+if {![info exists baseline_name] || "" == $baseline_name} {
+    set baseline_name "Baseline 1"
+}
 
 # ---------------------------------------------------------------
 # Create the Form
@@ -183,6 +187,32 @@ ad_form -extend -name $form_id \
     }
 
 
-set sub_navbar ""
+# ---------------------------------------------------------------
+# Navbars
+# ---------------------------------------------------------------
+
+# Setup the subnavbar
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $baseline_project_id
+
+set parent_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
+set plugin_id ""
+
+set menu_label "project_summary"
+set menu_label "project_summary" 
+set show_context_help_p 1
+
+set sub_navbar [im_sub_navbar \
+		    -components \
+		    -current_plugin_id $plugin_id \
+		    -base_url "/intranet/projects/view?project_id=$baseline_project_id" \
+		    $parent_menu_id \
+		    $bind_vars \
+		    "" \
+		    "pagedesriptionbar" \
+		    $menu_label \
+		   ]
+
 set left_navbar_html ""
+
 
