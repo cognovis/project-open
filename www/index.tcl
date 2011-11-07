@@ -11,18 +11,18 @@
 # Variables:
 #	risk_project_id:integer
 
-if {![info exists project_id]} {
-    ad_page_contract {
-	@author frank.bergmann@project-open.com
-    } {
-	{ risk_project_id:integer "" }
-	{ risk_customer_id:integer "" }
-	{ risk_status_id:integer "" }
-	{ risk_type_id:integer "" }
-	{ start_date "" }
-	{ end_date "" }
-    }
+ad_page_contract {
+    @author frank.bergmann@project-open.com
+} {
+    { risk_project_id:integer "" }
+    { risk_customer_id:integer "" }
+    { risk_status_id:integer "" }
+    { risk_type_id:integer "" }
+    { risk_ids "" }
+    { start_date "" }
+    { end_date "" }
 }
+
 
 set return_url [im_url_with_query]
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -39,74 +39,6 @@ im_project_permissions $current_user_id $risk_project_id object_view object_read
 if {!$object_read} {
     ad_return_complaint 1 "You don't have sufficient permissions to see this page"
     ad_script_abort
-}
-
-# ------------------------------------------------------------------
-# 
-# ------------------------------------------------------------------
-
-set action_list [list]
-set bulk_action_list [list]
-
-lappend action_list [lang::message::lookup "" intranet-riskmanagement.Add_new_risk "Add a new Risk"]
-lappend action_list [export_vars -base "/intranet-riskmanagement/new" {return_url risk_project_id}]
-lappend action_list [lang::message::lookup "" intranet-riskmanagement.Add_new_risk "Add a new Risk"]
-
-lappend bulk_action_list "[lang::message::lookup "" intranet-riskmanagement.Delete_Risk "Delete Risk"]" "[export_vars -base "/intranet-riskmanagement/delete" {return_url}]" "[lang::message::lookup "" intranet-riskmanagement.Delete_Risk "Delete Risk"]"
-
-list::create \
-    -name risks \
-    -multirow risks_multirow \
-    -key risk_id \
-    -row_pretty_plural "Risks" \
-    -checkbox_name checkbox \
-    -selected_format "normal" \
-    -class "list" \
-    -main_class "list" \
-    -sub_class "narrow" \
-    -actions $action_list \
-    -bulk_actions $bulk_action_list \
-    -elements {
-        risk_name {
-            label {Risk Name}
-            link_url_eval $risk_url
-        }
-        risk_type {
-            display_col risk_type
-            label "Risk Type"
-        }        
-    } -filters {
-    } -groupby {
-    }
-
-# ----------------------------------------------------
-# Create a "multirow" for risks
-
-set risk_project_sql ""
-if {"" != $risk_project_id} {
-    set risk_project_sql "and r.risk_project_id = :risk_project_id"
-}
-
-db_multirow -extend { risk_url } risks_multirow risks_select "
-	select	*,
-		im_category_from_id(r.risk_type_id) as risk_type,
-		im_category_from_id(r.risk_status_id) as risk_status
-	from	im_risks r
-	where	1=1
-		$risk_project_sql
-" {
-    set risk_url [export_vars -base "/intranet-riskmanagement/new" {risk_id return_url {form_mode display}}]
-}
-
-
-# ---------------------------------------------------------------
-# Admin Links
-# ---------------------------------------------------------------
-
-set admin_html "<ul>"
-
-if {$object_write} {
-    append admin_html "<li><a href=\"/intranet-riskmanagement/new\">[_ intranet-riskmanagement.Add_a_new_risk]</a>\n"
 }
 
 # ---------------------------------------------------------------
@@ -177,6 +109,82 @@ im_dynfield::set_local_form_vars_from_http -form_id $form_id
 
 array set extra_sql_array [im_dynfield::search_sql_criteria_from_form -form_id $form_id -object_type $object_type]
 
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+
+set action_list [list]
+set bulk_action_list [list]
+
+lappend action_list [lang::message::lookup "" intranet-riskmanagement.Add_new_risk "Add a new Risk"]
+lappend action_list [export_vars -base "/intranet-riskmanagement/new" {return_url risk_project_id}]
+lappend action_list [lang::message::lookup "" intranet-riskmanagement.Add_new_risk "Add a new Risk"]
+
+lappend bulk_action_list "[lang::message::lookup "" intranet-riskmanagement.Delete_Risk "Delete Risk"]" "[export_vars -base "/intranet-riskmanagement/delete" {return_url}]" "[lang::message::lookup "" intranet-riskmanagement.Delete_Risk "Delete Risk"]"
+
+list::create \
+    -name risks \
+    -multirow risks_multirow \
+    -key risk_id \
+    -row_pretty_plural "Risks" \
+    -checkbox_name checkbox \
+    -selected_format "normal" \
+    -class "list" \
+    -main_class "list" \
+    -sub_class "narrow" \
+    -actions $action_list \
+    -bulk_actions $bulk_action_list \
+    -elements {
+        risk_name {
+            label {Risk Name}
+            link_url_eval $risk_url
+        }
+        risk_type {
+            display_col risk_type
+            label "Risk Type"
+        }        
+    } -filters {
+    } -groupby {
+    }
+
+# ----------------------------------------------------
+# Create a "multirow" for risks
+
+set criteria {}
+if {"" != $risk_project_id} {
+    lappend criteria "r.risk_project_id = :risk_project_id"
+}
+if {"" != $risk_ids} {
+    im_security_alert_check_integer -location "intranet-riskmanagement/index" -value $risk_ids
+    lappend criteria "r.risk_id in ([join $risk_ids ","])"
+}
+
+set where_clause [join $criteria "\n\t\t"]
+if {{} != $criteria} { set where_clause "and \n\t\t$where_clause" }
+
+
+db_multirow -extend { risk_url } risks_multirow risks_select "
+	select	*,
+		im_category_from_id(r.risk_type_id) as risk_type,
+		im_category_from_id(r.risk_status_id) as risk_status
+	from	im_risks r
+	where	1=1
+		$where_clause
+" {
+    set risk_url [export_vars -base "/intranet-riskmanagement/new" {risk_id return_url {form_mode display}}]
+}
+
+
+# ---------------------------------------------------------------
+# Admin Links
+# ---------------------------------------------------------------
+
+set admin_html "<ul>"
+
+if {$object_write} {
+    append admin_html "<li><a href=\"/intranet-riskmanagement/new\">[_ intranet-riskmanagement.Add_a_new_risk]</a>\n"
+}
 
 # ---------------------------------------------------------------
 # Navbars

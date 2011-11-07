@@ -1,9 +1,11 @@
 
-@risk_widget_html;noquote@
-<table>
+@risk_chart_html;noquote@
+
+<form action="/intranet-riskmanagement/action" method=GET>
+<%= [export_form_vars return_url] %>
+<table width="100%">
 @table_header_html;noquote@
 @table_body_html;noquote@
+@table_footer_html;noquote@
 </table>
-<ul>
-<li><a href="/intranet-riskmanagement/new">New Riks</a>
-</ul>
+</form>

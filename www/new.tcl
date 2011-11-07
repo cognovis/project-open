@@ -205,28 +205,6 @@ if {"delete" == $button_pressed} {
     ad_returnredirect $return_url
 }
 
-
-# ------------------------------------------------------------------
-# Redirect if risk_type_id is missing
-# ------------------------------------------------------------------
-
-if {"edit" == $form_mode} {
-
-    set redirect_p 0
-    # redirect if risk_type_id is not defined
-    if {("" == $risk_type_id || 0 == $risk_type_id) && ![exists_and_not_null risk_id]} {
-	set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_risk"]
-	set all_same_p 0
-	if {!$all_same_p} { set redirect_p 1 }
-    }
-
-    if {$redirect_p} {
-	ad_returnredirect [export_vars -base "new-typeselect" {{return_url $current_url} risk_id risk_type_id risk_name risk_project_id}]
-    }
-
-}
-
-
 # ------------------------------------------------------------------
 # 
 # ------------------------------------------------------------------
