@@ -35,6 +35,9 @@ update acs_object_types set
 	type_column = 'risk_type_id'		-- which column contains the type_id field?
 where object_type = 'im_risk';
 
+-- Tell the metadata system where to find the type of risks.
+update acs_object_types set type_category_type = 'Intranet Risk Type' where object_type = 'im_risk';
+
 -- Object Type Tables contain the lists of all tables (except for
 -- acs_objects...) that contain information about an im_risk object.
 insert into acs_object_type_tables (object_type,table_name,id_column)
@@ -105,6 +108,14 @@ create index im_risks_project_idx on im_risks(risk_project_id);
 -- Don't allow two risks with the same name in the same project.
 create unique index im_risks_project_un on im_risks(risk_project_id, risk_name);
 
+
+
+-----------------------------------------------------------
+-- Standard Dynfields for Risks
+-----------------------------------------------------------
+
+SELECT im_dynfield_attribute_new ('im_risk', 'risk_probability_percent', 'Probability (%)', 'numeric', 'float', 'f');
+SELECT im_dynfield_attribute_new ('im_risk', 'risk_impact', 'Impact (default currency)', 'numeric', 'float', 'f');
 
 -----------------------------------------------------------
 -- PL/SQL functions to Create and Delete risks and to get
@@ -201,8 +212,9 @@ end;$body$ language 'plpgsql';
 -- Categories for Type and Status
 --
 -- 75000-75999  Intranet Risk Management (1000)
--- 75000-75099  Intranet Risk Status
--- 75100-75199  Intranet Risk Type
+-- 75000-75099  Intranet Risk Status (100)
+-- 75100-75199  Intranet Risk Type (100)
+-- 75200-75299	Intranet Risk Action (100)
 
 -- Status
 SELECT im_category_new (75000, 'Active', 'Intranet Risk Status');
@@ -210,6 +222,9 @@ SELECT im_category_new (75002, 'Deleted', 'Intranet Risk Status');
 
 -- Type
 SELECT im_category_new (75100, 'Default', 'Intranet Risk Type');
+
+-- Action
+SELECT im_category_new (75210, 'Delete', 'Intranet Risk Action');
 
 
 -----------------------------------------------------------
