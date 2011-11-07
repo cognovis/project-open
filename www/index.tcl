@@ -95,7 +95,7 @@ db_multirow -extend { risk_url } risks_multirow risks_select "
 	where	1=1
 		$risk_project_sql
 " {
-    set risk_url [export_vars -base "/intranet-riskmanagement/new" {risk_id return_url}]
+    set risk_url [export_vars -base "/intranet-riskmanagement/new" {risk_id return_url {form_mode display}}]
 }
 
 

@@ -256,3 +256,48 @@ update im_component_plugins
 set title_tcl = 'lang::message::lookup "" intranet-riskmanagement.Project_Risks "Project Risks"'
 where plugin_name = 'Project Risks';
 
+
+
+-----------------------------------------------------------
+-- Risk View Columns
+-----------------------------------------------------------
+
+-- 210-219              Riskmanagement
+
+delete from im_view_columns where view_id = 210;
+delete from im_views where view_id = 210;
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (210, 'im_risk_list_short', 'view_risks', 1400);
+
+
+-- Add a "select all" checkbox to select all risks in the list
+delete from im_view_columns where column_id = 21099;
+insert into im_view_columns (
+        column_id, view_id, sort_order,
+	column_name,
+	column_render_tcl,
+        visible_for
+) values (
+        21000, 210, 0,
+        '<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''risk'',this.checked)">',
+        '"<input type=checkbox name=risk_id.$risk_id id=risk.$risk_id>"',
+        ''
+);
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21010, 210, 10, 'Name', '"<a href=/intranet-riskmanagement/new?form_mode=display&risk_id_id=$risk_id>$risk_name</a>\
+<a href=/intranet-helpdesk/new?form_mode=edit&risk_id=$risk_id>[im_gif wrench]</a>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21030,210,30,'Type','$risk_type');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21040,210,40,'Status','$risk_status');
+
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21070,210,70,'Impact','$risk_impact');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21080,210,80,'Percent','$risk_probability_percent');
+
