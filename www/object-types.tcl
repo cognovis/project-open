@@ -77,7 +77,7 @@ db_multirow -extend { object_attributes_url } object_types select_object_types {
 			'im_freelance_rfq', 'im_freelance_rfq_answer',
 			'im_conf_item', 'im_cost_center', 'im_note', 'im_user_absence',
 			'im_invoice', 'im_expense', 'im_expense_bundle',
-			'im_material', 'im_timesheet_task',
+			'im_material', 'im_risk', 'im_timesheet_task',
 			'im_sla_parameter'
 		)
 	order by
