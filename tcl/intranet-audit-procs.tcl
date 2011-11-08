@@ -512,7 +512,7 @@ ad_proc -public im_audit_object_rels {
     db_release_unused_handles
 
     if {![info exists col_names]} {
-	ns_log Error "im_audit_object_value: For some reason we didn't find any record matching sql=$sql"
+	ns_log Error "im_audit_object_rels: For some reason we didn't find any record matching sql=$sql"
 	return ""
     }
 
