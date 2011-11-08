@@ -1,6 +1,12 @@
 
 # Variables from page:
+#
 # project_id
+# risk_status_id
+# risk_type_id
+# start_date
+# end_date
+# risk_ids
 
 if {![info exists view_name] || "" == $view_name} { set view_name "im_risk_list_short" }
 set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
@@ -20,7 +26,7 @@ set project_budget [db_string budget "
 	select	project_budget
 	from	im_projects
 	where	project_id = :project_id
-" -default ""]
+" -default 0]
 
 # Classifiers for impact and probability.
 # Each classified starts with 0 and ends at "ininite"
@@ -127,12 +133,24 @@ set table_header_html "<tr class=rowtitle>$table_header_html</tr>\n"
 # and format the risk chart
 # ---------------------------------------------------------
 
+set criteria {}
+if {[info exists project_id] && "" != $project_id && 0 != $project_id} { lappend criteria "r.risk_project_id = :project_id" }
+if {[info exists risk_status_id] && "" != $risk_status_id && 0 != $risk_status_id} { lappend criteria "r.risk_status_id = :risk_status_id" }
+if {[info exists risk_type_id] && "" != $risk_type_id && 0 != $risk_type_id} { lappend criteria "r.risk_type_id = :risk_type_id" }
+if {[info exists start_date] && "" != $start_date && 0 != $start_date} { lappend criteria "o.creation_date >= :start_date" }
+if {[info exists end_date] && "" != $end_date && 0 != $end_date} { lappend criteria "o.creation_date <= :end_date" }
+if {[info exists risk_ids] && "" != $risk_ids && 0 != $risk_ids} { lappend criteria "r.risk_id in ([join $risk_ids ","])" }
+set where_clause [join $criteria " and\n\t\t"]
+if {[llength $criteria] > 0} { set where_clause "and $where_clause" }
+
 set risk_sql "
 	select	r.*,
 		im_category_from_id(r.risk_type_id) as risk_type,
 		im_category_from_id(r.risk_status_id) as risk_status
-	from	im_risks r
-	where	risk_project_id = :project_id
+	from	im_risks r,
+		acs_objects o
+	where	r.risk_id = o.object_id 
+		$where_clause
 	order by risk_probability_percent * risk_impact DESC;
 "
 
@@ -197,7 +215,7 @@ for {set y [expr [llength $impact_classifier]-2]} {$y >= 0} {incr y -1} {
 	set v_ids {}
 	if {[info exists chart_ids_hash($key)]} { set v_ids $chart_ids_hash($key) }
 	set color [im_risk_chart_bg_color -x $x -y $y -max [llength $probab_classifier]]
-	set v_url [export_vars -base "/intranet-riskmanagement/index" {return_url {risk_ids $v_ids}}]
+	set v_url [export_vars -base "/intranet-riskmanagement/index" {return_url {risk_project_id $project_id} {risk_ids $v_ids}}]
 	append risk_chart_line "<td align=center bgcolor=$color width=$cell_width><a href='$v_url'>$v</a></td>\n"
     }
     append risk_chart_line "</tr>\n"
@@ -215,6 +233,9 @@ if {"" == $project_budget || 0 == $project_budget} {
     "
 }
 
+if {"" == $project_id} {
+    set risk_chart_html ""
+}
 
 # ---------------------------------------------------------
 # Table footer
