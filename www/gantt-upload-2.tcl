@@ -124,7 +124,7 @@ if {[catch {
 }
 
 # -------------------------------------------------------------------
-# Save the new Tasks from GanttProject
+# Parse the MS-Project/GanttProject XML
 # -------------------------------------------------------------------
 
 set doc ""
@@ -152,16 +152,16 @@ if {[string equal [$root_node nodeName] "Project"]
 ns_log Notice "gantt-upload-2: format=$format"
 
 
+# -------------------------------------------------------------------
 # Save the tasks.
-# The task_hash contains a mapping table from gantt_project_ids
-# to task_ids.
+# The task_hash contains a mapping table from gantt_project_ids to task_ids.
+# -------------------------------------------------------------------
 
-#ns_write "<h2>Pass 1: Saving Tasks</h2>\n"
+if {$debug_p} { ns_write "<h2>Pass 1: Saving Tasks</h2>\n" }
 set task_hash_array [list]
 
 
 if {[catch {
-
     set task_hash_array [im_gp_save_tasks \
 			     -format $format \
 			     -create_tasks 1 \
@@ -173,12 +173,13 @@ if {[catch {
 			    ]
     array set task_hash $task_hash_array
 
-    set debug ""
-    foreach k [lsort [array names task_hash]] { append debug "$k	$task_hash($k)\n" }
-#    ad_return_complaint 1 "<pre>$debug</pre>"
+    if {$debug_p} {
+	set debug_html ""
+	foreach k [lsort [array names task_hash]] { append debug_html "$k	$task_hash($k)\n" }
+	ad_return_complaint 1 "<pre>$debug_html</pre>"
+    }
 
-     
-    #ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
+    if {$debug_p} { ns_write "<h2>Pass 2: Saving Dependencies</h2>\n" }
     set task_hash_array [im_gp_save_tasks \
 			     -format $format \
 			     -create_tasks 0 \
@@ -190,8 +191,8 @@ if {[catch {
 			    ]
 
     ns_log Notice "Pass3: Make sure that tasks with sub-tasks become im_project"
+    if {$debug_p} { ns_write "<h2>Pass 3: Make sure that tasks with sub-tasks become im_project</h2>\n" }
     im_gp_save_tasks_fix_structure $project_id
-
 
 } err_msg]} {
     
@@ -254,18 +255,16 @@ if {[catch {
 
 if {[set node [$root_node selectNodes /project/description]] != ""} {
     set description [$node text]
-
     db_dml project_update "
-	    update im_projects set
-              description = :description
-	    where
-		project_id = :project_id
+	update im_projects 
+	set description = :description
+	where project_id = :project_id
     "
 }
 
+
 # -------------------------------------------------------------------
 # Process Resources
-# <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
 if {[set resource_node [$root_node selectNodes /project/resources]] == ""} {
@@ -283,6 +282,7 @@ if {$resource_node != ""} {
 
 }
 
+# Prepare to write out a useful error message if we didn't find a resource.
 set resources_to_assign_p 0
 set resource_html ""
 foreach rid [array names resource_hash] {
@@ -295,6 +295,7 @@ foreach rid [array names resource_hash] {
     append resource_html "$v\n"
 }
 
+
 # -------------------------------------------------------------------
 # Process Allocations
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
@@ -305,9 +306,10 @@ if {[set allocations_node [$root_node selectNodes /project/allocations]] == ""} 
 }
 
 if {$allocations_node != ""} {
-
-    #ns_write "<h2>Saving Allocations</h2>\n"
-    #ns_write "<ul>\n"
+    if {$debug_p} {
+	ns_write "<h2>Saving Allocations</h2>\n"
+	ns_write "<ul>\n"
+    }
 
     im_gp_save_allocations \
 	-debug_p $debug_p \
@@ -315,7 +317,7 @@ if {$allocations_node != ""} {
 	$task_hash_array \
         $resource_hash_array
     
-    #ns_write "</ul>\n"
+    if {$debug_p} { ns_write "</ul>\n" }
 }
 
 # -------------------------------------------------------------------
@@ -324,7 +326,6 @@ if {$allocations_node != ""} {
 
 # Get all the tasks about the current project
 array set db_task_ids {} 
-
 foreach i [im_gp_extract_db_tree $project_id] {
     set db_task_ids($i) 1
 }
@@ -360,7 +361,6 @@ if {!$tasks_to_delete_p && !$resources_to_assign_p} {
 }
 
 
-
 # -------------------------------------------------------------------
 # Create task reassignation screen
 # -------------------------------------------------------------------
@@ -385,14 +385,11 @@ db_foreach reassign_tasks "
 
 lappend ids 0
 db_multirow delete_tasks delete_tasks "
-  SELECT
-    project_id as task_id,
-    project_name,
-    project_nr
-  FROM
-    im_projects
-  WHERE 
-    project_id IN ([join $ids ,])
+	SELECT	project_id as task_id,
+		project_name,
+		project_nr
+	FROM	im_projects
+	WHERE 	project_id IN ([join $ids ,])
 "
 
 template::list::create \
@@ -419,12 +416,8 @@ template::list::create \
 	}
     }
 
-
-
 # Write audit trail
 im_project_audit -project_id $project_id
-
-
 
 
 # ---------------------------------------------------------------------
