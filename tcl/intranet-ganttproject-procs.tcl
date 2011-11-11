@@ -7,7 +7,11 @@
 
 ad_library {
     Integrate ]project-open[ tasks and resource assignations
-    with GanttProject and its data structure
+    with GanttProject, MS-Project and OpenProj.
+
+    This library contains helper procedures for the 
+    /intranet-ganttproject/www/gantt-upload-2.tcl
+    file. Go there for an overview of functionality.
 
     @author frank.bergmann@project-open.com
 }
@@ -1153,6 +1157,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 
 ad_proc -public im_gp_save_allocations { 
     {-debug_p 0}
+    {-main_project_id 0}
     allocations_node
     task_hash_array
     resource_hash_array
@@ -1164,10 +1169,32 @@ ad_proc -public im_gp_save_allocations {
     array set task_hash $task_hash_array
     array set resource_hash $resource_hash_array
 
+
+    # Reset the allocation of the entire project to "NULL percent":
+    # We don't want to completely remove users from assigned tasks 
+    # (otherwise they might not be able to access their logged 
+    # hours anymore), but we want to reset their assignment %
+    # to "" (NULL).
+    set reset_allocation_sql "
+	select	r.rel_id
+	from	im_projects parent,
+		im_projects child,
+		acs_rels r,
+		im_biz_object_members bom
+	where	parent.project_id = :main_project_id and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+		child.project_id = r.object_id_one and
+		r.rel_id = bom.rel_id
+    "
+    db_foreach reset_allocations $reset_allocation_sql {
+	ns_log Notice "im_gp_save_allocations: Reset percentag of rel_id=$rel_id"
+	db_dml reset "update im_biz_object_members set percentage = NULL where rel_id = :rel_id"
+    }
+
     foreach child [$allocations_node childNodes] {
 	ns_log Notice "im_gp_save_allocations: nodeName=[$child nodeName]"
-	switch [$child nodeName] {
-	    "allocation" - "Assignment" {
+	switch [string tolower [$child nodeName]] {
+	    "allocation" - "assignment" {
 		
 		# Check for GanttProject specific format
 		set task_id [$child getAttribute task-id ""]
@@ -1206,8 +1233,11 @@ ad_proc -public im_gp_save_allocations {
 		    continue 
 		}
 
+		# What is the role of the resource in the project?
+		# OpenProj contains this information while MS-Project don't.
 		set role_id [im_biz_object_role_full_member]
 		if {[string equal "Default:1" $function]} { 
+		    # We found an OpenProj project manager.
 		    set role_id [im_biz_object_role_project_manager]
 		}
 
