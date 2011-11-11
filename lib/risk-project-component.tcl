@@ -1,4 +1,5 @@
-
+# /intranet-riskmanagement/lib/risk-project-component.tcl
+#
 # Variables from page:
 #
 # project_id
@@ -35,7 +36,11 @@ set probab_classifier [list 0 5 10 20 30 100]
 
 set probab_classifier_values $probab_classifier
 set impact_classifier_values {}
-foreach i $impact_classifier { lappend impact_classifier_values [expr 1.0 * $project_budget * $i / 100.0] }
+foreach i $impact_classifier { 
+    catch {
+	lappend impact_classifier_values [expr 1.0 * $project_budget * $i / 100.0] 
+    }
+}
 
 
 
