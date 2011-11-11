@@ -103,8 +103,6 @@ if {![info exists xml_elements] || [llength $xml_elements] == 0} {
     set xml_elements {Name Title Manager ScheduleFromStart StartDate FinishDate}
 }
 
-ad_return_complaint 1 $xml_elements
-
 foreach element $xml_elements { 
     set append_p 1
     switch $element {

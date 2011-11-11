@@ -313,6 +313,7 @@ if {$allocations_node != ""} {
 
     im_gp_save_allocations \
 	-debug_p $debug_p \
+	-main_project_id $project_id \
 	$allocations_node \
 	$task_hash_array \
         $resource_hash_array
