@@ -149,7 +149,7 @@ set left_navbar_html "
 
 set table_header_html "<tr><td class=rowtitle>Projekt</td><td class=rowtitle>Mitarbeiter</td>"
 set inner_sql_list [list]
-# set duration 2
+# set duration 3
 
 for { set i 1 } { $i < $duration + 1 } { incr i } {
     if { 1 == [string length $i]} { 
@@ -167,7 +167,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 			im_projects children
 		where
 			children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-			and parent.project_id = h.project_id
+			-- and parent.project_id = h.project_id
 			and parent.project_id = p.project_id
 			)
             and h.day like '%$report_year-$report_month-$day_double_digit%') as h$report_year$report_month$day_double_digit
@@ -202,9 +202,6 @@ set sql "
 		and p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
 		and p.project_status_id IN ([im_project_status_open])
 		and p.project_lead_id = $current_user_id
-		--  and r.object_id_two in (
-			-- select distinct user_id from im_hours where day like '%$report_year-$report_month-%'
-		-- )
 	order by 
 		project_name
 "
