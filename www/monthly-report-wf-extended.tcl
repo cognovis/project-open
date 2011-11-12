@@ -106,19 +106,19 @@ set filter_form_html "
 	<form method=get action='$return_url' name=filter_form>
 	<table border=0 cellpadding=0 cellspacing=0>
                 <tr>
-                  <td class=form-label>Month</td>
+                  <td class=form-label> [lang::message::lookup "" intranet-timesheet2.Month "Month"]</td>
                   <td class=form-widget>
                     <input type=textfield name='report_year_month' value='$report_year_month'>
                   </td>
                 </tr>
                 <tr>
-                  <td class=form-label>User</td>
+                  <td class=form-label> [lang::message::lookup "" intranet-core.User "User"]</td>
                   <td class=form-widget>
                     [im_user_select -include_empty_p 1 owner_id $owner_id]
                   </td>
                 </tr>
                 <tr>
-                  <td class=form-label>Project</td>
+                  <td class=form-label> [lang::message::lookup "" intranet-timesheet2.Project "Project"]</td>
                   <td class=form-widget>
                     [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id]
                   </td>
@@ -147,7 +147,7 @@ set left_navbar_html "
 # Get Column Header & Data 
 # ---------------------------------------------------------------
 
-set table_header_html "<tr><td class=rowtitle>Projekt</td><td class=rowtitle>Mitarbeiter</td>"
+set table_header_html "<tr><td class=rowtitle> [lang::message::lookup "" intranet-timesheet2.Project "Project"]</td><td class=rowtitle> [lang::message::lookup "" intranet-core.Employee "Employee"]</td>"
 set inner_sql_list [list]
 # set duration 3
 
