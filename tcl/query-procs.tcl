@@ -5,7 +5,7 @@ ad_library {
     @creation-date 29 September 2000
     @author Karl Goldstein (karlg@arsdigita.com)
             Stanislav Freidin (sfreidin@arsdigita.com)
-    @cvs-id $Id: query-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
+    @cvs-id $Id$
 
 }
 
@@ -18,7 +18,7 @@ namespace eval template::query {}
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
-# $Id: query-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -932,7 +932,6 @@ ad_proc -public template::multirow {
         } 
 
         # Construct list of (rownum,columns appended with a space)
-
         # Allow for -ascii, -dictionary, -integer, -real, -command <command>, -increasing, -decreasing, unique switches
 
         set sort_args {}
@@ -957,26 +956,27 @@ ad_proc -public template::multirow {
         }
 
         set sort_cols [lrange $args $i end]
-            
         set sort_list [list]
         
         for { set i 1 } { $i <= $rowcount } { incr i } {
             upvar $multirow_level_up $name:$i row
-
             # Make a copy of the row
             array set copy:$i [array get row]
-
             # Contruct the list
             set sortby {}
             foreach col $sort_cols {
-                append sortby $row($col) " "
+		if {[info exists row($col)]} {
+		    set r $row($col)
+		} else {
+		    set r 0
+		}
+
+                append sortby $r " "
             }
-            
             lappend sort_list [list $i $sortby]
         }
 
         set sort_list [eval lsort $sort_args -index 1 [list $sort_list]]
-
         
         # Now we have a list with two elms, (rownum, sort-by-value), sorted by sort-by-value
         # Rearrange multirow to match the sort order
@@ -985,13 +985,10 @@ ad_proc -public template::multirow {
         foreach elm $sort_list {
             incr i
             upvar $multirow_level_up $name:$i row
-
             # which rownum in the original list should fill this space in the sorted multirow?
             set org_rownum [lindex $elm 0]
-
             # Replace the row in the multirow with the row from the copy with the rownum according to the sort
             array set row [array get copy:$org_rownum]
-
             # Replace the 'rownum' column
             set row(rownum) $i
         }
