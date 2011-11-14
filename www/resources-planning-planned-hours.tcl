@@ -58,7 +58,6 @@ set page_title "Resource Planning based on Planned Hours"
 set page_url "/intranet-resource-management/resources-planning-planned-hours.tcl"
 set sub_navbar ""
 set main_navbar_label "reporting"
-set show_context_help_p 0
 
 regsub -all {%20} $top_vars " " top_vars
 regsub -all {\+} $top_vars " " top_vars
