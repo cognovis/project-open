@@ -9,13 +9,13 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-resource-management</auto-mount>
 
-    <version name="4.0.1.0.1" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.1.0.1.apm">
+    <version name="4.0.1.0.2" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.1.0.2.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Resource Management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Contains a fast and flexible report summarizing most resource assignments to projects, timesheet tasks and translation tasks.</description>
 
-        <provides url="intranet-resource-management" version="4.0.1.0.1"/>
+        <provides url="intranet-resource-management" version="4.0.1.0.2"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-timesheet2" version="3.4.0.0.0"/>
 	<requires url="intranet-translation" version="3.4.0.0.0"/>
@@ -24,7 +24,8 @@
         </callbacks>
 
         <parameters>
-
+		<parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultCostCenterId"  default="525" description="To which department an employee should be assigned, when there's no assigment in /intranet/users/view?user_id=???. Default is id of Cost Center 'The company'"/>
+                <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="RestrictToUserDepartmentByDefaultP"  default="0" description="Restrict results to department the current user is a member of? Default is '0'."/>
         </parameters>
 
     </version>
