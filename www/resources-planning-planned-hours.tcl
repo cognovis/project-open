@@ -64,6 +64,7 @@ regsub -all {%20} $top_vars " " top_vars
 regsub -all {\+} $top_vars " " top_vars
 
 set restrict_to_user_department_by_default_p [parameter::get_from_package_key -package_key "intranet-resource-management" -parameter RestrictToUserDepartmentByDefaultP -default 0]
+set show_context_help_p 1
 
 # ------------------------------------------------------------
 # Start and End-Dat as min/max of selected projects.
