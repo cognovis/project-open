@@ -186,6 +186,16 @@ ad_proc -public -callback im_projects_index_filter -impl intranet-openoffice-spr
     }
 }
 
+ad_proc -public -callback im_companies_index_filter -impl intranet-openoffice-spreadsheet {
+    {-form_id:required}
+} {
+    Add the filter for the view_type
+} {
+    uplevel {
+        set view_type_options [concat $view_type_options [list [list Excel xls]] [list [list Openoffice ods]] [list [list PDF pdf]]]
+    }
+}
+
 ad_proc -public -callback im_timesheet_tasks_index_filter -impl intranet-openoffice-spreadsheet {
     {-form_id:required}
 } {
@@ -198,6 +208,23 @@ ad_proc -public -callback im_timesheet_tasks_index_filter -impl intranet-openoff
 
 
 ad_proc -public -callback im_projects_index_before_render -impl intranet-openoffice-spreadsheet {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+    {-variable_set ""}
+} {
+    Depending on the view_type return a spreadsheet in Excel / Openoffice or PDF
+} {
+ 
+    # Only execute for view types which are supported
+    if {[lsearch [list xls pdf ods] $view_type] > -1} {
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "projects.$view_type" -table_name "$table_header" -variable_set $variable_set
+        ad_script_abort
+    }
+}
+
+ad_proc -public -callback im_companies_index_before_render -impl intranet-openoffice-spreadsheet {
     {-view_name:required}
     {-view_type:required}
     {-sql:required}

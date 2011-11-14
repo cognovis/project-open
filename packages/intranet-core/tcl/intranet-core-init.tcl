@@ -461,6 +461,34 @@ ad_proc -public -callback im_projects_index_filter {
     @param form_id ID of the form to which we want to append filter elements
 } - 
 
+ad_proc -public -callback im_companies_index_filter {
+    {-form_id:required}
+} {
+    This callback is executed after we generated the filter ad_form
+    
+    This allows you to extend in the uplevel the form with any additional filters you might want to add.
+
+    @param form_id ID of the form to which we want to append filter elements
+} - 
+
+ad_proc -public -callback im_companies_index_before_render {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+    {-variable_set ""}
+} {
+    This callback is executed before /companies/index is rendered / the sql command actually executed.
+
+    The callback implementation needs to run ad_script_abort in the uplevel, so you don't execute the SQL statement and try to render the component.
+
+    @param view_name view_name used to render the columns.
+    @param view_type The view_type. This can be anything, empty string usually means you want to render the component
+    @param sql The SQL string which im_timesheet_task_list_component prepares
+    @param table_header Name of the table in the spreadsheet (e.g. in Excel).
+    @param variable_set A set of variables to pass through
+} -
+
 ad_proc -public -callback im_timesheet_tasks_index_filter {
     {-form_id:required}
 } {

@@ -37,6 +37,7 @@ ad_page_contract {
     { view_type "all" }
     { letter:trim "all" }
     { view_name "company_list" }
+    { view_type "" }
     { user_id_from_search:integer 0}
     { filter_advanced_p:integer 0 }
 }
@@ -168,6 +169,15 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -object_type "im_company"
 			  ]
 
+# List to store the view_type_options
+set view_type_options [list [list Tabelle ""]]
+
+# Run callback to extend the filter and/or add items to the view_type_options
+callback im_companies_index_filter -form_id $form_id
+
+ad_form -extend -name $form_id -form {
+    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options $view_type_options}}
+}
 
 # ---------------------------------------------------------------
 # 3. Define Table Columns
@@ -422,6 +432,8 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 
+callback im_projects_index_before_render -view_name $view_name \
+    -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach company_info_query $selection -bind $form_vars {
 
