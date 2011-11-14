@@ -1,4 +1,4 @@
-c# /packages/intranet-cust-koernigweber/tcl/intranet-cust-koernigweber-procs.tcl
+# /packages/intranet-cust-koernigweber/tcl/intranet-cust-koernigweber-procs.tcl
 #
 # Copyright (C) 1998-2011 
 
@@ -45,8 +45,9 @@ ad_proc find_sales_price {
 		where 
 			user_id = $user_id 
 			and object_id = $project_id
-			-- and project_type_id = $project_type_id
+			and project_type_id = $project_type_id
     	"
+
 	set amount_sales_price [db_string get_data $sql -default 0]
     } 	
 
@@ -60,7 +61,7 @@ ad_proc find_sales_price {
         ns_log NOTICE "KHD: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
 	        ns_log NOTICE "KHD: No parent project found, now looking for price defined on customer level:"
-		# This is the super project, if no price is found, lets check if a price is defined on the company level 
+		# This is the super project, if no price is found, lets check if a price is defined on the user level 
 		set sql "
 		        select
 		        	amount
@@ -68,7 +69,7 @@ ad_proc find_sales_price {
 	                	im_customer_prices
 		        where
         	        	user_id = $user_id
-			        and object_id = $company_id
+			        and object_id = $user_id
                 		and project_type_id in (select project_type_id from im_projects where project_id = $project_id)
     		"
 	    	set sales_price [db_string get_data $sql -default 0]
