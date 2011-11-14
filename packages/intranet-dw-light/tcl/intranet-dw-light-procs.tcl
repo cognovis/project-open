@@ -152,7 +152,7 @@ ad_proc im_companies_csv1 {
     set lol [im_dynfield::append_attributes_to_im_view -object_type "im_company"]
     set column_headers [concat $column_headers [lindex $lol 0]]
     set column_vars [concat $column_vars [lindex $lol 1]]
-
+    set derefs 	[lindex $lol 2]
 
     # ---------------------------------------------------------------
     # Ket's generate the sql query
@@ -193,6 +193,7 @@ ad_proc im_companies_csv1 {
     set sql "
 	select
 		c.*,
+		[join $derefs "\n"]
 		c.note as company_note,
 		o.*,
 		c.primary_contact_id as company_contact_id,
