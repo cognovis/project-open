@@ -454,7 +454,7 @@ set project_allocations_sql "
 set assignment_ctr 0
 db_foreach project_allocations $project_allocations_sql {
 
-    ns_log Notice "microsoft-project: xml_uid=$xml_uid"
+    ns_log Notice "microsoft-project: allocactions: xml_uid=$xml_uid"
     if {"" == $percentage_assigned} {
 	# Don't export empty assignments.
 	# These assignments are created by assignments of
@@ -466,8 +466,11 @@ db_foreach project_allocations $project_allocations_sql {
     # The sum of assigned work overrides the task work in MS-Project,
     # so we divide the task work evenly across the assigned resources.
     set planned_seconds [expr $planned_units * 3600]
-    set work_seconds [expr $planned_seconds / ($total_percentage_assigned / 100.0)]
+    set work_seconds [expr $planned_seconds * $percentage_assigned / $total_percentage_assigned]
     set work_ms [im_gp_seconds_to_ms_project_time $work_seconds]
+
+    ns_log Notice "microsoft-project: allocactions: uid=$assignment_ctr, task_id=$task_id, tot=$total_percentage_assigned, assig=$percentage_assigned"
+
 
     $allocations_node appendXML "
 	<Assignment>
