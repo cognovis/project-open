@@ -692,8 +692,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     set clicks([clock clicks -milliseconds]) trans_tasks
 
-
-
     # ------------------------------------------------------------------
     # Calculate the hierarchy.
     # We have to go through all main-projects that have children with
@@ -759,16 +757,37 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set hierarchy_row {}
 	set level $tree_level
 	set pid $project_id
-	while {$level >= 0} {
-	    lappend hierarchy_row $pid
 
-	    if { [info exists parent_hash($pid)] } {
-		set pid $parent_hash($pid)
-	    } else {
-		ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
-	    }
-	    incr level -1
-	}
+        while {$level >= 0} {
+            lappend hierarchy_row $pid
+            if { ![info exists parent_hash($pid)] } {
+               # Fallback - can we get parent_id from tree_sortkey?
+               set sql "
+                        select
+                                parent.project_id
+                        from
+                                im_projects parent,
+                                im_projects child
+                        where   child.project_id = :pid and
+                                tree_ancestor_key(child.tree_sortkey, tree_level(child.tree_sortkey)-1) = parent.tree_sortkey
+                "
+	       set parent_id [db_string get_data $sql -default 0]
+
+	       if { "0" == $parent_id || "" == $parent_id }  {
+                   set project_id_list "<br>"
+                   set sql "select project_id as problem_project_id from im_projects where parent_id = $pid"
+                   db_foreach problem_project_id $sql {
+                        append project_id_list "<a href='/intranet/projects/view?project_id=$problem_project_id'>$problem_project_id</a><br>"
+                   }
+                   ad_return_complaint 1 "We have found an invalid/non existing parent project (id=$pid) for the following projects/tasks id(s):<br>$project_id_list <br>"
+	       } else {
+                  set pid $parent_id
+	       }
+	   } else {
+              set pid $parent_hash($pid)
+	   }
+            incr level -1
+        }
 
 	# append the line to the list of sub-projects of the current main-project
 	set project_path [f::reverse $hierarchy_row]
