@@ -9,8 +9,8 @@
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 <br>
 <h1><%=[lang::message::lookup "" intranet-reporting.ListOfCurrentProjectTasks "List of Current Project Tasks"]%></h1> 
-
-This report lists time sheet tasks for projects of type "Consulting" (including sub-types). 
+<p>
+<%=[lang::message::lookup "" intranet-reporting.ListOfCurrentProjectTasksIntro "This report lists time sheet tasks for projects of type "Consulting" (including sub-types)."]%>
+</p>
 <br><br><br>
-
 @component_html;noquote@
