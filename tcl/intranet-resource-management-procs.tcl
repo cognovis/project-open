@@ -1828,10 +1828,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
 					if { 0 == $hours_availability_user } {
 					    set bar_value 0
 					} else {
-					    set bar_value [format "%0.2f" [expr 100*$acc_hours/$hours_availability_user]]
+					    set bar_value [expr 100*$acc_hours/$hours_availability_user]
 					}
 					set bar_color [im_resource_mgmt_get_bar_color "gradient" $bar_value]
-					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color "${acc_hours}[lang::message::lookup "" intranet-resource-management.HoursAbrv "h"]" "" 1]
+					append cell_html [im_resource_mgmt_resource_planning_cell "custom" $bar_value $bar_color "[format "%0.2f" $acc_hours][lang::message::lookup "" intranet-resource-management.HoursAbrv "h"]" "" 1]
 					set cell_flag 1
 				    }  
 				    # Create bar in case an absence is found 
