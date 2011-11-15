@@ -51,19 +51,18 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	selModel:	ticketGridSelModel,
 
 	listeners:	{
-	itemdblclick: function(view, record, item, index, e) {
-
-		// Open the ticket in a separate tab
-		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-		compoundPanel.loadTicket(record);
-		var title = record.get('project_name');
-		compoundPanel.tab.setText(title);
-		compoundPanel.tab.show();
-	
-		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		mainTabPanel.setActiveTab(compoundPanel);
-		Ext.getCmp('ticketActionBar').checkButtons(record);
-	}
+		itemdblclick: function(view, record, item, index, e) {
+			// Open the ticket in a separate tab
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+			compoundPanel.loadTicket(record);
+			var title = record.get('project_name');
+			compoundPanel.tab.setText(title);
+			compoundPanel.tab.show();
+		
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);
+			Ext.getCmp('ticketActionBar').checkButtons(record);
+		}
 	},
 
 	initComponent: function(){
@@ -304,6 +303,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					key = 'query';
 					value = query;
 					break;
+				case 'ticket_file':
+					value = value.toLowerCase();
+					query = query + ' and lower(ticket_file) like \'%' + value + '%\'';
+					key = 'query';
+					value = query;
+					break;					
 				case 'start_date':
 					// I can't get the proxy to quote (') the date, so we do it manually here:
 					var	year = '' + value.getFullYear(),

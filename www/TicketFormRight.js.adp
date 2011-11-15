@@ -215,7 +215,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							success: function(response) {		// response is the current date-time
 								var doneField = this.findField('ticket_done_date');
 								doneField.setValue(response.responseText);
-								doneField.setDisabled(false);
+								//doneField.setDisabled(false);
 							}
 						});
 
@@ -262,7 +262,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			frame:		false,
 			flex: 2,
 		//	width:		800,
-			layout: 	{ type: 'table', columns: 2 },
+			layout: 	{ type: 'table', columns: 3 },
 			defaults: {	
 				margin: '5 10 0 0',
 				listeners: {
@@ -292,8 +292,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 					// by default hide the Queue field, unless there is a specific status
 					queueField.hide();
+					panel.getForm().findField('combo_send_mail').hide();
 
 					switch (value) {
+						case '30000':
+						case '30028':
+							panel.getForm().findField('ticket_escalation_date').setValue('');
+							break;
 						case '30001':		// closed
 						case '30022':		// sign-off
 						case '30096':		// resolved
@@ -304,10 +309,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								success: function(response) {		// response is the current date-time
 									var doneField = this.findField('ticket_done_date');
 									doneField.setValue(response.responseText);
-									doneField.setDisabled(false);
+									//doneField.setDisabled(false);
 								}
 							});
-		
+							panel.getForm().findField('ticket_escalation_date').setValue('');
 							break;
 						case '30009':		// escalated
 						case '30011':		// assigned
@@ -315,6 +320,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							queueField.store = programGroupStore;
 							delete queueField.lastQuery;
 							queueField.show();
+							panel.getForm().findField('combo_send_mail').show();
 	
 							// Set the escalation_date
 							Ext.Ajax.request({
@@ -323,9 +329,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								success: function(response) {		// response is the current date-time
 									var escalationField = this.findField('ticket_escalation_date');
 									escalationField.setValue(response.responseText);
-									escalationField.setDisabled(false);
+									//escalationField.setDisabled(false);
 								}
-							});
+							});											
 							break;
 					};
 
@@ -344,7 +350,55 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				hidden:		true,
 				queryMode:	'local',
 				store:		programGroupStore,	// Filtered list of profiles
-				width:		300
+				width:		300,			
+				listeners:{
+					
+				/*	select: function (field,newValue,oldValue) {
+							userQueueStore.removeAll();
+							if (!Ext.isEmpty(newValue) || 0<=newValue) {
+								userQueueStore.proxy.extraParams['object_id_one'] = newValue;
+							}
+							userQueueStore.load();
+					},		*/			
+					change: function (field,newValue,oldValue) {
+							userQueueStore.removeAll();
+							Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').reset();
+							if (!Ext.isEmpty(newValue) && 0<=newValue && 463!=newValue && 73363!=newValue) {
+								userQueueStore.proxy.extraParams['object_id_one'] = newValue;
+								userQueueStore.load();
+							}
+							if (73363==newValue) {
+								userQueueStore.add({'object_id_two':0})
+								Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(userQueueStore.first());
+							}
+							// Set the escalation_date
+							Ext.Ajax.request({
+								scope:	this,
+								url:	'/intranet-sencha-ticket-tracker/today-date-time',
+								success: function(response) {		// response is the current date-time
+									Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
+								}
+							});										
+							
+					}					
+				}
+			}, {
+				name: 'combo_send_mail',
+				xtype:		'combobox',
+				valueField:	'object_id_two',
+				displayField:	'name',				
+				multiSelect: true,
+				hidden: true,
+				forceSelection: true,
+				queryMode:	'local',
+	            store: userQueueStore,
+				width:		600,
+				validator: function(value){
+					if (!this.isHidden() && Ext.isEmpty(value)) {
+						return 'Obligatorio';
+					}
+					return true;
+				},					
 			}]
 		}
 	],
@@ -367,6 +421,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			// Enable the queue field
 			queueField.store = programGroupStore;
 			queueField.show();
+			form.findField('combo_send_mail').show();
 			queueField.setValue(ticket_queue_id);
 		}
 		
