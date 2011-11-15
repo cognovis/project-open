@@ -2388,6 +2388,8 @@ ad_proc -private write_department_row {
 	            } else {
 	                # We have absences and planned hours -> Calculate availability
 	                set total_hours_department_occupancy [expr $totals_department_planned_hours_arr_loc($ctr) + $totals_department_absences_arr_loc($ctr)]
+	                set total_hours_department_occupancy [format "%0.1f" $total_hours_department_occupancy]
+
 	                set percentage_occupancy [expr 100 * $total_hours_department_occupancy / $totals_department_availability_arr_loc($ctr)]
                         set percentage_occupancy [format "%0.1f" $percentage_occupancy]
 	                set bar_color [im_resource_mgmt_get_bar_color "traffic_light" $percentage_occupancy]
