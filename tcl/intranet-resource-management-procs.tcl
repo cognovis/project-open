@@ -2389,8 +2389,16 @@ ad_proc -private write_department_row {
 	                # We have absences and planned hours -> Calculate availability
 	                set total_hours_department_occupancy [expr $totals_department_planned_hours_arr_loc($ctr) + $totals_department_absences_arr_loc($ctr)]
 	                set percentage_occupancy [expr 100 * $total_hours_department_occupancy / $totals_department_availability_arr_loc($ctr)]
+                        set percentage_occupancy [format "%0.1f" $percentage_occupancy]
 	                set bar_color [im_resource_mgmt_get_bar_color "traffic_light" $percentage_occupancy]
-			set par_hint "Abs.&Planned Hours:$total_hours_department_occupancy / Total Hours Dep. Avail.:$totals_department_availability_arr_loc($ctr) / Occ.:$percentage_occupancy%"
+
+			set par_hint  [lang::message::lookup "" intranet-resource-management.Absence_And_Planned_Hours "Abs.&Planned Hours"]
+			append par_hint ":$total_hours_department_occupancy / "
+                        append par_hint [lang::message::lookup "" intranet-resource-management.Total_Hours_Dep_Avail "Total Hours Dep. Avail."]			
+                        append par_hint ":$totals_department_availability_arr_loc($ctr) / "
+                        append par_hint [lang::message::lookup "" intranet-resource-management.Occupancy "Occ."]
+                        append par_hint ":$percentage_occupancy%"
+
 	                append row_html "<td>[im_resource_mgmt_resource_planning_cell "custom" $percentage_occupancy $bar_color $par_hint "" $limit_height]</td>\n"
 	            }
 	    } else {
