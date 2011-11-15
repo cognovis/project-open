@@ -154,6 +154,22 @@ var userCustomerStore = Ext.create('PO.data.UserStore', {
 	}
 });
 
+var userQueueStore = Ext.create('PO.data.UserStore', {
+	storeId: 'userQueueStore',
+	model: 'TicketBrowser.GroupMembershipRel',
+	autoLoad: false
+});
+
+userQueueStore.on({
+    'load':{
+        fn: function(store, records, options){
+        	Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(store.first());
+     },
+        scope:this
+    }
+});
+
+
 // ----------------------------------------------------------------
 // User Store
 // ----------------------------------------------------------------

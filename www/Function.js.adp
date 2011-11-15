@@ -85,6 +85,9 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 		if (ticketRightValues) {
 			ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
 			ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");	
+			if (!Ext.isEmpty(ticketRightValues.combo_send_mail)) {				
+				ticketRightValues.ticket_send_mail_ids = ticketRightValues.combo_send_mail.join('_');
+			}
 		}
 				
 		//Company and contacts validations
@@ -504,14 +507,25 @@ function Function_stopBar() {
 
 function Function_sendMail(ticket_id) {
 	/* Comprobar si ya estaba escalado en las acciones, sino mandar mail en el tcl*/
-	
+	//var detinatarios_field =  Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail');
+	var destinatarios = Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').getValue();
 	Ext.Ajax.request({
 		scope:	this,
-		url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id,
+		url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id+'&destinatarios='+destinatarios.join('_'),
 		success: function(response) {	
-			if (response.responseText.indexOf('false') > 0) {
-				Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
-			} 
+			//if (response.responseText.indexOf('false') > 0) {
+			//	Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
+			//} else {
+				//todo: buscar em message
+				if (!Ext.isEmpty(response.responseText)) {
+					Ext.Msg.show({
+				     	title:	'Envío de correo',
+				     	msg:	response.responseText,
+				    	buttons: Ext.Msg.OK,
+				    	icon: Ext.MessageBox.INFO
+					});	
+				}				
+			//}
 		},
 		failure: function(response) {	
 			/* ToDo mail error message*/

@@ -297,7 +297,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue('10000173');
+		//form.findField('ticket_type_id').setValue('10000173');
 		
 		// SEt datetime for actions
 		var date = new Date();
