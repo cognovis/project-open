@@ -355,13 +355,9 @@ Ext.define('TicketBrowser.GroupMembershipRel', {
 		},	
 		{ name:	'name',				// Calculated compound name
 			convert: function(value, record) {
-				if (record.get('object_id_two')!=0) {
-					var nombre =  userStore.name_from_id(record.get('object_id_two'));
-					var mail = userStore.findRecord('user_id', record.get('object_id_two')).get('spri_email');
-					return nombre+" - "+mail;
-				} else {
-					return "SACSPRI - SACSPRI@sicsa.es";
-				}
+				var nombre =  userStore.name_from_id(record.get('object_id_two'));
+				var mail = userStore.findRecord('user_id', record.get('object_id_two')).get('spri_email');
+				return nombre+" - "+mail;
 			}
 		}
 	],
