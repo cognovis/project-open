@@ -363,14 +363,14 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					change: function (field,newValue,oldValue) {
 							userQueueStore.removeAll();
 							Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').reset();
-							if (!Ext.isEmpty(newValue) && 0<=newValue && 463!=newValue && 73363!=newValue) {
+							if (!Ext.isEmpty(newValue) && 0<=newValue && 463!=newValue) {
 								userQueueStore.proxy.extraParams['object_id_one'] = newValue;
 								userQueueStore.load();
 							}
-							if (73363==newValue) {
+							/*if (73363==newValue) {
 								userQueueStore.add({'object_id_two':0})
 								Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(userQueueStore.first());
-							}
+							}*/
 							// Set the escalation_date
 							Ext.Ajax.request({
 								scope:	this,
