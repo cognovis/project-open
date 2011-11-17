@@ -22,7 +22,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="SendMail"  default="0" description="Enviar correo" section_name="No Section"/>
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="SendMail"  default="1" description="Eniar mail"/>
         </parameters>
 
     </version>
