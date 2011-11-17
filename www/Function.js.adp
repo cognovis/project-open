@@ -509,14 +509,11 @@ function Function_sendMail(ticket_id) {
 	/* Comprobar si ya estaba escalado en las acciones, sino mandar mail en el tcl*/
 	//var detinatarios_field =  Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail');
 	var destinatarios = Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').getValue();
-	Ext.Ajax.request({
-		scope:	this,
-		url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id+'&destinatarios='+destinatarios.join('_'),
-		success: function(response) {	
-			//if (response.responseText.indexOf('false') > 0) {
-			//	Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);
-			//} else {
-				//todo: buscar em message
+	if (!Ext.isEmpty(destinatarios)) {
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id+'&destinatarios='+destinatarios.join('_'),
+			success: function(response) {	
 				if (!Ext.isEmpty(response.responseText)) {
 					Ext.Msg.show({
 				     	title:	'Envío de correo',
@@ -525,11 +522,11 @@ function Function_sendMail(ticket_id) {
 				    	icon: Ext.MessageBox.INFO
 					});	
 				}				
-			//}
-		},
-		failure: function(response) {	
-			/* ToDo mail error message*/
-			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Action_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Action_Error_Message#', response.responseText);		
-		}
-	});	
+			},
+			failure: function(response) {	
+				/* ToDo mail error message*/
+				Function_errorMessage('Error al enviar mails', 'Los datos se han guardado correctamente pero se ha producido un error al intentar mandar emails.', response.responseText);		
+			}
+		});	
+	}
 }

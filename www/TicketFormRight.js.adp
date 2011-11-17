@@ -295,9 +295,10 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					panel.getForm().findField('combo_send_mail').hide();
 
 					switch (value) {
-						case '30000':
-						case '30028':
+						case '30000': //Abierto
+						case '30028': //Congelado
 							panel.getForm().findField('ticket_escalation_date').setValue('');
+							panel.getForm().findField('ticket_done_date').setValue('');	
 							break;
 						case '30001':		// closed
 						case '30022':		// sign-off
@@ -309,7 +310,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								success: function(response) {		// response is the current date-time
 									var doneField = this.findField('ticket_done_date');
 									doneField.setValue(response.responseText);
-									//doneField.setDisabled(false);
 								}
 							});
 							panel.getForm().findField('ticket_escalation_date').setValue('');
@@ -329,9 +329,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								success: function(response) {		// response is the current date-time
 									var escalationField = this.findField('ticket_escalation_date');
 									escalationField.setValue(response.responseText);
-									//escalationField.setDisabled(false);
 								}
-							});											
+							});		
+							panel.getForm().findField('ticket_done_date').setValue('');									
 							break;
 					};
 

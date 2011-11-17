@@ -58,47 +58,8 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     minHeight:	75,
 	listeners:	{
 		itemdblclick: function(view, record, item, index, e) {
-			Ext.create('Ext.window.Window', {
-			    title: 'Detalle '+record.get('audit_date').substring(0,19),
-			    //layout: 'fit',
-			    height: 400,
-			    width: 800,		
-				defaults: {		
-					margin: '5 10 0 0'				
-				},			    	    
-				layout: {
-				    type: 'table',
-				    columns: 4
-				},	    
-			    items: [
-			    {  
-					name:		'audit_audit_date',
-					xtype:		'textfield',
-					fieldLabel:	'#intranet-sencha-ticket-tracker.Audit_Date#',
-					value:		record.get('audit_date').substring(0,19),
-					colspan: 2
-			    }, 			    {  
-					name:		'audit_ticket_status_id',
-					xtype:		'textfield',
-					fieldLabel:	'#intranet-sencha-ticket-tracker.Status#',
-					value:		record.get('ticket_status_id').substring(0,19),
-					colspan: 2
-			    }, {
-					name:		'audit_ticket_request',
-					xtype:		'textareafield',
-					fieldLabel:	'#intranet-sencha-ticket-tracker.Request#',
-					labelAlign:	'top',
-					value:		record.get('ticket_request').split('\\n').join('\n'),
-					colspan: 2
-			    }, {
-					name:		'audit_ticket_resolution',
-					xtype:		'textareafield',
-					fieldLabel:	'#intranet-sencha-ticket-tracker.Resolution#',
-					labelAlign:	'top',
-					value: 		record.get('ticket_resolution').split('\\n').join('\n'),
-					colspan: 2
-				}]
-			}).show();
+			auditDetailWindow.loadAuditDetail(record);
+			auditDetailWindow.show();
 		}
 	},    
     dockedItems: [{
