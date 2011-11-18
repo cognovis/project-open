@@ -59,6 +59,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 	listeners:	{
 		itemdblclick: function(view, record, item, index, e) {
 			auditDetailWindow.loadAuditDetail(record);
+			//Ext.getCmp('mainPanel').disable();
 			auditDetailWindow.show();
 		}
 	},    
