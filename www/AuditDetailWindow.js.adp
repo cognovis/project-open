@@ -110,8 +110,12 @@ Ext.define('TicketBrowser.AuditDetailWindow', {
 					name:		'audit_ticket_incoming_channel_id',
 					xtype:		'textfield',
 					fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel#',
-					readOnly: true,
-					colspan: 2
+					readOnly: true
+			    },  {  
+					name:		'audit_ticket_incoming_channel_detail_id',
+					xtype:		'textfield',
+					fieldLabel:	'#intranet-sencha-ticket-tracker.Incoming_Channel_Detail#',
+					readOnly: true
 			    }, {
 					name:		'audit_ticket_request',
 					xtype:		'textareafield',
@@ -140,7 +144,9 @@ Ext.define('TicketBrowser.AuditDetailWindow', {
 		this.items.items[0].setValue(record.get('audit_date').substring(0,19));
 		this.items.items[1].setValue(ticketStatusStore.category_from_id(record.get('ticket_status_id')));
 		this.items.items[2].setValue(ticketTypeStore.category_from_id(record.get('ticket_type_id')));
-		this.items.items[3].setValue(profileStore.name_from_id(record.get('ticket_queue_id')));
+	    var queueName = profileStore.name_from_id(record.get('ticket_queue_id'));
+	    if ("Employees" == queueName) { queueName = ''; }		
+		this.items.items[3].setValue(queueName);
 		this.items.items[4].setValue(ticketAreaStore.category_from_id(record.get('ticket_area_id')));
 		this.items.items[5].setValue(companyStore.name_from_id(record.get('company_id')));
 		this.items.items[6].setValue(userStore.name_from_id(record.get('ticket_customer_contact_id')));
@@ -149,9 +155,19 @@ Ext.define('TicketBrowser.AuditDetailWindow', {
 		this.items.items[9].setValue(record.get('ticket_reaction_date'));
 		this.items.items[10].setValue(record.get('ticket_escalation_date'));
 		this.items.items[11].setValue(record.get('ticket_done_date'));
-		this.items.items[12].setValue(ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id')));
-		this.items.items[13].setValue(record.get('ticket_request').split('\\n').join('\n'));
-		this.items.items[14].setValue(record.get('ticket_resolution').split('\\n').join('\n'));
+		
+		var ticket_incoming_channel_id = record.get('ticket_incoming_channel_id');
+		if (!Ext.isEmpty(ticket_incoming_channel_id)) {
+			var channel_record = ticketOriginStore.findRecord('category_id',ticket_incoming_channel_id);
+			var tree_sort_key_channel_record_father = channel_record.get('tree_sortkey').substring(0,8);			
+			this.items.items[12].setValue(ticketOriginStore.category_from_id(tree_sort_key_channel_record_father));
+		} else {
+			this.items.items[12].setValue('');
+		}	
+		
+		this.items.items[13].setValue(ticketOriginStore.category_from_id(record.get('ticket_incoming_channel_id')));
+		this.items.items[14].setValue(record.get('ticket_request').split('\\n').join('\n'));
+		this.items.items[15].setValue(record.get('ticket_resolution').split('\\n').join('\n'));
 		
 	}				
 });	
