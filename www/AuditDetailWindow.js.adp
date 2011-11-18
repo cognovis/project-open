@@ -30,6 +30,7 @@ Ext.define('TicketBrowser.AuditDetailWindow', {
 			    //layout: 'fit',
 			    height: 600,
 			    width: 800,		
+			    modal: true,
 				defaults: {		
 					margin: '10 20 5 5'				
 				},			    	    
@@ -40,6 +41,7 @@ Ext.define('TicketBrowser.AuditDetailWindow', {
 				listeners: {
 					beforeclose: function(panel, eOpts ) {
 						this.hide();
+						//Ext.getCmp('mainPanel').enable();
 						return false;
 					}
 				},

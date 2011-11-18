@@ -443,6 +443,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		//this.dateCheck();
 
 		form.findField('ticket_status_id').setValue('30000');		//Open
+		form.findField('ticket_queue_id').hide();
+		form.findField('combo_send_mail').hide();
+		form.findField('ticket_org_queue_id').setValue('461');
 		Ext.getCmp('ticketActionBar').checkButtons(null);
 	},
 	

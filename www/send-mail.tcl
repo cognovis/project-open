@@ -16,7 +16,7 @@ ad_page_contract {
 		foreach destinatario $destinatarios {
 			if {0==$destinatario} {
 				lappend destinatarios_mail [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter DefaultFrom -default "SACSPRI@sicsa.es"]
-				lappend send_names "SACSPRI"
+				lappend send_names "SACSPRI."
 			} else {
 				lappend destinatarios_mail [db_string search-spri-mail "select spri_email from persons where person_id=:destinatario" -default ""]
 				lappend send_names [im_name_from_user_id $destinatario]
