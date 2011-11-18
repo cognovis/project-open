@@ -163,6 +163,7 @@ var userQueueStore = Ext.create('PO.data.UserStore', {
 userQueueStore.on({
     'load':{
         fn: function(store, records, options){
+        	store.sort('name', 'ASC');
         	Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(store.first());
      },
         scope:this

@@ -350,11 +350,17 @@ Ext.define('TicketBrowser.GroupMembershipRel', {
 		'object_id_two',			// User ID
 		{ name:	'user_id',			// Calculated user_id
 			convert: function(value, record) {
+				if (0==record.get('object_id_two')) {
+					return "";
+				}
 				return record.get('object_id_two');
 			}
 		},	
 		{ name:	'name',				// Calculated compound name
 			convert: function(value, record) {
+				if (0==record.get('object_id_two')) {
+					return  <%= [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter DefaultFrom -default \"SACSPRI@sicsa.es\"] %>;
+				}
 				var nombre =  userStore.name_from_id(record.get('object_id_two'));
 				var mail = userStore.findRecord('user_id', record.get('object_id_two')).get('spri_email');
 				return nombre+" - "+mail;

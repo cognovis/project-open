@@ -256,7 +256,11 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact, loadTicket){
 	var ticketModel;
 	var newTicket = false;
-
+	
+	if (ticketRightValues.ticket_queue_id != ticketRightValues.ticket_org_queue_id){
+		ticketRightValues.ticket_last_queue_id=ticketRightValues.ticket_org_queue_id;
+	}
+	
 	if (Ext.isEmpty(ticketValues.ticket_id)){
 		ticketValues.ticket_id = null;
 		ticketRightValues.ticket_id = null;
