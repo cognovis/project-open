@@ -14,14 +14,16 @@ ad_page_contract {
 	if {""!=$destinatarios} {
 		set destinatarios [split $destinatarios "_"]
 		foreach destinatario $destinatarios {
-			lappend destinatarios_mail [db_string search-spri-mail "select spri_email from persons where person_id=:destinatario" -default ""]
 			if {0==$destinatario} {
+				lappend destinatarios_mail [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter DefaultFrom -default "SACSPRI@sicsa.es"]
 				lappend send_names "SACSPRI"
 			} else {
+				lappend destinatarios_mail [db_string search-spri-mail "select spri_email from persons where person_id=:destinatario" -default ""]
 				lappend send_names [im_name_from_user_id $destinatario]
 			}
 		}
-		set send_names [string map {"\{" "" "\}" ","} $send_names]
+		set send_names [string range [string map {"\{" "" "\}" ","} $send_names]  0 end-1]
+		append send_names "."
 	}
 	
     set found_p [db_0or1row ticket_info "
@@ -57,7 +59,8 @@ ad_page_contract {
 	substring(audit_value from 'ticket_request\\t(\[^\\n\]*)') as audit_ticket_request,
 	substring(audit_value from 'ticket_resolution\\t(\[^\\n\]*)') as audit_ticket_resolution,
 	substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as audit_ticket_queue_id,
-	substring(audit_value from 'ticket_status_id\\t(\[^\\n\]*)') as audit_ticket_status_id	
+	substring(audit_value from 'ticket_status_id\\t(\[^\\n\]*)') as audit_ticket_status_id,
+	substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)') as audit_ticket_escalation_date	
 	from im_audits where audit_id in (
 		select max(audit_id) as audit_id from im_audits where audit_object_id = :object_id and audit_action != 'after_update' and audit_action != 'before_update' group by audit_action
 	)
@@ -76,21 +79,25 @@ ad_page_contract {
 	"
 	
 	if {30011==$ticket_status_id} {
-				append body "
-				Fecha y hora: [string range [db_string search-now "select now()"] 0 15]
-				Detalle: $ticket_request 
-				Resultado: $ticket_resolution 		
-				"		
+		append body "
+	Fecha y hora: [string range $ticket_escalation_date 0 15]
+	Detalle: 
+	$ticket_request 
+	Resultado: 
+	$ticket_resolution 		
+	--------------------------------------------------------------"		
 	}
 	set old_audit_ticket_queue_id ""
 	db_foreach search-actions $actions_sql {
 		if {30011==$audit_ticket_status_id} {
 			if {$audit_ticket_queue_id!=$old_audit_ticket_queue_id} {
 				append body "
-				Fecha y hora: [string range $audit_date 0 15]
-				Detalle: $audit_ticket_request 
-				Resultado: $audit_ticket_resolution 		
-				"
+	Fecha y hora: [string range $audit_ticket_escalation_date 0 15]
+	Detalle: 
+	$audit_ticket_request 
+	Resultado: 
+	$audit_ticket_resolution 		
+	--------------------------------------------------------------"
 			}
 			set old_audit_ticket_queue_id $old_audit_ticket_queue_id
 		}
@@ -115,8 +122,11 @@ ad_page_contract {
 				set remite [db_string search-spri-mail "select spri_email from persons where person_id=:current_user_id" -default [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter DefaultFrom -default "SACSPRI@sicsa.es"]]
 			}
 			
-			#Si va a un no SACE,no SAC y no empleados, ano ser que venga de un nivel 3 (grupos no sac,sace y empleados). se envia tipo 2
-			if {(463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id) || (463!=$old_ticket_queue_id && 73363!=$old_ticket_queue_id && 73369!=$old_ticket_queue_id )} {
+			#Si no hay audit y va  SAC es un tipo uno, sino es un tipo 2
+			
+			
+			#Si va a un no SACE,no SAC y no empleados, a no ser que venga de un nivel 3 (grupos no sac,sace y empleados). se envia tipo 2
+			if {(463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id) || ($found_audit_p && 463!=$old_ticket_queue_id && 73363!=$old_ticket_queue_id && 73369!=$old_ticket_queue_id )} {
 		    	ns_log Notice "send-mail: acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"
 				acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite
 				set return_message "Se ha enviado un correo tipo 2 de escalado al grupo $group_name: $send_names"

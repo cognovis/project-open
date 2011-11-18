@@ -214,7 +214,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	
 		// Special logic for assigned_queue_id:	Set to '' (=My Queues) if empty
 		if (null === filterValues.assigned_queue_id) {
-			filterValues.assigned_queue_id = 'my_groups'; 
+			filterValues.assigned_queue_id = defaultQueueFilter; 
 		}
 		
 		// delete filters added by other accordion filters
