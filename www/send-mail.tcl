@@ -83,26 +83,26 @@ ad_page_contract {
 	Fecha y hora: [string range $ticket_escalation_date 0 15]
 	Detalle: 
 	$ticket_request 
+	
 	Resultado: 
 	$ticket_resolution 		
-	--------------------------------------------------------------"		
+	--------------------------------------------------------------
+	"		
 	}
 	set old_audit_ticket_queue_id ""
 	db_foreach search-actions $actions_sql {
-		if {30011==$audit_ticket_status_id} {
-			if {$audit_ticket_queue_id!=$old_audit_ticket_queue_id} {
+		if {30011==$audit_ticket_status_id} {						
 				append body "
 	Fecha y hora: [string range $audit_ticket_escalation_date 0 15]
-	Detalle: 
-	$audit_ticket_request 
+	Detalle:
+	[string map {"\\n" "\n"} $audit_ticket_request]
 	
-	Resultado: 
-	$audit_ticket_resolution 		
+	Resultado:
+	[string map {"\\n" "\n"} $audit_ticket_resolution]
 	--------------------------------------------------------------
 	"
 			}
 			set old_audit_ticket_queue_id $old_audit_ticket_queue_id
-		}
 	}
 	
 	append body "
