@@ -69,7 +69,7 @@ begin
         select  plugin_id
         into    v_plugin_id
         from    im_component_plugins pl
-        where   plugin_name = ''Overtime'';
+        where   plugin_name = ''Overtime Balance Component'';
 
         PERFORM im_grant_permission(v_plugin_id, v_employees, ''read'');
 
