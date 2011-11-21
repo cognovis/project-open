@@ -215,9 +215,12 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							success: function(response) {		// response is the current date-time
 								var doneField = this.findField('ticket_done_date');
 								doneField.setValue(response.responseText);
-								//doneField.setDisabled(false);
 							}
 						});
+						panel.getForm().findField('ticket_escalation_date').setValue('');	
+						//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
+						panel.getForm().findField('ticket_queue_id').hide();
+						panel.getForm().findField('combo_send_mail').hide();
 
 					}
 				}
@@ -233,6 +236,11 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 					if (checked && panel.rendered) {
 						var statusField = panel.getForm().findField('ticket_status_id');
 						statusField.setValue('30028');
+						panel.getForm().findField('ticket_escalation_date').setValue('');	
+						//panel.getForm().findField('ticket_closed_in_1st_contact_p').setValue('');
+						panel.getForm().findField('ticket_done_date').setValue('');	
+						panel.getForm().findField('ticket_queue_id').hide();
+						panel.getForm().findField('combo_send_mail').hide();						
 					}
 				}
 			}, {
@@ -331,7 +339,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 									escalationField.setValue(response.responseText);
 								}
 							});		
-							panel.getForm().findField('ticket_done_date').setValue('');									
+							panel.getForm().findField('ticket_done_date').setValue('');				
+							//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
+							//panel.getForm().findField('ticket_closed_in_1st_contact_p').setValue('');					
 							break;
 					};
 
@@ -394,13 +404,13 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				forceSelection: true,
 				queryMode:	'local',
 	            store: userQueueStore,
-				width:		600,
+				width:		530,
 				validator: function(value){
 					if (!this.isHidden() && Ext.isEmpty(value)) {
 						return 'Obligatorio';
 					}
 					return true;
-				},					
+				}			
 			}]
 		}
 	],
@@ -445,7 +455,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		form.findField('ticket_status_id').setValue('30000');		//Open
 		form.findField('ticket_queue_id').hide();
 		form.findField('combo_send_mail').hide();
-		form.findField('ticket_org_queue_id').setValue('461');
+		form.findField('ticket_org_queue_id').setValue(employeeGroupId);
 		Ext.getCmp('ticketActionBar').checkButtons(null);
 	},
 	

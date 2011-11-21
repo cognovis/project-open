@@ -94,7 +94,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.Creation_Date#',
 				dataIndex:	'ticket_creation_date',
-				width:	80
+				width:	110,
+				renderer: function(value, o, record) {
+					// Only seconds
+				    return value.substring(0,19);
+				}				
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.VAT_Number#',
 				dataIndex:	'vat_number',
@@ -125,7 +129,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				width:	60,
 				renderer: function(value, o, record) {
 					return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
-				},
+				}/*,
 				field:	{
 					xtype:	'combobox',
 					typeAhead:	false,
@@ -135,7 +139,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					store:	ticketStatusStore,
 					displayField:	'category',
 					valueField:	'category_id'
-				}
+				}*/
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.Queue#',
 				dataIndex:	'ticket_queue_id',

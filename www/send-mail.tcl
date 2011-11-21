@@ -95,9 +95,11 @@ ad_page_contract {
 	Fecha y hora: [string range $audit_ticket_escalation_date 0 15]
 	Detalle: 
 	$audit_ticket_request 
+	
 	Resultado: 
 	$audit_ticket_resolution 		
-	--------------------------------------------------------------"
+	--------------------------------------------------------------
+	"
 			}
 			set old_audit_ticket_queue_id $old_audit_ticket_queue_id
 		}
@@ -129,7 +131,7 @@ ad_page_contract {
 			if {(463!=$ticket_queue_id && 73363!=$ticket_queue_id && 73369!=$ticket_queue_id) || ($found_audit_p && 463!=$old_ticket_queue_id && 73363!=$old_ticket_queue_id && 73369!=$old_ticket_queue_id )} {
 		    	ns_log Notice "send-mail: acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"
 				acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite
-				set return_message "Se ha enviado un correo tipo 2 de escalado al grupo $group_name: $send_names"
+				set return_message "Se ha enviado un correo de escalado al grupo $group_name: $send_names"
 				if {$debug} {
 					doc_return 200 "text/html" "acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"
 				}
@@ -140,7 +142,7 @@ ad_page_contract {
 					set body ""
 					acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite
 					ns_log Notice "send-mail: acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"	
-					set return_message "Se ha enviado un correo tipo 1 de escalado al grupo $group_name: $send_names"
+					set return_message "Se ha enviado un correo de escalado al grupo $group_name: $send_names"
 					if {$debug} {
 						doc_return 200 "text/html" "acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"			
 					}
@@ -151,7 +153,7 @@ ad_page_contract {
 					set body ""
 					acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite
 					ns_log Notice "send-mail: acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"	
-					set return_message "Se ha enviado un correo tipo 1 de escalado al grupo $group_name: $send_names"
+					set return_message "Se ha enviado un correo de escalado al grupo $group_name: $send_names"
 					if {$debug} {
 						doc_return 200 "text/html" "acs_mail_lite::send -send_immediately -from_addr $remite -to_addr $destinatarios_mail -subject $subject -body $body -bcc_addr $remite"			
 					}

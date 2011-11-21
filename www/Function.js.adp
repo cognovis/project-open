@@ -210,7 +210,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 					// This code doesn't need to be synchronized.
 					// The record will establish a "relationship" between the users and a group
 					var groupMember = {
-						object_id_one:	461,		// group_id for Customers
+						object_id_one:	customerGroupId,		// group_id for Customers
 						object_id_two:	contact_id,
 						rel_type:	'membership_rel',
 						member_state:	'approved'
