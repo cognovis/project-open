@@ -239,6 +239,7 @@ ad_proc -public im_ms_project_write_task {
 		}
 		UID			{ set value $org_project_id }
 		Work			{ 
+		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
 		    set seconds [expr $planned_units * 3600.0]
 		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
