@@ -465,6 +465,7 @@ db_foreach project_allocations $project_allocations_sql {
     # Calculate the work included in this assignments.
     # The sum of assigned work overrides the task work in MS-Project,
     # so we divide the task work evenly across the assigned resources.
+    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
     set planned_seconds [expr $planned_units * 3600]
     set work_seconds [expr $planned_seconds * $percentage_assigned / $total_percentage_assigned]
     set work_ms [im_gp_seconds_to_ms_project_time $work_seconds]
