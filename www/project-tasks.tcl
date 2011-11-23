@@ -56,8 +56,8 @@ ad_page_contract {
 	} 
 	set report_id 0
 	set page_title "Project-Tasks \[BETA\]"
-	set current_url "intranet-reporting/project-tasks.tcl"
-	set return_url "intranet-reporting/project-tasks.tcl"
+	set current_url "/intranet-reporting/project-tasks.tcl"
+	set return_url "/intranet-reporting/project-tasks.tcl"
 	set export_var_list ""
 	set user_id [ad_get_user_id]
 	set include_subprojects 0
