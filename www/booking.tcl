@@ -19,6 +19,18 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 
+# Planned units a number?
+if {![string is double $overtime]} {
+        ad_return_complaint 1 "
+            <b>[lang::message::lookup "" intranet-core.Not_a_number "Value is not a number"]</b>:<br>
+            [lang::message::lookup "" intranet-core.Not_a_number_msg "
+                The value for you have provided for 'Overtime' ('$overtime') is not a number.<br>
+                Please enter something like '1' or '0.5'.
+	"]
+        "
+        ad_script_abort
+}
+
 if {![im_permission $user_id "view_hr"]} {
     ad_return_complaint 1 "[_ intranet-core.lt_Insufficient_Privileg]"
 }
@@ -31,7 +43,6 @@ if {[catch {
                 values
                         ($overtime_booking_id, now(), :user_id_from_form, :comment, :overtime)
              "
-	     # 
              db_dml update_balance "
                 update im_employees set overtime_balance = (select overtime_balance from im_employees where employee_id = :user_id_from_form) + :overtime where employee_id = :user_id_from_form 
              "
