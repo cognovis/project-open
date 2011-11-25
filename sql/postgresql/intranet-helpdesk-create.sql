@@ -92,7 +92,6 @@ create table im_tickets (
 					constraint im_ticket_conf_item_fk
 					references im_conf_items,
 	ticket_component_id		integer
-					constraint im_ticket_conf_item_fk
 					references im_conf_items,
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
