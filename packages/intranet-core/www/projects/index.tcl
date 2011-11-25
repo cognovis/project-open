@@ -260,6 +260,7 @@ set user_select_groups {}
 foreach g $managable_profiles {
     lappend user_select_groups [lindex $g 1]
 }
+
 set user_options [im_profile::user_options -profile_ids $user_select_groups]
 set user_options [linsert $user_options 0 [list "#intranet-core.All#" ""]]
 
