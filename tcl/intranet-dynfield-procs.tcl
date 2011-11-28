@@ -516,6 +516,11 @@ ad_proc -public im_dynfield::attribute_store {
 		o.object_type = ot.object_type
     "
 
+    if { "user" == $object_type } {
+        set object_type "person"
+		set object_subtype_id [im_user_subtypes $object_id]
+    }
+
     set object_id_org $object_id
     set object_type_org $object_type
 
@@ -576,7 +581,7 @@ ad_proc -public im_dynfield::attribute_store {
 
         # object_subtype_id can be a list, so go through the list
         # and take the highest one (none - display - edit).
-	set display_mode "undefined"
+		set display_mode "undefined"
         foreach subtype_id $object_subtype_id {
             set key "$dynfield_attribute_id.$subtype_id"
             if {[info exists display_mode_hash($key)]} {
