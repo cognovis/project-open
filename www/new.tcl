@@ -12,16 +12,16 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    employee_id:integer
-    { return_url "/intranet-hr/index"}
-    edit_p:optional
-    message:optional
-    { form_mode "display" }
-    { availability:integer "100" }
-    { hourly_cost:float "0" }
-    { job_title "" }
-    { job_description "" }
-    { personnel_number "" }
+	employee_id:integer
+	{ return_url "/intranet-hr/index"}
+	edit_p:optional
+	message:optional
+	{ form_mode "display" }
+	{ availability:integer "100" }
+	{ hourly_cost:float "0" }
+	{ job_title "" }
+	{ job_description "" }
+	{ personnel_number "" }
     { ss_number "" }
     { salary:float "0" }
     { social_security:float "0" }
@@ -33,6 +33,7 @@ ad_page_contract {
     { termination_reason "" }
     { referred_by "0" }
     { vacation_balance:float "0" }
+	{ vacation_days_per_year "" }
     { start_date "" }
     { end_date "" }
 	{ supervisor_id "" }
@@ -52,7 +53,6 @@ ad_page_contract {
 	{ original_job_id "" }
 	{ current_job_id "" }
 	{ qualification_id "" }
-	{ vacation_days_per_year "" }
 }
 
 # ------------------------------------------------------------------
@@ -224,6 +224,9 @@ template::element::create $form_id end_date -optional -label $end_date_label -ht
 template::element::create $form_id voluntary_termination_p -label $voluntary_termination_p_label -widget "select"  -options $voluntary_termination_options -datatype text
 template::element::create $form_id termination_reason -optional -datatype text -widget textarea -label $termination_reason_label -html {rows 5 cols 40}
 template::element::create $form_id signed_nda_p -optional -datatype text -widget radio -label $signed_nda_p_label -options {{Yes t} {No f}}
+template::element::create $form_id vacation_days_per_year -optional -label $vacation_days_per_year_label -html {size 5} -datatype float
+template::element::create $form_id vacation_balance -optional -label $vacation_balance_label -html {size 5} -datatype float
+
 template::element::create $form_id dependant_p -optional -widget "hidden"
 template::element::create $form_id only_job_p -optional -widget "hidden"
 template::element::create $form_id married_p -optional -widget "hidden"
@@ -236,6 +239,10 @@ template::element::create $form_id referred_by -optional -widget "hidden"
 template::element::create $form_id experience_id -optional -widget "hidden"
 template::element::create $form_id employee_id -optional -widget "hidden"
 template::element::create $form_id return_url -optional -widget "hidden"
+template::element::create $form_id source_id -optional -widget "hidden"
+template::element::create $form_id original_job_id -optional -widget "hidden"
+template::element::create $form_id current_job_id -optional -widget "hidden"
+template::element::create $form_id qualification_id -optional -widget "hidden"
 
 set field_cnt [im_dynfield::append_attributes_to_form \
     -object_subtype_id "" \
