@@ -83,7 +83,52 @@ set odt_root [$odt_doc documentElement]
 # Perform substitutions etc.
 # ---------------------------------------------------------------
 
-# nada
+# Get the container tag that contains various pages
+set odt_container_node [$odt_root selectNodes "//office:presentation"]
+
+# Get the list of pages in the document
+set odt_page_nodes [$odt_root selectNodes "//draw:page"]
+
+# Search for the page that contains "@project_name@"
+set odt_template_page_node ""
+foreach page_node $odt_page_nodes {
+    set page_as_list [$page_node asList]
+    if {[regexp {project_name} $page_as_list match]} { 
+	set odt_template_page_node $page_node 
+    }
+}
+
+# Format the page for every project and add to the document
+set projects_sql "
+	select	p.*
+	from	im_projects p
+	where	p.parent_id is null and
+		p.project_status_id in (select * from im_sub_categories([im_project_status_open])) and
+		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
+	order by
+		lower(p.project_name)
+"
+
+# Convert the tDom tree into XML for rendering
+set odt_page_template_xml [$odt_template_page_node asXML]
+
+db_foreach projects $projects_sql {
+
+    # Insert a new XML page into OpenOffice document
+    # Replace placeholders in the OpenOffice template row with values
+    eval [template::adp_compile -string $odt_page_template_xml]
+    set odt_page_xml $__adp_output
+
+    # Parse the new page and insert into OOoo document
+    set page_doc [dom parse $odt_page_xml]
+    set new_page [$page_doc documentElement]
+
+    ns_log Notice "project-oneslide: $odt_root insertBefore $new_page $odt_template_page_node"
+    $odt_container_node insertBefore $new_page $odt_template_page_node
+
+}
+
+
 
 # ---------------------------------------------------------------
 # Format as XML and perform substitutions
