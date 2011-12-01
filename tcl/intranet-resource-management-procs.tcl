@@ -1081,6 +1081,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			set hours_per_day [expr $planned_units / $no_workdays ]
 
 			set column_sql "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" 
+
 			set no_users [db_string get_number_users "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" -default 1] 
 
 			db_foreach column_list_sql $column_sql {		
@@ -1100,7 +1101,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
                                             # "
                 	                }
 
-        	                        set user_day_task_arr($user_id-$days_julian-$project_id) [expr $hours_per_day * $user_percentage/100]
+        	                        # set user_day_task_arr($user_id-$days_julian-$project_id) [expr $hours_per_day * $user_percentage/100]
+        	                        set user_day_task_arr($user_id-$days_julian-$project_id) $hours_per_day 
 
 					# Set USER totals
 					if { [info exists user_day_total_plannedhours_arr($user_id-$days_julian)] } {
@@ -1108,7 +1110,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 					} else {
 						set user_day_total_plannedhours_arr($user_id-$days_julian) $user_day_task_arr($user_id-$days_julian-$project_id)
 					}	
-					#if {$project_id == 30961 } { append out " user_day_task_arr($user_id-$days_julian-$project_id) = $hours_per_day * $user_percentage/100 <br>"}
 					incr user_ctr
                 	        }
         		}
