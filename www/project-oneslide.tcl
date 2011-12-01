@@ -19,6 +19,8 @@ ad_page_contract {
 # Get user parameters
 set user_id [ad_maybe_redirect_for_registration]
 set user_locale [lang::user::locale]
+set date_format "YYYY-MM-DD"
+
 
 if {0} {
     ad_return_complaint 1 "<li>[lang::message::lookup $locale intranet-invoices.lt_You_need_to_specify_a]"
@@ -27,10 +29,6 @@ if {0} {
 
 set odt_filename "project-openslide.odt"
 
-set project_name "project_name"
-set company_name "company_name"
-set start_date_pretty "31.8.66"
-set end_date_pretty "31.8.66"
 set asdf asdf
 set sdfg sdfg
 
@@ -100,9 +98,14 @@ foreach page_node $odt_page_nodes {
 
 # Format the page for every project and add to the document
 set projects_sql "
-	select	p.*
-	from	im_projects p
-	where	p.parent_id is null and
+	select	p.*,
+		c.company_name,
+		to_char(p.start_date, :date_format) as start_date_pretty,
+		to_char(p.end_date, :date_format) as end_date_pretty
+	from	im_projects p,
+		im_companies c
+	where	p.company_id = c.company_id and
+		p.parent_id is null and
 		p.project_status_id in (select * from im_sub_categories([im_project_status_open])) and
 		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
 	order by
