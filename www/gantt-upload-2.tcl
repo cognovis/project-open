@@ -399,7 +399,6 @@ if {$allocations_node != ""} {
 
 # Check for "TimephasedData" assignment information per task
 # Walk through all <assignment> nodes and check for assignment information
-set timephased_html ""
 foreach child [$allocations_node childNodes] {
 
     switch [string tolower [$child nodeName]] {
@@ -415,12 +414,18 @@ foreach child [$allocations_node childNodes] {
 		    "timephaseddata" { 
 			set task_name $task_uid
 			if {[info exists task_uid_hash($task_uid)]} { set task_name $task_uid_hash($task_uid)}
-			append timephased_html "<li>$task_name<br>" 
+			append timephased_hash($task_name) 1
 		    }
                 }
             }
         }
     }
+}
+
+
+set timephased_html ""
+foreach task_name [lsort [array names timephased_hash]] {
+    append timephased_html "<li>$task_name\n"
 }
 
 
