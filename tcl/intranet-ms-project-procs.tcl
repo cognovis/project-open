@@ -141,6 +141,10 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours || [string equal $start_date $end_date] } { 
 	set duration_hours 0 
     }
+    # Set completed=100% if the task has been closed
+    if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
+	set percent_completed 100.0
+    }
 
     set task_node [$doc createElement Task]
     $tree_node appendChild $task_node
