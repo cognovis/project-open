@@ -80,7 +80,7 @@ if {"pod" == $gantt_file_extension} {
     ad_script_abort
 }
 
-if { $max_n_bytes && ($file_size > $max_n_bytes) } {
+if {$max_n_bytes && ($file_size > $max_n_bytes) } {
     ad_return_complaint 1 "Your file is larger than the maximum permissible upload size: 
     [util_commify_number $max_n_bytes] bytes"
     return 0
@@ -150,6 +150,71 @@ if {[string equal [$root_node nodeName] "Project"]
     set format "ms"
 }
 ns_log Notice "gantt-upload-2: format=$format"
+
+
+
+
+
+# -------------------------------------------------------------------
+# Check for duplicate tasks
+# We can't allow for duplicate task names because MS-project saves 
+# task names as a flat list, so that duplicates can occur.
+# The hierarchy of tasks is available only at a later moment.
+# 
+# ToDo: Rewrite the entire import in order to work with UID 
+# in order to avoid duplicate task names.
+# -------------------------------------------------------------------
+
+if {[set tasks_node [$root_node selectNodes /project/tasks]] == ""} {
+    set tasks_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Tasks" ]
+}
+
+array unset task_name_hash
+array set task_name_hash {}
+# Walk through tall <task> nodes and count the ocurrences of names
+# in the task_name_hash
+foreach child [$tasks_node childNodes] {
+
+    switch [string tolower [$child nodeName]] {
+	"task" {
+	    # Extract the task_name from the list of tasks's attributes
+	    set task_name ""
+	    foreach attr [$child childNodes] {
+		set nodeName [$attr nodeName]
+		set nodeText [$attr text]
+		switch $nodeName {
+		    "Name" { set task_name [string trim [string tolower $nodeText]] }
+		}
+	    }
+
+
+	    set cnt 0
+	    if {[info exists task_name_hash($task_name)]} { set cnt $task_name_hash($task_name) }
+	    incr cnt
+	    set task_name_hash($task_name) $cnt
+	}
+    }
+}
+
+set duplicate_task_html ""
+foreach task_name [lsort [array names task_name_hash]] {
+    set cnt $task_name_hash($task_name)
+    if {$cnt > 1} {
+	append duplicate_task_html "<li>'$task_name' occurs $cnt times\n"
+    }
+}
+
+if {"" != $duplicate_task_html} {
+    ad_return_complaint 1 "
+	<b>Duplicate task names are not allowed during import</b>:<br>
+	We found duplicate task names in your MS-Project schedule.<br>
+	This is not allowed during import, because of the way MS-Project
+	renames tasks if you move them in the schedule.<br>&nbsp;<br>
+	<b>Please rename the following tasks in your schedule</b>:<br>
+	<ul>$duplicate_task_html</ul>
+    "
+    ad_script_abort
+}
 
 
 # -------------------------------------------------------------------
