@@ -171,6 +171,9 @@ if {[set tasks_node [$root_node selectNodes /project/tasks]] == ""} {
 
 array unset task_name_hash
 array set task_name_hash {}
+array unset task_uid_hash
+array set task_uid_hash {}
+
 # Walk through tall <task> nodes and count the ocurrences of names
 # in the task_name_hash
 foreach child [$tasks_node childNodes] {
@@ -179,19 +182,27 @@ foreach child [$tasks_node childNodes] {
 	"task" {
 	    # Extract the task_name from the list of tasks's attributes
 	    set task_name ""
+	    set task_name_lower ""
+	    set task_uid ""
 	    foreach attr [$child childNodes] {
 		set nodeName [$attr nodeName]
 		set nodeText [$attr text]
 		switch $nodeName {
-		    "Name" { set task_name [string trim [string tolower $nodeText]] }
+		    "UID" { set task_uid $nodeText }
+		    "Name" { 
+			set task_name $nodeText
+			set task_name_lower [string trim [string tolower $task_name]]
+		    }
 		}
 	    }
 
+	    # store the mapping from UID to name for pretty output later
+	    set task_uid_hash($task_uid) $task_name
 
 	    set cnt 0
-	    if {[info exists task_name_hash($task_name)]} { set cnt $task_name_hash($task_name) }
+	    if {[info exists task_name_hash($task_name_lower)]} { set cnt $task_name_hash($task_name_lower) }
 	    incr cnt
-	    set task_name_hash($task_name) $cnt
+	    set task_name_hash($task_name_lower) $cnt
 	}
     }
 }
@@ -386,6 +397,33 @@ if {$allocations_node != ""} {
     if {$debug_p} { ns_write "</ul>\n" }
 }
 
+# Check for "TimephasedData" assignment information per task
+# Walk through all <assignment> nodes and check for assignment information
+set timephased_html ""
+foreach child [$allocations_node childNodes] {
+
+    switch [string tolower [$child nodeName]] {
+        "assignment" {
+            # Extract the assignment_name from the list of assignments's attributes
+	    set task_uid ""
+	    set task_name ""
+            foreach attr [$child childNodes] {
+                set nodeName [$attr nodeName]
+                set nodeText [$attr text]
+                switch [string tolower $nodeName] {
+                    "taskuid" { set task_uid $nodeText }
+		    "timephaseddata" { 
+			set task_name $task_uid
+			if {[info exists task_uid_hash($task_uid)]} { set task_name $task_uid_hash($task_uid)}
+			append timephased_html "<li>$task_name<br>" 
+		    }
+                }
+            }
+        }
+    }
+}
+
+
 # -------------------------------------------------------------------
 # Check if we have to delete some tasks
 # -------------------------------------------------------------------
@@ -422,7 +460,7 @@ if {"" == [set ids [array names db_task_ids]]} { set tasks_to_delete_p 0}
 # Check if there were no errors/decisions to take
 # -------------------------------------------------------------------
 
-if {!$tasks_to_delete_p && !$resources_to_assign_p} {
+if {!$tasks_to_delete_p && !$resources_to_assign_p && "" == $timephased_html} {
     ad_returnredirect $return_url
 }
 
