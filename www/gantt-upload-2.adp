@@ -6,6 +6,23 @@
 
 <h1>@page_title@</h1>
 
+<p>
+Importing data...
+</p>
+
+<if "" ne @timephased_html@>
+<h2>Warning: Found "Timephased Data"</h2>
+<p>
+Timephased data is detailed (intra-day) scheduling information created by MS-Project. <br>
+]project-open[ does not support timephased data with the result that the ]po[ schedule <br>
+may deviate from the MS-Project schedule for the following tasks:
+<ul>
+@timephased_html;noquote@
+</ul>
+Please use the function "Export to Microsoft Project" in your project to export a clean<br>
+version of your schedule and continue with this schedule.
+</p>&nbsp;<br>
+</if>
 
 <if @tasks_to_delete_p@>
 
