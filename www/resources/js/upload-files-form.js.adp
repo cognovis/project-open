@@ -14,6 +14,7 @@ Ext.require([
 ]);
 */
 
+
 Ext.onReady(function(){
 
 	Ext.QuickTips.init();  
@@ -77,7 +78,7 @@ Ext.onReady(function(){
 		columns: [
         	    {header: "ID", width: 25, dataIndex: 'inquiry_files_id', sortable: true},
         	    {header: "File", width: 100, dataIndex: 'file_name', sortable: true},
-        	    {header: "Source Language", width: 100, dataIndex: 'source_language', sortable: true},
+        	    {header: "Source Languages", width: 100, dataIndex: 'source_language', sortable: true},
         	    {header: "Target Languages", width: 200, dataIndex: 'target_languages', sortable: true},
         	    {header: "Delivery Date", width: 100, dataIndex: 'deliver_date', sortable: true}
         	]
@@ -146,7 +147,7 @@ Ext.onReady(function(){
                 id: 'target_language_id',
                 width: 200,
 		xtype: 'boxselect',
-		fieldLabel: 'Target Languages',
+		fieldLabel: '<a href="@abbreviation_url;noquote@"><img src="/intranet/images/help_12_12.gif"></a> Target Languages',
 		labelAlign: 'top',
 		labelWidth: 150,
                 valueField: 'category_id',
@@ -302,7 +303,7 @@ Ext.onReady(function(){
                 transform: 'source_language_id',
                 allowBlank: false,
                 blankText: 'Please provide a value',
-                fieldLabel: 'Source Language',
+                fieldLabel: '<a href="@abbreviation_url;noquote@"><img src="/intranet/images/help_12_12.gif"></a> Source Language',
                 labelAlign: 'top',
                 labelWidth: 150,
                 vtype:'sourceNotEmpty'
