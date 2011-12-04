@@ -72,8 +72,8 @@ set inquiries_query "
         left outer join
                 im_costs
         on
-                i.project_id = im_costs.project_id
-
+                i.project_id = im_costs.project_id and	 
+		im_costs.cost_status_id = 3802
 "
 
 set row_count 0
