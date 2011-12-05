@@ -10,14 +10,149 @@ ad_page_contract {
     and their parameters.
     @author frank.bergmann@project-open.com
 } {
-    { template "report-programs-template.111204b.odp" }
+    { template "report-programs-template.111205d.odp" }
     { odt_filename "project-openslide.odt" }
     { output_format "odp" }
+    { report_start_date "2011-10-01" }
+    { report_end_date "2011-11-01" }
+    { report_customer_id "" }
+    { report_program_id "" }
+    { report_project_type_id "" }
+    { report_area_id "" }
 }
 
 
-ad_proc im_oo_sql_list {
+ad_proc im_oo_tdom_explore {
+    {-level 0}
+    -parent:required
+} {
+    Returns a hierarchical representation of a tDom tree
+    representing the content of an OOoo document in this case.
+} {
+    set name [$parent nodeName]
+    set type [$parent nodeType]
+
+    set indent ""
+    for {set i 0} {$i < $level} {incr i} { append indent "    " }
+
+    set result "${indent}$name"
+    if {$type == "TEXT_NODE"} { return "$result=[$parent nodeValue]\n" }
+    if {$type != "ELEMENT_NODE"} { return "$result\n" }
+
+    # Create a key-value list of attributes behind the name of the tag
+    append result " ("
+    foreach attrib [$parent attributes] {
+        # Pull out the attributes identified by name:namespace.
+        set attrib_name [lindex $attrib 0]
+        set ns [lindex $attrib 1]
+	#       set value [$parent getAttribute "$ns:$attrib_name"]
+        set value ""
+        append result "'$ns':'$attrib_name'='$value', "
+    }
+    append result ")\n"
+
+    # Recursively descend to child nodes
+    foreach child [$parent childNodes] {
+        append result [im_invoice_oo_tdom_explore -parent $child -level [expr $level + 1]]
+    }
+    return $result
+}
+
+
+ad_proc im_oo_to_text {
+    -node:required
+} {
+    Returns a hierarchical representation of a tDom tree
+    representing the content of an OOoo document in this case.
+} {
+    set name [$node nodeName]
+    set type [$node nodeType]
+
+    set result ""
+    if {$name == "text:tab"} { set result "\t" }
+    if {$type == "TEXT_NODE"} { return "[$node nodeValue]\n" }
+
+    # Recursively descend to child nodes
+    foreach child [$node childNodes] {
+        append result [im_oo_to_text -node $child]
+    }
+    return $result
+}
+
+
+
+ad_proc im_oo_page_notes {
     -page_node:required
+} {
+    Returns the "notes" from a slide page.
+    The notes are used to store parameters.
+} {
+    # Go through all <text:p> nodes in all "presentation:notes" sections
+    # (there should be only one)
+    set notes_nodes [$page_node selectNodes "//presentation:notes"]
+    set notes ""
+    foreach notes_node $notes_nodes {
+	append notes [im_oo_to_text -node $notes_node]
+    }
+    return $notes
+}
+
+
+ad_proc im_oo_page_type_static {
+    -page_node:required
+    {-sql ""}
+    {-repeat "" }
+    {-page_name "undefined"}
+} {
+    @param page_node A tDom node for a draw:page node
+    @param sqlAn SQL statement that should return a single row.
+		The returned columns are available as variables
+		in the template.
+    @param repeat An optional SQL statement.
+		The template will be repated for every "repeat"
+		row with the repeat columns available as variables
+		for the SQL statement.
+    @param page_name The name of the slide 
+		(for debugging purposes)
+
+    The procedure will replace the template's @varname@
+    variables by the values returned from the SQL statement.
+} {
+    if {"" == $sql} { set sql "select 1 as one from dual" }
+
+    # Get the parent of the page
+    set page_container [$page_node parentNode]
+
+    # Convert the tDom tree into XML for rendering
+    set template_xml [$page_node asXML]
+
+    # execute the SQL statement in order to load variables
+    if {[catch {
+	db_1row sql $sql
+    } err_msg]} {
+	ad_return_complaint 1 "<b>Error executing SQL statement in slide '$page_name'</b>:<pre>$err_msg</pre>"
+	ad_script_abort
+    }
+
+    # Replace placeholders in the OpenOffice template row with values
+    eval [template::adp_compile -string $template_xml]
+    set xml $__adp_output
+
+    # Parse the new slide and insert into OOoo document
+    set doc [dom parse $xml]
+    set doc_doc [$row_doc documentElement]
+    $page_node insertBefore $doc_doc $template_row_node
+
+
+    # remove the template node
+    $page_container removeChild $page_node
+}
+
+
+
+ad_proc im_oo_page_type_sql_list {
+    -page_node:required
+    {-page_name "undefined"}
 } {
     Takes as input a page node from the template with
     a table and a sql parameter in the "notes".
@@ -34,8 +169,8 @@ ad_proc im_oo_sql_list {
         the data to be shown.
     </ul>
 } {
+    # Constants
     set date_format "YYYY-MM-DD"
-
 
     # Get the list of all tables in slide
     set table_nodes [$page_node selectNodes "//table:table"]
@@ -47,11 +182,11 @@ ad_proc im_oo_sql_list {
 	incr cnt 
     }
     if {$cnt == 0} { 
-	ad_return_complaint 1 "<b>im_oo_sql_list: Did not found a table in the slide</b>" 
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list: Did not found a table in the slide</b>" 
 	ad_script_abort
     }
-    if {$cnt > 1} { 
-	ad_return_complaint 1 "<b>im_oo_sql_list: Found more the one table</b>" 
+    if {$cnt > 1} {
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list: Found more the one table</b>" 
 	ad_script_abort
     }
 
@@ -79,6 +214,11 @@ ad_proc im_oo_sql_list {
 	,im_category_from_id(prog.project_status_id) as project_status
 	,im_category_from_id(prog.project_status_id) as area
     "
+
+
+    set notes [im_oo_page_notes -page_node $page_node]
+    ad_return_complaint 1 "<pre>Notes:\n$notes</pre>"
+
 
     set program_sql "
 	select	t.*,
@@ -211,11 +351,37 @@ set odt_page_template_nodes [$odt_root selectNodes "//draw:page"]
 # and process each page depending on its type
 # ---------------------------------------------------------------
 
-foreach template_page_node $odt_page_template_nodes {
-    set page_type [string tolower "sql_list"]
+foreach page_node $odt_page_template_nodes {
+    # Extract the "page name" from OOoo.
+    # We use this field to determine the type of the page
+    set page_name_list [$page_node getAttribute "draw:name"]
+    set page_type [lindex $page_name_list 0]
+    set page_name [lrange $page_name_list 1 end]
+
+    set page_notes [im_oo_page_notes -page_node $page_node]
+    set sql ""
+    set repeat ""
+    for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
+	set varname [lindex $page_notes $i]
+	set varvalue [lindex $page_notes [expr $i+1]]
+	switch $varname {
+	    sql { set sql $varvalue }
+	    repeat { set repeat $varvalue }
+	}
+    }
+
+#    ad_return_complaint 1 "type=$page_type, name=$page_name, repeat=$repeat, sql=$sql"
+
     switch $page_type {
+	static {
+	    im_oo_page_type_static -page_node $page_node -page_name $page_name -sql $sql -repeat $repeat
+	}
 	sql_list {
-	    im_oo_sql_list -page_node $template_page_node
+	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -sql $sql -repeat $repeat
+	}
+	default {
+	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
+	    ad_script_abort
 	}
     }
 }
