@@ -84,13 +84,15 @@ set context [im_context_bar $page_title]
 # Insert default information if the record doesn't exist
 # ------------------------------------------------------------------
 
-set availability "100"
-set birthdate $today
-set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-set currency $default_currency
-
 set exists_p [db_string exists_employee "select count(*) from im_employees where employee_id=:employee_id"]
+
 if {!$exists_p} {
+
+    set availability "100"
+    set birthdate $today
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set currency $default_currency
+
     db_dml insert_employee_record "
 	insert into im_employees (
 		employee_id,
@@ -154,7 +156,6 @@ if {[llength $rep_cost_ids] == 0} {
 set currency_options [im_currency_options]
 set department_options [im_department_options]
 set end_date $end_century
-set availability "100"
 set hourly_cost 0
 
 set supervisor_options [im_employee_options 1]
