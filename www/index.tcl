@@ -10,7 +10,7 @@ ad_page_contract {
     and their parameters.
     @author frank.bergmann@project-open.com
 } {
-    { template "report-programs-template.111205d.odp" }
+    { template "report-programs-template.odp" }
     { odt_filename "project-openslide.odt" }
     { output_format "odp" }
     { report_start_date "2011-10-01" }
@@ -89,7 +89,10 @@ ad_proc im_oo_page_notes {
 } {
     # Go through all <text:p> nodes in all "presentation:notes" sections
     # (there should be only one)
-    set notes_nodes [$page_node selectNodes "//presentation:notes"]
+
+    # selectNodes doesn't work!
+    # set notes_nodes [$page_node selectNodes "//presentation:notes"]
+    set notes_nodes [im_oo_select_nodes $page_node "presentation:notes"]
     set notes ""
     foreach notes_node $notes_nodes {
 	append notes [im_oo_to_text -node $notes_node]
@@ -151,21 +154,33 @@ ad_proc im_oo_page_type_static {
     set template_xml [$page_node asXML]
 
     # Perform substitutions on the SQL statement
-    eval [template::adp_compile -string $sql]
-    set sql $__adp_output
-    set sql [eval "set a \"$sql\""]
+    if {[catch {
+	eval [template::adp_compile -string $sql]
+	set sql $__adp_output
+	set sql [eval "set a \"$sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
+
+    db_1row "sql_statement $page_name" $sql
 
     # execute the SQL statement in order to load variables
     if {[catch {
-	db_1row sql $sql
     } err_msg]} {
 	ad_return_complaint 1 "<b>Error executing SQL statement in slide '$page_name'</b>:<pre>$err_msg</pre>"
 	ad_script_abort
     }
 
     # Replace placeholders in the OpenOffice template row with values
-    eval [template::adp_compile -string $template_xml]
-    set xml $__adp_output
+    if {[catch {
+	eval [template::adp_compile -string $template_xml]
+	set xml $__adp_output
+    } err_msg]} {
+	ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>
+        "
+	ad_script_abort
+    }
 
     # Parse the new slide and insert into OOoo document
     set doc [dom parse $xml]
@@ -245,15 +260,27 @@ ad_proc im_oo_page_type_sql_list {
     set template_row_xml [$template_row_node asXML]
 
     # Perform substitutions on the SQL statement
-    eval [template::adp_compile -string $sql]
-    set sql $__adp_output
-    set sql [eval "set a \"$sql\""]
+    if {[catch {
+	eval [template::adp_compile -string $sql]
+	set sql $__adp_output
+	set sql [eval "set a \"$sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
 
     set table_body_xml ""
     db_foreach sql $sql {
 	# Replace placeholders in the OpenOffice template row with values
-	eval [template::adp_compile -string $template_row_xml]
-	set row_xml $__adp_output
+
+	if {[catch {
+	    ns_log Notice "template_row_xml=$template_row_xml"
+	    eval [template::adp_compile -string $template_row_xml]
+	    set row_xml $__adp_output
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+	    ad_script_abort
+	}
 
 	# Parse the new row and insert into OOoo document
 	set row_doc [dom parse $row_xml]
@@ -286,6 +313,9 @@ set context [list $page_title]
 set sub_navbar_html ""
 set left_navbar_html ""
 
+# OpenOffice sometimes converts a normal dash into a "long dash"
+set long_dash [format "%c" 8211]
+
 
 # ---------------------------------------------------------------
 # Determine system pathes
@@ -294,7 +324,10 @@ set left_navbar_html ""
 # Determine the template
 set pageroot [ns_info pageroot]
 set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
+
 set template_base_path "$serverroot/packages/intranet-reporting-openoffice/templates"
+# set template_base_path "$serverroot/filestorage/home"
+
 set template_path "$template_base_path/$template"
 if {![file isfile $template_path] || ![file readable $template_path]} {
     ad_return_complaint "Unknown Template" "
@@ -374,8 +407,9 @@ set parameter_hash() $
 set parameter_list [array get parameter_hash]
 
 
-
+set debug ""
 foreach page_node $odt_page_template_nodes {
+
     # Extract the "page name" from OOoo.
     # We use this field to determine the type of the page
     set page_name_list [$page_node getAttribute "draw:name"]
@@ -388,11 +422,27 @@ foreach page_node $odt_page_template_nodes {
     for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
 	set varname [lindex $page_notes $i]
 	set varvalue [lindex $page_notes [expr $i+1]]
-	switch $varname {
+
+	# Substitute a "long dash" ("--") with a normal one
+	regsub -all $long_dash $varvalue "-" varvalue
+
+	switch [string tolower $varname] {
 	    sql { set sql $varvalue }
 	    repeat { set repeat $varvalue }
 	}
     }
+
+    if {[string length $sql] < 20 && [string length $sql] > 0} { 
+	set debug ""
+	for {set i 0} {$i < [string length $sql]} {incr i} {
+	    set char [string index $sql $i]
+	    scan $char %c ascii
+	    append debug "char: $char (ascii: $ascii)\n"
+	}
+	ad_return_complaint 1 "<pre>$debug</pre>"
+    }
+
+    append debug "<li>$page_type=$page_type, page_name=$page_name, sql=$sql, repeat=$repeat\n"
 
     switch $page_type {
 	static {
@@ -414,7 +464,7 @@ foreach page_node $odt_page_template_nodes {
 # ---------------------------------------------------------------
 
 # Format document as XML
-set content [$odt_root asXML]
+set content [$odt_root asXML -indent none]
 
 # Save the content to a file.
 set file [open $odt_content w]
