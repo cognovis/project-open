@@ -24,35 +24,35 @@ ad_page_contract {
 
 ad_proc im_oo_tdom_explore {
     {-level 0}
-    -parent:required
+    -node:required
 } {
     Returns a hierarchical representation of a tDom tree
     representing the content of an OOoo document in this case.
 } {
-    set name [$parent nodeName]
-    set type [$parent nodeType]
+    set name [$node nodeName]
+    set type [$node nodeType]
 
     set indent ""
     for {set i 0} {$i < $level} {incr i} { append indent "    " }
 
     set result "${indent}$name"
-    if {$type == "TEXT_NODE"} { return "$result=[$parent nodeValue]\n" }
+    if {$type == "TEXT_NODE"} { return "$result=[$node nodeValue]\n" }
     if {$type != "ELEMENT_NODE"} { return "$result\n" }
 
     # Create a key-value list of attributes behind the name of the tag
     append result " ("
-    foreach attrib [$parent attributes] {
+    foreach attrib [$node attributes] {
         # Pull out the attributes identified by name:namespace.
         set attrib_name [lindex $attrib 0]
         set ns [lindex $attrib 1]
-	#       set value [$parent getAttribute "$ns:$attrib_name"]
+	#       set value [$node getAttribute "$ns:$attrib_name"]
         set value ""
         append result "'$ns':'$attrib_name'='$value', "
     }
     append result ")\n"
 
     # Recursively descend to child nodes
-    foreach child [$parent childNodes] {
+    foreach child [$node childNodes] {
         append result [im_invoice_oo_tdom_explore -parent $child -level [expr $level + 1]]
     }
     return $result
@@ -98,8 +98,29 @@ ad_proc im_oo_page_notes {
 }
 
 
+ad_proc im_oo_select_nodes {
+    node
+    xpath
+} {
+    Returns a list of nodes that match the xpath.
+} {
+    set result [list]
+    set name [$node nodeName]
+    if {$name == $xpath} { lappend result $node }
+
+    # Recursively descend to child nodes
+    foreach child [$node childNodes] {
+        set sub_result [im_oo_select_nodes $child $xpath]
+	set result [concat $result $sub_result]
+    }
+    return $result
+}
+
+
+
 ad_proc im_oo_page_type_static {
     -page_node:required
+    -parameters:required
     {-sql ""}
     {-repeat "" }
     {-page_name "undefined"}
@@ -118,13 +139,21 @@ ad_proc im_oo_page_type_static {
     The procedure will replace the template's @varname@
     variables by the values returned from the SQL statement.
 } {
+    # Parameter checks
     if {"" == $sql} { set sql "select 1 as one from dual" }
+    array set param_hash $parameters
+    foreach var [array names param_hash] { set $var $param_hash($var) }
 
     # Get the parent of the page
     set page_container [$page_node parentNode]
 
     # Convert the tDom tree into XML for rendering
     set template_xml [$page_node asXML]
+
+    # Perform substitutions on the SQL statement
+    eval [template::adp_compile -string $sql]
+    set sql $__adp_output
+    set sql [eval "set a \"$sql\""]
 
     # execute the SQL statement in order to load variables
     if {[catch {
@@ -140,9 +169,8 @@ ad_proc im_oo_page_type_static {
 
     # Parse the new slide and insert into OOoo document
     set doc [dom parse $xml]
-    set doc_doc [$row_doc documentElement]
-    $page_node insertBefore $doc_doc $template_row_node
-
+    set doc_doc [$doc documentElement]
+    $page_container insertBefore $doc_doc $page_node
 
     # remove the template node
     $page_container removeChild $page_node
@@ -152,6 +180,9 @@ ad_proc im_oo_page_type_static {
 
 ad_proc im_oo_page_type_sql_list {
     -page_node:required
+    -parameters:required
+    {-sql ""}
+    {-repeat "" }
     {-page_name "undefined"}
 } {
     Takes as input a page node from the template with
@@ -171,9 +202,13 @@ ad_proc im_oo_page_type_sql_list {
 } {
     # Constants
     set date_format "YYYY-MM-DD"
+    array set param_hash $parameters
+    foreach var [array names param_hash] { set $var $param_hash($var) }
 
     # Get the list of all tables in slide
-    set table_nodes [$page_node selectNodes "//table:table"]
+    # Use a hand-written select_node because the selectNode doesn't work
+    # set table_nodes [$page_node selectNodes "//table:table"]
+    set table_nodes [im_oo_select_nodes $page_node "table:table"]
 
     set cnt 0
     set table_node ""
@@ -182,11 +217,12 @@ ad_proc im_oo_page_type_sql_list {
 	incr cnt 
     }
     if {$cnt == 0} { 
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list: Did not found a table in the slide</b>" 
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
 	ad_script_abort
     }
     if {$cnt > 1} {
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list: Found more the one table</b>" 
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
+        <pre>[im_oo_tdom_explore -node $page_node]</pre>"
 	ad_script_abort
     }
 
@@ -201,64 +237,20 @@ ad_proc im_oo_page_type_sql_list {
     }
 
     if {"" == $template_row_node} {
-        ad_return_complaint 1 "<b>Table only has one row</b>"
+        ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
         ad_script_abort
     }
 
     # Convert the tDom tree into XML for rendering
     set template_row_xml [$template_row_node asXML]
 
-    # ------------------------------------------------------------
-    # Construct the SQL
-    set derefs "
-	,im_category_from_id(prog.project_status_id) as project_status
-	,im_category_from_id(prog.project_status_id) as area
-    "
-
-
-    set notes [im_oo_page_notes -page_node $page_node]
-    ad_return_complaint 1 "<pre>Notes:\n$notes</pre>"
-
-
-    set program_sql "
-	select	t.*,
-		percent_completed_calendar_advance - program_percent_completed as percent_completed_calendar_deviation
-	from	(select	prog.*,
-			to_char(prog.start_date, :date_format) as start_date_pretty,
-			to_char(prog.end_date, :date_format) as end_date_pretty,
-			(	select	round(10.0 * avg(percent_completed)) / 10.0
-				from	im_projects p
-				where	p.program_id = prog.project_id and
-					p.project_status_id in (select * from im_sub_categories([im_project_status_open]))
-			) as program_percent_completed,
-	
-			-- Calculate the advance according to calendar time passed
-			CASE 
-			WHEN now() < prog.start_date THEN 0.0
-			WHEN now() > prog.end_date THEN 100.0
-			WHEN prog.start_date is null THEN 0.0
-			WHEN prog.end_date is null THEN 0.0
-			WHEN to_char(prog.end_date,'J')::float <= to_char(prog.start_date,'J')::float THEN 0.0
-			WHEN now() >= prog.start_date and now() <= prog.end_date THEN
-				100.0 * (to_char(now(),'J')::float - to_char(prog.start_date,'J')::float) / (to_char(prog.end_date,'J')::float - to_char(prog.start_date,'J')::float)
-			END as percent_completed_calendar_advance,
-	
-			cust.company_name,
-			cust.company_path as company_nr,
-			cust.company_id
-	
-			$derefs 
-		from	im_projects prog,
-			im_companies cust
-		where	prog.company_id = cust.company_id and
-			prog.project_type_id = [im_project_type_program]
-		) t
-	order by
-		lower(project_name)
-    "
+    # Perform substitutions on the SQL statement
+    eval [template::adp_compile -string $sql]
+    set sql $__adp_output
+    set sql [eval "set a \"$sql\""]
 
     set table_body_xml ""
-    db_foreach programs $program_sql {
+    db_foreach sql $sql {
 	# Replace placeholders in the OpenOffice template row with values
 	eval [template::adp_compile -string $template_row_xml]
 	set row_xml $__adp_output
@@ -351,6 +343,38 @@ set odt_page_template_nodes [$odt_root selectNodes "//draw:page"]
 # and process each page depending on its type
 # ---------------------------------------------------------------
 
+array set parameter_hash {}
+set parameter_hash(report_start_date) $report_start_date
+set parameter_hash(report_end_date) $report_end_date
+set parameter_hash(report_customer_id) $report_customer_id
+set parameter_hash(report_program_id) $report_program_id
+set parameter_hash(report_project_type_id) $report_project_type_id
+set parameter_hash(report_area_id) $report_area_id
+set parameter_hash(now) [db_string now "select to_char(now(), 'YYYY-MM-DD')"]
+set parameter_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
+set parameter_hash(now_day_of_month) [db_string now "select to_char(now(), 'DD')"]
+set parameter_hash(now_year) [db_string now "select to_char(now(), 'YYYY')"]
+set parameter_hash(date_format) $date_format
+set parameter_hash(report_start_date_pretty) [db_string report_start_date_pretty "select to_char(:report_start_date::date, :date_format) from dual"]
+set parameter_hash(report_end_date_pretty) [db_string report_end_date_pretty "select to_char(:report_end_date::date, :date_format) from dual"]
+
+set parameter_hash(program_id) 48944
+
+set ttt {
+set parameter_hash() $
+set parameter_hash() $
+set parameter_hash() $
+set parameter_hash() $
+set parameter_hash() $
+set parameter_hash() $
+set parameter_hash() $
+}
+
+#
+set parameter_list [array get parameter_hash]
+
+
+
 foreach page_node $odt_page_template_nodes {
     # Extract the "page name" from OOoo.
     # We use this field to determine the type of the page
@@ -370,14 +394,12 @@ foreach page_node $odt_page_template_nodes {
 	}
     }
 
-#    ad_return_complaint 1 "type=$page_type, name=$page_name, repeat=$repeat, sql=$sql"
-
     switch $page_type {
 	static {
-	    im_oo_page_type_static -page_node $page_node -page_name $page_name -sql $sql -repeat $repeat
+	    im_oo_page_type_static -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
 	}
 	sql_list {
-	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -sql $sql -repeat $repeat
+	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
 	}
 	default {
 	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
