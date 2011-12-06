@@ -30,7 +30,7 @@ set user_id [ad_maybe_redirect_for_registration]
 
 # defaults 
 set row_count 0
-set cost_type_id_invoice set data [db_string get_data "select category_id from im_categories where category_type = 'Customer Invoice'" -default 3700] 
+set cost_type_id_invoice [db_string get_data "select category_id from im_categories where category_type = 'Customer Invoice'" -default 3700] 
 
 # we assume that user is member of only one company 
 set sql "
