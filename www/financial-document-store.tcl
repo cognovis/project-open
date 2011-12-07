@@ -49,14 +49,15 @@ set sql "
 if { [catch {
         db_1row get_company_data $sql
 } err_msg] } {
-	ns_return 200 text/html "\{\"totalCount\":\"0\"\}"
+    ns_return 200 text/html "\{\"totalCount\":\"0\", \"docs\":\[ \]\}"
+    ad_script_abort
 }
 
 # security: user must be either "Key Account" or "Accounting Contact" ToDo: ... or listed in package parameter
 set user_is_primary_contact_or_accounting_contact [db_string get_view_id "select count(*) from im_companies where (primary_contact_id = :user_id or accounting_contact_id = :user_id) and company_id = $company_id" -default 0]
 if { !$user_is_primary_contact_or_accounting_contact } {  
-	ns_return 200 text/html "\{\"totalCount\":\"0\"\}"
-
+    ns_return 200 text/html "\{\"totalCount\":\"0\", \"docs\":\[ \]\}"
+    ad_script_abort
 } else {
     set cur_format [im_l10n_sql_currency_format -locale en]
     set doc_query "
@@ -125,3 +126,4 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 		set docs_count [db_string get_count $sql -default 0]
 	}
 }
+
