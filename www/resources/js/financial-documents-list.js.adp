@@ -63,7 +63,7 @@ Ext.onReady(function(){
        		}
    	});
 
-	var gridPanel = Ext.create('Ext.grid.Panel', {
+	var gridPanelDocs = Ext.create('Ext.grid.Panel', {
 		renderTo: 'gridFinancialDocuments',
 		store: financialDocumentStore,
 		remoteSort: true,
