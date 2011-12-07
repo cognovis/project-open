@@ -1,4 +1,4 @@
-# /packages/intranet-customer-portal/www/wizard/index.tcl
+# /packages/intranet-customer-portal/www/financial-document-store.tcl
 #
 # Copyright (C) 2011 ]project-open[
 # The code is based on ArsDigita ACS 3.4
@@ -22,15 +22,17 @@ ad_page_contract {
 }
 
 # ---------------------------------------------------------------
-# Returns inquiries as JSON 
+# Defaults & Security  
 # ---------------------------------------------------------------
 
-# security 
 set user_id [ad_maybe_redirect_for_registration]
-
-# defaults 
 set row_count 0
 set cost_type_id_invoice [db_string get_data "select category_id from im_categories where category_type = 'Customer Invoice'" -default 3700] 
+set docs_count 0
+
+# ---------------------------------------------------------------
+# Body
+# ---------------------------------------------------------------
 
 # we assume that user is member of only one company 
 set sql "
@@ -119,9 +121,7 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 	        and c.company_id = $company_id
                 and i.cost_type_id = $cost_type_id_invoice
 	"
-	if { 0 == $row_count} {
-		set docs_count 0
-	} else {
+	if { 0 != $row_count} {
 		set docs_count [db_string get_count $sql -default 0]
 	}
 }
