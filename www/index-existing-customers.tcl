@@ -30,7 +30,7 @@ set show_left_navbar_p 0
 
 # Load Sencha libs 
 template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
-template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "1"
+template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order "1"
 
 # ---------------------------------------------------------------
 # Set OpenACS login form

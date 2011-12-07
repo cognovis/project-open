@@ -36,11 +36,11 @@ ad_proc -public im_list_rfqs_component {} {
     if {[im_openacs54_p]} {
         # Include sencha libs
         template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-        template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+        template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order 1
         # CSS Adjustemnts to ExtJS
         template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
         # Include Component JS
-        template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 2
+        template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 200
     } else {
 	append html_output "<script language='javascript'>"
 	append html_output [ad_parse_template "/packages/intranet-customer-portal/www/resources/js/rfq-list.js"]
@@ -62,11 +62,11 @@ ad_proc -public im_list_financial_documents_component {} {
     if {[im_openacs54_p]} {
 	# Include sencha libs
 	template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order 1
-	template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order 1
+	template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order 1
 	# CSS Adjustemnts to ExtJS
 	template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
 	# Include Component JS
-	template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 2
+	template::head::add_javascript -src "/intranet-customer-portal/resources/js/financial-documents-list.js" -order 200
     } else {
 	append html_output "<script language='javascript'>"
 	append html_output [ad_parse_template "/packages/intranet-customer-portal/www/resources/js/financial-documents-list.js"]

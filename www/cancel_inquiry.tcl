@@ -45,7 +45,7 @@ if { "" != $security_token } {
 # Load Sencha libs 
 if {[im_openacs54_p]} {
     template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
-    template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "1"
+    template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order "1"
 }
 
 # ---------------------------------------------------------------

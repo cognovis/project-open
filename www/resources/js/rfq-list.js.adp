@@ -20,7 +20,17 @@ Ext.require([
 ]);
 
 
-Ext.onReady(function(){
+// create namespace
+Ext.namespace('RFQPortlet');
+
+RFQPortlet.app = function() {
+
+
+   return {
+    // public properties, e.g. strings to translate
+
+    // public methods
+    init: function() {
 
 	// ************** Grid Inquiries:  *** //
 
@@ -132,7 +142,14 @@ Ext.onReady(function(){
 			}
 		});
         };
-});
+
+   } // end of init
+
+  };
+
+}(); // end of app;
+
+Ext.onReady(RFQPortlet.app.init, RFQPortlet.app);
 
 
 

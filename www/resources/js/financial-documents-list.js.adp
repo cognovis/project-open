@@ -20,7 +20,16 @@ Ext.require([
 ]);
 
 
-Ext.onReady(function(){
+// create namespace
+Ext.namespace('FinancialDocumentsPortlet');
+
+FinancialDocumentsPortlet.app = function() {
+
+    return {
+    // public properties, e.g. strings to translate
+    
+    // public methods
+    init: function() {
 
 	// ************** Grid Inquiries:  *** //
 
@@ -83,21 +92,14 @@ Ext.onReady(function(){
 		        displayInfo: true,
 		        displayMsg: 'Displaying topics {0} - {1} of {2}',
 			emptyMsg: "No topics to display"
-		        /*
-		        items:[
-		                '-', {
-                		text: 'Show Preview',
-		                pressed: pluginExpanded,
-		                enableToggle: true,
-		                toggleHandler: function(btn, pressed) {
-		                var preview = Ext.getCmp('gv').getPlugin('preview');
-                		preview.toggleExpanded(pressed);
-                		}
-            		}]
-			*/
         	})
 	});
-});
+    } // end of init
+  };
+
+}(); // end of app;
+
+Ext.onReady(FinancialDocumentsPortlet.app.init, FinancialDocumentsPortlet.app);
 
 
 
