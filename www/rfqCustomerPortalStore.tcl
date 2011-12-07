@@ -89,7 +89,7 @@ db_multirow -extend { id action_column} inquiries inquiries_query $inquiries_que
 		set cost_name "---" 
 	} else {
 		# Make sure that user who inquired gets read permissions 
-		permission::grant -object_id $cost_id -party_id $user_id -privilege "read"
+		# permission::grant -object_id $cost_id -party_id $user_id -privilege "read"
                 set cost_name "<a href='/intranet-invoices/view?invoice_id=$cost_id&render_template_id=$template_id'>$cost_name</a>"
 	        set action_column "<img id='buttonAcceptQuote' src='/resources/themes/images/default/dd/drop-yes.gif'>&nbsp;<img id='buttonRejectQuote' src='/resources/themes/images/default/grid/drop-no.gif'>"}
 
