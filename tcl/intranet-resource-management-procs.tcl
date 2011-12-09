@@ -1010,6 +1010,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			lappend user_percentage_list [list $user_id $task_percentage]
 			incr user_ctr
                 }
+
+		# Store the number of users this task has
+		set number_of_users_on_task $user_ctr
+
 		# Add one to end date since this day is included  
 		set end_date_julian_planned_hours [expr $end_date_julian_planned_hours + 1]
 		# set end_date [db_string julian_date_select "select to_char( to_date($end_date_julian_planned_hours,'J'), 'YYYY-MM-DD') from dual"]
@@ -1049,19 +1053,19 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
                         set user_ctr 0
                         foreach user_id $user_list {
-                                set user_id [lindex [lindex $user_percentage_list $user_ctr] 0]
-                                set user_percentage [lindex [lindex $user_percentage_list $user_ctr] 1]
+                                # set user_id [lindex [lindex $user_percentage_list $user_ctr] 0]
+                                # set user_percentage [lindex [lindex $user_percentage_list $user_ctr] 1]
 
 				# Sanity check: Percentage assignment required
-			        if { "" == user_percentage || ![info exists user_percentage] } {
-					ad_return_complaint 1 "No assignment found for user_id: 
-						<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> 
-						on project task:<a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>
-					"
-				} 
+			        # if { "" == user_percentage || ![info exists user_percentage] } {
+				#	ad_return_complaint 1 "No assignment found for user_id: 
+				#		<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> 
+				#		on project task:<a href='/intranet/projects/view?project_id=$project_id'>$project_id</a>
+				#	"
+				#} 
 
 				if { [info exists user_day_task_arr($user_id-$next_workday_julian-$project_id)] } {
-					set user_day_task_arr($user_id-$days_julian-$project_id) [expr [expr $planned_units.0 * $user_percentage/100] + $user_day_task_arr($user_id-$days_julian-$project_id)]
+					set user_day_task_arr($user_id-$days_julian-$project_id) [expr [expr $planned_units.0 / $number_of_users_on_task] + $user_day_task_arr($user_id-$days_julian-$project_id)]
 				} else {
 					set user_day_task_arr($user_id-$days_julian-$project_id) [expr $planned_units.0 * $user_percentage/100]
 				}
@@ -1078,7 +1082,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			# Distribute hours over workdays 
 		    	if { [string first "." $planned_units] == -1 } { set planned_units $planned_units.0 }  
 		    	if { [string first "." $no_workdays] == -1 } { set no_workdays $no_workdays.0 }  
-			set hours_per_day [expr $planned_units / $no_workdays ]
+			set hours_per_day [expr $planned_units / $no_workdays / $number_of_users_on_task ]
 
 			set column_sql "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" 
 
