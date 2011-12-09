@@ -215,18 +215,6 @@ foreach task_name [lsort [array names task_name_hash]] {
     }
 }
 
-if {"" != $duplicate_task_html} {
-    ad_return_complaint 1 "
-	<b>Duplicate task names are not allowed during import</b>:<br>
-	We found duplicate task names in your MS-Project schedule.<br>
-	This is not allowed during import, because of the way MS-Project
-	renames tasks if you move them in the schedule.<br>&nbsp;<br>
-	<b>Please rename the following tasks in your schedule</b>:<br>
-	<ul>$duplicate_task_html</ul>
-    "
-    ad_script_abort
-}
-
 
 # -------------------------------------------------------------------
 # Save the tasks.
@@ -527,6 +515,7 @@ template::list::create \
 
 # Write audit trail
 im_project_audit -project_id $project_id
+
 
 
 # ---------------------------------------------------------------------
