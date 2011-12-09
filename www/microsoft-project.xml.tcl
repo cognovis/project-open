@@ -49,6 +49,12 @@ if {![db_0or1row project_info "
     return
 }
 
+# Filename for the download file
+set project_filename [string tolower [string trim "$project_name $project_path"]]
+regsub {[^[:alnum:]]} $project_filename "_" project_filename
+regsub {[[:space:]]+} $project_filename "_" project_filename
+regsub {_+} $project_filename "_" project_filename
+
 
 # ---------------------------------------------------------------
 # Check if all sub-projects and tasks have a im_gantt_project entry.
@@ -513,6 +519,8 @@ foreach line [split $xml_org "\n"] {
 if {"html" == $format} {
     ad_return_complaint 1 "<pre>[ns_quotehtml $xml]</pre>"
 } else {
+    set outputheaders [ns_conn outputheaders]
+    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${project_filename}.xml"
     ns_return 200 application/octet-stream "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n$xml"
 }
 
