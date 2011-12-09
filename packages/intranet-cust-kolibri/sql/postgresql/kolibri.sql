@@ -66,3 +66,90 @@ update im_categories set enabled_p = 'f' where category_id = 2016;
 -- Move Note component up
 update im_component_plugins set sort_order = 10 where plugin_id = 29115;
 update im_component_plugins set enabled_p = 'f' where plugin_id = 30328;
+
+
+
+-- DYNFIELDS
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'bank_account_nr',			-- column_name
+		 '#intranet-cust-kolibri.Bank_Account_Nr#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 50,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'bank_routing_nr',			-- column_name
+		 '#intranet-cust-kolibri.Bank_Routing_Nr#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 51,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'bank_name',			-- column_name
+		 '#intranet-cust-kolibri.Bank_Name#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 52,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'iban',			-- column_name
+		 '#intranet-cust-kolibri.iban#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 53,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  ) from dual;
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'bic',			-- column_name
+		 '#intranet-cust-kolibri.bic#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 54,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'paypal_email',			-- column_name
+		 '#intranet-cust-kolibri.paypal_email#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 55,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
+
+select im_dynfield_attribute_new (
+	  	 'im_company',			-- object_type
+		 'skrill_email',			-- column_name
+		 '#intranet-cust-kolibri.skrill_email#',	-- pretty_name
+		 'textbox_medium',			-- widget_name
+		 'string',				-- acs_datatype
+		 'f',					-- required_p   
+		 56,					-- pos y
+		 'f',					-- also_hard_coded
+		 'im_companies'			-- table_name
+	  );
