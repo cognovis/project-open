@@ -126,7 +126,6 @@ Ext.onReady(function(){
                 proxy: {
                         type: 'rest',
                         url: '/intranet-customer-portal/get-target-languages',
-                        // url: '/intranet-customer-portal/target-languages.txt',
                         appendId: true,
                         extraParams: {
                                 format: 'json',
@@ -137,41 +136,50 @@ Ext.onReady(function(){
         });
 
 
+    var selectTargetLanguage = Ext.create('Ext.ux.form.field.BoxSelect', {
+	id: 'target_language_id',
+        fieldLabel: '<a href="@abbreviation_url;noquote@"><img src="/intranet/images/help_12_12.gif"></a> Target Languages',
+	labelAlign: 'top',
+       	renderTo: 'form_target_languages',
+        displayField: 'category_translated',
+        width: 200,
+        labelWidth: 150,
+        store: targetLanguageStore,
+	valueField: 'category_id', 
+        queryMode: 'remote',
+	emptyText: 'Please provide a value',
+	valueField: 'category',
+	store: targetLanguageStore,
+	blankText: 'Please provide a value',
+	allowBlank: false,
+	forceSelection: true,
+	hiddenName: 'target_language_ids',
+	style: { "margin-right": "10px" },
+        listeners: {
+                change: function(targetLanguageForm, value){
+                        var record = targetLanguageForm.findRecord('category_id', value);
+                }
+        },
+        listConfig: {
+        	getInnerTpl: function() {
+                	return '<div class={indent_class}>{category_translated}</div>';
+                }
+        }
+
+    });
+
+
         targetLanguageForm = new Ext.FormPanel({
             id:                 'targetLanguageForm_id',
             renderTo:           'form_target_languages',
             autoHeight:         true,
             height:             170,
             style: { "margin-right": "10px" },
-            items: [{
-                id: 'target_language_id',
-                width: 200,
-		xtype: 'boxselect',
-		fieldLabel: '<a href="@abbreviation_url;noquote@"><img src="/intranet/images/help_12_12.gif"></a> Target Languages',
-		labelAlign: 'top',
-		labelWidth: 150,
-                valueField: 'category_id',
-		hiddenName: 'target_language_ids',
-                displayField: 'category_translated',
-                forceSelection: true,
-		allowBlank: false,
-		blankText: 'Please provide a value',
-                queryMode: 'remote',
-                store: targetLanguageStore,
-		listeners: {
-		    change: function(targetLanguageForm, value){
-		    	var record = targetLanguageForm.findRecord('category_id', value);
-			// this.findField('target_language_ids').setValue(record ? record.get('category_id') : '');
-			// targetLanguageForm.findField('target_language_ids').setValue(record ? record.get('category_id') : '');
-    		    }
-  		},
-                listConfig: {
-                        getInnerTpl: function() {
-                                return '<div class={indent_class}>{category_translated}</div>';
-                        }
-                }
-            }]
+            items: [
+		selectTargetLanguage
+            ]
         });
+
 
 
         // ************** Upload Form *** //
