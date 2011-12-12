@@ -1,7 +1,7 @@
 # -------------------------------------------------------------
-# /packages/intranet-planning/www/planning-component.tcl
+# /packages/intranet-planning/lib/planning-component.tcl
 #
-# Copyright (c) 2010 ]project-open[
+# Copyright (c) 2011 ]project-open[
 # All rights reserved.
 #
 # Author: frank.bergmann@project-open.com
@@ -27,15 +27,15 @@ if {![info exists top_vars] || "" == $top_vars} {
 if {![info exists left_vars] || "" == $left_vars} { 
     set left_vars [parameter::get_from_package_key -package_key intranet-planning -parameter "LeftDimension" -default "project_phase"] 
 }
-if {![info exists planning_dimension_time] || "" == $planning_dimension_time} { 
-    set planning_dimension_time [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionTime" -default "month"] 
+if {![info exists planning_dimension_date] || "" == $planning_dimension_date} { 
+    set planning_dimension_date [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionTime" -default "month"] 
 }
 if {![info exists planning_dimension_cost_type] || "" == $planning_dimension_cost_type} { 
     set planning_dimension_cost_type [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionCostType" -default "3704 3736 3722"] 
 }
 
-set top_vars "item_cost_type"
-set left_vars "item_project_member"
+set top_vars "item_cost_type_id"
+set left_vars "item_project_member_id"
 
 set sigma ""
 set bgcolor(0) " class=roweven "
@@ -91,8 +91,8 @@ db_0or1row start_date "
 # -------------------------------------------------------------
 # Time Dimension: Calculate value range
 # 
-set dimension_time_list [list]
-switch $planning_dimension_time {
+set dimension_date_list [list]
+switch $planning_dimension_date {
     year { set date_format "YYYY" }
     quarter { set date_format "YYYY-Q" }
     month { set date_format "YYYY-MM" }
@@ -103,7 +103,7 @@ switch $planning_dimension_time {
     week { set date_format "" }
 }
 
-set dimension_time_list [db_list_of_lists time_dimension "
+set dimension_date_list [db_list_of_lists time_dimension "
 		select distinct
 			to_char(im_day_enumerator, :date_format),
 			to_char(im_day_enumerator, :date_format)
@@ -173,7 +173,6 @@ set inner_sql "
 		from
 			im_planning_items pi
 		where
-			pi.item_type_id = :planning_type_id and
 			pi.item_object_id = :object_id
 "
 
@@ -181,11 +180,10 @@ set inner_sql "
 set middle_sql "
 	select
 		pi.*,
-		im_category_from_id(pi.item_time_dim_type_id) as item_time_dim_type,
-		acs_object__name(pi.item_project_member_dim_id) as item_project_member,
-		im_category_from_id(pi.item_cost_type_dim_id) as item_cost_type,
-		to_char(pi.item_time_dim, 'YYYY-MM-DD') as item_date_dim_pretty,
-		acs_object__name(pi.item_project_phase_dim_id) as item_project_phase
+		acs_object__name(pi.item_project_member_id) as item_project_member,
+		im_category_from_id(pi.item_cost_type_id) as item_cost_type,
+		to_char(pi.item_date, 'YYYY-MM-DD') as item_date_pretty,
+		acs_object__name(pi.item_project_phase_id) as item_project_phase
 	from	($inner_sql) pi
 	where	1=1
 "
@@ -205,18 +203,8 @@ db_foreach planning_items $sql {
     # something like "$year-$month-$customer_id"
     set key_expr "\$[join $dimension_vars "-\$"]"
     set key [eval "set a \"$key_expr\""]
-    
-    ad_return_complaint 1 "key=$key"
-
-    # Sum up the values for the matrix cells
-    set sum 0
-    if {[info exists hash($key)]} { set sum $hash($key) }
-    
-    if {"" == $hours} { set hours 0 }
-    set sum [expr $sum + $hours]
-    set hash($key) $sum
+    set hash($key) $item_value
 }
-
 
 
 # ------------------------------------------------------------
@@ -226,15 +214,15 @@ set top_scale [list]
 set left_scale [list]
 
 switch $top_vars {
-    item_cost_type	{ foreach e $dimension_cost_type_list { lappend top_scale [list $e] } }
-    item_projec_member	{ foreach e $dimension_member_list { lappend top_scale [list $e] } }
-    default 		{ ad_return_complaint 1 "planning-component: top_vars=$top_vars not implemented yet" }
+    item_cost_type_id		{ foreach e $dimension_cost_type_list { lappend top_scale [list $e] } }
+    item_projec_member_id	{ foreach e $dimension_member_list { lappend top_scale [list $e] } }
+    default 			{ ad_return_complaint 1 "planning-component: top_vars=$top_vars not implemented yet" }
 }
 
 switch $left_vars {
-    item_cost_type 	{ foreach e $dimension_cost_type_list { lappend left_scale [list $e] } }
-    item_project_member	{ foreach e $dimension_member_list { lappend left_scale [list $e] } }
-    default		{ ad_return_complaint 1 "planning-component: left_vars=$left_vars not implemented yet" }
+    item_cost_type_id 		{ foreach e $dimension_cost_type_list { lappend left_scale [list $e] } }
+    item_project_member_id	{ foreach e $dimension_member_list { lappend left_scale [list $e] } }
+    default			{ ad_return_complaint 1 "planning-component: left_vars=$left_vars not implemented yet" }
 }
 
 # ad_return_complaint 1 "<pre>top_vars=$top_vars\nleft_vars=$left_vars\nleft='$left_scale'\ntop='$top_scale'\n</pre>"
@@ -297,11 +285,12 @@ for {set row 0} {$row < $top_scale_rows} { incr row } {
 # Display the Table Body
 
 set body ""
-set cnt 0
+set row_cnt 0
+set cell_cnt 0
 foreach left_scale_item $left_scale {
 
     # Start the row
-    set row "<tr $bgcolor([expr $cnt % 2])>\n"
+    set row "<tr $bgcolor([expr $row_cnt % 2])>\n"
 
     # Show the pretty values from the left scale
     set left_scale_cnt 0
@@ -341,16 +330,25 @@ foreach left_scale_item $left_scale {
 	set key_expr "\$[join $dimension_vars "-\$"]"
 	set key [eval "set a \"$key_expr\""]
 	
+#	ad_return_complaint 1 "$key_expr $key"
+
 	# -----------------------------------------------------------
 	# Extract the value for this planning cell
 	set sum ""
 	if {[info exists hash($key)]} { set sum $hash($key) }
 
-	append row "\t<td><input type=text name=asdf value=\"$sum - $key\"></td>\n"
+	append row "\t<td>\n"
+	append row "<input type=text name=item_value.$cell_cnt value=\"$sum\">\n"
+	append row "<input type=hidden name=item_project_phase_id.$cell_cnt value=[im_opt_val item_project_phase_id]>\n"
+	append row "<input type=hidden name=item_project_member_id.$cell_cnt value=[im_opt_val item_project_member_id]>\n"
+	append row "<input type=hidden name=item_cost_type_id.$cell_cnt value=[im_opt_val item_cost_type_id]>\n"
+	append row "<input type=hidden name=item_date.$cell_cnt value=\"[im_opt_val item_date]\">\n"
+        append row "</td>\n"
+	incr cell_cnt
 
     }
     append row "</tr>\n"
     append body $row
-    incr cnt
+    incr row_cnt
 }
 
