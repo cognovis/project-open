@@ -20,55 +20,56 @@
 -- Please note that this is quite different from creating a new object
 -- class in Java or other languages.
 
-SELECT acs_object_type__create_type (
-	'im_planning_item',			-- object_type - only lower case letters and "_"
-	'Planning Item',			-- pretty_name - Human readable name
-	'Planning Items',			-- pretty_plural - Human readable plural
-	'acs_object',				-- supertype - "acs_object" is topmost object type.
-	'im_planning_items',			-- table_name - where to store data for this object?
-	'item_id',				-- id_column - where to store object_id in the table?
-	'intranet-planning',			-- package_name - name of this package
-	'f',					-- abstract_p - abstract class or not
-	null,					-- type_extension_table
-	'im_planning_item__name'		-- name_method - a PL/SQL procedure that
-						-- returns the name of the object.
-);
+--SELECT acs_object_type__create_type (
+--	'im_planning_item',			-- object_type - only lower case letters and "_"
+--	'Planning Item',			-- pretty_name - Human readable name
+--	'Planning Items',			-- pretty_plural - Human readable plural
+--	'acs_object',				-- supertype - "acs_object" is topmost object type.
+--	'im_planning_items',			-- table_name - where to store data for this object?
+--	'item_id',				-- id_column - where to store object_id in the table?
+--	'intranet-planning',			-- package_name - name of this package
+--	'f',					-- abstract_p - abstract class or not
+--	null,					-- type_extension_table
+--	'im_planning_item__name'		-- name_method - a PL/SQL procedure that
+--						-- returns the name of the object.
+--);
 
 -- Add additional meta information to allow DynFields to extend the im_planning_item object.
-update acs_object_types set
-        status_type_table = 'im_planning_items',	-- which table contains the status_id field?
-        status_column = 'item_status_id',		-- which column contains the status_id field?
-        type_column = 'item_type_id'			-- which column contains the type_id field?
-where object_type = 'im_planning_item';
+--update acs_object_types set
+--        status_type_table = 'im_planning_items',	-- which table contains the status_id field?
+--        status_column = 'item_status_id',		-- which column contains the status_id field?
+--        type_column = 'item_type_id'			-- which column contains the type_id field?
+--where object_type = 'im_planning_item';
 
 -- Object Type Tables contain the lists of all tables (except for
 -- acs_objects...) that contain information about an im_planning_item object.
 -- This way, developers can add "extension tables" to an object to
 -- hold additional DynFields, without changing the program code.
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_planning_item', 'im_planning_items', 'item_id');
+--insert into acs_object_type_tables (object_type,table_name,id_column)
+--values ('im_planning_item', 'im_planning_items', 'item_id');
 
 
 -- Generic URLs to link to an object of type "im_planning_item".
 -- These URLs are used by the Full-Text Search Engine and the Workflow
 -- to show links to the object type.
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_planning_item','view','/intranet-planning/new?display_mode=display&item_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_planning_item','edit','/intranet-planning/new?display_mode=edit&item_id=');
+--insert into im_biz_object_urls (object_type, url_type, url) values (
+--'im_planning_item','view','/intranet-planning/new?display_mode=display&item_id=');
+--insert into im_biz_object_urls (object_type, url_type, url) values (
+--'im_planning_item','edit','/intranet-planning/new?display_mode=edit&item_id=');
 
 
 -- This table stores one time line of items.
 drop table im_planning_items;
 create table im_planning_items (
-			-- The object_id: references acs_objects.object_id.
-			-- So we can lookup object metadata such as creation_date,
-			-- object_type etc in acs_objects.
-	item_id		integer
-			constraint im_planning_item_id_pk
-			primary key
-			constraint im_planning_item_id_fk
-			references acs_objects,
+-- not an object (yet)
+--			-- The object_id: references acs_objects.object_id.
+--			-- So we can lookup object metadata such as creation_date,
+--			-- object_type etc in acs_objects.
+--	item_id		integer
+--			constraint im_planning_item_id_pk
+--			primary key
+--			constraint im_planning_item_id_fk
+--			references acs_objects,
 			-- Field to allow attaching the item to a project, user or
 			-- company. So object_id references acs_objects.object_id,
 			-- the supertype of all object types.
@@ -77,49 +78,40 @@ create table im_planning_items (
 			not null
 			constraint im_object_id_fk
 			references acs_objects,
-			-- Type can be "Revenues" or "Costs"
-	item_type_id	integer 
-			constraint im_planning_item_type_nn
-			not null
-			constraint im_planning_item_type_fk
-			references im_categories,
-			-- Status of the planned row. May be "Active", "Approved"
-			-- or "Deleted". Could be controlled by a workflow.
-	item_status_id	integer 
-			constraint im_planning_item_status_nn
-			not null
-			constraint im_planning_item_status_fk
-			references im_categories,
-			-- The list of dimensions (contact left_dim top_dim)
-	item_dimensions	text
-			constraint item_dimensions_nn
-			not null,
-			-- Time dimension category. 
-			-- May be "Quarter", "Month", "Week" or "Day".
-	item_time_dim_type_id integer
-			constraint im_planning_item_time_dim_fk
-			references im_categories,
+--			-- Type can be "Revenues" or "Costs"
+--	item_type_id	integer 
+--			constraint im_planning_item_type_nn
+--			not null
+--			constraint im_planning_item_type_fk
+--			references im_categories,
+--			-- Status of the planned row. May be "Active", "Approved"
+--			-- or "Deleted". Could be controlled by a workflow.
+--	item_status_id	integer 
+--			constraint im_planning_item_status_nn
+--			not null
+--			constraint im_planning_item_status_fk
+--			references im_categories,
 			-- Project phase dimension
 			-- for planning on project phases.
-	item_project_phase_dim_id integer
-			constraint item_project_phase_dim_fk
+	item_project_phase_id integer
+			constraint item_project_phase_fk
 			references im_projects,
 			-- Project member dimension
 			-- for planning per project member.
-	item_project_member_dim_id integer
-			constraint item_project_member_dim_fk
+	item_project_member_id integer
+			constraint item_project_member_fk
 			references parties,
 			-- Cost type dimension.
 			-- Valid values include categories from "Intranet Cost Type"
 			-- and "Intranet Expense Type" (as a sub-type for expenses)
-	item_cost_type_dim_id integer,
+	item_cost_type_id integer,
 			-- Actual time dimension.
 			-- The timestamptz indicates the start of the
-			-- time range defined by item_time_dim_type_id.
-	item_time_dim	timestamptz,
+			-- time range defined by item_date_type_id.
+	item_date	timestamptz,
 			-- Start of the time line for planning values.
 			-- Should be set to the 1st day of week or month to plan.
-	item_value	numeric(12,2)[],
+	item_value	numeric(12,2),
 			-- Note per line
 	item_note	text
 );
@@ -134,35 +126,13 @@ create index im_planning_object_idx on im_planning_items(item_object_id);
 -- (This makes a lot of sense in practice. Otherwise there would be loads
 -- of duplicated projects in the system and worse...)
 create unique index im_planning_object_item_idx on im_planning_items(
-	item_object_id, 
-	item_type_id, 
-	item_dimensions,
-	coalesce(item_time_dim_type_id,0), 
-	coalesce(item_project_phase_dim_id,0), 
-	coalesce(item_project_member_dim_id,0),
-	coalesce(item_cost_type_dim_id,0),
-	coalesce(item_time_dim,'2000-01-01'::timestamptz)
+	item_object_id,
+	coalesce(item_project_phase_id,0), 
+	coalesce(item_project_member_id,0),
+	coalesce(item_cost_type_id,0),
+	coalesce(item_date,'2000-01-01'::timestamptz)
 );
 
-
-
------------------------------------------------------------
--- PL/SQL functions to Create and Delete planning and to get
--- the name of a specific item.
---
-create or replace function im_planning_item__name(integer)
-returns varchar as $body$
-DECLARE
-	p_item_id		alias for $1;
-	v_name			varchar;
-BEGIN
-	select	acs_object__name(p.item_object_id) || ' ' || im_category_from_id(item_time_dim_id) || ' ' || coalesce(item_dim1, '')
-	into	v_name
-	from	im_planning_items p
-	where	item_id = p_item_id;
-
-	return v_name;
-end; $body$ language 'plpgsql';
 
 
 -- Create a new planning item
@@ -175,7 +145,9 @@ end; $body$ language 'plpgsql';
 create or replace function im_planning_item__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
-	integer, integer, integer, integer, date
+	integer, integer, integer,
+	numeric, varchar,
+	integer, integer, integer, timestamptz
 ) returns integer as $body$
 DECLARE
 	-- Default 6 parameters that go into the acs_objects table
@@ -186,60 +158,44 @@ DECLARE
 	p_creation_ip   	alias for $5;		-- creation_ip default null
 	p_context_id		alias for $6;		-- context_id default null
 
-	-- Specific parameters with data to go into the im_planning table
+	-- Standard parameters
 	p_item_object_id	alias for $7;		-- associated object (project, user, ...)
 	p_item_type_id		alias for $8;		-- type (email, http, text comment, ...)
 	p_item_status_id	alias for $9;		-- status ("active" or "deleted").
-	p_item_time_dim_id	alias for $10;
-	p_item_start_date	alias for $11;
 
-	-- This is a variable for the PL/SQL function
-	v_item_id	integer;
+	-- Value parameters
+	p_item_value		alias for $10;		-- the actual numeric value
+	p_item_note		alias for $11;		-- A note per entry.
+
+	-- Dimension parameter
+	p_item_project_phase_id	alias for $12;
+	p_item_project_member_id alias for $13;
+	p_item_cost_type_id	alias for $14;
+	p_item_date		alias for $15;
+
 BEGIN
-	-- Create an acs_object as the super-type of the item.
-	-- (Do you remember, im_planning_item is a subtype of acs_object?)
-	-- acs_object__new returns the object_id of the new object.
-	v_item_id := acs_object__new (
-		p_item_id,		-- object_id - NULL to create a new id
-		p_object_type,		-- object_type - "im_planning_item"
-		p_creation_date,	-- creation_date - now()
-		p_creation_user,	-- creation_user - Current user or "0" for guest
-		p_creation_ip,		-- creation_ip - IP from ns_conn, or "0.0.0.0"
-		p_context_id,		-- context_id - NULL, not used in ]po[
-		't'			-- security_inherit_p - not used in ]po[
-	);
-	
 	-- Create an entry in the im_planning table with the same
 	-- v_item_id from acs_objects.object_id
 	insert into im_planning_items (
-		item_id, item_object_id, item_type_id, item_status_id, item_time_dim_id, item_start_date
+		item_object_id,
+		item_project_phase_id,
+		item_project_member_id,
+		item_cost_type_id,
+		item_date,
+		item_value,
+		item_note
 	) values (
-		v_item_id, p_item_object_id, p_item_type_id, p_item_status_id, p_item_time_dim_id, p_item_start_date
+		p_item_object_id,
+		p_item_project_phase_id,
+		p_item_project_member_id,
+		p_item_cost_type_id,
+		p_item_date,
+		p_item_value,
+		p_item_note
 	);
 
-	return v_item_id;
-END; $body$ language 'plpgsql';
-
-
--- Delete a item from the system.
--- Delete entries from both im_planning and acs_objects.
--- Deleting only from im_planning would lead to an invalid
--- entry in acs_objects, which is probably harmless, but innecessary.
-create or replace function im_planning_item__delete(integer)
-returns integer as '
-DECLARE
-	p_item_id	alias for $1;
-BEGIN
-	-- Delete any data related to the object
-	delete	from im_planning
-	where	item_id = p_item_id;
-
-	-- Finally delete the object iself
-	PERFORM acs_object__delete(p_item_id);
-
 	return 0;
-end;' language 'plpgsql';
-
+END; $body$ language 'plpgsql';
 
 
 

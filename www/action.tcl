@@ -13,15 +13,18 @@ ad_page_contract {
 } {
     action
     object_id:integer
-    item_value:array,optional
-    item_note:array,optional
     return_url
+    item_value:array,float,optional
+    item_project_phase_id:array,optional
+    item_project_member_id:array,optional
+    item_cost_type_id:array,optional
+    item_date:array,optional
+    item_note:array,optional
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
-
 
 # Check the permissions
 # Permissions for all usual projects, companies etc.
@@ -32,16 +35,48 @@ eval $perm_cmd
 if {!$object_write} { ad_return_complaint 1 "You don't have sufficient permission to perform this action" }
 
 
-ad_return_complaint 1 [array get item_value]
-
-
-set note_list [array names note]
-if {0 == [llength $note_list]} { ad_returnredirect $return_url }
-
 switch $action {
-    del_notes {
-	foreach note_id $note_list {
-	    db_string del_notes "select im_note__delete(:note_id)"
+    save {
+	# Delete the old values for this object_id
+	db_dml del_im_planning_items "delete from im_planning_items where item_object_id = :object_id"
+
+	# Create the new values whenever the value is not "" (null)
+	foreach id [array names item_value] {
+	    set value $item_value($id)
+	    if {"" == $value} { continue }
+
+	    set project_phase_id [im_opt_val item_project_phase_id($id)]
+	    set project_member_id [im_opt_val item_project_member_id($id)]
+	    set cost_type_id [im_opt_val item_cost_type_id($id)]
+	    set date [im_opt_val item_date($id)]
+	    set value [im_opt_val item_value($id)]
+	    set note [im_opt_val item_note($id)]
+
+	    db_string insert_im_planning_item "select im_planning_item__new(
+			-- object standard 6 parameters
+			null,
+			'im_planning_item',
+			now(),
+			:user_id,
+			'[ns_conn peeraddr]',
+			null,
+
+			-- Main parameters
+			:object_id,
+			null,
+			null,
+
+			-- Value parameters
+			:value,
+			:note,
+
+			-- Dimension parameters
+			:project_phase_id,
+			:project_member_id,
+			:cost_type_id,
+			:date
+		)
+	    "
 	}
     }
     default {
