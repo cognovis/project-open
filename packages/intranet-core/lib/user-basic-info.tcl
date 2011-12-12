@@ -44,6 +44,7 @@ if {0 == $user_id} {
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set subsite_id [ad_conn subsite_id]
 
 # Check the permissions 
@@ -126,7 +127,15 @@ set user_id $user_id_from_search
 # Profile Management
 # ---------------------------------------------------------------
 
-set profile_component [im_profile::profile_component $user_id_from_search "disabled"]
+set managable_profiles [im_profile::profile_options_managable_for_user $current_user_id]
+if {[llength $managable_profiles] > 0} { set edit_profiles_p 1 }
+if {!$current_user_is_admin_p && ($user_id == $current_user_id)} { set edit_profiles_p 0}
+
+if {$edit_profiles_p} {
+    set profile_component [im_profile::profile_component $user_id_from_search "disabled"]
+} else {
+    set profile_component ""
+}
 
 # ------------------------------------------------------
 # Show extension fields
