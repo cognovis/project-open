@@ -52,7 +52,7 @@ ad_proc -public im_planning_component {
 		    [list planning_dim3_id $planning_dim3_id] \
     ]
 
-    set result [ad_parse_template -params $params "/packages/intranet-planning/www/planning-component"]
+    set result [ad_parse_template -params $params "/packages/intranet-planning/lib/planning-component"]
     return [string trim $result]
 }
 

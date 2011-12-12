@@ -59,6 +59,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 
 
 -- This table stores one time line of items.
+drop table im_planning_items;
 create table im_planning_items (
 			-- The object_id: references acs_objects.object_id.
 			-- So we can lookup object metadata such as creation_date,
@@ -89,22 +90,33 @@ create table im_planning_items (
 			not null
 			constraint im_planning_item_status_fk
 			references im_categories,
-			-- Time dimension. May be "Quarter", "Month", "Week" or "Day".
-	item_time_dim_id integer 
-			constraint im_planning_item_time_dim_nn
-			not null
+			-- The list of dimensions (contact left_dim top_dim)
+	item_dimensions	text
+			constraint item_dimensions_nn
+			not null,
+			-- Time dimension category. 
+			-- May be "Quarter", "Month", "Week" or "Day".
+	item_time_dim_type_id integer
 			constraint im_planning_item_time_dim_fk
 			references im_categories,
-			-- Dimensions for planning. May all be NULL for planning by
-			-- object_id. item_dim1 may for example refer to sub-projects,
-			-- cost types etc. item_dim2 and higher are provided to allow
-			-- for planning both on sub-project and cost type for example.
-	item_dim1_id	integer,
-	item_dim2_id	integer,
-	item_dim3_id	integer,
-			-- When does planning start for this object?
-			-- This value is typically identical with the object start date.
-	item_start_date	date,
+			-- Project phase dimension
+			-- for planning on project phases.
+	item_project_phase_dim_id integer
+			constraint item_project_phase_dim_fk
+			references im_projects,
+			-- Project member dimension
+			-- for planning per project member.
+	item_project_member_dim_id integer
+			constraint item_project_member_dim_fk
+			references parties,
+			-- Cost type dimension.
+			-- Valid values include categories from "Intranet Cost Type"
+			-- and "Intranet Expense Type" (as a sub-type for expenses)
+	item_cost_type_dim_id integer,
+			-- Actual time dimension.
+			-- The timestamptz indicates the start of the
+			-- time range defined by item_time_dim_type_id.
+	item_time_dim	timestamptz,
 			-- Start of the time line for planning values.
 			-- Should be set to the 1st day of week or month to plan.
 	item_value	numeric(12,2)[],
@@ -121,7 +133,16 @@ create index im_planning_object_idx on im_planning_items(item_object_id);
 -- performs a "double-click" on the "Create New Planning Item" button...
 -- (This makes a lot of sense in practice. Otherwise there would be loads
 -- of duplicated projects in the system and worse...)
-create unique index im_planning_object_item_idx on im_planning_items(item_object_id, item_type_id, item_time_dim_id, coalesce(item_dim1_id,0), coalesce(item_dim2_id,0), coalesce(item_dim3_id,0));
+create unique index im_planning_object_item_idx on im_planning_items(
+	item_object_id, 
+	item_type_id, 
+	item_dimensions,
+	coalesce(item_time_dim_type_id,0), 
+	coalesce(item_project_phase_dim_id,0), 
+	coalesce(item_project_member_dim_id,0),
+	coalesce(item_cost_type_dim_id,0),
+	coalesce(item_time_dim,'2000-01-01'::timestamptz)
+);
 
 
 
