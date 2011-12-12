@@ -1,4 +1,4 @@
--- 
+0;95;c-- 
 -- packages/intranet-cust-kolibri/sql/postgresql/kolibri.sql
 -- 
 -- Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
@@ -40,7 +40,7 @@ begin
 	for v_note in
         select note,user_id
         from users_contact
-	where note is not null and note != '';
+	where note is not null and note != ''
         loop
 		v_note_id := im_note__new(
 			null,
@@ -54,7 +54,36 @@ begin
 			11514,
 			11400);
 		update users_contact set note = '' where user_id = v_note.user_id;
-    end loop; 
+end loop; 
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_note_id                 integer;
+	v_note                  record;
+begin
+	for v_note in
+        select note,user_id
+        from im_freelancers
+	where note is not null and note != ''
+        loop
+		v_note_id := im_note__new(
+			null,
+			'im_note',
+			now(),
+			v_note.user_id,
+			'[ad_conn peeraddr]',
+			null,
+			v_note.note,
+			v_note.user_id,
+			11514,
+			11400);
+		update users_contact set note = '' where user_id = v_note.user_id;
+end loop; 
         return 0;
 end;$body$ language 'plpgsql';
 select inline_0 ();
@@ -153,3 +182,5 @@ select im_dynfield_attribute_new (
 		 'f',					-- also_hard_coded
 		 'im_companies'			-- table_name
 	  );
+
+update im_companies set bank_account_nr = bank_account, bank_routing_nr = bank from im_freelancers, acs_rels where rel_type = 'im_company_employee_rel' and object_id_one = company_id and user_id = object_id_two;
