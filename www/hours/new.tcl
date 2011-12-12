@@ -305,6 +305,7 @@ if {[string is integer $project_id] && 0 != $project_id} {
     # Make sure the user can see everything below the single main project
     set task_visibility_scope "specified"
 
+
 } elseif {[llength $project_id] > 1} {
 
     set main_project_id_list [db_list main_ps "
@@ -404,6 +405,16 @@ switch $task_visibility_scope {
 						main.tree_sortkey and
 						tree_right(main.tree_sortkey)
 	"
+
+	if { "restrictive" == $permissive_logging && $one_project_only_p } {
+	    set children_sql "$children_sql 
+				and sub.project_id in (
+	                                select  r.object_id_one
+        	                        from    acs_rels r
+                	                where   r.object_id_two = :user_id_from_search
+				)
+	    " 
+	}
     }
     "sub_project" {
 	# sub_project: Each (sub-) project determines the visibility of its tasks.
@@ -673,8 +684,12 @@ db_foreach has_children $has_children_sql {
 
 db_multirow hours_multirow hours_timesheet $sql
 
+### 
+# Sort temporary deactivated, does not work in version 4.0 
+### 
+
 # Sort the tree according to the specified sort order
-multirow_sort_tree hours_multirow project_id parent_id sort_order
+# multirow_sort_tree hours_multirow project_id parent_id sort_order 
 
 # ---------------------------------------------------------
 # Format the output
