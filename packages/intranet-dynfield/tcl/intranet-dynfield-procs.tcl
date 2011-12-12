@@ -161,6 +161,7 @@ ad_proc -public im_dynfield::widget_options_not_cached {
 				   [list "Search" search] \
 				   [list "Select" select] \
 				   [list "Select Text" select_text] \
+				   [list "Skype" skype] \
 				   [list "Submit" submit] \
 				   [list "Tab" tab] \
 				   [list "Text" text] \
