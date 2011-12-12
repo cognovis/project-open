@@ -226,11 +226,15 @@ Ext.onReady(function(){
 	    // anchor : '90%'
 	});
 
+
+
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
 		
-		// V4.0: var source_language = form_source_language.elements[0].value;
+
 		var source_language = document.getElementById("form_source_language").elements[0].value;
+		console.log('source_language:' + source_language);
+		break;
 		var target_languages = targetLanguageForm.getForm().findField('target_language_id').getValue();
 
 		// toDo: Improve

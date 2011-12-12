@@ -27,11 +27,10 @@ ad_proc -public im_list_rfqs_component {} {
 } {
 
     set user_id [ad_get_user_id]
-
     set html_output "<div id='gridRFQ'></div><br>"
 
     if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
-	append html_output "<button class='form-button40' id='getNewQuote' onclick=\"document.location.href='/intranet-customer-portal/upload-files'; return false;\">Get a new quote</button>"
+		append html_output "<button class='form-button40' id='getNewQuote' onclick=\"document.location.href='/intranet-customer-portal/upload-files'; return false;\">Get a new quote</button>"
     }
     if {[im_openacs54_p]} {
         # Include sencha libs
@@ -42,9 +41,9 @@ ad_proc -public im_list_rfqs_component {} {
         # Include Component JS
         template::head::add_javascript -src "/intranet-customer-portal/resources/js/rfq-list.js" -order 200
     } else {
-	append html_output "<script language='javascript'>"
-	append html_output [ad_parse_template "/packages/intranet-customer-portal/www/resources/js/rfq-list.js"]
-	append html_output "</script>"
+		append html_output "<script language='javascript'>"
+		append html_output [ad_parse_template "/packages/intranet-customer-portal/www/resources/js/rfq-list.js"]
+		append html_output "</script>"
     }
 
     return $html_output

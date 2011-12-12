@@ -3,8 +3,6 @@
 <property name="show_left_navbar_p">@show_left_navbar_p;noquote@</property>
 <property name="main_navbar_label">intranet_customer_portal</property>
 
-
-
   <!--[if IE]>
 	<style type="text/css">
 	#source_language_placeholder { margin-top: -12px }
@@ -46,8 +44,9 @@
 		</div>
 	</td>
 </tr>
-
 </table>
+
+
 
 <!-- File Viewer & Comments --> 
 <br><br>
