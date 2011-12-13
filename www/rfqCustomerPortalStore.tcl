@@ -74,6 +74,9 @@ set inquiries_query "
         on
                 i.project_id = im_costs.project_id and	 
 		im_costs.cost_status_id = 3802
+
+	order by 
+		inquiry_date DESC
 "
 
 set row_count 0
