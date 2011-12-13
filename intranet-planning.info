@@ -23,6 +23,12 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DimensionTime" default="month" description="Defines the measure for the time dimension as one of the options: 'week', 'month', 'quarter' or 'year'. Default is 'month'"/>
 
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DimensionCostType" default="3704 3736 3722" description="A space separated list of cost types to be shown. Valid values include category IDs from 'Intranet Cost Type' as well as 'Intranet Expense Type'. With PlanningType=73100 (revenue planning) this dimension should contain only the cost type 3700=Invoice. Default is '3704 3736 3722' for Provider Bill - Timesheet Hours - Expense Bundles. An alternative is '3704 3736 4000 4007 4012' for Provider Bill - Timesheet Hours - Meals - Airfare - Other, where the last cost types are from the intranet-expenses package."/>
+
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="PlanningValueRoundingDigits"  default="0" description="Specifies the rounding of the displayed planning values. Default is '0' for no decimal places."/>
+
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="PlanningValueInputFieldSize"  default="6" description="Size of the input field for planning values. Default is 6."/>
+
+
         </parameters>
 
     </version>

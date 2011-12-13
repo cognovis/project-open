@@ -50,6 +50,14 @@ if {![info exists return_url] || "" == $return_url} {
     set return_url [im_url_with_query] 
 }
 
+# Size of the input field
+set input_field_size [parameter::get_from_package_key -package_key intranet-planning -parameter "PlanningValueInputFieldSize" -default 6] 
+
+# Rounding precision of the displayed values
+# The database by default contains a numeric(12,2) field,
+# so there are max. 2 digits stored in the DB. You can 
+# change this in the DB if you need more precision.
+set rounding_digits [parameter::get_from_package_key -package_key intranet-planning -parameter "PlanningValueRoundingDigits" -default 0] 
 
 
 # -------------------------------------------------------------
@@ -193,7 +201,7 @@ set middle_sql "
 # Execute the query to fill the "hash"
 #
 set sql "
-	select	item_value,
+	select	round(item_value, :rounding_digits) as item_value,
 		[join $dimension_vars ",\n\t\t"]
 	from	($middle_sql) m
 "
@@ -337,8 +345,8 @@ foreach left_scale_item $left_scale {
 	set sum ""
 	if {[info exists hash($key)]} { set sum $hash($key) }
 
-	append row "\t<td>\n"
-	append row "<input type=text name=item_value.$cell_cnt value=\"$sum\">\n"
+	append row "\t<td align=right>\n"
+	append row "<input type=text name=item_value.$cell_cnt value=\"$sum\" size=$input_field_size>\n"
 	append row "<input type=hidden name=item_project_phase_id.$cell_cnt value=[im_opt_val item_project_phase_id]>\n"
 	append row "<input type=hidden name=item_project_member_id.$cell_cnt value=[im_opt_val item_project_member_id]>\n"
 	append row "<input type=hidden name=item_cost_type_id.$cell_cnt value=[im_opt_val item_cost_type_id]>\n"
