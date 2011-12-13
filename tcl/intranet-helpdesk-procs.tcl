@@ -482,7 +482,7 @@ namespace eval im_ticket {
         db_dml update_ticket $sql
 
 	# Write Audit Trail
-	im_project_audit -project_id $ticket_id -action create
+	im_project_audit -project_id $ticket_id -action after_create
 
 	return $ticket_id
     }
@@ -555,7 +555,7 @@ namespace eval im_ticket {
 
 	
 	    # Write Audit Trail
-	    im_project_audit -project_id $ticket_id -action create
+	    im_project_audit -project_id $ticket_id -action after_create
 
 	    # Create a new forum topic of type "Note"
 	    set topic_type_id [im_topic_type_id_discussion]
@@ -721,7 +721,7 @@ namespace eval im_ticket {
         "
 
 	# Write Audit Trail
-	im_project_audit -project_id $ticket_id -action create
+	im_project_audit -project_id $ticket_id -action after_create
     }
 
     ad_proc -public check_permissions {
