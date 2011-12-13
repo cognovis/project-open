@@ -8,6 +8,14 @@
 -- @author frank.bergmann@project-open.com
 
 -----------------------------------------------------------
+-- Add new planning fields to im_project
+
+
+alter table im_projects add column cost_bills_planned numeric(12,2);
+alter table im_projects add column cost_expenses_planned numeric(12,2);
+
+
+-----------------------------------------------------------
 -- Planning
 --
 -- Assign a monthly or weekly number to an object and its 1st and 2nd dimension
