@@ -10,8 +10,8 @@ ad_page_contract {
     and their parameters.
     @author frank.bergmann@project-open.com
 } {
-    { template "report-programs-template.odp" }
-    { odt_filename "project-openslide.odt" }
+    { template "avance-accumulado-sor.odp" }
+    { odt_filename "avance-accumulado-sor.odp" }
     { output_format "odp" }
     { report_start_date "2011-10-01" }
     { report_end_date "2011-11-01" }
@@ -90,8 +90,6 @@ ad_proc im_oo_page_notes {
     # Go through all <text:p> nodes in all "presentation:notes" sections
     # (there should be only one)
 
-    # selectNodes doesn't work!
-    # set notes_nodes [$page_node selectNodes "//presentation:notes"]
     set notes_nodes [im_oo_select_nodes $page_node "presentation:notes"]
     set notes ""
     foreach notes_node $notes_nodes {
@@ -121,6 +119,31 @@ ad_proc im_oo_select_nodes {
 
 
 
+ad_proc im_oo_page_type_constant {
+    -page_node:required
+    -parameters:required
+    {-sql ""}
+    {-repeat "" }
+    {-page_name "undefined"}
+} {
+    A "constant" page contains only static contents.
+    No substitution whatsoever will take place.
+
+    @param page_node A tDom node for a draw:page node
+    @param sqlAn SQL statement that should return a single row.
+		The returned columns are available as variables
+		in the template.
+    @param repeat An optional SQL statement.
+		The template will be repated for every "repeat"
+		row with the repeat columns available as variables
+		for the SQL statement.
+    @param page_name The name of the slide 
+		(for debugging purposes)
+
+} {
+    # Do nothing
+}
+
 ad_proc im_oo_page_type_static {
     -page_node:required
     -parameters:required
@@ -142,18 +165,12 @@ ad_proc im_oo_page_type_static {
     The procedure will replace the template's @varname@
     variables by the values returned from the SQL statement.
 } {
-    # Parameter checks
-    if {"" == $sql} { set sql "select 1 as one from dual" }
+    # Write global parameters into local variables
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
-    # Get the parent of the page
-    set page_container [$page_node parentNode]
-
-    # Convert the tDom tree into XML for rendering
-    set template_xml [$page_node asXML]
-
-    # Perform substitutions on the SQL statement
+    # Check the sql statement and perform substitutions
+    if {"" == $sql} { set sql "select 1 as one from dual" }
     if {[catch {
 	eval [template::adp_compile -string $sql]
 	set sql $__adp_output
@@ -163,34 +180,52 @@ ad_proc im_oo_page_type_static {
         ad_script_abort
     }
 
-    db_1row "sql_statement $page_name" $sql
-
-    # execute the SQL statement in order to load variables
+    # Check the repeat statement and perform substitutions
+    if {"" == $repeat} { set repeat "select 1 as one from dual" }
     if {[catch {
+	eval [template::adp_compile -string $repeat]
+	set repeat $__adp_output
+	set repeat [eval "set a \"$repeat\""]
     } err_msg]} {
-	ad_return_complaint 1 "<b>Error executing SQL statement in slide '$page_name'</b>:<pre>$err_msg</pre>"
-	ad_script_abort
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in REPEAT statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
     }
 
-    # Replace placeholders in the OpenOffice template row with values
-    if {[catch {
-	eval [template::adp_compile -string $template_xml]
-	set xml $__adp_output
-    } err_msg]} {
-	ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>
-        "
-	ad_script_abort
+    # Get the parent of the page
+    set page_container [$page_node parentNode]
+
+    # Convert the tDom tree into XML for rendering
+    set template_xml [$page_node asXML]
+
+    db_foreach repeat $repeat {
+
+	# execute the SQL statement in order to load variables
+	if {[catch {
+	    db_1row "sql_statement $page_name" $sql
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>Error executing SQL statement in slide '$page_name'</b>:<pre>$err_msg</pre>"
+	    ad_script_abort
+	}
+	
+	# Replace placeholders in the OpenOffice template row with values
+	if {[catch {
+	    eval [template::adp_compile -string $template_xml]
+	    set xml $__adp_output
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+	    ad_script_abort
+	}
+	
+	# Parse the new slide and insert into OOoo document
+	set doc [dom parse $xml]
+	set doc_doc [$doc documentElement]
+	$page_container insertBefore $doc_doc $page_node
     }
-
-    # Parse the new slide and insert into OOoo document
-    set doc [dom parse $xml]
-    set doc_doc [$doc documentElement]
-    $page_container insertBefore $doc_doc $page_node
-
+	
     # remove the template node
     $page_container removeChild $page_node
-}
 
+}
 
 
 ad_proc im_oo_page_type_sql_list {
@@ -221,8 +256,6 @@ ad_proc im_oo_page_type_sql_list {
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
     # Get the list of all tables in slide
-    # Use a hand-written select_node because the selectNode doesn't work
-    # set table_nodes [$page_node selectNodes "//table:table"]
     set table_nodes [im_oo_select_nodes $page_node "table:table"]
 
     set cnt 0
@@ -242,14 +275,16 @@ ad_proc im_oo_page_type_sql_list {
     }
 
     # Seach for the 2nd table:table-row tag that contains the template
-    set row_nodes [$table_node selectNodes "//table:table-row"]
+    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
     set template_row_node ""
     set row_count 0
     foreach row_node $row_nodes {
         set row_as_list [$row_node asList]
-        if {2 == $row_count} { set template_row_node $row_node }
+        if {1 == $row_count} { set template_row_node $row_node }
         incr row_count
     }
+
+#    ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $template_row_node]</pre>"
 
     if {"" == $template_row_node} {
         ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
@@ -278,7 +313,7 @@ ad_proc im_oo_page_type_sql_list {
 	    eval [template::adp_compile -string $template_row_xml]
 	    set row_xml $__adp_output
 	} err_msg]} {
-	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+	    ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:<pre>$err_msg\n[im_oo_tdom_explore -node $template_row_node]</pre>"
 	    ad_script_abort
 	}
 
@@ -382,6 +417,7 @@ set parameter_hash(report_end_date) $report_end_date
 set parameter_hash(report_customer_id) $report_customer_id
 set parameter_hash(report_program_id) $report_program_id
 set parameter_hash(report_project_type_id) $report_project_type_id
+set parameter_hash(report_project_type) [im_category_from_id $report_project_type_id]
 set parameter_hash(report_area_id) $report_area_id
 set parameter_hash(now) [db_string now "select to_char(now(), 'YYYY-MM-DD')"]
 set parameter_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
@@ -432,19 +468,12 @@ foreach page_node $odt_page_template_nodes {
 	}
     }
 
-    if {[string length $sql] < 20 && [string length $sql] > 0} { 
-	set debug ""
-	for {set i 0} {$i < [string length $sql]} {incr i} {
-	    set char [string index $sql $i]
-	    scan $char %c ascii
-	    append debug "char: $char (ascii: $ascii)\n"
-	}
-	ad_return_complaint 1 "<pre>$debug</pre>"
-    }
-
     append debug "<li>$page_type=$page_type, page_name=$page_name, sql=$sql, repeat=$repeat\n"
 
     switch $page_type {
+	constant {
+	    im_oo_page_type_constant -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
+	}
 	static {
 	    im_oo_page_type_static -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
 	}
@@ -457,6 +486,8 @@ foreach page_node $odt_page_template_nodes {
 	}
     }
 }
+
+#ad_return_complaint 1 "<pre>$debug</pre>"
 
 
 # ---------------------------------------------------------------
