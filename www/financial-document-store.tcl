@@ -27,10 +27,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set row_count 0
-
-set cost_type_id_invoice [im_cost_type_invoice] 
-set cost_type_id_quote [im_cost_type_quote] 
-
+set cost_type_id_invoice [db_string get_data "select category_id from im_categories where category_type = 'Customer Invoice'" -default 3700] 
 set docs_count 0
 
 # ---------------------------------------------------------------
@@ -89,7 +86,7 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 	        and i.customer_id=c.company_id
 	        and i.provider_id=p.company_id
 		and c.company_id = $company_id
-		and i.cost_type_id in ($cost_type_id_invoice, $cost_type_id_quote)
+		and i.cost_type_id = $cost_type_id_invoice
 	order by 
 		i.invoice_id
 	limit   :limit
@@ -107,6 +104,26 @@ if { !$user_is_primary_contact_or_accounting_contact } {
 		incr row_count
 	}
 	
-    	if { 0 != $row_count} { set docs_count $row_count }
+	set sql "
+	select 
+		count(*)
+	from
+	        im_invoices_active i,
+	        im_costs ci
+	                LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
+	        acs_objects o,
+	        im_companies c,
+	        im_companies p
+	where
+	        i.invoice_id = o.object_id
+	        and i.invoice_id = ci.cost_id
+	        and i.customer_id=c.company_id
+	        and i.provider_id=p.company_id
+	        and c.company_id = $company_id
+                and i.cost_type_id = $cost_type_id_invoice
+	"
+	if { 0 != $row_count} {
+		set docs_count [db_string get_count $sql -default 0]
+	}
 }
 
