@@ -6,6 +6,7 @@ Ext.BLANK_IMAGE_URL = '/intranet/images/cleardot.gif';
 
 // SuperSelectBox Target Language
 var tempIdCounter = 0;
+
 /*
 Ext.require([
     'Ext.form.field.File',
@@ -16,6 +17,17 @@ Ext.require([
 
 
 Ext.onReady(function(){
+
+	Ext.ux.form.FileUploadField.override({
+	    onChange : function() {
+        	var fullPath = this.getValue();
+	        var lastIndex = fullPath.lastIndexOf('\\');
+        	if (lastIndex == -1)
+                	return;
+	        var fileName = fullPath.substring(lastIndex + 1);
+        	this.setValue(fileName);
+    	    }
+	});
 
 	Ext.QuickTips.init();  
 	Ext.form.Field.prototype.msgTarget = 'side';  
@@ -203,7 +215,14 @@ Ext.onReady(function(){
                     emptyText: 'Please select a document ...',
 		    labelAlign: 'top',
 		    fieldLabel: 'File to translate',
-                    buttonText: 'Browse'
+                    buttonText: 'Browse',
+		    listeners: {
+			    'change': function(){
+				// alert(this.value = this.value.replace("C:\\fakepath\\", ""));
+				// this.setValue(this.value.replace("C:\\fakepath\\", ""));
+				// this.setValue('vv');
+    			    }
+  		    }
                  }
 		]
         });
@@ -231,10 +250,8 @@ Ext.onReady(function(){
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
 		
-
 		var source_language = document.getElementById("form_source_language").elements[0].value;
 		console.log('source_language:' + source_language);
-		break;
 		var target_languages = targetLanguageForm.getForm().findField('target_language_id').getValue();
 
 		// toDo: Improve
@@ -321,11 +338,8 @@ Ext.onReady(function(){
                 vtype:'sourceNotEmpty'
             }]
         });
+
 });
-
-
-
-
 
 
 
