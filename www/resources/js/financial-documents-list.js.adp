@@ -48,7 +48,7 @@ FinancialDocumentsPortlet.app = function() {
 
 	var financialDocumentStore = new Ext.data.Store({
 	    model: 'listFinancialDocuments',
-	    pageSize: 50,
+	    pageSize: 7,
 	    proxy: {
         	type: 'ajax',
 	        url: '/intranet-customer-portal/financial-document-store',
@@ -68,14 +68,13 @@ FinancialDocumentsPortlet.app = function() {
 	financialDocumentStore.load({
         	params: {
             		start: 0,
-		        limit: 50
+		        limit: 7
        		}
    	});
 
 	var gridPanelDocs = Ext.create('Ext.grid.Panel', {
 		renderTo: 'gridFinancialDocuments',
 		store: financialDocumentStore,
-		remoteSort: true,
 		width: 685,	
 		height: 200,
 		columns: [
@@ -87,12 +86,20 @@ FinancialDocumentsPortlet.app = function() {
         	    {header: "Currency", width: 60, dataIndex: 'currency', sortable: true, align: 'left'},
         	    {header: "Project No.", width: 130, sortable: true, dataIndex: 'project_nr'}
         	],
+		dockedItems: [{
+		        xtype: 'pagingtoolbar',
+		        store: financialDocumentStore,   
+		        dock: 'bottom',
+		        displayInfo: true
+   		}]
+		/* 
 		bbar: Ext.create('Ext.PagingToolbar', {
 			store: financialDocumentStore,
 		        displayInfo: true,
 		        displayMsg: 'Displaying topics {0} - {1} of {2}',
 			emptyMsg: "No topics to display"
         	})
+		*/ 
 	});
     } // end of init
   };
