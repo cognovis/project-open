@@ -278,7 +278,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	-form_id riskmanagement_risk
 
     # Write Audit Trail
-    im_audit -object_id $risk_id -action create
+    im_audit -object_id $risk_id -action after_create
 
     ad_returnredirect $return_url
 #    ad_returnredirect [export_vars -base "/intranet-riskmanagement/new" {risk_id {form_mode display}}]
