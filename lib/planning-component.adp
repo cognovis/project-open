@@ -10,6 +10,7 @@
 		<nobr>
 		<select name=action>
 			<option value=save><%= [lang::message::lookup "" intranet-planning.Save "Save"] %></option>
+			<option value=create_quote_from_planning_data><%= [lang::message::lookup "" intranet-planning.Create_quote_from_date "Create quote from planning data"] %></option>
 		</select>	
 		<input type=submit value="<%= [lang::message::lookup "" intranet-planning.Apply "Apply"] %>">
 		</nobr>

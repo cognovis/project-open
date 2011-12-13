@@ -44,6 +44,10 @@ set default_billing_rate [parameter::get_from_package_key -package_key intranet-
 set billing_currency [parameter::get_from_package_key -package_key intranet-cost -parameter "DefaultCurrency" -default "EUR"]
 
 switch $action {
+    create_quote_from_planning_data {
+	# Redirect to the wizard page to create a new quote
+	ad_returnredirect [export_vars -base "/intranet-planning/quote-wizard/new-from-planning" {{project_id $object_id} return_url}]
+    }
     save {
 	# Delete the old values for this object_id
 	db_dml del_im_planning_items "delete from im_planning_items where item_object_id = :object_id"
