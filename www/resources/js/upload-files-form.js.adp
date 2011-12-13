@@ -246,7 +246,8 @@ Ext.onReady(function(){
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
 		
-		var source_language = document.getElementById("form_source_language").elements[0].value;
+		// var source_language = document.getElementById("form_source_language").elements[0].value;
+		var source_language = sourceLanguageForm.getForm().findField('source_language').getRawValue();
 		// console.log('source_language:' + source_language);
 		var target_languages = targetLanguageForm.getForm().findField('target_language_id').getValue();
 
@@ -321,8 +322,9 @@ Ext.onReady(function(){
             autoHeight: true,
             width: 150,
             style: { "margin-right": "10px" },
-          items: [{
+            items: [{
                 xtype: 'combo',
+		id: 'source_language',
                 transform: 'source_language_id',
                 allowBlank: false,
                 blankText: 'Please provide a value',
