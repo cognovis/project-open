@@ -50,6 +50,9 @@ ad_proc -public im_cost_type_expense_planned {} { return 3728 }
 ad_proc -public im_cost_type_interco_invoice {} { return 3730 }
 ad_proc -public im_cost_type_interco_quote {} { return 3732 }
 ad_proc -public im_cost_type_provider_receipt {} { return 3734 }
+# Fake cost types for timesheet _hours_
+ad_proc -public im_cost_type_timesheet_hours {} { return 3736 }
+
 
 ad_proc -public im_cost_type_short_name { cost_type_id } { 
     switch $cost_type_id {
@@ -397,7 +400,7 @@ namespace eval im_cost {
 	}
 
 	# Audit the action
-	# im_audit -object_id $cost_id -action create
+	# im_audit -object_id $cost_id -action after_create
 
 	return $cost_id
     }
@@ -1493,9 +1496,9 @@ ad_proc im_costs_project_finance_component {
     set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    append prelim_cost_html "<td align=right>
-	  $subtotals([im_cost_type_expense_planned]) $default_currency
-	</td>\n"
+    set subtotal $subtotals([im_cost_type_expense_planned])
+    append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[lang::message::lookup "" intranet-cost.Preliminary_Total "Preliminary Total"]</b></td>\n"
     append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
@@ -1960,17 +1963,25 @@ ad_proc -public im_cost_update_project_cost_cache {
         set subtotals($cost_type_id) $amount_converted
     }
 
-    # Special treatment for timesheet hours budget - multiply with default hourly rate
-    set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
-    if {"" == $budget_hours} { set budget_hours 0 }
-    set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
-    set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+    # Special treatment for timesheet hours budget:
+    # - Check if there are cost elements of type "timesheet planned hours" in the system
+    # - Otherwise use budget_hours in the project and multiply with default hourly rate
+    if {[info exists subtotals([im_cost_type_timesheet_planned])] && "" != $subtotals([im_cost_type_timesheet_planned]) && 0 != $subtotals([im_cost_type_timesheet_planned])} {
+	# There is an entry for planned timesheet hours for this project...
+	# Do nothing.
+    } else {
+	# Create a fake timesheet planning entry based on im_project.budget_hours field
+	set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
+	if {"" == $budget_hours} { set budget_hours 0 }
+	set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
+	set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+    }
 
     # Expense Planned
     if {![info exists subtotals([im_cost_type_expense_planned])]} {
 	set subtotals([im_cost_type_expense_planned]) 0
     }
-    
+
 
     # We can update the profit & loss because all financial documents
     # have been converted to default_currency
@@ -1983,7 +1994,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 			cost_quotes_cache = $subtotals([im_cost_type_quote]),
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
 			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
-			cost_timesheet_planned_cache = :cost_timesheet_planned,
+			cost_timesheet_planned_cache = $subtotals([im_cost_type_timesheet_hours]),
 			cost_expense_planned_cache = 0,
 			cost_cache_dirty = null
 		where
