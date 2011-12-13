@@ -159,9 +159,6 @@ Ext.onReady(function(){
         store: targetLanguageStore,
 	valueField: 'category_id', 
         queryMode: 'remote',
-	emptyText: 'Please provide a value',
-	valueField: 'category',
-	store: targetLanguageStore,
 	blankText: 'Please provide a value',
 	allowBlank: false,
 	forceSelection: true,
@@ -246,12 +243,11 @@ Ext.onReady(function(){
 	});
 
 
-
         // ************** Form Handling *** //
         var clickHandlerSendFileandMetaData = function() {
 		
 		var source_language = document.getElementById("form_source_language").elements[0].value;
-		console.log('source_language:' + source_language);
+		// console.log('source_language:' + source_language);
 		var target_languages = targetLanguageForm.getForm().findField('target_language_id').getValue();
 
 		// toDo: Improve
@@ -259,9 +255,7 @@ Ext.onReady(function(){
 		var curr_month = input_delivery_date.getValue().getMonth() + 1;
 		var curr_year = input_delivery_date.getValue().getFullYear();
 		// console.log('curr_date: ' + curr_date + ', curr_month:' + curr_month + ', curr_year: ' + curr_year )
-
 		var delivery_date = curr_year + '-' + curr_month + '-' + curr_date;
-		// console.log('target_languages:' + target_languages);
 
 		if( myuploadform.getForm().isValid() && targetLanguageForm.getForm().isValid() && sourceLanguageForm.getForm().isValid() ){
 			form_action=1;
