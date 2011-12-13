@@ -298,7 +298,7 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Project Revenue Planning',	-- plugin_name
+	'Project Financial Planning',	-- plugin_name
 	'intranet-planning',		-- package_name
 	'right',			-- location
 	'/intranet/projects/view',	-- page_url
