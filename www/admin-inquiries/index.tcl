@@ -32,10 +32,10 @@ if {![im_permission $current_user_id "view_projects_all"]} {
 set page_title ""
 
 # Load Sencha libs
-template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
+template::head::add_css -href "/intranet-sencha/resources/css/ext-all.css" -media "screen" -order "1"
 
 # Load SuperSelectBox
-template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order 1
+template::head::add_javascript -src "/intranet-sencha/resources/js/ext-all.js" -order 1
 
 # ---------------------------------------------------------------
 # Set HTML elements

@@ -38,7 +38,6 @@ set name_src_dir [parameter::get -package_id [apm_package_id_from_key intranet-c
 
 
 if { "" != $security_token } {
-    # set inquiry_id [db_string inq_id "select inquiry_id from im_inquiries_customer_portal where security_token = :security_token" -default 0]
     if { $inquiry_id == 0} {
 	ad_return_complaint 1 "You have to register first in order to upload files. Please refer to our <a href='/intranet-customer-portal/'>Customer Portal</a>"
     }
@@ -52,8 +51,8 @@ set user_id [ad_maybe_redirect_for_registration]
 
 # Load Sencha libs 
 if {[im_openacs54_p]} {
-    template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "1"
-    template::head::add_javascript -src "/intranet-sencha/js/ext-all.js" -order "1"
+    template::head::add_css -href "/intranet-sencha/resources/css/ext-all.css" -media "screen" -order "1"
+    template::head::add_javascript -src "/intranet-sencha/resources/js/ext-all.js" -order "1"
 }
 
 # ---------------------------------------------------------------
@@ -61,10 +60,6 @@ if {[im_openacs54_p]} {
 # ---------------------------------------------------------------
 
 if { "submit"==$btn_value } { 
-	# set project nr_& project_path (by default identical)
-	# Make sure that constraints are enforced: 
-	#  - "im_projects_nr_un" UNIQUE, btree (project_nr, company_id, parent_id)
-	#  - "im_projects_path_un" UNIQUE, btree (project_nr, company_id, parent_id)
 
 	set company_id [db_string get_company_id "select company_id from im_inquiries_customer_portal where inquiry_id=:inquiry_id" -default 0]
 
