@@ -30,7 +30,7 @@ set show_left_navbar_p 0
 
 # Load Sencha libs 
 template::head::add_css -href "/intranet-sencha/resources/css/ext-all.css" -media "screen" -order 1
-template::head::add_javascript -src "/intranet-sencha/resources/js/ext-all.js" -order 1
+template::head::add_javascript -src "/intranet-sencha/ext-all.js" -order 1
 
 # CSS Adjustemnts to ExtJS 
 template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10

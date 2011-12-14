@@ -35,7 +35,7 @@ ad_proc -public im_list_rfqs_component {} {
     if {[im_openacs54_p]} {
         # Include sencha libs
         template::head::add_css -href "/intranet-sencha/resources/css/ext-all.css" -media "screen" -order 1
-        template::head::add_javascript -src "/intranet-sencha/resources/js/ext-all.js" -order 1
+        template::head::add_javascript -src "/intranet-sencha/ext-all.js" -order 1
         # CSS Adjustemnts to ExtJS
         template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
         # Include Component JS
@@ -61,7 +61,7 @@ ad_proc -public im_list_financial_documents_component {} {
     if {[im_openacs54_p]} {
 	# Include sencha libs
 	template::head::add_css -href "/intranet-sencha/resources/css/ext-all.css" -media "screen" -order 1
-	template::head::add_javascript -src "/intranet-sencha/resources/js/ext-all.js" -order 1
+	template::head::add_javascript -src "/intranet-sencha/ext-all.js" -order 1
 	# CSS Adjustemnts to ExtJS
 	template::head::add_css -href "/intranet-customer-portal/intranet-customer-portal.css" -media "screen" -order 10
 	# Include Component JS
