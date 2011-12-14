@@ -1982,6 +1982,10 @@ ad_proc -public im_cost_update_project_cost_cache {
 	set subtotals([im_cost_type_expense_planned]) 0
     }
 
+    # Timesheet Hours Budget
+    if {![info exists subtotals([im_cost_type_timesheet_hours])]} {
+	set subtotals([im_cost_type_timesheet_hours]) 0
+    }
 
     # We can update the profit & loss because all financial documents
     # have been converted to default_currency
