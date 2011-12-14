@@ -839,9 +839,12 @@ set project_navbar_html [\
 eval [template::adp_compile -string {<formtemplate id="project_filter" style="tiny-plain"></formtemplate>}]
 set filter_html $__adp_output
 
-
-# Left Navbar is the filter/select part of the left bar
-set left_navbar_html "
+# Customizing for Kolibri. Do not show the filter to freelancers
+if {[im_profile::member_p -user_id $user_id -profile "Freelancers"]} {
+    set left_navbar_html ""
+} else {
+    # Left Navbar is the filter/select part of the left bar
+    set left_navbar_html "
 	<div class='filter-block'>
         	<div class='filter-title'>
 	           #intranet-core.Filter_Projects#
@@ -850,7 +853,7 @@ set left_navbar_html "
       	</div>
       <hr/>
 "
-
+}
 append left_navbar_html "
       	<div class='filter-block'>
         <div class='filter-title'>

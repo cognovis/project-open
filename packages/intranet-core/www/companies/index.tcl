@@ -367,29 +367,31 @@ ns_log Notice $selection
 # ----------------------------------------------------------
 # Do we have to show administration links?
 
-set admin_html "<ul>"
-if {[im_permission $current_user_id "add_companies"]} {
-
-    append admin_html "
-	<li><a href=/intranet/companies/new>[_ intranet-core.Add_a_new_Company]</a>\n"
-}
-
+set admin_html ""
 if {$user_is_admin_p} {
+
+    set admin_html "<ul>"
+    if {[im_permission $current_user_id "add_companies"]} {
+	
+	append admin_html "
+	<li><a href=/intranet/companies/new>[_ intranet-core.Add_a_new_Company]</a>\n"
+    }
+    
     append admin_html "
 <li><a href=/intranet/companies/upload-companies?[export_url_vars return_url]>[_ intranet-core.Import_Company_CSV]</a>
 <!-- <li><a href=/intranet/companies/upload-contacts?[export_url_vars return_url]>[_ intranet-core.lt_Import_Company_Contac]</a> -->
-"}
-
-append admin_html "
+"
+    
+    append admin_html "
 <li><a href=\"/intranet/companies/index?filter_advanced_p=1\">[_ intranet-core.Advanced_Filtering]</a>
 "
 
-# Append user-defined menus
-append admin_html [im_menu_ul_list -no_uls 1 "companies_admin" {}]
-
-
-append admin_html "</ul>"
-
+    # Append user-defined menus
+    append admin_html [im_menu_ul_list -no_uls 1 "companies_admin" {}]
+    
+    
+    append admin_html "</ul>"
+}
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
@@ -537,7 +539,8 @@ if {!$filter_advanced_p} {
     "
 }
 
-append left_navbar_html "
+if {$admin_html ne ""} {
+    append left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
             #intranet-core.Admin_Companies#
@@ -545,3 +548,4 @@ append left_navbar_html "
          $admin_html
       </div>
 "
+}
