@@ -496,7 +496,10 @@ set sub_navbar [im_company_navbar "" "/intranet/companies/" $next_page_url $prev
 eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="company_filter"></formtemplate>}]
 set filter_html $__adp_output
 
-set left_navbar_html "
+if { [im_user_is_freelance_p $current_user_id] } {
+    set left_navbar_html ""
+} else {
+    set left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
 	    #intranet-core.Filter_Companies#
@@ -506,8 +509,8 @@ set left_navbar_html "
       <hr/>
 "
 
-if {!$filter_advanced_p} {
-    set left_navbar_html "
+    if {!$filter_advanced_p} {
+	set left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
 	    #intranet-core.Filter_Companies#
@@ -537,8 +540,8 @@ if {!$filter_advanced_p} {
       </div>
       <hr/>
     "
+    }
 }
-
 if {$admin_html ne ""} {
     append left_navbar_html "
       <div class='filter-block'>
