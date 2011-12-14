@@ -59,7 +59,6 @@ if {[empty_string_p $julian_date]} { set julian_date [db_string sysdate_as_julia
 
 if {"" == $return_url} { set return_url [export_vars -base "/intranet-timesheet2/hours/index" {julian_date user_id_from_search}] }
 
-
 # ---------------------------------------------------------
 # Calculate the start and end of the week.
 # ---------------------------------------------------------
@@ -945,13 +944,13 @@ template::multirow foreach hours_multirow {
 	# set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
 	# if { $no_wf_cases > 0 } { set log_active_wf_p 1 } 
 
-
+	# Do not allow any logging at all on this day if there's an active WF 
         set wf_actice_case_sql "
                	select count(*)
                	from im_hours h
                	where   h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
                        	h.user_id = $user_id_from_search and 
-			h.project_id = $project_id and 
+			-- h.project_id = $project_id and 
 			h.conf_object_id is not null
         "
         set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
