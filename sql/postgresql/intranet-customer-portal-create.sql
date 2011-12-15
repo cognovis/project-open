@@ -611,7 +611,7 @@ drop function inline_0 ();
 	select workflow__add_transition (
          'rfq_customer_portal_wf',
          'rfq_accepted',
-         'Handle Client decision',
+         'Waiting for Client decision',
          'modify',
          3,
          'user'
