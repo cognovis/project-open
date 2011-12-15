@@ -686,18 +686,29 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    # Loop through the hash in time order and process the various events.
 	    set resolution_seconds 0.000
 	    
+	    # --------------------------------------------------------------------
 	    # Lifetime: Set to 1 by "creation" event and set to 0 by "now" event
+
+	    # Status variable: True between creation_date and now()
 	    set ticket_lifetime_p 0
+
+	    # Status variable: True during service hours
 	    set ticket_service_hour_p 0
+
+	    # Status variable: True while the ticket status is "open"
 	    set ticket_open_p 0
+
+	    # Status variable: Does the last interval count for resolution time?
 	    set count_duration_p 0
-	    
+
 	    # Counter from last, reset by "creation" event, this is just a default.
 	    set last_epoch $start_epoch($ticket_id)
 
 	    # Initialize counter for different queues
 	    set queue_id ""
+	    set queue_name ""
 	    set last_queue_id ""
+	    set last_queue_name ""
 	    
 	    # Loop through events per ticket
 	    ns_log Notice "im_sla_ticket_solution_time_sweeper: Looping through events for ticket_id=$ticket_id"
@@ -709,18 +720,17 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		# Calculate duration since last event
 		set duration_epoch [expr $e - $last_epoch]
 
-		# Who is responsible for the time passed?
-	        if {[info exists queue_hash($e)]} { 
+		# Which queue is responsible for the time passed?
+		if {[info exists queue_hash($e)]} { 
 		    set last_queue_id $queue_id
 		    set queue_id $queue_hash($e) 
-		}
-		set queue_name ""
-		set last_queue_name ""
-		if {"" != $queue_id} {
-		    set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]]
-		}
-		if {"" != $last_queue_id} {
-		    set last_queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $last_queue_id" -default ""]]
+
+		    if {"" != $queue_id} {
+			set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]]
+		    }
+		    if {"" != $last_queue_id} {
+			set last_queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $last_queue_id" -default ""]]
+		    }
 		}
 
 		# Event can be a ticket_status_id or {creation service_start service_end now}
@@ -780,10 +790,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		if {$count_duration_p} {
 		    # Total resolution time counter
 		    set resolution_seconds [expr $resolution_seconds + $duration_epoch]
-		}
 
-		# Resolution time per queue
-		if {$count_duration_p} {
+		    # Resolution time per queue
 		    if {"" != $last_queue_id} {
 			set seconds 0.0
 			if {[info exists queue_resolution_time($last_queue_id)]} { set seconds $queue_resolution_time($last_queue_id) }
