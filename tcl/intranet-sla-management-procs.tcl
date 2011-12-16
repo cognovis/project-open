@@ -377,7 +377,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper {
     nsv_incr intranet_sla_management sweeper_p -1
 
     if {$debug_p} {
-	# ad_return_complaint 1 $result
+	ad_return_complaint 1 $result
     }
     return $result
 }
@@ -427,6 +427,20 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
     # Calculate a list of groups for storing resolution times per group
     set group_list [db_list group_list "select group_id from groups where group_id > 0 order by group_id"]
+
+    # ----------------------------------------------------------------
+    # Get the group's labour time start and end dates during the week
+    # ToDo: Setup a link between SLAs and group's labour time.
+    # SISLA: "Developers" work from 9:00 until 17:00. 
+    # Time from 17:00 to service end doesn't count.
+    set employee_group_id [im_employee_group_id]
+    set employee_labour_hours {0 {} 1 {{09:00 16:10}} 2 {{09:00 16:10}} 3 {{09:00 16:10}} 4 {{09:00 16:10}} 5 {{09:00 16:10}} 6 {}}
+    array set employee_labour_hours_dow_hash $employee_labour_hours
+    set employee_labour_hours_list [list]
+    foreach dow [lsort [array names employee_labour_hours_dow_hash]] {
+	lappend employee_labour_hours_list $employee_labour_hours_dow_hash($dow)
+    }
+    set labour_hours_hash($employee_group_id) $employee_labour_hours_list
 
 
     # ----------------------------------------------------------------
@@ -542,6 +556,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    
 	    if {$debug_p} { append time_html "<li>sla_id=$sla_id, $ticket_id: ticket_creation_epoch=$ticket_creation_epoch" }
 	    
+	    # ----------------------------------------------------------------------------------------
 	    # Loop through all days between start and end and add the start
 	    # and end of the business hours this day.
 	    if {$debug_p} { 
@@ -549,6 +564,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    }
 	    for {set j $ticket_creation_julian} {$j <= $now_julian} {incr j} {
 
+		# ----------------------------------------------------------------------------------------
 		# Get the service hours per Day Of Week (0=Su, 1=mo, 6=Sa)
 		# service_hours are like {09:00 18:00}
 		set dow [expr ($j + 1) % 7]
@@ -558,7 +574,6 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		foreach sh $service_hours {
 		    if {$debug_p} { append debug_html "<li>Ticket: $ticket_id, julian=$j, ansi=[im_date_julian_to_ansi $j], sh=$sh\n" }
 		    
-		    # ----------------------------------------------------------------------------------------
 		    # Calculate service start	    
 		    # Example: service_start = '09:00'. Add 0.01 to avoid overwriting.
 		    set service_start [lindex $sh 0]
@@ -573,16 +588,13 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    set epoch_{$ticket_id}($service_start_epoch) "service_start"
 		    if {$debug_p} { 
 			ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, service_start=$service_start, hour=$service_start_hour, min=$service_start_minute"
-			
 			set service_start_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $service_start', 'J HH24:MM')) + 0.01"]
 			ns_log Notice "im_sla_ticket_solution_time: diff=[expr $service_start_epoch - $service_start_epoch2]"
 			append debug_html "<li>Start: julian=$j, ansi=[im_date_julian_to_ansi $j], service_start=$service_start, service_start_epoch=$service_start_epoch\n"
 		    }
-		    
-		    
-		    # ----------------------------------------------------------------------------------------
+
 		    # Calculate service end
-		    # Example: service_end = '18:00'. Add 0.02 to avoid overwriting.
+		    # Example: service_end = '18:00'. Add 0.01 to avoid overwriting.
 		    set service_end [lindex $sh 1]
 		    # On weekends there may be no service hours at all...
 		    if {"" == $service_end} { continue }
@@ -595,14 +607,72 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    set epoch_{$ticket_id}($service_end_epoch) "service_end"
 		    if {$debug_p} { 
 			ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, service_end=$service_end, hour=$service_end_hour, min=$service_end_minute"
-			
 			set service_end_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $service_end', 'J HH24:MM')) + 0.01"]
 			ns_log Notice "im_sla_ticket_solution_time: diff=[expr $service_end_epoch - $service_end_epoch2]"
 			append debug_html "<li>End: julian=$j, ansi=[im_date_julian_to_ansi $j], service_end=$service_end, service_end_epoch=$service_end_epoch\n"
 		    }		
 		}
-		
 		# End of looping through service hour start-end tuples
+
+
+		# ----------------------------------------------------------------------------------------
+		# Check the queue's labour time during the day
+		# and create events
+		foreach gid $group_list {
+		    # Pull out the list of labour hours for each group
+		    if {![info exists labour_hours_hash($gid)]} { continue }
+		    set labour_hours_list $labour_hours_hash($gid)
+
+		    # The labour hours's list ist ordered according to DoW, so we can use lindex.
+		    set labour_hours [lindex $labour_hours_list $dow]
+		    
+		    foreach sh $labour_hours {
+			set labour_start [lindex $sh 0]
+			if {"" == $labour_start} { continue }
+			set labour_start_list [split $labour_start ":"]
+			set labour_start_hour [string trimleft [lindex $labour_start_list 0] "0"]
+			set labour_start_minute [string trimleft [lindex $labour_start_list 1] "0"]
+			if {"" == $labour_start_hour} { set labour_start_hour 0 }
+			if {"" == $labour_start_minute} { set labour_start_minute 0 }
+			set labour_start_epoch [expr [im_date_julian_to_epoch $j] + 3600.0*$labour_start_hour + 60.0*$labour_start_minute + 0.04]
+			set epoch_{$ticket_id}($labour_start_epoch) "labour_start"
+			# Write the affected groups into a hash
+			set groups [list]
+			if {[info exists labour_start_groups_{$ticket_id}($labour_start_epoch)]} { set groups $labour_start_groups_{$ticket_id}($labour_start_epoch) }
+			lappend groups $gid
+			set labour_start_groups_{$ticket_id}($labour_start_epoch) $groups
+			if {$debug_p} {
+			    ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, labour_start=$labour_start, hour=$labour_start_hour, min=$labour_start_minute"
+			    set labour_start_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $labour_start', 'J HH24:MM')) + 0.04"]
+			    ns_log Notice "im_sla_ticket_solution_time: diff=[expr $labour_start_epoch - $labour_start_epoch2]"
+			    append debug_html "<li>Labour Start: julian=$j, ansi=[im_date_julian_to_ansi $j], labour_start=$labour_start, labour_start_epoch=$labour_start_epoch\n"
+			}
+
+			# Calculate service end
+			# Example: labour_end = '18:00'. Add 0.04 to avoid overwriting.
+			set labour_end [lindex $sh 1]
+			# On weekends there may be no service hours at all...
+			if {"" == $labour_end} { continue }
+			set labour_end_list [split $labour_end ":"]
+			set labour_end_hour [string trimleft [lindex $labour_end_list 0] "0"]
+			set labour_end_minute [string trimleft [lindex $labour_end_list 1] "0"]
+			if {"" == $labour_end_hour} { set labour_end_hour 0 }
+			if {"" == $labour_end_minute} { set labour_end_minute 0 }
+			set labour_end_epoch [expr [im_date_julian_to_epoch $j] + 3600.0*$labour_end_hour + 60.0*$labour_end_minute + 0.04]
+			set epoch_{$ticket_id}($labour_end_epoch) "labour_end"
+			# Write the affected groups into a hash
+			set groups [list]
+			if {[info exists labour_end_groups_{$ticket_id}($labour_end_epoch)]} { set groups $labour_end_groups_{$ticket_id}($labour_end_epoch) }
+			lappend groups $gid
+			set labour_end_groups_{$ticket_id}($labour_end_epoch) $groups
+			if {$debug_p} {
+			    ns_log Notice "im_sla_ticket_solution_time: ticket_id=$ticket_id, labour_end=$labour_end, hour=$labour_end_hour, min=$labour_end_minute"
+			    set labour_end_epoch2 [db_string epoch "select extract(epoch from to_timestamp('$j $labour_end', 'J HH24:MM')) + 0.04"]
+			    ns_log Notice "im_sla_ticket_solution_time: diff=[expr $labour_end_epoch - $labour_end_epoch2]"
+			    append debug_html "<li>Labour End: julian=$j, ansi=[im_date_julian_to_ansi $j], labour_end=$labour_end, labour_end_epoch=$labour_end_epoch\n"
+			}		
+		    }
+		}
 	    }
 	}
 
@@ -635,7 +705,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    if {$debug_p} { append debug_html "<li>sla_id=$sla_id, $ticket_id: $audit_date: $audit_object_status" }
 	    set epoch_{$ticket_id}($audit_date_epoch) $audit_object_status_id
 	    set julian_{$ticket_id}($audit_date_julian) $audit_object_status_id
-	    set queue_{$ticket_id}($audit_date_epoch) $audit_ticket_queue_id
+
+	    set queue_id $audit_ticket_queue_id
+	    if {"" == $queue_id} { set queue_id $audit_ticket_assignee_id }
+	    set queue_{$ticket_id}($audit_date_epoch) $queue_id
 	}
 
 	# Loop through all open tickets
@@ -680,6 +753,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 	    array unset queue_hash
 	    array set queue_hash [array get queue_{$ticket_id}]
 
+	    # Copy labour_start and labour_end hashes
+	    array unset labour_start_hash
+	    array unset labour_end_hash
+	    array set labour_start_hash [array get labour_start_groups_{$ticket_id}]
+	    array set labour_end_hash [array get labour_end_groups_{$ticket_id}]
+
 	    # Array of counters per assigned queue or group
 	    array unset queue_resolution_time
 
@@ -694,6 +773,10 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 	    # Status variable: True during service hours
 	    set ticket_service_hour_p 0
+
+	    # Status variable: True during queue labour time
+	    # This variable is true by default.
+	    set ticket_labour_hour_p 1
 
 	    # Status variable: True while the ticket status is "open"
 	    set ticket_open_p 0
@@ -723,13 +806,13 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		# Which queue is responsible for the time passed?
 		if {[info exists queue_hash($e)]} { 
 		    set last_queue_id $queue_id
-		    set queue_id $queue_hash($e) 
+		    set queue_id $queue_hash($e)
+		    if {"" != $queue_id} { set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]] }
+		    if {"" != $last_queue_id} { set last_queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $last_queue_id" -default ""]] }
 
-		    if {"" != $queue_id} {
-			set queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $queue_id" -default ""]]
-		    }
-		    if {"" != $last_queue_id} {
-			set last_queue_name [util_memoize [list db_string queue "select group_name from groups where group_id = $last_queue_id" -default ""]]
+		    # After a change in queues we have to check if the new queue is working now.
+		    if {$queue_id != $last_queue_id} {
+			# !!!
 		    }
 		}
 
@@ -747,19 +830,41 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 		    }
 		    service_start {
 			# Check if we were to count the duration until now
-			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
 			# Start counting the time from now on.
 			set ticket_service_hour_p 1
 		    }
 		    service_end {
 			# Check if we were to count the duration until now
-			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
 			# Don't count time from now on until the next service_start
 			set ticket_service_hour_p 0
 		    }
+		    labour_start {
+			# Check if the currently assigned queue is affected
+			set affected_groups [list]
+			if {[info exists labour_start_hash($e)]} { set affected_groups $labour_start_hash($e) }
+			if {-1 == [lsearch $affected_groups $queue_id]} { continue }
+
+			# Check if we were to count the duration until now
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
+			# Start counting the time from now on.
+			set ticket_labour_hour_p 1
+		    }
+		    labour_end {
+			# Check if the currently assigned queue is affected
+			set affected_groups [list]
+			if {[info exists labour_end_hash($e)]} { set affected_groups $labour_end_hash($e) }
+			if {-1 == [lsearch $affected_groups $queue_id]} { continue }
+
+			# Check if we were to count the duration until now
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
+			# Don't count time from now on until the next labour_start
+			set ticket_labour_hour_p 0
+		    }
 		    now {
 			# Check if we were to count the duration until now
-			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
 			# Current time. Don't count from here into the future...
 			set ticket_lifetime_p 0
 		    }
@@ -774,7 +879,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			}
 
 			# Check if we were to count the duration until now
-			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p]
+			set count_duration_p [expr $ticket_open_p && $ticket_lifetime_p && $ticket_service_hour_p && $ticket_labour_hour_p]
 
 			# Determine ticket status"
 			if {[lsearch $ticket_open_states $event] > -1} {
