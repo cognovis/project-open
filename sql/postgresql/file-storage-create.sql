@@ -49,6 +49,75 @@ create table fs_root_folders (
                 unique
 );
 
+
+
+
+
+-- fraber 110228
+-- There is an error in the old CR creation apparently...
+
+create or replace function content_type__create_type (varchar,varchar,varchar,varchar,varchar,varchar,varchar)
+returns integer as '
+declare
+  create_type__content_type           alias for $1;  
+  create_type__supertype              alias for $2;  -- default ''content_revision''  
+  create_type__pretty_name            alias for $3;  
+  create_type__pretty_plural          alias for $4;  
+  create_type__table_name             alias for $5;
+  create_type__id_column              alias for $6;  -- default ''XXX''
+  create_type__name_method            alias for $7;  -- default null
+  v_temp_p                            boolean;       
+  v_supertype_table                   acs_object_types.table_name%TYPE;
+                                        
+begin
+
+  if (create_type__supertype <> ''content_revision'')
+      and (create_type__content_type <> ''content_revision'') then
+    select count(*) > 0 into v_temp_p
+    from  acs_object_type_supertype_map
+    where object_type = create_type__supertype
+    and ancestor_type = ''content_revision'';
+
+    if not v_temp_p then
+      raise EXCEPTION ''-20000: supertype % must be a subtype of content_revision'', create_type__supertype;
+    end if;
+  end if;
+
+  select count(*) > 0 into v_temp_p from pg_class
+   where relname = lower(create_type__table_name);
+
+  if NOT v_temp_p and create_type__table_name is not null then
+    select table_name into v_supertype_table from acs_object_types
+      where object_type = create_type__supertype;
+
+    raise NOTICE ''content_type__create_type: table_name=%, id_column=%, supertype_table=%'', 
+	create_type__table_name, create_type__id_column, v_supertype_table;
+
+    execute ''create table '' || create_type__table_name || '' ('' ||
+      create_type__id_column || '' integer constraint '' || create_type__table_name || ''_pk primary key '' || 
+      '' constraint '' || create_type__table_name || ''_fk references '' || v_supertype_table || '')'';
+  end if;
+
+  PERFORM acs_object_type__create_type (
+    create_type__content_type,
+    create_type__pretty_name,
+    create_type__pretty_plural,
+    create_type__supertype,
+    create_type__table_name,
+    create_type__id_column,
+    null,
+    ''f'',
+    null,
+    create_type__name_method
+  );
+
+  PERFORM content_type__refresh_view(create_type__content_type);
+
+  return 0; 
+end;' language 'plpgsql';
+
+
+
 -- Create a subtype of content_revision so that site-wide-search can
 -- distinguish file-storage items (v.s. generic content repository
 -- items) in the search results
