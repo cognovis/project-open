@@ -433,14 +433,14 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     # ToDo: Setup a link between SLAs and group's labour time.
     # SISLA: "Developers" work from 9:00 until 17:00. 
     # Time from 17:00 to service end doesn't count.
-    set employee_group_id [im_employee_group_id]
-    set employee_labour_hours {0 {} 1 {{09:00 16:10}} 2 {{09:00 16:10}} 3 {{09:00 16:10}} 4 {{09:00 16:10}} 5 {{09:00 16:10}} 6 {}}
+    set developer_group_id [db_string developer_gid "select group_id from groups where group_name = 'Linux Admins'" -default 0]
+    set employee_labour_hours {0 {} 1 {{09:00 17:00}} 2 {{09:00 17:00}} 3 {{09:00 17:00}} 4 {{09:00 17:00}} 5 {{09:00 17:00}} 6 {}}
     array set employee_labour_hours_dow_hash $employee_labour_hours
     set employee_labour_hours_list [list]
     foreach dow [lsort [array names employee_labour_hours_dow_hash]] {
 	lappend employee_labour_hours_list $employee_labour_hours_dow_hash($dow)
     }
-    set labour_hours_hash($employee_group_id) $employee_labour_hours_list
+    set labour_hours_hash($developer_group_id) $employee_labour_hours_list
 
 
     # ----------------------------------------------------------------
@@ -812,7 +812,25 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 		    # After a change in queues we have to check if the new queue is working now.
 		    if {$queue_id != $last_queue_id} {
-			# !!!
+			# By default set the labour flag to 1 as there default unless there is an exception for this queue
+			set ticket_labour_hour_p 1
+			# Check if the new guys are working at the moment
+			if {[info exists labour_hours_hash($queue_id)]} {
+			    set e_julian [im_date_epoch_to_julian $e]
+			    set e_dow [expr ($e_julian + 1) % 7]
+			    set e_time [string range [im_date_epoch_to_time $e] 0 4]
+			    set labour_hours_list $labour_hours_hash($queue_id)
+			    set labour_hours [lindex $labour_hours_list $e_dow]
+			    set ticket_labour_hour_p 0
+			    foreach sh $labour_hours {
+				    set labour_start [lindex $sh 0]
+				    set labour_end [lindex $sh 1]
+				if {[string compare $labour_start $e_time] <= 0 && [string compare $e_time $labour_end] <= 0} {
+				    # The event's time ($e_time) is between start and end time
+				    set ticket_labour_hour_p 1
+				}
+			    }
+			}
 		    }
 		}
 
