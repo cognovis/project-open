@@ -13,11 +13,29 @@ where
 ;
 
 
+create or replace function file_storage_object__name(integer)
+returns varchar as $body$
+DECLARE
+	v_count		integer;
+BEGIN
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = 'cr_text';
+	IF 0 = v_count THEN return 1; END IF;
 
-delete from cr_text;
-alter table cr_text disable trigger cr_text_tr;
-insert into cr_text (text_data) values ('');
-alter table cr_text enable trigger cr_text_tr;
+	delete from cr_text;
+
+	select	count(*) into v_count from pg_trigger 
+	where	lower(tgname) = 'cr_text_tr';
+	IF 0 = v_count THEN
+		insert into cr_text (text_data) values ('');
+	ELSE
+		alter table cr_text disable trigger cr_text_tr;
+		insert into cr_text (text_data) values ('');
+		alter table cr_text enable trigger cr_text_tr;
+	END IF;
+
+	RETURN 0;
+END; $body$ language 'plpgsql';
 
 
 
