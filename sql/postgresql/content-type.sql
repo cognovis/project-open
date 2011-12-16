@@ -68,15 +68,15 @@ begin
     end if;
   end if;
 
- -- create the attribute table if not already created
-
-  select count(*) > 0 into v_temp_p 
-    from pg_class
+  select count(*) > 0 into v_temp_p from pg_class
    where relname = lower(create_type__table_name);
 
   if NOT v_temp_p and create_type__table_name is not null then
     select table_name into v_supertype_table from acs_object_types
       where object_type = create_type__supertype;
+
+    raise NOTICE ''content_type__create_type: table_name=%, id_column=%, supertype_table=%'', 
+	create_type__table_name, create_type__id_column, v_supertype_table;
 
     execute ''create table '' || create_type__table_name || '' ('' ||
       create_type__id_column || '' integer constraint '' || create_type__table_name || ''_pk primary key '' || 
