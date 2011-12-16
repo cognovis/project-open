@@ -548,6 +548,10 @@ ad_proc -public im_audit_object_value {
     if {"" == $object_type} {
 	set object_type [util_memoize [list db_string otype "select object_type from acs_objects where object_id = $object_id" -default ""]]
     }
+    if {"" == $object_type} {
+	ns_log warning "im_audit_object_value -object_id $object_id:  Database inconsistency: found an empty object_type"
+	return
+    }
 
     # Get the SQL to extract all values from the object
     set sql [util_memoize [list im_audit_object_type_sql -object_type $object_type]]
