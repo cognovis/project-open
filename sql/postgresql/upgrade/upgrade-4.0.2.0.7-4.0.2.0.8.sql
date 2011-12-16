@@ -29,3 +29,9 @@ SELECT acs_permission__grant_permission(
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
+
+
+
+-- Fix data type for float attribute
+update acs_attributes set datatype = 'float' where attribute_name = 'ticket_resolution_time';
+
