@@ -1,0 +1,270 @@
+# /packages/intranet-portfolio-management/tcl/intranet-portfolio-management-procs.tcl
+#
+# Copyright (C) 2003-2010 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
+ad_library {
+    @author frank.bergmann@project-open.com
+}
+
+
+# ----------------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+
+ad_proc -public im_program_portfolio_list_component {
+    -program_id:required
+    {-show_empty_project_list_p 1}
+    {-view_name "program_portfolio_list" }
+    {-order_by_clause ""}
+    {-project_type_id 0}
+    {-project_status_id 0}
+} {
+    Returns a HTML table with the list of projects of the
+    current user. Don't do any fancy with sorting and
+    pagination, because a single user won't be a member of
+    many active projects.
+
+    @param show_empty_project_list_p Should we show an empty project list?
+           Setting this parameter to 0 the component will just disappear
+           if there are no projects.
+} {
+    # Is this a "Program" Project?
+    # The portfolio view only makes sense in programs...
+    set program_info_sql "
+	select	project_type_id as program_type_id,
+		round(percent_completed::numeric,1) as program_percent_completed,
+		round(project_budget::numeric,1) as program_budget
+	from	im_projects
+	where	project_id = :program_id
+    "
+    db_1row program_inf $program_info_sql
+    if {![im_category_is_a $program_type_id [im_project_type_program]]} { return "" }
+
+    set current_user_id [ad_get_user_id]
+    set date_format "YYYY-MM-DD"
+
+    if {"" == $order_by_clause} {
+	set order_by_clause  [parameter::get_from_package_key -package_key "intranet-portfolio-management" -parameter "ProgramPortfolioListSortClause" -default "project_nr DESC"]
+    }
+
+    # ---------------------------------------------------------------
+    # Columns to show:
+    set view_id [db_string get_view_id "select view_id from im_views where view_name = :view_name"]
+    set column_headers [list]
+    set column_vars [list]
+    set extra_selects [list]
+    set extra_froms [list]
+    set extra_wheres [list]
+
+    set column_sql "
+	select	column_name,
+		column_render_tcl,
+		visible_for,
+	        extra_where,
+	        extra_select,
+	        extra_from
+	from	im_view_columns
+	where	view_id = :view_id
+		and group_id is null
+	order by sort_order
+    "
+    db_foreach column_list_sql $column_sql {
+	if {"" == $visible_for || [eval $visible_for]} {
+	    lappend column_headers "$column_name"
+	    lappend column_vars "$column_render_tcl"
+	}
+	if {"" != $extra_select} { lappend extra_selects $extra_select }
+	if {"" != $extra_from} { lappend extra_froms $extra_from }
+	if {"" != $extra_where} { lappend extra_wheres $extra_where }
+    }
+
+    # ---------------------------------------------------------------
+    # Generate SQL Query
+
+    set extra_select [join $extra_selects ",\n\t"]
+    if { ![empty_string_p $extra_select] } {
+	set extra_select ",\n\t$extra_select"
+    }
+
+    set extra_from [join $extra_froms ",\n\t"]
+    if { ![empty_string_p $extra_from] } {
+	set extra_from ",\n\t$extra_from"
+    }
+
+    set extra_where [join $extra_wheres "and\n\t"]
+    if { ![empty_string_p $extra_where] } {
+	set extra_where "and\n\t$extra_where"
+    }
+
+    # Project Status restriction
+    set project_status_restriction ""
+    if {0 != $project_status_id} {
+	set project_status_restriction "and p.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
+    }
+
+    # Project Type restriction
+    set project_type_restriction ""
+    if {0 != $project_type_id} {
+	set project_type_restriction "and p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
+    }
+
+    set perm_sql "
+	(select
+	        p.*
+	from
+	        im_projects p,
+		acs_rels r
+	where
+		r.object_id_one = p.project_id and
+		r.object_id_two = :current_user_id and
+		p.parent_id is null and
+		p.program_id = :program_id and
+		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket]) and
+		p.project_status_id not in ([im_project_status_deleted], [im_project_status_closed])
+		$project_status_restriction
+		$project_type_restriction
+	)
+    "
+
+    if {[im_permission $current_user_id "view_projects_all"]} {
+	set perm_sql "
+	(select	p.*
+	from	im_projects p
+	where	p.parent_id is null and
+		p.program_id = :program_id and
+		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket]) and
+                p.project_status_id not in ([im_project_status_deleted], [im_project_status_closed])
+                $project_status_restriction
+                $project_type_restriction
+	)"
+    }
+
+    set program_query "
+	SELECT
+		p.*,
+		to_char(p.start_date, :date_format) as start_date_formatted,
+		to_char(p.end_date, :date_format) as end_date_formatted,
+		coalesce(cost_bills_cache,0.0) + 
+			coalesce(cost_expense_logged_cache,0.0) + 
+			coalesce(cost_timesheet_logged_cache,0.0) as real_costs,
+		coalesce(greatest(cost_bills_planned_cache,cost_purchase_orders_cache),0.0) + 
+			coalesce(cost_expense_planned_cache,0.0) + 
+			coalesce(cost_timesheet_planned_cache,0.0) as planned_costs,
+	        c.company_name,
+		round(p.percent_completed::numeric,1) as percent_completed_rounded,
+	        im_name_from_user_id(project_lead_id) as lead_name,
+	        im_category_from_id(p.project_type_id) as project_type,
+	        im_category_from_id(p.project_status_id) as project_status,
+	        to_char(end_date, 'HH24:MI') as end_date_time
+                $extra_select
+	FROM
+		$perm_sql p,
+		im_companies c
+                $extra_from
+	WHERE
+		p.company_id = c.company_id
+		$project_status_restriction
+		$project_type_restriction
+                $extra_where
+	order by $order_by_clause
+    "
+
+    
+    # ---------------------------------------------------------------
+    # Format the List Table Header
+
+    # Set up colspan to be the number of headers + 1 for the # column
+    set colspan [expr [llength $column_headers] + 1]
+
+    set table_header_html "<tr>\n"
+    foreach col $column_headers {
+	regsub -all " " $col "_" col_txt
+	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+    }
+    append table_header_html "</tr>\n"
+
+
+    # ---------------------------------------------------------------
+    # Format the Result Data
+
+    set url "index?"
+    set table_body_html ""
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+    set ctr 0
+    set budget_total 0.0
+    set quotes_total 0.0
+    set budget_done 0.0
+    set quotes_done 0.0
+    db_foreach program_query $program_query {
+	set url [im_maybe_prepend_http $url]
+	if { [empty_string_p $url] } {
+	    set url_string "&nbsp;"
+	} else {
+	    set url_string "<a href=\"$url\">$url</a>"
+	}
+
+	# Append together a line of data based on the "column_vars" parameter list
+	set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	foreach column_var $column_vars {
+	    append row_html "\t<td valign=top>"
+	    set cmd "append row_html $column_var"
+	    eval "$cmd"
+	    append row_html "</td>\n"
+	}
+	append row_html "</tr>\n"
+	append table_body_html $row_html
+	
+	set quotes_total [expr $quotes_total + $cost_quotes_cache]
+	set budget_total [expr $budget_total + $project_budget]
+
+	set quotes_done [expr $quotes_done + $cost_quotes_cache * $percent_completed / 100.0]
+	set budget_done [expr $budget_done + $project_budget * $percent_completed / 100.0]
+
+	incr ctr
+    }
+
+    # Update the program's %done and budget values
+    if {0.0 != $budget_total} {
+	set completed [expr round(1000.0 * $budget_done / $budget_total) / 10.0]
+    } else {
+	set completed 0.0
+    }
+
+    # Update the 
+    set update_html ""
+    if {$program_percent_completed != $completed || $program_budget != $budget_total} {
+	db_dml update_program_advance "
+		update im_projects set
+			percent_completed = :completed,
+			project_budget = :budget_total
+		where
+			project_id = :program_id
+	"
+	set update_html "<font color=red>[lang::message::lookup "" intranet-portfolio-management.Updated_the_program_budget_and_advance "Updated the program's budget=%budget_total% and advance=%completed%"]</font>"
+    }
+
+    # Show a reasonable message when there are no result rows:
+    if { [empty_string_p $table_body_html] } {
+
+	# Let the component disappear if there are no projects...
+	if {!$show_empty_project_list_p} { return "" }
+
+	set table_body_html "
+	    <tr><td colspan=\"$colspan\"><ul><li><b> 
+	    [lang::message::lookup "" intranet-core.lt_There_are_currently_n "There are currently no entries matching the selected criteria"]
+	    </b></ul></td></tr>
+	"
+    }
+    return "
+	<table class=\"table_component\" width=\"100%\">
+	<thead>$table_header_html</thead>
+	<tbody>$table_body_html</tbody>
+	</table>
+	$update_html
+    "
+}
