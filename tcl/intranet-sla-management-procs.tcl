@@ -442,6 +442,8 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
     }
     set labour_hours_hash($developer_group_id) $employee_labour_hours_list
 
+    set labour_hours_hash(463) $employee_labour_hours_list
+
 
     # ----------------------------------------------------------------
     # Get the list of SLAs to work with.
@@ -636,9 +638,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			if {"" == $labour_start_minute} { set labour_start_minute 0 }
 			set labour_start_epoch [expr [im_date_julian_to_epoch $j] + 3600.0*$labour_start_hour + 60.0*$labour_start_minute + 0.04]
 			set epoch_{$ticket_id}($labour_start_epoch) "labour_start"
+
 			# Write the affected groups into a hash
 			set groups [list]
-			if {[info exists labour_start_groups_{$ticket_id}($labour_start_epoch)]} { set groups $labour_start_groups_{$ticket_id}($labour_start_epoch) }
+			ns_log Notice "sweeper: [array get labour_start_groups_{$ticket_id} $labour_start_epoch]"
+			ns_log Notice "sweeper: [array get labour_start_groups_{$ticket_id}]"
+			if {[info exists labour_start_groups_{$ticket_id}($labour_start_epoch)]} { set groups [array get labour_start_groups_{$ticket_id} $labour_start_epoch] }
 			lappend groups $gid
 			set labour_start_groups_{$ticket_id}($labour_start_epoch) $groups
 			if {$debug_p} {
@@ -662,7 +667,7 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 			set epoch_{$ticket_id}($labour_end_epoch) "labour_end"
 			# Write the affected groups into a hash
 			set groups [list]
-			if {[info exists labour_end_groups_{$ticket_id}($labour_end_epoch)]} { set groups $labour_end_groups_{$ticket_id}($labour_end_epoch) }
+			if {[info exists labour_end_groups_{$ticket_id}($labour_end_epoch)]} { set groups [array get labour_end_groups_{$ticket_id} $labour_end_epoch] }
 			lappend groups $gid
 			set labour_end_groups_{$ticket_id}($labour_end_epoch) $groups
 			if {$debug_p} {
