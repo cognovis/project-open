@@ -232,7 +232,7 @@ ad_proc im_indicator_horizontal_bar {
     { -value_color "000000" }
     { -red_color "FF0000" }
     { -yellow_color "FFD000" }
-    { -green_color "00D000" }
+    { -green_color "339900" }
     { -white_color "FFFFFF" }
     { -widget_width 200 }
     { -widget_height 30 }
