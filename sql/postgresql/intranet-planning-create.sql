@@ -67,7 +67,6 @@ alter table im_projects add column cost_expenses_planned numeric(12,2);
 
 
 -- This table stores one time line of items.
-drop table im_planning_items;
 create table im_planning_items (
 -- not an object (yet)
 --			-- The object_id: references acs_objects.object_id.
