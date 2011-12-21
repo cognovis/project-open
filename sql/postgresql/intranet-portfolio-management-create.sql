@@ -183,7 +183,7 @@ SELECT im_menu__new (
 	null,					-- creation_user
 	null,					-- creation_ip
 	null,					-- context_id
-	'intranet-portfolio-management',		-- package_name
+	'intranet-portfolio-management',	-- package_name
 	'department_planner',			-- label
 	'Department Planner',			-- name
 	'/intranet-portfolio-management/department-planner/index?view_name=portfolio_department_planner_list',	-- url

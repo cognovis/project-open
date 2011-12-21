@@ -14,6 +14,29 @@ ad_library {
 # 
 # ----------------------------------------------------------------------
 
+
+ad_proc -public im_program_portfolio_sweeper {
+} {
+    Periodic process to update the budget, percent_completed, start_date
+    and end_date of programs.
+} {
+    set programs_sql "
+	select	project_id
+	from	im_projects
+	where	parent_id is null and
+		project_type_id = [im_project_type_program]
+    "
+    set programs [db_list programs $programs_sql]
+
+    set admin_user_id [db_string cur_user "select min(user_id) from users where user_id > 0"]
+    foreach program_id $programs {
+	im_program_portfolio_list_component \
+		-program_id $program_id \
+		-current_user_id $admin_user_id
+    }
+}
+
+
 ad_proc -public im_program_portfolio_list_component {
     -program_id:required
     {-show_empty_project_list_p 1}
@@ -21,6 +44,7 @@ ad_proc -public im_program_portfolio_list_component {
     {-order_by_clause ""}
     {-project_type_id 0}
     {-project_status_id 0}
+    {-current_user_id 0}
 } {
     Returns a HTML table with the list of projects of the
     current user. Don't do any fancy with sorting and
@@ -31,19 +55,24 @@ ad_proc -public im_program_portfolio_list_component {
            Setting this parameter to 0 the component will just disappear
            if there are no projects.
 } {
+    # The owner of the system...
+    set admin_user_id [db_string cur_user "select min(user_id) from users where user_id > 0"]
+
     # Is this a "Program" Project?
     # The portfolio view only makes sense in programs...
     set program_info_sql "
 	select	project_type_id as program_type_id,
 		round(percent_completed::numeric,1) as program_percent_completed,
-		round(project_budget::numeric,1) as program_budget
+		round(project_budget::numeric,1) as program_budget,
+		start_date as start_date_program,
+		end_date as end_date_program
 	from	im_projects
 	where	project_id = :program_id
     "
     db_1row program_inf $program_info_sql
     if {![im_category_is_a $program_type_id [im_project_type_program]]} { return "" }
 
-    set current_user_id [ad_get_user_id]
+    if {"" == $current_user_id || 0 == $current_user_id} { set current_user_id [ad_get_user_id] }
     set date_format "YYYY-MM-DD"
 
     if {"" == $order_by_clause} {
@@ -129,7 +158,7 @@ ad_proc -public im_program_portfolio_list_component {
 	)
     "
 
-    if {[im_permission $current_user_id "view_projects_all"]} {
+    if {$current_user_id == $admin_user_id || [im_permission $current_user_id "view_projects_all"]} {
 	set perm_sql "
 	(select	p.*
 	from	im_projects p
@@ -147,10 +176,12 @@ ad_proc -public im_program_portfolio_list_component {
 		p.*,
 		to_char(p.start_date, :date_format) as start_date_formatted,
 		to_char(p.end_date, :date_format) as end_date_formatted,
+		to_char(p.start_date, 'YYYY-MM-DD') as start_date_ansi,
+		to_char(p.end_date, 'YYYY-MM-DD') as end_date_ansi,
 		coalesce(cost_bills_cache,0.0) + 
 			coalesce(cost_expense_logged_cache,0.0) + 
 			coalesce(cost_timesheet_logged_cache,0.0) as real_costs,
-		coalesce(greatest(cost_bills_planned_cache,cost_purchase_orders_cache),0.0) + 
+		coalesce(cost_purchase_orders_cache,0.0) + 
 			coalesce(cost_expense_planned_cache,0.0) + 
 			coalesce(cost_timesheet_planned_cache,0.0) as planned_costs,
 	        c.company_name,
@@ -200,6 +231,8 @@ ad_proc -public im_program_portfolio_list_component {
     set quotes_total 0.0
     set budget_done 0.0
     set quotes_done 0.0
+    set start_date_min "2099-12-31"
+    set end_date_max "2000-01-01"
     db_foreach program_query $program_query {
 	set url [im_maybe_prepend_http $url]
 	if { [empty_string_p $url] } {
@@ -225,6 +258,9 @@ ad_proc -public im_program_portfolio_list_component {
 	set quotes_done [expr $quotes_done + $cost_quotes_cache * $percent_completed / 100.0]
 	set budget_done [expr $budget_done + $project_budget * $percent_completed / 100.0]
 
+	if {$start_date_ansi < $start_date_min} { set start_date_min $start_date_ansi }
+	if {$end_date_ansi > $end_date_max} { set end_date_max $end_date_ansi }
+
 	incr ctr
     }
 
@@ -237,11 +273,13 @@ ad_proc -public im_program_portfolio_list_component {
 
     # Update the 
     set update_html ""
-    if {$program_percent_completed != $completed || $program_budget != $budget_total} {
+    if {$program_percent_completed != $completed || $program_budget != $budget_total || $start_date_program != $start_date_min || $end_date_program != $end_date_max} {
 	db_dml update_program_advance "
 		update im_projects set
 			percent_completed = :completed,
-			project_budget = :budget_total
+			project_budget = :budget_total,
+			start_date = :start_date_min,
+			end_date = :end_date_max
 		where
 			project_id = :program_id
 	"
