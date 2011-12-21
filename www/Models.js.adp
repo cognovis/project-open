@@ -197,7 +197,7 @@ Ext.define('TicketBrowser.Company', {
 		timeout:		300000,
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
-			gzip_p:    '1	',
+			gzip_p:    '1',
 			columns:	'company_id,company_name,company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
 		},
 		reader:	{
