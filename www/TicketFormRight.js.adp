@@ -436,6 +436,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 			queueField.show();
 			form.findField('combo_send_mail').show();
 			queueField.setValue(ticket_queue_id);
+		} else {
+			queueField.hide();
+			form.findField('combo_send_mail').hide();
 		}
 		
 		Ext.getCmp('ticketActionBar').checkButtons(rec);
