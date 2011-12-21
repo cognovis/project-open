@@ -209,15 +209,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							var statusField = panel.getForm().findField('ticket_status_id');
 							statusField.setValue('30001');
 	
-							// Set the creation done_date of the ticket
-							Ext.Ajax.request({
-								scope:	panel.getForm(),
-								url:	'/intranet-sencha-ticket-tracker/today-date-time',
-								success: function(response) {		// response is the current date-time
-									var doneField = this.findField('ticket_done_date');
-									doneField.setValue(response.responseText);
-								}
-							});
+							Function_updateDoneDate();
+
 							panel.getForm().findField('ticket_escalation_date').setValue('');	
 							//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
 							panel.getForm().findField('ticket_queue_id').hide();
@@ -315,15 +308,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 						case '30001':		// closed
 						case '30022':		// sign-off
 						case '30096':		// resolved
-							// Set the done_date of the ticket
-							Ext.Ajax.request({
-								scope:	panel.getForm(),
-								url:	'/intranet-sencha-ticket-tracker/today-date-time',
-								success: function(response) {		// response is the current date-time
-									var doneField = this.findField('ticket_done_date');
-									doneField.setValue(response.responseText);
-								}
-							});
+							Function_updateDoneDate();
 							panel.getForm().findField('ticket_escalation_date').setValue('');
 							break;
 						case '30009':		// escalated
@@ -334,15 +319,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 							queueField.show();
 							panel.getForm().findField('combo_send_mail').show();
 	
-							// Set the escalation_date
-							Ext.Ajax.request({
-								scope:	panel.getForm(),
-								url:	'/intranet-sencha-ticket-tracker/today-date-time',
-								success: function(response) {		// response is the current date-time
-									var escalationField = this.findField('ticket_escalation_date');
-									escalationField.setValue(response.responseText);
-								}
-							});		
+							Function_updateEscalationDate();
+							
 							panel.getForm().findField('ticket_done_date').setValue('');				
 							//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
 							//panel.getForm().findField('ticket_closed_in_1st_contact_p').setValue('');					
@@ -380,14 +358,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(userQueueStore.first());
 							}
 							// Set the escalation_date
-							if (!field.isHidden()) {
-								Ext.Ajax.request({
-									scope:	this,
-									url:	'/intranet-sencha-ticket-tracker/today-date-time',
-									success: function(response) {		// response is the current date-time
-										Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
-									}
-								});	
+							if (!loading) {
+								Function_updateEscalationDate();
 							}									
 							
 					}					
@@ -459,6 +431,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 		form.findField('ticket_queue_id').hide();
 		form.findField('combo_send_mail').hide();
 		form.findField('ticket_org_queue_id').setValue(employeeGroupId);
+		form.findField('ticket_escalation_date').setValue('');
+		form.findField('ticket_done_date').setValue('');	
 		Ext.getCmp('ticketActionBar').checkButtons(null);
 	},
 	

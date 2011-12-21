@@ -534,3 +534,31 @@ function Function_sendMail(ticket_id) {
 		});	
 	}
 }
+
+function Function_updateEscalationDate() {
+	var ticket_status_value = Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').getValue();
+		
+	if ('30009'==ticket_status_value || '30011'==ticket_status_value) {	
+		Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/today-date-time',
+		success: function(response) {		// response is the current date-time
+					Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
+				}
+		});	
+	}
+}
+
+function Function_updateDoneDate() {
+	var ticket_status_value = Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').getValue();
+		
+	if ('30001'==ticket_status_value || '30022'==ticket_status_value || '30096'==ticket_status_value) {	
+		Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/today-date-time',
+		success: function(response) {		// response is the current date-time
+					Ext.getCmp('ticketFormRight').getForm().findField('ticket_done_date').setValue(response.responseText);
+				}
+		});	
+	}
+}
