@@ -174,7 +174,8 @@ Ext.define('TicketBrowser.Main', {
 			}		
 		}, {
 			itemId: 'report',
-			title: '#intranet-sencha-ticket-tracker.Reports#'	
+			title: '#intranet-sencha-ticket-tracker.Reports#',
+			hidden: !currentUserIsAdmin
 		}],
 		
 		listeners: {

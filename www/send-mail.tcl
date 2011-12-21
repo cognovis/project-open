@@ -91,7 +91,8 @@ ad_page_contract {
 	}
 	set old_audit_ticket_queue_id ""
 	db_foreach search-actions $actions_sql {
-		if {30011==$audit_ticket_status_id} {						
+		if {30011==$audit_ticket_status_id} {		
+			if {$audit_ticket_queue_id!=$old_audit_ticket_queue_id} {				
 				append body "
 	Fecha y hora: [string range $audit_ticket_escalation_date 0 15]
 	Detalle:
@@ -103,6 +104,7 @@ ad_page_contract {
 	"
 			}
 			set old_audit_ticket_queue_id $old_audit_ticket_queue_id
+		}
 	}
 	
 	append body "

@@ -202,26 +202,28 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				inputValue:	't',
 				width:		150,
 				handler: function(checkbox, checked) {
+					if (!loading) {
 					// Set status to "closed" if checked by the user
-					var panel = this.ownerCt.ownerCt;
-					if (checked && panel.rendered) {
-						var statusField = panel.getForm().findField('ticket_status_id');
-						statusField.setValue('30001');
-
-						// Set the creation done_date of the ticket
-						Ext.Ajax.request({
-							scope:	panel.getForm(),
-							url:	'/intranet-sencha-ticket-tracker/today-date-time',
-							success: function(response) {		// response is the current date-time
-								var doneField = this.findField('ticket_done_date');
-								doneField.setValue(response.responseText);
-							}
-						});
-						panel.getForm().findField('ticket_escalation_date').setValue('');	
-						//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
-						panel.getForm().findField('ticket_queue_id').hide();
-						panel.getForm().findField('combo_send_mail').hide();
-
+						var panel = this.ownerCt.ownerCt;
+						if (checked && panel.rendered) {
+							var statusField = panel.getForm().findField('ticket_status_id');
+							statusField.setValue('30001');
+	
+							// Set the creation done_date of the ticket
+							Ext.Ajax.request({
+								scope:	panel.getForm(),
+								url:	'/intranet-sencha-ticket-tracker/today-date-time',
+								success: function(response) {		// response is the current date-time
+									var doneField = this.findField('ticket_done_date');
+									doneField.setValue(response.responseText);
+								}
+							});
+							panel.getForm().findField('ticket_escalation_date').setValue('');	
+							//panel.getForm().findField('ticket_requires_addition_info_p').setValue('');
+							panel.getForm().findField('ticket_queue_id').hide();
+							panel.getForm().findField('combo_send_mail').hide();
+	
+						}
 					}
 				}
 			}, {
@@ -231,16 +233,18 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				inputValue:	't',
 				width:		150,
 				handler: function(checkbox, checked) {
-					// Set status to "frozen" if checked by the user
-					var panel = this.ownerCt.ownerCt;
-					if (checked && panel.rendered) {
-						var statusField = panel.getForm().findField('ticket_status_id');
-						statusField.setValue('30028');
-						panel.getForm().findField('ticket_escalation_date').setValue('');	
-						//panel.getForm().findField('ticket_closed_in_1st_contact_p').setValue('');
-						panel.getForm().findField('ticket_done_date').setValue('');	
-						panel.getForm().findField('ticket_queue_id').hide();
-						panel.getForm().findField('combo_send_mail').hide();						
+					if (!loading) {
+						// Set status to "frozen" if checked by the user
+						var panel = this.ownerCt.ownerCt;
+						if (checked && panel.rendered) {
+							var statusField = panel.getForm().findField('ticket_status_id');
+							statusField.setValue('30028');
+							panel.getForm().findField('ticket_escalation_date').setValue('');	
+							//panel.getForm().findField('ticket_closed_in_1st_contact_p').setValue('');
+							panel.getForm().findField('ticket_done_date').setValue('');	
+							panel.getForm().findField('ticket_queue_id').hide();
+							panel.getForm().findField('combo_send_mail').hide();						
+						}
 					}
 				}
 			}, {
@@ -362,14 +366,6 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 				store:		programGroupStore,	// Filtered list of profiles
 				width:		300,			
 				listeners:{
-					
-				/*	select: function (field,newValue,oldValue) {
-							userQueueStore.removeAll();
-							if (!Ext.isEmpty(newValue) || 0<=newValue) {
-								userQueueStore.proxy.extraParams['object_id_one'] = newValue;
-							}
-							userQueueStore.load();
-					},		*/			
 					change: function (field,newValue,oldValue) {
 							userQueueStore.sort('object_id_two', 'ASC');
 							userQueueStore.removeAll();
@@ -384,13 +380,15 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 								Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(userQueueStore.first());
 							}
 							// Set the escalation_date
-							Ext.Ajax.request({
-								scope:	this,
-								url:	'/intranet-sencha-ticket-tracker/today-date-time',
-								success: function(response) {		// response is the current date-time
-									Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
-								}
-							});										
+							if (!field.isHidden()) {
+								Ext.Ajax.request({
+									scope:	this,
+									url:	'/intranet-sencha-ticket-tracker/today-date-time',
+									success: function(response) {		// response is the current date-time
+										Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
+									}
+								});	
+							}									
 							
 					}					
 				}
@@ -417,7 +415,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketFormRight', {
 
 	loadTicket: function(rec){
 		var form = this.getForm();
+		loading = true;
 		this.loadRecord(rec);
+		loading = false;
 		//this.dateCheck();
 		// Save the originalqueue_id from the DB. This value will become the 
 		// value of ticket_last_queue_id if the user selected a different queue.
