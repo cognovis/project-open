@@ -65,15 +65,14 @@ set employee_id [db_list emp_list "select employee_id from im_employees"]
 
 if {[llength $opened_projects] == 0} { set opened_projects [list 0] }
 
-
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+if { [catch { set start_date_ansi [clock format [clock scan $start_date] -format %Y-%m-%d] } ""] } {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+if { [catch { set end_date_ansi [clock format [clock scan $end_date] -format %Y-%m-%d] } ""] } {
     ad_return_complaint 1 "End Date doesn't have the right format.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
@@ -155,7 +154,7 @@ db_foreach project_superprojs $project_superprojs_sql {
     # Determine if a project has children
     set project_has_children_p($parent_id) 1
 
-    # Setup the list of direc<t children of a project
+    # Setup the list of direct children of a project
     if {"" != $parent_id} { 
 	set l [list]
 	if {[info exists project_direct_children($parent_id)] } { set l $project_direct_children($parent_id) }
@@ -476,7 +475,6 @@ template::multirow foreach project_list {
         	       	hours,
 			ho.project_id
 	"
-
 	set sum_hours 0
 	db_foreach col $sql {
 	    	set sales_price [find_sales_price $user_id $project_id $company_id ""]
@@ -489,6 +487,7 @@ template::multirow foreach project_list {
 			append err_mess "</a><br><br>"
 			ad_return_complaint 1 $err_mess
 	    	} else {
+		        ns_log NOTICE "***** KHD - Found sales price $sales_price based on (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
 			set sum_hours [expr $sum_hours + [expr $sales_price * $hours]]						
 		}
 	}
