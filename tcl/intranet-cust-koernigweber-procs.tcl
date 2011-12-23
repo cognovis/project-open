@@ -22,12 +22,14 @@ ad_proc find_sales_price {
     Returns the sales price that has defined for a particular user
     on an arbitrary project level above    
 } {
+
+    ns_log NOTICE "find_sales_price: Entr: user_id: $user_id, project_id: $project_id, company_id $company_id, project_type_id: $project_type_id"
     
     # Make sure you look for price based on project_type_id of the (sub-)project of level 'n'  
     if { "" == $project_type_id } {
 	set project_type_id [db_string get_data "select project_type_id from im_projects where project_id = $project_id" -default 0]
 	# check if task -> no prices are defined for tasks 
-        ns_log NOTICE "KHD: No project_type_id passed. Found: $project_type_id"
+        ns_log NOTICE "find_sales_price: No project_type_id passed. Found: $project_type_id"
 	if { 100 == $project_type_id } {    
 	    set project_type_id ""
 	}
@@ -35,7 +37,7 @@ ad_proc find_sales_price {
 
     set amount_sales_price 0
     if { "" != $project_type_id } {
-	ns_log NOTICE "KHD: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id and project_type_id=$project_type_id ([im_category_from_id $project_type_id])"
+	ns_log NOTICE "find_sales_price: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id"
 	# Check if there's a price defined on the project itself
 	set sql "
 		select 
@@ -45,22 +47,21 @@ ad_proc find_sales_price {
 		where 
 			user_id = $user_id 
 			and object_id = $project_id
-			and project_type_id = $project_type_id
     	"
 
 	set amount_sales_price [db_string get_data $sql -default 0]
     } 	
 
     if { 0 != $amount_sales_price} {
-        ns_log NOTICE "KHD: Price found: $amount_sales_price"
-        ns_log NOTICE "KHD: -----------------------------------------------------------"
+        ns_log NOTICE "find_sales_price: Price found: $amount_sales_price"
+        ns_log NOTICE "find_sales_price: -----------------------------------------------------------"
 	return $amount_sales_price
     } else {
-        ns_log NOTICE "KHD: No price found in project: $project_id for user: $user_id and project_type_id: $project_type_id ([im_category_from_id $project_type_id])"
+        ns_log NOTICE "find_sales_price: No price found in project: $project_id for user: $user_id and project_type_id: $project_type_id ([im_category_from_id $project_type_id])"
 	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
-        ns_log NOTICE "KHD: Found parent project: $parent_project_id" 
+        ns_log NOTICE "find_sales_price: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
-	        ns_log NOTICE "KHD: No parent project found, now looking for price defined on customer level:"
+	        ns_log NOTICE "find_sales_price: No parent project found, now looking for price defined on customer level:"
 		# This is the super project, if no price is found, lets check if a price is defined on the user level 
 		set sql "
 		        select
@@ -74,17 +75,17 @@ ad_proc find_sales_price {
     		"
 	    	set sales_price [db_string get_data $sql -default 0]
 		if { 0 == $sales_price } {
-                        ns_log NOTICE "KHD: No price found for customer neither, returning empty string"
-                        ns_log NOTICE "KHD: -----------------------------------------------------------" 
+                        ns_log NOTICE "find_sales_price: No price found for customer neither, returning empty string"
+                        ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 
 			return ""
 		} else {
-                        ns_log NOTICE "KHD: Price found for customer: $sales_price"
-                        ns_log NOTICE "KHD: -----------------------------------------------------------" 			
+                        ns_log NOTICE "find_sales_price: Price found for customer: $sales_price"
+                        ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 			
 			return $sales_price
 		}
     	} else {
-                ns_log NOTICE "KHD: Parent project found: $parent_project_id"
-                ns_log NOTICE "KHD: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $project_type_id ([im_category_from_id $project_type_id])"
+                ns_log NOTICE "find_sales_price: Parent project found: $parent_project_id"
+                ns_log NOTICE "find_sales_price: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $project_type_id ([im_category_from_id $project_type_id])"
 		return [find_sales_price $user_id $parent_project_id $company_id $project_type_id]
 	}
      }
