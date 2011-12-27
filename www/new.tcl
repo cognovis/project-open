@@ -12,16 +12,16 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-	employee_id:integer
-	{ return_url "/intranet-hr/index"}
-	edit_p:optional
-	message:optional
-	{ form_mode "display" }
-	{ availability:integer "100" }
-	{ hourly_cost:float "0" }
-	{ job_title "" }
-	{ job_description "" }
-	{ personnel_number "" }
+    employee_id:integer
+    { return_url "/intranet-hr/index"}
+    edit_p:optional
+    message:optional
+    { form_mode "display" }
+    { availability:integer "100" }
+    { hourly_cost:float "0" }
+    { job_title "" }
+    { job_description "" }
+    { personnel_number "" }
     { ss_number "" }
     { salary:float "0" }
     { social_security:float "0" }
@@ -33,26 +33,26 @@ ad_page_contract {
     { termination_reason "" }
     { referred_by "0" }
     { vacation_balance:float "0" }
-	{ vacation_days_per_year "" }
+    { vacation_days_per_year "" }
     { start_date "" }
     { end_date "" }
-	{ supervisor_id "" }
-	{ department_id "" }
-	{ dependant_p "" }
-	{ only_job_p "" }
-	{ married_p "" }
-	{ dependants ""}
-	{ head_of_household_p "" }
-	{ skills "" }
-	{ first_experience "" }
-	{ employee_status_id "" }
-	{ voluntary_termination_p "" }
-	{ signed_nda_p "" }
-	{ experience_id "" }
-	{ source_id "" }
-	{ original_job_id "" }
-	{ current_job_id "" }
-	{ qualification_id "" }
+    { supervisor_id "" }
+    { department_id "" }
+    { dependant_p "" }
+    { only_job_p "" }
+    { married_p "" }
+    { dependants ""}
+    { head_of_household_p "" }
+    { skills "" }
+    { first_experience "" }
+    { employee_status_id "" }
+    { voluntary_termination_p "" }
+    { signed_nda_p "" }
+    { experience_id "" }
+    { source_id "" }
+    { original_job_id "" }
+    { current_job_id "" }
+    { qualification_id "" }
 }
 
 # ------------------------------------------------------------------
@@ -154,7 +154,6 @@ if {[llength $rep_cost_ids] == 0} {
 set currency_options [im_currency_options]
 set department_options [im_department_options]
 set end_date $end_century
-set hourly_cost 0
 
 set supervisor_options [im_employee_options 1]
 set salary_interval_options {{Month month} {Day day} {Week week} {Year year}}
