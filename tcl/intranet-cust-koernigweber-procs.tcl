@@ -732,7 +732,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
     # Show a line with with the selected invoicing type
     append task_table_rows "
 	<tr>
-	  <td colspan=3>Please select the type of hours to use:</td>
+	  <td colspan=2>Please select the type of hours to use:</td>
 	  <td align=center><input type=radio name=invoice_hour_type value=reported $invoice_radio_disabled $reported_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=interval $invoice_radio_disabled $interval_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=unbilled $invoice_radio_disabled $unbilled_checked></td>
