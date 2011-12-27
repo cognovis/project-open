@@ -1,5 +1,5 @@
 -- upgrade-4.0.3.0.0-4.0.3.0.0.1.sql
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.0-4.0.3.0.0.1.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.0-4.0.3.0.1.sql','');
 
 create or replace function im_name_from_user_id(int4, int4) returns varchar as $body$
         DECLARE
