@@ -12,7 +12,6 @@ ad_library {
 # Show the members of the Admin Group of the current Business Object.
 # ---------------------------------------------------------------------
 
-
 ad_proc find_sales_price {
 	user_id
 	project_id
@@ -1094,4 +1093,13 @@ ad_proc im_category_select_branch_kw {
 }
 
 
+# Helper routine for import
+ad_proc get_person_id_from_org_id {
+        org_id
+} {
+    Returns the sales price that has defined for a particular user
+    on an arbitrary project level above
+} {
+    return [db_string get_data "select person_id from persons where organizational_id_number = :org_id" -default 0]
+}
 
