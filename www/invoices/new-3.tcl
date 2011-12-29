@@ -252,12 +252,13 @@ set price_colspan 11
 set ctr 1
 set old_project_id 0
 set colspan 6
+set flag 0 
 
 # ad_return_complaint 1 [concat $invoicing_start_date "" $invoicing_end_date ]
 # ad_return_complaint 1 $in_clause_list
 
 foreach project_id $in_clause_list {	
-
+    
 	set project_name [db_string get_project_name "select project_name from im_projects where project_id=$project_id"]
         append task_sum_html "
 	        <tr>\n
@@ -297,8 +298,10 @@ foreach project_id $in_clause_list {
 			</td>\n
 		</tr>\n
 	     "
+	     incr ctr
+	     set flag 1 
 	}
-	incr ctr
+	if { $flag } { set flag 0 } else { incr ctr }
 }
 
 append task_sum_html "<input type=hidden name='project_id' value='$select_project'><input type=hidden name='uom_id' value='320'>"
