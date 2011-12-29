@@ -147,10 +147,9 @@ ad_proc -public im_price_list {
 
     # ------------------ DEFAULTS ------------------------
     set current_user_id [ad_maybe_redirect_for_registration]
-
     set admin_p 0
-
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
+    set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
 
     if { "im_project" == $object_type } {
 	# set global vars for project_type and budget 
@@ -203,22 +202,28 @@ ad_proc -public im_price_list {
     if { "im_company" == $object_type } {
             set sql_query "
                 select distinct
-                        r.object_id_two as user_id
+                        r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two, $name_order) as name			
                 from
                         acs_rels r
                 where
                         object_id_one = :object_id 
                 	and rel_type = 'im_key_account_rel'
+		order by 
+			name
              "
     } else {
             set sql_query "
 		        select distinct
-                		r.object_id_two as user_id
+                		r.object_id_two as user_id,
+	                        im_name_from_user_id(r.object_id_two, $name_order) as name
 			from
 		                acs_rels r
 		        where
                 		object_id_one = $object_id
 		                and rel_type = 'im_biz_object_member'
+			order by 
+				name
 	     "
     }
 
@@ -246,13 +251,15 @@ ad_proc -public im_price_list {
 				amount,
 				currency,
 				project_type_id,			
-				im_name_from_user_id(user_id) as name
+				im_name_from_user_id(user_id, $name_order) as name 
 			from 
 				im_customer_prices 
 			where 	
 				user_id = $project_member_id 
 				and object_id = :object_id
 				and acs_object_util__get_object_type(object_id) = 'im_company'    
+			order by 
+				name
     			"
 	    }
 
@@ -291,7 +298,7 @@ ad_proc -public im_price_list {
                 		amount,
 		                currency,
         		        project_type_id,
-                		im_name_from_user_id(user_id) as name
+				im_name_from_user_id(user_id, $name_order) as name 
 			from 
 				im_customer_prices
 			where 
@@ -310,11 +317,13 @@ ad_proc -public im_price_list {
                                 amount,
                                 currency,
                                 project_type_id,
-                                im_name_from_user_id(user_id) as name
+				im_name_from_user_id(user_id, $name_order) as name 
                         from
                                 im_customer_prices
                         where
                                 object_id = $project_member_id 
+			order by 
+				name
 		"
 	    }
 
@@ -323,8 +332,6 @@ ad_proc -public im_price_list {
 	    }
 	}
 
-
-	
 	db_foreach records_to_list $inner_sql {
 		set show_currency_p 1
 		set show_user [im_show_user_style $user_id $current_user_id $price_object_id]
