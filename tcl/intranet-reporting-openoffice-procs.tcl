@@ -114,8 +114,8 @@ ad_proc im_oo_select_nodes {
 ad_proc im_oo_page_type_constant {
     -page_node:required
     -parameters:required
-    {-sql ""}
-    {-repeat "" }
+    {-list_sql ""}
+    {-page_sql "" }
     {-page_name "undefined"}
 } {
     A "constant" page contains only static contents.
@@ -139,8 +139,8 @@ ad_proc im_oo_page_type_constant {
 ad_proc im_oo_page_type_static {
     -page_node:required
     -parameters:required
-    {-sql ""}
-    {-repeat "" }
+    {-list_sql ""}
+    {-page_sql "" }
     {-page_name "undefined"}
 } {
     @param page_node A tDom node for a draw:page node
@@ -161,25 +161,14 @@ ad_proc im_oo_page_type_static {
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
-    # Check the sql statement and perform substitutions
-    if {"" == $sql} { set sql "select 1 as one from dual" }
+    # Check the page_sql statement and perform substitutions
+    if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
     if {[catch {
-	eval [template::adp_compile -string $sql]
-	set sql $__adp_output
-	set sql [eval "set a \"$sql\""]
+	eval [template::adp_compile -string $page_sql]
+	set page_sql $__adp_output
+	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
-        ad_script_abort
-    }
-
-    # Check the repeat statement and perform substitutions
-    if {"" == $repeat} { set repeat "select 1 as one from dual" }
-    if {[catch {
-	eval [template::adp_compile -string $repeat]
-	set repeat $__adp_output
-	set repeat [eval "set a \"$repeat\""]
-    } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in REPEAT statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -189,7 +178,7 @@ ad_proc im_oo_page_type_static {
     # Convert the tDom tree into XML for rendering
     set template_xml [$page_node asXML]
 
-    db_foreach repeat $repeat {
+    db_foreach page_sql $page_sql {
 
 	# execute the SQL statement in order to load variables
 	if {[catch {
@@ -223,8 +212,8 @@ ad_proc im_oo_page_type_static {
 ad_proc im_oo_page_type_sql_list {
     -page_node:required
     -parameters:required
-    {-sql ""}
-    {-repeat "" }
+    {-list_sql ""}
+    {-page_sql "" }
     {-page_name "undefined"}
 } {
     Takes as input a page node from the template with
@@ -237,7 +226,7 @@ ad_proc im_oo_page_type_sql_list {
     <ul>
     <li>The title row and
     <li>The data row with @var_name@ variables
-    <li>The page also needs to provide a "sql" argument
+    <li>The page also needs to provide a "list_sql" argument
         in the page comments that will be used to create
         the data to be shown.
     </ul>
@@ -266,57 +255,75 @@ ad_proc im_oo_page_type_sql_list {
 	ad_script_abort
     }
 
-    # Seach for the 2nd table:table-row tag that contains the template
+    # Seach for the 2nd row ("table:table-row" tag) that contains the 
+    # content row to be repeated for every row of the list_sql
     set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-    set template_row_node ""
+    set content_row_node ""
     set row_count 0
     foreach row_node $row_nodes {
         set row_as_list [$row_node asList]
-        if {1 == $row_count} { set template_row_node $row_node }
+        if {1 == $row_count} { set content_row_node $row_node }
         incr row_count
     }
+#    ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $content_row_node]</pre>"
 
-#    ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $template_row_node]</pre>"
-
-    if {"" == $template_row_node} {
+    if {"" == $content_row_node} {
         ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
         ad_script_abort
     }
 
     # Convert the tDom tree into XML for rendering
-    set template_row_xml [$template_row_node asXML]
+    set content_row_xml [$content_row_node asXML]
 
-    # Perform substitutions on the SQL statement
+    # Check the page_sql statement and perform substitutions
+    if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
     if {[catch {
-	eval [template::adp_compile -string $sql]
-	set sql $__adp_output
-	set sql [eval "set a \"$sql\""]
+	eval [template::adp_compile -string $page_sql]
+	set page_sql $__adp_output
+	set page_sql [eval "set a \"$page_sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
+
+    # Perform substitutions on the list_sql statement
+    if {[catch {
+	eval [template::adp_compile -string $list_sql]
+	set list_sql $__adp_output
+	set list_sql [eval "set a \"$list_sql\""]
     } err_msg]} {
         ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
-    set table_body_xml ""
-    db_foreach sql $sql {
-	# Replace placeholders in the OpenOffice template row with values
+    # Get the parent of the page
+    set page_container [$page_node parentNode]
 
-	if {[catch {
-	    ns_log Notice "template_row_xml=$template_row_xml"
-	    eval [template::adp_compile -string $template_row_xml]
-	    set row_xml $__adp_output
-	} err_msg]} {
-	    ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:<pre>$err_msg\n[im_oo_tdom_explore -node $template_row_node]</pre>"
-	    ad_script_abort
+    db_foreach page_sql $page_sql {
+
+	set table_body_xml ""
+	db_foreach list_sql $list_sql {
+	    # Replace placeholders in the OpenOffice template row with values
+	    
+	    if {[catch {
+		ns_log Notice "content_row_xml=$content_row_xml"
+		eval [template::adp_compile -string $content_row_xml]
+		set row_xml $__adp_output
+	    } err_msg]} {
+		ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
+		ad_script_abort
+	    }
+	    
+	    # Parse the new row and insert into OOoo document
+	    set row_doc [dom parse $row_xml]
+	    set new_row [$row_doc documentElement]
+	    $table_node insertBefore $new_row $content_row_node
 	}
 
-	# Parse the new row and insert into OOoo document
-	set row_doc [dom parse $row_xml]
-	set new_row [$row_doc documentElement]
-	$table_node insertBefore $new_row $template_row_node
-    }
+	# remove the template node
+	#$table_node removeChild $content_row_node
 
-    # remove the template node
-    $table_node removeChild $template_row_node
+    }
 
 }
 
