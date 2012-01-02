@@ -10,8 +10,8 @@ ad_page_contract {
     and their parameters.
     @author frank.bergmann@project-open.com
 } {
-    { template "avance-accumulado-sor.odp" }
-    { odt_filename "avance-accumulado-sor.odp" }
+    { template "test-list.odp" }
+    { odt_filename "test-list.odp" }
     { output_format "odp" }
     { report_start_date "2011-10-01" }
     { report_end_date "2011-11-01" }
@@ -120,23 +120,12 @@ set parameter_hash(date_format) $date_format
 set parameter_hash(report_start_date_pretty) [db_string report_start_date_pretty "select to_char(:report_start_date::date, :date_format) from dual"]
 set parameter_hash(report_end_date_pretty) [db_string report_end_date_pretty "select to_char(:report_end_date::date, :date_format) from dual"]
 
+# Debugging Sample Parameters
 set parameter_hash(program_id) 48944
-
-set ttt {
-set parameter_hash() $
-set parameter_hash() $
-set parameter_hash() $
-set parameter_hash() $
-set parameter_hash() $
-set parameter_hash() $
-set parameter_hash() $
-}
-
-#
-set parameter_list [array get parameter_hash]
 
 
 set debug ""
+set parameter_list [array get parameter_hash]
 foreach page_node $odt_page_template_nodes {
 
     # Extract the "page name" from OOoo.
@@ -146,8 +135,9 @@ foreach page_node $odt_page_template_nodes {
     set page_name [lrange $page_name_list 1 end]
 
     set page_notes [im_oo_page_notes -page_node $page_node]
-    set sql ""
-    set repeat ""
+    set page_sql ""
+    set list_sql ""
+    set counters ""
     for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
 	set varname [lindex $page_notes $i]
 	set varvalue [lindex $page_notes [expr $i+1]]
@@ -156,22 +146,22 @@ foreach page_node $odt_page_template_nodes {
 	regsub -all $long_dash $varvalue "-" varvalue
 
 	switch [string tolower $varname] {
-	    sql { set sql $varvalue }
-	    repeat { set repeat $varvalue }
+	    page_sql { set page_sql $varvalue }
+	    list_sql { set list_sql $varvalue }
 	}
     }
 
-    append debug "<li>$page_type=$page_type, page_name=$page_name, sql=$sql, repeat=$repeat\n"
+    append debug "<li>$page_type=$page_type, page_name=$page_name, page_sql=$page_sql, list_sql=$list_sql\n"
 
     switch $page_type {
 	constant {
-	    im_oo_page_type_constant -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
+	    im_oo_page_type_constant -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
 	}
 	static {
-	    im_oo_page_type_static -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
+	    im_oo_page_type_static -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
 	}
-	sql_list {
-	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -parameters $parameter_list -sql $sql -repeat $repeat
+	list {
+	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
 	}
 	default {
 	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
