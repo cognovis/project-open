@@ -231,49 +231,12 @@ ad_proc im_oo_page_type_sql_list {
         the data to be shown.
     </ul>
 } {
-    # Constants
+    # ------------------------------------------------------------------
+    # Constants & Arguments
+
     set date_format "YYYY-MM-DD"
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
-
-    # Get the list of all tables in slide
-    set table_nodes [im_oo_select_nodes $page_node "table:table"]
-
-    set cnt 0
-    set table_node ""
-    foreach node $table_nodes { 
-	set table_node $node
-	incr cnt 
-    }
-    if {$cnt == 0} { 
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
-	ad_script_abort
-    }
-    if {$cnt > 1} {
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
-        <pre>[im_oo_tdom_explore -node $page_node]</pre>"
-	ad_script_abort
-    }
-
-    # Seach for the 2nd row ("table:table-row" tag) that contains the 
-    # content row to be repeated for every row of the list_sql
-    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-    set content_row_node ""
-    set row_count 0
-    foreach row_node $row_nodes {
-        set row_as_list [$row_node asList]
-        if {1 == $row_count} { set content_row_node $row_node }
-        incr row_count
-    }
-#    ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $content_row_node]</pre>"
-
-    if {"" == $content_row_node} {
-        ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
-        ad_script_abort
-    }
-
-    # Convert the tDom tree into XML for rendering
-    set content_row_xml [$content_row_node asXML]
 
     # Check the page_sql statement and perform substitutions
     if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
@@ -296,10 +259,89 @@ ad_proc im_oo_page_type_sql_list {
         ad_script_abort
     }
 
-    # Get the parent of the page
+    # Get the parent of the page.
+    # This is where we later have to add new pages as children.
     set page_container [$page_node parentNode]
 
+    # Make a copy of the entire page.
+    # We may have to generate more then one page
+    set template_xml [$page_node asXML]
+
+
+
+    # ------------------------------------------------------------------
+    # Search for the content row in the template
+
+    # Get the list of all tables in slide
+    set table_nodes [im_oo_select_nodes $page_node "table:table"]
+
+    set cnt 0
+    set table_node ""
+    foreach node $table_nodes { 
+	set table_node $node
+	incr cnt 
+    }
+    if {$cnt == 0} { 
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
+	ad_script_abort
+    }
+    if {$cnt > 1} {
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
+        <pre>[im_oo_tdom_explore -node $page_root]</pre>"
+	    ad_script_abort
+    }
+    
+    # Seach for the 2nd row ("table:table-row" tag) that contains the 
+    # content row to be repeated for every row of the list_sql
+    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+    set content_row_node ""
+    set row_count 0
+    foreach row_node $row_nodes {
+	set row_as_list [$row_node asList]
+	if {1 == $row_count} { set content_row_node $row_node }
+	incr row_count
+    }
+    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $content_row_node]</pre>"
+    
+    if {"" == $content_row_node} {
+	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
+	ad_script_abort
+    }
+    
+    # Convert the tDom tree into XML for rendering
+    set content_row_xml [$content_row_node asXML]
+
+
+
+
+    # ------------------------------------------------------------------
+    # Start processing the template
+
+    # Loop through all repetitions
     db_foreach page_sql $page_sql {
+
+	# Parse the template in order to create a "fresh" XML tree
+        set page_doc [dom parse $template_xml]
+        set page_root [$page_doc documentElement]
+
+	# Get the list of all tables in the instance
+	set table_nodes [im_oo_select_nodes $page_root "table:table"]
+	set cnt 0
+	set table_node ""
+	foreach node $table_nodes { 
+	    set table_node $node
+	    incr cnt 
+	}
+
+	# Seach for the 2nd row again
+	set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+	set content_row_node ""
+	set row_count 0
+	foreach row_node $row_nodes {
+	    set row_as_list [$row_node asList]
+	    if {1 == $row_count} { set content_row_node $row_node }
+	    incr row_count
+	}
 
 	set table_body_xml ""
 	db_foreach list_sql $list_sql {
@@ -315,15 +357,34 @@ ad_proc im_oo_page_type_sql_list {
 	    }
 	    
 	    # Parse the new row and insert into OOoo document
-	    set row_doc [dom parse $row_xml]
-	    set new_row [$row_doc documentElement]
-	    $table_node insertBefore $new_row $content_row_node
+	    set new_row_doc [dom parse $row_xml]
+	    set new_row_root [$new_row_doc documentElement]
+	    $table_node insertBefore $new_row_root $content_row_node
 	}
 
 	# remove the template node
 	#$table_node removeChild $content_row_node
 
+        # Replace placeholders in the OpenOffice template row with values
+	set page_xml [$page_root asXML]
+        if {[catch {
+            eval [template::adp_compile -string $page_xml]
+            set xml $__adp_output
+        } err_msg]} {
+            ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+            ad_script_abort
+        }
+
+        # Parse the new slide and insert into OOoo document
+        set result_doc [dom parse $xml]
+        set result_root [$result_doc documentElement]
+        $page_container insertBefore $result_root $page_node
+
+	# End looping through repetitions
     }
+
+    # remove the template page
+    $page_container removeChild $page_node
 
 }
 
