@@ -215,7 +215,7 @@ set ctr 0
 set task_list [array names tasks_id]
 
 db_foreach select_tasks $task_sql {
-    ns_log Notice "task_id=$task_id, status_id=$task_status_id"
+    #    ns_log Notice "task_id=$task_id, status_id=$task_status_id"
 
     # Check if the task_type was set in categories
     if {"" != $aux_task_type_id} { set task_type_id $aux_task_type_id }
@@ -308,32 +308,48 @@ db_foreach select_tasks $task_sql {
     # Render the 4 possible workflow roles to assign
     if {$trans} {
 	append task_html [im_task_user_select -source_language_id $source_language_id -target_language_id $target_language_id task_trans.$task_id $project_resource_list $trans_id translator]
+	if {$trans_end_date eq ""} {
+	    set trans_end_date $end_date
+	}
+	append task_html "<br><input type=text size=25 maxlength=25 name=trans_end.$task_id value=\"$trans_end_date\">"
     } else {
-	append task_html "<input type=hidden name='task_trans.$task_id' value=''>"
+	append task_html "<input type=hidden name='task_trans.$task_id' value=''><input type=hidden name='trans_end.$task_id' value=''>"
     }
     
     append task_html "</td><td>"
 
     if {$edit} {
 	append task_html [im_task_user_select -source_language_id $source_language_id -target_language_id $target_language_id task_edit.$task_id $project_resource_list $edit_id editor]
+	if {$edit_end_date eq ""} {
+	    set edit_end_date $end_date
+	}
+	append task_html "<br><input type=text size=25 maxlength=25 name=edit_end.$task_id value=\"$edit_end_date\">"
     } else {
-	append task_html "<input type=hidden name='task_edit.$task_id' value=''>"
+	append task_html "<input type=hidden name='task_edit.$task_id' value=''><input type=hidden name='edit_end.$task_id' value=''>"
     }
 
     append task_html "</td><td>"
 
     if {$proof} {
 	append task_html [im_task_user_select -source_language_id $source_language_id -target_language_id $target_language_id task_proof.$task_id $project_resource_list $proof_id proofer]
+	if {$proof_end_date eq ""} {
+	    set proof_end_date $end_date
+	}
+	append task_html "<br><input type=text size=25 maxlength=25 name=proof_end.$task_id value=\"$proof_end_date\">"
     } else {
-	append task_html "<input type=hidden name='task_proof.$task_id' value=''>"
+	append task_html "<input type=hidden name='task_proof.$task_id' value=''><input type=hidden name='proof_end.$task_id' value=''>"
     }
 
     append task_html "</td><td>"
 
     if {$other} {
 	append task_html [im_task_user_select task_other.$task_id $project_resource_list $other_id]
+	if {$other_end_date eq ""} {
+	    set other_end_date $end_date
+	}
+	append task_html "<br><input type=text size=25 maxlength=25 name=other_end.$task_id value=\"$other_end_date\">"
     } else {
-	append task_html "<input type=hidden name='task_other.$task_id' value=''>"
+	append task_html "<input type=hidden name='task_other.$task_id' value=''><input type=hidden name='other_end.$task_id' value=''>"
     }
 
     append task_html "</td></tr>"
