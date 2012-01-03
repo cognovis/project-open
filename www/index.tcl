@@ -10,8 +10,8 @@ ad_page_contract {
     and their parameters.
     @author frank.bergmann@project-open.com
 } {
-    { template "test-list.odp" }
-    { odt_filename "test-list.odp" }
+    { template "avance-accumulado-sor.odp" }
+    { odt_filename "avance-accumulado-sor.odp" }
     { output_format "odp" }
     { report_start_date "2011-10-01" }
     { report_end_date "2011-11-01" }

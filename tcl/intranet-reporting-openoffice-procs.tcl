@@ -180,14 +180,6 @@ ad_proc im_oo_page_type_static {
 
     db_foreach page_sql $page_sql {
 
-	# execute the SQL statement in order to load variables
-	if {[catch {
-	    db_1row "sql_statement $page_name" $sql
-	} err_msg]} {
-	    ad_return_complaint 1 "<b>Error executing SQL statement in slide '$page_name'</b>:<pre>$err_msg</pre>"
-	    ad_script_abort
-	}
-	
 	# Replace placeholders in the OpenOffice template row with values
 	if {[catch {
 	    eval [template::adp_compile -string $template_xml]
@@ -243,6 +235,10 @@ ad_proc im_oo_page_type_sql_list {
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
+    if {"" == $list_sql} {
+        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in list page</b>."
+        ad_script_abort
+    }
 
     # Check the page_sql statement and perform substitutions
     if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
