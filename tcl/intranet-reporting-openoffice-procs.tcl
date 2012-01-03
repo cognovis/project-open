@@ -234,7 +234,9 @@ ad_proc im_oo_page_type_sql_list {
     # ------------------------------------------------------------------
     # Constants & Arguments
 
-    set date_format "YYYY-MM-DD"
+    # Default number of table rows per page, may be overwritten by list_max_rows parameter
+    set list_max_rows 10
+
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
@@ -267,52 +269,10 @@ ad_proc im_oo_page_type_sql_list {
     # We may have to generate more then one page
     set template_xml [$page_node asXML]
 
-
-
-    # ------------------------------------------------------------------
-    # Search for the content row in the template
-
-    # Get the list of all tables in slide
-    set table_nodes [im_oo_select_nodes $page_node "table:table"]
-
-    set cnt 0
-    set table_node ""
-    foreach node $table_nodes { 
-	set table_node $node
-	incr cnt 
-    }
-    if {$cnt == 0} { 
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
-	ad_script_abort
-    }
-    if {$cnt > 1} {
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
-        <pre>[im_oo_tdom_explore -node $page_root]</pre>"
-	    ad_script_abort
-    }
-    
-    # Seach for the 2nd row ("table:table-row" tag) that contains the 
-    # content row to be repeated for every row of the list_sql
-    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-    set content_row_node ""
-    set row_count 0
-    foreach row_node $row_nodes {
-	set row_as_list [$row_node asList]
-	if {1 == $row_count} { set content_row_node $row_node }
-	incr row_count
-    }
-    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $content_row_node]</pre>"
-    
-    if {"" == $content_row_node} {
-	ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
-	ad_script_abort
-    }
-    
-    # Convert the tDom tree into XML for rendering
-    set content_row_xml [$content_row_node asXML]
-
-
-
+    # Set the "content row" variable to default values.
+    # Normally the content row should contain the table row to be repeated...
+    set content_row_node $page_node
+    set content_row_xml ""
 
     # ------------------------------------------------------------------
     # Start processing the template
@@ -320,39 +280,85 @@ ad_proc im_oo_page_type_sql_list {
     # Loop through all repetitions
     db_foreach page_sql $page_sql {
 
-	# Parse the template in order to create a "fresh" XML tree
+	# Parse the template in order to create a "fresh" XML tree.
+	# We are going to use this tree to insert rows into the first list.
         set page_doc [dom parse $template_xml]
         set page_root [$page_doc documentElement]
 
-	# Get the list of all tables in the instance
-	set table_nodes [im_oo_select_nodes $page_root "table:table"]
-	set cnt 0
-	set table_node ""
-	foreach node $table_nodes { 
-	    set table_node $node
-	    incr cnt 
-	}
-
-	# Seach for the 2nd row again
-	set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-	set content_row_node ""
-	set row_count 0
-	foreach row_node $row_nodes {
-	    set row_as_list [$row_node asList]
-	    if {1 == $row_count} { set content_row_node $row_node }
-	    incr row_count
-	}
-
-	set table_body_xml ""
+	set row_cnt 0
+	set first_page_p 1
 	db_foreach list_sql $list_sql {
+
+	    # ------------------------------------------------------------------
+	    # Setup a new page.
+	    # Execute this code either if we are on the very first page or
+	    # if we have to start a new page because of a long table.
+	    if {$row_cnt >= $list_max_rows || $first_page_p} {
+
+		# ------------------------------------------------------------------
+		# Close the previous page, add it to the Impress document and start a new one.
+		if {0 == $first_page_p} {
+		    # Render the new page with the additional table rows as XML
+		    # and apply the OpenACS template engine in order to replace variables.
+		    set page_xml [$page_root asXML]
+		    if {[catch {
+			eval [template::adp_compile -string $page_xml]
+			set xml $__adp_output
+		    } err_msg]} {
+			ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			ad_script_abort
+		    }
+		    
+		    # Parse the new slide and insert into OOoo document
+		    set result_doc [dom parse $xml]
+		    set result_root [$result_doc documentElement]
+		    $page_container insertBefore $result_root $page_node		
+		}
+
+		# Now we are not on the first page anymore...
+		set first_page_p 0
+
+
+		# ------------------------------------------------------------------
+		# Create a fresh XML tree again for the next page and reset the row counter
+		set page_doc [dom parse $template_xml]
+		set page_root [$page_doc documentElement]
+		set row_cnt 0
+
+		# Get the list of all tables in the page and count them
+		set table_nodes [im_oo_select_nodes $page_root "table:table"]
+		set table_node [lindex $table_nodes 0]
+		set cnt [llength $table_nodes]
+		if {$cnt == 0} { 
+		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
+		    ad_script_abort
+		}
+		if {$cnt > 1} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
+        <pre>[im_oo_tdom_explore -node $page_root]</pre>"
+		    ad_script_abort
+		}
+
+		# Extract the 2nd row ("table:table-row" tag) that contains the 
+		# content row to be repeated for every row of the list_sql
+		set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+		set content_row_node [lindex $row_nodes 1]
+		set content_row_xml [$content_row_node asXML]
+		if {"" == $content_row_node} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
+		    ad_script_abort
+		}
+	    }
+
+
+	    # ------------------------------------------------------------------
 	    # Replace placeholders in the OpenOffice template row with values
-	    
 	    if {[catch {
-		ns_log Notice "content_row_xml=$content_row_xml"
 		eval [template::adp_compile -string $content_row_xml]
 		set row_xml $__adp_output
 	    } err_msg]} {
-		ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
+		ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:
+		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
 		ad_script_abort
 	    }
 	    
@@ -360,12 +366,11 @@ ad_proc im_oo_page_type_sql_list {
 	    set new_row_doc [dom parse $row_xml]
 	    set new_row_root [$new_row_doc documentElement]
 	    $table_node insertBefore $new_row_root $content_row_node
+
+	    incr row_cnt
 	}
 
-	# remove the template node
-	#$table_node removeChild $content_row_node
-
-        # Replace placeholders in the OpenOffice template row with values
+	# Close the page and apply the OpenACS template engine
 	set page_xml [$page_root asXML]
         if {[catch {
             eval [template::adp_compile -string $page_xml]
@@ -380,7 +385,7 @@ ad_proc im_oo_page_type_sql_list {
         set result_root [$result_doc documentElement]
         $page_container insertBefore $result_root $page_node
 
-	# End looping through repetitions
+	# End looping through multiple pages
     }
 
     # remove the template page

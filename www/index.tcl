@@ -31,11 +31,6 @@ set user_id [ad_maybe_redirect_for_registration]
 set user_locale [lang::user::locale]
 set date_format "YYYY-MM-DD"
 
-if {0} {
-    ad_return_complaint 1 "<li>[lang::message::lookup $locale intranet-invoices.lt_You_need_to_specify_a]"
-    return
-}
-
 set page_title [lang::message::lookup "" intranet-reporting-openoffice.Program_Overview "Program Overview"]
 set context [list $page_title]
 set sub_navbar_html ""
