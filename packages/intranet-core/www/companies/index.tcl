@@ -368,15 +368,17 @@ ns_log Notice $selection
 # Do we have to show administration links?
 
 set admin_html ""
-if {$user_is_admin_p} {
-
+if {[im_permission $current_user_id "add_companies"]} {
     set admin_html "<ul>"
-    if {[im_permission $current_user_id "add_companies"]} {
-	
-	append admin_html "
-	<li><a href=/intranet/companies/new>[_ intranet-core.Add_a_new_Company]</a>\n"
-    }
     
+    append admin_html "
+	<li><a href=/intranet/companies/new>[_ intranet-core.Add_a_new_Company]</a>\n"
+}
+
+if {$user_is_admin_p} {
+    if {$admin_html eq ""} {
+	set admin_html "<ul>"
+    }
     append admin_html "
 <li><a href=/intranet/companies/upload-companies?[export_url_vars return_url]>[_ intranet-core.Import_Company_CSV]</a>
 <!-- <li><a href=/intranet/companies/upload-contacts?[export_url_vars return_url]>[_ intranet-core.lt_Import_Company_Contac]</a> -->
