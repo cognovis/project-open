@@ -197,6 +197,7 @@ set related_projects_sql "
         select distinct
 	   	r.object_id_one as project_id,
 		p.project_name,
+                im_name_from_id(project_lead_id) as project_manager,
 		p.project_nr,
 		p.parent_id,
 		trim(both p.company_project_nr) as customer_project_nr
@@ -723,7 +724,7 @@ switch $cost_type_id {
 if {$default_payment_method_id eq ""} {set default_payment_method_id 10000302}
 switch $default_payment_method_id {
     10000302 {
-	set payment_string "Payment to Bank Account $bank_account_nr at $bank_name, Routing: $bank_routing_nr for ${company_name}${payment_days_string}. IBAN: $iban / BIC: $bic"
+	set payment_string "Payment to Bank Account $bank_account_nr at $bank_name, Routing: $bank_routing_nr for ${company_name}${payment_days_string}.<text:line-break/> IBAN: $iban / BIC: $bic"
     }
     10000303 {
 	set payment_string "Payment to Paypal account ${paypal_email}${payment_days_string}."
