@@ -118,9 +118,13 @@ set parameter_hash(report_end_date_pretty) [db_string report_end_date_pretty "se
 # Debugging Sample Parameters
 set parameter_hash(program_id) 48944
 
+# Make a copy of the parameter_hash as a list
+set base_parameter_list [array get parameter_hash]
+
 
 set debug ""
-set parameter_list [array get parameter_hash]
+array unset parameter_hash
+array set parameter_hash $base_parameter_list
 foreach page_node $odt_page_template_nodes {
 
     # Extract the "page name" from OOoo.
@@ -134,15 +138,18 @@ foreach page_node $odt_page_template_nodes {
     set list_sql ""
     set counters ""
     for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
-	set varname [lindex $page_notes $i]
+	set varname [string tolower [lindex $page_notes $i]]
 	set varvalue [lindex $page_notes [expr $i+1]]
 
 	# Substitute a "long dash" ("--") with a normal one
 	regsub -all $long_dash $varvalue "-" varvalue
 
-	switch [string tolower $varname] {
+	switch $varname {
 	    page_sql { set page_sql $varvalue }
 	    list_sql { set list_sql $varvalue }
+	    default {
+		set parameter_hash($varname) $varvalue
+	    }
 	}
     }
 
@@ -150,13 +157,28 @@ foreach page_node $odt_page_template_nodes {
 
     switch $page_type {
 	constant {
-	    im_oo_page_type_constant -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
+	    im_oo_page_type_constant \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get parameter_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
 	}
 	static {
-	    im_oo_page_type_static -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
+	    im_oo_page_type_static \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get parameter_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
 	}
 	list {
-	    im_oo_page_type_sql_list -page_node $page_node -page_name $page_name -parameters $parameter_list -list_sql $list_sql -page_sql $page_sql
+	    im_oo_page_type_sql_list \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get parameter_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
 	}
 	default {
 	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"

@@ -237,8 +237,12 @@ ad_proc im_oo_page_type_sql_list {
     # Default number of table rows per page, may be overwritten by list_max_rows parameter
     set list_max_rows 10
 
+    # Initialize counters
+    set counters {}
+
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
+
 
     # Check the page_sql statement and perform substitutions
     if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
@@ -271,8 +275,10 @@ ad_proc im_oo_page_type_sql_list {
 
     # Set the "content row" variable to default values.
     # Normally the content row should contain the table row to be repeated...
-    set content_row_node $page_node
+    set content_row_node ""
     set content_row_xml ""
+    set page_total_node ""
+    set list_total_node ""
 
     # ------------------------------------------------------------------
     # Start processing the template
@@ -295,9 +301,15 @@ ad_proc im_oo_page_type_sql_list {
 	    # if we have to start a new page because of a long table.
 	    if {$row_cnt >= $list_max_rows || $first_page_p} {
 
-		# ------------------------------------------------------------------
 		# Close the previous page, add it to the Impress document and start a new one.
 		if {0 == $first_page_p} {
+
+		    # Remove the content_row
+		    if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+
+		    # Remove the 4th line from the list in all but the last page
+		    if {"" != $list_total_node} { $table_node removeChild $list_total_node }
+
 		    # Render the new page with the additional table rows as XML
 		    # and apply the OpenACS template engine in order to replace variables.
 		    set page_xml [$page_root asXML]
@@ -318,8 +330,6 @@ ad_proc im_oo_page_type_sql_list {
 		# Now we are not on the first page anymore...
 		set first_page_p 0
 
-
-		# ------------------------------------------------------------------
 		# Create a fresh XML tree again for the next page and reset the row counter
 		set page_doc [dom parse $template_xml]
 		set page_root [$page_doc documentElement]
@@ -343,6 +353,8 @@ ad_proc im_oo_page_type_sql_list {
 		# content row to be repeated for every row of the list_sql
 		set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
 		set content_row_node [lindex $row_nodes 1]
+		set page_total_node [lindex $row_nodes 2]
+		set list_total_node [lindex $row_nodes 3]
 		set content_row_xml [$content_row_node asXML]
 		if {"" == $content_row_node} {
 		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
@@ -350,6 +362,37 @@ ad_proc im_oo_page_type_sql_list {
 		}
 	    }
 
+	    # ------------------------------------------------------------------
+	    # Update Counters
+	    # Counters allow to sum up values in a list column.
+	    # A counter consists of a list with two values:
+	    #	- counter_var: The name of the counter variables
+	    #	- counter_expr: A numeric expression that defines 
+	    #	  the value to be added to the counter.
+	    # The counter expression may contain any parameters 
+	    # of the static page or values returned from the list_sql.
+	    # The counter value can be used in the page_total and 
+	    # total lines of a list just like a normal variable.
+	    #
+	    foreach counter $counters {
+		set counter_var [lindex $counter 0]
+		set counter_expr [lindex $counter 1]
+
+		if {![info exists $counter_var]} { set $counter_var 0 }
+		set val ""
+		if {[catch {
+		    set val [expr $counter_expr]
+		} err_msg]} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Error updating counter</b>:<br>
+			Counter name: '$counter_var'<br>
+			Counter expressions: '$counter_expr'<br>
+			Error:<br><pre>$err_msg</pre>"
+		    ad_script_abort
+		}
+		if {"" != $val && [string is double $val]} {
+		    set $counter_var [expr "\$$counter_var + $val"]
+		}
+	    }
 
 	    # ------------------------------------------------------------------
 	    # Replace placeholders in the OpenOffice template row with values
@@ -361,7 +404,7 @@ ad_proc im_oo_page_type_sql_list {
 		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
 		ad_script_abort
 	    }
-	    
+
 	    # Parse the new row and insert into OOoo document
 	    set new_row_doc [dom parse $row_xml]
 	    set new_row_root [$new_row_doc documentElement]
@@ -370,7 +413,14 @@ ad_proc im_oo_page_type_sql_list {
 	    incr row_cnt
 	}
 
-	# Close the page and apply the OpenACS template engine
+
+	# ------------------------------------------------------------------
+	# The last page of the list. This can also be the very first page with short lists.
+
+	# Remove the content_row
+	if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+
+	# Apply the OpenACS template engine
 	set page_xml [$page_root asXML]
         if {[catch {
             eval [template::adp_compile -string $page_xml]
