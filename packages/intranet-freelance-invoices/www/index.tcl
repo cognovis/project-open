@@ -215,7 +215,7 @@ db_foreach task_tasks $task_sql {
 		<tr class=rowplain>
 		  <td colspan=$task_colspan align=right>
 		    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
-		    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+		    <input type=checkbox name=aggregate_tasks_p value=1>
 		    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 		    <input type=submit value=Submit>  
 		  </td>
@@ -276,7 +276,7 @@ if {$ctr > 1} {
 	<tr class=rowplain>
 	  <td colspan=$task_colspan align=right>
 	    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
-	    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+	    <input type=checkbox name=aggregate_tasks_p value=1>
 	    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 	    <input type=submit value=Submit>
 	  </td>
