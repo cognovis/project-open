@@ -94,6 +94,8 @@ from
 		select
 			tt.trans_id as freelance_id,
 			'trans' as action,
+                        trans_end_date as delivery_date,
+                        end_date,
 			[im_project_type_trans] as po_task_type_id,
 			im_category_from_id([im_project_type_trans]) as po_task_type,
 			tt.*
@@ -104,6 +106,8 @@ from
 		select
 			tt.edit_id as freelance_id,
 			'edit' as action,
+                        edit_end_date as delivery_date,
+                        end_date,
 			[im_project_type_edit] as po_task_type_id,
 			im_category_from_id([im_project_type_edit]) as po_task_type,
 			tt.*
@@ -114,6 +118,8 @@ from
 		select
 			tt.proof_id as freelance_id,
 			'proof' as action,
+                        proof_end_date as delivery_date,
+                        end_date,
 			[im_project_type_proof] as po_task_type_id,
 			im_category_from_id([im_project_type_proof]) as po_task_type,
 			tt.*
@@ -124,6 +130,8 @@ from
 		select
 			tt.other_id as freelance_id,
 			'other' as action,
+                        other_end_date as delivery_date,
+                        end_date,
 			[im_project_type_other] as po_task_type_id,
 			im_category_from_id([im_project_type_other]) as po_task_type,
 			tt.*
@@ -153,7 +161,8 @@ set ctr 1
 set task_list [array names tasks_id]
 set old_freelance_id 0
 db_foreach task_tasks $task_sql {
-    
+
+    set end_date [lc_time_fmt $end_date "%q %X"]
     # introduce spaces after "/" (by "/ ") to allow for graceful rendering
     regsub {/} $task_name "/ " task_name
     ns_log Notice "task_name=$task_name"
@@ -206,7 +215,7 @@ db_foreach task_tasks $task_sql {
 		<tr class=rowplain>
 		  <td colspan=$task_colspan align=right>
 		    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
-		    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+		    <input type=checkbox name=aggregate_tasks_p value=1>
 		    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 		    <input type=submit value=Submit>  
 		  </td>
@@ -227,6 +236,7 @@ db_foreach task_tasks $task_sql {
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Type]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Units]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.UoM]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Delivery_date]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Sel]</td>
 	  </tr>
 	  <tr class=rowtitle>
@@ -254,6 +264,7 @@ db_foreach task_tasks $task_sql {
 	  </td>
 	  <td>$task_units</td>
 	  <td>$task_uom</td>
+          <td>$delivery_date</td>
 	  <td><input type=checkbox name=\"$action.$task_id\" value=1 checked></td>
 	</tr>\n"
     incr ctr    
@@ -265,7 +276,7 @@ if {$ctr > 1} {
 	<tr class=rowplain>
 	  <td colspan=$task_colspan align=right>
 	    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
-	    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+	    <input type=checkbox name=aggregate_tasks_p value=1>
 	    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 	    <input type=submit value=Submit>
 	  </td>

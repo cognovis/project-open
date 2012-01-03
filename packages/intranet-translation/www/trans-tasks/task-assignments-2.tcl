@@ -21,6 +21,10 @@ ad_page_contract {
     task_edit:array
     task_proof:array
     task_other:array
+    trans_end:array
+    proof_end:array
+    edit_end:array
+    other_end:array
 }
 
 set user_id [ad_maybe_redirect_for_registration]
@@ -33,16 +37,21 @@ foreach task_id $task_list {
     set edit $task_edit($task_id)
     set proof $task_proof($task_id)
     set other $task_other($task_id)
-
-    ns_log Notice "task-assigment-2, each line of selection trans for roles:
-trans=$trans, edit=$edit, proof=$proof, other=$other"
+    set trans_end_date $trans_end($task_id)
+    set edit_end_date $edit_end($task_id)
+    set proof_end_date $proof_end($task_id)
+    set other_end_date $other_end($task_id)
 
     set task_workflow_update_sql "
 update im_trans_tasks set
 	trans_id=:trans,
 	edit_id=:edit,
 	proof_id=:proof,
-	other_id=:other
+	other_id=:other,
+        trans_end_date=:trans_end_date,
+        edit_end_date=:edit_end_date,
+        proof_end_date=:proof_end_date,
+        other_end_date=:other_end_date
 where
 	task_id=:task_id
 "

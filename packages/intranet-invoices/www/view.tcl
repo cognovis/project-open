@@ -32,6 +32,7 @@ ad_page_contract {
     { output_format "html" }
     { err_mess "" }
     { item_list_type:integer 0 }
+    { pdf_p 0 }
 }
 
 # ---------------------------------------------------------------
@@ -1406,10 +1407,17 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 
 	# ------------------------------------------------
         # Return the file
-	ns_log Notice "view.tcl: before returning file"
-        set outputheaders [ns_conn outputheaders]
-        ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${invoice_nr}.odt"
-        ns_returnfile 200 application/odt $odt_zip
+	if {$pdf_p} {
+	    set pdf_filename "[file rootname $odt_zip].pdf"
+	    intranet_oo::jodconvert -oo_file $odt_zip -output_file $pdf_filename
+	    set outputheaders [ns_conn outputheaders]
+	    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${invoice_nr}.pdf"
+	    ns_returnfile 200 application/pdf $pdf_filename
+	} else {
+	    set outputheaders [ns_conn outputheaders]
+	    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${invoice_nr}.odt"
+	    ns_returnfile 200 application/odt $odt_zip
+	}
 
 	# ------------------------------------------------
         # Delete the temporary files

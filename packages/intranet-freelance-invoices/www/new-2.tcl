@@ -502,6 +502,7 @@ select
 	s.*,
 	s.task_name as task_title,
   	im_category_from_id(s.task_type_id) as task_type,
+  	im_category_from_id(s.po_task_type_id) as po_task_type,
   	im_category_from_id(s.task_uom_id) as task_uom,
   	im_category_from_id(s.source_language_id) as source_language,
   	im_category_from_id(s.target_language_id) as target_language,
@@ -535,6 +536,7 @@ order by
     set task_title ""
     db_foreach task_sum_query $task_sum_sql {
 
+	ds_comment "Task:: $po_task_type_id"
         if { ![info exists file_type_id] } {
             set file_type_id ""
         }
@@ -565,8 +567,15 @@ set material_id ""
 	    set task_title "$task_type ($target_language)"
 	} else {
 	    # Title is there - add specifics
-	    set task_date_pretty [lc_time_fmt $end_date "%x" $locale]
-	    set task_title "$task_title ($source_language -> $target_language, $task_date_pretty)"
+	    switch $po_task_type_id {
+		86 {set task_date_pretty [lc_time_fmt $other_end_date "%x %X" $locale]}
+		88 {set task_date_pretty [lc_time_fmt $edit_end_date "%x %X" $locale]}
+		93 {set task_date_pretty [lc_time_fmt $trans_end_date "%x %X" $locale]}
+		95 {set task_date_pretty [lc_time_fmt $proof_end_date "%x %X" $locale]}
+		default {set task_date_pretty [lc_time_fmt $end_date "%x %X" $locale]}
+	    }
+
+	    set task_title "$po_task_type: $task_title ($source_language -> $target_language) Deadline: \"$task_date_pretty CET\""
 	}
 
 	# Determine the price from a ranked list of "price list hits"
