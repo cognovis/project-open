@@ -19,6 +19,7 @@
       select
 	i.*,
 	p.*,
+	now() as delivery_date_pretty,
 	im_category_from_id(i.item_type_id) as item_type,
 	im_category_from_id(i.item_uom_id) as item_uom,
 	p.project_nr as project_short_name,

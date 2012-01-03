@@ -301,7 +301,9 @@ set query "
 		im_cost_center_name_from_id(ci.cost_center_id) as cost_center_name,
 		im_category_from_id(ci.cost_status_id) as cost_status,
 		im_category_from_id(ci.cost_type_id) as cost_type, 
-		im_category_from_id(ci.template_id) as template
+		im_category_from_id(ci.template_id) as template,
+                im_category_from_id(c.default_payment_method_id) as default_payment_method,
+                im_category_from_id(c.company_type_id) as company_type
 	from
 		im_invoices i,
 		im_costs ci,
@@ -324,6 +326,12 @@ if { ![db_0or1row invoice_info_query $query] } {
     return
 }
 
+# -------------
+# set defaults
+# -------------
+
+if {$default_payment_method eq ""} {set default_payment_method "Bank"}
+if {$default_payment_days eq ""} {set default_payment_days 14}
 
 # ---------------------------------------------------------------
 # Get information about start- and end time of invoicing period
