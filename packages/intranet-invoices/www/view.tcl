@@ -327,13 +327,6 @@ if { ![db_0or1row invoice_info_query $query] } {
     return
 }
 
-# -------------
-# set defaults
-# -------------
-
-if {$default_payment_method eq ""} {set default_payment_method "Bank"}
-if {$default_payment_days eq ""} {set default_payment_days 14}
-
 # ---------------------------------------------------------------
 # Get information about start- and end time of invoicing period
 # ---------------------------------------------------------------
@@ -371,7 +364,6 @@ db_1row office_info_query "
 	from im_offices
 	where office_id = :invoice_office_id
 "
-
 
 # ---------------------------------------------------------------
 # Get everything about the contact person.
@@ -695,6 +687,53 @@ if {"" != $address_country_code} {
     }
     set country_name [lang::message::lookup $locale intranet-core.$country_name $country_name]
 }
+
+# -------------
+# set defaults KOLIBRI
+# -------------
+
+# if purchase order, no 14 days. All the rest is the same
+
+if {$address_country_code eq ""} {
+    set address_country_code "de"
+}
+
+switch $address_country_code {
+    de {
+	# Check if the company is a Kleinunternehmer
+	if {$company_type_id eq 10000301} {
+	    set taxability_string "Leistungsempfänger ist Kleinunternehmer und Steuerschuldner gemäß § 19 UStG."
+	}
+	set taxability_string ""
+    }
+    default {
+	set taxability_string "The recipient carries the tax liability."
+    }
+}
+
+switch $cost_type_id {
+    3704 {
+	set payment_days_string " within 14 days"
+    }
+    default {
+	set payment_days_string ""
+    }
+}
+
+if {$default_payment_method_id eq ""} {set default_payment_method_id 10000302}
+switch $default_payment_method_id {
+    10000302 {
+	set payment_string "Payment to Bank Account $bank_account_nr at $bank_name, Routing: $bank_routing_nr for ${company_name}${payment_days_string}. IBAN: $iban / BIC: $bic"
+    }
+    10000303 {
+	set payment_string "Payment to Paypal account ${paypal_email}${payment_days_string}."
+    }
+    10000304 {
+	set payment_string "Payment to Skrill account ${skrill_email}${payment_days_string}."
+    }
+}
+
+
 
 # ---------------------------------------------------------------
 # Update the amount paid for this cost_item
