@@ -310,7 +310,6 @@ ad_proc -public im_check_for_update_scripts {
         order by log_key
     "
     db_foreach db_files $sql {
-
 #        ns_log Notice "upgrade4: checking log key $log_key"
         # Add the "/packages/..." part to hash-array for fast comparison.
         if {[regexp {(/packages.*)} $log_key match path]} {

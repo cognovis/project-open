@@ -19,7 +19,7 @@
 -- @cvs-id $Id$
 --
 
-SELECT acs_log__debug('/packages/intranet-openoffice/sql/postgresql/intranet-openoffice-create.sql','');
+SELECT acs_log__debug('/packages/intranet-openoffice/sql/postgresql/upgrade/upgrade-4.0.1.0.0-4.0.2.0.0.sql','');
 
 update im_view_columns set datatype = 'date' where column_render_tcl like '%_date%';
 update im_view_columns set datatype = 'string' where datatype is null;
