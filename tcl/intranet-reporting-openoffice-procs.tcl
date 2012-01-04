@@ -702,16 +702,36 @@ ad_proc im_oo_page_type_gantt {
 		set sorted_grouping_nodes [im_oo_page_type_gantt_sort_groupings -grouping_nodes $grouping_nodes]
 
 		set green_node [lindex $sorted_grouping_nodes 0]
+		set green_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
+		set green_x_offset [lindex $green_x_y_offset 0]
+		set green_y_offset [lindex $green_x_y_offset 1]
+		im_oo_page_type_gantt_grouping_move -node $green_node -offset_list [list [expr -$green_x_offset] [expr -$green_y_offset]]
 		set green_xml [$green_node asXML]
+		
+
 		set yellow_node [lindex $sorted_grouping_nodes 1]
-		if {"" == $yellow_node} { set yellow_node $green_node }
+		if {"" == $yellow_node} { 
+		    set yellow_node $green_node 
+		} else {
+		    set yellow_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $yellow_node]
+		    set yellow_x_offset [lindex $yellow_x_y_offset 0]
+		    set yellow_y_offset [lindex $yellow_x_y_offset 1]
+		    im_oo_page_type_gantt_grouping_move -node $yellow_node -offset_list [list [expr -$yellow_x_offset] [expr -$yellow_y_offset]]
+		}
 		set yellow_xml [$yellow_node asXML]
+
+
 		set red_node [lindex $sorted_grouping_nodes 2]
-		if {"" == $red_node} { set red_node $green_node }
+		if {"" == $red_node} { 
+		    set red_node $green_node 
+		} else {
+		    set red_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $red_node]
+		    set red_x_offset [lindex $red_x_y_offset 0]
+		    set red_y_offset [lindex $red_x_y_offset 1]
+		    im_oo_page_type_gantt_grouping_move -node $red_node -offset_list [list [expr -$red_x_offset] [expr -$red_y_offset]]
+		}
 		set red_xml [$red_node asXML]
 
-		# Determine the minimum x/y distance from the upper left corner
-		set min_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
 	    }
 
 	    # ------------------------------------------------------------------
@@ -739,8 +759,8 @@ ad_proc im_oo_page_type_gantt {
 
 	    # Move the grouping into the correct x/y position.
 	    # Therefore we take the base x/y postition and add 1.5cmm for every row
-	    set x_offset 0.0
-	    set y_offset [expr $row_cnt * 1.5]
+	    set x_offset $green_x_offset
+	    set y_offset [expr $green_y_offset + $row_cnt * 1.5]
 	    im_oo_page_type_gantt_grouping_move -node $new_grouping_root -offset_list [list $x_offset $y_offset]
 
 	    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $page_root]</pre>"
