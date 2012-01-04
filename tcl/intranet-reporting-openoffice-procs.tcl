@@ -505,6 +505,55 @@ ad_proc im_oo_page_type_gantt_grouping_x_y_offset {
 }
 
 
+ad_proc im_oo_page_type_gantt_grouping_move {
+    {-level 0}
+    -node:required
+    -offset_list:required
+} {
+    Move all svg:x and svg:y coordinates in a grouping
+    by the specified offset.
+    @param node: The tDom node of the grouping
+    @param offset_list: {x_offset y_offset}
+} {
+    set name [$node nodeName]
+    set type [$node nodeType]
+
+    set x_offset [lindex $offset_list 0]
+    set y_offset [lindex $offset_list 1]
+
+    # Skipe text and element nodes
+    if {$type == "TEXT_NODE" || $type != "ELEMENT_NODE"} { return }
+
+    ns_log Notice "im_oo_page_type_gantt_grouping_move: name=$name, attrib=[$node attributes]"
+    foreach attrib [$node attributes] {
+        # Get the attribute value and remove possible "cm" after the value
+        set value [$node getAttribute $attrib]
+        if {[regexp {^([0-9\.]+)(.*)$} $value match val unit]} { set value $val }
+
+        # Apply the offset 
+        if {"svg:x" == $attrib} {
+	    set x [expr $value + $x_offset]
+	    $node setAttribute $attrib "$x$unit"
+	}
+        if {"svg:y" == $attrib} { 
+	    lappend y_list $value 
+	    set y [expr $value + $y_offset]
+	    $node setAttribute $attrib "$y$unit"
+	}
+    }
+
+    # Recursively descend to child nodes
+    foreach child [$node childNodes] {
+        im_oo_page_type_gantt_grouping_extract_x_y_offset_list \
+	    -node $child \
+	    -level [expr $level + 1] \
+	    -offset_list $offset_list \
+	    ]
+    }
+    return
+}
+
+
 ad_proc im_oo_page_type_gantt_sort_groupings {
     -grouping_nodes:required
 } {
@@ -659,8 +708,8 @@ ad_proc im_oo_page_type_gantt {
 		set red_node [lindex $grouping_nodes 0]
 		set red_xml [$red_node asXML]
 
-		# Determine the x/y distance from the upper left cornder of the page for the topmost (green) gantt bar
-		set x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
+		# Determine the minimum x/y distance from the upper left corner
+		set min_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
 
 		ad_return_complaint 1 "<pre>offset: $x_y_offset</pre>"
 
@@ -671,21 +720,25 @@ ad_proc im_oo_page_type_gantt {
 	    # Replace placeholders in the OpenOffice template row with values
 	    if {[catch {
 		eval [template::adp_compile -string $green_xml]
-		set row_xml $__adp_output
+		set grouping_xml $__adp_output
 	    } err_msg]} {
 		ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
 		<pre>$err_msg\n[im_oo_tdom_explore -node [lindex $grouping_nodes 0]]</pre>"
 		ad_script_abort
 	    }
 
-	    # Parse the new row and insert into OOoo document
-	    set new_row_doc [dom parse $row_xml]
-	    set new_row_root [$new_row_doc documentElement]
+	    # Parse the new grouping and insert into OOoo document
+	    set new_grouping_doc [dom parse $grouping_xml]
+	    set new_grouping_root [$new_grouping_doc documentElement]
 
-	    # Move the green grouping into the correct x/y position
+	    # Move the grouping into the correct x/y position.
+	    # Therefore we take the base x/y postition and add 1.5cmm for every row
+	    set x_offset [lindex $min_x_y_offset 0]
+	    set y_offset [expr [lindex $min_x_y_offset 1] + $row_cnt * 1.5]
+	    im_oo_page_type_gantt_grouping_move -node $new_grouping_root -offset [list $x_offset $y_offset]
 
 	    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $page_root]</pre>"
-	    $page_root insertBefore $new_row_root [$page_root firstChild]
+	    $page_root insertBefore $new_grouping_root [$page_root firstChild]
 
 	    incr row_cnt
 	}
