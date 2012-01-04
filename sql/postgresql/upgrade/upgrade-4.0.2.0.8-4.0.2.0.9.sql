@@ -1,7 +1,6 @@
 -- upgrade-4.0.2.0.8-4.0.2.0.9.sql
 SELECT acs_log__debug('/packages/intranet-sla-management/sql/postgresql/upgrade/upgrade-4.0.2.0.8-4.0.2.0.9.sql','');
 
-
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS INTEGER AS '
  
@@ -23,3 +22,7 @@ end;' LANGUAGE 'plpgsql';
  
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
+
+-- fix wrong value for status_type_table
+update acs_object_types set status_type_table = 'im_sla_parameters' where object_type = 'im_sla_parameter';
+
