@@ -45,6 +45,8 @@ set template_oo_path "$serverroot/packages/intranet-reporting-openoffice/templat
 set url [ns_conn url]
 set url_pieces [split $url "/"]
 set url_file [lindex $url_pieces 2]
+set url_file_body [lindex [split $url_file "."] 0]
+set url_file_ext [lindex [split $url_file "."] 1]
 
 # Get the information about the URL parameters, parse
 # them and store them into a hash array.
@@ -67,52 +69,64 @@ foreach query_piece $query_pieces {
 }
 
 
+set query_hash(now) [db_string now "select to_char(now(), 'YYYY-MM-DD')"]
+set query_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
+set query_hash(now_day_of_month) [db_string now "select to_char(now(), 'DD')"]
+set query_hash(now_year) [db_string now "select to_char(now(), 'YYYY')"]
+set query_hash(date_format) $date_format
+
+
 # ---------------------------------------------------------------
-# Redirection logic
+# Check for a TCL file in the template directories
 # ---------------------------------------------------------------
 
-# Define a number of locations where to look for the file
-set package_files [list \
-    "$serverroot/packages/intranet-reporting-openoffice/www/${url_file}" \
-    "$serverroot/packages/intranet-reporting-openoffice/www/${url_file}.tcl" \
-    "$template_oo_path/${url_file}" \
-    "$template_oo_path/${url_file}.tcl" \
-    "$template_path/${url_file}" \
-    "$template_path/${url_file}.tcl" \
-]
-
-foreach package_file $package_files {
-    if {[file isfile $package_file] && [file readable $package_file]} {
-	ns_log Notice "intranet-reporting-openoffice/index.vuh: Serving /www/$url_file"
-	set params [list [list query_hash [array get query_hash]]]
-	set result [ad_parse_template -params $params $package_file]
-	doc_return 200 $mime_type $result
-	ad_script_abort
-    } else {
-	ns_log Notice "intranet-reporting-openoffice/index.vuh: File '$package_file' does not exist or is not readable."
+if {"" == $url_file_ext || "tcl" == $url_file_ext || "adp" == $url_file_ext} {
+    # Define a number of locations where to look for the file
+    set package_files [list \
+			   "$template_oo_path/${url_file}" \
+			   "$template_oo_path/${url_file}.tcl" \
+			   "$template_oo_path/${url_file}.adp" \
+			   "$template_path/${url_file}" \
+			   "$template_path/${url_file}.tcl" \
+			   "$template_path/${url_file}.adp" \
+			  ]
+    
+    foreach package_file $package_files {
+	if {[file isfile $package_file] && [file readable $package_file]} {
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Serving /www/$url_file"
+	    set params [list [list query_hash [array get query_hash]]]
+	    set result [ad_parse_template -params $params $package_file]
+	    doc_return 200 $mime_type $result
+	    ad_script_abort
+	} else {
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: File '$package_file' does not exist or is not readable."
+	}
     }
 }
 
-
 # ---------------------------------------------------------------
-# Execute an OO.oo tempate
+# Look for an OO.oo tempate
 # ---------------------------------------------------------------
 
-# Define a number of locations where to look for the file
-set template_files [list \
-    "$template_oo_path/${url_file}" \
-    "$template_oo_path/${url_file}.odp" \
-    "$template_path/${url_file}" \
-    "$template_path/${url_file}.odp" \
-]
+if {"" == $url_file_ext || "odp" == $url_file_ext} {
 
-set odp_template_file ""
-foreach template_file $template_files {
-    if {[file isfile $template_file] && [file readable $template_file]} {
-	ns_log Notice "intranet-reporting-openoffice/index.vuh: Found template file $template_file"
-	set odp_template_file $template_file
+    # Define a number of locations where to look for the file
+    set template_files [list \
+			    "$template_oo_path/${url_file}" \
+			    "$template_oo_path/${url_file}.odp" \
+			    "$template_path/${url_file}" \
+			    "$template_path/${url_file}.odp" \
+			   ]
+    
+    set odp_template_file ""
+    foreach template_file $template_files {
+	if {[file isfile $template_file] && [file readable $template_file]} {
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Found template file $template_file"
+	    set odp_template_file $template_file
+	}
     }
 }
+
 
 # Redirect to default page if we didn't find a template
 if {"" == $odp_template_file} {
@@ -161,34 +175,6 @@ set odp_page_template_nodes [$odp_root selectNodes "//draw:page"]
 # and process each page depending on its type
 # ---------------------------------------------------------------
 
-# array set parameter_hash {}
-# set parameter_hash(report_start_date) $report_start_date
-# set parameter_hash(report_end_date) $report_end_date
-# set parameter_hash(report_customer_id) $report_customer_id
-# set parameter_hash(report_program_id) $report_program_id
-# set parameter_hash(report_project_type_id) $report_project_type_id
-# set parameter_hash(report_project_type) [im_category_from_id $report_project_type_id]
-# set parameter_hash(report_area_id) $report_area_id
-# set parameter_hash(now) [db_string now "select to_char(now(), 'YYYY-MM-DD')"]
-# set parameter_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
-# set parameter_hash(now_day_of_month) [db_string now "select to_char(now(), 'DD')"]
-# set parameter_hash(now_year) [db_string now "select to_char(now(), 'YYYY')"]
-# set parameter_hash(date_format) $date_format
-# set parameter_hash(report_start_date_pretty) [db_string report_start_date_pretty "select to_char(:report_start_date::date, :date_format) from dual"]
-# set parameter_hash(report_end_date_pretty) [db_string report_end_date_pretty "select to_char(:report_end_date::date, :date_format) from dual"]
-
-# Debugging Sample Parameters
-# set parameter_hash(program_id) 48944
-
-# Make a copy of the parameter_hash as a list
-set base_parameter_list [array get parameter_hash]
-
-
-set debug ""
-array unset parameter_hash
-array set parameter_hash $base_parameter_list
-array set parameter_hash [array get query_hash]
-
 foreach page_node $odp_page_template_nodes {
 
     # Extract the "page name" from OOoo.
@@ -212,7 +198,7 @@ foreach page_node $odp_page_template_nodes {
 	    page_sql { set page_sql $varvalue }
 	    list_sql { set list_sql $varvalue }
 	    default {
-		set parameter_hash($varname) $varvalue
+		set query_hash($varname) $varvalue
 	    }
 	}
     }
@@ -224,7 +210,7 @@ foreach page_node $odp_page_template_nodes {
 	    im_oo_page_type_constant \
 		-page_node $page_node \
 		-page_name $page_name \
-		-parameters [array get parameter_hash] \
+		-parameters [array get query_hash] \
 		-list_sql $list_sql \
 		-page_sql $page_sql
 	}
@@ -232,15 +218,23 @@ foreach page_node $odp_page_template_nodes {
 	    im_oo_page_type_static \
 		-page_node $page_node \
 		-page_name $page_name \
-		-parameters [array get parameter_hash] \
+		-parameters [array get query_hash] \
 		-list_sql $list_sql \
 		-page_sql $page_sql
 	}
 	list {
-	    im_oo_page_type_sql_list \
+	    im_oo_page_type_list \
 		-page_node $page_node \
 		-page_name $page_name \
-		-parameters [array get parameter_hash] \
+		-parameters [array get query_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
+	}
+	gantt {
+	    im_oo_page_type_gantt \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get query_hash] \
 		-list_sql $list_sql \
 		-page_sql $page_sql
 	}
@@ -260,6 +254,8 @@ foreach page_node $odp_page_template_nodes {
 
 # Format document as XML
 set content [$odp_root asXML -indent none]
+
+ad_return_complaint 1 "<pre>$content</pre>"
 
 # Save the content to a file.
 set file [open $odp_content w]

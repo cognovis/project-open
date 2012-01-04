@@ -288,7 +288,7 @@ ad_proc im_oo_page_type_static {
 }
 
 
-ad_proc im_oo_page_type_sql_list {
+ad_proc im_oo_page_type_list {
     -page_node:required
     -parameters:required
     {-list_sql ""}
