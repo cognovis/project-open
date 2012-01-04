@@ -255,8 +255,6 @@ foreach page_node $odp_page_template_nodes {
 # Format document as XML
 set content [$odp_root asXML -indent none]
 
-ad_return_complaint 1 "<pre>$content</pre>"
-
 # Save the content to a file.
 set file [open $odp_content w]
 fconfigure $file -encoding "utf-8"

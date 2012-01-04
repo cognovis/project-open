@@ -32,20 +32,20 @@ ad_proc im_oo_tdom_explore {
     if {$type != "ELEMENT_NODE"} { return "$result\n" }
 
     # Create a key-value list of attributes behind the name of the tag
-    append result " ("
+    ns_log Notice "im_oo_tdom_explore: name=$name, type=$type, attrib=[$node attributes]"
+    set attribute_list {}
     foreach attrib [$node attributes] {
         # Pull out the attributes identified by name:namespace.
         set attrib_name [lindex $attrib 0]
-        set ns [lindex $attrib 1]
-	#       set value [$node getAttribute "$ns:$attrib_name"]
-        set value ""
-        append result "'$ns':'$attrib_name'='$value', "
+	set value [$node getAttribute $attrib]
+        lappend attribute_list "$attrib_name=$value"
     }
-    append result ")\n"
+    if {"" != $attribute_list} { append result " ([join $attribute_list ", "])" }
+    append result "\n"
 
     # Recursively descend to child nodes
     foreach child [$node childNodes] {
-        append result [im_invoice_oo_tdom_explore -parent $child -level [expr $level + 1]]
+        append result [im_oo_tdom_explore -node $child -level [expr $level + 1]]
     }
     return $result
 }
@@ -109,90 +109,6 @@ ad_proc im_oo_select_nodes {
     return $result
 }
 
-
-
-
-# ----------------------------------------------------------------------
-# Handle HTTP GET requests
-# ----------------------------------------------------------------------
-
-ad_proc -private im_oo_call_get {
-    {-http_method GET }
-    {-format "xml" }
-} {
-    Handler for GET rest calls
-} {
-    # Get the entire URL and decompose into the "rest_otype" 
-    # and the "rest_oid" pieces. Splitting the URL on "/"
-    # will result in "{} intranet-rest rest_otype rest_oid":
-    set url [ns_conn url]
-    set url_pieces [split $url "/"]
-    set rest_otype [lindex $url_pieces 2]
-    set rest_oid [lindex $url_pieces 3]
-
-    # Get the information about the URL parameters, parse
-    # them and store them into a hash array.
-    set query [ns_conn query]
-    set query_pieces [split $query "&"]
-    array set query_hash {}
-    foreach query_piece $query_pieces {
-	if {[regexp {^([^=]+)=(.+)$} $query_piece match var val]} {
-	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
-
-	    # Additional decoding: replace "+" by " "
-	    regsub -all {\+} $var { } var
-	    regsub -all {\+} $val { } val
-
-	    set var [ns_urldecode $var]
-	    set val [ns_urldecode $val]
-	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
-	    set query_hash($var) $val
-	}
-    }
-
-    if {[info exists query_hash(format)]} { set format $query_hash(format) }
-
-    # Determine the authenticated user_id. 0 means not authenticated.
-    array set auth_hash [im_rest_authenticate -format $format -query_hash_pairs [array get query_hash]]
-    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
-    set auth_user_id $auth_hash(user_id)
-    set auth_method $auth_hash(method)
-    if {0 == $auth_user_id} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
-
-    # Default format are:
-    # - "html" for cookie authentication
-    # - "xml" for basic authentication
-    # - "xml" for auth_token authentication
-    switch $auth_method {
-	basic { set format "xml" }
-	cookie { set format "html" }
-	token { set format "xml" }
-	default { return [im_rest_error -format $format -http_status 401 -message "Invalid authentication method '$auth_method'."] }
-    }
-    # Overwrite default format with explicitely specified format in URL
-    if {[info exists query_hash(format)]} { set format $query_hash(format) }
-    set valid_formats {xml html json}
-    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
-
-    # Call the main request processing routine
-    if {[catch {
-
-	im_rest_call \
-	    -method $http_method \
-	    -format $format \
-	    -user_id $auth_user_id \
-	    -rest_otype $rest_otype \
-	    -rest_oid $rest_oid \
-	    -query_hash_pairs [array get query_hash]
-
-    } err_msg]} {
-
-	ns_log Notice "im_rest_call_get: im_rest_call returned an error: $err_msg"
-	return [im_rest_error -format $format -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
-
-    }
-    
-}
 
 # -------------------------------------------------------
 # Page processession procs
@@ -423,11 +339,11 @@ ad_proc im_oo_page_type_list {
 		set table_node [lindex $table_nodes 0]
 		set cnt [llength $table_nodes]
 		if {$cnt == 0} { 
-		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Did not found a table in the slide</b>" 
+		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Did not found a table in the slide</b>" 
 		    ad_script_abort
 		}
 		if {$cnt > 1} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Found more the one table ($cnt)</b>:<br>
+		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Found more the one table ($cnt)</b>:<br>
         <pre>[im_oo_tdom_explore -node $page_root]</pre>"
 		    ad_script_abort
 		}
@@ -440,7 +356,7 @@ ad_proc im_oo_page_type_list {
 		set list_total_node [lindex $row_nodes 3]
 		set content_row_xml [$content_row_node asXML]
 		if {"" == $content_row_node} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Table only has one row</b>"
+		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
 		    ad_script_abort
 		}
 	    }
@@ -466,7 +382,7 @@ ad_proc im_oo_page_type_list {
 		if {[catch {
 		    set val [expr $counter_expr]
 		} err_msg]} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_sql_list '$page_name': Error updating counter</b>:<br>
+		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
 			Counter name: '$counter_var'<br>
 			Counter expressions: '$counter_expr'<br>
 			Error:<br><pre>$err_msg</pre>"
@@ -529,6 +445,84 @@ ad_proc im_oo_page_type_list {
 
 
 
+ad_proc im_oo_page_type_gantt_grouping_extract_x_y_offset_list {
+    {-level 0}
+    -node:required
+} {
+    Takes a grouping, extracts all x and all y coordinates of 
+    objects and returns a list {min_x min_y}.
+} {
+    set name [$node nodeName]
+    set type [$node nodeType]
+
+    # Initialize the list of return values
+    set x_list {}
+    set y_list {}
+
+    # Skipe text and element nodes
+    if {$type == "TEXT_NODE" || $type != "ELEMENT_NODE"} { return [list $x_list $y_list] }
+
+    ns_log Notice "im_oo_page_type_gantt_grouping_x_y_offset: name=$name, attrib=[$node attributes]"
+    foreach attrib [$node attributes] {
+	# Get the attribute value and remove possible "cm" after the value
+	set value [$node getAttribute $attrib]
+	if {[regexp {^([0-9\.]+)} $value match val]} { set value $val}
+
+	# Append to the respective list
+	if {"svg:x" == $attrib} { lappend x_list $value }
+	if {"svg:y" == $attrib} { lappend y_list $value }
+    }
+
+    # Recursively descend to child nodes
+    foreach child [$node childNodes] {
+        set res [im_oo_page_type_gantt_grouping_extract_x_y_offset_list -node $child -level [expr $level + 1]]
+	set x_list [concat $x_list [lindex $res 0]]
+	set y_list [concat $y_list [lindex $res 1]]
+    }
+    return [list $x_list $y_list]
+}
+
+ad_proc im_oo_page_type_gantt_grouping_x_y_offset {
+    {-level 0}
+    -node:required
+} {
+    Takes a grouping, extracts all x and all y coordinates of 
+    objects and returns a list {min_x min_y}.
+} {
+    # Extract the list of x and y values.
+    set res [im_oo_page_type_gantt_grouping_extract_x_y_offset_list -node $node]
+    set x_list [lindex $res 0]
+    set y_list [lindex $res 1]
+
+    # Calculate the minimum value
+    set min_x 999.9
+    set min_y 999.9
+    foreach x $x_list { if {$x < $min_x} { set min_x $x } }
+    foreach y $y_list { if {$y < $min_y} { set min_y $y } }
+
+    #ad_return_complaint 1 "$min_x - $min_y"
+    return [list $min_x $min_y]
+}
+
+
+ad_proc im_oo_page_type_gantt_sort_groupings {
+    -grouping_nodes:required
+} {
+    Takes a list of exactly three "groupings" (an OpenOffice
+    group of several display elements) and returns the list
+    in Y-order (starting with the topmost element.
+    In the template, the tomost grouping represents the
+    template for a "green" task, the 2nd a "yellow" and the
+    3rd a "red" task.
+} {
+    # Use functional programming to sort
+    # the list after the min_Y value of the element.
+    # The min_Y element is the second element (lindex ... 1)
+    # of the list returned by grouping_x_y_offset.
+    return [qsort $grouping_nodes [lambda {s} {lindex [im_oo_page_type_gantt_grouping_x_y_offset -node $s] 1}]]
+}
+
+
 ad_proc im_oo_page_type_gantt {
     -page_node:required
     -parameters:required
@@ -536,23 +530,36 @@ ad_proc im_oo_page_type_gantt {
     {-page_sql "" }
     {-page_name "undefined"}
 } {
-    @param page_node A tDom node for a draw:page node
-    @param sqlAn SQL statement that should return a single row.
-		The returned columns are available as variables
-		in the template.
-    @param repeat An optional SQL statement.
-		The template will be repated for every "repeat"
-		row with the repeat columns available as variables
-		for the SQL statement.
-    @param page_name The name of the slide 
-		(for debugging purposes)
-
-    The procedure will replace the template's @varname@
-    variables by the values returned from the SQL statement.
+    Takes as input a page node from the template with
+    a table and a sql parameter in the "notes".
+    It interprets the second row of the first table as
+    a template and replaces this row with lines for 
+    each of the SQL results.<br>
+    Expected data structures: The "list" page requires 
+    a table with two rows:
+    <ul>
+    <li>The title row and
+    <li>The data row with @var_name@ variables
+    <li>The page also needs to provide a "list_sql" argument
+        in the page comments that will be used to create
+        the data to be shown.
+    </ul>
 } {
-    # Write global parameters into local variables
+    # ------------------------------------------------------------------
+    # Constants & Arguments
+
+    # Default number of table rows per page, may be overwritten by list_max_rows parameter
+    set list_max_rows 10
+
+    # Write parameters to local variables
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
+
+    # Make sure there is a SQL for the project phases/tasks
+    if {"" == $list_sql} {
+        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in gantt page</b>."
+        ad_script_abort
+    }
 
     # Check the page_sql statement and perform substitutions
     if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
@@ -565,30 +572,151 @@ ad_proc im_oo_page_type_gantt {
         ad_script_abort
     }
 
-    # Get the parent of the page
+    # Perform substitutions on the list_sql statement
+    if {[catch {
+	eval [template::adp_compile -string $list_sql]
+	set list_sql $__adp_output
+	set list_sql [eval "set a \"$list_sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
+
+    # Get the parent of the page.
+    # This is where we later have to add new pages as children.
     set page_container [$page_node parentNode]
 
-    # Convert the tDom tree into XML for rendering
+    # Make a copy of the entire page.
+    # We may have to generate more then one page
     set template_xml [$page_node asXML]
 
+
+    # ad_return_complaint 1 "<pre>[ns_quotehtml $template_xml]</pre>"
+
+    # ------------------------------------------------------------------
+    # Start processing the template
+
+    # Loop through all repetitions
     db_foreach page_sql $page_sql {
 
-	# Replace placeholders in the OpenOffice template row with values
-	if {[catch {
-	    eval [template::adp_compile -string $template_xml]
-	    set xml $__adp_output
-	} err_msg]} {
-	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
-	    ad_script_abort
+	# Parse the template in order to create a "fresh" XML tree.
+	# We are going to use this tree to insert rows into the first list.
+        set page_doc [dom parse $template_xml]
+        set page_root [$page_doc documentElement]
+
+	set row_cnt 0
+	set first_page_p 1
+	db_foreach list_sql $list_sql {
+
+	    # ------------------------------------------------------------------
+	    # Setup a new page.
+	    # Execute this code either if we are on the very first page or
+	    # if we have to start a new page because of a long table.
+	    if {$row_cnt >= $list_max_rows || $first_page_p} {
+
+		# Close the previous page, add it to the Impress document and start a new one.
+		if {0 == $first_page_p} {
+		    # Render the new page with the additional table rows as XML
+		    # and apply the OpenACS template engine in order to replace variables.
+		    set page_xml [$page_root asXML]
+		    if {[catch {
+			eval [template::adp_compile -string $page_xml]
+			set xml $__adp_output
+		    } err_msg]} {
+			ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			ad_script_abort
+		    }
+		    
+		    # Parse the new slide and insert into OOoo document
+		    set result_doc [dom parse $xml]
+		    set result_root [$result_doc documentElement]
+		    $page_container insertBefore $result_root $page_node		
+		}
+
+		# Now we are not on the first page anymore...
+		set first_page_p 0
+
+		# Create a fresh XML tree again for the next page and reset the row counter
+		set page_doc [dom parse $template_xml]
+		set page_root [$page_doc documentElement]
+		set row_cnt 0
+
+		# Get the list of all "groups" in the page and count them
+		set grouping_nodes [im_oo_select_nodes $page_root "draw:g"]
+		set cnt [llength $grouping_nodes]
+		if {3 != $cnt} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name': The page should have exactly 3 groups, but we found $cnt.</b>" 
+		    ad_script_abort
+		}
+
+		# Sort the groupings and "normalize" to svg:x=0 and svg:y=0
+		set sorted_grouping_nodes [im_oo_page_type_gantt_sort_groupings -grouping_nodes $grouping_nodes]
+
+		set green_node [lindex $grouping_nodes 0]
+		set green_xml [$green_node asXML]
+		set yellow_node [lindex $grouping_nodes 0]
+		set yellow_xml [$yellow_node asXML]
+		set red_node [lindex $grouping_nodes 0]
+		set red_xml [$red_node asXML]
+
+		# Determine the x/y distance from the upper left cornder of the page for the topmost (green) gantt bar
+		set x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
+
+		ad_return_complaint 1 "<pre>offset: $x_y_offset</pre>"
+
+
+	    }
+
+	    # ------------------------------------------------------------------
+	    # Replace placeholders in the OpenOffice template row with values
+	    if {[catch {
+		eval [template::adp_compile -string $green_xml]
+		set row_xml $__adp_output
+	    } err_msg]} {
+		ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
+		<pre>$err_msg\n[im_oo_tdom_explore -node [lindex $grouping_nodes 0]]</pre>"
+		ad_script_abort
+	    }
+
+	    # Parse the new row and insert into OOoo document
+	    set new_row_doc [dom parse $row_xml]
+	    set new_row_root [$new_row_doc documentElement]
+
+	    # Move the green grouping into the correct x/y position
+
+	    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $page_root]</pre>"
+	    $page_root insertBefore $new_row_root [$page_root firstChild]
+
+	    incr row_cnt
 	}
-	
-	# Parse the new slide and insert into OOoo document
-	set doc [dom parse $xml]
-	set doc_doc [$doc documentElement]
-	$page_container insertBefore $doc_doc $page_node
+
+
+	# ------------------------------------------------------------------
+	# The last page of the list. This can also be the very first page with short lists.
+
+	# Apply the OpenACS template engine
+	set page_xml [$page_root asXML]
+
+	# ad_return_complaint 1 "<pre>[ns_quotehtml $page_xml]</pre>"
+
+        if {[catch {
+            eval [template::adp_compile -string $page_xml]
+            set xml $__adp_output
+        } err_msg]} {
+            ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+            ad_script_abort
+        }
+
+        # Parse the new slide and insert into OOoo document
+        set result_doc [dom parse $xml]
+        set result_root [$result_doc documentElement]
+        $page_container insertBefore $result_root $page_node
+
+	# End looping through multiple pages
     }
-	
-    # remove the template node
+
+    # remove the template page
     $page_container removeChild $page_node
 
 }
+
