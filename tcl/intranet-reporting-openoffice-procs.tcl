@@ -111,6 +111,93 @@ ad_proc im_oo_select_nodes {
 
 
 
+
+# ----------------------------------------------------------------------
+# Handle HTTP GET requests
+# ----------------------------------------------------------------------
+
+ad_proc -private im_oo_call_get {
+    {-http_method GET }
+    {-format "xml" }
+} {
+    Handler for GET rest calls
+} {
+    # Get the entire URL and decompose into the "rest_otype" 
+    # and the "rest_oid" pieces. Splitting the URL on "/"
+    # will result in "{} intranet-rest rest_otype rest_oid":
+    set url [ns_conn url]
+    set url_pieces [split $url "/"]
+    set rest_otype [lindex $url_pieces 2]
+    set rest_oid [lindex $url_pieces 3]
+
+    # Get the information about the URL parameters, parse
+    # them and store them into a hash array.
+    set query [ns_conn query]
+    set query_pieces [split $query "&"]
+    array set query_hash {}
+    foreach query_piece $query_pieces {
+	if {[regexp {^([^=]+)=(.+)$} $query_piece match var val]} {
+	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
+
+	    # Additional decoding: replace "+" by " "
+	    regsub -all {\+} $var { } var
+	    regsub -all {\+} $val { } val
+
+	    set var [ns_urldecode $var]
+	    set val [ns_urldecode $val]
+	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
+	    set query_hash($var) $val
+	}
+    }
+
+    if {[info exists query_hash(format)]} { set format $query_hash(format) }
+
+    # Determine the authenticated user_id. 0 means not authenticated.
+    array set auth_hash [im_rest_authenticate -format $format -query_hash_pairs [array get query_hash]]
+    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
+    set auth_user_id $auth_hash(user_id)
+    set auth_method $auth_hash(method)
+    if {0 == $auth_user_id} { return [im_rest_error -format $format -http_status 401 -message "Not authenticated"] }
+
+    # Default format are:
+    # - "html" for cookie authentication
+    # - "xml" for basic authentication
+    # - "xml" for auth_token authentication
+    switch $auth_method {
+	basic { set format "xml" }
+	cookie { set format "html" }
+	token { set format "xml" }
+	default { return [im_rest_error -format $format -http_status 401 -message "Invalid authentication method '$auth_method'."] }
+    }
+    # Overwrite default format with explicitely specified format in URL
+    if {[info exists query_hash(format)]} { set format $query_hash(format) }
+    set valid_formats {xml html json}
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -format $format -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
+
+    # Call the main request processing routine
+    if {[catch {
+
+	im_rest_call \
+	    -method $http_method \
+	    -format $format \
+	    -user_id $auth_user_id \
+	    -rest_otype $rest_otype \
+	    -rest_oid $rest_oid \
+	    -query_hash_pairs [array get query_hash]
+
+    } err_msg]} {
+
+	ns_log Notice "im_rest_call_get: im_rest_call returned an error: $err_msg"
+	return [im_rest_error -format $format -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
+
+    }
+    
+}
+
+# -------------------------------------------------------
+# Page processession procs
+# -------------------------------------------------------
+
 ad_proc im_oo_page_type_constant {
     -page_node:required
     -parameters:required
@@ -439,3 +526,69 @@ ad_proc im_oo_page_type_sql_list {
 
 }
 
+
+
+
+ad_proc im_oo_page_type_gantt {
+    -page_node:required
+    -parameters:required
+    {-list_sql ""}
+    {-page_sql "" }
+    {-page_name "undefined"}
+} {
+    @param page_node A tDom node for a draw:page node
+    @param sqlAn SQL statement that should return a single row.
+		The returned columns are available as variables
+		in the template.
+    @param repeat An optional SQL statement.
+		The template will be repated for every "repeat"
+		row with the repeat columns available as variables
+		for the SQL statement.
+    @param page_name The name of the slide 
+		(for debugging purposes)
+
+    The procedure will replace the template's @varname@
+    variables by the values returned from the SQL statement.
+} {
+    # Write global parameters into local variables
+    array set param_hash $parameters
+    foreach var [array names param_hash] { set $var $param_hash($var) }
+
+    # Check the page_sql statement and perform substitutions
+    if {"" == $page_sql} { set page_sql "select 1 as one from dual" }
+    if {[catch {
+	eval [template::adp_compile -string $page_sql]
+	set page_sql $__adp_output
+	set page_sql [eval "set a \"$page_sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
+
+    # Get the parent of the page
+    set page_container [$page_node parentNode]
+
+    # Convert the tDom tree into XML for rendering
+    set template_xml [$page_node asXML]
+
+    db_foreach page_sql $page_sql {
+
+	# Replace placeholders in the OpenOffice template row with values
+	if {[catch {
+	    eval [template::adp_compile -string $template_xml]
+	    set xml $__adp_output
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+	    ad_script_abort
+	}
+	
+	# Parse the new slide and insert into OOoo document
+	set doc [dom parse $xml]
+	set doc_doc [$doc documentElement]
+	$page_container insertBefore $doc_doc $page_node
+    }
+	
+    # remove the template node
+    $page_container removeChild $page_node
+
+}
