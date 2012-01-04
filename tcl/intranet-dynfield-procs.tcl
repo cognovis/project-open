@@ -518,7 +518,7 @@ ad_proc -public im_dynfield::attribute_store {
 
     if { "user" == $object_type } {
         set object_type "person"
-		set object_subtype_id [im_user_subtypes $object_id]
+	set object_subtype_id [im_user_subtypes $object_id]
     }
 
     set object_id_org $object_id
@@ -532,6 +532,7 @@ ad_proc -public im_dynfield::attribute_store {
     # -------------------------------------------------
 
     # Get display mode per attribute and object_type_id
+
     set sql "
        select	m.attribute_id,
                 m.object_type_id as ot,
@@ -568,6 +569,7 @@ ad_proc -public im_dynfield::attribute_store {
 		and (also_hard_coded_p is NULL or also_hard_coded_p != 't')
 	order by aa.attribute_name
     "
+
     array set update_lines {}
     db_foreach attributes $attribute_sql {
 
@@ -581,10 +583,12 @@ ad_proc -public im_dynfield::attribute_store {
 
         # object_subtype_id can be a list, so go through the list
         # and take the highest one (none - display - edit).
-		set display_mode "undefined"
+	set display_mode "undefined"
         foreach subtype_id $object_subtype_id {
             set key "$dynfield_attribute_id.$subtype_id"
+	    ns_log Notice "im_dynfield::attribute_store: key: $key"
             if {[info exists display_mode_hash($key)]} {
+		ns_log Notice "im_dynfield::attribute_store: display_mode_hash(key): $display_mode_hash($key)"
                 switch $display_mode_hash($key) {
                     edit { set display_mode "edit" }
                     display { if {"edit" != $display_mode} { set display_mode "display" } }
