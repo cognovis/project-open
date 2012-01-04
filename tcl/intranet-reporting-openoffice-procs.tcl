@@ -544,11 +544,10 @@ ad_proc im_oo_page_type_gantt_grouping_move {
 
     # Recursively descend to child nodes
     foreach child [$node childNodes] {
-        im_oo_page_type_gantt_grouping_extract_x_y_offset_list \
+        im_oo_page_type_gantt_grouping_move \
 	    -node $child \
 	    -level [expr $level + 1] \
-	    -offset_list $offset_list \
-	    ]
+	    -offset_list $offset_list
     }
     return
 }
@@ -600,6 +599,9 @@ ad_proc im_oo_page_type_gantt {
     # Default number of table rows per page, may be overwritten by list_max_rows parameter
     set list_max_rows 10
 
+    # Initialize the on_track_status (green, yellow, red)
+    set on_track_status "green"
+
     # Write parameters to local variables
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
@@ -638,9 +640,6 @@ ad_proc im_oo_page_type_gantt {
     # Make a copy of the entire page.
     # We may have to generate more then one page
     set template_xml [$page_node asXML]
-
-
-    # ad_return_complaint 1 "<pre>[ns_quotehtml $template_xml]</pre>"
 
     # ------------------------------------------------------------------
     # Start processing the template
@@ -693,37 +692,44 @@ ad_proc im_oo_page_type_gantt {
 		# Get the list of all "groups" in the page and count them
 		set grouping_nodes [im_oo_select_nodes $page_root "draw:g"]
 		set cnt [llength $grouping_nodes]
-		if {3 != $cnt} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name': The page should have exactly 3 groups, but we found $cnt.</b>" 
+		if {$cnt < 1} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name': The page should have at least one 'group' of objects</b><br>
+		    This group will be used as a template for gantt bars." 
 		    ad_script_abort
 		}
 
 		# Sort the groupings and "normalize" to svg:x=0 and svg:y=0
 		set sorted_grouping_nodes [im_oo_page_type_gantt_sort_groupings -grouping_nodes $grouping_nodes]
 
-		set green_node [lindex $grouping_nodes 0]
+		set green_node [lindex $sorted_grouping_nodes 0]
 		set green_xml [$green_node asXML]
-		set yellow_node [lindex $grouping_nodes 0]
+		set yellow_node [lindex $sorted_grouping_nodes 1]
+		if {"" == $yellow_node} { set yellow_node $green_node }
 		set yellow_xml [$yellow_node asXML]
-		set red_node [lindex $grouping_nodes 0]
+		set red_node [lindex $sorted_grouping_nodes 2]
+		if {"" == $red_node} { set red_node $green_node }
 		set red_xml [$red_node asXML]
 
 		# Determine the minimum x/y distance from the upper left corner
 		set min_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
-
-		ad_return_complaint 1 "<pre>offset: $x_y_offset</pre>"
-
-
 	    }
 
 	    # ------------------------------------------------------------------
 	    # Replace placeholders in the OpenOffice template row with values
+	
+	    # Pull out the right template according to "color"
+	    switch [string tolower $on_track_status] {
+		"yellow" { set gantt_bar_xml $yellow_xml }
+		"red" { set gantt_bar_xml $red_xml }
+		default { set gantt_bar_xml $green_xml }
+	    }
+
 	    if {[catch {
-		eval [template::adp_compile -string $green_xml]
+		eval [template::adp_compile -string $gantt_bar_xml]
 		set grouping_xml $__adp_output
 	    } err_msg]} {
 		ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
-		<pre>$err_msg\n[im_oo_tdom_explore -node [lindex $grouping_nodes 0]]</pre>"
+		<pre>$err_msg\n$green_xml</pre>"
 		ad_script_abort
 	    }
 
@@ -733,9 +739,9 @@ ad_proc im_oo_page_type_gantt {
 
 	    # Move the grouping into the correct x/y position.
 	    # Therefore we take the base x/y postition and add 1.5cmm for every row
-	    set x_offset [lindex $min_x_y_offset 0]
-	    set y_offset [expr [lindex $min_x_y_offset 1] + $row_cnt * 1.5]
-	    im_oo_page_type_gantt_grouping_move -node $new_grouping_root -offset [list $x_offset $y_offset]
+	    set x_offset 0.0
+	    set y_offset [expr $row_cnt * 1.5]
+	    im_oo_page_type_gantt_grouping_move -node $new_grouping_root -offset_list [list $x_offset $y_offset]
 
 	    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $page_root]</pre>"
 	    $page_root insertBefore $new_grouping_root [$page_root firstChild]
@@ -747,11 +753,11 @@ ad_proc im_oo_page_type_gantt {
 	# ------------------------------------------------------------------
 	# The last page of the list. This can also be the very first page with short lists.
 
+	# Delete the three template nodes
+	foreach node $grouping_nodes { $page_root removeChild $node }
+
 	# Apply the OpenACS template engine
 	set page_xml [$page_root asXML]
-
-	# ad_return_complaint 1 "<pre>[ns_quotehtml $page_xml]</pre>"
-
         if {[catch {
             eval [template::adp_compile -string $page_xml]
             set xml $__adp_output
