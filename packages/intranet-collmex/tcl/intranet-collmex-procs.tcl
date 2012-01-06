@@ -75,7 +75,7 @@ ad_proc -public intranet_collmex::update_company {
     }
 
     if {$email eq ""} {
-	return "ERROR $company_id: missing primary contact for $company_name"
+	set email "[parameter::get_from_package_key -package_key "acs-core" -parameter "HostAdministrator"]"
     }
     
     set csv_line "$Satzart"
