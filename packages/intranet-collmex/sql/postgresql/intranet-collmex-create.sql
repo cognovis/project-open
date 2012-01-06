@@ -21,6 +21,9 @@
 
 SELECT acs_log__debug('/packages/intranet-collmex/sql/postgresql/intranet-collmex-create.sql','');
 
+alter table im_companies add column collmex_id integer;
+update im_offices set address_country_code = 'de' where address_country_code is null
+
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
 DECLARE
@@ -29,15 +32,7 @@ DECLARE
 	row			record;
 BEGIN
 
-
-	  v_attribute_id := im_dynfield_attribute_new (
-	  	 ''im_company'',			-- object_type
-		 ''collmex_id'',			-- column_name
-		 ''Collmex ID'',	-- pretty_name
-		 ''integer'',			-- widget_name
-		 ''integer'',				-- acs_datatype
-		 ''f''
-	  );
+	v_attribute_id := im_dynfield_attribute_new (''im_company'', ''collmex_id'', ''Collmex ID'', ''integer'', ''integer'', ''f'');
 
 	FOR row IN 
 		SELECT category_id FROM im_categories WHERE category_id NOT IN (100,101) AND category_type = ''Intranet Company Type''
@@ -57,6 +52,8 @@ BEGIN
 
 
 	RETURN 0;
-END;' language 'plpgsql';
 
+END;' language 'plpgsql';
+SELECT inline_0 ();
+DROP FUNCTION inline_0 ();
 
