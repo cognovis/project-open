@@ -732,6 +732,35 @@ ad_proc im_oo_page_type_gantt {
 		}
 		set red_xml [$red_node asXML]
 
+		# Search for the start and end markers for the timeline
+		set text_box_list [im_oo_select_nodes $page_root "draw:frame"]
+		set left_box ""
+		set right_box ""
+		foreach node $text_box_list {
+		    set text [string trim [string tolower [im_oo_to_text -node $node]]]
+		    ns_log Notice "im_oo_page_type_gantt: text='$text'"
+
+		    switch $text {
+			"@main_project_start_date_pretty@" { set left_box $node }
+			"@main_project_end_date_pretty@" { set right_box $node }
+		    }
+		}
+		if {"" == $left_box || "" == $right_box} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
+		    Could not find two text boxes with the text 'main_project_start_date_pretty'=$left_box and 'main_project_end_date_pretty'=$right_box"
+		    ad_script_abort
+		}
+		set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
+		set right_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $right_box]
+		set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
+		set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
+		set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+
+		set start_date_epoch [im_date_ansi_to_epoch $main_project_start_date]
+		set end_date_epoch [im_date_ansi_to_epoch $main_project_end_date]
+		set x_per_epoch [expr ($end_date_x - $start_date_x) / ($end_date_epoch - $start_date_epoch) ]
+
+		ad_return_complaint 1 "<pre>\nstart_date_x=$start_date_x\nend_date_x=$end_date_x\nstart_date_epoch=$start_date_epoch\nend_date_epoch=$end_date_epoch\nx_per_epoch=$x_per_epoch\n"
 	    }
 
 	    # ------------------------------------------------------------------
