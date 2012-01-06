@@ -213,6 +213,12 @@ if {$invoice_id} {
 	    "]
     }
 
+    set current_cost_type_id $cost_type_id
+    set parent_cost_type_id [im_category_parents $cost_type_id]
+    if {$parent_cost_type_id ne "" && $parent_cost_type_id ne 3710 && $parent_cost_type_id ne 3708} {
+	set cost_type_id $parent_cost_type_id
+    }
+
     set cost_type [im_category_from_id $cost_type_id]
     set invoice_mode "exists"
     set page_title "[_ intranet-invoices.Edit_cost_type]"
@@ -250,6 +256,7 @@ if {$invoice_id} {
     set invoice_nr [im_next_invoice_nr -cost_type_id $cost_type_id -cost_center_id $cost_center_id]
     set cost_status_id [im_cost_status_created]
     set effective_date $todays_date
+    set delivery_date $effective_date
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
     set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
     set vat 0
@@ -337,8 +344,13 @@ set payment_method_select [im_invoice_payment_method_select payment_method_id $p
 set template_select [im_cost_template_select template_id $template_id]
 set status_select [im_cost_status_select cost_status_id $cost_status_id]
 
-set type_select [im_cost_type_select cost_type_id $cost_type_id 0 "financial_doc"]
-if {"" != $cost_type_id} {
+# Find out if there are subtypes below the cost_type
+
+set subtypes [db_list subtypes "select child_id from im_category_hierarchy where parent_id = :cost_type_id"]
+
+if {$subtypes ne ""} {
+    set type_select [im_cost_type_select cost_type_id $current_cost_type_id $cost_type_id]
+} else {
     set type_select "
 	<input type=hidden name=cost_type_id value=$cost_type_id>
 	$cost_type

@@ -123,7 +123,7 @@ LIMIT 1
 # Use today's date as effective date, because the
 # quote was old...
 set effective_date $todays_date
-
+set delivery_date $effective_date
 
 # ---------------------------------------------------------------
 

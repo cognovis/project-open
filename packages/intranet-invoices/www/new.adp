@@ -233,6 +233,15 @@ function ajaxFunction() {
 	            <input type=text name=invoice_date size=15 value='@effective_date@'>
 	          </td>
 	        </tr>
+
+<if @invoice_or_bill_p@ eq 1>
+	        <tr> 
+	          <td class=roweven>#intranet-invoices.delivery_date#</td>
+	          <td class=roweven> 
+	            <input type=text name=delivery_date size=15 value='@delivery_date@'>
+	          </td>
+	        </tr>
+</if>
 <if @cost_center_select@ defined>
 	        <tr> 
 	          <td class=roweven>@cost_center_label@</td>

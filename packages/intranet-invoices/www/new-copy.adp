@@ -47,6 +47,12 @@
 	        </tr>
 <if @invoice_or_bill_p@>
 	        <tr> 
+	          <td class=roweven>#intranet-invoices.delivery_date#</td>
+	          <td class=roweven> 
+	            <input type=text name=delivery_date size=15 value='@delivery_date@'>
+	          </td>
+	        </tr>
+	        <tr> 
 	          <td class=rowodd>Payment Method</td>
 	          <td class=rowodd>@payment_method_select;noquote@</td>
 	        </tr>

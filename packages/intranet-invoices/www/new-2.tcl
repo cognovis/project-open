@@ -22,6 +22,7 @@ ad_page_contract {
     { project_id:integer "" }
     invoice_nr
     invoice_date
+    { delivery_date "" }
     cost_status_id:integer 
     cost_type_id:integer
     cost_center_id:integer
@@ -50,6 +51,10 @@ ad_page_contract {
     { return_url "/intranet-invoices/" }
 }
 
+
+if {$delivery_date eq ""} {
+    set delivery_date $invoice_date
+}
 
 set tax_format [im_l10n_sql_currency_format -style simple]
 set vat_format [im_l10n_sql_currency_format -style simple]
@@ -258,6 +263,7 @@ set
 	cost_center_id	= :cost_center_id,
 	template_id	= :template_id,
 	effective_date	= :invoice_date,
+        delivery_date   = :delivery_date,
 	start_block	= ( select max(start_block) 
 			    from im_start_months 
 			    where start_block < :invoice_date),

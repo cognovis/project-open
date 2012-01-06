@@ -148,9 +148,6 @@ set po_cost_type_id [im_cost_type_po]
 set invoice_cost_type_id [im_cost_type_invoice]
 set bill_cost_type_id [im_cost_type_bill]
 
-# Invoices and Bills have a "Payment Terms" field.
-set invoice_or_bill_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_bill]]
-
 # CostType for "Generate Invoice from Quote" or "Generate Bill from PO"
 set target_cost_type_id ""
 set generation_blurb ""
@@ -302,7 +299,6 @@ set query "
 		to_date(to_char(ci.effective_date, 'YYYY-MM-DD'), 'YYYY-MM-DD') + ci.payment_days as calculated_due_date,
 		im_cost_center_name_from_id(ci.cost_center_id) as cost_center_name,
 		im_category_from_id(ci.cost_status_id) as cost_status,
-		im_category_from_id(ci.cost_type_id) as cost_type, 
 		im_category_from_id(ci.template_id) as template,
                 im_category_from_id(c.default_payment_method_id) as default_payment_method,
                 im_category_from_id(c.company_type_id) as company_type
@@ -327,6 +323,17 @@ if { ![db_0or1row invoice_info_query $query] } {
     }
     return
 }
+
+# Clarify the name of the parent cost_type and the cost_type itself
+set parent_cost_type_id [im_category_parents $cost_type_id]
+set current_cost_type [im_category_from_id $cost_type_id]
+if {$parent_cost_type_id ne "" && $parent_cost_type_id ne 3710 && $parent_cost_type_id ne 3708} {
+    set cost_type_id $parent_cost_type_id
+}
+set cost_type [im_category_from_id $cost_type_id]
+
+# Invoices and Bills have a "Payment Terms" field.
+set invoice_or_bill_p [im_cost_type_is_invoice_or_bill_p $cost_type_id]
 
 # ---------------------------------------------------------------
 # Get information about start- and end time of invoicing period

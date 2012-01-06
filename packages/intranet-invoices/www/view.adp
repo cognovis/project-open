@@ -256,8 +256,11 @@
           <td  class=roweven>@cost_center_name@</td>
         </tr>
 </if>
-
-<if @invoice_or_bill_p@>
+<if @invoice_or_bill_p@ eq 1>
+        <tr> 
+          <td  class=rowodd>#intranet-invoices.delivery_date#</td>
+          <td  class=rowodd>@delivery_date@</td>
+	</tr>
         <tr> 
           <td  class=rowodd>#intranet-invoices.cost_type_due_date#</td>
           <td  class=rowodd>@due_date@</td>
@@ -283,7 +286,7 @@
 
 	<tr>
           <td class=roweven>#intranet-invoices.cost_type_type_1#</td>
-          <td class=roweven>@cost_type@</td>
+          <td class=roweven>@current_cost_type@</td>
         </tr>
 
         <tr> 
