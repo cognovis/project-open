@@ -72,6 +72,7 @@ ad_proc -public intranet_collmex::update_company {
     # Translation of the country code
     switch $address_country_code {
 	"uk" {set address_country_code gb}
+	""   {set address_country_code de} ; # default country code germany
     }
 
     if {$email eq ""} {

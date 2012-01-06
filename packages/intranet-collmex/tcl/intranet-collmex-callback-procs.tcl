@@ -39,3 +39,18 @@ ad_proc -public -callback im_company_after_update -impl intranet-collmex_update_
 	ns_log Notice "Updating Collmex: [intranet_collmex::update_company -company_id $object_id]"
     }
 }
+
+ad_proc -public -callback im_company_after_create -impl intranet-collmex_create_company {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+} {
+    Create the company in Collmex
+} {
+    # Find out if this is a customer
+    if {[lsearch [im_category_parents $type_id] 57]>=0 || $type_id eq 57} {
+	ns_log Notice "Creating in Collmex: [intranet_collmex::update_company -company_id $object_id -customer]"
+    } else {
+	ns_log Notice "Creating in Collmex: [intranet_collmex::update_company -company_id $object_id]"
+    }
+}
