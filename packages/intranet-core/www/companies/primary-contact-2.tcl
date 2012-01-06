@@ -35,6 +35,8 @@ set
 where
 	company_id=:company_id" 
 
+im_audit -object_type "im_company" -object_id $company_id -action after_update
+
 db_release_unused_handles
 
 ad_returnredirect view?[export_url_vars company_id]

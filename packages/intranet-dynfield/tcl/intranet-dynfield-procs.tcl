@@ -290,9 +290,9 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	# Check whether the attribute is part of the form
 	if {[lsearch $form_elements $attribute_name] >= 0} {
 	    set value [template::element::get_value $form_id $attribute_name]
-	    ns_log Notice "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
+	    ns_log Debug "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
 	    if {"" == $value || 0 == $value} {
-		ns_log Notice "search_sql_criteria_from_form: Skipping"
+		ns_log Debug "search_sql_criteria_from_form: Skipping"
 		continue
 	    }
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
@@ -1094,7 +1094,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+	if {$debug} { ns_log Debug "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
