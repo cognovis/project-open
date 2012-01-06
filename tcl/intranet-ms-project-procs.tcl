@@ -166,6 +166,7 @@ ad_proc -public im_ms_project_write_task {
 		CalendarUID 
 		PercentComplete
 		FixedCostAccrual
+	        ConstraintType
 	}
     }
 
@@ -257,7 +258,6 @@ ad_proc -public im_ms_project_write_task {
 		BCWS - \
 		CV - \
 		CommitmentType - \
-		ConstraintType - \
 		Cost - \
 		CreateDate - \
 		Critical - \
