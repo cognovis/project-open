@@ -272,10 +272,6 @@ where
 	cost_id = :invoice_id
 "
 
-# Audit the update
-im_audit -object_type "im_invoice" -object_id $invoice_id -action after_update -status_id $cost_status_id -type_id $cost_type_id
-
-
 if {$canned_note_enabled_p} {
 
     set attribute_id [db_string attrib_id "
@@ -442,6 +438,8 @@ im_invoice_update_rounded_amount \
     -discount_perc $discount_perc \
     -surcharge_perc $surcharge_perc
 
+# Audit the update
+im_audit -object_type "im_invoice" -object_id $invoice_id -action after_update -status_id $cost_status_id -type_id $cost_type_id
 
 db_release_unused_handles
 ad_returnredirect "/intranet-invoices/view?invoice_id=$invoice_id"

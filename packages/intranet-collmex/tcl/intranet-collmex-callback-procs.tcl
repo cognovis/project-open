@@ -54,3 +54,20 @@ ad_proc -public -callback im_company_after_create -impl intranet-collmex_create_
 	ns_log Notice "Creating in Collmex: [intranet_collmex::update_company -company_id $object_id]"
     }
 }
+
+ad_proc -public -callback im_invoice_after_update -impl intranet-collmex_invoice_handling {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+} {
+    This is the complex handle all types of invoice changes function for collmex
+} {
+    switch $type_id {
+	3700 {
+	    # Customer Invoice
+	} 
+	3704 {
+	    # Provider Bill
+	}
+    }
+}
