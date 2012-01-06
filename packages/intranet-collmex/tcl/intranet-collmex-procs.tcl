@@ -163,7 +163,9 @@ ad_proc -public intranet_collmex::update_company {
 	204002 {
 	    set return_message "ERROR $company_id: $response"
 	}
-	204000 {}
+	204020 {
+	    set return_message "Successfully updated $company_id"
+	}
 	default {
 	    set return_message "ERROR $company_id: $response"
 	}
