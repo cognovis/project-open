@@ -127,6 +127,39 @@ ad_proc im_oo_select_nodes {
 }
 
 
+
+
+
+# -------------------------------------------------------
+# Template Procs
+# -------------------------------------------------------
+
+ad_proc im_oo_page_extract_templates {
+    -page_node:required
+} {
+    Returns a key-value list of all "templates" on the specified page.
+    Most templates are individual objects (without grouping), so looping
+    through all these elements we should find all templates
+} {
+    array set hash {}
+    foreach child [$page_node childNodes] {
+	set title [string tolower [string trim [im_oo_to_title -node $child]]]
+	switch $title {
+	    yellow_square - red_square - green_square {
+		# <draw:frame draw:style-name="gr4" draw:layer="layout" svg:width="1.014cm" svg:height="1.267cm" svg:x="6cm" svg:y="16.9cm">
+		# <draw:text-box><text:p><text:span text:style-name="T8">?</text:span></text:p></draw:text-box>
+		# <svg:title>green_square</svg:title>
+		# </draw:frame>
+		set span_node [im_oo_select_nodes $child "text:span"]
+		set hash($title) $span_node
+	    }
+	    !!!
+	}
+    }
+
+}
+
+
 # -------------------------------------------------------
 # Page processession procs
 # -------------------------------------------------------
@@ -599,6 +632,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
     -main_project_start_date_epoch:required
     -main_project_end_date_epoch:required
     -row_cnt:required
+    -y_dist:required
     -percent_completed:required
     -percent_expected:required
 } {
@@ -624,7 +658,8 @@ ad_proc im_oo_page_type_gantt_move_scale {
     if {"" == $base_node || "" == $completed_node || "" == $expected_node} {
 	ad_return_complaint 1 "<b>im_oo_page_type_gantt_move_scale '$page_name'</b>:<br>
 	The grouping doesn't contain the necessary three nodes:<br>
-	<ul><li>base_node=$base_node<br><li>expected_node=$expected_node</br><li>completed_node=$completed_node</br></ul>"
+	<ul><li>base_node=$base_node<br><li>expected_node=$expected_node</br><li>completed_node=$completed_node</br></ul><br>
+        <pre>[im_oo_tdom_explore -node $grouping_node]</pre>"
     }
 
     # Extract the widths of the three bars
@@ -634,8 +669,8 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
 
-    # Advance the y postition 1.5cm for every row
-    set y_offset [expr $base_y_offset + $row_cnt * 1.5]
+    # Advance the y postition y_dist for every row
+    set y_offset [expr $base_y_offset + $row_cnt * $y_dist]
     set x_offset [expr $base_x_offset + ($start_date_epoch - $main_project_start_date_epoch) / $epoch_per_x]
 
     # Move the grouping to the x/y offset position
@@ -862,6 +897,8 @@ ad_proc im_oo_page_type_gantt {
 		set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
 		set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
 		set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+		set y_dist [expr ($red_y_offset - $green_y_offset) / 2.0]
+
 
 		# ad_return_complaint 1 "<pre>\nstart_date_x=$start_date_x\nend_date_x=$end_date_x\nstart_date_epoch=$start_date_epoch\nend_date_epoch=$end_date_epoch\nx_per_epoch=$x_per_epoch\n"
 	    }
@@ -902,6 +939,7 @@ ad_proc im_oo_page_type_gantt {
 		-main_project_start_date_epoch $main_project_start_date_epoch \
 		-main_project_end_date_epoch $main_project_end_date_epoch \
 		-row_cnt $row_cnt \
+		-y_dist $y_dist \
 		-percent_completed $percent_completed_pretty \
 		-percent_expected $percent_expected_pretty
 
