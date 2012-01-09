@@ -54,8 +54,9 @@ ad_proc im_oo_tdom_explore {
 ad_proc im_oo_to_text {
     -node:required
 } {
-    Returns a hierarchical representation of a tDom tree
-    representing the content of an OOoo document in this case.
+    Returns all text contained in the node and its children.
+    This is useful for example to extract the text contained
+    in the "notes" section of a slide.
 } {
     set name [$node nodeName]
     set type [$node nodeType]
@@ -69,6 +70,22 @@ ad_proc im_oo_to_text {
         append result [im_oo_to_text -node $child]
     }
     return $result
+}
+
+ad_proc im_oo_to_title {
+    -node:required
+} {
+    Returns the title(s) of the node and its children.
+    This is useful in order to identify specific elments
+    in a template.
+} {
+    set title_nodes [im_oo_select_nodes $node "svg:title"]
+    set title ""
+    foreach node $title_nodes {
+	if {"" == $node} { continue }
+	append title [im_oo_to_text -node $node]
+    }
+    return $title
 }
 
 
@@ -510,8 +527,7 @@ ad_proc im_oo_page_type_gantt_grouping_move {
     -node:required
     -offset_list:required
 } {
-    Move all svg:x and svg:y coordinates in a grouping
-    by the specified offset.
+    Move all svg:x and svg:y coordinates in a grouping by the specified offset.
     @param node: The tDom node of the grouping
     @param offset_list: {x_offset y_offset}
 } {
@@ -558,7 +574,7 @@ ad_proc im_oo_page_type_gantt_sort_groupings {
 } {
     Takes a list of exactly three "groupings" (an OpenOffice
     group of several display elements) and returns the list
-    in Y-order (starting with the topmost element.
+    in Y-order (starting with the topmost element).
     In the template, the tomost grouping represents the
     template for a "green" task, the 2nd a "yellow" and the
     3rd a "red" task.
@@ -568,6 +584,97 @@ ad_proc im_oo_page_type_gantt_sort_groupings {
     # The min_Y element is the second element (lindex ... 1)
     # of the list returned by grouping_x_y_offset.
     return [qsort $grouping_nodes [lambda {s} {lindex [im_oo_page_type_gantt_grouping_x_y_offset -node $s] 1}]]
+}
+
+
+ad_proc im_oo_page_type_gantt_move_scale {
+    -grouping_node:required
+    -page_name:required
+    -base_x_offset:required
+    -base_y_offset:required
+    -start_date_x:required
+    -end_date_x:required
+    -start_date_epoch:required
+    -end_date_epoch:required
+    -main_project_start_date_epoch:required
+    -main_project_end_date_epoch:required
+    -row_cnt:required
+    -percent_completed:required
+    -percent_expected:required
+} {
+    Move and scale a template bar according to start- and end date.
+    @takes a <draw:g> group of elements with the following texts:
+    - @percent_completed@: The bar representing the current completion level
+    - @percent_expected@: The bar representing the expected completeion level now.
+    - @aaa@: The bar representing the length of the task
+    All other elements are optional. Normal template formatting rules will apply.
+} {
+    set base_node ""
+    set completed_node ""
+    set expected_node ""
+    foreach node [$grouping_node childNodes] {
+	set text [string trim [im_oo_to_title -node $node]]
+	ns_log Notice "im_oo_page_type_gantt_move_scale: text=$text"
+	switch $text {
+	    "base_bar" { set base_node $node}
+	    "completed_bar" { set completed_node $node }
+	    "expected_bar" { set expected_node $node }
+	}
+    }
+    if {"" == $base_node || "" == $completed_node || "" == $expected_node} {
+	ad_return_complaint 1 "<b>im_oo_page_type_gantt_move_scale '$page_name'</b>:<br>
+	The grouping doesn't contain the necessary three nodes:<br>
+	<ul><li>base_node=$base_node<br><li>expected_node=$expected_node</br><li>completed_node=$completed_node</br></ul>"
+    }
+
+    # Extract the widths of the three bars
+    regexp {([0-9\.]+)} [$base_node getAttribute "svg:width"] match base_width
+    regexp {([0-9\.]+)} [$completed_node getAttribute "svg:width"] match completed_width
+    regexp {([0-9\.]+)} [$expected_node getAttribute "svg:width"] match expected_width
+
+    set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
+
+    # Advance the y postition 1.5cm for every row
+    set y_offset [expr $base_y_offset + $row_cnt * 1.5]
+    set x_offset [expr $base_x_offset + ($start_date_epoch - $main_project_start_date_epoch) / $epoch_per_x]
+
+    # Move the grouping to the x/y offset position
+    foreach child [$grouping_node childNodes] {
+
+	# Move X start
+	set old_x [$child getAttribute "svg:x"]
+	regexp {([0-9\.]+)} $old_x match old_x
+	set new_x [expr $old_x + $x_offset]
+	$child setAttribute "svg:x" "${new_x}cm"
+
+	# Move Y start
+	set old_y [$child getAttribute "svg:y"]
+	regexp {([0-9\.]+)} $old_y match old_y
+	set new_y [expr $old_y + $y_offset]
+	$child setAttribute "svg:y" "${new_y}cm"
+    }
+
+    # Set the width of the bars
+    set base_width [expr ($end_date_epoch - $start_date_epoch) / $epoch_per_x]
+    $base_node setAttribute "svg:width" "${base_width}cm"
+
+    set completed_width [expr $base_width * $percent_completed / 100.0]
+    $completed_node setAttribute "svg:width" "${completed_width}cm"
+
+    set expected_width [expr $base_width * $percent_expected / 100.0]
+    $expected_node setAttribute "svg:width" "${expected_width}cm"
+
+    return
+
+    ad_return_complaint 1 "<pre>
+epoch_per_x=$epoch_per_x
+x_offset=$x_offset
+y_offset=$y_offset
+start_date_epoch=$start_date_epoch
+end_date_epoch=$end_date_epoch
+[ns_quotehtml [$grouping_node asXML]]
+    </pre>"
+
 }
 
 
@@ -756,11 +863,7 @@ ad_proc im_oo_page_type_gantt {
 		set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
 		set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
 
-		set start_date_epoch [im_date_ansi_to_epoch $main_project_start_date]
-		set end_date_epoch [im_date_ansi_to_epoch $main_project_end_date]
-		set x_per_epoch [expr ($end_date_x - $start_date_x) / ($end_date_epoch - $start_date_epoch) ]
-
-		ad_return_complaint 1 "<pre>\nstart_date_x=$start_date_x\nend_date_x=$end_date_x\nstart_date_epoch=$start_date_epoch\nend_date_epoch=$end_date_epoch\nx_per_epoch=$x_per_epoch\n"
+		# ad_return_complaint 1 "<pre>\nstart_date_x=$start_date_x\nend_date_x=$end_date_x\nstart_date_epoch=$start_date_epoch\nend_date_epoch=$end_date_epoch\nx_per_epoch=$x_per_epoch\n"
 	    }
 
 	    # ------------------------------------------------------------------
@@ -787,12 +890,21 @@ ad_proc im_oo_page_type_gantt {
 	    set new_grouping_root [$new_grouping_doc documentElement]
 
 	    # Move the grouping into the correct x/y position.
-	    # Therefore we take the base x/y postition and add 1.5cmm for every row
-	    set x_offset $green_x_offset
-	    set y_offset [expr $green_y_offset + $row_cnt * 1.5]
-	    im_oo_page_type_gantt_grouping_move -node $new_grouping_root -offset_list [list $x_offset $y_offset]
+	    im_oo_page_type_gantt_move_scale \
+		-grouping_node $new_grouping_root \
+		-page_name $page_name \
+		-base_x_offset $green_x_offset \
+		-base_y_offset $green_y_offset \
+		-start_date_x $start_date_x \
+		-end_date_x $end_date_x \
+		-start_date_epoch $start_date_epoch \
+		-end_date_epoch $end_date_epoch \
+		-main_project_start_date_epoch $main_project_start_date_epoch \
+		-main_project_end_date_epoch $main_project_end_date_epoch \
+		-row_cnt $row_cnt \
+		-percent_completed $percent_completed_pretty \
+		-percent_expected $percent_expected_pretty
 
-	    # ad_return_complaint 1 "<pre>[im_oo_tdom_explore -node $page_root]</pre>"
 	    $page_root insertBefore $new_grouping_root [$page_root firstChild]
 
 	    incr row_cnt
