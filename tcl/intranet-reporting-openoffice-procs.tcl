@@ -80,12 +80,13 @@ ad_proc im_oo_to_title {
     in a template.
 } {
     set title_nodes [im_oo_select_nodes $node "svg:title"]
-    set title ""
+    set titles {}
     foreach node $title_nodes {
 	if {"" == $node} { continue }
-	append title [im_oo_to_text -node $node]
+	set title [string trim [im_oo_to_text -node $node]]
+	set titles [concat $titles $title]
     }
-    return $title
+    return $titles
 }
 
 
@@ -134,6 +135,26 @@ ad_proc im_oo_select_nodes {
 # Template Procs
 # -------------------------------------------------------
 
+
+ad_proc im_oo_page_delete_templates {
+    -page_node:required
+} {
+    Delete template nodes from the given page.
+} {
+    foreach child [$page_node childNodes] {
+	set titles [string tolower [im_oo_to_title -node $child]]
+	ns_log Notice "im_oo_page_delete_templates: titles=$titles"
+	foreach title $titles {
+	    switch $title {
+		green_bar - yellow_bar - red_bar {
+		    ns_log Notice "im_oo_page_delete_templates: delete node title='$title'"
+		    $page_node removeChild $child
+		}
+	    }
+	}
+    }
+}
+
 ad_proc im_oo_page_extract_templates {
     -page_node:required
 } {
@@ -143,21 +164,69 @@ ad_proc im_oo_page_extract_templates {
 } {
     array set hash {}
     foreach child [$page_node childNodes] {
-	set title [string tolower [string trim [im_oo_to_title -node $child]]]
-	switch $title {
-	    yellow_square - red_square - green_square {
-		# <draw:frame draw:style-name="gr4" draw:layer="layout" svg:width="1.014cm" svg:height="1.267cm" svg:x="6cm" svg:y="16.9cm">
-		# <draw:text-box><text:p><text:span text:style-name="T8">?</text:span></text:p></draw:text-box>
-		# <svg:title>green_square</svg:title>
-		# </draw:frame>
-		set span_node [im_oo_select_nodes $child "text:span"]
-		set hash($title) $span_node
+	set titles [string tolower [im_oo_to_title -node $child]]
+	ns_log Notice "im_oo_page_extract_templates: titles=$titles"
+	foreach title $titles {
+		switch $title {
+		    green_square - yellow_square - red_square {
+			# <draw:frame draw:style-name="gr4" svg:width="1.014cm" svg:height="1.267cm" svg:x="6cm" svg:y="16.9cm">
+			# <draw:text-box><text:p><text:span text:style-name="T8">?</text:span></text:p></draw:text-box>
+			# <svg:title>green_square</svg:title>
+			# </draw:frame>
+			set span_node [im_oo_select_nodes $child "text:span"]
+			set span_xml [$span_node asXML]
+			# <text:span text:style-name="T8">?</text:span>
+			ns_log Notice "im_oo_page_extract_templates: $title=$span_xml"
+			if {[regexp {<(.*)>([^<>]*)<(.*)>} $span_xml match tag text end_tag]} {
+			    set span_rev_xml "<$end_tag><$tag>$text"
+			    ns_log Notice "im_oo_page_extract_templates: $title=$span_rev_xml"
+			    set hash($title) $span_rev_xml
+			}
+		    }
+		    green_bar - yellow_bar - red_bar {
+			# Groupings used as templates for Gantt bars.
+			# We need to move the groupings to 0/0 coordinates.
+			ns_log Notice "im_oo_page_extract_templates: $title=$title"
+			set x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $child]
+
+			set x_offset [lindex $x_y_offset 0]
+			set "${title}_x_offset" $x_offset
+			set hash(${title}_x_offset) $x_offset
+
+			set y_offset [lindex $x_y_offset 1]
+			set "${title}_y_offset" $y_offset
+			set hash(${title}_y_offset) $y_offset
+
+			im_oo_page_type_gantt_grouping_move -node $child -offset_list [list [expr -$x_offset] [expr -$y_offset]]
+			ns_log Notice "im_oo_page_extract_templates: $title=$child"
+			set hash($title) $child
+		    }
+		    default {
+			# Nothing, ignore.
+		    }
+		}
+	    if {[catch {
+	    } err_msg]} {
+		ns_log Notice "im_oo_page_extract_templates: $err_msg"
 	    }
-	    !!!
 	}
     }
 
+    # Special logic to calculate the distance between the gantt bars
+    if {[info exists hash(green_bar)] && [info exists hash(red_bar)]} {
+	set y_dist [expr ($red_bar_y_offset - $green_bar_y_offset) / 2.0]
+    } elseif {[info exists hash(green_bar)] && [info exists hash(yellow_bar)]} {
+	set y_dist [expr ($yellow_bar_y_offset - $green_bar_y_offset) / 1.0]
+    } else {
+	set y_dist 1.5
+    }
+    set hash(y_dist) $y_dist
+
+    # Return the hash as key-value list that will be written to 
+    # local variables in the caller's environment
+    return [array get hash]
 }
+
 
 
 # -------------------------------------------------------
@@ -287,6 +356,10 @@ ad_proc im_oo_page_type_list {
 
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
+
+    # Extract templates from the page and write to local variables
+    array set template_hash [im_oo_page_extract_templates -page_node $page_node]
+    foreach var [array names template_hash] { set $var $template_hash($var) }
 
     if {"" == $list_sql} {
         ad_return_complaint 1 "<b>'$page_name': No list_sql specified in list page</b>."
@@ -514,6 +587,12 @@ ad_proc im_oo_page_type_gantt_grouping_extract_x_y_offset_list {
 
     ns_log Notice "im_oo_page_type_gantt_grouping_x_y_offset: name=$name, attrib=[$node attributes]"
     foreach attrib [$node attributes] {
+	# Attributes sometimes are a list {attrib ns url}
+	if {3 == [llength $attrib]} {
+	    set attrib "[lindex $attrib 1]:[lindex $attrib 0]"
+	    ns_log Notice "im_oo_page_type_gantt_grouping_x_y_offset: attrib from list: '$attrib'"
+	}
+
 	# Get the attribute value and remove possible "cm" after the value
 	set value [$node getAttribute $attrib]
 	if {[regexp {^([0-9\.]+)} $value match val]} { set value $val}
@@ -550,7 +629,6 @@ ad_proc im_oo_page_type_gantt_grouping_x_y_offset {
     foreach x $x_list { if {$x < $min_x} { set min_x $x } }
     foreach y $y_list { if {$y < $min_y} { set min_y $y } }
 
-    #ad_return_complaint 1 "$min_x - $min_y"
     return [list $min_x $min_y]
 }
 
@@ -575,6 +653,13 @@ ad_proc im_oo_page_type_gantt_grouping_move {
 
     ns_log Notice "im_oo_page_type_gantt_grouping_move: name=$name, attrib=[$node attributes]"
     foreach attrib [$node attributes] {
+
+	# Attributes sometimes are a list {attrib ns url}
+	if {3 == [llength $attrib]} {
+	    set attrib "[lindex $attrib 1]:[lindex $attrib 0]"
+	    ns_log Notice "im_oo_page_type_gantt_grouping_move: attrib from list: '$attrib'"
+	}
+
         # Get the attribute value and remove possible "cm" after the value
         set value [$node getAttribute $attrib]
         if {[regexp {^([0-9\.]+)(.*)$} $value match val unit]} { set value $val }
@@ -600,25 +685,6 @@ ad_proc im_oo_page_type_gantt_grouping_move {
     }
     return
 }
-
-
-ad_proc im_oo_page_type_gantt_sort_groupings {
-    -grouping_nodes:required
-} {
-    Takes a list of exactly three "groupings" (an OpenOffice
-    group of several display elements) and returns the list
-    in Y-order (starting with the topmost element).
-    In the template, the tomost grouping represents the
-    template for a "green" task, the 2nd a "yellow" and the
-    3rd a "red" task.
-} {
-    # Use functional programming to sort
-    # the list after the min_Y value of the element.
-    # The min_Y element is the second element (lindex ... 1)
-    # of the list returned by grouping_x_y_offset.
-    return [qsort $grouping_nodes [lambda {s} {lindex [im_oo_page_type_gantt_grouping_x_y_offset -node $s] 1}]]
-}
-
 
 ad_proc im_oo_page_type_gantt_move_scale {
     -grouping_node:required
@@ -676,17 +742,14 @@ ad_proc im_oo_page_type_gantt_move_scale {
     # Move the grouping to the x/y offset position
     foreach child [$grouping_node childNodes] {
 
-	# Move X start
-	set old_x [$child getAttribute "svg:x"]
-	regexp {([0-9\.]+)} $old_x match old_x
-	set new_x [expr $old_x + $x_offset]
-	$child setAttribute "svg:x" "${new_x}cm"
+	# Delete the "svg:title" tag. Tags are used to identify
+	# template nodes, which need to be deleted afterwards
+	set name [$child nodeName]
+	ns_log Notice "xxx: name='$name'"
+	if {"svg:title" == $name} { [$child parentNode] removeChild $child }
 
-	# Move Y start
-	set old_y [$child getAttribute "svg:y"]
-	regexp {([0-9\.]+)} $old_y match old_y
-	set new_y [expr $old_y + $y_offset]
-	$child setAttribute "svg:y" "${new_y}cm"
+	# Move the element to the right x/y position
+	im_oo_page_type_gantt_grouping_move -node $child -offset_list [list $x_offset $y_offset]
     }
 
     # Set the width of the bars
@@ -747,6 +810,10 @@ ad_proc im_oo_page_type_gantt {
     # Write parameters to local variables
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
+
+    # Extract templates from the page and write to local variables
+    array set template_hash [im_oo_page_extract_templates -page_node $page_node]
+    foreach var [array names template_hash] { set $var $template_hash($var) }
 
     # Make sure there is a SQL for the project phases/tasks
     if {"" == $list_sql} {
@@ -831,48 +898,21 @@ ad_proc im_oo_page_type_gantt {
 		set page_root [$page_doc documentElement]
 		set row_cnt 0
 
-		# Get the list of all "groups" in the page and count them
-		set grouping_nodes [im_oo_select_nodes $page_root "draw:g"]
-		set cnt [llength $grouping_nodes]
-		if {$cnt < 1} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name': The page should have at least one 'group' of objects</b><br>
-		    This group will be used as a template for gantt bars." 
+		# Check if the extract_template found the "green_bar" template
+		# This template will be used to render the gantt bars.
+		if {![info exists green_bar]} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
+			The page should have at least one 'group' of objects with title 'green_bar'."
 		    ad_script_abort
 		}
+		# yellow_bar and red_bar are optional
+		if {![info exists yellow_bar]} { set yellow_bar $green_bar }
+		if {![info exists red_bar]} { set red_bar $green_bar }
 
-		# Sort the groupings and "normalize" to svg:x=0 and svg:y=0
-		set sorted_grouping_nodes [im_oo_page_type_gantt_sort_groupings -grouping_nodes $grouping_nodes]
-
-		set green_node [lindex $sorted_grouping_nodes 0]
-		set green_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $green_node]
-		set green_x_offset [lindex $green_x_y_offset 0]
-		set green_y_offset [lindex $green_x_y_offset 1]
-		im_oo_page_type_gantt_grouping_move -node $green_node -offset_list [list [expr -$green_x_offset] [expr -$green_y_offset]]
-		set green_xml [$green_node asXML]
-		
-
-		set yellow_node [lindex $sorted_grouping_nodes 1]
-		if {"" == $yellow_node} { 
-		    set yellow_node $green_node 
-		} else {
-		    set yellow_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $yellow_node]
-		    set yellow_x_offset [lindex $yellow_x_y_offset 0]
-		    set yellow_y_offset [lindex $yellow_x_y_offset 1]
-		    im_oo_page_type_gantt_grouping_move -node $yellow_node -offset_list [list [expr -$yellow_x_offset] [expr -$yellow_y_offset]]
-		}
-		set yellow_xml [$yellow_node asXML]
-
-
-		set red_node [lindex $sorted_grouping_nodes 2]
-		if {"" == $red_node} { 
-		    set red_node $green_node 
-		} else {
-		    set red_x_y_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $red_node]
-		    set red_x_offset [lindex $red_x_y_offset 0]
-		    set red_y_offset [lindex $red_x_y_offset 1]
-		    im_oo_page_type_gantt_grouping_move -node $red_node -offset_list [list [expr -$red_x_offset] [expr -$red_y_offset]]
-		}
-		set red_xml [$red_node asXML]
+		# Calculate some offsets in order to calculate Gantt bar position
+		set green_xml [$green_bar asXML]
+		set yellow_xml [$yellow_bar asXML]
+		set red_xml [$red_bar asXML]
 
 		# Search for the start and end markers for the timeline
 		set text_box_list [im_oo_select_nodes $page_root "draw:frame"]
@@ -881,7 +921,6 @@ ad_proc im_oo_page_type_gantt {
 		foreach node $text_box_list {
 		    set text [string trim [string tolower [im_oo_to_text -node $node]]]
 		    ns_log Notice "im_oo_page_type_gantt: text='$text'"
-
 		    switch $text {
 			"@main_project_start_date_pretty@" { set left_box $node }
 			"@main_project_end_date_pretty@" { set right_box $node }
@@ -897,10 +936,6 @@ ad_proc im_oo_page_type_gantt {
 		set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
 		set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
 		set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
-		set y_dist [expr ($red_y_offset - $green_y_offset) / 2.0]
-
-
-		# ad_return_complaint 1 "<pre>\nstart_date_x=$start_date_x\nend_date_x=$end_date_x\nstart_date_epoch=$start_date_epoch\nend_date_epoch=$end_date_epoch\nx_per_epoch=$x_per_epoch\n"
 	    }
 
 	    # ------------------------------------------------------------------
@@ -930,8 +965,8 @@ ad_proc im_oo_page_type_gantt {
 	    im_oo_page_type_gantt_move_scale \
 		-grouping_node $new_grouping_root \
 		-page_name $page_name \
-		-base_x_offset $green_x_offset \
-		-base_y_offset $green_y_offset \
+		-base_x_offset $green_bar_x_offset \
+		-base_y_offset $green_bar_y_offset \
 		-start_date_x $start_date_x \
 		-end_date_x $end_date_x \
 		-start_date_epoch $start_date_epoch \
@@ -952,8 +987,8 @@ ad_proc im_oo_page_type_gantt {
 	# ------------------------------------------------------------------
 	# The last page of the list. This can also be the very first page with short lists.
 
-	# Delete the three template nodes
-	foreach node $grouping_nodes { $page_root removeChild $node }
+	# Delete the template nodes from the page
+	im_oo_page_delete_templates -page_node $page_root
 
 	# Apply the OpenACS template engine
 	set page_xml [$page_root asXML]
