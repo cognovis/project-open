@@ -222,61 +222,61 @@ select acs_object_type__create_type (
 insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_employee_customer_price', 'im_customer_prices', 'id');
 
-create or replace function im_employee_customer_price__update(int4,varchar,timestamptz,int4,varchar,int4,int,int,numeric,varchar, int) returns int4 as '
-        DECLARE
-                p_id              alias for $1;
-                p_object_type     alias for $2;
-                p_creation_date   alias for $3;
-                p_creation_user   alias for $4;
-                p_creation_ip     alias for $5;
-                p_context_id      alias for $6;
 
-                p_user_id         alias for $7;
-                p_object_id       alias for $8;
-                p_amount          alias for $9;
-                p_currency        alias for $10;
-		p_project_type_id alias for $11;
-
-                v_id              integer;
-                v_count           integer;
-        BEGIN
-                -- RAISE NOTICE ''KHD: user_id: %; object_id: %; project_type_id:%; '', p_user_id, p_object_id, p_project_type_id;  
-
-		IF p_project_type_id IS NULL THEN 
-			-- RAISE NOTICE ''KHD: p_project_type_id IS NULL'';
-			select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id IS NULL;
-		ELSE 
-			-- RAISE NOTICE ''KHD: p_project_type_id IS NOT NULL'';
-			select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_project_type_id;				
-		END IF; 
-
-                select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_project_type_id;
-                -- RAISE NOTICE ''KHD: Count: %'', v_count;  
-
-                IF v_count > 0 THEN
-			IF p_project_type_id IS NULL THEN 
-				update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id IS NULL;
-			ELSE 
-				update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id = p_project_type_id; 
-			END IF;
-                ELSE
-                        v_id := acs_object__new (
-                                p_id,
-                                p_object_type,
-                                p_creation_date,
-                                p_creation_user,
-                                p_creation_ip,
-                                p_context_id
-                        );
-
-                        insert into im_customer_prices (
-                                id, user_id, object_id, amount, currency, project_type_id
-                        ) values (
-                                v_id, p_user_id, p_object_id, p_amount, p_currency, p_project_type_id
-                        );
-                END IF;
-                return v_id;
+create or replace function im_employee_customer_price__update(int4,varchar,timestamptz,int4,varchar,int4,int4,int4,numeric,varchar,int4) returns int4 as '
+                DECLARE
+                        p_id              alias for $1;
+                        p_object_type     alias for $2;
+                        p_creation_date   alias for $3;
+                        p_creation_user   alias for $4;
+                        p_creation_ip     alias for $5;
+                        p_context_id      alias for $6;
+        
+                        p_user_id         alias for $7;
+                        p_object_id       alias for $8;
+                        p_amount          alias for $9;
+                        p_currency        alias for $10;
+                        p_cost_object_category_id alias for $11;
+        
+                        v_id              integer;
+                        v_count           integer;
+                BEGIN
+                        RAISE NOTICE ''im_employee_customer_price__update: user_id: %; object_id: %; project_type_id:%; '', p_user_id, p_object_id, p_cost_object_category_id;
+        IF p_cost_object_category_id IS NULL THEN 
+        RAISE NOTICE ''im_employee_customer_price__update: p_cost_object_category_id IS NULL'';
+        select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id IS NULL;
+        ELSE 
+        RAISE NOTICE ''im_employee_customer_price__update: p_cost_object_category_id IS NOT NULL'';
+        select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_cost_object_category_id;
+        END IF; 
+        RAISE NOTICE ''im_employee_customer_price__update: Count: %'', v_count;
+        
+                        IF v_count > 0 THEN
+        
+        IF p_cost_object_category_id IS NULL THEN 
+        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id IS NULL;
+        ELSE 
+        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id = p_cost_object_category_id; 
+        END IF;
+        ELSE
+                                v_id := acs_object__new (
+                                        p_id,
+                                        p_object_type,
+                                        p_creation_date,
+                                        p_creation_user,
+                                        p_creation_ip,
+                                        p_context_id
+                                );
+        
+                                insert into im_customer_prices (
+                                        id, user_id, object_id, amount, currency, cost_object_category_id
+                                ) values (
+                                        v_id, p_user_id, p_object_id, p_amount, p_currency, p_cost_object_category_id
+                                );
+                        END IF;
+                        return v_id;
 end;' language 'plpgsql';
+
 
 
 -- Create a plugin for the Company View Page.
@@ -665,3 +665,4 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (20016,200,NULL,'Hours','"[lindex [split [calculate_dd_hh_mm_from_day $duration_days $hours_day_base] \" \"] 1 ]"','','',13,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (20017,200,NULL,'Minutes','"[expr [lindex [split [calculate_dd_hh_mm_from_day $duration_days $hours_day_base] \" \"] 2 ]*15]"','','',14,'');
+

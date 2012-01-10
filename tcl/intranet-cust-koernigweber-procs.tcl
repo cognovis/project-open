@@ -16,26 +16,26 @@ ad_proc find_sales_price {
 	user_id
 	project_id
 	company_id
-        project_type_id 
+        cost_object_category_id 
 } {
     Returns the sales price that has defined for a particular user
     on an arbitrary project level above    
 } {
 
-    ns_log NOTICE "find_sales_price: Entr: user_id: $user_id, project_id: $project_id, company_id $company_id, project_type_id: $project_type_id"
+    ns_log NOTICE "find_sales_price: Entr: user_id: $user_id, project_id: $project_id, company_id $company_id, cost_object_category_id: $cost_object_category_id"
     
-    # Make sure you look for price based on project_type_id of the (sub-)project of level 'n'  
-    if { "" == $project_type_id } {
-	set project_type_id [db_string get_data "select project_type_id from im_projects where project_id = $project_id" -default 0]
+    # Make sure you look for price based on cost_object_category_id of the (sub-)project of level 'n'  
+    if { "" == $cost_object_category_id } {
+	set cost_object_category_id [db_string get_data "select cost_object_category_id from im_projects where project_id = $project_id" -default 0]
 	# check if task -> no prices are defined for tasks 
-        ns_log NOTICE "find_sales_price: No project_type_id passed. Found: $project_type_id"
-	if { 100 == $project_type_id } {    
-	    set project_type_id ""
+        ns_log NOTICE "find_sales_price: No cost_object_category_id passed. Found: $cost_object_category_id"
+	if { 100 == $cost_object_category_id } {    
+	    set cost_object_category_id ""
 	}
     }
 
     set amount_sales_price 0
-    if { "" != $project_type_id } {
+    if { "" != $cost_object_category_id } {
 	ns_log NOTICE "find_sales_price: Looking for price in current project: select amount from im_customer_prices where user_id = $user_id and object_id = $project_id"
 	# Check if there's a price defined on the project itself
 	set sql "
@@ -56,7 +56,7 @@ ad_proc find_sales_price {
         ns_log NOTICE "find_sales_price: -----------------------------------------------------------"
 	return $amount_sales_price
     } else {
-        ns_log NOTICE "find_sales_price: No price found in project: $project_id for user: $user_id and project_type_id: $project_type_id ([im_category_from_id $project_type_id])"
+        ns_log NOTICE "find_sales_price: No price found in project: $project_id for user: $user_id and cost_object_category_id: $cost_object_category_id ([im_category_from_id $cost_object_category_id])"
 	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
         ns_log NOTICE "find_sales_price: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
@@ -70,7 +70,7 @@ ad_proc find_sales_price {
 		        where
         	        	user_id = $user_id
 			        and object_id = $user_id
-                		and project_type_id in (select project_type_id from im_projects where project_id = $project_id)
+                		and cost_object_category_id in (select cost_object_category_id from im_projects where project_id = $project_id)
     		"
 	    	set sales_price [db_string get_data $sql -default 0]
 		if { 0 == $sales_price } {
@@ -84,8 +84,8 @@ ad_proc find_sales_price {
 		}
     	} else {
                 ns_log NOTICE "find_sales_price: Parent project found: $parent_project_id"
-                ns_log NOTICE "find_sales_price: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $project_type_id ([im_category_from_id $project_type_id])"
-		return [find_sales_price $user_id $parent_project_id $company_id $project_type_id]
+                ns_log NOTICE "find_sales_price: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $cost_object_category_id ([im_category_from_id $cost_object_category_id])"
+		return [find_sales_price $user_id $parent_project_id $company_id $cost_object_category_id]
 	}
      }
 }
@@ -155,13 +155,18 @@ ad_proc -public im_price_list {
 	# set global vars for project_type and budget 
         db_1row sender_get_info_1 "
         	select
-                	project_type_id as glob_project_type_id,
+                	cost_object_category_id as glob_cost_object_category_id,
                         project_budget_currency as glob_project_budget_currency
                 from
                         im_projects
                 where
                         project_id=:object_id
                 "
+
+	if { ![exists_and_not_null glob_cost_object_category_id] } {
+	    set err_mess  [lang::message::lookup "" intranet-cust-koernigweber.CostObjectMissing "No Cost Object found, please contact your System Administrator."]
+	    ad_return_complaint 1 $err_mess
+	}
 
 	if { [im_permission $current_user_id "admin_project_price_list"]} {
 		set admin_p 1  		
@@ -180,7 +185,7 @@ ad_proc -public im_price_list {
 		append header_html "<td class=rowtitle align=left>[_ intranet-core.Name]</td>"
     }
     append header_html "
-	<td class=rowtitle align=left>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
+	<td class=rowtitle align=left>[lang::message::lookup "" intranet-cust-koernigweber.CostObjectType "Cost Object Type"]</td>
 	<td class=rowtitle align=right>[lang::message::lookup "" intranet-core.Price "Price"]</td>
     "
     if { $admin_p } {
@@ -250,7 +255,7 @@ ad_proc -public im_price_list {
 				acs_object_util__get_object_type(object_id) as object_type,
 				amount,
 				currency,
-				project_type_id,			
+				cost_object_category_id,			
 				im_name_from_user_id(user_id, $name_order) as name 
 			from 
 				im_customer_prices 
@@ -284,7 +289,7 @@ ad_proc -public im_price_list {
 			"
 		} else {
                         set where_clause "
-				project_type_id = $glob_project_type_id and
+				cost_object_category_id = $glob_cost_object_category_id and
 	                        user_id = :project_member_id and
 	                        currency = :glob_project_budget_currency
 			"
@@ -297,7 +302,7 @@ ad_proc -public im_price_list {
         		       	object_id as price_object_id,
                 		amount,
 		                currency,
-        		        project_type_id,
+        		        cost_object_category_id,
 				im_name_from_user_id(user_id, $name_order) as name 
 			from 
 				im_customer_prices
@@ -316,7 +321,7 @@ ad_proc -public im_price_list {
                                 object_id as price_object_id,
                                 amount,
                                 currency,
-                                project_type_id,
+                                cost_object_category_id,
 				im_name_from_user_id(user_id, $name_order) as name 
                         from
                                 im_customer_prices
@@ -353,15 +358,15 @@ ad_proc -public im_price_list {
 		}
 
 
-        	# Set "Project Type"		
-		if { ![info exists project_type_id] } { set project_type_id "" }	
+        	# Set Type (Category: Intranet Cost Object)		
+		if { ![info exists cost_object_category_id] } { set cost_object_category_id "" }	
 
 		# Decide about mode (view/edit)
         	# if  [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type 
 		    # User has permission to edit company prices  
         	#    append body_html "
                 #	  <td align=middle>
-		#		[im_project_type_select "project_type_id.${user_id}_$project_type_id" $project_type_id] 
+		#		[im_project_type_select "cost_object_category_id.${user_id}_$cost_object_category_id" $cost_object_category_id] 
 	        #          </td>
         	#    "
 	        #  else 
@@ -369,7 +374,7 @@ ad_proc -public im_price_list {
 
 	            append body_html "
         	          <td align=left>
-				[im_category_from_id $project_type_id]
+				[im_category_from_id $cost_object_category_id]
 	                  </td>
         	    "
         	# end if
@@ -377,9 +382,9 @@ ad_proc -public im_price_list {
 		# Set price (edit/view)
 	        # if [im_permission $current_user_id "admin_company_price_matrix"] && "im_company" == $object_type 
 	    
-	    	if { ("" != $project_type_id && "im_company" == $object_type) || ("0" == $project_type_id && "im_project" == $object_type ) } {
-		    set var_amount "amount.${user_id}_$project_type_id" 
-		    set var_currency "currency.${user_id}_$project_type_id"
+	    	if { ("" != $cost_object_category_id && "im_company" == $object_type) || ("0" == $cost_object_category_id && "im_project" == $object_type ) } {
+		    set var_amount "amount.${user_id}_$cost_object_category_id" 
+		    set var_currency "currency.${user_id}_$cost_object_category_id"
 
         	    append body_html "
                 	  <td align=right>
@@ -398,8 +403,8 @@ ad_proc -public im_price_list {
 
 		append body_html "</td>"
 
-		# if $add_admin_links && "" == $project_type_id
-		if { (("user" == $object_type) || ("" == $project_type_id && "im_project" == $object_type )) && $admin_p } {
+		# if $add_admin_links && "" == $cost_object_category_id
+		if { (("user" == $object_type) || ("" == $cost_object_category_id && "im_project" == $object_type )) && $admin_p } {
 		    set var_delete_price "delete_price.$id_price_table"
 		    append body_html "
 			  <td align=right>
@@ -452,6 +457,7 @@ ad_proc -public im_price_list {
         <tr $td_class([expr $count % 2])>
      " 
 
+
      if { "im_company" == $object_type || "im_project" == $object_type } {
 	append body_html "
 		<td>
@@ -463,10 +469,10 @@ ad_proc -public im_price_list {
      append body_html "<td align=middle>"
  
      if { "im_project" == $object_type } {
-	 if { ![info exists project_type_id ] } { set project_type_id $glob_project_type_id }
-	 append body_html [ im_category_from_id $project_type_id ]
+	 if { ![info exists cost_object_category_id ] } { set cost_object_category_id $glob_cost_object_category_id }
+	 append body_html [ im_category_from_id $cost_object_category_id ]
      } else {
-	 append body_html [im_project_type_select "new_project_type_id" ""]
+         append body_html [im_category_select "Intranet Cost Object" "new_cost_object_category_id" ""]
      }
 
      append body_html "
@@ -756,7 +762,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy_kw {
                 children.project_name,
                 children.project_nr,
                 im_category_from_id(children.project_status_id) as project_status,
-                im_category_from_id(children.project_type_id) as project_type,
+                im_category_from_id(children.cost_object_category_id) as project_type,
                 tree_level(children.tree_sortkey) - tree_level(parent.tree_sortkey) as level,
                 t.task_id,
                 t.planned_units,
@@ -945,7 +951,7 @@ ad_proc im_project_type_table {
     Based on "im_category_select_helper"
 } {
 
-    set category_type "Intranet Project Type"
+    set category_type "Intranet Cost Object"
 
     # Read the categories into the a hash cache
     # Initialize parent and level to "0"
@@ -1052,7 +1058,6 @@ ad_proc im_category_select_branch_kw {
 } {
     Returns a list of html "options" displaying an options hierarchy.
 } {
-
 
     if {$level > 10} { return "" }
 

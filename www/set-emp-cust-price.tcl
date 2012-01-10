@@ -13,7 +13,7 @@ ad_page_contract {
     currency:array,optional
     project_type_id:integer,array,optional
     new_user_id:integer
-    new_project_type_id:integer,optional
+    new_cost_object_category_id:integer,optional
     new_amount:optional
     new_currency:optional    
     delete_price:array,optional
@@ -47,7 +47,6 @@ ns_log Notice "member-update: submit=$submit"
 # -----------------------------------------------------------------
 # Action
 # -----------------------------------------------------------------
-
  	set debug ""
  	foreach user_id_project_type_id [array names amount] {
  	    set rate_amount [string trim $amount($user_id_project_type_id)]
@@ -92,10 +91,11 @@ ns_log Notice "member-update: submit=$submit"
 	    }
 	}
 
-	# In case there's a new record write it 
+	# Ignore when no price is set 
         if { "" != $new_amount } {
+	    	# In case there's a new record write it 
 		if { "" != $new_user_id } {
-		    if { ![info exists new_project_type_id] } { 
+		    if { ![info exists new_cost_object_category_id] } { 
 	              set sql "
 	                select
         	                im_employee_customer_price__update(NULL,
@@ -109,7 +109,7 @@ ns_log Notice "member-update: submit=$submit"
                 	        im_employee_customer_price__update(NULL,
                         	'im_employee_customer_price', now()::date,
 	                        NULL, '', NULL, :new_user_id, $object_id,
-        	                :new_amount, :new_currency, :new_project_type_id)
+        	                :new_amount, :new_currency, :new_cost_object_category_id)
                 	"
 		    }
         	    set foo [db_string write_new_price $sql -default 0]
