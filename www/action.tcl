@@ -51,7 +51,7 @@ switch $action {
     save {
 	# Delete the old values for this object_id
 	db_dml del_im_planning_items "delete from im_planning_items where item_object_id = :object_id"
-
+	
 	# Create the new values whenever the value is not "" (null)
 	set invoices_planned ""
 	set quotes_planned ""
@@ -86,7 +86,8 @@ switch $action {
 	    set value [im_opt_val item_value($id)]
 	    set note [im_opt_val item_note($id)]
 
-	    set billing_rate [util_memoize [list db_string billing_rate "select hourly_cost from im_employees where employee_id = $project_member_id" -default $default_billing_rate]]
+	    set billing_rate [util_memoize [list db_string billing_rate "select hourly_cost from im_employees where employee_id = $project_member_id" -default ""]]
+	    if {"" == $billing_rate} { set billing_rate $default_billing_rate }
 
 	    db_string insert_im_planning_item "select im_planning_item__new(
 			-- object standard 6 parameters
@@ -214,7 +215,9 @@ switch $action {
 
 
 	# Calculate values for the project's budget fields
-	set sql "update im_projects set\n"
+	set sql "update im_projects set
+								cost_cache_dirty = now(),
+	"
 	if {"" != $invoices_planned} { append sql		"project_budget = :invoices_planned,\n" }
 	if {"" != $quotes_planned} { append sql			"project_budget = :quotes_planned,\n" }
 	if {"" != $bills_planned} { append sql			"cost_bills_planned = :bills_planned,\n" }
