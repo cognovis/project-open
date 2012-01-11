@@ -105,7 +105,7 @@ ad_proc -public im_allowed_project_types {
     set add_admin_links 1  
     set header_html "
       <tr> 
-	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.Project_Type "Project Type"]</td>
+	<td class=rowtitle align=middle>[lang::message::lookup "" intranet-core.CostObject "Cost Object"]</td>
       </tr>"
 
     # ------------------ Format the table footer with buttons ------------
@@ -119,7 +119,7 @@ ad_proc -public im_allowed_project_types {
 
     # ------------------ Join table header, body and footer ----------------
     set html "
-	<form method=POST action=/intranet-cust-koernigweber/set-customer-project-types>
+	<form method=POST action=/intranet-cust-koernigweber/set-customer-cost-object>
 	[export_form_vars return_url company_id]
 	    <table bgcolor=white cellpadding=1 cellspacing=1 border=0>
 	      $header_html
@@ -1113,5 +1113,26 @@ ad_proc get_person_id_from_org_id {
     on an arbitrary project level above
 } {
     return [db_string get_data "select person_id from persons where organizational_id_number = :org_id" -default 0]
+}
+
+ad_proc -public -callback im_project_new_redirect -impl intranet-cust-koernigweber  {
+    { 
+	{ -object_id ""} 
+	{ -status_id ""} 
+	{ -type_id ""}
+        { -project_id ""}
+	{ -parent_id ""}
+	{ -company_id ""}
+	{ -project_type_id ""} 
+	{ -project_name ""}
+	{ -project_nr ""}
+	{ -workflow_key ""}
+	{ -return_url ""}
+    }
+} {
+    Check if choosen "Cost Object" is selectable
+} {
+    # ns_log NOTICE "KHD: im_project_new_redirect - in callback company_id: $company_id, project_id: $project_id"
+    template::head::add_javascript -src "/intranet-cust-koernigweber/js/get_cost_object.js" -order "1"     
 }
 
