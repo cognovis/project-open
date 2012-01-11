@@ -48,13 +48,17 @@ SELECT im_lang_add_message('de_DE','intranet-cust-koernigweber','AbsenceTimefram
 
 -- create table to manage information which project types are allowed 
 
+create sequence im_customer_project_type_seq;	
+
 create table im_customer_project_type (
+	id			integer,
         company_id              integer
                                 references im_companies,
         project_type_id         integer not null,
         unique(company_id, project_type_id)
 );
 
+ALTER TABLE im_customer_project_type ALTER COLUMN id SET DEFAULT NEXTVAL('im_customer_project_type_seq');
 
 SELECT im_component_plugin__new (
         null,                           -- plugin_id
