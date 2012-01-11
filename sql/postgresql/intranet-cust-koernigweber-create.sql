@@ -247,7 +247,7 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
         select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id IS NULL;
         ELSE 
         RAISE NOTICE ''im_employee_customer_price__update: p_cost_object_category_id IS NOT NULL'';
-        select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and project_type_id = p_cost_object_category_id;
+        select count(*) into v_count from im_customer_prices where user_id = p_user_id and object_id = p_object_id and cost_object_category_id = p_cost_object_category_id;
         END IF; 
         RAISE NOTICE ''im_employee_customer_price__update: Count: %'', v_count;
         
