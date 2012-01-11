@@ -40,5 +40,5 @@ if {![string equal "t" $read_p]} {
 # Title
 # ---------------------------------------------------------------
 
-set page_title [lang::message::lookup "" intranet-reporting-openoffice.Informe_Presupuestario_y_de_Avance_Clientes "Informe Presupuestario y de Avance Clientes"]
+set page_title [lang::message::lookup "" intranet-reporting-openoffice.Informe_Presupuestario_y_de_Avance_Clientes_Accumulado "Informe Presupuestario y de Avance Clientes - Accumulado"]
 set context_bar [im_context_bar $page_title]
