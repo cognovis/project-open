@@ -75,3 +75,9 @@ function update_cost_object() {
     xmlHttp2.open("GET","/intranet-cust-koernigweber/set_cost_object_drop_down?company_id="+company_id ,true);
     xmlHttp2.send(null);
 }
+
+
+jQuery().ready(function(){
+        update_cost_object();
+	$('#company_id').change(update_cost_object);
+});
