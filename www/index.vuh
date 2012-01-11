@@ -14,6 +14,9 @@
 set user_id [ad_maybe_redirect_for_registration]
 set user_locale [lang::user::locale]
 set date_format "YYYY-MM-DD"
+set currency_format [im_l10n_sql_currency_format]
+set number_format $currency_format
+
 
 set page_title [lang::message::lookup "" intranet-reporting-openoffice.Program_Overview "Program Overview"]
 set context [list $page_title]
@@ -74,6 +77,8 @@ set query_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
 set query_hash(now_day_of_month) [db_string now "select to_char(now(), 'DD')"]
 set query_hash(now_year) [db_string now "select to_char(now(), 'YYYY')"]
 set query_hash(date_format) $date_format
+set query_hash(number_format) $number_format
+set query_hash(currency_format) $currency_format
 
 
 # ---------------------------------------------------------------
