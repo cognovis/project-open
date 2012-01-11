@@ -5,4 +5,5 @@
 
 <h1>@page_title@</h1>
 
+<listtemplate name="reports"></listtemplate>
 
