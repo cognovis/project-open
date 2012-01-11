@@ -458,18 +458,26 @@ ad_proc im_oo_page_type_list {
 		set row_cnt 0
 
 		# Get the list of all tables in the page and count them
-		set table_nodes [im_oo_select_nodes $page_root "table:table"]
-		set table_node [lindex $table_nodes 0]
-		set cnt [llength $table_nodes]
-		if {$cnt == 0} { 
-		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Did not found a table in the slide</b>" 
+		set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
+		set table_node ""
+		foreach node $table_nodes {
+		    set node_text [string trim [im_oo_to_title -node $node]]
+		    ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
+		    if {"list" == $node_text} { 
+			# We found a draw:frame node with the right title.
+			# This node should have exactly one "table:table"
+			set table_frame_node $node
+			set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
+		    }
+		}
+
+		if {"" == $table_node} {
+		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
+			Didn't find a table with title 'list'.<br>
+		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
 		    ad_script_abort
 		}
-		if {$cnt > 1} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Found more the one table ($cnt)</b>:<br>
-        <pre>[im_oo_tdom_explore -node $page_root]</pre>"
-		    ad_script_abort
-		}
+
 
 		# Extract the 2nd row ("table:table-row" tag) that contains the 
 		# content row to be repeated for every row of the list_sql
@@ -540,7 +548,11 @@ ad_proc im_oo_page_type_list {
 	# The last page of the list. This can also be the very first page with short lists.
 
 	# Remove the content_row
-	if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+	if {"" != $content_row_node} { 
+	    catch {
+		[$content_row_node parentNode] removeChild $content_row_node 
+	    }
+	}
 
 	# Apply the OpenACS template engine
 	set page_xml [$page_root asXML]
