@@ -56,7 +56,7 @@ if {[regexp {[^0-9\ ]} $opened_projects match]} {
 # Constants & Options
 
 
-set page_title "Report Employess/Customer Price List"
+set page_title "Gewinn und Verlust nach Kostenstellen"
 set context_bar [im_context_bar $page_title]
 set context ""
 
