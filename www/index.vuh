@@ -31,8 +31,7 @@ set pageroot [ns_info pageroot]
 set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
 
 # Package template path
-set template_path "$serverroot/filestorage/templates"
-set template_oo_path "$serverroot/packages/intranet-reporting-openoffice/templates"
+set template_path_list [parameter::get_from_package_key -package_key "intranet-reporting-openoffice" -parameter "TemplatePathList" -default "/filestorage/templates /packages/intranet-reporting-openoffice/templates /packages/intranet-cust-santander/templates"]
 
 
 # ---------------------------------------------------------------
@@ -86,28 +85,28 @@ set query_hash(currency_format) $currency_format
 # ---------------------------------------------------------------
 
 if {"" == $url_file_ext || "tcl" == $url_file_ext || "adp" == $url_file_ext} {
-    # Define a number of locations where to look for the file
-    set package_files [list \
-			   "$template_oo_path/${url_file}" \
-			   "$template_oo_path/${url_file}.tcl" \
-			   "$template_oo_path/${url_file}.adp" \
-			   "$template_path/${url_file}" \
-			   "$template_path/${url_file}.tcl" \
-			   "$template_path/${url_file}.adp" \
-			  ]
-    
+
+    set package_files {}
+    foreach path $template_path_list {
+	lappend package_files "${path}/${url_file}"
+	lappend package_files "${path}/${url_file}.tcl"
+	lappend package_files "${path}/${url_file}.adp"
+    }
+
     foreach package_file $package_files {
-	if {[file isfile $package_file] && [file readable $package_file]} {
-	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Serving /www/$url_file"
+	ns_log Notice "intranet-reporting-openoffice/index.vuh: Checking package_file='$package_file'"
+	if {[file readable "${serverroot}$package_file"] && [file isfile "${serverroot}$package_file"]} {
+	    set package_file_without_ext [lindex [split $package_file "."] 0]
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Serving url_file='$url_file', package_file='$package_file', no_ext='$package_file_without_ext'"
+
 	    set params [list [list query_hash [array get query_hash]]]
-	    set result [ad_parse_template -params $params $package_file]
-	    doc_return 200 $mime_type $result
+	    set result [ad_parse_template -params $params $package_file_without_ext]
+	    doc_return 200 "text/html" $result
 	    ad_script_abort
-	} else {
-	    ns_log Notice "intranet-reporting-openoffice/index.vuh: File '$package_file' does not exist or is not readable."
 	}
     }
 }
+
 
 # ---------------------------------------------------------------
 # Look for an OO.oo tempate
@@ -115,19 +114,17 @@ if {"" == $url_file_ext || "tcl" == $url_file_ext || "adp" == $url_file_ext} {
 
 if {"" == $url_file_ext || "odp" == $url_file_ext} {
 
-    # Define a number of locations where to look for the file
-    set template_files [list \
-			    "$template_oo_path/${url_file}" \
-			    "$template_oo_path/${url_file}.odp" \
-			    "$template_path/${url_file}" \
-			    "$template_path/${url_file}.odp" \
-			   ]
-    
+    set template_files {}
+    foreach path $template_path_list {
+	lappend template_files "${path}/${url_file}"
+	lappend template_files "${path}/${url_file}.odp"
+    }
+
     set odp_template_file ""
     foreach template_file $template_files {
-	if {[file isfile $template_file] && [file readable $template_file]} {
+	if {[file readable "${serverroot}$template_file"] && [file isfile "${serverroot}$template_file"]} {
 	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Found template file $template_file"
-	    set odp_template_file $template_file
+	    set odp_template_file "${serverroot}$template_file"
 	}
     }
 }
