@@ -1132,7 +1132,6 @@ ad_proc -public -callback im_project_new_redirect -impl intranet-cust-koernigweb
 } {
     Check if choosen "Cost Object" is selectable
 } {
-    # ns_log NOTICE "KHD: im_project_new_redirect - in callback company_id: $company_id, project_id: $project_id"
-    template::head::add_javascript -src "/intranet-cust-koernigweber/js/get_cost_object.js" -order "1"     
+    template::head::add_javascript -src "/intranet-cust-koernigweber/js/get_cost_object.js" -order "999"     
 }
 
