@@ -17,7 +17,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-reporting-openoffice.Report_List "Report List"]
+set page_title [lang::message::lookup "" intranet-reporting-openoffice.Report_List "List of available OpenOffice Reports"]
 set context_bar [im_context_bar $page_title]
 
 set find_cmd [im_filestorage_find_cmd]
@@ -27,8 +27,7 @@ set pageroot [ns_info pageroot]
 set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
 
 # Package template path
-set template_path "$serverroot/filestorage/templates"
-set template_oo_path "$serverroot/packages/intranet-reporting-openoffice"
+set template_path_list [parameter::get_from_package_key -package_key "intranet-reporting-openoffice" -parameter "TemplatePathList" -default "/filestorage/templates /packages/intranet-reporting-openoffice/templates /packages/intranet-cust-santander/templates"]
 
 set base_url "/intranet-reporting-openoffice"
 
@@ -36,14 +35,12 @@ set base_url "/intranet-reporting-openoffice"
 # Check for a TCL file in the template directories
 # ---------------------------------------------------------------
 
-
 template::multirow create reports report_file_name url
 
-set pathes [list \
-		"$template_path/" \
-		"$template_oo_path/templates/" \
-		"$template_oo_path/www/" \
-	       ]
+set pathes {}
+foreach template_path $template_path_list {
+    lappend pathes "${serverroot}${template_path}"
+}
 
 foreach path $pathes {
     set files [exec $find_cmd $path -noleaf -type f]
@@ -55,8 +52,6 @@ foreach path $pathes {
 
 	switch $file_body {
 	    "report-list" { continue }
-	    "test-gantt" { continue }
-	    "test-list" { continue }
 	    "project-oneslide" { continue }
 	    default {
 		set hash($file_name) $file_name
