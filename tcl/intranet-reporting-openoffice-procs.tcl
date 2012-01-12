@@ -408,6 +408,12 @@ ad_proc im_oo_page_type_list {
     # Loop through all repetitions
     db_foreach page_sql $page_sql {
 
+	# Reset counters
+	foreach counter $counters {
+	    set counter_var [lindex $counter 0]
+	    set $counter_var 0
+	}
+
 	# Parse the template in order to create a "fresh" XML tree.
 	# We are going to use this tree to insert rows into the first list.
         set page_doc [dom parse $template_xml]
@@ -477,7 +483,6 @@ ad_proc im_oo_page_type_list {
 		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
 		    ad_script_abort
 		}
-
 
 		# Extract the 2nd row ("table:table-row" tag) that contains the 
 		# content row to be repeated for every row of the list_sql
