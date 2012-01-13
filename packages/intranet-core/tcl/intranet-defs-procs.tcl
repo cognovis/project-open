@@ -121,6 +121,17 @@ ad_proc -public im_date_julian_to_epoch {
     return [expr 86400.0 * ($julian - 2440588.0) - $tz_offset_seconds]
 }
 
+ad_proc -public im_date_ansi_to_epoch { 
+    { -throw_complaint_p 1 }
+    ansi
+} {
+    Returns seconds after 1/1/1970 00:00 GMT
+} {
+    regexp {(....)-(..)-(..)} $ansi match year month day
+    set julian [dt_ansi_to_julian $year $month $day]
+    return [im_date_julian_to_epoch -throw_complaint_p $throw_complaint_p $julian]
+}
+
 ad_proc -public im_date_epoch_to_ansi { 
     { -throw_complaint_p 1 }
     epoch
@@ -129,6 +140,16 @@ ad_proc -public im_date_epoch_to_ansi {
 } {
     set ansi [db_string epoch_to_ansi "SELECT to_char(TIMESTAMP WITH TIME ZONE 'epoch' + :epoch * INTERVAL '1 second', 'YYYY-MM-DD')"]
     return $ansi
+}
+
+ad_proc -public im_date_epoch_to_julian { 
+    { -throw_complaint_p 1 }
+    epoch
+} {
+    Returns ansi date for epoch
+} {
+    set julian [db_string epoch_to_julian "SELECT to_char(TIMESTAMP WITH TIME ZONE 'epoch' + :epoch * INTERVAL '1 second', 'J')"]
+    return $julian
 }
 
 ad_proc -public im_date_epoch_to_time { 
@@ -193,7 +214,11 @@ ad_proc im_csv_get_values { file_content {separator ","}} {
 # CSV Line Parser
 # ------------------------------------------------------------------
 
-ad_proc im_csv_split { line {separator ","}} {
+ad_proc im_csv_split { 
+    {-debug 0}
+    line 
+    {separator ","}
+} {
     Splits a line from a CSV (Comma Separated Values) file
     into an array of values. Deals with:
     <ul>
@@ -213,14 +238,13 @@ ad_proc im_csv_split { line {separator ","}} {
     </ul>
 
 } {
-    set debug 0
-
     set result_list [list]
     set pos 0
     set len [string length $line]
     set quote ""
     set state "field_start"
     set field ""
+    set cnt 0
 
     while {$pos <= $len} {
 	set char [string index $line $pos]
@@ -233,7 +257,7 @@ ad_proc im_csv_split { line {separator ","}} {
 		# We're before a field. Next char may be a quote
 		# or not. Skip white spaces.
 
-		if {[string is space $char]} {
+		if {[string is space $char] && $char != $separator} {
 
 		    if {$debug} {ns_log notice "im_csv_split: field_start: found a space: '$char'"}
 		    incr pos
@@ -302,8 +326,12 @@ ad_proc im_csv_split { line {separator ","}} {
 
 		# We got here after finding the end of a "field".
 		# Now we expect a separator or we have to throw an
-		# error otherwise. Skip whitespaces.
-		
+		# error otherwise. Skip whitespaces, unless the whitespace is the separator...
+		if {$char == $separator} { 
+		    # don't inc pos!
+		    set state "field_start"
+		}
+
 		if {[string is space $char]} {
 		    if {$debug} {ns_log notice "im_csv_split: separator: found a space: '$char'"}
 		    incr pos
@@ -319,6 +347,11 @@ ad_proc im_csv_split { line {separator ","}} {
 		}
 	    }
 	    # Switch, while and proc ending
+	}
+
+	if {$debug} {
+	    incr cnt
+	    if {$cnt > 10000} { ad_return_complaint 1 "overflow" }
 	}
     }
 
@@ -591,7 +624,8 @@ ad_proc -public im_name_from_user_id {user_id} {
 
 ad_proc -public im_name_from_user_id_helper {user_id} {
     set user_name "&lt;unknown&gt;"
-    catch { set user_name [db_string uname "select im_name_from_user_id(:user_id)"] } err
+    set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
+    catch { set user_name [db_string uname "select im_name_from_user_id(:user_id, $name_order)"] } err
     return $user_name
 }
 
@@ -613,6 +647,17 @@ ad_proc -public im_email_from_user_id_helper {user_id} {
     }
     return $user_email
 }
+
+# Find out the user initials
+ad_proc -public im_initials_from_user_id {user_id} {
+    set user_name [im_name_from_user_id $user_id]
+    set result ""
+    foreach name $user_name {
+	append result [string toupper [string range $name 0 0]]
+    }
+    return $result
+}
+
 
 
 ad_proc im_employee_select_optionlist { 
@@ -1356,17 +1401,13 @@ ad_proc im_csv_guess_separator { file } {
     by determining the character frequency in the file
 } {
     foreach char [split $file ""] {
-	
 	# The the numeric character code for the character
         scan $char "%c" code
-
-	if {[lsearch {";" "," "|" } $char] != -1} {
-	    
+	if {[lsearch {";" "," "|" "\t"} $char] != -1} {
 	    # Increment the respective counter
 	    set count 0
 	    if {[info exists hash($code)]} { set count $hash($code) }
 	    set hash($code) [expr $count+1]
-	    
 	}
     }
     
@@ -1379,7 +1420,14 @@ ad_proc im_csv_guess_separator { file } {
 	}
     }
     
-    return [format "%c" $max_code]
+    if {[catch {
+	set result [format "%c" $max_code]
+    } err_msg]} {
+	ad_return_complaint 1 "<b>im_csv_guess_separator: Didn't find separator</b>:<br>
+	Input:<br><pre>$file</pre>"
+	ad_script_abort
+    }
+    return $result
 }
 
 

@@ -28,6 +28,13 @@
         border: 1px solid #666;
 }
 
+.not_todays_date_weekend, .todays_date_weekend {
+        text-align: left;
+        border: 1px solid #666;
+	background: #EEEEEE;
+}
+
+
 .link_log_hours {
 	padding-top: 8px;
 	padding-left: 12px;
@@ -263,7 +270,7 @@ background-position: 0px -10px;
 
 
 #header_logo {
-  position: absolute;
+ position: absolute;
   left: 0px;
   top: 0px;
   font-size: 16pt;
@@ -386,6 +393,9 @@ background-position: 0px -10px;
 	background-color: #2E2E2E;
         -moz-box-sizing: content-box;
 	box-sizing: content-box;
+	color: #000000;
+	font-family: verdana,arial,helvetica,sans-serif;
+	font-size: 8pt;
 }
 
 #navbar_main {
@@ -571,7 +581,7 @@ a   span  {float:none;}
 	bottom: -1px;
 	list-style: none;
 	line-height: normal;
-	width: 800px;
+	top: -20px;
 }
 
 #navbar_sub LI, #alphabar LI {
@@ -691,7 +701,7 @@ a   span  {float:none;}
 /* **********************************************   COMPONENTS ***************************** */ 
 
 .component {
-	position: relative;
+	/* position: relative; */ 
 	padding-left: 5px;
 	padding-right: 5px;
 	padding-top: 5px;
@@ -699,9 +709,9 @@ a   span  {float:none;}
 	min-height: 0;
 }
 .component_header_rounded {
-  background-color: #eeeeee;
+  background-color: #E1E2E1;
   color: #000000;
-  border: solid 1px #EEEEEE;
+  border: solid 1px #CCCCCC;
 }
 
 
@@ -880,13 +890,13 @@ a   span  {float:none;}
 .fullwidth-list .component table tr.rowodd,
 .fullwidth-list .component table tr.roweven {
 	height: 22px;
-	border-top: 1px solid #FFFFFF;
-	border-bottom: 1px solid #FFFFFF;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
 }
 
 .fullwidth-list .component table td {
 	padding: 0px 2px 0px 2px;
-	vertical-align: top;
+	vertical-align: middle;
 }
 
 .fullwidth-list .component table.month_header td {
@@ -1017,7 +1027,7 @@ a   span  {float:none;}
    margin:10px; */
 }
 
-.fullwidth-list table tr {
+.fullwidth-list .component_body table tr {
  	padding: 3px;
 	height:20px;
 }
@@ -1196,7 +1206,7 @@ table.list td {
         height: 200px;
         top: 200px;
         left:-37px;
-        background-image:url('intranet/images/navbar_saltnpepper/background.gif');
+        /* background-image:url('intranet/images/navbar_saltnpepper/background.gif'); */
         background-position:top left;
         background-repeat:repeat-y;	
 	/* STOP NEW IDEBAR */
@@ -1468,15 +1478,22 @@ span.list-label {
 
 /* XOWIKI */
 
-div.xowiki-content, div.xowiki-content p, .graphicTable td {
+#Contents {
+	margin-left: -13px;
+}
+
+div.xowiki-content, 
+div.xowiki-content p, 
+.graphicTable td, 
+div.xowiki-content ul li,
+div.xowiki-content td
+ {
         font-family:Arial,Helvetica,sans-serif;
         color:#333333;
         font-size:13px;
         line-height:140%;
         margin-top: 6px;
 }
-
-
 
 #left-col {
 	margin-top:15px;
@@ -1496,7 +1513,7 @@ div.xowiki-content h1 {
         padding-left:0;
         text-decoration:none;
         border-bottom: solid silver 1px; color: #222222;
-	padding-top:10px;
+	padding-top:25px;
 }
 
 div.xowiki-content h2 {
@@ -1510,6 +1527,7 @@ div.xowiki-content h2 {
         border-bottom: solid silver 1px; color: #222222;
 	padding-top:20px;
 }
+
 div.xowiki-content h3 {
         font-family:Arial,Helvetica,sans-serif;
         color:#424547;
@@ -1521,11 +1539,23 @@ div.xowiki-content h3 {
         border-bottom: solid silver 1px; color: #222222;
 	padding-top:20px;
 }
+
 div.xowiki-content h4 {
-    /* font-size: 12px; */
     margin: 0;
 }
 
+div.xowiki-content ul.mktree, 
+div.xowiki-content ul.mktree ul, 
+div.xowiki-content ul.mktree li {
+	padding-left: 3px;
+        font-size:11px;
+}
+
+div.xowiki-content ul.mktree li.liClosed .bullet,
+div.xowiki-content ul.mktree li.liOpen .bullet
+{
+	font-size:11px;
+}
 
 div.rightbox {
 	margin-top: 2em;
@@ -1548,8 +1578,12 @@ div.xowiki-content hr {
          /* display: none; */ 
 }
 
+.forumBar {
+	margin-top:-1;
+}
+
 .component table.forumBar td  {
-        background: #EEEEEE
+        background: #E1E2E1;
 }
 
 .component table.forumBar td a  {
@@ -1625,6 +1659,8 @@ div.xowiki-content hr {
     background: #ff6;
 }
 
+/* Buttons ]po[ 4.0 */
+
 .form-button40 a, .form-button40, .form-button40 button  {
     margin:0 7px 0 0;
     background-color:#d8dada;
@@ -1663,4 +1699,67 @@ div.xowiki-content hr {
     border:none;
     width:16px;
     height:16px;
+}
+
+/* ??? */
+
+th.list-narrow {
+	padding: 5px;
+}
+
+/* calendar - weekends */
+
+.cal-table-caption {
+    background: none repeat scroll 0 0 #FFFFFF;
+    font-size: 1em;
+    font-weight: bold;
+    margin: 0.5em;
+}
+
+#cal-table-day th, #cal-table-week th {
+    background-color: #FFFFFF;
+	font-size: 0.6em;
+}
+
+/* patch ExtJS grid */
+.fullwidth-list .component_body table.x-grid-table tr {
+    height: auto;
+}
+
+
+/* notification bar */ 
+
+.error-notice {
+    background-color: #f2baba;
+    color: #333333;
+    border: 2px #b81616;
+    font-weight: bold;
+    margin-left: 0px;
+    margin-right: 0px;
+    position:absolute;
+    left:0;
+    top:0px;
+    z-index: 9999; 
+    width: 100%; 
+    height: 25px;
+    text-align: center;
+    vertical-align: middle;
+    display:inline-block;
+    line-height:25px;
+}
+ 
+.success-notice {
+    background-color: #baf2bb;
+    color: #049900;
+    border: 2px #15a612;
+    font-weight: normal;
+    font-size: 0.95em;
+    margin-left: 0px;
+    margin-right: 0px;
+    position:absolute;
+    left:0;
+    top:0px;
+    z-index: 9999;
+    width: 100%;  
+    height: 25px;
 }

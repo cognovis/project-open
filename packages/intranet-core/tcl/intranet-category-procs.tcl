@@ -59,17 +59,28 @@ ad_proc -public im_id_from_category_helper {
     Convert a category_name into a category_id.
     Returns "" if the category isn't found.
 } {
-    set results [list]
-    foreach cat $category {
-	set id [db_string id_from_cat "
+    set id [db_string id_from_cat "
+		select	category_id
+		from	im_categories
+		where	category = :category and
+			category_type = :category_type
+    " -default ""]
+    if {"" != $id} { return $id }
+
+    if {$list_p} {
+	set results [list]
+	foreach cat $category {
+	    set id [db_string id_from_cat "
 		select	category_id
 		from	im_categories
 		where	category = :cat and
 			category_type = :category_type
-        " -default ""]
-	if {"" != $id} { lappend results $id }
+            " -default ""]
+	    if {"" != $id} { lappend results $id }
+	}
+	return $results
     }
-    return $results
+    return ""
 }
 
 
@@ -462,6 +473,15 @@ ad_proc -public template::widget::im_category_tree {
 	set include_empty_p [lindex $params [expr $include_empty_p_pos + 1]]
     }
 
+    # Get the "include_empty_name" parameter to determine if we should
+    # include an empty first line in the widget
+    #
+    set include_empty_name ""
+    set include_empty_name_pos [lsearch $params include_empty_name]
+    if { $include_empty_name_pos >= 0 } {
+	set include_empty_name [lindex $params [expr $include_empty_name_pos + 1]]
+    }
+
     array set attributes $tag_attributes
     set category_html ""
     set field_name $element(name)
@@ -485,7 +505,7 @@ ad_proc -public template::widget::im_category_tree {
 
 
     if { "edit" == $element(mode)} {
-	append category_html [im_category_select -translate_p 1 -package_key $package_key -include_empty_p $include_empty_p -include_empty_name "" -plain_p $plain_p $category_type $field_name $default_value]
+	append category_html [im_category_select -translate_p 1 -package_key $package_key -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p $category_type $field_name $default_value]
 
 
     } else {

@@ -337,7 +337,7 @@ namespace eval project {
         set project_id [db_exec_plsql create_new_project $sql]
 
 	# Write Audit Trail
-	# im_project_audit -action create -project_id $project_id
+	# im_project_audit -action after_create -project_id $project_id
 
         return $project_id
     }
@@ -2271,7 +2271,7 @@ ad_proc im_project_nuke {
 
     # Write Audit Trail
     ns_log Notice "im_project_nuke: before im_project_audit"
-    im_project_audit -user_id $current_user_id -project_id $project_id -action nuke
+    im_project_audit -user_id $current_user_id -project_id $project_id -action before_nuke
 
     # ---------------------------------------------------------------
     # Delete
