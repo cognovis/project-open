@@ -186,7 +186,7 @@ ad_proc im_report_render_cell {
     into a report HTTP session
 } {
     set td_fields ""
-
+    
     # Remove leading spaces
     regexp {^[ ]*(.*)} $cell match cell
 
@@ -306,7 +306,6 @@ ad_proc im_report_render_header {
 		html - printer { ns_write "<tr>\n" }
 		csv { }
 	    }
-
 	    foreach field $header {
 		set value ""
 		if {"" != $field} {
@@ -729,6 +728,7 @@ ad_proc im_report_number_locale_select {
 
 ad_proc im_report_write_http_headers {
     -output_format
+    {-report_name ""}
 } {
     Writes a suitable HTTP header to the connection.
     We need this custom routine in order to deal with
@@ -738,11 +738,23 @@ ad_proc im_report_write_http_headers {
 } {
     set content_type [im_report_content_type -output_format $output_format]
     set http_encoding [im_report_http_encoding -output_format $output_format]
+
     append content_type "; charset=$http_encoding"
-    
-    set all_the_headers "HTTP/1.0 200 OK
+
+    # Set content disposition for CSV exports
+    if {$output_format == "csv" && $report_name != ""} {
+	set report_key [string tolower $report_name]
+	regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+	regsub -all {_+} $report_key "_" report_key
+	set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Type: $content_type
+Content-Disposition: attachment; filename=${report_key}.csv\r\n"
+    } else {
+	set all_the_headers "HTTP/1.0 200 OK
 MIME-Version: 1.0
 Content-Type: $content_type\r\n"
+    }
     
     util_WriteWithExtraOutputHeaders $all_the_headers
     ns_startcontent -type $content_type
