@@ -18,6 +18,7 @@
 	<script type="text/javascript" src="RowExpander.js"></script> 
 	<script type="text/javascript" src="ProjectSlaList.js"></script> 
 	<script type="text/javascript" src="AuditGrid.js"></script> 
+	<script type="text/javascript" src="AuditDetailWindow.js"></script> 
 	<script type="text/javascript" src="FileStorageGrid.js"></script> 
 
 	<!-- ------------------------------- Custome Specific ---------------------------------- -->

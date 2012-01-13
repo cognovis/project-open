@@ -157,7 +157,7 @@ set report_sql "
 		t.ticket_queue_id as ticket_resuelto_raw_id,
 		CASE WHEN t.ticket_queue_id = 463 THEN 'SI' ELSE 'NO' END as ticket_resuelto,
 		t.ticket_requires_addition_info_p as ticket_requires_addition_info_raw_id,
-		CASE WHEN t.ticket_requires_addition_info_p = 'true' THEN 'SI' ELSE 'NO' END as ticket_requires_addition_info,
+		CASE WHEN t.ticket_requires_addition_info_p = 't' THEN 'SI' ELSE 'NO' END as ticket_requires_addition_info,
 
 		p_creator.person_id as creation_user_id,
 		p_creator.first_names as creation_user_first_names,
@@ -168,12 +168,12 @@ set report_sql "
 		coalesce(p_contact.first_names,'') || ' ' || 
 			coalesce(p_contact.last_name, '') || ' ' || 
 			coalesce(p_contact.last_name2, '') as contact_name,
-		pa_contact.email as contact_email,
+		p_contact.spri_email as contact_email,
 		p_contact.telephone as contact_telephone,
 		p_contact.vip_p as contact_vip_p,
-		p_contact.gender as contact_gender,
-		p_contact.language as contact_language,
-		regexp_replace(p_contact.spri_consultant, '1', 'S') as contact_consultant,
+		CASE WHEN p_contact.gender = 'male' THEN 'Hombre' WHEN p_contact.gender = 'female' THEN 'Mujer' ELSE '' END	as contact_gender,
+		CASE WHEN p_contact.language = 'es_ES' THEN 'Español' WHEN p_contact.language = 'eu_ES' THEN 'Euskera' ELSE '' END	as contact_language,
+		CASE WHEN p_contact.spri_consultant = 1 THEN 'SI' ELSE 'NO' END as contact_consultant,
 
 		to_char(o.creation_date, 'YYYY-MM-DD') as creation_date_date,
 		to_char(o.creation_date, 'HH24:MI') as creation_date_time,
@@ -181,6 +181,9 @@ set report_sql "
 		to_char(t.ticket_creation_date, :date_time_format) as ticket_creation_date_pretty,
 		to_char(t.ticket_creation_date, 'YYYY-MM-DD') as ticket_creation_date_date,
 		to_char(t.ticket_creation_date, 'HH24:MI') as ticket_creation_date_time,
+
+		to_char(t.ticket_reaction_date, 'YYYY-MM-DD') as ticket_reaction_date_date,
+		to_char(t.ticket_reaction_date, 'HH24:MI') as ticket_reaction_date_time,
 
 		to_char(t.ticket_escalation_date, 'YYYY-MM-DD') as ticket_escalation_date_date,
 		to_char(t.ticket_escalation_date, 'HH24:MI') as ticket_escalation_date_time,
@@ -194,7 +197,8 @@ set report_sql "
 		to_char(t.ticket_signoff_date, :date_time_format) as ticket_signoff_date_pretty,
 		to_char(t.ticket_resolution_date, :date_time_format) as ticket_resolution_date_pretty,
 		to_char(t.ticket_escalation_date, :date_time_format) as ticket_escalation_date_pretty,
-		to_char(t.ticket_resolution_date, :date_time_format) as ticket_resolution_date_pretty
+		to_char(t.ticket_resolution_date, :date_time_format) as ticket_resolution_date_pretty,
+		CASE WHEN t.ticket_closed_in_1st_contact_p = 't' THEN 'SI' ELSE 'NO' END as ticket_closed_in_1st_contact
 	from
 		acs_objects o
 		LEFT OUTER JOIN persons p_creator ON (o.creation_user = p_creator.person_id),
@@ -208,13 +212,11 @@ set report_sql "
 	where
 		t.ticket_id = o.object_id and
 		t.ticket_id = p.project_id and
-		o.creation_date >= :start_date and
-		o.creation_date <= :end_date
+		t.ticket_creation_date >= :start_date and
+		t.ticket_creation_date <= :end_date
 	order by
 		lower(cust.company_path),
 		lower(p.project_nr)
-		
-
 "
 
 # ------------------------------------------------------------
@@ -229,6 +231,8 @@ set header0 {
 	"Ticket ID"
 	"Fecha Sistema"
 	"Hora Sistema"
+	"Fecha Creacion"
+	"Hora Creacion"	
 	"Fecha Recepcion"
 	"Hora Recepcion"
 	"Fecha Escalacion"
@@ -251,6 +255,8 @@ set header0 {
 	"Contacto Mail"
 	"Telefono"
 	"Consultor"
+	"Contacto genero"
+	"Contacto idioma"	
 	"Area"
 	"Area Id"
 	"Programa"
@@ -267,6 +273,7 @@ set header0 {
 	"Apoyo Mail Id"
 	"Escalado"
 	"Escalado Id"
+	"Cerrado en primer contacto"
 }
 
 # The entries in this list include <a HREF=...> tags
@@ -281,6 +288,8 @@ set report_def [list \
 	$creation_date_time
 	$ticket_creation_date_date
 	$ticket_creation_date_time
+	$ticket_reaction_date_date
+	$ticket_reaction_date_time	
 	$ticket_escalation_date_date
 	$ticket_escalation_date_time
 	$ticket_done_date_date
@@ -301,6 +310,8 @@ set report_def [list \
 	$contact_email
 	$contact_telephone
 	$contact_consultant
+	$contact_gender
+	$contact_language
 	$ticket_area
 	$ticket_area_raw_id
 	$ticket_program
@@ -317,6 +328,7 @@ set report_def [list \
 	$ticket_requires_addition_info_raw_id
 	$ticket_queue
 	$ticket_queue_raw_id
+	$ticket_closed_in_1st_contact
     } \
     content {} \
     footer {} \
@@ -459,15 +471,28 @@ db_foreach sql $report_sql {
 	    -cell_class $class
 
         # Data Customization
-		
-		if {"" != $ticket_area_raw_id} {
-		
+		if {"" != $ticket_program_raw_id} {
 			set lista_parents [im_category_parents $ticket_program_raw_id]
 			set parent [lindex $lista_parents 0]
 			set ticket_area_raw_id $parent
-			
 		}	
+		if {[empty_string_p $ticket_area_raw_id]} {
+			set ticket_area $ticket_program
+			set ticket_area_raw_id $ticket_program_raw_id
+		}
 			
+		set lista_parents [im_category_parents $ticket_incoming_channel_raw_id]
+		set parent [lindex $lista_parents 0]	
+		set ticket_incoming_channel_parent [im_category_from_id $parent]
+		if {"" == $ticket_incoming_channel_parent} {
+			set ticket_incoming_channel_parent [im_category_from_id $ticket_incoming_channel_raw_id]
+		}			
+		set lista_parents [im_category_parents $ticket_outgoing_channel_raw_id]
+		set parent [lindex $lista_parents 0]	
+		set ticket_outgoing_channel_parent [im_category_from_id $parent]
+		if {"" == $ticket_outgoing_channel_parent} {
+			set ticket_outgoing_channel_parent [im_category_from_id $ticket_outgoing_channel_raw_id]
+		}			
 			
         if {"" != $ticket_incoming_channel_parent} {
             set category_key "intranet-core.[lang::util::suggest_key $ticket_incoming_channel_parent]"

@@ -46,7 +46,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			typeAhead:	true,
 			listeners: {
 				change: function (field,newValue,oldValue) {
-					 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue)
+					 Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue);
 				}
 			}							
 	},
@@ -57,9 +57,9 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 	{ name: 'ticket_id',				xtype: 'hiddenfield' },
 	{ name: 'ticket_creation_date', 	xtype: 'hiddenfield' },
 	{ name: 'ticket_status_id',			xtype: 'hiddenfield', value: 30000 },	// Open by default
-	{ name: 'ticket_queue_id',			xtype: 'hiddenfield', value: 463 },	// Assign to Employees by default
-	{ name: 'ticket_last_queue_id',		xtype: 'hiddenfield' },			// 
-	{ name: 'fs_folder_id',				xtype: 'hiddenfield' },			// Assign to Employees by default
+	{ name: 'ticket_queue_id',			xtype: 'hiddenfield', value: employeeGroupId },	// Assign to Employees by default
+	{ name: 'ticket_last_queue_id',		xtype: 'hiddenfield' },		
+	{ name: 'fs_folder_id',				xtype: 'hiddenfield' },			
 	{ name: 'project_nr',				xtype: 'hiddenfield' },
 
 	// Optional fields start here
@@ -124,6 +124,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		validator: function(value){
+			Ext.getCmp('ticketForm').getForm().findField('ticket_area_id').validate();
 			return this.store.validateLevel(this.value,this.allowBlank)
 		}		
 	}, {
@@ -147,16 +148,16 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 		    // The user has selected a program/area from the drop-down box.
 		    // Now construct a new ProgramGroupStore based on this information
 		    // with only those groups/profiles that are assigned to the program
-		    'change': function(field, values) {
-		    //	if (null == values) { this.reset();}
+		    change: function(field, newValue, oldValue) {
+		    	Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue);
 				var ticket_area_id =  Ext.getCmp('ticketForm').getForm().findField('ticket_area_id');
 
 				if (ticket_area_id.store.filters.length > 0) {
 					//Filter value is modified with the new value selected.
-					ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(values,8,"0");
+					ticket_area_id.store.filters.getAt(0).value = Ext.String.leftPad(newValue,8,"0");
 				} else {
 					//New filters is created with the value selected
-					ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(values,8,"0"));
+					ticket_area_id.store.filter('tree_sortkey',  Ext.String.leftPad(newValue,8,"0"));
 				}
 				if (resetCombo) {
 					ticket_area_id.reset();
@@ -183,7 +184,8 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		listeners: {
-			'change': function(field, newValue, oldValue, options) {			
+			change: function(field, newValue, oldValue, options) {			
+				Ext.getCmp('ticketCompoundPanel').checkTicketField(field,newValue,oldValue);
 				var programId = this.getValue();
 				if (null != programId) {
 					var programModel = ticketAreaStore.findRecord('category_id', programId);
@@ -213,7 +215,31 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 			}
 		},
 		validator: function(value){
-			return this.store.validateLevel(this.value,this.allowBlank)
+			try{
+				var ticket_type_field = Ext.getCmp('ticketForm').getForm().findField('ticket_type_id');
+				if (this.store.data.length > 0 && !Ext.isEmpty(this.value) && !Ext.isEmpty(ticket_type_field.store.findRecord('category_id',ticket_type_field.getValue())) ) {
+					var string_2_program = this.store.findRecord('category_id',this.value).get('aux_string2');
+					var string_2_type = ticket_type_field.store.findRecord('category_id',ticket_type_field.getValue()).get('aux_string2');
+					if (Ext.String.trim(string_2_program).toLowerCase()!=Ext.String.trim(string_2_type).toLowerCase()) {
+						return 'Tipo de ticket no válido para el programa indicado'; 
+					}
+				}
+			} catch(err) {
+				return this.store.validateLevel(this.value,this.allowBlank);
+			}
+			return this.store.validateLevel(this.value,this.allowBlank);
+			/*
+			var levelv = this.store.validateLevel(this.value,this.allowBlank);
+			if (levelv==true) {
+				var ticket_type_field = Ext.getCmp('ticketForm').getForm().findField('ticket_type_id');
+				var parent_type_id = ticket_type_field.store.getParent(ticket_type_field.getValue());
+				if ((this.value=='10000221' || this.value=='10000244' || this.value=='10000234' || this.value=='10000235' || this.value=='10000236' || this.value=='10000223' || this.value=='10000238' || this.value=='10000239' || this.value=='10000240') && parent_type_id!=serviceId) {
+						return 'Tipo de ticket no válido para el programa indicado';
+				}
+				return true;
+			} else {
+				return levelv;
+			}*/
 		}		
 	}, {
 		name:		'ticket_file',
@@ -271,7 +297,7 @@ var ticketInfoPanel = Ext.define('TicketBrowser.TicketForm', {
 
 		// Set the default value for ticket_type
 		var form = this.getForm();
-		form.findField('ticket_type_id').setValue('10000183');
+		//form.findField('ticket_type_id').setValue('10000173');
 		
 		// SEt datetime for actions
 		var date = new Date();

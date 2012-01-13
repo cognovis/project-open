@@ -154,6 +154,23 @@ var userCustomerStore = Ext.create('PO.data.UserStore', {
 	}
 });
 
+var userQueueStore = Ext.create('PO.data.UserStore', {
+	storeId: 'userQueueStore',
+	model: 'TicketBrowser.GroupMembershipRel',
+	autoLoad: false
+});
+
+userQueueStore.on({
+    'load':{
+        fn: function(store, records, options){
+        	store.sort('name', 'ASC');
+        	Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(store.first());
+     },
+        scope:this
+    }
+});
+
+
 // ----------------------------------------------------------------
 // User Store
 // ----------------------------------------------------------------
@@ -300,13 +317,20 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'sort_order',
+		direction: 'ASC'
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 ticketTypeStore.load(
       function(record, operation) {
       // This code is called once the reply from the server has arrived.
       this.addBlank();
-      ticketTypeStore.sort('tree_sortkey');
+      ticketTypeStore.sort();
     }
 );
 

@@ -65,11 +65,13 @@ db_transaction {
     db_dml context_index "delete from acs_object_context_index where object_id = :company_id or ancestor_id = :company_id"
 
     # Move any contacts of company_id to company_id_replacement
-    db_dml acs_rels "update acs_rels set object_id_one = :company_id_replacement where object_id_one = :company_id"
-    db_dml acs_rels "update acs_rels set object_id_two = :company_id_replacement where object_id_two = :company_id"
+    db_dml acs_rels "update acs_rels set object_id_one = :company_id_replacement where object_id_one = :company_id and object_id_two not in (select object_id_two from acs_rels where object_id_one=:company_id_replacement)"
+    db_dml acs_rels "update acs_rels set object_id_two = :company_id_replacement where object_id_two = :company_id and object_id_one not in (select object_id_one from acs_rels where object_id_two=:company_id_replacement)"
 
     # Delete the company from the various tables where it exists
     db_dml delete_company "delete from im_biz_objects where object_id = :company_id"
+    db_dml delete_company "delete from im_biz_object_members where rel_id in (select rel_id  from acs_rels where object_id_one = :company_id or object_id_two = :company_id)"
+    db_dml delete_company "delete from acs_rels where object_id_one = :company_id or object_id_two = :company_id"
     db_dml delete_company "delete from parties where party_id = :company_id"
     db_dml delete_company "delete from im_companies where company_id = :company_id"
     db_dml delete_acs_obj "delete from acs_objects where object_id = :company_id"

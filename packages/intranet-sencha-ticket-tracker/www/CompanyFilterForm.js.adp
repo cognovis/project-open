@@ -37,7 +37,9 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 	},
 	minWidth:	200,
 	standardsubmit:	true,
-	items: [{
+	items: [
+	{ name: 'contact_id',			xtype: 'hiddenfield' },
+	{
 		name: 'creation_user',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_User#',
                 xtype:          'combobox',

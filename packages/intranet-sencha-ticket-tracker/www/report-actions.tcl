@@ -133,30 +133,62 @@ set report_sql "
 			substring(audit_value from 'ticket_resolution\\t(\[^\\n\]*)') as resultado,
 			substring(audit_value from 'ticket_status_id\\t(\[^\\n\]*)') as estado,
 			substring(audit_value from 'ticket_type_id\\t(\[^\\n\]*)') as tipo,
-			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as escalado,
-			substring(audit_value from 'ticket_program_id\\t(\[^\\n\]*)') as area,
-			substring(audit_value from 'company_id\\t(\[^\\n\]*)') as cliente,
-			substring(audit_value from 'user_id\\t(\[^\\n\]*)') as contacto,
+			substring(audit_value from 'ticket_type_id\\t(\[^\\n\]*)') as tipo_id,
+			substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') as escalado,
+			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as area,
+			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as programa,
+			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as area_id,
+			substring(audit_value from 'ticket_area_id\\t(\[^\\n\]*)') as programa_id,			
+			substring(audit_value from 'company_id\\t(\[^\\n\]*)') as cliente_id,
+			CASE WHEN substring(audit_value from 'ticket_queue_id\\t(\[^\\n\]*)') = 463 THEN 'SI' ELSE 'NO' END as ticket_resuelto,
+			CASE WHEN substring(audit_value from 'ticket_requires_addition_info_p\\t(\[^\\n\]*)') = 't' THEN 'SI' ELSE 'NO' END as ticket_requires_addition_info,
+			CASE WHEN substring(audit_value from 'ticket_closed_in_1st_contact_p\\t(\[^\\n\]*)') = 't' THEN 'SI' ELSE 'NO' END as ticket_closed_in_1st_contact,
+			substring(audit_value from 'company_id\\t(\[^\\n\]*)') as cliente_id,
+			acs_object__name(substring(audit_value from 'company_id\\t(\[^\\n\]*)')::integer) as cliente,
+			substring(audit_value from 'ticket_customer_contact_id\\t(\[^\\n\]*)') as contacto_id,
+			acs_object__name(substring(audit_value from 'ticket_customer_contact_id\\t(\[^\\n\]*)')::integer) as contacto,
 			substring(audit_value from 'ticket_file\\t(\[^\\n\]*)') as exp,
-			to_date(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechacre,
-			to_date(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fecharec,
-			to_date(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechaescalado,
-			to_date(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD') as fechacierre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechacre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_creation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timecre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fecharec,
+			to_char(to_timestamp(substring(audit_value from 'ticket_reaction_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timerec,
+			to_char(to_timestamp(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechaescalado,
+			to_char(to_timestamp(substring(audit_value from 'ticket_escalation_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timeescalado,						
+			to_char(to_timestamp(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'YYYY-MM-DD')  as fechacierre,
+			to_char(to_timestamp(substring(audit_value from 'ticket_done_date\\t(\[^\\n\]*)'), 'YYYY-MM-DD HH:MI'), 'HH24:MI')  as timecierre,						
 			substring(audit_value from 'ticket_incoming_channel_id\\t(\[^\\n\]*)') as canal,
 			substring(audit_value from 'ticket_incoming_channel_id\\t(\[^\\n\]*)') as detalle,
-			project_nr as numero
-	
+			substring(audit_value from 'ticket_outcoming_channel_id\\t(\[^\\n\]*)') as canalsalida,
+			substring(audit_value from 'ticket_outcoming_channel_id\\t(\[^\\n\]*)') as detallecanalsalida,			
+			project_nr as numero,
+			audit_user_id,
+			acs_object__name(audit_user_id) as audit_user_name,
+			(select asterisk_user_id from persons where person_id=audit_user_id) as audit_user_asterik_id,
+			c.vat_number as cliente_nif,
+			c.company_type_id as cliente_tipo_id,
+			c.company_type_id as cliente_tipo,
+			c.company_province as cliente_provincia,
+			pe.spri_email as contacto_email,
+			pe.telephone as contacto_telefono,
+			CASE WHEN pe.language = 'es_ES' THEN 'Español' WHEN pe.language = 'eu_ES' THEN 'Euskera' ELSE '' END	as contacto_idioma,
+			CASE WHEN pe.gender = 'male' THEN 'Hombre' WHEN pe.gender = 'female' THEN 'Mujer' ELSE '' END as contacto_genero,
+			CASE WHEN pe.spri_consultant = 1 THEN 'SI' ELSE 'NO' END as contacto_consultor
 	from 	im_audits,
 			im_projects,
-			im_tickets
-
+			im_tickets,
+			im_companies c,
+			persons pe
 	where 	ticket_id	  = audit_object_id	and
 			project_id	  = audit_object_id and 
 			audit_action != 'after_update' 	and 
 			audit_action != 'before_update' and 
 			audit_id in (
 				select max(audit_id) as audit_id from im_audits where audit_action != 'after_update' and audit_action != 'before_update' group by audit_action
-			)
+			) and 
+			ticket_creation_date >= :start_date and
+			ticket_creation_date <= :end_date	
+			and c.company_id = substring(audit_value from 'company_id\\t(\[^\\n\]*)')
+			and pe.person_id = substring(audit_value from 'ticket_customer_contact_id\\t(\[^\\n\]*)')
 
 	order by 	project_nr asc,
 				audit_date asc	
@@ -172,24 +204,51 @@ set report_sql "
 
 # Global Header Line
 set header0 {
-	"Nombre" 
-	"Numero"
-	"Fecha Modificacion"
-	"Descripcion"
-	"Resultado"
-	"Estado"
-	"Tipo"
-	"Escalado"
+	"Nombre"                                           					       
+	"Numero"                                           	                        
+	"Fecha Modificacion"                               	                        
+	"Usuario accion ID"                          	                        
+	"Usuario accion nombre"                      	                        
+	"Usuario accion Asterix ID"	                           	                        
+	"Descripcion"                                      	                        
+	"Resultado"                                        	                        
+	"Estado"                                           	                        
+	"Tipo"        
+	"Tipo ID"                                     	                        
+	"Expediente"                                       	                        
+	"Escalado"   
+	"Escalado ID"                                        	                        
 	"Area"
-	"Cliente"
-	"Contacto"
-	"Expediente"
-	"Fecha Creacion"
-	"Fecha Recepcion"
-	"Fecha Escalado"
-	"Fecha Cierre"
-	"Canal"
-	"Detalle Canal"
+	"Area ID"                                                   	                        
+	"Programa"	                                       	                        
+	"Programa ID"	                                       	                        
+	"Entidad"   
+	"Entidad ID"                                       	                        
+	"Tipo entidad"  
+	"Tipo entidad ID"                                   	                        
+	"NIF"                                              	                        
+	"Provincia"                                        	                        
+	"Contacto"                                         	                        
+	"Contacto Mail"                                    	                        
+	"Contacto Teléfono"                                	                        
+	"Contacto idioma"                                  	                        
+	"Contacto genero"                                  	                        
+	"Contacto consultor"                               	                        
+	"Fecha Creacion"                                   	                        
+	"Hora Creacion"                                    	                        
+	"Fecha Recepcion"                                  	                        
+	"Hora Recepcion"                                   	                        
+	"Fecha Escalado"                                   	                        
+	"Hora Escalado"                                    	                        
+	"Fecha Cierre"                                     	                        
+	"Hora Cierre"                                      	                        
+	"Canal Entrada Lv 1"                               	                        
+	"Canal Entrada"                                    	                        
+	"Canal Salida Lv 1"                                	                        
+	"Canal Salida"	                                   	                        
+	"Cerrado en primer contacto"                       	                        
+	"Resuelto"
+	"Requiere información adicional"
 }
 
 # The entries in this list include <a HREF=...> tags
@@ -198,24 +257,51 @@ set header0 {
 set report_def [list \
     group_by nombreticket  \
     header {
-	$nombreticket	
-	$numero
-	$fechamod
-	$descripcion
-	$resultado
-	$estado
-	$tipo
-	$escalado
-	$area
-	$cliente
-	$contacto
-	$exp
-	$fechacre
-	$fecharec
-	$fechaescalado
-	$fechacierre
-	$canal
-	$detalle
+	$nombreticket											
+	$numero                                                 
+	$fechamod            
+	$audit_user_id
+	$audit_user_name
+	$audit_user_asterik_id  
+	$descripcion                                          
+	$resultado                                              
+	$estado                                                 
+	$tipo    
+	$tipo_id
+	$exp                                               
+	$escalado    
+	$escalado_id                                           
+	$area  
+	$area_id     
+	$programa                                            
+	$programa_id
+	$cliente   
+	$cliente_id  
+	$cliente_tipo 
+	$cliente_tipo_id
+	$cliente_nif
+	$cliente_provincia                                        
+	$contacto    
+	$contacto_email
+	$contacto_telefono
+	$contacto_idioma
+	$contacto_genero
+	$contacto_consultor	                                                                                              
+	$fechacre                                               
+	$timecre                                                
+	$fecharec                                               
+	$timerec                                                
+	$fechaescalado                                          
+	$timeescalado                                           
+	$fechacierre                                            
+	$timecierre                                             
+	$canal                                                  
+	$detalle       
+	$canalsalida                                         
+	$detallecanalsalida   
+	$ticket_closed_in_1st_contact
+	$ticket_resuelto
+	$ticket_requires_addition_info
     } \
     content {} \
     footer {} \
@@ -342,40 +428,76 @@ db_foreach sql $report_sql {
 		
 		set tipo [im_category_from_id $tipo]
 		
-		set escalado [im_category_from_id $escalado]
+		set lista_parents [im_category_parents $cliente_tipo_id]
+		set parent [lindex $lista_parents 0]
+		set cliente_tipo [im_category_from_id -locale "es_ES" $parent]
+		
+		#set escalado [im_category_from_id $escalado]
+		
+		set escalado [db_0or1row serach-group-name "select group_name,group_id from groups where group_id=:escalado and group_id!=463"]
+		if {!$escalado} {
+			set escalado ""
+			set escalado_id "463"
+		} else {
+			set escalado $group_name
+			set escalado_id $group_id
+		}
+		
+		if {"" != $area} {
+			set lista_parents [im_category_parents $area]
+			set parent [lindex $lista_parents 0]
+			set area $parent
+			set area_id $parent
+		}			
+		set area [im_category_from_id -locale "es_ES" $area]
+		set programa [im_category_from_id -locale "es_ES" $programa]
 		
 		set lista_parents [im_category_parents $canal]
 		set parent [lindex $lista_parents 0]	
 		set canal [im_category_from_id $parent]
 		if {"" == $canal} {
-		
 			set canal [im_category_from_id $detalle]
 		}
 		
 		set detalle [im_category_from_id $detalle]
 		
-		set company_sql "select company_name as comp from im_companies where company_id = $cliente"
-		db_foreach sql $company_sql {
-			set cliente $comp
+		set lista_parents [im_category_parents $canalsalida]
+		set parent [lindex $lista_parents 0]	
+		set canalsalida [im_category_from_id $parent]
+		if {"" == $canalsalida} {
+			set canalsalida [im_category_from_id $detallecanalsalida]
 		}
+		
+		set detallecanalsalida [im_category_from_id $detallecanalsalida]		
+		
+		#set company_sql "select company_name as comp from im_companies where company_id = $cliente"
+		#db_foreach sql $company_sql {
+		#	set cliente $comp
+		#}
 				
 		# Control de fechas vacias tras "to_date" cuando un substring del audit viene vacio para la fecha
 		
-		if {"0001-01-01 BC" == $fechacre} {
+		if {"0001-01-01" == $fechacre} {
             set fechacre ""
+            set timecre ""
         }
 		
-		if {"0001-01-01 BC" == $fecharec} {
+		if {"0001-01-01" == $fecharec} {
             set fecharec ""
+            set timerec ""
         }
 		
-		if {"0001-01-01 BC" == $fechaescalado} {
+		if {"0001-01-01" == $fechaescalado} {
             set fechaescalado ""
+            set timeescalado ""
         }
 		
-		if {"0001-01-01 BC" == $fechacierre} {
+		if {"0001-01-01" == $fechacierre} {
             set fechacierre ""
+            set timecierre ""
         }
+        
+        
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \

@@ -109,11 +109,23 @@ var ticketCompountPanel = Ext.define('TicketBrowser.TicketCompoundPanel', {
 			var date_time = response.responseText;
 			Ext.getCmp('ticketFormRight').getForm().findField('ticket_creation_date').setValue(date_time);
 			Ext.getCmp('ticketForm').getForm().findField('ticket_creation_date').setValue(date_time);
-			var ticket_escalation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').getValue();
+			Ext.getCmp('ticketFormRight').getForm().findField('ticket_queue_id').reset();
+			Ext.getCmp('ticketForm').getForm().findField('ticket_queue_id').setValue('463');
+			Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue('');
+			Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').setValue('');
+			Ext.getCmp('ticketFormRight').getForm().findField('ticket_done_date').setValue('');
+			Ext.getCmp('ticketForm').getForm().findField('ticket_done_date').setValue('');	
+			Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').setValue('30000');
+			Ext.getCmp('ticketForm').getForm().findField('ticket_status_id').setValue('30000');	
+			Ext.getCmp('ticketForm').getForm().findField('fs_folder_id').setValue('');	
+			Ext.getCmp('ticketActionBar').checkButtons(null);
+			Ext.getCmp('fileStorageGrid').newTicket();	
+			
+		/*	var ticket_escalation_date = Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').getValue();
 			if (!Ext.isEmpty(ticket_escalation_date)){
 				Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(date_time);
 				Ext.getCmp('ticketForm').getForm().findField('ticket_escalation_date').setValue(date_time);				
-			}
+			}*/
 		}
 	});
 	
