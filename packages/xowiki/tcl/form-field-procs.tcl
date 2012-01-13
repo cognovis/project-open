@@ -79,7 +79,7 @@ namespace eval ::xowiki::formfield {
   #  return [string map [list __COLON__ :] $string]
   #}
 
-  FormField proc get_from_name {name} {
+  FormField proc get_from_name {object name} {
     #
     # Get a form field via name. The provided names are unique for a
     # form. If multiple forms should be rendered simultaneously, we
@@ -87,10 +87,12 @@ namespace eval ::xowiki::formfield {
     #
     # todo: we could speed this up by an index if needed
     foreach f [::xowiki::formfield::FormField info instances -closure] {
-      if {[$f name] eq $name} {
+      if {[$f name] eq $name && $object eq [$f object]} {
+	#my msg FOUND-$object-$name->$f
 	return $f
       }
     }
+    #my msg not-found-$object-$name
     return ""
   }
 
@@ -619,9 +621,18 @@ namespace eval ::xowiki::formfield {
     my instvar object
 
     array set "" [$object item_ref -default_lang [$object lang] -parent_id $parent_id $entry_name]
+
+    set label [my label] ;# the label is used for alt und title
+    if {$label eq $(stripped_name)} {
+      # The label is apparently the default. For Photo.form instances,
+      # this is always "image". In such cases, use the title of the
+      # parent object as label.
+      set label [[my object] title]
+    }
+    
     set l [::xowiki::Link create new -destroy_on_cleanup \
 	       -page $object -type "image" -lang $(prefix) \
-	       [list -stripped_name $(stripped_name)] [list -label [my label]] \
+	       [list -stripped_name $(stripped_name)] [list -label $label] \
 	       -parent_id $(parent_id) -item_id $(item_id)]
 
     foreach option {
@@ -1358,7 +1369,8 @@ namespace eval ::xowiki::formfield {
       if {[my wiki]} {
         [my object] set unresolved_references 0
         [my object] set __unresolved_references [list]
-        ::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
+        #::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
+        ::html::t -disableOutputEscaping [[my object] substitute_markup [my value]]
       } else {
         ::html::t -disableOutputEscaping [my value]
       }
