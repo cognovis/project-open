@@ -26,6 +26,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 # Security
 # ---------------------------------------------------------------
+set current_cost_type_id $target_cost_type_id
 
 set user_id [ad_maybe_redirect_for_registration]
 if {![im_permission $user_id add_invoices]} {
@@ -95,7 +96,6 @@ db_1row invoices_info_query "
 select
 	i.*,
 	ci.*,
-	im_category_from_id(:target_cost_type_id) as target_cost_type,
 	i.invoice_nr as org_invoice_nr,
 	ci.note as cost_note,
 	to_char(ci.effective_date,:date_format) as effective_date,
@@ -119,6 +119,15 @@ where
 	and i.invoice_id = ci.cost_id
 LIMIT 1
 "
+
+set current_cost_type_id $target_cost_type_id
+set parent_cost_type_id [im_category_parents $target_cost_type_id]
+if {$parent_cost_type_id ne "" && $parent_cost_type_id ne 3710 && $parent_cost_type_id ne 3708} {
+    set target_cost_type_id $parent_cost_type_id
+}
+
+set target_cost_type [im_category_from_id $target_cost_type_id]
+
 
 # Use today's date as effective date, because the
 # quote was old...
@@ -226,10 +235,19 @@ set status_select [im_cost_status_select cost_status_id $cost_status_id]
 # Type_select doesnt allow for options anymore...
 # set type_select [im_cost_type_select cost_type_id $target_cost_type_id 0 "financial_doc"]
 #
-set type_select "
-        <input type=hidden name=cost_type_id value=$target_cost_type_id>
-        $target_cost_type
-"
+
+# Find out if there are subtypes below the cost_type
+set subtypes [db_list subtypes "select child_id from im_category_hierarchy where parent_id = :target_cost_type_id"]
+
+if {$subtypes ne ""} {
+    set type_select [im_cost_type_select cost_type_id $current_cost_type_id $target_cost_type_id]
+} else {
+    set type_select "
+	<input type=hidden name=cost_type_id value=$target_cost_type_id>
+	$cost_type
+    "
+}
+
 
 
 # ---------------------------------------------------------------
