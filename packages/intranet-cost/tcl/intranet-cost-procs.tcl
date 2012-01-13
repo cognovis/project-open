@@ -50,6 +50,9 @@ ad_proc -public im_cost_type_expense_planned {} { return 3728 }
 ad_proc -public im_cost_type_interco_invoice {} { return 3730 }
 ad_proc -public im_cost_type_interco_quote {} { return 3732 }
 ad_proc -public im_cost_type_provider_receipt {} { return 3734 }
+# Fake cost types for timesheet _hours_
+ad_proc -public im_cost_type_timesheet_hours {} { return 3736 }
+
 
 ad_proc -public im_cost_type_short_name { cost_type_id } { 
     switch $cost_type_id {
@@ -397,7 +400,7 @@ namespace eval im_cost {
 	}
 
 	# Audit the action
-	# im_audit -object_id $cost_id -action create
+	# im_audit -object_id $cost_id -action after_create
 
 	return $cost_id
     }
@@ -1493,9 +1496,9 @@ ad_proc im_costs_project_finance_component {
     set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    append prelim_cost_html "<td align=right>
-	  $subtotals([im_cost_type_expense_planned]) $default_currency
-	</td>\n"
+    set subtotal $subtotals([im_cost_type_expense_planned])
+    append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[lang::message::lookup "" intranet-cost.Preliminary_Total "Preliminary Total"]</b></td>\n"
     append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
@@ -1889,6 +1892,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 } {
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set default_hourly_cost [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" 30]
+    set planning_exists_p [llength [info commands im_planning_item_status_active]]
 
     # Update the logged hours cache
     im_timesheet_update_timesheet_cache -project_id $project_id
@@ -1955,39 +1959,88 @@ ad_proc -public im_cost_update_project_cost_cache {
 	set subtotals($category_id) 0
     }
 
+    # Calculate the subtotals per cost type
     db_foreach subtotals $subtotals_sql {
 	if {"" == $amount_converted} { set amount_converted 0 }
         set subtotals($cost_type_id) $amount_converted
     }
 
-    # Special treatment for timesheet hours budget - multiply with default hourly rate
-    set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
-    if {"" == $budget_hours} { set budget_hours 0 }
-    set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
-    set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+    # Check if the intranet-planning package is installed and
+    # calculate estimated values for expenses and timesheet hours.
+    # Planning is performed _only_ on the main project, so we don't
+    # have to sum up (yet) the mounts from sub-projects.
+    if {$planning_exists_p} {
+	ns_log Notice "im_cost_update_project_cost_cache: intranet-planning package exists"
+	set planning_sql "
+		select	sum(pi.item_value) as amount_converted,
+			pi.item_cost_type_id
+		from	im_planning_items pi
+		where	pi.item_object_id = :project_id
+		group by pi.item_cost_type_id
+	"
+	db_foreach planning $planning_sql {
+	    # We have to translate from the planned cost_type_id to the planning_type_id
+	    switch $item_cost_type_id {
+		3736 {
+		    # 3736=Timesheet Hours -> 3726=Timesheet Budget
+		    set subtotals(3726) $amount_converted	    
+		}
+		3722 {
+		    # 3722=Expense Bundle -> 3728=Expense Planned Cost
+		    set subtotals(3728) $amount_converted	    
+		}
+		3720 {
+		    # 3720=Expense Item -> 3728=Expense Planned Cost
+		    set subtotals(3728) $amount_converted	    
+		}
+		default {
+		    set subtotals($item_cost_type_id) $amount_converted	    
+		}
+	    }
+	}
+    }
+
+
+    # Special treatment for timesheet hours budget:
+    # - Check if there are cost elements of type "timesheet planned hours" in the system
+    # - Otherwise use budget_hours in the project and multiply with default hourly rate
+    if {[info exists subtotals([im_cost_type_timesheet_planned])] && "" != $subtotals([im_cost_type_timesheet_planned]) && 0 != $subtotals([im_cost_type_timesheet_planned])} {
+	# There is an entry for planned timesheet costs for this project...
+	# Do nothing.
+    } else {
+	# Create a fake timesheet planning entry based on im_project.budget_hours field
+	set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
+	if {"" == $budget_hours} { set budget_hours 0 }
+	set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
+	set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+    }
 
     # Expense Planned
     if {![info exists subtotals([im_cost_type_expense_planned])]} {
 	set subtotals([im_cost_type_expense_planned]) 0
     }
-    
+
+    # Timesheet Hours Budget
+    if {![info exists subtotals([im_cost_type_timesheet_planned])]} {
+	set subtotals([im_cost_type_timesheet_planned]) 0
+    }
 
     # We can update the profit & loss because all financial documents
     # have been converted to default_currency
     db_dml update_projects "
-		update im_projects set
-			cost_invoices_cache = $subtotals([im_cost_type_invoice]),
-			cost_bills_cache = $subtotals([im_cost_type_bill]),
-			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
-			cost_expense_logged_cache = $subtotals([im_cost_type_expense_bundle]),
-			cost_quotes_cache = $subtotals([im_cost_type_quote]),
-			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
-			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
-			cost_timesheet_planned_cache = :cost_timesheet_planned,
-			cost_expense_planned_cache = 0,
-			cost_cache_dirty = null
-		where
-			project_id = :project_id
+	update im_projects set
+		cost_invoices_cache = $subtotals([im_cost_type_invoice]),
+		cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
+		cost_quotes_cache = $subtotals([im_cost_type_quote]),
+		cost_bills_cache = $subtotals([im_cost_type_bill]),
+		cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
+		cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
+		cost_timesheet_planned_cache = $subtotals([im_cost_type_timesheet_planned]),
+		cost_expense_logged_cache = $subtotals([im_cost_type_expense_bundle]),
+		cost_expense_planned_cache = $subtotals([im_cost_type_expense_planned]),
+		cost_cache_dirty = null
+	where	
+		project_id = :project_id
     "
 
     # Audit the action
