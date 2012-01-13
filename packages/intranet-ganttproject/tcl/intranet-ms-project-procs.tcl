@@ -141,6 +141,10 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours || [string equal $start_date $end_date] } { 
 	set duration_hours 0 
     }
+    # Set completed=100% if the task has been closed
+    if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
+	set percent_completed 100.0
+    }
 
     set task_node [$doc createElement Task]
     $tree_node appendChild $task_node
@@ -149,9 +153,12 @@ ad_proc -public im_ms_project_write_task {
     if {[llength $xml_elements] == 0} {
 	set xml_elements {
 		UID ID 
-		Name Type 
+		Name Type
+		EffortDriven
 		OutlineNumber OutlineLevel Priority 
 		Start Finish 
+	        IsNull
+		Milestone
 		Work RemainingWork
 		Duration 
 		RemainingDuration
@@ -159,6 +166,7 @@ ad_proc -public im_ms_project_write_task {
 		CalendarUID 
 		PercentComplete
 		FixedCostAccrual
+	        ConstraintType
 	}
     }
 
@@ -173,29 +181,36 @@ ad_proc -public im_ms_project_write_task {
 	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
 		Name			{ set value $project_name }
-		Type			{   if {[info exists xml_type] && $xml_type!=""} {
-						set value $xml_type
-					    } else {
-						set value 0 
-					    }
-					}
+		Type			{
+			# Fixed units, fixed duration or fixed work?
+			switch $effort_driven_type_id {
+				""	{ set value 0}
+				9720	{ set value 0}
+				9721	{ set value 1}
+				9722	{ set value 2}
+				default { ad_return_complaint 1 "im_ms_project_write_task: Unknown effort driven type '$effort_driven_type_id'" }
+			}
+		}
+	        IsNull			{ set value 0 }
 		OutlineNumber		{ set value $outline_number }
 		OutlineLevel		{ set value $outline_level }
 		Priority		{ set value 500 }
 		Start			{ set value $start_date }
 		Finish			{ set value $end_date }
 		Duration {
-			# Check if we've got a duration defined in the xml_elements.
-			# Otherwise (export without import...) generate a duration.
-			set value "PT$duration_hours\H0M0S" 
-			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
+		    # Check if we've got a duration defined in the xml_elements.
+		    # Otherwise (export without import...) generate a duration.
+		    set seconds [expr $duration_hours * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
 		DurationFormat		{ set value 7 }
+		EffortDriven		{ if {"t" == $effort_driven_p} { set value 1 } else { set value 0 } }
 		RemainingDuration {
-			set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
-			set value "PT$remaining_duration_hours\H0M0S" 
-			# if {[info exists $attribute_name ] } { set value [expr $$attribute_name] }
+		    set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
+		    set seconds [expr $remaining_duration_hours * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
+		Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
 		Notes			{ set value $note }
 		PercentComplete		{ set value $percent_completed }
 		PredecessorLink	{ 
@@ -228,6 +243,11 @@ ad_proc -public im_ms_project_write_task {
 			continue
 		}
 		UID			{ set value $org_project_id }
+		Work			{ 
+		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
+		    set seconds [expr $planned_units * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		}
 		ACWP - \
 		ActualCost - \
 		ActualDuration - \
@@ -238,7 +258,6 @@ ad_proc -public im_ms_project_write_task {
 		BCWS - \
 		CV - \
 		CommitmentType - \
-		ConstraintType - \
 		Cost - \
 		CreateDate - \
 		Critical - \
@@ -247,7 +266,6 @@ ad_proc -public im_ms_project_write_task {
 		EarlyFinish - \
 		EarlyStart - \
 		EarnedValueMethod - \
-		EffortDriven - \
 		Estimated - \
 		ExtendedAttribute - \
 		ExternalTask - \
@@ -265,7 +283,6 @@ ad_proc -public im_ms_project_write_task {
 		LevelingCanSplit - \
 		LevelingDelay - \
 		LevelingDelayFormat - \
-		Milestone - \
 		OverAllocated - \
 		OvertimeCost - \
 		OvertimeWork - \
@@ -283,7 +300,6 @@ ad_proc -public im_ms_project_write_task {
 		Summary - \
 		Task - \
 		TotalSlack - \
-		Work - \
 		WorkVariance - \
 		Xxxx {
 		    # Skip these ones
@@ -321,25 +337,6 @@ ad_proc -public im_ms_project_write_task {
 
 	ns_log Notice "im_ms_project_write_task: Adding element='$element' with value='$value'"
 	$task_node appendFromList [list $element {} [list [list \#text $value]]]
-    }
-
-    # Disabled storing the ]po[ task IDs.
-    # Instead, we can use the UID of MS-Project, which survives updates of the project
-    set ttt {    
-	    $task_node appendXML "
-			<ExtendedAttribute>
-			<UID>$project_id</UID>
-			<FieldID>188744006</FieldID>
-			<Value>$project_nr</Value>
-			</ExtendedAttribute>
-		"
-	    $task_node appendXML "
-			<ExtendedAttribute>
-			<UID>$project_id</UID>
-			<FieldID>188744007</FieldID>
-			<Value>$project_id</Value>
-			</ExtendedAttribute>
-		"
     }
 
     im_ms_project_write_subtasks \

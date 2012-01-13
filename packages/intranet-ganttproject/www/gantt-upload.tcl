@@ -42,6 +42,24 @@ if {!$write} {
 }
 
 
+db_1row project_info "
+	select	parent_id
+	from	im_projects
+	where	project_id = :project_id
+"
+if {"" != $parent_id} {
+    ad_return_complaint 1 "
+	<br>
+	<b>[lang::message::lookup "" intranet-ganttproject.Unable_to_import_into_sub_project "Unable to import data into a sub-project"]</b>:<br>
+	<p>[lang::message::lookup "" intranet-ganttproject.Unable_to_import_into_sub_project_blurb "
+		We can't import into Gantt tasks into a sub-project.<br>
+		Please select the main project and try again.
+	"]</p><br>
+    "
+    ad_script_abort
+}
+
+
 # ---------------------------------------------------------------------
 # Projects Submenu
 # ---------------------------------------------------------------------
