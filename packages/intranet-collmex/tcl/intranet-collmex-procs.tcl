@@ -157,6 +157,7 @@ ad_proc -public intranet_collmex::update_company {
 	"NEW_OBJECT_ID" {
 	    if {$collmex_id eq ""} {
 		db_dml update_collmex_id "update im_companies set collmex_id = [lindex $response 1] where company_id = :company_id"
+		set return_message [lindex $response 1]
 	    } else {
 		set return_message "Problem: Collmex ID exists for new company $company_id :: $collmex_id :: new [lindex $response 1]"
 	    }
@@ -249,4 +250,104 @@ ad_proc -public intranet_collmex::update_provider_bill {
     ds_comment "$csv_line"
     return $return_message
 
+}
+
+ad_proc -public intranet_collmex::update_customer_invoice {
+    -invoice_id
+} {
+    send the customer invoice to collmex
+} {
+    # Get all the invoice information
+    db_1row invoice_data {
+	select collmex_id,to_char(effective_date,'YYYYMMDD') as invoice_date, invoice_nr, 
+	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code
+	from im_invoices i, im_costs ci, im_companies c, im_offices o
+	where c.company_id = ci.customer_id 
+	and c.main_office_id = o.office_id
+	and ci.cost_id = i.invoice_id 
+	and i.invoice_id = :invoice_id
+    }
+
+    regsub -all {\.} $netto {,} netto
+
+    set csv_line "CMXUMS"
+    if {$collmex_id eq ""} {
+	set collmex_id [intranet_collmex::update_company -company_id $company_id -customer]
+    }
+	
+    append csv_line ";$collmex_id" ; # Lieferantennummer
+    append csv_line ";1" ; # Firma Nr
+    append csv_line ";$invoice_date" ; # Rechnungsdatum
+    append csv_line ";$invoice_nr" ; # Rechnungsnummer
+
+    
+    #set konto 5900
+    set konto 8400
+    # Find if the provide is from germany and has vat.
+    if {$vat eq 19} {
+	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\"" ; # Nettobetrag voller Umsatzsteuersatz
+    } else {
+	append csv_line ";"
+    }
+    
+    append csv_line ";" ; # Steuer zum vollen Umsatzsteuersatz
+    append csv_line ";" ; # Nettobetrag halber Umsatzsteuersatz
+    append csv_line ";" ; # Steuer zum halben Umsatzsteuersatz
+    if {$vat eq 19} {
+	append csv_line ";"
+	append csv_line ";"
+    } else {
+	switch $address_country_code {
+	    us,au,ca {
+		# Export
+		append csv_line ";" 
+		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
+	    }
+	    default {
+		# Umsaetze innergemeinschatliche Lieferung
+		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
+		append csv_line ";"
+	    }
+	}
+    }
+    
+    append csv_line ";" ; # Steuerfreie Erloese Konto
+    append csv_line ";" ; # Steuerfrei Betrag
+    append csv_line ";\"EUR\"" ; # Währung (ISO-Codes)
+    append csv_line ";" ; # Gegenkonto
+    append csv_line ";0" ; # Rechnungsart
+    append csv_line ";" ; # Belegtext
+    append csv_line ";6" ; # Zahlungsbedingung
+    if {$vat eq 19} {
+	append csv_line ";$konto" ; # KontoNr voller Umsatzsteuersatz
+    } else {
+	append csv_line ";"
+    }
+    append csv_line ";" ; # KontoNr halber Umsatzsteuersatz
+    append csv_line ";" ; # reserviert
+    append csv_line ";" ; # reserviert
+    append csv_line ";" ; # Storno
+    append csv_line ";" ; # Schlussrechnung
+    append csv_line ";" ; # Erloesart
+    append csv_line ";\"projop\"" ; # Systemname
+    append csv_line ";" ; # Verrechnen mit Rechnugnsnummer fuer gutschrift
+    append csv_line ";" ; # Kostenstelle
+    
+    set response [split [intranet_collmex::http_post -csv_data $csv_line] ";"]
+    
+    set satzart [lindex $response 0]
+    if {$satzart eq "MESSAGE"} {
+	if {[lindex $response 1] eq "E"} {
+	    set return_message "ERROR $invoice_id: $response"
+	} elseif {[lindex $response 1] eq "W"} {
+	    set return_message "WARNING $invoice_id: $response"	    
+	} else {
+	    set return_message "SUCCESS $invoice_id: $response"
+	}
+    } else {
+	set return_message "CREATED $invoice_id: $response"
+    }
+    ds_comment "$csv_line"
+    return $return_message
+    
 }
