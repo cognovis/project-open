@@ -18,6 +18,7 @@ ad_page_contract {
     { cost_type_id:integer "[im_cost_type_expense_item]" }
     { project_id:integer "" }
     { return_url "/intranet-expenses/"}
+    { user_id_from_search "" }
 }
 
 # ------------------------------------------------------------------
@@ -25,14 +26,27 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set current_user_id $user_id
 if {![im_permission $user_id "add_expenses"]} {
     ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
     return
 }
 
+# Check permissions to log hours for other users
+# We use the hour logging permissions also for expenses...
+set add_hours_all_p [im_permission $current_user_id "add_hours_all"]
+if {"" == $user_id_from_search || !$add_hours_all_p} { set user_id_from_search $current_user_id }
+
+
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set this_year [string range [ns_localsqltimestamp] 0 4]
-set page_title [lang::message::lookup "" intranet-expenses.New_Expense_Items "New Expense Items"]
+set page_title "[lang::message::lookup "" intranet-expenses.New_Expense_Items "New Expense Items"] "
+if {"" != $user_id_from_search && $current_user_id != $user_id_from_search} {
+    set user_name_from_search [im_name_from_user_id $user_id_from_search]
+    append page_title [lang::message::lookup "" intranet-expenses.for_user_id_from_search "for '%user_name_from_search%'"]
+}
+
+
 set context_bar [im_context_bar $page_title]
 
 set currency_format [im_l10n_sql_currency_format]

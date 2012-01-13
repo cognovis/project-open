@@ -16,6 +16,7 @@ ad_page_contract {
 } {
     return_url
     expense_id:integer,multiple,optional
+    { user_id_from_search "" }
 }
 
 # ---------------------------------------------------------------
@@ -29,6 +30,12 @@ if {![info exists expense_id]} { ad_returnredirect $return_url }
 set current_user_id [ad_maybe_redirect_for_registration]
 set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
 
+# Check permissions to log hours for other users
+# We use the hour logging permissions also for expenses...
+set add_hours_all_p [im_permission $current_user_id "add_hours_all"]
+if {"" == $user_id_from_search || !$add_hours_all_p} { set user_id_from_search $current_user_id }
+
+
 # if {!$add_expense_bundles_p} {
 #    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
 #    ad_script_abort
@@ -41,7 +48,7 @@ lappend epense_id 0
 # Sum up the expenses
 # ---------------------------------------------------------------
 
-array set hash [im_expense_bundle_item_sum -expense_ids $expense_id]
+array set hash [im_expense_bundle_item_sum -user_id_from_search $user_id_from_search -expense_ids $expense_id]
 
 set common_project_id $hash(common_project_id)
 set common_project_nr $hash(common_project_nr)
@@ -112,7 +119,7 @@ catch {set wf_installed_p [im_expenses_workflow_installed_p] }
 if {$wf_installed_p && $add_expense_bundles_p} {
     im_expenses_workflow_spawn_workflow \
 	-expense_bundle_id $expense_bundle_id \
-	-user_id $current_user_id
+	-user_id $user_id_from_search
 
     set page_title [lang::message::lookup "" intranet-expenses.Workflow_Created "Workflow Created"]
     set context_bar [im_context_bar $page_title]
