@@ -482,7 +482,7 @@ namespace eval im_ticket {
         db_dml update_ticket $sql
 
 	# Write Audit Trail
-	im_project_audit -project_id $ticket_id -action create
+	im_project_audit -project_id $ticket_id -action after_create
 
 	return $ticket_id
     }
@@ -555,7 +555,7 @@ namespace eval im_ticket {
 
 	
 	    # Write Audit Trail
-	    im_project_audit -project_id $ticket_id -action create
+	    im_project_audit -project_id $ticket_id -action after_create
 
 	    # Create a new forum topic of type "Note"
 	    set topic_type_id [im_topic_type_id_discussion]
@@ -721,7 +721,7 @@ namespace eval im_ticket {
         "
 
 	# Write Audit Trail
-	im_project_audit -project_id $ticket_id -action create
+	im_project_audit -project_id $ticket_id -action after_create
     }
 
     ad_proc -public check_permissions {
@@ -992,7 +992,7 @@ ad_proc -public im_helpdesk_ticket_sla_options {
 
     # Can the user see all projects?
     set permission_sql ""
-    if {![im_permission $user_id "view_project_all"]} {
+    if {![im_permission $user_id "view_projects_all"]} {
 	set include_create_sla_p 0
 	set permission_sql "and p.project_id in (
 		select object_id_one from acs_rels where object_id_two = :user_id UNION 

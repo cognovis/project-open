@@ -21,10 +21,9 @@
 
         <callbacks>
         </callbacks>
-        <parameters>v
+        <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultTicketTemplate" default="" description="Default ticket for showing a printer friendly version of a ticket. The template is located in the default template path (~/filestorage/templates/) defined by the parameter InvoiceTemplatePathUnix. There is an example available in ~/packages/intranet-helpdesk/templates/default.adp. The default template is used if this parameter is empty."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="NextTicketNrMethod" default="sequence" description="How show we determine the Nr of the next ticket? 'sequence' creates a new number every time while 'incremental' will take the last Nr and add +1. The default is 'sequence' in order to avoid any issues with duplicates."/>
-        <!-- No version parameters -->
         </parameters>
 
     </version>

@@ -365,7 +365,9 @@ foreach var_from_url $vars_from_url {
 if {"new" == $ticket_sla_id && $user_can_create_new_customer_sla_p} {
 
     # Copy all ticket form values to local variables
-    template::form::get_values ticket
+    catch {
+	template::form::get_values ticket
+    }
 
     # Get the list of all variables in the form
     set form_vars [template::form::get_elements helpdesk_ticket]
