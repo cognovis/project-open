@@ -58,29 +58,45 @@ Ext.define('PO.data.CategoryStore', {
 			return 'Obligatorio';
 		}
 
-		var validate = true;
-		var record = this.getById(value);
-		var record_field_value = record.get('tree_sortkey');
-		var record_field_length = record_field_value.length;		
-		
-		this.clearFilter()
-		this.each(function(record){
-				var store_field_value = record.get('tree_sortkey');
-				var store_field_length = store_field_value.length;
-				if (store_field_length > record_field_length && store_field_value.substring(0,record_field_length) == record_field_value) {
-					validate = 'No permitido';
-					return validate;
+		try {
+			var validate = true;
+			var record = this.getById(value);
+			var record_field_value = record.get('tree_sortkey');
+			var record_field_length = record_field_value.length;		
+			
+			this.clearFilter()
+			this.each(function(record){
+					var store_field_value = record.get('tree_sortkey');
+					var store_field_length = store_field_value.length;
+					if (store_field_length > record_field_length && store_field_value.substring(0,record_field_length) == record_field_value) {
+						validate = 'No permitido';
+						return validate;
+					}
 				}
-			}
-		);
-		return validate;	
+			);
+			return validate;	
+		} catch(err) {	
+			return 'Obligatorio'; 
+		}
 	},
 	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
 		var categoryVars = {category_id: '', category_translated: null, sort_order: '0'};
 		var category = Ext.ModelManager.create(categoryVars, 'TicketBrowser.Category');
 		this.add(category);	
+	},
+	getParent: function(value) {//Get category parent ID
+		if (!Ext.isEmpty(value)) {
+			var record = this.getById(value);
+			if (!Ext.isEmpty(record)) {
+				var record_field_value = record.get('tree_sortkey');
+				var record_field_length = record_field_value.length;	
+				this.clearFilter();
+				var parent_id = this.findRecord('tree_sortkey','' + parseInt(record_field_value.substr(0,record_field_length - 8),10)).get('category_id');
+				return parent_id;
+			}
+		}
+		return '';
 	}
-	
 });
 
 /*
@@ -186,8 +202,21 @@ var employeeGroupId = '463';		// String!
 var customerGroupId = '461';		// String!
 
 // Check if the current user is an admin
-var currentUserIsAdmin = <%= [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] %>;	// Integer!
+var currentUserIsAdmin = <%= [im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] %>;	// Integer!       
 
+var serviceId = '10000152';
 
 //Check date format
 dateFormat = /^([0-9]{4}\-[0-9]{2}\-[0-9]{2})?(\ [0-9]{2}\:[0-9]{2})?$/ ;
+
+var sendmailparameter = <%= [parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter SendMail -default 0] %>;
+var userIsSACE = <%= [im_user_group_member_p [ad_get_user_id] 73369] %>;
+
+var defaultQueueFilter = 'my_groups';
+var emptyDefaultQueueFilter = '#intranet-sencha-ticket-tracker.My_Groups#';
+if (userIsSACE) {
+	defaultQueueFilter = 'all_groups';
+	emptyDefaultQueueFilter = 'Todos Grupos';
+}
+
+var loading =  false;

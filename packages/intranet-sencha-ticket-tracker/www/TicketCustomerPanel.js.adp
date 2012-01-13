@@ -86,9 +86,11 @@ Ext.define('TicketBrowser.TicketCustomerPanel', {
 		allowBlank:	false,
 		validator: function(value){
 			if (Ext.isEmpty(value)){
+				this.show();
 				return "Obligatorio";
 			}
 			if (value.substring(0,13).toLowerCase() == "nueva entidad"){
+				this.show();
 				return "No válido";
 			}
 			return true;

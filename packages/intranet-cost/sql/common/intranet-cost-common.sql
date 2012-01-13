@@ -84,6 +84,8 @@ SELECT im_category_new (3728,'Expense Planned Cost','Intranet Cost Type');
 SELECT im_category_new (3730,'InterCo Invoice','Intranet Cost Type');
 SELECT im_category_new (3732,'InterCo Invoice','Intranet Cost Type');
 SELECT im_category_new (3734,'Provider Receipt','Intranet Cost Type');
+-- Fake cost types for timesheet _hours_
+SELECT im_category_new (3736,'Timesheet Hours','Intranet Cost Type');
 
 
 

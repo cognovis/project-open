@@ -52,7 +52,17 @@ switch $target_object_type {
 
 	if {"" == $role_id} { ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.No_Role_Specified "No role specified"] }
 	foreach t $tid {
+
+	    # Write the audit log
+	    im_audit -object_id $t -action "before_update"
+	    im_audit -object_id $user_id -action "before_update"
+
 	    im_biz_object_add_role $user_id $t $role_id
+	    
+	    # Write the audit log
+	    im_audit -object_id $t -action "after_update"
+	    im_audit -object_id $user_id -action "after_update"
+
 	}
     }
     release_project {
@@ -80,7 +90,7 @@ switch $target_object_type {
 		    " -default 0]
 
 		    set release_status_id [im_release_mgmt_status_default]
-		    db_string add_user "
+		    set release_item_id [db_string release_project "
 			select im_release_item__new (
 				null,
 				'im_release_item',
@@ -92,15 +102,27 @@ switch $target_object_type {
 				:release_status_id,
 	                        [expr $max_sort_order + 10]
 			)
-		    "
+		    "]
+		    
+		    # Write the audit log
+		    im_audit -object_id $release_item_id -action "after_create"
 	    }
 	}
     }
     conf_item {
 	foreach t $tid {
+
+	    # Write the audit log
+	    im_audit -object_id $t -action "before_update"
+	    im_audit -object_id $conf_item_id -action "before_update"
+
 	    im_conf_item_new_project_rel \
 		-project_id $t \
 		-conf_item_id $conf_item_id
+
+	    # Write the audit log
+	    im_audit -object_id $t -action "after_update"
+	    im_audit -object_id $conf_item_id -action "after_update"
 	}
     }
     ticket {
@@ -119,15 +141,19 @@ switch $target_object_type {
 	    "]
 
 	    if {!$exists_p} {
-		    set max_sort_order [db_string max_sort_order "
+		set max_sort_order [db_string max_sort_order "
 		        select  coalesce(max(ttr.sort_order),0)
 		        from    im_ticket_ticket_rels ttr,
 		                acs_rels r
 		        where	ttr.rel_id = r.rel_id
 		                and r.object_id_one = :release_project_id
-		    " -default 0]
+		" -default 0]
 
-		    db_string add_ticket_ticket_rel "
+		# Write the audit log
+		im_audit -object_id $pid -action "after_update"
+		im_audit -object_id $ticket_id -action "after_update"
+
+		db_string add_ticket_ticket_rel "
 			select im_ticket_ticket_rel__new (
 				null,
 				'im_ticket_ticket_rel',
@@ -138,7 +164,11 @@ switch $target_object_type {
 				'[ad_conn peeraddr]',
 	                        [expr $max_sort_order + 10]
 			)
-		    "
+		"
+		# Write the audit log
+		im_audit -object_id $pid -action "after_update"
+		im_audit -object_id $ticket_id -action "after_update"
+
 	    }
 	}
     }

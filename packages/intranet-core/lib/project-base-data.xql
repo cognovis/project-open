@@ -26,26 +26,30 @@
   <fullquery name="project_info_query">
     <querytext>
 	select
-		im_projects.*,
-		im_companies.*,
-		to_char(im_projects.end_date, 'HH24:MI') as end_date_time,
-		to_char(im_projects.start_date, 'YYYY-MM-DD') as start_date_formatted,
-		to_char(im_projects.end_date, 'YYYY-MM-DD') as end_date_formatted,
-		to_char(im_projects.percent_completed, '999990.9%') as percent_completed_formatted,
-		im_companies.primary_contact_id as company_contact_id,
-		im_name_from_user_id(im_companies.primary_contact_id) as company_contact,
-		im_email_from_user_id(im_companies.primary_contact_id) as company_contact_email,
-		im_name_from_user_id(im_projects.project_lead_id) as project_lead,
-		im_name_from_user_id(im_projects.supervisor_id) as supervisor,
-		im_name_from_user_id(im_companies.manager_id) as manager,
-		$extra_select
+		ic.company_name,
+		ic.company_path,
+		ic.primary_contact_id as company_contact_id,
+		im_name_from_user_id(ic.manager_id) as manager,
+		im_name_from_user_id(ic.primary_contact_id) as company_contact,
+		im_email_from_user_id(ic.primary_contact_id) as company_contact_email,
+		ip.*
 	from
-		im_projects, 
-		im_companies
-	where 
-		im_projects.project_id=:project_id
-		and im_projects.company_id = im_companies.company_id
-      
+		im_companies ic,
+		(select
+			p.*,
+			to_char(p.end_date, 'HH24:MI') as end_date_time,
+			to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+			to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
+			to_char(p.percent_completed, '999990.9%') as percent_completed_formatted,
+			im_name_from_user_id(p.project_lead_id) as project_lead,
+			im_name_from_user_id(p.supervisor_id) as supervisor,
+			$extra_select
+		from
+			im_projects p
+		where 
+			p.project_id = :project_id
+		) ip
+	where	ip.company_id = ic.company_id
     </querytext>
   </fullquery>
 
@@ -67,7 +71,8 @@
       where
       		a.widget_name = w.widget_name and
       		a.acs_attribute_id = aa.attribute_id and
-      		aa.object_type = 'im_project'
+      		aa.object_type = 'im_project' and
+		(a.also_hard_coded_p is NULL or a.also_hard_coded_p = 'f')
       order by
     		coalesce(la.pos_y,0), coalesce(la.pos_x,0)
 

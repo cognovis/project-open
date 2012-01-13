@@ -118,9 +118,12 @@ function showFileStorageNewForm(ticket_id) {
 							ticket_model.set('fs_folder_id', fs_folder_id);
 							ticket_model.set('fs_folder_path', fs_folder_path);
 	
-							// Tell all panels to load the data of the newly created object
+							/*// Tell all panels to load the data of the newly created object
 							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-							compoundPanel.loadTicket(ticket_model);	
+							compoundPanel.loadTicket(ticket_model);	*/
+							ticket_form.getForm().findField('fs_folder_id').setValue(fs_folder_id);
+							Ext.getCmp('fileStorageGrid').loadTicket(ticket_model);
+							
 						},
 						failure: function(form, action) {
 							Function_errorMessage('#intranet-sencha-ticket-tracker.Load_File_Error_Title#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#');

@@ -1579,18 +1579,15 @@ ad_proc -public im_stylesheet {} {
     set css "/resources/acs-subsite/site-master.css"
 #    if {$openacs54_p} { template::head::add_css -href $css -media "screen" } else { append html "<link rel=StyleSheet type=text/css href=\"$css\" media=screen>\n" }
 
-
     if {$openacs54_p} { template::head::add_css -href "/resources/acs-templating/mktree.css" -media "screen" -order "5" } else { append html "<link rel=StyleSheet type=text/css href=\"/resources/acs-templating/mktree.css\" media=screen>\n" }
 
-    if {$openacs54_p} { template::head::add_javascript -src "/intranet/js/jquery-1.2.3.pack.js" -order "1" } else { append html "<script type=text/javascript src=\"/intranet/js/jquery-1.2.3.pack.js\"></script>\n" }
+    if {$openacs54_p} { template::head::add_javascript -src "/intranet/js/jquery.min.js" -order "1" } else { append html "<script type=text/javascript src=\"/intranet/js/jquery.min.js\"></script>\n" }
 
     if {$openacs54_p} { template::head::add_javascript -src "/intranet/js/showhide.js" -order "5" } else { append html "<script type=text/javascript src=\"/intranet/js/showhide.js\"></script>\n" }
 
     if {$openacs54_p} { template::head::add_javascript -src "/resources/diagram/diagram/diagram.js" -order "4" } else { append html "<script type=text/javascript src=\"/resources/diagram/diagram/diagram.js\"></script>\n" }
 
     if {$openacs54_p} { template::head::add_javascript -src "/resources/acs-subsite/core.js" -order "6" } else { append html "<script type=text/javascript src=\"/resources/acs-subsite/core.js\"></script>\n" }
-
-#   if {$openacs54_p} { template::head::add_javascript -src "/intranet/js/jquery-1.2.1.min.js" } else { append html "<script type=text/javascript src=\"/intranet/js/jquery-1.2.1.min.js\"></script>\n" }
 
     if {$openacs54_p} { template::head::add_javascript -src "/intranet/js/rounded_corners.inc.js" -order "3" } else { append html "<script type=text/javascript src=\"/intranet/js/rounded_corners.inc.js\"></script>\n" }
 
@@ -1637,7 +1634,7 @@ ad_proc -public im_logo {} {
     if { "0" != [ad_get_user_id] } {
 	return "\n<a href=\"$system_logo_link\"><img id='intranetlogo' src=\"$system_logo\" alt=\"logo\" border='0'></a>\n"
     } else {
-	return "\n<a href=\"$system_logo_link\"><img id='intranetlogo' src=\"logo.gif\" alt=\"logo\" border='0'></a>\n"
+	return "\n<a href=\"$system_logo_link\"><img id='intranetlogo' src=\"/logo.gif\" alt=\"logo\" border='0'></a>\n"
     }
 }
 
@@ -2088,7 +2085,7 @@ ad_proc -public im_skin_select_html {
 	return "Error: Column users.skin_id doesn't exist.<br>Please run intranet-core V3.4.0.4.0 upgrade script."
     }
 
-   set current_skin_id [util_memoize [list db_string skin_id "select skin_id from users where user_id = $user_id"] 60]
+   set current_skin_id [util_memoize [list db_string skin_id "select skin_id from users where user_id = $user_id" -default ""] 60]
 
    set skin_select_html "
 	<form method=\"GET\" action=\"/intranet/users/select-skin\">

@@ -285,7 +285,9 @@ if {$filter_advanced_p} {
         -object_type $object_type \
         -form_id $form_id \
         -object_id 0 \
-        -advanced_filter_p 1
+        -advanced_filter_p 1 \
+	-page_url "/intranet/projects/index"
+
     
     # Set the form values from the HTTP form variable frame
     im_dynfield::set_form_values_from_http -form_id $form_id
@@ -295,6 +297,13 @@ if {$filter_advanced_p} {
 				   -form_id $form_id \
 				   -object_type $object_type
 			      ]
+
+    # Show an admin wrench for setting up the filter design
+    if {$admin_p} {
+	set filter_admin_url [export_vars -base "/intranet-dynfield/layout-position" {{object_type im_project} {page_url "/intranet/projects/index"}}]
+	set filter_admin_html "<a href='$filter_admin_url'>[im_gif wrench]</a>"
+    }
+
 }
 
 # ---------------------------------------------------------------
@@ -654,9 +663,6 @@ if {[im_permission $current_user_id "add_projects"]} {
 
 # Append user-defined menus
 append admin_html [im_menu_ul_list -no_uls 1 "projects_admin" {}]
-
-# Close the admin_html section
-#append admin_html "<li><a href=\"/intranet/projects/index?filter_advanced_p=1\">[_ intranet-core.Advanced_Filtering]</a>"
 append admin_html "</ul>"
 
 # ---------------------------------------------------------------
@@ -843,7 +849,7 @@ set filter_html $__adp_output
 set left_navbar_html "
 	<div class='filter-block'>
         	<div class='filter-title'>
-	           #intranet-core.Filter_Projects#
+	           #intranet-core.Filter_Projects# $filter_admin_html
         	</div>
             	$filter_html
       	</div>

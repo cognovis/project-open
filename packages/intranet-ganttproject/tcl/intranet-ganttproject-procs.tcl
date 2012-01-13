@@ -7,7 +7,11 @@
 
 ad_library {
     Integrate ]project-open[ tasks and resource assignations
-    with GanttProject and its data structure
+    with GanttProject, MS-Project and OpenProj.
+
+    This library contains helper procedures for the 
+    /intranet-ganttproject/www/gantt-upload-2.tcl
+    file. Go there for an overview of functionality.
 
     @author frank.bergmann@project-open.com
 }
@@ -317,6 +321,27 @@ ad_proc -public im_gp_extract_db_tree {
 } {
     Returns a list of all task_ids below a top project.
 } {
+    set task_sql "
+	select	child.project_id
+	from	im_projects parent,
+		im_projects child
+	where	parent.project_id = :project_id and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+    "
+    set result {}
+    db_foreach sub_tasks $task_sql {
+	lappend result $project_id
+    }
+
+    return $result
+}
+
+ad_proc -public im_gp_extract_db_tree_old_bad { 
+    project_id 
+} {
+    Returns a list of all task_ids below a top project.
+    We can filter out the sub-projects in a different way...
+} {
     # We can't use the tree_sortkey query here because we need
     # to deal with sub-projects somewhere in the middel of the
     # structure.
@@ -410,7 +435,8 @@ ad_proc -public im_project_create_dependency {
 ad_proc -public im_gp_ms_project_time_to_seconds {
     time 
 } {
-    converts the ms project time string to seconds
+    Converts a MS-Project time string to seconds.
+    Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
 } {
     set days 0
     if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds]} {
@@ -424,6 +450,21 @@ ad_proc -public im_gp_ms_project_time_to_seconds {
     }
 
     error "im_gp_ms_project_time_to_seconds: unable to parse data='$time'"
+}
+
+
+ad_proc -public im_gp_seconds_to_ms_project_time {
+    seconds
+} {
+    Converts a number of seconds into a MS-Project time string.
+    Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
+} {
+    set minutes [expr int($seconds / 60.0)]
+    set seconds [expr int($seconds - ($minutes * 60))]
+    set hours [expr int($minutes / 60.0)]
+    set minutes [expr int($minutes - ($hours * 60))]
+    
+    return "PT${hours}H${minutes}M${seconds}S"
 }
 
 
@@ -525,7 +566,9 @@ ad_proc -public im_gp_save_tasks {
     array set task_hash $task_hash_array
 
     ns_log Notice "im_gp_save_tasks: Starting to iterate through task nodes"
-    foreach child [$tasks_node childNodes] {
+    set child_nodes [$tasks_node childNodes]
+    foreach child $child_nodes {
+
 	if {$debug_p} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [string tolower [$child nodeName]] {
@@ -590,14 +633,18 @@ ad_proc -public im_gp_save_tasks2 {
     set priority		[$task_node getAttribute priority ""]
     set expand_p		[$task_node getAttribute expand ""]
     set end_date		[db_string end_date "select :start_date::date + :duration::integer"]
-    set is_null 0
-    set note ""
-    set task_nr ""
-    set task_id 0
-    set has_subobjects_p 0
+    set is_null			0
+    set milestone_p		""
+    set effort_driven_p		"t"
+    set effort_driven_type_id	0
+    set note			""
+    set task_nr			""
+    set task_id			0
+    set has_subobjects_p	0
+    set work			0
 
-    set outline_number ""
-    set remaining_duration ""
+    set outline_number		""
+    set remaining_duration	""
 
     set gantt_field_update {}
     set xml_elements {}
@@ -609,19 +656,18 @@ ad_proc -public im_gp_save_tasks2 {
 	ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
 
         switch [string tolower $nodeName] {
-            "name"              { set task_name [$taskchild text] }
-	    "uid"               { set gantt_project_id [$taskchild text] }
-	    "isnull"		{ set is_null [$taskchild text] }
-	    "duration"          { 
-		set duration [$taskchild text] 
-	    }
-	    "remainingduration" { set remaining_duration [$taskchild text] }
-	    "start"             { set start_date [$taskchild text] }
-	    "finish"            { set end_date [$taskchild text] }
-	    "priority"          { set priority [$taskchild text] }
-	    "notes"             { set note [$taskchild text] }
-	    "outlinenumber"     { set outline_number [$taskchild text] }
-	    "percentcomplete"	{ set percent_completed [$taskchild text] }
+            "name"              { set task_name $nodeText }
+	    "uid"               { set gantt_project_id $nodeText }
+	    "isnull"		{ set is_null $nodeText }
+	    "duration"          { set duration $nodeText }
+	    "remainingduration" { set remaining_duration $nodeText }
+	    "effortdriven"	{ if {"1" == $nodeText} { set effort_driven_p "t" } else { set effort_driven_p "f" } }
+	    "start"             { set start_date $nodeText }
+	    "finish"            { set end_date $nodeText }
+	    "priority"          { set priority $nodeText }
+	    "notes"             { set note $nodeText }
+	    "outlinenumber"     { set outline_number $nodeText }
+	    "percentcomplete"	{ set percent_completed $nodeText }
 	    "extendedattribute" {
 		set fieldid ""
 		set fieldvalue ""
@@ -637,8 +683,23 @@ ad_proc -public im_gp_save_tasks2 {
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
 		    "188744007" { set task_id $fieldvalue }
+		    default {
+			# Any other extended attribute is ignored as specified
+			# in the MS-Project integration docu
+			continue
+		    }
 		}
 	    }
+	    "milestone"		{ if {"1" == $nodeText} { set milestone_p "t" }}
+	    "type"	{
+		switch $nodeText {
+			0	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_units] }
+			1	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_duration] }
+			2	{ set effort_driven_type_id [im_timesheet_task_effort_driven_type_fixed_work] }
+			default { ad_return_complaint 1 "im_gp_save_tasks2: Unknown task type '$nodeText'" }
+		}
+	    }
+	    "work"		{ set work $nodeText }
 	    "predecessorlink" { 
 		# this is handled below, because we don't know our task id yet
 		continue
@@ -650,6 +711,11 @@ ad_proc -public im_gp_save_tasks2 {
 		# these are from ganttproject. see below
 		continue 
 	    }
+	    "timephaseddata" {
+                # This is a timephased data assignment directly for a task.
+	        # ]po[ can't handle this type of assignments yet.
+                continue
+            }
 	    default {
 		# Nothing
 	    }
@@ -660,21 +726,25 @@ ad_proc -public im_gp_save_tasks2 {
 	im_ganttproject_add_import "im_gantt_project" $nodeName
 	set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 	lappend gantt_field_update "$column_name = '[db_quote $nodeText]'"
-	    
 	lappend xml_elements $nodeName
     }
 
 
-    # If no percent_completed is given explicitely (GanttProject(?))
-    # then calculate based on remaining duration.
-    # ToDo: Can we delete this piece?
-
+    # Calculate the effective duration
     if {"" != $duration} {
     	set duration_seconds [im_gp_ms_project_time_to_seconds $duration]
     } else {
 	set duration_seconds 0
     }
 
+    # Calculate the effective work
+    set work_seconds ""
+    if {"" != $work} {
+    	set work_seconds [im_gp_ms_project_time_to_seconds $work]
+    }
+
+    # If no percent_completed is given explicitely (GanttProject(?))
+    # then calculate based on remaining duration. ToDo: Can we delete this piece?
     if {"" == $percent_completed} {
 	if {$remaining_duration != "" && $duration != "" && 0 != $duration_seconds} {
 	    set remaining_seconds [im_gp_ms_project_time_to_seconds $remaining_duration]
@@ -686,6 +756,7 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
 
+    ns_log Notice "im_gp_save_tasks2: $task_name: work=$work"
     ns_log Notice "im_gp_save_tasks2: $task_name: duration=$duration"
     ns_log Notice "im_gp_save_tasks2: $task_name: percent_completed=$percent_completed"
 
@@ -780,7 +851,7 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # -----------------------------------------------------
-    # Check if a task with the task_nr exists in the DB
+    # Check if a task with the task_nr or the task_name exists in the DB
     if {0 == $task_id} {
 	set task_id [db_string task_id_from_nr "
 		select	task_id 
@@ -788,19 +859,27 @@ ad_proc -public im_gp_save_tasks2 {
 		where	project_id = :parent_id and task_nr = :task_nr
         " -default 0]
     }
+    if {0 == $task_id} {
+	set task_id [db_string task_id_from_name "
+		select	task_id 
+		from	im_timesheet_tasks_view
+		where	project_id = :parent_id and lower(task_name) = lower(:task_name)
+        " -default 0]
+    }
 
     # -----------------------------------------------------
     # Check if the task exists in the DB
     set task_exists_p [db_string task_exists_p "
 	select	count(*)
-	from	im_timesheet_tasks
-	where	task_id = :task_id
+	from	im_projects
+	where	project_id = :task_id
     "]
 
     # -----------------------------------------------------
     # Create a new task if:
     # - if task_id=0 (new task created in GanttProject)
     # - if there is a task_id, but it's not in the DB (import from GP)
+    set task_created_p 0
     if {0 == $task_id || !$task_exists_p} {
 
 	if {$create_tasks} {
@@ -813,20 +892,21 @@ ad_proc -public im_gp_save_tasks2 {
 			null,			-- creation_user
 			null,			-- creation_ip
 			null,			-- context_id
-			:task_nr,
-			:task_name,
-			:parent_id,
-			:material_id,
-			:cost_center_id,
-			:uom_id,
-			:task_type_id,
-			:task_status_id,
-			:note
+			:task_nr,		-- task_nr
+			:task_name,		-- task_name
+			:parent_id,		-- parent_id
+			:material_id,		-- material_id
+			:cost_center_id,	-- cost_center_id
+			:uom_id,		-- uom_id
+			:task_type_id,		-- task_type_id
+			:task_status_id,	-- task_status_id
+			:note			-- note
 		)"
 	    ]
 
-	    # Write Audit Trail
-	    im_project_audit -action create -project_id $task_id
+	    # Remember that we have created the task, so that we can
+	    # call the right im_audit action below.
+	    set task_created_p 1
 	}
 
     } else {
@@ -840,7 +920,6 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_hash($gantt_project_id) $task_id
 	set task_hash(o$outline_number) $task_id
     }
-
 
     # -----------------------------------------------------
     # we have the proper task_id now, we can do the dependencies
@@ -885,9 +964,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    }
 	    depend { 
 		if {$save_dependencies} {
-
 		    if {$debug_p} { ns_write "<li>Creating dependency relationship\n" }
-
 		    im_project_create_dependency \
 			-task_id_one [$taskchild getAttribute id] \
 			-task_id_two [$task_node getAttribute id] \
@@ -895,7 +972,6 @@ ad_proc -public im_gp_save_tasks2 {
 			-difference [$taskchild getAttribute difference] \
 			-hardness [$taskchild getAttribute hardness] \
 			-task_hash_array [array get task_hash]
-
 		}
 	    }
 	    customproperty { }
@@ -915,6 +991,16 @@ ad_proc -public im_gp_save_tasks2 {
     }
     if {$debug_p} { ns_write "</ul>\n" }
 
+
+    # ------------------------------------------------------
+    # Save the detailed task information
+
+    # "Milestone" is just a characteristic of the task.
+    set milestone_sql ""
+    if {[im_column_exists im_projects milestone_p]} {
+	set milestone_sql "milestone_p	=	:milestone_p,"
+    }
+
     db_dml project_update "
 	update im_projects set
 		project_name		= :task_name,
@@ -922,6 +1008,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
+		$milestone_sql
 		note			= :note,
 		sort_order		= :my_sort_order,
 		percent_completed	= :percent_completed
@@ -929,11 +1016,23 @@ ad_proc -public im_gp_save_tasks2 {
 		project_id = :task_id
     "
 
+    set units_sql "
+		planned_units = :duration_seconds / 3600.0,
+		billable_units = :duration_seconds / 3600.0
+    "
+    if {"" != $work_seconds} {
+	set units_sql "
+		planned_units = :work_seconds / 3600.0,
+		billable_units = :work_seconds / 3600.0
+	"
+    }
+
     db_dml update_task "
 	update im_timesheet_tasks set
-		planned_units = :duration_seconds / 3600.0,
-		billable_units = :duration_seconds / 3600.0,
-		uom_id = [im_uom_hour]
+		effort_driven_p = :effort_driven_p,
+		effort_driven_type_id = :effort_driven_type_id,
+		uom_id = [im_uom_hour],
+		$units_sql
 	where
 		task_id = :task_id
     "
@@ -953,17 +1052,99 @@ ad_proc -public im_gp_save_tasks2 {
 	
 	db_dml gantt_project_update "
 	    update im_gantt_projects set
-                [join $gantt_field_update ,]
+                [join $gantt_field_update ",\n\t\t"]
 	    where
 		project_id = :task_id
         " 
     }
 
     # Write audit trail
-    im_project_audit -project_id $task_id
+    if {$task_created_p} { set task_action "after_create" } else { set task_action "after_update" }
+    im_project_audit -object_type "im_timesheet_task" -project_id $task_id -status_id $task_status_id -type_id $task_type_id -action $task_action
 
     return [array get task_hash]
 }
+
+
+
+ad_proc -public im_gp_save_tasks_fix_structure { 
+    {-debug_p 0}
+    project_id
+} {
+    Checks the entire project structure and assures that:
+    <ul>
+    <li>Tasks with sub-tasks become projects and
+    <li>Tasks without sub-tasks are of type im_timesheet_task
+    </ul>.
+} {
+    ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id"
+    db_1row project_info "
+	select	p.project_type_id,
+		o.object_type
+	from	im_projects p,
+		acs_objects o
+	where	p.project_id = :project_id and
+		p.project_id = o.object_id
+    "
+
+    set sub_tasks [db_list sub_tasks "
+	select	project_id
+	from	im_projects
+	where	parent_id = :project_id
+    "]
+
+    ns_log Notice "im_gp_save_tasks_fix_structure: project_id=$project_id, project_type_id=$project_type_id, sub_tasks=$sub_tasks"
+
+    if {[llength $sub_tasks] > 0} {
+
+	# The task has children. Make sure it has the object type "im_project"
+	if {[im_project_type_consulting] != $project_type_id} {
+	    if {$debug_p} { ns_write "<li>Setting the project_type_id to 'Consulting project' because there are children\n" }
+	    db_dml update_import_field "
+		UPDATE	im_projects
+		SET	project_type_id = [im_project_type_consulting]
+		WHERE	project_id = :project_id
+            "
+	}
+	if {"im_project" != $object_type} {
+	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
+	    db_dml update_otype "
+		UPDATE	acs_objects
+		SET	object_type = 'im_project'
+		WHERE	object_id = :project_id
+            "
+	}
+
+    } else {
+
+	# The task has no sub-tasks, make it a "im_timeheet_task"
+	if {[im_project_type_task] != $project_type_id} {
+	    if {$debug_p} { ns_write "<li>Setting the object type to 'im_timesheet_task' because there are NO children\n" }
+	    db_dml update_import_field "
+		UPDATE	im_projects
+		SET	project_type_id = [im_project_type_task]
+		WHERE	project_id = :project_id
+            "
+	}
+	if {"im_timesheet_task" != $object_type} {
+	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
+	    db_dml update_otype "
+		UPDATE	acs_objects
+		SET	object_type = 'im_timesheet_task'
+		WHERE	object_id = :project_id
+            "
+	}
+
+    }
+
+    # Recursively descend
+    foreach tid $sub_tasks {
+	im_gp_save_tasks_fix_structure -debug_p $debug_p $tid
+    }
+
+}
+
+
 
 
 # ----------------------------------------------------------------------
@@ -976,25 +1157,53 @@ ad_proc -public im_gp_save_tasks2 {
 
 ad_proc -public im_gp_save_allocations { 
     {-debug_p 0}
+    {-main_project_id 0}
     allocations_node
     task_hash_array
     resource_hash_array
 } {
     Saves allocation information from GanttProject
 } {
+    ns_log Notice "im_gp_save_allocations: task_hash_array='$task_hash_array', resource_hash_array='$resource_hash_array'"
+
     array set task_hash $task_hash_array
     array set resource_hash $resource_hash_array
 
+
+    # Reset the allocation of the entire project to "NULL percent":
+    # We don't want to completely remove users from assigned tasks 
+    # (otherwise they might not be able to access their logged 
+    # hours anymore), but we want to reset their assignment %
+    # to "" (NULL).
+    set reset_allocation_sql "
+	select	r.rel_id
+	from	im_projects parent,
+		im_projects child,
+		acs_rels r,
+		im_biz_object_members bom
+	where	parent.project_id = :main_project_id and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+		child.project_id = r.object_id_one and
+		r.rel_id = bom.rel_id
+    "
+    db_foreach reset_allocations $reset_allocation_sql {
+	ns_log Notice "im_gp_save_allocations: Reset percentag of rel_id=$rel_id"
+	db_dml reset "update im_biz_object_members set percentage = NULL where rel_id = :rel_id"
+    }
+
     foreach child [$allocations_node childNodes] {
-	switch [$child nodeName] {
-	    "allocation" - "Assignment" {
+	ns_log Notice "im_gp_save_allocations: nodeName=[$child nodeName]"
+	switch [string tolower [$child nodeName]] {
+	    "allocation" - "assignment" {
 		
+		# Check for GanttProject specific format
 		set task_id [$child getAttribute task-id ""]
 		set resource_id [$child getAttribute resource-id ""]
 		set function [$child getAttribute function ""]
 		set responsible [$child getAttribute responsible ""]
 		set percentage [$child getAttribute load "0"]
-		
+
+		# Check for MS-Project specific format
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
@@ -1004,32 +1213,44 @@ ad_proc -public im_gp_save_allocations {
 			"Units" { set percentage [expr round(100.0*$nodeText)] }
 		    }
 		}
+		ns_log Notice "im_gp_save_allocations: iter: task_uid=$task_id, resource_uid=$resource_id, function=$function, percentage=$percentage, responsible=$responsible"
 
 		if {![info exists task_hash($task_id)]} {
+		    ns_log Notice "im_gp_save_allocations: Didn't find task_id='$task_id' in task_hash."
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n" }
 		    continue
 		}
 		set task_id $task_hash($task_id)
 
 		if {![info exists resource_hash($resource_id)]} {
+		    ns_log Notice "im_gp_save_allocations: Didn't find resource_id='$resource_id' in resource_hash"
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n" }
 		    continue
 		}
 		set resource_id $resource_hash($resource_id)
-		if {![string is integer $resource_id]} { continue }
+		if {![string is integer $resource_id]} { 
+		    ns_log Notice "im_gp_save_allocations: found invalid resource_id='$resource_id'"
+		    continue 
+		}
 
+		# What is the role of the resource in the project?
+		# OpenProj contains this information while MS-Project don't.
 		set role_id [im_biz_object_role_full_member]
 		if {[string equal "Default:1" $function]} { 
+		    # We found an OpenProj project manager.
 		    set role_id [im_biz_object_role_project_manager]
 		}
 
 		# Add the dude to the task with a given percentage
+		ns_log Notice "im_gp_save_allocations: Adding user=$resource_id to task=$task_id in role=$role_id"
 		im_biz_object_add_role -percentage $percentage $resource_id $task_id $role_id
 
-		set user_name [im_name_from_user_id $resource_id]
-		set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
-		if {$debug_p} { ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n" }
-		ns_log Notice "im_gp_save_allocations: [$child asXML]"
+		if {$debug_p} {
+		    set user_name [im_name_from_user_id $resource_id]
+		    set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
+		    ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n"
+		    ns_log Notice "im_gp_save_allocations: [$child asXML]"
+		}
 
 	    }
 	    default { }
@@ -1049,6 +1270,18 @@ ad_proc -public im_gp_save_allocations {
 
 
 ad_proc -public im_gp_find_person_for_name { 
+    -name
+    -email
+} {
+    Tries to determine the person_id for a name string.
+    Uses all kind of fuzzy matching trying to be intuitive...
+    Returns "" if it didn't find the name.
+} {
+    # Remember just for 30 seconds - that's what it takes to import the MS-Project file...
+    return [util_memoize [list im_gp_find_person_for_name_helper -name $name -email $email] 30]
+}
+
+ad_proc -public im_gp_find_person_for_name_helper { 
     -name
     -email
 } {
@@ -1081,13 +1314,14 @@ ad_proc -public im_gp_find_person_for_name {
         set person_id [db_string resource_id "
 		select	min(person_id)
 		from	persons
-		where	:name = lower(im_name_from_user_id(person_id))
+		where	lower(im_name_from_user_id(person_id)) = :name
         " -default ""]		
     }
 
     # Check if we get a single match looking for the pieces of the
     # resources name
-    if {"" == $person_id} {
+    # Fraber 110830: Disable, because "Architect" matches "Laura Leadarchitect"
+    if {0 && "" == $person_id} {
 	set name_pieces [split $name " "]
 	# Initialize result to the list of all persons
 	set result [db_list all_resources "
@@ -1129,11 +1363,14 @@ ad_proc -public im_gp_save_resources {
     foreach child [$resources_node childNodes] {
 	switch [$child nodeName] {
 	    "resource" - "Resource" {
+
+		# Check for GanttProject resource format
 		set resource_id [$child getAttribute id ""]
 		set name [$child getAttribute name ""]
 		set function [$child getAttribute function ""]
 		set email [$child getAttribute contacts ""]
 
+		# Check of MS-Project resource format
 		foreach attr [$child childNodes] {
 		    switch [$attr nodeName] {
 			"UID" { set resource_id [$attr text] }
@@ -2052,15 +2289,12 @@ ad_proc -public im_ganttproject_gantt_component {
 		where
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
-		        and child.tree_sortkey 
-				between parent.tree_sortkey 
-				and tree_right(parent.tree_sortkey)
-		        and d.d 
-				between child.start_date 
-				and child.end_date
+		        and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		        and d.d between child.start_date and child.end_date
 			$where_clause
     "
 
+	# Add milestones as milestones
 
     # Aggregate additional/important fields to the fact table.
     set middle_sql "

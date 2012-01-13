@@ -136,7 +136,7 @@ if { $can_write_p } {
     set bulk_actions {
 	"#categories.Delete#" "category-delete" "#categories.Delete_category_link_title#"
 	"#categories.Deprecate#" "category-phase-out" "#categories.Deprecate_category_link_title#"
-	"#categories.Restore#" "category-phase-in" "#categories.Restore_category_link_ttitle#"
+	"#categories.Restore#" "category-phase-in" "#categories.Restore_category_link_title#"
 	"#categories.Ordering_update#" "tree-order-update" "#categories.Ordering_update_link_title#"
     }
     set actions [list \

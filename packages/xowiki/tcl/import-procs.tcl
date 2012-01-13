@@ -3,7 +3,7 @@
 
     @creation-date 2008-04-25
     @author Gustaf Neumann
-    @cvs-id $Id: import-procs.tcl,v 1.20 2010/07/29 07:08:25 gustafn Exp $
+    @cvs-id $Id$
 }
 
 
@@ -169,15 +169,14 @@ namespace eval ::xowiki {
 
 	set need_to_import 1
 	#
-	# If the page was implicitely added (due to being a
+	# If the page was implicitly added (due to being a
 	# page_template of an exported page), and a page (e.g. a form
-	# or a workflow) with the same name is inherited to the
+	# or a workflow) with the same name can be found in the
 	# target, don't materialize the inherited page.
 	#
 	if {$keep_inherited 
 	    && [$o exists __export_reason] 
 	    && [$o set __export_reason] eq "implicit_page_template"} {
-	  #my msg "importing implicit_page_template [$o name]"
 	  $o unset __export_reason
 	  set page [[my package_id] get_page_from_item_ref \
 			-allow_cross_package_item_refs false \
@@ -186,8 +185,14 @@ namespace eval ::xowiki {
 			-use_prototype_pages false \
 			[$o name] \
 		       ]
-	  if {$page ne "" && [$page physical_parent_id] ne [$page parent_id]} {
-	    #my msg "page [$o name] is inherited in folder [my parent_id]"
+
+	  # If we would like to restrict to just inherited pages in
+	  # the target, we could extend the test below with a test like
+	  # the following:
+	  #   set inherited [expr {[$page physical_parent_id] ne [$page parent_id]}]
+
+	  if {$page ne ""} {
+	    #my msg "page [$o name] can ne found in folder [my parent_id]"
 	    my incr inherited
 	    unset todo($o)
 	    set o $page
@@ -207,7 +212,7 @@ namespace eval ::xowiki {
 	    #my msg "exists template? [my isobject [$o page_template]]"
 	    if {![my isobject [$o page_template]]} {
 	      ::xo::db::CrClass get_instance_from_db -item_id [$o page_template]
-	      my msg "[my isobject [$o page_template]] loaded"
+	      #my msg "[my isobject [$o page_template]] loaded"
 	    }
 	  }
 	  
@@ -294,19 +299,20 @@ namespace eval ::xowiki {
 	    ::xo::db::CrClass get_instance_from_db -item_id $template_id
 	    set new 1
 	    $template_id set __export_reason implicit_page_template
+	    continue
 	  }
 	}
 	#
 	# check for child objects of the item
 	#
-	set sql [[$item_id info class] instance_select_query -folder_id $item_id -with_subtypes true]
+	set sql [::xowiki::Page instance_select_query -folder_id $item_id -with_subtypes true]
 	db_foreach instance_select $sql {
 	  if {![info exists items($item_id)]} {
 	    ::xo::db::CrClass get_instance_from_db -item_id $item_id
 	    ns_log notice "--export including child $item_id [$item_id name]"
 	    set items($item_id) 1 
 	    set new 1
-	    $template_id set __export_reason implicit_child_page
+	    $item_id set __export_reason implicit_child_page
 	  }
 	}
       }

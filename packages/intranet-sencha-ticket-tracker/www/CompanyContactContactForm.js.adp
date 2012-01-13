@@ -99,7 +99,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_Name2#'
 	}, {
-		name:		'email',
+		name:		'spri_email',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Email#'
 	}, {
@@ -144,6 +144,12 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
+	}, {
+		name:		'spri_consultant',
+		xtype:		'checkbox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Consultant#',
+		uncheckedValue:	'0',
+		inputValue: '1'
 	}],
 
 	loadUser: function(rec){
@@ -159,7 +165,7 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	loadCompany: function(customerModel){
 		var company_id = customerModel.get('company_id');
 		if (Ext.isEmpty(company_id)) {
-			company_id = 'null';
+			company_id = '1';
 		}		
 		userCustomerContactRelationStore.removeAll();
 		userCustomerContactRelationStore.proxy.extraParams['object_id_one'] = company_id;
@@ -167,10 +173,8 @@ Ext.define('TicketBrowser.CompanyContactContactForm', {
 	},
 
 	newCompany: function() {
-	/*	var form = this.getForm();
-		form.reset();*/
 		userCustomerContactRelationStore.removeAll();
-		userCustomerContactRelationStore.proxy.extraParams['object_id_one'] = "null";
+		userCustomerContactRelationStore.proxy.extraParams['object_id_one'] = "1";
 		userCustomerContactRelationStore.load();	
 	}
 });

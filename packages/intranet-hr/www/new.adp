@@ -10,5 +10,5 @@
 </if>
 
 <property name="focus">@focus;noquote@</property>
-<formtemplate id="cost"></formtemplate>
+<formtemplate id="employee_information"></formtemplate>
 

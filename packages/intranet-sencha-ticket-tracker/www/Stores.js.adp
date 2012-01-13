@@ -22,6 +22,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var GLOBAL_STOP_BAR = 0;
+
 /*
  * Status Engine for the StoreManager
  * There are dependencies with stores,
@@ -152,6 +154,23 @@ var userCustomerStore = Ext.create('PO.data.UserStore', {
 	}
 });
 
+var userQueueStore = Ext.create('PO.data.UserStore', {
+	storeId: 'userQueueStore',
+	model: 'TicketBrowser.GroupMembershipRel',
+	autoLoad: false
+});
+
+userQueueStore.on({
+    'load':{
+        fn: function(store, records, options){
+        	store.sort('name', 'ASC');
+        	Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(store.first());
+     },
+        scope:this
+    }
+});
+
+
 // ----------------------------------------------------------------
 // User Store
 // ----------------------------------------------------------------
@@ -192,7 +211,7 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		Function_StopBar();
+		Function_stopBar();
 	}
 );
 
@@ -298,13 +317,20 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'sort_order',
+		direction: 'ASC'
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 ticketTypeStore.load(
       function(record, operation) {
       // This code is called once the reply from the server has arrived.
       this.addBlank();
-      ticketTypeStore.sort('tree_sortkey');
+      ticketTypeStore.sort();
     }
 );
 
@@ -547,13 +573,12 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 12,				// Enable pagination
-	autoSync: true,			// Write changes to the REST server ASAP
+//	autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
-		property: 'creation_date',
+		property: 'ticket_creation_date',
 		direction: 'DESC'
 	}]
 });
-	
 
 var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',

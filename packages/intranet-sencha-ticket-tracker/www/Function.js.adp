@@ -61,7 +61,35 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 			//do nothing
 			return;
 		}
+
+		Function_checkValues(companyValues);
+		Function_checkValues(contactValues);
+		Function_checkValues(ticketValues);
+		Function_checkValues(ticketRightValues);
 		
+		if (Ext.isEmpty(companyValues.company_id)) {
+			companyValues.company_name = companyValues.company_name.toUpperCase();
+			companyValues.vat_number = companyValues.vat_number.toUpperCase();
+		}
+		if (Ext.isEmpty(contactValues.user_id)) {
+			contactValues.first_names = contactValues.first_names.toUpperCase();
+			contactValues.last_name = contactValues.last_name.toUpperCase();
+			contactValues.last_name2 = contactValues.last_name2.toUpperCase();
+			if (!Ext.isEmpty(contactValues.spri_email)) {
+				contactValues.email = contactValues.spri_email + Math.random()*1000000000000000000
+			} else {
+				contactValues.email = "nowhere@nowhere.es" + Math.random()*1000000000000000000
+			}
+		}		
+		
+		if (ticketRightValues) {
+			ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
+			ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");	
+			if (!Ext.isEmpty(ticketRightValues.combo_send_mail)) {				
+				ticketRightValues.ticket_send_mail_ids = ticketRightValues.combo_send_mail.join('_');
+			}
+		}
+				
 		//Company and contacts validations
 		if (Ext.isEmpty(companyValues.company_id) && !Function_validateNewCompany(companyValues)) {
 			return;							
@@ -77,24 +105,14 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 			Ext.getCmp('ticketCompoundPanel').disable();
 		}
 		
-		Function_checkValues(companyValues);
-		Function_checkValues(contactValues);
-		Function_checkValues(ticketValues);
-		Function_checkValues(ticketRightValues);
-		
-		companyValues.company_name = companyValues.company_name.toUpperCase();
-		companyValues.vat_number = companyValues.vat_number.toUpperCase();
-		contactValues.first_names = contactValues.first_names.toUpperCase();
-		contactValues.last_name = contactValues.last_name.toUpperCase();
-		contactValues.last_name2 = contactValues.last_name2.toUpperCase();
-		
 		Function_saveContact(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
-	} catch(err) {
-		Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Ticket_Error_Message#', err.description);				
+	} catch(err) {		
 		if (loadCompanyContact) {
+			Function_errorMessage('Error al guardar entidad contacto', 'Se ha producido un error al guardar entidad contacto', err.description);				
 			Ext.getCmp('companyContactCompoundPanel').enable();
 		}
 		if (loadTicket) {	
+			Function_errorMessage('#intranet-sencha-ticket-tracker.Save_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Save_Ticket_Error_Message#', err.description);				
 			Ext.getCmp('ticketCompoundPanel').enable();
 		}		
 	}
@@ -169,7 +187,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 			contactModel.phantom = true;		
 			newContact =true;
 		} else {
-			contactModel = userCustomerStore.findRecord('user_id',contactValues.user_id);
+			contactModel = userCustomerContactStore.findRecord('user_id',contactValues.user_id);
 			contactModel.set(contactValues);
 		}			
 		contactModel.save({
@@ -185,13 +203,14 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 				if (newContact) {
 					contactValues.user_id = contact_id;
 					userStore.add(contact_record);
-					userCustomerStore.add(contact_record);	
+					userCustomerContactStore.add(contact_record);	
+					userCustomerStore.add(contact_record);
 						
 					// Add the users to the group "Customers".
 					// This code doesn't need to be synchronized.
 					// The record will establish a "relationship" between the users and a group
 					var groupMember = {
-						object_id_one:	461,		// group_id for Customers
+						object_id_one:	customerGroupId,		// group_id for Customers
 						object_id_two:	contact_id,
 						rel_type:	'membership_rel',
 						member_state:	'approved'
@@ -204,7 +223,7 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 							Function_saveCompany(companyValues, contactValues, ticketValues, ticketRightValues, loadCompanyContact, loadTicket);
 						},			
 						failure: function(record, operation) { 
-							Function_errorMessage('#intranet-sencha-ticket-tracker.Contact_Group_Error_Title#', '#intranet-sencha-ticket-tracker..Contact_Group_Error_Message#', operation.request.scope.reader.jsonData["message"]);
+							Function_errorMessage('#intranet-sencha-ticket-tracker.Contact_Group_Error_Title#', '#intranet-sencha-ticket-tracker.Contact_Group_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 							if (loadCompanyContact){
 								Ext.getCmp('companyContactCompoundPanel').enable(); 
 							}
@@ -237,7 +256,11 @@ function Function_saveContact(companyValues, contactValues, ticketValues, ticket
 function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact, loadTicket){
 	var ticketModel;
 	var newTicket = false;
-
+	
+	if (ticketRightValues.ticket_queue_id != ticketRightValues.ticket_org_queue_id){
+		ticketRightValues.ticket_last_queue_id=ticketRightValues.ticket_org_queue_id;
+	}
+	
 	if (Ext.isEmpty(ticketValues.ticket_id)){
 		ticketValues.ticket_id = null;
 		ticketRightValues.ticket_id = null;
@@ -250,17 +273,22 @@ function Function_saveTicket(ticketValues, ticketRightValues, loadCompanyContact
 		ticketModel.set(ticketValues);
 		ticketModel.set(ticketRightValues);
 	}	
-	if (ticketModel.get('ticket_queue_id') != ticketModel.get('ticket_org_queue_id')){
+/*	if (ticketModel.get('ticket_queue_id') != ticketModel.get('ticket_org_queue_id')){
 		ticketModel.set('ticket_last_queue_id', ticketModel.get('ticket_org_queue_id'));
-	}	
+	}	*/
+	//console.log('Estado antes guardar: ' + ticketRightValues.ticket_status_id);
 	ticketModel.save({
 		scope: this,
 		success: function(ticket_record, operation) {
 			var ticket_id = ticket_record.get('ticket_id');
+		//	console.log('Ticket guardado OK: ' + ticket_record.get('ticket_id') + ' Estado guardado: ' + ticket_record.get('ticket_status_id'));
 			if (newTicket) {
 				ticketValues.ticket_id = ticket_id;
 				ticketRightValues.ticket_id = ticket_id;
 				ticketStore.add(ticket_record);
+			}
+			if (0 != sendmailparameter) {
+				Function_sendMail(ticket_id);
 			}
 			Function_insertAction(ticket_id, ticketValues.datetime, ticket_record);
 			Ext.getCmp('ticketCompoundPanel').tab.setText(ticket_record.get('project_name'));
@@ -463,15 +491,74 @@ function Function_errorMessage(e_title, e_msg, e_log){
 	    	buttons: Ext.Msg.OK,
 	    	icon: Ext.MessageBox.ERROR
 		});		
-		console.error(e_log);
+		if (!Ext.isEmpty(e_log)){
+			console.error(e_log);
+		}else{
+			console.error("Error desconocido")
+		}
 }
 
 
-function Function_StopBar() {
+function Function_stopBar() {
 		//To avoid infinite loading in progressBar when the load is faster than grafical
 		if (Ext.getCmp('ticketActionBar') == undefined) {
-			setTimeout("Function_StopBar()", 3000);
+			//setTimeout("Function_StopBar()", 3000);
+			GLOBAL_STOP_BAR = 1;
 		} else {
 			setTimeout("Ext.getCmp(\'ticketActionBar\').stopBar()", 2000);
 		}
+}
+
+function Function_sendMail(ticket_id) {
+	/* Comprobar si ya estaba escalado en las acciones, sino mandar mail en el tcl*/
+	//var detinatarios_field =  Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail');
+	var destinatarios = Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').getValue();
+	if (!Ext.isEmpty(destinatarios)) {
+		Ext.Ajax.request({
+			scope:	this,
+			url:	'/intranet-sencha-ticket-tracker/send-mail?object_id=' + ticket_id+'&destinatarios='+destinatarios.join('_'),
+			success: function(response) {	
+				if (!Ext.isEmpty(response.responseText)) {
+					Ext.Msg.show({
+				     	title:	'Envío de correo',
+				     	msg:	response.responseText,
+				    	buttons: Ext.Msg.OK,
+				    	icon: Ext.MessageBox.INFO
+					});	
+				}				
+			},
+			failure: function(response) {	
+				/* ToDo mail error message*/
+				Function_errorMessage('Error al enviar mails', 'Los datos se han guardado correctamente pero se ha producido un error al intentar mandar emails.', response.responseText);		
+			}
+		});	
+	}
+}
+
+function Function_updateEscalationDate() {
+	var ticket_status_value = Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').getValue();
+		
+	if ('30009'==ticket_status_value || '30011'==ticket_status_value) {	
+		Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/today-date-time',
+		success: function(response) {		// response is the current date-time
+					Ext.getCmp('ticketFormRight').getForm().findField('ticket_escalation_date').setValue(response.responseText);
+				}
+		});	
+	}
+}
+
+function Function_updateDoneDate() {
+	var ticket_status_value = Ext.getCmp('ticketFormRight').getForm().findField('ticket_status_id').getValue();
+		
+	if ('30001'==ticket_status_value || '30022'==ticket_status_value || '30096'==ticket_status_value) {	
+		Ext.Ajax.request({
+		scope:	this,
+		url:	'/intranet-sencha-ticket-tracker/today-date-time',
+		success: function(response) {		// response is the current date-time
+					Ext.getCmp('ticketFormRight').getForm().findField('ticket_done_date').setValue(response.responseText);
+				}
+		});	
+	}
 }

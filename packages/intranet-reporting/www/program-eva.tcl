@@ -422,6 +422,10 @@ set class "rowodd"
 
 db_foreach sql $sql {
 
+    if { ""==$project_budget_converted } {
+        set project_budget_converted 0
+    }
+
     if {"" == $project_id} {
 	set project_id 0
 	set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]

@@ -17,13 +17,12 @@
         <description format="text/plain">Implements a 3-way AJAX page with 1) a list of Customers and SLAs, 2) a list of tickets and 3) a ticket panel that allows to edit and create tickets.</description>
         <maturity>0</maturity>
 
-        <provides url="intranet-sencha-ticket-tracker" version="4.0.0.0.0"/>
-        <requires url="intranet-sencha" version="4.0.0.0.0"/>
+        <provides url="intranet-sencha-ticket-tracker" version="0.1d"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="SendMail"  default="1" description="Eniar mail"/>
         </parameters>
 
     </version>

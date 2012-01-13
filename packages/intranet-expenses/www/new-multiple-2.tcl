@@ -25,6 +25,7 @@ ad_page_contract {
     expense_payment_type_id:array,integer,optional
     receipt_reference:array,optional
     note:array,optional
+    { user_id_from_search "" }
     return_url
 }
 
@@ -35,13 +36,24 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set current_user_id $user_id
 if {![im_permission $user_id "add_expenses"]} {
     ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
     return
 }
 
+# Check permissions to log hours for other users
+# We use the hour logging permissions also for expenses...
+set add_hours_all_p [im_permission $current_user_id "add_hours_all"]
+if {"" == $user_id_from_search || !$add_hours_all_p} { set user_id_from_search $current_user_id }
+
+
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
+if {"" != $user_id_from_search && $current_user_id != $user_id_from_search} {
+    set user_name_from_search [im_name_from_user_id $user_id_from_search]
+    append page_title [lang::message::lookup "" intranet-expenses.for_user_id_from_search "for '%user_name_from_search%'"]
+}
 set context_bar [im_context_bar $page_title]
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set percent_format "FM999"
@@ -187,7 +199,7 @@ db_transaction {
 	set set_p 0
 
 	set item_customer_id [im_company_internal]
-	set item_provider_id $user_id
+	set item_provider_id $user_id_from_search
 	set item_template_id ""
 	set item_payment_days "30"
 	set item_cost_status [im_cost_status_created]

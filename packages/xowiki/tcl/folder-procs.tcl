@@ -29,6 +29,7 @@ namespace eval ::xowiki::includelet {
         {__decoration plain}
         {parameter_declaration {
           {-show_full_tree false}
+          {-context_tree_view false}
         }}
         {id "[xowiki::Includelet js_name [self]]"}
       }
@@ -50,7 +51,8 @@ namespace eval ::xowiki::includelet {
          [my js_name].render();
       });
      "
-    return [[my build_tree] render -style yuitree -js $js]
+    set tree [my build_tree]
+    return [$tree render -style yuitree -js $js]
   }
 
   folders instproc collect_folders {
@@ -125,7 +127,8 @@ namespace eval ::xowiki::includelet {
 	    #
 	    $f set_resolve_context -package_id [$l package_id] -parent_id [$l item_id]
 	    #
-	    # TODO we could save the double-fetch by collecing in get_form_entries via item-ids, not via new-objects
+	    # TODO we could save the double-fetch by collecing in
+	    # get_form_entries via item-ids, not via new-objects
 	    #
 	    ::xo::db::CrClass get_instance_from_db -item_id [$f item_id]
 	    [$f item_id] set_resolve_context -package_id [$l package_id] -parent_id [$l item_id]
@@ -164,7 +167,7 @@ namespace eval ::xowiki::includelet {
                             -package_id $package_id]
     set link_form_id   [::xowiki::Weblog instantiate_forms -forms en:link.form \
                             -package_id $package_id]
-    #my log folder_form=[my set folder_form_id]
+    #my msg folder_form=$folder_form_id
 
     set current_folder [$page get_folder -folder_form_ids $folder_form_id]
     set current_folder_id [$current_folder item_id]
@@ -315,12 +318,34 @@ namespace eval ::xowiki::includelet {
       }
     }
 
+    set top_folder_of_tree $root_folder
+    #
+    # Check, if the optional context tree view is activated
+    #
+    if {$context_tree_view || [$package_id get_parameter FolderContextTreeView false]} {
+      set parent_id [$current_folder parent_id]
+      if {$parent_id ne -100} {
+	set top_folder_of_tree $parent_id
+	#my msg top_folder_of_tree=$top_folder_of_tree
+      }
+    }
+
+    set parent_folder [$top_folder_of_tree parent_id]
+    if {$top_folder_of_tree eq $root_folder || $parent_folder eq "-100"} {
+      set href [::$package_id package_url]
+      set label  [::$package_id instance_name]
+      #my msg "use instance name"
+    } else {
+      set href [$top_folder_of_tree pretty_link]
+      set label "[$top_folder_of_tree title] ..."
+    }
+
     set t [::xowiki::Tree new -id foldertree_[my id] ]
     set node [::xowiki::TreeNode new \
-                -href [::$package_id package_url] \
-                -label [::$package_id instance_name] \
-                -highlight $root_folder_is_current \
-                -object $root_folder \
+                -href $href \
+                -label $label \
+                -highlight [expr {$current_folder_id == [$top_folder_of_tree item_id]}] \
+                -object $top_folder_of_tree \
                 -expanded 1 \
                 -open_requests 1]
     $t add $node
@@ -415,6 +440,9 @@ namespace eval ::xowiki::includelet {
             {-orderby:optional "last_modified,desc"}
             {-publish_status "ready"}
             {-view_target ""}
+            {-html-content}
+            {-parent .}
+            {-hide}
           }
         }
       }
@@ -429,6 +457,10 @@ namespace eval ::xowiki::includelet {
     my get_parameters
 
     set current_folder [my set __including_page]
+    if {$parent eq ".."} {
+      set current_folder [$current_folder parent_id]
+      ::xo::db::CrClass get_instance_from_db -item_id $current_folder
+    }
     if {![$current_folder istype ::xowiki::FormPage]} {
       # current folder has to be a FormPage
       set current_folder [$current_folder parent_id]
@@ -438,10 +470,14 @@ namespace eval ::xowiki::includelet {
     }
     set current_folder_id [$current_folder item_id]
 
-    if {[::xo::cc query_parameter m] ne "list"} {
+    if {[::xo::cc query_parameter m] ne "list" && $parent ne ".."} {
       set index [$current_folder property index]
       if {$index ne ""} {
-	set index_link [$package_id pretty_link -parent_id [$current_folder item_id] $index]
+	set download [string match "file:*" $index]
+	set index_link [$package_id pretty_link \
+			    -parent_id [$current_folder item_id] \
+			    -download $download \
+			    $index]
 	return [$package_id returnredirect $index_link]
       }
     }
@@ -458,9 +494,15 @@ namespace eval ::xowiki::includelet {
     set return_url [::xo::cc url] ;#"[$package_id package_url]edit-done"
     set category_url [export_vars -base [$package_id package_url] { {manage-categories 1} {object_id $package_id}}]
 
+    set columns {objects edit object_type name last_modified delete}
+    foreach column $columns {set ::hidden($column) 0 }
+    if {[info exists hide]} {
+      foreach column $hide {if {[info exists ::hidden($column)]} {set ::hidden($column) 1}}
+    }
+
     set t [::YUI::DataTable new -skin $skin -volatile \
                -columns {
-                 BulkAction objects -id ID -actions {
+                 BulkAction objects -id ID -hide $::hidden(objects) -actions {
                    Action new -label select -tooltip select -url admin/select
                  }
 		 # The "-html" options are currenty ignored in the YUI
@@ -471,60 +513,53 @@ namespace eval ::xowiki::includelet {
 		 #
                  HiddenField ID
                  AnchorField edit -CSSclass edit-item-button -label "" \
+		     -hide $::hidden(edit) \
                      -html {style "padding: 0px;"}
                  Field object_type -label [_ xowiki.page_kind] -orderby object_type -richtext false \
+		     -hide $::hidden(object_type) \
                      -html {style "padding: 0px;"}
 		 AnchorField name -label [_ xowiki.Page-name] -orderby name \
+		     -hide $::hidden(name) \
 		     -html {style "padding: 2px;"}
-                 Field last_modified -label [_ xowiki.Page-last_modified] -orderby last_modified
+                 Field last_modified -label [_ xowiki.Page-last_modified] -orderby last_modified \
+		     -hide $::hidden(last_modified) 
                  AnchorField delete -CSSclass delete-item-button \
+		     -hide $::hidden(delete) \
                      -label "" ;#-html {onClick "return(confirm('Confirm delete?'));"}
                }]
 
 
-    set where_clause "true"
+    set extra_where_clause "true"
     # TODO: why filter on title and name?
-    if {[my exists regexp]} {set where_clause "(bt.title ~ '$regexp' OR ci.name ~ '$regexp' )"}
-
+    if {[info exists regexp]} {set extra_where_clause "(bt.title ~ '$regexp' OR ci.name ~ '$regexp' )"}
     set publish_status_clause [::xowiki::Includelet publish_status_clause $publish_status]
 
-    foreach object_type [my types_to_show] {
-      set attributes [list revision_id creation_user title parent_id \
-                          "to_char(last_modified,'YYYY-MM-DD HH24:MI') as last_modified" ]
-      if {$object_type eq "::xowiki::FormPage"} {
-        set attributes "* $attributes"
-        set base_table [$object_type set table_name]i
-      } else {
-        set base_table cr_revisions
+    set items [::xowiki::FormPage get_folder_children \
+		   -folder_id $current_folder_id \
+		   -object_types [my types_to_show] \
+		   -extra_where_clause $extra_where_clause]
+
+    foreach c [$items children] {
+      set name [$c name]
+      set page_link [::$package_id pretty_link -parent_id $logical_folder_id $name]
+      array set icon [$c render_icon]
+
+      if {[catch {set prettyName [$c pretty_name]} errorMsg]} {
+	my msg "can't obtain pretty name of [$c item_id] [$c name]: $errorMsg"
+	set prettyName $name
       }
-      set items [$object_type get_instances_from_db \
-                   -folder_id $current_folder_id \
-                   -with_subtypes false \
-                   -select_attributes $attributes \
-                   -where_clause "$where_clause $publish_status_clause" \
-                   -base_table $base_table]
 
-      foreach c [$items children] {
-	set name [$c name]
-        set page_link [::$package_id pretty_link -parent_id $logical_folder_id $name]
-	array set icon [$c render_icon]
+      #set delete_link [export_vars -base  [$package_id package_url] \
+      #		      [list {delete 1} \
+      #			   [list item_id [$c item_id]] \
+      #			   [list name [$c pretty_link]] return_url]]
 
-	if {[catch {set prettyName [$c pretty_name]} errorMsg]} {
-	  my msg "can't obtain pretty name of [$c item_id] [$c name]: $errorMsg"
-	  set prettyName $name
-	}
+      set delete_link [export_vars -base $page_link {{m delete} return_url}]
 
-	#set delete_link [export_vars -base  [$package_id package_url] \
-	#		      [list {delete 1} \
-	#			   [list item_id [$c item_id]] \
-	#			   [list name [$c pretty_link]] return_url]]
-
-	set delete_link [export_vars -base $page_link {{m delete} return_url}]
-	
-        $t add \
+      $t add \
             -ID [$c name] \
             -name $prettyName \
-	    -name.href [export_vars -base $page_link {template_file}] \
+	    -name.href [export_vars -base $page_link {template_file html-content}] \
             -name.title [$c set title] \
             -object_type $icon(text) \
             -object_type.richtext $icon(is_richtext) \
@@ -535,7 +570,6 @@ namespace eval ::xowiki::includelet {
             -delete "" \
             -delete.href $delete_link \
             -delete.title #xowiki.delete#
-      }
     }
 
     foreach {att order} [split $orderby ,] break
@@ -762,12 +796,14 @@ namespace eval ::xo::Table {
         append js   "   fields: \[ \n"
 	set js_fields [list]
         foreach field [[self]::__columns children] {
+	  if {[$field hide]} continue
           lappend js_fields "       \{ key: \"[$field set name]\" \}"
         }
 	append js [join $js_fields ", "] "   \] \n\};\n"
         append js "var $coldef = \[\n"
 	set js_fields [list]
         foreach field [[self]::__columns children] {
+	  if {[$field hide]} continue
 	  if {[$field istype HiddenField]} continue
 	  if {[$field istype BulkAction]} {
             set label "<input type='checkbox' onclick='acs_ListCheckAll(\\\"objects\\\",this.checked)'></input>"
@@ -787,6 +823,7 @@ namespace eval ::xo::Table {
         html::thead {
             html::tr -class list-header {
                 foreach o [[self]::__columns children] {
+		    if {[$o hide]} continue
                     $o render
                 }
             }
@@ -796,6 +833,7 @@ namespace eval ::xo::Table {
             foreach line [my children] {
                 html::tr -class [expr {[my incr __rowcount]%2 ? [my set css.tr.odd-class] : [my set css.tr.even-class] }] {
                     foreach field [[self]::__columns children] {
+		        if {[$field hide]} continue
                         html::td  [concat [list class list] [$field html]] { 
                             $field render-data $line
                         }

@@ -109,12 +109,28 @@ constraint ticket_last_queue_id references parties;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_last_queue_id', 'Ticket Last Queue', 'profile', 'integer', 'f');
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
 
+	 select count(*) into v_count from information_schema.columns where
+        	table_name = ''im_tickets''
+              	and column_name = ''ticket_closed_in_1st_contact_p'';
+
+        IF v_count > 0 THEN 
+		alter table im_tickets alter column ticket_closed_in_1st_contact_p type text;
+	ELSE 
+		alter table im_tickets add column ticket_closed_in_1st_contact_p text;
+	END IF;
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 -- alter table im_tickets alter column ticket_closed_in_1st_contact_p type text;
-alter table im_tickets
-add column ticket_closed_in_1st_contact_p text;
-
 alter table im_tickets alter column ticket_requires_addition_info_p type text;
 
 alter table im_tickets alter column ticket_creation_date type timestamptz;

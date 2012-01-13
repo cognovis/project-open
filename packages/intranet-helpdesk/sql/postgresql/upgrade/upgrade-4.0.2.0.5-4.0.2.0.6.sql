@@ -3,6 +3,21 @@
 SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-4.0.2.0.5-4.0.2.0.6.sql','');
 
 
+-- New Widget for queues
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_queues', 'Ticket Queues', 'Ticket Queues',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+		select	g.group_id, g.group_name
+		from	groups g,
+			acs_objects o
+		where	o.object_type = ''im_ticket_queue'' and
+			g.group_id = o.object_id
+		order by lower(g.group_name)
+	}}}'
+);
+
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id

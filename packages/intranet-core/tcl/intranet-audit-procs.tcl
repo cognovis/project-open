@@ -47,6 +47,7 @@ ad_proc -public im_audit  {
 		Nuke represents complete object deletion - should only be used for demo data.
 		Before_update represents checks before the update of important objects im_costs,
 		im_project. This way the system can detect changes from outside the system.
+    @return $audit_id
 } {
     # Deal with old action names during the transition period
     if {""       == $action} { set action "after_update" }
@@ -93,15 +94,16 @@ ad_proc -public im_audit  {
 
     ns_log Notice "im_audit: intranet_audit_exists_p=$intranet_audit_exists_p"
 
+    set audit_id 0
     if {$intranet_audit_exists_p} {
 	if {[catch {
-	    set err_msg [im_audit_impl -user_id $user_id -object_id $object_id -object_type $object_type -status_id $status_id -action $action -comment $comment]
+	    set audit_id [im_audit_impl -user_id $user_id -object_id $object_id -object_type $object_type -status_id $status_id -action $action -comment $comment]
 	} err_msg]} {
 	    ns_log Error "im_audit: Error executing im_audit_impl: $err_msg"
 	}
     }
 
-    return $err_msg
+    return $audit_id
 }
 
 
@@ -119,10 +121,17 @@ ad_proc -public im_project_audit  {
     Specific audit for projects. This audit keeps track of the cost cache with each
     project, allowing for EVA Earned Value Analysis.
 } {
-    set err_msg "Error in Audit module, please consult your System Administrator"
-    catch {
-	set err_msg [im_project_audit_impl -user_id $user_id -project_id $project_id -action $action -comment $comment]
-    }
-    return [im_audit -user_id $user_id -object_id $project_id -object_type $object_type -status_id $status_id -type_id $type_id -action $action -comment $comment]
+    set intranet_audit_exists_p [util_memoize [list db_string audit_exists_p "select count(*) from apm_packages where package_key = 'intranet-audit'"]]
+    if {!$intranet_audit_exists_p} { return "" }
+
+    return [im_project_audit_impl \
+		-user_id $user_id \
+		-object_type $object_type \
+		-project_id $project_id \
+		-status_id $status_id \
+		-type_id $type_id \
+		-action $action \
+		-comment $comment
+    ]
 }
 

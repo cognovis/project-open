@@ -56,7 +56,13 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
     id:		'auditGrid',
     store: 	auditStore,
     minHeight:	75,
-    
+	listeners:	{
+		itemdblclick: function(view, record, item, index, e) {
+			auditDetailWindow.loadAuditDetail(record);
+			//Ext.getCmp('mainPanel').disable();
+			auditDetailWindow.show();
+		}
+	},    
     dockedItems: [{
 		dock: 'bottom',
 		xtype: 'pagingtoolbar',
@@ -70,7 +76,7 @@ var auditGrid = Ext.define('TicketBrowser.AuditGrid', {
 		text: "#intranet-sencha-ticket-tracker.Audit_Date#", 
 		sortable: true, 
 		minWidth: 50,
-		hidden: true,
+		hidden: false,
 		dataIndex: 'audit_date',
 		renderer: function(value, o, record) {
 			// Only seconds

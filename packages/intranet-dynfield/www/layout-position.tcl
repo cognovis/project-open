@@ -3,7 +3,7 @@ ad_page_contract {
     @author Juanjo Ruiz juanjoruizx@yahoo.es
     @author Frank Bergmann <frank.bergmann@project-open.com>
     @creation-date 2008-02-07
-    @cvs-id $Id: layout-position.tcl,v 1.4 2008/03/24 22:35:57 cvs Exp $
+    @cvs-id $Id$
 
 } {
     object_type:notnull
@@ -85,12 +85,27 @@ switch $action {
 # List definition
 # ******************************************************
 
-db_1row get_layout_type {
+if {![db_0or1row get_layout_type {
 	select	*
 	from	im_dynfield_layout_pages
 	where	object_type = :object_type
 		and page_url = :page_url
-} -column_array "page"
+} -column_array "page"]} {
+    set design_page_create_url [export_vars -base "/intranet-dynfield/object-type" {{object_type im_project}}]
+    ad_return_complaint 1 "
+	<b>Unknown page '$page_url' for object type '$object_type'</b><br>&nbsp;<br>
+	You probably have to setup the page first.<br>
+	Please visit the following <a href='$design_page_create_url'>page</a>
+	and select 'Add Page' in the 'DynField Layout' section and add a page:<br>&nbsp;<br>
+	<ul>
+	<li>Page URL: /intranet/projects/index
+	<li>Layout Type: Table
+	<li>Columns: &lt;empty&gt;
+	</ul>
+	<br>&nbsp;<br>
+    "
+}
+
 
 lappend action_list "Add attribute" "[export_vars -base "layout-position-2" { object_type page_url }]" "Add item to this order"
 lappend action_list "Add all attributes" "[export_vars -base "layout-position" { object_type page_url {action add_all_attributes}}]" "Add all available attributes"

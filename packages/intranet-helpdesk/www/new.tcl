@@ -383,7 +383,9 @@ foreach var_from_url $vars_from_url {
 if {"new" == $ticket_sla_id && $user_can_create_new_customer_sla_p} {
 
     # Copy all ticket form values to local variables
-    template::form::get_values ticket
+    catch {
+	template::form::get_values ticket
+    }
 
     # Get the list of all variables in the form
     set form_vars [template::form::get_elements helpdesk_ticket]
@@ -693,7 +695,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id -action create
+    im_project_audit -project_id $ticket_id -action after_create
 
     # fraber 100928: Disabling return_url.
     # For a new ticket it makes sense to be sent to the new ticket page...

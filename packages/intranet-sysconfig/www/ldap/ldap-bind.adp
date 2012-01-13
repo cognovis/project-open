@@ -6,18 +6,6 @@
 
 <h2>@page_title@</h2>
 
-<p>
-@po;noquote@ currently supports:<br>&nbsp;
-<ul>
-<li>Microsoft Active Directory and</li>
-<li>OpenLDAP.</li>
-</ul>
-<br>
-<p>
-Please select LDAP server type:
-</p>
-<br>
-
 <input type=hidden name=ip_address value="@ip_address;noquote@">
 <input type=hidden name=port value="@port;noquote@">
 <input type=hidden name=ldap_type value="@ldap_type;noquote@">
@@ -39,7 +27,7 @@ Please select LDAP server type:
 <td>Type:</td>
 <td>
 	<if "ad" eq @ldap_type@>Microsoft Active Directory</if>
-	<else>OpenLDAP<else>
+	<else>OpenLDAP</else>
 </td>
 </tr>
 <tr>
@@ -48,18 +36,19 @@ Please select LDAP server type:
 </tr>
 <tr>
 <td>BindDN<br>(username):</td>
-<td><input type=text name=binddn size=50 value='@binddn;noquote@'></td>
+<td><input type=text name=system_binddn size=50 value='@system_binddn;noquote@'></td>
 </tr>
 <tr>
-<td>Password:</td>
-<td><input type=text name=bindpw size=20 value='@bindpw;noquote@'></td>
+<td>BindPassword:</td>
+<td><input type=text name=system_bindpw size=20 value='@system_bindpw;noquote@'></td>
 </tr>
 </table>
 
+<if "" ne @debug@>
+<h2>Server Message</h2>
 <br>
 <pre>
 @debug@
 </pre>
-
-
+</if>
 

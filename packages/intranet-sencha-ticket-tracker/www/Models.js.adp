@@ -129,7 +129,7 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_creation_date',		// 
 		'ticket_reaction_date',		// 
 //		'ticket_confirmation_date',	// 
-//		'ticket_escalation_date',	// 
+		'ticket_escalation_date',	// 
 //		'ticket_resolution_date',	// 
 		'ticket_done_date',		// 
 //		'ticket_signoff_date',		//
@@ -141,8 +141,9 @@ Ext.define('TicketBrowser.Ticket', {
 		'ticket_area_id',		// Area
 		'ticket_program_id',		// programa
 		'ticket_file',			// expediente
-		'ticket_request',		// expediente
-		'ticket_resolution',		// expediente
+		'ticket_request',		
+		'ticket_resolution',		
+		'ticket_send_mail_ids',
 //		'ticket_answer',		// Respuesta
 //		'ticket_observations',		// Observaciones
 //		'replycount'			// Number of ticket replies - not supported at the moment
@@ -156,7 +157,7 @@ Ext.define('TicketBrowser.Ticket', {
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
 			deref_p:	'1',
-			columns: 	'ticket_id,project_name,project_nr,parent_id,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution'
+			columns: 	'ticket_id,project_name,project_nr,parent_id,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_escalation_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution,ticket_send_mail_ids'
 		},
 		reader:	{
 			type:		'json',			// Tell the Proxy Reader to parse JSON
@@ -174,8 +175,8 @@ Ext.define('TicketBrowser.Company', {
 	extend:	'Ext.data.Model',
 	idProperty:	'company_id',		// The primary key or object_id of the company
 	fields:	[
-		'id',
-		'object_name',
+		'company_id',
+		'company_name',
 		'company_status_id',		// Lifecycle control: Current Status
 		'company_type_id',		// Type of company: Controls presence/absence of DynFields
 		'primary_contact_id',		// Main customer contact
@@ -186,17 +187,7 @@ Ext.define('TicketBrowser.Company', {
 		'spri_company_address',
 		'spri_company_pc',
 		'spri_company_city',
-		'spri_company_fax',
-		{ 	name: 'company_id',			
-			convert: function(value, record) {
-				return record.get('id');
-			}
-		},
-		{ 	name: 'company_name',		
-			convert: function(value, record) {
-				return record.get('object_name');
-			}
-		}						
+		'spri_company_fax'					
 	],
 
 	proxy:	{
@@ -207,7 +198,7 @@ Ext.define('TicketBrowser.Company', {
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
 			gzip_p:    '1',
-			columns:	'company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
+			columns:	'company_id,company_name,company_status_id,company_type_id,primary_contact_id,vat_number,company_province,spri_company_telephone,spri_company_email,spri_company_address,spri_company_pc,spri_company_city,spri_company_fax'
 		},
 		reader:	{
 			type:		'json',		// Tell the Proxy Reader to parse JSON
@@ -224,22 +215,20 @@ Ext.define('TicketBrowser.User', {
 	extend:	'Ext.data.Model',
 	idProperty:	'user_id',		// The primary key or object_id of the company
 	fields:	[
-		'id',			// Primary key
+		'user_id',			// Primary key
 		'first_names',			// First name(s)
 		'last_name',			// Standard last name
 		'username',			// Windows username
 		'last_name2',			// Spanish 2nd last name
 		'telephone',			// Telephone
-		'email',			// Just email txt
+		'email',
+		'spri_email',			// Just email txt
 		'gender',			// male or female
 		'language',			// es_ES or eu_ES
+		'spri_consultant',
 		{	name: 'name',			// Calculated compound name
 			convert: function(value, record) {
 				return Ext.String.trim(record.get('first_names') + ' ' + record.get('last_name') + ' ' + record.get('last_name2'));
-			}
-		},{	name: 'user_id',			
-			convert: function(value, record) {
-				return record.get('id');
 			}
 		}
 	],
@@ -253,7 +242,7 @@ Ext.define('TicketBrowser.User', {
 			format:	'json',
 			format_variant:	'sencha',
 			gzip_p:    '1',
-			columns: 	'first_names,last_name,username,last_name2,telephone,email,gender,language'
+			columns: 	'user_id,first_names,last_name,username,last_name2,telephone,email,spri_email,gender,language,spri_consultant'
 		},
 		reader:	{ 
 			type:		'json', 
@@ -283,7 +272,7 @@ Ext.define('TicketBrowser.EmployeeMembershipRel', {
 		},
 		{ name:	'name',				// Calculated compound name
 			convert: function(value, record) {
-				return userStore.name_from_id(record.get('object_id_two'));
+				return userStore.name_from_id(record.get('object_id_two')) ;
 			}
 		}
 	],
@@ -353,6 +342,54 @@ Ext.define('TicketBrowser.CustomerMembershipRel', {
 });
 
 
+Ext.define('TicketBrowser.GroupMembershipRel', {
+	extend:	'Ext.data.Model',
+	idProperty:	'rel_id',				// The primary key or object_id of the company
+	fields:	[
+		'object_id_one',			// Group ID
+		'object_id_two',			// User ID
+		{ name:	'user_id',			// Calculated user_id
+			convert: function(value, record) {
+				if (0==record.get('object_id_two')) {
+					return "";
+				}
+				return record.get('object_id_two');
+			}
+		},	
+		{ name:	'name',				// Calculated compound name
+			convert: function(value, record) {
+				if (0==record.get('object_id_two')) {
+					return  '<%=[parameter::get_from_package_key -package_key intranet-sencha-ticket-tracker -parameter DefaultFrom -default \"SACSPRI@sicsa.es\"] %>';
+				}
+				try {
+					var nombre =  userStore.name_from_id(record.get('object_id_two'));
+					var mail = userStore.findRecord('user_id', record.get('object_id_two')).get('spri_email');
+				} catch (err) {
+					return "";
+				}
+				return nombre+" - "+mail;
+			}
+		}
+	],
+	proxy:	{
+		type:			'rest',
+		url:			'/intranet-rest/membership_rel',
+		appendId:		true,
+		timeout:		300000,
+		extraParams: {
+			format:	'json',
+			columns:	'object_id_one,object_id_two'
+		},
+		reader:	{ 
+			type:		'json', 
+			root:		'data',
+			totalProperty:	'total'
+		},
+		writer:	{
+			type:		'json'
+		}
+	}
+});
 
 
 
