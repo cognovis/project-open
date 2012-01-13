@@ -131,10 +131,7 @@ switch $action {
     
 	set delete_task_list [array names task_id]
 	set task_names [join $delete_task_list "<li>"]
-	if {0 == [llength $delete_task_list]} {
-	    ad_returnredirect $return_url
-	    ad_script_abort
-	}
+	if {0 == [llength $delete_task_list]} { ad_returnredirect $return_url }
 	
 	# Check if timesheet entries exist
 	# We don't want to delete them...
@@ -155,7 +152,7 @@ switch $action {
 	    foreach del_task_id $delete_task_list {
 
 		# Write Audit Trail
-		im_project_audit -action delete -project_id $del_task_id
+		im_project_audit -action before_nuke -project_id $del_task_id
 
 		# Delete the task
 		db_string del_task "SELECT im_timesheet_task__delete(:del_task_id)"

@@ -31,6 +31,7 @@ ad_proc -public im_timesheet_task_type_standard { } { return 9500 }
 # For GanttProject:
 ad_proc -public im_timesheet_task_dependency_type_depends { } { return 9650 }
 ad_proc -public im_timesheet_task_dependency_type_subtask { } { return 9652 }
+
 #
 # For MS-Project
 ad_proc -public im_timesheet_task_dependency_type_ff { } { return 9660 }
@@ -52,8 +53,19 @@ ad_proc -public im_timesheet_task_scheduling_type_fnet { } { return 9706 }
 ad_proc -public im_timesheet_task_scheduling_type_fnlt { } { return 9707 }
 
 
+# Effort Driven Type
+ad_proc -public im_timesheet_task_effort_driven_type_fixed_units { } { return 9720 }
+ad_proc -public im_timesheet_task_effort_driven_type_fixed_duration { } { return 9721 }
+ad_proc -public im_timesheet_task_effort_driven_type_fixed_work { } { return 9722 }
+
+# Dependency Hardness
 ad_proc -public im_timesheet_task_dependency_hardness_type_hard { } { return 9550 }
 
+
+
+# ----------------------------------------------------------------------
+# 
+# ---------------------------------------------------------------------
 
 ad_proc -public im_package_timesheet_task_id {} {
     Returns the package id of the intranet-timesheet2-tasks module
@@ -171,7 +183,11 @@ ad_proc -public im_timesheet_task_list_component {
     if {"" != $max_entries_per_page} { set task_how_many $max_entries_per_page }
 
     if {"" == $order_by} { 
-	set order_by [parameter::get_from_package_key -package_key intranet-timesheet2-tasks -parameter TaskListDetailsDefaultSortOrder -default "sort_order"] 
+	if { "/intranet/" == [im_url_with_query] } {
+	    set order_by [parameter::get_from_package_key -package_key intranet-timesheet2-tasks -parameter TaskListHomeDefaultSortOrder -default "start_date"] 
+	} else {
+	    set order_by [parameter::get_from_package_key -package_key intranet-timesheet2-tasks -parameter TaskListDetailsDefaultSortOrder -default "sort_order"] 
+	}
     }
 
     # URL to toggle open/closed tree
@@ -258,11 +274,13 @@ ad_proc -public im_timesheet_task_list_component {
     }
     if {$debug} { ns_log Notice "im_timesheet_task_component: column_headers=$column_headers" }
 
-
     if {[string is integer $restrict_to_cost_center_id] && $restrict_to_cost_center_id > 0} {
 	lappend extra_wheres "(t.cost_center_id is null or t.cost_center_id = :restrict_to_cost_center_id)"
     }
 
+    if { "0" != $restrict_to_project_id } {
+        lappend extra_wheres "parent.project_id = :restrict_to_project_id"
+    }
 
     # -------- Compile the list of parameters to pass-through-------
     set form_vars [ns_conn form]
@@ -328,7 +346,7 @@ ad_proc -public im_timesheet_task_list_component {
 
     if {"mine" == $restrict_to_mine_p} {
 	lappend criteria "p.project_id in (select object_id_one from acs_rels where object_id_two = [ad_get_user_id])"
-    }
+    } 
 
     if {[string is integer $restrict_to_with_member_id] && $restrict_to_with_member_id > 0} {
 	lappend criteria "p.project_id in (select object_id_one from acs_rels where object_id_two = :restrict_to_with_member_id)"
@@ -343,16 +361,14 @@ ad_proc -public im_timesheet_task_list_component {
 	set restriction_clause "and $restriction_clause" 
     }
 
-
-    set extra_select [join $extra_selects ",\n\t"]
+    set extra_select [join $extra_selects ",\n\t\t"]
     if { ![empty_string_p $extra_select] } { set extra_select ",\n\t$extra_select" }
 
-    set extra_from [join $extra_froms ",\n\t"]
+    set extra_from [join $extra_froms ",\n\t\t"]
     if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
 
-    set extra_where [join $extra_wheres "and\n\t"]
-    if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
-
+    set extra_where [join $extra_wheres " and\n\t\t"]
+    if { ![empty_string_p $extra_where] } { set extra_where " and \n\t$extra_where" }
 
     # ---------------------- Inner Permission Query -------------------------
 
@@ -365,7 +381,7 @@ ad_proc -public im_timesheet_task_list_component {
 				r.object_id_two = :user_id
 				$restriction_clause"
 
-    if {[im_permission $user_id "view_projects_all"] || [im_permission $user_id "view_timesheet_tasks_all"]} { 
+    if {([im_permission $user_id "view_projects_all"] || [im_permission $user_id "view_timesheet_tasks_all"]) && "mine" != $restrict_to_mine_p} { 
 	set child_perm_sql "
 			select	p.*
 			from	im_projects p 
@@ -377,11 +393,13 @@ ad_proc -public im_timesheet_task_list_component {
 			select	p.*
 			from	im_projects p,
 				acs_rels r
-			where	r.object_id_one = p.project_id and 
+			where	
+				p.parent_id IS NULL and
+				r.object_id_one = p.project_id and 
 				r.object_id_two = :user_id 
 				$restriction_clause"
 
-    if {[im_permission $user_id "view_projects_all"]} {
+    if {[im_permission $user_id "view_projects_all"] && "mine" != $restrict_to_mine_p} {
 	set parent_perm_sql "
 			select	p.*
 			from	im_projects p
@@ -402,6 +420,7 @@ ad_proc -public im_timesheet_task_list_component {
 
     # Sorting: Create a sort_by_clause that returns a "sort_by_value".
     # This value is used to sort the hierarchical multirow.
+	
     switch $order_by {
 	sort_order { 
 	    # Order like the imported Gantt diagram (GanttProject or MS-Project)
@@ -425,8 +444,21 @@ ad_proc -public im_timesheet_task_list_component {
     set sql "
 	select
 		t.*,
-		to_char(planned_units, '9999999.0') as planned_units,
-		to_char(billable_units, '9999999.0') as billable_units,
+		to_char(planned_units, '9999999.0') as planned_units_bad,
+		to_char(billable_units, '9999999.0') as billable_units_bad,
+		(	select	round(sum(coalesce(planned_units, 0.0)))
+			from	im_projects pp, im_timesheet_tasks pt
+			where	pp.project_id = pt.task_id and
+				pp.tree_sortkey between child.tree_sortkey and tree_right(child.tree_sortkey) and
+				pp.project_type_id = [im_project_type_task]
+		) as planned_units,
+		(	select	round(sum(coalesce(billable_units, 0.0)))
+			from	im_projects pp, im_timesheet_tasks pt
+			where	pp.project_id = pt.task_id and
+				pp.tree_sortkey between child.tree_sortkey and tree_right(child.tree_sortkey) and
+				pp.project_type_id = [im_project_type_task]
+		) as billable_units,
+		im_biz_object_member__list(child.project_id) as project_member_list,
 		gp.*,
 		child.*,
 		child.project_nr as task_nr,
@@ -457,7 +489,6 @@ ad_proc -public im_timesheet_task_list_component {
 		left outer join im_cost_centers cc on (t.cost_center_id = cc.cost_center_id)
 		$extra_from
 	where
-		parent.project_id = :restrict_to_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
 		child.project_status_id not in ([im_project_status_deleted])
 		$extra_where
@@ -466,23 +497,30 @@ ad_proc -public im_timesheet_task_list_component {
     "
 
     db_multirow task_list_multirow task_list_sql $sql {
-
-	# Perform the following steps in addition to calculating the multirow:
-	# The list of all projects
+	# Create a list list of all projects
 	set all_projects_hash($child_project_id) 1
+
 	# The list of projects that have a sub-project
         set parents_hash($child_parent_id) 1
-
-	ns_log Notice 1 "im_timesheet_task_list_component: id=$project_id, nr=$project_nr, o=$order_by_value"
+	ns_log Notice "im_timesheet_task_list_component: id=$project_id, nr=$project_nr, o=$order_by_value"
     }
 
     # Sort the tree according to the specified sort order
     # "sort_order" is an integer, so we have to tell the sort algorithm to use integer sorting
-    if {"sort_order" == $order_by} {
-	multirow_sort_tree -integer task_list_multirow project_id parent_id order_by_value
-    } else {
-	multirow_sort_tree task_list_multirow project_id parent_id order_by_value
+    ns_log Notice "im_timesheet_task_list_component: starting to sort multirow"
+
+    if {[catch {
+	if {"sort_order" == $order_by} {
+	    multirow_sort_tree -integer task_list_multirow project_id parent_id order_by_value
+	} else {
+	    multirow_sort_tree task_list_multirow project_id parent_id order_by_value
+	}
+    } err_msg]} {
+	ns_log Error "multirow_sort_tree: Error sorting: $err_msg"
+	return "<b>Error</b>:<pre>$err_msg</pre>"
     }
+    ns_log Notice "im_timesheet_task_list_component: finished to sort multirow"
+
 
 
     # ----------------------------------------------------
@@ -554,10 +592,17 @@ ad_proc -public im_timesheet_task_list_component {
 	    set prev_task_start_idx [expr $task_start_idx - $task_how_many]
 	    if {$prev_task_start_idx < 0} { set $prev_task_start_idx 0 }
 	    set prev_page_url [export_vars -base "/intranet-timesheet2-tasks/index" { \
-			{project_id $restrict_to_project_id} \
 			task_how_many \
-			{task_start_idx $prev_task_start_idx} \
 			view_name \
+			order_by \
+			{project_id $restrict_to_project_id} \
+			{task_start_idx $prev_task_start_idx} \
+			{task_type_id $restrict_to_type_id }
+			{task_status_id $restrict_to_status_id }
+			{mine_p $restrict_to_mine_p}
+			{with_member_id $restrict_to_with_member_id}
+			{cost_center_id $restrict_to_cost_center_id}
+			{material_id $restrict_to_material_id} \
 	    }]
 
 	    continue
@@ -638,6 +683,8 @@ ad_proc -public im_timesheet_task_list_component {
 
 	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
 
+	# Something is going wrong with task_id, so set it again.
+	set task_id $project_id
 
 	# We've got a task.
 	# Write out a line with task information
@@ -656,10 +703,17 @@ ad_proc -public im_timesheet_task_list_component {
 	if {$task_how_many > 0 && $ctr >= $task_how_many} {
 	    set next_task_start_idx [expr $task_start_idx + $task_how_many]
 	    set next_page_url [export_vars -base "/intranet-timesheet2-tasks/index" { \
-			{project_id $restrict_to_project_id} \
 			task_how_many \
-			{task_start_idx $next_task_start_idx} \
 			view_name \
+			order_by \
+			{project_id $restrict_to_project_id} \
+			{task_start_idx $next_task_start_idx} \
+			{task_type_id $restrict_to_type_id }
+			{task_status_id $restrict_to_status_id }
+			{mine_p $restrict_to_mine_p}
+			{with_member_id $restrict_to_with_member_id}
+			{cost_center_id $restrict_to_cost_center_id}
+			{material_id $restrict_to_material_id} \
 	    }]
 	    break
 	}
@@ -703,7 +757,7 @@ ad_proc -public im_timesheet_task_list_component {
     # Format the action bar at the bottom of the table
     #
     set action_html "
-	<td align=right>
+	<td align=left>
 		<select name=action>
 		<option value=save>[lang::message::lookup "" intranet-timesheet2-tasks.Save_Changes "Save Changes"]</option>
 		<option value=delete>[_ intranet-timesheet2-tasks.Delete]</option>

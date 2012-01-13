@@ -446,7 +446,7 @@ SELECT im_category_new(9707,'Finish no later than', 'Intranet Timesheet Task Sch
 -- 9720-9739    Intranet Timesheet Task Effort Driven Type
 SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Effort Driven Type');
 SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Effort Driven Type');
-SELECT im_category_new(9722,'Fixed Fixed Work', 'Intranet Timesheet Task Effort Driven Type');
+SELECT im_category_new(9722,'Fixed Work', 'Intranet Timesheet Task Effort Driven Type');
 
 
 -------------------------------
@@ -563,10 +563,11 @@ extra_select, extra_where, sort_order, visible_for) values (91021,910,NULL, 'Don
 '"<input type=textbox size=3 name=percent_completed.$task_id value=$percent_completed>"', 
 '','',21,'');
 
+delete from im_view_columns where column_id = 91022;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (91022,910,NULL, 
 '"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''tasks'',this.checked)>"',
-'"<input type=checkbox name=task_id.$task_id id=tasks,$task_id>"', '', '', 22, '');
+'"<input type=checkbox name=task_id.$task_id id=tasks,$task_id>"', '', '', -1, '');
 
 
 
@@ -579,7 +580,17 @@ delete from im_views where view_id = 911;
 --
 insert into im_views (view_id, view_name, visible_for) values (911, 
 'im_timesheet_task_list_short', 'view_projects');
---
+
+delete from im_view_columns where column_id = 91112;
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (91112,911,NULL, 
+'"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''tasks'',this.checked)>"',
+'"<input type=checkbox name=task_id.$task_id id=tasks,$task_id>"', '', '', -1, '');
+
+
+'"[im_gif del "Delete"]"', 
+'"<input type=checkbox name=task_id.$task_id>"', '', '', -1, '');
+
 -- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 -- extra_select, extra_where, sort_order, visible_for) values (91100,911,NULL,'"Project Nr"',
 -- '"<a href=/intranet/projects/view?[export_url_vars project_id]>$project_nr</a>"',
@@ -619,9 +630,8 @@ extra_select, extra_where, sort_order, visible_for) values (91110,911,NULL,'UoM'
 '$uom','','',10,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (91112,911,NULL, 
-'"[im_gif del "Delete"]"', 
-'"<input type=checkbox name=task_id.$task_id>"', '', '', 12, '');
+extra_select, extra_where, sort_order, visible_for) values (91115,911,NULL,'Members',
+'"$project_member_list"','','',15,'');
 
 
 
