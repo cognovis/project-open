@@ -184,24 +184,32 @@ ad_proc -public intranet_collmex::update_provider_bill {
     # Get all the invoice information
     db_1row invoice_data {
 	select collmex_id,to_char(effective_date,'YYYYMMDD') as invoice_date, invoice_nr, 
-	  round(vat,0) as vat, round(amount,2) as netto
-	from im_invoices i, im_costs ci, im_companies c 
+	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, aux_int1 as konto
+	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca
 	where c.company_id = ci.provider_id 
+	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
+	and ca.category_id = ci.cost_type_id
 	and i.invoice_id = :invoice_id
     }
 
     regsub -all {\.} $netto {,} netto
 
     set csv_line "CMXLRN"
+
+    if {$collmex_id eq ""} {
+	set collmex_id [intranet_collmex::update_company -company_id $company_id]
+    }
+
     append csv_line ";$collmex_id" ; # Lieferantennummer
     append csv_line ";1" ; # Firma Nr
     append csv_line ";$invoice_date" ; # Rechnungsdatum
     append csv_line ";$invoice_nr" ; # Rechnungsnummer
 
-    
-    #set konto 5900
-    set konto 4780
+    if {$konto eq ""} {
+	set konto [parameter::get_from_package_key -package_key "intranet-collmex" -parameter "KontoInvoice"]
+    }
+
     # Find if the provide is from germany and has vat.
     if {$vat eq 19} {
 	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\"" ; # Nettobetrag voller Umsatzsteuersatz
@@ -260,11 +268,12 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     # Get all the invoice information
     db_1row invoice_data {
 	select collmex_id,to_char(effective_date,'YYYYMMDD') as invoice_date, invoice_nr, 
-	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code
-	from im_invoices i, im_costs ci, im_companies c, im_offices o
+	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, aux_int1 as konto
+	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca
 	where c.company_id = ci.customer_id 
 	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
+	and ca.category_id = ci.cost_type_id
 	and i.invoice_id = :invoice_id
     }
 
@@ -280,9 +289,10 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";$invoice_date" ; # Rechnungsdatum
     append csv_line ";$invoice_nr" ; # Rechnungsnummer
 
-    
-    #set konto 5900
-    set konto 8400
+    if {$konto eq ""} {
+	set konto [parameter::get_from_package_key -package_key "intranet-collmex" -parameter "KontoInvoice"]
+    }
+
     # Find if the provide is from germany and has vat.
     if {$vat eq 19} {
 	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\"" ; # Nettobetrag voller Umsatzsteuersatz

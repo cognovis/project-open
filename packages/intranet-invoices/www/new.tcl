@@ -39,6 +39,7 @@ ad_page_contract {
 # 2. Defaults & Security
 # ---------------------------------------------------------------
 
+set current_cost_type_id $cost_type_id
 set user_id [ad_maybe_redirect_for_registration]
 set show_cost_center_p [ad_parameter -package_id [im_package_invoices_id] "ShowCostCenterP" "" 0]
 set current_url [im_url_with_query]
