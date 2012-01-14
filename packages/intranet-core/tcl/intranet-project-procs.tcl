@@ -585,6 +585,7 @@ ad_proc -public im_project_subproject_ids {
 	}
 	
 	set task_exclude_clauses [list]
+	set extra_from ""
 	if {$project_ids ne ""} {
 	    if {$exclude_task_status_ids ne ""} {
 		lappend task_exclude_clauses "and task_status_id not in ([template::util::tcl_to_sql_list $exclude_task_status_ids])"

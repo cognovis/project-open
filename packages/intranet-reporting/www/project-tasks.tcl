@@ -267,6 +267,8 @@ if {$employee_cost_center_id ne ""} {
     if {[im_project_subproject_ids -type "task" -task_member_ids $employees] eq ""} {
 	return
     }
+} else {
+    set employees ""
 }
 
 
@@ -297,13 +299,11 @@ if {$employee_cost_center_id ne ""} {
 foreach project_id $main_project_ids {
     
     set stop_p 0
-    if {$employees ne ""} {
-	set task_ids [im_project_subproject_ids -project_id $project_id -type "task" -task_member_ids $employees -exclude_task_status_ids 9601 \
-			 -task_start_date $start_date_form -task_end_date $end_date_form]
-	if {$task_ids eq ""} {
-	    # We don't have any open tasks in this project
-	    set stop_p 1
-	}
+    set task_ids [im_project_subproject_ids -project_id $project_id -type "task" -task_member_ids $employees -exclude_task_status_ids 9601 \
+		      -task_start_date $start_date_form -task_end_date $end_date_form]
+    if {$task_ids eq ""} {
+	# We don't have any open tasks in this project
+	set stop_p 1
     }
 
     if {$stop_p eq 0} {
