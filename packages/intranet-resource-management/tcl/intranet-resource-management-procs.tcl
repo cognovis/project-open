@@ -123,8 +123,8 @@ ad_proc -public im_date_julian_to_components { julian_date } {
     set day_of_year [expr $julian_date - $first_year_julian + 1]
     set quarter_of_year [expr 1 + int(($month_of_year-1) / 3)]
 
-    set week_of_year [util_memoize [list db_string dow "select to_char(to_date($julian_date, 'J'),'IW')"]]
-    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+    set week_of_year [util_memoize [list db_string dow "select to_char(to_date('$julian_date', 'J'),'IW')"]]
+    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date('$julian_date', 'J'))"]]
     if {0 == $day_of_week} { set day_of_week 7 }
    
     return [list year $year \
@@ -1730,7 +1730,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	    set occupation_user 0
 	    set occupation_user_total 0
 
-	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date('$julian_date', 'J'))"]]
 	    if {0 == $day_of_week} { set day_of_week 7 }
 
 	    switch $otype {
@@ -2122,7 +2122,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
 	    # Check if column is a weekend 
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars [lindex $top_scale $col]]]
-	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date('$julian_date', 'J'))"]]
 	    if {0 == $day_of_week} { set day_of_week 7 }    
     
 	    if { "6" != $day_of_week && "7" != $day_of_week  } { 
@@ -2380,7 +2380,7 @@ ad_proc -private write_department_row {
 	    if {![info exists totals_department_availability_arr_loc($ctr)]} { set totals_department_availability_arr_loc($ctr) 0 }
 
 	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars $top_entry]]
-	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+	    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date('$julian_date', 'J'))"]]
 	    if {0 == $day_of_week} { set day_of_week 7 }
 	    if { "6" != $day_of_week && "7" != $day_of_week  } {
 	            set total_department_occupancy [expr $totals_department_planned_hours_arr_loc($ctr) + $totals_department_absences_arr_loc($ctr)]
@@ -2395,7 +2395,11 @@ ad_proc -private write_department_row {
 	                set total_hours_department_occupancy [expr $totals_department_planned_hours_arr_loc($ctr) + $totals_department_absences_arr_loc($ctr)]
 	                set total_hours_department_occupancy [format "%0.1f" $total_hours_department_occupancy]
 
-	                set percentage_occupancy [expr 100 * $total_hours_department_occupancy / $totals_department_availability_arr_loc($ctr)]
+			if {$totals_department_availability_arr_loc($ctr) eq 0} {
+			    set percentage_occupancy 0
+			} else {
+			    set percentage_occupancy [expr 100 * $total_hours_department_occupancy / $totals_department_availability_arr_loc($ctr)]
+			}
                         set percentage_occupancy [format "%0.1f" $percentage_occupancy]
 	                set bar_color [im_resource_mgmt_get_bar_color "traffic_light" $percentage_occupancy]
 

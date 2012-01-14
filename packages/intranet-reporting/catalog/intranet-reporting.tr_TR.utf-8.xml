@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="tr_TR" charset="utf-8">
+<message_catalog package_key="intranet-reporting" locale="tr_TR" charset="utf-8">
 
   <msg key="Add_new_Report">Yeni rapor ekle</msg>
   <msg key="Available_Reports">Mevcut Raporlar</msg>

@@ -563,10 +563,16 @@ db_foreach main_project_sql $main_project_sql {
 	        # In theory we can find any of the sub-types of project
         	# here: Ticket and Timesheet Task.
 	
+		set member ""
 		switch $project_type_id {
 			100 {
 	        	    # Timesheet Task
 			    set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
+			    set member [join [db_list members "select im_name_from_id(object_id_two) from acs_rels where object_id_one = :child_project_id and rel_type = 'im_biz_object_member'"] ","]
+			    if {$member eq "" || [string range $member 0 3] eq "Abt."} {
+				set member "<font color='red'>#intranet-reporting.assign# $member</font>"
+			    }
+	#		    ds_comment "Member $member :: $child_project_id"
 			}
 			101 {
         		    # Ticket

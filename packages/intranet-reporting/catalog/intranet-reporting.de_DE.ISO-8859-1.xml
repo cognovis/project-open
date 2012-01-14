@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-reporting" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Ad_hoc_Fraber_Test_group_id">Gruppen-ID</msg>
   <msg key="Ad_hoc_Fraber_Test_group_name">Gruppenname</msg>
   <msg key="Add_new_Report">Neuen Bericht hinzufügen</msg>
   <msg key="Admin_Reports">Admin Berichte</msg>
+  <msg key="assign">Weise mich zu - </msg>
   <msg key="Available_Reports">Verfügbare Berichte</msg>
   <msg key="Edit_Report">Bericht bearbeiten</msg>
   <msg key="Finance">Finanzen</msg>
