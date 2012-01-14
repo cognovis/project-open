@@ -1072,9 +1072,29 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				} else {
 					set user_day_task_arr($user_id-$days_julian-$project_id) [expr $planned_units.0 * $user_percentage/100]
 				}
-
+				
 				# get the superproject
-				set super_project_id [im_project_super_project_id $project_id]
+				set super_project_id $project_id
+				set loop 1
+				set ctr 0
+				while {$loop} {
+				    set loop 0
+				    if {[exists_and_not_null parent_hash($super_project_id)]} {
+					set parent_id $parent_hash($super_project_id)
+				    } else {
+					set parent_id ""
+				    } 
+				    if {$parent_id != ""} {
+					set super_project_id $parent_id
+					set loop 1
+				    }
+				    
+				    # Check for recursive loop
+				    if {$ctr > 20} {
+					set loop 0
+				    }
+				    incr ctr
+				}
 				if { [info exists user_day_task_arr($user_id-$next_workday_julian-$super_project_id)] } {
 					set user_day_task_arr($user_id-$days_julian-$super_project_id) [expr [expr $planned_units.0 / $number_of_users_on_task] + $user_day_task_arr($user_id-$days_julian-$super_project_id)]
 				} else {
@@ -1120,14 +1140,34 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				
 				# set user_day_task_arr($user_id-$days_julian-$project_id) [expr $hours_per_day * $user_percentage/100]
 				set user_day_task_arr($user_id-$days_julian-$project_id) $hours_per_day 
-				
-				set super_project_id [im_project_super_project_id $project_id]
+
+				# get the superproject
+				set super_project_id $project_id
+				set loop 1
+				set ctr 0
+				while {$loop} {
+				    set loop 0
+				    if {[exists_and_not_null parent_hash($super_project_id)]} {
+					set parent_id $parent_hash($super_project_id)
+				    } else {
+					set parent_id ""
+				    } 
+				    if {$parent_id != ""} {
+					set super_project_id $parent_id
+					set loop 1
+				    }
+				    
+				    # Check for recursive loop
+				    if {$ctr > 20} {
+					set loop 0
+				    }
+				    incr ctr
+				}
 				if { [info exists user_day_task_arr($user_id-$days_julian-$super_project_id)] } {
 				    set user_day_task_arr($user_id-$days_julian-$super_project_id) [expr $hours_per_day + $user_day_task_arr($user_id-$days_julian-$super_project_id)]
 				} else {
 				    set user_day_task_arr($user_id-$days_julian-$super_project_id) $hours_per_day
 				}
-
 				# Set USER totals
 				if { [info exists user_day_total_plannedhours_arr($user_id-$days_julian)] } {
 				    set user_day_total_plannedhours_arr($user_id-$days_julian) [expr $user_day_task_arr($user_id-$days_julian-$project_id) + $user_day_total_plannedhours_arr($user_id-$days_julian)]
