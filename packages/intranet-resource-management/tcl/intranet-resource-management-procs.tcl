@@ -771,7 +771,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
                         where   child.project_id = :pid and
                                 tree_ancestor_key(child.tree_sortkey, tree_level(child.tree_sortkey)-1) = parent.tree_sortkey
                 "
-	       set parent_id [db_string get_data $sql -default 0]
+	       set parent_id [db_string get_parent $sql -default 0]
 
 	       if { "0" == $parent_id || "" == $parent_id }  {
                    set project_id_list "<br>"
@@ -922,8 +922,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		end_date_julian_planned_hours,
 		start_date,
 		end_date,
-		planned_units,
-		percent_completed
+		coalesce(planned_units,0) as planned_units,
+		coalesce(percent_completed,0) as percent_completed
 	from 
                 (
                 select
@@ -975,9 +975,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # for a particular day: user_day_total_plannedhours_arr($user_id-$days_julian)
 
     db_foreach planned_hours_loop $planned_hours_sql {
-
+	
 	# Check the number of tasks this task is parent to  
-	set no_parents [db_string get_data "select count(*) from im_projects where parent_id = $project_id" -default 0]
+	set no_parents [db_string get_parents "select count(*) from im_projects where parent_id = $project_id" -default 0]
 
 	if { "0" == $no_parents } {
 
@@ -1083,12 +1083,14 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		    	if { [string first "." $planned_units] == -1 } { set planned_units $planned_units.0 }  
 		    	if { [string first "." $no_workdays] == -1 } { set no_workdays $no_workdays.0 }  
 			set hours_per_day [expr $planned_units / $no_workdays / $number_of_users_on_task ]
+			
+			set workdays [util_memoize [list im_absence_working_days_weekend_only -start_date $start_date -end_date $end_date]]
+			set no_users [llength $workdays]
+#			set workdays [util_memoize [list db_list get_work_days "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)"]]
 
-			set column_sql "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" 
+#			set no_users [util_memoize [list db_string get_number_users "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" -default 1]]
 
-			set no_users [db_string get_number_users "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)" -default 1] 
-
-			db_foreach column_list_sql $column_sql {		
+			foreach days $workdays {		
 			    	set days_julian [dt_ansi_to_julian_single_arg "$days"]
 				set user_ctr 0
 	                        foreach user_id $user_percentage_list {
@@ -1506,13 +1508,13 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# an entry for a person only.
 	set user_id [lindex $left_entry 0]
 
-	set user_department_id [util_memoize [list db_string get_data "select department_id from im_employees where employee_id = $user_id" -default 0]]
+	set user_department_id [util_memoize [list db_string get_department "select department_id from im_employees where employee_id = $user_id" -default 0]]
 	if { ""==$user_department_id } { set user_department_id $default_department }
 
 	# -----------------------------------------------
         # Determine availability of user (hours/day)  
 	# -----------------------------------------------
-        set availability_user_perc [util_memoize [list db_string get_data "select availability from im_employees where employee_id=$user_id" -default 0]]
+        set availability_user_perc [util_memoize [list db_string get_availabilty "select availability from im_employees where employee_id=$user_id" -default 0]]
         if { ![info exists availability_user_perc] } { set availability_user_perc 100 }
         # Make it 100% when no value found -> ToDo: Print hint on bottom of report 
 	if { "" == $availability_user_perc } { set availability_user_perc 100 }
@@ -1985,7 +1987,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
             }
             im_project {
 		# Is user even member of this project?  
-	        set user_is_project_member_p [db_string get_data "select count(*) from acs_rels where object_id_one = $oid and object_id_two =$user_id" -default 0]
+	        set user_is_project_member_p [db_string project_member_p "select count(*) from acs_rels where object_id_one = $oid and object_id_two =$user_id" -default 0]
 		if { $user_is_project_member_p } {
 		    # Does this project contain a task with planned hours for the given period where the user is a member of 
 		    set show_this_row_sql "
@@ -2014,7 +2016,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 						and parent.project_id = $oid
 					) isql
 		    "
-		    set found_task_p [db_string get_data $show_this_row_sql -default 0]
+		    set found_task_p [db_string found_task_p $show_this_row_sql -default 0]
 		    if { $found_task_p } {
 			 append department_row_html $department_row_html_tmp	
 		    }	 
@@ -2456,4 +2458,12 @@ ad_proc -private hsv2hex {h s v} {
 
 	set rgb_list [split $rgb " "]
 	return "\#[format %x [lindex $rgb_list 0]][format %x [lindex $rgb_list 1]][format %x [lindex $rgb_list 2]]"
+}
+
+ad_proc -public im_absence_working_days_weekend_only {
+    -start_date
+    -end_date
+} {
+} {
+    return [db_list get_work_days "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)"]
 }
