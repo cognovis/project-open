@@ -923,7 +923,8 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		start_date,
 		end_date,
 		coalesce(planned_units,0) as planned_units,
-		coalesce(percent_completed,0) as percent_completed
+		coalesce(percent_completed,0) as percent_completed,
+                (select count(*) from im_projects where parent_id =sq.project_id) as no_parents
 	from 
                 (
                 select
@@ -977,7 +978,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
     db_foreach planned_hours_loop $planned_hours_sql {
 	
 	# Check the number of tasks this task is parent to  
-	set no_parents [db_string get_parents "select count(*) from im_projects where parent_id = $project_id" -default 0]
 
 	if { "0" == $no_parents } {
 
@@ -1030,7 +1030,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		} 
 
 		# Over how many work days do we have to distribute the planned hours,  
-		set no_workdays [db_string get_view_id "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as foo (days date)" -default 1]
+		set workdays [util_memoize [list im_absence_working_days_weekend_only -start_date "$start_date" -end_date "$end_date"]]
+		set no_workdays [llength $workdays]
+
+#		set no_workdays [db_string get_view_id "select count(*) from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as foo (days date)" -default 1]
 		
 		ns_log NOTICE "<br>no_workdays for project: $project_id: $no_workdays<br>"
 
@@ -1084,7 +1087,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		    	if { [string first "." $no_workdays] == -1 } { set no_workdays $no_workdays.0 }  
 			set hours_per_day [expr $planned_units / $no_workdays / $number_of_users_on_task ]
 			
-			set workdays [util_memoize [list im_absence_working_days_weekend_only -start_date $start_date -end_date $end_date]]
+			set workdays [util_memoize [list im_absence_working_days_weekend_only -start_date "$start_date" -end_date "$end_date"]]
 			set no_users [llength $workdays]
 #			set workdays [util_memoize [list db_list get_work_days "select * from im_absences_working_days_period_weekend_only('$start_date', '$end_date') as series_days (days date)"]]
 
