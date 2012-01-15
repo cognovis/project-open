@@ -141,6 +141,13 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours || [string equal $start_date $end_date] } { 
 	set duration_hours 0 
     }
+
+    # Ignore the duration if it is a project and not a task
+    if {$project_type_id ne "100"} {
+	set duration_hours 0
+	set planned_units 0
+    }
+    
     # Set completed=100% if the task has been closed
     if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
 	set percent_completed 100.0
@@ -156,11 +163,11 @@ ad_proc -public im_ms_project_write_task {
 		Name Type
 		EffortDriven
 		OutlineNumber OutlineLevel Priority 
-		Start Finish ManualStart ManualFinish
+		Start Finish
 	        IsNull
 		Milestone
 		Work RemainingWork
-		Duration ManualDuration
+		Duration
 		RemainingDuration
 		DurationFormat
 		CalendarUID 
@@ -257,9 +264,13 @@ ad_proc -public im_ms_project_write_task {
 		}
 		UID			{ set value $org_project_id }
 		Work			{ 
-		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
-		    set seconds [expr $planned_units * 3600.0]
-		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
+			set planned_units 0 
+			set value ""
+		    } else {
+			set seconds [expr $planned_units * 3600.0]
+			set value [im_gp_seconds_to_ms_project_time $seconds]
+		    }
 		}
 		ACWP - \
 		ActualCost - \
