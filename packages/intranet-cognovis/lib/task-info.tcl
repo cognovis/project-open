@@ -54,7 +54,11 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
     set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
 
     # Set the value
-    set value $task($attribute_name)
+    if {![info exists task($attribute_name)]} {
+	set value ""
+    } else {
+	set value $task($attribute_name)
+    }
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
     }
