@@ -83,7 +83,7 @@ ad_proc -public im_department_planner_get_list_multirow {
     regexp {(....)-(..)-(..)} $report_end_date match year month day
     set report_end_date_julian [dt_ansi_to_julian $year $month $day]
 
-    if {$report_start_date_julian >= $report_end_date_julian} {
+    if {$report_start_date_julian > $report_end_date_julian} {
 		ad_return_complaint 1 "<b>Invalid start and end date</b>:<br>End date needs to be after start date."
 		ad_script_abort
     } 
@@ -173,7 +173,7 @@ ad_proc -public im_department_planner_get_list_multirow {
 
         # Set the total planned days for this project
         if {[exists_and_not_null planned_${cost_center_id}($main_project_id)]} {
-            incr planned_${cost_center_id}($main_project_id) $task_planned_days
+            set planned_${cost_center_id}($main_project_id)  [expr [set planned_${cost_center_id}($main_project_id)] + $task_planned_days]
         } else {
             set planned_${cost_center_id}($main_project_id) $task_planned_days
         }
@@ -183,13 +183,15 @@ ad_proc -public im_department_planner_get_list_multirow {
 	
 		# Calculate total calendar task length
 		set task_len_calendar_days [expr $task_end_date_julian - $task_start_date_julian]
-		if {$task_len_calendar_days <= 0} {
+		if {$task_len_calendar_days < 0} {
 	    	append error_html "<li><b>Invalid start and end date for task <a href=$task_url>$project_name</a></b>:<br>
 			End date should be later then start date.<br>
 			Start date: $start_date<br>
 			End date: $end_date
 	    	"
 	    	continue
+		} elseif {$task_len_calendar_days eq 0} {
+		    continue
 		}
        
 		# Calculate start and end within the reporting period

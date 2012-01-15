@@ -280,6 +280,9 @@ ad_form -extend -name $form_id -form {
     {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options $view_type_options}}
 }
 
+set filter_admin_url ""
+set filter_admin_html ""
+
 if {$filter_advanced_p} {
     im_dynfield::append_attributes_to_form \
         -object_type $object_type \
@@ -303,7 +306,6 @@ if {$filter_advanced_p} {
 	set filter_admin_url [export_vars -base "/intranet-dynfield/layout-position" {{object_type im_project} {page_url "/intranet/projects/index"}}]
 	set filter_admin_html "<a href='$filter_admin_url'>[im_gif wrench]</a>"
     }
-
 }
 
 # ---------------------------------------------------------------
