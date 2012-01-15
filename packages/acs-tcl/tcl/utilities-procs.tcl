@@ -2586,7 +2586,8 @@ ad_proc -public util_current_location {{}} {
     if { $port ne "" && $port ne $default_port($proto) } {
         return "$proto://$hostname:$port"
     } else {
-        return "$proto://$hostname"
+	return [ad_url]
+        #return "$proto://$hostname"
     }
 }
 
