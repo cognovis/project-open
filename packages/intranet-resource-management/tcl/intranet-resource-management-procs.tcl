@@ -1596,7 +1596,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	# --------------------------------------------------------------------
 	# Write department Row when user_department_id has changed ...   
 	# -------------------------------------------------------------------
-
 	if { $row_shows_employee_p } {
 	    if { 0 == $row_ctr } {
 		set user_department_id_predecessor $user_department_id
@@ -1604,17 +1603,17 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		if { $user_department_id_predecessor != $user_department_id } {
 		    set first_department_p 0
 		    # Change of department -> show subtotals and print rows 
-			append html [write_department_row \
-					$department_row_html \
-					$user_department_id_predecessor \
-					[array get totals_department_absences_arr] \
-					[array get totals_department_planned_hours_arr] \
-					[array get totals_department_availability_arr] \
-					$top_scale $top_vars $show_departments_only_p \
-				] 
-
+		    append html [write_department_row \
+				     $department_row_html \
+				     $user_department_id_predecessor \
+				     [array get totals_department_absences_arr] \
+				     [array get totals_department_planned_hours_arr] \
+				     [array get totals_department_availability_arr] \
+				     $top_scale $top_vars $show_departments_only_p \
+				    ] 
+		    
 		    set user_department_id_predecessor $user_department_id
-
+		    
 		    # Reset department arrays 
 		    array unset totals_department_absences_arr
 		    array unset totals_department_availability_arr
@@ -2101,15 +2100,17 @@ ad_proc -public im_resource_mgmt_resource_planning {
     }; # end loop user/project/task rows 
 
     # ad_return_complaint 1 "$totals_department_planned_hours_arr(0)<br>$totals_department_planned_hours_arr(1)<br>"
-
-    append html [write_department_row \
-	$department_row_html \
-        $user_department_id_predecessor \
-        [array get totals_department_absences_arr] \
-        [array get totals_department_planned_hours_arr] \
-        [array get totals_department_availability_arr] \
-        $top_scale $top_vars $show_departments_only_p \
-    ]
+    
+    if {[info exists department_row_html]} {
+	append html [write_department_row \
+			 $department_row_html \
+			 $user_department_id_predecessor \
+			 [array get totals_department_absences_arr] \
+			 [array get totals_department_planned_hours_arr] \
+			 [array get totals_department_availability_arr] \
+			 $top_scale $top_vars $show_departments_only_p \
+			]
+    }
 
     # end loop rows 
 
