@@ -156,11 +156,11 @@ ad_proc -public im_ms_project_write_task {
 		Name Type
 		EffortDriven
 		OutlineNumber OutlineLevel Priority 
-		Start Finish 
+		Start Finish ManualStart ManualFinish
 	        IsNull
 		Milestone
 		Work RemainingWork
-		Duration 
+		Duration ManualDuration
 		RemainingDuration
 		DurationFormat
 		CalendarUID 
@@ -171,8 +171,10 @@ ad_proc -public im_ms_project_write_task {
     }
 
     # Add the following elements to the xml_elements always
-    if {[lsearch $xml_elements "PredecessorLink"] < 0} {
-	lappend xml_elements "PredecessorLink"
+    foreach xml_element [list "PredecessorLink" "ManualStart" "ManualFinish" "ManualDuration"] {
+	if {[lsearch $xml_elements $xml_element] < 0} {
+	    lappend xml_elements $xml_element
+	}
     }
 
     set predecessors_done 0
@@ -197,12 +199,21 @@ ad_proc -public im_ms_project_write_task {
 		Priority		{ set value 500 }
 		Start			{ set value $start_date }
 		Finish			{ set value $end_date }
+		ManualStart		{ set value $start_date }
+		ManualFinish		{ set value $end_date }
 		Duration {
 		    # Check if we've got a duration defined in the xml_elements.
 		    # Otherwise (export without import...) generate a duration.
 		    set seconds [expr $duration_hours * 3600.0]
 		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
+	        ManualDuration {
+		    # Check if we've got a duration defined in the xml_elements.
+		    # Otherwise (export without import...) generate a duration.
+		    set seconds [expr $duration_hours * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		}
+
 		DurationFormat		{ set value 7 }
 		EffortDriven		{ if {"t" == $effort_driven_p} { set value 1 } else { set value 0 } }
 		RemainingDuration {
