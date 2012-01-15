@@ -409,7 +409,7 @@ ad_proc -public im_project_create_dependency {
  	"
     }
 
-    set dependency_type_id [db_string dependency_type "select category_id from im_categories where category = :depend_type and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
+    set dependency_type_id [db_string dependency_type "select category_id from im_categories where (category = :depend_type or aux_int1 = :depend_type) and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
     set hardness_type_id [db_string dependency_type "select category_id from im_categories where category = :hardness and category_type = 'Intranet Timesheet Task Dependency Hardness Type'" -default ""]
     
 
@@ -938,7 +938,8 @@ ad_proc -public im_gp_save_tasks2 {
 			switch [$attrtag nodeName] {
 			    "PredecessorUID" { set linkid [$attrtag text] }
 			    # TODO: the next one should obviously not be fixed
-			    "Type"           { set linktype 2 }
+			    "Type"           { set linktype [$attrtag text] }
+			    "LinkLag"           { set difference [$attrtag text] }
 			}
 		    }
 		    
@@ -946,6 +947,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
+			-difference $difference \
 			-task_hash_array [array get task_hash]
 		}
 	    }

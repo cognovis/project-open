@@ -232,11 +232,13 @@ ad_proc -public im_ms_project_write_task {
 			set dependency_sql "
 				SELECT DISTINCT
 					gp.xml_uid as xml_uid_ms_project,
-					gp.project_id as xml_uid
-				FROM	im_timesheet_task_dependencies ttd
+					gp.project_id as xml_uid,
+                                        coalesce(c.aux_int1,1) as type_id, 
+                                        coalesce(ttd.difference,0) as difference
+				FROM	im_categories c,im_timesheet_task_dependencies ttd
 					LEFT OUTER JOIN im_gantt_projects gp ON (ttd.task_id_two = gp.project_id)
 				WHERE	ttd.task_id_one = :task_id and
-					ttd.dependency_type_id = [im_timesheet_task_dependency_type_depends] and
+                                        ttd.dependency_type_id = c.category_id and
 					ttd.task_id_two <> :task_id
 			"
 
@@ -244,9 +246,9 @@ ad_proc -public im_ms_project_write_task {
 			    $task_node appendXML "
 				<PredecessorLink>
 					<PredecessorUID>$xml_uid</PredecessorUID>
-					<Type>1</Type>
+					<Type>$type_id</Type>
 					<CrossProject>0</CrossProject>
-					<LinkLag>0</LinkLag>
+					<LinkLag>$difference</LinkLag>
 					<LagFormat>7</LagFormat>
 				</PredecessorLink>
 			    "
