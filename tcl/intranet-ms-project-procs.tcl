@@ -156,11 +156,14 @@ ad_proc -public im_ms_project_write_task {
 		Name Type
 		EffortDriven
 		OutlineNumber OutlineLevel Priority 
-		Start Finish 
+		Start Finish
+	        ManualStart
+	        ManualFinish
 	        IsNull
 		Milestone
 		Work RemainingWork
-		Duration 
+		Duration
+	        ManualDuration
 		RemainingDuration
 		DurationFormat
 		CalendarUID 
