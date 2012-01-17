@@ -62,6 +62,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     -ldap_type:required
     -ldap_domain:required
     -ldap_binddn:required
+    { -ldap_bindpw "" }
     -ldap_system_binddn:required
     -ldap_system_bindpw:required
 } {
