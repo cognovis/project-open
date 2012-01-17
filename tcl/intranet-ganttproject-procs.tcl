@@ -409,7 +409,7 @@ ad_proc -public im_project_create_dependency {
  	"
     }
 
-    set dependency_type_id [db_string dependency_type "select category_id from im_categories where category = :depend_type and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
+    set dependency_type_id [db_string dependency_type "select category_id from im_categories where (category = :depend_type OR aux_int1 = :depend_type) and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
     set hardness_type_id [db_string dependency_type "select category_id from im_categories where category = :hardness and category_type = 'Intranet Timesheet Task Dependency Hardness Type'" -default ""]
     
 
