@@ -15,7 +15,8 @@ SELECT im_category_new(9652,'Sub-Task', 'Intranet Timesheet Task Dependency Type
 
 
 -- Check for configuration error in previous version
-update im_categories set catgory_id = 9666 where category_id = 9668;
+update im_categories set category_id = 9666 where category_id = 9668;
+update im_categories set category = 'Depends' where category_id = 9650;
 
 --
 -- Values used for MS-project
