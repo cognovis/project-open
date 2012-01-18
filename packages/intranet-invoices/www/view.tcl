@@ -139,7 +139,9 @@ im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
 # ---------------------------------------------------------------
 
 # Invoices and Quotes have a "Customer" fields.
-set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note] || $cost_type_id == [im_cost_type_interco_quote] || $cost_type_id == [im_cost_type_interco_invoice]]
+set invoice_or_quote_p [expr [im_category_is_a $cost_type_id [im_cost_type_invoice]] || [im_category_is_a $cost_type_id [im_cost_type_quote]] || [im_category_is_a $cost_type_id [im_cost_type_delivery_note]] || [im_category_is_a $cost_type_id [im_cost_type_interco_quote]] || [im_category_is_a $cost_type_id [im_cost_type_interco_invoice]]]
+
+ds_comment "$invoice_or_quote_p ..."
 
 # Vars for ADP (can't use the commands in ADP)
 set quote_cost_type_id [im_cost_type_quote]
