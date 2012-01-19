@@ -37,7 +37,7 @@ SELECT acs_permission__grant_permission(
 -- 300			program_portfolio_list
 
 --
-delete from im_view_columns where column_id > 30000 and column_id < 30099;
+delete from im_view_columns where view_id = 300;
 delete from im_views where view_id = 300;
 --
 insert into im_views (view_id, view_name, visible_for, view_type_id)
