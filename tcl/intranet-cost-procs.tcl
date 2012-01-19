@@ -1983,7 +1983,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 	    switch $item_cost_type_id {
 		3736 {
 		    # 3736=Timesheet Hours -> 3726=Timesheet Budget
-		    set subtotals(3726) $amount_converted	    
+		    # Do nothing (skip) here. There is a special treatment below.
 		}
 		3722 {
 		    # 3722=Expense Bundle -> 3728=Expense Planned Cost
@@ -1998,31 +1998,58 @@ ad_proc -public im_cost_update_project_cost_cache {
 		}
 	    }
 	}
-    }
 
+	# Special treatment for budget hours.
+	# We need to multiply the budget hours with a hourly rate,
+	# possibly depending on the user (im_planning_items.item_project_member_id)
+	set planning_ts_hours_sql "
+		select	sum(amount_converted * hourly_cost)
+		from	(
+			select	sum(pi.item_value) as amount_converted,
+				coalesce(e.hourly_cost, :default_hourly_cost) as hourly_cost
+			from	im_planning_items pi
+				LEFT OUTER JOIN im_employees e ON (pi.item_project_member_id = e.employee_id)
+			where	pi.item_object_id = :project_id and
+				pi.item_cost_type_id = [im_cost_type_timesheet_hours]
+			group by 
+				pi.item_project_member_id,
+				e.hourly_cost
+			) t
+	"
+	set ts_budget [db_string ts_budget $planning_ts_hours_sql -default 0.0]
+	if {"" == $ts_budget} { set ts_budget 0.0 }
+	set ts_budget [expr $ts_budget]
+	set subtotals(3726) $ts_budget
 
-    # Special treatment for timesheet hours budget:
-    # - Check if there are cost elements of type "timesheet planned hours" in the system
-    # - Otherwise use budget_hours in the project and multiply with default hourly rate
-    if {[info exists subtotals([im_cost_type_timesheet_planned])] && "" != $subtotals([im_cost_type_timesheet_planned]) && 0 != $subtotals([im_cost_type_timesheet_planned])} {
-	# There is an entry for planned timesheet costs for this project...
-	# Do nothing.
     } else {
-	# Create a fake timesheet planning entry based on im_project.budget_hours field
-	set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
-	if {"" == $budget_hours} { set budget_hours 0 }
-	set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
-	set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
-    }
 
-    # Expense Planned
-    if {![info exists subtotals([im_cost_type_expense_planned])]} {
-	set subtotals([im_cost_type_expense_planned]) 0
-    }
+	# Package "intranet-planning" is not installed:
 
-    # Timesheet Hours Budget
-    if {![info exists subtotals([im_cost_type_timesheet_planned])]} {
-	set subtotals([im_cost_type_timesheet_planned]) 0
+	# Special treatment for timesheet hours budget:
+	# - Check if there are cost elements of type "timesheet planned hours" in the system
+	# - Otherwise use budget_hours in the project and multiply with default hourly rate
+	if {[info exists subtotals([im_cost_type_timesheet_planned])] && "" != $subtotals([im_cost_type_timesheet_planned]) && 0 != $subtotals([im_cost_type_timesheet_planned])} {
+	    # There is an entry for planned timesheet costs for this project...
+	    # Do nothing.
+	} else {
+	    # Create a fake timesheet planning entry based on im_project.budget_hours field
+	    set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
+	    if {"" == $budget_hours} { set budget_hours 0 }
+	    set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
+	    set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+	}
+	
+	# Expense Planned
+	if {![info exists subtotals([im_cost_type_expense_planned])]} {
+	    set subtotals([im_cost_type_expense_planned]) 0
+	}
+	
+	# Timesheet Hours Budget
+	if {![info exists subtotals([im_cost_type_timesheet_planned])]} {
+	    set subtotals([im_cost_type_timesheet_planned]) 0
+	}
+
+	# End of "planing not installed"
     }
 
     # We can update the profit & loss because all financial documents
