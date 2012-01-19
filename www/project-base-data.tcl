@@ -133,6 +133,7 @@ set project_base_data_html "
                           </tr>"
 
 if { ![empty_string_p $parent_id] } {
+    set parent_name [db_string get_data "select project_name from im_projects where project_id = :parent_id" -default 0]
     append project_base_data_html "
                           <tr>
                             <td>[_ intranet-core.Parent_Project]</td>
