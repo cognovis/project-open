@@ -141,6 +141,14 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours || [string equal $start_date $end_date] } { 
 	set duration_hours 0 
     }
+
+    # Ignore the duration if it is not a task (a project).
+    # Projects don't have duration and planned_units in ]po[.
+    if {$project_type_id != [im_project_type_task]} {
+	set duration_hours 0
+	set planned_units 0
+    }
+
     # Set completed=100% if the task has been closed
     if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
 	set percent_completed 100.0
@@ -156,11 +164,14 @@ ad_proc -public im_ms_project_write_task {
 		Name Type
 		EffortDriven
 		OutlineNumber OutlineLevel Priority 
-		Start Finish 
+		Start Finish
+	        ManualStart
+	        ManualFinish
 	        IsNull
 		Milestone
 		Work RemainingWork
-		Duration 
+		Duration
+	        ManualDuration
 		RemainingDuration
 		DurationFormat
 		CalendarUID 
@@ -169,10 +180,12 @@ ad_proc -public im_ms_project_write_task {
 	        ConstraintType
 	}
     }
-
+    
     # Add the following elements to the xml_elements always
-    if {[lsearch $xml_elements "PredecessorLink"] < 0} {
-	lappend xml_elements "PredecessorLink"
+    foreach xml_element [list "PredecessorLink" "ManualStart" "ManualFinish" "ManualDuration"] {
+	if {[lsearch $xml_elements $xml_element] < 0} {
+	    lappend xml_elements $xml_element
+	}
     }
 
     set predecessors_done 0
@@ -195,9 +208,9 @@ ad_proc -public im_ms_project_write_task {
 		OutlineNumber		{ set value $outline_number }
 		OutlineLevel		{ set value $outline_level }
 		Priority		{ set value 500 }
-		Start			{ set value $start_date }
-		Finish			{ set value $end_date }
-		Duration {
+		Start - ManualStart	{ set value $start_date }
+		Finish - ManualFinish	{ set value $end_date }
+		Duration - ManualDuration {
 		    # Check if we've got a duration defined in the xml_elements.
 		    # Otherwise (export without import...) generate a duration.
 		    set seconds [expr $duration_hours * 3600.0]
@@ -229,13 +242,27 @@ ad_proc -public im_ms_project_write_task {
 					ttd.task_id_two <> :task_id
 			"
 
+			set dependency_sql "
+				SELECT DISTINCT
+					gp.xml_uid as xml_uid_ms_project,
+					gp.project_id as xml_uid,
+					coalesce(c.aux_int1,1) as type_id, 
+                                        coalesce(ttd.difference,0) as difference
+				FROM	im_categories c,
+					im_timesheet_task_dependencies ttd
+					LEFT OUTER JOIN im_gantt_projects gp ON (ttd.task_id_two = gp.project_id)
+				WHERE	ttd.task_id_one = :task_id and
+                                        ttd.dependency_type_id = c.category_id and
+					ttd.task_id_two <> :task_id
+			"
+
 			db_foreach dependency $dependency_sql {
 			    $task_node appendXML "
 				<PredecessorLink>
 					<PredecessorUID>$xml_uid</PredecessorUID>
-					<Type>1</Type>
+					<Type>$type_id</Type>
 					<CrossProject>0</CrossProject>
-					<LinkLag>0</LinkLag>
+					<LinkLag>$difference</LinkLag>
 					<LagFormat>7</LagFormat>
 				</PredecessorLink>
 			    "
@@ -244,9 +271,13 @@ ad_proc -public im_ms_project_write_task {
 		}
 		UID			{ set value $org_project_id }
 		Work			{ 
-		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
-		    set seconds [expr $planned_units * 3600.0]
-		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
+			set planned_units 0 
+			set value ""
+		    } else {
+			set seconds [expr $planned_units * 3600.0]
+			set value [im_gp_seconds_to_ms_project_time $seconds]
+		    }
 		}
 		ACWP - \
 		ActualCost - \
