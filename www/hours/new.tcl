@@ -91,7 +91,8 @@ set project_id_for_default [lindex $project_id 0]
 if {0 == $project_id} { set project_id_for_default ""}
 
 # "Log hours for a different day"
-set different_date_url [export_vars -base "index" {user_id_from_search julian_date show_week_p project_id}]
+# set different_date_url [export_vars -base "index" {user_id_from_search julian_date show_week_p project_id}]
+set different_date_url [export_vars -base "/intranet-timesheet2/hours/index" {user_id_from_search julian_date show_week_p project_id}]
 
 # Should we show an "internal" text comment
 # in addition to the normal "external" comment?
@@ -959,7 +960,7 @@ template::multirow foreach hours_multirow {
 		append help_text [lang::message::lookup "" intranet-timesheet2.Approval_Made_Or_In_Progress "Entry already approved or approval in progress"]
 	}
 
-    if {"" != $help_text} { set help_gif [im_gif help $help_text] }
+    if {"" != $help_text} { set help_gif [im_gif information $help_text] }
     append results "<td>$help_gif $debug_html</td>\n"
 
 	# Determine whether the hours have already been included in a timesheet invoice
@@ -979,8 +980,14 @@ template::multirow foreach hours_multirow {
 		if {$materials_p} { append results "<td>[im_select -translate_p 0 -ad_form_option_list_style_p 1 materials0.$project_id $material_options $material_id]</td>\n" }
 	    }
 	} else {
+	    set help_gif_hours ""
+	    set help_text_hours ""
+	    if { 0 != $invoice_id } {
+		set help_text_hours [lang::message::lookup "" intranet-timesheet2.InvoiceExists "Hours already invoiced"]
+		set help_gif_hours [im_gif information $help_text_hours] 
+	    }
 	    # Write Disabled because we can't log hours on this one
-	    append results "<td>$hours <INPUT type=hidden NAME=hours${i}.$project_id value=\"$hours\"></td>\n"
+	    append results "<td>$hours <INPUT type=hidden NAME=hours${i}.$project_id value=\"$hours\">&nbsp;$help_gif_hours</td>\n"
 
 	    if {!$show_week_p} {
 		append results "<td>[ns_quotehtml [value_if_exists note]] <INPUT type=hidden NAME=notes0.$project_id value=\"[ns_quotehtml [value_if_exists note]]\"></td>\n"
