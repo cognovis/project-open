@@ -641,10 +641,12 @@ ad_proc -public im_sla_ticket_solution_time_sweeper_helper {
 
 			# Write the affected groups into a hash
 			set groups [list]
+
 			if {$debug_p} {
 			    ns_log Notice "sweeper: [array get labour_start_groups_{$ticket_id} $labour_start_epoch]"
 			    ns_log Notice "sweeper: [array get labour_start_groups_{$ticket_id}]"
 			}
+
 			if {[info exists labour_start_groups_{$ticket_id}($labour_start_epoch)]} { set groups [array get labour_start_groups_{$ticket_id} $labour_start_epoch] }
 			lappend groups $gid
 			set labour_start_groups_{$ticket_id}($labour_start_epoch) $groups
