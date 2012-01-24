@@ -118,10 +118,13 @@ set vacation_sql "
 	order by
 		a.start_date
 "
-if {![info exists rwh_balance] || "" == $rwh_balance} { set rwh_balance 0 }
+
+set rwh_days_last_year [db_string get_data "select rwh_days_last_year from im_employees where employee_id = :user_id_from_search" -default 0]
+if {![info exists rwh_days_last_year] || "" == $rwh_days_last_year} { set rwh_days_last_year 0 }
+
 if {"" == $rwh_days_per_year} { set rwh_days_per_year 0 }
 
-set rwh_days_left [expr $rwh_balance + $rwh_days_per_year]
+set rwh_days_left [expr $rwh_days_last_year + $rwh_days_per_year]
 set rwh_days_taken 0
 
 db_multirow -extend { absence_url absence_type } rwh_balance_multirow rwh_balance $vacation_sql {
@@ -134,3 +137,4 @@ db_multirow -extend { absence_url absence_type } rwh_balance_multirow rwh_balanc
 }
 
 ad_return_template
+

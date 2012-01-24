@@ -16,7 +16,7 @@
 </tr>
 <tr class=rowodd>
         <td><%= [lang::message::lookup "" intranet-timesheet2.Rwh_Balance_From_Last_Year "RWH Balance from Last Year"] %></td>
-        <td>@rwh_balance@</td>
+        <td>@rwh_days_last_year@</td>
 </tr>
 <tr class=rowodd>
         <td><%= [lang::message::lookup "" intranet-timesheet2.Rwh_Taken_This_Year "RWH Taken This Year"] %></td>
