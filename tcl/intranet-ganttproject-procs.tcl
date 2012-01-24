@@ -382,7 +382,7 @@ ad_proc -public im_project_create_dependency {
             <customproperty taskproperty-id="tpc0" value="nothing..." />
           </task>
 } {
-    ns_log Notice "im_ganttproject_create_dependency: task_id_one=$task_id_one, task_id_two=$task_id_two, depend-type=$depend_type, hardness=$hardness"
+    ns_log Notice "im_ganttproject_create_dependency: task_id_one=$task_id_one, task_id_two=$task_id_two, depend-type=$depend_type, difference=$difference, hardness=$hardness"
     array set task_hash $task_hash_array
 
     set org_task_id_one task_id_one
@@ -945,12 +945,15 @@ ad_proc -public im_gp_save_tasks2 {
 			}
 		    }
 
-		    # ToDo: Calculate "difference" from LinkLag and LagFormat
+		    # Calculate "difference" from LinkLag and LagFormat.
+		    # ToDo: Take care of LagFormat
+		    set difference_seconds [expr $link_lag * 1.0]
+
 		    im_project_create_dependency \
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
-			-difference $difference \
+			-difference $difference_seconds \
 			-task_hash_array [array get task_hash]
 		}
 	    }
