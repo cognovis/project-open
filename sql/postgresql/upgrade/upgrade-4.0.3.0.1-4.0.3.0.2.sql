@@ -30,7 +30,7 @@ begin
 		
         	v_date_out      date;
 	begin		
-        	select to_date(date_trunc(''month'',add_months(p_date_in,1))::text, ''YYYY-MM-DD''::text) - 1 into v_date_out;
+        	select to_date(date_trunc('month',add_months(p_date_in,1))::text, 'YYYY-MM-DD'::text) - 1 into v_date_out;
         	return v_date_out;
 	end;' LANGUAGE 'plpgsql';
 
