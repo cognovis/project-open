@@ -1428,7 +1428,11 @@ ad_proc -public im_dynfield::append_attributes_to_im_view {
     db_foreach dynfield_attributes $attributes_sql {
 
 	# Apply the dereferencing function in order to convert catgory_ids into text etc.
-        set deref "$table_prefix$attribute_name"
+	if {$table_prefix ne ""} {
+	    set deref "$table_prefix$attribute_name"
+	} else {
+	    set deref "${table_name}.$attribute_name"
+	}
         if {"" != $deref_plpgsql_function} {
             set deref "${deref_plpgsql_function}($deref)"
         }

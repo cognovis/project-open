@@ -414,7 +414,7 @@ set expense_lines_sql "
 		e.*,
 		acs_object__name(provider_id) as provider_name,
 		to_char(effective_date, :date_format) as effective_date,
-		to_char(((c.amount * c.vat/100) + c.amount)*e.reimbursable/100,:cur_format) as amount_reimbursable,
+		((c.amount * c.vat/100) + c.amount)*e.reimbursable/100 as amount_reimbursable,
 		round(((c.amount * c.vat/100) + c.amount) * (e.reimbursable/100) * 
 			im_exchange_rate(c.effective_date::date, c.currency, '$def_currency') :: numeric, 2) as amount_reimbursable_converted,
 		im_category_from_id(expense_type_id) as expense_type,
@@ -450,7 +450,7 @@ db_multirow -extend {project_url expense_new_url provider_url} expense_lines exp
             set curr_idx [lsearch $currency_list $currency]
         }
     }
-
+    
     if { [info exists curr_hash($provider_id,$curr_idx) ] } {
         set curr_hash($provider_id,$curr_idx) [expr $curr_hash($provider_id,$curr_idx) + $amount_reimbursable]
     } else {

@@ -21,7 +21,7 @@ ad_page_contract {
     { project_id:integer "" }
     { return_url "/intranet-expenses/"}
     expense_id:integer,optional
-    expense_amount:float,optional
+    expense_amount:optional
     expense_date:optional
     {form_mode "edit"}
 }
@@ -300,7 +300,9 @@ ad_form -extend -name $form_id -on_request {
 	     intranet-expenses.Expense_type_is_required \
 	     "You have to selectect an expense type"]
     }
-
+    
+    # Make sure to have the expense amount in a format that TCL can use.
+    regsub -all {,} $expense_amount {.} expense_amount
     if {![info exists vat] || "" == $vat} { set vat 0 }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
@@ -341,6 +343,9 @@ ad_form -extend -name $form_id -on_request {
     im_audit -object_type im_expense -action after_create -object_id $expense_id
 
 } -edit_data {
+
+    # Make sure to have the expense_amount in a format TCL can use
+    regsub -all {,} $expense_amount {.} expense_amount
 
     # Security Check: Don't allow to change an "invoiced" expense
     set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
