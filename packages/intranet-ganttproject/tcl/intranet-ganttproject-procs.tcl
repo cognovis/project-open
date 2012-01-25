@@ -382,6 +382,7 @@ ad_proc -public im_project_create_dependency {
             <customproperty taskproperty-id="tpc0" value="nothing..." />
           </task>
 } {
+    ns_log Notice "im_ganttproject_create_dependency: task_id_one=$task_id_one, task_id_two=$task_id_two, depend-type=$depend_type, difference=$difference, hardness=$hardness"
     array set task_hash $task_hash_array
 
     set org_task_id_one task_id_one
@@ -389,8 +390,6 @@ ad_proc -public im_project_create_dependency {
 
     if {[info exists task_hash($task_id_one)]} { set task_id_one $task_hash($task_id_one) }
     if {[info exists task_hash($task_id_two)]} { set task_id_two $task_hash($task_id_two) }
-
-#    ns_write "<li>im_ganttproject_create_dependency($org_task_id_one =&gt; $task_id_one, $org_task_id_two =&gt; $task_id_two, $depend_type, $hardness)\n"
 
     # ----------------------------------------------------------
     # Check if the two task_ids exist
@@ -934,18 +933,27 @@ ad_proc -public im_gp_save_tasks2 {
 
 		    set linkid ""
 		    set linktype ""
+		    set link_lag 0
+		    set link_lag_format 7
+		    set difference 0
 		    foreach attrtag [$taskchild childNodes] {
 			switch [$attrtag nodeName] {
 			    "PredecessorUID" { set linkid [$attrtag text] }
-			    # TODO: the next one should obviously not be fixed
-			    "Type"           { set linktype 2 }
+			    "Type"           { set linktype [$attrtag text] }
+			    "LinkLag"        { set link_lag [$attrtag text] }
+			    "LagFormat"      { set link_lag_format [$attrtag text] }
 			}
 		    }
-		    
+
+		    # Calculate "difference" from LinkLag and LagFormat.
+		    # ToDo: Take care of LagFormat
+		    set difference_seconds [expr $link_lag * 1.0]
+
 		    im_project_create_dependency \
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
+			-difference $difference_seconds \
 			-task_hash_array [array get task_hash]
 		}
 	    }
