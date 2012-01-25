@@ -69,7 +69,6 @@ function update_cost_object() {
     // get the company_id from the customer's drop-down
     var oForm = document.getElementById('project-ae');
     var company_id = oForm.elements["company_id"].options[oForm.elements["company_id"].selectedIndex].value;
-
     xmlHttp1.open("GET","/intranet-cust-koernigweber/set_cost_object_drop_down?company_id="+company_id ,true);
     xmlHttp1.send(null);
     xmlHttp2.open("GET","/intranet-cust-koernigweber/set_cost_object_drop_down?company_id="+company_id ,true);
@@ -78,6 +77,22 @@ function update_cost_object() {
 
 
 jQuery().ready(function(){
-        update_cost_object();
+        var oForm = document.getElementById('project-ae');
+	var project_id = oForm.elements["object_id"].value;
+	var company_id = oForm.elements["company_id"].options[oForm.elements["company_id"].selectedIndex].value;
+	if ( company_id != null && company_id != "" ) {
+	        update_cost_object();
+		var url_str = "/intranet-rest/im_project/" + project_id + "?format=xml"; 
+		$.ajax({
+			url: url_str,
+			dataType: ($.browser.msie) ? "xml" : "text/xml",
+			success: function(xml){
+				  $(xml).find("cost_object_category_id").each(function() {
+				          var oForm = document.getElementById('project-ae');
+					  oForm.elements["cost_object_category_id"].value = $(this)[0].innerHTML;
+  				  });
+	  		}
+		});
+	}
 	$('#company_id').change(update_cost_object);
 });
