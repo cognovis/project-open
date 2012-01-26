@@ -1884,6 +1884,7 @@ ad_proc -public im_cost_cache_sweeper { } {
 
 
 ad_proc -public im_cost_update_project_cost_cache { 
+    {-debug_p 0}
     project_id 
 } {
     Calculates the sums of all cost elements per project,
@@ -2072,6 +2073,17 @@ ad_proc -public im_cost_update_project_cost_cache {
 
     # Audit the action
     # im_project_audit -project_id $project_id -action after_update
+
+    if {$debug_p} {
+	set debug_html ""
+	foreach cid [array names subtotals] {
+	    set v $subtotals($cid)
+	    append debug_html "<tr><td>[im_category_from_id $cid]</td><td>$v</td></tr>\n"
+	}
+	ad_return_complaint 1 "<table>$debug_html</table>"
+	ad_script_abort
+    }
+
 
     return [array get subtotals]
 }
