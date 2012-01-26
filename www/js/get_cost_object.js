@@ -75,24 +75,29 @@ function update_cost_object() {
     xmlHttp2.send(null);
 }
 
-
 jQuery().ready(function(){
         var oForm = document.getElementById('project-ae');
-	var project_id = oForm.elements["object_id"].value;
+	if (oForm.elements["object_id"] == null) {
+	    var project_id = oForm.elements["project_id"].value;
+	} else {
+	    var project_id = oForm.elements["object_id"].value;
+	}
 	var company_id = oForm.elements["company_id"].options[oForm.elements["company_id"].selectedIndex].value;
 	if ( company_id != null && company_id != "" ) {
 	        update_cost_object();
-		var url_str = "/intranet-rest/im_project/" + project_id + "?format=xml"; 
-		$.ajax({
-			url: url_str,
-			dataType: ($.browser.msie) ? "xml" : "text/xml",
-			success: function(xml){
-				  $(xml).find("cost_object_category_id").each(function() {
-				          var oForm = document.getElementById('project-ae');
-					  oForm.elements["cost_object_category_id"].value = $(this)[0].innerHTML;
-  				  });
-	  		}
-		});
+		if ( oForm.elements["object_id"] != null ) {
+			var url_str = "/intranet-rest/im_project/" + project_id + "?format=xml"; 
+			$.ajax({
+				url: url_str,
+				dataType: ($.browser.msie) ? "xml" : "text/xml",
+				success: function(xml){
+					  $(xml).find("cost_object_category_id").each(function() {
+					          var oForm = document.getElementById('project-ae');
+						  oForm.elements["cost_object_category_id"].value = $(this)[0].innerHTML;
+  					  });
+	  			}
+			});
+		}
 	}
 	$('#company_id').change(update_cost_object);
 });
