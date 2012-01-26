@@ -275,8 +275,6 @@ if {0 != $last_month_closing_day && "" != $last_month_closing_day && !$add_hours
 
 set edit_hours_closed_message [lang::message::lookup "" intranet-timesheet2.Logging_hours_has_been_closed "Logging hours for this date has already been closed. <br>Please contact your supervisor or the HR department."]
 
-
-
 # ---------------------------------------------------------
 # Build the SQL Subquery, determining the (parent)
 # projects to be displayed 
@@ -707,7 +705,7 @@ set old_project_id 0
 set closed_level 0
 set closed_status [im_project_status_open]
 set old_parent_project_nr ""
-set log_project_status_id_p 0
+set block_logging_project_status_p 0
 set wf_case_assigned_p 0
 
 
@@ -854,7 +852,7 @@ template::multirow foreach hours_multirow {
     if {![string eq "t" $edit_hours_p]} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_edit_hours_p "The time period has been closed for editing. "] }
     if {!$log_on_parent_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_parent_p "This project has sub-projects or tasks. "] }
     if {$solitary_main_project_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_solitary_main_project_p "This is a 'solitary' main project. Your system is configured in such a way, that you can't log hours on it. "] }
-    # if { !$log_project_status_id_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
+    # if { !$block_logging_project_status_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"] }
 
     # Not a member: This isn't relevant in all modes:
     switch $task_visibility_scope {
@@ -878,12 +876,14 @@ template::multirow foreach hours_multirow {
 
     if {$show_member_p && !$user_is_project_member_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Not_member_of_project "You are not a member of this project. "] }
 
-    # ns_log NOTICE [concat "KHD " "log_project_status_id_p - before: " $log_project_status_id_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
-    if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
-	set log_project_status_id_p 1
+    # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - before: " $block_logging_project_status_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
+    
+    set block_logging_project_status_p [check_logging_project_status $project_id]
+    if { !$block_logging_project_status_p } {
 	append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"]
-    }	
-    # ns_log NOTICE [concat "KHD " "log_project_status_id_p - after: " $log_project_status_id_p ]
+    }
+
+    # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - after: " $block_logging_project_status_p ]
 
     # -----------------------------------------------
     # Write out help and debug information
@@ -969,9 +969,9 @@ template::multirow foreach hours_multirow {
 	if {[info exists hours_invoice_hash($invoice_key)]} { set invoice_id $hours_invoice_hash($invoice_key) }
 
 	ns_log NOTICE [concat "KHD:: " "project_id:" $project_id "edit_hours_p: " $edit_hours_p "log_on_parent_p: " $log_on_parent_p "invoice_id: " $invoice_id  "solitary_main_project_p: " $solitary_main_project_p \
-                              "closed_p: " $closed_p  "log_project_status_id_p (sub/task): " $log_project_status_id_p ]
+                              "closed_p: " $closed_p  "block_logging_project_status_p (sub/task): " $block_logging_project_status_p ]
 
-	if { "t" == $edit_hours_p && $log_on_parent_p && !$invoice_id && !$solitary_main_project_p && !$closed_p && !$log_project_status_id_p && !$log_active_wf_p } {
+	if { "t" == $edit_hours_p && $log_on_parent_p && !$invoice_id && !$solitary_main_project_p && !$closed_p && $block_logging_project_status_p && !$log_active_wf_p } {
 	    # Write editable entries.
 	    append results "<td><INPUT NAME=hours${i}.$project_id size=5 MAXLENGTH=5 value=\"$hours\"></td>\n"
 	    if {!$show_week_p} {
@@ -998,7 +998,7 @@ template::multirow foreach hours_multirow {
     }
     append results "</tr>\n"
     incr ctr
-    set log_project_status_id_p 0
+    set block_logging_project_status_p 0
     set log_active_wf_p 0
 }
 
