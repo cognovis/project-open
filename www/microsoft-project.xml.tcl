@@ -114,10 +114,10 @@ foreach element $xml_elements {
     switch $element {
 	"Name" - "Title"	{ set value "${project_name}.xml" }
 	"Manager"		{ set value $project_lead_name }
-	"ScheduleFromStart"	{ set value 1 }
 	"StartDate"		{ set value $project_start_date }
 	"FinishDate"		{ set value $project_end_date }
 	"CalendarUID"		{ set value 1 }
+        "ProjectExternallyEdited" { set value 0 }
         DefaultStartTime - DefaultFinishTime {
 	    # Determines the default start- and end time of tasks.
 	    # A mismatch could lead to working hours being cut.
@@ -132,57 +132,16 @@ foreach element $xml_elements {
 	Calendars - \
 	Resources - \
 	Tasks - \
-        ActualsInSync - \
-        AdminProject - \
-        AutoAddNewResourcesAndTasks - \
-        Autolink - \
-        BaselineForEarnedValue - \
-        CreationDate - \
-        CriticalSlackLimit - \
+	CreationDate - \
         CurrencyCode - \
-        CurrencyDigits - \
-        CurrencySymbol - \
-        CurrencySymbolPosition - \
-        CurrentDate - \
-        DaysPerMonth - \
-        DefaultFixedCostAccrual - \
-        DefaultOvertimeRate - \
-        DefaultStandardRate - \
-        DefaultTaskEVMethod - \
-        DefaultTaskType - \
-        DurationFormat - \
-        EditableActualCosts - \
+	CurrentDate - \
         ExtendedAttributes/ - \
-        ExtendedCreationDate - \
-        FYStartDate - \
         FinishDate - \
-        FiscalYearStart - \
-        HonorConstraints - \
-        InsertedProjectsLikeSummary - \
-        LastSaved - \
-        MicrosoftProjectServerURL - \
-        MinutesPerDay - \
-        MinutesPerWeek - \
-        MoveCompletedEndsBack - \
+	LastSaved - \
         MoveCompletedEndsForward - \
-        MoveRemainingStartsBack - \
-        MoveRemainingStartsForward - \
-        MultipleCriticalPaths - \
-        NewTaskStartDate - \
-        NewTasksEffortDriven - \
         NewTasksEstimated - \
-        OutlineCodes/ - \
         ProjectExternallyEdited - \
-        RemoveFileProperties - \
-        ScheduleFromStart - \
-        SplitsInProgressTasks - \
-        SpreadActualCost - \
-        SpreadPercentComplete - \
         StartDate - \
-        TaskUpdatesResource - \
-        WBSMasks/ - \
-        WeekStartDay - \
-        WorkFormat - \
 	Xxx {
 	    # Don't write out these fields by default
 	    set append_p 0
@@ -195,6 +154,7 @@ foreach element $xml_elements {
 
     # the following does "<$element>$value</$element>"
     if {$append_p} {
+	ns_log Notice "microsoft-project.xml.tcl: append $element=$value"
         $project_node appendFromList [list $element {} [list [list \#text $value]]]
     }
 }
