@@ -1135,3 +1135,38 @@ ad_proc -public -callback im_project_new_redirect -impl intranet-cust-koernigweb
     template::head::add_javascript -src "/intranet-cust-koernigweber/js/get_cost_object.js" -order "999"     
 }
 
+ad_proc check_logging_project_status {
+        project_id
+} {
+    Checks if one of the parent projects has a project status that prohibits
+    TS logging due to parameter 'AllowLoggingForProjectStatusIDs'
+} {
+	# Check if status of object itself forbidds logging 
+	set project_status_id [db_string get_data "select project_status_id from im_projects where project_id = :project_id" -default 0]	
+	if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
+		return 0 
+	}
+
+	# Check for parent element(s)
+	set sql "
+		select 
+			project_status_id, 
+			project_id as parent_project_id 
+		from 
+			im_projects 
+		where 
+			project_id in (
+				select parent_id from im_projects where project_id = :project_id 
+			)
+	"
+	set project_status_id [db_string get_data $sql -default 0]
+	if { "" == $project_status_id  } {
+		return 1
+	} else {
+		if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
+			return 0 
+		} else {
+			return check_logging_project_status($parent_project_id)
+		}
+	}
+}
