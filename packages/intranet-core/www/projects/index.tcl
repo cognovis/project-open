@@ -91,7 +91,7 @@ ad_page_contract {
 # User id already verified by filters
 
 set show_context_help_p 0
-
+set filter_html ""
 set user_id [ad_maybe_redirect_for_registration]
 set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set subsite_id [ad_conn subsite_id]
