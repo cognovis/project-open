@@ -91,9 +91,7 @@ create table im_tickets (
 	ticket_conf_item_id		integer
 					constraint im_ticket_conf_item_fk
 					references im_conf_items,
-	ticket_component_id		integer
-					constraint im_ticket_conf_item_fk
-					references im_conf_items,
+	ticket_component_id		integer,
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
 					references groups,
@@ -585,7 +583,7 @@ SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type'
 -- 30500-30599	Intranet Ticket Action (100)
 -- 30600-30699	Intranet Ticket Telephony Request Type
 -- 31000-31999	Intranet Ticket Class (1000)
--- 32000-32999	reserved (1000)
+-- 32000-32999	Intranet Service Catalog (Extension 1000)
 -- 33000-33999	reserved (1000)
 -- 34000-34999	reserved (1000)
 -- 35000-39999	reserved (5000)
@@ -872,7 +870,7 @@ where	category_type = 'Intranet Ticket Type'
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -900,7 +898,7 @@ SELECT acs_permission__grant_permission(
 -- Timesheet plugin
 select im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creattion_ip
@@ -954,7 +952,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1012,7 +1010,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1067,7 +1065,7 @@ drop function inline_0 ();
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
-	'im_component_plugin',				-- object_type
+	'im_component_plugin',			-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
@@ -1121,7 +1119,7 @@ drop function inline_0 ();
 -- List of Tickets at the home page
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1148,7 +1146,7 @@ SELECT acs_permission__grant_permission(
 -- Workflow Actions in the object's View Page
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1194,7 +1192,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1222,7 +1220,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1249,7 +1247,7 @@ SELECT acs_permission__grant_permission(
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'im_component_plugin',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -1573,6 +1571,7 @@ SELECT im_dynfield_widget__new (
 );
 
 
+
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_assignees', 'Ticket Assignees', 'Ticket Assignees',
@@ -1588,10 +1587,24 @@ SELECT im_dynfield_widget__new (
 
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_queues', 'Ticket Queues', 'Ticket Queues',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+		select	g.group_id, g.group_name
+		from	groups g,
+			acs_objects o
+		where	o.object_type = ''im_ticket_queue'' and
+			g.group_id = o.object_id
+		order by lower(g.group_name)
+	}}}'
+);
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_po_components', 'Ticket &#93;po&#91; Components', 'Ticket &#93;po&#91; Components',
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {
-
 select	ci.conf_item_id,
 	ci.conf_item_name
 from	im_conf_items ci

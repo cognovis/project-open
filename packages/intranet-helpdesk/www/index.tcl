@@ -110,12 +110,7 @@ db_foreach column_list_sql $column_sql {
 	set col_url [export_vars -base "index" {{order_by $column_name}}]
 
 	append col_url "&ticket_sla_id=$ticket_sla_id"
-	append col_url "&ticket_queue_id=$ticket_queue_id"
 	append col_url "&assignee_id=$assignee_id"
-
-#       fraber 110404: These variables are now DynFields
-#	append col_url "&ticket_status_id=$ticket_status_id"
-#	append col_url "&ticket_type_id=$ticket_type_id"
 
 	# Append the DynField values from the Filter as pass-through variables
 	# so that sorting won't alter the selected tickets

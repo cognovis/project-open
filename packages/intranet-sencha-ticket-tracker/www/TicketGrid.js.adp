@@ -51,18 +51,18 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	selModel:	ticketGridSelModel,
 
 	listeners:	{
-	itemdblclick: function(view, record, item, index, e) {
-
-		// Open the ticket in a separate tab
-		var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-		compoundPanel.loadTicket(record);
-		var title = record.get('project_name');
-		compoundPanel.tab.setText(title);
-		compoundPanel.tab.show();
-	
-		var mainTabPanel = Ext.getCmp('mainTabPanel');
-		mainTabPanel.setActiveTab(compoundPanel);
-	}
+		itemdblclick: function(view, record, item, index, e) {
+			// Open the ticket in a separate tab
+			var compoundPanel = Ext.getCmp('ticketCompoundPanel');
+			compoundPanel.loadTicket(record);
+			var title = record.get('project_name');
+			compoundPanel.tab.setText(title);
+			compoundPanel.tab.show();
+		
+			var mainTabPanel = Ext.getCmp('mainTabPanel');
+			mainTabPanel.setActiveTab(compoundPanel);
+			Ext.getCmp('ticketActionBar').checkButtons(record);
+		}
 	},
 
 	initComponent: function(){
@@ -94,7 +94,11 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.Creation_Date#',
 				dataIndex:	'ticket_creation_date',
-				width:	80
+				width:	110,
+				renderer: function(value, o, record) {
+					// Only seconds
+				    return value.substring(0,19);
+				}				
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.VAT_Number#',
 				dataIndex:	'vat_number',
@@ -125,7 +129,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				width:	60,
 				renderer: function(value, o, record) {
 					return ticketStatusStore.category_from_id(record.get('ticket_status_id'));
-				},
+				}/*,
 				field:	{
 					xtype:	'combobox',
 					typeAhead:	false,
@@ -135,7 +139,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					store:	ticketStatusStore,
 					displayField:	'category',
 					valueField:	'category_id'
-				}
+				}*/
 			}, {
 				header:	'#intranet-sencha-ticket-tracker.Queue#',
 				dataIndex:	'ticket_queue_id',
@@ -214,7 +218,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 	
 		// Special logic for assigned_queue_id:	Set to '' (=My Queues) if empty
 		if (null === filterValues.assigned_queue_id) {
-			filterValues.assigned_queue_id = 'my_groups'; 
+			filterValues.assigned_queue_id = defaultQueueFilter; 
 		}
 		
 		// delete filters added by other accordion filters
@@ -279,7 +283,7 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 				case 'email':
 					// Fuzzy search
 					value = value.toLowerCase();
-					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
+					query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(spri_email) like \'%' + value + '%\'))';
 					key = 'query';
 					value = query;
 					break;	
@@ -303,6 +307,12 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 					key = 'query';
 					value = query;
 					break;
+				case 'ticket_file':
+					value = value.toLowerCase();
+					query = query + ' and lower(ticket_file) like \'%' + value + '%\'';
+					key = 'query';
+					value = query;
+					break;					
 				case 'start_date':
 					// I can't get the proxy to quote (') the date, so we do it manually here:
 					var	year = '' + value.getFullYear(),
@@ -362,26 +372,26 @@ var ticketGrid = Ext.define('TicketBrowser.TicketGrid', {
 
 	// Delete the currently selected ticket
 	onDelete: function(btn, pressed){
-
-		// Get the selected ticket (only one!)
 		var selection = this.selModel.getSelection();
-		var ticketModel = selection[0];
-
-		// Send a GET request to the server in order to
-		// destroy the ticket. DELETE on REST may cause
-		// problems because session information is not
-		// defined in DELETE
-		Ext.Ajax.request({
-			scope:	this,
-			url:	'/intranet-sencha-ticket-tracker/delete-ticket',
-			success: function(response) {
-		 		console.log('Ticket #'+ticketModel.get('project_nr')+' was destroyed.');
-				ticketStore.remove(ticketModel);
-			},
-			failure: function(response) {
-				Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), response.responseText);
-			}
-		});
+		//var ticketModel = selection[0];
+		var count_delete = 0;
+		
+		for(var i=0;i < selection.length;i++) {
+			var ticketModel = selection[i];
+			ticketModel.destroy({
+				success: function(record, operation) {
+			 		console.log('Ticket #' + operation.records[0].get('project_nr')+' was destroyed.');
+					ticketStore.remove(operation.records[0]);
+					count_delete++;
+					if (count_delete==i){
+						Ext.getCmp('ticketFilterForm').onSearch();
+					}
+				},
+				failure: function(record, operation) {
+					Function_errorMessage('#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Title#', '#intranet-sencha-ticket-tracker.Delete_Ticket_Error_Message# ' + ticketModel.get('project_nr'), operation.request.scope.reader.jsonData["message"]);
+				}
+			});				
+		}
 	},
 
 	onCopy: function() {

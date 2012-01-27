@@ -9,6 +9,7 @@
 
 	<!-- ------------------------------- Infrastructure ---------------------------------- -->
 	<script type="text/javascript" src="/intranet-sencha/js/ext-all-debug-w-comments.js"></script> 
+	<!-- <script type="text/javascript" src="/intranet-sencha/js/ext-all.js"></script> -->
 	<script type="text/javascript" src="/intranet-sencha/js/locale/ext-lang-es.js"></script>
 	<script type="text/javascript" src="Function.js"></script>
 	<script type="text/javascript" src="POClasses.js"></script> 
@@ -17,6 +18,7 @@
 	<script type="text/javascript" src="RowExpander.js"></script> 
 	<script type="text/javascript" src="ProjectSlaList.js"></script> 
 	<script type="text/javascript" src="AuditGrid.js"></script> 
+	<script type="text/javascript" src="AuditDetailWindow.js"></script> 
 	<script type="text/javascript" src="FileStorageGrid.js"></script> 
 
 	<!-- ------------------------------- Custome Specific ---------------------------------- -->

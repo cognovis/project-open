@@ -46,8 +46,8 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		xtype:		'combobox',
         valueField:	'group_id',
         displayField:	'group_name',
-		emptyText:	'#intranet-sencha-ticket-tracker.My_Groups#',
-		value:		'my_groups',
+		emptyText:	emptyDefaultQueueFilter,
+		value:		defaultQueueFilter,
 		forceSelection:	true,
 		queryMode:	'local',
 		store:		profileFilteredStore,
@@ -305,10 +305,12 @@ var ticketFilterForm = Ext.define('TicketBrowser.TicketFilterForm', {
 		var form = filterForm.getForm();
 		var filterValues = form.getFieldValues();
 		var grid = Ext.getCmp('ticketGrid');
-		grid.filterTickets(filterValues);
+		/*if (userIsSACE) {
+			Ext.getCmp('ticketFilterForm').getForm().findField('assigned_queue_id').setValue('all_groups')
+		
+		}	*/	
+		//grid.filterTickets(filterValues);
 		return true;
 	}
 
 });
-
-

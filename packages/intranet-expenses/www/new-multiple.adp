@@ -10,7 +10,7 @@
 </if>
 
 <form action=new-multiple-2 method=POST>
-<%= [export_form_vars return_url] %>
+<%= [export_form_vars user_id_from_search return_url] %>
 <table>
 <tr class=rowtitle align=center>
 <td class=rowtitle>#intranet-core.No#</td>

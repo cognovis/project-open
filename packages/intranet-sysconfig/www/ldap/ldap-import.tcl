@@ -19,6 +19,8 @@ ad_page_contract {
     { domain "" }
     { binddn "" }
     { bindpw "" }
+    { system_binddn "" }
+    { system_bindpw "" }
     { authority_name "" }
     { authority_id "" }
     { group_map "" }
@@ -79,7 +81,8 @@ array set params {}
 set params(LdapURI) "ldap://$ip_address:$port"
 set params(BaseDN) $domain
 set params(BindDN) $binddn
-set params(BindPW) $bindpw
+set params(SystemBindDN) $system_binddn
+set params(SystemBindPW) $system_bindpw
 set params(ServerType) $ldap_type
 set params(GroupMap) $group_map
 

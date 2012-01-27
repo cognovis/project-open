@@ -122,9 +122,8 @@ if {$enabled_p} {
 
 
 set page_body "
-<form action=\"edit-2.tcl\" method=GET>
-<input type=hidden name=plugin_id value=$plugin_id>
-<input type=hidden name=return_url value=$return_url>
+<form action=\"edit-2.tcl\" method=POST>
+[export_form_vars plugin_id return_url]
 
 <TABLE border=0>
 <TBODY>

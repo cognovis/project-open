@@ -99,6 +99,12 @@ Ext.define('TicketBrowser.TicketActionBar', {
 		id: 'buttonRemoveSelected',
 		text:		'#intranet-sencha-ticket-tracker.Remove_checked_items#',
 		iconCls:	'icon-new-ticket',
+		disable:	function (){
+						if (currentUserIsAdmin != 1) {
+							return true;
+						}
+						return false;
+					},
 		handler:	function(btn, pressed){
 			//Confimation message
 			Ext.Msg.show({
@@ -168,15 +174,21 @@ Ext.define('TicketBrowser.TicketActionBar', {
 			var ticket_queue_field = form.findField('ticket_queue_id');
 			var ticket_last_queue_field = form.findField('ticket_last_queue_id');
 			var ticket_last_queue_id = ticket_last_queue_field.getValue();
-
+			//SI viene de empleados se pone SACE
+			if (463==ticket_last_queue_id) {
+				ticket_last_queue_id = 73369;
+			}
+			
 			// Check that the store contains the value for rejection
 			var lastQueueRecord = programGroupStore.findRecord('group_id', ticket_last_queue_id);
 			if (null == lastQueueRecord || undefined == lastQueueRecord) {
 				// We need to add the group to the store
                 var profileModel = profileStore.findRecord('group_id', ticket_last_queue_id);
 				programGroupStore.insert(0, profileModel);
+				lastQueueRecord = profileModel;
 			}
-			ticket_queue_field.setValue(ticket_last_queue_id);			
+			//ticket_queue_field.setValue(ticket_last_queue_id);			
+			ticket_queue_field.select(lastQueueRecord);			
 		}
 	}, {
 		id: 'buttonSave',
@@ -286,12 +298,46 @@ Ext.define('TicketBrowser.TicketActionBar', {
 	       text: '#intranet-sencha-ticket-tracker.Loading___#',
 	       scope: this
 	    });
+	    if (GLOBAL_STOP_BAR) {
+	    	this.stopBar();
+	    }
 	},
 	
 	stopBar: function (){
 		var progressbar = this.getComponent('progressBar');
 	   	progressbar.reset();
 	   	progressbar.updateText('#intranet-sencha-ticket-tracker.Finish_Load#');
-	}
+	},
 		
+	checkButtons: function (rec){
+		var rejectButton = Ext.getCmp('ticketActionBar').getComponent('buttonReject');
+		var buttonSave = Ext.getCmp('ticketActionBar').getComponent('buttonSave');
+		
+		rejectButton.show();
+		buttonSave.show();		
+		if (Ext.isEmpty(rec)){
+			rejectButton.disable();
+			buttonSave.enable();				
+		} else {
+			//If the Ticket is close, hide the buttons
+			var ticket_status_id = rec.get('ticket_status_id');
+			var ticket_last_queue_field = rec.get('ticket_last_queue_id');
+			//var ticket_last_queue_field = rec.get('ticket_queue_id');
+		
+			if (ticket_status_id == '30001' && currentUserIsAdmin != 1){
+				rejectButton.disable();
+				buttonSave.disable();
+			} else {
+				buttonSave.enable();
+				// Enable the "Reject" button if last_queue_id exists
+				if (Ext.isEmpty(ticket_last_queue_field)){
+				//if (30011!=ticket_status_id){
+					rejectButton.disable();
+				} else {
+					rejectButton.enable();
+				}
+			}		
+		}
+	}		
+	
 });

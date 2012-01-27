@@ -19,7 +19,7 @@ ad_page_contract {
   @author alwin.egger@gmx.net
   @author frank.bergmann@project-open.com
 } {
-    { package_key "none"}
+    { package_key_form "none"}
     { component_location ""}
     { component_page ""}
     { plugin_id ""}
@@ -125,7 +125,12 @@ append table_header "\n</tr>\n"
 # ------------------------------------------------------
 
 set component_where ""
-if {"none" != $package_key && "" != $package_key} { append component_where "\tand package_name = :package_key\n" }
+
+
+
+
+if {"none" != $package_key_form && "" != $package_key_form} { append component_where "\t and package_name = :package_key_form \n" }
+
 if {"" != $component_location} { append component_where "\tand location = :component_location\n" }
 if {"" != $plugin_id} { append component_where "\tand plugin_id = :plugin_id\n" }
 if {"" != $component_page} { 
@@ -155,6 +160,8 @@ set component_select_sql "
 		package_name,
 		plugin_name
 "
+
+#ad_return_complaint 1 $component_select_sql
 
 set ctr 1
 set table ""
@@ -204,7 +211,6 @@ append table "
 </form>
 "
 
-
 # ------------------------------------------------------
 # Filters & Navbar
 # ------------------------------------------------------
@@ -216,7 +222,8 @@ if {![im_permission $current_user_id "add_components"]} {
 
 append admin_html "</ul>"
 
-set package_select [im_select -ad_form_option_list_style_p 1 package_key $package_options $package_key]
+if { "" == $package_key_form } { set package_key_form "All" }
+set package_select [im_select -ad_form_option_list_style_p 1 package_key_form $package_options $package_key_form]
 
 set left_navbar_html "
 	<table>

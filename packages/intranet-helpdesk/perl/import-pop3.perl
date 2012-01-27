@@ -46,19 +46,18 @@ $debug = 1;
 
 
 # The name of the ]po[ server
-$server = "po34demo";
-
-$db_pwd = "";
-$db_datasource = "dbi:Pg:dbname=$server";
-$db_username = "$server";
+$server = "projop";				# The name of the database instance.
+$db_username = "$server";			# By default the same as the server.
+$db_pwd = "";					# The DB password. Empty by default.
+$db_datasource = "dbi:Pg:dbname=$server";	# How to identify the database
 
 
 # --------------------------------------------------------
 # The POP3 Mail Account
 
 $pop3_server = "pop3.server.com";
-$pop3_user = "username";
-$pop3_pwd = "password";
+$pop3_user = "myuser";
+$pop3_pwd = "secret";
 
 
 # --------------------------------------------------------

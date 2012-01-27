@@ -19,6 +19,7 @@ ad_page_contract {
     { provider_id 0}
     { orderby "effective_date,desc" }
     { unassigned ""}
+    { user_id_from_search "" }
 }
 
 
@@ -36,6 +37,11 @@ set date_format "YYYY-MM-DD"
 set cur_format [im_l10n_sql_currency_format]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
+
+# Check permissions to log hours for other users
+# We use the hour logging permissions also for expenses...
+set add_hours_all_p [im_permission $current_user_id "add_hours_all"]
+if {"" == $user_id_from_search || !$add_hours_all_p} { set user_id_from_search $current_user_id }
 
 
 # Unassigned Logic
@@ -61,7 +67,12 @@ db_0or1row project_info "
 	from dual
 "
 
-set page_title "$project_nr [lang::message::lookup "" intranet-expenses.Expenses_List "Expense List"]"
+set page_title "$project_nr [lang::message::lookup "" intranet-expenses.Expenses_List "Expense List"] "
+if {"" != $user_id_from_search && $current_user_id != $user_id_from_search} {
+    set user_name_from_search [im_name_from_user_id $user_id_from_search]
+    append page_title [lang::message::lookup "" intranet-expenses.for_user_id_from_search "for '%user_name_from_search%'"]
+}
+
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 set org_project_id $project_id
 set expense_type_id_default $expense_type_id
@@ -116,15 +127,15 @@ set action_list [list]
 set bulk_action_list [list]
 
 if {$add_expense_p} {
-    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]</a></li>\n"
+    append admin_links "<li><a href=\"new?[export_url_vars project_id user_id_from_search return_url]\">[lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]</a></li>\n"
 
     lappend action_list [lang::message::lookup "" intranet-expenses.Add_one_new_Expense_Item "Add one new Expense Item"]
-    lappend action_list [export_vars -base "/intranet-expenses/new" {return_url project_id}]
+    lappend action_list [export_vars -base "/intranet-expenses/new" {return_url user_id_from_search project_id}]
     lappend action_list [lang::message::lookup "" intranet-expenses.Add_one_new_Expense_Item "Add one new Expense Item"]
 
     if {$multiple_expense_items_enabled_p} {
 	lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiple new Expense Items"]
-	lappend action_list [export_vars -base "/intranet-expenses/new-multiple" {return_url project_id}]
+	lappend action_list [export_vars -base "/intranet-expenses/new-multiple" {return_url user_id_from_search project_id}]
 	lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiplen new Expense Item"]
     }
 
@@ -141,8 +152,7 @@ set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }
 # Only show this button if the user doesn't have the right to create bundles anyway
 if {$wf_installed_p && !$create_bundle_p} {
-
-    lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "bundle-create" {project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
+    lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "bundle-create" {user_id_from_search project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
 
 }
 
@@ -165,7 +175,7 @@ template::list::create \
     -actions $action_list \
     -bulk_action_method post \
     -bulk_actions $bulk_action_list \
-    -bulk_action_export_vars { start_date end_date return_url } \
+    -bulk_action_export_vars { start_date end_date return_url user_id_from_search} \
     -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
     -elements {
 	expense_chk {
@@ -260,6 +270,7 @@ if {"" != $expense_type_id  & 0 != $expense_type_id} {
 set personal_only_sql "and provider_id = :user_id"
 if {$view_expenses_all_p} { set personal_only_sql "" }
 
+
 switch $unassigned {
     "todo" { set unassigned_sql "and (c.project_id is null OR e.bundle_id is null)" }
     "unassigned" { set unassigned_sql "and c.project_id is null" }
@@ -330,7 +341,7 @@ template::list::create \
     -has_checkboxes \
     -bulk_action_method post \
     -bulk_actions $bulk2_action_list \
-    -bulk_action_export_vars { project_id } \
+    -bulk_action_export_vars { user_id_from_search project_id } \
     -row_pretty_plural "[lang::message::lookup "" intranet-expenses.Bundle_Items "Bundle Items"]" \
     -elements {
 	cost_name {
@@ -375,7 +386,7 @@ set ttt {
 # Allow accounting guys to see all expense items,
 # not just their own ones...
 set personal_only_sql "and provider_id = :user_id"
-if {$create_bundle_p} { set personal_only_sql "" }
+if {$view_expenses_all_p} { set personal_only_sql "" }
 
 # Allow the project manager to see all expense bundles
 if {1 == $user_is_pm_p} { set personal_only_sql "" }
@@ -424,6 +435,7 @@ db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines b
 # Setup the subnavbar
 set bind_vars [ns_set create]
 ns_set put $bind_vars project_id $project_id
+ns_set put $bind_vars user_id_from_search $user_id_from_search
 set project_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
 
 set sub_navbar [im_sub_navbar \
@@ -457,7 +469,18 @@ set left_navbar_html "
 	    <td class=form-label>[lang::message::lookup "" intranet-expenses.Expense_Type "Type"]</td>
 	    <td class=form-widget>[im_category_select -translate_p 1 -package_key "intranet-expenses" -include_empty_p 1  "Intranet Expense Type" expense_type_id $expense_type_id_default]</td>
 	</tr>
+"
 
+if {$add_hours_all_p} {
+    append left_navbar_html "
+        <tr>
+            <td>[lang::message::lookup "" intranet-timesheet2.Log_hours_for_user "Log Hours<br>for User"]</td>
+            <td>[im_user_select -include_empty_p 1 -include_empty_name "" user_id_from_search $user_id_from_search]</td>
+        </tr>
+    "
+}
+
+append left_navbar_html "
 	<tr>
 	  <td class=form-label>Start Date</td>
 	  <td class=form-widget>

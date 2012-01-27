@@ -155,3 +155,25 @@ ad_form -extend -name cost_center -on_request {
 	ad_script_abort
 }
 
+
+
+
+# ----------------------------------------------------------------
+# Left Navbar
+
+set admin_html "
+<ul>
+<li><a href=[export_vars -base "/intranet-cost/cost-centers/index" {}]>[lang::message::lookup "" intranet-cost.Admin_Cost_Centers "Admin Cost Centers"]</a>
+</ul>
+"
+
+append left_navbar_html "
+	    <div class=\"filter-block\">
+		<div class=\"filter-title\">
+		    [lang::message::lookup "" intranet-cost.Admin_Cost_Centers "Admin Cost Centers"]
+		</div>
+		$admin_html
+	    </div>
+	    <hr/>
+"
+

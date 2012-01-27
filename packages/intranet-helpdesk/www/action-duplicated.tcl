@@ -72,6 +72,9 @@ if {0 == [llength $tid]} { ad_returnredirect $return_url }
 
 foreach ticket_id $tid {
     
+    # Write Audit Trail
+    im_project_audit -project_id $ticket_id -action before_update
+
     db_transaction {
 	# Close the ticket
 	db_dml close_ticket "
@@ -85,6 +88,10 @@ foreach ticket_id $tid {
 	    -ticket_id_from_search $ticket_id_from_search \
 	    -sort_order 0
     }
+
+    # Write Audit Trail
+    im_project_audit -project_id $ticket_id -action after_update
+
 }
 
 ad_returnredirect $return_url

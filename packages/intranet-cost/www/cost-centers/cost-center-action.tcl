@@ -31,23 +31,15 @@ if {0 == [llength $cost_center_list]} {
     ad_returnredirect $return_url
 }
 
-# Convert the list of selected cost_centers into a
-# "cost_center_id in (1,2,3,4...)" clause
-#
-set cost_center_in_clause "and cost_center_id in ("
-append cost_center_in_clause [join $cost_center_list ", "]
-append cost_center_in_clause ")\n"
-ns_log Notice "cost_center-action: cost_center_in_clause=$cost_center_in_clause"
-
-
-# Delete
-
-set sql "
-	delete from im_cost_centers
-	where 1=1
-		$cost_center_in_clause"
 if {[catch {
-    db_dml del_cost_centers $sql
+
+    db_transaction {
+	db_dml null_cc "update im_employees set department_id = null where department_id in ([join $cost_center_list ", "])"
+	db_dml null_cc "update im_costs set cost_center_id = null where cost_center_id in ([join $cost_center_list ", "])"
+	db_dml del_cost_centers "delete from im_cost_centers where cost_center_id in ([join $cost_center_list ", "])"
+	db_dml del_cc_objects "delete from acs_objects where object_id in ([join $cost_center_list ", "])"
+    }
+
 } err_msg]} {
     ad_return_complaint 1 "<li>Error deleting cost centers. Perhaps you try to delete a cost center that still has sub cost centers. Here is the error:<br><pre>$err_msg</pre>"
     return

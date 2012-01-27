@@ -215,21 +215,18 @@ if {"" == $company_contact_id } {
 
 set canned_note_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceCannedNoteP" "" 1]
 
-
 # ---------------------------------------------------------------
 # Update invoice base data
 # ---------------------------------------------------------------
 
 # Just update the invoice if it already exists:
 if {!$invoice_exists_p} {
-
     # Let's create the new invoice
     set invoice_id [db_exec_plsql create_invoice ""]
-
-    # Audit the creation of the invoice
-    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
-
 }
+
+# Give company_contact_id READ permissions - required for Customer Portal 
+permission::grant -object_id $invoice_id -party_id $company_contact_id -privilege "read"
 
 # Check if the cost item was changed via outside SQL
 im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
@@ -318,6 +315,22 @@ db_dml delete_invoice_items "
 "
 
 set item_list [array names item_name]
+
+# sanity check for double item names
+set name_list [list]
+foreach nr $item_list {
+    if {!("" == [string trim $item_name($nr)] && (0 == $item_units($nr) || "" == $item_units($nr)))} {
+        if { -1 != [lsearch $name_list $item_name($nr)] } {
+            ad_return_complaint 1 "Found duplicate invoice item: $item_name($nr)<br>
+                    Please ensure that item names are unique. Use the back button of your browser to rename item.<br>
+                    Consider adding spaces if item can't be renamed
+            "
+        } else {
+          lappend name_list $item_name($nr)
+        }
+    }
+}
+
 foreach nr $item_list {
     set name $item_name($nr)
     set units $item_units($nr)
@@ -344,24 +357,6 @@ foreach nr $item_list {
     # Insert only if it's not an empty line from the edit screen
     if {!("" == [string trim $name] && (0 == $units || "" == $units))} {
 	set item_id [db_nextval "im_invoice_items_seq"]
-
-	# sanity check 
-	set san_sql "
-                select
-                        count(*)
-                from
-                        im_invoice_items
-                where
-                        invoice_id = :invoice_id
-			and project_id = :project_id 
-			and item_uom_id = :uom_id 
-			and sort_order = :sort_order
-			and item_name = :name
-	"
-
-	if { "0" != [db_string get_view_id $san_sql -default 0] } {
-		ad_return_complaint 1 "Can't create invoice, please verify that there are no duplicate invoice item names"
-	}
 
 	if { ![info exists source_invoice_id] } {
 		set source_invoice_id -1
@@ -446,6 +441,21 @@ im_invoice_update_rounded_amount \
 
 # Audit the update
 im_audit -object_type "im_invoice" -object_id $invoice_id -action after_update -status_id $cost_status_id -type_id $cost_type_id
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
+# Audit the creation of the invoice
+if {!$invoice_exists_p} {
+    # Audit creation
+    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
+} else {
+    # Audit the update
+    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_update -status_id $cost_status_id -type_id $cost_type_id
+}
+
+
 
 db_release_unused_handles
 ad_returnredirect "/intranet-invoices/view?invoice_id=$invoice_id"

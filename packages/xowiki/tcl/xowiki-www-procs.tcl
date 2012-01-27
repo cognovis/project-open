@@ -4,7 +4,7 @@
 
     @creation-date 2006-04-10
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-www-procs.tcl,v 1.296 2011/05/28 17:12:42 gustafn Exp $
+    @cvs-id $Id$
 }
 
 ::xo::library require xowiki-procs
@@ -619,7 +619,7 @@ namespace eval ::xowiki {
     #my log anon_instances=$anon_instances
     
     set field_names [my field_names -form $form]
-    #my log field_names=$field_names
+    #my msg field_names=$field_names
     set form_fields [my create_form_fields $field_names]
 
     if {$form eq ""} {
@@ -890,7 +890,7 @@ namespace eval ::xowiki {
     my set_form_data $form_fields
     if {$disable_input_fields} {
       # (a) disable explicit input fields
-      foreach f $form_fields {$f disabled disabled}
+      foreach f $form_fields {$f disabled 1}
       # (b) disable input in HTML-specified fields
       set disabled [Form dom_disable_input_fields $rootNode]
       #
@@ -1158,6 +1158,7 @@ namespace eval ::xowiki {
     set admin_link  [$context_package_id make_link -privilege admin -link admin/ $context_package_id {} {}] 
     set index_link  [$context_package_id make_link -privilege public -link "" $context_package_id {} {}]
     set import_link [$context_package_id make_link -privilege admin -link "" $context_package_id {} {}]
+    set page_show_link [$page_package_id make_link -privilege admin [self] show-object return_url]
 
     set notification_subscribe_link ""
     if {[$context_package_id get_parameter "with_notifications" 1]} {
@@ -1210,7 +1211,10 @@ namespace eval ::xowiki {
           -item [list text #xowiki.revisions# url $rev_link]
       $mb add_menu_item -name Page.Delete \
           -item [list text #xowiki.delete# url $delete_link]
-
+      if {[acs_user::site_wide_admin_p]} {
+	$mb add_menu_item -name Page.Show \
+	    -item [list text "Show Object" url $page_show_link]
+      }
     }
     
     # the content may be passed by other methods (e.g. edit) to 
@@ -1332,6 +1336,9 @@ namespace eval ::xowiki {
 	set meta(keywords) ""
 	if {[my istype ::xowiki::FormPage]} {
 	  set meta(keywords) [string trim [my property keywords]]
+	  if {[my property html_title] ne ""} {
+	    ::xo::Page set_property doc title [my property html_title]
+	  }
 	}
 	if {$meta(keywords) eq ""} {
 	  set meta(keywords) [$context_package_id get_parameter keywords ""]
@@ -1745,9 +1752,12 @@ namespace eval ::xowiki {
       #my log "form-params=[$cc array get form_parameter]"
     }
     #my msg "fields $field_names // $form_fields"
+    #foreach f $form_fields { my msg "... $f [$f name]" }
 
-    # we have a form and get all form variables
-    
+    #
+    # We have a form and get all form input from the fields of the
+    # from into form field objects.
+    #
     foreach att $field_names {
       #my msg "getting att=$att"
       set processed($att) 1
@@ -1768,7 +1778,7 @@ namespace eval ::xowiki {
            # get rid of strange utf-8 characters hex C2AD (firefox bug?)
            # ns_log notice "FORM_DATA var=$varname, value='$value' s=$s"
            if {$varname eq "text"} {regsub -all "­" $value "" value}
-           # ns_log notice "FORM_DATA var=$varname, value='$value' s=$s"
+           #ns_log notice "FORM_DATA var=$varname, value='$value'"
            if {![string match *.* $att]} {my set $varname $value}
          }
         default {
@@ -1865,20 +1875,35 @@ namespace eval ::xowiki {
       # Run validators
       #
       set validation_error [$f validate [self]]
-      #my msg "validation of [$f name] with value '[$f value]' returns '$validation_error'"
       if {$validation_error ne ""} {
+	#my msg "validation of $f [$f name] with value '[$f value]' returns '$validation_error'"
         $f error_msg $validation_error
         incr validation_errors
       }
     }
-    my log validation_errors=$validation_errors
+    #my msg "validation returns $validation_errors errors"
+
     if {$validation_errors == 0} {
       #
       # Postprocess based on form fields based on form-fields methods.
       #
       foreach f $form_fields {
-        $f convert_to_internal
-      }        
+	$f convert_to_internal
+      }
+    } else {
+      my log validation_errors=$validation_errors
+
+      # There were validation erros.  Reset the value for form-fields
+      # of type "file" to avoid confusions, since a file-name was
+      # provided, but the file was not uploaded due to the validation
+      # error. If we would not reset the value, the provided name
+      # would cause an interpretation of an uploaded empty file. Maybe
+      # a new method "reset-to-default" would be a good idea.
+      foreach f $form_fields {
+	if {[$f type] eq "file"} {
+	  $f set value ""
+        }
+      }
     }
 
     my instance_attributes [array get __ia]
@@ -1951,7 +1976,7 @@ namespace eval ::xowiki {
   FormPage instproc field_names {{-form ""}} {
     my instvar package_id
     foreach {form_vars needed_attributes} [my field_names_from_form -form $form] break
-    #my log "form=$form, form_vars=$form_vars needed_attributes=$needed_attributes"
+    #my msg "form=$form, form_vars=$form_vars needed_attributes=$needed_attributes"
     my array unset __field_in_form
     my array unset __field_needed
     if {$form_vars} {foreach v $needed_attributes {my set __field_in_form($v) 1}}
@@ -1961,9 +1986,9 @@ namespace eval ::xowiki {
     # Remove the fields already included in auto_fields form the needed_attributes.
     # The final list field_names determines the order of the fields in the form.
     #
-    set auto_fields [list _name _page_order _creator _title _text _description _nls_language]
+    set auto_fields [list _name _page_order _title _creator _assignee _text _description _nls_language]
     set reduced_attributes $needed_attributes
-
+    
     foreach f $auto_fields {
       set p [lsearch $reduced_attributes $f]
       if {$p > -1} {
@@ -1973,7 +1998,7 @@ namespace eval ::xowiki {
         set reduced_attributes [lreplace $reduced_attributes $p $p]
       } 
     }
-    #my msg reduced_attributes=$reduced_attributes 
+    #my msg reduced_attributes(after)=$reduced_attributes 
     #my msg fields_from_form=[my array names __field_in_form]
 
     set field_names [list _name]
@@ -1981,7 +2006,7 @@ namespace eval ::xowiki {
     lappend field_names _title _creator _assignee
     foreach fn $reduced_attributes                     { lappend field_names $fn }
     foreach fn [list _text _description _nls_language] { lappend field_names $fn }
-    #my msg field_names=$field_names
+    #my msg final-field_names=$field_names
     return $field_names
   }
 

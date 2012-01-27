@@ -44,7 +44,7 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		queryMode:	'local',
 		valueField:		'user_id',
 		displayField:   	'name',
-		store:			userCustomerStore,
+		store:			userCustomerContactStore,
 		enableKeyEvents:	true,
 		triggerAction:		'all',
 		listeners:{
@@ -54,10 +54,10 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		 'blur': function(field, event) {
 
 			var user_id = this.getValue();
-			var user_record = userCustomerStore.findRecord('user_id',user_id);
+			var user_record = userCustomerContactStore.findRecord('user_id',user_id);
 			
 			if (Ext.isEmpty(user_record)) {
-				var user_record = userCustomerStore.findRecord('name',this.getRawValue());
+				var user_record = userCustomerContactStore.findRecord('name',this.getRawValue());
 				//var user_record = userCustomerStore.findRecord('user_id',anonimo_user_id);
 			}
 			if (Ext.isEmpty(user_record)) {
@@ -83,20 +83,38 @@ Ext.define('TicketBrowser.TicketContactForm', {
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.First_names#',
 		hidden: true,
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				this.show();
+				return "Obligatorio";
+			}
+			if (value.substring(0,14).toLowerCase() == "nuevo contacto"){
+				this.show();
+				return "No válido";
+			}
+			return true;
+		}		
 	}, {
 		name:		'last_name',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_name#',
 		hidden: true,
-		allowBlank:	false
+		allowBlank:	false,
+		validator: function(value){
+			if (Ext.isEmpty(value)){
+				this.show();
+				return "Obligatorio";
+			}
+			return true;
+		}			
 	}, {
 		name:		'last_name2',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Last_Name2#',
 		hidden: true
 	}, {
-		name:		'email',
+		name:		'spri_email',
 		xtype:		'textfield',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Email#'
 	}, {
@@ -142,20 +160,18 @@ Ext.define('TicketBrowser.TicketContactForm', {
 						['female', '#intranet-sencha-ticket-tracker.Female#']
 					]
 		})
+	}, {
+		name:		'spri_consultant',
+		xtype:		'checkbox',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Consultant#',
+		uncheckedValue:	'0',
+		inputValue: '1'
 	}],
 
 	loadTicket: function(rec){
-		// Customer contact ID, may be NULL
-		var contact_id;
-		if (rec.data.hasOwnProperty('ticket_customer_contact_id')) { 
-			contact_id = rec.data.ticket_customer_contact_id; 
-		}
-
-		var contact_record = userStore.findRecord('user_id',contact_id);
-		if (contact_record == null || typeof contact_record == "undefined") { return; }
-
-		// load the information from the record into the form
-		this.loadUser(contact_record);
+		userCustomerTicketRelationStore.removeAll();
+		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = rec.get('company_id');
+		userCustomerTicketRelationStore.load();			
 	},
 
 	loadUser: function(rec){
@@ -177,13 +193,15 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	},
 
 	// Called when the user changed the customer in the TicketCustomerPanel
-	loadCustomer: function(customerModel){
-	/*	var form = this.getForm();
-		form.reset();*/
-		
+	loadCustomer: function(customerModel){		
 		//Load anonymus contact
-		userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));
+		var company_id = customerModel.get('company_id');
+		if (Ext.isEmpty(company_id)) {
+			company_id = '1';
+		}
+		userCustomerTicketRelationStore.removeAll();
+		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = company_id;
+		userCustomerTicketRelationStore.load();				
 		
 		Ext.getCmp('ticketContactForm').getForm().findField('first_names').show();					
 		Ext.getCmp('ticketContactForm').getForm().findField('last_name').show();
@@ -193,11 +211,9 @@ Ext.define('TicketBrowser.TicketContactForm', {
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
 	newTicket: function() {
-	/*	var form = this.getForm();
-		form.reset();
-		this.hide();*/
-		userCustomerStore.clearFilter();
-		this.loadUser(userCustomerStore.findRecord('user_id' ,anonimo_user_id));
+		userCustomerTicketRelationStore.removeAll();
+		userCustomerTicketRelationStore.proxy.extraParams['object_id_one'] = anonimo_company_id;
+		userCustomerTicketRelationStore.load();				
 	}
 
 });

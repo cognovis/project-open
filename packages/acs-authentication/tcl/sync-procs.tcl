@@ -12,6 +12,7 @@ namespace eval auth::sync::job {}
 namespace eval auth::sync::get_doc {}
 namespace eval auth::sync::get_doc::http {}
 namespace eval auth::sync::get_doc::file {}
+namespace eval auth::sync::get_doc::ldap {}
 namespace eval auth::sync::entry {}
 namespace eval auth::sync::process_doc {}
 namespace eval auth::sync::process_doc::ims {}
@@ -984,4 +985,68 @@ ad_proc -public auth::sync::process_doc::ims::GetAcknowledgementDocument {
     append doc {</enterprise>} \n
     
     return $doc
+}
+
+#####
+#
+# auth::sync::get_doc::ldap namespace
+#
+#####
+
+ad_proc -private auth::sync::get_doc::ldap::register_impl {} {
+    Register this implementation
+} {
+    set spec {
+        contract_name "auth_sync_retrieve"
+        owner "acs-authentication"
+        name "LDAPGet"
+        pretty_name "LDAP GET"
+	aliases {
+            GetDocument auth::sync::get_doc::ldap::GetDocument
+            GetParameters auth::sync::get_doc::ldap::GetParameters
+	}
+    }
+    
+    return [acs_sc::impl::new_from_spec -spec $spec]
+    
+}
+
+ad_proc -private auth::sync::get_doc::ldap::unregister_impl {} {
+    Unregister this implementation
+} {
+    acs_sc::impl::delete -contract_name "auth_sync_retrieve" -impl_name "LDAPGet"
+}
+
+ad_proc -private auth::sync::get_doc::ldap::GetParameters {} {
+    Parameters for LDAP GetDocument implementation.
+} {
+    return {}
+}
+
+ad_proc -private auth::sync::get_doc::ldap::GetDocument { parameters } {
+    Retrieve the document by LDAP
+} {
+    ns_log Notice "auth::sync::get_doc::ldap::GetDocument: parameters=$parameters"
+    array set result {
+        doc_status failed_to_conntect
+	doc_message {}
+	document {}
+        snapshot_p f
+    }
+    
+    array set param $parameters
+    
+    # Check 4 call levels upwards for an authority_id
+    upvar 3 authority_id authority_id
+    if {![info exists authority_id]} { set authority_id "" }
+    
+    if {"" == $authority_id} {
+	ad_return_complaint 1 "Internal Error:<br>auth::sync::get_doc::ldap::GetDocument didn't find a valid authority_id.<br>&nbsp;"
+	ad_script_abort
+    }
+    
+    
+    set result(document) "!!!"
+    set result(doc_status) "ok"
+    return [array get result]
 }

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 7 Nov 2000
-    @cvs-id $Id: file.tcl,v 1.31 2008/11/09 23:29:26 donb Exp $
+    @cvs-id $Id$
 } {
     file_id:integer,notnull
     {show_all_versions_p "f"}
@@ -125,7 +125,7 @@ db_multirow -unclobber -extend { author_link last_modified_pretty content_size_p
     set author_link [acs_community_member_link -user_id $author_id -label $author]
 }
 
-if { [apm_package_installed_p "general-comments"] && [ad_parameter "GeneralCommentsP" -package_id [ad_conn package_id]] } {
+if { [apm_package_installed_p "general-comments"] && [parameter::get -parameter "GeneralCommentsP" -package_id [ad_conn package_id]] } {
     set gc_link [general_comments_create_link $file_id $return_url]
     set gc_comments [general_comments_get_comments $file_id $return_url]
 } else {

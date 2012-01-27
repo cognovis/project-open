@@ -48,15 +48,23 @@ var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
 	allowDeselect: true,
 	checkOnly: true,
+	
 	listeners: {
-		selectionchange: function(sm, selections) {
-			var otherSel = Ext.getCmp('companyGrid').getSelectionModel().getSelection();
+		select: function (component,record,index, eOpts ){
+			Ext.getCmp('companyFilterForm').getForm().findField('contact_id').setValue(record.get('user_id'));
+		}, 
+		deselect: function (component,record,index, eOpts ){
+			Ext.getCmp('companyFilterForm').getForm().findField('contact_id').setValue(null);
+			//Ext.getCmp('companyFilterForm').onSearch();
+		},
+		selectionchange: function(view,selections,options)		{
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
 			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
-			}	
-		}
+			}			
+		}	
 	}	
 });
 
@@ -99,7 +107,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			dataIndex:	'last_name2'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Contact_Mail#',
-			dataIndex:	'email',
+			dataIndex:	'spri_email',
 			minWidth:	150
 		}, {
 			header:	'#intranet-sencha-ticket-tracker.Telephone#',
@@ -124,9 +132,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					default:	return value;
 				}
 			}
-		}, {
-			header:		'#intranet-sencha-ticket-tracker.Last_Updated#',
-			dataIndex:	'last_modified'
 		}
 	],
 	dockedItems:	[{
@@ -196,7 +201,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and lower(email) like \'%' + value + '%\'';
+						query = query + ' and lower(spri_email) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;

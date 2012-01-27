@@ -44,13 +44,11 @@ var companyGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	listeners: {
 		select: function (component,record,index, eOpts ){
 			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(record.get('company_id'));
-			setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',1000);
-			
+			//setTimeout('Ext.getCmp(\'contactFilterForm\').onSearch()',2000);
 		}, 
 		deselect: function (component,record,index, eOpts ){
 			Ext.getCmp('contactFilterForm').getForm().findField('company_id').setValue(null);
-			Ext.getCmp('contactFilterForm').onSearch();
-			
+			//Ext.getCmp('contactFilterForm').onSearch();	
 		},
 		selectionchange: function(view,selections,options)		{
 			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
@@ -182,6 +180,11 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 		
 					// special treatment for special filter variables
 					switch (key) {
+					case 'contact_id':
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (' + value + '))';
+						key = 'query';
+						value = query;
+						break;						
 					case 'vat_number':
 						// The customer's VAT number is not part of the REST
 						// company fields. So translate into a query:
@@ -204,7 +207,7 @@ var companyGrid = Ext.define('TicketBrowser.CompanyGrid', {
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select party_id from parties where lower(email) like \'%' + value + '%\'))';
+						query = query + ' and company_id in (select object_id_one from acs_rels where object_id_two in (select person_id from persons where lower(spri_email) like \'%' + value + '%\'))';
 						key = 'query';
 						value = query;
 						break;											

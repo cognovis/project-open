@@ -86,9 +86,9 @@ Ext.define('TicketBrowser.Main', {
 						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
 						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
+						//ToDo: si el ticket esta cerrado y no es admin desabilitar boton de salvar
 						var date = new Date();
 						Ext.getCmp('ticketForm').getForm().findField('datetime').setValue(date.getTime());
-//						Ext.getCmp('ticketForm').getForm().findField('random').setValue(parseInt(Math.random()*10000000));
 				},
 				deactivate: function(){
 					// Show a dialog to save changes in ticket
@@ -96,14 +96,10 @@ Ext.define('TicketBrowser.Main', {
 					var ticket_id = ticket_id_field.getValue();
 					var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
 					//There is a ticked that is not closed and dirty			
-					if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
-					/*	Ext.Msg.show({
-					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
-					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
-					    	buttons: Ext.Msg.OK,
-					    	icon: Ext.MessageBox.WARNING,
-						});*/
-						ticketModel.dirty = false;
+					if (Ext.isEmpty(ticketModel) || (ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty)) {
+						if (!Ext.isEmpty(ticketModel)) {
+							ticketModel.dirty = false;
+						}
 						Ext.Msg.show({
 					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
 					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
@@ -147,10 +143,10 @@ Ext.define('TicketBrowser.Main', {
 					var contact_id_field = Ext.getCmp('companyContactContactForm').getForm().findField('user_id');
 					var contact_id = contact_id_field.getValue();
 					if (!Ext.isEmpty(contact_id)) {			
-						var contactModel = userCustomerStore.findRecord('user_id',contact_id);							
+						var contactModel = userCustomerContactStore.findRecord('user_id',contact_id);							
 					}
 						
-					if ((companyModel != undefined && companyModel.dirty) || (contactModel != undefined && contactModel.dirty)) {
+					if (Ext.isEmpty(companyModel) || Ext.isEmpty(contactModel) || (companyModel.dirty) || (contactModel.dirty)) {
 						Ext.Msg.show({
 					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
 					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
@@ -167,10 +163,10 @@ Ext.define('TicketBrowser.Main', {
 					     		}
 					     	}
 						});
-						if (companyModel != undefined) {
+						if (!Ext.isEmpty(companyModel)) {
 							companyModel.dirty = false;
 						}
-						if (contactModel != undefined) {
+						if (!Ext.isEmpty(contactModel)) {
 							contactModel.dirty = false;
 						}
 					}		
@@ -178,7 +174,8 @@ Ext.define('TicketBrowser.Main', {
 			}		
 		}, {
 			itemId: 'report',
-			title: '#intranet-sencha-ticket-tracker.Reports#'	
+			title: '#intranet-sencha-ticket-tracker.Reports#',
+			hidden: !currentUserIsAdmin
 		}],
 		
 		listeners: {

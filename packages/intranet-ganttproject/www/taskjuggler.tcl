@@ -65,7 +65,7 @@ set base_tj "
  * Please do not edit manually. 
  */
 
-project p$main_project_id \"$project_name\" \"1.0\" $project_start_date $project_end_date {
+project p$main_project_id \"$project_name\" \"1.0\" $project_start_date - $project_end_date {
     currency \"$default_currency\"
 }
 
@@ -184,10 +184,13 @@ db_foreach project_resources $project_resources_sql {
 		h.user_id = :person_id
     "
     db_foreach timesheet $timesheet_sql {
-	append user_tj "\t\tbooking t$child_project_id $hour_date +${hour_hours}h\n"
+
+	set key "r$person_id"
+	set bookings ""
+	if {[info exists booking_hash($key)]} { set booking $booking_hash($key) }
+	append bookings "\t\tbooking t$child_project_id $hour_date +${hour_hours}h\n"
+	set booking_hash($key) $bookings
     }
-
-
 
 
     # ---------------------------------------------------------------
@@ -206,10 +209,29 @@ append resource_tj "}\n"
 # Start writing out the tasks recursively
 set tasks_tj [im_taskjuggler_write_subtasks -depth 0 -default_start $project_start_date $main_project_id]
 
+
+
+# ---------------------------------------------------------------
+# Bookings Entries
+# ---------------------------------------------------------------
+
+set bookings_tj ""
+foreach key [array names booking_hash] {
+    set bookings $booking_hash($key)
+    append bookings_tj "supplement resource $key {\n$bookings\n}\n"
+}
+
+
+# ---------------------------------------------------------------
+# Join the various parts
+# ---------------------------------------------------------------
+
+
 set tj_content "
 $base_tj
 $resource_tj
 $tasks_tj
+$bookings_tj
 $footer_tj
 "
 
@@ -271,21 +293,32 @@ if {[catch {
     ad_script_abort
 }
 
+
 # Run TaskJuggler and process the input file
 if {[catch {
     set cmd "export HOME=$serverroot; cd $tj_dir; taskjuggler $tj_file"
     ns_log Notice "exec $cmd"
     exec bash -c $cmd
 } err]} {
+
+    # Format the tj content with line numbers
+    set tj_content_lines [split $tj_content "\n"]
+    set ctr 1
+    set tj_content_pretty ""
+    foreach line $tj_content_lines {
+	set ctr_str $ctr
+	while {[string length $ctr_str] < 3} { set ctr_str " $ctr_str" }
+	append tj_content_pretty "$ctr_str $line\n"
+	incr ctr
+    }
+
     ad_return_complaint 1 "<b>Error executing TaskJuggler</b>:<br>
 	<pre>
 	$err
 	</pre>
 	<b>Source</b><br>
 	Here is the TaskJuggler file that has caused the issue:
-	<pre>
-	$tj_content
-	</pre>
+	<pre>\n$tj_content_pretty</pre>
     "
     ad_script_abort
 }

@@ -230,8 +230,20 @@ ad_proc -public im_biz_object_add_role {
 
     # Add the user in a im_biz_object_membership relationship
 
-    set rel_id [db_string rel_id "select rel_id from acs_rels where object_id_one = :object_id and object_id_two = :user_id" -default 0]
-    if {0 == $rel_id} {
+    set org_percentage ""
+    set org_role_id ""
+    db_0or1row relationship_info "
+	select	r.rel_id,
+		bom.percentage as org_percentage,
+		bom.object_role_id as org_role_id
+	from	acs_rels r,
+		im_biz_object_members bom
+	where	r.rel_id = bom.rel_id and
+		object_id_one = :object_id and 
+		object_id_two = :user_id
+    "
+
+    if {![info exists rel_id] || 0 == $rel_id || "" == $rel_id} {
 	ns_log Notice "im_biz_object_add_role: oid=$object_id, uid=$user_id, rid=$role_id"
 	set rel_id [db_string create_rel "
 		select im_biz_object_member__new (
@@ -244,15 +256,19 @@ ad_proc -public im_biz_object_add_role {
                         :user_ip
                 )
 	"]
+    }
 
+    if {"" == $rel_id || 0 == $rel_id} { ad_return_complaint 1 "im_biz_object_add_role: rel_id=$rel_id" }
+
+    # Update the bom's percentage and role only if necessary
+    if {$org_percentage != $percentage || $org_role_id != $role_id} {
 	db_dml update_perc "
 		UPDATE im_biz_object_members SET 
-			percentage = :percentage 
+			percentage = :percentage,
+			object_role_id = :role_id
 		WHERE rel_id = :rel_id
 	"
     }
-    if {"" == $rel_id || 0 == $rel_id} { ad_return_complaint 1 "im_biz_object_add_role: rel_id=$rel_id" }
-
 
     # Take specific action to create relationships depending on the object types
     switch $object_type {
@@ -407,50 +423,34 @@ ad_proc -public im_group_member_component {
     are welcome...
 
 } {
+    # Settings ans Defaults
+    set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
+
     # Check if there is a percentage column from intranet-ganttproject
     set show_percentage_p [im_column_exists im_biz_object_members percentage]
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
     if {$object_type != "im_project" & $object_type != "im_timesheet_task"} { set show_percentage_p 0 }
 
     # ------------------ limit_to_users_in_group_id ---------------------
-    if { [empty_string_p $limit_to_users_in_group_id] } {
-	set limit_to_group_id_sql ""
-    } else {
+    set limit_to_group_id_sql ""
+    if {![empty_string_p $limit_to_users_in_group_id]} {
 	set limit_to_group_id_sql "
-	and exists (select 1 
-		from 
-			group_member_map map2,
-		        membership_rels mr,
-			groups ug
-		where 
-			map2.group_id = ug.group_id
-			and map2.rel_id = mr.rel_id
-			and mr.member_state = 'approved'
-			and map2.member_id = u.user_id 
-			and map2.group_id = :limit_to_users_in_group_id
-		)
-	"
+	and rels.object_id_two in (
+		select	gdmm.member_id
+		from	group_distinct_member_map gdmm
+		where	gdmm.group_id = :limit_to_users_in_group_id
+	)"
     } 
 
     # ------------------ dont_allow_users_in_group_id ---------------------
-    if { [empty_string_p $dont_allow_users_in_group_id] } {
-	set dont_allow_sql ""
-    } else {
+    set dont_allow_sql ""
+    if {![empty_string_p $dont_allow_users_in_group_id]} {
 	set dont_allow_sql "
-	and not exists (
-		select 1 
-		from 
-			group_member_map map2, 
-			membership_rels mr,
-			groups ug
-		where 
-			map2.group_id = ug.group_id
-			and map2.rel_id = mr.rel_id
-			and mr.member_state = 'approved'
-			and map2.member_id = u.user_id 
-			and map2.group_id = :dont_allow_users_in_group_id
-		)
-	"
+	and rels.object_id_two not in (
+		select	gdmm.member_id
+		from	group_distinct_member_map gdmm
+		where	gdmm.group_id = :dont_allow_users_in_group_id
+	)"
     } 
 
     set bo_rels_percentage_sql ""
@@ -459,41 +459,37 @@ ad_proc -public im_group_member_component {
     }
 
     # ------------------ Main SQL ----------------------------------------
-    # fraber: Abolished the "distinct" because the role assignment page 
-    # now takes care that a user is assigned only once to a group.
-    # We neeed this if we want to show the role of the user.
-    #
     set sql_query "
 	select
-		u.user_id, 
-		u.user_id as party_id,
-		im_email_from_user_id(u.user_id) as email,
-		im_name_from_user_id(u.user_id) as name,
+		rels.object_id_two as user_id, 
+		rels.object_id_two as party_id, 
+		im_email_from_user_id(rels.object_id_two) as email,
+		im_name_from_user_id(rels.object_id_two, $name_order) as name,
 		im_category_from_id(c.category_id) as member_role,
 		c.category_gif as role_gif,
 		c.category_description as role_description
 		$bo_rels_percentage_sql
 	from
-		users u,
 		acs_rels rels
 		LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
-		LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
-		group_member_map m,
-		membership_rels mr
+		LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id)
 	where
-		rels.object_id_one = $object_id
-		and rels.object_id_two = u.user_id
-		and mr.member_state = 'approved'
-		and u.user_id = m.member_id
-		and mr.member_state = 'approved'
-		and m.group_id = acs__magic_object_id('registered_users'::character varying)
-		and m.rel_id = mr.rel_id
-		and m.container_id = m.group_id
-		and m.rel_type = 'membership_rel'
-
+		rels.object_id_one = :object_id and
+		rels.object_id_two in (select party_id from parties) and
+		rels.object_id_two not in (
+			-- Exclude banned or deleted users
+			select	m.member_id
+			from	group_member_map m,
+				membership_rels mr
+			where	m.rel_id = mr.rel_id and
+				m.group_id = acs__magic_object_id('registered_users') and
+				m.container_id = m.group_id and
+				mr.member_state != 'approved'
+		)
 		$limit_to_group_id_sql 
 		$dont_allow_sql
-	order by lower(im_name_from_user_id(u.user_id))
+	order by 
+		name	
     "
 
     # ------------------ Format the table header ------------------------
@@ -707,6 +703,56 @@ ad_proc -public im_object_assoc_component {
 
 }
 
+
+ad_proc -public im_biz_object_member_list_format { 
+    {-format_user "initials"}
+    {-format_role_p 0}
+    {-format_perc_p 1}
+    bom_list 
+} {
+    Formats a list of business object memberships for display.
+    Returns a piece of HTML suitable for the Timesheet Task List for example.
+    @param bom_list A list of {user_id role_id perc} entries
+} {
+    set member_list ""
+    foreach entry $bom_list {
+	set party_id [lindex $entry 0]
+	set role_id [lindex $entry 1]
+	set perc [lindex $entry 2]
+	set party_name [im_name_from_user_id $party_id]
+	switch $format_user {
+	    initials {
+		set party_pretty [im_initials_from_user_id $party_id]
+	    }
+	    email {
+		set party_pretty [im_email_from_user_id $party_id]
+	    }
+	    default {
+		set party_pretty [im_name_from_user_id $party_id]
+	    }
+	}
+	# Skip the entry if we didn't manage to format the name
+	if {"" == $party_pretty} { set party_id "" }
+
+	# Add a link to the user's page
+	set party_url [export_vars -base "/intranet/users/view" {{user_id $party_id}}]
+	set party_pretty "<a href=\"$party_url\" title=\"$party_name\">$party_pretty</a>"
+
+	if {$format_role_p && "" != $role_id} {
+	    set role_name [im_category_from_id $role_id]
+	    # ToDo: Add role to name using GIF
+	}
+
+	if {$format_perc_p && "" != $perc} {
+	    set perc [expr round($perc)]
+	    append party_pretty ":${perc}%"
+	}
+	if {"" != $party_id} {
+	    lappend member_list "$party_pretty"
+	}
+    }
+    return [join $member_list ", "]
+}
 
 
 

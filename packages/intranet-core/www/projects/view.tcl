@@ -39,8 +39,8 @@ ad_page_contract {
 
 # Redirect if this is a task
 if {[exists_and_not_null project_id]} {
-    set task_p [db_string task_id "select task_id from im_timesheet_tasks where task_id = :project_id" -default 0]
-    if {$task_p} {
+    set otype [db_string otype "select object_type from acs_objects where object_id = :project_id" -default ""]
+    if {"im_timesheet_task" == $otype} {
 	ad_returnredirect [export_vars -base "/intranet-timesheet2-tasks/new" {{form_mode display} {task_id $project_id}}]
     } 
 }
@@ -81,6 +81,10 @@ im_project_audit -project_id $project_id -action before_update
 # ---------------------------------------------------------------------
 # Check permissions
 # ---------------------------------------------------------------------
+
+# Global admin?
+# Only global admins are allowed to "nuke" projects
+set site_wide_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 
 # get the current users permissions for this project
 im_project_permissions $user_id $project_id view read write admin
@@ -130,6 +134,11 @@ if {$admin} {
     append admin_html_content "<li><A href=\"[export_vars -base "/intranet/projects/new" {{parent_id $project_id}}]\">[_ intranet-core.Create_a_Subproject]</A><br></li>\n"
 }
 
+if {$site_wide_admin_p} {
+    append admin_html_content "<li><A href=\"[export_vars -base "/intranet/projects/nuke" {project_id}]\">[_ intranet-core.Nuke_this_project]</A><br></li>\n"
+}
+
+
 set exec_pr_help [lang::message::lookup "" intranet-core.Execution_Project_Help "An 'Execution Project' is a copy of the current project, but without any references to the project's customers. This options allows you to delegate the management of an 'Execution Project' to freelance project managers etc."]
 
 set clone_pr_help [lang::message::lookup "" intranet-core.Clone_Project_Help "A 'Clone' is an exact copy of your project. You can use this function to standardize repeating projects."]
@@ -166,9 +175,9 @@ if {$gantt_project_enabled_p} {
         <li><A href=\"[export_vars -base "/intranet-ganttproject/gantt-project.gan" {project_id}]\"
         >[lang::message::lookup "" intranet-ganttproject.Export_to_GanttProject "Export to GanttProject"]</A></li>
         <li><A href=\"[export_vars -base "/intranet-ganttproject/openproj-project.xml" {project_id}]\"
-        >[lang::message::lookup "" intranet-ganttproject.Export_to_OpenProj "Export to OpenProj (beta)"]</A></li>
+        >[lang::message::lookup "" intranet-ganttproject.Export_to_OpenProj "Export to OpenProj"]</A></li>
         <li><A href=\"[export_vars -base "/intranet-ganttproject/microsoft-project.xml" {project_id}]\"
-        >[lang::message::lookup "" intranet-ganttproject.Export_to_OpenProj "Export to Microsoft Project (alpha)"]</A></li>
+        >[lang::message::lookup "" intranet-ganttproject.Export_to_OpenProj "Export to Microsoft Project"]</A></li>
         "
     }
 
@@ -179,16 +188,16 @@ if {$gantt_project_enabled_p} {
         >[lang::message::lookup "" intranet-ganttproject.Import_from_GanttProject "Import from GanttProject"]</A></li>
 
         <li><A href=\"[export_vars -base "/intranet-ganttproject/gantt-upload" {project_id return_url {import_type openproj}}]\"
-        >[lang::message::lookup "" intranet-ganttproject.Import_from_OpenProj "Import from OpenProj (beta)"]</A></li>
+        >[lang::message::lookup "" intranet-ganttproject.Import_from_OpenProj "Import from OpenProj"]</A></li>
 
         <li><A href=\"[export_vars -base "/intranet-ganttproject/gantt-upload" {project_id return_url {import_type microsoft_project}}]\"
-        >[lang::message::lookup "" intranet-ganttproject.Import_from_MicrosoftProject "Import from Microsoft Project (alpha)"]</A></li>
+        >[lang::message::lookup "" intranet-ganttproject.Import_from_MicrosoftProject "Import from Microsoft Project"]</A></li>
         "
 
         append export_html_content "
 	</ul><br><ul>
         <li><A href=\"[export_vars -base "/intranet-ganttproject/taskjuggler" {project_id}]\"
-        >[lang::message::lookup "" intranet-ganttproject.Schedule_using_TaskJuggler "Schedule using TaskJuggler (alpha)"]</A></li>
+        >[lang::message::lookup "" intranet-ganttproject.Schedule_project_using_TaskJuggler "Schedule project using TaskJuggler (alpha)"]</A></li>
 	"
     }
 }

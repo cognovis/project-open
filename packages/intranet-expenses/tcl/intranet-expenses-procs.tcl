@@ -59,11 +59,15 @@ ad_proc -public im_expense_bundle_permissions {user_id bundle_id view_var read_v
 
 ad_proc im_expense_bundle_item_sum {
     -expense_ids:required
+    {-user_id_from_search "" }
 } {
     Sums up a list of expense items.
     Returns a hash array with the resulting amount sum etc.
 } {
     set current_user_id [ad_get_user_id]
+    set add_hours_all_p [im_permission $current_user_id "add_hours_all"]
+    if {"" == $user_id_from_search || !$add_hours_all_p} { set user_id_from_search $current_user_id }
+
     set amount_before_vat 0
     set total_amount 0
     set common_project_id 0
@@ -153,7 +157,7 @@ ad_proc im_expense_bundle_item_sum {
     set hash(total_amount) $total_amount
     set hash(bundle_vat) $bundle_vat
     set hash(customer_id) [im_company_internal]
-    set hash(provider_id) $current_user_id
+    set hash(provider_id) $user_id_from_search
     set hash(cost_type_id) [im_cost_type_expense_bundle]
     set hash(cost_status_id) [im_cost_status_requested]
     set hash(template_id) ""

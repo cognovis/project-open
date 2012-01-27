@@ -32,7 +32,7 @@ ad_page_contract {
     { zoom "" }
     { max_col 20 }
     { max_row 100 }
-    { calculation_mode "percentage" }
+    { calculation_mode "planned_hours" }
 }
 
 # ---------------------------------------------------------------
@@ -84,8 +84,11 @@ if {0 == $start_date || "" == $start_date} {
     set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
 }
 
+
+
 if {0 == $end_date || "" == $end_date} {
     set end_date [db_string end_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
+    set end_date [db_string end_date "select to_char(now()::date + 2, 'YYYY-MM-01')"]
 }
 
 
@@ -105,7 +108,7 @@ set html [im_resource_mgmt_resource_planning \
 	-max_col $max_col \
 	-max_row $max_row \
 	-show_all_employees_p $show_all_employees_p \
-	-calculation_mode $calculation_mode \
+	-calculation_mode "planned_hours" \
 ]
 
 if {"" == $html} { 
@@ -161,8 +164,6 @@ if {1} {
     }
 
     set top_var_options {
-        "year week_of_year day_of_week"
-        "Week and Day"
         "year month_of_year day_of_month"
         "Month and Day"
     }
@@ -222,10 +223,10 @@ append filter_html "
 }
 
 
-
 set show_all_employees_checked ""
 if {1 == $show_all_employees_p} { set show_all_employees_checked "checked" }
 append filter_html "
+  <!--
   <tr>
 	<td class=form-label valign=top>[lang::message::lookup "" intranet-ganttproject.All_Employees "Show all:"]</td>
 	<td class=form-widget valign=top>
@@ -233,9 +234,8 @@ append filter_html "
 		[lang::message::lookup "" intranet-core.Employees "Employees?"]
 	</td>
   </tr>
+  --> 
 "
-
-
 
 set planned_hours_checked ""
 set percentage_checked ""
@@ -247,6 +247,7 @@ if { "" == $calculation_mode || "percentage" == $calculation_mode } {
 }
 
 append filter_html "
+<!--
 <tr>
   <td class='form-label' valign='top'>Mode</td>
   <td class='form-widget' valign='top'>
@@ -254,6 +255,7 @@ append filter_html "
         <input name='calculation_mode' value='planned_hours' $planned_hours_checked  type='radio'>Planned Hours
   </td>
 </tr>
+-->
 "
 
 append filter_html "
