@@ -1,0 +1,1 @@
+ad_returnredirect "[export_vars -base "list" -url {{cost_type_id 3710}}]"

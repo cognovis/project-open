@@ -24,8 +24,8 @@
                 :payment_method_id,	-- payment_method_id
                 :payment_days,		-- payment_days
                 0,			-- amount
-                :vat,			-- vat
-                :tax,			-- tax
+                to_number(:vat,:vat_format),			-- vat
+                to_number(:tax,:tax_format),			-- tax
                 :note			-- note
             )
         </querytext>
@@ -37,6 +37,21 @@
              null,             -- rel_id
              'relationship',   -- rel_type
              :project_id,      -- object_id_one
+             :invoice_id,      -- object_id_two
+             null,             -- context_id
+             null,             -- creation_user
+             null             -- creation_ip
+      )
+
+    </querytext>
+</fullquery>
+<fullquery name="create_invoice_rel">
+    <querytext>
+
+      select acs_rel__new (
+             null,             -- rel_id
+             'im_invoice_invoice_rel',   -- rel_type
+             :source_id,      -- object_id_one
              :invoice_id,      -- object_id_two
              null,             -- context_id
              null,             -- creation_user

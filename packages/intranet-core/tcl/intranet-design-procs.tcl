@@ -1248,62 +1248,54 @@ ad_proc -public im_header {
 	" -order tinymceZ
     }
 
-    # OpenACS 5.4 Header stuff
-    if {[im_openacs54_p]} {
-
-	# Determine if developer support is installed and enabled
-	#
-	set developer_support_p [expr { [llength [info procs ::ds_show_p]] == 1 && [ds_show_p] }]
-	if {$developer_support_p} {
-	    template::head::add_css -href "/resources/acs-developer-support/acs-developer-support.css" -media "all"
-	    template::add_header -src "/packages/acs-developer-support/lib/toolbar"
-	    template::add_footer -src "/packages/acs-developer-support/lib/footer"
-	}
-
-	template::head::add_css -href "/resources/acs-subsite/default-master.css" -media "all"
-
-	set header_html ""
-	if {[im_openacs54_p]} {
-	    set header_html [template::get_header_html]
-	}
-
-	# Extract multirows for header META, CSS, STYLE & SCRIPT etc. from global variables
-	template::head::prepare_multirows
-	set event_handlers [template::get_body_event_handlers]
-
-	template::multirow foreach meta {
-	    set row "<meta"
-	    if {"" != $http_equiv} {  append row " http_equiv='$http_equiv'" }
-	    if {"" != $name} {  append row " name='$name'" }
-	    if {"" != $scheme} {  append row " scheme='$scheme'" }
-	    if {"" != $lang} {  append row " lang='$lang'" }
-	    append row " content='$content'>\n"
-	    append extra_stuff_for_document_head $row
-	}
-	
-	template::multirow foreach link {
-	    set row "<link rel='$rel' href='$href'"
-	    if {"" != $lang} {  append row " lang='$lang'" }
-	    if {"" != $title} {  append row " title='$title'" }
-	    if {"" != $type} {  append row "  type='$type'" }
-	    if {"" != $media} {  append row " media='$media'" }
-	    append row ">\n"
-	    append extra_stuff_for_document_head $row
-	}
-	
-	template::multirow foreach headscript {
-	    set row "<script type='$type'"
-	    if {"" != $src} {  append row " src='$src'" }
-	    if {"" != $charset} {  append row " charset='$charset'" }
-	    if {"" != $defer} {  append row " defer='$defer'" }
-	    append row ">"
-	    if {"" != $content} {  append row " $content" }
-	    append row "</script>\n"
-	    append extra_stuff_for_document_head $row
-	}
-	
+    # Determine if developer support is installed and enabled
+    #
+    set developer_support_p [expr { [llength [info procs ::ds_show_p]] == 1 && [ds_show_p] }]
+    if {$developer_support_p} {
+	template::head::add_css -href "/resources/acs-developer-support/acs-developer-support.css" -media "all"
+	template::add_header -src "/packages/acs-developer-support/lib/toolbar"
+	template::add_footer -src "/packages/acs-developer-support/lib/footer"
     }
-
+    
+    template::head::add_css -href "/resources/acs-subsite/default-master.css" -media "all"
+    
+    set header_html [template::get_header_html]
+    
+    # Extract multirows for header META, CSS, STYLE & SCRIPT etc. from global variables
+    template::head::prepare_multirows
+    set event_handlers [template::get_body_event_handlers]
+    
+    template::multirow foreach meta {
+	set row "<meta"
+	if {"" != $http_equiv} {  append row " http_equiv='$http_equiv'" }
+	if {"" != $name} {  append row " name='$name'" }
+	if {"" != $scheme} {  append row " scheme='$scheme'" }
+	if {"" != $lang} {  append row " lang='$lang'" }
+	append row " content='$content'>\n"
+	append extra_stuff_for_document_head $row
+    }
+    
+    template::multirow foreach link {
+	set row "<link rel='$rel' href='$href'"
+	if {"" != $lang} {  append row " lang='$lang'" }
+	if {"" != $title} {  append row " title='$title'" }
+	if {"" != $type} {  append row "  type='$type'" }
+	if {"" != $media} {  append row " media='$media'" }
+	append row ">\n"
+	append extra_stuff_for_document_head $row
+    }
+    
+    template::multirow foreach headscript {
+	set row "<script type='$type'"
+	if {"" != $src} {  append row " src='$src'" }
+	if {"" != $charset} {  append row " charset='$charset'" }
+	if {"" != $defer} {  append row " defer='$defer'" }
+	append row ">"
+	if {"" != $content} {  append row " $content" }
+	append row "</script>\n"
+	append extra_stuff_for_document_head $row
+    }
+	
     if {[llength [info procs im_amberjack_header_stuff]]} {
 	append extra_stuff_for_document_head [im_amberjack_header_stuff]
     }

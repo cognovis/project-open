@@ -257,15 +257,6 @@ where
 "
 
 
-# Audit the action
-if {0 == $company_exists_p} {
-    im_audit -object_type "im_office" -object_id $main_office_id -type_id [im_office_type_main] -status_id [im_office_status_active] -action after_create
-    im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_create
-} else {
-    im_audit -object_type "im_office" -object_id $main_office_id -type_id [im_office_type_main] -status_id [im_office_status_active] -action after_update
-    im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_update
-}
-
 # -----------------------------------------------------------------
 # Make sure the creator and the manager become Key Accounts
 # -----------------------------------------------------------------
@@ -313,6 +304,14 @@ if {[im_table_exists im_dynfield_attributes]} {
 
 }
 
+# Audit the action
+if {0 == $company_exists_p} {
+    im_audit -object_type "im_office" -object_id $main_office_id -type_id [im_office_type_main] -status_id [im_office_status_active] -action after_create
+    im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_create
+} else {
+    im_audit -object_type "im_office" -object_id $main_office_id -type_id [im_office_type_main] -status_id [im_office_status_active] -action after_update
+    im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_update
+}
 
 # ------------------------------------------------------
 # Finish

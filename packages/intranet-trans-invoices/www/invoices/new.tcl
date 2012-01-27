@@ -167,6 +167,8 @@ db_foreach column_list_sql $column_sql {
 
 set criteria [list]
 
+
+
 # We don't need to show the select screen if only a single project
 # has been selected...
 if {$project_id != 0} {
@@ -181,7 +183,7 @@ if {$project_id != 0} {
 
 	# Restrict the search for tasks to the subprojects
 	# of the current project and the project itself
-	lappend criteria "
+	lappend criteria "(
 		p.project_id in (
 		      select	children.project_id
 		      from	im_projects parent,
@@ -191,7 +193,7 @@ if {$project_id != 0} {
 					between parent.tree_sortkey 
 					and tree_right(parent.tree_sortkey)
 				and parent.project_id = :project_id
-		)
+		) or p.project_id = :project_id)
 	"
 
     } else {
@@ -305,7 +307,6 @@ where
 	$where_clause
 	$order_by_clause
 "
-
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>

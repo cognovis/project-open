@@ -37,6 +37,7 @@ ad_page_contract {
     { view_type "all" }
     { letter:trim "all" }
     { view_name "company_list" }
+    { view_type "" }
     { user_id_from_search:integer 0}
     { filter_advanced_p:integer 0 }
 }
@@ -168,6 +169,15 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -object_type "im_company"
 			  ]
 
+# List to store the view_type_options
+set view_type_options [list [list Tabelle ""]]
+
+# Run callback to extend the filter and/or add items to the view_type_options
+callback im_companies_index_filter -form_id $form_id
+
+ad_form -extend -name $form_id -form {
+    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options $view_type_options}}
+}
 
 # ---------------------------------------------------------------
 # 3. Define Table Columns
@@ -357,29 +367,33 @@ ns_log Notice $selection
 # ----------------------------------------------------------
 # Do we have to show administration links?
 
-set admin_html "<ul>"
+set admin_html ""
 if {[im_permission $current_user_id "add_companies"]} {
-
+    set admin_html "<ul>"
+    
     append admin_html "
 	<li><a href=/intranet/companies/new>[_ intranet-core.Add_a_new_Company]</a>\n"
 }
 
 if {$user_is_admin_p} {
+    if {$admin_html eq ""} {
+	set admin_html "<ul>"
+    }
     append admin_html "
 <li><a href=/intranet/companies/upload-companies?[export_url_vars return_url]>[_ intranet-core.Import_Company_CSV]</a>
 <!-- <li><a href=/intranet/companies/upload-contacts?[export_url_vars return_url]>[_ intranet-core.lt_Import_Company_Contac]</a> -->
-"}
-
-append admin_html "
+"
+    
+    append admin_html "
 <li><a href=\"/intranet/companies/index?filter_advanced_p=1\">[_ intranet-core.Advanced_Filtering]</a>
 "
 
-# Append user-defined menus
-append admin_html [im_menu_ul_list -no_uls 1 "companies_admin" {}]
-
-
-append admin_html "</ul>"
-
+    # Append user-defined menus
+    append admin_html [im_menu_ul_list -no_uls 1 "companies_admin" {}]
+    
+    
+    append admin_html "</ul>"
+}
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
@@ -422,6 +436,8 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 
+callback im_projects_index_before_render -view_name $view_name \
+    -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach company_info_query $selection -bind $form_vars {
 
@@ -482,7 +498,10 @@ set sub_navbar [im_company_navbar "" "/intranet/companies/" $next_page_url $prev
 eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="company_filter"></formtemplate>}]
 set filter_html $__adp_output
 
-set left_navbar_html "
+if { [im_user_is_freelance_p $current_user_id] } {
+    set left_navbar_html ""
+} else {
+    set left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
 	    #intranet-core.Filter_Companies#
@@ -492,8 +511,8 @@ set left_navbar_html "
       <hr/>
 "
 
-if {!$filter_advanced_p} {
-    set left_navbar_html "
+    if {!$filter_advanced_p} {
+	set left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
 	    #intranet-core.Filter_Companies#
@@ -523,9 +542,10 @@ if {!$filter_advanced_p} {
       </div>
       <hr/>
     "
+    }
 }
-
-append left_navbar_html "
+if {$admin_html ne ""} {
+    append left_navbar_html "
       <div class='filter-block'>
          <div class='filter-title'>
             #intranet-core.Admin_Companies#
@@ -533,3 +553,4 @@ append left_navbar_html "
          $admin_html
       </div>
 "
+}
