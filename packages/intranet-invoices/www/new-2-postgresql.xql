@@ -45,4 +45,19 @@
 
     </querytext>
 </fullquery>
+<fullquery name="create_invoice_rel">
+    <querytext>
+
+      select acs_rel__new (
+             null,             -- rel_id
+             'im_invoice_invoice_rel',   -- rel_type
+             :source_id,      -- object_id_one
+             :invoice_id,      -- object_id_two
+             null,             -- context_id
+             null,             -- creation_user
+             null             -- creation_ip
+      )
+
+    </querytext>
+</fullquery>
 </queryset>

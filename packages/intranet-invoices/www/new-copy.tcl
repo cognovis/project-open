@@ -229,7 +229,6 @@ set new_invoice_id [im_new_object_id]
 # ---------------------------------------------------------------
 # Calculate the selects for the ADP page
 # ---------------------------------------------------------------
-ds_comment "Payment : $payment_method_id :: $default_payment_method_id"
 set payment_method_select [im_invoice_payment_method_select payment_method_id $payment_method_id]
 set template_select [im_cost_template_select template_id $template_id]
 set status_select [im_cost_status_select cost_status_id $cost_status_id]

@@ -331,6 +331,8 @@ foreach nr $item_list {
     }
 }
 
+set source_invoice_ids [list]
+
 foreach nr $item_list {
     set name $item_name($nr)
     set units $item_units($nr)
@@ -342,6 +344,11 @@ foreach nr $item_list {
     } else {
 	set item_source_invoice_id ""
     }
+    
+    if {[lsearch $source_invoice_ids $item_source_invoice_id]<0} {
+	lappend source_invoice_ids $item_source_invoice_id
+    }
+
     set project_id_item $item_project_id($nr)   
     # project_id is empty when document is created from scratch
     # project_id is required for grouped invoice items 
@@ -406,6 +413,23 @@ foreach project_id $select_project {
 	set rel_id [db_exec_plsql create_rel ""]
     }
 }
+
+# ---------------------------------------------------------------
+# Associate the invoice with the source invoices via acs_rels
+# ---------------------------------------------------------------
+
+foreach source_id $source_invoice_ids {
+    db_1row "get relations" "
+		select	count(*) as v_rel_exists
+                from    acs_rels
+                where   object_id_one = :source_id
+                        and object_id_two = :invoice_id
+    "
+    if {0 ==  $v_rel_exists} {
+	set rel_id [db_exec_plsql create_invoice_rel ""]
+    }
+}
+
 
 # ---------------------------------------------------------------
 # Update the invoice amount and currency 

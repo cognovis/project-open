@@ -65,6 +65,7 @@
   <msg key="intranet-invoices.Error_multiple_currencies">mehrere Währungsfehler</msg>
   <msg key="Invoice_Address">Rechnungsadresse</msg>
   <msg key="Line">Zeile</msg>
+  <msg key="Linked_Invoices">Verknüpfte&lt;br /&gt;Rechnungen</msg>
   <msg key="lt_Cant_find_the_documen">Dokument Nr. %invoice_id% nicht gefunden</msg>
   <msg key="lt_Dear_accounting_conta">Sehr geehrte( r) Frau/Herr %accounting_contact_name%,
 Eine neue %cost_type% wurde für sie erstellt auf

@@ -33,7 +33,7 @@
   <msg key="Date">Date</msg>
   <msg key="days">days</msg>
   <msg key="Del">Del</msg>
-  <msg key="delivery_date">Delivery date</msg>
+  <msg key="delivery_date">Delivery Date</msg>
   <msg key="Description">Description</msg>
   <msg key="Document_">Document #</msg>
   <msg key="Document_hash_simbol">Document #</msg>
@@ -67,6 +67,7 @@
   <msg key="intranet-invoices.Error_multiple_currencies">Multiple Currencies Error</msg>
   <msg key="Invoice_Address">Invoice Address</msg>
   <msg key="Line">Line</msg>
+  <msg key="Linked_Invoices">Linked Invoices</msg>
   <msg key="lt_Cant_find_the_documen">Can't find the document# %invoice_id%</msg>
   <msg key="lt_Dear_accounting_conta">Dear %accounting_contact_name%,
 

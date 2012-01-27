@@ -141,8 +141,6 @@ im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
 # Invoices and Quotes have a "Customer" fields.
 set invoice_or_quote_p [expr [im_category_is_a $cost_type_id [im_cost_type_invoice]] || [im_category_is_a $cost_type_id [im_cost_type_quote]] || [im_category_is_a $cost_type_id [im_cost_type_delivery_note]] || [im_category_is_a $cost_type_id [im_cost_type_interco_quote]] || [im_category_is_a $cost_type_id [im_cost_type_interco_invoice]]]
 
-ds_comment "$invoice_or_quote_p ..."
-
 # Vars for ADP (can't use the commands in ADP)
 set quote_cost_type_id [im_cost_type_quote]
 set delnote_cost_type_id [im_cost_type_delivery_note]
@@ -846,7 +844,7 @@ set invoice_item_html "<tr align=center>\n"
 
 if {$show_our_project_nr && $show_leading_invoice_item_nr} {
     append invoice_item_html "
-          <td class=rowtitle $decoration_item_nr>[lang::message::lookup $locale intranet-invoices.Line_no "#"]</td>
+          <td class=rowtitle $decoration_item_nr>[lang::message::lookup $locale intranet-invoices.Line_no '#']</td>
     "
 }
 
@@ -885,76 +883,77 @@ set ctr 1
 
 set oo_table_xml ""
 
+set source_invoice_ids [list]
 if { 0 == $item_list_type } {
-	db_foreach invoice_items {} {
-	    # $company_project_nr is normally related to each invoice item,
-	    # because invoice items can be created based on different projects.
-	    # However, frequently we only have one project per invoice, so that
-	    # we can use this project's company_project_nr as a default
-	    if {$company_project_nr_exists && "" == $company_project_nr} { 
-		set company_project_nr $customer_project_nr_default
-	    }
-	    if {"" == $project_short_name} { 
-		set project_short_name $project_short_name_default
-	    }
+    db_foreach invoice_items {} {
+	# $company_project_nr is normally related to each invoice item,
+	# because invoice items can be created based on different projects.
+	# However, frequently we only have one project per invoice, so that
+	# we can use this project's company_project_nr as a default
+	if {$company_project_nr_exists && "" == $company_project_nr} { 
+	    set company_project_nr $customer_project_nr_default
+	}
+	if {"" == $project_short_name} { 
+	    set project_short_name $project_short_name_default
+	}
 	
-	    set amount_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount+0] $rounding_precision] "" $locale]
-	    set item_units_pretty [lc_numeric [expr $item_units+0] "" $locale]
-	    set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
+	set amount_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount+0] $rounding_precision] "" $locale]
+	set item_units_pretty [lc_numeric [expr $item_units+0] "" $locale]
+	set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
 	
-	    append invoice_item_html "
+	append invoice_item_html "
 		<tr $bgcolor([expr $ctr % 2])>
 	    "
 	
-	    if {$show_leading_invoice_item_nr} {
-	        append invoice_item_html "
-	          <td $bgcolor([expr $ctr % 2]) align=right>$sort_order</td>\n"
-	    }
-	
+	if {$show_leading_invoice_item_nr} {
 	    append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2]) align=right>$sort_order</td>\n"
+	}
+	
+	append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2])>$item_name</td>
 	    "
-	    if {$show_qty_rate_p} {
-	        append invoice_item_html "
+	if {$show_qty_rate_p} {
+	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
 	          <td $bgcolor([expr $ctr % 2]) align=left>[lang::message::lookup $locale intranet-core.$item_uom $item_uom]</td>
 	          <td $bgcolor([expr $ctr % 2]) align=right>$price_per_unit_pretty&nbsp;$currency</td>
 	        "
-	    }
-
-	    if {$show_company_project_nr} {
-		# Only if intranet-translation has added the field
-		append invoice_item_html "
-	          <td $bgcolor([expr $ctr % 2]) align=left>$company_project_nr</td>\n"
-	    }
+	}
 	
-	    if {$show_our_project_nr} {
-		append invoice_item_html "
-	          <td $bgcolor([expr $ctr % 2]) align=left>$project_short_name</td>\n"
-	    }
-	
+	if {$show_company_project_nr} {
+	    # Only if intranet-translation has added the field
 	    append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2]) align=left>$company_project_nr</td>\n"
+	}
+	
+	if {$show_our_project_nr} {
+	    append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2]) align=left>$project_short_name</td>\n"
+	}
+	
+	append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$amount_pretty&nbsp;$currency</td>
 		</tr>"
 	
 	
-	    # Insert a new XML table row into OpenOffice document
-	    if {"odt" == $template_type} {
-		set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
-		# Replace placeholders in the OpenOffice template row with values
-		eval [template::adp_compile -string $odt_row_template_xml]
-		set odt_row_xml $__adp_output
-	
-		# Parse the new row and insert into OOoo document
-		set row_doc [dom parse $odt_row_xml]
-		set new_row [$row_doc documentElement]
-		$odt_template_table_node insertBefore $new_row $odt_template_row_node
-	
-	    }
-	
-	    incr ctr
+	# Insert a new XML table row into OpenOffice document
+	if {"odt" == $template_type} {
+	    set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
+	    # Replace placeholders in the OpenOffice template row with values
+	    eval [template::adp_compile -string $odt_row_template_xml]
+	    set odt_row_xml $__adp_output
+	    
+	    # Parse the new row and insert into OOoo document
+	    set row_doc [dom parse $odt_row_xml]
+	    set new_row [$row_doc documentElement]
+	    $odt_template_table_node insertBefore $new_row $odt_template_row_node
+	    
 	}
-
+	
+	incr ctr
+    }
+    
 } elseif { 100 == $item_list_type } {
 	# item_list_type: Translation Project Hirarchy   
     	set invoice_items_sql "
@@ -966,6 +965,7 @@ if { 0 == $item_list_type } {
                                 item_units,
                                 item_type_id,
                                 item_uom_id,
+                                item_source_invoice_id,
                                 price_per_unit,
 				trunc((price_per_unit * item_units) :: numeric, 2) as line_total,
 				(select category from im_categories where category_id = item_uom_id) as item_uom
@@ -1165,7 +1165,6 @@ if { 0 == $item_list_type } {
     	}
 	append invoice_item_html "<tr><td class='invoiceroweven' colspan ='100' align='right'>[lc_numeric [im_numeric_add_trailing_zeros [expr $amount_sub_total+0] $rounding_precision] "" $locale]&nbsp;$currency</td></tr>"
 }
-
 
 # ---------------------------------------------------------------
 # Add subtotal + VAT + TAX = Grand Total
@@ -1645,3 +1644,54 @@ db_foreach column_list_sql $column_sql {
 
 
 append project_base_data_html "</table>"
+
+# ---------------------------------------------------------------
+# Source Invoices list
+# ---------------------------------------------------------------
+
+set linked_list_html ""
+set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
+if {$linked_invoice_ids eq ""} {
+    # this might be a parent, try it again for children
+    set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
+}
+if {$linked_invoice_ids ne ""} {
+
+    set linked_list_html "
+	<table border=0 cellPadding=1 cellspacing=1>
+        <tr>
+          <td align=middle class=rowtitle colspan=3>
+	    [lang::message::lookup $locale intranet-invoices.Linked_Invoices]
+	  </td>
+        </tr>"
+
+    set linked_list_sql "
+select
+	invoice_id as linked_invoice_id,
+        invoice_nr as linked_invoice_nr
+from
+	im_invoices
+where
+	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
+"
+
+    set linked_ctr 0
+    db_foreach linked_list $linked_list_sql {
+	append linked_list_html "
+        <tr $bgcolor([expr $linked_ctr % 2])>
+          <td>
+	    <A href=/intranet-invoices/view?invoice_id=$linked_invoice_id>
+	      $linked_invoice_nr
+ 	    </A>
+	  </td></tr>\n"
+	incr linked_ctr
+    }
+
+    if {!$linked_ctr} {
+	append linked_list_html "<tr class=roweven><td align=center><i>[lang::message::lookup $locale intranet-invoices.No_linkeds_found]</i></td></tr>\n"
+    }
+
+    append linked_list_html "
+	</table>
+        </form>\n"
+}
