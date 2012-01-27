@@ -194,15 +194,11 @@ ad_proc -public im_ms_project_write_task {
 	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
 		Name			{ set value $project_name }
-		Type			{
-			# Fixed units, fixed duration or fixed work?
-			switch $effort_driven_type_id {
-				""	{ set value 0}
-				9720	{ set value 0}
-				9721	{ set value 1}
-				9722	{ set value 2}
-				default { ad_return_complaint 1 "im_ms_project_write_task: Unknown effort driven type '$effort_driven_type_id'" }
-			}
+		Type			{ 
+		    set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
+		    if {"" == $value} { 
+			ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
+		    }
 		}
 	        IsNull			{ set value 0 }
 		OutlineNumber		{ set value $outline_number }
