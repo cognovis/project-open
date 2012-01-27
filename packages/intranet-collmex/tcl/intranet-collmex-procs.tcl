@@ -403,7 +403,7 @@ ad_proc -public intranet_collmex::invoice_payment_get {
 	if {[lindex $line_items 0] eq "INVOICE_PAYMENT"} {
 	    set collmex_id  "[lindex $line_items 5]-[lindex $line_items 6]-[lindex $line_items 7]"
 	    set date  [lindex $line_items 2] ; # Datum
-	    set amount  [lindex $line_items 3] ; # Actually paid amount
+	    set amount  [lindex $line_items 4] ; # Actually paid amount
 	    set invoice_nr [lindex $line_items 1]
 	    regsub -all {,} $amount {.} amount
 	    # Check if we have this id already for a payment
