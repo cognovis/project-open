@@ -255,7 +255,6 @@ ad_proc -public intranet_collmex::update_provider_bill {
     } else {
 	set return_message "CREATED $invoice_id: $response"
     }
-    ds_comment "$csv_line"
     return $return_message
 
 }
@@ -357,7 +356,7 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     } else {
 	set return_message "CREATED $invoice_id: $response"
     }
-    ds_comment "$csv_line"
+
     return $return_message
     
 }

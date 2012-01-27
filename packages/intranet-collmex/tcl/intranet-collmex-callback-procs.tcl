@@ -63,15 +63,15 @@ ad_proc -public -callback im_invoice_after_update -impl intranet-collmex_invoice
     This is the complex handle all types of invoice changes function for collmex
 } {
 
-    if {[lsearch [im_category_children -super_category_id 3700] $type_id] >-1} {
+    if {[lsearch [im_category_children -super_category_id 3700] $type_id] >-1 || $type_id eq 3700} {
 	# Customer Invoice
-	intranet_collmex::update_customer_invoice -invoice_id $object_id
+	ns_log Notice "Creating invoice in Collmex:: [intranet_collmex::update_customer_invoice -invoice_id $object_id]"
 	return
     } 
     
-    if {[lsearch [im_category_children -super_category_id 3704] $type_id] >-1} {
+    if {[lsearch [im_category_children -super_category_id 3704] $type_id] >-1 || $type_id eq 3704} {
 	# Provider Bill
-	intranet_collmex::update_provider_bill -invoice_id $object_id
+	ns_log Notice "Creating bill in Collmex:: [intranet_collmex::update_provider_bill -invoice_id $object_id]"
 	return
     }
 }
