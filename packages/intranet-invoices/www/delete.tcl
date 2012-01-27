@@ -30,9 +30,11 @@ if {![im_permission $user_id add_invoices]} {
 #
 set otype [db_string object_type "select object_type from acs_objects where object_id=:invoice_id"]
 
-db_string delete_cost_item ""
+db_1row type_and_status "select cost_type_id, cost_status_id from im_costs where cost_id = :cost_id"
 
-im_audit -object_type "im_invoice" -object_id $invoice_id -action after_delete
+im_audit -object_type "$otype" -object_id $invoice_id -status_id $cost_status_id -type_id $cost_type_id -action before_delete
+
+db_string delete_cost_item ""
 
 ad_returnredirect $return_url
 return
