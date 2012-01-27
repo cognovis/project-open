@@ -490,6 +490,8 @@ if { [form is_request $form_id] } {
 	template::element::set_value $form_id referred_by $referred_by
 	template::element::set_value $form_id experience_id $experience_id
 	template::element::set_value $form_id employee_id $employee_id
+        template::element::set_value $form_id vacation_days_per_year $vacation_days_per_year
+        template::element::set_value $form_id vacation_balance $vacation_balance
 	template::element::set_value $form_id return_url "/intranet/users/view?user_id=$employee_id"
 }
 	

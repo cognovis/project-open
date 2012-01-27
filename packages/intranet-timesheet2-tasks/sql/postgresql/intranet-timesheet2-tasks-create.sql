@@ -379,7 +379,7 @@ drop function inline_0 ();
 -- 9600-9649	Intranet Timesheet Task Status
 -- 9650-9699	Intranet Timesheet Task Dependency Type
 -- 9700-9719	Intranet Timesheet Task Scheduling Type
--- 9720-9739	Intranet Timesheet Task Effort Driven Type
+-- 9720-9739	Intranet Timesheet Task Fixed Task Type
 -- 9740-9999	unassigned
 
 
@@ -421,7 +421,7 @@ SELECT im_category_new(9662,'FS (finish-to-start)', 'Intranet Timesheet Task Dep
 update im_categories set aux_int1 = 1 where category_id = 9662;
 SELECT im_category_new(9664,'SF (start-to-finish)', 'Intranet Timesheet Task Dependency Type');
 update im_categories set aux_int1 = 2 where category_id = 9664;
-SELECT im_category_new(9668,'SS (start-to-start)', 'Intranet Timesheet Task Dependency Type');
+SELECT im_category_new(9666,'SS (start-to-start)', 'Intranet Timesheet Task Dependency Type');
 update im_categories set aux_int1 = 3 where category_id = 9666;
 
 
@@ -446,11 +446,11 @@ SELECT im_category_new(9707,'Finish no later than', 'Intranet Timesheet Task Sch
 
 
 -------------------------------
--- Timesheet Task Effort Driven Type
--- 9720-9739    Intranet Timesheet Task Effort Driven Type
-SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Effort Driven Type');
-SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Effort Driven Type');
-SELECT im_category_new(9722,'Fixed Work', 'Intranet Timesheet Task Effort Driven Type');
+-- Timesheet Task Fixed Task Type
+-- 9720-9739    Intranet Timesheet Task Fixed Task Type
+SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Fixed Task Type');
+SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Fixed Task Type');
+SELECT im_category_new(9722,'Fixed Work', 'Intranet Timesheet Task Fixed Task Type');
 
 
 -------------------------------
