@@ -32,5 +32,7 @@ set otype [db_string object_type "select object_type from acs_objects where obje
 
 db_string delete_cost_item ""
 
+im_audit -object_type "im_invoice" -object_id $invoice_id -action after_delete
+
 ad_returnredirect $return_url
 return
