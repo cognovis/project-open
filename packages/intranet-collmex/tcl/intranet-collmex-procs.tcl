@@ -178,6 +178,7 @@ ad_proc -public intranet_collmex::update_company {
 
 ad_proc -public intranet_collmex::update_provider_bill {
     -invoice_id
+    -storno:boolean
 } {
     send the provider bill to collmex
 } {
@@ -238,7 +239,11 @@ ad_proc -public intranet_collmex::update_provider_bill {
 	append csv_line ";"
     }
     append csv_line ";" ; # KontoNr halber Umsatzsteuersatz
-    append csv_line ";" ; # Storno
+    if {$storno_p} {
+	append csv_line ";1" ; # Storno
+    } else {
+	append csv_line ";" ; # Storno
+    }
     append csv_line ";" ; # Kostenstelle
 
     set response [split [intranet_collmex::http_post -csv_data $csv_line] ";"]
@@ -261,6 +266,7 @@ ad_proc -public intranet_collmex::update_provider_bill {
 
 ad_proc -public intranet_collmex::update_customer_invoice {
     -invoice_id
+    -storno:boolean
 } {
     send the customer invoice to collmex
 } {
@@ -335,7 +341,11 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # KontoNr halber Umsatzsteuersatz
     append csv_line ";" ; # reserviert
     append csv_line ";" ; # reserviert
-    append csv_line ";" ; # Storno
+    if {$storno_p} {
+	append csv_line ";1" ; # Storno
+    } else {
+	append csv_line ";" ; # Storno
+    }
     append csv_line ";" ; # Schlussrechnung
     append csv_line ";" ; # Erloesart
     append csv_line ";\"projop\"" ; # Systemname
