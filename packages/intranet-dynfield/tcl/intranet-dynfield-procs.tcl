@@ -1835,17 +1835,27 @@ ad_proc -public im_dynfield::object_array {
 
     set array_val(object_type_column) $type_column
     set ref_column "${table_name}.${id_column}"
-    set tables [list $table_name]
-    set wheres [list "$ref_column = :object_id"]
+    set tables [list]
+    set wheres [list "$ref_column = $object_id"]
     set selects [list "${status_type_table}.$type_column"]
 
     foreach type [ams::object_parents -object_type $object_type -hide_current] {
-	db_1row object_type_info "select id_column, table_name from acs_object_types where object_type = :type"
-	lappend tables "$table_name"
-	lappend wheres "$ref_column = ${table_name}.${id_column}"
+	db_1row object_type_info "select id_column, table_name as parent_table_name from acs_object_types where object_type = :type"
+	lappend tables "$parent_table_name"
+	lappend wheres "$ref_column = ${parent_table_name}.${id_column}"
     }
+    
+    lappend tables $table_name
 
-
+    # Deal with out join tables
+    set outer_joins ""
+    db_foreach tables {select table_name, id_column from acs_object_type_tables where object_type = :object_type} {
+	if {[lsearch $tables $table_name]<0} {
+	    # We need an outer_join
+	    append outer_joins "LEFT OUTER JOIN $table_name ON ${table_name}.$id_column = $ref_column"
+	}
+    }
+    
     set attribute_names [list]
     set category_attribute_names [list]
     set deref_attribute_names [list]
@@ -1885,12 +1895,12 @@ ad_proc -public im_dynfield::object_array {
     }
 
     # Retreive the data
-    if { ![db_0or1row project_info_query "
-	select [join $selects ",\n"]
-	from [join $tables ",\n"]
-        WHERE [join $wheres "\n and "]"]
+    set sql "	select [join $selects ",\n"]
+	from [join $tables ",\n"] $outer_joins
+        WHERE [join $wheres "\n and "]"
+    if { ![db_0or1row project_info_query "$sql"]
      } {
-	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	ad_return_complaint 1 "Cant Find $sql"
 	return
     }
 
