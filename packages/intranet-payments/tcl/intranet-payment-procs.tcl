@@ -17,6 +17,7 @@ ad_proc -public im_payment_create_payment {
     {-cost_id ""}
     {-payment_type_id ""}
     {-note ""}
+    {-actual_amount ""}
 } {
     Generate a new payment
 } {
@@ -43,7 +44,11 @@ ad_proc -public im_payment_create_payment {
     # Get the values from cost item
     # --------------------------
     
-    db_1row cost_info "select cost_type_id, customer_id, provider_id, amount, currency from im_costs where cost_id = :cost_id"
+    db_1row cost_info "select cost_type_id, customer_id, provider_id, (amount * (1 + coalesce(vat,0)/100 + coalesce(tax,0)/100)) as amount, currency from im_costs where cost_id = :cost_id"
+    if {$actual_amount eq ""} {
+	set actual_amount $amount
+    }
+
     if {[im_cost_type_is_invoice_or_quote_p $cost_type_id]} {
 	set company_id $customer_id
 	set provider_id [im_company_internal]
@@ -80,7 +85,7 @@ ad_proc -public im_payment_create_payment {
 		:cost_id,
 		:customer_id,
 		:provider_id,
-	        :amount, 
+	        :actual_amount, 
 		:currency,
 		:received_date,
 		:payment_type_id,
