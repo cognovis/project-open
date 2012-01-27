@@ -419,14 +419,16 @@ foreach project_id $select_project {
 # ---------------------------------------------------------------
 
 foreach source_id $source_invoice_ids {
-    db_1row "get relations" "
+    if {$source_id ne ""} {
+	db_1row "get relations" "
 		select	count(*) as v_rel_exists
                 from    acs_rels
                 where   object_id_one = :source_id
                         and object_id_two = :invoice_id
     "
-    if {0 ==  $v_rel_exists} {
-	set rel_id [db_exec_plsql create_invoice_rel ""]
+	if {0 ==  $v_rel_exists} {
+	    set rel_id [db_exec_plsql create_invoice_rel ""]
+	}
     }
 }
 
