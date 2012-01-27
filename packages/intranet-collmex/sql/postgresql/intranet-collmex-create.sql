@@ -57,3 +57,5 @@ END;' language 'plpgsql';
 SELECT inline_0 ();
 DROP FUNCTION inline_0 ();
 
+alter table im_payments add column collmex_id varchar(20);
+

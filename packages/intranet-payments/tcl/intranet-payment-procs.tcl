@@ -26,10 +26,14 @@ ad_proc -public im_payment_create_payment {
     # ---------------------------------------------------------------
     
     # User id already verified by filters
-    set user_id [ad_maybe_redirect_for_registration]
-    if {![im_permission $user_id add_payments]} {
-	ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
+    if {
+	[catch {
+	    set user_id [ad_conn user_id]
+	    set peeraddr [ns_conn peeraddr]
+	}]
+    } {
+	set user_id [im_sysadmin_user_default]
+	set peeraddr "0.0.0.0"
     }
 
     set payment_id [db_nextval "im_payments_id_seq"]
@@ -83,7 +87,7 @@ ad_proc -public im_payment_create_payment {
 	        :note, 
 		(select sysdate from dual), 
 		:user_id, 
-		'[ns_conn peeraddr]' 
+		:peeraddr
     )" 
 
     # ---------------------------------------------------------------
@@ -105,4 +109,6 @@ ad_proc -public im_payment_create_payment {
 
     # Record the payment
     callback im_payment_after_create -payment_id $payment_id -payment_method_id $payment_type_id
+    
+    return $payment_id
 }
