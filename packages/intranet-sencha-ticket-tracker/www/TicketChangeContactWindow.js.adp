@@ -49,7 +49,8 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
              	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Delete#',
               	anchor: '100%',
 				allowBlank:	false,
-				store:		contactGridStore,
+				store:		userCustomerStore,
+				queryMode:	'local',
 				valueField:	'user_id',
 				displayField:   'name'													          
           	},
@@ -61,7 +62,8 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
               	fieldLabel:	'#intranet-sencha-ticket-tracker.Contact_To_Change#',
               	anchor: '100%',
 				allowBlank:	false,
-				store:		contactGridStore,
+				store:		userCustomerStore,
+				queryMode:	'local',
 				valueField:	'user_id',
 				displayField:   'name'						            
           	}
@@ -82,9 +84,11 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
 						url:	'contact-delete-replace',
 						method:	'GET',
 						success: function(form, action) {
+							userCustomerStore.clearFilter();
 							var contact_id_value=form.findField('contact_id').getValue();
-							var contactModel = contactGridStore.findRecord('user_id',contact_id_value);
-							contactGridStore.remove(contactModel);
+							//var contactModel = contactGridStore.findRecord('user_id',contact_id_value);
+							contactGridStore.remove(contactGridStore.findRecord('user_id',contact_id_value));
+							userCustomerStore.remove(userCustomerStore.findRecord('user_id',contact_id_value));
 							Ext.Msg.show({
 							     title :"Exito borrando/replazando contacto:",
 							     msg: 'Borrado y sustitución realizado correctamente',
@@ -110,6 +114,7 @@ Ext.define('TicketBrowser.TicketChangeContactWindow', {
 							Ext.getCmp('ticketChangeContactWindow').close();				
 						}
 					});
+					userCustomerStore.clearFilter();
 			    }                     
           	},
           	{

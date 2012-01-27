@@ -103,6 +103,7 @@ set html [im_resource_mgmt_resource_planning \
 	-max_col $max_col \
 	-max_row $max_row \
 	-show_all_employees_p $show_all_employees_p \
+	-excluded_group_ids ""
 ]
 
 if {"" == $html} { 

@@ -33,7 +33,7 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 	remoteFilter:	true,
 	autoLoad: 	false,			// Don't load manually
 	autoSync: 	true,			// Write changes to the REST server ASAP
-	pageSize: 	20,			// 
+	pageSize: 	12,			// 
 	sorters: [{
 		property: 'first_names',
 		direction: 'ASC'
@@ -46,14 +46,25 @@ var contactGridStore = Ext.create('PO.data.UserStore', {
 
 var contactGridSelModel = Ext.create('Ext.selection.CheckboxModel', {
 	mode:	'SINGLE',
+	allowDeselect: true,
+	checkOnly: true,
+	
 	listeners: {
-		selectionchange: function(sm, selections) {
-			if (selections.length > 0){
+		select: function (component,record,index, eOpts ){
+			Ext.getCmp('companyFilterForm').getForm().findField('contact_id').setValue(record.get('user_id'));
+		}, 
+		deselect: function (component,record,index, eOpts ){
+			Ext.getCmp('companyFilterForm').getForm().findField('contact_id').setValue(null);
+			//Ext.getCmp('companyFilterForm').onSearch();
+		},
+		selectionchange: function(view,selections,options)		{
+			var otherSel = Ext.getCmp('contactGrid').getSelectionModel().getSelection();
+			if (selections.length + otherSel.length == 1){
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
 			} else {
 				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
-			}
-		}
+			}			
+		}	
 	}	
 });
 
@@ -68,9 +79,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 
 	listeners: {
 		itemdblclick: function(view, record, item, index, e) {
-			// Load the contact into the ContactCompoundPanel
-			var compoundPanel = Ext.getCmp('contactCompoundPanel');
-			compoundPanel.loadContact(record);
+			// no debe hacer nada
 		}
 	},
 
@@ -79,29 +88,29 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			header:		'#intranet-sencha-ticket-tracker.Contacts#',
 			dataIndex:	'name',
 			flex:		1,
-			minWidth:	150,
+			minWidth:	150/*,
 			renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				return '<a href="/intranet/users/view?user_id=' + 
 					record.get('user_id') + 
 					'" target="_blank">' + 
 					value +
 					'</a>';
-			}
+			}*/
 		}, {
-			header:		'#intranet-core.First_names#',
+			header:		'#intranet-sencha-ticket-tracker.First_names#',
 			dataIndex:	'first_names'
 		}, {
-			header:		'#intranet-core.Last_name#',
+			header:		'#intranet-sencha-ticket-tracker.Last_name#',
 			dataIndex:	'last_name'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Last_Name2#',
 			dataIndex:	'last_name2'
 		}, {
 			header:		'#intranet-sencha-ticket-tracker.Contact_Mail#',
-			dataIndex:	'email',
+			dataIndex:	'spri_email',
 			minWidth:	150
 		}, {
-			header:	'#intranet-core.Telephone#',
+			header:	'#intranet-sencha-ticket-tracker.Telephone#',
 			dataIndex:	'contact_telephone'
 		}, {
 			header:	'#intranet-sencha-ticket-tracker.Language#',
@@ -123,9 +132,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					default:	return value;
 				}
 			}
-		}, {
-			header:		'#intranet-sencha-ticket-tracker.Last_Updated#',
-			dataIndex:	'last_modified'
 		}
 	],
 	dockedItems:	[{
@@ -161,6 +167,11 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 		
 					// special treatment for special filter variables
 					switch (key) {
+					case 'company_id':
+						query = query + ' and b.person_id in (select object_id_two from acs_rels where object_id_one in (' + value + '))';
+						key = 'query';
+						value = query;
+						break;					
 					case 'first_names':
 						// Fuzzy search
 						value = value.toLowerCase();
@@ -190,7 +201,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 					case 'email':
 						// Fuzzy search
 						value = value.toLowerCase();
-						query = query + ' and lower(email) like \'%' + value + '%\'';
+						query = query + ' and lower(spri_email) like \'%' + value + '%\'';
 						key = 'query';
 						value = query;
 						break;
@@ -234,7 +245,7 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 			scope: this,
 			callback: function(record, operation) {
 				if (!operation.wasSuccessful()) {
-					Ext.Msg.alert('Error buscando por un contacto', operation.request.scope.reader.jsonData["message"]);
+					Function_errorMessage('#intranet-sencha-ticket-tracker.Search_Contact_Error_Title#', '#intranet-sencha-ticket-tracker.Search_Contact_Error_Message#', operation.request.scope.reader.jsonData["message"]);
 				}
 			}
 		});
@@ -248,25 +259,6 @@ var contactGrid = Ext.define('TicketBrowser.ContactGrid', {
 	},
 
 	// The user has pressed the "Delete" button in the contact list page
-/*	onDelete: function() {
-
-		// Get the selected user (only one!)
-		var selection = this.selModel.getSelection();
-		var userModel = selection[0];
-
-		// Delete the user. This triggers a DELETE server request
-		userModel.destroy({
-			success: function(record, operation) {
-				contactGridStore.remove(userModel);
-				userStore.remove(userModel);
-			},
-			failure: function(record, operation) {
-				Ext.Msg.alert('Error borrando User #'+userModel.get('project_nr')+':\nSolo administradores tienen permisso para borrar users.', operation.request.scope.reader.jsonData["message"]);
-			}
-		});
-
-
-	},*/
 	onDelete: function() {
 		// Get the selected customer (only one!)
 		var selection = this.selModel.getSelection();

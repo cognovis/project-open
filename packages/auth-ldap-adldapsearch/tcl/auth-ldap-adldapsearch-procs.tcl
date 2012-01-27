@@ -262,7 +262,7 @@ ad_proc -private auth::ldap::set_password {
 
 
 ad_proc -private auth::ldap::authentication::Authenticate {
-    {-disable_password_check_p 1}
+    {-disable_password_check_p 0}
     username
     password
     {parameters {}}
@@ -314,11 +314,11 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # This is a fixed account for OpenLDAP ("cn=Manager,dc=project-open,dc=com"),
     # while Active Directory needs the DN of the user ("{username}@project-open.com")
     set bind_dn $params(BindDN)
-    set bind_pw ""
-    catch { set bind_pw $params(BindPW) }
     # "ad" = Active Directory, "ol" = OpenLDAP
     set server_type "ad"
     catch { set server_type $params(ServerType) }
+    set search_filter ""
+    catch { set search_filter $params(SearchFilter) }
     # One of {uid|sAMAccountName}
     set username_attribute ""
     catch { set username_attribute $params(UsernameAttribute) }
@@ -358,7 +358,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		set auth_info(auth_status) "ok"
 		set auth_info(user_id) $uid
 		set auth_info(auth_message) "Login Successful"
-		
+
 		# Sync the user with the LDAP information, with username as primary key
 		set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
 		array set auth_info $auth_info_array
@@ -390,10 +390,10 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	    # For OpenLDAP auth, we retreive the "userPassword" field of the user and
 	    # check if we can construct the same hash
 	    ns_log Notice "auth::ldap::authentication::Authenticate: OpenLDAP"
-	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn '$username_attribute=$username' userPassword"
+	    ns_log Notice "ldapsearch -x -H $uri -D $bind_dn -w $password -b $base_dn '$username_attribute=$username' userPassword"
 	    set return_code [catch {
 		# Bind as "Manager" and retreive the userPassword field for
-		exec ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn "$username_attribute=$username" userPassword
+		exec ldapsearch -x -H $uri -D $bind_dn -w $password -b $base_dn "$username_attribute=$username" userPassword
 	    } err_msg]
 	    ns_log Notice "auth::ldap::authentication::Authenticate: return_code=$return_code, msg=$err_msg"
 
@@ -497,12 +497,14 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
     ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::GetParameters"
 
     return {
-        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
-        BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
+        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com:389"
+        BaseDN "Base DN when searching for users. Typically something like 'dc=project-open,dc=com'"
         BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
-	BindPW "The password for the BindDN. Leave empty if this is not necessary."
+        SystemBindDN "DN of an LDAP system user that allows PO to access the LDAP for batch synchronization. Example: 'cn=Administrator,cn=Users,dc=project-open,dc=com'. Leave empty if your LDAP allows anonymous access."
+        SystemBindPW "Password for the SystemBindDN."
 	ServerType "'ad' for Microsoft Active Directory of 'ol' for OpenLDAP (without the single quotes)."
         GroupMap "A TCL list represnting a map form LDAP groups to PO groups. Example: 'Users 463 Administrators 459' maps Windows 'Users' to Employees and Windows 'Administrators' to PO Admins."
+	SearchFilter "An optional LDAP expression to limit the users to be imported. Example: '(memberOf=cn=PO-Users,cn=Users,dc=project-open,dc=com)' would only import users who are member of the LDAP group 'PO-Users'."
     }
 }
 
@@ -525,6 +527,41 @@ ad_proc -public auth::ldap::authentication::Sync {
 } {
     ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync username=$username, auth=$authority_id, params='$parameters'"
 
+    array set hash [auth::ldap::batch_import::import_users -debug_p 0 -extra_filter "(sAMAccountName=$username)" $parameters $authority_id ]
+
+    set result $hash(result)
+    set debug $hash(debug)
+    ns_log Notice "auth::ldap::authentication::Sync: result=$result"
+
+    if {1 == $result} {
+	set uid [db_string uid "select user_id from users where lower(username) = :username" -default 0]
+	set auth_info(auth_status) "ok"
+	set auth_info(info_status) "ok"
+	set auth_info(user_id) $uid
+	set auth_info(auth_message) "Login Successful"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    } else {
+	set auth_info(auth_status) "sync_error"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "LDAP error during sync with user '$system_bind_dn':<br><pre>$debug</pre>"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    }
+}
+
+ad_proc -public auth::ldap::authentication::Sync_disabled {
+    username 
+    parameters 
+    authority_id
+} {
+    Creates a new ]po[ user from LDAP information.
+    Returns 0 if the user can't be created
+} {
+    ns_log Notice "auth-ldap-adldapsearch: auth::ldap::authentication::Sync username=$username, auth=$authority_id, params='$parameters'"
+
     # Parameters
     array set params $parameters
 
@@ -533,16 +570,17 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
-    set bind_dn $params(BindDN)
-    set bind_pw $params(BindPW)
+    set system_bind_dn $params(SystemBindDN)
+    set system_bind_pw $params(SystemBindPW)
     set server_type $params(ServerType)
+    set search_filter $params(SearchFilter)
     set group_map $params(GroupMap)
     # Write the group map into a Hash and normalize group names
     array set group_map_hash $group_map
 
     # -------------------------------------------------------------------
     # Get the LDAP user information
-    set cmd "ldapsearch -x -H $uri -D $bind_dn -w $bind_pw -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
+    set cmd "ldapsearch -x -H $uri -D $system_bind_dn -w $system_bind_pw -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
     set return_code [catch {
         ns_log Notice "auth::ldap::authentication::Sync: cmd='$cmd'"
 	eval "exec $cmd"
@@ -553,11 +591,12 @@ ad_proc -public auth::ldap::authentication::Sync {
     if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
+
     ns_log Notice "auth::ldap::authentication::Sync: return_code=$return_code, msg_first_line=$msg_first_line"
     if {0 != $return_code} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
-	set auth_info(auth_message) "LDAP error:<br>$msg_first_line"
+	set auth_info(auth_message) "LDAP error during sync with user '$system_bind_dn':<br>$msg_first_line"
 	set auth_info(account_status) "ok"
 	set auth_info(account_message) ""
 	return [array get auth_info]

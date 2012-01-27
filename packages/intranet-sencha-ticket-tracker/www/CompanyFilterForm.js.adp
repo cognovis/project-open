@@ -37,7 +37,9 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 	},
 	minWidth:	200,
 	standardsubmit:	true,
-	items: [{
+	items: [
+	{ name: 'contact_id',			xtype: 'hiddenfield' },
+	{
 		name: 'creation_user',
 		fieldLabel:	'#intranet-sencha-ticket-tracker.Creation_User#',
                 xtype:          'combobox',
@@ -55,7 +57,7 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 		}
 	}, {
 		name: 'vat_number', 
-		fieldLabel: '#intranet-core.VAT_Number#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.VAT_Number#',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
@@ -90,14 +92,20 @@ var companyFilterForm = Ext.define('TicketBrowser.CompanyFilterForm', {
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}	
+	}, {	
+		name: 'email', 
+		fieldLabel: '#intranet-sencha-ticket-tracker.Email#',
+		listeners: {
+			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
+		}
 	}, {
-		fieldLabel: '#intranet-helpdesk.Company_Nr#',
+		fieldLabel: '#intranet-sencha-ticket-tracker.Company_Nr#',
 		name: 'project_name',
 		listeners: {
 			'keypress': function(field, key) { if (13 == key.getCharCode()) { this.ownerCt.onSearch(); } }
 		}
 	}, {
-		fieldLabel:	'#intranet-helpdesk.Status#',
+		fieldLabel:	'#intranet-sencha-ticket-tracker.Status#',
 		name:		'company_status_id',
 		xtype:		'combobox',
                 valueField:	'category_id',

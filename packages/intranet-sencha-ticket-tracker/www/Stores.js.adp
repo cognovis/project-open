@@ -22,6 +22,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var GLOBAL_STOP_BAR = 0;
+
 /*
  * Status Engine for the StoreManager
  * There are dependencies with stores,
@@ -40,11 +42,25 @@ var provincesStore = Ext.create('Ext.data.Store', {
     fields: ['id', 'name'],
     autoLoad: false,
     load:  function(options) {
-    	provincesStore.removeAll();
-    	provincesStore.add({'name':'Araba/Álava'});
-    	provincesStore.add({'name':'Bizkaia'});
-    	provincesStore.add({'name':'Gipuzkoa'});
-    	provincesStore.add({'name':'Otras'});
+    	this.removeAll();
+    	this.add({'name':null});
+    	this.add({'name':'Araba/Álava'});
+    	this.add({'name':'Bizkaia'});
+    	this.add({'name':'Gipuzkoa'});
+    	this.add({'name':'Otras'});
+    }
+});
+
+var companyContactProvincesStore = Ext.create('Ext.data.Store', {
+    fields: ['id', 'name'],
+    autoLoad: false,
+    load:  function(options) {
+    	this.removeAll();
+    	this.add({'name':null});
+    	this.add({'name':'Araba/Álava'});
+    	this.add({'name':'Bizkaia'});
+    	this.add({'name':'Gipuzkoa'});
+    	this.add({'name':'Otras'});
     }
 });
 // ----------------------------------------------------------------
@@ -77,7 +93,21 @@ Ext.define('PO.data.EmployeeStore', {
 				userEmployeeStore.add(record); 
 			}
 		});
-	}
+		userEmployeeStore.addBlank();
+		this.sort();
+	},
+	addBlank:  function() { // Add blank value to the store. It is used to white selecction in comboboxes
+		var userVars = {user_id: '', name: null};
+		var user = Ext.ModelManager.create(userVars, 'TicketBrowser.User');
+		this.add(user);	
+	},
+	sorters: [{
+		property: 'first_names',
+		direction: 'ASC'
+	}, {
+		property: 'last_name',
+		direction: 'ASC'
+	}]
 });
 
 // Create a copy of the userStore with filtered values.
@@ -86,9 +116,6 @@ var userEmployeeStore = Ext.create('PO.data.EmployeeStore', {
 	storeId: 'userEmployeeStore',
 	model: 'TicketBrowser.User'
 });
-
-
-
 
 // ----------------------------------------------------------------
 // Customers
@@ -105,27 +132,10 @@ var customerMembershipRelStore = Ext.create('Ext.data.Store', {
 	remoteFilter:	false,			// Doesn't need filtering
 	pageSize: 	1000000			// Load entire table
 });
-/*
-// CustomerStore is a "child store" of userStore
-Ext.define('PO.data.CustomerStore', {
-	extend: 'Ext.data.Store',
-	load: function(options) {
-		// Delete whatever was there before
-		this.removeAll();
-		// Copy values from userStore if the user is member of Customers group
-		userStore.each(function(record) {
-			var user_id = record.get('user_id');
-			var emp_rec = customerMembershipRelStore.findRecord('object_id_two',user_id);
-			if (null != emp_rec) { 
-				userCustomerStore.add(record); 
-			}
-		});
-	}
-});*/
 
 // Create a copy of the userStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var userCustomerStore = Ext.create('Ext.data.Store', {
+var userCustomerStore = Ext.create('PO.data.UserStore', {
 	storeId: 'userCustomerStore',
 	model: 'TicketBrowser.User',
 	load: function(options) {
@@ -139,9 +149,27 @@ var userCustomerStore = Ext.create('Ext.data.Store', {
 				userCustomerStore.add(record); 
 			}
 		});
+		userCustomerStore.addBlank();
 		userCustomerStore.sort();
 	}
 });
+
+var userQueueStore = Ext.create('PO.data.UserStore', {
+	storeId: 'userQueueStore',
+	model: 'TicketBrowser.GroupMembershipRel',
+	autoLoad: false
+});
+
+userQueueStore.on({
+    'load':{
+        fn: function(store, records, options){
+        	store.sort('name', 'ASC');
+        	Ext.getCmp('ticketFormRight').getForm().findField('combo_send_mail').setValue(store.first());
+     },
+        scope:this
+    }
+});
+
 
 // ----------------------------------------------------------------
 // User Store
@@ -153,7 +181,7 @@ var userStore = Ext.create('PO.data.UserStore', {
 	remoteSort:	false,
 	remoteFilter:	true,
 	autoLoad: 	false,			// Load manually below in order to create child stores.
-	autoSync: 	true,			// Write changes to the REST server ASAP
+//	autoSync: 	true,			// Write changes to the REST server ASAP
 	// Load all users into this table, this is rarely more than 2000...
 	// ToDo: Replace this with a server-side search function plus cache(?)
 	pageSize: 	1000000,
@@ -183,8 +211,7 @@ userStore.load(
 		userEmployeeStore.load();
 		userCustomerStore.load();
 
-		//Stop progress
-		Ext.getCmp('ticketActionBar').stopBar();
+		Function_stopBar();
 	}
 );
 
@@ -193,7 +220,7 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketAreaStore',
 	model: 'TicketBrowser.Category',
 	remoteFilter:	true,
-	autoLoad:	true,
+	autoLoad:	false,
 	pageSize:	1000,
 	proxy: {
 		type: 'rest',
@@ -208,87 +235,50 @@ var ticketAreaStore = Ext.create('PO.data.CategoryStore', {
 });
 ticketAreaStore.load(
 	function(record, operation) {
-		// This code is called once the reply from the server has arrived.
-		ticketAreaStore.sort('tree_sortkey');
+		// This code is called once the reply from the server has arrived.	
+		this.fill_tree_category_translated(this);	
+							
+		ticketAreaStore.sort('tree_category_translated');
 		programTicketAreaStore.load();
 		areaTicketAreaStore.load();
 	}
 );
 
-/*Ext.define('PO.data.AreaStore', {
-	extend: 'Ext.data.Store',
-	load: function(options) {
-		// Delete whatever was there before
-		areaTicketAreaStore.removeAll();
-		ticketAreaStore.each(function(record) {
-			var indent_class = record.get('indent_class');
-			var num = indent_class.substring(indent_class.length-1);
-			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
-			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
-			if (tree_sortkey_filter == undefined || tree_sortkey_filter.value.indexOf('null') > -1){ //
-				areaTicketAreaStore.add(record); 
-			}else{
-				if (num  > 0) { 
-					if (tree_sortkey_filter != undefined && tree_sortkey_filter.value == tree_sortkey){
-						areaTicketAreaStore.add(record); 
-					}
-				}
-			}
-		});
-	}
-});*/
-
-/*Ext.define('PO.data.ProgramStore', {
-	extend: 'Ext.data.Store',
-	load: function(options) {
-		// Delete whatever was there before
-		this.removeAll();
-		ticketAreaStore.each(function(record) {
-			var indent_class = record.get('indent_class');
-			var num = indent_class.substring(indent_class.length-1);
-			if (num  == 0) { 
-				programTicketAreaStore.add(record); 
-			}
-		});
-		
-	}
-});*/
-
 // Create a copy of the ticketAreaStore with filtered values.
 // Performs the filtering once the original store has been loaded.
-var areaTicketAreaStore = Ext.create('Ext.data.Store', {
+var areaTicketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId: 'areaTicketAreaStore',
 	model: 'TicketBrowser.Category',
 	load: function(options) {
 		// Delete whatever was there before
 		areaTicketAreaStore.removeAll();
+		ticketAreaStore.fill_tree_category_translated(ticketAreaStore);
 		ticketAreaStore.each(function(record) {
 			var indent_class = record.get('indent_class');
 			var num = indent_class.substring(indent_class.length-1);
 			var tree_sortkey_filter = areaTicketAreaStore.filters.getAt(0);
-			var tree_sortkey = record.get('tree_sortkey').substring(0,8);			
-			if (tree_sortkey_filter == undefined || Ext.isEmpty(Ext.String.trim(tree_sortkey_filter.value)) || tree_sortkey_filter.value.indexOf('null')  > -1 ){ //
+			var tree_sortkey_source = record.get('tree_sortkey').substring(0,8);	
+				
+			if (tree_sortkey_filter == undefined || Ext.isEmpty(Ext.String.trim(tree_sortkey_filter.value)) || tree_sortkey_filter.value.indexOf('null')  > -1 || tree_sortkey_filter.value.indexOf('00000000')  > -1){ //
 				areaTicketAreaStore.add(record); 
 			}else{
-				if (num  > 0) { 
-					if (tree_sortkey_filter.value == tree_sortkey){
+			//	if (num  > 0) { 
+					if (tree_sortkey_filter.value == tree_sortkey_source){
 						areaTicketAreaStore.add(record); 
 					}
-				}
+			//	}
 			}
 		});
+		this.addBlank();		
 		areaTicketAreaStore.sort();
 	},
 	sorters: [{
-		property: 'tree_sortkey',
-		direction: 'ASC'		
-	}/*, {
-		property: 'category_translated',
+		property: 'tree_category_translated',
 		direction: 'ASC'
-	}*/]		
+	}]				
 });
 
-var programTicketAreaStore = Ext.create('Ext.data.Store', {
+var programTicketAreaStore = Ext.create('PO.data.CategoryStore', {
 	storeId: 'programTicketAreaStore',
 	model: 'TicketBrowser.Category',
 	load: function(options) {
@@ -301,6 +291,7 @@ var programTicketAreaStore = Ext.create('Ext.data.Store', {
 				programTicketAreaStore.add(record); 
 			}
 		});
+		this.addBlank();	
 		programTicketAreaStore.sort();
 	},
 	sorters: [{
@@ -313,8 +304,8 @@ var programTicketAreaStore = Ext.create('Ext.data.Store', {
 
 var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketTypeStore',
-	remoteFilter:	true,
-	autoLoad:	true,
+/*	remoteFilter:	true,
+	autoLoad:	true,*/
 	model: 'TicketBrowser.Category',
 	pageSize:	1000,
 	proxy: {
@@ -326,12 +317,20 @@ var ticketTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'sort_order',
+		direction: 'ASC'
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
 });
 ticketTypeStore.load(
       function(record, operation) {
       // This code is called once the reply from the server has arrived.
-      ticketTypeStore.sort('tree_sortkey');
+      this.addBlank();
+      ticketTypeStore.sort();
     }
 );
 
@@ -339,8 +338,8 @@ ticketTypeStore.load(
 
 var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketStatusStore',
-	autoLoad:	true,
-	remoteFilter:	true,
+/*	autoLoad:	true,
+	remoteFilter:	true,*/
 	model: 'TicketBrowser.Category',
 	pageSize:	1000,
 
@@ -353,12 +352,24 @@ var ticketStatusStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Status\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'category_translated',
+		direction: 'ASC'
+	}]		
 });
+
+ticketStatusStore.load(
+	function(record, operation) {
+		// This code is called once the reply from the server has arrived.
+	    this.addBlank();
+		ticketStatusStore.sort();
+    }
+);
 
 var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyStatusStore',
-	autoLoad:	true,
+	autoLoad:	false,
 	remoteFilter:	true,
 	model: 		'TicketBrowser.Category',
 	pageSize:	1000,
@@ -374,6 +385,7 @@ var companyStatusStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
+companyStatusStore.load();
 
 var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'companyTypeStore',
@@ -389,12 +401,17 @@ var companyTypeStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Company Type\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'tree_category_translated',
+		direction: 'ASC'
+	}]		
 });
 companyTypeStore.load(
-      function(record, operation) {
-	      // This code is called once the reply from the server has arrived.
-	      this.sort('tree_sortkey');
+	function(record, operation) {
+		this.fill_tree_category_translated(this);
+		this.addBlank();
+	    this.sort();
     }
 );
 
@@ -422,8 +439,8 @@ var ticketPriorityStore = Ext.create('PO.data.CategoryStore', {
 // Incoming and Outgoing channels are both 'Intranet Ticket Origin' category
 var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'ticketOriginStore',
-	autoLoad:	true,
-	remoteFilter:	true,
+	//autoLoad:	true,
+	//remoteFilter:	true,
 	model:		'TicketBrowser.Category',
 	pageSize:	1000,
 	proxy: {
@@ -435,7 +452,20 @@ var ticketOriginStore = Ext.create('PO.data.CategoryStore', {
 			category_type: '\'Intranet Ticket Origin\''
 		},
 		reader: { type: 'json', root: 'data' }
-	}
+	},
+	sorters: [{
+		property: 'sort_order',
+		direction: 'ASC'
+	}, {
+		property: 'tree_sortkey',
+		direction: 'ASC'
+	}]		
+});
+
+ticketOriginStore.load(function (record, operation){
+	//this.fill_tree_category_translated(this);
+	this.addBlank();
+	this.sort();
 });
 
 
@@ -477,7 +507,7 @@ var requestAreaProgramStore = Ext.create('PO.data.CategoryStore', {
 	}
 });
 
-
+/*
 var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 	storeId:	'bizObjectRoleStore',
 	autoLoad:	true,
@@ -495,7 +525,7 @@ var bizObjectRoleStore = Ext.create('PO.data.CategoryStore', {
 		reader: { type: 'json', root: 'data' }
 	}
 });
-
+*/
 
 var programStore = Ext.create('Ext.data.Store', {
 	storeId:	'programStore',
@@ -543,13 +573,12 @@ var ticketStore = Ext.create('Ext.data.Store', {
 	remoteSort: true,
 	remoteFilter:	true,
 	pageSize: 12,				// Enable pagination
-	// autoSync: true,			// Write changes to the REST server ASAP
+//	autoSync: true,			// Write changes to the REST server ASAP
 	sorters: [{
-		property: 'creation_date',
+		property: 'ticket_creation_date',
 		direction: 'DESC'
 	}]
 });
-	
 
 var companyStore = Ext.create('PO.data.CompanyStore', {
 	storeId: 'companyStore',
@@ -557,12 +586,17 @@ var companyStore = Ext.create('PO.data.CompanyStore', {
 	/*remoteSort: true,
 	remoteFilter:	true,*/
 	pageSize: 1000000,
-	autoSync: true,				// Write changes to the REST server ASAP
-	autoLoad: true,
+//	autoSync: true,				// Write changes to the REST server ASAP
+	autoLoad: false,
 	sorters: [{
 		property: 'company_name',
 		direction: 'ASC'
 	}]
+});
+
+companyStore.load(function (record, operation){
+	this.addBlank();
+	this.sort();
 });
 
 
@@ -614,8 +648,6 @@ profileStore.load(
 	}
 );
 
-
-
 // Store for keeping the filtered groups per program.
 // Initialize to an empty store. There is a procedure
 // updating its values depending on the "program/area".
@@ -627,7 +659,96 @@ var programGroupStore = Ext.create('PO.data.ProfileStore', {
 
 // fake store while developing
 var ticketServiceTypeStore = ticketSlaStore;
-var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
+//var ticketChannelStore = ticketOriginStore; // look up for ticket_incoming_channel_id
 var ticketQueueStore = ticketPriorityStore;
 
 
+var userCustomerContactRelationStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'userCustomerContactRelationStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+    pageSize: 	1000000		// Load entire table
+});
+
+userCustomerContactRelationStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var company_id;
+            userCustomerContactStore.removeAll();
+			store.each(function(record) {
+				userCustomerContactStore.add(userStore.findRecord('user_id', record.get('object_id_two')));
+			});
+			userCustomerContactStore.addBlank();
+			if (Ext.isEmpty(userCustomerContactStore.findRecord('user_id', anonimo_user_id))){
+				userCustomerContactStore.add(userStore.findRecord('user_id', anonimo_user_id));
+			}
+			userCustomerContactStore.sort();    
+			
+			var customerModel = companyStore.findRecord('company_id', store.proxy.extraParams['object_id_one']);
+			var contactModel = null;
+			if (!Ext.isEmpty(customerModel)) {
+				contactModel = userCustomerContactStore.findRecord('user_id', customerModel.get('primary_contact_id'));
+			}			
+			if (Ext.isEmpty(contactModel)){
+				Ext.getCmp('companyContactContactForm').loadUser(userCustomerContactStore.findRecord('user_id' ,anonimo_user_id));
+			} else {
+				Ext.getCmp('companyContactContactForm').loadUser(contactModel);
+			}			
+        },
+        scope:this
+    }
+});
+
+var userCustomerContactStore = Ext.create('PO.data.UserStore', {
+    model: 'TicketBrowser.User',
+    storeId: 'userCustomerContactStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+	sorters: [{
+		property: 'name',
+		direction: 'ASC'
+	}]
+});
+
+var userCustomerTicketRelationStore = Ext.create('Ext.data.Store', {
+    model: 'TicketBrowser.BizObjectMember',
+    storeId: 'userCustomerTicketRelationStore',
+    autoLoad: false,
+    remoteSort: false,
+    remoteFilter: false,
+    pageSize: 	1000000		// Load entire table
+});
+
+userCustomerTicketRelationStore.on({
+    'load':{
+        fn: function(store, records, options){
+            //store is loaded, now you can work with it's records, etc.
+            var company_id;
+            userCustomerContactStore.removeAll();
+			store.each(function(record) {
+				userCustomerContactStore.add(userStore.findRecord('user_id', record.get('object_id_two')));
+			});
+			userCustomerContactStore.addBlank();
+			if (Ext.isEmpty(userCustomerContactStore.findRecord('user_id', anonimo_user_id))){
+				userCustomerContactStore.add(userStore.findRecord('user_id', anonimo_user_id));
+			}
+			userCustomerContactStore.sort();    
+
+			var customerModel = companyStore.findRecord('company_id', store.proxy.extraParams['object_id_one']);
+			var contactModel = null;
+			if (!Ext.isEmpty(customerModel)) {
+				contactModel = userCustomerContactStore.findRecord('user_id', customerModel.get('primary_contact_id'));
+			}
+			if (Ext.isEmpty(contactModel)){
+				Ext.getCmp('ticketContactForm').loadUser(userCustomerContactStore.findRecord('user_id' ,anonimo_user_id));
+			} else {
+				Ext.getCmp('ticketContactForm').loadUser(contactModel);
+			}			
+        },
+        scope:this
+    }
+});

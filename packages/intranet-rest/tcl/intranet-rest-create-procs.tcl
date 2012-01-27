@@ -105,7 +105,7 @@ ad_proc -private im_rest_post_object_type_im_project {
     }
 
     # Write Audit Trail
-    im_project_audit -project_id $rest_oid -action create  
+    im_project_audit -project_id $rest_oid -action after_create  
     
     set hash_array(rest_oid) $rest_oid
     return [array get hash_array]
@@ -230,7 +230,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     }
 
     # Write Audit Trail
-    im_project_audit -project_id $rest_oid -action create
+    im_project_audit -project_id $rest_oid -action after_create
     
     ns_log Notice "im_rest_post_object_type_im_ticket: Successfully created object with object_id=$rest_oid"
     set hash_array(rest_oid) $rest_oid
@@ -339,7 +339,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
     
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(task_id) $rest_oid
@@ -424,7 +424,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
     
     set hash_array(rest_oid) $rest_oid
     set hash_array(task_id) $rest_oid
@@ -577,7 +577,7 @@ ad_proc -private im_rest_post_object_type_im_company {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
     
     set hash_array(rest_oid) $rest_oid
     set hash_array(company_id) $rest_oid
@@ -685,7 +685,7 @@ ad_proc -private im_rest_post_object_type_im_user_absence {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
     
     set hash_array(rest_oid) $rest_oid
     set hash_array(absence_id) $rest_oid
@@ -791,7 +791,7 @@ ad_proc -private im_rest_post_object_type_user {
 				    ]
 	ns_log Notice "im_rest_post_object_type_user: after auth::create_user"
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
-	    ns_log Notice "im_rest_post_object_type_user: "User creation unsuccessfull: [array get creation_status]"
+	    ns_log Notice "im_rest_post_object_type_user: User creation unsuccessfull: [array get creation_status]"
 	    return [im_rest_error -format $format -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
 	set new_user_id $creation_info(user_id)
@@ -876,7 +876,7 @@ ad_proc -private im_rest_post_object_type_user {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $new_user_id -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $new_user_id -action after_create
 
     set rest_oid $new_user_id
 
@@ -984,7 +984,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 	return [im_rest_error -format $format -http_status 406 -message "Error updating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
     
     set hash_array(rest_oid) $rest_oid
     set hash_array(invoice_id) $rest_oid
@@ -1019,7 +1019,7 @@ ad_proc -private im_rest_post_object_type_im_trans_invoice {
 	where	object_id = :rest_oid
     "
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(invoice_id) $rest_oid
@@ -1118,7 +1118,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     im_invoice_update_rounded_amount -invoice_id $invoice_id 
 
     # No audit here, invoice_item is not a real object
-    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(item_id) $rest_oid
@@ -1209,7 +1209,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
     }
 
     # Not a real object, so no audit!
-    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    # im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(hour_id) $rest_oid
@@ -1356,7 +1356,7 @@ ad_proc -private im_rest_post_object_type_membership_rel {
 	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid
@@ -1437,7 +1437,7 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
 	    return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
 	}
    
-	im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+	im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
     }
 
     set hash_array(rest_oid) $rest_oid
@@ -1516,7 +1516,7 @@ ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
 	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
    
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid
@@ -1593,7 +1593,7 @@ ad_proc -private im_rest_post_object_type_im_key_account_rel {
 	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
    
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid
@@ -1669,7 +1669,7 @@ ad_proc -private im_rest_post_object_type_im_company_employee_rel {
 	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
     }
 
-    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action create
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
    
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid

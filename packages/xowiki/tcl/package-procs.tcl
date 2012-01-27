@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: package-procs.tcl,v 1.247 2011/07/14 17:59:56 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -52,11 +52,11 @@ namespace eval ::xowiki {
 			-item_id $item_id \
 			-revision_id $revision_id]
     ::xo::Package initialize \
+	-export_vars false \
 	-package_id $package_id \
 	-init_url false -actual_query "" \
 	-parameter $parameter \
 	-user_id $user_id
-
     set page [::xo::db::CrClass get_instance_from_db -item_id $item_id -revision_id $revision_id]
     ::$package_id set_url -url [$page pretty_link]
     return $page
@@ -854,7 +854,7 @@ namespace eval ::xowiki {
   Package instproc package_path {} {
     # 
     # Compute a list fo package objects which should be used for
-    # resolving ("inheriance of objects from other instances").
+    # resolving ("inheritance of objects from other instances").
     #
     set packages [list]
     set package_url [string trimright [my package_url] /]
@@ -1105,7 +1105,13 @@ namespace eval ::xowiki {
     set name [string trimright $name \0]
     set (stripped_name) [string trimright $(stripped_name) \0]
 
-    if {$element eq "." || $element eq ".\0"} {
+    if {$element eq "" || $element eq "\0"} {
+      set folder_id [my folder_id]
+      array set "" [my item_info_from_id $folder_id]
+      set item_id $folder_id
+      set parent_id $(parent_id)
+      #my msg "SETTING item_id $item_id parent_id $parent_id // [array get {}]"
+    } elseif {$element eq "." || $element eq ".\0"} {
       array set "" [my item_info_from_id $parent_id]
       set item_id $parent_id
       set parent_id $(parent_id)
@@ -1186,7 +1192,7 @@ namespace eval ::xowiki {
 	    }
             default {
               set name file:$(stripped_name)
-              set (link_type) file
+              if {![info exists (link_type)]} {set (link_type) file}
             }
           }
           set item_id [my lookup \

@@ -794,6 +794,8 @@ ad_proc -private im_rest_get_object_type {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$current_user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
     array set query_hash $query_hash_pairs
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
+    set rest_columns [im_rest_get_rest_columns $query_hash_pairs]
+    foreach col $rest_columns { set rest_columns_hash($col) 1 }
 
     # -------------------------------------------------------
     # Get some more information about the current object type
@@ -871,7 +873,23 @@ ad_proc -private im_rest_get_object_type {
     #
     switch $rest_otype {
 	user - person - party {
-	    set table_name "(select * from users u, parties pa, persons pe where u.user_id = pa.party_id and u.user_id = pe.person_id )"
+	    set table_name "(
+		select	*
+		from	users u, parties pa, persons pe
+		where	u.user_id = pa.party_id and u.user_id = pe.person_id and
+			u.user_id in (
+				SELECT  o.object_id
+				FROM    acs_objects o,
+				        group_member_map m,
+				        membership_rels mr
+				WHERE   m.member_id = o.object_id AND
+				        m.group_id = acs__magic_object_id('registered_users'::character varying) AND
+				        m.rel_id = mr.rel_id AND
+				        m.container_id = m.group_id AND
+				        m.rel_type::text = 'membership_rel'::text AND
+				        mr.member_state = 'approved'
+			)
+		)"
 	}
 	file_storage_object {
 	    # file storage object needs additional security
@@ -952,7 +970,7 @@ ad_proc -private im_rest_get_object_type {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { 
+	    xml {
 		append result "<object_id id=\"$rest_oid\" href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" 
 	    }
 	    json {
@@ -960,6 +978,10 @@ ad_proc -private im_rest_get_object_type {
 		if {0 == $obj_ctr} { set komma "" }
 		set dereferenced_result ""
 		foreach v $valid_vars {
+
+		    # Skip the column unless it is explicitely mentioned in the rest_columns list
+		    if {{} != $rest_columns} { if {![info exists rest_columns_hash($v)]} { continue } }
+
 		    eval "set a $$v"
 		    regsub -all {\n} $a {\n} a
 		    regsub -all {\r} $a {} a
@@ -980,21 +1002,21 @@ ad_proc -private im_rest_get_object_type {
     switch $format {
 	html {
 	    set page_title "object_type: $rest_otype"
-	    doc_return 200 "text/html" "
+	    im_rest_doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
 	}
 	xml {  
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    im_rest_doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	    return
 	}
 	json {  
 	    # Calculate the total number of objects
 	    set total [db_string total "select count(*) from ($unlimited_sql) t" -default 0]
 	    set result "{\"success\": true,\n\"total\": $total,\n\"message\": \"im_rest_get_object_type: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
-	    doc_return 200 "text/html" $result
+	    im_rest_doc_return 200 "text/html" $result
 	    return
 	}
 	default {
@@ -1079,7 +1101,7 @@ ad_proc -private im_rest_get_im_invoice_items {
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
-	    doc_return 200 "text/html" "
+	    im_rest_doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
@@ -1087,11 +1109,11 @@ ad_proc -private im_rest_get_im_invoice_items {
 	    return
 	}
 	xml {  
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    im_rest_doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	    return
 	}
 	json {  
-	    doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
+	    im_rest_doc_return 200 "text/html" "{object_type: \"$rest_otype\",\n$result\n}"
 	    return
 	}
     }
@@ -1179,7 +1201,7 @@ ad_proc -private im_rest_get_im_hours {
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
-	    doc_return 200 "text/html" "
+	    im_rest_doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
@@ -1187,11 +1209,11 @@ ad_proc -private im_rest_get_im_hours {
 	    return
 	}
 	xml {  
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    im_rest_doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	    return
 	}
 	json {  
-	    doc_return 200 "text/html" "\[$result\]\n"
+	    im_rest_doc_return 200 "text/html" "\[$result\]\n"
 	    return
 	}
     }
@@ -1310,7 +1332,7 @@ ad_proc -private im_rest_get_im_categories {
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
-	    doc_return 200 "text/html" "
+	    im_rest_doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
@@ -1318,13 +1340,13 @@ ad_proc -private im_rest_get_im_categories {
 	    return
 	}
 	xml {  
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    im_rest_doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	    return
 	}
 	json {  
 	    # Deal with different JSON variants for different AJAX frameworks
 	    set result "{\"success\": true,\n\"message\": \"im_rest_get_im_categories: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
-	    doc_return 200 "text/html" $result
+	    im_rest_doc_return 200 "text/html" $result
 	    return
 	}
     }
@@ -1407,17 +1429,17 @@ ad_proc -private im_rest_get_im_dynfield_attributes {
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
-	    doc_return 200 "text/html" "
+	    im_rest_doc_return 200 "text/html" "
 		[im_header $page_title [im_rest_header_extra_stuff]][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
 		</table>[im_footer]
 	    " 
 	}
 	xml {  
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    im_rest_doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
 	}
 	json {  
-	    doc_return 200 "text/html" "\[\n$result\n\]\n"
+	    im_rest_doc_return 200 "text/html" "\[\n$result\n\]\n"
 	}
     }
 

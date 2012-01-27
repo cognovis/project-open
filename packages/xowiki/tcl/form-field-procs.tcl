@@ -3,7 +3,7 @@
 
     @creation-date 2007-06-22
     @author Gustaf Neumann
-    @cvs-id $Id: form-field-procs.tcl,v 1.193 2011/05/23 11:48:45 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki::formfield {
@@ -79,7 +79,7 @@ namespace eval ::xowiki::formfield {
   #  return [string map [list __COLON__ :] $string]
   #}
 
-  FormField proc get_from_name {name} {
+  FormField proc get_from_name {object name} {
     #
     # Get a form field via name. The provided names are unique for a
     # form. If multiple forms should be rendered simultaneously, we
@@ -87,10 +87,12 @@ namespace eval ::xowiki::formfield {
     #
     # todo: we could speed this up by an index if needed
     foreach f [::xowiki::formfield::FormField info instances -closure] {
-      if {[$f name] eq $name} {
+      if {[$f name] eq $name && $object eq [$f object]} {
+	#my msg FOUND-$object-$name->$f
 	return $f
       }
     }
+    #my msg not-found-$object-$name
     return ""
   }
 
@@ -619,9 +621,18 @@ namespace eval ::xowiki::formfield {
     my instvar object
 
     array set "" [$object item_ref -default_lang [$object lang] -parent_id $parent_id $entry_name]
+
+    set label [my label] ;# the label is used for alt und title
+    if {$label eq $(stripped_name)} {
+      # The label is apparently the default. For Photo.form instances,
+      # this is always "image". In such cases, use the title of the
+      # parent object as label.
+      set label [[my object] title]
+    }
+    
     set l [::xowiki::Link create new -destroy_on_cleanup \
 	       -page $object -type "image" -lang $(prefix) \
-	       [list -stripped_name $(stripped_name)] [list -label [my label]] \
+	       [list -stripped_name $(stripped_name)] [list -label $label] \
 	       -parent_id $(parent_id) -item_id $(item_id)]
 
     foreach option {
@@ -705,7 +716,7 @@ namespace eval ::xowiki::formfield {
       #
       # Figure out, if we got a different file-name (value). If the
       # file-name is the same as in the last revision, we return a
-      # "-".
+      # "-". This has the effect, that file file is not uploaded again.
       #
       if {$old_value ne "" && $old_value eq [my set value]} {
         return "-"
@@ -1358,7 +1369,8 @@ namespace eval ::xowiki::formfield {
       if {[my wiki]} {
         [my object] set unresolved_references 0
         [my object] set __unresolved_references [list]
-        ::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
+        #::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
+        ::html::t -disableOutputEscaping [[my object] substitute_markup [my value]]
       } else {
         ::html::t -disableOutputEscaping [my value]
       }
@@ -2002,13 +2014,23 @@ namespace eval ::xowiki::formfield {
       array set wc [::xowiki::FormPage filter_expression $where &&]
       #my msg "where '$where' => wc=[array get wc]"
     }
-    set options [list]    
+
+    set from_package_ids {}
+    set package_path [::$package_id package_path]
+    if {[llength $package_path] > 0} {
+      foreach p $package_path {
+	lappend from_package_ids [$p id]
+      }
+    }
     set items [::xowiki::FormPage get_form_entries \
                    -base_item_ids $form_object_item_ids \
                    -form_fields [list] \
                    -publish_status ready \
                    -h_where [array get wc] \
-                   -package_id $package_id]
+                   -package_id $package_id \
+		   -from_package_ids $from_package_ids]
+
+    set options [list]
     foreach i [$items children] {
       #
       # If the form_page has a different package_id, prepend the

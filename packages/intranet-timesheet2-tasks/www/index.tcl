@@ -19,8 +19,8 @@ ad_page_contract {
     { project_id }
     { task_status_id 0 }
     { task_type_id 0 }
-    { task_how_many 0 }
-    { task_max_entries_per_page 50 }
+    { task_start_idx:integer ""}
+    { task_how_many "" }
     { with_member_id "" }
     { cost_center_id "" }
     { mine_p "" }
@@ -97,7 +97,6 @@ set task_content [im_timesheet_task_list_component \
 	-view_name 			$view_name \
 	-view_type 			$view_type \
 	-order_by			$task_order_by \
-	-max_entries_per_page		$task_max_entries_per_page \
 	-restrict_to_type_id		$task_type_id \
 	-restrict_to_status_id		$task_status_id \
 	-restrict_to_material_id	$material_id \
@@ -105,6 +104,8 @@ set task_content [im_timesheet_task_list_component \
 	-restrict_to_mine_p		$mine_p \
 	-restrict_to_with_member_id	$with_member_id \
 	-restrict_to_cost_center_id	$cost_center_id \
+	-task_how_many			$task_how_many \
+	-task_start_idx			$task_start_idx \
 ]
 
 

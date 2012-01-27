@@ -49,6 +49,12 @@ if {![db_0or1row project_info "
     return
 }
 
+# Filename for the download file
+set project_filename [string tolower [string trim "$project_name $project_path"]]
+regsub {[^[:alnum:]]} $project_filename "_" project_filename
+regsub {[[:space:]]+} $project_filename "_" project_filename
+regsub {_+} $project_filename "_" project_filename
+
 
 # ---------------------------------------------------------------
 # Check if all sub-projects and tasks have a im_gantt_project entry.
@@ -104,71 +110,42 @@ if {![info exists xml_elements] || [llength $xml_elements] == 0} {
 }
 
 foreach element $xml_elements { 
+    set append_p 1
     switch $element {
 	"Name" - "Title"	{ set value "${project_name}.xml" }
 	"Manager"		{ set value $project_lead_name }
-	"ScheduleFromStart"	{ set value 1 }
 	"StartDate"		{ set value $project_start_date }
 	"FinishDate"		{ set value $project_end_date }
 	"CalendarUID"		{ set value 1 }
+        "ProjectExternallyEdited" { set value 0 }
+        DefaultStartTime - DefaultFinishTime {
+	    # Determines the default start- and end time of tasks.
+	    # A mismatch could lead to working hours being cut.
+	    if {[catch {
+		    set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
+		    set value [expr $$attribute_name]
+	    } err_msg]} {
+		    set append_p 0
+	    }
+	}
 	Assignments - \
 	Calendars - \
 	Resources - \
 	Tasks - \
-        ActualsInSync - \
-        AdminProject - \
-        AutoAddNewResourcesAndTasks - \
-        Autolink - \
-        BaselineForEarnedValue - \
-        CreationDate - \
-        CriticalSlackLimit - \
+	CreationDate - \
         CurrencyCode - \
-        CurrencyDigits - \
-        CurrencySymbol - \
-        CurrencySymbolPosition - \
-        CurrentDate - \
-        DaysPerMonth - \
-        DefaultFinishTime - \
-        DefaultFixedCostAccrual - \
-        DefaultOvertimeRate - \
-        DefaultStandardRate - \
-        DefaultStartTime - \
-        DefaultTaskEVMethod - \
-        DefaultTaskType - \
-        DurationFormat - \
-        EditableActualCosts - \
+	CurrentDate - \
         ExtendedAttributes/ - \
-        ExtendedCreationDate - \
-        FYStartDate - \
         FinishDate - \
-        FiscalYearStart - \
-        HonorConstraints - \
-        InsertedProjectsLikeSummary - \
-        LastSaved - \
-        MicrosoftProjectServerURL - \
-        MinutesPerDay - \
-        MinutesPerWeek - \
-        MoveCompletedEndsBack - \
+	LastSaved - \
         MoveCompletedEndsForward - \
-        MoveRemainingStartsBack - \
-        MoveRemainingStartsForward - \
-        MultipleCriticalPaths - \
-        NewTaskStartDate - \
-        NewTasksEffortDriven - \
         NewTasksEstimated - \
-        OutlineCodes/ - \
         ProjectExternallyEdited - \
-        RemoveFileProperties - \
-        ScheduleFromStart - \
-        SplitsInProgressTasks - \
-        SpreadActualCost - \
-        SpreadPercentComplete - \
         StartDate - \
-        TaskUpdatesResource - \
-        WBSMasks/ - \
-        WeekStartDay - \
-        WorkFormat - \
-	Xxx { continue }
+	Xxx {
+	    # Don't write out these fields by default
+	    set append_p 0
+	}
 	default {
 	    set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	    set value [expr $$attribute_name]
@@ -176,7 +153,10 @@ foreach element $xml_elements {
     }
 
     # the following does "<$element>$value</$element>"
-    $project_node appendFromList [list $element {} [list [list \#text $value]]]
+    if {$append_p} {
+	ns_log Notice "microsoft-project.xml.tcl: append $element=$value"
+        $project_node appendFromList [list $element {} [list [list \#text $value]]]
+    }
 }
 
 
@@ -313,7 +293,8 @@ im_ms_project_write_subtasks \
     "0" "1" id
 
 
-# -------- Resources -------------
+# ---------------------------------------------------------------
+# Resources
 #    <resources>
 #	<resource id="0" name="Frank Bergmann" function="Default:1" contacts="" phone="" />
 #	<resource id="1" name="Klaus Hofeditz" function="Default:0" contacts="" phone="" />
@@ -383,6 +364,10 @@ db_foreach project_resources $project_resources_sql {
     }
 }
 
+
+# ---------------------------------------------------------------
+# Assignments
+
 set allocations_node [$doc createElement Assignments]
 $project_node appendChild $allocations_node
 
@@ -392,11 +377,17 @@ set project_allocations_sql "
 		gp.xml_uid::integer as xml_uid,
 		object_id_one AS task_id,
 		object_id_two AS user_id,
-		coalesce(bom.percentage, 0.0) as percentage_assigned,
+		bom.percentage as percentage_assigned,
 		p.percent_completed,
 		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
 		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
-		tt.planned_units
+		tt.planned_units,
+		(select	sum(coalesce(pbom.percentage,0))
+		 from	im_biz_object_members pbom,
+			acs_rels pr
+		 where	pr.rel_id = pbom.rel_id and
+			pr.object_id_one = tt.task_id
+		) as total_percentage_assigned
 	from
 		acs_rels r,
 		im_projects p
@@ -429,7 +420,24 @@ set project_allocations_sql "
 set assignment_ctr 0
 db_foreach project_allocations $project_allocations_sql {
 
-    ns_log Notice "microsoft-project: xml_uid=$xml_uid"
+    ns_log Notice "microsoft-project: allocactions: xml_uid=$xml_uid"
+    if {"" == $percentage_assigned} {
+	# Don't export empty assignments.
+	# These assignments are created by assignments of
+	# resources to sub-tasks in ]po[
+	continue
+    }
+
+    # Calculate the work included in this assignments.
+    # The sum of assigned work overrides the task work in MS-Project,
+    # so we divide the task work evenly across the assigned resources.
+    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
+    set planned_seconds [expr $planned_units * 3600]
+    set work_seconds [expr $planned_seconds * $percentage_assigned / $total_percentage_assigned]
+    set work_ms [im_gp_seconds_to_ms_project_time $work_seconds]
+
+    ns_log Notice "microsoft-project: allocactions: uid=$assignment_ctr, task_id=$task_id, tot=$total_percentage_assigned, assig=$percentage_assigned"
+
 
     $allocations_node appendXML "
 	<Assignment>
@@ -441,9 +449,9 @@ db_foreach project_allocations $project_allocations_sql {
 		<Start>${start_date_date}T00:00:00</Start>
 		<Finish>${end_date_date}T23:00:00</Finish>
 		<OvertimeWork>PT0H0M0S</OvertimeWork>
-		<RegularWork>PT${planned_units}H0M0S</RegularWork>
-		<RemainingWork>PT${planned_units}H0M0S</RemainingWork>
-		<Work>PT${planned_units}H0M0S</Work>
+		<RegularWork>$work_ms</RegularWork>
+		<RemainingWork>$work_ms</RemainingWork>
+		<Work>$work_ms</Work>
 	</Assignment>
     "
     incr assignment_ctr
@@ -471,6 +479,8 @@ foreach line [split $xml_org "\n"] {
 if {"html" == $format} {
     ad_return_complaint 1 "<pre>[ns_quotehtml $xml]</pre>"
 } else {
+    set outputheaders [ns_conn outputheaders]
+    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${project_filename}.xml"
     ns_return 200 application/octet-stream "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n$xml"
 }
 

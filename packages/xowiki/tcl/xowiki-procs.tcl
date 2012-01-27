@@ -821,9 +821,11 @@ namespace eval ::xowiki {
         "delete from xowiki_tags where item_id = $item_id and user_id = $user_id"
 
     foreach tag [split $tags " ,;"] {
-      db_dml [my qn insert_tag] \
-          "insert into xowiki_tags (item_id,package_id, user_id, tag, time) \
-           values ($item_id, $package_id, $user_id, :tag, current_timestamp)"
+      if {$tag ne ""} {
+	db_dml [my qn insert_tag] \
+	    "insert into xowiki_tags (item_id,package_id, user_id, tag, time) \
+	      values ($item_id, $package_id, $user_id, :tag, current_timestamp)"
+      }
     }
     search::queue -object_id $revision_id -event UPDATE
   }
@@ -1540,7 +1542,7 @@ namespace eval ::xowiki {
       array set "" [$package_id item_ref -default_lang [my lang] -parent_id $parent_id \
                         $(link)]
     }
-    #my msg [array get ""]
+    #my msg "link '$(link)' => [array get {}]"
 
     if {$label eq $arg} {set label $(link)}
     set item_name [string trimleft $(prefix):$(stripped_name) :]
@@ -1577,7 +1579,7 @@ namespace eval ::xowiki {
 
 
   Page instproc anchor {arg} {
-    if {[catch {set l [my create_link $arg]} errorMsg]} {
+    if {[catch {set l [my create_link [my unescape $arg]]} errorMsg]} {
       return "<div class='errorMsg'>Error during processing of anchor ${arg}:<blockquote>$errorMsg</blockquote></div>"
     }
     if {$l eq ""} {return ""}
@@ -1900,7 +1902,7 @@ namespace eval ::xowiki {
     if {$update_references || [my set unresolved_references] > 0} {
       my references_update [lsort -unique [my set references]]
     }
-    my unset references
+    my unset -nocomplain references
     #
     # handle footer
     #
@@ -2225,15 +2227,97 @@ namespace eval ::xowiki {
     }
     return [my set full_file_name]
   }
+
+  File instproc html_content {{-add_sections_to_folder_tree 0} -owner} {
+    set parent_id [my parent_id]
+    set fileName [my full_file_name]
+
+    set f [open $fileName r]; set data [read $f]; close $f 
+
+    # Ugly hack to fight against a problem with tDom: asHTML strips
+    # spaces between a </span> and the following <span>"
+    #regsub -all "/span>      <span" $data "/span>\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;<span" data
+    #regsub -all "/span>     <span" $data "/span>\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;<span" data
+    #regsub -all "/span>    <span" $data "/span>\\&nbsp;\\&nbsp;\\&nbsp;\\&nbsp;<span" data
+    #regsub -all "/span>   <span" $data "/span>\\&nbsp;\\&nbsp;\\&nbsp;<span" data
+    #regsub -all "/span>  <span" $data "/span>\\&nbsp;\\&nbsp;<span" data
+
+    regsub -all "/span> " $data "/span>\\&nbsp;" data
+    regsub -all " <span " $data "\\&nbsp;<span " data
+
+    dom parse -html $data doc 
+    $doc documentElement root 
+
+    #
+    # substitute relative links to download links in the same folder
+    #
+    set prefix [$parent_id pretty_link -absolute true -download true]
+    foreach n [$root selectNodes //img] {
+      set src [$n getAttribute src]
+      if {[regexp {^[^/]} $src]} {
+	$n setAttribute src $prefix/$src
+	#my msg "setting src to $prefix/$src"
+      }
+    }
+
+    #
+    # In case, the switch is activated, and we have a menubar, add the
+    # top level section
+    #
+    if {$add_sections_to_folder_tree && [info command ::__xowiki__MenuBar] ne ""} {
+      $owner set book_mode 1
+      set pages [::xo::OrderedComposite new -destroy_on_cleanup]
+      if {$add_sections_to_folder_tree == 1} {
+	set selector //h2
+      } else {
+	set selector {//h2 | //h3}
+      }
+
+      set order 0
+      foreach n [$root selectNodes $selector] {
+	if {[$n hasAttribute id]} {
+	  set name [$n getAttribute id]
+	} else {
+	  set name "section $n"
+	}
+	set o [::xotcl::Object new]
+	$o set page_order [incr $order]
+	$o set title [$n asText]
+	
+	set e [$doc createElement a]
+	$e setAttribute name $name
+	[$n parentNode] insertBefore $e $n
+
+	$o set name $name
+	$pages add $o
+      }
+	
+      #$o instvar page_order title name
+
+      ::__xowiki__MenuBar additional_sub_menu -kind folder -pages $pages -owner $owner
+    }
+
+    #
+    # return content of body
+    #
+    set content "" 
+    foreach n [$root selectNodes //body/*] { append content [$n asHTML] \n } 
+
+    return $content
+  }
     
   File instproc render_content {} {
     my instvar name mime_type description parent_id package_id item_id creation_user
     # don't require permissions here, such that rss can present the link
     #set page_link [$package_id make_link -privilege public [self] download ""]
 
-    set revision_id [[$package_id context] query_parameter revision_id]
+    set ctx [$package_id context]
+    set revision_id [$ctx query_parameter revision_id]
     set query [expr {$revision_id ne "" ? "revision_id=$revision_id" : ""}]
     set page_link [my pretty_link -download true -query $query]
+    if {[$ctx query_parameter html-content] ne ""} {
+      return [my html_content]
+    }
 
     #my log "--F page_link=$page_link ---- "
     set t [TableWidget new -volatile \
@@ -2978,7 +3062,7 @@ namespace eval ::xowiki {
     } elseif {$from_package_ids eq "*"} {
       set package_clause ""
     } else {
-      set package_clause "and object_package_id in ([$join $from_package_ids ,])"
+      set package_clause "and object_package_id in ([join $from_package_ids ,])"
     }
 
     if {$parent_id eq "*"} {
@@ -3028,7 +3112,38 @@ namespace eval ::xowiki {
     return $items
   }
   
-   #
+  FormPage proc get_folder_children {
+    -folder_id:required
+    {-publish_status ready}
+    {-object_types {::xowiki::Page ::xowiki::Form ::xowiki::FormPage}}
+    {-extra_where_clause true}
+  } {
+    set package_id [my package_id]
+    set publish_status_clause [::xowiki::Includelet publish_status_clause $publish_status]
+    set result [::xo::OrderedComposite new -destroy_on_cleanup]
+
+    foreach object_type $object_types {
+      set attributes [list revision_id creation_user title parent_id page_order \
+                          "to_char(last_modified,'YYYY-MM-DD HH24:MI') as last_modified" ]
+      set base_table [$object_type set table_name]i
+      if {$object_type eq "::xowiki::FormPage"} {
+	set attributes "* $attributes"
+      }
+      set items [$object_type get_instances_from_db \
+		     -folder_id $folder_id \
+		     -with_subtypes false \
+		     -select_attributes $attributes \
+		     -where_clause "$extra_where_clause $publish_status_clause" \
+		     -base_table $base_table]
+
+      foreach i [$items children] {
+	$result add $i
+      }
+    }
+    return $result
+  }
+
+  #
   # begin property management
   #
 
@@ -3313,7 +3428,7 @@ namespace eval ::xowiki {
       #
       # First check to find an existing form-field with that name
       #
-      set f [::xowiki::formfield::FormField get_from_name $varname]
+      set f [::xowiki::formfield::FormField get_from_name [self] $varname]
       if {$f ne ""} {
 	#
 	# the form field exists already, we just fill in the actual

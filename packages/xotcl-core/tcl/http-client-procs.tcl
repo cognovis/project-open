@@ -5,7 +5,7 @@ ad_library {
 
   @author Gustaf Neumann, Stefan Sobernig
   @creation-date 2007-10-05
-  @cvs-id $Id: http-client-procs.tcl,v 1.28 2010/09/13 17:28:44 stefans Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {
@@ -703,7 +703,12 @@ namespace eval ::xo {
 	# this case, we do not have to perform the cond-notify.
 	if {[my exists_status $condition] && 
 	    [my get_status $condition] eq "COND_WAIT_REFRESH"} {
-          # Before, we had here COND_WAIT_TIMEOUT instead of 
+	}
+	if {[my exists_status $condition] &&
+	    (  [my get_status $condition] eq "COND_WAIT_REFRESH"
+	    || [my get_status $condition] eq "COND_WAIT_TIMEOUT")
+	  } {
+          # Before, we had here one COND_WAIT_TIMEOUT, and once
           # COND_WAIT_REFRESH
 	  my set_status $condition $status $value
 	  catch {thread::cond notify $condition}

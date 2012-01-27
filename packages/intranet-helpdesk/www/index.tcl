@@ -110,12 +110,7 @@ db_foreach column_list_sql $column_sql {
 	set col_url [export_vars -base "index" {{order_by $column_name}}]
 
 	append col_url "&ticket_sla_id=$ticket_sla_id"
-	append col_url "&ticket_queue_id=$ticket_queue_id"
 	append col_url "&assignee_id=$assignee_id"
-
-#       fraber 110404: These variables are now DynFields
-#	append col_url "&ticket_status_id=$ticket_status_id"
-#	append col_url "&ticket_type_id=$ticket_type_id"
 
 	# Append the DynField values from the Filter as pass-through variables
 	# so that sorting won't alter the selected tickets
@@ -171,6 +166,19 @@ if {$view_tickets_all_p} {
 }
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
+
+# Add custom searches to drop-down
+if {[im_table_exists im_sql_selectors]} {
+    set selector_sql "
+	select	s.name, s.short_name
+	from	im_sql_selectors s
+	where	s.object_type = 'im_ticket'
+    "
+    db_foreach selectors $selector_sql {
+	lappend mine_p_options [list $name $short_name]
+    }
+}
+
 
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 	select  distinct
@@ -402,10 +410,18 @@ switch $mine_p {
                 )
 	)"
     }
-    "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
+    "default" { 
+	# The short name of a SQL selector
+	set selector_sql [db_string selector_sql "select selector_sql from im_sql_selectors where short_name = :mine_p" -default ""]
+	if {"" == $selector_sql} {
+	    ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" 
+	    ad_script_abort
+	}
+
+	lappend criteria "t.ticket_id in ($selector_sql)"
+    }
 }
 
-# ad_return_complaint 1 $order_by
 
 set order_by_clause "order by lower(t.ticket_id) DESC"
 switch [string tolower $order_by] {
@@ -522,6 +538,10 @@ set sql "
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
+
+# The SQL can contain commands [..] that need to be
+# evaluated in the context of this page.
+eval "set sql \"$sql\""
 
 # ad_return_complaint 1 "<pre>$sql</pre>"
 

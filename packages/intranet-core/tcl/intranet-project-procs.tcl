@@ -116,6 +116,7 @@ ad_proc -public im_project_permissions {
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $project_id
 } {
+    ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id"
     upvar $view_var view
     upvar $read_var read
     upvar $write_var write
@@ -126,6 +127,7 @@ ad_proc -public im_project_permissions {
     set write 0
     set admin 0
 
+    ns_log Notice "im_project_permissions: before user_is_admin_p"
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
     set user_is_group_member_p [im_biz_object_member_p $user_id $project_id]
@@ -134,11 +136,13 @@ ad_proc -public im_project_permissions {
 
     # empty project_id would give errors below
     if {"" == $project_id} { set project_id 0 }
+    ns_log Notice "im_project_permissions: before im_security_alert_check_integer"
     im_security_alert_check_integer -location "im_project_permissions" -value $project_id
 
 
     # Treat the project mangers_fields
     # A user man for some reason not be the group PM
+    ns_log Notice "im_project_permissions: before project_manager"
     if {!$user_is_group_admin_p} {
 	set project_manager_id [db_string project_manager "select project_lead_id from im_projects where project_id = :project_id" -default 0]
 	if {$user_id == $project_manager_id} {
@@ -147,6 +151,7 @@ ad_proc -public im_project_permissions {
     }
     
     # Admin permissions to global + intranet admins + group administrators
+    ns_log Notice "im_project_permissions: user_admin_p"
     set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
     set user_admin_p [expr $user_admin_p || $user_is_wheel_p]
 
@@ -155,6 +160,7 @@ ad_proc -public im_project_permissions {
 
     # Get the projects's company and the project status
     # Use caching because this procedure is queried very frequently!
+    ns_log Notice "im_project_permissions: company info"
     set query "
 	select	company_id, 
 		lower(im_category_from_id(project_status_id)) as project_status 
@@ -192,12 +198,14 @@ ad_proc -public im_project_permissions {
 
 
     # Allow customer' Members to see their customer's projects
+    ns_log Notice "im_project_permissions: customer members"
     if {$user_is_company_member_p && $user_is_employee_p} { 
 	set view 1
 	set read 1
     }
     
     # Allow Key Account Managers to see their customer's projects
+    ns_log Notice "im_project_permissions: company_admin"
     if {$user_is_company_admin_p && $user_is_employee_p} { 
 	set read 1
 	set write 1
@@ -209,10 +217,12 @@ ad_proc -public im_project_permissions {
 	set read 1
     }
 
+    ns_log Notice "im_project_permissions: view_projects_all"
     if {[im_permission $user_id view_projects_all]} { 
 	set read 1
     }
 
+    ns_log Notice "im_project_permissions: edit_projects_all"
     if {[im_permission $user_id edit_projects_all]} { 
 	set read 1
 	set write 1
@@ -221,9 +231,10 @@ ad_proc -public im_project_permissions {
 
     # companies and freelancers are not allowed to see non-open projects.
     # 76 = open
+    ns_log Notice "im_project_permissions: view_projects_history"
     if {![im_permission $user_id view_projects_history] && ![string equal $project_status "open"]} {
 	# Except their own projects...
-	if {!$user_is_company_member_p} {
+	if {!$user_is_company_member_p && !$user_is_group_member_p} {
 	    set read 0
 	}
     }
@@ -326,7 +337,7 @@ namespace eval project {
         set project_id [db_exec_plsql create_new_project $sql]
 
 	# Write Audit Trail
-	# im_project_audit -action create -project_id $project_id
+	# im_project_audit -action after_create -project_id $project_id
 
         return $project_id
     }
@@ -365,6 +376,7 @@ ad_proc -public im_next_project_nr {
 
     # Check for a custom project_nr generator
     set project_nr_generator [parameter::get -package_id [im_package_core_id] -parameter "CustomProjectNrGenerator" -default ""]
+
     if {"" != $project_nr_generator} {
 	return [eval $project_nr_generator -customer_id $customer_id -nr_digits $nr_digits -date_format $date_format]
     }
@@ -2267,17 +2279,20 @@ ad_proc im_project_nuke {
     
     # Use a predefined user_id to avoid a call to ad_get_user_id.
     # ad_get_user_id's connection isn't defined during a DELETE REST request.
+    ns_log Notice "im_project_nuke: before ad_get_user_id"
     if {0 == $current_user_id} { 
 	ns_log Notice "im_project_nuke: No current_user_id specified - using ad_get_user_id"
 	set current_user_id [ad_get_user_id] 
     }
 
     # Check for permissions
+    ns_log Notice "im_project_nuke: before im_project_permissions"
     im_project_permissions $current_user_id $project_id view read write admin
     if {!$admin} { return "User #$currrent_user_id isn't a system administrator" }
 
     # Write Audit Trail
-    im_project_audit -project_id $project_id -action nuke
+    ns_log Notice "im_project_nuke: before im_project_audit"
+    im_project_audit -user_id $current_user_id -project_id $project_id -action before_nuke
 
     # ---------------------------------------------------------------
     # Delete
@@ -2286,6 +2301,7 @@ ad_proc im_project_nuke {
     # if this fails, it will probably be because the installation has 
     # added tables that reference the users table
 
+    ns_log Notice "im_project_nuke: before db_transaction"
     db_transaction {
     
 	# Helpdesk Tickets
@@ -2527,7 +2543,6 @@ ad_proc im_project_nuke {
 
 	# Helpdesk
 	if {[im_table_exists im_tickets]} {
-	    
 	    ns_log Notice "projects/nuke-2: im_tickets"
 	    db_dml tickets "
 		    delete from im_tickets
@@ -2537,7 +2552,6 @@ ad_proc im_project_nuke {
 
 	# GanttProject
 	if {[im_table_exists im_timesheet_task_dependencies]} {
-	
 	    ns_log Notice "projects/nuke-2: im_timesheet_task_dependencies"
 	    db_dml del_dependencies "
 		delete from im_timesheet_task_dependencies
@@ -2546,7 +2560,6 @@ ad_proc im_project_nuke {
 	}
 
 	if {[im_table_exists im_gantt_projects]} {
-	
 	    ns_log Notice "projects/nuke-2: im_gantt_projects"
 	    db_dml del_gantt_projects "
 		delete from im_gantt_projects
@@ -2645,6 +2658,25 @@ ad_proc im_project_nuke {
 	set im_conf_item_project_rels_exists_p [im_table_exists im_conf_item_project_rels]
 	set im_ticket_ticket_rels_exists_p [im_table_exists im_ticket_ticket_rels]
 
+        # TS Configuration Objects
+        if {[im_table_exists im_timesheet_conf_objects]} {
+
+            ns_log Notice "projects/nuke-2: im_timesheet_conf_objects"
+            db_dml del_dependencies "
+                delete from im_timesheet_conf_objects
+                where conf_project_id = :project_id
+            "
+        }
+	
+        # Survey responses
+        if {[im_table_exists survsimp_responses]} {
+            ns_log Notice "projects/nuke-2: survsimp_responses"
+            db_dml del_dependencies "
+                delete from survsimp_responses
+                where related_object_id = :project_id or related_context_id = :project_id
+            "
+        }
+
 	# Relationships
 	foreach rel_id $rels {
 	    db_dml del_rels "delete from group_element_index where rel_id = :rel_id"
@@ -2658,7 +2690,6 @@ ad_proc im_project_nuke {
 	    db_dml del_rels "delete from acs_objects where object_id = :rel_id"
 	}
 
-	
 	ns_log Notice "projects/nuke-2: party_approved_member_map"
 	db_dml party_approved_member_map "
 		delete from party_approved_member_map 

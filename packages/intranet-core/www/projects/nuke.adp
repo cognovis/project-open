@@ -7,23 +7,27 @@
 
 <h2>@page_title@</h2>
 
+<p>
 #intranet-core.lt_Confirm_the_nuking_of#
-<a href="one?project_id=@project_id@">@project_name@</a>
+<a href="@project_url_org@">@project_name_org@</a>.
+<%= [lang::message::lookup "" intranet-core.Nuking_is_a_violent_irreversible_action "Nuking is a violent irreversible action."] %>
+
+</p><br>
+
+<listtemplate name="@list_id@"></listtemplate>
+
+<br>
 <p>
-
-
+<%= [lang::message::lookup "" intranet-core.You_shoud_change_status_to_deleted "
 First, unless @object_name@ is a test @object_type@, you 
-should probably delete this user instead. Deleting marks 
-the @object_type@ deleted but leaves intact its
-relationship with other objects such as forums, filestorage etc.
+should probably set the status of this project as 'deleted'
+instead."] %><br>
 
-<p>
-Nuking is a violent irreversible action. 
-You are instructing the system to remove the user and any content 
-that he or she has contributed to the site. This is generally only 
-appropriate in the case of test users and, perhaps, dishonest people 
-who've flooded a site with fake crud.
-<p>
+<%= [lang::message::lookup "" intranet-core.This_way_the_project_wont_appear "
+This way, the project won't appear in the rest of
+the system anymore, but associated information will kept
+intact."] %>
+</p><br>
 
 <center>
 <form method=get action=nuke-2>

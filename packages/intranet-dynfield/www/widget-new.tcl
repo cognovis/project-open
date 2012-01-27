@@ -5,7 +5,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: widget-new.tcl,v 1.12 2010/11/30 16:31:03 po34demo Exp $
+    @cvs-id $Id$
 } {
     widget_id:optional
     { form_mode "display" }
@@ -41,50 +41,20 @@ if {![info exists menu_id]} { set form_mode "edit" }
 # In the future 
 
 set storage_options [list [list "Table Column" 10007] [list "Multi-Select Mapping Table" 10005] ]
-
-set acs_datatype_options [list \
-	[list "Integer" integer] \
-	[list "String" string] \
-	[list "Boolean" boolean] \
-	[list "Date" date] \
-	[list "Email" email] \
-	[list "Text" text] \
-	[list "Float" float] \
-	[list "Number" number] \
-	[list "File" file] \
-	[list "Filename" filename] \
-	[list "Keyword" keyword] \
-	[list "Natural Number" naturalnum] \
-]
-
-set widget_options [list \
-	[list "Checkbox" checkbox] \
-	[list "\]po\[ Checkbox" im_checkbox] \
-	[list "Cost Center Tree" im_cost_center_tree] \
-	[list "Date" date] \
-	[list "Multiselect" multiselect] \
-	[list "Radio" radio] \
-	[list "Rich Text" richtext] \
-	[list "Select" select] \
-	[list "Text" text] \
-	[list "Textarea" textarea] \
-	[list "OpenACS Category" category_tree] \
-	[list "\]po\[ Category" im_category_tree] \
-	[list "\]po\[ Generic SQL" generic_sql] \
-	[list "\]po\[ Generic TCL" generic_tcl] \
-	[list "Hidden" hidden] \
-]
+set acs_datatype_options [im_dynfield::datatype_options]
+set widget_options [im_dynfield::widget_options]
 
 set deref_options [list \
-	[list "Generic Default (im_name_from_id)" "im_name_from_id"] \
-	[list "Integer (im_integer_from_id)" "im_integer_from_id"] \
-	[list "User Name (im_name_from_user_id)" "im_name_from_user_id"] \
-	[list "User Email (im_email_from_user_id)" "im_email_from_user_id"] \
-	[list "Traffic Light (im_traffic_light_from_id)" "im_traffic_light_from_id"] \
-	[list "Cost Center Name (im_cost_center_name_from_id)" "im_cost_center_name_from_id"] \
+	[list "Generic Default (im_name_from_id) - Please choose this if in doubt." "im_name_from_id"] \
+	[list "Category (im_category_from_id) - Converts a category_id to a translated string." "im_category_from_id"] \
+	[list "Integer (im_integer_from_id) - Doesn't convert integers or other numbers." "im_integer_from_id"] \
+	[list "User Name (im_name_from_user_id) - Returns a pretty user name." "im_name_from_user_id"] \
+	[list "User Email (im_email_from_user_id) - Returns the user's email address." "im_email_from_user_id"] \
+	[list "Object Link (im_link_from_id) - Returns a link to the object's page. Only works with business objects." "im_link_from_id"] \
+	[list "Traffic Light (im_traffic_light_from_id) - Returns a red, yellow or green GIF for traffic light status of projects." "im_traffic_light_from_id"] \
+	[list "Cost Center Name (im_cost_center_name_from_id) - Returns the cost center's name." "im_cost_center_name_from_id"] \
+	[list "Numeric (im_numeric_from_id) - Returns a float value." "im_numeric_from_id"] \
 ]
-#	[list "" ""] \
-
 
 
 ad_form \
@@ -124,14 +94,6 @@ ad_form -extend -name widget -on_request {
 
     db_string create_widget ""
 
-# } -validate {
-#
-#	{widget_name
-#	    {![db_string unique_name_check "select count(*) from im_dynfield_widgets where widget_name = :widget_name"]}
-#	    "Duplicate Widget Name. Please use a new name."
-#	}
-
-
 } -edit_data {
 
     if {$pretty_plural == ""} {
@@ -158,6 +120,11 @@ ad_form -extend -name widget -on_request {
 
 
 } -after_submit {
+
+	# Remove cached results
+	im_permission_flush
+
+        callback im_dynfield_widget_after_update -widget_name $widget_name
 
 	ad_returnredirect $return_url
 	ad_script_abort

@@ -7,6 +7,7 @@
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
+@message_html;noquote@
 
 <if @message@ not nil>
     <div class="general-message">@message@</div>
@@ -35,9 +36,20 @@
     <%= [im_component_bay bottom] %>
     </if>
     <else>
-    <%= [im_box_header $page_title] %>
-    <formtemplate id="helpdesk_ticket"></formtemplate>
-    <%= [im_box_footer] %>
+
+            <table width="100%">
+                <tr valign="top">
+                <td>
+		    <%= [im_box_header $page_title] %>
+		    <formtemplate id="helpdesk_ticket"></formtemplate>
+		    <%= [im_box_footer] %>
+                </td>
+                <td>
+			<%= [im_component_bay new_right] %> <!-- ToDo: validate -->
+                </td>
+                </tr>
+            </table>
+
     </else>
 </else>
 

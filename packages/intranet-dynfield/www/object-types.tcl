@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-04
-    @cvs-id $Id: object-types.tcl,v 1.16 2010/11/15 20:10:54 po34demo Exp $
+    @cvs-id $Id$
 
 } {
     {orderby "name"}
@@ -77,7 +77,7 @@ db_multirow -extend { object_attributes_url } object_types select_object_types {
 			'im_freelance_rfq', 'im_freelance_rfq_answer',
 			'im_conf_item', 'im_cost_center', 'im_note', 'im_user_absence',
 			'im_invoice', 'im_expense', 'im_expense_bundle',
-			'im_material', 'im_timesheet_task',
+			'im_material', 'im_risk', 'im_timesheet_task',
 			'im_sla_parameter'
 		) 
            or   object_type in (

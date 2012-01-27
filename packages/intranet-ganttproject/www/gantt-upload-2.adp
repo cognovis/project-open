@@ -6,6 +6,9 @@
 
 <h1>@page_title@</h1>
 
+<p>
+Importing data...
+</p>
 
 <if @tasks_to_delete_p@>
 
@@ -18,7 +21,7 @@
 	   with resources such as timesheet hours, expenses, forum discussions, files <br>etc.</p>
 	<p><b>Reassign Resources</b>: Please select the tasks to be deleted and choose<br>
 	   where to reassign its resources.</p>
-	<p><b>Or</b>: Just <a href='@return_url;noquote@'>Return to the previous page</a> 
+	<p><b>Or</b>: Just <a href='%return_url%'>Return to the previous page</a> 
 	   in order to keep these task and their <br>resources.</p>
 	"] %>
 
@@ -41,7 +44,7 @@
 </p>
 <p>
 <%= [lang::message::lookup "" intranet-ganttproject.Click_here_to_go_to_your_project "Please click here to go to your project."] %>:
-<a href='/intranet/projects/view?project_id=@project_id@'>@project_name@</a><br>
+<a href='/intranet/projects/view?project_id=@org_project_id@'>@org_project_name@</a><br>
 </p>
 
 

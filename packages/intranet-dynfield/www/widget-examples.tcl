@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: widget-examples.tcl,v 1.3 2006/04/07 23:07:39 cvs Exp $
+    @cvs-id $Id$
 
 } {
 }
@@ -92,26 +92,36 @@ db_multirow widgets get_widgets {
 } {
 }
 
+# Create the ad_form
+ad_form -name widgets_form -form {} -on_submit {}
+
+
+
+set cnt 0
 template::multirow foreach widgets {
 
     ns_log Notice "widget-examples: widget_name=$widget_name"
-    set form_element "${widget_name}_widget:${acs_datatype}(${widget}),optional {value \"\"} {html \"\"}"
 
-    if { [string equal $storage_type_id [im_dynfield_storage_type_id_multimap]] } {
-        append form_element { {options { {"Demo Example One" 1} {"Demo Example Two" 2} {"Demo Example Three" 3} {"Demo Example Four" 4} {"Demo Example Five" 5} {"Demo Example Six" 6} }}}
-    }
+#    if { [string equal $storage_type_id [im_dynfield_storage_type_id_multimap]] } {
+#        append form_element { {options { {"Demo Example One" 1} {"Demo Example Two" 2} {"Demo Example Three" 3} {"Demo Example Four" 4} {"Demo Example Five" 5} {"Demo Example Six" 6} }}}
+#    }
+#    lappend form_element [list "label" "<p><strong>$widget_name</strong></p><p>$pretty_plural</p><p><small>widget: $widget<br>datatype: $acs_datatype<br>parameters: $parameters</small></p>"]
 
-    if { [exists_and_not_null parameters] } {
-        append form_element " ${parameters}"
-    }
+    im_dynfield::append_attribute_to_form \
+	-widget $widget \
+	-form_id widgets_form \
+	-datatype $acs_datatype \
+	-display_mode "edit" \
+	-parameters $parameters \
+	-attribute_name "${widget_name}_widget" \
+	-pretty_name $widget_name \
+	-required_p "f" \
+	-help_text ""
 
-    lappend form_element [list "label" "<p><strong>$widget_name</strong></p><p>$pretty_plural</p><p><small>widget: $widget<br>datatype: $acs_datatype<br>parameters: $parameters</small></p>"]
-    lappend form_elements $form_element
-
+    incr cnt
 }
 
-# ad_return_error 1 "<pre>$form_elements</pre>"
 
-ad_form -name widgets_form -form $form_elements -on_submit {}
+
 
 ad_return_template

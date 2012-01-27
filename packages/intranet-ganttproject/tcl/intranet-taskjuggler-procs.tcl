@@ -44,6 +44,7 @@ ad_proc -public im_taskjuggler_write_subtasks {
 } {
     Returns a TJ specification of the project's tasks
 } {
+    ns_log Notice "im_taskjuggler_write_subtasks: pid=$project_id, depth=$depth, default_start=$default_start"
     # Get sub-tasks in the right sort_order
     set project_list [db_list sorted_query "
 	select
@@ -78,6 +79,8 @@ ad_proc -public im_taskjuggler_write_task {
     Write out the information about one specific task and then call
     a recursive routine to write out the stuff below the task.
 } {
+    ns_log Notice "im_taskjuggler_write_task: pid=$project_id, depth=$depth, default_start=$default_start"
+
     set org_project_id $project_id
     set indent ""
     for {set i 0} {$i < $depth} {incr i} { append indent "\t" }
@@ -104,16 +107,14 @@ ad_proc -public im_taskjuggler_write_task {
 	return
     }
 
-
     # --------------------------------------------------------------
     # Massage values
     if {"" == $priority} { set priority "1" }
-    if {"" == $start_date} { set start_date $default_start_date }
+    if {"" == $start_date} { set start_date $default_start }
     if {"" == $start_date} { set start_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
 
+    ns_log Notice "im_taskjuggler_write_task: pid=$project_id, project_name=$project_name, start_date=$start_date"
     append tj "${indent}task t$org_project_id \"$project_name\" {\n"
-
-
 
     # --------------------------------------------------------------
     # Add dependencies to predecessors 
@@ -138,10 +139,11 @@ ad_proc -public im_taskjuggler_write_task {
     # Make tasks without dependency start at the start of the project
     if {0 == $dependency_ctr} {
 
+	append tj "${indent}\tstart $default_start\n"
+
 	# Write the start command once for the topmost task
-	if {0 != $num_subtasks} {
-	    append tj "${indent}\tstart $default_start\n"
-	}
+#	if {0 != $num_subtasks} {
+#	}
     }
 
 

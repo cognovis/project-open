@@ -14,7 +14,7 @@ ad_page_contract {
     @level_of_detail Integer representing the level to which report 
 		     groupings are opened
 } {
-    { start_date "2009-01-01" }
+    { start_date "2011-01-01" }
     { end_date "2099-12-31" }
     { level_of_detail:integer 3 }
     { customer_id:integer 0 }

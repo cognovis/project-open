@@ -4,7 +4,7 @@
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @author Neophytos Demetriou (k2pts@phigita.net)
   @creation-date 2005-11-26
-  @cvs-id $Id: 30-widget-procs.tcl,v 1.50 2011/02/04 23:51:32 gustafn Exp $
+  @cvs-id $Id$
 }
 
 ::Serializer exportMethods {
@@ -458,7 +458,7 @@ namespace eval ::xo {
 
     Class Field \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""}} \
+	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""} {hide 0}} \
 	-instproc init {} {
 	  my set name [namespace tail [self]]
 	} \
@@ -472,7 +472,7 @@ namespace eval ::xo {
 
     Class BulkAction \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {name id {html {}}} \
+	-parameter {name id {html {}} {hide 0}} \
         -instproc actions {cmd} {
           #my init
           set grandParent [[my info parent] info parent]

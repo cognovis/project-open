@@ -15,6 +15,52 @@ ad_library {
 # Auxillary functions
 # --------------------------------------------------------
 
+ad_proc -public im_rest_doc_return {args} {
+    This is a replacement for doc_return that values if the
+    gzip_p URL parameters has been set.
+} {
+    # Perform some magic work
+    db_release_unused_handles
+    ad_http_cache_control
+
+    # find out if we should compress or not
+    set query_set [ns_conn form]
+    set gzip_p [ns_set get $query_set gzip_p]
+    ns_log Notice "im_rest_doc_return: gzip_p=$gzip_p"
+
+    # Return the data
+    if {"1" == $gzip_p} {
+	return [eval "ns_returnz $args"]
+    } else {
+	return [eval "ns_return $args"]
+    }
+
+}
+
+
+ad_proc -public im_rest_get_rest_columns {
+    query_hash_pairs
+} {
+    Reads the "columns" URL variable and returns the 
+    list of selected REST columns or an empty list 
+    if the variable was not specified.
+} {
+    set rest_columns [list]
+    set rest_column_arg ""
+    array set query_hash $query_hash_pairs
+    if {[info exists query_hash(columns)]} { set rest_column_arg $query_hash(columns) }
+    if {"" != $rest_column_arg} {
+        # Accept both space (" ") and komma (",") separated columns
+	set rest_columns [split $rest_column_arg " "]
+	if {[llength $rest_columns] <= 1} {
+	    set rest_columns [split $rest_column_arg ","]
+	}
+    }
+
+    return $rest_columns
+}
+
+
 ad_proc -private im_rest_header_extra_stuff {
     {-debug 1}
 } {
@@ -660,9 +706,9 @@ ad_proc -public im_rest_valid_sql {
     # ------------------------------------------------------
     # Rules have a format LHS <- RHS (Left Hand Side <- Right Hand Side)
     set rules {
-	query {select [a-z_]+}
-	query {from [a-z_]+}
-	query {where [a-z_]+ in \( query \)}
+	query {select [[:alnum:]_]+}
+	query {from [[:alnum:]_]+}
+	query {where [[:alnum:]_]+ in \( query \)}
 	query {where cond}
 	query {query query}
 	query {query where val}
@@ -675,7 +721,7 @@ ad_proc -public im_rest_valid_sql {
 	cond {\( cond \)}
 	cond {val = val}
 	cond {val like val}
-	cond {[a-z_]+ like val}
+	cond {[[:alnum:]_]+ like val}
 	cond {val > val}
 	cond {val >= val}
 	cond {val < val}
@@ -683,20 +729,21 @@ ad_proc -public im_rest_valid_sql {
 	cond {val <> val}
 	cond {val != val}
 	cond {val is null}
+	cond {[[:alnum:]_]+ @@ val}
 	cond {val is not null}
 	cond {val in \( val \)}
 	cond {val in \( query \)}
 	val  {val , val}
 	val  {val val}
 	val  {[0-9]+}
-	val  {[0-9a-z\_]+\.[0-9a-z\_]+}
+	val  {[[:alnum:]_]+\.[[:alnum:]_]+}
 	val  {[0-9]+\-[0-9]+\-[0-9]+t[0-9]+\:[0-9]+\:[0-9]+}
-	val  {\'[a-z0-9_\ \-\%\@\.]*\'}
-	val  {[a-z0-9_]+ \( [a-z0-9_]+ \)}
+	val  {\'[[:alnum:]_\ \-\%\@\.]*\'}
+	val  {[[:alnum:]_]+ \( [[:alnum:]_]+ \)}
     }
 
     # Add rules for every variable saying that it's a var.
-    lappend variables member_id user_id group_id
+    lappend variables member_id user_id group_id object_id_one object_id_two
     foreach var $variables {
 	lappend rules val
 	lappend rules $var

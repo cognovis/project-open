@@ -8,10 +8,12 @@
 ad_page_contract {
     SPRI Cube
 } {
+    { output_format "html" }
     { start_date "" }
     { end_date "" }
     { locale "es_ES" }
     { perc_p 1 }
+    { perca_p 1 }
     { channel_p 1 }
     { type_p 0 }
     { queue_p 0 }
@@ -25,6 +27,8 @@ ad_page_contract {
 set page_title [lang::message::lookup "" intranet-sencha-ticket-tracker.Report_Tickets_por_Area "Tickets por Area"]
 set sigma "&Sigma;"
 set days_in_past 0
+set sub_cat_string ""
+set tecnicos_group_id [db_string tecnicos "select group_id from groups where group_name = 'Tecnicos'" -default 473]
 
 db_1row todays_date "
 select
@@ -136,19 +140,34 @@ foreach area_id $area_list {
     set row($area_id) ""
 
     set area_footer($area_id) ""
-    append area_footer($area_id) "<td>Total</td>\n"
+    switch $output_format {
+	html { append area_footer($area_id) "<td>Total</td>\n" }
+	csv  { append area_footer($area_id) "\"Total\";" }
+    }
 }
 set footer ""
 
+switch $output_format {
+    html {  
+	append top_header "<td class=rowtitle></td>\n"
+	append top_header "<td class=rowtitle align=center colspan=2>Actividad</td>\n"
+	append header "<td class=rowtitle></td>"
+	append header "<td class=rowtitle>Total</td>\n"
+	append header "<td class=rowtitle>Total %</td>\n"
+    }
+    csv  {  
+	append top_header "\"\"; "
+	append top_header "\"Actividad\";\"\";"
+	append header "\"\";"
+	append header "\"Total\";"
+	append header "\"Total %\";"
+    }
+}
 
-append top_header "<td class=rowtitle></td>\n"
-append top_header "<td class=rowtitle align=center colspan=2>Actividad</td>\n"
-append header "<td class=rowtitle></td>"
-append header "<td class=rowtitle>Total</td>\n"
-append header "<td class=rowtitle>Total %</td>\n"
+
 
 set dimension_vars [list area_id program_id]
-set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
 set total_sql "
 	select  coalesce(
@@ -177,7 +196,7 @@ set total_aggregate_sql "
 
 db_foreach total_hash $total_aggregate_sql {
     if {"" == $area_id} { set area_id -1000 }
-    foreach perm $dimension_perms {
+    foreach perm $dimension_permutations {
 	# Add a "$" before every variable
 	set perm_subs [list]
 	foreach p $perm { lappend perm_subs "\$$p" }
@@ -200,35 +219,62 @@ foreach area_id $area_list {
 
     # -------------------------------------
     # Area name (from category)
-    append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n"
+    switch $output_format {
+	html { append row($area_id) "<td>[im_category_from_id -translate_p 0 $area_id]</td>\n" }
+	csv  { append row($area_id) "\"[im_category_from_id -translate_p 0 $area_id]\";" }
+    }
 
     # -------------------------------------
     # Total and Total %
     set val [v total_hash($area_id) 0]
-    append row($area_id) "<td align=right>$val</td>"
-    append area_footer($area_id) "<td align=right>$val</td>"
     if {[catch { set perc "[lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale]%" }]} { set perc "undef" }
-    append row($area_id) "<td align=right>$perc</td>"
-    append area_footer($area_id) "<td align=right>$perc</td>"
+
+    switch $output_format {
+	html {  
+	    append row($area_id) "<td align=right>$val</td>"
+	    append area_footer($area_id) "<td align=right>$val</td>"
+	    append row($area_id) "<td align=right>$perc</td>"
+	    append area_footer($area_id) "<td align=right>$perc</td>"
+	}
+	csv  {  
+	    append row($area_id) "\"$val\";"
+	    append area_footer($area_id) "\"$val\";"
+	    append row($area_id) "\"$perc\";"
+	    append area_footer($area_id) "\"$perc\";"
+	}
+    }
+
 
     # -------------------------------------
     # Repeat the same procedure for the programs contained in the area
     set program_list [v program_list_hash($area_id) ""]
     foreach program_id $program_list {
-	append row($program_id) "<td>[im_category_from_id -translate_p 0 $program_id]</td>\n"
 	set val [v total_hash($program_id) 0]
-	append row($program_id) "<td align=right>$val</td>"
 	if {[catch { set perc "[lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale]%" }]} { set perc "undef" }
-	append row($program_id) "<td align=right>$perc</td>"
+
+	switch $output_format {
+	    html {  
+		append row($program_id) "<td>[im_category_from_id -translate_p 0 $program_id]</td>\n"
+		append row($program_id) "<td align=right>$val</td>"
+		append row($program_id) "<td align=right>$perc</td>"
+	    }
+	    csv  {  
+		append row($program_id) "\"[im_category_from_id -translate_p 0 $program_id]\";\"$val\";\"$perc\";"
+	    }
+	}
     }
 }
 
-append footer "<td>Total</td>\n"
-append footer "<td align=right>$total_tickets</td>\n"
-append footer "<td align=right>100.0%</td>\n"
-
-
-
+switch $output_format {
+    html {  
+	append footer "<td>Total</td>\n"
+	append footer "<td align=right>$total_tickets</td>\n"
+	append footer "<td align=right>100.0%</td>\n"
+    }
+    csv  {  
+	append footer "\"Total\";\"$total_tickets\";\"100\";"
+    }
+}
 
 
 # ----------------------------------------------------------------
@@ -238,7 +284,7 @@ append footer "<td align=right>100.0%</td>\n"
 if {$channel_p} {
 
     set dimension_vars [list area_id program_id channel_level1_id channel_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
     
     # ----------------------------------------------------------------
     # Get the list of all channels
@@ -299,12 +345,12 @@ if {$channel_p} {
     # Write the values from the SQL into a hash array and aggregate
     db_foreach channel_hash $channel_aggregate_sql {
 
-	if {"" == $area_id}			{ set area_id -1000 }
+	if {"" == $area_id}		{ set area_id -1000 }
 	if {"" == $program_id}		{ set program_id -1004 }
 	if {"" == $channel_id} 		{ set channel_id -1001 }
 	if {"" == $channel_level1_id} 	{ set channel_level1_id -1002 }
 	
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
@@ -328,7 +374,11 @@ if {$channel_p} {
 	    
 	    # Disable for debugging
 	    # continue
-	    
+
+	    # Don't show the sub-categories of "telefonia" and CRM
+	    if {10000036 == $channel_id} { continue }
+	    if {10000198 == $channel_id} { continue }
+
 	    # Check for sub-categories with values
 	    set subcats [im_sub_categories $channel_id]
 	    foreach sub_channel_id $subcats {
@@ -346,24 +396,57 @@ if {$channel_p} {
     # ----------------------------------------------------------------
     # Format the data 
     
-    append top_header "<td class=rowtitle></td>\n"
-    append header "<td class=rowtitle></td>\n"
+    switch $output_format {
+	html {  
+	    append top_header "<td class=rowtitle></td>\n"
+	    append header "<td class=rowtitle></td>\n"
+	}
+	csv  {  
+	    append top_header "\"\";"
+	    append header "\"\";"
+	}
+    }
+
     set cnt 0
     foreach channel_id $channels_with_values_list {
 	set channel [im_category_from_id $channel_id]
 	if {$channel_id < 1000} { 
 	    # Ugly. Restore the category
-	    set channel "Sub-Cat<br>[im_category_from_id [expr $channel_id + 10000000]]"
+	    switch $output_format {
+		html { set channel "$sub_cat_string[im_category_from_id [expr $channel_id + 10000000]]" }
+		csv  { set channel "$sub_cat_string[im_category_from_id [expr $channel_id + 10000000]]" }
+	    }
 	}
 	if {$channel_id < 0} { set channel "N/C" }
 	
-	append header "<td class=rowtitle>$channel</td>\n"
-	if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
+	switch $output_format {
+	    html { append header "<td class=rowtitle>$channel</td>\n" }
+	    csv  { append header "\"$channel\";" }
+	}
+	
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>%</td>\n"  }
+		csv  { append header "\"%\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
-    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Canal</td>\n"
-    
-    
+    switch $output_format {
+	html { 
+	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Canal</td>\n" 
+	}
+	csv  { 
+	    append top_header "\"Por Canal\";"
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	}
+    }
     
     # Constants defined for channels
     set telephone_channel_id 10000036
@@ -376,51 +459,135 @@ if {$channel_p} {
 	
 	# -------------------------------------
 	# Area empty colum
-	append row($area_id) "<td align=right></td>"
-	append area_footer($area_id) "<td align=right></td>"
+	switch $output_format {
+	    html {  
+		append row($area_id) "<td align=right></td>"
+		append area_footer($area_id) "<td align=right></td>"
+	    }
+	    csv  {  
+		append row($area_id) "\"\";"
+		append area_footer($area_id) "\"\";"
+	    }
+	}
+
 	
 	# List of category values
 	foreach channel_id $channels_with_values_list {
 	    set key "$area_id-$channel_id"
 	    set val [v channel_hash($key) ""]
-	    append row($area_id) "<td align=right>$val</td>"
-	    append area_footer($area_id) "<td align=right>$val</td>"
+	    switch $output_format {
+		html {  
+		    append row($area_id) "<td align=right>$val</td>"
+		    append area_footer($area_id) "<td align=right>$val</td>"
+		}
+		csv  {  
+		    append row($area_id) "\"$val\";"
+		    append area_footer($area_id) "\"$val\";"
+		}
+	    }
+	    
 	    if {$perc_p} {
 		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
 		set perc "$perc%"
 		if {"" == $val} { set perc "" }
-		append row($area_id) "<td align=right>$perc</td>"
-		append area_footer($area_id) "<td align=right>$perc</td>"
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
 	    }
+
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
 	# Repeat the same procedure for the programs contained in the area
 	set program_list [v program_list_hash($area_id) ""]
 	foreach program_id $program_list {
+	    # !!!
 	    set total_ticket_for_program [v channel_hash($program_id) 0]
-	    append row($program_id) "<td align=right></td>"
+	    switch $output_format {
+		html { append row($program_id) "<td align=right></td>" }
+		csv  { append row($program_id) "\"\";" }
+	    }
+	    
 	    foreach channel_id $channels_with_values_list {
 		set key "$program_id-$channel_id"
 		set val [v channel_hash($key) ""]
-		append row($program_id) "<td align=right>$val</td>"
+		switch $output_format {
+		    html { append row($program_id) "<td align=right>$val</td>" }
+		    csv  { append row($program_id) "\"$val\";" }
+		}
+
 		if {$perc_p} {
 		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
 		    set perc "$perc%"
 		    if {"" == $val} { set perc "" }
-		    append row($program_id) "<td align=right>$perc</td>"
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
 		}
+
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
+
 	    }
 	}
     }
     
     # Deal with footer
-    append footer "<td align=right></td>"
+    switch $output_format {
+	html { append footer "<td align=right></td>" }
+	csv  { append footer "\"\";" }
+    }
+    
     foreach channel_id $channels_with_values_list {
 	set key "$channel_id"
 	set val [v channel_hash($key) 0]
-	append footer "<td align=right>$val</td>"
-	if {$perc_p} { append footer "<td align=right></td>" }
+	switch $output_format {
+	    html { append footer "<td align=right>$val</td>" }
+	    csv  { append footer "\"$val\";" }
+	}
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
     }
     
 }
@@ -433,7 +600,7 @@ if {$channel_p} {
 if {$type_p} {
 
     set dimension_vars [list area_id program_id type_level1_id type_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
     set type_list_sql "
 	select distinct
@@ -485,9 +652,7 @@ if {$type_p} {
 		type_level1_id,
 		type_id
     "
-
-    # ad_return_complaint 1 "<pre>[join [db_list_of_lists t $type_aggregate_sql] "\n"]</pre>"
-    
+   
     db_foreach type_hash $type_aggregate_sql {
 	
 	if {"" == $area_id}			{ set area_id -1000 }
@@ -495,7 +660,7 @@ if {$type_p} {
 	if {"" == $type_id} 		{ set type_id -1001 }
 	if {"" == $type_level1_id}		{ set type_level1_id -1002 }
 
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
@@ -538,21 +703,51 @@ if {$type_p} {
     # ----------------------------------------------------------------
     # Format the data 
 
-    append top_header "<td class=rowtitle></td>"
-    append header "<td class=rowtitle></td>"
+    switch $output_format {
+	html {  
+	    append top_header "<td class=rowtitle></td>"
+	    append header "<td class=rowtitle></td>"
+	}
+	csv  {  
+	    append top_header "\"\";"
+	    append header "\"\";"
+	}
+    }
+
     set cnt 0
     foreach type_id $types_with_values_list {
 	set type [im_category_from_id $type_id]
 	if {$type_id < 1000} { 
 	    # Ugly. Restore the category
-	    set type "Sub-Cat<br>[im_category_from_id [expr $type_id + 10000000]]"
+	    set type "$sub_cat_string[im_category_from_id [expr $type_id + 10000000]]"
 	}
 	if {$type_id < 0} { set type "N/C" }
-	append header "<td class=rowtitle>$type</td>\n"
-	if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
+	switch $output_format {
+	    html { append header "<td class=rowtitle>$type</td>\n" }
+	    csv  { append header "\"$type\";" }
+	}
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>%</td>\n"  }
+		csv  { append header "\"%\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
-    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Servicio</td>\n"
+    switch $output_format {
+	html { append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Servicio</td>\n" }
+	csv  { 
+	    append top_header "\"Por Servicio\";" 
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	}
+    }
+    
 
     
     set total_tickets [v type_hash() 0]
@@ -568,22 +763,65 @@ if {$type_p} {
 	
 	# -------------------------------------
 	# Area name (from category)
-	append row($area_id) "<td></td>\n"
-	append area_footer($area_id) "<td></td>\n"
+	switch $output_format {
+	    html {  
+		append row($area_id) "<td></td>\n"
+		append area_footer($area_id) "<td></td>\n"
+	    }
+	    csv  {  
+		append row($area_id) "\"\";"
+		append area_footer($area_id) "\"\";"
+	    }
+	}
+
 	
 	# List of category values
 	foreach type_id $types_with_values_list {
 	    set key "$area_id-$type_id"
 	    set val [v type_hash($key) ""]
-	    append row($area_id) "<td align=right>$val</td>"
-	    append area_footer($area_id) "<td align=right>$val</td>"
+	    switch $output_format {
+		html {  
+		    append row($area_id) "<td align=right>$val</td>"
+		    append area_footer($area_id) "<td align=right>$val</td>"
+		}
+		csv  {  
+		    append row($area_id) "\"$val\";"
+		    append area_footer($area_id) "\"$val\";"
+		}
+	    }
+
 	    if {$perc_p} {
 		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
 		set perc "$perc%"
 		if {"" == $val} { set perc "" }
-		append row($area_id) "<td align=right>$perc</td>"
-		append area_footer($area_id) "<td align=right>$perc</td>"
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"		    
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"		    
+		    }
+		}
 	    }
+
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"		    
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"		    
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
@@ -591,29 +829,65 @@ if {$type_p} {
 	set program_list [v program_list_hash($area_id) ""]
 	foreach program_id $program_list {
 	    set total_ticket_for_program [v type_hash($program_id) 0]
-	    append row($program_id) "<td></td>\n"
+	    switch $output_format {
+		html { append row($program_id) "<td></td>\n" }
+		csv  { append row($program_id) "\"\";" }
+	    }
 	    foreach type_id $types_with_values_list {
 		set key "$program_id-$type_id"
 		set val [v type_hash($key) ""]
-		append row($program_id) "<td align=right>$val</td>"
+		switch $output_format {
+		    html { append row($program_id) "<td align=right>$val</td>" }
+		    csv  { append row($program_id) "\"$val\";" }
+		}
 		if {$perc_p} {
 		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
 		    set perc "$perc%"
 		    if {"" == $val} { set perc "" }
-		    append row($program_id) "<td align=right>$perc</td>"
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
 		}
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
+
 	    }
 	}
     }
     
-    append footer "<td></td>\n"
+    switch $output_format {
+	html { append footer "<td></td>\n" }
+	csv  { append footer "\"\";" }
+    }
+    
     foreach type_id $types_with_values_list {
 	set key "$type_id"
 	set val [v type_hash($key)]
-	append footer "<td align=right>$val</td>"
-	if {$perc_p} { append footer "<td align=right></td>" }
+	switch $output_format {
+	    html { append footer "<td align=right>$val</td>" }
+	    csv  { append footer "\"$val\";" }
+	}
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
     }
-    
 }
 
 
@@ -625,13 +899,16 @@ if {$type_p} {
 if {$queue_p} {
 
     set dimension_vars [list area_id program_id queue_id]
-    set dimension_perms [im_report_take_all_ordered_permutations $dimension_vars]
+    set dimension_permutations [im_report_take_all_ordered_permutations $dimension_vars]
 
     set queue_list_sql "
 	select distinct
 		ticket_queue_id
 	from	im_tickets
 	where	ticket_queue_id is not null
+
+	UNION
+	select	$tecnicos_group_id
 	order by ticket_queue_id
     "
     set queue_list [list]
@@ -671,15 +948,19 @@ if {$queue_p} {
 
     db_foreach queue_hash $queue_aggregate_sql {
 	
-	if {"" == $area_id}			{ set area_id -1000 }
+	# Fix special categories
+	if {"" == $area_id}		{ set area_id -1000 }
 	if {"" == $program_id}		{ set program_id -1004 }
 	if {"" == $queue_id} 		{ set queue_id -1003 }
 	
+	# Summarize all "Tecnios" in a single group.
+	if {$queue_id > 73375}		{ set queue_id $tecnicos_group_id }
+
 	ns_log Notice "---------------------------------------------------------------"
 	ns_log Notice "report-area: aggregate=$aggregate, area_id=$area_id, queue_id=$queue_id"
 	ns_log Notice ""
 	
-	foreach perm $dimension_perms {
+	foreach perm $dimension_permutations {
 	    # Add a "$" before every variable
 	    set perm_subs [list]
 	    foreach p $perm { lappend perm_subs "\$$p" }
@@ -708,43 +989,115 @@ if {$queue_p} {
     
     # ----------------------------------------------------------------
     # Format the data 
-    
-    append top_header "<td class=rowtitle></td>"
-    append header "<td class=rowtitle></td>"
+
+    switch $output_format {
+	html {  
+	    append top_header "<td class=rowtitle></td>"
+	    append header "<td class=rowtitle></td>"
+	}
+	csv  {  
+	    append top_header "\"\";"
+	    append header "\"\";"
+	}
+    }
+
     set cnt 0
     foreach queue_id $queues_with_values_list {
 	set queue [db_string queue "select acs_object__name(:queue_id)"]
 	if {"Employees" == $queue} { set queue "No escalado" }
 	if {"" == $queue} { set queue $queue_id }
 	if {-1003 == $queue} { set queue "N/C" }
-	append header "<td class=rowtitle>$queue</td>\n"
-	if {$perc_p} { append header "<td class=rowtitle>%</td>\n" }
+	switch $output_format {
+	    html { append header "<td class=rowtitle>$queue</td>\n" }
+	    csv  { append header "\"$queue\";" }
+	}
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>%</td>\n"  }
+		csv  { append header "\"%\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append header "<td class=rowtitle>% A</td>\n"  }
+		csv  { append header "\"% A\";"  }
+	    }
+	}
 	incr cnt
     }
     
-    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p)*$cnt]>Por Escalado</td>\n"
+    switch $output_format {
+	html { 
+	    append top_header "<td class=rowtitle align=center colspan=[expr (1+$perc_p+$perca_p)*$cnt]>Por Escalado</td>\n" 
+	}
+	csv  { 
+	    append top_header "\"Por Escalado\";" 
+	    for {set i 0} {$i < [expr (1+$perc_p+$perca_p)*$cnt - 1]} {incr i} { append top_header "\"\";" }
+	}
+    }
+    
     
     foreach area_id $area_list {
 	set total_ticket_for_area [v queue_hash($area_id) 0]
 	
 	# -------------------------------------
 	# Area name (from category)
-	append row($area_id) "<td></td>\n"
-	append area_footer($area_id) "<td></td>\n"
+	switch $output_format {
+	    html {  
+		append row($area_id) "<td></td>\n"
+		append area_footer($area_id) "<td></td>\n"
+	    }
+	    csv  {  
+		append row($area_id) "\"\";"
+		append area_footer($area_id) "\"\";"
+	    }
+	}
 	
 	# List of queues
 	foreach queue_id $queues_with_values_list {
 	    set key "$area_id-$queue_id"
 	    set val [v queue_hash($key) ""]
-	    append row($area_id) "<td align=right>$val</td>"
-	    append area_footer($area_id) "<td align=right>$val</td>"
+	    switch $output_format {
+		html {  
+		    append row($area_id) "<td align=right>$val</td>"
+		    append area_footer($area_id) "<td align=right>$val</td>"
+		}
+		csv  {  
+		    append row($area_id) "\"$val\";"
+		    append area_footer($area_id) "\"$val\";"
+		}
+	    }
 	    if {$perc_p} {
 		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_area) / 10.0] "" $locale] }]} { set perc "undef" }
 		set perc "$perc%"
 		if {"" == $val} { set perc "" }
-		append row($area_id) "<td align=right>$perc</td>"
-		append area_footer($area_id) "<td align=right>$perc</td>"
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
 	    }
+	    if {$perca_p} {
+		if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_tickets) / 10.0] "" $locale] }]} { set perc "undef" }
+		set perc "$perc%"
+		if {"" == $val} { set perc "" }
+		switch $output_format {
+		    html {  
+			append row($area_id) "<td align=right>$perc</td>"
+			append area_footer($area_id) "<td align=right>$perc</td>"
+		    }
+		    csv  {  
+			append row($area_id) "\"$perc\";"
+			append area_footer($area_id) "\"$perc\";"
+		    }
+		}
+	    }
+
 	}
 	
 	# -------------------------------------
@@ -752,27 +1105,62 @@ if {$queue_p} {
 	set program_list [v program_list_hash($area_id) ""]
 	foreach program_id $program_list {
 	    set total_ticket_for_program [v queue_hash($program_id) 0]
-	    append row($program_id) "<td></td>\n"
+	    switch $output_format {
+		html { append row($program_id) "<td></td>\n" }
+		csv  { append row($program_id) "\"\";" }
+	    }
 	    foreach queue_id $queues_with_values_list {
 		set key "$program_id-$queue_id"
 		set val [v queue_hash($key) ""]
-		append row($program_id) "<td align=right>$val</td>"
+		switch $output_format {
+		    html { append row($program_id) "<td align=right>$val</td>" }
+		    csv  { append row($program_id) "\"$val\";" }
+		}
 		if {$perc_p} {
 		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
 		    set perc "$perc%"
 		    if {"" == $val} { set perc "" }
-		    append row($program_id) "<td align=right>$perc</td>"
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
+		}
+		if {$perca_p} {
+		    if {[catch { set perc [lc_numeric [expr round(1000.0 * $val / $total_ticket_for_program) / 10.0] "" $locale] }]} { set perc "undef" }
+		    set perc "$perc%"
+		    if {"" == $val} { set perc "" }
+		    switch $output_format {
+			html { append row($program_id) "<td align=right>$perc</td>" }
+			csv  { append row($program_id) "\"$perc\";" }
+		    }
 		}
 	    }
 	}
     }
     
-    append footer "<td></td>\n"
+    switch $output_format {
+	html { append footer "<td></td>\n" }
+	csv  { append footer "\"\";" }
+    }
     foreach queue_id $queues_with_values_list {
 	set key "$queue_id"
 	set val [v queue_hash($key)]
-	append footer "<td align=right>$val</td>"
-	if {$perc_p} { append footer "<td align=right></td>" }
+	switch $output_format {
+	    html { append footer "<td align=right>$val</td>" }
+	    csv  { append footer "\"$val\";" }
+	}
+	if {$perc_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
+	if {$perca_p} { 
+	    switch $output_format {
+		html { append footer "<td align=right></td>"  }
+		csv  { append footer "\"\";"  }
+	    }
+	}
     }
     
 }
@@ -783,29 +1171,90 @@ if {$queue_p} {
 # ----------------------------------------------------------------
 
 set body ""
-append body "<table cellspacing=5 cellpadding=5>"
-append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
-append body "<tr class=rowtitle valign=top>$header</tr>\n"
-foreach area_id $area_list {
-    append body "<tr>$row($area_id)</tr>\n"
+switch $output_format {
+    html {  
+	append body "<table cellspacing=5 cellpadding=5>"
+	append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
+	append body "<tr class=rowtitle valign=top>$header</tr>\n"
+    }
+    csv  {  
+	append body "$top_header\n"
+	append body "$header\n"
+    }
 }
-append body "<tr class=roweven>$footer</tr>\n"
+foreach area_id $area_list {
+    switch $output_format {
+	html { append body "<tr>$row($area_id)</tr>\n" }
+	csv  { append body "$row($area_id)\n" }
+    }
+}
+switch $output_format {
+    html { append body "<tr class=roweven>$footer</tr>\n" }
+    csv  { append body "$footer\n" }
+}
 
 set cnt 0
 foreach area_id $area_list {
-#    if {$cnt >= 0} { continue }
     set area_name [im_category_from_id $area_id]
     if {"" == $area_id || -1000 == $area_id} { set area_name "N/C" }
-    append body "<tr><td>&nbsp;</td></tr>\n"
-    append body "<tr class=rowtitle><td class=rowtitle colspan=999>$area_name</td></tr>\n"
-    append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
-    append body "<tr class=rowtitle valign=top>$header</tr>\n"
+    switch $output_format {
+	html {  
+	    append body "<tr><td>&nbsp;</td></tr>\n"
+	    append body "<tr class=rowtitle><td class=rowtitle colspan=999>$area_name</td></tr>\n"
+	    append body "<tr class=rowtitle valign=top>$top_header</tr>\n"
+	    append body "<tr class=rowtitle valign=top>$header</tr>\n"
+	}
+	csv  {  
+	    append body "\n"
+	    append body "\"$area_name\"\n"
+	    append body "$top_header\n"
+	    append body "$header\n"
+	}
+    }
+
     set program_list [v program_list_hash($area_id) ""]
     foreach program_id $program_list {
-	append body "<tr>$row($program_id)</tr>\n"
+	switch $output_format {
+	    html { append body "<tr>$row($program_id)</tr>\n" }
+	    csv  { append body "$row($program_id)\n" }
+	}
     }
-    append body "<tr class=roweven>$area_footer($area_id)</tr>\n"
+    switch $output_format {
+	html { append body "<tr class=roweven>$area_footer($area_id)</tr>\n" }
+	csv  { append body "$area_footer($area_id)\n" }
+    }
     incr cnt
 }
-append body "</table>\n"
 
+switch $output_format {
+    html { append body "</table>\n" }
+    csv  { append body "\n" }
+}
+
+
+switch $output_format {
+    csv  { 
+	set content_type [im_report_content_type -output_format $output_format]
+	
+	set tcl_encoding [parameter::get_from_package_key -package_key intranet-dw-light -parameter CsvTclCharacterEncoding -default "iso8859-1" ]
+	set app_type [parameter::get_from_package_key -package_key intranet-dw-light -parameter CsvContentType -default "application/csv"]
+	set charset [parameter::get_from_package_key -package_key intranet-dw-light -parameter CsvHttpCharacterEncoding -default "iso-8859-1"]
+
+	if {"utf-8" == $tcl_encoding} {
+	    set body_latin1 $body
+	} else {
+	    set body_latin1 [encoding convertto $tcl_encoding $body]
+	}
+	
+	# For some reason we have to send out a "hard" HTTP
+	# header. ns_return and ns_respond don't seem to convert
+	# the content body into the right Latin1 encoding.
+	# So we do this manually here...
+	set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Type: $app_type; charset=$charset\r\n"
+	util_WriteWithExtraOutputHeaders $all_the_headers
+	ns_write $body_latin1
+	ad_script_abort
+    }
+}

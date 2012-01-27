@@ -12,6 +12,8 @@
 <input type=hidden name=domain value="@domain;noquote@">
 <input type=hidden name=binddn value="@binddn;noquote@">
 <input type=hidden name=bindpw value="@bindpw;noquote@">
+<input type=hidden name=system_binddn value="@system_binddn;noquote@">
+<input type=hidden name=system_bindpw value="@system_bindpw;noquote@">
 <input type=hidden name=authority_id value="@authority_id@">
 <input type=hidden name=group_map value="@group_map;noquote@">
 
@@ -26,19 +28,22 @@
 </tr>
 <tr>
 <td>Type:</td>
-<td><if "ad" eq @ldap_type@>Microsoft Active Directory</if><else>OpenLDAP<else></td>
+<td>
+	<if "ad" eq @ldap_type@>Microsoft Active Directory</if>
+	<else>OpenLDAP</else>
+</td>
 </tr>
 <tr>
 <td>Domain:</td>
 <td>@domain@</td>
 </tr>
 <tr>
-<td>BindDN<br>(username):</td>
-<td>@binddn@</td>
+<td>SystemBindDN<br>(username):</td>
+<td>@system_binddn@</td>
 </tr>
 <tr>
-<td>Password:</td>
-<td>@bindpw@</td>
+<td>SystemBindPassword:</td>
+<td>@system_bindpw@</td>
 </tr>
 
 <tr>

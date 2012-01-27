@@ -106,7 +106,7 @@ function showFileStorageNewForm(ticket_id) {
 								var fs_folder_id = resp.result.data[0].fs_folder_id + '';
 								var fs_folder_path = resp.result.data[0].fs_folder_path + '';
 							} catch (ex) {
-								alert('Error creating object: ' + operation.action.responseText);
+								Function_errorMessage('#intranet-sencha-ticket-tracker.Create_Object_Error_Title#', '#intranet-sencha-ticket-tracker.Create_Object_Error_Message#', operation.action.responseText);
 								return;
 							}
 			
@@ -118,12 +118,15 @@ function showFileStorageNewForm(ticket_id) {
 							ticket_model.set('fs_folder_id', fs_folder_id);
 							ticket_model.set('fs_folder_path', fs_folder_path);
 	
-							// Tell all panels to load the data of the newly created object
+							/*// Tell all panels to load the data of the newly created object
 							var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-							compoundPanel.loadTicket(ticket_model);	
+							compoundPanel.loadTicket(ticket_model);	*/
+							ticket_form.getForm().findField('fs_folder_id').setValue(fs_folder_id);
+							Ext.getCmp('fileStorageGrid').loadTicket(ticket_model);
+							
 						},
-							failure: function(form, action) {
-							alert('Error loading file');
+						failure: function(form, action) {
+							Function_errorMessage('#intranet-sencha-ticket-tracker.Load_File_Error_Title#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#', '#intranet-sencha-ticket-tracker.Load_File_Error_Message#');
 							fileStorageNewForm.hide();
 						}
 					});
@@ -136,7 +139,7 @@ function showFileStorageNewForm(ticket_id) {
 		});
 	
 		fileStorageNewForm = Ext.widget('window', {
-			title:		'#intranet-filestorage.Upload_File#',
+			title:		'#intranet-sencha-ticket-tracker.Upload_File#',
 			closeAction:	'hide',
 			width:		300,
 			height:		400,
@@ -215,7 +218,7 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	columns: [
 		  {
-		  header:	'#intranet-filestorage.Filename#',
+		  header:	'#intranet-sencha-ticket-tracker.Filename#',
 		  dataIndex:	'name',
 		  flex:	1,
 		  minWidth:	100,
@@ -258,7 +261,6 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 
 	// Load the files for the new ticket
 	loadTicket: function(rec){
-
 		// Reload the store containing the ticket's files
 		var folder_id = rec.get('fs_folder_id');
 		var folder_path = rec.get('fs_folder_path');
@@ -296,12 +298,8 @@ var fileStorageGrid = Ext.define('TicketBrowser.FileStorageGrid', {
 	// Somebody pressed the "New Ticket" button:
 	// Prepare the form for entering a new ticket
 	newTicket: function() {
-	// We don't need to show this while the ticket hasn't yet been created...
-	this.hide();
+		// We don't need to show this while the ticket hasn't yet been created...
+		this.hide();
 	}
 
 });
-
-
-
-

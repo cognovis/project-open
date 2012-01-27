@@ -1,0 +1,322 @@
+# /packages/intranet-reporting-openoffice/www/report-portfolio.tcl
+#
+# Copyright (C) 2003 - 2011 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
+
+# ---------------------------------------------------------------
+# Defaults & Security
+# ---------------------------------------------------------------
+
+# Get user parameters
+set user_id [ad_maybe_redirect_for_registration]
+set user_locale [lang::user::locale]
+set date_format "YYYY-MM-DD"
+set currency_format [im_l10n_sql_currency_format]
+set number_format $currency_format
+
+
+set page_title [lang::message::lookup "" intranet-reporting-openoffice.Program_Overview "Program Overview"]
+set context [list $page_title]
+set sub_navbar_html ""
+set left_navbar_html ""
+
+# OpenOffice sometimes converts a normal dash into a "long dash"
+set long_dash [format "%c" 8211]
+
+# Determine the template
+set pageroot [ns_info pageroot]
+set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
+
+# Package template path
+set template_path_list [parameter::get_from_package_key -package_key "intranet-reporting-openoffice" -parameter "TemplatePathList" -default "/filestorage/templates /packages/intranet-reporting-openoffice/templates /packages/intranet-cust-santander/templates"]
+
+
+# ---------------------------------------------------------------
+# Parse the URL information
+# ---------------------------------------------------------------
+
+
+# This index.vuh file will receive all calls to
+# the /intranet-reporting-openoffice/ url, independent
+# of the file body.
+
+# Get the entire URL and decompose
+set url [ns_conn url]
+set url_pieces [split $url "/"]
+set url_file [lindex $url_pieces 2]
+set url_file_body [lindex [split $url_file "."] 0]
+set url_file_ext [lindex [split $url_file "."] 1]
+
+# Get the information about the URL parameters, parse
+# them and store them into a hash array.
+set query [ns_conn query]
+set query_pieces [split $query "&"]
+array set query_hash {}
+foreach query_piece $query_pieces {
+    if {[regexp {^([^=]+)=(.+)$} $query_piece match var val]} {
+	ns_log Notice "im_rest_call_get: var='$var', val='$val'"
+	
+	# Additional decoding: replace "+" by " "
+	regsub -all {\+} $var { } var
+	regsub -all {\+} $val { } val
+	
+	set var [ns_urldecode $var]
+	set val [ns_urldecode $val]
+	ns_log Notice "im_rest_call_get: var='$var', val='$val'"
+	set query_hash($var) $val
+    }
+}
+
+
+set query_hash(now) [db_string now "select to_char(now(), 'YYYY-MM-DD')"]
+set query_hash(now_month_of_year) [db_string now "select to_char(now(), 'MM')"]
+set query_hash(now_day_of_month) [db_string now "select to_char(now(), 'DD')"]
+set query_hash(now_year) [db_string now "select to_char(now(), 'YYYY')"]
+set query_hash(date_format) $date_format
+set query_hash(number_format) $number_format
+set query_hash(currency_format) $currency_format
+
+
+# ---------------------------------------------------------------
+# Check for a TCL file in the template directories
+# ---------------------------------------------------------------
+
+if {"" == $url_file_ext || "tcl" == $url_file_ext || "adp" == $url_file_ext} {
+
+    set package_files {}
+    foreach path $template_path_list {
+	lappend package_files "${path}/${url_file}"
+	lappend package_files "${path}/${url_file}.tcl"
+	lappend package_files "${path}/${url_file}.adp"
+    }
+
+    foreach package_file $package_files {
+	ns_log Notice "intranet-reporting-openoffice/index.vuh: Checking package_file='$package_file'"
+	if {[file readable "${serverroot}$package_file"] && [file isfile "${serverroot}$package_file"]} {
+	    set package_file_without_ext [lindex [split $package_file "."] 0]
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Serving url_file='$url_file', package_file='$package_file', no_ext='$package_file_without_ext'"
+
+	    set params [list [list query_hash [array get query_hash]]]
+	    set result [ad_parse_template -params $params $package_file_without_ext]
+	    doc_return 200 "text/html" $result
+	    ad_script_abort
+	}
+    }
+}
+
+
+# ---------------------------------------------------------------
+# Look for an OO.oo tempate
+# ---------------------------------------------------------------
+
+if {"" == $url_file_ext || "odp" == $url_file_ext} {
+
+    set template_files {}
+    foreach path $template_path_list {
+	lappend template_files "${path}/${url_file}"
+	lappend template_files "${path}/${url_file}.odp"
+    }
+
+    set odp_template_file ""
+    foreach template_file $template_files {
+	if {[file readable "${serverroot}$template_file"] && [file isfile "${serverroot}$template_file"]} {
+	    ns_log Notice "intranet-reporting-openoffice/index.vuh: Found template file $template_file"
+	    set odp_template_file "${serverroot}$template_file"
+	}
+    }
+}
+
+
+# Redirect to default page if we didn't find a template
+if {"" == $odp_template_file} {
+    ad_returnredirect "/intranet-reporting-openoffice/report-list"
+}
+
+
+# ---------------------------------------------------------------
+# Unzip the ODP template, update the "content.xml" file and zip again.
+# ---------------------------------------------------------------
+
+set odp_template_pieces [split $odp_template_file "/"]
+set odp_template_body [lindex $odp_template_pieces end]
+
+# Create a temporary directory for our contents
+set odp_tmp_path [ns_tmpnam]
+ns_mkdir $odp_tmp_path
+
+set odp_zip "${odp_tmp_path}.odp"
+set odp_content "${odp_tmp_path}/content.xml"
+set odp_styles "${odp_tmp_path}/styles.xml"
+
+ns_cp $odp_template_file $odp_zip
+
+# Unzip the odp into the temorary directory
+exec unzip -d $odp_tmp_path $odp_zip
+
+# Read the content.xml file
+set file [open $odp_content]
+fconfigure $file -encoding "utf-8"
+set odp_template_content [read $file]
+close $file
+
+# Parse the template XML document into a tree
+set odp_doc [dom parse $odp_template_content]
+set odp_root [$odp_doc documentElement]
+
+# Get the container tag that contains various pages
+# and the list of pages in the document
+set odp_page_container_node [$odp_root selectNodes "//office:presentation"]
+set odp_page_template_nodes [$odp_root selectNodes "//draw:page"]
+
+
+# ---------------------------------------------------------------
+# Loop through all pages
+# and process each page depending on its type
+# ---------------------------------------------------------------
+
+foreach page_node $odp_page_template_nodes {
+
+    # Extract the "page name" from OOoo.
+    # We use this field to determine the type of the page
+    set page_name_list [$page_node getAttribute "draw:name"]
+    set page_type [lindex $page_name_list 0]
+    set page_name [lrange $page_name_list 1 end]
+
+    set page_notes [im_oo_page_notes -page_node $page_node]
+    set page_sql ""
+    set list_sql ""
+    set counters ""
+    for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
+	set varname [string tolower [lindex $page_notes $i]]
+	set varvalue [lindex $page_notes [expr $i+1]]
+
+	# Substitute a "long dash" ("--") with a normal one
+	regsub -all $long_dash $varvalue "-" varvalue
+
+	switch $varname {
+	    page_sql { set page_sql $varvalue }
+	    list_sql { set list_sql $varvalue }
+	    default {
+		set query_hash($varname) $varvalue
+	    }
+	}
+    }
+
+    append debug "<li>$page_type=$page_type, page_name=$page_name, page_sql=$page_sql, list_sql=$list_sql\n"
+
+    switch $page_type {
+	constant {
+	    im_oo_page_type_constant \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get query_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
+	}
+	static {
+	    im_oo_page_type_static \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get query_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
+	}
+	list {
+	    im_oo_page_type_list \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get query_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
+	}
+	gantt {
+	    im_oo_page_type_gantt \
+		-page_node $page_node \
+		-page_name $page_name \
+		-parameters [array get query_hash] \
+		-list_sql $list_sql \
+		-page_sql $page_sql
+	}
+	default {
+	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
+	    ad_script_abort
+	}
+    }
+}
+
+#ad_return_complaint 1 "<pre>$debug</pre>"
+
+
+# ---------------------------------------------------------------
+# Format as XML and perform substitutions
+# ---------------------------------------------------------------
+
+# Format document as XML
+set content [$odp_root asXML -indent none]
+
+# Save the content to a file.
+set file [open $odp_content w]
+fconfigure $file -encoding "utf-8"
+puts $file $content
+flush $file
+close $file
+
+
+
+# ---------------------------------------------------------------
+# Process the styles.xml file
+# ---------------------------------------------------------------
+
+set file [open $odp_styles]
+fconfigure $file -encoding "utf-8"
+set style_content [read $file]
+close $file
+
+# Perform replacements
+eval [template::adp_compile -string $style_content]
+set style $__adp_output
+
+# Save the content to a file.
+set file [open $odp_styles w]
+fconfigure $file -encoding "utf-8"
+puts $file $style
+flush $file
+close $file
+
+
+# ---------------------------------------------------------------
+# Replace the files inside the odp file by the processed files
+# ---------------------------------------------------------------
+
+# The zip -j command replaces the specified file in the zipfile
+# which happens to be the OpenOffice File.
+exec zip -j $odp_zip $odp_content
+exec zip -j $odp_zip $odp_styles
+
+db_release_unused_handles
+
+
+# ---------------------------------------------------------------
+# Return the file
+# ---------------------------------------------------------------
+
+set outputheaders [ns_conn outputheaders]
+ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${odp_template_body}"
+ns_returnfile 200 application/odp $odp_zip
+
+
+# ---------------------------------------------------------------
+# Delete the temporary files
+# ---------------------------------------------------------------
+
+# delete other tmpfiles
+# ns_unlink "${dir}/$document_filename"
+# ns_unlink "${dir}/$content.xml"
+# ns_unlink "${dir}/$style.xml"
+# ns_unlink "${dir}/document.odf"
+# ns_rmdir $dir
+ad_script_abort
+

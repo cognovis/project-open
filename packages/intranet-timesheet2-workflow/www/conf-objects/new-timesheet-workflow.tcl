@@ -17,7 +17,7 @@ ad_page_contract {
     { return_url "/intranet-timesheet2-workflow/conf-objects/index" }
     { start_date_julian "" }
     { end_date_julian "" }
-    { workflow_key "timesheet_approval_wf" }
+    { workflow_key "" }
 }
 
 # ---------------------------------------------------------------
@@ -25,13 +25,14 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set wf_user_id $user_id
-
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[lang::message::lookup "" intranet-timesheet2-workflow.Create_New_Timesheet_Workflow "New Timesheet Workflow(s)"]"
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
-
 set date_format_pretty "YYYY-MM-DD"
+if { "" == $workflow_key } {
+    set workflow_key [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2-workflow] -parameter "DefaultWorkflowKey" -default "timesheet_approval_wf"]
+}
 
 # ---------------------------------------------------------------
 # Create new Timesheet Confirmation Objects and their WFs

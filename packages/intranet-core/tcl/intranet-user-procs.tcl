@@ -279,18 +279,19 @@ ad_proc im_user_select {
 ad_proc im_employee_select_multiple { select_name { defaults "" } { size "6"} {multiple ""}} {
     set bind_vars [ns_set create]
     set employee_group_id [im_employee_group_id]
+    set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
     set sql "
-select
-	u.user_id,
-	im_name_from_user_id(u.user_id) as employee_name
-from
-	registered_users u,
-	group_distinct_member_map gm
-where
-	u.user_id = gm.member_id
-	and gm.group_id = $employee_group_id
-order by lower(im_name_from_user_id(u.user_id))
-"
+	select
+		u.user_id,
+		im_name_from_user_id(u.user_id, $name_order) as employee_name
+	from
+		registered_users u,
+		group_distinct_member_map gm
+	where
+		u.user_id = gm.member_id
+		and gm.group_id = $employee_group_id
+	order by lower(im_name_from_user_id(u.user_id, $name_order))
+    "
     return [im_selection_to_list_box -translate_p "0" $bind_vars category_select $sql $select_name $defaults $size $multiple]
 }    
 
@@ -1084,12 +1085,18 @@ ad_proc -public im_user_nuke {
 	    db_dml freelance_conf "update im_freelance_skills set confirmation_user_id = null where confirmation_user_id = :user_id"
 	}
 
+	# Gantt Projects
+	if {[im_table_exists im_gantt_persons]} {
+	    db_dml im_gantt_persons "delete from im_gantt_persons where person_id = :user_id"
+	}
 
 	# Helpdesk + ConfDB
 	if {[im_table_exists im_tickets]} {
 	    db_dml assignees "update im_tickets set ticket_assignee_id = :default_user where ticket_assignee_id = :user_id"
 	    db_dml assignees "update im_tickets set ticket_customer_contact_id = :default_user where ticket_customer_contact_id = :user_id"
 	}
+
+	# Configuration Items
 	if {[im_table_exists im_conf_items]} {
 	    db_dml assignees "update im_conf_items set conf_item_owner_id = :default_user where conf_item_owner_id = :user_id"
 	}

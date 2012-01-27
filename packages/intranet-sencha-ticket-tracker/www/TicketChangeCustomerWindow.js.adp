@@ -44,23 +44,25 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 		{
 			id:		'company_id',
 			name:		'company_id',
-			xtype:		'combo',
+			xtype:		'combobox',
 			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Delete#',
 			anchor:		'100%',
 			allowBlank:	false,
 			store:		companyStore,
+			queryMode:	'local',
 			valueField:	'company_id',
 			displayField:   'company_name'															
 		}, {
 			id: 		'company_id_replacement',
 			name:		'company_id_replacement',
-			xtype:		'combo',
+			xtype:		'combobox',
 			forceSelection: true,
 			fieldLabel:	'#intranet-sencha-ticket-tracker.Customer_To_Change#',
 			anchor:		'100%',
 			allowBlank:	false,
 			store:		companyStore,
+			queryMode:	'local',
 			valueField:	'company_id',
 			displayField:   'company_name'									
 		}
@@ -84,9 +86,11 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 						url:	'company-delete-replace',
 						method:	'GET',
 						success: function(form, action) {
+							companyStore.clearFilter();
 							var customer_id_value=form.findField('company_id').getValue();
-							var companyModel = contactGridStore.findRecord('user_id',customer_id_value);
-							companyStore.remove(companyModel);
+							//var companyModel = companyStore.findRecord('company_id',customer_id_value);
+							companyStore.remove(companyStore.findRecord('company_id',customer_id_value));
+							companyGridStore.remove(companyGridStore.findRecord('company_id',customer_id_value));
 							Ext.Msg.show({
 							     title :"Exito borrando/replazando entidad:",
 							     msg: 'Borrado y sustitución realizado correctamente',
@@ -112,6 +116,7 @@ Ext.define('TicketBrowser.TicketChangeCustomerWindow', {
 							Ext.getCmp('ticketChangeCustomerWindow').close();	
 						}
 					});
+					companyStore.clearFilter();
 			}
 		}, {
 			xtype: 'button',

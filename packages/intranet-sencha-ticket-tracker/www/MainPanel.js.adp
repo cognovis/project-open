@@ -52,119 +52,141 @@ Ext.define('TicketBrowser.Main', {
 			itemId: 'ticket',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketContainer',
-      listeners: {
-      		activate:  function(){
-      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('ticketGrid').selModel.getSelection());     
-      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
-      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
-      				Ext.getCmp('ticketFilterForm').onSearch()
-      		}
-      }				
+			listeners: {
+				activate:  function(){
+					Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('ticketGrid').selModel.getSelection());     
+					Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',Ext.getCmp('ticketGrid').selModel.getSelection()); 			
+					Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,false);
+					Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);
+					Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);
+					Ext.getCmp('ticketFilterForm').onSearch()
+				}
+			}				
 		}, {
-			itemId: 'company',
-			title: 	'#intranet-sencha-ticket-tracker.Companies#',
-			xtype: 'companyContainer',
-      listeners: {
-      		activate:  function(){
-							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
-      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('companyGrid').selModel.getSelection());
-      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
-      		}
-      }							
+			itemId: 'companyContactContainer',
+			title: '#intranet-sencha-ticket-tracker.CompanyContact#',
+			xtype:  'companyContactContainer',
+			listeners: {
+	      		activate:  function(){
+					Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('contactGrid').selModel.getSelection());
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true); 
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonSave',true,true);  
+	  				Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);   				
+	      		}
+      		}			
 		}, {
-			itemId: 'contact',
-			title: '#intranet-sencha-ticket-tracker.Contacts#',
-			xtype: 'contactContainer',
-      listeners: {
-      		activate:  function(){
-							Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
-      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',Ext.getCmp('contactGrid').selModel.getSelection());
-      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);      				
-      		}
-      }				
-		}, {
-			itemId: 'sample',
+			itemId: 'TEC',
 			title: '#intranet-sencha-ticket-tracker.Tickets#',
 			xtype: 'ticketCompoundPanel',
-			//disabled: true,
 			hidden: true,
-      listeners: {
-      		activate:  function(){
-      				Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
-      				Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
-      				Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
-      		},
-          deactivate: function(){
-						// Show a dialog to save changes in ticket
-						var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
-						var ticket_id = ticket_id_field.getValue();
-						var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
-						//There is a ticked that is not closed and dirty			
-						if (ticketModel != undefined && ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty) {
-							Ext.Msg.show({
-						     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
-						     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
-						    	buttons: Ext.Msg.YESNO,
-						    	icon: Ext.MessageBox.QUESTION,
-						     	fn: function(btn){
-						     		var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);	
-						     		ticketModel.dirty = false;
-						     		if (btn == 'yes'){
-						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
-						     			var ticketFormRightValues = Ext.getCmp('ticketFormRight').getForm().getFieldValues();
-						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
-						     			var ticketFormValues = Ext.getCmp('ticketForm').getForm().getFieldValues();
-										// Update an existing ticket
-										// Loop through all form fields and store into the ticket store
-										var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);
-										for(var field in ticketFormValues) {
-											if (ticketFormValues.hasOwnProperty(field)) {
-												value = ticketFormValues[field];
-												ticketModel.set(field, value);
-											}
-										}			
-										for(var field in ticketFormRightValues) {
-											if (ticketFormRightValues.hasOwnProperty(field)) {
-												value = ticketFormRightValues[field];
-												ticketModel.set(field, value);
-											}
-										}													     			
-						     			
-						     			
-						     			
-										ticketModel.save({
-											scope: Ext.getCmp('ticketForm'),
-											success: function(record, operation) {
-												// Refresh all forms to show the updated information
-												var compoundPanel = Ext.getCmp('ticketCompoundPanel');
-												compoundPanel.tab.setText(record.get('project_name'));
-												compoundPanel.loadTicket(ticketModel);
-											},
-											failure: function(record, operation) {
-												Ext.Msg.alert('Failed to save ticket', operation.request.scope.reader.jsonData["message"]);
-											}
-										});										
-						     		}
-						     	}
-							});
+			listeners: {
+				activate:  function(){
+						Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',false);
+						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',false);
+						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
+						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
+						//ToDo: si el ticket esta cerrado y no es admin desabilitar boton de salvar
+						var date = new Date();
+						Ext.getCmp('ticketForm').getForm().findField('datetime').setValue(date.getTime());
+				},
+				deactivate: function(){
+					// Show a dialog to save changes in ticket
+					var ticket_id_field = Ext.getCmp('ticketForm').getForm().findField('ticket_id');
+					var ticket_id = ticket_id_field.getValue();
+					var ticketModel = ticketStore.findRecord('ticket_id',ticket_id);			
+					//There is a ticked that is not closed and dirty			
+					if (Ext.isEmpty(ticketModel) || (ticketModel.get('ticket_status_id') != '30001' && ticketModel.dirty)) {
+						if (!Ext.isEmpty(ticketModel)) {
+							ticketModel.dirty = false;
 						}
-          }
-      }			
+						Ext.Msg.show({
+					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+					    	buttons: Ext.Msg.YESNO,
+					    	icon: Ext.MessageBox.QUESTION,
+					     	fn: function(btn){
+					     		if (btn == 'yes'){
+									var companyValues = Ext.getCmp('ticketCustomerPanel').getValues();
+									var contactValues =  Ext.getCmp('ticketContactForm').getValues();
+									var ticketValues =  Ext.getCmp('ticketForm').getValues();
+									var ticketRightValues =  Ext.getCmp('ticketFormRight').getValues();
+									
+									if (Function_validateTicket()){
+										Function_save(companyValues, contactValues, ticketValues, ticketRightValues, false, true);
+									}																														     			
+					     		}
+					     	}
+						});
+					}
+			  	}
+			}			
+		}, {
+			itemId: 'companyContactCompoundPanel',
+			title: '#intranet-sencha-ticket-tracker.EditCompanyContact#',
+			xtype: 'companyContactCompoundPanel',
+			hidden: true,
+			listeners: {
+				activate:  function(){
+						Ext.getCmp('ticketActionBar').checkButton('buttonCopyTicket',true);
+						Ext.getCmp('ticketActionBar').checkButton('buttonRemoveSelected',true);
+						Ext.getCmp('ticketActionBar').checkButton('buttonSummaryTicket',false,true);
+						Ext.getCmp('ticketActionBar').checkButton('buttonSave',false,false);
+						Ext.getCmp('ticketActionBar').checkButton('buttonReject',true,true);
+				},
+				deactivate: function(){
+					// Show a dialog to save changes in ticket
+					var company_id_field = Ext.getCmp('companyContactCustomerPanel').getForm().findField('company_id');
+					var company_id = company_id_field.getValue();
+					var companyModel = companyStore.findRecord('company_id',company_id);			
+					
+					var contact_id_field = Ext.getCmp('companyContactContactForm').getForm().findField('user_id');
+					var contact_id = contact_id_field.getValue();
+					if (!Ext.isEmpty(contact_id)) {			
+						var contactModel = userCustomerContactStore.findRecord('user_id',contact_id);							
+					}
+						
+					if (Ext.isEmpty(companyModel) || Ext.isEmpty(contactModel) || (companyModel.dirty) || (contactModel.dirty)) {
+						Ext.Msg.show({
+					     	title:'#intranet-sencha-ticket-tracker.Save_changes_tittle#',
+					     	msg:	'#intranet-sencha-ticket-tracker.Save_changes_message#',
+					    	buttons: Ext.Msg.YESNO,
+					    	icon: Ext.MessageBox.QUESTION,
+					     	fn: function(btn){
+					     		if (btn == 'yes'){
+									var companyValues = Ext.getCmp('companyContactCustomerPanel').getValues();
+									var contactValues =  Ext.getCmp('companyContactContactForm').getValues();
+										
+									if (Function_validateCompanyContact()){
+										Function_save(companyValues, contactValues, false, false, true, false);	
+									}																														     			
+					     		}
+					     	}
+						});
+						if (!Ext.isEmpty(companyModel)) {
+							companyModel.dirty = false;
+						}
+						if (!Ext.isEmpty(contactModel)) {
+							contactModel.dirty = false;
+						}
+					}		
+			  	}				
+			}		
 		}, {
 			itemId: 'report',
-			title: '#intranet-sencha-ticket-tracker.Reports#'
-			//xtype: 'ticketCompoundPanel',		
+			title: '#intranet-sencha-ticket-tracker.Reports#',
+			hidden: !currentUserIsAdmin
 		}],
 		
-      listeners: {
-      		beforetabchange: function(tabPanel, newCard, oldCard, options){		
-      			if (newCard.itemId == 'report'){
-      				window.open('/intranet-reporting/');
-      				return false;
-      			} 
-      			return true;
-      		}
-      }		
+		listeners: {
+			beforetabchange: function(tabPanel, newCard, oldCard, options){		
+				if (newCard.itemId == 'report'){
+					window.open('/intranet-reporting/');
+					return false;
+				} 
+				return true;
+			}
+		}
 	}]
 });
 

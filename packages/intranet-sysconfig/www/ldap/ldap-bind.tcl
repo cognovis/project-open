@@ -17,6 +17,8 @@ ad_page_contract {
     { domain "" }
     { binddn "" }
     { bindpw "" }
+    { system_binddn "" }
+    { system_bindpw "" }
     { authority_name "" }
     { authority_id "" }
     { group_map "" }
@@ -25,10 +27,10 @@ ad_page_contract {
 set default_binddn_ad "cn=Administrator,cn=Users,$domain"
 set default_binddn_ol "cn=Manager,$domain"
 
-if {"" == $binddn} {
+if {"" == $system_binddn} {
     switch $ldap_type {
-	ad { set binddn $default_binddn_ad }
-	ol { set binddn $default_binddn_ol }
+	ad { set system_binddn $default_binddn_ad }
+	ol { set system_binddn $default_binddn_ol }
     }
 }
 
@@ -60,7 +62,9 @@ array set hash [im_sysconfig_ldap_check_bind \
 		    -ldap_type $ldap_type \
 		    -ldap_domain $domain \
 		    -ldap_binddn $binddn \
-		    -ldap_bindpw $bindpw]
+		    -ldap_bindpw $bindpw \
+		    -ldap_system_binddn $system_binddn \
+		    -ldap_system_bindpw $system_bindpw]
 
 set success_p $hash(success_p)
 set debug $hash(debug)

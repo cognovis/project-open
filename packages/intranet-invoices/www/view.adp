@@ -3,6 +3,31 @@
 <property name="main_navbar_label">finance</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
+<if @show_dynfield_tab_p@ eq 1>
+
+	<script src="http://yui.yahooapis.com/2.8.2r1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+	<script src="http://yui.yahooapis.com/2.8.2r1/build/element/element-min.js"></script>
+	<script src="http://yui.yahooapis.com/2.8.2r1/build/tabview/tabview-min.js"></script>
+	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.2r1/build/tabview/assets/skins/sam/tabview.css">
+
+	<script type="text/javascript">
+		var myTabs = new YAHOO.widget.TabView("demo");
+	</script>
+
+	<div class="yui-skin-sam">
+
+	<div id="demo" class="yui-navset">
+	    <ul class="yui-nav">
+        	<li class="selected"><a href="#tab1"><em>Invoice</em></a></li>
+	        <li><a href="#tab2"><em>Dynamic Invoice Elements</em></a></li>
+ 	   </ul>
+
+	<div class="yui-content">
+	<div>
+</if>
+
+
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <span style="color:red;font-weight:bold;">@err_mess@</span>
 
@@ -354,3 +379,18 @@
 
 </td></tr>
 </table>
+<if @show_dynfield_tab_p@ eq 1>
+</div>
+
+
+<div>
+    <%= [im_table_with_title "" $project_base_data_html] %>
+</div>
+
+</div>
+
+
+
+</div>
+</div>
+</if>
