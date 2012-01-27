@@ -258,6 +258,7 @@ select
 	(ci.amount * (1 + coalesce(ci.vat,0)/100 + coalesce(ci.tax,0)/100)) as invoice_amount,
 	ci.currency as invoice_currency,
 	ci.paid_amount as payment_amount,
+	to_char(ci.paid_amount,:cur_format) as payment_amount_formatted,
 	ci.paid_currency as payment_currency,
 	pr.project_nr,
 	to_char(ci.effective_date, 'YYYY-MM') as effective_month,
@@ -486,6 +487,7 @@ db_foreach invoices_info_query $selection {
     if {"" == $paid_amount} { set paid_amount 0}
     if {"" == $amount} { set amount 0}
 
+    if {$payment_amount eq ""} { set payment_currency ""}
     # ---- Deal with non-writable Invoices ----
 
     # Calculate the statu-select drop-down for this invoice
