@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-customer-portal" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+  <msg key="Notification_Subject_Notify_Customer_Quote_Created">Quote created</msg>
+  <msg key="Notification_Body_Notify_Customer_Quote_Created">A quote has been created for you. Please visit the customer portal.</msg>
+  <msg key="Notification_Subject_Notify_Project_Customer_Decision">Notice: Client accepted/rejected quote</msg>
+  <msg key="'Notification_Body_Notify_Project_Customer_Decision">There had been a client response on one the quotes created for a RFQ.</msg>
+</message_catalog>
