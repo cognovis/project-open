@@ -44,6 +44,11 @@ set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-translati
 
 set auto_assignment_component_p [parameter::get_from_package_key -package_key intranet-translation -parameter "EnableAutoAssignmentComponentP" -default 0]
 
+# Deal with the dates
+set trans_end_date ""
+set edit_end_date ""
+set proof_end_date ""
+set other_end_date ""
 
 if {"" == $return_url} { set return_url [im_url_with_query] }
 
