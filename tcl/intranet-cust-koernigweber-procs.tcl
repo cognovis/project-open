@@ -561,7 +561,8 @@ ad_proc -public im_koernigweber_next_project_nr {
     set sql "
                 select  project_nr as last_project_nr
                 from    im_projects
-                where   project_nr like '$company_code%' and 
+                where   
+			project_nr like '$company_code%' and 
 			company_id = :customer_id
 		order by project_nr ASC
 		limit 1
@@ -572,7 +573,7 @@ ad_proc -public im_koernigweber_next_project_nr {
     } else {
 	set last_project_nr_length [string length $last_project_nr]
 	set last_project_nr [string range $last_project_nr [expr $last_project_nr_length-4] $last_project_nr_length]
-	set last_project_nr [expr $last_project_nr + 1]
+	set last_project_nr [expr [forceInteger $last_project_nr] + 1]
     }
 
     # fill up with zeros 
@@ -1166,7 +1167,19 @@ ad_proc check_logging_project_status {
 		if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
 			return 0 
 		} else {
+		    if { ![info exists parent_project_id] || $parent_project_id == "" } {
+			return 1 
+		    } else {
 			return check_logging_project_status($parent_project_id)
+		    }
 		}
 	}
+}
+
+ad_proc forceInteger { x } {
+    set count [scan $x %d%s n rest]
+    if { $count <= 0 || ( $count == 2 && ![string is space $rest] ) } {
+        return -code error "not an integer: \"$x\""
+    }
+    return $n
 }
