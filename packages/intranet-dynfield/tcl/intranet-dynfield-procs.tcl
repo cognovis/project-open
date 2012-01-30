@@ -612,12 +612,14 @@ ad_proc -public im_dynfield::attribute_store {
 	    # Special treatment for certain types of widgets
 	    set widget_element [template::element::get_property $form_id $attribute_name widget]
 
+	    if {[info exists update_lines($table_name)]} {
+		set ulines $update_lines($table_name)
+            } else {
+                set ulines [list]
+            }
 	    switch $widget_element {
 		date {
-		    set ulines [list]
-		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
 		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_timestamp [set $attribute_name]]"
-		    set update_lines($table_name) $ulines
 		}
 		richtext {
 		    set $attribute_name [template::util::richtext::create [set $attribute_name] text/html]
