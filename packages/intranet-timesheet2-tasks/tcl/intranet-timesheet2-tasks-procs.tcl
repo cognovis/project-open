@@ -786,8 +786,8 @@ ad_proc -public im_timesheet_task_list_component {
     #
     set action_html "
 	<td align=left>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id task_status_id return_url]\"
-		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+           <a href=\"[export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_
+                >[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
 	</td>
 	<td align=right>
 		<select name=action>
@@ -795,10 +795,6 @@ ad_proc -public im_timesheet_task_list_component {
 		<option value=delete>[_ intranet-timesheet2-tasks.Delete]</option>
 		</select>
 		<input type=submit name=submit value='[_ intranet-timesheet2-tasks.Apply]'>
-		<br>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\"
-		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
-		
 	</td>
     "
     if {!$write} { set action_html "" }
