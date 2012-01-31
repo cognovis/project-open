@@ -239,6 +239,20 @@ if {$invoice_id} {
 	} err_msg
     }
 
+    if {$invoice_or_quote_p} {
+	if { 0 == $customer_id } {
+	    set company_id [db_string cost_type "select customer_id from im_costs where cost_id = :invoice_id" -default ""]    
+	} else {
+	    set company_id $customer_id
+	}
+	set ajax_company_widget "customer_id"
+	set custprov "customer"
+    } else {
+	set company_id $provider_id
+	set ajax_company_widget "provider_id"
+	set custprov "provider"
+    }
+    
 } else {
 
 # ---------------------------------------------------------------
