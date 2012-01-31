@@ -245,7 +245,7 @@ if {$subtypes ne ""} {
 } else {
     set type_select "
 	<input type=hidden name=cost_type_id value=$target_cost_type_id>
-	$cost_type
+	$target_cost_type
     "
 }
 
