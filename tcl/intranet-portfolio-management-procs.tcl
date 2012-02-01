@@ -251,6 +251,10 @@ ad_proc -public im_program_portfolio_list_component {
 	}
 	append row_html "</tr>\n"
 	append table_body_html $row_html
+
+	# Avoid error due to NULL values
+	if {"" == $cost_quotes_cache} { set cost_quotes_cache 0 }
+	if {"" == $project_budget} { set project_budget 0 }
 	
 	set quotes_total [expr $quotes_total + $cost_quotes_cache]
 	set budget_total [expr $budget_total + $project_budget]
