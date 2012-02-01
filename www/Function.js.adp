@@ -85,6 +85,12 @@ function Function_save(companyValues, contactValues, ticketValues, ticketRightVa
 		if (ticketRightValues) {
 			ticketRightValues.ticket_request = ticketRightValues.ticket_request.replace(/\r/g,"");
 			ticketRightValues.ticket_resolution = ticketRightValues.ticket_resolution.replace(/\r/g,"");	
+			if (Ext.isEmpty(ticketRightValues.ticket_closed_in_1st_contact_p)) {	
+				ticketRightValues.ticket_closed_in_1st_contact_p = 'f';
+			}
+			if (Ext.isEmpty(ticketRightValues.ticket_requires_addition_info_p)) {	
+				ticketRightValues.ticket_requires_addition_info_p = 'f';
+			}			
 			if (!Ext.isEmpty(ticketRightValues.combo_send_mail)) {				
 				ticketRightValues.ticket_send_mail_ids = ticketRightValues.combo_send_mail.join('_');
 			}

@@ -157,7 +157,7 @@ Ext.define('TicketBrowser.Ticket', {
 		extraParams: {
 			format:		'json',			// Tell the ]po[ REST to return JSON data.
 			deref_p:	'1',
-			columns: 	'ticket_id,project_name,project_nr,parent_id,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_escalation_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_pticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution,ticket_send_mail_ids'
+			columns: 	'ticket_id,project_name,project_nr,parent_id,company_id,creation_user,ticket_status_id,ticket_type_id,ticket_customer_contact_id,fs_folder_id,fs_folder_path,ticket_last_queue_id,ticket_queue_id,ticket_closed_in_1st_contact_p,ticket_creation_date,ticket_reaction_date,ticket_escalation_date,ticket_done_date,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_requires_addition_info_p,ticket_incoming_channel_id,ticket_outgoing_channel_id,ticket_area_id,ticket_program_id,ticket_file,ticket_request,ticket_resolution,ticket_send_mail_ids'
 		},
 		reader:	{
 			type:		'json',			// Tell the Proxy Reader to parse JSON
