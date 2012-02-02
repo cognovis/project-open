@@ -282,8 +282,8 @@ set hours_sql "
 			from	group_distinct_member_map
 			where	group_id = [im_employee_group_id]
 		)
-		and h.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-		and h.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+		and h.day >= :start_date::date
+		and h.day < :end_date::date
 		$hours_where
 	GROUP BY 
 		h.project_id, h.user_id
