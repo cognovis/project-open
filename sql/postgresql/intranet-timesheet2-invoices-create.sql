@@ -90,7 +90,7 @@ create table im_timesheet_invoices (
 				constraint im_timesheet_invoices_pk
 				primary key
 				constraint im_timesheet_invoices_fk
-				references im_invoices
+				references im_invoices,
 	-- Start and end date of invoicing period
 	invoice_period_start	timestamptz,
 	invoice_period_end	timestamptz
