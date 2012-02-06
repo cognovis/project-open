@@ -141,7 +141,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting-finance/finance-projects-documents" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-projects-documents-lup" {start_date end_date} ]
 set current_url [im_url_with_query]
 
 # ------------------------------------------------------------
@@ -247,21 +247,35 @@ set inner_sql "
 		o.creation_user
 	from
 		acs_objects o,
-		(select distinct
-			p.project_id as project_project_id,
-			c.*
-		 from
-			(select	project_id
-			 from	im_projects p
-			 where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.project_status_id not in ([im_project_status_deleted])
-			) p	 
-			LEFT OUTER JOIN acs_rels r 
-				ON (p.project_id = r.object_id_one)
-			LEFT OUTER JOIN im_costs c 
-				ON (c.cost_id = r.object_id_two OR c.project_id = p.project_id)
+		(
+
+			select distinct
+				p.project_id as project_project_id,
+				c.*
+			from	(select	project_id
+				from	im_projects p
+				where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+					and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
+					and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
+					and p.project_status_id not in ([im_project_status_deleted])
+				) p	 
+				LEFT OUTER JOIN acs_rels r ON (p.project_id = r.object_id_one)
+				LEFT OUTER JOIN im_costs c ON (c.cost_id = r.object_id_two)
+	
+			UNION
+	
+			select distinct
+				p.project_id as project_project_id,
+				c.*
+			from	(select	project_id
+				from	im_projects p
+				where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+					and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
+					and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
+					and p.project_status_id not in ([im_project_status_deleted])
+				) p
+				LEFT OUTER JOIN im_costs c ON (c.project_id = p.project_id)
+
 		) c
 	where
 		c.cost_id = o.object_id
@@ -425,13 +439,13 @@ for {set i 1} {$i <= $max_col} {incr i} {
 
 set project_footer [concat $project_footer [list \
 	"" \
-	"<nobr><i>\$invoice_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$delnote_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$quote_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$bill_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$po_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$expense_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$timesheet_subsubtotal \$default_currency</i></nobr>" \
+	"<nobr><i>\$invoice_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$delnote_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$quote_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$bill_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$po_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$expense_subsubtotal_rounded \$default_currency</i></nobr>" \
+	"<nobr><i>\$timesheet_subsubtotal_rounded \$default_currency</i></nobr>" \
 	"<nobr><i>\$po_per_quote_perc_subsubtotal</i></nobr>" \
 	"<nobr><i>\$gross_profit_subsubtotal</i></nobr>" \
 	"<nobr><i>\$wip_subsubtotal</i></nobr>" \
@@ -460,13 +474,13 @@ for {set i 1} {$i <= $max_col} {incr i} {
 
 set project_customer_footer [concat $project_customer_footer [list \
 	"" \
-	"<b>\$invoice_subtotal \$default_currency</b>" \
-	"<b>\$delnote_subtotal \$default_currency</b>" \
-	"<b>\$quote_subtotal \$default_currency</b>" \
-	"<b>\$bill_subtotal \$default_currency</b>" \
-	"<b>\$po_subtotal \$default_currency</b>" \
-	"<b>\$expense_subtotal \$default_currency</b>" \
-	"<b>\$timesheet_subtotal \$default_currency</b>" \
+	"<b>\$invoice_subtotal_rounded \$default_currency</b>" \
+	"<b>\$delnote_subtotal_rounded \$default_currency</b>" \
+	"<b>\$quote_subtotal_rounded \$default_currency</b>" \
+	"<b>\$bill_subtotal_rounded \$default_currency</b>" \
+	"<b>\$po_subtotal_rounded \$default_currency</b>" \
+	"<b>\$expense_subtotal_rounded \$default_currency</b>" \
+	"<b>\$timesheet_subtotal_rounded \$default_currency</b>" \
 	"<b>\$po_per_quote_perc_subtotal</b>" \
 	"<b>\$gross_profit_subtotal</b>" \
 	"<b>\$wip_subtotal</b>" \
@@ -508,13 +522,13 @@ for {set i 1} {$i <= $max_col} {incr i} { lappend footer0 "" }
 
 set footer0 [concat $footer0 {
 	"<br><b><i>Total:</i></b>" 
-	"<br><b><i>$invoice_total $default_currency</i></b>" 
-	"<br><b><i>$delnote_total $default_currency</i></b>" 
-	"<br><b><i>$quote_total $default_currency</i></b>" 
-	"<br><b><i>$bill_total $default_currency</i></b>" 
-	"<br><b><i>$po_total $default_currency</i></b>"
-	"<br><b><i>$expense_total $default_currency</i></b>"
-	"<br><b><i>$timesheet_total $default_currency</i></b>"
+	"<br><b><i>$invoice_total_rounded $default_currency</i></b>" 
+	"<br><b><i>$delnote_total_rounded $default_currency</i></b>" 
+	"<br><b><i>$quote_total_rounded $default_currency</i></b>" 
+	"<br><b><i>$bill_total_rounded $default_currency</i></b>" 
+	"<br><b><i>$po_total_rounded $default_currency</i></b>"
+	"<br><b><i>$expense_total_rounded $default_currency</i></b>"
+	"<br><b><i>$timesheet_total_rounded $default_currency</i></b>"
 	"<br><b><i>$po_per_quote_perc_total</i></b>"
 	"<br><b><i>$gross_profit_total</i></b>"
 	"<br><b><i>$wip_total</i></b>"
@@ -843,8 +857,8 @@ db_foreach sql $sql {
 	set po_per_quote_perc_subsubtotal [expr int(10000.0 * $po_subsubtotal / $quote_subsubtotal) / 100.0]
 	set po_per_quote_perc_subsubtotal "$po_per_quote_perc_subsubtotal %"
     }
-    set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal - $expense_subsubtotal]
-    set wip_subsubtotal [expr $timesheet_subsubtotal + $bill_subsubtotal + $expense_subsubtotal - $invoice_subsubtotal]
+    set gross_profit_subsubtotal [expr round(1000.0 * ($invoice_subsubtotal - $bill_subsubtotal - $expense_subsubtotal)) / 1000.0]
+    set wip_subsubtotal [expr round(1000.0 * ($timesheet_subsubtotal + $bill_subsubtotal + $expense_subsubtotal - $invoice_subsubtotal)) / 1000.0]
     
     
     # Calculated Variables for footer0
@@ -852,8 +866,8 @@ db_foreach sql $sql {
     if {[expr $quote_subtotal+0] != 0} {
 	set po_per_quote_perc_subtotal [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
     }
-    set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal - $expense_subtotal]
-    set wip_subtotal [expr $timesheet_subtotal + $bill_subtotal + $expense_subtotal - $invoice_subtotal]
+    set gross_profit_subtotal [expr round(1000.0 * ($invoice_subtotal - $bill_subtotal - $expense_subtotal)) / 1000.0]
+    set wip_subtotal [expr round(1000.0 * ($timesheet_subtotal + $bill_subtotal + $expense_subtotal - $invoice_subtotal)) / 1000.0]
     
     
     set last_value_list [im_report_render_header \
@@ -880,8 +894,8 @@ set po_per_quote_perc_total "undef"
 if {[expr $quote_total+0] != 0} {
     set po_per_quote_perc_total [expr int(10000.0 * $po_total / $quote_total) / 100.0]
 }
-set gross_profit_total [expr $invoice_total - $bill_total - $expense_total]
-set wip_total [expr $timesheet_total + $bill_total + $expense_total - $invoice_total]
+set gross_profit_total [expr round(1000.0 * ($invoice_total - $bill_total - $expense_total)) / 1000.0]
+set wip_total [expr round(1000.0 * ($timesheet_total + $bill_total + $expense_total - $invoice_total)) / 1000.0]
 
 
 

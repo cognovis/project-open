@@ -386,10 +386,10 @@ set project_footer [concat $project_footer [list \
 		"" \
 		"" \
 		"" \
-		"<i>\$invoice_subtotal \$default_currency</i>" \
-		"<i>\$quote_subtotal \$default_currency</i>" \
-		"<i>\$bill_subtotal \$default_currency</i>" \
-		"<i>\$po_subtotal \$default_currency</i>" \
+		"<i>\$invoice_subtotal_rounded \$default_currency</i>" \
+		"<i>\$quote_subtotal_rounded \$default_currency</i>" \
+		"<i>\$bill_subtotal_rounded \$default_currency</i>" \
+		"<i>\$po_subtotal_rounded \$default_currency</i>" \
 		\$po_per_quote_perc \
 ]]
 
@@ -462,10 +462,10 @@ for {set i 1} {$i <= $max_col} {incr i} { lappend footer0 "" }
 set footer0 [concat $footer0 {
 	"" 
 	"<br><b>Total:</b>" 
-	"<br><b>$invoice_total $default_currency</b>" 
-	"<br><b>$quote_total $default_currency</b>" 
-	"<br><b>$bill_total $default_currency</b>" 
-	"<br><b>$po_total $default_currency</b>"
+	"<br><b>$invoice_total_rounded $default_currency</b>" 
+	"<br><b>$quote_total_rounded $default_currency</b>" 
+	"<br><b>$bill_total_rounded $default_currency</b>" 
+	"<br><b>$po_total_rounded $default_currency</b>"
 	"<br><b>$po_per_quote_perc %</b>"
 }]
 
