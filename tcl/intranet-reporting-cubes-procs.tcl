@@ -1194,7 +1194,7 @@ ad_proc im_reporting_cubes_display {
     switch $output_format {
 	html { 
 	    return "
-		<table border=0 cellspacing=1 cellpadding=1>
+		<table border=1 cellspacing=1 cellpadding=1 bordercolor=white>
 		$header
 		$body
 		</table>
