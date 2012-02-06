@@ -1173,8 +1173,11 @@ ad_proc im_reporting_cubes_display {
 		html { set val "&nbsp;" }
 		csv  { set val "" }
 	    }
-	    if {[info exists hash($key)]} { set val $hash($key) }
-	    
+	    if {[info exists hash($key)]} { 
+		set val $hash($key) 
+		set val [expr round(1000.0 * $val) / 1000.0]
+	    }
+    
 	    switch $output_format {
 		html { append body "<td>$val</td>\n" }
 		csv  { append body "\"$val\";" }
