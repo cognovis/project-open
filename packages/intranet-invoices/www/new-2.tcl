@@ -361,6 +361,28 @@ foreach nr $item_list {
     ns_log Notice "item($nr, $name, $units, $uom_id, $project_id, $rate)"
     ns_log NOTICE "KHD: Now creating invoice item: item_name: $name, invoice_id: $invoice_id, project_id: $project_id, sort_order: $sort_order, item_uom_id: $uom_id"
 
+    # Enter the rate from the material if the rate is zero but the material is set
+    if {$rate eq 0} {
+	# try getting the default rate from the material
+	set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id and material_id = :material_id and task_type_id = :type_id" -default 0]
+	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id and material_id = :material_id" -default 0]
+	}
+	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id " -default 0]
+	}
+	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id and material_id = :material_id and task_type_id = :type_id" -default 0]
+	}
+	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id and material_id = :material_id" -default 0]
+	}
+	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id" -default 0]
+	}
+    }
+	
+
     # Insert only if it's not an empty line from the edit screen
     if {!("" == [string trim $name] && (0 == $units || "" == $units))} {
 	set item_id [db_nextval "im_invoice_items_seq"]
