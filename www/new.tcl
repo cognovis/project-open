@@ -37,8 +37,6 @@ if {![info exists report_id]} { set form_mode "edit" }
 # ---------------------------------------------------------------
 # Options
 
-set project_options [im_project_options]
-
 set report_type_options [db_list_of_lists report_type_options "
 	select	report_type, report_type_id
 	from	im_report_types
@@ -56,20 +54,6 @@ set parent_menu_options [db_list_of_lists parent_menu_options "
 		and (m.enabled_p is null OR m.enabled_p = 't')
 "]
 
-set ttt {
-UNION
-	select	m.name, m.menu_id
-	from	im_menus m
-	where	parent_menu_id in (
-			select	menu_id
-			from	im_menus 
-			where	parent_menu_id in (
-				select	menu_id
-				from	im_menus
-				where 	label = 'reporting'
-			)
-		)
-}
 
 
 # ---------------------------------------------------------------
