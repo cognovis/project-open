@@ -1,4 +1,4 @@
-<table valign="top" width="100%">
+<table valign="top" width="100%" cellpadding="20" border=1>
   <multiple name=task_info>
     <if @task_info.heading@ not nil>
       <tr>
