@@ -109,7 +109,6 @@ foreach form_var [ad_ns_set_keys $form_vars] {
 
 set report_sql_subst [lang::message::format $report_sql $substitution_list]
 
-#ad_return_complaint 1 "<pre>$report_sql_subst</pre>"
 
 # ---------------------------------------------------------------
 # Calculate the report
