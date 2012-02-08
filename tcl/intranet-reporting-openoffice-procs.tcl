@@ -290,7 +290,7 @@ ad_proc im_oo_page_type_static {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -307,7 +307,7 @@ ad_proc im_oo_page_type_static {
 	    eval [template::adp_compile -string $template_xml]
 	    set xml $__adp_output
 	} err_msg]} {
-	    ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+	    ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
 	    ad_script_abort
 	}
 	
@@ -373,7 +373,7 @@ ad_proc im_oo_page_type_list {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -383,7 +383,7 @@ ad_proc im_oo_page_type_list {
 	set list_sql $__adp_output
 	set list_sql [eval "set a \"$list_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -440,12 +440,12 @@ ad_proc im_oo_page_type_list {
 
 		    # Render the new page with the additional table rows as XML
 		    # and apply the OpenACS template engine in order to replace variables.
-		    set page_xml [$page_root asXML]
+		    set page_xml [$page_root asXML -indent none]
 		    if {[catch {
 			eval [template::adp_compile -string $page_xml]
 			set xml $__adp_output
 		    } err_msg]} {
-			ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
 			ad_script_abort
 		    }
 		    
@@ -535,7 +535,7 @@ ad_proc im_oo_page_type_list {
 		eval [template::adp_compile -string $content_row_xml]
 		set row_xml $__adp_output
 	    } err_msg]} {
-		ad_return_complaint 1 "<b>'$page_name': Error substituting row template variables</b>:
+		ad_return_complaint 1 "<b>List: '$page_name': Error substituting row template variables</b>:
 		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
 		ad_script_abort
 	    }
@@ -565,7 +565,7 @@ ad_proc im_oo_page_type_list {
             eval [template::adp_compile -string $page_xml]
             set xml $__adp_output
         } err_msg]} {
-            ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+            ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in last page</b>:<pre>$err_msg</pre>"
             ad_script_abort
         }
 
@@ -845,7 +845,7 @@ ad_proc im_oo_page_type_gantt {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -855,7 +855,7 @@ ad_proc im_oo_page_type_gantt {
 	set list_sql $__adp_output
 	set list_sql [eval "set a \"$list_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>'$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
 
@@ -897,7 +897,7 @@ ad_proc im_oo_page_type_gantt {
 			eval [template::adp_compile -string $page_xml]
 			set xml $__adp_output
 		    } err_msg]} {
-			ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
 			ad_script_abort
 		    }
 		    
@@ -1013,7 +1013,7 @@ ad_proc im_oo_page_type_gantt {
             eval [template::adp_compile -string $page_xml]
             set xml $__adp_output
         } err_msg]} {
-            ad_return_complaint 1 "<b>'$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+            ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
             ad_script_abort
         }
 
