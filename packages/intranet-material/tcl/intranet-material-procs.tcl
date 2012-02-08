@@ -112,6 +112,7 @@ ad_proc -private im_material_status_options { {-include_empty 1} } {
 	from	im_categories
 	where	category_type = 'Intranet Material Status'
 		and (enabled_p = 't' OR enabled_p is null)
+	order by category
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options

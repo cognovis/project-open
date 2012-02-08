@@ -629,6 +629,10 @@ ad_proc im_report_update_counters {
 	# so that the row expressions can access it
 	upvar $var $var
 	set $var $last_sum
+
+	# Store the rounded result
+	upvar "${var}_rounded" "${var}_rounded"
+	set "${var}_rounded" [expr round(100.0 * $last_sum) / 100.0]
     }
 }
 

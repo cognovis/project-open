@@ -37,20 +37,16 @@ if {![im_permission $user_id "view_projects_all"]} {
 }
 
 set sql "
-	select 
-		fi.file_path,
-		fi.file_name 
-	from 
-		im_inquiries_customer_portal cp, 
-		im_inquiries_files fi
-	 where 
-		cp.inquiry_id in (
-			select inquiry_id from im_inquiries_files where inquiry_files_id=:file_id
-		)
-" 
+        select
+                fi.file_path,
+                fi.file_name
+        from
+                im_inquiries_files fi
+         where
+                fi.inquiry_files_id=:file_id
+"
 
 db_1row get_file_info $sql
-
 
 # -------------------------------------------------------------------
 # Return file 

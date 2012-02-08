@@ -14,7 +14,10 @@
 	&nbsp;
 	<li><a href="/intranet-sysconfig/ldap/index">LDAP Configuration Wizard</a><br>
 	&nbsp;
-
+	<li><a href="/intranet-sysconfig/export-conf/index">Export Configuration</a><br>
+	&nbsp;
+	<li><a href="/intranet-sysconfig/import-conf/index">Import Configuration</a><br>
+	&nbsp;
     </ul>
 
     <h2>Other</h2>
