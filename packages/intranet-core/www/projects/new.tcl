@@ -325,12 +325,14 @@ if {[info exists project_id] } {
 template::element::create $form_id start \
     -datatype "date" widget "date" \
     -label "[_ intranet-core.Start_Date]" \
-    -format "DD Month YYYY"
+    -format "DD Month YYYY" \
+    -after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('start', 'y-m-d');" >}
 
 template::element::create $form_id end \
     -datatype "date" widget "date" \
     -label "[_ intranet-core.Delivery_Date]"\
-    -format "DD Month YYYY HH24:MI"
+    -format "DD Month YYYY HH24:MI" \
+    -after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('end', 'y-m-d');" >}
 
 set help_text "[im_gif help "Is the project going to be in time and budget (green), does it need attention (yellow) or is it doomed (red)?"]"
 template::element::create $form_id on_track_status_id \
@@ -681,13 +683,18 @@ if {[form is_submission $form_id]} {
 	incr n_error
 	template::element::set_error $form_id project_name "[_ intranet-core.lt_The_specified_name_pr]"
     }
+
+    # Make sure company_project_nr has a max length 50
+    if { [string length $company_project_nr] > 50} {
+        incr n_error
+        template::element::set_error $form_id company_project_nr "[_ intranet-core.Max50Chars]"
+    }
 		
     if {$n_error >0} {
 	return
     }
  
 }
-
 
 if {[form is_valid $form_id]} {
 
