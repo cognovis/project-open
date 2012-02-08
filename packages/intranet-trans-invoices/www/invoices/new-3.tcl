@@ -209,7 +209,7 @@ if {$view_order_by_clause != ""} {
                         set order_by_clause "p.project_id, task_name ASC, type_name, target_language"
     }
 } else {
-            set order_by_clause "p.project_id"
+            set order_by_clause "t.task_name"
 }
 
 
@@ -421,7 +421,7 @@ if {$aggregate_tasks_p} {
                         set order_by_clause "p.project_id, task_name ASC, type_name ASC, target_language ASC"
 	    }
 	} else {
-        	set order_by_clause "p.project_id"
+        	set order_by_clause "t.task_name"
 	}
 
 
