@@ -977,6 +977,10 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     db_foreach planned_hours_loop $planned_hours_sql {
 	
+	if {"" == $planned_units} { set planned_units 0 }
+	if {"" == $percent_completed} { set percent_completed 0 }
+
+
 	# Check the number of tasks this task is parent to  
 
 	if { "0" == $no_parents } {
