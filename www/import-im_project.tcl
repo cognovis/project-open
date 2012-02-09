@@ -321,10 +321,27 @@ foreach csv_line_fields $values_list_of_lists {
 	select	project_id
 	from	im_projects p
 	where	p.parent_id $parent_id_sql and
-		(	lower(trim(project_name)) = lower(trim(:project_name))
-		OR	lower(trim(project_nr)) = lower(trim(:project_nr))
-		)
+		lower(trim(project_nr)) = lower(trim(:project_nr))
     " -default ""]
+
+    set project_id2 [db_string project_id "
+	select	project_id
+	from	im_projects p
+	where	p.parent_id $parent_id_sql and
+		lower(trim(project_name)) = lower(trim(:project_name))
+    " -default ""]
+
+    if {"" != $project_id && "" != $project_id2} {
+	if {$ns_write_p} {
+	    ns_write "<li><font color=red>Error: We have found two different projects, one with
+	    'Project Nr'=$project_nr and a second one with 'Project Name'='$project_name'.<br>
+	    Please change one of the two projects to avoid this ambiguity.
+	    </font>\n"
+	}
+	continue
+    }
+    if {"" == $project_id} { set project_id $project_id2 }
+
 
     # Check for problems with project_path
     set project_path_exists_p [db_string project_path_existis_p "
