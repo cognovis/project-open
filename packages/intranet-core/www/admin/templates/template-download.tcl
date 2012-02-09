@@ -25,13 +25,12 @@ if {!$user_is_admin_p} {
 
 set path_to_file [parameter::get -package_id [db_string get_view_id "select package_id from apm_packages where package_key = 'intranet-invoices'" -default 0] -parameter "InvoiceTemplatePathUnix" -default ""]
 append path_to_file "/"  $template_name
-
-
+set mime_type [cr_filename_to_mime_type $template_name]
 
 if {[catch {
-    # set outputheaders [ns_conn outputheaders]
-    # ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${template_name}"
-    ns_returnfile 200 "application" $path_to_file
+    set outputheaders [ns_conn outputheaders]
+    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${template_name}"
+    ns_returnfile 200 $mime_type $path_to_file
 } err_msg]} {
     ad_return_complaint 1 "
        <b>Error receiving template, please ask your System Administrator check category 'Intranet Cost Template'</b>:<br>
