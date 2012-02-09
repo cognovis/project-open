@@ -21,6 +21,10 @@ set diagram_width 300
 set diagram_height 300
 set title "Milestones"
 
+set year 2000
+set month "01"
+set day "01"
+
 # project_id may be overwritten by SQLs below
 set org_project_id $project_id
 
@@ -134,6 +138,7 @@ if {0} {
 # for milestones that don't have audit values for
 # specific audit days.
 
+set data_list {}
 foreach audit_date $audit_dates {
 
     # Reformat date for javascript
