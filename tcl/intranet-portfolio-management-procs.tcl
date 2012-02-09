@@ -73,7 +73,11 @@ ad_proc -public im_program_portfolio_list_component {
     if {![im_category_is_a $program_type_id [im_project_type_program]]} { return "" }
 
     if {"" == $current_user_id || 0 == $current_user_id} { set current_user_id [ad_get_user_id] }
+    set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+
     set date_format "YYYY-MM-DD"
+
+    set return_url [im_url_with_query]
 
     if {"" == $order_by_clause} {
 	set order_by_clause  [parameter::get_from_package_key -package_key "intranet-portfolio-management" -parameter "ProgramPortfolioListSortClause" -default "project_nr DESC"]
@@ -212,9 +216,16 @@ ad_proc -public im_program_portfolio_list_component {
 
     set table_header_html "<tr>\n"
     foreach col $column_headers {
+
+	set admin_html ""
+	if {$admin_p} {
+	    set url [export_vars -base "/intranet/admin/views/new-column" {column_id return_url}]
+	    set admin_html "<a href='$url'>[im_gif wrench ""]</a>"
+	}
+
 	regsub -all " " $col "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
-	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+	append table_header_html "  <td class=rowtitle>$col_txt $admin_html</td>\n"
     }
     append table_header_html "</tr>\n"
 
@@ -227,13 +238,20 @@ ad_proc -public im_program_portfolio_list_component {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set ctr 0
+
+    # Total amounts of budget and quotes of the included projects
     set budget_total 0.0
     set quotes_total 0.0
+
+    # "Done" (total x percent_completed) amounts of budget and 
+    # quote of the included projects
     set budget_done 0.0
     set quotes_done 0.0
+
     set start_date_min "2099-12-31"
     set end_date_max "2000-01-01"
     db_foreach program_query $program_query {
+
 	set url [im_maybe_prepend_http $url]
 	if { [empty_string_p $url] } {
 	    set url_string "&nbsp;"
@@ -269,13 +287,20 @@ ad_proc -public im_program_portfolio_list_component {
     }
 
     # Update the program's %done and budget values
+    # Allow to use either quotes or budget for calculation
+    if {0.0 != $quotes_total} {
+	set completed [expr round(1000.0 * $quotes_done / $quotes_total) / 10.0]
+    } else {
+	set completed 0.0
+    }
+    # budget overrides quotes
     if {0.0 != $budget_total} {
 	set completed [expr round(1000.0 * $budget_done / $budget_total) / 10.0]
     } else {
 	set completed 0.0
     }
 
-    # Update the 
+    # Update the program with information from the included projects
     set update_html ""
     if {$program_percent_completed != $completed || $program_budget != $budget_total || $start_date_program != $start_date_min || $end_date_program != $end_date_max} {
 	db_dml update_program_advance "
