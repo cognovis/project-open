@@ -1,3 +1,4 @@
+<if "" ne @data_list@>
 <div id=@diagram_id@></div>
 <script type='text/javascript'>
 
@@ -7,9 +8,6 @@ Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.co
         fields: @fields_json;noquote@,
         data: @data_json;noquote@
     });
-
-
-
 
 Ext.onReady(function () {
     
@@ -51,7 +49,6 @@ Ext.onReady(function () {
 	}]
     }
 )});
-
-	    
 </script>
+</if>
 
