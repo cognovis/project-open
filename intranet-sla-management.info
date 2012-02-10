@@ -10,7 +10,7 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-sla-management</auto-mount>
 
-    <version name="4.0.1.0.0" url="http://www.project-open.org/download/apm/intranet-sla-management-4.0.1.0.0.apm">
+    <version name="4.0.3.0.0" url="http://www.project-open.org/download/apm/intranet-sla-management-4.0.3.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Service Level Agreements define parameters for service contracts between customers and service providers. This package allows defining SLA parameters using dynamic attributes.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
