@@ -6,7 +6,7 @@
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id $Id: apm-create.sql,v 1.3 2010/11/17 20:47:58 po34demo Exp $
+-- @cvs-id $Id$
 
 -----------------------------
 --     PACKAGE OBJECT	   --
@@ -1564,7 +1564,7 @@ begin
 
     select attr_value into value from apm_parameter_values v
     where v.package_id is null
-    and parameter_id = get_value__parameter_id;
+    and parameter_id = v_parameter_id;
 
     return value;
    
