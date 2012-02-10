@@ -1,8 +1,11 @@
 /**
- * $Id: editor_plugin_src.js,v 1.1 2010/10/20 01:36:29 po34demo Exp $
+ * editor_plugin_src.js
  *
- * @author Moxiecode
- * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
 (function() {

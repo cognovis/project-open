@@ -3,8 +3,8 @@
  * On the fly Thumbnail generation.
  * Creates thumbnails given by thumbs.php?img=/relative/path/to/image.jpg
  * relative to the base_dir given in config.inc.php
- * @author $Author: po34demo $
- * @version $Id: thumbs.php,v 1.2 2010/10/20 00:45:01 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 
@@ -23,6 +23,16 @@ $manager = new ImageManager($IMConfig);
 
 //get the image and the full path to the image
 $image = rawurldecode($_GET['img']);
+
+// If the image is a URL, see if there is an x-thumbnail x-thumb or x-tn param on it
+//  probably best to use x-tn to save space on the URL
+if(preg_match('/^[a-z]+:\/\/.*[?&]x-(thumbnail|thumb|tn)=([^&]+)/i', $image, $Matches))
+{
+  // In which case, we will use the thumbnail
+  header('location: ' . rawurldecode($Matches[2]));
+  exit;
+}
+
 $fullpath = Files::makeFile($manager->getImagesDir(),$image);
 
 //not a file, so exit

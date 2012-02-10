@@ -1,5 +1,5 @@
 ad_page_contract {
-  @cvs-id $Id: multirow.tcl,v 1.2 2010/10/19 20:13:13 po34demo Exp $
+  @cvs-id $Id$
   @datasource body multirow
   The sun and planets of our solar system
   @column name "Sun" or name of the planet.

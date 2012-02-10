@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
 
-# $Id: util-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:

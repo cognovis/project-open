@@ -1,5 +1,5 @@
 /**
- * $Id: editor_plugin_src.js,v 1.1 2010/10/20 01:38:43 po34demo Exp $
+ * $Id$
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2007, Moxiecode Systems AB, All rights reserved.

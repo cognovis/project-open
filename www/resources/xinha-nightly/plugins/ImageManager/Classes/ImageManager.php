@@ -1,8 +1,8 @@
 <?php
 /**
  * ImageManager, list images, directories, and thumbnails.
- * @author $Author: po34demo $
- * @version $Id: ImageManager.php,v 1.2 2010/10/20 01:04:30 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 
@@ -14,8 +14,8 @@ require_once('../ImageManager/Classes/Files.php');
 
 /**
  * ImageManager Class.
- * @author $Author: po34demo $
- * @version $Id: ImageManager.php,v 1.2 2010/10/20 01:04:30 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  */
 class ImageManager 
 {
@@ -313,7 +313,7 @@ class ImageManager
 		if($this->config['safe_mode'] == true
 			|| strlen(trim($this->config['thumbnail_dir'])) == 0)
 		{
-			Return Files::makeFile($this->getImagesURL(),$thumbnail);
+			Return Files::makeFile($this->getImagesURL(),rawurlencode($thumbnail));
 		}
 		else
 		{
@@ -324,7 +324,7 @@ class ImageManager
 
 				_ddt( __FILE__, __LINE__, "getThumbURL(): url_path is '$url_path'" );
 
-				Return Files::makeFile($url_path,$thumbnail);
+				Return Files::makeFile($url_path,rawurlencode($thumbnail));
 			}
 			else //should this ever happen?
 			{

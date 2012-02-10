@@ -31,7 +31,7 @@
 // |          Vincent Oostindie <vincent@sunlight.tmfweb.nl>              |
 // +----------------------------------------------------------------------+
 //
-// $Id: Transform.php,v 1.2 2010/10/20 01:04:32 po34demo Exp $
+// $Id$
 //
 // Image Transformation interface
 //

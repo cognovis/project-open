@@ -1,8 +1,8 @@
 <?php 
 /**
  * The PHP Image Editor user interface.
- * @author $Author: po34demo $
- * @version $Id: editor.php,v 1.2 2010/10/20 00:45:00 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 

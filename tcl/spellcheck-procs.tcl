@@ -3,7 +3,7 @@ ad_library {
 
     @author Ola Hansson (ola@polyxena.net)
     @creation-date 2003-09-21
-    @cvs-id $Id: spellcheck-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template {}

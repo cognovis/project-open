@@ -1,5 +1,5 @@
 /**
- * $Id: mclayer.js,v 1.1 2010/10/20 01:03:03 po34demo Exp $
+ * $Id$
  *
  * Moxiecode floating layer script.
  *

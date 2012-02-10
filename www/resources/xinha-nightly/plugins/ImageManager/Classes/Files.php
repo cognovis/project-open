@@ -1,8 +1,8 @@
 <?php
 /**
  * File Utilities.
- * @author $Author: po34demo $
- * @version $Id: Files.php,v 1.2 2010/10/20 01:04:28 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 
@@ -14,8 +14,8 @@ define('FILE_ERROR_DST_DIR_EXIST', 104);
 
 /**
  * File Utilities
- * @author $Author: po34demo $
- * @version $Id: Files.php,v 1.2 2010/10/20 01:04:28 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  * @subpackage files
  */

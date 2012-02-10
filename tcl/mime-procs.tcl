@@ -6,7 +6,7 @@ ad_library {
 
     @author Shan Shan Huang (shuang@arsdigita.com)
     @creation-date 12 January 2001
-    @cvs-id $Id: mime-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -public template::register_mime_type { mime_type file_extension header_preamble } {

@@ -1,5 +1,5 @@
 ad_page_contract {
-  $Id: state.tcl,v 1.2 2010/10/19 20:13:14 po34demo Exp $
+  $Id$
 } -query {
   state_abbrev
 } -properties {}

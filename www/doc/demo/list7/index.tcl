@@ -13,7 +13,7 @@ ad_page_contract {
 
   @author rhs@mit.edu
   @creation-date 2000-10-23
-  @cvs-id $Id: index.tcl,v 1.2 2010/10/20 00:13:30 po34demo Exp $
+  @cvs-id $Id$
 } -query {
   orderby:optional
   color_filter_value:optional

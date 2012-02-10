@@ -932,6 +932,7 @@ ad_proc -public template::multirow {
         } 
 
         # Construct list of (rownum,columns appended with a space)
+
         # Allow for -ascii, -dictionary, -integer, -real, -command <command>, -increasing, -decreasing, unique switches
 
         set sort_args {}
@@ -956,27 +957,26 @@ ad_proc -public template::multirow {
         }
 
         set sort_cols [lrange $args $i end]
+            
         set sort_list [list]
         
         for { set i 1 } { $i <= $rowcount } { incr i } {
             upvar $multirow_level_up $name:$i row
+
             # Make a copy of the row
             array set copy:$i [array get row]
+
             # Contruct the list
             set sortby {}
             foreach col $sort_cols {
-		if {[info exists row($col)]} {
-		    set r $row($col)
-		} else {
-		    set r 0
-		}
-
-                append sortby $r " "
+                append sortby $row($col) " "
             }
+            
             lappend sort_list [list $i $sortby]
         }
 
         set sort_list [eval lsort $sort_args -index 1 [list $sort_list]]
+
         
         # Now we have a list with two elms, (rownum, sort-by-value), sorted by sort-by-value
         # Rearrange multirow to match the sort order
@@ -985,10 +985,13 @@ ad_proc -public template::multirow {
         foreach elm $sort_list {
             incr i
             upvar $multirow_level_up $name:$i row
+
             # which rownum in the original list should fill this space in the sorted multirow?
             set org_rownum [lindex $elm 0]
+
             # Replace the row in the multirow with the row from the copy with the rownum according to the sort
             array set row [array get copy:$org_rownum]
+
             # Replace the 'rownum' column
             set row(rownum) $i
         }

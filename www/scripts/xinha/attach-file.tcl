@@ -5,7 +5,7 @@ ad_page_contract {
     @author Gustaf Neumann neumann@wu-wien.ac.at
     @author Dave Bauer (dave@solutiongrove.com)
     @creation-date 13.07.2004
-    @cvs-id $Id: attach-file.tcl,v 1.2 2010/10/20 00:27:39 po34demo Exp $
+    @cvs-id $Id$
 } {
     {parent_id:integer,optional}
     {package_id ""}

@@ -2,7 +2,7 @@ ad_page_contract {
   @author Guenter Ernst guenter.ernst@wu-wien.ac.at, 
   @author Gustaf Neumann neumann@wu-wien.ac.at
   @creation-date 13.07.2004
-  @cvs-id $Id: insert-ilink.tcl,v 1.2 2010/10/20 00:27:40 po34demo Exp $
+  @cvs-id $Id$
 } {
   {fs_package_id:integer,optional}
   {folder_id:integer,optional}

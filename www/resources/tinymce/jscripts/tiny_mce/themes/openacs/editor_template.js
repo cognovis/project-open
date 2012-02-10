@@ -1,5 +1,5 @@
 /**
- * $Id: editor_template.js,v 1.1 2010/10/20 01:47:15 po34demo Exp $
+ * $Id$
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.

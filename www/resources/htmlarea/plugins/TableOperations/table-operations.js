@@ -4,7 +4,7 @@
 // Copyright (c) dynarch.com 2003-2005
 // This copyright notice must stay intact for use.
 //
-// $Id: table-operations.js,v 1.2 2010/10/19 20:13:21 po34demo Exp $
+// $Id$
 
 // Object that will encapsulate all the table operations provided by
 // HTMLArea-3.0 (except "insert table" which is included in the main file)

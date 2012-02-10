@@ -6,8 +6,8 @@ header('Content-Type: text/javascript; charset=UTF-8');
  * resize.php?img=/relative/path/to/image.jpg&width=<pixels>&height=<pixels>[&to=/relative/path/to/newimage.jpg]
  * relative to the base_dir given in config.inc.php
  * This is pretty much just thumbs.php with some mods, I'm too lazy to do it properly
- * @author $Author: po34demo $
- * @version $Id: resizer.php,v 1.1 2010/10/20 00:44:53 po34demo Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 
@@ -22,6 +22,11 @@ function js_success($resultFile)    { echo '\'' . $resultFile . '\''; exit;   }
 if(!isset($_GET['img']) || !isset($_GET['width']) || !isset($_GET['height']))
 {
   js_fail('Missing parameter.');
+}
+
+if($IMConfig['resize_files'] == FALSE)
+{
+    js_success($_GET['img']);
 }
 
 $manager = new ExtendedFileManager($IMConfig);

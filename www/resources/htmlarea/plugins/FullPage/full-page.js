@@ -5,7 +5,7 @@
 // Distributed under the same terms as HTMLArea itself.
 // This notice MUST stay intact for use (see license.txt).
 //
-// $Id: full-page.js,v 1.2 2010/10/20 00:13:36 po34demo Exp $
+// $Id$
 
 function FullPage(editor) {
 	this.editor = editor;

@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-10-13
     @arch-tag: b5d458b6-bd22-4b87-8c4e-6a8c23fcca9e
-    @cvs-id $Id: date-procs.tcl,v 1.2 2010/10/20 00:13:20 po34demo Exp $
+    @cvs-id $Id$
 }
 
 
