@@ -17,7 +17,6 @@ ad_page_contract {
 }
 
 # We need to figure out a way to detect which contacts package a party_id belongs to
-set contacts_package_id [apm_package_id_from_key contacts]
 
 set page_title "[_ mail-tracking.One_message]"
 set context [list]
@@ -36,6 +35,7 @@ if {![exists_and_not_null cc]} {
 }
 
 if {[exists_and_not_null sender_id]} {
+    set contacts_package_id [contact::package_id -party_id $sender_id]
     if {$contacts_package_id} {
 	set sender "<a href=\"[contact::url -party_id $sender_id  -package_id $contacts_package_id]\">[party::name -party_id $sender_id]</a>"
     } else {

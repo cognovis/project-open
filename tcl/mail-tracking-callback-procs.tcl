@@ -12,7 +12,7 @@ ad_library {
 
 ad_proc -public -callback acs_mail_lite::complex_send -impl mail_tracking {
     {-package_id:required}
-    {-from_party_id:required 0}
+    {-from_party_id:required}
     {-from_addr ""}
     {-to_party_ids ""}
     {-cc_party_ids ""}
@@ -58,7 +58,7 @@ ad_proc -public -callback acs_mail_lite::complex_send -impl mail_tracking {
 
 ad_proc -public -callback acs_mail_lite::send -impl mail_tracking {
     {-package_id:required}
-    {-from_party_id:required 0}
+    {-from_party_id:required}
     {-to_party_id:required}
     {-body:required}
     {-message_id:required}

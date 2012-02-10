@@ -42,6 +42,7 @@ create table acs_mail_log (
 
 create index acs_mail_log_object_idx on acs_mail_log(object_id);
 create index acs_mail_log_sender_idx on acs_mail_log(sender_id);
+create index acs_mail_log_object_message_idx on acs_mail_log(object_id,message_id);
 
 create table acs_mail_log_recipient_map (
 	recipient_id		integer	constraint 
