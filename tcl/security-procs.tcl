@@ -83,7 +83,7 @@ ad_proc -private sec_handler {} {
     #ns_log notice "OACS cookies: $msg"
 
     if { [catch { 
-	set cookie_list [ad_get_signed_cookie_with_expr "ad_session_id"]
+	set cookie_list [ad_get_signed_cookie "ad_session_id"]
     } errmsg ] } {
 	# Cookie is invalid because either:
 	# -> it was never set
@@ -97,8 +97,21 @@ ad_proc -private sec_handler {} {
     } else {
 	# The session cookie already exists and is valid.
 	set cookie_data [split [lindex $cookie_list 0] {,}]
-	set session_expr [lindex $cookie_list 1]
-
+	set session_last_renew_time [lindex $cookie_data 3]
+    if {![string is integer -strict $session_last_renew_time]} {
+        # This only happens if the session cookie is old style
+        # previous to openacs 5.7 and does not have session review time
+        # embedded.
+        # Assume cookie expired and force login handler
+        set session_last_renew_time 0
+    }
+    
+    set session_expr [expr {$session_last_renew_time + [sec_session_timeout]}]
+    
+    if {$session_expr < [ns_time]} {
+        sec_login_handler
+    }
+               
 	set session_id [lindex $cookie_data 0]
 	set untrusted_user_id [lindex $cookie_data 1]
 	set login_level [lindex $cookie_data 2]
@@ -162,6 +175,28 @@ ad_proc -private sec_handler {} {
     }
 }
 
+ad_proc -private sec_login_read_cookie {} {
+
+    Fetches values either from ad_user_login_secure or ad_user_login,
+    depending whether we are in a secured connection or not.
+    
+    @author Victor Guerra 
+
+    @return List of values read from cookie ad_user_login_secure or ad_user_login
+} {
+    # If over HTTPS, we look for a secure cookie, otherwise we look for the normal one
+    set login_list [list]
+    if { [security::secure_conn_p] } {
+	catch {
+	    set login_list [split [ad_get_signed_cookie "ad_user_login_secure"] ","]
+	}
+    } 
+    if { $login_list eq "" } {
+	set login_list [split [ad_get_signed_cookie "ad_user_login"] ","]
+    }
+    return $login_list
+}
+
 ad_proc -private sec_login_handler {} {
 
     Reads the login cookie, setting fields in ad_conn accordingly.
@@ -176,16 +211,7 @@ ad_proc -private sec_login_handler {} {
     
     # check for permanent login cookie
     catch {
-        # If over HTTPS, we look for a secure cookie, otherwise we look for the normal one
-        set login_list [list]
-        if { [security::secure_conn_p] } {
-            catch {
-                set login_list [split [ad_get_signed_cookie "ad_user_login_secure"] ","]
-            }
-        } 
-        if { $login_list eq "" } {
-            set login_list [split [ad_get_signed_cookie "ad_user_login"] ","]
-        }
+	set login_list [sec_login_read_cookie]
         
         set untrusted_user_id [lindex $login_list 0]
         set login_expr [lindex $login_list 1]
@@ -252,7 +278,7 @@ ad_proc -public ad_user_login {
             -secure t \
 	    -domain $domain \
             ad_user_login_secure \
-            "$user_id,[ns_time],[sec_get_user_auth_token $user_id],[ns_time]"
+            "$user_id,[ns_time],[sec_get_user_auth_token $user_id],[ns_time],$forever_p"
 
         # We're secure
         set auth_level "secure"
@@ -268,7 +294,7 @@ ad_proc -public ad_user_login {
 	-domain $domain \
         -secure f \
         ad_user_login \
-        "$user_id,[ns_time],[sec_get_user_auth_token $user_id]"
+        "$user_id,[ns_time],[sec_get_user_auth_token $user_id],$forever_p"
 
     # deal with the current session
     sec_setup_session $user_id $auth_level $account_status
@@ -479,8 +505,19 @@ ad_proc -private sec_generate_session_id_cookie {} {
 
     set domain [parameter::get -parameter CookieDomain -package_id [ad_acs_kernel_id]]
 
-    ad_set_signed_cookie -discard t -replace t -max_age [sec_session_timeout] -domain $domain \
-	    "ad_session_id" "$session_id,$user_id,$login_level"
+    # we fetch the last value element of ad_user_login cookie (or ad_user_login_secure) that indicates
+    # if user wanted to be remembered when loggin in
+    set discard t
+    set max_age [sec_session_timeout]
+    catch { 
+	    set login_list [sec_login_read_cookie]
+      	if {[lindex $login_list end] == 1} {
+	        set discard f
+            set max_age inf
+	    }
+    }
+    ad_set_signed_cookie -discard $discard -replace t -max_age $max_age -domain $domain \
+	    "ad_session_id" "$session_id,$user_id,$login_level,[ns_time]"
 }
 
 ad_proc -private sec_generate_secure_token_cookie { } { 
@@ -1166,10 +1203,7 @@ ad_proc -private populate_secret_tokens_db {} {
     while { $counter < $num_tokens } {
 	set random_token [sec_random_token]
 
-	db_dml insert_random_token {
-	    insert /*+ APPEND */ into secret_tokens(token_id, token, timestamp)
-	    values(sec_security_token_id_seq.nextval, :random_token, sysdate)
-	}
+	db_dml insert_random_token {}
 	incr counter
     }
 
