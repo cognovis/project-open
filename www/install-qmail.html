@@ -1,24 +1,24 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 'http://www.w3.org/TR/html4/loose.dtd"'>
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Install qmail (OPTIONAL)</title><link rel="stylesheet" href="openacs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.60.1"><link rel="home" href="index.html" title="OpenACS Core Documentation"><link rel="up" href="install-more-software.html" title="Appendix B. Install additional supporting software"><link rel="previous" href="install-daemontools.html" title="Install Daemontools (OPTIONAL)"><link rel="next" href="analog-install.html" title="Install Analog web file analyzer"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><a href="http://openacs.org"><img src="/doc/images/alex.jpg" style="border:0" alt="Alex logo"></a><table width="100%" summary="Navigation header" border="0"><tr><td width="20%" align="left"><a accesskey="p" href="install-daemontools.html">Prev</a> </td><th width="60%" align="center">Appendix B. Install additional supporting software</th><td width="20%" align="right"> <a accesskey="n" href="analog-install.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="install-qmail"></a>Install qmail (OPTIONAL)</h2></div></div><div></div></div><p>Qmail is a Mail Transfer Agent.  It handles incoming and
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 'http://www.w3.org/TR/html4/loose.dtd"'>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Install qmail (OPTIONAL)</title><link rel="stylesheet" type="text/css" href="openacs.css"><meta name="generator" content="DocBook XSL Stylesheets V1.76.0"><link rel="home" href="index.html" title="OpenACS Core Documentation"><link rel="up" href="install-more-software.html" title="Appendix B. Install additional supporting software"><link rel="previous" href="install-daemontools.html" title="Install Daemontools (OPTIONAL)"><link rel="next" href="analog-install.html" title="Install Analog web file analyzer"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><a href="http://openacs.org"><img src="/doc/images/alex.jpg" style="border:0" alt="Alex logo"></a><table width="100%" summary="Navigation header" border="0"><tr><td width="20%" align="left"><a accesskey="p" href="install-daemontools.html">Prev</a> </td><th width="60%" align="center">Appendix B. Install additional supporting software</th><td width="20%" align="right"> <a accesskey="n" href="analog-install.html">Next</a></td></tr></table><hr></div><div class="sect1" title="Install qmail (OPTIONAL)"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="install-qmail"></a>Install qmail (OPTIONAL)</h2></div></div></div><p>Qmail is a Mail Transfer Agent.  It handles incoming and
       outgoing mail.  Install qmail if you want your OpenACS server to
       send and receive mail, and you don't want to use an alternate
       MTA.</p><p>Red Hat 9: all djb tools (qmail, daemontools, ucspi) will
-      fail to compile in Red Hat 9 because of changes to glibc (<a href="http://moni.csi.hu/pub/glibc-2.3.1/" target="_top">patches</a>)</p><div class="orderedlist"><ol type="1"><li><p><b>Install ucspi. </b>This program handles incoming tcp connections.
-            <a href="individual-programs.html#ucspi-download">Download ucspi</a> and install it.</p><pre class="screen">[root root]# <b class="userinput"><tt>cd /usr/local/src</tt></b>
-[root src]# <b class="userinput"><tt>wget http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz</tt></b>
-[root src]# <b class="userinput"><tt>tar xzf ucspi-tcp-0.88.tar.gz</tt></b>
+      fail to compile in Red Hat 9 because of changes to glibc (<a class="ulink" href="http://moni.csi.hu/pub/glibc-2.3.1/" target="_top">patches</a>)</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p title="Install ucspi"><b>Install ucspi. </b>This program handles incoming tcp connections.
+            <a class="link" href="individual-programs.html#ucspi-download" title="ucspi-tcp 0.88, OPTIONAL">Download ucspi</a> and install it.</p><pre class="screen">[root root]# <strong class="userinput"><code>cd /usr/local/src</code></strong>
+[root src]# <strong class="userinput"><code>wget http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz</code></strong>
+[root src]# <strong class="userinput"><code>tar xzf ucspi-tcp-0.88.tar.gz</code></strong>
 <span class="action"><span class="action">cd /usr/local/src 
 wget http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz
 tar xzf ucspi-tcp-0.88.tar.gz </span></span></pre><p>Red Hat 9 only</p><pre class="screen"><span class="action"><span class="action">wget http://moni.csi.hu/pub/glibc-2.3.1/ucspi-tcp-0.88.errno.patch
 cd ucspi-tcp-0.88
 patch -p1 &lt;../ucspi-tcp-0.88.errno.patch
-cd ..</span></span></pre><p>All platforms continue:</p><pre class="screen">[root src]# <b class="userinput"><tt>cd ucspi-tcp-0.88</tt></b>
-[root ucspi-tcp-0.88]#<b class="userinput"><tt> make</tt></b>
+cd ..</span></span></pre><p>All platforms continue:</p><pre class="screen">[root src]# <strong class="userinput"><code>cd ucspi-tcp-0.88</code></strong>
+[root ucspi-tcp-0.88]#<strong class="userinput"><code> make</code></strong>
 ( cat warn-auto.sh; \
-echo 'main=&quot;$1&quot;; shift'; \<span class="emphasis"><em>(many lines omitted)</em></span>
+echo 'main="$1"; shift'; \<span class="emphasis"><em>(many lines omitted)</em></span>
 ./compile instcheck.c
 ./load instcheck hier.o auto_home.o unix.a byte.a
-[root ucspi-tcp-0.88]# <b class="userinput"><tt>make setup check</tt></b>
+[root ucspi-tcp-0.88]# <strong class="userinput"><code>make setup check</code></strong>
 ./install
 ./instcheck
 [root ucspi-tcp-0.88]#
@@ -59,18 +59,18 @@ Length: 242,310 [application/x-gunzip]
 
 15:04:21 (24.04 KB/s) - `netqmail-1.04.tar.gz' saved [242310/242310]
 
-[root src]# <b class="userinput"><tt>mkdir /var/qmail</tt></b>
-[root src]#<b class="userinput"><tt> groupadd nofiles</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g nofiles -d /var/qmail/alias alias</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g nofiles -d /var/qmail qmaild</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g nofiles -d /var/qmail qmaill</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g nofiles -d /var/qmail qmailp</tt></b>
-[root src]# <b class="userinput"><tt>groupadd qmail</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g qmail -d /var/qmail qmailq</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g qmail -d /var/qmail qmailr</tt></b>
-[root src]# <b class="userinput"><tt>useradd -g qmail -d /var/qmail qmails</tt></b>
-[root src]# <b class="userinput"><tt>cd netqmail-1.04</tt></b>
-[root netqmail-1.04]# <b class="userinput"><tt>./collate.sh</tt></b>
+[root src]# <strong class="userinput"><code>mkdir /var/qmail</code></strong>
+[root src]#<strong class="userinput"><code> groupadd nofiles</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g nofiles -d /var/qmail/alias alias</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g nofiles -d /var/qmail qmaild</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g nofiles -d /var/qmail qmaill</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g nofiles -d /var/qmail qmailp</code></strong>
+[root src]# <strong class="userinput"><code>groupadd qmail</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g qmail -d /var/qmail qmailq</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g qmail -d /var/qmail qmailr</code></strong>
+[root src]# <strong class="userinput"><code>useradd -g qmail -d /var/qmail qmails</code></strong>
+[root src]# <strong class="userinput"><code>cd netqmail-1.04</code></strong>
+[root netqmail-1.04]# <strong class="userinput"><code>./collate.sh</code></strong>
 
 You should see 7 lines of text below.  If you see anything
 else, then something might be wrong.
@@ -81,8 +81,8 @@ else, then something might be wrong.
 [5] Renaming qmail-1.03 to netqmail-1.04...
 [6] Continue installing qmail using the instructions found at:
 [7] http://www.lifewithqmail.org/lwq.html#installation
-[root netqmail-1.04]# <b class="userinput"><tt>cd netqmail-1.04</tt></b>
-[root netqmail-1.04]# <b class="userinput"><tt>make setup check</tt></b>
+[root netqmail-1.04]# <strong class="userinput"><code>cd netqmail-1.04</code></strong>
+[root netqmail-1.04]# <strong class="userinput"><code>make setup check</code></strong>
 ( cat warn-auto.sh; \
 echo CC=\'`head -1 conf-cc`\'; \<span class="emphasis"><em>(many lines omitted)</em></span>
 ./install

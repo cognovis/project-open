@@ -1,5 +1,5 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 'http://www.w3.org/TR/html4/loose.dtd"'>
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Appendix A. Install Red Hat 8/9</title><link rel="stylesheet" href="openacs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.60.1"><link rel="home" href="index.html" title="OpenACS Core Documentation"><link rel="up" href="acs-admin.html" title="Part II. Administrator's Guide"><link rel="previous" href="backups-with-cvs.html" title="Using CVS for backup-recovery"><link rel="next" href="install-more-software.html" title="Appendix B. Install additional supporting software"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><a href="http://openacs.org"><img src="/doc/images/alex.jpg" style="border:0" alt="Alex logo"></a><table width="100%" summary="Navigation header" border="0"><tr><td width="20%" align="left"><a accesskey="p" href="backups-with-cvs.html">Prev</a> </td><th width="60%" align="center">Part II. Administrator's Guide</th><td width="20%" align="right"> <a accesskey="n" href="install-more-software.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="install-redhat"></a>Appendix A. Install Red Hat 8/9</h2></div></div><div></div></div><div class="authorblurb"><p>by <a href="mailto:joel@aufrecht.org" target="_top">Joel Aufrecht</a></p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 'http://www.w3.org/TR/html4/loose.dtd"'>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Appendix A. Install Red Hat 8/9</title><link rel="stylesheet" type="text/css" href="openacs.css"><meta name="generator" content="DocBook XSL Stylesheets V1.76.0"><link rel="home" href="index.html" title="OpenACS Core Documentation"><link rel="up" href="acs-admin.html" title="Part II. Administrator's Guide"><link rel="previous" href="backups-with-cvs.html" title="Using CVS for backup-recovery"><link rel="next" href="credits.html" title="Appendix B. Credits"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><a href="http://openacs.org"><img src="/doc/images/alex.jpg" style="border:0" alt="Alex logo"></a><table width="100%" summary="Navigation header" border="0"><tr><td width="20%" align="left"><a accesskey="p" href="backups-with-cvs.html">Prev</a> </td><th width="60%" align="center">Part II. Administrator's Guide</th><td width="20%" align="right"> <a accesskey="n" href="credits.html">Next</a></td></tr></table><hr></div><div class="appendix" title="Appendix A. Install Red Hat 8/9"><div class="titlepage"><div><div><h2 class="title"><a name="install-redhat"></a>Appendix A. Install Red Hat 8/9</h2></div></div></div><div class="authorblurb"><p>by <a class="ulink" href="mailto:joel@aufrecht.org" target="_top">Joel Aufrecht</a></p>
           OpenACS docs are written by the named authors, and may be edited
           by OpenACS documentation staff.
         </div><p>This section takes a blank PC and sets up some supporting
@@ -149,34 +149,34 @@ Password:
          (The reason for this discrepencies is that, while daemontools
          is better, it's a pain in the ass to deal with and nobody's
          had any trouble leaving PostgreSQL the way it is.)
-       </p><pre class="screen">[root root]# <b class="userinput"><tt>service pcmcia stop</tt></b>
-[root root]# <b class="userinput"><tt>service netfs stop</tt></b>
-[root root]# <b class="userinput"><tt>chkconfig --del pcmcia</tt></b>
-[root root]# <b class="userinput"><tt>chkconfig --del netfs</tt></b>
+       </p><pre class="screen">[root root]# <strong class="userinput"><code>service pcmcia stop</code></strong>
+[root root]# <strong class="userinput"><code>service netfs stop</code></strong>
+[root root]# <strong class="userinput"><code>chkconfig --del pcmcia</code></strong>
+[root root]# <strong class="userinput"><code>chkconfig --del netfs</code></strong>
 [root root]#
 <span class="action"><span class="action">service pcmcia stop
 service netfs stop
 chkconfig --del pcmcia
 chkconfig --del netfs</span></span></pre><p>If you installed PostgreSQL, do also
-<tt class="computeroutput">service postgresql start</tt> and <tt class="computeroutput">chkconfig --add postgresql</tt>.</p></li><li><p>Plug in the network cable.</p></li><li><p>Verify that you have connectivity by going to another
+<code class="computeroutput">service postgresql start</code> and <code class="computeroutput">chkconfig --add postgresql</code>.</p></li><li class="listitem"><p>Plug in the network cable.</p></li><li class="listitem"><p>Verify that you have connectivity by going to another
           computer and ssh'ing to
           <span class="replaceable"><span class="replaceable">yourserver</span></span>, logging in as
-          remadmin, and promoting yourself to root:</p><pre class="screen">[joeuser@someotherserver]$ <b class="userinput"><tt> ssh <span class="replaceable"><span class="replaceable">remadmin@yourserver.test</span></span></tt></b>
+          remadmin, and promoting yourself to root:</p><pre class="screen">[joeuser@someotherserver]$ <strong class="userinput"><code> ssh <span class="replaceable"><span class="replaceable">remadmin@yourserver.test</span></span></code></strong>
 The authenticity of host 'yourserver.test (1.2.3.4)' can't be established.
 DSA key fingerprint is 10:b9:b6:10:79:46:14:c8:2d:65:ae:c1:61:4b:a5:a5.
-Are you sure you want to continue connecting (yes/no)? <b class="userinput"><tt>yes</tt></b>
+Are you sure you want to continue connecting (yes/no)? <strong class="userinput"><code>yes</code></strong>
 Warning: Permanently added 'yourserver.test (1.2.3.4)' (DSA) to the list of known hosts.
 Password:
 Last login: Mon Mar  3 21:15:27 2003 from host-12-01.dsl-sea.seanet.com
-[remadmin remadmin]$ <b class="userinput"><tt>su -</tt></b>
+[remadmin remadmin]$ <strong class="userinput"><code>su -</code></strong>
 Password: 
-[root root]#</pre></li><li><p>If you didn't burn a CD of patches and use it, can still
+[root root]#</pre></li><li class="listitem"><p>If you didn't burn a CD of patches and use it, can still
           download and install the necessary patches.  Here's how to
           do it for the kernel; you should also check for other
           critical packages.</p><p>Upgrade the kernel to fix a security hole.  The default
           Red Hat 8.0 system kernel (2.4.18-14, which you can check
-          with <b class="userinput"><tt>uname -a</tt></b>) has several <a href="https://rhn.redhat.com/errata/RHSA-2003-098.html" target="_top">security problems</a>.  Download the new kernel, install it, and reboot.</p><pre class="screen">[root root]# <b class="userinput"><tt>cd /var/tmp</tt></b>
-[root tmp]# <b class="userinput"><tt>wget http://updates.redhat.com/7.1/en/os/i686/kernel-2.4.18-27.7.x.i686.rpm</tt></b>
+          with <strong class="userinput"><code>uname -a</code></strong>) has several <a class="ulink" href="https://rhn.redhat.com/errata/RHSA-2003-098.html" target="_top">security problems</a>.  Download the new kernel, install it, and reboot.</p><pre class="screen">[root root]# <strong class="userinput"><code>cd /var/tmp</code></strong>
+[root tmp]# <strong class="userinput"><code>wget http://updates.redhat.com/7.1/en/os/i686/kernel-2.4.18-27.7.x.i686.rpm</code></strong>
 --20:39:00--  http://updates.redhat.com/7.1/en/os/i686/kernel-2.4.18-27.7.x.i686.rpm
            =&gt; `kernel-2.4.18-27.7.x.i686.rpm'
 Resolving updates.redhat.com... done.
@@ -188,11 +188,11 @@ Length: 12,736,430 [application/x-rpm]
 
 20:41:39 (78.38 KB/s) - `kernel-2.4.18-27.7.x.i686.rpm' saved [12736430/12736430]
 
-root@yourserver tmp]# <b class="userinput"><tt>rpm -Uvh kernel-2.4.18-27.7.x.i686.rpm</tt></b>
+root@yourserver tmp]# <strong class="userinput"><code>rpm -Uvh kernel-2.4.18-27.7.x.i686.rpm</code></strong>
 warning: kernel-2.4.18-27.7.x.i686.rpm: V3 DSA signature: NOKEY, key ID db42a60e
 Preparing...                ########################################### [100%]
    1:kernel                 ########################################### [100%]
-[root tmp]# <b class="userinput"><tt>reboot</tt></b>
+[root tmp]# <strong class="userinput"><code>reboot</code></strong>
 
 Broadcast message from root (pts/0) (Sat May  3 20:46:39 2003):
 
@@ -201,4 +201,4 @@ The system is going down for reboot NOW!
 <span class="action"><span class="action">cd /var/tmp
 wget http://updates.redhat.com/7.1/en/os/i686/kernel-2.4.18-27.7.x.i686.rpm
 rpm -Uvh kernel-2.4.18-27.7.x.i686.rpm
-reboot</span></span></pre></li></ol></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="backups-with-cvs.html">Prev</a> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right"> <a accesskey="n" href="install-more-software.html">Next</a></td></tr><tr><td width="40%" align="left">Using CVS for backup-recovery </td><td width="20%" align="center"><a accesskey="u" href="acs-admin.html">Up</a></td><td width="40%" align="right"> Appendix B. Install additional supporting software</td></tr></table><hr><address><a href="mailto:docs@openacs.org">docs@openacs.org</a></address></div><a name="comments"></a><center><a href="http://openacs.org/doc/current/install-redhat.html#comments">View comments on this page at openacs.org</a></center></body></html>
+reboot</span></span></pre></li></ol></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="backups-with-cvs.html">Prev</a> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right"> <a accesskey="n" href="credits.html">Next</a></td></tr><tr><td width="40%" align="left">Using CVS for backup-recovery </td><td width="20%" align="center"><a accesskey="u" href="acs-admin.html">Up</a></td><td width="40%" align="right"> Appendix B. Credits</td></tr></table><hr><address><a href="mailto:docs@openacs.org">docs@openacs.org</a></address></div><a name="comments"></a><center><a href="http://openacs.org/doc/current/install-redhat.html#comments">View comments on this page at openacs.org</a></center></body></html>
