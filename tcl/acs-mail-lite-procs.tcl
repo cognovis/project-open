@@ -407,7 +407,7 @@ namespace eval acs_mail_lite {
         set message_date [acs_mail_lite::utils::build_date]
 
         # Build the message body
-        set tokens [acs_mail_lite::utils::build_body -mime_type $mime_type $body]
+        set tokens [acs_mail_lite::utils::build_body -mime_type $mime_type -- $body]
 
         # Add attachments if any
         if {[exists_and_not_null file_ids]} {
@@ -441,8 +441,8 @@ namespace eval acs_mail_lite {
 
         # Set the subject
         if { $subject ne "" } {
-            set subject [acs_mail_lite::utils::build_subject $subject]
-            mime::setheader $tokens Subject $subject
+            set encoded_subject [acs_mail_lite::utils::build_subject $subject]
+            mime::setheader $tokens Subject $encoded_subject
         }
 
         # Add extra headers
