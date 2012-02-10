@@ -1244,13 +1244,20 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		# Check if there is a super-project and continue there.
 		# Otherwise allow for one iteration with an empty $pid
 		# to deal with the user's level
+
 		if {"" == $pid} { 
 		    set continue 0 
 		} else {
 		    if { [info exists parent_hash($pid)] } {
 			set pid $parent_hash($pid)
 		    } else {
-			ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+			set err_mess "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>.
+			        <br />Possible causes include: 
+			        <ul>
+				<li>Start/end date of subordinate task or project does not ly within the period that is defined by start and end date of the superior project or task </li>
+				</ul>
+			"
+			ad_return_complaint 1 $err_mess
 		    }
 		}
 	    }
