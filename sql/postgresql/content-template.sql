@@ -53,7 +53,7 @@ declare
 begin
 
   if new__parent_id is null then
-    v_parent_id := content_template_globals.c_root_folder_id;
+    select c_root_folder_id into v_parent_id from content_template_globals;
   else
     v_parent_id := new__parent_id;
   end if;
@@ -133,7 +133,7 @@ declare
 begin
 
   if new__parent_id is null then
-    v_parent_id := content_template_globals.c_root_folder_id;
+    select c_root_folder_id into v_parent_id from content_template_globals;
   else
     v_parent_id := new__parent_id;
   end if;
