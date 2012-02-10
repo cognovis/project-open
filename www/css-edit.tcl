@@ -17,6 +17,7 @@ ad_page_contract {
 } -errors {
 }
 
+ds_require_permission [ad_conn package_id] "admin"
 
 if {[file exists $file_location] && [file extension $file_location] eq ".css"} {
 
@@ -32,11 +33,7 @@ if {[file exists $file_location] && [file extension $file_location] eq ".css"} {
 
 	set package_id [ad_conn package_id]
 	set css_path "<a href='$css_location'>$css_location</a>"
-        if {$revision_id eq ""} {
-            set fp [open "$file_location" "r"]
-        } else {
-            set fp [open [content::revision::get_cr_file_path -revision_id $revision_id] "r"]
-        }
+	set fp [open "$file_location" "r"]
 	set css_content ""
 	while { [gets $fp line] >= 0 } {
 	    append css_content "$line \n"
@@ -49,26 +46,25 @@ if {[file exists $file_location] && [file extension $file_location] eq ".css"} {
 	    append revision_html "<ol>"
 	    db_foreach revision {select revision_id, publish_date, description from cr_revisions where item_id = :item_id order by publish_date desc} {
 		if { [content::revision::is_live -revision_id $revision_id] eq "t" } {
-		    set make_live "<b>that's live!</b>"
+		    set make_live "<strong>that's live!</strong>"
 		} else {
 		    set return_url_2 [ad_return_url]
 		    set make_live "<a href=\"[export_vars -base "css-make-live" -url {revision_id return_url_2 file_location}]\">make live!</a>"
 		}
 		set return_url ""
-                set revision_url [export_vars -base "css-edit" {revision_id file_location css_location}]
-                append revision_html "<li><a href='$revision_url'>$publish_date</a> \[$make_live\]: [string range $description 0 50]</li>"
+		append revision_html "<li><a href='/o/$revision_id'>$publish_date</a> \[$make_live\]: [string range $description 0 50]</li>"
 	    }
 	    append revision_html "</ol>"
 	    file stat $file_location file_stat_arr
 	    # mcordova: ugly things until I figure out how to do that in a
 	    # better way...
 	    set item_id [content::item::get_id_by_name -name $file_location -parent_id $package_id]
+	    ns_log Notice " * * * the file $file_location (cr_item_id: $item_id) has that modif time: \[$file_stat_arr(mtime)\]"
 	    #todo compare file mtime with live revision time
 	    ## if they are not the same date, show user a warning
 	    # recommening to make a new revision...
 	} else {
 	    append revision_html "<em>no revisions yet</em>"
-	 
 	}
     } -on_submit {
 
@@ -80,12 +76,10 @@ if {[file exists $file_location] && [file extension $file_location] eq ".css"} {
 
 	    # Get the old version to initialize the item with
 	    set fp [open "$file_location" "r"]
-	    set old_css_content ""
-	    while { [gets $fp line] >= 0 } {
-		append old_css_content "$line \n"
-	    }
+            set old_css_content [read $fp]
 	    close $fp
-            set item_id [content::item::new -name $file_location -parent_id $package_id -title "$css_location" -description "First revision" -text $old_css_content]
+
+	    set item_id [content::item::new -name $file_location -parent_id $package_id -title "$css_location" -description "First revision" -text $old_css_content]
 	}
 
 	
