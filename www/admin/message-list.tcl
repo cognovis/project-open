@@ -5,7 +5,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
 
     @creation-date 26 October 2001
-    @cvs-id $Id: message-list.tcl,v 1.2 2010/10/19 20:11:56 po34demo Exp $
+    @cvs-id $Id$
 } {
     locale
     package_key
@@ -62,17 +62,15 @@ db_1row counts {
             (select count(*) 
              from lang_messages 
              where package_key = :package_key 
-             and locale = :locale 
+             and locale = :default_locale 
              and deleted_p = 't') as num_deleted
     from dual
 }
 set num_untranslated [expr {$num_messages - $num_translated}]
-set num_messages_pretty [lc_numeric $num_messages]
+set num_messages_pretty [lc_numeric [expr {$num_messages + $num_deleted}]]
 set num_translated_pretty [lc_numeric $num_translated]
 set num_untranslated_pretty [lc_numeric $num_untranslated]
-
-
-
+set num_deleted_pretty [lc_numeric $num_deleted]
 
 
 #####
@@ -139,7 +137,7 @@ multirow create show_opts value label count
 multirow append show_opts "all" "All" $num_messages_pretty
 multirow append show_opts "translated" "Translated" $num_translated_pretty
 multirow append show_opts "untranslated" "Untranslated" $num_untranslated_pretty
-multirow append show_opts "deleted" "Deleted" $num_deleted
+multirow append show_opts "deleted" "Deleted" $num_deleted_pretty
 
 multirow extend show_opts url selected_p 
 

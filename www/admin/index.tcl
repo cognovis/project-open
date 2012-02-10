@@ -7,14 +7,14 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 19 October 2001
-    @cvs-id $Id: index.tcl,v 1.2 2010/10/19 20:11:55 po34demo Exp $
+    @cvs-id $Id$
 }
 
 # We rename to avoid conflict in queries
 set system_locale [lang::system::locale -site_wide]
 set system_locale_label [lang::util::get_label $system_locale]
 
-set page_title "Administration of Localization"
+set page_title [_ acs-lang.Administration_of_Localization]
 set context [list]
 
 set site_wide_admin_p [acs_user::site_wide_admin_p]
@@ -37,7 +37,13 @@ set parameter_url [export_vars -base "/shared/parameters" { {package_id {[ad_con
 #
 #####
 
-set num_messages [db_string num_messages { select count(*) from lang_message_keys }]
+set default_locale "en_US"
+db_1row counts {
+    select count(*) as num_messages
+    from lang_messages 
+    where locale = :default_locale 
+      and deleted_p = 'f'
+}
 
 db_multirow -extend { 
     escaped_locale
@@ -56,7 +62,7 @@ db_multirow -extend {
            l.default_p as default_p,
            l.enabled_p as enabled_p,
            (select count(*) from ad_locales l2 where l2.language = l.language) as num_locales_for_language,
-           (select count(*) from lang_messages lm2 where lm2.locale = l.locale) as num_translated
+           (select count(*) from lang_messages lm2 where lm2.locale = l.locale and lm2.deleted_p = 'f') as num_translated
     from   ad_locales l
     order  by locale_label
 } {
