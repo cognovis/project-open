@@ -673,7 +673,7 @@ ad_proc -public im_timesheet_task_list_component {
 	switch $project_type_id {
 	    100 {
 		# Timesheet Task
-		set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
+		set object_url [export_vars -base "/intranet-timesheet2-tasks/view" {{task_id $child_project_id} return_url}]
 	    }
 	    101 {
 		# Ticket
@@ -988,6 +988,49 @@ ad_proc -public im_timesheet_task_members_component {
 
     return $html
 }
+
+# ----------------------------------------------------------------------
+# Timesheet Task Info Component
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_timesheet_task_info2_component {
+    task_id
+    return_url
+} {
+    
+
+    set params [list  [list base_url "/intranet-timesheet2-tasks/"]  [list task_id $task_id] [list return_url $return_url]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/task-info"]
+
+    return [string trim $result]
+}
+
+
+
+# ----------------------------------------------------------------------
+# Home Tasks Component
+# ---------------------------------------------------------------------
+ad_proc -public im_timesheet_task_home_component {
+    {-page_size 20}
+    {-restrict_to_status_id 76}
+    {-return_url ""}
+} {
+
+    @creation-date 2011-01-12
+} {
+
+    # set the page variable (hopefully)
+    set page [ns_queryget page 1]
+    set orderby [ns_queryget orderby priority]
+    set params [list [list base_url "/intranet-timesheet2-tasks/"] [list page_size $page_size] [list restrict_to_status_id $restrict_to_status_id] [list orderby $orderby] [list page $page] [list return_url $return_url]]
+
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/home-tasks"]
+    return [string trim $result]
+}
+
+
 
 
 # -------------------------------------------------------------------

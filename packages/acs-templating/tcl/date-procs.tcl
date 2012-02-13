@@ -1047,8 +1047,6 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
     append output "value=\"$element(format)\" >\n"
     
     # Prepare the value to set defaults on the form
-    ds_comment "date :: $element(value)"
-    
     if { [info exists element(value)] && 
 	 [template::util::date::get_property not_null $element(value)] } {
 	set value $element(value)

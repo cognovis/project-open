@@ -1420,7 +1420,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
     # Show help text as part of a help GIF
     if {$help_text ne ""} {
-        set after_html [im_gif help $help_text]
+        set after_html [im_gif help [lang::util::localize $help_text]]
     } else {
         set after_html ""
     }

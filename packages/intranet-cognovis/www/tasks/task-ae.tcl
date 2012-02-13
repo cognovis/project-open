@@ -108,7 +108,6 @@ set ::super_project_id $parent_id
 
 set project_name_title [db_string project_name "select project_name from im_projects where project_id=:parent_id" -default "Unknown"]
 
-
 append page_title " for '$project_name_title'"
 
 im_project_permissions $user_id $parent_id project_view project_read project_write project_admin
