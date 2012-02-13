@@ -654,7 +654,7 @@ if {"" != $admin_html_links && [im_table_exists spam_messages]} {
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
-set sub_navbar [im_user_navbar $letter "/intranet/users/index" $next_page_url $previous_page_url [list user_group_name] $menu_select_label]
+set sub_navbar [im_user_navbar $letter "/intranet/users/index" $next_page_url $previous_page_url [list] $menu_select_label]
 
 
 # Compile and execute the formtemplate if advanced filtering is enabled.

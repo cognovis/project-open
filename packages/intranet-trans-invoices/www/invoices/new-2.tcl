@@ -197,7 +197,7 @@ if {$view_order_by_clause != ""} {
     }
 
 } else {
-            set order_by_clause "t.project_id"
+            set order_by_clause "t.task_name"
 }
 
 

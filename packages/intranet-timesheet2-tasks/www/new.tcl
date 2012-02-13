@@ -341,8 +341,8 @@ ad_form -extend -name task -on_request {
     }
 
     set task_nr [string tolower $task_nr]
-    set start_date_sql [template::util::date get_property sql_date $start_date]
-    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+    if {[info exists start_date]} {set start_date [template::util::date get_property sql_date $start_date]}
+    if {[info exists end_date]} {set end_date [template::util::date get_property sql_timestamp $end_date]}
 
     db_dml project_update {}
 
