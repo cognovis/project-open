@@ -4,7 +4,7 @@ ad_page_contract {
 
   @author rhs@mit.edu
   @creation-date 2000-08-20
-  @cvs-id $Id: revoke.tcl,v 1.4 2003/05/17 10:02:04 jeffd Exp $
+  @cvs-id $Id: revoke.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
 } {
   object_id:integer,notnull
   {revoke_list:multiple,optional {}}

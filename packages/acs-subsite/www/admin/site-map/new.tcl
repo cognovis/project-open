@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Rafael Schloming (rhs@mit.edu)
     @creation-date 2000-09-09
-    @cvs-id $Id: new.tcl,v 1.5 2005/03/01 00:01:23 jeffd Exp $
+    @cvs-id $Id: new.tcl,v 1.2 2010/10/19 20:12:36 po34demo Exp $
 
 } {
     parent_id:integer,notnull

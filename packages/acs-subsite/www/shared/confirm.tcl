@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author lars@pinds.com
     @creation-date 5 Jun 2000
-    @cvs-id $Id: confirm.tcl,v 1.1 2001/03/13 22:59:26 ben Exp $
+    @cvs-id $Id: confirm.tcl,v 1.2 2010/10/19 20:12:44 po34demo Exp $
 } {
     { header "Confirm" } 
     message

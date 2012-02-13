@@ -4,7 +4,7 @@
 --
 -- @creation-date 28 August 2000
 --
--- @cvs-id $Id: acs-subsite-create.sql,v 1.9 2009/12/08 01:57:22 donb Exp $
+-- @cvs-id $Id: acs-subsite-create.sql,v 1.2 2010/10/19 20:12:16 po34demo Exp $
 --
 
 \i portraits.sql

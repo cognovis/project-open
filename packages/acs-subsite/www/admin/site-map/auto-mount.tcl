@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Fri Feb  9 20:27:26 2001
-    @cvs-id $Id: auto-mount.tcl,v 1.4 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id: auto-mount.tcl,v 1.2 2010/10/19 20:12:35 po34demo Exp $
 
 } {
     package_key:notnull

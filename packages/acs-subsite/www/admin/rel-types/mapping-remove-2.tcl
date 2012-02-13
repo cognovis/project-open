@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Dec 12 10:45:07 2000
-    @cvs-id $Id: mapping-remove-2.tcl,v 1.4 2007/01/10 21:22:07 gustafn Exp $
+    @cvs-id $Id: mapping-remove-2.tcl,v 1.2 2010/10/19 20:12:32 po34demo Exp $
 
 } {
     { group_rel_id:integer "" }

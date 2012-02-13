@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Wed Dec 13 20:11:27 2000
-    @cvs-id $Id: one.tcl,v 1.3 2003/10/10 15:03:38 lars Exp $
+    @cvs-id $Id: one.tcl,v 1.2 2010/10/19 20:12:34 po34demo Exp $
 
 } {
     rel_id:integer,notnull

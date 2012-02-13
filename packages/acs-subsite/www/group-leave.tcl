@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-08-07
-    @cvs-id $Id: group-leave.tcl,v 1.2 2004/01/30 15:17:31 lars Exp $
+    @cvs-id $Id: group-leave.tcl,v 1.2 2010/10/19 20:12:20 po34demo Exp $
 } {
     {group_id:integer {[application_group::group_id_from_package_id]}}
     return_url:optional
