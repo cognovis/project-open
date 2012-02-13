@@ -23,6 +23,7 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { return_url ""}
+    { task_status_id ""}
 }
 
 # ---------------------------------------------------------------
@@ -184,6 +185,8 @@ set object_type "im_project"
 set action_url [export_vars -base [ns_conn url] {}]
 set form_mode "edit"
 
+set type_options [im_timesheet_task_type_options -include_empty 0]
+
 ad_form \
     -name $form_id \
     -action $action_url \
@@ -193,6 +196,7 @@ ad_form \
     -form {
         {start_date:text(text),optional {label "Start Date"}}
         {end_date:text(text),optional {label "End Date"}}
+        {task_status_id:text(im_category_tree) {label "[_ intranet-timesheet2-tasks.Status]"} {custom {category_type "Intranet Timesheet Task Status"}}}
     }
 
 template::element::set_value $form_id start_date $start_date
@@ -208,5 +212,6 @@ set task_table_rows [im_timesheet_invoicing_project_hierarchy \
 			 -start_date $start_date \
 			 -end_date $end_date \
 			 -invoice_hour_type "" \
+			 -task_status_id $task_status_id
 ]
 

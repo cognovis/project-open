@@ -25,11 +25,10 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set action_url "/intranet-timesheet2-tasks/view"
 set focus "task.var_name"
-set page_title [_ intranet-timesheet2-tasks.New_Timesheet_Task]
 set base_component_title [_ intranet-timesheet2-tasks.Timesheet_Task]
+set page_title $base_component_title
 set context [list $page_title]
 set current_user_id $user_id
-
 set current_url [ad_conn url]
 set normalize_project_nr_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NormalizeProjectNrP" -default 1]
 
@@ -55,8 +54,6 @@ if {[info exists task_id]} {
 }
 
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default "Unknown"]
-
-append page_title " for <a href='[export_vars -base "/intranet/projects/view" {{project_id $project_id}}]'>'$project_name'</a>"
 
 if {![info exists task_id]} { set form_mode "edit" }
 

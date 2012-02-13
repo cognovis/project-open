@@ -1,4 +1,16 @@
 <table valign="top" width="100%" cellpadding="20" border=1>
+    <tr>
+      <td align="right" valign="top" class="attribute" width="20%">#intranet-timesheet2-tasks.Name#: </td>
+      <td align="left" valign="top" class="value">@task_name;noquote@</td>
+    </tr>
+    <tr>
+      <td align="right" valign="top" class="attribute" width="20%">#intranet-timesheet2-tasks.Short_Name#: </td>
+      <td align="left" valign="top" class="value">@task_nr;noquote@</td>
+    </tr>
+    <tr>
+      <td align="right" valign="top" class="attribute" width="20%">#intranet-core.Project#: </td>
+      <td align="left" valign="top" class="value"><a href="@project_url;noquote@">@project_name;noquote@</td>
+    </tr>
   <multiple name=task_info>
     <if @task_info.heading@ not nil>
       <tr>

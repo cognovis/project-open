@@ -13,6 +13,9 @@ im_project_permissions $user_id $task_id view read write admin
 # ---------------------------------------------------------------------
 # Get Everything about the task
 # ---------------------------------------------------------------------
+db_1row task_info "select project_name as task_name, project_nr as task_nr, parent_id as project_id, im_name_from_id(parent_id) as project_name from im_projects where project_id = :task_id"
+
+set project_url [export_vars -base "/intranet/projects/view" -url {project_id}]
 im_dynfield::object_array -array_name task -object_id $task_id
 set object_type_id $task(object_type_id)
 
@@ -58,13 +61,11 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
     }
-    
-    # Special setting for projects (parent_id)
-    if {$attribute_name eq "parent_id"} {
-	set project_id $task(parent_id_orig)
-	set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
-	set value "<a href='$project_url'>$value</a>"
+
+    if {$attribute_name eq "material_id"} {
+	set value [db_string material_name "select material_name from im_materials where material_id = :value"]
     }
+
 }
 
 set current_user_id [ad_conn user_id]

@@ -116,7 +116,6 @@ if {"" == $default_material_id || 0 == $default_material_id} {
     "
 }
 
-ds_comment "DEFAULT:: $default_material_id"
 set button_pressed [template::form get_action task]
 if {"delete" == $button_pressed} {
 
@@ -220,7 +219,6 @@ im_dynfield::append_attributes_to_form \
     -form_id task \
     -object_id $my_task_id \
     -object_subtype_id $task_type_id
-
 
 # Set default type to "Task"
 
