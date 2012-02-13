@@ -3,7 +3,7 @@
 -- 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2007-05-24
--- @cvs-id $Id: upgrade-5.3.2d1-5.3.2d2.sql,v 1.2 2007/10/27 22:57:19 donb Exp $
+-- @cvs-id $Id: upgrade-5.3.2d1-5.3.2d2.sql,v 1.1 2010/10/19 21:10:13 po34demo Exp $
 --
 
 declare v_result integer;

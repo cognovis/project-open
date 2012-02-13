@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: acs-objects-create.sql,v 1.25 2010/10/17 21:06:08 donb Exp $
+-- @cvs-id $Id: acs-objects-create.sql,v 1.2 2010/10/19 20:11:32 po34demo Exp $
 --
 
 -----------------------------

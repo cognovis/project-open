@@ -1,9 +1,191 @@
--- @author Vinod Kurup (vinod@kurup.com)
--- @creation-date 2002-10-06
---
--- @cvs-id $Id: upgrade-4.5.1-4.6.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- Callbacks
+create table apm_package_callbacks (
+    version_id         integer 
+                       constraint apm_package_callbacks_vid_fk 
+                       references apm_package_versions(version_id)
+                       on delete cascade,
+    type               varchar(40),
+    proc               varchar(300),
+    constraint apm_package_callbacks_vt_un
+    unique (version_id, type)
+);
 
--- fix in apm_package_version.sortable_version_name
+comment on table apm_package_callbacks is '
+  This table holds names of Tcl procedures to invoke at the time (before or after) the package is
+  installed, instantiated, or mounted.        
+';
+
+comment on column apm_package_callbacks.proc is '
+  Name of the Tcl proc.
+';
+
+comment on column apm_package_callbacks.type is '
+  Indicates when the callback proc should be invoked, for example after-install. Valid
+  values are given by the Tcl proc apm_supported_callback_types.
+';
+
+-- Add column for auto-mount
+alter table apm_package_versions add auto_mount varchar(50);
+
+comment on column apm_package_versions.auto_mount is '
+ A dir under the main site site node where an instance of the package will be mounted
+ automatically upon installation. Useful for site-wide services that need mounting
+ such as general-comments and notifications.
+';
+
+-- Recreate view for auto-mount
+create or replace view apm_package_version_info as
+    select v.package_key, t.package_uri, t.pretty_name, t.singleton_p, t.initial_install_p,
+           v.version_id, v.version_name,
+           v.version_uri, v.summary, v.description_format, v.description, v.release_date,
+           v.vendor, v.vendor_uri, v.auto_mount, v.enabled_p, v.installed_p, v.tagged_p, v.imported_p, v.data_model_loaded_p,
+           v.activation_date, v.deactivation_date,
+           nvl(v.content_length,0) as tarball_length,
+           distribution_uri, distribution_date
+    from   apm_package_types t, apm_package_versions v
+    where  v.package_key = t.package_key;
+
+create or replace view apm_enabled_package_versions as
+    select * from apm_package_version_info
+    where  enabled_p = 't';
+
+-- Change PLSQL code for auto-mount
+create or replace package apm_package_version
+as
+  function new (
+    version_id			in apm_package_versions.version_id%TYPE
+					default null,
+    package_key			in apm_package_versions.package_key%TYPE,
+    version_name		in apm_package_versions.version_name%TYPE 
+					default null,
+    version_uri			in apm_package_versions.version_uri%TYPE,
+    summary			in apm_package_versions.summary%TYPE,
+    description_format		in apm_package_versions.description_format%TYPE,
+    description			in apm_package_versions.description%TYPE,
+    release_date		in apm_package_versions.release_date%TYPE,
+    vendor			in apm_package_versions.vendor%TYPE,
+    vendor_uri			in apm_package_versions.vendor_uri%TYPE,
+    auto_mount                  in apm_package_versions.auto_mount%TYPE,
+    installed_p			in apm_package_versions.installed_p%TYPE
+					default 'f',
+    data_model_loaded_p		in apm_package_versions.data_model_loaded_p%TYPE
+				        default 'f'
+  ) return apm_package_versions.version_id%TYPE;
+
+  procedure delete (
+      version_id		in apm_packages.package_id%TYPE
+  );
+
+  procedure enable (
+       version_id			in apm_package_versions.version_id%TYPE
+  );
+
+  procedure disable (
+       version_id			in apm_package_versions.version_id%TYPE
+  );
+
+ function edit (
+      new_version_id		in apm_package_versions.version_id%TYPE
+				default null,
+      version_id		in apm_package_versions.version_id%TYPE,
+      version_name		in apm_package_versions.version_name%TYPE 
+				default null,
+      version_uri		in apm_package_versions.version_uri%TYPE,
+      summary			in apm_package_versions.summary%TYPE,
+      description_format	in apm_package_versions.description_format%TYPE,
+      description		in apm_package_versions.description%TYPE,
+      release_date		in apm_package_versions.release_date%TYPE,
+      vendor			in apm_package_versions.vendor%TYPE,
+      vendor_uri		in apm_package_versions.vendor_uri%TYPE,
+      auto_mount                in apm_package_versions.auto_mount%TYPE,
+      installed_p		in apm_package_versions.installed_p%TYPE
+				default 'f',
+      data_model_loaded_p	in apm_package_versions.data_model_loaded_p%TYPE
+				default 'f'
+    ) return apm_package_versions.version_id%TYPE;
+
+  -- Add a file to the indicated version.
+  function add_file(
+    file_id			in apm_package_files.file_id%TYPE
+				default null,
+    version_id			in apm_package_versions.version_id%TYPE,
+    path			in apm_package_files.path%TYPE,
+    file_type			in apm_package_file_types.file_type_key%TYPE,
+    db_type			in apm_package_db_types.db_type_key%TYPE
+                                default null
+  ) return apm_package_files.file_id%TYPE;
+
+  -- Remove a file from the indicated version.
+  procedure remove_file(
+    version_id			in apm_package_versions.version_id%TYPE,
+    path			in apm_package_files.path%TYPE
+  );
+
+  -- Add an interface provided by this version.
+  function add_interface(
+    interface_id		in apm_package_dependencies.dependency_id%TYPE
+			        default null,
+    version_id			in apm_package_versions.version_id%TYPE,
+    interface_uri		in apm_package_dependencies.service_uri%TYPE,
+    interface_version		in apm_package_dependencies.service_version%TYPE
+  ) return apm_package_dependencies.dependency_id%TYPE;
+
+  procedure remove_interface(
+    interface_id		in apm_package_dependencies.dependency_id%TYPE
+  );
+
+  procedure remove_interface(
+    interface_uri		in apm_package_dependencies.service_uri%TYPE,
+    interface_version		in apm_package_dependencies.service_version%TYPE,
+    version_id			in apm_package_versions.version_id%TYPE
+  );
+
+  -- Add a requirement for this version.  A requirement is some interface that this
+  -- version depends on.
+  function add_dependency(
+    dependency_id		in apm_package_dependencies.dependency_id%TYPE
+			        default null,
+    version_id			in apm_package_versions.version_id%TYPE,
+    dependency_uri		in apm_package_dependencies.service_uri%TYPE,
+    dependency_version		in apm_package_dependencies.service_version%TYPE
+  ) return apm_package_dependencies.dependency_id%TYPE;
+
+  procedure remove_dependency(
+    dependency_id		in apm_package_dependencies.dependency_id%TYPE
+  );
+
+  procedure remove_dependency(
+    dependency_uri		in apm_package_dependencies.service_uri%TYPE,
+    dependency_version		in apm_package_dependencies.service_version%TYPE,
+    version_id			in apm_package_versions.version_id%TYPE
+  );
+
+  -- Given a version_name (e.g. 3.2a), return
+  -- something that can be lexicographically sorted.
+  function sortable_version_name (
+    version_name		in apm_package_versions.version_name%TYPE
+  ) return varchar2;
+
+  -- Given two version names, return 1 if one > two, -1 if two > one, 0 otherwise. 
+  -- Deprecate?
+  function version_name_greater(
+    version_name_one		in apm_package_versions.version_name%TYPE,
+    version_name_two		in apm_package_versions.version_name%TYPE
+  ) return integer;
+
+  function upgrade_p(
+    path			in apm_package_files.path%TYPE,
+    initial_version_name	in apm_package_versions.version_name%TYPE,
+    final_version_name		in apm_package_versions.version_name%TYPE
+   ) return integer;
+
+  procedure upgrade(
+    version_id                  in apm_package_versions.version_id%TYPE
+  );
+
+end apm_package_version;
+/
+show errors
 
 create or replace package body apm_package_version 
 as
@@ -20,6 +202,7 @@ as
       release_date		in apm_package_versions.release_date%TYPE,
       vendor			in apm_package_versions.vendor%TYPE,
       vendor_uri		in apm_package_versions.vendor_uri%TYPE,
+      auto_mount                in apm_package_versions.auto_mount%TYPE,
       installed_p		in apm_package_versions.installed_p%TYPE
 				default 'f',
       data_model_loaded_p	in apm_package_versions.data_model_loaded_p%TYPE
@@ -41,11 +224,11 @@ as
         );
       insert into apm_package_versions
       (version_id, package_key, version_name, version_uri, summary, description_format, description,
-      release_date, vendor, vendor_uri, installed_p, data_model_loaded_p)
+      release_date, vendor, vendor_uri, auto_mount, installed_p, data_model_loaded_p)
       values
       (v_version_id, package_key, version_name, version_uri,
        summary, description_format, description,
-       release_date, vendor, vendor_uri,
+       release_date, vendor, vendor_uri, auto_mount,
        installed_p, data_model_loaded_p);
       return v_version_id;		
     end new;
@@ -107,10 +290,10 @@ as
 
 	insert into apm_package_versions(version_id, package_key, version_name,
 					version_uri, summary, description_format, description,
-					release_date, vendor, vendor_uri)
+					release_date, vendor, vendor_uri, auto_mount)
 	    select v_version_id, package_key, copy.new_version_name,
 		   copy.new_version_uri, summary, description_format, description,
-		   release_date, vendor, vendor_uri
+		   release_date, vendor, vendor_uri, auto_mount
 	    from apm_package_versions
 	    where version_id = copy.version_id;
     
@@ -123,6 +306,11 @@ as
 	    select acs_object_id_seq.nextval, v_version_id, path, file_type, db_type
 	    from apm_package_files
 	    where version_id = copy.version_id;
+
+        insert into apm_package_callbacks (version_id, type, proc)
+                select v_version_id, type, proc
+                from apm_package_callbacks
+                where version_id = copy.version_id;
     
 	insert into apm_package_owners(version_id, owner_uri, owner_name, sort_key)
 	    select v_version_id, owner_uri, owner_name, sort_key
@@ -145,6 +333,7 @@ as
       release_date		in apm_package_versions.release_date%TYPE,
       vendor			in apm_package_versions.vendor%TYPE,
       vendor_uri		in apm_package_versions.vendor_uri%TYPE,
+      auto_mount                in apm_package_versions.auto_mount%TYPE,
       installed_p		in apm_package_versions.installed_p%TYPE
 				default 'f',
       data_model_loaded_p	in apm_package_versions.data_model_loaded_p%TYPE
@@ -178,6 +367,7 @@ as
 		release_date = trunc(sysdate),
 		vendor = edit.vendor,
 		vendor_uri = edit.vendor_uri,
+                auto_mount = edit.auto_mount,
 		installed_p = edit.installed_p,
 		data_model_loaded_p = edit.data_model_loaded_p
 	    where version_id = v_version_id;
@@ -482,150 +672,5 @@ as
   end upgrade;
 
 end apm_package_version;
-/
-show errors
-
--- fixed typo in rel_segment.get_or_new
-
-create or replace package body rel_segment
-is
- function new (
-  segment_id            in rel_segments.segment_id%TYPE default null,
-  object_type           in acs_objects.object_type%TYPE
-                           default 'rel_segment',
-  creation_date         in acs_objects.creation_date%TYPE
-                           default sysdate,
-  creation_user         in acs_objects.creation_user%TYPE
-                           default null,
-  creation_ip           in acs_objects.creation_ip%TYPE default null,
-  email                 in parties.email%TYPE default null,
-  url                   in parties.url%TYPE default null,
-  segment_name          in rel_segments.segment_name%TYPE,
-  group_id              in rel_segments.group_id%TYPE,
-  rel_type              in rel_segments.rel_type%TYPE,
-  context_id	in acs_objects.context_id%TYPE default null
- ) return rel_segments.segment_id%TYPE
- is
-  v_segment_id rel_segments.segment_id%TYPE;
- begin
-  v_segment_id :=
-   party.new(segment_id, object_type, creation_date, creation_user,
-             creation_ip, email, url, context_id);
-
-  insert into rel_segments
-   (segment_id, segment_name, group_id, rel_type)
-  values
-   (v_segment_id, new.segment_name, new.group_id, new.rel_type);
-
-  return v_segment_id;
- end new;
-
- procedure delete (
-   segment_id     in rel_segments.segment_id%TYPE
- )
- is
- begin
-
-   -- remove all constraints on this segment
-   for row in (select constraint_id 
-                 from rel_constraints 
-                where rel_segment = rel_segment.delete.segment_id) loop
-
-       rel_constraint.delete(row.constraint_id);
-
-   end loop;
-
-   party.delete(segment_id);
-
- end delete;
-
- -- EXPERIMENTAL / UNSTABLE -- use at your own risk
- --
- function get (
-   group_id       in rel_segments.group_id%TYPE,
-   rel_type       in rel_segments.rel_type%TYPE
- ) return rel_segments.segment_id%TYPE
- is
-   v_segment_id rel_segments.segment_id%TYPE;
- begin
-   select min(segment_id) into v_segment_id
-   from rel_segments
-   where group_id = get.group_id
-     and rel_type = get.rel_type;
-
-   return v_segment_id;
- end get;
-
-
- -- EXPERIMENTAL / UNSTABLE -- use at your own risk
- --
- -- This function simplifies the use of segments a little by letting
- -- you not have to worry about creating and initializing segments.
- -- If the segment you're interested in exists, this function
- -- returns its segment_id.
- -- If the segment you're interested in doesn't exist, this function
- -- does a pretty minimal amount of initialization for the segment
- -- and returns a new segment_id.
- function get_or_new (
-   group_id       in rel_segments.group_id%TYPE,
-   rel_type       in rel_segments.rel_type%TYPE,
-   segment_name   in rel_segments.segment_name%TYPE
-                  default null
- ) return rel_segments.segment_id%TYPE
- is
-   v_segment_id rel_segments.segment_id%TYPE;
-   v_segment_name rel_segments.segment_name%TYPE;
- begin
-
-   v_segment_id := get(group_id, rel_type);
-
-   if v_segment_id is null then
-
-      if segment_name is not null then
-         v_segment_name := segment_name;
-      else
-         select groups.group_name || ' - ' || acs_object_types.pretty_name ||
-                  ' segment'
-         into v_segment_name
-         from groups, acs_object_types
-         where groups.group_id = get_or_new.group_id
-           and acs_object_types.object_type = get_or_new.rel_type;
-
-      end if;
-
-      v_segment_id := rel_segment.new (
-          object_type => 'rel_segment',
-          creation_user => null,
-          creation_ip => null,
-          email => null,
-          url => null,
-          segment_name => v_segment_name,
-          group_id => get_or_new.group_id,
-          rel_type => get_or_new.rel_type,
-          context_id => get_or_new.group_id
-      );
-
-   end if;
-
-   return v_segment_id;
-
- end get_or_new;
-
- function name (
-  segment_id      in rel_segments.segment_id%TYPE
- )
- return rel_segments.segment_name%TYPE
- is
-  segment_name varchar(200);
- begin
-  select segment_name
-  into segment_name
-  from rel_segments
-  where segment_id = name.segment_id;
-
-  return segment_name;
- end name;
-
-end rel_segment;
 /
 show errors

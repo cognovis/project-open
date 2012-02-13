@@ -5,7 +5,7 @@
 --
 -- @author Peter Marklund
 -- @creation-date 2000/10/01
--- @cvs-id $Id: acs-install.sql,v 1.18 2006/10/29 22:02:24 donb Exp $
+-- @cvs-id $Id: acs-install.sql,v 1.2 2010/10/19 20:11:31 po34demo Exp $
 --
 
 declare
