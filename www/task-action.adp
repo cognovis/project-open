@@ -151,7 +151,7 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
 	</if>
 
         <tr>
-	<td colspan="2"><ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul></td>
+	<td colspan="2"><!--<ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul>--></td>
         </tr>
 
         </table>
