@@ -209,6 +209,7 @@ set dynfield_sql "
 		and a.acs_attribute_id = aa.attribute_id
 		and aa.object_type in ('im_project','im_company')
 		and aa.attribute_name not like 'default%'
+		and aa.attribute_name != 'note'
 	order by
 		aa.object_type,
 		aa.sort_order
