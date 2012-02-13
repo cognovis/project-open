@@ -251,6 +251,8 @@ ad_proc -public im_program_portfolio_list_component {
     set plain_done 0.0
 
     set var_list {
+	planned_costs
+	real_costs
 	cost_bills_cache
 	cost_cache_dirty
 	cost_delivery_notes_cache
@@ -265,10 +267,7 @@ ad_proc -public im_program_portfolio_list_component {
 	reported_hours_cache
     }
     
-    foreach var $var_list { 
-	set "${var}_total" 0
-    }
-
+    foreach var $var_list { set "${var}_total" 0 }
 
     set start_date_min "2099-12-31"
     set end_date_max "2000-01-01"
@@ -305,7 +304,16 @@ ad_proc -public im_program_portfolio_list_component {
 	set plain_done [expr $plain_done + 1.0 * $percent_completed / 100.0]
 
 	foreach var $var_list {
-	    catch { set "${var}_total" [expr "${var}_total" + $var] }
+
+	    # Sum up the column's values into totals
+	    set val [set $var]
+	    if {"" == $val} { set val 0 }
+	    if {[catch { 
+		set cmd "set ${var}_total \[expr \$${var}_total + $val\]"
+		eval $cmd
+	    } err_msg]} {
+		ad_return_complaint 1 "<pre>$err_msg</pre>"
+	    }
 	}
 
 	if {$start_date_ansi < $start_date_min} { set start_date_min $start_date_ansi }
@@ -313,6 +321,7 @@ ad_proc -public im_program_portfolio_list_component {
 
 	incr ctr
     }
+
 
     # Update the program's %done and budget values
     # Allow to use either quotes or budget for calculation
@@ -328,6 +337,29 @@ ad_proc -public im_program_portfolio_list_component {
     if {0.0 != $budget_total} {
 	set completed [expr round(1000.0 * $budget_done / $budget_total) / 10.0]
     }
+
+    # Total summary line:
+    # Copy the *_total values into the values without _total
+    foreach var $var_list { set $var [set ${var}_total] }
+    set project_name ""
+    set project_nr ""
+    set on_track_status_id ""
+    set percent_completed_rounded $completed
+    set start_date $start_date_min
+    set end_date $end_date_max
+
+    # Display the same row with summary values
+    set row_html "<tr>\n"
+    foreach column_var $column_vars {
+	append row_html "\t<td class=rowtitle>"
+	set cmd "append row_html $column_var"
+	eval "$cmd"
+	append row_html "</td>\n"
+    }
+    append row_html "</tr>\n"
+    append table_body_html $row_html
+
+
 
     # Update the program with information from the included projects
     set update_html ""
