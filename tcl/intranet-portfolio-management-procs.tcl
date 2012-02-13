@@ -304,8 +304,8 @@ ad_proc -public im_program_portfolio_list_component {
 	set budget_done [expr $budget_done + $project_budget * $percent_completed / 100.0]
 	set plain_done [expr $plain_done + 1.0 * $percent_completed / 100.0]
 
-	fforeach var $var_list {
-	    set "${var}_total" [expr "${var}_total" + $var]
+	foreach var $var_list {
+	    catch { set "${var}_total" [expr "${var}_total" + $var] }
 	}
 
 	if {$start_date_ansi < $start_date_min} { set start_date_min $start_date_ansi }
