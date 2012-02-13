@@ -18,7 +18,7 @@ select
 	im_category_from_id(tp.file_type_id) as file_type,
 	tp.valid_from,
 	tp.valid_through,
-	replace(to_char(tp.price, '99999.99'), '.', ',') as price,
+	replace(to_char(tp.price, ''99999.99''), ''.'', '','') as price,
 	tp.currency
 from	im_trans_prices tp,
 	im_companies c
