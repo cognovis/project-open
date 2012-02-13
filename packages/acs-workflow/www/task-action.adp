@@ -25,10 +25,12 @@ set approval_attributes [db_list approval_attributes "
 set approval_task_p 1
 if {[llength $approval_attributes] == 0} { set approval_task_p 0 }
 
-
 # Only use the approval_task logic if the current user
 # is assigned to the task.
 if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
+
+# Show reassign links (Assign yourself / reassign)? 
+set reassign_p [im_permission $user_id wf_reassign_tasks]
 
 %>
 
@@ -68,14 +70,17 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
 	    </ul>
 	</if>
     </else>
-
     <p>
-    <ul class="admin_links">
-    <if @task.this_user_is_assigned_p@ ne 1>
-        <li><a href="@task.assign_yourself_url@"><%=[lang::message::lookup "" acs-workflow.Assign_Yourself "assign yourself"]%></a></li>
+
+    <if @reassign_p@ >
+    	<ul class="admin_links">
+	    <if @task.this_user_is_assigned_p@ ne 1>
+        	<li><a href="@task.assign_yourself_url@"><%=[lang::message::lookup "" acs-workflow.Assign_Yourself "assign yourself"]%></a></li>
+	    </if>
+	    <li><a href="@task.manage_assignments_url@"><%=[lang::message::lookup "" acs-workflow.Reassign "reassign"]%></a></li>
+	</ul>
     </if>
-    <li><a href="@task.manage_assignments_url@"><%=[lang::message::lookup "" acs-workflow.Reassign "reassign"]%></a></li>
-    </ul>
+
     <if @task.deadline_pretty@ not nil>
         <p>
         <if @task.days_till_deadline@ lt 1>
@@ -146,7 +151,7 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
 	</if>
 
         <tr>
-	<td colspan="2"><ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul></td>
+	<td colspan="2"><!--<ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul>--></td>
         </tr>
 
         </table>
