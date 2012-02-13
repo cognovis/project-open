@@ -242,11 +242,33 @@ ad_proc -public im_program_portfolio_list_component {
     # Total amounts of budget and quotes of the included projects
     set budget_total 0.0
     set quotes_total 0.0
+    set plain_total 0.0
 
     # "Done" (total x percent_completed) amounts of budget and 
     # quote of the included projects
     set budget_done 0.0
     set quotes_done 0.0
+    set plain_done 0.0
+
+    set var_list {
+	cost_bills_cache
+	cost_cache_dirty
+	cost_delivery_notes_cache
+	cost_expense_logged_cache
+	cost_expense_planned_cache
+	cost_invoices_cache
+	cost_purchase_orders_cache
+	cost_quotes_cache
+	cost_timesheet_logged_cache
+	cost_timesheet_planned_cache
+	reported_days_cache
+	reported_hours_cache
+    }
+    
+    foreach var $var_list { 
+	set "${var}_total" 0
+    }
+
 
     set start_date_min "2099-12-31"
     set end_date_max "2000-01-01"
@@ -273,12 +295,18 @@ ad_proc -public im_program_portfolio_list_component {
 	# Avoid error due to NULL values
 	if {"" == $cost_quotes_cache} { set cost_quotes_cache 0 }
 	if {"" == $project_budget} { set project_budget 0 }
-	
+
 	set quotes_total [expr $quotes_total + $cost_quotes_cache]
 	set budget_total [expr $budget_total + $project_budget]
+	set plain_total [expr $plain_total + 1.0]
 
 	set quotes_done [expr $quotes_done + $cost_quotes_cache * $percent_completed / 100.0]
 	set budget_done [expr $budget_done + $project_budget * $percent_completed / 100.0]
+	set plain_done [expr $plain_done + 1.0 * $percent_completed / 100.0]
+
+	fforeach var $var_list {
+	    set "${var}_total" [expr "${var}_total" + $var]
+	}
 
 	if {$start_date_ansi < $start_date_min} { set start_date_min $start_date_ansi }
 	if {$end_date_ansi > $end_date_max} { set end_date_max $end_date_ansi }
@@ -288,16 +316,17 @@ ad_proc -public im_program_portfolio_list_component {
 
     # Update the program's %done and budget values
     # Allow to use either quotes or budget for calculation
+    set completed 0.0
+    if {0.0 != $plain_total} {
+	set completed [expr round(1000.0 * $plain_done / $plain_total) / 10.0]
+    }
+    # Quotes override aritmetic median
     if {0.0 != $quotes_total} {
 	set completed [expr round(1000.0 * $quotes_done / $quotes_total) / 10.0]
-    } else {
-	set completed 0.0
     }
     # budget overrides quotes
     if {0.0 != $budget_total} {
 	set completed [expr round(1000.0 * $budget_done / $budget_total) / 10.0]
-    } else {
-	set completed 0.0
     }
 
     # Update the program with information from the included projects
