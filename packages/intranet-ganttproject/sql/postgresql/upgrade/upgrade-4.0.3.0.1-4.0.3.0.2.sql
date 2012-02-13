@@ -9,8 +9,26 @@ where category_type = 'Intranet Timesheet Task Effort Driven Type';
 
 -- Add im_gantt_projects as an extension table to im_timesheet_task
 --
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_timesheet_task', 'im_gantt_projects', 'project_id');
+
+
+create or replace function inline_0 ()
+returns integer as $$
+declare
+	v_count			integer;
+begin
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = 'im_timesheet_task' and id_column = 'project_id';
+	if v_count = 0 then 
+	   	insert into acs_object_type_tables (object_type,table_name,id_column)
+		values ('im_timesheet_task', 'im_gantt_projects', 'project_id');
+	end if;
+	return 0;
+end;$$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
 
 -- Widget to select the Fixed Task Type
 SELECT im_dynfield_widget__new (
