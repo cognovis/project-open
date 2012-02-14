@@ -3,8 +3,8 @@ ad_page_contract {
 }
 
 set cube_name "finance"
-set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"]
-set end_date [db_string start "select to_date(now()::date+60, 'YYYY-MM-01')"]
+set start_date [db_string start "select now()::date-10000 from dual"]
+set end_date [db_string start "select now()::date + 60 from dual"]
 set cost_type_id {3700}
 set sigma "&Sigma;"
 
