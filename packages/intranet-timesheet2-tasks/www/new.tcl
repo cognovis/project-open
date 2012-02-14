@@ -330,6 +330,19 @@ ad_form -extend -name task -on_request {
     # Update percent_completed
     im_timesheet_project_advance $task_id
 
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-timesheet2-tasks/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-timesheet2-tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $project_id \
+        -response_id "" \
+        -notif_subject "New Task: $task_name" \
+        -notif_html "<h1><a href='$task_url'>$task_name</h1><p /><div align=left>[string trim $result]</div>"
+
+
 
 } -edit_data {
 
@@ -354,6 +367,19 @@ ad_form -extend -name task -on_request {
 
     # Write Audit Trail
     im_project_audit -project_id $task_id -action after_update
+
+    # Send a notification for this task
+    set params [list  [list base_url "/intranet-timesheet2-tasks/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/task-info"]
+    set task_url [export_vars -base "[ad_url]/intranet-timesheet2-tasks/view" -url {task_id}]
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name project_notif] \
+        -object_id $project_id \
+        -response_id "" \
+        -notif_subject "Edit: $task_name" \
+        -notif_html "<h1><a href='$task_url'>$task_name</h1><p /><div align=left>[string trim $result]</div>"
+
 
 } -on_submit {
 	ns_log Notice "new: on_submit"
