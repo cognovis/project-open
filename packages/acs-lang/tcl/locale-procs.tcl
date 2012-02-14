@@ -10,7 +10,7 @@ ad_library {
     @creation-date 28 September 2000
     @author Henry Minsky (hqm@mit.edu)
     @author Lars Pind (lars@pinds.com)
-    @cvs-id $Id: locale-procs.tcl,v 1.37 2010/01/08 17:39:58 emmar Exp $
+    @cvs-id $Id: locale-procs.tcl,v 1.2 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::system {}

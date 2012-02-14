@@ -1,4 +1,4 @@
-# $Id: toggle-dont-spam-me-p.tcl,v 1.2 2002/09/18 12:16:45 jeffd Exp $
+# $Id: toggle-dont-spam-me-p.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
 
 set user_id [ad_get_user_id]
 

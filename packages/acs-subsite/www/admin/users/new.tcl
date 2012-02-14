@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author oumi@arsdigita.com
     @creation-date 2000-02-07
-    @cvs-id $Id: new.tcl,v 1.12 2010/01/13 10:48:45 emmar Exp $
+    @cvs-id $Id: new.tcl,v 1.2 2010/10/19 20:12:38 po34demo Exp $
 
 } {
     { user_type:notnull "user" }

@@ -1,7 +1,7 @@
 ad_page_contract {
     Let's the user reset his/her password.
 
-    @cvs-id $Id: password-reset.tcl,v 1.2 2007/01/10 21:22:11 gustafn Exp $
+    @cvs-id $Id: password-reset.tcl,v 1.2 2010/10/19 23:59:45 po34demo Exp $
 } {
     {user_id {[ad_conn untrusted_user_id]}}
     {return_url ""}

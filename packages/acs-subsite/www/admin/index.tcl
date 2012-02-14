@@ -5,7 +5,7 @@ ad_page_contract {
     @author Michael Bryzek (mbryzek@arsdigita.com)
 
     @creation-date August 15, 2000
-    @cvs-id $Id: index.tcl,v 1.19 2011/04/15 09:50:52 emmar Exp $
+    @cvs-id $Id$
 } {
 } -properties {
     context:onevalue

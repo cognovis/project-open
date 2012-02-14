@@ -1,5 +1,5 @@
 -- @author Mark Dettinger (mdettinger@arsdigita.com)
--- $Id: host-node-map-create.sql,v 1.3 2003/01/16 13:37:46 jeffd Exp $
+-- $Id: host-node-map-create.sql,v 1.2 2010/10/19 20:12:16 po34demo Exp $
 
 create table host_node_map (
    host                 varchar(200) 

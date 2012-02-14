@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Yonatan Feldman (yon@arsdigita.com)
     @creation-date August 15, 2000
-    @cvs-id $Id: alphabetical-index.tcl,v 1.6 2011/04/18 17:24:30 emmar Exp $
+    @cvs-id $Id$
 
 } {}
 

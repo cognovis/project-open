@@ -5,7 +5,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
 
     @creation-date 26 October 2001
-    @cvs-id $Id: package-list.tcl,v 1.10 2011/04/07 16:28:27 emmar Exp $
+    @cvs-id $Id$
 } {
     locale
 } -properties {

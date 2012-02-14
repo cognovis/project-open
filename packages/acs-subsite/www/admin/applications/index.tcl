@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-02
-    @cvs-id $Id: index.tcl,v 1.10 2011/04/15 10:29:16 emmar Exp $
+    @cvs-id $Id$
 }
 
 set page_title "[_ acs-subsite.Applications]"

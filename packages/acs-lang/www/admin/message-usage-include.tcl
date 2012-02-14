@@ -3,7 +3,7 @@
 #
 # @author Peter Marklund (peter@collaboraid.biz)
 # @author Lars Pind (lars@collaboraid.biz)
-# @cvs-id $Id: message-usage-include.tcl,v 1.5 2007/01/10 21:22:04 gustafn Exp $
+# @cvs-id $Id: message-usage-include.tcl,v 1.2 2010/10/19 20:11:57 po34demo Exp $
 
 set full_key "$package_key.$message_key"
 
