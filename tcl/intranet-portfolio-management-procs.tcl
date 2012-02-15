@@ -341,25 +341,26 @@ ad_proc -public im_program_portfolio_list_component {
 
     # Total summary line:
     # Copy the *_total values into the values without _total
-    foreach var $var_list { set $var [set ${var}_total] }
-    set project_name ""
-    set project_nr ""
-    set on_track_status_id ""
-    set percent_completed_rounded $completed
-    set start_date $start_date_min
-    set end_date $end_date_max
-
-    # Display the same row with summary values
-    set row_html "<tr>\n"
-    foreach column_var $column_vars {
-	append row_html "\t<td class=rowtitle>"
-	set cmd "append row_html $column_var"
-	eval "$cmd"
-	append row_html "</td>\n"
+    if {$ctr > 0} {
+	foreach var $var_list { set $var [set ${var}_total] }
+	set project_name ""
+	set project_nr ""
+	set on_track_status_id ""
+	set percent_completed_rounded $completed
+	set start_date $start_date_min
+	set end_date $end_date_max
+	
+	# Display the same row with summary values
+	set row_html "<tr>\n"
+	foreach column_var $column_vars {
+	    append row_html "\t<td class=rowtitle>"
+	    set cmd "append row_html $column_var"
+	    eval "$cmd"
+	    append row_html "</td>\n"
+	}
+	append row_html "</tr>\n"
+	append table_body_html $row_html
     }
-    append row_html "</tr>\n"
-    append table_body_html $row_html
-
 
 
     # Update the program with information from the included projects
