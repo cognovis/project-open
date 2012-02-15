@@ -331,7 +331,8 @@ ad_proc -public im_program_portfolio_list_component {
     }
     # Quotes override aritmetic median
     if {0.0 != $quotes_total} {
-	set completed [expr round(1000.0 * $quotes_done / $quotes_total) / 10.0]
+	# Santa: Projects usually don't have a budget...
+	# set completed [expr round(1000.0 * $quotes_done / $quotes_total) / 10.0]
     }
     # budget overrides quotes
     if {0.0 != $budget_total} {
