@@ -52,23 +52,8 @@ if {![file readable $tmp_filename]} {
     ad_script_abort
 }
 
-set csv_files_content [fileutil::cat $tmp_filename]
-set csv_files [split $csv_files_content "\n"]
-
-set separator [im_csv_guess_separator $csv_files]
-ns_log Notice "import-conf-2: trying with separator=$separator"
-# Split the header into its fields
-set csv_header [string trim [lindex $csv_files 0]]
-set csv_header_fields [im_csv_split $csv_header $separator]
-set csv_header_len [llength $csv_header_fields]
-set values_list_of_lists [im_csv_get_values $csv_files_content $separator]
-
-
 # ------------------------------------------------------------
 # Render Result Header
-
-set ttt {
-}
 
 ad_return_top_of_page "
         [im_header]
@@ -76,103 +61,8 @@ ad_return_top_of_page "
 	<ul>
 "
 
-
-
-
-# ------------------------------------------------------------
-# Loop through the CSV lines
-
-set type ""
-set key ""
-set value ""
-set package_key ""
-
-set cnt 1
-foreach csv_line_fields $values_list_of_lists {
-    incr cnt
-
-    # Write columns to local variables
-    for {set i 0} {$i < [llength $csv_header_fields]} {incr i} {
-	set var [lindex $csv_header_fields $i]
-	set val [lindex $csv_line_fields $i]
-	if {"" != $var} { set $var $val }
-    }
-
-    ns_write "<li>\n"
-    ns_write "<li>line: $cnt\n"
-    ns_write "<li>line=$cnt, type='$type', key='$key', package_key='$package_key', value='$value'\n"
-
-    switch [string tolower $type] {
-	category {
-	    set type_name [split $key "."]
-	    set category_type [string tolower [lindex $type_name 0]]
-	    set category [string tolower [lindex $type_name 1]]
-	    set category_ids [db_list cat "select category_id from im_categories where lower(category_type) = :category_type and lower(category) = :category"]
-	    if {[llength $category_ids] > 1} {
-		ns_write "<li>line=$cnt, $type: found more the one category matching category_type='$category_type' and category='$category'."
-		continue
-	    }
-	    if {[llength $category_ids] < 1} {
-		ns_write "<li>line=$cnt, $type: Did not find a category matching category_type='$category_type' and category='$category'."
-		continue
-	    }
-	    set old_value [db_string old_cat "select enabled_p from im_categories where category_id = :category_ids" -default ""]
-	    if {$value != $old_value} {
-		db_dml menu_en "update im_categories set enabled_p = :value where category_id = :category_ids"
-		ns_write "<li>line=$cnt, $type: Successfully update category_type='$category_type' and category='$category'."
-	    } else {
-		ns_write "<li>line=$cnt, $type: No update necessary."
-	    }
-	}
-	menu {
-	    set menu_id [db_string menu "select menu_id from im_menus where label=:value" -default 0]
-	    if {0 != $menu_id} {
-		set old_value [db_string old_value "select enabled_p from im_menus where label = :key" -default ""]
-		if {$value != $old_value} {
-		    db_dml menu_en "update im_menus set enabled_p = :value where label = :value"
-		    ns_write "<li>line=$cnt, $type: Successfully update menu label='$value'.\n"
-		} else {
-		    ns_write "<li>line=$cnt, $type: No update necessary."
-		}
-	    } else {
-	        ns_write "<li>line=$cnt, $type: Did not find menu label='$value'.\n"
-	    }
-	}
-	portlet {
-	    set portlet_id [db_string portlet "select plugin_id from im_component_plugins where plugin_name=:key and package_name=:package_key" -default 0]
-	    if {0 != $portlet_id} {
-		set old_value [db_string old_value "select enabled_p from im_component_plugins where plugin_name=:key and package_name=:package_key" -default ""]
-		if {$value != $old_value} {
-		    db_dml portlet "update im_component_plugins set enabled_p = :value where plugin_name=:key and package_name=:package_key"
-		    ns_write "<li>line=$cnt, $type: Successfully update portlet '$value'.\n"
-		} else {
-		    ns_write "<li>line=$cnt, $type: No update necessary."
-		}
-	    } else {
-	        ns_write "<li>line=$cnt, $type: Did not find portlet '$value'.\n"
-	    }
-	}
-	parameter {
-	    set parameter_id [db_string param "select parameter_id from apm_parameters where package_key = :package_key and lower(parameter_name) = lower(:key)" -default 0]
-	    if {0 == $parameter_id} {
-		ns_write "<li>line=$cnt, $type: Did not find parameter with package_key='$package_key' and name='$key'.\n"
-		continue
-	    }
-	    set old_value [db_string old_val "select min(attr_value) from apm_parameter_values where parameter_id = :parameter_id" -default ""]
-	    if {$value != $old_value} {
-		db_dml param "update apm_parameter_values set attr_value = :value where parameter_id = :parameter_id"
-		ns_write "<li>line=$cnt, $type: Successfully update parameter='$key'.\n"
-	    } else {
-		ns_write "<li>line=$cnt, $type: No update necessary."
-	    }
-	}
-	default {
-	    ns_write "<li>line=$cnt, type='$type' not implemented yet.\n"
-	}
-    }
-
-}
-
+set html [im_sysconfig_load_configuration $tmp_filename]
+ns_write $html
 
 # ------------------------------------------------------------
 # Render Report Footer
