@@ -149,17 +149,17 @@ ad_proc -public im_sysconfig_load_configuration { file } {
 		}
 	    }
 	    menu {
-		set menu_id [db_string menu "select menu_id from im_menus where label=:value" -default 0]
+		set menu_id [db_string menu "select menu_id from im_menus where label = :key" -default 0]
 		if {0 != $menu_id} {
 		    set old_value [db_string old_value "select enabled_p from im_menus where label = :key" -default ""]
 		    if {$value != $old_value} {
-			db_dml menu_en "update im_menus set enabled_p = :value where label = :value"
+			db_dml menu_en "update im_menus set enabled_p = :value where label = :key"
 			append html "<li>line=$cnt, $type: Successfully update menu label='$value'.\n"
 		    } else {
 			append html "<li>line=$cnt, $type: No update necessary."
 		    }
 		} else {
-		    append html "<li>line=$cnt, $type: Did not find menu label='$value'.\n"
+		    append html "<li>line=$cnt, $type: Did not find menu label='$key'.\n"
 		}
 	    }
 	    portlet {
@@ -195,6 +195,10 @@ ad_proc -public im_sysconfig_load_configuration { file } {
 	    }
 	}
     }
+
+    # Force recalculation of cached menus etc
+    im_permission_flush
+
     return $html
 }
 
