@@ -17,7 +17,7 @@ ad_page_contract {
 
   @author frank.bergmann@project-open.com
 } {
-
+    { return_url "" }
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -27,9 +27,73 @@ if {!$user_is_admin_p} {
     return
 }
 
+# Determine the template
+set pageroot [ns_info pageroot]
+set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
+set find_cmd [im_filestorage_find_cmd]
+if {"" == $return_url} { set return_url [im_url_with_query] }
 
 set page_title "[lang::message::lookup "" intranet-sysconfig.SysConfig "SysConfig"]"
 set context_bar [im_context_bar $page_title]
 
 set bgcolor(0) " class=rowodd"
 set bgcolor(1) " class=roweven"
+
+
+
+# ---------------------------------------------------------------
+# Search for suitable configuration files
+# ---------------------------------------------------------------
+
+template::multirow create templates template_name url
+
+set base_path "$serverroot/packages/intranet-sysconfig/templates"
+set files ""
+catch { set files [exec $find_cmd $base_path -noleaf -type f] }
+foreach file $files {
+    set file_name [lindex [split $file "/"] end]
+    set file_ext [lindex [split $file_name "."] end]
+    set file_body [lrange [split $file_name "."] 0 end-1]
+    
+
+    switch $file_body {
+	"CVS" - Entries - Root - Repository { continue }
+	"" { continue }
+	default {
+	    set hash($file_name) $file_name
+	}
+    }
+}
+
+set base_url "/intranet-sysconfig/import-conf/import-conf-2"
+foreach file_name [array names hash] {
+    set file_ext [lindex [split $file_name "."] end]
+    set file_body [lrange [split $file_name "."] 0 end-1]
+    
+    set abs_file_name "$base_path/$file_name"
+    set url [export_vars -base $base_url {{upload_file $abs_file_name} return_url}]
+
+    template::multirow append templates $file_name $url 
+   
+}
+
+template::multirow sort templates template_name
+
+list::create \
+    -name templates \
+    -multirow templates \
+    -key template_file_name \
+    -row_pretty_plural "[_ intranet-dynfield.Unmapped_Attributes]" \
+    -selected_format "normal" \
+    -class "list" \
+    -main_class "list" \
+    -sub_class "narrow" \
+    -pass_properties {
+    } -actions {
+    } -elements {
+        template_file_name {
+            label "[lang::message::lookup {} intranet-templateing-openoffice.Template {Template}]"
+            display_col template_name
+	    link_url_eval $url
+        }
+    }
