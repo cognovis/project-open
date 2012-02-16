@@ -2,44 +2,44 @@
 <property name="title">@page_title;noquote@</property>
 <property name="admin_navbar_label">admin_sysconfig</property>
 
-<!-- left - right - bottom  design -->
 
-<table cellpadding=0 cellspacing=0 border=0 width=100%>
-<tr>
-  <td valign=top>
+<table>
+<tr valign=top>
+<td>
 
-    <H2>@page_title;noquote@</H2>
-    <ul>
-	<li><a href="/intranet-sysconfig/segment/index">Basic Configuration Wizard</a><br>
-	&nbsp;
-	<li><a href="/intranet-sysconfig/ldap/index">LDAP Configuration Wizard</a><br>
-	&nbsp;
-	<li><a href="/intranet-sysconfig/export-conf/index">Export Configuration</a><br>
-	&nbsp;
-	<li><a href="/intranet-sysconfig/import-conf/index">Import Configuration</a><br>
-	&nbsp;
-    </ul>
+	<table cellpadding=0 cellspacing=0 border=0 width=100%>
+	<tr>
+	  <td valign=top>
+	    <H2>@page_title;noquote@</H2>
+	    <ul>
+		<li><a href="/intranet-sysconfig/segment/index">Basic Configuration Wizard</a><br>&nbsp;
+		<li><a href="/intranet-sysconfig/ldap/index">LDAP Configuration Wizard</a><br>&nbsp;
+		<li><a href="/intranet-sysconfig/export-conf/index">Export Configuration</a><br>&nbsp;
+		<li><a href="/intranet-sysconfig/import-conf/index">Import Configuration</a><br>&nbsp;
+	    </ul>
+	    <h2>Other</h2>
+	    <ul>
+		<li><a href="/intranet-sysconfig/unconfigure">Disable everything except SysConfig Wizard</a><br>&nbsp;
+		<li><a href="/intranet-sysconfig/del_security_tokens">Delete Security Tokens</a><br>&nbsp;
+		<li><a href="/intranet-sysconfig/move_projects">Move Projects & Forum Topics</a><br>&nbsp;
+	    </ul>
+	    <%= [im_component_bay left] %>
+	  </td>
+	  <td valign=top>
+	    <%= [im_component_bay right] %>
+	  </td>
+	</tr>
+	</table><br>
 
-    <h2>Other</h2>
-    <ul>
-	<li><a href="/intranet-sysconfig/unconfigure">Disable everything except SysConfig Wizard</a><br>
-	&nbsp;
+</td>
+<td>
+	<h2>Available Configuration Templates</h2>
+	<listtemplate name="templates"></listtemplate>
 
-	<li><a href="/intranet-sysconfig/del_security_tokens">Delete Security Tokens</a><br>
-	&nbsp;
-
-	<li><a href="/intranet-sysconfig/move_projects">Move Projects & Forum Topics</a><br>
-	&nbsp;
-
-    </ul>
-    <%= [im_component_bay left] %>
-
-  </td>
-  <td valign=top>
-    <%= [im_component_bay right] %>
-  </td>
+</td>
 </tr>
-</table><br>
+</table>
+
 
 <table cellpadding=0 cellspacing=0 border=0>
 <tr><td>
