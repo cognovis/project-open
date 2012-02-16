@@ -71,7 +71,7 @@ foreach file_name [array names hash] {
     set file_body [lrange [split $file_name "."] 0 end-1]
     
     set abs_file_name "$base_path/$file_name"
-    set url [export_vars -base $base_url {{upload_file $abs_file_name} return_url}]
+    set url [export_vars -base $base_url {{config_file $abs_file_name} return_url}]
 
     template::multirow append templates $file_name $url 
    

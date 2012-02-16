@@ -6,10 +6,14 @@
 ad_page_contract {
     Parse a CSV file and update the configuration.
     @author frank.bergmann@project-open.com
+    @param upload_file Parameter used during manual file upload
+    @param config_file Parameter used when a specific config is called
 } {
     return_url
-    upload_file
+    upload_file:optional
+    {config_file ""}
 }
+
 
 # ---------------------------------------------------------------
 # Defaults & Security
@@ -25,32 +29,26 @@ if {!$user_is_admin_p} {
 set page_title [lang::message::lookup "" intranet-sysconfig.Import_Conf "Import Configuration"]
 set context_bar [im_context_bar {} $page_title]
 
-# Get the file from the user.
-# number_of_bytes is the upper-limit
-set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
-set tmp_filename [ns_queryget upload_file.tmpfile]
-im_security_alert_check_tmpnam -location "import-conf-2.tcl" -value $tmp_filename
-if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
-    ad_return_complaint 1 "Your file is larger than the maximum permissible upload size:  [util_commify_number $max_n_bytes] bytes"
-    return
-}
 
-# strip off the C:\directories... crud and just get the file name
-if ![regexp {([^//\\]+)$} $upload_file match company_filename] {
-    # couldn't find a match
-    set company_filename $upload_file
+if {"" == $config_file} {
+    # Manual file upload:
+    # Get the file from the user.
+    # number_of_bytes is the upper-limit
+    set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
+    set config_file [ns_queryget upload_file.tmpfile]
+    im_security_alert_check_tmpnam -location "import-conf-2.tcl" -value $config_file
+    if { $max_n_bytes && ([file size $config_file] > $max_n_bytes) } {
+	ad_return_complaint 1 "Your file is larger than the maximum permissible upload size:  [util_commify_number $max_n_bytes] bytes"
+	return
+    }
 }
-
-if {[regexp {\.\.} $company_filename]} {
-    set error "Filename contains forbidden characters"
-    ad_returnredirect "/error.tcl?[export_url_vars error]"
-}
-
-if {![file readable $tmp_filename]} {
-    ad_return_complaint 1 "Unable to read the file '$tmp_filename'. <br>
+    
+if {![file readable $config_file]} {
+    ad_return_complaint 1 "Unable to read the file '$config_file'. <br>
     Please check the file permissions or contact your system administrator.\n"
     ad_script_abort
 }
+
 
 # ------------------------------------------------------------
 # Render Result Header
@@ -61,7 +59,7 @@ ad_return_top_of_page "
 	<ul>
 "
 
-set html [im_sysconfig_load_configuration $tmp_filename]
+set html [im_sysconfig_load_configuration $config_file]
 ns_write $html
 
 # ------------------------------------------------------------
