@@ -606,6 +606,8 @@ if {"odt" == $template_type} {
 # ---------------------------------------------------------------
 
 set invoice_date_pretty [lc_time_fmt $invoice_date "%x" $locale]
+set delivery_date_pretty2 [lc_time_fmt $delivery_date "%x" $locale]
+
 set calculated_due_date_pretty [lc_time_fmt $calculated_due_date "%x" $locale]
 
 set invoice_period_start_pretty [lc_time_fmt $invoice_period_start "%x" $locale]
