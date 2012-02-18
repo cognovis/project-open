@@ -1,7 +1,7 @@
 ad_page_contract {
     Page for users to register themselves on the site.
 
-    @cvs-id $Id: user-new.tcl,v 1.22 2007/05/06 06:58:40 maltes Exp $
+    @cvs-id $Id: user-new.tcl,v 1.2 2010/10/19 20:12:43 po34demo Exp $
 } {
     {email ""}
     {return_url [ad_pvt_home]}

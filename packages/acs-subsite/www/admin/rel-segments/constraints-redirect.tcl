@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Thu Jan  4 11:20:37 2001
-    @cvs-id $Id: constraints-redirect.tcl,v 1.2 2007/01/10 21:22:07 gustafn Exp $
+    @cvs-id $Id: constraints-redirect.tcl,v 1.2 2010/10/19 20:12:28 po34demo Exp $
 
 } {
     segment_id:naturalnum,notnull

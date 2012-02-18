@@ -12,7 +12,7 @@ ad_library {
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-message-procs.tcl,v 1.51 2008/06/07 20:28:55 donb Exp $
+    @cvs-id $Id: lang-message-procs.tcl,v 1.9 2011/06/06 14:42:38 po34demo Exp $
 }
 
 namespace eval lang::message {}

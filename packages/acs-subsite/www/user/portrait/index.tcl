@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author philg@mit.edu
     @creation-date September 26, 1999
-    @cvs-id $Id: index.tcl,v 1.10 2009/03/31 14:39:45 emmar Exp $
+    @cvs-id $Id: index.tcl,v 1.2 2010/10/19 20:12:46 po34demo Exp $
 } {
     {return_url "" }
     {user_id ""}

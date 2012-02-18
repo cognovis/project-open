@@ -14,7 +14,7 @@ ad_library {
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
     @author Christian Hvid
-    @cvs-id $Id: lang-util-procs.tcl,v 1.46 2010/01/08 17:39:58 emmar Exp $
+    @cvs-id $Id: lang-util-procs.tcl,v 1.2 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::util {}

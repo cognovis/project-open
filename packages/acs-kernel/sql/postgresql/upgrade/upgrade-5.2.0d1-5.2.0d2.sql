@@ -134,12 +134,14 @@ set title = (select name
                   where node_id = acs_objects.object_id)
 where object_type = 'site_node';
 
+-- fraber 120212: Fixed issue with some updates
 update acs_objects
 set title = (select instance_name
              from apm_packages
              where package_id = object_id),
     package_id = object_id
-where object_type in ('apm_package','apm_application','apm_service');
+where object_type in ('apm_package','apm_application','apm_service') and
+      object_id in (select package_id from apm_packages);
 
 update acs_objects
 set title = (select package_key || ', Version ' || version_name

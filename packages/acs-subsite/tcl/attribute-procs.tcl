@@ -7,7 +7,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Thu Dec  7 10:30:57 2000
-    @cvs-id $Id: attribute-procs.tcl,v 1.10 2007/09/19 13:29:55 gustafn Exp $
+    @cvs-id $Id: attribute-procs.tcl,v 1.2 2010/10/19 20:12:18 po34demo Exp $
 }
 
 ad_page_contract_filter attribute_dynamic_p { name value } {
