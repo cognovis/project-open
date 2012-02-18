@@ -161,6 +161,7 @@ ad_proc -public im_dynfield::widget_options_not_cached {
 				   [list "Search" search] \
 				   [list "Select" select] \
 				   [list "Select Text" select_text] \
+				   [list "Skype" skype] \
 				   [list "Submit" submit] \
 				   [list "Tab" tab] \
 				   [list "Text" text] \
@@ -289,9 +290,9 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	# Check whether the attribute is part of the form
 	if {[lsearch $form_elements $attribute_name] >= 0} {
 	    set value [template::element::get_value $form_id $attribute_name]
-	    ns_log Notice "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
+	    ns_log Debug "search_sql_criteria_from_form: attribute_name=$attribute_name, tcl_widget=$widget, value='$value'"
 	    if {"" == $value || 0 == $value} {
-		ns_log Notice "search_sql_criteria_from_form: Skipping"
+		ns_log Debug "search_sql_criteria_from_form: Skipping"
 		continue
 	    }
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
@@ -611,12 +612,14 @@ ad_proc -public im_dynfield::attribute_store {
 	    # Special treatment for certain types of widgets
 	    set widget_element [template::element::get_property $form_id $attribute_name widget]
 
+	    if {[info exists update_lines($table_name)]} {
+		set ulines $update_lines($table_name)
+            } else {
+                set ulines [list]
+            }
 	    switch $widget_element {
 		date {
-		    set ulines [list]
-		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
 		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_timestamp [set $attribute_name]]"
-		    set update_lines($table_name) $ulines
 		}
 		richtext {
 		    set $attribute_name [template::util::richtext::create [set $attribute_name] text/html]
@@ -1151,7 +1154,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 	}
 
-	if {$debug} { ns_log Notice "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
+	if {$debug} { ns_log Debug "append_attributes_to_form2: name=$attribute_name, display_mode=$display_mode" }
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
@@ -1417,7 +1420,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 
     # Show help text as part of a help GIF
     if {$help_text ne ""} {
-        set after_html [im_gif help $help_text]
+        set after_html [im_gif help [lang::util::localize $help_text]]
     } else {
         set after_html ""
     }
@@ -1834,17 +1837,27 @@ ad_proc -public im_dynfield::object_array {
 
     set array_val(object_type_column) $type_column
     set ref_column "${table_name}.${id_column}"
-    set tables [list $table_name]
-    set wheres [list "$ref_column = :object_id"]
+    set tables [list]
+    set wheres [list "$ref_column = $object_id"]
     set selects [list "${status_type_table}.$type_column"]
 
     foreach type [ams::object_parents -object_type $object_type -hide_current] {
-	db_1row object_type_info "select id_column, table_name from acs_object_types where object_type = :type"
-	lappend tables "$table_name"
-	lappend wheres "$ref_column = ${table_name}.${id_column}"
+	db_1row object_type_info "select id_column, table_name as parent_table_name from acs_object_types where object_type = :type"
+	lappend tables "$parent_table_name"
+	lappend wheres "$ref_column = ${parent_table_name}.${id_column}"
     }
+    
+    lappend tables $table_name
 
-
+    # Deal with out join tables
+    set outer_joins ""
+    db_foreach tables {select table_name, id_column from acs_object_type_tables where object_type = :object_type} {
+	if {[lsearch $tables $table_name]<0} {
+	    # We need an outer_join
+	    append outer_joins "LEFT OUTER JOIN $table_name ON ${table_name}.$id_column = $ref_column"
+	}
+    }
+    
     set attribute_names [list]
     set category_attribute_names [list]
     set deref_attribute_names [list]
@@ -1884,12 +1897,12 @@ ad_proc -public im_dynfield::object_array {
     }
 
     # Retreive the data
-    if { ![db_0or1row project_info_query "
-	select [join $selects ",\n"]
-	from [join $tables ",\n"]
-        WHERE [join $wheres "\n and "]"]
+    set sql "	select [join $selects ",\n"]
+	from [join $tables ",\n"] $outer_joins
+        WHERE [join $wheres "\n and "]"
+    if { ![db_0or1row project_info_query "$sql"]
      } {
-	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	ad_return_complaint 1 "Cant Find $sql"
 	return
     }
 

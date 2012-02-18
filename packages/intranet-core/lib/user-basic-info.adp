@@ -8,10 +8,12 @@
     </tr>
   </multiple>
 
+  <if @profile_component@ ne "">
   <tr @td_class;noquote@>
     <td>#intranet-core.Profile#</td>
     <td>@profile_component;noquote@</td>
   </tr>
+</if>
   <formtemplate id="person_view" style="standard-withouttabletab"></formtemplate>
     <tr>
       <td class=form-label>&nbsp;</td>

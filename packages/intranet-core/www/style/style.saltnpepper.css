@@ -931,7 +931,7 @@ a   span  {float:none;}
    font-size: 10pt; 
    color: #2e2e2e;
    /* background-color: #cccac1; */ 
-   background-color: #A6BAFE; 
+   background-color: #D0D0D0; 
    font-weight: bold;
 }
 
@@ -1082,7 +1082,7 @@ div#fullwidth-components {
 .table_list_page tr.row_undefined,
 .table_component tr.roweven,
 .table_component tr.rowodd,
-.list tr td {
+.list th tr td {
    border-bottom:1px solid #fff;
    border-top:1px solid #fff;
    background:#F4F4F4 url('/intranet/images/navbar_saltnpepper/gradback_light_grey.gif')
@@ -1141,7 +1141,8 @@ div#fullwidth-components {
 
 
 .table_list_page tfoot tr td, .table_component tfoot tr td, .list tfoot tr td {
-   background:#e8edff;
+   /* background:#e8edff; */
+   background:#ffffff;
    font-size:12px;
    color:#99c;
 }
@@ -1206,7 +1207,6 @@ table.list td {
         height: 200px;
         top: 200px;
         left:-37px;
-        /* background-image:url('intranet/images/navbar_saltnpepper/background.gif'); */
         background-position:top left;
         background-repeat:repeat-y;	
 	/* STOP NEW IDEBAR */
@@ -1762,4 +1762,28 @@ th.list-narrow {
     z-index: 9999;
     width: 100%;  
     height: 25px;
+}
+
+
+/* Overwriting lists.css */
+
+th.list-table, th.list-table-narrow, .list-table th {
+    border-bottom: 2px solid #CCCCCC;
+    padding: 8px 16px;
+}
+
+tr.last td {
+    border-bottom: 2px solid #CCCCCC;
+}
+
+td.list-table, td.list-table-narrow, .list-table td {
+    border-bottom: 1px solid #CCCCCC;
+    padding: 8px 16px;
+}
+
+.backward_smaller_than a, .forward_greater_than a {
+    font-size: 2em;
+    font-weight: bold;
+    text-decoration: none;
+    color: #666666;
 }

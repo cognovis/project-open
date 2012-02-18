@@ -289,7 +289,7 @@ set conf_item_perm_sql "
 			                acs_rels r
 			        where	r.object_id_one = c.conf_item_id
 			                and r.object_id_two = :current_user_id
-					and c.conf_item_status_id not in ([im_conf_item_status_deleted])
+					and c.conf_item_status_id not in (11702)
 			)"
 
 if {[im_permission $user_id "view_conf_items_all"]} {

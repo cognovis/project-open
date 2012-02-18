@@ -112,6 +112,7 @@ ad_proc -private im_material_status_options { {-include_empty 1} } {
 	from	im_categories
 	where	category_type = 'Intranet Material Status'
 		and (enabled_p = 't' OR enabled_p is null)
+	order by category
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -488,7 +489,7 @@ ad_proc -private im_material_create_from_parameters {
 		aa.attribute_id = da.acs_attribute_id and
 		da.widget_name = dw.widget_name and
 		coalesce(dl.page_url,'default') = 'default'
-	order by dl.pos_y, lower(aa.attribute_id)
+	order by dl.pos_y, aa.attribute_id
     "
 
     # params is a list of "variables" ordered by the sort order of the material's DynFields.

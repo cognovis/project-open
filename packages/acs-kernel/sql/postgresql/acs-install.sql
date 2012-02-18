@@ -5,7 +5,7 @@
 --
 -- @author Peter Marklund
 -- @creation-date 2000/10/01
--- @cvs-id $Id: acs-install.sql,v 1.27 2006/06/04 00:45:38 donb Exp $
+-- @cvs-id $Id: acs-install.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 create function inline_0 ()

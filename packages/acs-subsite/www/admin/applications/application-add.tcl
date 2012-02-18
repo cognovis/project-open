@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-05-28
-    @cvs-id $Id: application-add.tcl,v 1.11 2011/04/15 10:29:16 emmar Exp $
+    @cvs-id $Id$
 } {
     node_id:integer,optional
     {return_url "."}

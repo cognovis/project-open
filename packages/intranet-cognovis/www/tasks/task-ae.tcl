@@ -57,6 +57,18 @@ set current_user_id $user_id
 
 set normalize_project_nr_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NormalizeProjectNrP" -default 1]
 
+# Set the task_type_default depending on the project
+
+if {[info exists task_id]} {
+    set task_type_id [db_string ptype "select task_type_id from im_timesheet_tasks where task_id = :task_id" -default 0]
+}
+
+if {![exists_and_not_null task_type_id]} {
+    set task_type_id [db_string task_type "select aux_int2 from im_categories, im_projects where category_id = project_type_id and project_id = :parent_id" -default ""]
+    if {$task_type_id eq ""} {
+	set task_type_id 9500
+    }
+}
 
 # Check if this is really a task.
 if {[info exists task_id]} {
@@ -95,7 +107,6 @@ if {0 == $parent_id} {
 set ::super_project_id $parent_id
 
 set project_name_title [db_string project_name "select project_name from im_projects where project_id=:parent_id" -default "Unknown"]
-
 
 append page_title " for '$project_name_title'"
 
@@ -206,7 +217,7 @@ im_dynfield::append_attributes_to_form \
     -object_type "im_timesheet_task" \
     -form_id task \
     -object_id $my_task_id \
-    -object_subtype_id 9500
+    -object_subtype_id $task_type_id
 
 
 ad_form -extend -name task -on_request {
@@ -256,10 +267,6 @@ ad_form -extend -name task -on_request {
 	
 	# Set default Material to most used Material
 	set material_id $default_material_id
-    }
-
-    if {![exists_and_not_null task_type_id]} {
-	set task_type_id 9500
     }
 
     db_string task_insert {}

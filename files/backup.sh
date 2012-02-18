@@ -13,10 +13,11 @@
 # Change the variables below to fit your computer/backup
 #
 
+SERVICE=projop
 COMPUTER=yourserver.net              # name of this computer
 DBHOST=localhost                     # name of the computer running the database
 BACKUPUSER=backup                    # username to own the files
-BACKUPDIR=/backup/thisserver         # where to store the backups
+BACKUPDIR=/backup/$SERVICE         # where to store the backups
 BACKUPPART=/dev/hda1                 # which partition are we backing up to
                                      # (would be nice to figure this out automatically)
 WEBDIR=/var/lib/aolserver            # path to OpenACS service root
@@ -24,7 +25,7 @@ FULL_SPACE_FREE=5                    # must be this many GB free to run full bac
                                      # if not, try incremental
 INCR_SPACE_FREE=1                    # must be this many GB free to run incremental
                                      # if not, don't back up
-OTHERHOST=theservice.de              # another server, to receive backup
+OTHERHOST=                           # another server, to receive backup
                                      # files
                                      # leave blank to skip scp exchange
 
@@ -40,13 +41,8 @@ OTHERUSER=malte                     # the user on the recipient server
 
                                      # script assumes an exact match between database
                                      # name and filesystem
-POSTGRES_DBS="service0"              # space-separated list of postgres databases
+POSTGRES_DBS=$SERVICE              # space-separated list of postgres databases
                                      # to be backed up to file system
-
-ORACLE8I_DBS="service0"              # space-separated list of Oracle8i databases
-                                     # to be backed up to file system
-
-                                     # space-separated list of directories to be backed up
 
 KEEP_DAYS=7                          # Number of days to keep backups in $BACKUPDIR
 RSYNC="no"                          # Use RSYNC for the content-repository. Useful with large amount of content
@@ -54,14 +50,14 @@ RSYNC="no"                          # Use RSYNC for the content-repository. Usef
 #---------------------------------------------------------------------
 # a space-delimited list of directories to back up
 # A minimal backup  
-DIRECTORIES="/var/lib/aolserver/service0"
+DIRECTORIES="/var/lib/aolserver/$SERVICE"
 #
 # this is a fairly thorough set of data back - must run as root to work, though
 #DIRECTORIES="/etc /home /root /cvsroot /var/qmail/alias /usr/local/aolserver $WEBDIR"
 #---------------------------------------------------------------------
 
 # System Program Paths
-PG_BINDIR=/usr/local/pg80/bin       # path to PostGreSQL binaries
+PG_BINDIR=/usr/bin                   # path to PostGreSQL binaries
 TIMEDIR=$BACKUPDIR/last-full         # where to store time of full backup
 TAR=/bin/tar                         # name and location of tar
 CHOWN=/bin/chown
@@ -155,23 +151,18 @@ echo -e "\nPostgres"
 
 for dbname in $POSTGRES_DBS
 do
-    dmp_file=$WEBDIR/$dbname/database-backup/$dbname-nightly-backup.dmp
-    echo -n "-> Dumping $dbname to $dmp_file ... "
-    time $PG_BINDIR/pg_dump -f $dmp_file -Fp $dbname -h $DBHOST
+    dmp_file=$WEBDIR/$dbname/$dbname-nightly-backup.dmp
+    echo -n "-> Dumping $dbname to $dmp_file ... for $dbname "
+    if [[ $DBHOST == "" ]];
+      then
+        time $PG_BINDIR/pg_dump -f $dmp_file -Fp $dbname
+      else
+        time $PG_BINDIR/pg_dump -f $dmp_file -Fp $dbname -h $DBHOST
+    fi
     /bin/ls -lh $dmp_file | awk '{print $5}'
     gzip -f $dmp_file
 done
 
-#---------------------------------------------------------------------
-# Oracle
-for dbname in $ORACLE8IDBS
-do
-    dmp_file=$WEBDIR/$dbname/database-backup/$dbname-nightly-backup.dmp
-    echo -n "-> Dumping $dbname to $dmp_file ... "
-    time /usr/sbin/export-oracle $dbname $dmp_file
-    /bin/ls -lh $dmp_file | awk '{print $5}'
-    gzip -f $dmp_file
-done
 
 #---------------------------------------------------------------------
 # Make backup files from file system and transfer to remote site

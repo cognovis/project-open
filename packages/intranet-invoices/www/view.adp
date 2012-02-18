@@ -40,7 +40,9 @@
   <td>
     @payment_list_html;noquote@
   </td>
-
+  <td>
+    @linked_list_html;noquote@
+  </td>
 
 <if @surcharge_enabled_p@>
 <td>
@@ -98,7 +100,8 @@
 	  <% set preview_vars [export_url_vars invoice_id render_template_id return_url] %>
 	  <A HREF="/intranet-invoices/view?@preview_vars@">
 		<%= [lang::message::lookup "" intranet-invoices.Preview_using_template "Preview using template"] %>
-	  </A>
+	  </A>&nbsp;
+          (<A HREF="/intranet-invoices/view?@preview_vars@&pdf_p=1">PDF</A>)
         <li>
           <% set render_template_id $template_id %>
           <% set preview_vars [export_url_vars invoice_id render_template_id return_url] %>
@@ -255,8 +258,11 @@
           <td  class=roweven>@cost_center_name@</td>
         </tr>
 </if>
-
-<if @invoice_or_bill_p@>
+        <tr> 
+          <td  class=rowodd>#intranet-invoices.delivery_date#</td>
+          <td  class=rowodd>@delivery_date_pretty2@</td>
+	</tr>
+<if @invoice_or_bill_p@ eq 1>
         <tr> 
           <td  class=rowodd>#intranet-invoices.cost_type_due_date#</td>
           <td  class=rowodd>@due_date@</td>
@@ -282,7 +288,7 @@
 
 	<tr>
           <td class=roweven>#intranet-invoices.cost_type_type_1#</td>
-          <td class=roweven>@cost_type@</td>
+          <td class=roweven>@current_cost_type@</td>
         </tr>
 
         <tr> 

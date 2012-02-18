@@ -209,7 +209,7 @@ if {$view_order_by_clause != ""} {
                         set order_by_clause "p.project_id, task_name ASC, type_name, target_language"
     }
 } else {
-            set order_by_clause "p.project_id"
+            set order_by_clause "t.task_name"
 }
 
 
@@ -421,7 +421,7 @@ if {$aggregate_tasks_p} {
                         set order_by_clause "p.project_id, task_name ASC, type_name ASC, target_language ASC"
 	    }
 	} else {
-        	set order_by_clause "p.project_id"
+        	set order_by_clause "t.task_name"
 	}
 
 
@@ -624,6 +624,7 @@ db_foreach task_sum_query $task_sum_sql {
     # from the current stack environment
     set material_id [im_material_create_from_parameters -material_uom_id $task_uom_id -material_type_id [im_material_type_translation] -debug 1]
 
+set material_id ""
     # insert intermediate headers for every project
     if {$old_project_id != $project_id} {
 	append task_sum_html "
@@ -700,6 +701,8 @@ db_foreach task_sum_query $task_sum_sql {
     }
 
     # Minimum Price Logic
+    regsub -all {,} $best_match_price {.} best_match_price
+    regsub -all {,} $task_sum {.} task_sum
     if {[expr $best_match_price * $task_sum] < $best_match_min_price} {
 	set task_sum 1
 	set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(Minimum Fee)"]"

@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-05
--- @cvs-id $Id: site-nodes-create.sql,v 1.24 2010/11/24 18:58:45 victorg Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function inline_0 ()

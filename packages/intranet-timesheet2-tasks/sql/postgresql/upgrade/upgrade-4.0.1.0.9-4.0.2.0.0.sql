@@ -4,10 +4,14 @@ SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrad
 
 
 
+update im_categories
+set category_type = 'Intranet Timesheet Task Fixed Task Type'
+where category_type = 'Intranet Timesheet Task Effort Driven Type';
 
-SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Effort Driven Type');
-SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Effort Driven Type');
-SELECT im_category_new(9722,'Fixed Work', 'Intranet Timesheet Task Effort Driven Type');
+
+SELECT im_category_new(9720,'Fixed Units', 'Intranet Timesheet Task Fixed Task Type');
+SELECT im_category_new(9721,'Fixed Duration', 'Intranet Timesheet Task Fixed Task Type');
+SELECT im_category_new(9722,'Fixed Work', 'Intranet Timesheet Task Fixed Task Type');
 
 
 

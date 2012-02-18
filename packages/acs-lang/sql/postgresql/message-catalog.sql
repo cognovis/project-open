@@ -5,7 +5,7 @@
 -- @author Jeff Davis (davis@xarg.net)
 -- @author Christian Hvid
 -- @creation-date 2000-09-10
--- @cvs-id $Id: message-catalog.sql,v 1.17 2006/09/25 20:41:12 byronl Exp $
+-- @cvs-id $Id: message-catalog.sql,v 1.2 2010/10/19 20:11:52 po34demo Exp $
 --
 
 begin;

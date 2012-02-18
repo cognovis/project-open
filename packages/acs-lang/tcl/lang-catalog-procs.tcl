@@ -24,7 +24,7 @@ ad_library {
     @author Jeff Davis
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-catalog-procs.tcl,v 1.49 2009/03/31 20:13:30 emmar Exp $
+    @cvs-id $Id: lang-catalog-procs.tcl,v 1.2 2010/10/19 20:11:53 po34demo Exp $
 }
 
 namespace eval lang::catalog {}

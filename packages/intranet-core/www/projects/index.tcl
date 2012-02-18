@@ -91,7 +91,7 @@ ad_page_contract {
 # User id already verified by filters
 
 set show_context_help_p 0
-
+set filter_admin_html ""
 set user_id [ad_maybe_redirect_for_registration]
 set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set subsite_id [ad_conn subsite_id]
@@ -260,12 +260,13 @@ set user_select_groups {}
 foreach g $managable_profiles {
     lappend user_select_groups [lindex $g 1]
 }
+
 set user_options [im_profile::user_options -profile_ids $user_select_groups]
 set user_options [linsert $user_options 0 [list "#intranet-core.All#" ""]]
 
 ad_form -extend -name $form_id -form {
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
-    {company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options}}
+    {company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options} {value $company_id}}
     {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
     {start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
     {end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
@@ -664,7 +665,8 @@ if {[im_permission $current_user_id "add_projects"]} {
 }
 
 # Append user-defined menus
-append admin_html [im_menu_ul_list -no_uls 1 "projects_admin" {}]
+set bind_vars [list return_url $return_url]
+append admin_html [im_menu_ul_list -no_uls 1 "projects_admin" $bind_vars]
 append admin_html "</ul>"
 
 # ---------------------------------------------------------------
@@ -846,9 +848,12 @@ set project_navbar_html [\
 eval [template::adp_compile -string {<formtemplate id="project_filter" style="tiny-plain"></formtemplate>}]
 set filter_html $__adp_output
 
-
-# Left Navbar is the filter/select part of the left bar
-set left_navbar_html "
+# Customizing for Kolibri. Do not show the filter to freelancers
+if {[im_profile::member_p -user_id $user_id -profile "Freelancers"]} {
+    set left_navbar_html ""
+} else {
+    # Left Navbar is the filter/select part of the left bar
+    set left_navbar_html "
 	<div class='filter-block'>
         	<div class='filter-title'>
 	           #intranet-core.Filter_Projects# $filter_admin_html
@@ -857,7 +862,7 @@ set left_navbar_html "
       	</div>
       <hr/>
 "
-
+}
 append left_navbar_html "
       	<div class='filter-block'>
         <div class='filter-title'>

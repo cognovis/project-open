@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author mbryzek@mit.edu
     @creation-date 2000-12-11
-    @cvs-id $Id: add.tcl,v 1.10 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id: add.tcl,v 1.2 2010/10/19 20:12:34 po34demo Exp $
 } {
     group_id:integer,notnull
     rel_type:notnull

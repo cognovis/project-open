@@ -5,7 +5,7 @@
 --
 -- @author Multiple
 -- @creation-date Wed Nov  1 10:32:08 2000
--- @cvs-id $Id: upgrade-4.0-4.0.1.sql,v 1.2 2001/05/11 00:14:48 donb Exp $
+-- @cvs-id $Id: upgrade-4.0-4.0.1.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
 
 -- upgrade security.
 

@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id $Id: groups-drop.sql,v 1.1 2001/03/20 22:51:55 donb Exp $
+-- @cvs-id $Id: groups-drop.sql,v 1.2 2010/10/19 20:11:34 po34demo Exp $
 --
 
 drop package acs_group;

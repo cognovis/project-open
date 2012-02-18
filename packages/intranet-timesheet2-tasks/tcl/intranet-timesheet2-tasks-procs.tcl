@@ -54,7 +54,7 @@ ad_proc -public im_timesheet_task_scheduling_type_fnet { } { return 9706 }
 ad_proc -public im_timesheet_task_scheduling_type_fnlt { } { return 9707 }
 
 
-# Effort Driven Type
+# Fixed Task Type
 ad_proc -public im_timesheet_task_effort_driven_type_fixed_units { } { return 9720 }
 ad_proc -public im_timesheet_task_effort_driven_type_fixed_duration { } { return 9721 }
 ad_proc -public im_timesheet_task_effort_driven_type_fixed_work { } { return 9722 }
@@ -673,7 +673,7 @@ ad_proc -public im_timesheet_task_list_component {
 	switch $project_type_id {
 	    100 {
 		# Timesheet Task
-		set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
+		set object_url [export_vars -base "/intranet-timesheet2-tasks/view" {{task_id $child_project_id} return_url}]
 	    }
 	    101 {
 		# Ticket
@@ -751,8 +751,9 @@ ad_proc -public im_timesheet_task_list_component {
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
     #
+    set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]
+    
     if {[empty_string_p $table_body_html] && "" == $prev_page_url && "" == $next_page_url} {
-        set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]
 	set table_body_html "
 		<tr class=table_list_page_plain>
         <td colspan=$colspan align=left>
@@ -786,8 +787,7 @@ ad_proc -public im_timesheet_task_list_component {
     #
     set action_html "
 	<td align=left>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id task_status_id return_url]\"
-		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+           <a href=\"$new_task_url\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
 	</td>
 	<td align=right>
 		<select name=action>
@@ -795,10 +795,6 @@ ad_proc -public im_timesheet_task_list_component {
 		<option value=delete>[_ intranet-timesheet2-tasks.Delete]</option>
 		</select>
 		<input type=submit name=submit value='[_ intranet-timesheet2-tasks.Apply]'>
-		<br>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\"
-		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
-		
 	</td>
     "
     if {!$write} { set action_html "" }
@@ -859,9 +855,65 @@ ad_proc -public im_timesheet_task_info_component {
     set html ""
 
     #
-    # small form to add new dependency
+    # the two dependency lists
     #
 
+    foreach {a b info} [list \
+	two one [lang::message::lookup "" intranet-timesheet2-tasks.This_task_depends_on "This task depends on"] \
+	one two [lang::message::lookup "" intranet-timesheet2-tasks.These_tasks_depend_on_this_task "These tasks depend on this task"] \
+    ] {
+	append html "<br>\n<p>$info:"
+
+	db_multirow delete_task_deps_$a delete_task_deps_$a "
+            SELECT
+                task_id_one,
+                task_id_two,
+                task_id_$a AS id,
+                project_nr,
+                project_name,
+		im_category_from_id(dependency_type_id) as dependency_type,
+		round(difference / 4800.0, 1) as lag_days
+            from 
+                im_timesheet_task_dependencies,
+		im_projects
+	    where 
+                task_id_$b = :task_id and
+		task_id_$a = project_id
+            "
+
+	template::list::create \
+	    -name delete_task_deps_$a \
+	    -key task_id_$a \
+	    -pass_properties { return_url project_id task_id } \
+	    -elements {
+		project_nr {
+		    label "[_ intranet-timesheet2-tasks.Task_Nr]"
+		    link_url_eval { 
+			[return "/intranet-timesheet2-tasks/new?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
+		    }
+		}
+		dependency_type {
+		    label "[lang::message::lookup {} intranet-timesheet2-tasks.Dependency_Type Type]"
+		}
+		lag_days {
+		    label "[lang::message::lookup {} intranet-timesheet2-tasks.Lag_Days {Lag (Days)}]"
+		}
+		project_name {
+		    label "[_ intranet-timesheet2-tasks.Task_Name]"
+		}
+	    } \
+	    -bulk_actions [list [_ intranet-core.Delete] "/intranet-timesheet2-tasks/delete-dependency" "Delete selected task dependency"] \
+	    -bulk_action_export_vars { return_url project_id task_id } \
+	    -bulk_action_method post
+
+	append html [template::list::render -name delete_task_deps_$a]
+    }
+
+
+    #
+    # small form to add new dependency
+    #
+    append html "<br>\n"
     append html "<form action=\"/intranet-timesheet2-tasks/add-dependency\">"
     append html [export_vars -form { return_url task_id } ]
     append html "<select name=dependency_id><option value=\"0\">---</option>"
@@ -881,51 +933,8 @@ ad_proc -public im_timesheet_task_info_component {
     }
     append html "</select><input type=submit value=\"[lang::message::lookup "" intranet-timesheet2-tasks.Add_Dependency "Add Dependency"]\"></form>"
     
-    #
-    # the two dependency lists
-    #
 
-    foreach {a b info} [list \
-	two  one [lang::message::lookup "" intranet-timesheet2-tasks.This_task_depends_on "This task depends on"] \
-	one  two [lang::message::lookup "" intranet-timesheet2-tasks.These_tasks_depend_on "These tasks depend on this one"] \
-    ] {
-	append html "<p>$info:"
 
-	db_multirow delete_task_deps_$a delete_task_deps_$a "
-            SELECT
-                task_id_one,
-                task_id_two,
-                task_id_$a AS id,
-                project_nr,
-                project_name
-            from 
-                im_timesheet_task_dependencies,im_projects
-	    where 
-                task_id_$b = :task_id AND dependency_type_id = [im_timesheet_task_dependency_type_depends]
-                and task_id_$a = project_id
-            "
-
-	template::list::create \
-	    -name delete_task_deps_$a \
-	    -key task_id_$a \
-	    -pass_properties { return_url project_id task_id } \
-	    -elements {
-		project_nr {
-		    label "[_ intranet-timesheet2-tasks.Task_Nr]"
-		    link_url_eval { 
-			[return "/intranet-timesheet2-tasks/new?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
-		    }
-		} 
-		project_name {
-		    label "[_ intranet-timesheet2-tasks.Task_Name]"
-		}
-	    } \
-	    -bulk_actions [list [_ intranet-core.Delete] "/intranet-timesheet2-tasks/delete-dependency" "Delete selected task dependency"] \
-	    -bulk_action_export_vars { return_url project_id task_id } \
-	    -bulk_action_method post
-
-	    append html [template::list::render -name delete_task_deps_$a]
-    }
     return $html
 }
 
@@ -979,6 +988,49 @@ ad_proc -public im_timesheet_task_members_component {
 
     return $html
 }
+
+# ----------------------------------------------------------------------
+# Timesheet Task Info Component
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_timesheet_task_info2_component {
+    task_id
+    return_url
+} {
+    
+
+    set params [list  [list base_url "/intranet-timesheet2-tasks/"]  [list task_id $task_id] [list return_url $return_url]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/task-info"]
+
+    return [string trim $result]
+}
+
+
+
+# ----------------------------------------------------------------------
+# Home Tasks Component
+# ---------------------------------------------------------------------
+ad_proc -public im_timesheet_task_home_component {
+    {-page_size 20}
+    {-restrict_to_status_id 76}
+    {-return_url ""}
+} {
+
+    @creation-date 2011-01-12
+} {
+
+    # set the page variable (hopefully)
+    set page [ns_queryget page 1]
+    set orderby [ns_queryget orderby priority]
+    set params [list [list base_url "/intranet-timesheet2-tasks/"] [list page_size $page_size] [list restrict_to_status_id $restrict_to_status_id] [list orderby $orderby] [list page $page] [list return_url $return_url]]
+
+    set result [ad_parse_template -params $params "/packages/intranet-timesheet2-tasks/lib/home-tasks"]
+    return [string trim $result]
+}
+
+
 
 
 # -------------------------------------------------------------------

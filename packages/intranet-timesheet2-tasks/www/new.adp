@@ -19,17 +19,7 @@
       <formtemplate id="task"></formtemplate>
       <%= [im_box_footer] %>
 
-<if @form_mode@ eq "display" >
-      <%= [im_component_bay left] %>
-</if>
-
     </td>
-
-<if @form_mode@ eq "display" >
-    <td width="50%">
-      <%= [im_component_bay right] %>
-    </td>
-</if>
 
   </tr>
   <tr>

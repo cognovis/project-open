@@ -382,6 +382,7 @@ ad_proc -public im_project_create_dependency {
             <customproperty taskproperty-id="tpc0" value="nothing..." />
           </task>
 } {
+    ns_log Notice "im_ganttproject_create_dependency: task_id_one=$task_id_one, task_id_two=$task_id_two, depend-type=$depend_type, difference=$difference, hardness=$hardness"
     array set task_hash $task_hash_array
 
     set org_task_id_one task_id_one
@@ -389,8 +390,6 @@ ad_proc -public im_project_create_dependency {
 
     if {[info exists task_hash($task_id_one)]} { set task_id_one $task_hash($task_id_one) }
     if {[info exists task_hash($task_id_two)]} { set task_id_two $task_hash($task_id_two) }
-
-#    ns_write "<li>im_ganttproject_create_dependency($org_task_id_one =&gt; $task_id_one, $org_task_id_two =&gt; $task_id_two, $depend_type, $hardness)\n"
 
     # ----------------------------------------------------------
     # Check if the two task_ids exist
@@ -409,7 +408,7 @@ ad_proc -public im_project_create_dependency {
  	"
     }
 
-    set dependency_type_id [db_string dependency_type "select category_id from im_categories where (category = :depend_type or aux_int1 = :depend_type) and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
+    set dependency_type_id [db_string dependency_type "select category_id from im_categories where (category = :depend_type OR aux_int1 = :depend_type) and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
     set hardness_type_id [db_string dependency_type "select category_id from im_categories where category = :hardness and category_type = 'Intranet Timesheet Task Dependency Hardness Type'" -default ""]
     
 
@@ -474,8 +473,8 @@ ad_proc -public im_gp_save_tasks {
     {-save_dependencies 1}
     {-task_hash_array ""}
     {-debug_p 0}
-    root_node 
-    super_project_id 
+    root_node
+    main_project_id 
 } {
     Parse the XML tree of a MS-Project or OpenProj file and
     start the recursive iteration through all sub-tasks.
@@ -505,9 +504,9 @@ ad_proc -public im_gp_save_tasks {
 	if {[db_string check_gantt_project_entry "
 		select	count(*)=0 
 		from	im_gantt_projects 
-		where	project_id = :super_project_id
+		where	project_id = :main_project_id
         "]} {
-	    db_dml add_gantt_project_entry "insert into im_gantt_projects (project_id,xml_elements) values (:super_project_id, '')"
+	    db_dml add_gantt_project_entry "insert into im_gantt_projects (project_id,xml_elements) values (:main_project_id, '')"
 	}
 
 	# Store the information of the main project in the super_project's im_gantt_project entry.
@@ -522,19 +521,19 @@ ad_proc -public im_gp_save_tasks {
 
 	    switch [string tolower $nodeName] {
 		"name" - "title" - "manager" - "calendaruid" - "calendars" - 
-		"tasks" - "resources" - "assignments" - "schedulefromstart" {
+		"tasks" - "resources" - "assignments" {
 		    ns_log Notice "im_gp_save_tasks: Ignore project information"
 		    # ignore these
 		}
 		"startdate" {
 		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.start_date"
 		    db_dml project_start_date "
-			UPDATE im_projects SET start_date = :nodeText WHERE project_id = :super_project_id"
+			UPDATE im_projects SET start_date = :nodeText WHERE project_id = :main_project_id"
 		}
 		"finishdate" {		    
 		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.end_date"
 		    db_dml project_end_date "
-			UPDATE im_projects SET end_date = :nodeText WHERE project_id = :super_project_id"
+			UPDATE im_projects SET end_date = :nodeText WHERE project_id = :main_project_id"
 		}
 		default {
 		    im_ganttproject_add_import "im_gantt_project" $nodeName
@@ -542,7 +541,7 @@ ad_proc -public im_gp_save_tasks {
 		    db_dml update_import_field "
 			UPDATE	im_gantt_projects 
 			SET	[plsql_utility::generate_oracle_name $column_name] = :nodeText
-			WHERE	project_id = :super_project_id
+			WHERE	project_id = :main_project_id
                     "
 		}
 	    }	    
@@ -551,7 +550,7 @@ ad_proc -public im_gp_save_tasks {
 	db_dml update_import_field "
 		UPDATE	im_gantt_projects 
 		SET	xml_elements = :xml_elements
-		WHERE	project_id = :super_project_id
+		WHERE	project_id = :main_project_id
         "
 
 	set tasks_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Tasks"]
@@ -560,7 +559,7 @@ ad_proc -public im_gp_save_tasks {
     set super_task_node ""
     set sort_order 0
 
-    # Tricky: The task_hash contains the mapping from gantt_task_id => task_id
+    # Tricky: The task_hash contains the mapping from uid => task_id
     # for both tasks and projects. We have to pass this array around between the
     # recursive calls because TCL doesnt have by-value variables
     array set task_hash $task_hash_array
@@ -578,7 +577,8 @@ ad_proc -public im_gp_save_tasks {
 			-save_dependencies $save_dependencies \
 			-debug_p $debug_p \
 			$child \
-			$super_project_id \
+			$main_project_id \
+			$main_project_id \
 			sort_order \
 			[array get task_hash] \
 		]
@@ -600,11 +600,17 @@ ad_proc -public im_gp_save_tasks2 {
     -save_dependencies
     task_node 
     super_project_id 
+    main_project_id
     sort_order_name
     task_hash_array
 } {
     Stores a single task into the database.
     Recursively descenses the XML tree with tasks and sub-tasks.
+    @param task_node: The tDom "task" node to parse here
+    @param super_project_id: The current super-project where to create new tasks.
+    @param main_project_id: The top-level project.
+    @param sort_order_name: How to sort the projects
+    @param task_hash_array: A mapping UID->task_id and WBS->task_id
 } {
     upvar 1 $sort_order_name sort_order
     incr sort_order
@@ -614,17 +620,13 @@ ad_proc -public im_gp_save_tasks2 {
     if {$debug_p} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
     set task_url "/intranet-timesheet2-tasks/new?task_id="
 
-    # Check if the super_project_id was stored in the task_hash
-    # This doesn't make sense if this procedure is used recursively...
-    #    if {[info exists task_hash(super_project_id)]} {
-    #        set super_project_id $task_hash($super_project_id)
-    #    }
-
-    # The gantt_project_id as returned from the XML file.
-    # This ID does not correspond to a OpenACS object,
-    # because GanttProject generates simply consecutive
+    # GanttProject: The gantt_project_id as returned from 
+    # the XML file. This ID does not correspond to a OpenACS 
+    # object, because GanttProject generates simply consecutive
     # IDs for new objects.
-    set gantt_project_id [$task_node getAttribute id ""]
+    # MS-Project: uid will be overwritten when parsing the
+    # task attributes.
+    set uid			[$task_node getAttribute id ""]
 
     set task_name		[$task_node getAttribute name ""]
     set start_date		[$task_node getAttribute start ""]
@@ -653,11 +655,11 @@ ad_proc -public im_gp_save_tasks2 {
     foreach taskchild [$task_node childNodes] {
 	set nodeName [$taskchild nodeName]
 	set nodeText [$taskchild text]
-	ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
+	# ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
 
         switch [string tolower $nodeName] {
             "name"              { set task_name $nodeText }
-	    "uid"               { set gantt_project_id $nodeText }
+	    "uid"               { set uid $nodeText }
 	    "isnull"		{ set is_null $nodeText }
 	    "duration"          { set duration $nodeText }
 	    "remainingduration" { set remaining_duration $nodeText }
@@ -785,9 +787,9 @@ ad_proc -public im_gp_save_tasks2 {
 
     # MS-Project creates a task with ID=0 and an empty name,
     # probably to represent the top-project. Let's ignore this one:
-    ns_log Notice "im_gp_save_tasks2: Found task with task_name='$task_name', uid='$gantt_project_id'"
-    if {"" == $task_name || 0 == $gantt_project_id} { 
-	ns_log Notice "im_gp_save_tasks2: Ignoring task with task_name='$task_name', uid=$gantt_project_id"
+    ns_log Notice "im_gp_save_tasks2: Found task with task_name='$task_name', uid='$uid'"
+    if {"" == $task_name || 0 == $uid} { 
+	ns_log Notice "im_gp_save_tasks2: Ignoring task with task_name='$task_name', uid=$uid"
 	return 
     }
 
@@ -799,7 +801,7 @@ ad_proc -public im_gp_save_tasks2 {
     # ToDo: Potentially dangerous - there could be a case with
     # a duplicated gantt_id.
     if {"" == $task_nr} {
-	set task_id_zeros $gantt_project_id
+	set task_id_zeros $uid
 	while {[string length $task_id_zeros] < 4} { set task_id_zeros "0$task_id_zeros" }
 	set task_nr "task_$task_id_zeros"
     }
@@ -819,7 +821,7 @@ ad_proc -public im_gp_save_tasks2 {
 	where	project_id = :super_project_id
     "
 
-    if {$debug_p} { ns_write "<li>$task_name...\n<li>task_nr='$task_nr', gantt_id=$gantt_project_id, task_id=$task_id" }
+    if {$debug_p} { ns_write "<li>$task_name...\n<li>task_nr='$task_nr', uid=$uid, task_id=$task_id" }
 
 
 
@@ -827,13 +829,12 @@ ad_proc -public im_gp_save_tasks2 {
     # Determine the parent of the project.
     # GanttProject: The super_project_id is determined by the recursive structure of tasks within task elements
     set parent_id $super_project_id
+
     # Microsoft Project: The WBS field contains the hierarchy. We have to cut off the last element, though
     set outline_list [split $outline_number "\."]
     if {[llength $outline_list] >= 2} {
-	# Cut off the last element of the list
+	# Cut off the last element of the list and joint together again
 	set outline_list [lrange $outline_list 0 end-1]
-
-	# Join the elements together again with a "."
 	set outline_task_key "o[join $outline_list "."]"
 	
 	# Lookup this outline in the task_hash
@@ -843,43 +844,60 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # -----------------------------------------------------
+    # Map the M$/GanttProject uid into a ]po[ task_id
+
     # Check if the task has already been mapped to a GanttID
     # in a previous run of this procedure.
-    #
-    if {[info exists task_hash($gantt_project_id)]} {
-	set task_id $task_hash($gantt_project_id)
+    if {[info exists task_hash($uid)]} {
+	set task_id $task_hash($uid)
+	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id in task_hash using UID=$uid" }
     }
 
-    # -----------------------------------------------------
-    # Check if a task with the task_nr or the task_name exists in the DB
+    # Look for a task with the specified UID
     if {0 == $task_id} {
 	set task_id [db_string task_id_from_nr "
-		select	task_id 
-		from	im_timesheet_tasks_view
-		where	project_id = :parent_id and task_nr = :task_nr
+		select	gp.project_id
+		from	im_projects p,
+			im_projects main_p,
+			im_gantt_projects gp
+		where	main_p.project_id = :main_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+			p.project_id = gp.project_id and
+			gp.xml_uid = :uid
         " -default 0]
-    }
-    if {0 == $task_id} {
-	set task_id [db_string task_id_from_name "
-		select	task_id 
-		from	im_timesheet_tasks_view
-		where	project_id = :parent_id and lower(task_name) = lower(:task_name)
-        " -default 0]
+	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id in xml_uid using UID=$uid" }
     }
 
-    # -----------------------------------------------------
-    # Check if the task exists in the DB
-    set task_exists_p [db_string task_exists_p "
-	select	count(*)
-	from	im_projects
-	where	project_id = :task_id
-    "]
+    # Check for a task with the same task_nr or task_name below the specified parent. 
+    # This could be necessary if a new task was created by ]po[.
+    if {0 == $task_id} {
+	set task_id [db_string task_id_from_nr "
+		select	p.project_id
+		from	im_projects p,
+			im_timesheet_tasks t
+		where	t.task_id = p.project_id and
+			p.parent_id = :parent_id and 
+			(p.project_nr = :task_nr OR lower(p.project_name) = lower(:task_name))
+        " -default 0]
+	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id using parent_id=$parent_id, task_nr=$task_nr or task_name=$task_name" }
+    }
+
+    if {0 && 0 == $task_id} {
+       ad_return_complaint 1 "im_gp_save_tasks2: Didn't find task with task_id=$task_id:<br>
+       			   task_hash='[array get task_hash]'<br>
+			   task_nr=$task_nr<br>
+			   task_name=$task_name<br>
+       "
+       ad_script_abort
+    }
+
 
     # -----------------------------------------------------
     # Create a new task if:
-    # - if task_id=0 (new task created in GanttProject)
+    # - if task_id=0 (new task created in M$-Project or GanttProject)
     # - if there is a task_id, but it's not in the DB (import from GP)
     set task_created_p 0
+    set task_exists_p [db_string task_exists_p "select count(*) from im_projects where project_id = :task_id"]
     if {0 == $task_id || !$task_exists_p} {
 
 	if {$create_tasks} {
@@ -915,10 +933,13 @@ ad_proc -public im_gp_save_tasks2 {
 
 
     # -----------------------------------------------------
-    # Write the mapping of gantt_project_id and task_id to the task_hash
-    if {0 != $task_id} {
-	set task_hash($gantt_project_id) $task_id
+    # Write the mapping of uid and task_id to the task_hash
+    if {"" != $task_id && 0 != $task_id} {
+	set task_hash($uid) $task_id
 	set task_hash(o$outline_number) $task_id
+    } else {
+	ad_return_complaint 1 "<b>im_gp_save_tasks2: found an empty task_id for uid=$uid</b>:
+        <br>There was probably an error creating the task in the database."
     }
 
     # -----------------------------------------------------
@@ -926,7 +947,7 @@ ad_proc -public im_gp_save_tasks2 {
     foreach taskchild [$task_node childNodes] {
 	set nodeName [$taskchild nodeName]
 	set nodeText [$taskchild text]
-	ns_log Notice "im_gp_save_tasks2: nodeName=$nodeName, nodeText=$nodeText"
+	# ns_log Notice "im_gp_save_tasks2: nodeName=$nodeName, nodeText=$nodeText"
 
         switch $nodeName {
 	    "PredecessorLink" {
@@ -934,20 +955,28 @@ ad_proc -public im_gp_save_tasks2 {
 
 		    set linkid ""
 		    set linktype ""
+		    set link_lag 0
+		    set link_lag_format 7
+		    set difference 0
 		    foreach attrtag [$taskchild childNodes] {
 			switch [$attrtag nodeName] {
 			    "PredecessorUID" { set linkid [$attrtag text] }
-			    # TODO: the next one should obviously not be fixed
 			    "Type"           { set linktype [$attrtag text] }
-			    "LinkLag"           { set difference [$attrtag text] }
+			    "LinkLag"        { set link_lag [$attrtag text] }
+			    "LagFormat"      { set link_lag_format [$attrtag text] }
 			}
 		    }
-		    
+
+		    # Calculate "difference" from LinkLag and LagFormat.
+		    # ToDo: Take care of LagFormat
+		    set difference_seconds [expr $link_lag * 1.0]
+
 		    im_project_create_dependency \
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
 			-difference $difference \
+			-difference $difference_seconds \
 			-task_hash_array [array get task_hash]
 		}
 	    }
@@ -958,7 +987,7 @@ ad_proc -public im_gp_save_tasks2 {
     # Process task sub-nodes
     if {$debug_p} { ns_write "<ul>\n" }
     foreach taskchild [$task_node childNodes] {
-	ns_log Notice "im_gp_save_tasks2: process subtasks: nodeName=[$taskchild nodeName]"
+	# ns_log Notice "im_gp_save_tasks2: process subtasks: nodeName=[$taskchild nodeName]"
 
 	switch [$taskchild nodeName] {
 	    notes { 
@@ -979,11 +1008,12 @@ ad_proc -public im_gp_save_tasks2 {
 	    customproperty { }
 	    task {
 		# Recursive sub-tasks
+		# ToDo: GanttProject: replace super_project_id by the current task_id!?
 		set task_hash_array [im_gp_save_tasks2 \
 			-create_tasks $create_tasks \
 			-save_dependencies $save_dependencies \
 			$taskchild \
-			$gantt_project_id \
+			$super_project_id \
 			sort_order \
 			[array get task_hash] \
 		]

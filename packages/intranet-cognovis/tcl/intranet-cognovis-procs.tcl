@@ -291,7 +291,7 @@ ad_proc -public -callback im_project_new_redirect -impl intranet-cognovis {
 
 
 
-
+if {0} {
 ad_proc -public -callback im_timesheet_task_new_redirect -impl intranet-cognovis {
     {-object_id:required}
     {-status_id ""}
@@ -319,7 +319,7 @@ ad_proc -public -callback im_timesheet_task_new_redirect -impl intranet-cognovis
     }
 } 
 
-
+}
 
 ad_proc -public -callback im_company_new_redirect -impl intranet-cognovis {
     {-object_id:required}

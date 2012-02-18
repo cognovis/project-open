@@ -10,38 +10,6 @@
 Importing data...
 </p>
 
-<!-- --------------------------------------------------------------------- -->
-<if "" ne @timephased_html@>
-	<h2>Warning: Found "Timephased Data"</h2>
-	<p>
-	Timephased data (intra-day scheduling) is created by MS-Project.<br>
-	]project-open[ does not support timephased data with the result <br>
-	that the ]po[ schedule may deviate from the MS-Project schedule <br>
-	for the following tasks:
-	<ul>
-	@timephased_html;noquote@
-	</ul>
-	Please use the function "Export to Microsoft Project" in your project to export a clean<br>
-	version of your schedule and continue with this schedule.
-	</p>&nbsp;<br>
-</if>
-
-
-<!-- --------------------------------------------------------------------- -->
-<if "" ne @duplicate_task_html@>
-	<h2>Warning: Found Duplicated Tasks</h2>
-	<p>
-	We found several tasks in your MS-Project schedule with the same name.<br>
-	Duplicate tasks may overwrite each other in some cases during the import. <br>
-	In order to avoid please rename the following tasks in your schedule:<br>
-	<ul>
-	@duplicate_task_html;noquote@
-	</ul>
-	</p>
-	<br>&nbsp;<br>
-</if>
-
-
 <if @tasks_to_delete_p@>
 
 	<h2>@reassign_title@</h2>

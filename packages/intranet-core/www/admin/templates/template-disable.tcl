@@ -1,7 +1,7 @@
 ad_page_contract {
 
 } {
-    category_id
+    category_id:integer,multiple
     return_url
 }
 
@@ -16,7 +16,9 @@ if {!$user_is_admin_p} {
     return
 }
 
-db_dml del_template "update im_categories set enabled_p = 'f' where category_id = :category_id"
+foreach cid $category_id {
+    db_dml disable_template "update im_categories set enabled_p = 'f' where category_id = :cid"
+}
 
 # Remove all permission related entries in the system cache
 im_permission_flush

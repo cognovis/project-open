@@ -107,7 +107,8 @@ order by
   <li>
     [_ intranet-timesheet2-invoices.lt_Check_this_sample_pra]
     [_ intranet-timesheet2-invoices.lt_It_contains_some_comm]
-</ul>\n"
+</ul>\n
+"
     return $price_list_html
 }
 
@@ -123,6 +124,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
     -start_date:required
     -end_date:required
     -invoice_hour_type:required
+    {-task_status_id ""}
 } {
     Returns a formatted HTML table representing the list of subprojects
     and their logged hours.
@@ -185,6 +187,12 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td></td>
 	</tr>
     "
+    
+    if {$task_status_id ne ""} {
+	set status_sql "and t.task_status_id = :task_status_id"
+    } else {
+	set status_sql ""
+    }
 
     set sql "
 	select
@@ -194,8 +202,8 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		children.project_id,
 		children.project_name,
 		children.project_nr,
-		im_category_from_id(children.project_status_id) as project_status,
-		im_category_from_id(children.project_type_id) as project_type,
+		im_category_from_id(t.task_status_id) as task_status,
+		im_category_from_id(t.task_type_id) as task_type,
 		tree_level(children.tree_sortkey) - tree_level(parent.tree_sortkey) as level,
 		t.task_id,
 		t.planned_units,
@@ -232,6 +240,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	where
 		children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
 		and parent.project_id in ([join $select_project ","])
+                $status_sql
 	order by 
 		parent.project_name, 
 		children.tree_sortkey
@@ -239,7 +248,6 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 
 
 #    ad_return_complaint 1 "<pre>$sql</pre>"
-
     set ctr 0
     set colspan 11
     set old_parent_id 0
@@ -315,7 +323,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=right>$units_in_interval</td>
 	  <td align=right>$unbilled_units</td>
 	  <td align=right>$uom_name</td>
-	  <td>$project_status</td>
+	  <td>$task_status</td>
 	</tr>
 	"
 	incr ctr

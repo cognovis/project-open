@@ -7,7 +7,7 @@
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-02-02
--- @cvs-id $Id: upgrade-4.1.1-4.2.sql,v 1.2 2006/09/25 21:16:34 byronl Exp $
+-- @cvs-id $Id: upgrade-4.1.1-4.2.sql,v 1.2 2010/10/19 20:12:17 po34demo Exp $
 --
 
 ------------------------
@@ -205,7 +205,7 @@ where g.group_id = s.group_id;
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-02-02
--- @cvs-id $Id: upgrade-4.1.1-4.2.sql,v 1.2 2006/09/25 21:16:34 byronl Exp $
+-- @cvs-id $Id: upgrade-4.1.1-4.2.sql,v 1.2 2010/10/19 20:12:17 po34demo Exp $
 --
 
 ---------------------------
@@ -353,7 +353,7 @@ where p.party_id = groups.group_id(+)
 -- @author Michael Bryzek (mbryzek@arsdigita.com)
 -- @creation-date 2001-02-20
 
--- $Id: upgrade-4.1.1-4.2.sql,v 1.2 2006/09/25 21:16:34 byronl Exp $
+-- $Id: upgrade-4.1.1-4.2.sql,v 1.2 2010/10/19 20:12:17 po34demo Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

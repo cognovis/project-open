@@ -6,7 +6,7 @@ ad_library {
 
     @author Don Baccus (dhogaza@pacifier.com)
     @creation-date 2008-04-26
-    @cvs-id $Id: subsite-navigation-procs.tcl,v 1.3 2008/09/11 01:08:41 donb Exp $
+    @cvs-id $Id: subsite-navigation-procs.tcl,v 1.1 2010/10/19 23:58:28 po34demo Exp $
 
 }
 
