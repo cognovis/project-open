@@ -64,7 +64,7 @@ begin
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
-                v_subject := 'Your application for an absence has not been approved';
+                v_subject := 'Your application for an absence';
         END IF;
 
         -- Replace variables
@@ -78,8 +78,9 @@ begin
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
-                v_body := 'Your application for an absence has not been approved \\n:';
+                v_body := 'Your application for an absence has not been approved:';
         END IF;
+
         -- Replace variables
         -- v_body := replace(v_body, '%object_name%', v_object_name);
         -- v_body := replace(v_body, '%transition_name%', v_transition_name);
@@ -98,28 +99,19 @@ begin
                 p.parameter_name = 'SystemURL' and
                 pv.parameter_id = p.parameter_id;
 
-	v_url := v_base_url;
-	v_url := '/intranet-timesheet2/absences/new?form_mode=display&absence_id=';
-	v_url := v_absence_id;
+	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
 	-- get info about absence 
-	select 
-		to_char(start_date,'YYYY-MM-DD'), 
-		to_char(end_date,'YYYY-MM-DD'), 
-		description 
-	into v_start_date, v_end_date, v_description
-	from im_user_absences where absence_id = v_absence_id;
+       	select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+		COALESCE(v_description, '(none)')
+       	into v_start_date, v_end_date, v_description
+       	from im_user_absences where absence_id = v_absence_id;
+	
+	v_body := v_body || '\\r\\n' || v_description || '\\r\\n' || v_start_date || '\\r\\n' || v_end_date || '\\r\\n' || v_url || '\\r\\n';	
 
-	v_body := v_description;
-	v_body := '\\n';
-	v_body := v_start_date;
-	v_body := '\\n';
-	v_body := v_end_date;
-	v_body := '\\n';
-	v_body := v_url;
-	v_body := '\\n';
-
-        RAISE NOTICE 'KHD: Notify_assignee_project_approval: Subject=%, Body=%', v_subject, v_body;
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
 		v_party_from,                 -- party_from
@@ -199,7 +191,7 @@ begin
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
-                v_subject := 'Your application for an absence has not been approved';
+                v_subject := 'Your application for an absence:';
         END IF;
 
         -- Replace variables
@@ -213,8 +205,9 @@ begin
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
-                v_body := 'Your application for an absence has been approved \\n:';
+                v_body := 'Your application for an absence has been approved';
         END IF;
+
         -- Replace variables
         -- v_body := replace(v_body, '%object_name%', v_object_name);
         -- v_body := replace(v_body, '%transition_name%', v_transition_name);
@@ -237,24 +230,18 @@ begin
 	v_url := '/intranet-timesheet2/absences/new?form_mode=display&absence_id=';
 	v_url := v_absence_id;
 
-	-- get info about absence 
-	select 
-		to_char(start_date,'YYYY-MM-DD'), 
-		to_char(end_date,'YYYY-MM-DD'), 
-		description 
-	into v_start_date, v_end_date, v_description
-	from im_user_absences where absence_id = v_absence_id;
 
-	v_body := v_description;
-	v_body := '\\n';
-	v_body := v_start_date;
-	v_body := '\\n';
-	v_body := v_end_date;
-	v_body := '\\n';
-	v_body := v_url;
-	v_body := '\\n';
+        -- get info about absence
+        select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+                COALESCE(v_description, '(none)')
+        into v_start_date, v_end_date, v_description
+        from im_user_absences where absence_id = v_absence_id;
 
-        RAISE NOTICE 'KHD: Notify_assignee_project_approval: Subject=%, Body=%', v_subject, v_body;
+        v_body := v_body || '\\r\\n' || v_description || '\\r\\n' || v_start_date || '\\r\\n' || v_end_date || '\\r\\n' || v_url || '\\r\\n';
+
+        RAISE NOTICE 'im_absence_notify_applicant_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
 		v_party_from,                 -- party_from
