@@ -240,6 +240,7 @@ ad_proc -public im_ms_project_write_task {
 	switch $element {
 	    Name			{ set value $project_name }
 	    Type			{ 
+                if {![exists_and_not_null effort_driven_type_id]} {set effort_driven_type_id 9720}
 		set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
 		if {"" == $value} { 
 		    ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
