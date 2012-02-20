@@ -157,6 +157,11 @@ ns_log Notice "gantt-upload-2: format=$format"
 # The task_hash contains a mapping table from gantt_project_ids to task_ids.
 # -------------------------------------------------------------------
 
+# First delete the dependencies.
+# This is brute force and might be handled better....
+set del_dep_task_ids [im_project_subproject_ids -project_id $project_id -type task]
+db_dml delete_dependencies "delete from im_timesheet_task_dependencies where task_id_one in ([template::util::tcl_to_sql_list $del_dep_task_ids])"
+
 if {$debug_p} { ns_write "<h2>Pass 1: Saving Tasks</h2>\n" }
 set task_hash_array [list]
 

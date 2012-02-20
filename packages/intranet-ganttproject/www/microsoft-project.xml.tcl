@@ -148,7 +148,9 @@ foreach element $xml_elements {
 	}
 	default {
 	    set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-	    set value [expr $$attribute_name]
+	    if {[info exists $attribute_name]} {
+		set value [expr $$attribute_name]
+	    }
 	}
     }
 
@@ -378,7 +380,7 @@ set project_allocations_sql "
 		object_id_one AS task_id,
 		object_id_two AS user_id,
 		bom.percentage as percentage_assigned,
-		p.percent_completed,
+		coalesce(p.percent_completed,0) as percent_completed,
 		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
 		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
 		tt.planned_units,
@@ -417,6 +419,7 @@ set project_allocations_sql "
 			)
 		)
 "
+
 set assignment_ctr 0
 db_foreach project_allocations $project_allocations_sql {
 
@@ -433,9 +436,20 @@ db_foreach project_allocations $project_allocations_sql {
     # so we divide the task work evenly across the assigned resources.
     if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
     set planned_seconds [expr $planned_units * 3600]
-    set work_seconds [expr $planned_seconds * $percentage_assigned / $total_percentage_assigned]
-    set work_ms [im_gp_seconds_to_ms_project_time $work_seconds]
 
+    set actual_work_seconds [expr $planned_seconds * $percent_completed / 100]
+    set remaining_work_seconds [expr $planned_seconds - $actual_work_seconds]
+
+    if {$total_percentage_assigned == 0} {
+	set work_seconds $planned_seconds
+    } else {
+	set work_seconds [expr $planned_seconds * $percentage_assigned / $total_percentage_assigned]
+	set actual_work_seconds [expr $actual_work_seconds * $percentage_assigned / $total_percentage_assigned]
+	set remaining_work_seconds [expr $remaining_work_seconds * $percentage_assigned / $total_percentage_assigned]
+    }
+    set work_ms [im_gp_seconds_to_ms_project_time $work_seconds]
+    set actual_work_ms [im_gp_seconds_to_ms_project_time $actual_work_seconds]
+    set remaining_work_ms [im_gp_seconds_to_ms_project_time $remaining_work_seconds]
     ns_log Notice "microsoft-project: allocactions: uid=$assignment_ctr, task_id=$task_id, tot=$total_percentage_assigned, assig=$percentage_assigned"
 
 
@@ -450,7 +464,8 @@ db_foreach project_allocations $project_allocations_sql {
 		<Finish>${end_date_date}T23:00:00</Finish>
 		<OvertimeWork>PT0H0M0S</OvertimeWork>
 		<RegularWork>$work_ms</RegularWork>
-		<RemainingWork>$work_ms</RemainingWork>
+		<ActualWork>$actual_work_ms</ActualWork>
+		<RemainingWork>$remaining_work_ms</RemainingWork>
 		<Work>$work_ms</Work>
 	</Assignment>
     "
