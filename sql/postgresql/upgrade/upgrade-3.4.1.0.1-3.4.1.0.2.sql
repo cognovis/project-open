@@ -54,3 +54,29 @@ begin
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
 
+
+CREATE OR REPLACE FUNCTION im_workflow__assign_to_user(integer, text)
+  RETURNS integer AS
+$BODY$
+declare
+        p_task_id               alias for $1;
+        p_custom_arg            alias for $2;
+	v_transition_key	text;
+	v_case_id		integer;
+begin
+       	-- Get information about the transition and the "environment"
+       	select	tr.transition_key, t.case_id
+       	into	v_transition_key, v_case_id 
+       	from	wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
+       	where	t.task_id = p_task_id
+       		and t.case_id = c.case_id
+       		and o.object_id = t.case_id
+       		and t.workflow_key = tr.workflow_key
+       		and t.transition_key = tr.transition_key;
+
+	PERFORM im_workflow__assign_to_user(v_case_id, v_transition_key, p_custom_arg);
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+
