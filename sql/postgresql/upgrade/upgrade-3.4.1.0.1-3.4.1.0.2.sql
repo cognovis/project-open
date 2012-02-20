@@ -53,4 +53,4 @@ begin
 	return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
-ALTER FUNCTION im_workflow__assign_to_user(integer, text) OWNER TO projop;
+
