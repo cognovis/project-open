@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-reporting" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Ad_hoc_Fraber_Test_group_id">Identifiant du groupe</msg>
   <msg key="Ad_hoc_Fraber_Test_group_name">Nom du groupe</msg>
