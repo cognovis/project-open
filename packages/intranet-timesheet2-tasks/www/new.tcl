@@ -258,8 +258,8 @@ ad_form -extend -name task -on_request {
 	        t.task_type_id,
 	        p.project_status_id,
 	        t.task_type_id,
-	        to_char(p.start_date,'YYYY MM DD') as start_date, 
-	        to_char(p.end_date,'YYYY MM DD') as end_date, 
+	        start_date, 
+	        end_date, 
 		p.reported_hours_cache,
 		p.reported_hours_cache as reported_units_cache,
 	        p.note
