@@ -889,7 +889,7 @@ ad_proc -public im_timesheet_task_info_component {
 		project_nr {
 		    label "[_ intranet-timesheet2-tasks.Task_Nr]"
 		    link_url_eval { 
-			[return "/intranet-timesheet2-tasks/new?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
+			[return "/intranet-timesheet2-tasks/view?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
 		    }
 		}
 		dependency_type {
