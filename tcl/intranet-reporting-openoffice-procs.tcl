@@ -729,6 +729,10 @@ ad_proc im_oo_page_type_gantt_move_scale {
     set base_node ""
     set completed_node ""
     set expected_node ""
+
+    if {"" == $percent_completed} { set percent_completed 0.0 }
+    if {"" == $percent_expected} { set percent_expected 0.0 }
+
     foreach node [$grouping_node childNodes] {
 	set text [string trim [im_oo_to_title -node $node]]
 	ns_log Notice "im_oo_page_type_gantt_move_scale: text=$text"
