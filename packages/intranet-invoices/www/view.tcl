@@ -897,9 +897,16 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2]) align=right>$sort_order</td>\n"
 	}
 	
-	append invoice_item_html "
+	if {[exists_and_not_null task_id]} {
+	    set task_url [export_vars -base "/intranet-timesheet2-tasks/view" -url {task_id}]
+	    append invoice_item_html "
+                 <td $bgcolor([expr $ctr % 2])><a href='$task_url'>$item_name</a></td>
+           "
+	} else {
+	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2])>$item_name</td>
 	    "
+	}
 	if {$show_qty_rate_p} {
 	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -1638,6 +1645,7 @@ append project_base_data_html "</table>"
 
 set linked_list_html ""
 set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
+set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
 if {$linked_invoice_ids eq ""} {
     # this might be a parent, try it again for children
     set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
