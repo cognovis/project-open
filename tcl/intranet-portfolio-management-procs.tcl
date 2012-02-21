@@ -273,6 +273,8 @@ ad_proc -public im_program_portfolio_list_component {
     set end_date_max "2000-01-01"
     db_foreach program_query $program_query {
 
+        if {"" == $percent_completed} { set percent_completed 0.0 }
+
 	set url [im_maybe_prepend_http $url]
 	if { [empty_string_p $url] } {
 	    set url_string "&nbsp;"
@@ -390,11 +392,16 @@ ad_proc -public im_program_portfolio_list_component {
 	    </b></ul></td></tr>
 	"
     }
+    
+    set add_project_url [export_vars -base "/intranet-portfolio-management/add-project-to-portfolio" {return_url {program_id $program_id}}]
     return "
 	<table class=\"table_component\" width=\"100%\">
 	<thead>$table_header_html</thead>
 	<tbody>$table_body_html</tbody>
 	</table>
 	$update_html
+	<ul>
+	<li><a href=\"$add_project_url\">[lang::message::lookup "" intranet-portfolio-management.Add_a_project_to_the_portfolio "Add a project to the portfolio"]</a></li>
+	</ul>
     "
 }
