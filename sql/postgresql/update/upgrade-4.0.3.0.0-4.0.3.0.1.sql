@@ -109,7 +109,7 @@ begin
        	into v_start_date, v_end_date, v_description
        	from im_user_absences where absence_id = v_absence_id;
 	
-	v_body := v_body || '\\r\\n' || v_description || '\\r\\n' || v_start_date || '\\r\\n' || v_end_date || '\\r\\n' || v_url || '\\r\\n';	
+	v_body := v_body || '\\n\\n' || v_description || '\\n\\n' || v_start_date || '\\n\\n' || v_end_date || '\\n\\n' || v_url || '\\n\\n';	
 
         RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
@@ -226,10 +226,7 @@ begin
 		p.parameter_name = 'SystemURL' and 
 		pv.parameter_id = p.parameter_id; 
 
-	v_url := v_base_url;
-	v_url := '/intranet-timesheet2/absences/new?form_mode=display&absence_id=';
-	v_url := v_absence_id;
-
+	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
         -- get info about absence
         select
@@ -239,7 +236,7 @@ begin
         into v_start_date, v_end_date, v_description
         from im_user_absences where absence_id = v_absence_id;
 
-        v_body := v_body || '\\r\\n' || v_description || '\\r\\n' || v_start_date || '\\r\\n' || v_end_date || '\\r\\n' || v_url || '\\r\\n';
+        v_body := v_body || '\\n\\n' || v_description || '\\n\\n' || v_start_date || '\\n\\n' || v_end_date || '\\n\\n' || v_url || '\\n\\n';
 
         RAISE NOTICE 'im_absence_notify_applicant_approved: Subject=%, Body=%', v_subject, v_body;
 
