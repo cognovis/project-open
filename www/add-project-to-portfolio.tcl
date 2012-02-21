@@ -17,9 +17,6 @@ set current_user_id [ad_get_user_id]
 set page_title [lang::message::lookup "" intranet-portfolio-management.Add_a_project_to_the_portfolio "Add a project to the portfolio"]
 set context_bar [im_context_bar "" $page_title]
 
-
-ad_return_complaint 1 $return_url
-
 # get the current users permissions for this project
 im_project_permissions $current_user_id $program_id view read write admin
 if {!$write} {
