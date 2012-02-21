@@ -402,8 +402,11 @@ ad_proc -private acs_mail_process_queue {
 		acs_mail_queue_outgoing
 	LIMIT 700
     } {
+
         set to_send [acs_mail_body_to_output_format -link_id $message_id]
-	set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
+	# set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
+	set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] ]
+
 	ns_log notice "acs_mail_process_queue: to_send_2=$to_send_2"
 
         if [catch {
