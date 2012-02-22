@@ -87,9 +87,13 @@ namespace eval ::xowiki::formfield {
     #
     # todo: we could speed this up by an index if needed
     foreach f [::xowiki::formfield::FormField info instances -closure] {
-      if {[$f name] eq $name && $object eq [$f object]} {
-	#my msg FOUND-$object-$name->$f
-	return $f
+      if {[$f name] eq $name} {
+	if {![$f exists object]} {
+	  my msg "strange, $f [$f name] was created without object but fits name"
+	  return $f
+	} elseif {$object eq [$f object]} {
+	  return $f
+	}
       }
     }
     #my msg not-found-$object-$name
@@ -103,6 +107,11 @@ namespace eval ::xowiki::formfield {
     #if {[my exists default]} {my set value [my default]}
     my config_from_spec [my spec]
   }
+
+  #
+  # Basic initialze method, doing nothing; should be subclassed by the
+  # application classes
+  FormField instproc initialize {} {next}
 
   FormField instproc validate {obj} {
     my instvar name required
@@ -1427,6 +1436,8 @@ namespace eval ::xowiki::formfield {
     {callback "/* callback code */"}
     {destroy_callback "/* callback code */"}
     {extraPlugins ""}
+    {templatesFiles ""}
+    {templates ""}
     {contentsCss /resources/xowiki/ck_contents.css}
     {imageSelectorDialog /xowiki/ckeditor-images/}
   }
@@ -1482,6 +1493,18 @@ namespace eval ::xowiki::formfield {
     }
   }
 
+  richtext::ckeditor instproc pathNames {fileNames} {
+    set result [list]
+    foreach fn $fileNames {
+      if {[regexp {^[./]} $fn]} {
+	append result $fn
+      } else {
+	append result "/resources/xowiki/$fn"
+      }
+    }
+    return $result
+  }
+
   richtext::ckeditor instproc render_input {} {
     set disabled [expr {[my exists disabled] && [my disabled] ne "false"}]
     if {![my istype ::xowiki::formfield::richtext] || $disabled } {
@@ -1501,6 +1524,13 @@ namespace eval ::xowiki::formfield {
       set package_id [[my object] package_id]
       #my extraPlugins {timestamp xowikiimage}
 
+      if {[lsearch [my extraPlugins] xowikiimage] > -1} {
+	my js_image_helper
+	set ready_callback {xowiki_image_callback(e.editor);}
+      } else {
+	set ready_callback "/*none*/;"
+      }
+      
       set options [subst {
 	toolbar : '[my toolbar]',
 	uiColor: '[my uiColor]',
@@ -1512,11 +1542,14 @@ namespace eval ::xowiki::formfield {
 	extraPlugins: '[join [my extraPlugins] ,]',
 	contentsCss: '[my contentsCss]',
 	imageSelectorDialog: '[my imageSelectorDialog]',
+	ready_callback: '$ready_callback',
 	customConfig: '[my customConfig]'
       }]
-
-      if {[lsearch [my extraPlugins] xowikiimage] > -1} {
-	my js_image_helper
+      if {[my templatesFiles] ne ""} {
+	append options "  , templates_files: \['[join [my pathNames [my templatesFiles]] ',' ]' \]\n"
+      }
+      if {[my templates] ne ""} {
+	append options "  , templates: '[my templates]'\n"
       }
 
       #set parent [[[my object] package_id] get_page_from_item_or_revision_id [[my object] parent_id]];# ???
@@ -1554,7 +1587,7 @@ namespace eval ::xowiki::formfield {
 	    \$( '#$id' ).ckeditor(function() { $callback }, {
 	      $options
 	    });
-            CKEDITOR.instances['$id'].on('instanceReady',function(e) {xowiki_image_callback(e.editor);});
+            CKEDITOR.instances['$id'].on('instanceReady',function(e) {$ready_callback});
 	  });
 	}]
 	next
@@ -1815,7 +1848,7 @@ namespace eval ::xowiki::formfield {
       set category_name [ad_quotehtml [lang::util::localize $category_name]]
       my set category_label($category_id) $category_name
       if { $level>1 } {
-        set category_name "[string repeat {&nbsp;} [expr {2*$level-4}]]..$category_name"
+        set category_name "[string repeat {.} [expr {2*$level-4}]]..$category_name"
       }
       lappend options [list $category_name $category_id]
     }
