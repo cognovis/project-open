@@ -31,6 +31,7 @@ ad_page_contract {
     match75:array,optional
     match50:array,optional
     match0:array,optional
+    description:array,optional
 
     { target_language_id:multiple {}}
     { task_name_file "" }
@@ -134,6 +135,8 @@ switch -glob $action {
 
 	foreach task_id $task_list {
 
+	    set description_value $description($task_id)
+
 	    # Use default values if no InterCo values are available:
 	    if {![info exists billable_units_interco($task_id)]} { 
 		set billable_units_interco($task_id) $billable_units($task_id) 
@@ -188,7 +191,8 @@ switch -glob $action {
                 	task_status_id= '$task_status($task_id)',
                 	task_type_id= '$task_type($task_id)',
 			billable_units = :billable_value,
-			billable_units_interco = :billable_value_interco
+			billable_units_interco = :billable_value_interco,
+                        description = :description_value
 			$trados_reuse_update
                     where project_id=:project_id
                     and task_id=:task_id"
