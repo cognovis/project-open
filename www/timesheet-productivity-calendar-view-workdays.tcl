@@ -192,8 +192,8 @@ set day_header ""
 
 for { set i 1 } { $i < $duration + 1 } { incr i } {
     if { 1 == [string length $i]} { set day_double_digit 0$i } else { set day_double_digit $i }
-    lappend inner_sql_list "(select sum(hours) from im_hours h where
-            h.user_id = s.sub_user_id
+    lappend inner_sql_list "sum((select sum(hours) from im_hours h where
+            h.user_id = s.user_id
             and h.project_id in (
                 select
                         children.project_id as subproject_id
@@ -206,11 +206,11 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 	    and h.project_id = s.sub_project_id
             and h.day like '%$report_year-$report_month-$day_double_digit%'
 	    
-	) as day$day_double_digit
+	)) as day$day_double_digit
     "
     lappend outer_sql_list "
-	CASE WHEN day$day_double_digit <= $daily_hours THEN null ELSE day$day_double_digit
-	END as day$day_double_digit
+	sum(CASE WHEN day$day_double_digit <= $daily_hours THEN null ELSE day$day_double_digit
+	END) as day$day_double_digit
     " 
     append day_placeholders "\\" "\$day$day_double_digit "
     append day_header \"$day_double_digit\"
@@ -229,63 +229,85 @@ set inner_sql [join $inner_sql_list ", "]
 set outer_sql [join $outer_sql_list ", "]
 
 set sql "
-
-select 
+	select
+        	user_id,
+		user_name,
+	        top_parent_project_id,
+        	top_project_name,
+		sub_project_id,
+		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
+                (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
+                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
+                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
+                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
+                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
+                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
+	        $outer_sql
+	from
+        	(select
+                	user_id,
+	                user_name,
+        	        s.top_parent_project_id,
+                	(select project_name from im_projects where project_id = s.top_parent_project_id) as top_project_name,
+                        	 CASE
+                                         WHEN s.project_type_id = 100 THEN
+                                         (select project_name from im_projects where project_id = s.top_parent_project_id)
+                                         ELSE
+                                         s.sub_project_name
+                                END as sub_project_name,
+                                CASE
+                                         WHEN s.project_type_id = 100 THEN
+                                         (select project_id from im_projects where project_id = s.top_parent_project_id)
+                                         ELSE
+                                         s.sub_project_id
+                                END as sub_project_id,
+			$inner_sql
+        	from
+                	(
+			 select	distinct on (p.project_id) 
+                	        u.user_id,
+                        	im_name_from_user_id(u.user_id) as user_name,
+	                        (select main_p.project_id from im_projects pr, im_projects main_p where pr.project_id = h.project_id and tree_ancestor_key(pr.tree_sortkey, 1) = main_p.tree_sortkey limit 1) as top_parent_project_id,
+				p.project_name as sub_project_name,
+				p.project_id	as sub_project_id,
+				p.project_type_id
+		   	from
+                        	im_hours h,
+	                        im_projects p,
+        	                users u
+                	        LEFT OUTER JOIN
+                        	        im_employees e
+                                	on (u.user_id = e.employee_id)
+	                where
+        	                h.project_id = p.project_id
+                	        and h.user_id = u.user_id
+                        	and h.day >= to_date(:first_day_of_month, 'YYYY-MM-DD')
+	                        and h.day < to_date(:first_day_next_month, 'YYYY-MM-DD')
+        	                $where_clause
+                	order by
+                        	p.project_id,
+	                        u.user_id,
+        	                h.day
+                	) s
+		group by 
+                	user_id,
+	                user_name,
+        	        top_parent_project_id,
+                	top_project_name,
+			project_type_id,
+	                sub_project_id,
+        	        sub_project_name
+	 ) t
+group by 
 	user_id,
 	user_name,
-	project_id, 
-	top_project_name as project_name,
 	top_parent_project_id,
-	work_days,
-	vacation_days,
-	training_days,
-	travel_days,
-	sick_days,
-	personal_days,
-	$outer_sql
-from 
-	(select 
-		s.sub_user_id as user_id,
-		s.sub_user_name as user_name,
-		s.sub_project_id as project_id,
-		s.sub_project_name as project_name,
-		(select project_name from im_projects where project_id = s.top_parent_project_id) as top_project_name,
-		s.top_parent_project_id,
-		(select count(*) from (select * from im_absences_working_days_month(s.sub_user_id,$report_month,$report_year) t(days int))ct) as work_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
-		$inner_sql
-	from 
-		(select
-        		distinct on (p.project_id) p.project_id as sub_project_id,
-			u.user_id as sub_user_id,
-			p.project_name as sub_project_name, 
-			im_name_from_user_id(u.user_id) as sub_user_name,
-                        (select main_p.project_id from im_projects pr, im_projects main_p where pr.project_id = h.project_id and tree_ancestor_key(pr.tree_sortkey, 1) = main_p.tree_sortkey limit 1) as top_parent_project_id
-	        from
-        	        im_hours h,
-                	im_projects p,
-	                users u
-        	        LEFT OUTER JOIN
-                	        im_employees e
-                        	on (u.user_id = e.employee_id)
-	        where
-        	        h.project_id = p.project_id
-                	and h.user_id = u.user_id
-                	and h.day >= to_date(:first_day_of_month, 'YYYY-MM-DD')
-	                and h.day < to_date(:first_day_next_month, 'YYYY-MM-DD') 
-        	        $where_clause
-		order by 
-			p.project_id,
-			u.user_id,
-			h.day
-		) s 
-) t
-order by 
-	user_id
+	top_project_name,
+	sub_project_id,
+	sub_project_name
+order by
+        user_id,
+	top_parent_project_id
 "
 
 # ad_return_complaint 1 $sql
@@ -296,10 +318,11 @@ set report_def [list \
                 "\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"
     } \
 	            content [list \
-		            group_by project_id \
+		            group_by top_project_id \
         	            header {
 				""
-                	        "<b><a href=$project_url$project_id>$project_name</a></b>"
+                	        "<b><a href=$project_url$top_project_id>$top_project_name</a></b>"
+                	        "<b><a href=$project_url$sub_project_id>$sub_project_name</a></b>"
 				$day01 
 				"-"
                     	     } \
@@ -311,7 +334,7 @@ set report_def [list \
 ]
 
 
-set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\$project_name</a></b>\" "
+set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\$top_project_name</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\$sub_project_name</a></b>\" "
 append line_str $day_placeholders "-" 
 set no_empty_columns [expr $duration+1]
 
@@ -320,6 +343,7 @@ lappend report_def 	[list group_by project_id header $line_str content {}]
 
 if {$duration == 28} {
 lappend report_def      footer { "<strong>Summary</strong>" \
+				 "&nbsp;"
 				 "&nbsp;"
 				 "$thours_arr(day01)" \
 				 "$thours_arr(day02)" \
@@ -355,6 +379,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 }
 if {$duration == 29} {
 lappend report_def      footer { "<strong>Summary</strong>" \
+				 "&nbsp;"
 				 "&nbsp;"
 				 "$thours_arr(day01)" \
 				 "$thours_arr(day02)" \
@@ -392,6 +417,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 if {$duration == 30} {
 lappend report_def      footer { "<strong>Summary</strong>" \
 				 "&nbsp;"
+				 "&nbsp;"
 				 "$thours_arr(day01)" \
 				 "$thours_arr(day02)" \
 				 "$thours_arr(day03)" \
@@ -428,6 +454,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 }
 if {$duration == 31} {
 lappend report_def      footer { "<strong>Summary</strong>" \
+				 "&nbsp;"
 				 "&nbsp;"
 				 "$thours_arr(day01)" \
 				 "$thours_arr(day02)" \
@@ -467,9 +494,8 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 
 # Global header/footer
 # set header0 {"Employee" "Project" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "Working<br>Days"}
-set header0 "\"Employee\" \"Project\" $day_header \"Days<br>shown\" \"Working<br>Days net\" \"Utilization\" "
-set footer0 {"" "" "" "" "" "" "" "" ""}
-
+set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Toal Days<br>hours logged\" \"Working<br>Days net\" \"Utilization\" "
+set footer0 {"" "" "" "" "" "" "" "" "" ""}
 
 # ------------------------------------------------------------
 # Start formatting the page
