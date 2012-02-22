@@ -31,6 +31,7 @@ ad_page_contract {
     { auto_login "" }
     { email "" }
     { password "" }
+    { cmd "" }
 }
 
 # ------------------------------------------------------------------------
@@ -72,13 +73,42 @@ if {"" != $password && "" != $email} {
 # ------------------------------------------------------------------------
 
 # Log the dude in if the token was OK.
+# Allow the SysAdmin to login here.
 set user_requires_manual_login_p 0
 set valid_login [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login -check_user_requires_manual_login_p $user_requires_manual_login_p]
 
 if {$valid_login} {
-    ad_user_login -forever=0 $user_id
+    ns_log Notice "auto-login: Found a valid login"
+
+    if {"" != $cmd} {
+	set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+	if {$admin_p} {
+	    ns_log Notice "auto-login: Logging the dude in"
+	    ad_user_login -forever=0 $user_id
+	    ns_log Notice "auto-login: User is an administrator"
+	    if {[catch {
+		ns_log Notice "auto-login: About to execute 'eval $cmd'"
+		set result [eval $cmd]
+		ns_log Notice "auto-login: Successfully executed commend=$cmd"
+		doc_return 200 "text/plain" $result
+		ad_script_abort
+	    } err_msg]} {
+		ns_log Notice "auto-login: Error while executing command=$cmd: $err_msg"
+		doc_return 500 "text/plain" $err_msg
+		ad_script_abort
+	    }
+	} else {
+	    # Interesting, a normal users tries to execute a commend...
+	    ns_log Notice "auto-login: Non-Admin tried to execute a command..."
+	    im_security_alert -/intranet/admin-login.tcl -message "Non-admin user tries to execute a command" -value $cmd
+	    doc_return 500 "text/plain" "You need to be an administator in order to execute commands"
+	    ad_script_abort
+	}
+    }
+
     ad_returnredirect $url
 } else {
+    ns_log Notice "auto-login: Invalid login"
     ad_return_complaint 1 "<b>Wrong Security Token</b>:<br>
         Your security token is not valid. Please contact the system owner.<br>"
     ad_script_abort
