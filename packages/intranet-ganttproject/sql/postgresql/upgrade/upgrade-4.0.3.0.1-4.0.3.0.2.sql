@@ -17,7 +17,7 @@ declare
 	v_count			integer;
 begin
 	select	count(*) into v_count from acs_object_type_tables
-	where	object_type = 'im_timesheet_task' and id_column = 'project_id';
+	where	object_type = 'im_timesheet_task' and table_name = 'im_gantt_projects' and id_column = 'project_id';
 	if v_count = 0 then 
 	   	insert into acs_object_type_tables (object_type,table_name,id_column)
 		values ('im_timesheet_task', 'im_gantt_projects', 'project_id');
