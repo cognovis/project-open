@@ -710,7 +710,7 @@ ad_proc -public im_timesheet_task_list_component {
 	    set planned_hours_input $planned_units
 	}
 
-	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+#	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
 
 	# Something is going wrong with task_id, so set it again.
 	set task_id $project_id
@@ -889,7 +889,7 @@ ad_proc -public im_timesheet_task_info_component {
 		project_nr {
 		    label "[_ intranet-timesheet2-tasks.Task_Nr]"
 		    link_url_eval { 
-			[return "/intranet-timesheet2-tasks/new?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
+			[return "/intranet-timesheet2-tasks/view?[export_vars -url -override {{ task_id $id }} { return_url project_id } ]" ]
 		    }
 		}
 		dependency_type {

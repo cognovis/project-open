@@ -18,6 +18,7 @@
 	        and r.object_id_two = :invoice_id
 		and u.object_type = o.object_type
 		and u.url_type = 'view'
+                and r.rel_type != 'im_invoice_invoice_rel'
    </querytext>
 </fullquery>
 </queryset>
