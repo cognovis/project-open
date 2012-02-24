@@ -300,21 +300,27 @@ ad_proc im_oo_page_type_static {
     # Convert the tDom tree into XML for rendering
     set template_xml [$page_node asXML]
 
-    db_foreach page_sql $page_sql {
 
-	# Replace placeholders in the OpenOffice template row with values
-	if {[catch {
-	    eval [template::adp_compile -string $template_xml]
-	    set xml $__adp_output
-	} err_msg]} {
-	    ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
-	    ad_script_abort
+    if {[catch {
+	db_foreach page_sql $page_sql {
+	    
+	    # Replace placeholders in the OpenOffice template row with values
+	    if {[catch {
+		eval [template::adp_compile -string $template_xml]
+		set xml $__adp_output
+	    } err_msg]} {
+		ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+		ad_script_abort
+	    }
+	    
+	    # Parse the new slide and insert into OOoo document
+	    set doc [dom parse $xml]
+	    set doc_doc [$doc documentElement]
+	    $page_container insertBefore $doc_doc $page_node
 	}
-	
-	# Parse the new slide and insert into OOoo document
-	set doc [dom parse $xml]
-	set doc_doc [$doc documentElement]
-	$page_container insertBefore $doc_doc $page_node
+    } err_msg]} {
+        ad_return_complaint 1 "<b>Static: '$page_name': Error evaluating page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort	
     }
 	
     # remove the template node
@@ -421,133 +427,171 @@ ad_proc im_oo_page_type_list {
 
 	set row_cnt 0
 	set first_page_p 1
-	db_foreach list_sql $list_sql {
-
-	    # ------------------------------------------------------------------
-	    # Setup a new page.
-	    # Execute this code either if we are on the very first page or
-	    # if we have to start a new page because of a long table.
-	    if {$row_cnt >= $list_max_rows || $first_page_p} {
-
-		# Close the previous page, add it to the Impress document and start a new one.
-		if {0 == $first_page_p} {
-
-		    # Remove the content_row
-		    if {"" != $content_row_node} { $table_node removeChild $content_row_node }
-
-		    # Remove the 4th line from the list in all but the last page
-		    if {"" != $list_total_node} { $table_node removeChild $list_total_node }
-
-		    # Render the new page with the additional table rows as XML
-		    # and apply the OpenACS template engine in order to replace variables.
-		    set page_xml [$page_root asXML -indent none]
-		    if {[catch {
-			eval [template::adp_compile -string $page_xml]
-			set xml $__adp_output
-		    } err_msg]} {
-			ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
+	if {[catch {
+	    db_foreach list_sql $list_sql {
+		
+		# ------------------------------------------------------------------
+		# Setup a new page.
+		# Execute this code either if we are on the very first page or
+		# if we have to start a new page because of a long table.
+		if {$row_cnt >= $list_max_rows || $first_page_p} {
+		    
+		    # Close the previous page, add it to the Impress document and start a new one.
+		    if {0 == $first_page_p} {
+			
+			# Remove the content_row
+			if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+			
+			# Remove the 4th line from the list in all but the last page
+			if {"" != $list_total_node} { $table_node removeChild $list_total_node }
+			
+			# Render the new page with the additional table rows as XML
+			# and apply the OpenACS template engine in order to replace variables.
+			set page_xml [$page_root asXML -indent none]
+			if {[catch {
+			    eval [template::adp_compile -string $page_xml]
+			    set xml $__adp_output
+			} err_msg]} {
+			    ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
+			    ad_script_abort
+			}
+			
+			# Parse the new slide and insert into OOoo document
+			set result_doc [dom parse $xml]
+			set result_root [$result_doc documentElement]
+			$page_container insertBefore $result_root $page_node		
+		    }
+		    
+		    # Now we are not on the first page anymore...
+		    set first_page_p 0
+		    
+		    # Create a fresh XML tree again for the next page and reset the row counter
+		    set page_doc [dom parse $template_xml]
+		    set page_root [$page_doc documentElement]
+		    set row_cnt 0
+		    
+		    # Get the list of all tables in the page and count them
+		    set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
+		    set table_node ""
+		    foreach node $table_nodes {
+			set node_text [string trim [im_oo_to_title -node $node]]
+			ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
+			if {"list" == $node_text} { 
+			    # We found a draw:frame node with the right title.
+			    # This node should have exactly one "table:table"
+			    set table_frame_node $node
+			    set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
+			}
+		    }
+		    
+		    if {"" == $table_node} {
+			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
+			Didn't find a table with title 'list'.<br>
+		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
 			ad_script_abort
 		    }
 		    
-		    # Parse the new slide and insert into OOoo document
-		    set result_doc [dom parse $xml]
-		    set result_root [$result_doc documentElement]
-		    $page_container insertBefore $result_root $page_node		
-		}
-
-		# Now we are not on the first page anymore...
-		set first_page_p 0
-
-		# Create a fresh XML tree again for the next page and reset the row counter
-		set page_doc [dom parse $template_xml]
-		set page_root [$page_doc documentElement]
-		set row_cnt 0
-
-		# Get the list of all tables in the page and count them
-		set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
-		set table_node ""
-		foreach node $table_nodes {
-		    set node_text [string trim [im_oo_to_title -node $node]]
-		    ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
-		    if {"list" == $node_text} { 
-			# We found a draw:frame node with the right title.
-			# This node should have exactly one "table:table"
-			set table_frame_node $node
-			set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
+		    # Extract the 2nd row ("table:table-row" tag) that contains the 
+		    # content row to be repeated for every row of the list_sql
+		    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+		    set content_row_node [lindex $row_nodes 1]
+		    set page_total_node [lindex $row_nodes 2]
+		    set list_total_node [lindex $row_nodes 3]
+		    set content_row_xml [$content_row_node asXML]
+		    if {"" == $content_row_node} {
+			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
+			ad_script_abort
 		    }
 		}
-
-		if {"" == $table_node} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
-			Didn't find a table with title 'list'.<br>
-		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
-		    ad_script_abort
-		}
-
-		# Extract the 2nd row ("table:table-row" tag) that contains the 
-		# content row to be repeated for every row of the list_sql
-		set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-		set content_row_node [lindex $row_nodes 1]
-		set page_total_node [lindex $row_nodes 2]
-		set list_total_node [lindex $row_nodes 3]
-		set content_row_xml [$content_row_node asXML]
-		if {"" == $content_row_node} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
-		    ad_script_abort
-		}
-	    }
-
-	    # ------------------------------------------------------------------
-	    # Update Counters
-	    # Counters allow to sum up values in a list column.
-	    # A counter consists of a list with two values:
-	    #	- counter_var: The name of the counter variables
-	    #	- counter_expr: A numeric expression that defines 
-	    #	  the value to be added to the counter.
-	    # The counter expression may contain any parameters 
-	    # of the static page or values returned from the list_sql.
-	    # The counter value can be used in the page_total and 
-	    # total lines of a list just like a normal variable.
-	    #
-	    foreach counter $counters {
-		set counter_var [lindex $counter 0]
-		set counter_expr [lindex $counter 1]
-
-		if {![info exists $counter_var]} { set $counter_var 0 }
-		set val ""
-		if {[catch {
-		    set val [expr $counter_expr]
-		} err_msg]} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
+		
+		# ------------------------------------------------------------------
+		# Update Counters
+		# Counters allow to sum up values in a list column.
+		# A counter consists of a list with two values:
+		#	- counter_var: The name of the counter variables
+		#	- counter_expr: A numeric expression that defines 
+		#	  the value to be added to the counter.
+		# The counter expression may contain any parameters 
+		# of the static page or values returned from the list_sql.
+		# The counter value can be used in the page_total and 
+		# total lines of a list just like a normal variable.
+		#
+		foreach counter $counters {
+		    set counter_var [lindex $counter 0]
+		    set counter_expr [lindex $counter 1]
+		    
+		    if {![info exists $counter_var]} { set $counter_var 0 }
+		    set val ""
+		    if {[catch {
+			set val [expr $counter_expr]
+		    } err_msg]} {
+			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
 			Counter name: '$counter_var'<br>
 			Counter expressions: '$counter_expr'<br>
 			Error:<br><pre>$err_msg</pre>"
+			ad_script_abort
+		    }
+		    if {"" != $val && [string is double $val]} {
+			set $counter_var [expr "\$$counter_var + $val"]
+		    }
+		}
+		
+		# ------------------------------------------------------------------
+		# Replace placeholders in the OpenOffice template row with values
+		if {[catch {
+		    eval [template::adp_compile -string $content_row_xml]
+		    set row_xml $__adp_output
+		} err_msg]} {
+		    ad_return_complaint 1 "<b>List: '$page_name': Error substituting row template variables</b>:
+		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
 		    ad_script_abort
 		}
-		if {"" != $val && [string is double $val]} {
-		    set $counter_var [expr "\$$counter_var + $val"]
+		
+		# Parse the new row and insert into OOoo document
+		set new_row_doc [dom parse $row_xml]
+		set new_row_root [$new_row_doc documentElement]
+		$table_node insertBefore $new_row_root $content_row_node
+		
+		incr row_cnt
+	    }
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>List '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre>"
+            ad_script_abort
+	}
+
+	# Deal with the case of zero rows returned:
+	# Extract the "content_row", so that we can delete this below
+	if {0 == $row_cnt} {
+
+	    # Create a fresh XML tree again for the next page and reset the row counter
+	    set page_doc [dom parse $template_xml]
+	    set page_root [$page_doc documentElement]
+	    set row_cnt 0
+
+	    # Get the list of all tables in the page and count them
+	    set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
+	    set table_node ""
+	    foreach node $table_nodes {
+		set node_text [string trim [im_oo_to_title -node $node]]
+		ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
+		if {"list" == $node_text} {
+		    # We found a draw:frame node with the right title.
+		    # This node should have exactly one "table:table"
+		    set table_frame_node $node
+		    set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
 		}
 	    }
-
-	    # ------------------------------------------------------------------
-	    # Replace placeholders in the OpenOffice template row with values
-	    if {[catch {
-		eval [template::adp_compile -string $content_row_xml]
-		set row_xml $__adp_output
-	    } err_msg]} {
-		ad_return_complaint 1 "<b>List: '$page_name': Error substituting row template variables</b>:
-		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
+	    
+	    if {"" == $table_node} {
+		ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
+                        Didn't find a table with title 'list'.<br>
+                        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
 		ad_script_abort
 	    }
 
-	    # Parse the new row and insert into OOoo document
-	    set new_row_doc [dom parse $row_xml]
-	    set new_row_root [$new_row_doc documentElement]
-	    $table_node insertBefore $new_row_root $content_row_node
-
-	    incr row_cnt
+	    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+	    set content_row_node [lindex $row_nodes 1]
 	}
-
 
 	# ------------------------------------------------------------------
 	# The last page of the list. This can also be the very first page with short lists.
@@ -884,126 +928,130 @@ ad_proc im_oo_page_type_gantt {
 
 	set row_cnt 0
 	set first_page_p 1
-	db_foreach list_sql $list_sql {
-
-	    # ------------------------------------------------------------------
-	    # Setup a new page.
-	    # Execute this code either if we are on the very first page or
-	    # if we have to start a new page because of a long table.
-	    if {$row_cnt >= $list_max_rows || $first_page_p} {
-
-		# Close the previous page, add it to the Impress document and start a new one.
-		if {0 == $first_page_p} {
-		    # Render the new page with the additional table rows as XML
-		    # and apply the OpenACS template engine in order to replace variables.
-		    set page_xml [$page_root asXML]
-		    if {[catch {
-			eval [template::adp_compile -string $page_xml]
-			set xml $__adp_output
-		    } err_msg]} {
-			ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
-			ad_script_abort
+	if {[catch {
+	    db_foreach list_sql $list_sql {
+		
+		# ------------------------------------------------------------------
+		# Setup a new page.
+		# Execute this code either if we are on the very first page or
+		# if we have to start a new page because of a long table.
+		if {$row_cnt >= $list_max_rows || $first_page_p} {
+		    
+		    # Close the previous page, add it to the Impress document and start a new one.
+		    if {0 == $first_page_p} {
+			# Render the new page with the additional table rows as XML
+			# and apply the OpenACS template engine in order to replace variables.
+			set page_xml [$page_root asXML]
+			if {[catch {
+			    eval [template::adp_compile -string $page_xml]
+			    set xml $__adp_output
+			} err_msg]} {
+			    ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			    ad_script_abort
+			}
+			
+			# Parse the new slide and insert into OOoo document
+			set result_doc [dom parse $xml]
+			set result_root [$result_doc documentElement]
+			$page_container insertBefore $result_root $page_node		
 		    }
 		    
-		    # Parse the new slide and insert into OOoo document
-		    set result_doc [dom parse $xml]
-		    set result_root [$result_doc documentElement]
-		    $page_container insertBefore $result_root $page_node		
-		}
-
-		# Now we are not on the first page anymore...
-		set first_page_p 0
-
-		# Create a fresh XML tree again for the next page and reset the row counter
-		set page_doc [dom parse $template_xml]
-		set page_root [$page_doc documentElement]
-		set row_cnt 0
-
-		# Check if the extract_template found the "green_bar" template
-		# This template will be used to render the gantt bars.
-		if {![info exists green_bar]} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
+		    # Now we are not on the first page anymore...
+		    set first_page_p 0
+		    
+		    # Create a fresh XML tree again for the next page and reset the row counter
+		    set page_doc [dom parse $template_xml]
+		    set page_root [$page_doc documentElement]
+		    set row_cnt 0
+		    
+		    # Check if the extract_template found the "green_bar" template
+		    # This template will be used to render the gantt bars.
+		    if {![info exists green_bar]} {
+			ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
 			The page should have at least one 'group' of objects with title 'green_bar'."
-		    ad_script_abort
-		}
-		# yellow_bar and red_bar are optional
-		if {![info exists yellow_bar]} { set yellow_bar $green_bar }
-		if {![info exists red_bar]} { set red_bar $green_bar }
-
-		# Calculate some offsets in order to calculate Gantt bar position
-		set green_xml [$green_bar asXML]
-		set yellow_xml [$yellow_bar asXML]
-		set red_xml [$red_bar asXML]
-
-		# Search for the start and end markers for the timeline
-		set text_box_list [im_oo_select_nodes $page_root "draw:frame"]
-		set left_box ""
-		set right_box ""
-		foreach node $text_box_list {
-		    set text [string trim [string tolower [im_oo_to_text -node $node]]]
-		    ns_log Notice "im_oo_page_type_gantt: text='$text'"
-		    switch $text {
-			"@main_project_start_date_pretty@" { set left_box $node }
-			"@main_project_end_date_pretty@" { set right_box $node }
+			ad_script_abort
 		    }
-		}
-		if {"" == $left_box || "" == $right_box} {
-		    ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
+		    # yellow_bar and red_bar are optional
+		    if {![info exists yellow_bar]} { set yellow_bar $green_bar }
+		    if {![info exists red_bar]} { set red_bar $green_bar }
+		    
+		    # Calculate some offsets in order to calculate Gantt bar position
+		    set green_xml [$green_bar asXML]
+		    set yellow_xml [$yellow_bar asXML]
+		    set red_xml [$red_bar asXML]
+		    
+		    # Search for the start and end markers for the timeline
+		    set text_box_list [im_oo_select_nodes $page_root "draw:frame"]
+		    set left_box ""
+		    set right_box ""
+		    foreach node $text_box_list {
+			set text [string trim [string tolower [im_oo_to_text -node $node]]]
+			ns_log Notice "im_oo_page_type_gantt: text='$text'"
+			switch $text {
+			    "@main_project_start_date_pretty@" { set left_box $node }
+			    "@main_project_end_date_pretty@" { set right_box $node }
+			}
+		    }
+		    if {"" == $left_box || "" == $right_box} {
+			ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
 		    Could not find two text boxes with the text 'main_project_start_date_pretty'=$left_box and 'main_project_end_date_pretty'=$right_box"
+			ad_script_abort
+		    }
+		    set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
+		    set right_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $right_box]
+		    set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
+		    set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
+		    set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+		}
+		
+		# ------------------------------------------------------------------
+		# Replace placeholders in the OpenOffice template row with values
+		
+		# Pull out the right template according to "color"
+		switch [string tolower $on_track_status] {
+		    "yellow" { set gantt_bar_xml $yellow_xml }
+		    "red" { set gantt_bar_xml $red_xml }
+		    default { set gantt_bar_xml $green_xml }
+		}
+		
+		if {[catch {
+		    eval [template::adp_compile -string $gantt_bar_xml]
+		    set grouping_xml $__adp_output
+		} err_msg]} {
+		    ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
+		<pre>$err_msg\n$green_xml</pre>"
 		    ad_script_abort
 		}
-		set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
-		set right_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $right_box]
-		set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
-		set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
-		set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+		
+		# Parse the new grouping and insert into OOoo document
+		set new_grouping_doc [dom parse $grouping_xml]
+		set new_grouping_root [$new_grouping_doc documentElement]
+		
+		# Move the grouping into the correct x/y position.
+		im_oo_page_type_gantt_move_scale \
+		    -grouping_node $new_grouping_root \
+		    -page_name $page_name \
+		    -base_x_offset $green_bar_x_offset \
+		    -base_y_offset $green_bar_y_offset \
+		    -start_date_x $start_date_x \
+		    -end_date_x $end_date_x \
+		    -start_date_epoch $start_date_epoch \
+		    -end_date_epoch $end_date_epoch \
+		    -main_project_start_date_epoch $main_project_start_date_epoch \
+		    -main_project_end_date_epoch $main_project_end_date_epoch \
+		    -row_cnt $row_cnt \
+		    -y_dist $y_dist \
+		    -percent_completed $percent_completed_pretty \
+		    -percent_expected $percent_expected_pretty
+		
+		$page_root insertBefore $new_grouping_root [$page_root firstChild]
+		
+		incr row_cnt
 	    }
-
-	    # ------------------------------------------------------------------
-	    # Replace placeholders in the OpenOffice template row with values
-	
-	    # Pull out the right template according to "color"
-	    switch [string tolower $on_track_status] {
-		"yellow" { set gantt_bar_xml $yellow_xml }
-		"red" { set gantt_bar_xml $red_xml }
-		default { set gantt_bar_xml $green_xml }
-	    }
-
-	    if {[catch {
-		eval [template::adp_compile -string $gantt_bar_xml]
-		set grouping_xml $__adp_output
-	    } err_msg]} {
-		ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
-		<pre>$err_msg\n$green_xml</pre>"
-		ad_script_abort
-	    }
-
-	    # Parse the new grouping and insert into OOoo document
-	    set new_grouping_doc [dom parse $grouping_xml]
-	    set new_grouping_root [$new_grouping_doc documentElement]
-
-	    # Move the grouping into the correct x/y position.
-	    im_oo_page_type_gantt_move_scale \
-		-grouping_node $new_grouping_root \
-		-page_name $page_name \
-		-base_x_offset $green_bar_x_offset \
-		-base_y_offset $green_bar_y_offset \
-		-start_date_x $start_date_x \
-		-end_date_x $end_date_x \
-		-start_date_epoch $start_date_epoch \
-		-end_date_epoch $end_date_epoch \
-		-main_project_start_date_epoch $main_project_start_date_epoch \
-		-main_project_end_date_epoch $main_project_end_date_epoch \
-		-row_cnt $row_cnt \
-		-y_dist $y_dist \
-		-percent_completed $percent_completed_pretty \
-		-percent_expected $percent_expected_pretty
-
-	    $page_root insertBefore $new_grouping_root [$page_root firstChild]
-
-	    incr row_cnt
+	} err_msg]} {
+	    ad_return_complaint 1 "<b>Gantt '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre>"
+	    ad_script_abort
 	}
-
 
 	# ------------------------------------------------------------------
 	# The last page of the list. This can also be the very first page with short lists.
