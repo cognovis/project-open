@@ -242,6 +242,7 @@ set current_cost_type_id [db_string linked_cost_type "
     where parent_id = :target_cost_type_id 
     and aux_int1 = (select aux_int1 from im_categories where category_id = :cost_type_id)
     and child_id = category_id
+    limit 1
 " -default $target_cost_type_id]
 			
 
