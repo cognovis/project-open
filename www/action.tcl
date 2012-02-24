@@ -359,7 +359,7 @@ switch $actions {
 			f.object_id = :object_id
 			and p.folder_id = f.folder_id
 			and p.profile_id in ([join $user_memberships ", "])
-			and p.read_p = 1
+			and p.read_p = '1'
 	"
 	db_foreach get_folders $folder_sql {
 	    lappend dest_path "$base_path/$folder_path"
