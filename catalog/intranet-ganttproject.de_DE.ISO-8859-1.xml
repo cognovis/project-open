@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-ganttproject" package_version="3.4.0.7.5" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Dim_day_of_month">Tag</msg>
   <msg key="Dim_month_of_year">Monat</msg>
