@@ -183,7 +183,7 @@ ad_proc -public im_material_select {
 } {
     set options [im_material_options -include_empty $include_empty_p -restrict_to_status_id $restrict_to_status_id -restrict_to_type_id $restrict_to_type_id -show_material_codes_p $show_material_codes_p -max_option_len $max_option_len]
 
-    return [im_options_to_select_box $select_name $options $default]
+    return [im_options_to_select_box $select_name $options $default [list id $select_name]]
 }
 
 
@@ -489,7 +489,7 @@ ad_proc -private im_material_create_from_parameters {
 		aa.attribute_id = da.acs_attribute_id and
 		da.widget_name = dw.widget_name and
 		coalesce(dl.page_url,'default') = 'default'
-	order by dl.pos_y, lower(aa.attribute_id)
+	order by dl.pos_y, aa.attribute_id
     "
 
     # params is a list of "variables" ordered by the sort order of the material's DynFields.
