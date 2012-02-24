@@ -18,8 +18,7 @@
 
 switch $format {
     graph {
-	set dot_text [wf_generate_dot_representation workflow]
-
+	set dot_text [lang::util::localize [wf_generate_dot_representation workflow]]
 	set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
 	
 	set width_and_height ""

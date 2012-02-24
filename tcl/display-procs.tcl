@@ -41,8 +41,8 @@ ad_proc wf_attribute_widget {
 
     switch $attribute(datatype) {
 	boolean {
-	    #set widget "<select name=\"$name\"><option value=\"-\">--Please select--</option><option value=\"t\">Yes</option><option value=\"f\">No</option></select>"
-	    set widget "<select name=\"$name\"><option value=\"t\" [ad_decode $attribute(value) "t" "SELECTED" ""]>Yes</option><option value=\"f\" [ad_decode $attribute(value) f SELECTED ""]>No</option></select>"
+	    #set widget "<select name=\"$name\"><option value=\"-\">--Please select--</option><option value=\"t\">#acs-kernel.common_Yes#</option><option value=\"f\">#acs-kernel.common_No#</option></select>"
+	    set widget "<select name=\"$name\"><option value=\"t\" [ad_decode $attribute(value) "t" "SELECTED" ""]>#acs-kernel.common_Yes#</option><option value=\"f\" [ad_decode $attribute(value) f SELECTED ""]>#acs-kernel.common_No#</option></select>"
 
 	}
 	number {
@@ -76,7 +76,7 @@ ad_proc wf_attribute_value_pretty {
     attribute_info
 } {
     Returns a nice display version of the value of an attribute. 
-    Specifically, it displays booleans as "Yes" or "No", and it 
+    Specifically, it displays booleans as "#acs-kernel.common_Yes#" or "#acs-kernel.common_No#", and it 
     displays a party with the <a
     href="/api-doc/proc-view?proc=ad_present_user"><code>ad_present_user</code></a>
     function.
@@ -91,7 +91,7 @@ ad_proc wf_attribute_value_pretty {
     set value $attribute(value)
     switch $attribute(datatype) {
 	boolean {
-	    set value [ad_decode $value "t" "Yes" "No"]
+	    set value [ad_decode $value "t" "#acs-kernel.common_Yes#" "#acs-kernel.common_No#"]
 	}
     }
     return $value

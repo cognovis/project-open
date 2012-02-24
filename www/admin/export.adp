@@ -1,29 +1,28 @@
 <master>
-<property name="title">Export Business Process</property>
+<property name="title">#acs-workflow.lt_Export_Business_Proce#</property>
 <property name="context">@context;noquote@</property>
 
-This will export the process definition as a SQL script, which you can
-subsequently run on a different system, in order to recreate the process there.
+#acs-workflow.lt_This_will_export_the_#
 
 <p>
 
-<h3>Select Method</h3>
+<h3>#acs-workflow.Select_Method#</h3>
 
 <ul>
 
-<li><a href="@download_url@"><strong>Download</strong> the SQL script</a></li>
+<li><a href="@download_url@"><strong>#acs-workflow.Download#</strong> #acs-workflow.the_SQL_script#</a></li>
 
 <p>
 
-<li><a href="@view_url@"><strong>View</strong> the SQL script in your browser</a></li>
+<li><a href="@view_url@"><strong>#acs-workflow.View#</strong> #acs-workflow.lt_the_SQL_script_in_you#</a></li>
 
 <p>
 
-<li><a href="@textarea_url@">Show the SQL script in a &lt;textarea&gt; field, so you can <strong>copy and paste</strong> it</a></li>
+<li><a href="@textarea_url@">#acs-workflow.lt_Show_the_SQL_script_i# <strong>#acs-workflow.copy_and_paste#</strong> #acs-workflow.it#</a></li>
 
 <p>
 
-<li><a href="@save_url@"><strong>Save</strong> it to a file <strong>on the server</strong></a></li>
+<li><a href="@save_url@"><strong>#acs-workflow.Save#</strong> #acs-workflow.it_to_a_file# <strong>#acs-workflow.on_the_server#</strong></a></li>
 
 </ul>
 

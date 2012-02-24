@@ -1,5 +1,5 @@
 <master>
-<property name="title">@workflow_name;noquote@ Static Assignments</property>
+<property name="title">#acs-workflow.lt_workflow_namenoquote__1#</property>
 <property name="context">@context;noquote@</property>
 
 <!--
@@ -10,7 +10,7 @@ Context: [
     <else><a href="@context_slider.url@">@context_slider.title@</a></else>
   </multiple>
 ]
-(<a href="@context_add_url@">create new context</a>)
+(<a href="@context_add_url@">#acs-workflow.create_new_context#</a>)
 -->
 
 <table>
@@ -22,7 +22,7 @@ Context: [
  
     <table width="100%" cellspacing="1" cellpadding="4" border="0">
     <tr bgcolor="#ffffe4">
-    <td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><th align="left" valign="middle">Task: @tasks.transition_name@</th></tr></table></td>
+    <td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><th align="left" valign="middle">#acs-workflow.lt_Task_taskstransition_#</th></tr></table></td>
     </tr>
 
     <group column="transition_key">
@@ -32,10 +32,10 @@ Context: [
 		<a href="/shared/community-member?user_id=@tasks.party_id@">@tasks.party_name@</a>
 		<if @tasks.party_email@ not nil>(<a href="mailto:@tasks.party_email@">@tasks.party_email@</a>)</if>
 		<if @tasks.party_email@ nil>&nbsp;</if>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>(<a href="static-assignment-delete?workflow_key=@workflow_key@&context_key=@context_key@&transition_key=@tasks.transition_key@&party_id=@tasks.party_id@">remove</a>)</small>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>(<a href="static-assignment-delete?workflow_key=@workflow_key@&context_key=@context_key@&transition_key=@tasks.transition_key@&party_id=@tasks.party_id@">#acs-workflow.remove#</a>)</small>
             </if>
             <if @tasks.party_id@ nil>
-	        <em>no static assignments</em>
+	        <em>#acs-workflow.lt_no_static_assignments#</em>
             </if>
 	</td>
 	</tr>
@@ -48,10 +48,10 @@ Context: [
                     <input type="hidden" name="workflow_key" value="@workflow_key@" />
                     <input type="hidden" name="context_key" value="@context_key@" />
                     <input type="hidden" name="transition_key" value="@tasks.transition_key@" />
-                    Add assignee: @tasks.user_select_widget@ <input type="submit" value="Add" />
+                    #acs-workflow.lt_Add_assignee_tasksuse# <input type="submit" value="Add" />
                 </if>
                 <if @tasks.user_select_widget@ nil>
-                    <em>All parties are already assigned to this task</em>
+                    <em>#acs-workflow.lt_All_parties_are_alrea#</em>
                 </if>
 	    </td>
 	</tr>
@@ -77,4 +77,5 @@ Context: [
 
 
 </master>
+
 

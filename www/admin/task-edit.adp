@@ -1,5 +1,5 @@
 <master>
-<property name="title">Task @transition_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Task_transition_namen#</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">@focus;noquote@</property>
 
@@ -8,13 +8,13 @@
 
 <table>
   <tr>
-    <th align="right">Task name</th>
+    <th align="right">#acs-workflow.Task_name#</th>
     <td>
       <input type="text" size="80" name="transition_name" value="@transition_name@" />
     </td>
   </tr>
   <tr>
-    <th align="right">Trigger type</th>
+    <th align="right">#acs-workflow.Trigger_type#</th>
     <td>
       <select name="trigger_type">
         <multiple name="trigger_types">
@@ -24,10 +24,10 @@
     </td>
   </tr>
   <tr>
-    <th align="right">Role</th>
+    <th align="right">#acs-workflow.Role#</th>
     <td>
       <if @new_role_p@ eq 1>
-        <font color="red"><em>Please type a name for the new role</em></font><br />
+        <font color="red"><em>#acs-workflow.lt_Please_type_a_name_fo#</em></font><br />
         <input type="text" name="role_name" size="50" />
       </if>
       <else>
@@ -40,11 +40,11 @@
     </td>
   </tr>
   <tr>
-    <th align="right">Time estimate</th>
-    <td><input type="text" name="estimated_minutes" value="@estimated_minutes@" /> minutes</td>
+    <th align="right">#acs-workflow.Time_estimate#</th>
+    <td><input type="text" name="estimated_minutes" value="@estimated_minutes@" /> #acs-workflow.minutes#</td>
   </tr> 
   <tr>
-    <th align="right">Instructions</th>
+    <th align="right">#acs-workflow.Instructions#</th>
     <td><textarea name="instructions" rows="4" cols="45" wrap="soft">@instructions@</textarea></td>
   </tr>
   <tr>
@@ -59,3 +59,4 @@
 </form>
 
 </master>
+
