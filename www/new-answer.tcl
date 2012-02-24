@@ -238,9 +238,7 @@ ad_form -extend -name "rfq-form" -form {
 
 
 ad_form -extend -name "rfq-form" -select_query {
-	select	*,
-		to_char(rfq_start_date, 'YYYY MM DD') as rfq_start_date,
-		to_char(rfq_end_date, 'YYYY MM DD HH24 MI') as rfq_end_date
+	select	*
 	from	im_freelance_rfqs
 	where	rfq_id = :rfq_id
 
