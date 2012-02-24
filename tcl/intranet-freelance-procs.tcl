@@ -180,7 +180,7 @@ ad_proc im_freelance_skill_select {
         from	im_categories
         where	category_type = :skill_type
 		and (enabled_p = 't' OR enabled_p is NULL)
-        order by lower(category_id)
+        order by lower(category)
     "
 
     return [im_selection_to_select_box -translate_p $translate_p $bind_vars $select_name $sql $select_name $default]
