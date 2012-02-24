@@ -233,9 +233,17 @@ set payment_method_select [im_invoice_payment_method_select payment_method_id $p
 set template_select [im_cost_template_select template_id $template_id]
 set status_select [im_cost_status_select cost_status_id $cost_status_id]
 
-# Type_select doesnt allow for options anymore...
-# set type_select [im_cost_type_select cost_type_id $target_cost_type_id 0 "financial_doc"]
-#
+# Find out the current type and, if int1 matches, find the type in the
+# target_cost_type
+
+set current_cost_type_id [db_string linked_cost_type "
+    select category_id 
+    from im_categories, im_category_hierarchy
+    where parent_id = :target_cost_type_id 
+    and aux_int1 = (select aux_int1 from im_categories where category_id = :cost_type_id)
+    and child_id = category_id
+" -default $target_cost_type_id]
+			
 
 # Find out if there are subtypes below the cost_type
 set subtypes [db_list subtypes "select child_id from im_category_hierarchy where parent_id = :target_cost_type_id"]
