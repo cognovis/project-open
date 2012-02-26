@@ -4,7 +4,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Henry Minsky (hqm@arsdigita.com)
 
--- $Id: acs-lang-create.sql,v 1.2 2010/10/19 20:11:51 po34demo Exp $
+-- $Id: acs-lang-create.sql,v 1.2 2001/11/20 21:49:52 donb Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
