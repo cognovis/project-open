@@ -1,0 +1,4 @@
+#!/bin/bash
+git fetch $1
+git merge -s subtree $1/master
+

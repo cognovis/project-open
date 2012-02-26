@@ -122,3 +122,7 @@
 ./git-update intranet-workflow master >>update.log 2>&1
 ./git-update intranet-xmlrpc master >>update.log 2>&1
 ./git-update simple-survey master >>update.log 2>&1
+
+./github-update intranet-planning >>update.log 2>&1
+./github-update intranet-overtime >>update.log 2>&1
+./github-update intranet-reporting-openoffice >>update.log 2>&1
