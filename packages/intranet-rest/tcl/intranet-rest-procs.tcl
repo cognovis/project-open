@@ -391,6 +391,51 @@ ad_proc -private im_rest_get_object {
     # Check that rest_oid is an integer
     im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
 
+    # Permissions for the object type
+    set current_user_id $user_id
+    set rest_otype_read_none_p 0
+    set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $current_user_id -privilege "read"]
+    if {!$rest_otype_read_all_p} {
+        # There are "view_xxx_all" permissions allowing a user to see all objects:
+        switch $rest_otype {
+            bt_bug              { }
+            im_company          { set rest_otype_read_all_p [im_permission $current_user_id "view_companies_all"] }
+            im_cost             { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+            im_conf_item        { set rest_otype_read_all_p [im_permission $current_user_id "view_conf_items_all"] }
+            im_invoices         { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+            im_project          { set rest_otype_read_all_p [im_permission $current_user_id "view_projects_all"] }
+            im_user_absence     { set rest_otype_read_all_p [im_permission $current_user_id "view_absences_all"] }
+            im_office           { set rest_otype_read_all_p [im_permission $current_user_id "view_offices_all"] }
+            im_ticket           { set rest_otype_read_all_p [im_permission $current_user_id "view_tickets_all"] }
+            im_timesheet_task   { set rest_otype_read_all_p [im_permission $current_user_id "view_timesheet_tasks_all"] }
+            im_timesheet_invoices { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+            im_trans_invoices   { set rest_otype_read_all_p [im_permission $current_user_id "view_finance"] }
+            im_translation_task { }
+            user                { }
+            default {
+                # No read permissions?
+                # Well, no object type except the ones above has a custom procedure,
+                # so we can deny access here:
+                set rest_otype_read_none_p 1
+                ns_log Notice "im_rest_get_object_type: Denying access to $rest_otype"
+            }
+        }
+    }
+
+    # Aggregate permissions into a single read_p
+    set read_p $rest_otype_read_all_p
+    if {!$read_p} {
+	catch {
+	    eval "${rest_otype}_permissions $current_user_id $rest_oid view_p read_p write_p admin_p"
+	}
+    }
+    if {$rest_otype_read_none_p} { set read_p 0 }
+    if {!$read_p} {
+	return [im_rest_error -format $format -http_status 401 -message "No permission on object '$rest_oid' of type '$rest_otype'."]
+    }
+
+
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
 #    set sql [util_memoize [list im_rest_object_type_select_sql -rest_otype $rest_otype]]
@@ -410,18 +455,15 @@ ad_proc -private im_rest_get_object {
 	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
 		set var [lindex $col_names $i]
 		set val [ns_set value $selection $i]
-		# fraber 100519: I don't remember why index columns shouldn't be part of the
-		# returned fields in the first place. But now we need them in the Timesheet
-		# REST application.
-		# if {[lsearch $index_columns $var] >= 0} { continue }
-
 		set result_hash($var) $val
 	    }
 	}
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -format $format -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { 
+	return [im_rest_error -format $format -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] 
+    }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -805,6 +847,7 @@ ad_proc -private im_rest_get_object_type {
 	where	object_type = :rest_otype
     "
 
+# !!!
     if {"" == $table_name} {
 	im_rest_error -format $format -http_status 500 -message "Invalid DynField configuration: Object type '$rest_otype' doesn't have a table_name specified in table acs_object_types."
     }
@@ -853,10 +896,6 @@ ad_proc -private im_rest_get_object_type {
     set where_clause_unchecked_list [list]
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
     if {"" != $where_clause} { lappend where_clause_list $where_clause }
-
-    # Fraber 110612:
-    # Decoding the where clause messes up a value like '%123%' (searching for vat_id)
-    # set where_clause [ns_urldecode $where_clause]
     ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
 
 
@@ -964,7 +1003,9 @@ ad_proc -private im_rest_get_object_type {
 	if {!$read_p} {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
-	    eval "${rest_otype}_permissions $current_user_id $rest_oid view_p read_p write_p admin_p"
+	    catch {
+		eval "${rest_otype}_permissions $current_user_id $rest_oid view_p read_p write_p admin_p"
+	    }
 	}
 	if {!$read_p} { continue }
 

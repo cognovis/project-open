@@ -91,7 +91,8 @@ ad_proc -private im_rest_cookie_auth_user_id {
     set cookie_list [split $cookie_string ";"]
     # ns_log Notice "im_rest_cookie_auth_user_id: cookie=$cookie_string\n"
     # ns_log Notice "im_rest_cookie_auth_user_id: cookie_list=$cookie_list\n"
-    
+
+
     array set cookie_hash {}
     foreach l $cookie_list {
 	if {[regexp {([^ =]+)\=(.+)} $l match key value]} {
@@ -102,6 +103,27 @@ ad_proc -private im_rest_cookie_auth_user_id {
 	}
     }
     set user_id ""
+
+    if {[info exists cookie_hash(ad_session_id)]} { 
+
+	set ad_session_id $cookie_hash(ad_session_id)
+        ns_log Notice "im_rest_cookie_auth_user_id: ad_session_id=$ad_session_id"
+
+	set user_id ""
+	catch { set user_id [ad_get_user_id] }
+
+	if {"" != $user_id} {
+	    ns_log Notice "im_rest_cookie_auth_user_id: found autenticated user_id: storing into cache"
+	    ns_cache set im_rest $ad_session_id $user_id    
+	    return $user_id
+	}
+	
+	if {[ns_cache get im_rest $ad_session_id value]} { 
+	    ns_log Notice "im_rest_cookie_auth_user_id: Didn't find autenticated user_id: returning cached value"
+	    return $value 
+	}
+    }
+
     if {[info exists cookie_hash(ad_user_login)]} { 
 
 	set ad_user_login $cookie_hash(ad_user_login)
