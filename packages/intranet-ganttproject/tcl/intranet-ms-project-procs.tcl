@@ -10,12 +10,8 @@ ad_library {
     with GanttProject and its data structure
 
     @author frank.bergmann@project-open.com
+    @author malte.sussdorff@cognovis.de
 }
-
-
-# ----------------------------------------------------------------------
-# 
-# ----------------------------------------------------------------------
 
 ad_proc -public im_ms_project_write_subtasks { 
     { -default_start_date "" }
@@ -178,71 +174,83 @@ ad_proc -public im_ms_project_write_task {
 		PercentComplete
 		FixedCostAccrual
 	        ConstraintType
+	        ActualStart
 	}
     }
     
     # Add the following elements to the xml_elements always
-    foreach xml_element [list "PredecessorLink" "ManualStart" "ManualFinish" "ManualDuration"] {
+    foreach xml_element [list "PredecessorLink" "ActualStart" "ManualStart" "ManualFinish" "ManualDuration"] {
 	if {[lsearch $xml_elements $xml_element] < 0} {
 	    lappend xml_elements $xml_element
 	}
     }
 
     set predecessors_done 0
+    
     foreach element $xml_elements { 
 
 	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
-		Name			{ set value $project_name }
-		Type			{ 
-		    set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
-		    if {"" == $value} { 
-			ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
-		    }
+	    Name			{ set value $project_name }
+	    Type			{ 
+                if {![exists_and_not_null effort_driven_type_id]} {set effort_driven_type_id 9720}
+		set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
+		if {"" == $value} { 
+		    ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
 		}
-	        IsNull			{ set value 0 }
-		OutlineNumber		{ set value $outline_number }
-		OutlineLevel		{ set value $outline_level }
-		Priority		{ set value 500 }
-		Start - ManualStart	{ set value $start_date }
-		Finish - ManualFinish	{ set value $end_date }
-		Duration - ManualDuration {
-		    # Check if we've got a duration defined in the xml_elements.
-		    # Otherwise (export without import...) generate a duration.
-		    set seconds [expr $duration_hours * 3600.0]
-		    set value [im_gp_seconds_to_ms_project_time $seconds]
+	    }
+	    IsNull			{ set value 0 }
+	    OutlineNumber		{ set value $outline_number }
+	    OutlineLevel		{ set value $outline_level }
+	    Priority		{ set value 500 }
+	    ActualStart         { 
+		# We need to add the ActualStart to a milestone otherwise
+		# The Percent Complete will not be transferred.
+		if {[info exists xml_actualstart]} {
+		    set value $xml_actualstart
 		}
-		DurationFormat		{ set value 7 }
-		EffortDriven		{ if {"t" == $effort_driven_p} { set value 1 } else { set value 0 } }
-		RemainingDuration {
-		    set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
-		    set seconds [expr $remaining_duration_hours * 3600.0]
-		    set value [im_gp_seconds_to_ms_project_time $seconds]
+		if {$value ne "" && "t" == $milestone_p} {
+		    $task_node appendXML "
+				<ActualStart>$value</ActualStart>
+			    "
 		}
-		Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
-		Notes			{ set value $note }
-		PercentComplete		{ set value $percent_completed }
-		PredecessorLink	{ 
-			if {$predecessors_done} { continue }
-			set predecessors_done 1
-
-			# Add dependencies to predecessors 
-			set dependency_sql "
-				SELECT DISTINCT
-					gp.xml_uid as xml_uid_ms_project,
-					gp.project_id as xml_uid
-				FROM	im_timesheet_task_dependencies ttd
-					LEFT OUTER JOIN im_gantt_projects gp ON (ttd.task_id_two = gp.project_id)
-				WHERE	ttd.task_id_one = :task_id and
-					ttd.dependency_type_id = [im_timesheet_task_dependency_type_depends] and
-					ttd.task_id_two <> :task_id
-			"
-
-			set dependency_sql "
+		continue
+	    }
+	    Start - ManualStart { set value $start_date }
+	    Finish - ManualFinish	{ set value $end_date }
+	    Duration - ManualDuration {
+		# Check if we've got a duration defined in the xml_elements.
+		# Otherwise (export without import...) generate a duration.
+		set seconds [expr $duration_hours * 3600.0]
+		set value [im_gp_seconds_to_ms_project_time $seconds]
+	    }
+	    ManualDuration {
+		# Check if we've got a duration defined in the xml_elements.
+		# Otherwise (export without import...) generate a duration.
+		set seconds [expr $duration_hours * 3600.0]
+		set value [im_gp_seconds_to_ms_project_time $seconds]
+	    }
+	    
+	    DurationFormat		{ set value 7 }
+	    EffortDriven		{ if {"t" == $effort_driven_p} { set value 1 } else { set value 0 } }
+	    RemainingDuration {
+		set remaining_duration_hours [expr round($duration_hours * (100.0 - $percent_completed) / 100.0)]
+		set seconds [expr $remaining_duration_hours * 3600.0]
+		set value [im_gp_seconds_to_ms_project_time $seconds]
+	    }
+	    Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
+	    Notes			{ set value $note }
+	    PercentComplete		{ set value $percent_completed }
+	    PredecessorLink	{ 
+		if {$predecessors_done} { continue }
+		set predecessors_done 1
+		
+		# Add dependencies to predecessors 
+		set dependency_sql "
 				SELECT DISTINCT
 					gp.xml_uid as xml_uid_ms_project,
 					gp.project_id as xml_uid,
-					coalesce(c.aux_int1,1) as type_id, 
+					coalesce(c.aux_int1,1) as type_id,
                                         coalesce(ttd.difference,0) as difference
 				FROM	im_categories c,
 					im_timesheet_task_dependencies ttd
@@ -251,9 +259,9 @@ ad_proc -public im_ms_project_write_task {
                                         ttd.dependency_type_id = c.category_id and
 					ttd.task_id_two <> :task_id
 			"
-
-			db_foreach dependency $dependency_sql {
-			    $task_node appendXML "
+		
+		db_foreach dependency $dependency_sql {
+		    $task_node appendXML "
 				<PredecessorLink>
 					<PredecessorUID>$xml_uid</PredecessorUID>
 					<Type>$type_id</Type>
@@ -262,20 +270,20 @@ ad_proc -public im_ms_project_write_task {
 					<LagFormat>7</LagFormat>
 				</PredecessorLink>
 			    "
-			}
-			continue
 		}
-		UID			{ set value $org_project_id }
-		Work			{ 
-		    if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
-			set planned_units 0 
-			set value ""
-		    } else {
-			set seconds [expr $planned_units * 3600.0]
-			set value [im_gp_seconds_to_ms_project_time $seconds]
-		    }
+		continue
+	    }
+	    UID			{ set value $org_project_id }
+	    Work			{ 
+		if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
+		    set planned_units 0 
+		    set value ""
+		} else {
+		    set seconds [expr $planned_units * 3600.0]
+		    set value [im_gp_seconds_to_ms_project_time $seconds]
 		}
-		ACWP - \
+	    }
+	    ACWP - \
 		ActualCost - \
 		ActualDuration - \
 		ActualOvertimeCost - \
