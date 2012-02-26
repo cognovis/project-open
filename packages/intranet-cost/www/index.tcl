@@ -208,7 +208,7 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 
 
 # Compile and execute the formtemplate if advanced filtering is enabled.
-eval [template::adp_compile -string {<formtemplate id="cost_filter"></formtemplate>}]
+eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="cost_filter"></formtemplate>}]
 set filter_html $__adp_output
 
 
