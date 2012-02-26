@@ -4,7 +4,7 @@
 --
 -- @author ben@openforce
 -- @creation-date 2002-05-17
--- @version $Id: tree-create.sql,v 1.2 2010/10/19 20:11:35 po34demo Exp $
+-- @version $Id: tree-create.sql,v 1.5 2002/09/16 21:47:01 jeffd Exp $
 --
 -- This does funky sortkey stuff in Oracle,
 -- similar to DonB's PG varbit stuff, but without varbits

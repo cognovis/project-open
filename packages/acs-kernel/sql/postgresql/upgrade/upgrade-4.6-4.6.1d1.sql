@@ -2,7 +2,7 @@
 --
 -- @author Jeff Davis (davis@xarg.net)
 -- @creation-date 2002-12-17
--- @cvs-id $Id: upgrade-4.6-4.6.1d1.sql,v 1.2 2010/10/19 21:10:16 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.6-4.6.1d1.sql,v 1.1 2005/02/26 19:48:54 jeffd Exp $
 
 -- Add two new datatypes (supported by templating already).
 --

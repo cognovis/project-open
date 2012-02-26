@@ -3,7 +3,7 @@
 -- 
 -- @author khy@arsdigita.com
 -- @creation-date 2000-11-24
--- @cvs-id $Id: acs-object-util.sql,v 1.2 2010/10/19 20:11:32 po34demo Exp $
+-- @cvs-id $Id: acs-object-util.sql,v 1.1 2001/07/30 03:17:35 danw Exp $
 --
 
 create or replace package acs_object_util

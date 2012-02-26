@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id $Id: groups-body-create.sql,v 1.2 2010/10/19 20:11:33 po34demo Exp $
+-- @cvs-id $Id: groups-body-create.sql,v 1.17 2009/02/14 19:22:59 donb Exp $
 --
 
 --------------

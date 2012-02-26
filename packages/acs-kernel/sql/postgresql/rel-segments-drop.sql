@@ -3,7 +3,7 @@
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id $Id: rel-segments-drop.sql,v 1.2 2010/10/19 20:11:42 po34demo Exp $
+-- @cvs-id $Id: rel-segments-drop.sql,v 1.5 2004/06/18 18:21:57 jeffd Exp $
 \t
 create function inline_0 ()
 declare 

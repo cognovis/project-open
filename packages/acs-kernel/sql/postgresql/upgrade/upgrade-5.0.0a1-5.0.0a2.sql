@@ -8,7 +8,7 @@
 --
 -- @creation-date 2004-01-15
 --
--- @cvs-id $Id: upgrade-5.0.0a1-5.0.0a2.sql,v 1.2 2010/10/19 20:11:43 po34demo Exp $
+-- @cvs-id $Id: upgrade-5.0.0a1-5.0.0a2.sql,v 1.2 2004/01/26 15:39:45 jeffd Exp $
 --
 
 alter table auth_driver_params drop constraint auth_driver_params_authority_id_key;
