@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-13
-    @cvs-id $Id$
+    @cvs-id $Id: configure.tcl,v 1.12 2011/04/15 09:50:52 emmar Exp $
 }
 
 set page_title "[_ acs-subsite.Subsite_Configuration]"

@@ -6,7 +6,7 @@ ad_page_contract {
     @author Michael Bryzek (mbryzek@arsdigita.com)
 
     @creation-date 2000-12-05
-    @cvs-id $Id: one.tcl,v 1.2 2010/10/19 20:12:26 po34demo Exp $
+    @cvs-id $Id: one.tcl,v 1.6 2007/01/10 21:22:07 gustafn Exp $
 } {
     group_id:integer,notnull
 } -properties {

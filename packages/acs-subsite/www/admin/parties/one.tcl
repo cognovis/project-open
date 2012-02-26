@@ -7,7 +7,7 @@ ad_page_contract {
     @author Oumi Mehrotra (oumi@arsdigita.com)
 
     @creation-date 2001-02-06
-    @cvs-id $Id: one.tcl,v 1.2 2010/10/19 20:12:28 po34demo Exp $
+    @cvs-id $Id: one.tcl,v 1.4 2002/09/18 14:54:52 jeffd Exp $
 } {
     party_id:integer,notnull
 } -properties {

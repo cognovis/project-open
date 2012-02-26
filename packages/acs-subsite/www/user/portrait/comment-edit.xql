@@ -4,7 +4,7 @@
 <!-- @author Emmanuelle Raffenne (eraffenne@dia.uned.es) -->
 <!-- @creation-date 2007-11-27 -->
 <!-- @arch-tag: d51369f7-896b-494e-8f83-92366f1a5349 -->
-<!-- @cvs-id $Id: comment-edit.xql,v 1.1 2010/10/20 00:02:05 po34demo Exp $ -->
+<!-- @cvs-id $Id: comment-edit.xql,v 1.2 2007/11/27 18:02:10 emmar Exp $ -->
 
 <queryset>
 

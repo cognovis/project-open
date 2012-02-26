@@ -7,7 +7,7 @@ ad_page_contract {
     @author Randy O'Meara <omeara@got.net>
 
     @creation-date 2000-2-28
-    @cvs-id $Id: user-join.tcl,v 1.2 2010/10/19 20:12:43 po34demo Exp $
+    @cvs-id $Id: user-join.tcl,v 1.12 2007/01/10 21:22:09 gustafn Exp $
 } {
     {group_id:integer {[application_group::group_id_from_package_id]}}
     {rel_type:notnull "membership_rel"}

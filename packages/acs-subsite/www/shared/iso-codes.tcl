@@ -1,7 +1,7 @@
 ad_page_contract {
     displays the iso-codes
 
-    @cvs-id $Id: iso-codes.tcl,v 1.2 2010/10/19 20:12:44 po34demo Exp $
+    @cvs-id $Id: iso-codes.tcl,v 1.2 2002/09/26 03:46:25 jong Exp $
 } -properties {
     ccodes:multirow
 }

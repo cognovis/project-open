@@ -4,7 +4,7 @@ ad_library {
 
     @author swoodcock@scholastic.co.uk
     @creation-date Sun Jul 22 13:51:26 BST 2001
-    @cvs-id $Id: plpgsql-utility-procs.tcl,v 1.2 2010/10/19 20:12:19 po34demo Exp $
+    @cvs-id $Id: plpgsql-utility-procs.tcl,v 1.4 2007/01/10 21:22:06 gustafn Exp $
     
 }
 

@@ -765,15 +765,12 @@ Calendar.cellClick = function(el) {
 			newdate = true;
 		}
 	}
-
 	if (newdate) {
 		cal.callHandler();
 	}
-
-	// fraber 2012-02-07: Now closing the calendar after clicking into a date
-	Calendar.removeClass(el, "hilite");
-	cal.callCloseHandler();
 	if (closing) {
+		Calendar.removeClass(el, "hilite");
+		cal.callCloseHandler();
 	}
 };
 
@@ -1122,6 +1119,7 @@ Calendar.prototype._init = function (mondayFirst, date) {
 	}
 	this.ar_days = ar_days;
 	this.title.firstChild.data = Calendar._MN[month] + ", " + year;
+        this._hideCombos();
 	// PROFILE
 	// this.tooltips.firstChild.data = "Generated in " + ((new Date()) - today) + " ms";
 };
@@ -1733,7 +1731,7 @@ function showCalendarWithDateWidget(id,fmt) {
     // first-time call, create the calendar
     var cal = new Calendar(true, null, selectwidget, closeHandler);
     calendar = cal;             // remember the calendar in the global
-    cal.setRange(2000, 2070);   // min/max year allowed
+    cal.setRange(1900, 2050);   // min/max year allowed
     calendar.create();          // create a popup calendar
     calendar.parseDate(calval,fmt); // set it to a new date
   }

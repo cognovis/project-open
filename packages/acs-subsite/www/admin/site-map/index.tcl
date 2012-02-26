@@ -3,7 +3,7 @@ ad_page_contract {
     @author rhs@mit.edu
     @author bquinn@arsidigta.com
     @creation-date 2000-09-09
-    @cvs-id $Id$
+    @cvs-id $Id: index.tcl,v 1.27 2011/04/18 17:24:30 emmar Exp $
     
 } {
     {expand:integer,multiple ""}

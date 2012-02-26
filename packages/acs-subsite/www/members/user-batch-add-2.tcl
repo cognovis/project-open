@@ -1,6 +1,6 @@
 ad_page_contract {
     Interface for specifying a list of users to sign up as a batch
-    @cvs-id $Id: user-batch-add-2.tcl,v 1.7 2010/10/19 20:12:39 po34demo Exp $
+    @cvs-id $Id: user-batch-add-2.tcl,v 1.5 2009/07/12 01:08:30 donb Exp $
 } -query {
     userlist
     from

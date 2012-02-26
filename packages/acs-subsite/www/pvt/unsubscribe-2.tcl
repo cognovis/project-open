@@ -1,7 +1,7 @@
 ad_page_contract {
     Unsubscribes from the site
 
-    @cvs-id $Id: unsubscribe-2.tcl,v 1.2 2010/10/19 20:12:42 po34demo Exp $
+    @cvs-id $Id: unsubscribe-2.tcl,v 1.2 2003/09/19 15:00:44 lars Exp $
 } {} -properties {
     system_name:onevalue
 }

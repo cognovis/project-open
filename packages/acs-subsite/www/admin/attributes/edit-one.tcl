@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Thu Nov  9 20:06:49 2000
-    @cvs-id $Id: edit-one.tcl,v 1.2 2010/10/19 20:12:22 po34demo Exp $
+    @cvs-id $Id: edit-one.tcl,v 1.4 2007/01/10 21:22:06 gustafn Exp $
 
 } {
     attribute_id:naturalnum

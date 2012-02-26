@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-08-07
-    @cvs-id $Id: group-join.tcl,v 1.2 2010/10/19 20:12:20 po34demo Exp $
+    @cvs-id $Id: group-join.tcl,v 1.2 2005/03/01 00:01:23 jeffd Exp $
 } {
     {return_url "."}
 }

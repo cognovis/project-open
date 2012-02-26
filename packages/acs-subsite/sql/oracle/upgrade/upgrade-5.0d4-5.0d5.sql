@@ -3,7 +3,7 @@
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-02-02
--- @cvs-id $Id: upgrade-5.0d4-5.0d5.sql,v 1.2 2010/10/19 20:12:16 po34demo Exp $
+-- @cvs-id $Id: upgrade-5.0d4-5.0d5.sql,v 1.2 2004/01/26 15:39:46 jeffd Exp $
 --
 
 
@@ -224,7 +224,7 @@ show errors;
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-02-02
--- @cvs-id $Id: upgrade-5.0d4-5.0d5.sql,v 1.2 2010/10/19 20:12:16 po34demo Exp $
+-- @cvs-id $Id: upgrade-5.0d4-5.0d5.sql,v 1.2 2004/01/26 15:39:46 jeffd Exp $
 --
 
 create or replace package user_profile

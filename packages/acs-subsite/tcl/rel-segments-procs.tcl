@@ -6,7 +6,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Dec 12 16:37:45 2000
-    @cvs-id $Id: rel-segments-procs.tcl,v 1.2 2010/10/19 20:12:19 po34demo Exp $
+    @cvs-id $Id: rel-segments-procs.tcl,v 1.4 2007/01/10 21:22:06 gustafn Exp $
     
 }
 

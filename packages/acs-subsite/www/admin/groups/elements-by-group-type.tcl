@@ -21,7 +21,7 @@
 #
 # @author oumi@arsdigita.com
 # @creation-date 2001-2-6
-# @cvs-id $Id: elements-by-group-type.tcl,v 1.2 2010/10/19 20:12:25 po34demo Exp $
+# @cvs-id $Id: elements-by-group-type.tcl,v 1.1 2001/03/13 22:59:26 ben Exp $
 
 # Select out group types that have at least one group. Count up the
 # number of groups to decide later if we display them all
