@@ -168,9 +168,10 @@ if {0 != $cost_center_id && "" != $cost_center_id} {
     )"
 }
 
-if {0 != $task_id && "" != $task_id} {
-    lappend criteria "h.project_id = :task_id"
-}
+# MSU: This does not make ANY sense at all. If you have a task, then there will by definition not be any subprojects... strange...
+#if {0 != $task_id && "" != $task_id} {
+#    lappend criteria "h.project_id = :task_id"
+#}
 
 if {0 != $invoice_id && "" != $invoice_id} {
     lappend criteria "h.invoice_id = :invoice_id"
