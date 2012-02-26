@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author lars@collaboraid.biz
     @creation-date 2003-06-11
-    @cvs-id $Id: edit.tcl,v 1.2 2010/10/19 20:12:28 po34demo Exp $
+    @cvs-id $Id: edit.tcl,v 1.5 2004/03/12 18:48:55 jeffd Exp $
 
 } {
     segment_id:integer,notnull

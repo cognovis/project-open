@@ -3,7 +3,7 @@
 --
 -- @author oumi@arsdigita.com
 -- @creation-date 2000-02-02
--- @cvs-id $Id: user-profiles-drop.sql,v 1.2 2010/10/19 20:12:17 po34demo Exp $
+-- @cvs-id $Id: user-profiles-drop.sql,v 1.2 2001/04/17 04:10:06 danw Exp $
 --
 
 drop view cc_users_of_package_id;

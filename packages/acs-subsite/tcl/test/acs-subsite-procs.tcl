@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-subsite-procs.tcl,v 1.2 2010/10/19 20:12:20 po34demo Exp $
+    @cvs-id $Id: acs-subsite-procs.tcl,v 1.6 2008/01/21 16:42:56 donb Exp $
 }
 
 aa_register_case acs_subsite_expose_bug_775 {

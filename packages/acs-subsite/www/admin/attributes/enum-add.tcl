@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Nov  7 12:14:42 2000
-    @cvs-id $Id: enum-add.tcl,v 1.2 2010/10/19 20:12:23 po34demo Exp $
+    @cvs-id $Id: enum-add.tcl,v 1.3 2007/01/10 21:22:06 gustafn Exp $
 
 } {
     attribute_id:integer,notnull

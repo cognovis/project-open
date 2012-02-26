@@ -2,7 +2,7 @@ ad_page_contract {
     @author Mark Dettinger (mdettinger@arsdigita.com)
     @author Michael Steigman (michael@steigman.net)
     @creation-date 2000-10-24
-    @cvs-id $Id$
+    @cvs-id $Id: index.tcl,v 1.9 2011/04/19 21:22:47 emmar Exp $
 } {
 }
 

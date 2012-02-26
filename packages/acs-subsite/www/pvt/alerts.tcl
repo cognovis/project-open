@@ -1,5 +1,5 @@
 ad_page_contract {
-    @cvs-id $Id: alerts.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
+    @cvs-id $Id: alerts.tcl,v 1.5 2007/01/10 21:22:09 gustafn Exp $
 } {
 } -properties {
     title:onevalue

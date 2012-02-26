@@ -5,7 +5,7 @@
 --
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 12 Aug 2000
--- @cvs-id $Id: utilities-create.sql,v 1.2 2010/10/19 20:11:42 po34demo Exp $
+-- @cvs-id $Id: utilities-create.sql,v 1.6 2006/06/08 23:38:27 rocaelh Exp $
 --
 
 create function util__multiple_nextval (varchar,integer)

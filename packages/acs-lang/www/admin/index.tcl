@@ -7,7 +7,7 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 19 October 2001
-    @cvs-id $Id$
+    @cvs-id $Id: index.tcl,v 1.11 2011/04/08 11:57:15 emmar Exp $
 }
 
 # We rename to avoid conflict in queries

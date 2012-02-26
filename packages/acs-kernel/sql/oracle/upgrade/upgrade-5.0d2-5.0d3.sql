@@ -3,7 +3,7 @@
 --
 -- @author Peter Marklund (peter@collaboraid.biz)
 --
--- @cvs-id $Id: upgrade-5.0d2-5.0d3.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
+-- @cvs-id $Id: upgrade-5.0d2-5.0d3.sql,v 1.10 2004/01/26 15:39:45 jeffd Exp $
 --
 
 

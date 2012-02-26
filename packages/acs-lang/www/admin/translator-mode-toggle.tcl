@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date October 24, 2002
-    @cvs-id $Id: translator-mode-toggle.tcl,v 1.2 2010/10/19 20:11:57 po34demo Exp $
+    @cvs-id $Id: translator-mode-toggle.tcl,v 1.2 2007/01/10 21:22:04 gustafn Exp $
 } {
     {return_url "."}
 }

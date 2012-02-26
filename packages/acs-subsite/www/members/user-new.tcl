@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-02
-    @cvs-id $Id$
+    @cvs-id $Id: user-new.tcl,v 1.10 2011/04/07 11:39:12 emmar Exp $
 } {
     email:trim
 }
@@ -11,6 +11,7 @@ ad_page_contract {
 subsite::assert_user_may_add_member
 
 set group_id [application_group::group_id_from_package_id]
+
 set mainsite_group_id [application_group::group_id_from_package_id \
                            -no_complain \
                            -package_id [subsite::main_site_id]]

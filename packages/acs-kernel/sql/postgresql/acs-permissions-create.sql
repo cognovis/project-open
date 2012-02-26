@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-08-13
 --
--- @cvs-id $Id: acs-permissions-create.sql,v 1.4 2010/10/19 20:11:39 po34demo Exp $
+-- @cvs-id $Id: acs-permissions-create.sql,v 1.34 2010/03/10 00:44:03 donb Exp $
 --
 
 

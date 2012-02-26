@@ -7,7 +7,7 @@ ad_page_contract {
     
     @author rhs@mit.edu
     @creation-date 2000-08-29
-    @cvs-id $Id: index.tcl,v 1.2 2010/10/19 20:12:39 po34demo Exp $
+    @cvs-id $Id: index.tcl,v 1.3 2005/03/01 00:01:24 jeffd Exp $
 } { 
     root:trim,integer,optional
 }

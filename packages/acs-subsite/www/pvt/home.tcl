@@ -1,7 +1,7 @@
 ad_page_contract {
     Page for users to register themselves on the site.
 
-    @cvs-id $Id: home.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
+    @cvs-id $Id: home.tcl,v 1.26 2007/08/29 13:44:37 maltes Exp $
 } {
 
 }

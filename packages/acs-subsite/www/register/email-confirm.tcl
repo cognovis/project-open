@@ -1,7 +1,7 @@
 ad_page_contract {
     Page for users to register themselves on the site.
 
-    @cvs-id $Id: email-confirm.tcl,v 1.2 2010/10/19 20:12:43 po34demo Exp $
+    @cvs-id $Id: email-confirm.tcl,v 1.11 2007/05/29 05:40:54 maltes Exp $
 } {
     token:notnull,trim
     user_id:integer
