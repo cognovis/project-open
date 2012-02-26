@@ -149,6 +149,8 @@ if {[llength $contact_ids] > 0} {
 if {$company_contact_id eq ""} {
     set company_contact_id $accounting_contact_id
 }
+if {"" == $company_contact_id} { set company_contact_id $accounting_contact_id }
+if {"" == $company_contact_id} { set company_contact_id $primary_contact_id }
 
 if {$company_contact_id eq ""} {
     set company_contact_id $primary_contact_id

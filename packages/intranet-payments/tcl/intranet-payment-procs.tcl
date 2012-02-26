@@ -195,5 +195,3 @@ ad_proc -public im_payment_list {
     }
     return [join $csv_lines "\n"]
 }
-
->>>>>>> c6e7a1c... Mark payments as paid once the payment list has been created

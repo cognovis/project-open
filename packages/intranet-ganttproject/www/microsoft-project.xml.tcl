@@ -111,6 +111,7 @@ if {![info exists xml_elements] || [llength $xml_elements] == 0} {
 
 foreach element $xml_elements { 
     set append_p 1
+    set value ""
     switch $element {
 	"Name" - "Title"	{ set value "${project_name}.xml" }
 	"Manager"		{ set value $project_lead_name }

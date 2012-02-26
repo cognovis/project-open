@@ -13,53 +13,6 @@ ad_library {
     @author malte.sussdorff@cognovis.de
 }
 
-
-# ----------------------------------------------------------------------
-# 
-# ----------------------------------------------------------------------
-
-ad_proc -public im_ms_project_calculate_actualstart {
-    -task_id
-} {
-    Calculate the actual start based on the dependencies
-} {
-
-    db_foreach parents {
-	select to_char(p.end_date, 'YYYY-MM-DD HH24:MM:SS') as end_date,
-	       ttd.difference, dependency_type_id
-        from   im_projects p,
-               im_timesheet_task_dependencies ttd
-	WHERE  ttd.task_id_one = :task_id and ttd.task_id_two = p.project_id and
-	       ttd.task_id_two <> :task_id
-    } {
-	switch $dependency_type_id {
-	    9660 {
-		set actual_start_date ""
-	    }
-	    9662 {
-		# Finish to start
-		set actual_start_date [db_string actual_start_date "
-				SELECT 	p2.end_date::date || 'T' || p2.end_date::time as end_date
-				FROM	
-                                (SELECT to_date(:end_date, 'YYYY-MM-DD HH24:MM:SS') + interval '$difference seconds' as end_date from dual) p2
-			" -default ""]
-	    }
-	    9664 {
-		set actual_start_date ""
-	    }
-	    9666 {
-		# start to start
-		set actual_start_date [db_string actual_start_date "
-				SELECT 	p2.end_date::date || 'T' || p2.end_date::time as end_date
-				FROM	
-                                (SELECT to_date(:end_date, 'YYYY-MM-DD HH24:MM:SS') + interval '$difference seconds' as end_date from dual) p2
-			" -default ""]
-	    }
-	}
-	ds_comment "$actual_start_date"
-    }
-}    
-
 ad_proc -public im_ms_project_write_subtasks { 
     { -default_start_date "" }
     { -default_duration "" }
