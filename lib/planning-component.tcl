@@ -136,7 +136,7 @@ set dimension_project_phase_list [db_list_of_lists dim_project_phase "
 #
 set dimension_member_list [db_list_of_lists dim_members "
 	select	p.party_id,
-		acs_object__name(p.party_id)
+		'<a href=/intranet/users/view?user_id=' || p.party_id || '>' || acs_object__name(p.party_id) || '</a>'
 	from	acs_rels r,
 		parties p
 	where	r.object_id_two = p.party_id and
@@ -206,13 +206,15 @@ set sql "
 	from	($middle_sql) m
 "
 db_foreach planning_items $sql {
-
     # Calculate the key for this permutation
     # something like "$year-$month-$customer_id"
     set key_expr "\$[join $dimension_vars "-\$"]"
     set key [eval "set a \"$key_expr\""]
     set hash($key) $item_value
 }
+
+
+# ad_return_complaint 1 "<pre>dimension_member_list=$dimension_member_list</pre>"
 
 
 # ------------------------------------------------------------
@@ -286,9 +288,6 @@ for {set row 0} {$row < $top_scale_rows} { incr row } {
     append header "</tr>\n"
 }
 
-# ad_return_complaint 1 "<table>$header</table>"
-
-
 # ------------------------------------------------------------
 # Display the Table Body
 
@@ -338,8 +337,6 @@ foreach left_scale_item $left_scale {
 	set key_expr "\$[join $dimension_vars "-\$"]"
 	set key [eval "set a \"$key_expr\""]
 	
-#	ad_return_complaint 1 "$key_expr $key"
-
 	# -----------------------------------------------------------
 	# Extract the value for this planning cell
 	set sum ""
