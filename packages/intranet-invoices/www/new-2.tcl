@@ -487,9 +487,6 @@ im_invoice_update_rounded_amount \
     -discount_perc $discount_perc \
     -surcharge_perc $surcharge_perc
 
-# Audit the update
-im_audit -object_type "im_invoice" -object_id $invoice_id -action after_update -status_id $cost_status_id -type_id $cost_type_id
-
 # ---------------------------------------------------------------
 # 
 # ---------------------------------------------------------------
