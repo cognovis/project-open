@@ -111,6 +111,11 @@ create table im_planning_items (
 	item_project_member_id integer
 			constraint im_planning_items_project_member_fk
 			references parties,
+			-- Only for planning hourly costs:
+			-- Contains the hourly_cost of the resource in order
+			-- to keep budgets from changing when changing the 
+			-- im_employees.hourly_cost of a resource.
+	item_project_member_hourly_cost numeric(12,3),
 			-- Cost type dimension.
 			-- Valid values include categories from "Intranet Cost Type"
 			-- and "Intranet Expense Type" (as a sub-type for expenses)
@@ -203,6 +208,17 @@ BEGIN
 		p_item_value,
 		p_item_note
 	);
+
+	-- Store the current hourly_rate with planning items.
+	IF p_item_cost_type_id = 3736 AND p_item_project_member_id is not null THEN
+		update im_planning_items
+		set item_project_member_hourly_cost = (
+			select hourly_cost
+			from   im_employees
+			where  employee_id = p_item_project_member_id
+		    )
+		where item_id = row.item_id;       
+	END IF;
 
 	return 0;
 END; $body$ language 'plpgsql';
