@@ -150,6 +150,9 @@ create unique index im_planning_object_item_idx on im_planning_items(
 
 
 
+
+
+
 -- Create a new planning item
 -- The first 6 parameters are common for all ]po[ business objects
 -- with metadata such as the creation_user etc. Context_id 
@@ -188,10 +191,15 @@ DECLARE
 	p_item_cost_type_id	alias for $14;
 	p_item_date		alias for $15;
 
+	v_item_id		integer;
 BEGIN
+	select	nextval('im_planning_items_seq')
+	into	v_item_id from dual;
+
 	-- Create an entry in the im_planning table with the same
 	-- v_item_id from acs_objects.object_id
 	insert into im_planning_items (
+		item_id,
 		item_object_id,
 		item_project_phase_id,
 		item_project_member_id,
@@ -200,6 +208,7 @@ BEGIN
 		item_value,
 		item_note
 	) values (
+		v_item_id,
 		p_item_object_id,
 		p_item_project_phase_id,
 		p_item_project_member_id,
@@ -217,7 +226,7 @@ BEGIN
 			from   im_employees
 			where  employee_id = p_item_project_member_id
 		    )
-		where item_id = row.item_id;       
+		where item_id = v_item_id;
 	END IF;
 
 	return 0;
