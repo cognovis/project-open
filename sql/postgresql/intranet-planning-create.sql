@@ -81,9 +81,9 @@ create table im_planning_items (
 			-- company. So object_id references acs_objects.object_id,
 			-- the supertype of all object types.
 	item_object_id	integer
-			constraint im_planning_item_oid_nn
+			constraint im_planning_items_object_nn
 			not null
-			constraint im_object_id_fk
+			constraint im_planning_items_object_fk
 			references acs_objects,
 --			-- Type can be "Revenues" or "Costs"
 --	item_type_id	integer 
@@ -101,12 +101,12 @@ create table im_planning_items (
 			-- Project phase dimension
 			-- for planning on project phases.
 	item_project_phase_id integer
-			constraint item_project_phase_fk
+			constraint im_planning_items_project_phase_fk
 			references im_projects,
 			-- Project member dimension
 			-- for planning per project member.
 	item_project_member_id integer
-			constraint item_project_member_fk
+			constraint im_planning_items_project_member_fk
 			references parties,
 			-- Cost type dimension.
 			-- Valid values include categories from "Intranet Cost Type"
@@ -124,7 +124,7 @@ create table im_planning_items (
 );
 
 -- Speed up (frequent) queries to find all planning for a specific object.
-create index im_planning_object_idx on im_planning_items(item_object_id);
+create index im_planning_items_object_idx on im_planning_items(item_object_id);
 
 -- Avoid duplicate entries.
 -- Every ]po[ object should contain one such "unique" constraint in order
