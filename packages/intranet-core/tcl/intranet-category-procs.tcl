@@ -827,3 +827,16 @@ ad_proc im_biz_object_category_select_branch {
     return $html
 }
 
+ad_proc -public im_category_all_parents {
+    -category_id
+} {
+    set all_parent_ids [list]
+    set parent_ids [im_category_parents $category_id]
+    if {$parent_ids ne ""} {
+	foreach parent_id $parent_ids {
+	    lappend all_parent_ids $parent_id
+	    set all_parent_ids [concat $all_parent_ids [im_category_all_parents -category_id $parent_id]]
+	}
+    }
+    return $all_parent_ids
+}
