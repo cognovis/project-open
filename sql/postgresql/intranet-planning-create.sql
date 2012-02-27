@@ -66,17 +66,20 @@ alter table im_projects add column cost_expenses_planned numeric(12,2);
 --'im_planning_item','edit','/intranet-planning/new?display_mode=edit&item_id=');
 
 
+
+
+-- Sequence to create fake object_ids for im_planning_items
+create sequence im_planning_items_seq;
+
 -- This table stores one time line of items.
+-- It is not an OpenACS object, so the item_id does not reference acs_objects.
+---
 create table im_planning_items (
--- not an object (yet)
---			-- The object_id: references acs_objects.object_id.
---			-- So we can lookup object metadata such as creation_date,
---			-- object_type etc in acs_objects.
---	item_id		integer
---			constraint im_planning_item_id_pk
---			primary key
---			constraint im_planning_item_id_fk
---			references acs_objects,
+			-- The (fake) object_id: does not yet reference acs_objects.
+	item_id		integer default nextval('im_planning_items_seq')
+			constraint im_planning_item_id_pk
+			primary key,
+
 			-- Field to allow attaching the item to a project, user or
 			-- company. So object_id references acs_objects.object_id,
 			-- the supertype of all object types.
