@@ -271,7 +271,7 @@ ad_proc -public im_csv_import_guess_parser {
     # Date parsers
     #
     # Abort if there are not enough values
-    if {[llength $sample_values] > 1} { 
+    if {[llength $sample_values] >= 1} { 
 
 	set date_european_p 1
 	set date_american_p 1

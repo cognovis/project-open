@@ -35,6 +35,18 @@ if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
     ad_script_abort
 }
 
+# Empty return_url?
+# Choose depending on the object type...
+if {"" == $return_url} {
+    switch $object_type {
+	im_project { set return_url "/intranet/projects/index" }
+	im_company { set return_url "/intranet/companies/index" }
+	default { set return_url "/intranet" }
+    }
+}
+
+
+
 # strip off the C:\directories... crud and just get the file name
 if ![regexp {([^//\\]+)$} $upload_file match filename] {
     # couldn't find a match

@@ -290,6 +290,9 @@ foreach csv_line_fields $values_list_of_lists {
     if {"" == $customer_id } { 
 	set customer_id [db_string cust "select company_id from im_companies where lower(company_path) = trim(lower(:customer_name))" -default ""] 
     }
+    # For compatibility
+    set company_id $customer_id
+
     if {"" == $customer_id } { 
 	if {$ns_write_p} {
 	    ns_write "<li><font color=red>Error: Didn't find customer for '$customer_name'.<br>
