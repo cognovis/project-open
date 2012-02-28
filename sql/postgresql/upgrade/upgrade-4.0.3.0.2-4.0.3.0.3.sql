@@ -4,18 +4,42 @@
 
 
 -- Sequence to create fake object_ids for im_planning_items
-create sequence im_planning_items_seq;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
 
-alter table im_planning_items
-add column item_id integer default nextval('im_planning_items_seq') constraint im_planning_item_id_pk primary key;
+begin
+	select count(*) into v_count from pg_class
+	where  lower(relname) = 'im_planning_items_seq';
+	IF v_count = 0 THEN 
+		create sequence im_planning_items_seq;
+	END IF;
 
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_id';
+	IF v_count = 0 THEN 
+		alter table im_planning_items
+		add column item_id integer default nextval('im_planning_items_seq') 
+		constraint im_planning_item_id_pk primary key;
+	END IF;
 
--- Only for planning hourly costs:
--- Contains the hourly_cost of the resource in order
--- to keep budgets from changing when changing the
--- im_employees.hourly_cost of a resource.
-alter table im_planning_items
-add column item_project_member_hourly_cost numeric(12,3);
+	select count(*) into v_count from user_tab_columns
+	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_id';
+	IF v_count = 0 THEN 
+		-- Only for planning hourly costs:
+		-- Contains the hourly_cost of the resource in order
+		-- to keep budgets from changing when changing the
+		-- im_employees.hourly_cost of a resource.
+		alter table im_planning_items
+		add column item_project_member_hourly_cost numeric(12,3);
+	END IF;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
 
 
 
@@ -24,14 +48,14 @@ add column item_project_member_hourly_cost numeric(12,3);
 create or replace function inline_0 ()
 returns integer as $body$
 declare
-	v_count		integer;
 	row		RECORD;
 begin
 	FOR row IN
 		select	*
 		from	im_planning_items
 		where	item_project_member_id is not null and
-			item_cost_type_id = 3736
+			item_cost_type_id = 3736 and
+			item_project_member_hourly_cost is null
 	LOOP
 		update im_planning_items
 		set item_project_member_hourly_cost = (
@@ -46,8 +70,6 @@ begin
 end;$body$ language 'plpgsql';
 select inline_0();
 drop function inline_0();
-
-
 
 
 
