@@ -331,7 +331,7 @@ foreach csv_line_fields $values_list_of_lists {
 		lower(trim(project_name)) = lower(trim(:project_name))
     " -default ""]
 
-    if {"" != $project_id && "" != $project_id2} {
+    if {$project_id != $project_id2 && "" != $project_id && "" != $project_id2} {
 	if {$ns_write_p} {
 	    ns_write "<li><font color=red>Error: We have found two different projects, one with
 	    'Project Nr'=$project_nr and a second one with 'Project Name'='$project_name'.<br>
