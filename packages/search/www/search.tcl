@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.36 2010/02/04 21:06:42 daveb Exp $
+    @cvs-id $Id$
 } {
     q:trim
     {t:trim ""}
