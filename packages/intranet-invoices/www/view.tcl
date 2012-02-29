@@ -33,14 +33,26 @@ ad_page_contract {
     { err_mess "" }
     { item_list_type:integer 0 }
     { pdf_p 0 }
+    { user_id ""}
+    { auto_login ""}
+    { expiry_date ""}
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
+# First check for auto login
+if {"" != $user_id && "" != $auto_login} {
+    if {![im_valid_auto_login_p -user_id $user_id -auto_login $auto_login -check_user_requires_manual_login_p 0 -expiry_date $expiry_date]} {
+	set user_id [ad_maybe_redirect_for_registration]
+    }
+} else {
+    set user_id [ad_maybe_redirect_for_registration]
+}    
+
 # Get user parameters
-set user_id [ad_maybe_redirect_for_registration]
+
 set user_locale [lang::user::locale]
 set locale $user_locale
 set page_title ""
