@@ -131,7 +131,7 @@ if {[exists_and_not_null risk_id]} {
     set risk_exists_p [db_string risk_exists_p "select count(*) from im_risks where risk_id = :risk_id"]
 
     # Write Audit Trail
-    im_project_audit -project_id $risk_id -action before_update
+    im_audit -object_id $risk_id -action before_update
 
 }
 
@@ -200,32 +200,10 @@ if {"delete" == $button_pressed} {
      "
 
     # Write Audit Trail
-    im_project_audit -project_id $risk_id -action delete
+    im_audit -object_id $risk_id -action delete
 
     ad_returnredirect $return_url
 }
-
-
-# ------------------------------------------------------------------
-# Redirect if risk_type_id is missing
-# ------------------------------------------------------------------
-
-if {"edit" == $form_mode} {
-
-    set redirect_p 0
-    # redirect if risk_type_id is not defined
-    if {("" == $risk_type_id || 0 == $risk_type_id) && ![exists_and_not_null risk_id]} {
-	set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_risk"]
-	set all_same_p 0
-	if {!$all_same_p} { set redirect_p 1 }
-    }
-
-    if {$redirect_p} {
-	ad_returnredirect [export_vars -base "new-typeselect" {{return_url $current_url} risk_id risk_type_id risk_name risk_project_id}]
-    }
-
-}
-
 
 # ------------------------------------------------------------------
 # 
@@ -273,7 +251,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 } -select_query {
 
 	select	r.*
-	from	im_risks t
+	from	im_risks r
 	where	r.risk_id = :risk_id
 
 } -new_data {
@@ -300,7 +278,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	-form_id riskmanagement_risk
 
     # Write Audit Trail
-    im_project_audit -project_id $risk_id -action create
+    im_audit -object_id $risk_id -action after_create
 
     ad_returnredirect $return_url
 #    ad_returnredirect [export_vars -base "/intranet-riskmanagement/new" {risk_id {form_mode display}}]
@@ -320,7 +298,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	-form_id riskmanagement_risk
 
     # Write Audit Trail
-    im_project_audit -project_id $risk_id -action update
+    im_audit -object_id $risk_id -action after_update
 
 } -on_submit {
 
