@@ -1,6 +1,6 @@
-# /packages/intranet-reporting/www/finance-yearly-revenues.tcl
+# /packages/intranet-reporting-cubes/www/timesheet-cube.tcl
 #
-# Copyright (c) 2003-2006 ]project-open[
+# Copyright (c) 2003-2012 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
