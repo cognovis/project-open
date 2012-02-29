@@ -4,7 +4,7 @@ ad_library {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 10 November, 2006
-    @cvs-id $Id: intranet-cost-init.tcl,v 1.2 2007/03/10 23:07:34 cvs Exp $
+    @cvs-id $Id$
 
 }
 
