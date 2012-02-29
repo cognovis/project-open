@@ -3,7 +3,7 @@
 
     @creation-date 2006-02-02
     @author Gustaf Neumann
-    @cvs-id $Id: chat-procs.tcl,v 1.13 2010/03/18 10:03:56 gustafn Exp $
+    @cvs-id $Id$
 }
 namespace eval ::xowiki {
   ::xo::ChatClass Chat -superclass ::xo::Chat

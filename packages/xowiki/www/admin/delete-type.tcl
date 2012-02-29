@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Aug 11, 2006
-  @cvs-id $Id: delete-type.tcl,v 1.10 2008/12/12 13:48:17 gustafn Exp $
+  @cvs-id $Id$
 
   @param object_type 
   @param query

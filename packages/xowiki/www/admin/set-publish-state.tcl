@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Nov 16, 2006
-  @cvs-id $Id: set-publish-state.tcl,v 1.7 2007/06/08 12:04:14 gustafn Exp $
+  @cvs-id $Id$
 
   @param object_type 
   @param query

@@ -3,7 +3,7 @@
 
     @creation-date 2010-06-26
     @author Gustaf Neumann
-    @cvs-id $Id: upgrade.tcl,v 1.5 2011/05/20 09:52:45 victorg Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -557,22 +557,6 @@ namespace eval ::xowiki {
 	      -attribute_name_in context_id -value_in $p
 	}
       }
-    }
-
-    set v 0.138
-    if {[apm_version_names_compare $from_version_name $v] == -1 &&
-        [apm_version_names_compare $to_version_name $v] > -1} {
-        ns_log notice "-- upgrading to $v"
-        
-        foreach object_type {PlainPage Page File PodcastItem PageTemplate PageInstance Object Form FormPage} {
-            set pretty_name_key "#xowiki.${object_type}_pretty_name#"
-            set pretty_plural_key "#xowiki.${object_type}_pretty_plural#"
-            set xowiki_object_type "::xowiki::${object_type}"
-            db_dml i18_name "
-                update acs_object_types set pretty_name = :pretty_name_key, pretty_plural = :pretty_plural_key
-                where object_type = :xowiki_object_type
-            "
-        }
     }
   }
 }

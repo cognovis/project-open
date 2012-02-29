@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Nov 11, 2007
-  @cvs-id $Id: bulk-delete.tcl,v 1.1 2007/11/26 09:14:44 gustafn Exp $
+  @cvs-id $Id$
 
   @param object_type 
 } -parameter {

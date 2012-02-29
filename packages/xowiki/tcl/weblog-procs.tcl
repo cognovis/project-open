@@ -60,7 +60,7 @@ namespace eval ::xowiki {
     set folder_id [::$package_id folder_id]
     set filter_msg  ""
     set query_parm ""
-    set query [expr {[ns_conn isconnected] ? [ns_conn query] : ""}]
+    set query [ns_conn query]
     
     # set up filters
     set extra_from_clause ""
@@ -112,8 +112,7 @@ namespace eval ::xowiki {
     set base_type ::xowiki::Page
     set base_table xowiki_pagei
     set attributes [list bt.revision_id bt.publish_date bt.title bt.creator bt.creation_user \
-                        ci.parent_id bt.description s.body \
-			pi.instance_attributes pi.page_template fp.state]
+                        ci.parent_id bt.description s.body pi.instance_attributes]
     
     set class_clause \
         " and ci.content_type not in ('::xowiki::PageTemplate','::xowiki::Object')"
@@ -177,7 +176,6 @@ namespace eval ::xowiki {
              -from_clause "\
 		left outer join syndication s on s.object_id = bt.revision_id \
 		left join xowiki_page_instance pi on (bt.revision_id = pi.page_instance_id) \
-		left join xowiki_form_page fp on (bt.revision_id = fp.xowiki_form_page_id) \
 		$extra_from_clause" \
              -where_clause "ci.item_id not in ([my exclude_item_ids]) \
                 and ci.name != '::$folder_id' and ci.name not like '%weblog%' $date_clause \

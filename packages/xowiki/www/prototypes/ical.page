@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: ical.page,v 1.5 2010/06/17 10:41:42 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "News" -text {
   #
   # A sample News object.

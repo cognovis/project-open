@@ -3,7 +3,7 @@
 
     @creation-date 2007-03-13
     @author Gustaf Neumann
-    @cvs-id $Id: adp-generator-procs.tcl,v 1.37 2011/05/26 07:51:05 gustafn Exp $
+    @cvs-id $Id$
 }
 
 
@@ -259,13 +259,6 @@ table.mini-calendar {width: 200px ! important;}
     } \
     -proc content_part {} {
       return [subst -novariables -nobackslashes {\
-
-<div style="width: 100%; float: left"> <!-- contentwrap -->
-<div style="margin-left: 258px;"> <!-- content -->
-[next]
-</div> <!-- content -->
-</div> <!-- contentwrap -->
-
 <div style="float:left; width: 245px; font-size: 85%;">
 <div style="background: url(/resources/xowiki/bw-shadow.png) no-repeat bottom right;
      margin-left: 6px; margin-top: 6px; padding: 0px;
@@ -298,7 +291,9 @@ table.mini-calendar {width: 200px ! important;}
 	 portlet="categories -open_page @name@  -decoration plain">
 </div></div>  <!-- background -->
 </div>
-
+<div style="float:right; width: 70%;">
+[next]
+</div> <!-- right 70% -->
 }]
      }
 
