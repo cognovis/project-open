@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date November 20, 2000
-    @cvs-id $Id: workflow.tcl,v 1.1 2006/06/05 20:45:14 dotproj Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull
     {tab home}
