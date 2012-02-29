@@ -240,3 +240,36 @@ ad_proc -public -callback im_companies_index_before_render -impl intranet-openof
         ad_script_abort
     }
 }
+
+ad_proc -public -callback im_invoices_after_create -impl intranet-openoffice-pdf-invoice {
+    {-object_type:required}
+    {-object_id:required}
+    {-status_id:required}
+    {-type_id:required}
+} {
+    Generate a PDF for the created invoice document and attach the PDF to the invoice
+    
+    Use the content repository for this and make sure you create new revisions not new files.
+} {
+
+    # First we need to retrieve the invoice
+    set user_id [im_sysadmin_user_default]
+    set expiry_date [db_string current_date "select to_char(sysdate, 'YYYY-MM-DD') from dual"]
+    set auto_login [im_generate_auto_login -expiry_date $expiry_date -user_id $user_id]
+    set invoice_id $object_id
+    set invoice_url [export_vars -base "http://kolibri.cognovis.de/intranet-invoices/view" -url {invoice_id user_id expiry_date auto_login {pdf_p 1} {render_template_id 1}}]
+    set mime_type "application/pdf"
+    set invoice_nr [db_string name "select invoice_nr from im_invoices where invoice_id = :invoice_id"]
+    set data [ util_httpget $invoice_url ]
+
+    # Save the content to a file.                                                                             
+    set tmp_filename [ns_tmpnam]                                                                                  
+    set file [open $tmp_filename w]
+    fconfigure $file -encoding "utf-8"
+    puts $file $data
+    flush $file
+    close $file
+    
+    cr_import_content -creation_user $user_id -title "{$invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "{$invoice_nr}.pdf"
+    
+}
