@@ -22,12 +22,10 @@ ad_page_contract {
     { different_from_project_p "" }
 }
 
-
 proc round_down {val rounder} {
        set nval [expr floor($val*$rounder) /$rounder]
        return $nval
        }
-
 
 # ------------------------------------------------------------
 # Security
@@ -80,31 +78,16 @@ if { [empty_string_p $report_year_month] } {
 set report_year [string range $report_year_month 0 3]
 set report_month [string range $report_year_month 5 6 ]
 
-
-# set days_in_past 15
-# db_1row todays_date "
-# select
-#	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
-#	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month
-# from dual
-# "
-
 set first_day_of_month "$report_year-$report_month-01"
 set first_day_next_month [db_string get_number_days_month "SELECT '$first_day_of_month'::date + '1 month'::interval" -default 0]
 
 set duration [db_string get_number_days_month "SELECT date_part('day','$first_day_of_month'::date + '1 month'::interval - '1 day'::interval)" -default 0]
-# set duration 1
-
 
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
 
-set this_url [export_vars -base "/intranet-reporting/timesheet-productivity" {report_year_month} ]
-
 set internal_company_id [im_company_internal]
-
-set levels {1 "User Only" 2 "User+Company" 3 "User+Company+Project" 4 "All Details"} 
 
 set num_format "999,990.99"
 
@@ -173,15 +156,19 @@ if {[info exists user_id] && 0 != $user_id && "" != $user_id} {
 
 set show_user_only_p 1 
 
-if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Senior Managers"] -user_id $user_id] } {
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Senior Managers"] -user_id $current_user_id] } {
 	set show_user_only_p 0
 }
 
-if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Technical Office"] -user_id $user_id] } {
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Technical Office"] -user_id $current_user_id] } {
         set show_user_only_p 0
 }
 
-if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "HR Managers"] -user_id $user_id] } {
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "HR Managers"] -user_id $current_user_id] } {
+        set show_user_only_p 0
+}
+
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "P/O Admins"] -user_id $current_user_id] } {
         set show_user_only_p 0
 }
 
@@ -189,6 +176,7 @@ if { $show_user_only_p } {
 	lappend criteria "u.user_id = $current_user_id"
 }
 
+# ad_return_complaint 1 $show_user_only_p
 
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
@@ -241,7 +229,6 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
     # }
 }
 
-# ad_return_complaint 1 $day_placeholders
 
 set inner_sql [join $inner_sql_list ", "]
 set outer_sql [join $outer_sql_list ", "]
@@ -333,32 +320,8 @@ order by
 	top_parent_project_id
 "
 
-# ad_return_complaint 1 $sql
-
-# # set report_def [list \
-#     group_by user_id \
-#     header {
-#                 "\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"
-#     } \
-# 	            content [list \
-# 		            group_by top_project_id \
-#         	            header {
-# 				""
-#                 	        "<b><a href=$project_url$top_project_id>$top_project_name</a></b>"
-#                 	        "<b><a href=$project_url$sub_project_id>$sub_project_name</a></b>"
-# 				$day01 
-# 				"-"
-#                     	     } \
-#                     	     content {} \
-#             	    ] \
-#     footer {
-#             "Summary" "#colspan=33" "$number_days_ctr_pretty $number_hours_ctr_pretty" 
-#     } \
-#]
-
-
 set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr}&nbsp;\${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr}&nbsp;\${sub_project_name}</a></b>\" "
-append line_str $day_placeholders "-" 
+append line_str $day_placeholders "\$number_hours_project_ctr" 
 set no_empty_columns [expr $duration+1]
 
 set report_def 		[list group_by user_id header {"\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"} content]
@@ -525,6 +488,13 @@ set footer0 {"" "" "" "" "" "" "" "" "" ""}
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format $output_format
 
+
+
+
+
+
+
+
 # Add the HTML select box to the head of the page
 switch $output_format {
     html {
@@ -641,12 +611,20 @@ set number_hours_counter [list \
        expr "\$number_hours_ctr+0" \
 ]
 
+set number_hours_project_ctr 0
+set number_hours_project_counter [list \
+       pretty_name "Number hours per project" \
+       var number_hours_project_ctr_pretty \
+       reset \$top_parent_project_id \
+       expr "\$number_hours_project_ctr+0" \
+]
+
 set counters [list \
 	  $number_days_counter \
 	  $number_hours_counter \
+	  $number_hours_project_counter \
 ]
  
-
 #------------------------
 # Initialize
 #------------------------ 
@@ -662,6 +640,7 @@ db_foreach sql $sql {
 
         set number_days_ctr 0
         set number_hours_ctr 0
+        set number_hours_project_ctr 0
 
 	im_report_display_footer \
 	    -output_format $output_format \
@@ -690,6 +669,7 @@ db_foreach sql $sql {
 				set number_days_ctr [expr $number_days_ctr+1]  
 				set month_arr($day_double_digit) 1
 			        set number_hours_ctr [expr $number_hours_ctr + $thours_arr($day_double_digit)] 
+			        set number_hours_project_ctr [expr $number_hours_project_ctr + $thours_arr($day_double_digit)] 
 			}
 		}
 	}
