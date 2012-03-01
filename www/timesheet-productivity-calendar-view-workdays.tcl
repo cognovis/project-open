@@ -320,8 +320,10 @@ order by
 	top_parent_project_id
 "
 
+# This string represents a project/sub project
 set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr}&nbsp;\${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr}&nbsp;\${sub_project_name}</a></b>\" "
 append line_str $day_placeholders "\$number_hours_project_ctr" 
+
 set no_empty_columns [expr $duration+1]
 
 set report_def 		[list group_by user_id header {"\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"} content]
@@ -360,7 +362,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 				 "<strong>$thours_arr(day26)</strong>" \
 				 "<strong>$thours_arr(day27)</strong>" \
 				 "<strong>$thours_arr(day28)</strong>" \
-                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+                                 "<strong>$number_hours_ctr_pretty</strong><tr><td colspan='99'>&nbsp;</td></tr>"
 }}
 
 if {$duration == 29} {
@@ -396,7 +398,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 				 "<strong>$thours_arr(day27)</strong>" \
 				 "<strong>$thours_arr(day28)</strong>" \
 				 "<strong>$thours_arr(day29)</strong>" \
-                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+                                 "<strong>$number_hours_ctr_pretty</strong><tr><td colspan='99'>&nbsp;</td></tr>"
 }}
 
 if {$duration == 30} {
@@ -433,7 +435,7 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 				 "<strong>$thours_arr(day28)</strong>" \
 				 "<strong>$thours_arr(day29)</strong>" \
 				 "<strong>$thours_arr(day30)</strong>" \
-                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+                                 "<strong>$number_hours_ctr_pretty</strong><tr><td colspan='99'>&nbsp;</td></tr>"
 }}
 
 if {$duration == 31} {
@@ -471,14 +473,11 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 				 "<strong>$thours_arr(day29)</strong>" \
 				 "<strong>$thours_arr(day30)</strong>" \
 				 "<strong>$thours_arr(day31)</strong>" \
-				 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty) </strong> <tr><td colspan='99'>&nbsp;</td></tr>" 
+				 "<strong>$number_hours_ctr_pretty </strong> <tr><td colspan='99'>&nbsp;</td></tr>" 
 }}
 
 # Global header/footer
-# set header0 {"Employee" "Project" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "Working<br>Days"}
-# set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Total Hours (Days)<br> logged\" \"Working<br>Days net\" \"Utilization\" "
-set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Total Hours (Days)<br> logged\" "
-
+set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Hours\" "
 set footer0 {"" "" "" "" "" "" "" "" "" ""}
 
 # ------------------------------------------------------------
@@ -487,13 +486,6 @@ set footer0 {"" "" "" "" "" "" "" "" "" ""}
 
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format $output_format
-
-
-
-
-
-
-
 
 # Add the HTML select box to the head of the page
 switch $output_format {
@@ -603,33 +595,15 @@ set number_days_counter [list \
        expr "\$number_days_ctr+0" \
 ]
 
-set number_hours_ctr 0 
-set number_hours_counter [list \
-       pretty_name "Number hours" \
-       var number_hours_ctr_pretty \
-       reset \$user_id \
-       expr "\$number_hours_ctr+0" \
-]
-
-set number_hours_project_ctr 0
-set number_hours_project_counter [list \
-       pretty_name "Number hours per project" \
-       var number_hours_project_ctr_pretty \
-       reset \$top_parent_project_id \
-       expr "\$number_hours_project_ctr+0" \
-]
-
-set counters [list \
-	  $number_days_counter \
-	  $number_hours_counter \
-	  $number_hours_project_counter \
-]
+set counters [list $number_days_counter ]
  
 #------------------------
 # Initialize
 #------------------------ 
 
 set saved_user_id 0
+set number_hours_project_ctr 0
+
 for { set i 1 } { $i < $duration + 1 } { incr i } {
         if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
 	set month_arr($day_double_digit) 0
@@ -640,7 +614,6 @@ db_foreach sql $sql {
 
         set number_days_ctr 0
         set number_hours_ctr 0
-        set number_hours_project_ctr 0
 
 	im_report_display_footer \
 	    -output_format $output_format \
@@ -650,29 +623,43 @@ db_foreach sql $sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-	
+
+        set number_hours_project_ctr 0
+
 	if { $user_id != $saved_user_id } {
 		set saved_user_id $user_id
 		for { set i 1 } { $i < $duration + 1 } { incr i } {
 	        	if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
 	        	set month_arr($day_double_digit) 0
 			set thours_arr($day_double_digit) ""
+ 		    	set number_hours_ctr_pretty 0
 		}
 	}	
 
 	for { set i 1 } { $i < $duration + 1 } { incr i } {
+	        # Make sure that day_double_digit is always a 2-digit number  
 		if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
+
 		if { "" != [expr $$day_double_digit] } {
 			set thours_arr($day_double_digit) [expr $thours_arr($day_double_digit) + $$day_double_digit]
-			ns_log notice "maurizio\[$day_double_digit\] --> [expr $thours_arr($day_double_digit)]"
+			ns_log notice "khd: $user_id: \[$day_double_digit\] --> [expr $thours_arr($day_double_digit)]"
+
+   		        set number_hours_project_ctr [expr $number_hours_project_ctr + [expr $$day_double_digit]] 
+		        set number_hours_ctr_pretty [expr $number_hours_ctr_pretty + [expr $$day_double_digit]]
+
+			ns_log notice "khd: $user_id: SubSum: $number_hours_project_ctr"
+
 			if { 0 == $month_arr($day_double_digit) } {
-				set number_days_ctr [expr $number_days_ctr+1]  
 				set month_arr($day_double_digit) 1
 			        set number_hours_ctr [expr $number_hours_ctr + $thours_arr($day_double_digit)] 
-			        set number_hours_project_ctr [expr $number_hours_project_ctr + $thours_arr($day_double_digit)] 
 			}
+
 		}
 	}
+
+	ns_log notice "khd: Sum $user_id: $number_hours_project_ctr"
+	ns_log NOTICE "khd"
+
 		
 	im_report_update_counters -counters $counters
 	
@@ -694,6 +681,8 @@ db_foreach sql $sql {
 	    -row_class $class \
 	    -cell_class $class
         ]
+
+
 
 }
 
