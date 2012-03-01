@@ -115,13 +115,22 @@ ad_proc -public im_project_audit  {
     {-object_type "im_project" }
     {-status_id "" }
     {-type_id "" }
-    {-action "after_update" }
     {-comment "" }
 } {
     Specific audit for projects. This audit keeps track of the cost cache with each
     project, allowing for EVA Earned Value Analysis.
 } {
     set intranet_audit_exists_p [util_memoize [list db_string audit_exists_p "select count(*) from apm_packages where package_key = 'intranet-audit'"]]
+    
+    # Submit a callback so that customers can extend projects
+    set err_msg ""
+    if {[catch {
+	ns_log Notice "im_audit: About to call callback ${object_type}_${action} -object_id $project_id -status_id $status_id -type_id $type_id"
+	callback ${object_type}_${action} -object_id $project_id -status_id $status_id -type_id $type_id
+    } err_msg]} {
+	ns_log Error "im_audit: Error with callback ${object_type}_${action} -object_id $project_id -status_id $status_id -type_id $type_id:\n$err_msg"
+    }
+    
     if {!$intranet_audit_exists_p} { return "" }
 
     return [im_project_audit_impl \
