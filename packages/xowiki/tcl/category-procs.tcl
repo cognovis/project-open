@@ -3,7 +3,7 @@
 
     @creation-date 2006-10-10
     @author Gustaf Neumann
-    @cvs-id $Id: category-procs.tcl,v 1.23 2011/03/11 17:49:48 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {
@@ -62,8 +62,7 @@ namespace eval ::xowiki {
     # provide a common interface to older versions of categories
     #
     # provide compatibility with earlier versions of categories
-    #set have_locale [expr {[lsearch [info args category_tree::get_tree] locale] > -1}]
-    set have_locale 1
+    set have_locale [expr {[lsearch [info args category_tree::get_tree] locale] > -1}]
     set all_arg [expr {$all ? "-all" : ""}]
     return [expr {$have_locale ?
                   [eval category_tree::get_tree $all_arg -subtree_id [list $subtree_id] $tree_id $locale] :

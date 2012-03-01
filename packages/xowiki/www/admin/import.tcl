@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Aug 11, 2006
-  @cvs-id $Id: import.tcl,v 1.20 2011/05/20 09:52:45 victorg Exp $
+  @cvs-id $Id$
 } -parameter {
   {create_user_ids 0}
   {replace 0}
@@ -16,14 +16,14 @@ ad_form \
     -export {parent_id return_url} \
     -html { enctype multipart/form-data } \
     -form {
-      {upload_file:file(file) {html {size 30}} {label "[_ xowiki.import_upload_file]"}}
-      {create_user_ids:integer(radio),optional {options {{#acs-admin.Yes# 1} {#acs-admin.No# 0}}} {value 0} 
-        {label "[_ xowiki.import_create_user_ids]"}
-        {help_text "[_ xowiki.import_create_user_ids_helptxt]"}
+      {upload_file:file(file) {html {size 30}} {label "Import file for upload"} }
+      {create_user_ids:integer(radio),optional {options {{yes 1} {no 0}}} {value 0} 
+        {label "Create user_ids"}
+        {help_text "If checked, import will create new user_ids if necessary"}
       }
-      {replace:integer(radio),optional {options {{#acs-admin.Yes# 1} {#acs-admin.No# 0}}} {value 0} 
-        {label "[_ xowiki.import_replace]"}
-        {help_text "[_ xowiki.import_replace_helptxt]"}
+      {replace:integer(radio),optional {options {{yes 1} {no 0}}} {value 0} 
+        {label "Replace objects"}
+        {help_text "If checked, import will delete the object if it exists and create it new, otherwise import just adds a revision"}
       }
       {ok_btn:text(submit) {label "[_ acs-templating.HTMLArea_SelectUploadBtn]"}
       }
@@ -73,6 +73,6 @@ ad_form \
 
 
 set return_url [ns_queryget return_url ../]
-set title [_ xowiki.import_title]
+set title "Import XoWiki Pages"
 set context .
 ad_return_template

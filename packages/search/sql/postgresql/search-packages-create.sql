@@ -1,6 +1,6 @@
 -- Search Observer Package
 --
--- @cvs-id $Id: search-packages-create.sql,v 1.6 2004/05/14 10:17:35 jeffd Exp $ 
+-- @cvs-id $Id$ 
 
 create or replace function search_observer__enqueue(integer,varchar)
 returns integer as '

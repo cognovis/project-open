@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="search" package_version="5.1.5" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="________Search_took">.
+        La recherche a pris</msg>
+  <msg key="Advanced_Search">Recherche avancée</msg>
+  <msg key="advanced_search">&amp;quot;recherche avancée&amp;quot;</msg>
+  <msg key="anytime">à tout moment</msg>
+  <msg key="Date_Range">Intervalle de dates</msg>
+  <msg key="details">détails</msg>
+  <msg key="Feeling_Lucky">J'ai de la chance</msg>
+  <msg key="lt_bstopwordsb_is_a_very">&amp;quot;&amp;lt;b&amp;gt;%stopwords%&amp;lt;/b&amp;gt;&amp;quot; est un mot très courant et il a été ignoré de votre recherche.</msg>
+  <msg key="lt_FtsEngineDriver_not_a">Le moteur de recherche de texte intégraux est indisponible.</msg>
+  <msg key="lt_Make_sure_all_words_a">Assurez-vous que tous les mots sont correctement orthographiés</msg>
+  <msg key="lt_No_pages_were_found_c">Aucune page contenant &quot; &quot; n'a été trouvée</msg>
+  <msg key="lt_The_following_words_a">Les mots suivants sont très courants et ont été ignorés de votre recherche :</msg>
+  <msg key="lt_Tip_In_most_browsers_">Astuce : dans la plupart des navigateurs, vous pouvez simplement appuyer sur la touche entrée au lieu de cliquer sur le bouton recherche</msg>
+  <msg key="lt_Try_different_keyword">Essayez avec d'autres mots de passe.</msg>
+  <msg key="lt_Try_more_general_keyw">Essayez avec des mots de passe plus généraux.</msg>
+  <msg key="lt_Try_your_query_on_stw">Essayez avec : %stw;noquote%</msg>
+  <msg key="lt_You_must_specify_some">Vous devez préciser des mots de passe</msg>
+  <msg key="nbspDisplay">&amp;amp;nbsp;Afficher</msg>
+  <msg key="Next">Suivant</msg>
+  <msg key="of_about">de</msg>
+  <msg key="past_3_months">3 derniers mois</msg>
+  <msg key="past_6_months">6 derniers mois</msg>
+  <msg key="past_year">année dernière</msg>
+  <msg key="Previous">Précédent</msg>
+  <msg key="Result_page">Page de résultats :</msg>
+  <msg key="Results">Résultats</msg>
+  <msg key="results">résultats</msg>
+  <msg key="Search">Recherche</msg>
+  <msg key="Searched_for_query">Recherche de : %query%</msg>
+  <msg key="seconds">secondes.</msg>
+  <msg key="selected">sélectionné</msg>
+  <msg key="Suggestions">Suggestions :</msg>
+  <msg key="The">&amp;quot;&amp;lt;b&amp;gt;ET&amp;lt;/b&amp;gt;&amp;quot; l'opérateur n'est pas nécessaire -- par défaut, nous incluons tous les termes de la recherche.</msg>
+  <msg key="Try_fewer_keywords">Essayez avec moins de mots de passe.</msg>
+  <msg key="Untitled">Sans titre</msg>
+</message_catalog>

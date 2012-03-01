@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: news-item.form.page,v 1.1 2010/12/31 13:42:42 gustafn Exp $
+# $Id$
 ::xowiki::Form new \
     -set name en:news-item.form \
     -title "News Item" \

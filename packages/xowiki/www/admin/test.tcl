@@ -831,28 +831,6 @@ test section "Item refs"
            && $(parent_id) eq $folder_id && $(item_id) == 0}} 1 "\n$test:\n  [array get {}]\n "
 
   ################################
-  test subsection "Absolute to toplevel:"
-
-  set l "/f1"
-  set test [label "item_ref" "absolute existing topfolder short" $l]
-  array set "" [p item_ref -default_lang en -parent_id $folder_id $l]
-  ? {expr {$(link_type) eq "link" && $(prefix) eq "" && $(stripped_name) eq "f1"
-           && $(parent_id) eq $folder_id && $(item_id) == $f1_id}} 1 "\n$test:\n  [array get {}]\n "
-
-  set l "/f1/"
-  set test [label "item_ref" "absolute existing topfolder short slash" $l]
-  array set "" [p item_ref -default_lang en -parent_id $folder_id $l]
-  ? {expr {$(link_type) eq "link" && $(prefix) eq "" && $(stripped_name) eq "f1"
-           && $(parent_id) eq $folder_id && $(item_id) == $f1_id}} 1 "\n$test:\n  [array get {}]\n "
-
-  set l "/" ;# stripped name will be the name of the root folder
-  set test [label "item_ref" "just slash" $l]
-  array set "" [p item_ref -default_lang de -parent_id $folder_id $l]
-  ? {expr {$(link_type) eq "folder" && $(prefix) eq "" 
-           && $(parent_id) == -100 && $(item_id) == $folder_id}} 1 "\n$test:\n  [array get {}]\n "
-
-
-  ################################
   test subsection "Relative to current folder:"
 
   set l "./parentpage"
@@ -1112,7 +1090,7 @@ test section "Item refs"
   set l "parentpage1"
   set test [label "link" "not existing simple page" $l]
   set link [p create_link $l]
-? {$link render} [subst -nocommands {<a class='missing' href='/$instance_name/?nls_language=de_DE&edit-new=1&name=de%3aparentpage1&parent_id=$folder_id&title=parentpage1'> parentpage1</a>}] "\n$test\n "
+? {$link render} [subst -nocommands {<a  href='/$instance_name/?nls_language=de_DE&edit-new=1&name=de%3aparentpage1&parent_id=$folder_id&title=parentpage1'> [ </a>parentpage1 <a  href='/$instance_name/?nls_language=de_DE&edit-new=1&name=de%3aparentpage1&parent_id=$folder_id&title=parentpage1'> ] </a>}] "\n$test\n "
 
   set l "parentpage#a"
   set test [label "link" "existing simple with anchor" $l]
@@ -1377,56 +1355,6 @@ test section "Item refs"
 
   # link to page in other package
   # link to dir in other package
-
-
-test section "Form Fields"  
-
-# Create dummy object with a minimal setup to be used like a page
-set o [::xotcl::Object new -destroy_on_cleanup]
-$o mixin ::xowiki::Page
-$o name dummy
-$o nls_language en_US
-$o package_id $info(package_id)
-
-set f0 [$o create_raw_form_field -name test -slot ::xowiki::Page::slot::name]
-? {$f0 asWidgetSpec} \
-    {text,optional {label {#xowiki.Page-name#}}  {html {maxlength 400 id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
-    "name with help_text"
-
-set f0 [$o create_raw_form_field -name test \
-	    -slot ::xowiki::Page::slot::name -spec inform]
-? {$f0 asWidgetSpec} \
-    {text(inform),optional {label {#xowiki.Page-name#}}  {html {id F.dummy.test }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
-    "name with help_text + inform"
-
-set f0 [$o create_raw_form_field -name test \
-	    -slot ::xowiki::Page::slot::name -spec optional]
-? {$f0 asWidgetSpec} \
-    {text,optional {label {#xowiki.Page-name#}}  {html {maxlength 400 id F.dummy.test size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
-    "name with help_text + optional"
-
-set f1 [$o create_raw_form_field -name test \
-	    -slot ::xowiki::Page::slot::description \
-	    -spec "textarea,cols=80,rows=2"]
-? {$f1 asWidgetSpec} \
-    {text(textarea),nospell,optional {label {#xowiki.Page-description#}}  {html {cols 80 id F.dummy.test rows 2 }} } \
-    "textarea,cols=80,rows=2"
-
-    set f2 [$o create_raw_form_field -name test \
-                -slot ::xowiki::Page::slot::nls_language \
-                -spec {select,options={{de_DE de_DE} {en_US en_US} {pt_BR pt_BR} {es_ES es_ES}}}]
-? {$f2 asWidgetSpec} \
-    {text(select),optional {label {#xowiki.Page-nls_language#}}  {html {id F.dummy.test }}  {options {{{de_DE de_DE} {en_US en_US} {pt_BR pt_BR} {es_ES es_ES}}}} } \
-    {select,options=[xowiki::locales]}
-
-$o mixin ::xowiki::PodcastItem
-set f3 [$o create_raw_form_field -name test \
-    -slot ::xowiki::PodcastItem::slot::pub_date]
-? {$f3 asWidgetSpec} \
-    {date,optional {label {#xowiki.PodcastItem-pub_date#}}  {html {id F.dummy.test }}  {format {YYYY MM DD HH24 MI}} } \
-    {date with format}
-  
-
 
 ns_write "<p>
 <hr>

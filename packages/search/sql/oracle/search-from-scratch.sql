@@ -18,7 +18,7 @@
 -- Populate .LRN's intermedia index
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">Dirk Gomez</a>
--- @version $Id: search-from-scratch.sql,v 1.3 2006/08/31 07:31:29 emmar Exp $
+-- @version $Id$
 -- @creation-date 13-May-2005
 --
 

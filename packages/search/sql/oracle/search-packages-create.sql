@@ -18,7 +18,7 @@
 -- Create database packages for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">Dirk Gomez</a>
--- @version $Id: search-packages-create.sql,v 1.5 2008/06/07 20:29:01 donb Exp $
+-- @version $Id$
 -- @creation-date 13-May-2005
 
 -- Partly ported from ACES.

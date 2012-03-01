@@ -1,5 +1,5 @@
 // simple javascript support for streaming ajax based chat interface
-// $Id: scripted-streaming-chat.js,v 1.1 2006/04/09 00:07:10 gustafn Exp $
+// $Id$
 // -gustaf neumann   April 2006
 
 function getHttpObject() {

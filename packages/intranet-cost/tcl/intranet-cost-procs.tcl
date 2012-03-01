@@ -2010,14 +2010,13 @@ ad_proc -public im_cost_update_project_cost_cache {
 		select	sum(amount_converted * hourly_cost)
 		from	(
 			select	sum(pi.item_value) as amount_converted,
-				coalesce(e.hourly_cost, :default_hourly_cost) as hourly_cost
+				coalesce(pi.item_project_member_hourly_cost, :default_hourly_cost) as hourly_cost
 			from	im_planning_items pi
-				LEFT OUTER JOIN im_employees e ON (pi.item_project_member_id = e.employee_id)
 			where	pi.item_object_id = :project_id and
 				pi.item_cost_type_id = [im_cost_type_timesheet_hours]
 			group by 
 				pi.item_project_member_id,
-				e.hourly_cost
+				pi.item_project_member_hourly_cost
 			) t
 	"
 	set ts_budget [db_string ts_budget $planning_ts_hours_sql -default 0.0]

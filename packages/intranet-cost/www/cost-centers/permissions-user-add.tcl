@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-13
-    @cvs-id $Id: permissions-user-add.tcl,v 1.1 2006/09/20 15:01:13 arvato Exp $
+    @cvs-id $Id$
 }
 
 set page_title "Add User"

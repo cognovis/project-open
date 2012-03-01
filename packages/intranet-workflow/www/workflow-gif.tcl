@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 22 August 2000
-    @cvs-id $Id: workflow-gif.tcl,v 1.2 2009/11/02 12:48:33 po34demo Exp $
+    @cvs-id $Id$
 } {
     tmpfile:notnull
 } -validate {

@@ -1,4 +1,4 @@
--- /package/intranet-forum/sql/intranet-notes-drop.sql
+-- /package/intranet-forum/sql/intranet-riskmanagement-drop.sql
 --
 -- Copyright (c) 2003-2006 ]project-open[
 --
@@ -10,33 +10,33 @@
 
 -- Drop plugins and menus for the module
 --
-select  im_component_plugin__del_module('intranet-notes');
-select  im_menu__del_module('intranet-notes');
+select  im_component_plugin__del_module('intranet-riskmanagement');
+select  im_menu__del_module('intranet-riskmanagement');
 
 
 -----------------------------------------------------------
 -- Drop main structures info
 
 -- Drop functions
-drop function im_note__name(integer);
-drop function im_note__new (
+drop function im_risk__name(integer);
+drop function im_risk__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
 	varchar, integer, integer, integer
 );
-drop function im_note__delete(integer);
+drop function im_risk__delete(integer);
 
 
 -- Drop the main table
-drop table im_notes;
+drop table im_risks;
 
 -- Delete entries from acs_objects
-delete from acs_objects where object_type = 'im_note';
+delete from acs_objects where object_type = 'im_risk';
 
 
 -- Completely delete the object type from the
 -- object system
-SELECT acs_object_type__drop_type ('im_note', 't');
+SELECT acs_object_type__drop_type ('im_risk', 't');
 
 
 
@@ -44,10 +44,10 @@ SELECT acs_object_type__drop_type ('im_note', 't');
 -- Drop Categories
 --
 
-drop view im_note_status;
-drop view im_note_type;
+drop view im_risk_status;
+drop view im_risk_type;
 
-delete from im_categories where category_type = 'Intranet Notes Status';
-delete from im_categories where category_type = 'Intranet Notes Type';
+delete from im_categories where category_type = 'Intranet Risk Status';
+delete from im_categories where category_type = 'Intranet Risk Type';
 
 

@@ -21,7 +21,7 @@ namespace eval ::xowiki::formfield {
   # (e.g. for boolean entries). FormFields can be subclassed
   # to ensure tailorability and high reuse.
   # 
-  # todo: at some later time, this could go into xotcl-core
+  # todo: at some later time, this should go into xotcl-core
 
   ###########################################################
   #
@@ -79,7 +79,7 @@ namespace eval ::xowiki::formfield {
   #  return [string map [list __COLON__ :] $string]
   #}
 
-  FormField proc get_from_name {object name} {
+  FormField proc get_from_name {name} {
     #
     # Get a form field via name. The provided names are unique for a
     # form. If multiple forms should be rendered simultaneously, we
@@ -88,15 +88,9 @@ namespace eval ::xowiki::formfield {
     # todo: we could speed this up by an index if needed
     foreach f [::xowiki::formfield::FormField info instances -closure] {
       if {[$f name] eq $name} {
-	if {![$f exists object]} {
-	  my msg "strange, $f [$f name] was created without object but fits name"
-	  return $f
-	} elseif {$object eq [$f object]} {
-	  return $f
-	}
+	return $f
       }
     }
-    #my msg not-found-$object-$name
     return ""
   }
 
@@ -107,11 +101,6 @@ namespace eval ::xowiki::formfield {
     #if {[my exists default]} {my set value [my default]}
     my config_from_spec [my spec]
   }
-
-  #
-  # Basic initialze method, doing nothing; should be subclassed by the
-  # application classes
-  FormField instproc initialize {} {next}
 
   FormField instproc validate {obj} {
     my instvar name required
@@ -327,7 +316,6 @@ namespace eval ::xowiki::formfield {
 
   FormField instproc config_from_spec {spec} {
     #my log "spec=$spec [my info class] [[my info class] exists abstract]"
-
     my instvar type
     if {[[my info class] exists abstract]} {
       # had earlier here: [my info class] eq [self class]
@@ -389,10 +377,9 @@ namespace eval ::xowiki::formfield {
     if {[my exists format]} {
       append spec " {format " [list $format] "} "
     }
-
     if {$help_text ne ""} {
       if {[string match "#*#" $help_text]} {
-	set internationalized [my localize $help_text]
+        set internationalized [_ [string trim $help_text #]]
         append spec " {help_text {$internationalized}}"
       } else {
         append spec " {help_text {$help_text}}"
@@ -440,22 +427,9 @@ namespace eval ::xowiki::formfield {
       ::xo::Page requireJS  "YAHOO.xo_form_field_validate.add('[my id]','$package_url');"
     }
 
-    set pairs [list [list CSSclass class]]
-    # Special handling of HTML boolean attributes, since they require a
-    # different coding; it would be nice, if tdom would care for this.
-    set booleanAtts [list required readonly disabled multiple formnovalidate autofocus]
-    foreach att $booleanAtts {
-      if {[my exists $att] && [my set $att]} {
-	my set __#$att $att
-	lappend pairs [list __#$att $att]
-      }
-    }
-    ::html::input [eval my get_attributes type size maxlength id name value \
-		       pattern placeholder $pairs] {}
-    foreach att $booleanAtts {
-      if {[my exists __#$att]} {my unset __#$att}
-    }
-    
+    ::html::input [my get_attributes type size maxlength id name value disabled {CSSclass class} \
+		       autocomplete autofocus formnovalidate multiple pattern placeholder readonly required] {}
+
     #
     # Disabled fieds are not returned by the browsers. For some
     # fields, we require to be sent. therefore we include in these
@@ -630,18 +604,9 @@ namespace eval ::xowiki::formfield {
     my instvar object
 
     array set "" [$object item_ref -default_lang [$object lang] -parent_id $parent_id $entry_name]
-
-    set label [my label] ;# the label is used for alt und title
-    if {$label eq $(stripped_name)} {
-      # The label is apparently the default. For Photo.form instances,
-      # this is always "image". In such cases, use the title of the
-      # parent object as label.
-      set label [[my object] title]
-    }
-    
     set l [::xowiki::Link create new -destroy_on_cleanup \
 	       -page $object -type "image" -lang $(prefix) \
-	       [list -stripped_name $(stripped_name)] [list -label $label] \
+	       [list -stripped_name $(stripped_name)] [list -label [my label]] \
 	       -parent_id $(parent_id) -item_id $(item_id)]
 
     foreach option {
@@ -725,7 +690,7 @@ namespace eval ::xowiki::formfield {
       #
       # Figure out, if we got a different file-name (value). If the
       # file-name is the same as in the last revision, we return a
-      # "-". This has the effect, that file file is not uploaded again.
+      # "-".
       #
       if {$old_value ne "" && $old_value eq [my set value]} {
         return "-"
@@ -751,9 +716,7 @@ namespace eval ::xowiki::formfield {
     array set entry_info [my entry_name $value]
 
     set content_type [my set content-type]
-    if {$content_type eq "application/octetstream" 
-	|| $content_type eq "application/force-download"
-      } {
+    if {$content_type eq "application/octetstream"} {
       set content_type [::xowiki::guesstype $value]
     }
     #my msg "mime_type of $entry_name = [::xowiki::guesstype $value] // [my set content-type] ==> $content_type"
@@ -1380,8 +1343,7 @@ namespace eval ::xowiki::formfield {
       if {[my wiki]} {
         [my object] set unresolved_references 0
         [my object] set __unresolved_references [list]
-        #::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
-        ::html::t -disableOutputEscaping [[my object] substitute_markup [my value]]
+        ::html::t -disableOutputEscaping [[my object] substitute_markup [list [my value] text/html]]
       } else {
         ::html::t -disableOutputEscaping [my value]
       }
@@ -1418,180 +1380,39 @@ namespace eval ::xowiki::formfield {
   #
   # ::xowiki::formfield::richtext::ckeditor
   #
-  #    mode: wysiwyg, source
-  #    skin: kama, v2, office2003
-  #    extraPlugins: tcl-list, is converted to comma list for js
-  #
   ###########################################################
   Class richtext::ckeditor -superclass richtext -parameter {
     {editor ckeditor}
     {mode wysiwyg}
-    {skin kama}
-    {toolbar Full}
-    {CSSclass xowiki-ckeditor}
-    {uiColor ""}
-    {inplace false}
-    {CSSclass xowiki-ckeditor}
-    {customConfig "../ck_config.js"}
-    {callback "/* callback code */"}
-    {destroy_callback "/* callback code */"}
-    {extraPlugins ""}
-    {templatesFiles ""}
-    {templates ""}
-    {contentsCss /resources/xowiki/ck_contents.css}
-    {imageSelectorDialog /xowiki/ckeditor-images/}
+    {CSSclass ckeditor}
   }
   richtext::ckeditor set editor_mixin 1
   richtext::ckeditor instproc initialize {} {
-    if {[my set inplace]} {
-        my append help_text " #xowiki.ckeip_help#"
-    }
     next
     my set widget_type richtext
-    # Mangle the id to make it compatible with jquery; most probably
-    # not optimal and just a temporary solution
-    regsub -all {[.:]} [my id] "" id
-    my id $id
   }
-
-  richtext::ckeditor instproc js_image_helper {} {
-    ::xo::Page requireJS {
-      function xowiki_image_callback(editor) {
-	$(editor.element.$.form).submit(function(e) {
-	  calc_image_tags_to_wiki_image_links(this);
-	});
-	editor.setData(calc_wiki_image_links_to_image_tags(editor.getData()));
-      }
-      
-      function calc_image_tags_to_wiki_image_links (form) {
-	var calc = function() {
-	  var wiki_link = $(this).attr('alt');
-	  $(this).replaceWith('[['+wiki_link+']]');
-	}
-	$(form).find('iframe').each(function() {
-	  $(this).contents().find('img[type="wikilink"]').each(calc);
-	});
-	
-	$(form).find('textarea.ckeip').each(function() {
-	  var contents = $('<div>'+this.value+'</div>');
-	  contents.find('img[type="wikilink"]').each(calc);
-	  this.value = contents.html();
-	});
-	return true;
-      }
-      
-      function calc_wiki_image_links_to_image_tags (data) {
-	var pathname = window.location.pathname;
-	pathname = pathname.substr(pathname.lastIndexOf("/")+1,pathname.length)
-	console.log('pathname' + pathname);
-	pathname = pathname.replace(/:/ig,"%3a");
-	var regex_wikilink = new RegExp('(\\[\\[./image:)(.*?)(\\]\\])', 'g');
-	data = data.replace(regex_wikilink,'<img src="'+pathname+'/$2"  alt="./image:$2" type="wikilink"  />');
-	console.log('data' + data);
-	return data
-      }
-    }
-  }
-
-  richtext::ckeditor instproc pathNames {fileNames} {
-    set result [list]
-    foreach fn $fileNames {
-      if {[regexp {^[./]} $fn]} {
-	append result $fn
-      } else {
-	append result "/resources/xowiki/$fn"
-      }
-    }
-    return $result
-  }
-
   richtext::ckeditor instproc render_input {} {
     set disabled [expr {[my exists disabled] && [my disabled] ne "false"}]
     if {![my istype ::xowiki::formfield::richtext] || $disabled } {
       my render_richtext_as_div
     } else {
-      ::xo::Page requireJS "/resources/xowiki/jquery/jquery.min.js"
-      ::xo::Page requireJS "/resources/xowiki/ckeditor/ckeditor_source.js"
-      #::xo::Page requireJS "/resources/xowiki/ckeditor/ckeditor.js"
-      ::xo::Page requireJS "/resources/xowiki/ckeditor/adapters/jquery.js"
-      ::xo::Page requireJS "/resources/xowiki/jquery-ui-1.8.17.custom.min.js"
-      ::xo::Page requireCSS "/resources/xowiki/jquery-ui-1.8.17.custom.css"
+      ::xo::Page requireJS "/resources/xowiki/ckeditor/ckeditor.js"
+      #::xo::Page requireJS "/resources/xowiki/ckeditor/adapters/jquery.js"
 
-      # In contrary to the doc, ckeditor names instances after the id,
-      # not the name. 
-      set id [my id]
-      set name [my name] 
-      set package_id [[my object] package_id]
-      #my extraPlugins {timestamp xowikiimage}
+      set name [my name]
+      set mode [my mode]
 
-      if {[lsearch [my extraPlugins] xowikiimage] > -1} {
-	my js_image_helper
-	set ready_callback {xowiki_image_callback(e.editor);}
-      } else {
-	set ready_callback "/*none*/;"
-      }
-      
-      set options [subst {
-	toolbar : '[my toolbar]',
-	uiColor: '[my uiColor]',
-	language: '[lang::conn::language]',
-	skin: '[my skin]',
-	startupMode: '[my mode]',
-	parent_id: '[[my object] item_id]',
-	package_url: '[$package_id package_url]',
-	extraPlugins: '[join [my extraPlugins] ,]',
-	contentsCss: '[my contentsCss]',
-	imageSelectorDialog: '[my imageSelectorDialog]',
-	ready_callback: '$ready_callback',
-	customConfig: '[my customConfig]'
+#      ::xo::Page requireJS {
+#	$( 'textarea.ckeditor' ).ckeditor();
+#      }
+      ::xo::Page requireJS [subst -nocommands -nobackslash {
+        YAHOO.util.Event.onDOMReady(function () {
+	  CKEDITOR.replace( '$name' );
+	  CKEDITOR.instances.$name.setMode( '$mode' );
+	});
       }]
-      if {[my templatesFiles] ne ""} {
-	append options "  , templates_files: \['[join [my pathNames [my templatesFiles]] ',' ]' \]\n"
-      }
-      if {[my templates] ne ""} {
-	append options "  , templates: '[my templates]'\n"
-      }
 
-      #set parent [[[my object] package_id] get_page_from_item_or_revision_id [[my object] parent_id]];# ???
-
-      if {[my set inplace]} {
-        if {[my value] eq ""} {my value "&nbsp;"}
-        my render_richtext_as_div
-	if {[my inline]} {
-	  set wrapper_class ""
-	} else {
-	  set wrapper_class "form-item-wrapper"
-	  my callback {$(this.element.$).closest('.form-widget').css('clear','both').css('display', 'block');}
-	  my destroy_callback {$(this).closest('.form-widget').css('clear','none');}
-	}
-	set callback [my callback]
-	set destroy_callback [my destroy_callback]
-
-        ::xo::Page requireJS "/resources/xowiki/ckeip.js"
-        ::xo::Page requireJS [subst -nocommands {
-        \$(document).ready(function() {
-	  \$( '\#$id' ).ckeip(function() { $callback }, {
-            name: '$name',
-            ckeditor_config: {
-	      $options,
-              destroy_callback: function() { $destroy_callback }
-            },
-            wrapper_class: '$wrapper_class'
-          });
-        });
-        }]
-      } else {
-	set callback [my callback]
-	::xo::Page requireJS [subst -nocommands {
-	  \$(document).ready(function() {
-	    \$( '#$id' ).ckeditor(function() { $callback }, {
-	      $options
-	    });
-            CKEDITOR.instances['$id'].on('instanceReady',function(e) {$ready_callback});
-	  });
-	}]
-	next
-      }
+      next
     }
   }
 
@@ -1619,7 +1440,7 @@ namespace eval ::xowiki::formfield {
       my render_richtext_as_div
     } else {
       ::xo::Page requireCSS "/resources/xowiki/wymeditor/skins/default/screen.css"
-      ::xo::Page requireJS "/resources/xowiki/jquery/jquery.min.js"
+      ::xo::Page requireJS  "/resources/xowiki/jquery/jquery.js"
       ::xo::Page requireJS  "/resources/xowiki/wymeditor/jquery.wymeditor.pack.js"
       set postinit ""
       foreach plugin {hovertools resizable fullscreen embed} {
@@ -1848,7 +1669,7 @@ namespace eval ::xowiki::formfield {
       set category_name [ad_quotehtml [lang::util::localize $category_name]]
       my set category_label($category_id) $category_name
       if { $level>1 } {
-        set category_name "[string repeat {.} [expr {2*$level-4}]]..$category_name"
+        set category_name "[string repeat {&nbsp;} [expr {2*$level-4}]]..$category_name"
       }
       lappend options [list $category_name $category_id]
     }
@@ -2155,23 +1976,13 @@ namespace eval ::xowiki::formfield {
       array set wc [::xowiki::FormPage filter_expression $where &&]
       #my msg "where '$where' => wc=[array get wc]"
     }
-
-    set from_package_ids {}
-    set package_path [::$package_id package_path]
-    if {[llength $package_path] > 0} {
-      foreach p $package_path {
-	lappend from_package_ids [$p id]
-      }
-    }
+    set options [list]    
     set items [::xowiki::FormPage get_form_entries \
                    -base_item_ids $form_object_item_ids \
                    -form_fields [list] \
                    -publish_status ready \
                    -h_where [array get wc] \
-                   -package_id $package_id \
-		   -from_package_ids $from_package_ids]
-
-    set options [list]
+                   -package_id $package_id]
     foreach i [$items children] {
       #
       # If the form_page has a different package_id, prepend the
@@ -2435,12 +2246,7 @@ namespace eval ::xowiki::formfield {
       # file exists already
       return 1
     }
-    if {[regexp {^file://(.*)$} $value _ path]} {
-      set f [open $path r]
-      fconfigure $f translation binary
-      set img [read $f] 
-      close $f
-    } elseif {[catch {
+    if {[catch {
       set r [::xo::HttpRequest new -url $value -volatile]
       set img [$r set data]
     } errorMsg]} {
@@ -2710,6 +2516,7 @@ namespace eval ::xowiki::formfield {
   Class label -superclass FormField -parameter {
     {disableOutputEscaping false}
   }
+  label instproc initialize {} {next}
   label instproc render_item {} {
     # sanity check; required and label do not fit well together
     if {[my required]} {my required false}
@@ -2941,47 +2748,6 @@ namespace eval ::xowiki::formfield {
 
   ###########################################################
   #
-  # ::xowiki::boolean_image
-  #
-  ###########################################################
-
-  Class create boolean_image -superclass FormField -parameter {
-    {default t} 
-    {t_img_url /resources/xowiki/examples/check_richtig.png}
-    {f_img_url /resources/xowiki/examples/check_falsch.png}
-    {CSSclass img_boolean}
-  }
-  boolean_image instproc initialize {} {
-    my type hidden
-    my set widget_type boolean(hidden)
-  }
-  boolean_image instproc render_input {} {
-    my instvar t_img_url f_img_url CSSclass
-    set title [expr {[my exists __render_help_text_as_title_attr] ? [my set help_text] : ""}]
-    ::html::img \
-	-title $title \
-	-class $CSSclass \
-	-src [expr {[my value] ? $t_img_url : $f_img_url}] \
-	-onclick "toggle_img_boolean(this,'$t_img_url','$f_img_url')"
-    ::html::input -type hidden -name [my name] -value [my value]
-
-    ::xo::Page requireJS {
-      function toggle_img_boolean (element,t_img_url,f_img_url) {
-	var input = $(element).next();
-	var state = input.val()== "t";  
-	if (state) {
-	  input.val('f');
-	  $(element).attr('src',f_img_url);
-	} else {
-	  input.val('t');
-	  $(element).attr('src',t_img_url);
-	}
-      }
-    }
-  }
-
-  ###########################################################
-  #
   # ::xowiki::formfield::scale
   #
   ###########################################################
@@ -3112,6 +2878,71 @@ namespace eval ::xowiki::formfield {
         $location_txt \
         "</div>" 
     return $result
+  }
+
+  ###########################################################
+  #
+  # a few test cases
+  #
+  ###########################################################
+
+  proc ? {cmd expected {msg ""}} {
+    ::xo::Timestamp t1
+    set r [uplevel $cmd]
+    if {$msg eq ""} {set msg $cmd}
+    if {$r ne $expected} {
+      regsub -all \# $r "" r
+      append ::_ "Error: $msg returned \n'$r' ne \n'$expected'\n"
+    } else {
+      append ::_ "$msg - passed ([t1 diff] ms)\n"
+    }
+  }
+  #
+  proc test_form_fields {} {
+    set ::_ ""
+    set o [Object new -destroy_on_cleanup]
+    # mixin methods for create_raw_form_field
+    $o mixin ::xowiki::Page
+
+    set f0 [$o create_raw_form_field -name test \
+                -slot ::xowiki::Page::slot::name]
+    ? {$f0 asWidgetSpec} \
+        {text {label #xowiki.Page-name#}  {html {size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
+        "name with help_text"
+
+    set f0 [$o create_raw_form_field -name test \
+                -slot ::xowiki::Page::slot::name -spec inform]
+    ? {$f0 asWidgetSpec} \
+        {text(inform) {label #xowiki.Page-name#}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
+        "name with help_text + inform"
+
+    set f0 [$o create_raw_form_field -name test \
+                -slot ::xowiki::Page::slot::name -spec optional]
+    ? {$f0 asWidgetSpec} \
+        {text,optional {label #xowiki.Page-name#}  {html {size 80 }}  {help_text {Shortname to identify an entry within a folder, typically lowercase characters}}} \
+        "name with help_text + optional"
+
+    set f1 [$o create_raw_form_field -name test \
+               -slot ::xowiki::Page::slot::description \
+               -spec "textarea,cols=80,rows=2"]
+    ? {$f1 asWidgetSpec} \
+        {text(textarea),nospell,optional {label #xowiki.Page-description#}  {html {cols 80 rows 2 }} } \
+        "textarea,cols=80,rows=2"
+
+    set f2 [$o create_raw_form_field -name test \
+                -slot ::xowiki::Page::slot::nls_language \
+                -spec {select,options=[xowiki::locales]}]
+    ? {$f2 asWidgetSpec} \
+        {text(select),optional {label #xowiki.Page-nls_language#}  {options {[xowiki::locales]}} } \
+        {select,options=[xowiki::locales]}
+
+
+    $o mixin ::xowiki::PodcastItem
+    set f3 [$o create_raw_form_field -name test \
+                -slot ::xowiki::PodcastItem::slot::pub_date]
+    ? {$f3 asWidgetSpec} \
+        {date,optional {label #xowiki.PodcastItem-pub_date#}  {format {YYYY MM DD HH24 MI}} } \
+        {date with format}
   }
 }
 

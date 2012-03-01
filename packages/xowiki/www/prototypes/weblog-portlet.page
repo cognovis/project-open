@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: weblog-portlet.page,v 1.18 2010/07/08 12:17:32 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "Weblog" -text {
   #
   # A sample Weblog object.

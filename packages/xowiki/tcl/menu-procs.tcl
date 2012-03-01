@@ -74,7 +74,7 @@ namespace eval ::xowiki {
     }
 
     if {![my exists href] || [my href] eq ""} {
-      my append CSSclass " " [string tolower [namespace tail [my info class]]]-disabled
+      my append CSSclass [string tolower [namespace tail [my info class]]]-disabled
     }
     if {![my exists linkclass]} {
       # set the CSS class to e.g. "yuimenuitemlabel"
@@ -116,7 +116,6 @@ namespace eval ::xowiki {
         header
         footer
         shadow
-	{autorender false}
         {configuration {{}}}
       }
   
@@ -207,14 +206,13 @@ namespace eval ::xowiki {
   ::xo::tdom::Class create YUIMenuItem \
       -superclass MenuItem \
       -parameter {
-	{href "#"}
         helptext
       }
   
   YUIMenuItem ad_instproc render {} {doku} {
     html::li [my get_attributes id {CSSclass class} style] {
       # if we have no href, mark entry as disabled
-      if {![my exists href] || [my href] eq ""} {my append linkclass " disabled"}
+      if {[my href] eq ""} {my append linkclass " disabled"}
       html::a [my get_attributes target href {linkclass class} title] {
         html::t [my text]
         if {[my exists helptext]} {
@@ -297,9 +295,7 @@ namespace eval ::xowiki {
     my append CSSclass " yuimenu"
     html::div [my get_attributes id {CSSclass class}] {
       html::div -class "bd" {
-	html::ul {
-	  foreach li [my children] {$li render}
-	}
+        foreach li [my children] {$li render}
       }
       html::script -type "text/javascript" {
         html::t "var [my js_name] = new YAHOO.widget.ContextMenu('[my id]', { trigger: '[my set trigger]' } );"
@@ -462,7 +458,7 @@ namespace eval ::xowiki {
 
   ::xowiki::MenuBar instproc render-yui {} {
     set M [my content]
-    set mb [::xowiki::YUIMenuBar -id [my get_prop $M id] -configuration {
+    set mb [::xowiki::YUIMenuBar -id [my get_prop $M id] -autorender false -configuration {
       {autosubmenudisplay: false, keepopen: true, lazyload: false}
     } {
       foreach {menu_att menu} $M {

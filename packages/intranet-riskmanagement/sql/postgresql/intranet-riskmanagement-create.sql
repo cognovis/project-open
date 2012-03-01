@@ -35,6 +35,9 @@ update acs_object_types set
 	type_column = 'risk_type_id'		-- which column contains the type_id field?
 where object_type = 'im_risk';
 
+-- Tell the metadata system where to find the type of risks.
+update acs_object_types set type_category_type = 'Intranet Risk Type' where object_type = 'im_risk';
+
 -- Object Type Tables contain the lists of all tables (except for
 -- acs_objects...) that contain information about an im_risk object.
 insert into acs_object_type_tables (object_type,table_name,id_column)
@@ -105,6 +108,14 @@ create index im_risks_project_idx on im_risks(risk_project_id);
 -- Don't allow two risks with the same name in the same project.
 create unique index im_risks_project_un on im_risks(risk_project_id, risk_name);
 
+
+
+-----------------------------------------------------------
+-- Standard Dynfields for Risks
+-----------------------------------------------------------
+
+SELECT im_dynfield_attribute_new ('im_risk', 'risk_probability_percent', 'Probability (%)', 'numeric', 'float', 'f');
+SELECT im_dynfield_attribute_new ('im_risk', 'risk_impact', 'Impact (default currency)', 'numeric', 'float', 'f');
 
 -----------------------------------------------------------
 -- PL/SQL functions to Create and Delete risks and to get
@@ -201,8 +212,9 @@ end;$body$ language 'plpgsql';
 -- Categories for Type and Status
 --
 -- 75000-75999  Intranet Risk Management (1000)
--- 75000-75099  Intranet Risk Status
--- 75100-75199  Intranet Risk Type
+-- 75000-75099  Intranet Risk Status (100)
+-- 75100-75199  Intranet Risk Type (100)
+-- 75200-75299	Intranet Risk Action (100)
 
 -- Status
 SELECT im_category_new (75000, 'Active', 'Intranet Risk Status');
@@ -210,6 +222,9 @@ SELECT im_category_new (75002, 'Deleted', 'Intranet Risk Status');
 
 -- Type
 SELECT im_category_new (75100, 'Default', 'Intranet Risk Type');
+
+-- Action
+SELECT im_category_new (75210, 'Delete', 'Intranet Risk Action');
 
 
 -----------------------------------------------------------
@@ -255,4 +270,49 @@ SELECT im_component_plugin__new (
 update im_component_plugins 
 set title_tcl = 'lang::message::lookup "" intranet-riskmanagement.Project_Risks "Project Risks"'
 where plugin_name = 'Project Risks';
+
+
+
+-----------------------------------------------------------
+-- Risk View Columns
+-----------------------------------------------------------
+
+-- 210-219              Riskmanagement
+
+delete from im_view_columns where view_id = 210;
+delete from im_views where view_id = 210;
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (210, 'im_risk_list_short', 'view_risks', 1400);
+
+
+-- Add a "select all" checkbox to select all risks in the list
+delete from im_view_columns where column_id = 21099;
+insert into im_view_columns (
+        column_id, view_id, sort_order,
+	column_name,
+	column_render_tcl,
+        visible_for
+) values (
+        21000, 210, 0,
+        '<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''risk'',this.checked)">',
+        '"<input type=checkbox name=risk_id.$risk_id id=risk.$risk_id>"',
+        ''
+);
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21010, 210, 10, 'Name', '"<a href=/intranet-riskmanagement/new?form_mode=display&risk_id_id=$risk_id>$risk_name</a>\
+<a href=/intranet-helpdesk/new?form_mode=edit&risk_id=$risk_id>[im_gif wrench]</a>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21030,210,30,'Type','$risk_type');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21040,210,40,'Status','$risk_status');
+
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21070,210,70,'Impact','$risk_impact');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(21080,210,80,'Percent','$risk_probability_percent');
 

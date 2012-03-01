@@ -3,7 +3,7 @@
 
     @creation-date 2006-08-08
     @author Gustaf Neumann
-    @cvs-id $Id: xowiki-callback-procs.tcl,v 1.68 2010/11/23 07:50:04 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::xowiki {

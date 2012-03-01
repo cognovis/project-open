@@ -10,4 +10,7 @@
 <if @master_p@>
 </if>
 
-<listtemplate name="risks"></listtemplate>
+<%= [im_box_header $page_title] %>
+@risk_html;noquote@
+<%= [im_box_footer] %>
+
