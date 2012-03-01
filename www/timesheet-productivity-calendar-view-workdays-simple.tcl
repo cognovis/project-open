@@ -32,7 +32,7 @@ proc round_down {val rounder} {
 # ------------------------------------------------------------
 
 # Label: Provides the security context for this report
-set menu_label "reporting-timesheet-productivity-calendar-view-workdays-simple"
+set menu_label "timesheet-productivity-calendar-view-workdays-simple"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
