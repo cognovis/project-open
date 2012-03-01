@@ -30,7 +30,7 @@
 	    <if @notification_message@ not nil>
 	      <td>
 		<form>
-		  <input type="button" value="@notification_button;noquote@" onClick="self.location.href='@notification_url;noquote@'" />
+		  <input type="submit" value="@notification_button;noquote@" onClick="self.location.href='@notification_url;noquote@'" />
 		</form>
 	      </td>
 	    </if>
