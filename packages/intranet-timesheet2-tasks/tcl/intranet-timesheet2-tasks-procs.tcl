@@ -686,6 +686,16 @@ ad_proc -public im_timesheet_task_list_component {
 	# Something is going wrong with task_id, so set it again.
 	set task_id $project_id
 
+	if {$write} {
+	    set cal_picker_start_date "<input type=\"button\" style=\"height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');\" onclick =\"return showCalendar('start_date.$task_id', 'y-m-d');\" >"
+	    set start_date_input "<input name='start_date.$task_id' id='start_date.$task_id' size='10' type='text' value='[string range $start_date 0 9]'>$cal_picker_start_date"
+
+	    set cal_picker_end_date "<input type=\"button\" style=\"height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');\" onclick =\"return showCalendar('end_date.$task_id', 'y-m-d');\" >"
+	    set end_date_input "<input name='end_date.$task_id' id='end_date.$task_id' size='10' type='text' value='[string range $end_date 0 9]'>$cal_picker_end_date"
+	} else {
+	    set start_date_input [string range $start_date 0 9]
+	    set end_date_input [string range $end_date 0 9]
+	}
 	# We've got a task.
 	# Write out a line with task information
 	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
@@ -731,13 +741,6 @@ ad_proc -public im_timesheet_task_list_component {
 			<b>[_ intranet-timesheet2-tasks.There_are_no_active_tasks]</b>
 			</td>
 		</tr>
-		<tr>
-			<td colspan=$colspan>
-			<ul>
-			<li><a href=\"$new_task_url\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
-			</ul>
-			</td>
-		</tr>
 	"
     }
     
@@ -757,27 +760,71 @@ ad_proc -public im_timesheet_task_list_component {
     # Format the action bar at the bottom of the table
     #
     set action_html "
-	<td align=left>
+      <tr>
+	<td align='right' colspan='99'>
+	<div>
+	  <div style='float: right;'>
 		<select name=action>
 		<option value=save>[lang::message::lookup "" intranet-timesheet2-tasks.Save_Changes "Save Changes"]</option>
 		<option value=delete>[_ intranet-timesheet2-tasks.Delete]</option>
 		</select>
 		<input type=submit name=submit value='[_ intranet-timesheet2-tasks.Apply]'>
-		<br>
-		<a href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\"
-		>[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
-		
+	   </div>
+	</div>
 	</td>
+      </tr>
     "
-    if {!$write} { set action_html "" }
+
+    if {!$write} { 
+        set action_html "
+           <tr>
+                <td align='right' colspan='99'>
+                <div>
+                       <div style='float: left;'>
+                                 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+                       </div>
+                </div>
+                </td>
+           </tr>
+        "
+    } else {
+	set action_html "
+	   <tr>
+        	<td align='right' colspan='99'>
+	        <div>
+		       <div style='float: left;'>
+                		 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+                       </div>
+		      <div style='float: right;'>
+        	        <select name=action>
+			      <option value=save>[lang::message::lookup "" intranet-timesheet2-tasks.Save_Changes "Save Changes"]</option>
+			      <option value=delete>[_ intranet-timesheet2-tasks.Delete]</option>
+        	        </select>
+	      		<input type=submit name=submit value='[_ intranet-timesheet2-tasks.Apply]'>
+	             </div>
+        	</div>
+        	</td>
+           </tr>
+    	"
+    }
+
 
     set task_start_idx_pretty [expr $task_start_idx+1]
     set task_end_idx_pretty [expr $task_end_idx+1]
+
     set next_prev_html "
 	$prev_page_html
 	[lang::message::lookup "" intranet-timesheet2-tasks.Showing_tasks_start_idx_how_many "Showing tasks %task_start_idx_pretty% to %task_end_idx_pretty%"]
 	$next_page_html
     "
+
+    if { 0 == $task_start_idx && ( $ctr < $max_entries_per_page || "" == $max_entries_per_page) } {
+	    set next_prev_html "
+        	$prev_page_html
+	        <span style='font-weight: normal;color: #333333;'>[lang::message::lookup "" intranet-timesheet2-tasks.Showing "Showing: %ctr%/%ctr%"]</span>
+        	$next_page_html
+	    "
+    }	
 
     # ---------------------- Join all parts together ------------------------
 
@@ -785,30 +832,34 @@ ad_proc -public im_timesheet_task_list_component {
     set project_id $restrict_to_project_id
 
     set component_html "
-	<center>$next_prev_html</center>
 	<form action=/intranet-timesheet2-tasks/task-action method=POST>
 	[export_form_vars project_id return_url]
 	<table bgcolor=white border=0 cellpadding=1 cellspacing=1 class=\"table_list_page\">
 	<thead>
 		<tr class=tableheader>
+			<td colspan='99' valign='middle'>
+				<div style='float: right'>$next_prev_html</div>
+			</td>
+		</tr>
+		<tr class=tableheader>
 		$table_header_html
 		</tr>
 	</thead>
 	$table_body_html
-	<tfoot>
 		<tr>
 		<td class=rowplain colspan=$colspan align=right>
 			<table width='100%'>
-			<tr>
 			$action_html
-			</tr>
 			</table>
 		</td>
 		</tr>
+
+
+	<tfoot>
+	<tr><td colspan='99'><div style='float: right'>$next_prev_html</div></td></tr>
 	<tfoot>
 	</table>
 	</form>
-	<center>$next_prev_html</center>
     "
 
     return $component_html
