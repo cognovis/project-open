@@ -977,3 +977,38 @@ ad_proc -public im_invoice_generate_bills {
 	
     return 1
 }
+
+ad_proc -public im_invoice_send_invoice_mail {
+    -invoice_id
+    {-recipient_id ""}
+    {-from_addr ""}
+    {-cc_addr ""}
+} {
+    Send out an E-Mail to the recipient for with the invoice attached
+    
+    @param invoice_id cost_id of the invoice to be sent
+    @recipient_id Recipient of the invoice mail. Defaults to company_contact_id of the invoice
+    @from_addr Sender of the invoice mail. Defaults to current user mail
+    @cc_addr Optional cc email address. Useful for receiving copies.
+} {
+    set invoice_revision_id [intranet_openoffice::invoice_pdf -invoice_id $invoice_id]
+    set user_id [ad_conn user_id]
+    if {"" == $recipient_id} {
+	set recipient_id [db_string company_contact_id "select company_contact_id from im_invoices where invoice_id = :invoice_id" -default $user_id]
+    } 
+
+    db_1row get_recipient_info "select first_names, last_name, email as to_addr from cc_users where user_id = :recipient_id"
+
+    if {"" == $from_addr} {
+	set from_addr [party::email -party_id $user_id]
+    }
+    
+    # Get the type information so we can get the strings
+    set invoice_type_id [db_string type "select cost_type_id from im_costs where cost_id = :invoice_id"]
+    
+    set recipient_locale [lang::user::locale -user_id $recipient_id]
+    set subject [lang::util::localize "#intranet-invoices.invoice_email_subject_${invoice_type_id}#" $recipient_locale]
+    set body [lang::util::localize "#intranet-invoices.invoice_email_body_${invoice_type_id}#" $recipient_locale]
+    acs_mail_lite::send -send_immediately -to_addr $to_addr -from_addr $from_addr -cc_addr $cc_addr -subject $subject -body $body -file_ids $invoice_revision_id -use_sender
+}
+    
