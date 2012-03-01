@@ -36,8 +36,8 @@ proc round_down {val rounder} {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-timesheet-productivity-calendar-view-workdays"
 
+set menu_label "reporting-timesheet-productivity-calendar-view-workdays-weber"
 set current_user_id [ad_maybe_redirect_for_registration]
 
 set read_p [db_string report_perms "
@@ -118,7 +118,6 @@ set im_absence_type_training 5004
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
 #
-
  
 if {[empty_string_p $different_from_project_p]} {
    set mm_checked ""
@@ -171,6 +170,25 @@ if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
 if {[info exists user_id] && 0 != $user_id && "" != $user_id} {
     lappend criteria "h.user_id = :user_id"
 }
+
+set show_user_only_p 1 
+
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Senior Managers"] -user_id $user_id] } {
+	set show_user_only_p 0
+}
+
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Technical Office"] -user_id $user_id] } {
+        set show_user_only_p 0
+}
+
+if { [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "HR Managers"] -user_id $user_id] } {
+        set show_user_only_p 0
+}
+
+if { $show_user_only_p } {
+	lappend criteria "u.user_id = $current_user_id"
+}
+
 
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
@@ -233,9 +251,11 @@ set sql "
         	user_id,
 		user_name,
 	        top_parent_project_id,
-        	top_project_name,
+		top_project_name,
+		(select project_nr from im_projects where project_id = top_parent_project_id) as top_project_nr,
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
+		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE  (select project_nr from im_projects where project_id = sub_project_id) END as sub_project_nr,
                 (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
@@ -249,6 +269,7 @@ set sql "
 	                user_name,
         	        s.top_parent_project_id,
                 	(select project_name from im_projects where project_id = s.top_parent_project_id) as top_project_name,
+                	(select project_nr from im_projects where project_id = s.top_parent_project_id) as top_project_nr,			
                         	 CASE
                                          WHEN s.project_type_id = 100 THEN
                                          (select project_name from im_projects where project_id = s.top_parent_project_id)
@@ -303,8 +324,10 @@ group by
 	user_name,
 	top_parent_project_id,
 	top_project_name,
+	top_project_nr,
 	sub_project_id,
-	sub_project_name
+	sub_project_name,
+	sub_project_nr
 order by
         user_id,
 	top_parent_project_id
@@ -312,189 +335,187 @@ order by
 
 # ad_return_complaint 1 $sql
 
-set report_def [list \
-    group_by user_id \
-    header {
-                "\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"
-    } \
-	            content [list \
-		            group_by top_project_id \
-        	            header {
-				""
-                	        "<b><a href=$project_url$top_project_id>$top_project_name</a></b>"
-                	        "<b><a href=$project_url$sub_project_id>$sub_project_name</a></b>"
-				$day01 
-				"-"
-                    	     } \
-                    	     content {} \
-            	    ] \
-    footer {
-            "Summary" "#colspan=33" "$number_days_ctr_pretty" 
-    } \
-]
+# # set report_def [list \
+#     group_by user_id \
+#     header {
+#                 "\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"
+#     } \
+# 	            content [list \
+# 		            group_by top_project_id \
+#         	            header {
+# 				""
+#                 	        "<b><a href=$project_url$top_project_id>$top_project_name</a></b>"
+#                 	        "<b><a href=$project_url$sub_project_id>$sub_project_name</a></b>"
+# 				$day01 
+# 				"-"
+#                     	     } \
+#                     	     content {} \
+#             	    ] \
+#     footer {
+#             "Summary" "#colspan=33" "$number_days_ctr_pretty $number_hours_ctr_pretty" 
+#     } \
+#]
 
 
-set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\$top_project_name</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\$sub_project_name</a></b>\" "
+set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr}&nbsp;\${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr}&nbsp;\${sub_project_name}</a></b>\" "
 append line_str $day_placeholders "-" 
 set no_empty_columns [expr $duration+1]
 
 set report_def 		[list group_by user_id header {"\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"} content]
 lappend report_def 	[list group_by project_id header $line_str content {}]
 
+
 if {$duration == 28} {
 lappend report_def      footer { "<strong>Summary</strong>" \
 				 "&nbsp;"
 				 "&nbsp;"
-				 "$thours_arr(day01)" \
-				 "$thours_arr(day02)" \
-				 "$thours_arr(day03)" \
-				 "$thours_arr(day04)" \
-				 "$thours_arr(day05)" \
-				 "$thours_arr(day06)" \
-				 "$thours_arr(day07)" \
-				 "$thours_arr(day08)" \
-				 "$thours_arr(day09)" \
-				 "$thours_arr(day10)" \
-				 "$thours_arr(day11)" \
-				 "$thours_arr(day12)" \
-				 "$thours_arr(day13)" \
-				 "$thours_arr(day14)" \
-				 "$thours_arr(day15)" \
-				 "$thours_arr(day16)" \
-				 "$thours_arr(day17)" \
-				 "$thours_arr(day18)" \
-				 "$thours_arr(day19)" \
-				 "$thours_arr(day20)" \
-				 "$thours_arr(day21)" \
-				 "$thours_arr(day22)" \
-				 "$thours_arr(day23)" \
-				 "$thours_arr(day24)" \
-				 "$thours_arr(day25)" \
-				 "$thours_arr(day26)" \
-				 "$thours_arr(day27)" \
-				 "$thours_arr(day28)" \
-				 "$number_days_ctr_pretty" \
-				 "[expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ]"\
-				 "[round_down [expr 100 * $number_days_ctr_pretty / [expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ] ] 1000]%" }
-}
+				 "<strong>$thours_arr(day01)</strong>" \
+				 "<strong>$thours_arr(day02)</strong>" \
+				 "<strong>$thours_arr(day03)</strong>" \
+				 "<strong>$thours_arr(day04)</strong>" \
+				 "<strong>$thours_arr(day05)</strong>" \
+				 "<strong>$thours_arr(day06)</strong>" \
+				 "<strong>$thours_arr(day07)</strong>" \
+				 "<strong>$thours_arr(day08)</strong>" \
+				 "<strong>$thours_arr(day09)</strong>" \
+				 "<strong>$thours_arr(day10)</strong>" \
+				 "<strong>$thours_arr(day11)</strong>" \
+				 "<strong>$thours_arr(day12)</strong>" \
+				 "<strong>$thours_arr(day13)</strong>" \
+				 "<strong>$thours_arr(day14)</strong>" \
+				 "<strong>$thours_arr(day15)</strong>" \
+				 "<strong>$thours_arr(day16)</strong>" \
+				 "<strong>$thours_arr(day17)</strong>" \
+				 "<strong>$thours_arr(day18)</strong>" \
+				 "<strong>$thours_arr(day19)</strong>" \
+				 "<strong>$thours_arr(day20)</strong>" \
+				 "<strong>$thours_arr(day21)</strong>" \
+				 "<strong>$thours_arr(day22)</strong>" \
+				 "<strong>$thours_arr(day23)</strong>" \
+				 "<strong>$thours_arr(day24)</strong>" \
+				 "<strong>$thours_arr(day25)</strong>" \
+				 "<strong>$thours_arr(day26)</strong>" \
+				 "<strong>$thours_arr(day27)</strong>" \
+				 "<strong>$thours_arr(day28)</strong>" \
+                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+}}
+
 if {$duration == 29} {
 lappend report_def      footer { "<strong>Summary</strong>" \
 				 "&nbsp;"
 				 "&nbsp;"
-				 "$thours_arr(day01)" \
-				 "$thours_arr(day02)" \
-				 "$thours_arr(day03)" \
-				 "$thours_arr(day04)" \
-				 "$thours_arr(day05)" \
-				 "$thours_arr(day06)" \
-				 "$thours_arr(day07)" \
-				 "$thours_arr(day08)" \
-				 "$thours_arr(day09)" \
-				 "$thours_arr(day10)" \
-				 "$thours_arr(day11)" \
-				 "$thours_arr(day12)" \
-				 "$thours_arr(day13)" \
-				 "$thours_arr(day14)" \
-				 "$thours_arr(day15)" \
-				 "$thours_arr(day16)" \
-				 "$thours_arr(day17)" \
-				 "$thours_arr(day18)" \
-				 "$thours_arr(day19)" \
-				 "$thours_arr(day20)" \
-				 "$thours_arr(day21)" \
-				 "$thours_arr(day22)" \
-				 "$thours_arr(day23)" \
-				 "$thours_arr(day24)" \
-				 "$thours_arr(day25)" \
-				 "$thours_arr(day26)" \
-				 "$thours_arr(day27)" \
-				 "$thours_arr(day28)" \
-				 "$thours_arr(day29)" \
-				 "$number_days_ctr_pretty" \
-				 "[expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ]"\
-				 "[round_down [expr 100 * $number_days_ctr_pretty / [expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ] ] 1000]%" }
-}
+				 "<strong>$thours_arr(day01)</strong>" \
+				 "<strong>$thours_arr(day02)</strong>" \
+				 "<strong>$thours_arr(day03)</strong>" \
+				 "<strong>$thours_arr(day04)</strong>" \
+				 "<strong>$thours_arr(day05)</strong>" \
+				 "<strong>$thours_arr(day06)</strong>" \
+				 "<strong>$thours_arr(day07)</strong>" \
+				 "<strong>$thours_arr(day08)</strong>" \
+				 "<strong>$thours_arr(day09)</strong>" \
+				 "<strong>$thours_arr(day10)</strong>" \
+				 "<strong>$thours_arr(day11)</strong>" \
+				 "<strong>$thours_arr(day12)</strong>" \
+				 "<strong>$thours_arr(day13)</strong>" \
+				 "<strong>$thours_arr(day14)</strong>" \
+				 "<strong>$thours_arr(day15)</strong>" \
+				 "<strong>$thours_arr(day16)</strong>" \
+				 "<strong>$thours_arr(day17)</strong>" \
+				 "<strong>$thours_arr(day18)</strong>" \
+				 "<strong>$thours_arr(day19)</strong>" \
+				 "<strong>$thours_arr(day20)</strong>" \
+				 "<strong>$thours_arr(day21)</strong>" \
+				 "<strong>$thours_arr(day22)</strong>" \
+				 "<strong>$thours_arr(day23)</strong>" \
+				 "<strong>$thours_arr(day24)</strong>" \
+				 "<strong>$thours_arr(day25)</strong>" \
+				 "<strong>$thours_arr(day26)</strong>" \
+				 "<strong>$thours_arr(day27)</strong>" \
+				 "<strong>$thours_arr(day28)</strong>" \
+				 "<strong>$thours_arr(day29)</strong>" \
+                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+}}
+
 if {$duration == 30} {
 lappend report_def      footer { "<strong>Summary</strong>" \
 				 "&nbsp;"
 				 "&nbsp;"
-				 "$thours_arr(day01)" \
-				 "$thours_arr(day02)" \
-				 "$thours_arr(day03)" \
-				 "$thours_arr(day04)" \
-				 "$thours_arr(day05)" \
-				 "$thours_arr(day06)" \
-				 "$thours_arr(day07)" \
-				 "$thours_arr(day08)" \
-				 "$thours_arr(day09)" \
-				 "$thours_arr(day10)" \
-				 "$thours_arr(day11)" \
-				 "$thours_arr(day12)" \
-				 "$thours_arr(day13)" \
-				 "$thours_arr(day14)" \
-				 "$thours_arr(day15)" \
-				 "$thours_arr(day16)" \
-				 "$thours_arr(day17)" \
-				 "$thours_arr(day18)" \
-				 "$thours_arr(day19)" \
-				 "$thours_arr(day20)" \
-				 "$thours_arr(day21)" \
-				 "$thours_arr(day22)" \
-				 "$thours_arr(day23)" \
-				 "$thours_arr(day24)" \
-				 "$thours_arr(day25)" \
-				 "$thours_arr(day26)" \
-				 "$thours_arr(day27)" \
-				 "$thours_arr(day28)" \
-				 "$thours_arr(day29)" \
-				 "$thours_arr(day30)" \
-				 "$number_days_ctr_pretty" \
-				 "[expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ]"\
-				 "[round_down [expr 100 * $number_days_ctr_pretty / [expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ] ] 1000]%" }
-}
+				 "<strong>$thours_arr(day01)</strong>" \
+				 "<strong>$thours_arr(day02)</strong>" \
+				 "<strong>$thours_arr(day03)</strong>" \
+				 "<strong>$thours_arr(day04)</strong>" \
+				 "<strong>$thours_arr(day05)</strong>" \
+				 "<strong>$thours_arr(day06)</strong>" \
+				 "<strong>$thours_arr(day07)</strong>" \
+				 "<strong>$thours_arr(day08)</strong>" \
+				 "<strong>$thours_arr(day09)</strong>" \
+				 "<strong>$thours_arr(day10)</strong>" \
+				 "<strong>$thours_arr(day11)</strong>" \
+				 "<strong>$thours_arr(day12)</strong>" \
+				 "<strong>$thours_arr(day13)</strong>" \
+				 "<strong>$thours_arr(day14)</strong>" \
+				 "<strong>$thours_arr(day15)</strong>" \
+				 "<strong>$thours_arr(day16)</strong>" \
+				 "<strong>$thours_arr(day17)</strong>" \
+				 "<strong>$thours_arr(day18)</strong>" \
+				 "<strong>$thours_arr(day19)</strong>" \
+				 "<strong>$thours_arr(day20)</strong>" \
+				 "<strong>$thours_arr(day21)</strong>" \
+				 "<strong>$thours_arr(day22)</strong>" \
+				 "<strong>$thours_arr(day23)</strong>" \
+				 "<strong>$thours_arr(day24)</strong>" \
+				 "<strong>$thours_arr(day25)</strong>" \
+				 "<strong>$thours_arr(day26)</strong>" \
+				 "<strong>$thours_arr(day27)</strong>" \
+				 "<strong>$thours_arr(day28)</strong>" \
+				 "<strong>$thours_arr(day29)</strong>" \
+				 "<strong>$thours_arr(day30)</strong>" \
+                                 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty)</strong><tr><td colspan='99'>&nbsp;</td></tr>"
+}}
+
 if {$duration == 31} {
 lappend report_def      footer { "<strong>Summary</strong>" \
 				 "&nbsp;"
 				 "&nbsp;"
-				 "$thours_arr(day01)" \
-				 "$thours_arr(day02)" \
-				 "$thours_arr(day03)" \
-				 "$thours_arr(day04)" \
-				 "$thours_arr(day05)" \
-				 "$thours_arr(day06)" \
-				 "$thours_arr(day07)" \
-				 "$thours_arr(day08)" \
-				 "$thours_arr(day09)" \
-				 "$thours_arr(day10)" \
-				 "$thours_arr(day11)" \
-				 "$thours_arr(day12)" \
-				 "$thours_arr(day13)" \
-				 "$thours_arr(day14)" \
-				 "$thours_arr(day15)" \
-				 "$thours_arr(day16)" \
-				 "$thours_arr(day17)" \
-				 "$thours_arr(day18)" \
-				 "$thours_arr(day19)" \
-				 "$thours_arr(day20)" \
-				 "$thours_arr(day21)" \
-				 "$thours_arr(day22)" \
-				 "$thours_arr(day23)" \
-				 "$thours_arr(day24)" \
-				 "$thours_arr(day25)" \
-				 "$thours_arr(day26)" \
-				 "$thours_arr(day27)" \
-				 "$thours_arr(day28)" \
-				 "$thours_arr(day29)" \
-				 "$thours_arr(day30)" \
-				 "$thours_arr(day31)" \
-				 "$number_days_ctr_pretty" \
-				 "[expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ]"\
-				 "[round_down [expr 100 * $number_days_ctr_pretty / [expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ] ] 1000]%" }
-}
+				 "<strong><strong>$thours_arr(day01)</strong>" \
+				 "<strong>$thours_arr(day02)</strong>" \
+				 "<strong>$thours_arr(day03)</strong>" \
+				 "<strong>$thours_arr(day04)</strong>" \
+				 "<strong>$thours_arr(day05)</strong>" \
+				 "<strong>$thours_arr(day06)</strong>" \
+				 "<strong>$thours_arr(day07)</strong>" \
+				 "<strong>$thours_arr(day08)</strong>" \
+				 "<strong>$thours_arr(day09)</strong>" \
+				 "<strong>$thours_arr(day10)</strong>" \
+				 "<strong>$thours_arr(day11)</strong>" \
+				 "<strong>$thours_arr(day12)</strong>" \
+				 "<strong>$thours_arr(day13)</strong>" \
+				 "<strong>$thours_arr(day14)</strong>" \
+				 "<strong>$thours_arr(day15)</strong>" \
+				 "<strong>$thours_arr(day16)</strong>" \
+				 "<strong>$thours_arr(day17)</strong>" \
+				 "<strong>$thours_arr(day18)</strong>" \
+				 "<strong>$thours_arr(day19)</strong>" \
+				 "<strong>$thours_arr(day20)</strong>" \
+				 "<strong>$thours_arr(day21)</strong>" \
+				 "<strong>$thours_arr(day22)</strong>" \
+				 "<strong>$thours_arr(day23)</strong>" \
+				 "<strong>$thours_arr(day24)</strong>" \
+				 "<strong>$thours_arr(day25)</strong>" \
+				 "<strong>$thours_arr(day26)</strong>" \
+				 "<strong>$thours_arr(day27)</strong>" \
+				 "<strong>$thours_arr(day28)</strong>" \
+				 "<strong>$thours_arr(day29)</strong>" \
+				 "<strong>$thours_arr(day30)</strong>" \
+				 "<strong>$thours_arr(day31)</strong>" \
+				 "<strong>$number_hours_ctr_pretty ($number_days_ctr_pretty) </strong> <tr><td colspan='99'>&nbsp;</td></tr>" 
+}}
 
 # Global header/footer
 # set header0 {"Employee" "Project" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "Working<br>Days"}
-set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Toal Days<br>hours logged\" \"Working<br>Days net\" \"Utilization\" "
+# set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Total Hours (Days)<br> logged\" \"Working<br>Days net\" \"Utilization\" "
+set header0 "\"Employee\" \"Project\" \"Sub-Project\" $day_header \"Total Hours (Days)<br> logged\" "
+
 set footer0 {"" "" "" "" "" "" "" "" "" ""}
 
 # ------------------------------------------------------------
@@ -508,28 +529,33 @@ im_report_write_http_headers -output_format $output_format
 switch $output_format {
     html {
         ns_write "
-	[im_header]
-	[im_navbar]
-
-
-<table border=0 cellspacing=1 cellpadding=1>
-<tr>
-<td>
-
-	<form>
+		[im_header]
+		[im_navbar]
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
-		  <td class=form-label>Month</td>
-		  <td class=form-widget>
-		    <input type=textfield name='report_year_month' value='$report_year_month'>
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Employee</td>
-		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 user_id $user_id]
-		  </td>
-		</tr>
+		<td>
+		<form>
+			<table border=0 cellspacing=1 cellpadding=1>
+			<tr>
+			  <td class=form-label>Month</td>
+			  <td class=form-widget>
+			    <input type=textfield name='report_year_month' value='$report_year_month'>
+			  </td>
+			</tr>
+	"
+
+	if { !$show_user_only_p  } {
+        	ns_write "
+			<tr>
+			  <td class=form-label>Employee</td>
+			  <td class=form-widget>
+			    [im_user_select -include_empty_p 1 user_id $user_id]
+			  </td>
+			</tr>
+		"
+	}
+
+        ns_write "
                 <tr>
                   <td class=form-label>Customer</td>
                   <td class=form-widget>
@@ -556,7 +582,7 @@ switch $output_format {
                   <td class=form-label>Daily hours</td>
                   <td class=form-widget>
 			<select name='daily_hours'>
-"
+	"
 
 	if {0==$daily_hours || ""==$daily_hours } {ns_write " <option selected value='0'>all</option>"} else {ns_write "<option value='0'>all</option>" }
 	for {set ctr 2} {$ctr < 9} {incr ctr} {
@@ -579,11 +605,6 @@ switch $output_format {
 	<ul>
     	<li>Report shows only content for days where the logged hours pass a threshold as defined in filter: <strong>'Daily hours'</strong></li>
         <li>Hours logged on sub-projects are accumulated</li>
-	<li>Column <strong>'Days shown'</strong> is the sum of the day columns shown containing a value</li>
-        <li>Column <strong>'Working days net'</strong> <strong>Working days net</strong> is calculated as follows: Weekdays of a month - Absences
-            such as bank holidays, vacation, training, travel, sick/personal business days</li>
-        <li>Column <strong>'Utilization'</strong>: Relation btw. <strong>'Days shown'</strong> to 
-	    <strong>'Working days net'</strong></li>
 	</ul>
 </td>
 </tr>
@@ -612,8 +633,17 @@ set number_days_counter [list \
        expr "\$number_days_ctr+0" \
 ]
 
+set number_hours_ctr 0 
+set number_hours_counter [list \
+       pretty_name "Number hours" \
+       var number_hours_ctr_pretty \
+       reset \$user_id \
+       expr "\$number_hours_ctr+0" \
+]
+
 set counters [list \
 	  $number_days_counter \
+	  $number_hours_counter \
 ]
  
 
@@ -631,6 +661,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 db_foreach sql $sql {
 
         set number_days_ctr 0
+        set number_hours_ctr 0
 
 	im_report_display_footer \
 	    -output_format $output_format \
@@ -658,6 +689,7 @@ db_foreach sql $sql {
 			if { 0 == $month_arr($day_double_digit) } {
 				set number_days_ctr [expr $number_days_ctr+1]  
 				set month_arr($day_double_digit) 1
+			        set number_hours_ctr [expr $number_hours_ctr + $thours_arr($day_double_digit)] 
 			}
 		}
 	}
