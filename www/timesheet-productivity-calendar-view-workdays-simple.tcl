@@ -22,11 +22,6 @@ ad_page_contract {
     { different_from_project_p "" }
 }
 
-proc round_down {val rounder} {
-       set nval [expr floor($val*$rounder) /$rounder]
-       return $nval
-       }
-
 # ------------------------------------------------------------
 # Security
 # ------------------------------------------------------------
@@ -48,10 +43,9 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-set page_title "Timesheet Productivity Report"
+set page_title "Timesheet Productivity Report - Monthly View - Simple"
 set context_bar [im_context_bar $page_title]
 set context ""
-
 
 # Check that Start-Date have correct format
 set report_year_month [string range $report_year_month 0 6]
