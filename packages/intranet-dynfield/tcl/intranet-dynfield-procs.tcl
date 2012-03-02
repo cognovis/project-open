@@ -583,7 +583,7 @@ ad_proc -public im_dynfield::attribute_store {
 
         # object_subtype_id can be a list, so go through the list
         # and take the highest one (none - display - edit).
-	set display_mode "undefined"
+	set display_mode "edit"
         foreach subtype_id $object_subtype_id {
             set key "$dynfield_attribute_id.$subtype_id"
 	    ns_log Notice "im_dynfield::attribute_store: key: $key"
