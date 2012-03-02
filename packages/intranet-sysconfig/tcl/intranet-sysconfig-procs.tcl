@@ -202,3 +202,23 @@ ad_proc -public im_sysconfig_load_configuration { file } {
     return $html
 }
 
+ad_proc -public im_sysconfig_change_server { 
+    -server_path
+    -server_url
+} {
+    Allows moving a server to a different location. This will change the most typical parameters when you copy e.g. the database from production to staging
+} {
+
+    parameter::set_from_package_key -package_key acs-kernel -parameter "SystemURL" -value $server_url
+
+    parameter::set_from_package_key -package_key intranet-core -parameter "BackupBasePathUnix" -value "${server_path}/filestorage/backup"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "BugBasePathUnix" -value "${server_path}/filestorage/bugs"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "CompanyBasePathUnix" -value "${server_path}/filestorage/companies"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "HomeBasePathUnix" -value "${server_path}/filestorage/home"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "ProjectBasePathUnix" -value "${server_path}/filestorage/projects"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "ProjectSalesBasePathUnix" -value "${server_path}/filestorage/project_sales"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "TicketBasePathUnix" -value "${server_path}/filestorage/tickets"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "UserBasePathUnix" -value "${server_path}/filestorage/users"
+    parameter::set_from_package_key -package_key intranet-filestorage -parameter "CostBasePathUnix" -value "${server_path}/filestorage/costs"
+    parameter::set_from_package_key -package_key intranet-invoices -parameter "InvoiceTemplatePathUnix" -value "${server_path}/filestorage/templates"
+}
