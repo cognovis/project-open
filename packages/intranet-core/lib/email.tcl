@@ -75,7 +75,7 @@ if {$recipients eq ""} {
     }
 } else {
     append form_elements {
-	{to:text(checkbox),multiple
+	{to:text(checkbox),multiple,optional
 	    {label "[_ acs-mail-lite.Recipients]:"} 
 	    {options  $recipients }
 	    {html {checked 1}}
@@ -111,12 +111,9 @@ append form_elements {
 if { [exists_and_not_null file_ids] } {
     set files [list]
     foreach file $file_ids {
-        set file_title [lang::util::localize [db_string get_file_title { } -default "[_ acs-mail-lite.Untitled]"]]
-        if { $tracking_p } {
-            lappend files "<a href=\"/tracking/download/$file_title?version_id=$file\">$file_title</a> "
-        } else {
-            lappend files "$file_title "
-        }
+	set sql "select title from cr_revisions where revision_id = :file"
+        set file_title [lang::util::localize [db_string get_file_title $sql -default "[_ acs-mail-lite.Untitled]"]]
+	lappend files "$file_title "
     }
     set files [join $files ", "]
     
