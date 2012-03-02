@@ -178,6 +178,7 @@ ad_form -action $action \
     -edit_buttons $edit_buttons \
     -form $form_elements \
     -on_request {
+	set content_body [template::util::richtext::create $content_body "html"]
     } -new_request {
     } -edit_request {
     } -on_submit {
@@ -229,7 +230,8 @@ ad_form -action $action \
         }
 
 	
-        acs_mail_lite::send_immediately \
+        acs_mail_lite::send \
+	    -send_immediately \
             -to_addr $to_addr \
             -cc_addr $cc_addr \
             -from_addr "$from_addr" \
@@ -238,7 +240,8 @@ ad_form -action $action \
             -package_id $package_id \
             -file_ids $file_ids \
             -mime_type $mime_type \
-            -object_id $object_id 
+            -object_id $object_id  \
+	    -use_sender
 
         util_user_message -html -message "[_ acs-mail-lite.Your_message_was_sent_to]"
         
