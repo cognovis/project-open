@@ -71,7 +71,7 @@ set report_year [string range $report_year_month 0 3]
 set report_month [string range $report_year_month 5 6 ]
 
 set first_day_of_month "$report_year-$report_month-01"
-set first_day_next_month [db_string get_number_days_month "SELECT '$first_day_of_month'::date + '1 month'::interval" -default 0]
+set first_day_next_month [string range [db_string get_number_days_month "SELECT '$first_day_of_month'::date + '1 month'::interval" -default 0] 0 9 ]
 
 set duration [db_string get_number_days_month "SELECT date_part('day','$first_day_of_month'::date + '1 month'::interval - '1 day'::interval)" -default 0]
 
@@ -198,8 +198,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
                           tree_ancestor_key(children.tree_sortkey, 1) = parent.tree_sortkey 
                         )
 	    and h.project_id = s.sub_project_id
-            and h.day like '%$report_year-$report_month-$day_double_digit%'
-	    
+            and date_trunc('day', day) = '$report_year-$report_month-$day_double_digit'    
 	)) as day$day_double_digit
     "
     lappend outer_sql_list "
@@ -271,8 +270,8 @@ set sql "
 	                where
         	                h.project_id = p.project_id
                 	        and h.user_id = u.user_id
-                        	and h.day >= to_date(:first_day_of_month, 'YYYY-MM-DD')
-	                        and h.day < to_date(:first_day_next_month, 'YYYY-MM-DD')
+                        	and h.day >= to_date('$first_day_of_month', 'YYYY-MM-DD')
+	                        and h.day < to_date('$first_day_next_month', 'YYYY-MM-DD')
         	                $where_clause
                 	order by
                         	p.project_id,
