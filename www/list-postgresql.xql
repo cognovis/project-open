@@ -31,7 +31,12 @@ select
 	prov.company_path as provider_short_name,
 	im_category_from_id(c.cost_status_id) as cost_status,
 	im_category_from_id(c.cost_type_id) as cost_type,
-	now()::date - c.effective_date::date + c.payment_days::integer as overdue
+        CASE c.cost_status_id = 3810 
+                WHEN true THEN
+			0
+                ELSE
+                        now()::date - c.effective_date::date + c.payment_days::integer
+        END as overdue        
 	$extra_select
 from
 	im_costs c 
