@@ -59,3 +59,18 @@ if { [exists_and_not_null level] && $llevel < $current_level } {
 
 
 set projects_html [im_table_with_title "[_ intranet-core.Projects]" "<ul>$projects_html</ul>"]
+
+# ------------------------------------------------------
+# Add new projects form
+# ------------------------------------------------------
+
+
+ad_form \
+    -name new_project \
+    -action "/intranet/projects/new" \
+    -export {company_id} \
+    -form {
+	{project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
+	{button_new_project:text(submit) {label "[lang::message::lookup {} intranet-core.Add_a_project {Add a new project}]"}}
+    }
+
