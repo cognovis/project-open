@@ -861,6 +861,8 @@ END;' language 'plpgsql';
 SELECT inline_8 ();
 DROP FUNCTION inline_8 ();
 
+update im_dynfield_type_attribute_map set default_value = 'tcl {db_string now "select to_char(now(),''YYYY MM DD'') from dual"}' where attribute_id = (select ida.attribute_id from im_dynfield_attributes ida, acs_attributes aa where ida.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'start_date' and object_type = 'im_project');
+
 -- Add javascript calendar buton on date widget
 UPDATE im_dynfield_widgets set parameters = '{format "YYYY-MM-DD"} {after_html {<input type="button" style="height:23px; width:23px; background: url(''/resources/acs-templating/calendar.gif'');" onclick ="return showCalendarWithDateWidget(''$attribute_name'', ''y-m-d'');" ></b>}}' where widget_name = 'date';
 
@@ -933,6 +935,7 @@ END;' language 'plpgsql';
 SELECT inline_9 ();
 DROP FUNCTION inline_9 ();
 
+update im_dynfield_type_attribute_map set default_value = 'tcl {db_string now "select to_char(now(),''YYYY MM DD HH24 MM SS'') from dual"}' where attribute_id = (select ida.attribute_id from im_dynfield_attributes ida, acs_attributes aa where ida.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'end_date' and object_type = 'im_project');
 
 -- on_track_status_id
 CREATE OR REPLACE FUNCTION inline_10 ()

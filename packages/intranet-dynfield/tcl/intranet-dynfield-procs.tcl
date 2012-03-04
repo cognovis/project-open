@@ -1308,18 +1308,19 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                           where	$attribute_id_column = :object_id
                           " -default ""]
 
-                switch $widget {
-                    date {
-                        set date [template::util::date::create]
-                        set value [template::util::date::set_property ansi $date $value]
-                    }
-                    default { }
-                }
-                
                 # Don't overwrite values with default value if the value is there already
                 if {$value ne ""} {
+		    switch $widget {
+			date {
+			    set date [template::util::date::create]
+			    set value [template::util::date::set_property ansi $date $value]
+			}
+			default { }
+		    }
+		    
                     if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
                     template::element::set_value $form_id $attribute_name $value
+		    ds_comment "value :: $value"
                 }
                 
             }

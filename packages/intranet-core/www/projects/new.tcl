@@ -22,7 +22,7 @@ ad_page_contract {
     @creation-date 2011-08-05
 } {
     {project_type_id ""}
-    {project_status_id ""}
+    {project_status_id:integer,optional}
     {company_id ""}
     {parent_id ""}
     {project_nr ""}
@@ -196,7 +196,7 @@ ad_form -extend -name $form_id -new_request {
         db_1row projects_by_parent_id_query {}
         
         # Now set the values for status and type
-        if {$project_status_id eq ""} {
+        if {![exists_and_not_null project_status_id]} {
             template::element::set_value $form_id project_status_id $parent_status_id
         }
         if {$project_type_id eq ""} {
@@ -215,14 +215,10 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id company_id $company_id
     
 } -edit_request { 
-    
-	set page_title "[_ intranet-core.Edit_project]"
-	set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] [list "/intranet/projects/view?[export_url_vars project_id]" "One project"] $page_title]
-	
-	set button_text "[_ intranet-core.Save_Changes]"
-	
-	
-    
+    set page_title "[_ intranet-core.Edit_project]"
+    set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] [list "/intranet/projects/view?[export_url_vars project_id]" "One project"] $page_title]
+        
+    set button_text "[_ intranet-core.Save_Changes]"
 } -validate { 
     
     {project_nr
