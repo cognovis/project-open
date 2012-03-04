@@ -127,6 +127,59 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
 
+
+
+create or replace function im_sub_cost_centers (integer) 
+returns setof integer as $body$
+declare
+	p_cat			alias for $1;
+	v_cat			integer;
+	row			RECORD;
+BEGIN
+	FOR row IN
+		select	child_id
+		from	im_category_hierarchy
+		where	parent_id = p_cat
+	    UNION
+		select	p_cat
+	LOOP
+		RETURN NEXT row.child_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
+
+-- Return a list of all cost centers below and including the specified cost center
+create or replace function im_sub_cost_centers (integer)
+returns setof integer as $body$
+DECLARE
+	p_cc_id			alias for $1;
+	v_cc_id			integer;
+	v_len			integer;
+	v_super_cc_code		varchar;
+	row			RECORD;
+BEGIN
+	-- Extract len and code from the super cc
+	select	length(cost_center_code), cost_center_code
+	into	v_len, v_super_cc_code
+	from	im_cost_centers
+	where	cost_center_id = p_cc_id;
+
+	-- Return all ids of the sub ccs
+	FOR row IN
+		select	cc.cost_center_id
+		from	im_cost_centers cc
+		where	substring(cost_center_code for v_len) = v_super_cc_code
+	LOOP
+		RETURN NEXT row.cost_center_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
+
+
 -- prompt *** intranet-costs: Creating im_cost_center
 -- create or replace package im_cost_center
 -- is
@@ -182,6 +235,7 @@ DECLARE
 	);
 	return v_cost_center_id;
 end;' language 'plpgsql';
+
 
 
 -- Delete a single cost_center (if we know its ID...)
@@ -1395,12 +1449,6 @@ where	category_type = 'Intranet VAT Type';
 -------------------------------------------------------------
 -- Finance Menu System
 --
-
-select im_menu__del_module('intranet-trans-invoices');
-select im_menu__del_module('intranet-payments');
-select im_menu__del_module('intranet-invoices');
-select im_menu__del_module('intranet-cost');
-
 
 -- prompt *** intranet-costs: Create Finance Menu
 -- Setup the "Finance" main menu entry
