@@ -71,7 +71,11 @@ set add_budget_hours_p [im_permission $user_id add_budget_hours]
 
 set project_exists_p 0
 if {[info exists project_id]} {
-    set project_exists_p [db_string project_exists {}]
+    set project_exists_p [db_string project_exists "
+	select count(*) 
+	from im_projects 
+	where project_id = :project_id
+    " -default 0]
 }
 
 if {$project_exists_p} {
@@ -244,10 +248,6 @@ ad_form -extend -name $form_id -new_request {
     {parent_id
         {![string equal $parent_id $project_id]}
         {"Parent Project = Project"}
-    }
-    {end_date
-        {[expr {[template::util::date get_property sql_date $end_date] >= [template::util::date get_property sql_date $start_date]}]}
-        {[_ intranet-core.lt_End_date_must_be_afte]}
     }
     {percent_completed
         {[expr {$percent_completed <= 100}]}
