@@ -5,7 +5,6 @@
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
-
 ad_page_contract {
 	testing reports	
     @param start_year Year to start the report
@@ -223,7 +222,7 @@ set sql "
 		(select project_nr from im_projects where project_id = top_parent_project_id) as top_project_nr,
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
-		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE  (select project_nr from im_projects where project_id = sub_project_id) END as sub_project_nr,
+                CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_nr END as sub_project_nr,
                 (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
@@ -240,13 +239,19 @@ set sql "
                 	(select project_nr from im_projects where project_id = s.top_parent_project_id) as top_project_nr,			
                         	 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_name from im_projects where project_id = s.top_parent_project_id)
+                                         (select project_name from im_projects where project_id = s.sub_project_id)
                                          ELSE
                                          s.sub_project_name
                                 END as sub_project_name,
                                 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_id from im_projects where project_id = s.top_parent_project_id)
+                                         (select project_nr from im_projects where project_id in (select parent_id from im_projects where project_id = s.sub_project_id))
+                                         ELSE
+                                         s.sub_project_nr
+                                END as sub_project_nr,
+                                CASE
+                                         WHEN s.project_type_id = 100 THEN
+                                         (select project_id from im_projects where project_id = s.sub_project_id)
                                          ELSE
                                          s.sub_project_id
                                 END as sub_project_id,
@@ -285,6 +290,7 @@ set sql "
                 	top_project_name,
 			project_type_id,
 	                sub_project_id,
+ 			sub_project_nr,
         	        sub_project_name
 	 ) t
 group by 
@@ -302,12 +308,12 @@ order by
 "
 
 # This string represents a project/sub project
-set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr}&nbsp;\${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr}&nbsp;\${sub_project_name}</a></b>\" "
+set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr} - \${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr} - \${sub_project_name}</a></b>\" "
 append line_str $day_placeholders "\$number_hours_project_ctr" 
 
 set no_empty_columns [expr $duration+1]
 
-set report_def 		[list group_by user_id header {"\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"} content]
+set report_def 		[list group_by user_id header {"\#colspan=99 <a href=$user_url$user_id>$user_name</a>"} content]
 lappend report_def 	[list group_by project_id header $line_str content {}]
 
 
@@ -518,7 +524,7 @@ switch $output_format {
                 <tr>
                   <td class=form-label>Project Status</td>
                   <td class=form-widget>
-                    [im_project_status_select "project_status_id" $project_status_id]
+ 			[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id ""]
                   </td>
                 </tr>
                 <tr>
@@ -546,13 +552,14 @@ switch $output_format {
 <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign='top' width='600px'>
 	<ul>
+    	<li>Up to two project levels are shown (Main Project/Sub Project), levels underneath are accumulated</strong></li>
     	<li>Report shows only content for days where the logged hours pass a threshold as defined in filter: <strong>'Daily hours'</strong></li>
         <li>Hours logged on sub-projects are accumulated</li>
 	</ul>
 </td>
 </tr>
 </table>
-	<table border=0 cellspacing=3 cellpadding=3>\n
+	<table border=0 cellspacing=5 cellpadding=5>\n
 	"
     }
 }
