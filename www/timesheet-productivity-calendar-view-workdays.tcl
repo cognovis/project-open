@@ -238,7 +238,7 @@ set sql "
 		(select project_nr from im_projects where project_id = top_parent_project_id) as top_project_nr,
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
-		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE  (select project_nr from im_projects where project_id = sub_project_id) END as sub_project_nr,
+		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_nr END as sub_project_nr,
                 (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
                 (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
@@ -255,13 +255,20 @@ set sql "
                 	(select project_nr from im_projects where project_id = s.top_parent_project_id) as top_project_nr,			
                         	 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_name from im_projects where project_id = s.sub_project_id)
+					 (select project_name from im_projects where project_id in (select parent_id from im_projects where project_id = s.sub_project_id))
                                          ELSE
                                          s.sub_project_name
                                 END as sub_project_name,
+
                                 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_id from im_projects where project_id = s.sub_project_id)
+                                         (select project_nr from im_projects where project_id in (select parent_id from im_projects where project_id = s.sub_project_id))
+                                         ELSE
+                                         s.sub_project_nr
+                                END as sub_project_nr,
+                                CASE
+                                         WHEN s.project_type_id = 100 THEN
+                                         (select parent_id from im_projects where project_id = s.sub_project_id)
                                          ELSE
                                          s.sub_project_id
                                 END as sub_project_id,
@@ -274,7 +281,8 @@ set sql "
 	                        (select main_p.project_id from im_projects pr, im_projects main_p where pr.project_id = h.project_id and tree_ancestor_key(pr.tree_sortkey, 1) = main_p.tree_sortkey limit 1) as top_parent_project_id,
 				p.project_name as sub_project_name,
 				p.project_id	as sub_project_id,
-				p.project_type_id
+				p.project_type_id,
+				p.project_nr as sub_project_nr
 		   	from
                         	im_hours h,
 	                        im_projects p,
@@ -300,6 +308,7 @@ set sql "
                 	top_project_name,
 			project_type_id,
 	                sub_project_id,
+			sub_project_nr,
         	        sub_project_name
 	 ) t
 group by 
@@ -317,7 +326,7 @@ order by
 "
 
 # This string represents a project/sub project
-set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr}&nbsp;\${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr}&nbsp;\${sub_project_name}</a></b>\" "
+set line_str " \"\" \"<b><a href=\$project_url\$top_parent_project_id>\${top_project_nr} - \${top_project_name}</a></b>\" \"<b><a href=\$project_url\$sub_project_id>\${sub_project_nr} - \${sub_project_name}</a></b>\" "
 append line_str $day_placeholders "\$number_hours_project_ctr" 
 
 set no_empty_columns [expr $duration+1]
@@ -568,7 +577,7 @@ switch $output_format {
 <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign='top' width='600px'>
 	<ul>
-        <li>Up to two project levels are shown (Main Project/Sub Project), levels underneath are accumulated</strong></li>
+        <li>Second column contains main project, third clumn contains parent project of the task the hours are logged for</li>
     	<li>Report shows only content for days where the logged hours pass a threshold as defined in filter: <strong>'Daily hours'</strong></li>
         <li>Hours logged on sub-projects are accumulated</li>
 	</ul>
