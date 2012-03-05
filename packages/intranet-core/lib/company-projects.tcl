@@ -70,7 +70,7 @@ ad_form \
     -action "/intranet/projects/new" \
     -export {company_id} \
     -form {
-	{project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
+	{project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {custom {category_type "Intranet Project Type" translate_p 1} } }
 	{button_new_project:text(submit) {label "[lang::message::lookup {} intranet-core.Add_a_project {Add a new project}]"}}
     }
 
