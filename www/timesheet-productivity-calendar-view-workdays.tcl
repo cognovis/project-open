@@ -16,16 +16,12 @@ ad_page_contract {
     { output_format "html" }
     { user_id 0 }
     { project_id 0 }
-    { project_status_id 76 }
+    { project_status_id "" }
     { customer_id 0 }
     { daily_hours 0 }
     { different_from_project_p "" }
 }
 
-proc round_down {val rounder} {
-       set nval [expr floor($val*$rounder) /$rounder]
-       return $nval
-       }
 
 # ------------------------------------------------------------
 # Security
@@ -210,7 +206,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
                           tree_ancestor_key(children.tree_sortkey, 1) = parent.tree_sortkey 
                         )
 	    and h.project_id = s.sub_project_id
-            and h.day like '%$report_year-$report_month-$day_double_digit%'
+	    and date_trunc('day', day) = '$report_year-$report_month-$day_double_digit'
 	    
 	)) as day$day_double_digit
     "
@@ -259,13 +255,13 @@ set sql "
                 	(select project_nr from im_projects where project_id = s.top_parent_project_id) as top_project_nr,			
                         	 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_name from im_projects where project_id = s.top_parent_project_id)
+                                         (select project_name from im_projects where project_id = s.sub_project_id)
                                          ELSE
                                          s.sub_project_name
                                 END as sub_project_name,
                                 CASE
                                          WHEN s.project_type_id = 100 THEN
-                                         (select project_id from im_projects where project_id = s.top_parent_project_id)
+                                         (select project_id from im_projects where project_id = s.sub_project_id)
                                          ELSE
                                          s.sub_project_id
                                 END as sub_project_id,
@@ -534,10 +530,13 @@ switch $output_format {
                     [im_project_select -include_empty_p 1 project_id $project_id]
                   </td>
                 </tr>	    
+	"
+        if { !$show_user_only_p  } {
+                ns_write "
                 <tr>
                   <td class=form-label>Project Status</td>
                   <td class=form-widget>
-                    [im_project_status_select "project_status_id" $project_status_id]
+		    [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id ""]
                   </td>
                 </tr>
                 <tr>
@@ -555,6 +554,10 @@ switch $output_format {
 			</select>
                   </td>
                 </tr>
+	"
+	}
+
+        ns_write "
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -565,6 +568,7 @@ switch $output_format {
 <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td valign='top' width='600px'>
 	<ul>
+        <li>Up to two project levels are shown (Main Project/Sub Project), levels underneath are accumulated</strong></li>
     	<li>Report shows only content for days where the logged hours pass a threshold as defined in filter: <strong>'Daily hours'</strong></li>
         <li>Hours logged on sub-projects are accumulated</li>
 	</ul>
