@@ -176,6 +176,33 @@ create index im_projects_audit_project_id_idx on im_projects_audit(project_id);
 
 
 
+
+-----------------------------------------------------------
+-- Function for accessing the values in an audit_value string
+--
+
+-- Extract the value of a specific field from an audit_value
+create or replace function im_audit_value (text, text)
+returns text as $body$
+DECLARE
+	p_audit_value	alias for $1;
+	p_var_name	alias for $2;
+
+	v_expr		text;
+	v_result	text;
+BEGIN
+	v_expr := p_var_name || '\\t([^\\n]*)';
+	RAISE NOTICE 'im_audit_value: v_expr=%', v_expr;
+
+	select	substring(p_audit_value from v_expr) 
+	into v_result 
+	from dual;
+
+	return v_result;
+end; $body$ language 'plpgsql';
+
+
+
 -----------------------------------------------------------
 -- Component Plugins
 --
