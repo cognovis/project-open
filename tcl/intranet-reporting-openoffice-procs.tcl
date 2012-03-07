@@ -332,6 +332,7 @@ ad_proc im_oo_page_type_static {
 ad_proc im_oo_page_type_list {
     -page_node:required
     -parameters:required
+    {-locale ""}
     {-list_sql ""}
     {-page_sql "" }
     {-page_name "undefined"}
@@ -359,6 +360,10 @@ ad_proc im_oo_page_type_list {
 
     # Initialize counters
     set counters {}
+
+    # Number formatting
+    if {"" == $locale} { set locale [lang::user::locale] }
+    set rounding_precision 2
 
     array set param_hash $parameters
     foreach var [array names param_hash] { set $var $param_hash($var) }
@@ -519,7 +524,8 @@ ad_proc im_oo_page_type_list {
 		foreach counter $counters {
 		    set counter_var [lindex $counter 0]
 		    set counter_expr [lindex $counter 1]
-		    
+		    set counter_var_pretty "${counter_var}_pretty"
+
 		    if {![info exists $counter_var]} { set $counter_var 0 }
 		    set val ""
 		    if {[catch {
@@ -533,6 +539,10 @@ ad_proc im_oo_page_type_list {
 		    }
 		    if {"" != $val && [string is double $val]} {
 			set $counter_var [expr "\$$counter_var + $val"]
+
+			# Pretty formatting of sum
+			set amount_zeros [im_numeric_add_trailing_zeros [expr "\$$counter_var"] $rounding_precision]
+			set $counter_var_pretty [lc_numeric $amount_zeros "" $locale]
 		    }
 		}
 		
