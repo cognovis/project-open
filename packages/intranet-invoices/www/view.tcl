@@ -1425,7 +1425,7 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# Save the content to a file.
 	set file [open $odt_content w]
 	fconfigure $file -encoding "utf-8"
-	puts $file $content
+	puts $file [intranet_oo::convert -content $content]
 	flush $file
 	close $file
 
@@ -1445,7 +1445,7 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# Save the content to a file.
 	set file [open $odt_styles w]
 	fconfigure $file -encoding "utf-8"
-	puts $file $style
+	puts $file [intranet_oo::convert -content $style]
 	flush $file
 	close $file
 
