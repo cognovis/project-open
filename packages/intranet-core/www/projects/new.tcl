@@ -156,7 +156,7 @@ if {[info exists project_id]} {
 }
 
 # Returnredirect to translations for translation projects
-if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]]} {
+if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]] && $project_id eq ""} {
     ad_returnredirect [export_vars -base "/intranet-translation/projects/new" -url {project_type_id project_status_id company_id parent_id project_nr project_name workflow_key return_url project_id}]
 }
 
@@ -198,7 +198,14 @@ ad_form -extend -name $form_id -new_request {
         
         # This means we are adding a subproject.
         # Let's select out some defaults for this page
-        db_1row projects_by_parent_id_query {}
+        db_1row projects_by_parent_id_query {select 
+	    p.company_id, 
+	    p.project_type_id as parent_type_id, 
+	    p.project_status_id as parent_status_id
+	    from
+	    im_projects p
+	    where 
+	    p.project_id=:parent_id}
         
         # Now set the values for status and type
         if {![exists_and_not_null project_status_id]} {
@@ -433,7 +440,7 @@ ad_form -extend -name $form_id -new_request {
     
 } -edit_data {
     
-    set previous_project_type_id [db_string prev_ptype {} -default 0]	
+    set previous_project_type_id [db_string prev_ptype {select project_type_id from im_projects where project_id = :project_id} -default 0]	
     
     set project_path $project_nr
 	

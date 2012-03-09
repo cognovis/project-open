@@ -30,6 +30,7 @@ ad_page_contract {
     {workflow_key ""}
     {return_url ""}
     {project_id:integer,optional}
+    target_language_ids:multiple,optional
 }
 
 # -----------------------------------------------------------
@@ -190,14 +191,15 @@ where
 "
 
 set company_contact_options [db_list_of_lists contacts $company_contacts_sql]
+set target_language_options [db_list_of_lists languages "select category,category_id from im_categories where category_type = 'Intranet Translation Language' and enabled_p = 't' order by category"]
 ad_form -extend -name $form_id -form {
     {company_contact_id:text(select),optional 
 	{label "[_ intranet-translation.Client_contact]"}
 	{options "$company_contact_options"}
     }
-    {target_language_ids:text(im_category_tree),multiple
+    {target_language_ids:text(multiselect)
 	{label "[_ intranet-translation.Target_Languages]"}
-	{custom {category_type "Intranet Translation Language" multiple_p 1 include_empty_p 0}}
+	{options "$target_language_options"}
     }
 }
 
@@ -244,6 +246,7 @@ ad_form -extend -name $form_id -new_request {
     
 } -edit_request { 
 
+    set target_language_ids [db_list target_languages "select language_id from im_target_languages where project_id = :project_id"]
     set page_title "[_ intranet-core.Edit_project]"
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] [list "/intranet/projects/view?[export_url_vars project_id]" "One project"] $page_title]
         
@@ -431,18 +434,7 @@ ad_form -extend -name $form_id -new_request {
             -form_id $form_id
         
         set requires_report_p t
-        
-	db_dml update_translation_info "
-	update im_projects 
-        set final_company=:final_company,
-	    company_project_nr=:company_project_nr,
-	    company_contact_id=:company_contact_id,
-     	    expected_quality_id=:expected_quality_id,
- 	    subject_area_id=:subject_area_id,
-	    source_language_id=:source_language_id
-        where project_id = :project_id
-        "
-        
+                
         # Write Audit Trail
         im_project_audit -project_id $project_id  -type_id $project_type_id -status_id $project_status_id -action after_create
         
@@ -485,21 +477,6 @@ ad_form -extend -name $form_id -new_request {
         -object_id $project_id \
         -form_id $form_id
 
-
-    # ---------------------------------------------------------------------
-    # Update Information about the project
-    # ---------------------------------------------------------------------
-    
-    db_dml update_translation_info "
-	update im_projects 
-        set final_company=:final_company,
-	    company_project_nr=:company_project_nr,
-	    company_contact_id=:company_contact_id,
-     	    expected_quality_id=:expected_quality_id,
- 	    subject_area_id=:subject_area_id,
-	    source_language_id=:source_language_id
-        where project_id = :project_id
-    "
 
     # Write Audit Trail
     im_project_audit -project_id $project_id -type_id $project_type_id -status_id $project_status_id -action after_update
@@ -558,6 +535,24 @@ ad_form -extend -name $form_id -new_request {
 	
 	
 } -after_submit {
+    set target_language_ids [element get_values $form_id target_language_ids]
+
+   # Save the information about the project target languages
+    # in the im_target_languages table
+    #
+    db_transaction {
+	db_dml delete_im_target_language "delete from im_target_languages where project_id=:project_id"
+	
+	foreach lang $target_language_ids {
+	    ns_log Notice "target_language=$lang"
+	    set sql "insert into im_target_languages values ($project_id, $lang)"
+	    db_dml insert_im_target_language $sql
+	    
+	    if {[im_table_exists im_freelancers]} {
+		im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $lang
+	    }
+	}
+    }
 
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]
         
