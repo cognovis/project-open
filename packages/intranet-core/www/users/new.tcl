@@ -124,6 +124,16 @@ if {$editing_existing_user} {
     ns_log Notice "/users/new: profile_values=$profile_values"
 
 } else {
+    # Check if current_user_id can create new users
+    if {![im_permission $current_user_id add_users]} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_4]"
+	return
+    }
+    # Empty set of default values for a new user
+    set profile_values [list]
+    # Pre-generate user_id for double-click protection
+    set user_id [db_nextval acs_object_id_seq]
+
 
 }
 ns_log Notice "/users/new: user_id=$user_id, current_user_id=$current_user_id, email=$email"
@@ -270,17 +280,6 @@ ad_form -extend -name register -on_request {
     db_0or1row get_user_details $user_details_sql
 
 } -new_request {
-    # Check if current_user_id can create new users
-    if {![im_permission $current_user_id add_users]} {
-	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_4]"
-	return
-    }
-
-    # Pre-generate user_id for double-click protection
-    set user_id [db_nextval acs_object_id_seq]
-
-    # Empty set of default values for a new user
-    set profile_values [list]
 
 } -on_submit {
 
