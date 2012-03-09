@@ -134,7 +134,7 @@ if {$project_exists_p} {
 # --------------------------------------------
 
 set form_id "project-ae"
-ad_form -name $form_id -action /intranet-translation/projects/new -cancel_url $return_url -form {
+ad_form -name $form_id -html { enctype multipart/form-data } -action /intranet-translation/projects/new -cancel_url $return_url -form {
     project_id:key
 }
 
@@ -210,7 +210,6 @@ ad_form -extend -name $form_id -form {
     }
     {upload_file:file(file),optional
         {label "#acs-subsite.Filename#"}
-        {help_text $help_text}
     }
     {zip_p:text(checkbox),optional
 	{label ""}
@@ -259,45 +258,6 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id project_nr $project_nr
     template::element::set_value $form_id company_id $company_id
     
-} -validate { 
-    
-    {project_nr
-        {![var_contains_quotes $project_nr]}
-        {[_ intranet-core.lt_Quotes_in_Project_Nr_]}
-    }
-    {project_nr
-        {[regexp {^[a-z0-9_]+$} $project_nr match]}
-        {[lang::message::lookup "" intranet-core.Non_alphanum_chars_in_nr "The specified path contains invalid characters.<br> Allowed are only aphanumeric characters including a-z, 0-9 and '_'."]}
-    }
-    {project_nr
-        {![regexp {/} $project_nr]}
-        {[_ intranet-core.intranet-core.lt_Slashes__in_Project_P]}
-    }
-    {project_nr
-        {![regexp {\.} $project_nr]}
-        {[_ intranet-core.lt_Dots__in_Project_Path]}
-    }
-    {project_name
-        {![var_contains_quotes $project_name]}
-        {[_ intranet-core.lt_Quotes_in_Project_Nam]}
-    }
-    {parent_id
-        {![string equal $parent_id $project_id]}
-        {"Parent Project = Project"}
-    }
-    {end_date
-        {[expr {[template::util::date get_property sql_date $end_date] >= [template::util::date get_property sql_date $start_date]}]}
-        {[_ intranet-core.lt_End_date_must_be_afte]}
-    }
-    {percent_completed
-        {[expr {$percent_completed <= 100}]}
-        {"Number must be in range (0 .. 100)"}
-    }
-    {percent_completed
-        {[expr {$percent_completed >= 0}]}
-        {"Number must be in range (0 .. 100)"}
-    }
-    
 } -on_submit {
 
     if { ![exists_and_not_null zip_p] } {
@@ -332,18 +292,7 @@ ad_form -extend -name $form_id -new_request {
     if {[info exists project_nr]} {
         set project_nr [string tolower [string trim $project_nr]]
     }
-    set tmp_filename [ns_queryget upload_file.tmpfile]
-    ds_comment "$tmp_filename"
-content::item::upload_file -upload_file $upload_file \
-    -parent_id 308034
-    
-    set tmp_filename [template::util::file::get_property tmp_filename $upload_file]
-    set filename [template::util::file::get_property filename $upload_file]
-    
-    ds_comment "$tmp_filename ... $filename"
-    asdasd
-    
-    
+
     if {![exists_and_not_null project_path]} {
         set project_path [string tolower [string trim $project_name]]
     }
@@ -475,7 +424,7 @@ content::item::upload_file -upload_file $upload_file \
 	}
 
 	if {[info exists company_contact_id]} {db_dml update_project "update im_projects set company_contact_id = :company_contact_id where project_id = :project_id"}
-
+	if {[info exists source_language_id]} {db_dml update_project "update im_projects set source_language_id = :source_language_id where project_id = :project_id"}
 	# ---------------------------------------------------------------------
 	# Create the directory structure necessary for the project
 	# ---------------------------------------------------------------------
@@ -500,12 +449,7 @@ content::item::upload_file -upload_file $upload_file \
 	    set project_dir [im_filestorage_project_path $project_id]
 	    set source_dir "$project_dir/${source}_$source_language"
 	    set tmp_filename [template::util::file::get_property tmp_filename $upload_file]
-
-	    # strip off the C:\directories... crud and just get the file name
-	    if {![regexp {([^/\\]+)$} $upload_file match client_filename]} {
-		# couldn't find a match
-		set client_filename $upload_file
-	    }
+	    set filename [template::util::file::get_property filename $upload_file]
 	    
 	    file copy $tmp_filename ${source_dir}/$filename	    
 	    if {$zip_p eq "t"} {
