@@ -244,13 +244,6 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id project_nr $project_nr
     template::element::set_value $form_id company_id $company_id
     
-} -edit_request { 
-
-    set target_language_ids [db_list target_languages "select language_id from im_target_languages where project_id = :project_id"]
-    set page_title "[_ intranet-core.Edit_project]"
-    set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] [list "/intranet/projects/view?[export_url_vars project_id]" "One project"] $page_title]
-        
-    set button_text "[_ intranet-core.Save_Changes]"
 } -validate { 
     
     {project_nr
@@ -434,7 +427,27 @@ ad_form -extend -name $form_id -new_request {
             -form_id $form_id
         
         set requires_report_p t
-                
+
+	set target_language_ids [element get_values $form_id target_language_ids]
+	
+	# Save the information about the project target languages
+	# in the im_target_languages table
+	#
+	db_transaction {
+	    db_dml delete_im_target_language "delete from im_target_languages where project_id=:project_id"
+	    
+	    foreach lang $target_language_ids {
+		ns_log Notice "target_language=$lang"
+		set sql "insert into im_target_languages values ($project_id, $lang)"
+		db_dml insert_im_target_language $sql
+		
+		if {[im_table_exists im_freelancers]} {
+		    im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $lang
+		}
+	    }
+	}
+
+	if {[info exists company_contact_id]} {db_dml update_project "update im_projects set company_contact_id = :company_contact_id where project_id = :project_id"}
         # Write Audit Trail
         im_project_audit -project_id $project_id  -type_id $project_type_id -status_id $project_status_id -action after_create
         
@@ -461,99 +474,8 @@ ad_form -extend -name $form_id -new_request {
         util_memoize_flush_regexp "db_list_of_lists company_info.*"
         
     }
-    
-} -edit_data {
-    
-    set project_path $project_nr
-	
-    
-    # -----------------------------------------------------------------
-    # Store dynamic fields
-    
-    ns_log Notice "/intranet/projects/new: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
 
-    im_dynfield::attribute_store \
-        -object_type $object_type \
-        -object_id $project_id \
-        -form_id $form_id
-
-
-    # Write Audit Trail
-    im_project_audit -project_id $project_id -type_id $project_type_id -status_id $project_status_id -action after_update
-
-    # -----------------------------------------------------------------
-    # add the creating current_user to the group
-    
-    if { [exists_and_not_null project_lead_id] } {
-        im_biz_object_add_role $project_lead_id $project_id [im_biz_object_role_project_manager]
-    }
-    
-    
-    # -----------------------------------------------------------------
-    # Call the "project_create" or "project_update" user_exit
-    im_user_exit_call project_update $project_id
-    
-    
-    
-    # -----------------------------------------------------------------
-    # Flush caches related to the project's information
-    util_memoize_flush_regexp "im_project_has_type_helper.*"
-    util_memoize_flush_regexp "db_list_of_lists company_info.*"
-
-    # Send a notification for this task
-    set params [list  [list base_url "/intranet/projects/"]  [list project_id $project_id] [list return_url ""] [list no_write_p 1]]
-    
-    set result [ad_parse_template -params $params "/packages/intranet-core/lib/project-base-data"]
-    set project_url [export_vars -base "[im_url]/projects/view" -url {project_id}]
-    notification::new \
-        -type_id [notification::type::get_type_id -short_name project_notif] \
-        -object_id $project_id \
-        -response_id "" \
-        -notif_subject "Edit Project: $project_name" \
-        -notif_html "<h1><a href='$project_url'>$project_name</h1><p /><div align=left>[string trim $result]</div>"
-    
-    # ---------------------------------------
-    # Close subprojects and tasks if needed
-    # ---------------------------------------
-    
-    if {[im_category_is_a $project_status_id [im_project_status_closed]]} {
-	
-	# Find the list of tasks in all subprojects and close them
-	# We might need to think about workflows in the future here!
-	set close_task_ids [im_project_subproject_ids -project_id $project_id -type task]
-	foreach close_task_id $close_task_ids {
-	    db_dml close_task "update im_timesheet_tasks set task_status_id = [im_timesheet_task_status_closed] where task_id = :close_task_id"
-	    db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :close_task_id"
-	}
-
-	# Find the list of subprojects
-	set close_subproject_ids [im_project_subproject_ids -project_id $project_id -exclude_self]
-	foreach close_project_id $close_subproject_ids {
-	    db_dml close_task "update im_projects set project_status_id = :project_status_id where project_id = :close_project_id"
-	}
-    }
-	
-	
 } -after_submit {
-    set target_language_ids [element get_values $form_id target_language_ids]
-
-   # Save the information about the project target languages
-    # in the im_target_languages table
-    #
-    db_transaction {
-	db_dml delete_im_target_language "delete from im_target_languages where project_id=:project_id"
-	
-	foreach lang $target_language_ids {
-	    ns_log Notice "target_language=$lang"
-	    set sql "insert into im_target_languages values ($project_id, $lang)"
-	    db_dml insert_im_target_language $sql
-	    
-	    if {[im_table_exists im_freelancers]} {
-		im_freelance_add_required_skills -object_id $project_id -skill_type_id [im_freelance_skill_type_target_language] -skill_ids $lang
-	    }
-	}
-    }
-
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]
         
     ad_returnredirect $return_url

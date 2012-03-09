@@ -156,7 +156,7 @@ if {[info exists project_id]} {
 }
 
 # Returnredirect to translations for translation projects
-if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]] && $project_id eq ""} {
+if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]] && ![info exists project_id]} {
     ad_returnredirect [export_vars -base "/intranet-translation/projects/new" -url {project_type_id project_status_id company_id parent_id project_nr project_name workflow_key return_url project_id}]
 }
 
