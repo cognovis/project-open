@@ -226,11 +226,9 @@ switch $view_name {
 set sub_navbar [im_sub_navbar \
     -components \
     -current_plugin_id $plugin_id \
-    -base_url "/intranet/projects/view?project_id=$project_id" \
+    -base_url "/intranet/projects/view" \
     $parent_menu_id \
     $bind_vars "" "pagedesriptionbar" $menu_label] 
-
-
 
 set left_navbar_html ""
 if {"" != $admin_html_content} {

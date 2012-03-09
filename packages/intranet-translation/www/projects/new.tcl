@@ -192,14 +192,24 @@ where
 
 set company_contact_options [db_list_of_lists contacts $company_contacts_sql]
 set target_language_options [db_list_of_lists languages "select category,category_id from im_categories where category_type = 'Intranet Translation Language' and enabled_p = 't' order by category"]
+set help_text [_ acs-subsite.lt_Use_the_Browse_button]
+
 ad_form -extend -name $form_id -form {
     {company_contact_id:text(select),optional 
 	{label "[_ intranet-translation.Client_contact]"}
 	{options "$company_contact_options"}
     }
+    {source_language_id:text(select)
+	{label "[_ intranet-translation.Source_Language]"}
+	{options "$target_language_options"}
+    }
     {target_language_ids:text(multiselect)
 	{label "[_ intranet-translation.Target_Languages]"}
 	{options "$target_language_options"}
+    }
+    {upload_file:file(file)
+        {label "#acs-subsite.Filename#"}
+        {help_text $help_text}
     }
 }
 
@@ -284,7 +294,11 @@ ad_form -extend -name $form_id -new_request {
     }
     
 } -on_submit {
-    
+
+    if { ![exists_and_not_null zip_p] } {
+        set zip_p "f"
+    }    
+
     # Permission check. Cases include a user with full add_projects rights,
     # but also a freelancer updating an existing project or a freelancer
     # creating a sub-project of a project he or she can admin.
@@ -313,8 +327,16 @@ ad_form -extend -name $form_id -new_request {
     if {[info exists project_nr]} {
         set project_nr [string tolower [string trim $project_nr]]
     }
-} -new_data {
-
+    set tmp_filename [ns_queryget upload_file.tmpfile]
+    ds_comment "$tmp_filename"
+content::item::upload_file -upload_file $upload_file \
+    -parent_id 308034
+    
+    set tmp_filename [template::util::file::get_property tmp_filename $upload_file]
+    set filename [template::util::file::get_property filename $upload_file]
+    
+    ds_comment "$tmp_filename ... $filename"
+    asdasd
     
     
     if {![exists_and_not_null project_path]} {
@@ -448,6 +470,44 @@ ad_form -extend -name $form_id -new_request {
 	}
 
 	if {[info exists company_contact_id]} {db_dml update_project "update im_projects set company_contact_id = :company_contact_id where project_id = :project_id"}
+
+	# ---------------------------------------------------------------------
+	# Create the directory structure necessary for the project
+	# ---------------------------------------------------------------------
+	
+	# If the filestorage module is installed...
+	set fs_installed_p [im_table_exists im_fs_folders]
+	if {$fs_installed_p} {
+	    
+	    set create_err ""
+	    if { [catch {
+		set create_err [im_filestorage_create_directories $project_id]
+	    } err_msg] } {
+		ad_return_complaint 1 "<li>err_msg: $err_msg<br>create_err: $create_err<br>"
+		return
+	    }
+	    
+	    # Save the file in the correct directory
+	    set locale "en_US"
+	    set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
+	    set source_language [im_category_from_id $source_language_id]
+	    
+	    set project_dir [im_filestorage_project_path $project_id]
+	    set source_dir "$project_dir/${source}_$source_language"
+	    set tmp_filename [template::util::file::get_property tmp_filename $upload_file]
+
+	    # strip off the C:\directories... crud and just get the file name
+	    if {![regexp {([^/\\]+)$} $upload_file match client_filename]} {
+		# couldn't find a match
+		set client_filename $upload_file
+	    }
+	    
+	    if {$zip_p eq "f"} {
+		file copy $tmp_filename ${source_dir}/$client_filename
+	    }
+
+	}
+
         # Write Audit Trail
         im_project_audit -project_id $project_id  -type_id $project_type_id -status_id $project_status_id -action after_create
         
