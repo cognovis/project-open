@@ -114,33 +114,6 @@ ns_log Notice "/users/new: editing_existing_user=$editing_existing_user, user_id
 set authority_id [db_string auth "select min(authority_id) from auth_authorities"]
 
 if {$editing_existing_user} {
-
-    # Permissions for existing user: We need to be able to admin him:
-    im_user_permissions $current_user_id $user_id view read write admin
-
-    if {!$write} {
-	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_3]"
-	return
-    }
-
-    set user_details_sql "
-	select
-		pe.first_names,
-		pe.last_name,
-		pa.email,
-		pa.url,
-		u.screen_name,
-		u.username,
-		u.authority_id
-	from
-		parties pa
-		left outer join persons pe on (pa.party_id = pe.person_id)
-		left outer join users u on (pa.party_id = u.user_id)
-	where
-		pa.party_id = :user_id
-    "
-    db_0or1row get_user_details $user_details_sql
-
     # The user already exists - let's get his list of profiles
     set users_profiles [im_profile::profile_options_of_user $user_id]
     ns_log Notice "/users/new: users_profiles=$users_profiles"
@@ -152,17 +125,6 @@ if {$editing_existing_user} {
 
 } else {
 
-    # Check if current_user_id can create new users
-    if {![im_permission $current_user_id add_users]} {
-	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_4]"
-	return
-    }
-
-    # Pre-generate user_id for double-click protection
-    set user_id [db_nextval acs_object_id_seq]
-
-    # Empty set of default values for a new user
-    set profile_values [list]
 }
 ns_log Notice "/users/new: user_id=$user_id, current_user_id=$current_user_id, email=$email"
 
@@ -183,7 +145,8 @@ if { [security::RestrictLoginToSSLP] } {
     security::require_secure_conn
 }
 
-ad_form -name register -export {next_url user_id return_url} -form { 
+ad_form -name register -export {next_url return_url} -form { 
+    {user_id:key}
     {email:text(text) {label "[_ intranet-core.Email]"} {html {size 30}}}
 }
 
@@ -278,6 +241,46 @@ im_dynfield::append_attributes_to_form \
 
 ad_form -extend -name register -on_request {
     # Populate elements from local variables
+
+} -edit_request {
+    # Permissions for existing user: We need to be able to admin him:
+    im_user_permissions $current_user_id $user_id view read write admin
+
+    if {!$write} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_3]"
+	return
+    }
+
+    set user_details_sql "
+	select
+		pe.first_names,
+		pe.last_name,
+		pa.email,
+		pa.url,
+		u.screen_name,
+		u.username,
+		u.authority_id
+	from
+		parties pa
+		left outer join persons pe on (pa.party_id = pe.person_id)
+		left outer join users u on (pa.party_id = u.user_id)
+	where
+		pa.party_id = :user_id
+    "
+    db_0or1row get_user_details $user_details_sql
+
+} -new_request {
+    # Check if current_user_id can create new users
+    if {![im_permission $current_user_id add_users]} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_4]"
+	return
+    }
+
+    # Pre-generate user_id for double-click protection
+    set user_id [db_nextval acs_object_id_seq]
+
+    # Empty set of default values for a new user
+    set profile_values [list]
 
 } -on_submit {
 
