@@ -71,11 +71,7 @@ set add_budget_hours_p [im_permission $user_id add_budget_hours]
 
 set project_exists_p 0
 if {[info exists project_id]} {
-    set project_exists_p [db_string project_exists "
-	select count(*) 
-	from im_projects 
-	where project_id = :project_id
-    " -default 0]
+    set project_exists_p [db_string project_exists {select 1 from im_projects where project_id = :project_id} -default 0]
 }
 
 if {$project_exists_p} {
@@ -137,7 +133,7 @@ if {$project_exists_p} {
 # --------------------------------------------
 
 set form_id "project-ae"
-ad_form -name $form_id -action /intranet/projects/new -cancel_url $return_url -form {
+ad_form -name $form_id -action /intranet-translation/projects/new -cancel_url $return_url -form {
     project_id:key
 }
 
@@ -153,11 +149,6 @@ if {[info exists project_id]} {
     if {0 != $existing_project_type_id && "" != $existing_project_type_id} {
         set dynfield_project_type_id $existing_project_type_id
     }
-}
-
-# Returnredirect to translations for translation projects
-if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]]} {
-    ad_returnredirect [export_vars -base "/intranet-translation/projects/new" -url {project_type_id project_status_id company_id parent_id project_nr project_name workflow_key return_url project_id}]
 }
 
 set dynfield_project_id 0
@@ -177,6 +168,38 @@ im_dynfield::append_attributes_to_form \
 
 
 set requires_report_p "f"
+
+set customer_group_id [im_customer_group_id]
+set freelance_group_id [im_freelance_group_id]
+
+set company_contacts_sql "
+select DISTINCT
+    im_name_from_user_id(u.user_id) as user_name,
+    u.user_id
+from
+    cc_users u,
+    group_distinct_member_map m,
+    acs_rels ur
+where
+    u.member_state = 'approved'
+    and u.user_id = m.member_id
+    and m.group_id in (:customer_group_id, :freelance_group_id)
+    and u.user_id = ur.object_id_two
+    and ur.object_id_one = :company_id
+    and ur.object_id_one != 0
+"
+
+set company_contact_options [db_list_of_lists contacts $company_contacts_sql]
+ad_form -extend -name $form_id -form {
+    {company_contact_id:text(select),optional 
+	{label "[_ intranet-translation.Client_contact]"}
+	{options "$company_contact_options"}
+    }
+    {target_language_ids:text(im_category_tree),multiple
+	{label "[_ intranet-translation.Target_Languages]"}
+	{custom {category_type "Intranet Translation Language" multiple_p 1 include_empty_p 0}}
+    }
+}
 
 ad_form -extend -name $form_id -new_request { 
     
@@ -220,6 +243,7 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id company_id $company_id
     
 } -edit_request { 
+
     set page_title "[_ intranet-core.Edit_project]"
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] [list "/intranet/projects/view?[export_url_vars project_id]" "One project"] $page_title]
         
@@ -249,6 +273,10 @@ ad_form -extend -name $form_id -new_request {
     {parent_id
         {![string equal $parent_id $project_id]}
         {"Parent Project = Project"}
+    }
+    {end_date
+        {[expr {[template::util::date get_property sql_date $end_date] >= [template::util::date get_property sql_date $start_date]}]}
+        {[_ intranet-core.lt_End_date_must_be_afte]}
     }
     {percent_completed
         {[expr {$percent_completed <= 100}]}
@@ -290,6 +318,7 @@ ad_form -extend -name $form_id -new_request {
         set project_nr [string tolower [string trim $project_nr]]
     }
 } -new_data {
+
     
     
     if {![exists_and_not_null project_path]} {
@@ -403,6 +432,16 @@ ad_form -extend -name $form_id -new_request {
         
         set requires_report_p t
         
+	db_dml update_translation_info "
+	update im_projects 
+        set final_company=:final_company,
+	    company_project_nr=:company_project_nr,
+	    company_contact_id=:company_contact_id,
+     	    expected_quality_id=:expected_quality_id,
+ 	    subject_area_id=:subject_area_id,
+	    source_language_id=:source_language_id
+        where project_id = :project_id
+        "
         
         # Write Audit Trail
         im_project_audit -project_id $project_id  -type_id $project_type_id -status_id $project_status_id -action after_create
@@ -433,8 +472,6 @@ ad_form -extend -name $form_id -new_request {
     
 } -edit_data {
     
-    set previous_project_type_id [db_string prev_ptype {} -default 0]	
-    
     set project_path $project_nr
 	
     
@@ -447,7 +484,23 @@ ad_form -extend -name $form_id -new_request {
         -object_type $object_type \
         -object_id $project_id \
         -form_id $form_id
+
+
+    # ---------------------------------------------------------------------
+    # Update Information about the project
+    # ---------------------------------------------------------------------
     
+    db_dml update_translation_info "
+	update im_projects 
+        set final_company=:final_company,
+	    company_project_nr=:company_project_nr,
+	    company_contact_id=:company_contact_id,
+     	    expected_quality_id=:expected_quality_id,
+ 	    subject_area_id=:subject_area_id,
+	    source_language_id=:source_language_id
+        where project_id = :project_id
+    "
+
     # Write Audit Trail
     im_project_audit -project_id $project_id -type_id $project_type_id -status_id $project_status_id -action after_update
 
@@ -505,7 +558,7 @@ ad_form -extend -name $form_id -new_request {
 	
 	
 } -after_submit {
-  
+
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]
         
     ad_returnredirect $return_url

@@ -488,6 +488,15 @@ ad_proc -public template::widget::im_category_tree {
 	set package_key [lindex $params [expr $package_key_pos + 1]]
     }
 
+    # Get the "multiple_p" parameter to determine if we should
+    # display the categories as multiples
+    #
+    set multiple_p 0
+    set multiple_p_pos [lsearch $params multiple_p]
+    if { $multiple_p_pos >= 0 } {
+	set multiple_p [lindex $params [expr $multiple_p_pos + 1]]
+    }
+
     # Get the "include_empty_p" parameter to determine if we should
     # include an empty first line in the widget
     #
@@ -529,7 +538,7 @@ ad_proc -public template::widget::im_category_tree {
 
 
     if { "edit" == $element(mode)} {
-	append category_html [im_category_select -translate_p 1 -package_key $package_key -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p $category_type $field_name $default_value]
+	append category_html [im_category_select -translate_p 1 -package_key $package_key -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -multiple_p $multiple_p $category_type $field_name $default_value]
 
 
     } else {
