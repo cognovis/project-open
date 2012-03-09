@@ -416,6 +416,13 @@ foreach csv_line_fields $values_list_of_lists {
 	continue	    
     }
 
+
+    # Add the project lead to the list of project members
+    if {"" != $project_lead_id} {
+	set role_id [im_biz_object_role_project_manager]
+	im_biz_object_add_role $project_lead_id $project_id $role_id
+    }
+
     
     # -------------------------------------------------------
     # Make sure there is an entry in im_timesheet_tasks if the project is of type task
