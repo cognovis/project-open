@@ -41,7 +41,7 @@ if {"" == $invoice_item_id} {
 set user_id [ad_conn user_id]
 set recipient_id [db_string company_contact_id "select company_contact_id from im_invoices where invoice_id = :invoice_id" -default $user_id]
 
-db_1row user_info "select first_names, last_name from persons where person_id = :user_id"
+db_1row user_info "select first_names, last_name from persons where person_id = :recipient_id"
 
 # Get the type information so we can get the strings
 set invoice_type_id [db_string type "select cost_type_id from im_costs where cost_id = :invoice_id"]
