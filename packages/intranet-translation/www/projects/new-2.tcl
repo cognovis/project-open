@@ -114,8 +114,7 @@ ad_form -extend -name tasks -form {
 	set task_filename [set file_name_$i]
 	set task_units_file [set file_units_$i]	
 	set target_language_ids [im_target_language_ids $project_id]
-#	im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
-	ns_log Notice "im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids"
+	im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
 	incr i
     }
 } -after_submit {

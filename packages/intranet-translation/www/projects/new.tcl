@@ -194,6 +194,7 @@ set company_contact_options [db_list_of_lists contacts $company_contacts_sql]
 set target_language_options [db_list_of_lists languages "select category,category_id from im_categories where category_type = 'Intranet Translation Language' and enabled_p = 't' order by category"]
 set help_text [_ acs-subsite.lt_Use_the_Browse_button]
 
+set options_list [list [list "Unzip File?"  "t"]]
 ad_form -extend -name $form_id -form {
     {company_contact_id:text(select),optional 
 	{label "[_ intranet-translation.Client_contact]"}
@@ -210,6 +211,10 @@ ad_form -extend -name $form_id -form {
     {upload_file:file(file)
         {label "#acs-subsite.Filename#"}
         {help_text $help_text}
+    }
+    {zip_p:text(checkbox),optional
+	{label ""}
+	{options $options_list}
     }
 }
 
@@ -502,10 +507,10 @@ content::item::upload_file -upload_file $upload_file \
 		set client_filename $upload_file
 	    }
 	    
-	    if {$zip_p eq "f"} {
-		file copy $tmp_filename ${source_dir}/$client_filename
+	    file copy $tmp_filename ${source_dir}/$filename	    
+	    if {$zip_p eq "t"} {
+		exec unzip -d ${source_dir} ${source_dir}/$filename
 	    }
-
 	}
 
         # Write Audit Trail
