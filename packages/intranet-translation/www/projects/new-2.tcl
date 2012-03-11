@@ -135,23 +135,14 @@ if {"" == $files} {
 
 } else {
 
-    ad_form -extend -name tasks -form {
-	{file_ctr:text(hidden)
-	    {value $file_ctr}
-	}
-    } -on_submit {
-	
-    
-	
-	# Create the tasks for each file
-	set i 1   
-	while {$i <= $file_ctr} {
-	    set task_filename [set file_name_$i]
-	    set task_units_file [set file_units_$i]	
-	    set target_language_ids [im_target_language_ids $project_id]
-	    im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
-	    incr i
-	}
+    # Create the tasks for each file
+    set i 1   
+    while {$i <= $file_ctr} {
+	set task_filename [set file_name_$i]
+	set task_units_file [set file_units_$i]	
+	set target_language_ids [im_target_language_ids $project_id]
+	im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
+	incr i
     }
 }
 
