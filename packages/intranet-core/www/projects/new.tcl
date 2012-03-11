@@ -455,6 +455,36 @@ ad_form -extend -name $form_id -new_request {
         -object_id $project_id \
         -form_id $form_id
     
+
+    # -----------------------------------------------------------------                                                                                                                                                # Create a new Workflow for the project either if:                                                                                                                                                                 # - specified explicitely in the parameters or                                                                                                                                                                     # - if there is a WF associated with the project_type                                                                                                                                                              # Check if there is a WF associated with the project type                                                                                                                                                       
+    if {"" == $workflow_key} {
+        set wf_key [db_string wf "select aux_string1 from im_categories where category_id = :project_type_id" -default ""]
+        set wf_exists_p [db_string wf_exists "select count(*) from wf_workflows where workflow_key = :wf_key"]
+        if {$wf_exists_p} { set workflow_key $wf_key }
+    }
+
+    # Project Approval WF had been executed and finsihed at least one                                                                                                                                               
+    set wf_finished_p 0
+    
+    if {[info exists project_id] } {
+	# Check if WF case already exist for project                                                                                                                                                                
+        set workflow_case_id [db_string wf_exists "select case_id from wf_cases where workflow_key = :wf_key and object_id = :project_id limit 1" -default 0]
+    } else {
+	set wf_finished_p [db_string wf_exists "select count(*) from wf_cases where workflow_key = :wf_key and object_id = :project_id and state = 'finished' limit 1"]
+    }
+    
+    if { 0 == $workflow_case_id && $wf_exists_p && !$wf_finished_p } {
+	# Create a new workflow case (instance)                                                                                                                                                                 
+	set context_key ""
+	set case_id [wf_case_new \
+			 $workflow_key \
+			 $context_key \
+			 $project_id \
+			]
+	# Determine the first task in the case to be executed and start+finisch the task.                                                                                                                       
+	im_workflow_skip_first_transition -case_id $case_id
+    }
+    
     # Write Audit Trail
     im_project_audit -project_id $project_id -type_id $project_type_id -status_id $project_status_id -action after_update
 
