@@ -767,13 +767,16 @@ ad_proc -public im_invoice_copy_new {
     db_1row invoices_info_query "
 select
 	i.*,
-	ci.*
+	ci.*,
+        c.aux_int1 as new_template_id
 from
 	im_invoices i, 
-	im_costs ci
+	im_costs ci,
+        im_categories c
 where 
         i.invoice_id in ([join $source_invoice_ids ", "])
 	and i.invoice_id = ci.cost_id
+        and ci.template_id = c.category_id
 LIMIT 1
 "
     
@@ -793,6 +796,10 @@ LIMIT 1
     if {$payment_days eq ""} { set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] }
 
     
+    # Check the template
+    if {![exists_and_not_null new_template_id]} {
+	set new_template_id $template_id
+    }
     
     # ---------------------------------------------------------------
     # Update invoice base data
@@ -833,7 +840,7 @@ set
 	cost_status_id	= :cost_status_id,
 	cost_type_id	= :target_cost_type_id,
 	cost_center_id	= :cost_center_id,
-	template_id	= :template_id,
+	template_id	= :new_template_id,
 	effective_date	= now(),
         delivery_date   = :delivery_date,
 	start_block	= ( select max(start_block) 
