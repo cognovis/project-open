@@ -949,7 +949,7 @@ if { 0 == $item_list_type } {
 	    set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
 	    # Replace placeholders in the OpenOffice template row with values
 	    eval [template::adp_compile -string $odt_row_template_xml]
-	    set odt_row_xml $__adp_output
+	    set odt_row_xml [intranet_oo::convert -content $__adp_output]
 	    
 	    # Parse the new row and insert into OOoo document
 	    set row_doc [dom parse $odt_row_xml]
@@ -1421,7 +1421,7 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# Perform replacements
         eval [template::adp_compile -string $odt_template_content]
         set content $__adp_output
-
+	
 	# Save the content to a file.
 	set file [open $odt_content w]
 	fconfigure $file -encoding "utf-8"
