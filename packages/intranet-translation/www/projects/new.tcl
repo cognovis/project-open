@@ -510,6 +510,7 @@ content::item::upload_file -upload_file $upload_file \
 	    file copy $tmp_filename ${source_dir}/$filename	    
 	    if {$zip_p eq "t"} {
 		exec unzip -d ${source_dir} ${source_dir}/$filename
+		file delete -force ${source_dir}/$filename
 	    }
 	}
 
