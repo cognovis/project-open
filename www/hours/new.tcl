@@ -879,6 +879,8 @@ template::multirow foreach hours_multirow {
     # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - before: " $block_logging_project_status_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
     
     set block_logging_project_status_p [check_logging_project_status $project_id]
+    # set block_logging_project_status_p 1
+
     if { !$block_logging_project_status_p } {
 	append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"]
     }
