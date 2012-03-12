@@ -5,22 +5,18 @@ function ltrim(str, chars) {
 
 function update_cost_object() {
     var xmlHttp1;
-    var xmlHttp2;
     try {
 	// Firefox, Opera 8.0+, Safari
 	xmlHttp1=new XMLHttpRequest();
-	xmlHttp2=new XMLHttpRequest();
     }
     catch (e) {
 	// Internet Explorer
 	try {
 	    xmlHttp1=new ActiveXObject("Msxml2.XMLHTTP");
-	    xmlHttp2=new ActiveXObject("Msxml2.XMLHTTP");
 	}
 	catch (e) {
 	    try {
 		xmlHttp1=new ActiveXObject("Microsoft.XMLHTTP");
-		xmlHttp2=new ActiveXObject("Microsoft.XMLHTTP");
 	    }
 	    catch (e) {
 		alert("Your browser does not support AJAX!");
@@ -47,32 +43,11 @@ function update_cost_object() {
 	}
     }
 
-    xmlHttp2.onreadystatechange = function() {
-        var oForm = document.getElementById('project-ae');
-	if(xmlHttp2.readyState==4) {
-	    // empty options
-	    for (i = oForm.cost_object_category_id.options.length-1; i >= 0; i--) { 
-		oForm.cost_object_category_id.remove(i); 
-	    }
-	    // loop through the komma separated list
-	    var res2 = xmlHttp2.responseText;
-	    var opts2 = res2.split("|");
-	    // alert(opts2);	    
-	    for (i=0; i < opts2.length; i = i+2) {
-		//alert (opts2[i]);
-		var newOpt = new Option(opts2[i+1], ltrim(opts2[i]), false, true);
-		oForm.cost_object_category_id.options[oForm.cost_object_category_id.options.length] = newOpt;
-	    }
-	}
-    }
-
     // get the company_id from the customer's drop-down
     var oForm = document.getElementById('project-ae');
     var company_id = oForm.elements["company_id"].options[oForm.elements["company_id"].selectedIndex].value;
     xmlHttp1.open("GET","/intranet-cust-koernigweber/set_cost_object_drop_down?company_id="+company_id ,true);
     xmlHttp1.send(null);
-    xmlHttp2.open("GET","/intranet-cust-koernigweber/set_cost_object_drop_down?company_id="+company_id ,true);
-    xmlHttp2.send(null);
 }
 
 jQuery().ready(function(){
