@@ -208,7 +208,7 @@ ad_form -extend -name $form_id -form {
 	{label "[_ intranet-translation.Target_Languages]"}
 	{options "$target_language_options"}
     }
-    {upload_file:file(file)
+    {upload_file:file(file),optional
         {label "#acs-subsite.Filename#"}
         {help_text $help_text}
     }
@@ -482,7 +482,7 @@ content::item::upload_file -upload_file $upload_file \
 	
 	# If the filestorage module is installed...
 	set fs_installed_p [im_table_exists im_fs_folders]
-	if {$fs_installed_p} {
+	if {$fs_installed_p && [exists_and_not_null upload_file]} {
 	    
 	    set create_err ""
 	    if { [catch {
