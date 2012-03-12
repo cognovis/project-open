@@ -49,6 +49,9 @@ ad_form -name tasks -action /intranet-translation/projects/new-2 -form {
 	{value $default_uom}
 	{custom {category_type "Intranet UoM" translate_p 1}}
     }
+    {project_id:integer(hidden)
+	{value $project_id}
+    }
 }
 
 # Get the sorted list of files in the directory
@@ -97,27 +100,62 @@ foreach file $files {
     }
 }
 
-ad_form -extend -name tasks -form {
-    {file_ctr:text(hidden)
-	{value $file_ctr}
+if {"" == $files} {
+    # We only provide tasks
+    set task_ctr 0
+    while {$task_ctr < 5} {
+	incr task_ctr
+	ad_form -extend -name tasks -form {
+	    {task_name_${task_ctr}:text(text),optional
+		{label "Task $task_ctr"}
+	    }
+	    {task_units_${task_ctr}:float(text),optional
+		{label "Units $task_ctr"}
+		{help_text "Please enter task and units"}
+	    }
+	}
     }
-    {project_id:integer(hidden)
-	{value $project_id}
+    ad_form -extend -name tasks -form {
+	{task_ctr:text(hidden)
+	    {value $task_ctr}
+	}
+    } -on_submit {
+	# Create the tasks for each file
+	set i 1   
+	while {$i <= $task_ctr} {
+	    set task_name [set task_name_$i]
+	    set task_units [set task_units_$i]	
+	    set target_language_ids [im_target_language_ids $project_id]
+	    if {"" != $task_name} {
+		im_task_insert $project_id [ns_urldecode $task_name] $task_name $task_units $uom_id $project_type_id $target_language_ids
+	    }
+	    incr i
+	}
     }
-} -on_submit {
 
+} else {
+
+    ad_form -extend -name tasks -form {
+	{file_ctr:text(hidden)
+	    {value $file_ctr}
+	}
+    } -on_submit {
+	
     
-
-    # Create the tasks for each file
-    set i 1   
-    while {$i <= $file_ctr} {
-	set task_filename [set file_name_$i]
-	set task_units_file [set file_units_$i]	
-	set target_language_ids [im_target_language_ids $project_id]
-	im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
-	incr i
+	
+	# Create the tasks for each file
+	set i 1   
+	while {$i <= $file_ctr} {
+	    set task_filename [set file_name_$i]
+	    set task_units_file [set file_units_$i]	
+	    set target_language_ids [im_target_language_ids $project_id]
+	    im_task_insert $project_id $task_filename $task_filename $task_units_file $uom_id $project_type_id $target_language_ids
+	    incr i
+	}
     }
-} -after_submit {
+}
+
+ad_form -extend -name tasks -after_submit {
     im_trans_task_project_advance $project_id
     
     set task_ids [db_list task_ids "select task_id from im_trans_tasks where project_id = :project_id"]
