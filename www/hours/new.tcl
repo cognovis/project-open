@@ -59,6 +59,8 @@ if {[empty_string_p $julian_date]} { set julian_date [db_string sysdate_as_julia
 
 if {"" == $return_url} { set return_url [export_vars -base "/intranet-timesheet2/hours/index" {julian_date user_id_from_search}] }
 
+set log_blind_html ""
+
 # ---------------------------------------------------------
 # Calculate the start and end of the week.
 # ---------------------------------------------------------
@@ -790,8 +792,9 @@ template::multirow foreach hours_multirow {
 	set closed_level 0
     }
 
-    ns_log Notice "new: $pnam: p=$project_id, depth=$subproject_level, closed_level=$closed_level, status=$project_status"
-
+    set ns_log_notice "new: $pnam: p=$project_id, depth=$subproject_level, closed_level=$closed_level, status=$project_status"
+    ns_log NOTICE $ns_log_notice
+    # append log_blind_html $ns_log_notice
 
     # We've just discovered a status change from open to closed:
     # Remember at what level this has happened to undo the change
@@ -879,7 +882,7 @@ template::multirow foreach hours_multirow {
     # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - before: " $block_logging_project_status_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
     
     set block_logging_project_status_p [check_logging_project_status $project_id]
-    # set block_logging_project_status_p 1
+    # set block_logging_project_status_p 0
 
     if { !$block_logging_project_status_p } {
 	append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"]
@@ -953,25 +956,29 @@ template::multirow foreach hours_multirow {
                	from im_hours h
                	where   h.day like '%[string range [im_date_julian_to_ansi $julian_day_offset] 0 9]%' and
                        	h.user_id = $user_id_from_search and 
-			-- h.project_id = $project_id and 
+			h.project_id = $project_id and 
 			h.conf_object_id is not null
         "
         set no_wf_cases [db_string no_wf_cases $wf_actice_case_sql]
         if { $no_wf_cases > 0 } { 
 		set log_active_wf_p 1 
-		append help_text [lang::message::lookup "" intranet-timesheet2.Approval_Made_Or_In_Progress "Entry already approved or approval in progress"]
+		append help_text [lang::message::lookup "" intranet-timesheet2.Approval_Made_Or_In_Progress "-Entry already approved or approval in progress"]
 	}
 
-    if {"" != $help_text} { set help_gif [im_gif information $help_text] }
-    append results "<td>$help_gif $debug_html</td>\n"
+        if {"" != $help_text} { set help_gif [im_gif information $help_text] }
+        append results "<td>$help_gif $debug_html</td>\n"
 
 	# Determine whether the hours have already been included in a timesheet invoice
 	set invoice_id 0
 	set invoice_key "$project_id-$julian_day_offset"
 	if {[info exists hours_invoice_hash($invoice_key)]} { set invoice_id $hours_invoice_hash($invoice_key) }
 
-	ns_log NOTICE [concat "KHD:: " "project_id:" $project_id "edit_hours_p: " $edit_hours_p "log_on_parent_p: " $log_on_parent_p "invoice_id: " $invoice_id  "solitary_main_project_p: " $solitary_main_project_p \
-                              "closed_p: " $closed_p  "block_logging_project_status_p (sub/task): " $block_logging_project_status_p ]
+	set log_notice [concat "KHD:: " "project_id:" $project_id " project_name:'" [string range $project_name 0 20] "'\n edit_hours_p: " $edit_hours_p]
+	append log_notice " log_on_parent_p: '" $log_on_parent_p "' invoice_id: '" $invoice_id  "' solitary_main_project_p: '" $solitary_main_project_p 
+	append log_notice "' closed_p: '" $closed_p "' block_logging_project_status_p (sub/task): '" $block_logging_project_status_p "' no_wf_cases: '" $no_wf_cases "'\n\n"
+
+	ns_log NOTICE $log_notice
+	append log_blind_html $log_notice "\n"
 
 	if { "t" == $edit_hours_p && $log_on_parent_p && !$invoice_id && !$solitary_main_project_p && !$closed_p && $block_logging_project_status_p && !$log_active_wf_p } {
 	    # Write editable entries.
@@ -1109,3 +1116,9 @@ append left_navbar_html "
          </ul>
       </div>
 "
+
+# ---------------------------------------------------------
+# Log protocoll blind HTML
+# ---------------------------------------------------------
+
+append results "<!--\n${log_blind_html}-->"
