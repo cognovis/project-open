@@ -111,9 +111,8 @@ append form_elements {
 if { [exists_and_not_null file_ids] } {
     set files [list]
     foreach file $file_ids {
-	set sql "select title from cr_revisions where revision_id = :file"
-        set file_title [lang::util::localize [db_string get_file_title $sql -default "[_ acs-mail-lite.Untitled]"]]
-	lappend files "$file_title "
+	db_1row file_info "select item_id, title from cr_revisions where revision_id = :file"
+	lappend files "<a href=\"/file/$item_id\">$title</a> "
     }
     set files [join $files ", "]
     

@@ -271,8 +271,11 @@ ad_proc -public intranet_openoffice::invoice_pdf {
 
     set item_id [content::item::get_id_by_name -name ${invoice_nr}.pdf -parent_id $invoice_id]
     if {$item_id ne ""} {
-	set file_item_id [cr_import_content -item_id $item_id -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
+	set file_revision_id [cr_import_content -item_id $item_id -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
     } else {
-	set file_item_id [cr_import_content -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
+	set file_revision_id [cr_import_content -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
     }	
+    
+    content::item::set_live_revision -revision_id $file_revision_id
+    return $file_revision_id
 }
