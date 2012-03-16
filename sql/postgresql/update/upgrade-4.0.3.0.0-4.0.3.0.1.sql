@@ -57,7 +57,7 @@ begin
         from    user_preferences
         where   user_id = v_creation_user;
 
-	IF v_locale IS NULL 
+	IF v_locale IS NULL THEN
 		v_locale := 'en_US';
 	END IF; 
 
@@ -188,7 +188,7 @@ begin
         from    user_preferences
         where   user_id = v_creation_user;
 
-        IF v_locale IS NULL
+        IF v_locale IS NULL THEN
                 v_locale := 'en_US';
         END IF;
 
