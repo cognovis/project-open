@@ -115,6 +115,7 @@ begin
 	
 	v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';	
 
+
         RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
