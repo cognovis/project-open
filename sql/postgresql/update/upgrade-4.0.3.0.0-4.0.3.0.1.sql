@@ -57,6 +57,10 @@ begin
         from    user_preferences
         where   user_id = v_creation_user;
 
+	IF v_locale IS NULL 
+		v_locale := 'en_US';
+	END IF; 
+
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_subject := 'Notification_Subject_Notify_Applicant_Absence_Not_Approved';
@@ -183,6 +187,10 @@ begin
         select  language_preference into v_locale
         from    user_preferences
         where   user_id = v_creation_user;
+
+        IF v_locale IS NULL
+                v_locale := 'en_US';
+        END IF;
 
         -- ------------------------------------------------------------
         -- Try with specific translation first
