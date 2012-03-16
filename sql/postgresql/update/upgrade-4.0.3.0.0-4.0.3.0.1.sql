@@ -103,7 +103,7 @@ begin
                 p.parameter_name = 'SystemURL' and
                 pv.parameter_id = p.parameter_id;
 
-	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
 	-- get info about absence 
        	select
@@ -234,7 +234,7 @@ begin
 		p.parameter_name = 'SystemURL' and 
 		pv.parameter_id = p.parameter_id; 
 
-	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
         -- get info about absence
         select
