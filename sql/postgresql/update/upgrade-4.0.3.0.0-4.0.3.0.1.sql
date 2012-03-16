@@ -252,4 +252,3 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
-ALTER FUNCTION im_absence_notify_applicant_not_approved(integer, character varying, character varying) OWNER TO postgres;
