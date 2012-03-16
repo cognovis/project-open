@@ -1183,3 +1183,69 @@ ad_proc forceInteger { x } {
     }
     return $n
 }
+
+
+ad_proc im_absence_new_page_wf_perm_edit_button_kw {
+    -absence_id:required
+} {
+    Should we show the "Edit" button in the AbsenceNewPage?
+    The button is visible only for the Owner of the absence
+    and the Admin, but nobody else during the course of the WF.
+    Also, the Absence should not be changed anymore once it has
+    started.
+} {
+    set perm_table [im_absence_new_page_wf_perm_table_kw]
+    set perm_set [im_workflow_object_permissions \
+                    -object_id $absence_id \
+                    -perm_table $perm_table
+		  ]
+
+    ns_log Notice "im_absence_new_page_wf_perm_edit_button absence_id=$absence_id => $perm_set"
+    return [expr [lsearch $perm_set "w"] > -1]
+}
+
+ad_proc im_absence_new_page_wf_perm_delete_button_kw {
+    -absence_id:required
+} {
+    Should we show the "Delete" button in the AbsenceNewPage?
+    The button is visible only for the Owner of the absence,
+    but nobody else in the WF.
+} {
+    set perm_table [im_absence_new_page_wf_perm_table_kw]
+    set perm_set [im_workflow_object_permissions \
+                    -object_id $absence_id \
+                    -perm_table $perm_table
+		  ]
+
+    ns_log Notice "im_absence_new_page_wf_perm_delete_button absence_id=$absence_id => $perm_set"
+    return [expr [lsearch $perm_set "d"] > -1]
+}
+
+
+ad_proc im_absence_new_page_wf_perm_table_kw { } {
+    Returns a hash array representing (role x status) -> (v r d w a),
+    controlling the read and write permissions on absences,
+    depending on the users's role and the WF status.
+} {
+    set req [im_absence_status_requested]
+    set rej [im_absence_status_rejected]
+    set act [im_absence_status_active]
+    set del [im_absence_status_deleted]
+
+    set perm_hash(owner-$rej) {v r d}
+    set perm_hash(owner-$req) {v r d}
+    set perm_hash(owner-$act) {v r d}
+    set perm_hash(owner-$del) {v r d}
+
+    set perm_hash(assignee-$rej) {v r}
+    set perm_hash(assignee-$req) {v r}
+    set perm_hash(assignee-$act) {v r}
+    set perm_hash(assignee-$del) {v r}
+
+    set perm_hash(hr-$rej) {v r d w a}
+    set perm_hash(hr-$req) {v r d w a}
+    set perm_hash(hr-$act) {v r d w a}
+    set perm_hash(hr-$del) {v r d w a}
+
+    return [array get perm_hash]
+}
