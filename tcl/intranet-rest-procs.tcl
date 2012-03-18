@@ -17,6 +17,7 @@ ad_library {
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/documentation/rest_version_history
+    <li>2.1	(2012-03-18):	Added new report and now deprecating single object calls
     <li>2.0	(2011-05-12):	Added support for JSOn and Sencha format variants
 				ToDo: Always return "id" instead of "object_id"
     <li>1.5.2	(2010-12-21):	Fixed bug of not applying where_query
