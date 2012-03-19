@@ -259,40 +259,6 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id project_nr $project_nr
     template::element::set_value $form_id company_id $company_id
     
-} -validate { 
-    
-    {project_nr
-        {![var_contains_quotes $project_nr]}
-        {[_ intranet-core.lt_Quotes_in_Project_Nr_]}
-    }
-    {project_nr
-        {[regexp {^[a-z0-9_]+$} $project_nr match]}
-        {[lang::message::lookup "" intranet-core.Non_alphanum_chars_in_nr "The specified path contains invalid characters.<br> Allowed are only aphanumeric characters including a-z, 0-9 and '_'."]}
-    }
-    {project_nr
-        {![regexp {/} $project_nr]}
-        {[_ intranet-core.intranet-core.lt_Slashes__in_Project_P]}
-    }
-    {project_nr
-        {![regexp {\.} $project_nr]}
-        {[_ intranet-core.lt_Dots__in_Project_Path]}
-    }
-    {project_name
-        {![var_contains_quotes $project_name]}
-        {[_ intranet-core.lt_Quotes_in_Project_Nam]}
-    }
-    {parent_id
-        {![string equal $parent_id $project_id]}
-        {"Parent Project = Project"}
-    }
-    {percent_completed
-        {[expr {$percent_completed <= 100}]}
-        {"Number must be in range (0 .. 100)"}
-    }
-    {percent_completed
-        {[expr {$percent_completed >= 0}]}
-        {"Number must be in range (0 .. 100)"}
-    }
 } -on_submit {
 
     if { ![exists_and_not_null zip_p] } {
