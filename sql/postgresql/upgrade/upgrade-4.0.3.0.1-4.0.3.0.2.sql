@@ -17,8 +17,7 @@ BEGIN
 	RAISE NOTICE 'im_audit_value: v_expr=%', v_expr;
 
 	select	substring(p_audit_value from v_expr) 
-	into v_result 
-	from dual;
+	into v_result from dual;
 
 	return v_result;
 end; $body$ language 'plpgsql';
