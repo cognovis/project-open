@@ -910,7 +910,7 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2]) align=right>$sort_order</td>\n"
 	}
 	
-	if {[exists_and_not_null task_id]} {
+	if {[exists_and_not_null task_id] && $task_id >0} {
 	    set task_url [export_vars -base "/intranet-timesheet2-tasks/view" -url {task_id}]
 	    append invoice_item_html "
                  <td $bgcolor([expr $ctr % 2])><a href='$task_url'>$item_name</a></td>
