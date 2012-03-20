@@ -70,13 +70,14 @@ function update_cost_object() {
 	var url_str = "/intranet-rest/im_project/" + project_id + "?format=xml"; 
 	$.ajax({
 		url: url_str,
-		dataType: ($.browser.msie) ? "xml" : "text/xml",
+		// dataType: ($.browser.msie) ? "xml" : "text/xml",
+		dataType: "xml",
 		success: function(xml){
 			  $(xml).find("im_project").each(function() {
 	   			  var v_cost_object_category_id = $(this).find('cost_object_category_id').text();
 				  var s = document.getElementById('project-ae').elements["cost_object_category_id"];
 				  for ( var i = 0; i <  s.options.length; i++ ) {
-				        if ( s.options[i].value == v_cost_object_category_id ) {
+					if ( s.options[i].value == v_cost_object_category_id ) {
 				            s.options[i].selected = true;
 				            return;
         				}
