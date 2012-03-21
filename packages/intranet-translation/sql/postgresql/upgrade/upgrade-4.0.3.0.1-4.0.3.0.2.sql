@@ -148,7 +148,7 @@ BEGIN
 		   INSERT INTO im_dynfield_type_attribute_map
 		   	  (attribute_id, object_type_id, display_mode, help_text,section_heading,default_value,required_p)
 		   VALUES
-			  (v_attribute_id, row.child_id,''edit'',''Who is the final consumer (when working for an agency)? Examples: Shell, UBS, ...'',null,null,''f'');
+			  (v_attribute_id, row.child_id,''edit'','''',null,null,''f'');
 		ELSE
 		   UPDATE im_dynfield_type_attribute_map SET display_mode = ''edit'', required_p = ''f'' WHERE attribute_id = v_attribute_id AND object_type_id = row.child_id;
 		END IF;
@@ -204,7 +204,7 @@ BEGIN
 	       null,					-- creation_ip
 	       null,					-- context_id	
 	       v_acs_attribute_id,			-- acs_attribute_id
-	       ''im_category_tree'',			-- widget
+	       ''category_subject_area'',			-- widget
 	       ''f'',					-- deprecated_p
 	       ''t'',					-- already_existed_p
 	       null,					-- pos_y
