@@ -164,6 +164,7 @@ set mine_p_options {}
 if {$view_tickets_all_p} { 
     lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
 }
+
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
 
@@ -274,11 +275,16 @@ im_dynfield::set_form_values_from_http -form_id $form_id
 im_dynfield::set_local_form_vars_from_http -form_id $form_id
 set mine_p $org_mine_p
 
+# A customer should not get the "My queue" filter pre-selected - should he get the "My queue" selection at all? 
+if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $current_user_id] && [string first "mine" [string tolower $mine_p_options]] != -1 } {
+    template::element::set_value $form_id mine_p "mine"
+    set mine_p "mine"
+}
+
 array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -form_id $form_id \
 			       -object_type $object_type
 ]
-
 
 # ad_return_complaint 1 [array get extra_sql_array]
 
