@@ -128,7 +128,98 @@ ad_proc im_oo_select_nodes {
 }
 
 
+ad_proc im_oo_substitute {
+    -page_name:required
+    -node:required
+    -parameters:required
+} {
+    Returns a new tDom node with with a copy of $node
+    with template expressions substituted. The returned
+    node is suitable to be inserted into a table.
 
+    This functions work similar to template::adp_compile,
+    but also allows the user to modify the XML structure
+    around the substitution text.
+} {
+    # Create a clone of the node
+    set clone [$node cloneNode -deep]
+
+    # Replace @varname@ expressions by the respective var value
+    im_oo_substitute_descend -node_stack {} -parameters $parameters -node $clone
+
+    return $clone
+}
+
+
+ad_proc im_oo_substitute_descend {
+    -node:required
+    -parameters:required
+    -node_stack:required
+} {
+    Performes substitution on tDom nodes.
+} {
+    # Write the parameter list to a hash array
+    array set params $parameters
+
+    # Update the stack of nodes.
+    # This way we can go upwards towards the parent node.
+    set node_stack [linsert $node_stack 0 $node]
+    
+    # get the name and type of the node
+    set name [$node nodeName]
+    set type [$node nodeType]
+    set text ""
+    if {$type == "TEXT_NODE"} { 
+	set text [$node nodeValue]
+	set org_text $text
+
+	# Loop through all @varname@ expressions and replaceReplace variable expressions
+	set cnt 0
+	while {[regexp {^(.*?)@([a-zA-Z0-9_]+)@(.*)$} $text match head var tail]} {
+	    ns_log Notice "im_oo_substitute_descend: head=$head, var=$var, tail=$tail"
+	    set val $var
+	    if {[info exists params($var)]} { set val $params($var) }
+	    set text "$head$val$tail"
+	    incr cnt
+	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text'" }
+	}
+	ns_log Notice "im_oo_substitute_descend: result=$text"
+
+        # Check for #tag=value expression
+	set cnt 0
+	while {[regexp {^(.*?)\s*#([a-zA-Z0-9_\:\-]+)=([a-zA-Z0-9_\:\-]+)\s*(.*)$} $text match head tag value tail]} {
+	    ns_log Notice "im_oo_substitute_descend: node_name=$name, node_type=$type"
+	    ns_log Notice "im_oo_substitute_descend: tag=$tag, value=$value"
+
+	    # Walk through the list of parents and replace the attribute at the first matching parent
+	    set break_p 0
+	    foreach n $node_stack {
+		set n_name [$n nodeName]
+		set n_type [$n nodeType]
+		if {"TEXT_NODE" != $n_type} {
+		    if {[$n hasAttribute $tag]} {
+			$n setAttribute $tag $value
+			set break_p 1
+		    }
+		}
+		if {$break_p} { break }
+	    }
+
+	    set text "$head$tail"
+	    incr cnt
+	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text'" }
+        }
+
+	# Perform the substitution
+        if {$text != $org_text} { $node nodeValue $text }
+
+    }
+
+    # Recursively descend to child nodes
+    foreach child [$node childNodes] {
+        im_oo_substitute_descend -node_stack $node_stack -parameters $parameters -node $child
+    }
+}
 
 
 # -------------------------------------------------------
@@ -201,8 +292,36 @@ ad_proc im_oo_page_extract_templates {
 			ns_log Notice "im_oo_page_extract_templates: $title=$child"
 			set hash($title) $child
 		    }
+		    text_style {
+			# Check for text styles. These are just a piece of text with a title.
+			# In the example below we want to extract that text_style "red" corresponds to "T7"
+			# <draw:frame draw:style-name...><draw:text-box><text:p text:style-name="P8">
+			# <text:span text:style-name="T7">Red Text</text:span>
+			# </text:p></draw:text-box><svg:title>text_style red</svg:title></draw:frame>
+			set style_name [lindex $titles 1]
+			if {"" == $style_name} { continue }
+			set span_nodes [im_oo_select_nodes $child "text:span"]
+			foreach span_node $span_nodes {
+			    set text_style [$span_node getAttribute "text:style-name"]
+			    ns_log Notice "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_name'"
+			    set hash($style_name) $text_style
+			}
+		    }
 		    default {
-			# Nothing, ignore.
+			# Check for text styles. These are just a piece of text with a title.
+			if {[regexp {^text_style(.*)} $title match style_title]} {
+			    # <draw:frame draw:style-name...><draw:text-box><text:p text:style-name="P8">
+			    # <text:span text:style-name="T7">Red Text</text:span>
+			    # </text:p></draw:text-box><svg:title>style red</svg:title></draw:frame>
+			    set span_nodes [im_oo_select_nodes $child "text:span"]
+			    foreach span_node $span_nodes {
+				set text_style [$span_node getAttribute "text:style-name"]
+				ns_log Notice "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_title' - $titles."
+				ad_return_complaint 1 "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_title' - $titles."
+
+			    }
+			}
+			# End of default section
 		    }
 		}
 	    if {[catch {
@@ -226,6 +345,120 @@ ad_proc im_oo_page_extract_templates {
     # local variables in the caller's environment
     return [array get hash]
 }
+
+
+
+# ---------------------------------------------------------------
+# Execute a list of pages
+# ---------------------------------------------------------------
+
+ad_proc im_oo_page_list {
+    -page_node:required
+    -page_name:required
+    -page_node_list:required
+    -parameters:required
+} {
+    "Execute" a list of pages
+} {
+    set long_dash [format "%c" 8211]
+
+    array set query_hash $parameters
+
+    foreach page_node_tree $page_node_list {
+  
+	# The actual page node is located in the first position of the structure
+	set page_node [lindex $page_node_tree 0]
+	# The second position is a list of sub-pages for "repeat" pages
+	set page_sub_nodes [lindex $page_node_tree 1]
+	
+	# Extract the "page name" from OOoo.
+	# We use this field to determine the type of the page
+	set page_name_list [$page_node getAttribute "draw:name"]
+	set page_type [lindex $page_name_list 0]
+	set page_name [lrange $page_name_list 1 end]
+	
+	set page_notes [im_oo_page_notes -page_node $page_node]
+	set page_sql ""
+	set list_sql ""
+	set repeat_sql ""
+	set counters ""
+	for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
+	    set varname [string tolower [lindex $page_notes $i]]
+	    set varvalue [lindex $page_notes [expr $i+1]]
+	    # Substitute a "long dash" ("--") with a normal one
+	    regsub -all $long_dash $varvalue "-" varvalue
+	    switch $varname {
+		page_sql { set page_sql $varvalue }
+		list_sql { set list_sql $varvalue }
+		repeat_sql { set repeat_sql $varvalue }
+		default {
+		    set query_hash($varname) $varvalue
+		}
+	    }
+	}
+	
+	append debug "<li>$page_type=$page_type, page_name=$page_name, page_sql=$page_sql, list_sql=$list_sql\n"
+	
+	switch $page_type {
+	    template {
+		set result [im_oo_page_type_template \
+				-page_node $page_node \
+				-page_name $page_name \
+				-parameters [array get query_hash] \
+				-list_sql $list_sql \
+				-page_sql $page_sql \
+			       ]
+		# Add the templates to the query hash
+		array set query_hash $result
+	    }
+	    constant {
+		im_oo_page_type_constant \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -parameters [array get query_hash] \
+		    -list_sql $list_sql \
+		    -page_sql $page_sql
+	    }
+	    static {
+		im_oo_page_type_static \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -parameters [array get query_hash] \
+		    -list_sql $list_sql \
+		    -page_sql $page_sql
+	    }
+	    repeat {
+		im_oo_page_type_repeat \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -parameters [array get query_hash] \
+		    -repeat_sql $repeat_sql \
+		    -page_sub_nodes $page_sub_nodes
+	    }
+	    list {
+		im_oo_page_type_list \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -parameters [array get query_hash] \
+		    -list_sql $list_sql \
+		    -page_sql $page_sql
+	    }
+	    gantt {
+		im_oo_page_type_gantt \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -parameters [array get query_hash] \
+		    -list_sql $list_sql \
+		    -page_sql $page_sql
+	    }
+	    default {
+		ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
+		ad_script_abort
+	    }
+	}
+    }
+}
+
 
 
 
@@ -257,6 +490,26 @@ ad_proc im_oo_page_type_constant {
 } {
     # Do nothing
 }
+
+
+
+ad_proc im_oo_page_type_template {
+    -page_node:required
+    -parameters:required
+    {-list_sql ""}
+    {-page_sql "" }
+    {-page_name "undefined"}
+} {
+    Takes as input a page node from the template with
+    a list of templates on it. The page extracts the
+    templates and returns them in a hash.
+} {
+    # Extract templates from the page and write to local variables
+    set template_hash_list [im_oo_page_extract_templates -page_node $page_node]
+    return $template_hash_list
+}
+
+
 
 ad_proc im_oo_page_type_static {
     -page_node:required
@@ -329,6 +582,80 @@ ad_proc im_oo_page_type_static {
 }
 
 
+
+
+ad_proc im_oo_page_type_repeat {
+    -page_node:required
+    -page_sub_nodes:required
+    -parameters:required
+    -page_name:required
+    -repeat_sql:required
+} {
+    @param page_node A tDom node for a draw:page node
+    @param repeat_sql
+    	A SQL statement that should return one or more rows.
+    @param page_sub_nodes
+    	An ordered list of pages below the "repeat" page
+	that should be executed for every row returned by
+	repeat_sql
+} {
+    # Write parameters into hash and local variables
+    array set param_hash $parameters
+    foreach var [array names param_hash] { set $var $param_hash($var) }
+
+    # Check the repeat_sql statement and perform substitutions
+    if {"" == $repeat_sql} { set repeat_sql "select 1 as one from dual" }
+    if {[catch {
+	eval [template::adp_compile -string $repeat_sql]
+	set repeat_sql $__adp_output
+	set repeat_sql [eval "set a \"$repeat_sql\""]
+    } err_msg]} {
+        ad_return_complaint 1 "<b>Repeat: '$page_name': Error substituting variables in repeat_sql statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort
+    }
+
+    # Get the parent of the page
+    set page_container [$page_node parentNode]
+
+    if {[catch {
+	# Loop through the repeat_sql and write the results into param_hash
+	db_with_handle repeat_sql_db {
+	    set repeat_sql_selection [db_exec select $repeat_sql_db repeat_sql $repeat_sql 1]
+	    set repeat_sql_columns [ad_ns_set_keys $repeat_sql_selection]
+	    while {[db_getrow $repeat_sql_db $repeat_sql_selection]} {
+
+		for {set i 0} {$i < [llength $repeat_sql_columns]} {incr i} {
+		    set var [lindex $repeat_sql_columns $i]
+		    set val [ns_set value $repeat_sql_selection $i]
+		    set $var $val
+		    set param_hash($var) $val
+		}
+
+		# "Execute" the list of pages
+		im_oo_page_list \
+		    -page_node $page_node \
+		    -page_name $page_name \
+		    -page_node_list $page_sub_nodes \
+		    -parameters [array get param_hash]
+
+
+		# Parse the new slide and insert into OOoo document
+		set doc [dom parse $xml]
+		set doc_doc [$doc documentElement]
+		$page_container insertBefore $doc_doc $page_node
+	    }
+	}
+    } err_msg]} {
+        ad_return_complaint 1 "<b>Repeat: '$page_name': Error evaluating repeat_sql statement</b>:<pre>$err_msg</pre>"
+        ad_script_abort	
+    }
+	
+    # remove the template node
+    $page_container removeChild $page_node
+
+}
+
+
 ad_proc im_oo_page_type_list {
     -page_node:required
     -parameters:required
@@ -366,11 +693,8 @@ ad_proc im_oo_page_type_list {
     set rounding_precision 2
 
     array set param_hash $parameters
+    array set param_hash [im_oo_page_extract_templates -page_node $page_node]
     foreach var [array names param_hash] { set $var $param_hash($var) }
-
-    # Extract templates from the page and write to local variables
-    array set template_hash [im_oo_page_extract_templates -page_node $page_node]
-    foreach var [array names template_hash] { set $var $template_hash($var) }
 
     if {"" == $list_sql} {
         ad_return_complaint 1 "<b>'$page_name': No list_sql specified in list page</b>."
@@ -433,137 +757,142 @@ ad_proc im_oo_page_type_list {
 	set row_cnt 0
 	set first_page_p 1
 	if {[catch {
-	    db_foreach list_sql $list_sql {
-		
-		# ------------------------------------------------------------------
-		# Setup a new page.
-		# Execute this code either if we are on the very first page or
-		# if we have to start a new page because of a long table.
-		if {$row_cnt >= $list_max_rows || $first_page_p} {
-		    
-		    # Close the previous page, add it to the Impress document and start a new one.
-		    if {0 == $first_page_p} {
+	    # Loop through the list_sql and write the results into param_hash
+	    db_with_handle list_sql_db {
+		set list_sql_selection [db_exec select $list_sql_db list_sql $list_sql 1]
+		set list_sql_columns [ad_ns_set_keys $list_sql_selection]
+		while {[db_getrow $list_sql_db $list_sql_selection]} {
+		    for {set i 0} {$i < [llength $list_sql_columns]} {incr i} {
+			set var [lindex $list_sql_columns $i]
+			set val [ns_set value $list_sql_selection $i]
+			# ns_log Notice "im_oo_page_type_list: list_sql: $var=$val"
+			set $var $val
+			set param_hash($var) $val
+		    }
+
+		    # ------------------------------------------------------------------
+		    # Setup a new page.
+		    # Execute this code either if we are on the very first page or
+		    # if we have to start a new page because of a long table.
+		    if {$row_cnt >= $list_max_rows || $first_page_p} {
 			
-			# Remove the content_row
-			if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+			# Close the previous page, add it to the Impress document and start a new one.
+			if {0 == $first_page_p} {
+			    
+			    # Remove the content_row
+			    if {"" != $content_row_node} { $table_node removeChild $content_row_node }
+			    
+			    # Remove the 4th line from the list in all but the last page
+			    if {"" != $list_total_node} { $table_node removeChild $list_total_node }
+			    
+			    # Render the new page with the additional table rows as XML
+			    # and apply the OpenACS template engine in order to replace variables.
+			    set page_xml [$page_root asXML -indent none]
+			    if {[catch {
+				eval [template::adp_compile -string $page_xml]
+				set xml $__adp_output
+			    } err_msg]} {
+				ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
+				ad_script_abort
+			    }
+			    
+			    # Parse the new slide and insert into OOoo document
+			    set result_doc [dom parse $xml]
+			    set result_root [$result_doc documentElement]
+			    $page_container insertBefore $result_root $page_node		
+			}
 			
-			# Remove the 4th line from the list in all but the last page
-			if {"" != $list_total_node} { $table_node removeChild $list_total_node }
+			# Now we are not on the first page anymore...
+			set first_page_p 0
 			
-			# Render the new page with the additional table rows as XML
-			# and apply the OpenACS template engine in order to replace variables.
-			set page_xml [$page_root asXML -indent none]
-			if {[catch {
-			    eval [template::adp_compile -string $page_xml]
-			    set xml $__adp_output
-			} err_msg]} {
-			    ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
+			# Create a fresh XML tree again for the next page and reset the row counter
+			set page_doc [dom parse $template_xml]
+			set page_root [$page_doc documentElement]
+			set row_cnt 0
+			
+			# Get the list of all tables in the page and count them
+			set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
+			set table_node ""
+			foreach node $table_nodes {
+			    set node_text [string trim [im_oo_to_title -node $node]]
+			    ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
+			    if {"list" == $node_text} { 
+				# We found a draw:frame node with the right title.
+				# This node should have exactly one "table:table"
+				set table_frame_node $node
+				set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
+			    }
+			}
+			
+			if {"" == $table_node} {
+			    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
+			Didn't find a table with title 'list'.<br>
+		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
 			    ad_script_abort
 			}
 			
-			# Parse the new slide and insert into OOoo document
-			set result_doc [dom parse $xml]
-			set result_root [$result_doc documentElement]
-			$page_container insertBefore $result_root $page_node		
-		    }
-		    
-		    # Now we are not on the first page anymore...
-		    set first_page_p 0
-		    
-		    # Create a fresh XML tree again for the next page and reset the row counter
-		    set page_doc [dom parse $template_xml]
-		    set page_root [$page_doc documentElement]
-		    set row_cnt 0
-		    
-		    # Get the list of all tables in the page and count them
-		    set table_nodes [im_oo_select_nodes $page_root "draw:frame"]
-		    set table_node ""
-		    foreach node $table_nodes {
-			set node_text [string trim [im_oo_to_title -node $node]]
-			ns_log Notice "im_oo_page_type_list: Searching for list node: text='$node_text'"
-			if {"list" == $node_text} { 
-			    # We found a draw:frame node with the right title.
-			    # This node should have exactly one "table:table"
-			    set table_frame_node $node
-			    set table_node [lindex [im_oo_select_nodes $node "table:table"] 0]
+			# Extract the 2nd row ("table:table-row" tag) that contains the 
+			# content row to be repeated for every row of the list_sql
+			set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
+			set content_row_node [lindex $row_nodes 1]
+			set page_total_node [lindex $row_nodes 2]
+			set list_total_node [lindex $row_nodes 3]
+			set content_row_xml [$content_row_node asXML]
+			if {"" == $content_row_node} {
+			    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
+			    ad_script_abort
 			}
 		    }
 		    
-		    if {"" == $table_node} {
-			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
-			Didn't find a table with title 'list'.<br>
-		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
-			ad_script_abort
-		    }
-		    
-		    # Extract the 2nd row ("table:table-row" tag) that contains the 
-		    # content row to be repeated for every row of the list_sql
-		    set row_nodes [im_oo_select_nodes $table_node "table:table-row"]
-		    set content_row_node [lindex $row_nodes 1]
-		    set page_total_node [lindex $row_nodes 2]
-		    set list_total_node [lindex $row_nodes 3]
-		    set content_row_xml [$content_row_node asXML]
-		    if {"" == $content_row_node} {
-			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
-			ad_script_abort
-		    }
-		}
-		
-		# ------------------------------------------------------------------
-		# Update Counters
-		# Counters allow to sum up values in a list column.
-		# A counter consists of a list with two values:
-		#	- counter_var: The name of the counter variables
-		#	- counter_expr: A numeric expression that defines 
-		#	  the value to be added to the counter.
-		# The counter expression may contain any parameters 
-		# of the static page or values returned from the list_sql.
-		# The counter value can be used in the page_total and 
-		# total lines of a list just like a normal variable.
-		#
-		foreach counter $counters {
-		    set counter_var [lindex $counter 0]
-		    set counter_expr [lindex $counter 1]
-		    set counter_var_pretty "${counter_var}_pretty"
+		    # ------------------------------------------------------------------
+		    # Update Counters
+		    # Counters allow to sum up values in a list column.
+		    # A counter consists of a list with two values:
+		    #	- counter_var: The name of the counter variables
+		    #	- counter_expr: A numeric expression that defines 
+		    #	  the value to be added to the counter.
+		    # The counter expression may contain any parameters 
+		    # of the static page or values returned from the list_sql.
+		    # The counter value can be used in the page_total and 
+		    # total lines of a list just like a normal variable.
+		    #
+		    foreach counter $counters {
+			set counter_var [lindex $counter 0]
+			set counter_expr [lindex $counter 1]
+			set counter_var_pretty "${counter_var}_pretty"
 
-		    if {![info exists $counter_var]} { set $counter_var 0 }
-		    set val ""
-		    if {[catch {
-			set val [expr $counter_expr]
-		    } err_msg]} {
-			ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
+			if {![info exists $counter_var]} { set $counter_var 0 }
+			set val ""
+			if {[catch {
+			    set val [expr $counter_expr]
+			} err_msg]} {
+			    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
 			Counter name: '$counter_var'<br>
 			Counter expressions: '$counter_expr'<br>
 			Error:<br><pre>$err_msg</pre>"
-			ad_script_abort
-		    }
-		    if {"" != $val && [string is double $val]} {
-			set $counter_var [expr "\$$counter_var + $val"]
+			    ad_script_abort
+			}
+			if {"" != $val && [string is double $val]} {
+			    set $counter_var [expr "\$$counter_var + $val"]
 
-			# Pretty formatting of sum
-			set amount_zeros [im_numeric_add_trailing_zeros [expr "\$$counter_var"] $rounding_precision]
-			set $counter_var_pretty [lc_numeric $amount_zeros "" $locale]
+			    # Pretty formatting of sum
+			    set amount_zeros [im_numeric_add_trailing_zeros [expr "\$$counter_var"] $rounding_precision]
+			    set $counter_var_pretty [lc_numeric $amount_zeros "" $locale]
+			}
 		    }
+		    
+		    # ------------------------------------------------------------------
+		    # Replace placeholders in the OpenOffice template row with values
+		    # !!!
+		    set new_row_node [im_oo_substitute -page_name $page_name -node $content_row_node -parameters [array get param_hash]]
+		    $table_node insertBefore $new_row_node $content_row_node
+		    
+		    incr row_cnt
+
+		    # End of the list_sql loop
 		}
-		
-		# ------------------------------------------------------------------
-		# Replace placeholders in the OpenOffice template row with values
-		if {[catch {
-		    eval [template::adp_compile -string $content_row_xml]
-		    set row_xml $__adp_output
-		} err_msg]} {
-		    ad_return_complaint 1 "<b>List: '$page_name': Error substituting row template variables</b>:
-		<pre>$err_msg\n[im_oo_tdom_explore -node $content_row_node]</pre>"
-		    ad_script_abort
-		}
-		
-		# Parse the new row and insert into OOoo document
-		set new_row_doc [dom parse $row_xml]
-		set new_row_root [$new_row_doc documentElement]
-		$table_node insertBefore $new_row_root $content_row_node
-		
-		incr row_cnt
 	    }
+
 	} err_msg]} {
 	    ad_return_complaint 1 "<b>List '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre>"
             ad_script_abort
@@ -836,18 +1165,6 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     set expected_width [expr $base_width * $percent_expected / 100.0]
     $expected_node setAttribute "svg:width" "${expected_width}cm"
-
-    return
-
-    ad_return_complaint 1 "<pre>
-epoch_per_x=$epoch_per_x
-x_offset=$x_offset
-y_offset=$y_offset
-start_date_epoch=$start_date_epoch
-end_date_epoch=$end_date_epoch
-[ns_quotehtml [$grouping_node asXML]]
-    </pre>"
-
 }
 
 
@@ -881,14 +1198,12 @@ ad_proc im_oo_page_type_gantt {
 
     # Initialize the on_track_status (green, yellow, red)
     set on_track_status "green"
+    set param_hash(on_track_status) $on_track_status
 
     # Write parameters to local variables
     array set param_hash $parameters
+    array set param_hash [im_oo_page_extract_templates -page_node $page_node]
     foreach var [array names param_hash] { set $var $param_hash($var) }
-
-    # Extract templates from the page and write to local variables
-    array set template_hash [im_oo_page_extract_templates -page_node $page_node]
-    foreach var [array names template_hash] { set $var $template_hash($var) }
 
     # Make sure there is a SQL for the project phases/tasks
     if {"" == $list_sql} {

@@ -171,83 +171,71 @@ set odp_root [$odp_doc documentElement]
 set odp_page_container_node [$odp_root selectNodes "//office:presentation"]
 set odp_page_template_nodes [$odp_root selectNodes "//draw:page"]
 
+# Create a list of integers with the same elements as odp_page_template_nodes
+set odp_page_template_idx [list]
+for {set i 0} {$i < [llength $odp_page_template_nodes]} {incr i} { lappend odp_page_template_idx $i }
 
 # ---------------------------------------------------------------
-# Loop through all pages
-# and process each page depending on its type
+# Go thought all pages and check for a page of type "repeat"
+# that works as an interator for the following pages.
 # ---------------------------------------------------------------
 
-foreach page_node $odp_page_template_nodes {
+set page_node_list [list]
+set cnt 0
+set page_cnt 0
+while {$page_cnt < [llength $odp_page_template_nodes]} {
+    ns_log Notice "index.vuh: cnt=$cnt, page_cnt=$page_cnt"
+    incr cnt
+    if {$cnt > 100} { ad_return_complaint 1 1 }
 
-    # Extract the "page name" from OOoo.
-    # We use this field to determine the type of the page
+    # Extract page type and page name.
+    set page_node [lindex $odp_page_template_nodes $page_cnt]
     set page_name_list [$page_node getAttribute "draw:name"]
     set page_type [lindex $page_name_list 0]
     set page_name [lrange $page_name_list 1 end]
-
     set page_notes [im_oo_page_notes -page_node $page_node]
-    set page_sql ""
-    set list_sql ""
-    set counters ""
+
+    set repeat_sql ""
+    set repeat_count ""
     for {set i 0} {$i < [llength $page_notes]} {incr i 2} {
 	set varname [string tolower [lindex $page_notes $i]]
 	set varvalue [lindex $page_notes [expr $i+1]]
-
 	# Substitute a "long dash" ("--") with a normal one
 	regsub -all $long_dash $varvalue "-" varvalue
-
 	switch $varname {
-	    page_sql { set page_sql $varvalue }
-	    list_sql { set list_sql $varvalue }
-	    default {
-		set query_hash($varname) $varvalue
-	    }
+	    repeat_sql { set repeat_sql $varvalue }
+	    repeat_count { set repeat_count $varvalue }
 	}
     }
-
-    append debug "<li>$page_type=$page_type, page_name=$page_name, page_sql=$page_sql, list_sql=$list_sql\n"
 
     switch $page_type {
-	constant {
-	    im_oo_page_type_constant \
-		-page_node $page_node \
-		-page_name $page_name \
-		-parameters [array get query_hash] \
-		-list_sql $list_sql \
-		-page_sql $page_sql
-	}
-	static {
-	    im_oo_page_type_static \
-		-page_node $page_node \
-		-page_name $page_name \
-		-parameters [array get query_hash] \
-		-list_sql $list_sql \
-		-page_sql $page_sql
-	}
-	list {
-	    im_oo_page_type_list \
-		-page_node $page_node \
-		-page_name $page_name \
-		-parameters [array get query_hash] \
-		-list_sql $list_sql \
-		-page_sql $page_sql
-	}
-	gantt {
-	    im_oo_page_type_gantt \
-		-page_node $page_node \
-		-page_name $page_name \
-		-parameters [array get query_hash] \
-		-list_sql $list_sql \
-		-page_sql $page_sql
+	"repeat" {
+	    if {"" == $repeat_count} {
+		ad_return_complaint 1 "<b>Repeat '$page_name': Didn't find 'repeat_count' parameter.</b>"
+		ad_script_abort
+	    }
+	    # The page_node_list is something like {domNode0xa3be4110 {domNode0xa3310c40 {domNode0xa3313400 domNode0xa3342f60}}}
+	    set sub_node_list [lrange $odp_page_template_nodes [expr $page_cnt+1] [expr $page_cnt+$repeat_count]]
+	    lappend page_node_list [list $page_node $sub_node_list]
+
+	    set page_cnt [expr $page_cnt + $repeat_count]
 	}
 	default {
-	    ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
-	    ad_script_abort
+	    lappend page_node_list $page_node
 	}
     }
+    ns_log Notice "index.vuh: before incr: cnt=$cnt, page_cnt=$page_cnt"
+    incr page_cnt
 }
 
-#ad_return_complaint 1 "<pre>$debug</pre>"
+
+# "Execute" the list of pages
+im_oo_page_list \
+    -page_node $page_node \
+    -page_name $page_name \
+    -page_node_list $page_node_list \
+    -parameters [array get query_hash]
+
 
 
 # ---------------------------------------------------------------
