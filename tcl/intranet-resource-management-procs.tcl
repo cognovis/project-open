@@ -236,7 +236,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
     {-excluded_group_ids "" }
     {-show_departments_only_p "0" }
 } {
-
     Creates Resource Report 
 
     @param start_date Hard start of reporting period. Defaults to start of first project
@@ -246,7 +245,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     ToDo: 
     	- excluded_group_ids currently only accepts a single int
-
 } {
 
     # ---------------------------------------
@@ -1030,7 +1028,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
 		# Sanity Check: end_date needs to be >= start_date 
 		if { $end_date_julian_planned_hours < $start_date_julian_planned_hours } { 
-			ad_return_complaint 1 "End Date ($end_date) is earlier than start date ($start_date) of task id: <a href='/intranet-timesheet2-tasks/new?task_id=project_id'>$project_id</a>" 
+			ns_log Warning "im_resource_mgmt_resource_planning: End Date ($end_date) is earlier than start date ($start_date) of task \#$project_id" 
 		} 
 
 		# Over how many work days do we have to distribute the planned hours,  
