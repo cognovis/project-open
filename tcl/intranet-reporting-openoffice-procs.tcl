@@ -572,7 +572,7 @@ ad_proc im_oo_page_type_static {
 	    $page_container insertBefore $doc_doc $page_node
 	}
     } err_msg]} {
-        ad_return_complaint 1 "<b>Static: '$page_name': Error evaluating page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Static: '$page_name': Error evaluating page_sql statement</b>:<pre>[ad_print_stack_trace]</pre>"
         ad_script_abort	
     }
 	
@@ -638,11 +638,6 @@ ad_proc im_oo_page_type_repeat {
 		    -page_node_list $page_sub_nodes \
 		    -parameters [array get param_hash]
 
-
-		# Parse the new slide and insert into OOoo document
-		set doc [dom parse $xml]
-		set doc_doc [$doc documentElement]
-		$page_container insertBefore $doc_doc $page_node
 	    }
 	}
     } err_msg]} {
