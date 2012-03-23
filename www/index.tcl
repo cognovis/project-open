@@ -809,7 +809,7 @@ set ticket_navbar_html [im_ticket_navbar $letter "/intranet-helpdesk/index" $nex
 
 
 # Compile and execute the formtemplate if advanced filtering is enabled.
-eval [template::adp_compile -string {<formtemplate id="ticket_filter"></formtemplate>}]
+eval [template::adp_compile -string {<formtemplate style=tiny-plain-po id="ticket_filter"></formtemplate>}]
 set filter_html $__adp_output
 
 
@@ -826,7 +826,7 @@ set left_navbar_html "
 if {$sla_exists_p} {
 
     # Compile and execute the formtemplate if advanced filtering is enabled.
-    eval [template::adp_compile -string {<formtemplate id="ticket_new"></formtemplate>}]
+    eval [template::adp_compile -string {<formtemplate style=tiny-plain-po id="ticket_new"></formtemplate>}]
     set form_html $__adp_output
 
     append left_navbar_html "
