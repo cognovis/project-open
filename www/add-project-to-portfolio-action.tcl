@@ -36,7 +36,7 @@ foreach pid $project_id {
 # ------------------------------------------------------------------
 
 foreach pid $project_id {
-    db_dml add_project_to_portfolio "update im_projects set program_id = :program_id where project_id = :project_id"
+    db_dml add_project_to_portfolio "update im_projects set program_id = :program_id where project_id = :pid"
 }
 
 
