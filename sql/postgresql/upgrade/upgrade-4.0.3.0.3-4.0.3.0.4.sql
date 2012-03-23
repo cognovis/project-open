@@ -48,7 +48,7 @@ declare
 	v_count		integer;
 begin
 	select count(*) into v_count from user_tab_columns
-	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_id';
+	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_project_member_hourly_cost';
 	IF v_count = 0 THEN 
 		-- Only for planning hourly costs:
 		-- Contains the hourly_cost of the resource in order
