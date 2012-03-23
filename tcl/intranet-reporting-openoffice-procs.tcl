@@ -353,15 +353,14 @@ ad_proc im_oo_page_extract_templates {
 # ---------------------------------------------------------------
 
 ad_proc im_oo_page_list {
-    -page_node:required
-    -page_name:required
     -page_node_list:required
     -parameters:required
 } {
     "Execute" a list of pages
 } {
-    set long_dash [format "%c" 8211]
+    ns_log Notice "im_oo_page_list: page_node_list=$page_node_list, parameters=$parameters"
 
+    set long_dash [format "%c" 8211]
     array set query_hash $parameters
 
     foreach page_node_tree $page_node_list {
@@ -376,6 +375,7 @@ ad_proc im_oo_page_list {
 	set page_name_list [$page_node getAttribute "draw:name"]
 	set page_type [lindex $page_name_list 0]
 	set page_name [lrange $page_name_list 1 end]
+	ns_log Notice "im_oo_page_list: type=$page_type, name=$page_name, node=$page_node, sub_nodes=$page_sub_nodes"
 	
 	set page_notes [im_oo_page_notes -page_node $page_node]
 	set page_sql ""
@@ -518,17 +518,6 @@ ad_proc im_oo_page_type_static {
     {-page_sql "" }
     {-page_name "undefined"}
 } {
-    @param page_node A tDom node for a draw:page node
-    @param sqlAn SQL statement that should return a single row.
-		The returned columns are available as variables
-		in the template.
-    @param repeat An optional SQL statement.
-		The template will be repated for every "repeat"
-		row with the repeat columns available as variables
-		for the SQL statement.
-    @param page_name The name of the slide 
-		(for debugging purposes)
-
     The procedure will replace the template's @varname@
     variables by the values returned from the SQL statement.
 } {
@@ -550,9 +539,12 @@ ad_proc im_oo_page_type_static {
     # Get the parent of the page
     set page_container [$page_node parentNode]
 
+    if {"" == $page_container} {
+	ad_return_complaint 1 "$page_container - $page_node - <br><pre>[ad_print_stack_trace]</pre>"
+    }
+
     # Convert the tDom tree into XML for rendering
     set template_xml [$page_node asXML]
-
 
     if {[catch {
 	db_foreach page_sql $page_sql {
@@ -577,7 +569,7 @@ ad_proc im_oo_page_type_static {
     }
 	
     # remove the template node
-    $page_container removeChild $page_node
+#    $page_container removeChild $page_node
 
 }
 
@@ -591,13 +583,8 @@ ad_proc im_oo_page_type_repeat {
     -page_name:required
     -repeat_sql:required
 } {
-    @param page_node A tDom node for a draw:page node
-    @param repeat_sql
-    	A SQL statement that should return one or more rows.
-    @param page_sub_nodes
-    	An ordered list of pages below the "repeat" page
-	that should be executed for every row returned by
-	repeat_sql
+    Repeat the following N slides for all rows coming out
+    of the repeat_sql statement
 } {
     # Write parameters into hash and local variables
     array set param_hash $parameters
@@ -633,8 +620,6 @@ ad_proc im_oo_page_type_repeat {
 
 		# "Execute" the list of pages
 		im_oo_page_list \
-		    -page_node $page_node \
-		    -page_name $page_name \
 		    -page_node_list $page_sub_nodes \
 		    -parameters [array get param_hash]
 
@@ -646,7 +631,7 @@ ad_proc im_oo_page_type_repeat {
     }
 	
     # remove the template node
-    $page_container removeChild $page_node
+#    $page_container removeChild $page_node
 
 }
 
@@ -956,7 +941,7 @@ ad_proc im_oo_page_type_list {
     }
 
     # remove the template page
-    $page_container removeChild $page_node
+#    $page_container removeChild $page_node
 
 }
 
@@ -1398,7 +1383,7 @@ ad_proc im_oo_page_type_gantt {
     }
 
     # remove the template page
-    $page_container removeChild $page_node
+#    $page_container removeChild $page_node
 
 }
 
