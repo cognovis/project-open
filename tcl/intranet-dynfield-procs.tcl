@@ -971,7 +971,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     			    -widget hidden \
     			    -value  $object_type
     }
-    
+
     # add a hidden object_id field to the form
     if {[exists_and_not_null object_id]} {
     	if {![template::element::exists $form_id "object_id"]} {
@@ -1110,6 +1110,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	order by
 		pos_y_coalesce
     "
+
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
