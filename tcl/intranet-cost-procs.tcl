@@ -1187,6 +1187,9 @@ ad_proc im_costs_project_finance_component {
     set num_format "9999999999.99"
     set return_url [im_url_with_query]
 
+    # Round to two digits by default
+    set rounding_factor 100.0
+
     # Locale for rendering 
     set locale "en"
 
@@ -1465,6 +1468,7 @@ ad_proc im_costs_project_finance_component {
     append hard_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
+    set grand_total [expr round($rounding_factor * $grand_total) / $rounding_factor]
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
     append hard_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
 
@@ -1503,6 +1507,7 @@ ad_proc im_costs_project_finance_component {
     append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
+    set grand_total [expr round($rounding_factor * $grand_total) / $rounding_factor]
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[lang::message::lookup "" intranet-cost.Preliminary_Total "Preliminary Total"]</b></td>\n"
     append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
     append prelim_cost_html "</tr>\n</table>\n"
