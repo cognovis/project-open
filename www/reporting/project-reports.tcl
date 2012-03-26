@@ -232,7 +232,7 @@ set date_sql "
 			select distinct 
 				to_char(im_day_enumerator, 'J') as monday_julian 
 			from	im_day_enumerator (:start_date::date, :end_date::date)
-			where	to_char(im_day_enumerator, 'D') = 2
+			where	to_char(im_day_enumerator, 'D') = '2'
 			order by monday_julian
 		) e
 "
