@@ -1048,7 +1048,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				# set next_julian_end_date [db_string get_next_julian_end_date "select to_char( to_date('[expr $end_date_julian_planned_hours + 2]','J'), 'YYYY-MM-DD') from dual" -default 0]
 			    	set next_julian_end_date [im_date_julian_to_ansi [expr $end_date_julian_planned_hours + 2]] 				
 
-				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', 'next_julian_end_date') as series_days (days date) limit 1" -default 0]
+				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', '$next_julian_end_date') as series_days (days date) limit 1" -default 0]
 				# set days_julian-startdate-ne-end-date [db_string get_days_julian "select to_char( to_date('next_workday','J'), 'YYYY-MM-DD') from dual" -default 0]
 				set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
 			} else { 
