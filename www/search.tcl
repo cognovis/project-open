@@ -706,16 +706,12 @@ db_foreach full_text_query $sql {
 		    db_0or1row page_info "
 			select  s.name as package_mount,
 				i.name as page_name
-			from
-			        cr_items i,
-			        cr_folders f,
+			from	cr_items i,
 			        apm_packages p,
 			        site_nodes s
-			where
-			        i.item_id = :object_id and
-			        i.parent_id = f.folder_id and
-			        f.package_id = p.package_id and
-			        p.package_id = s.object_id
+			where	i.item_id = :object_id and
+			        p.package_id = s.object_id and
+				p.package_key = 'xowiki'
 		    "
 		    set name_link "<a href=\"/$package_mount/$page_name\">$page_name</a>"
 		}
