@@ -10,7 +10,7 @@
     <inherit-templates-p>t</inherit-templates-p>
     <auto-mount>intranet-timesheet2-workflow</auto-mount>
 
-    <version name="4.0.3.0.1" url="http://www.project-open.org/download/apm/intranet-timesheet2-workflow-4.0.3.0.1.apm">
+    <version name="4.0.3.1.0" url="http://www.project-open.org/download/apm/intranet-timesheet2-workflow-4.0.3.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Provides a &quot;confirmation object&quot; to allow for workflows confirming logged hours by PM.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
