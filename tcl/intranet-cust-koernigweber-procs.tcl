@@ -151,6 +151,16 @@ ad_proc -public im_price_list {
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
     set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
 
+    # ------------------ PERMISSIONS ------------------------
+
+    # Show price list in projects only when user is a Project Manager of the project
+    # ad_return_complaint 1 "$user_id $object_id [im_biz_object_admin_p $user_id $object_id]"
+    if { "im_project" == $object_type && ![im_biz_object_admin_p $user_id $object_id] } {
+	return ""
+    }
+
+    # ------------------ START  ------------------------
+
     if { "im_project" == $object_type } {
 	# set global vars for project_type and budget 
         db_1row sender_get_info_1 "
