@@ -129,25 +129,46 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
 
-create or replace function im_sub_cost_centers (integer) 
+-------------------------------------------------------------
+-- Add a default cost center to im_projects
+--
+
+alter table im_projects
+add project_cost_center_id integer
+constraint im_projects_cost_center_fk references im_cost_centers;
+
+
+
+
+create or replace function im_user_cost_centers (integer) 
 returns setof integer as $body$
 declare
-	p_cat			alias for $1;
-	v_cat			integer;
+	p_user_id		alias for $1;
+	v_cc_code		varchar;
 	row			RECORD;
 BEGIN
+	select	cc.cost_center_code into v_cc_code
+	from	im_employees e, im_cost_centers cc
+	where	e.employee_id = p_user_id and
+		e.department_id = cc.cost_center_id;
+
+	-- Return the list of all cost centers below the one to which the user belongs to
 	FOR row IN
-		select	child_id
-		from	im_category_hierarchy
-		where	parent_id = p_cat
-	    UNION
-		select	p_cat
+		select	cc.*
+		from	im_cost_centers cc
+		where	substring(cc.cost_center_code for length(v_cc_code)) = v_cc_code
 	LOOP
-		RETURN NEXT row.child_id;
+		RETURN NEXT row.cost_center_id;
 	END LOOP;
 
 	RETURN;
 end;$body$ language 'plpgsql';
+
+
+
+
+
+
 
 
 -- Return a list of all cost centers below and including the specified cost center
@@ -732,6 +753,7 @@ create table im_costs (
 );
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
+
 
 
 
