@@ -306,7 +306,7 @@ end;
 create or replace function spam__approve (integer)
 returns integer as '
 declare
-   p_spam_id      alias for $1            -- spam_messages.spam_id%TYPE)
+   p_spam_id      alias for $1;            -- spam_messages.spam_id%TYPE)
 begin
    update spam_messages
       set approved_p = ''t''
