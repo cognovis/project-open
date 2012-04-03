@@ -22,6 +22,7 @@
         <provides url="intranet-mail-import" version="3.4.0.2.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-notes" version="3.4.0.0.0"/>
+	<requires url="intranet-spam" version="4.0.3.1.0"/>
 
         <callbacks>
             <callback type="before-uninstall"  proc="im_mail_import::before_uninstall"/>
