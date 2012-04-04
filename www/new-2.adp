@@ -39,11 +39,11 @@
 	            <input type=text name=payment_days size=5 value='@default_payment_days@'>
 	            days date of invoice</td>
 	        </tr>
+-->
 	        <tr> 
 	          <td class=rowodd>Payment Method</td>
 	          <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %></td>
 	        </tr>
--->
 	        <tr> 
 	          <td class=roweven>Purchase Order template:</td>
 	          <td class=roweven>
