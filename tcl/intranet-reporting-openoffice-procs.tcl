@@ -353,6 +353,7 @@ ad_proc im_oo_page_extract_templates {
 # ---------------------------------------------------------------
 
 ad_proc im_oo_page_list {
+    -insert_node:required
     -page_node_list:required
     -parameters:required
 } {
@@ -403,6 +404,7 @@ ad_proc im_oo_page_list {
 	    template {
 		set result [im_oo_page_type_template \
 				-page_node $page_node \
+				-insert_node $insert_node \
 				-page_name $page_name \
 				-parameters [array get query_hash] \
 				-list_sql $list_sql \
@@ -414,6 +416,7 @@ ad_proc im_oo_page_list {
 	    constant {
 		im_oo_page_type_constant \
 		    -page_node $page_node \
+		    -insert_node $insert_node \
 		    -page_name $page_name \
 		    -parameters [array get query_hash] \
 		    -list_sql $list_sql \
@@ -422,6 +425,7 @@ ad_proc im_oo_page_list {
 	    static {
 		im_oo_page_type_static \
 		    -page_node $page_node \
+		    -insert_node $insert_node \
 		    -page_name $page_name \
 		    -parameters [array get query_hash] \
 		    -list_sql $list_sql \
@@ -430,6 +434,7 @@ ad_proc im_oo_page_list {
 	    repeat {
 		im_oo_page_type_repeat \
 		    -page_node $page_node \
+		    -insert_node $insert_node \
 		    -page_name $page_name \
 		    -parameters [array get query_hash] \
 		    -repeat_sql $repeat_sql \
@@ -438,6 +443,7 @@ ad_proc im_oo_page_list {
 	    list {
 		im_oo_page_type_list \
 		    -page_node $page_node \
+		    -insert_node $insert_node \
 		    -page_name $page_name \
 		    -parameters [array get query_hash] \
 		    -list_sql $list_sql \
@@ -446,6 +452,7 @@ ad_proc im_oo_page_list {
 	    gantt {
 		im_oo_page_type_gantt \
 		    -page_node $page_node \
+		    -insert_node $insert_node \
 		    -page_name $page_name \
 		    -parameters [array get query_hash] \
 		    -list_sql $list_sql \
@@ -467,6 +474,7 @@ ad_proc im_oo_page_list {
 # -------------------------------------------------------
 
 ad_proc im_oo_page_type_constant {
+    -page_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
@@ -495,6 +503,7 @@ ad_proc im_oo_page_type_constant {
 
 ad_proc im_oo_page_type_template {
     -page_node:required
+    -page_node:required
     -parameters:required
     {-list_sql ""}
     {-page_sql "" }
@@ -512,6 +521,7 @@ ad_proc im_oo_page_type_template {
 
 
 ad_proc im_oo_page_type_static {
+    -page_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
@@ -578,6 +588,7 @@ ad_proc im_oo_page_type_static {
 
 ad_proc im_oo_page_type_repeat {
     -page_node:required
+    -page_node:required
     -page_sub_nodes:required
     -parameters:required
     -page_name:required
@@ -637,6 +648,7 @@ ad_proc im_oo_page_type_repeat {
 
 
 ad_proc im_oo_page_type_list {
+    -page_node:required
     -page_node:required
     -parameters:required
     {-locale ""}
@@ -1149,6 +1161,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
 
 ad_proc im_oo_page_type_gantt {
+    -page_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
