@@ -9,7 +9,8 @@ ad_page_contract {
     @creation-date 3 Jul 2000
     @cvs-id $Id$
 } {
-    version_id
+    { version_id "" }
+    { package_key "" }
     { public_p "" }
     { kind "procs_files" }
 } -properties {
@@ -24,6 +25,12 @@ ad_page_contract {
     sql_files:multirow
     content_pages:multirow
 }
+
+if {"" != $package_key} {
+    set version_id [db_string package_version "select min(version_id) from apm_package_versions where package_key = :package_key" -default ""]
+}
+
+if {"" == $version_id} { ad_return_complaint 1 "package-view: You need to specify version_id or package_key" }
 
 set public_p [api_set_public $version_id $public_p]
 
