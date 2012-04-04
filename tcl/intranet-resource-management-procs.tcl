@@ -255,7 +255,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     set end_date_request $end_date
 
     # Write iregularities to protocoll
-    set err_protocoll ""
+    set err_protocol ""
 
     # Department to use, when user is not assigned to one 
     set default_department [parameter::get -package_id [apm_package_id_from_key intranet-resource-management] -parameter "DefaultCostCenterId" -default 525]
@@ -1255,7 +1255,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				<li>Start/end date of subordinate task or project does not ly within the period that is defined by start and end date of the superior project or task </li>
 				</ul>
 			"
-			ad_return_complaint 1 $err_mess
+			append err_protocol "<li>$err_mess</li>\n"
 		    }
 		}
 	    }
@@ -2289,7 +2289,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     }
 
     set clicks([clock clicks -milliseconds]) close_table
-    return "$html <br> $err_protocoll"
+    return "$html <br> $err_protocol"
 }
 
 
