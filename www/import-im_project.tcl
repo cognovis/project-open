@@ -566,8 +566,6 @@ foreach csv_line_fields $values_list_of_lists {
 	}
 
     }
-
-    break
 }
 
 
