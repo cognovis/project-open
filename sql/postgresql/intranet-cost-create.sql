@@ -130,16 +130,102 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
 -------------------------------------------------------------
--- Add a default cost center to im_projects
+-- Add a default cost center to im_projects and
+-- add a trigger for setting the default value.
 --
 
 alter table im_projects
 add project_cost_center_id integer
 constraint im_projects_cost_center_fk references im_cost_centers;
 
+-- Initialize cost centers based on project manager
+update im_projects                                                                           
+set project_cost_center_id = (select e.department_id from im_employees e where e.employee_id = im_projects.project_lead_id)
+where parent_id is null and project_cost_center_id is null;
+
+
+create or replace function im_project_project_cost_center_update_tr ()
+returns trigger as $body$
+DECLARE
+	v_ccid		integer;
+	row		RECORD;
+BEGIN
+	----------------------------------------------------------------
+	-- Check if there was a change in the project_cost_center_id
+	-- and propagete the change to the children
+	IF
+		old.project_cost_center_id is not null and
+		new.project_cost_center_id is not null and
+		old.project_cost_center_id != new.project_cost_center_id
+	THEN 
+		-- Propagate to direct subprojects
+		-- These _direct_ subprojects are responsible for
+		-- further propagating down, creating a recursion loop.
+		-- ToDo
+		RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Propagating to children', new.project_id;
+		FOR row IN
+			select	sub_p.project_id
+			from	im_projects sub_p
+			where	sub_p.parent_id = new.project_id
+		LOOP
+			update	im_projects
+			set	project_cost_center_id = new.project_cost_center_id
+			where	project_id = row.project_id;
+		END LOOP;
+		return new;
+	END IF;
+
+
+	----------------------------------------------------------------
+	-- Check if the project_cost_center_id needs a default value.
+	IF new.project_cost_center_id is null THEN
+		-- Take the project_cost_center_id from the parent if available
+		IF new.parent_id is not null THEN
+			select	pp.project_cost_center_id into v_ccid
+			from	im_projects pp
+			where	pp.project_id = new.parent_id;
+			
+			IF v_ccid is not null THEN
+				RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Using CC of parent: %', new.project_id, new.parent_id;
+				update	im_projects
+				set	project_cost_center_id = v_ccid
+				where	project_id = new.project_id;
+				-- Attention! This action triggers this same proc recursively,
+				-- leading to a propagation of the value to sub-projects.
+				return new;
+			END IF;
+		END IF;
+
+		-- Use the department of the project manager as a default value
+		select	e.department_id into v_ccid
+		from	im_employees e
+		where	e.employee_id = new.project_lead_id;
+
+		IF v_ccid is not null THEN
+			RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Using CC of PM: %', new.project_id, new.project_lead_id;
+			update	im_projects
+			set	project_cost_center_id = v_ccid
+			where	project_id = new.project_id;
+			-- Attention! This action triggers this same proc recursively,
+			-- leading to a propagation of the value to sub-projects.
+			return new;
+		END IF;
+
+	END IF;
+
+	return new;
+END;$body$ language 'plpgsql';
+
+
+CREATE TRIGGER im_project_project_cost_center_update_tr
+AFTER UPDATE ON im_projects FOR EACH ROW
+EXECUTE PROCEDURE im_project_project_cost_center_update_tr();
 
 
 
+
+
+-- Return the list of all cost centers below the one to which the user belongs to
 create or replace function im_user_cost_centers (integer) 
 returns setof integer as $body$
 declare
