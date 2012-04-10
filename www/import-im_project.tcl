@@ -74,6 +74,7 @@ set dynfield_sql {
 	select distinct
 		aa.attribute_name,
 		aa.object_type,
+		aa.table_name,
 		w.parameters,
 		w.widget as tcl_widget,
 		substring(w.parameters from 'category_type "(.*)"') as category_type
@@ -509,13 +510,30 @@ foreach csv_line_fields $values_list_of_lists {
     # Import DynFields    
     set project_dynfield_updates {}
     set task_dynfield_updates {}
+    array set attributes_hash {}
     db_foreach store_dynfiels $dynfield_sql {
-	switch $object_type {
-	    im_project {
+	ns_log Notice "import-im_project: name=$attribute_name, otype=$object_type, table=$table_name"
+
+	# Avoid storing attributes multipe times into the same table.
+	# Sub-types can have the same attribute defined as the main type, so duplicate
+	# DynField attributes are OK.
+	set key "$attribute_name-$table_name"
+	if {[info exists attributes_hash($key)]} {
+	    ns_log Notice "import-im_project: name=$attribute_name already exists."
+	    continue
+	}
+	set attributes_hash($key) $table_name
+
+	switch $table_name {
+	    im_projects {
 		lappend project_dynfield_updates "$attribute_name = :$attribute_name"
 	    }
-	    im_timesheet_task {
+	    im_timesheet_tasks {
 		lappend task_dynfield_updates "$attribute_name = :$attribute_name"
+	    }
+	    default {
+		ad_return_complaint 1 "<b>Dynfield Configuration Error</b>:<br>
+		Attribute='$attribute_name' in table='$table_name' is not in im_projects or im_timesheet_tasks."
 	    }
 	}
     }
@@ -549,6 +567,7 @@ foreach csv_line_fields $values_list_of_lists {
 
     }
 
+    break
 }
 
 
