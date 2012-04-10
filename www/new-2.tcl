@@ -99,6 +99,7 @@ set button_text "[_ intranet-freelance-invoices.lt_Create_Purchase_Order]"
 set page_title "[_ intranet-freelance-invoices.New_Purchase_Order]"
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-freelance-invoices.Purchase_Orders]"] $page_title]
 set invoice_id [im_new_object_id]
+set org_invoice_id $invoice_id
 set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id]
 set invoice_date $todays_date
 set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30] 
@@ -630,6 +631,9 @@ order by
 	incr ctr
 	set task_title ""
     }
+
+    # 120408 Bruno de Wolf: Fixed issue overwriting invoice_id
+    set invoice_id $org_invoice_id
 
 } else {
 
