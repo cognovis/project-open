@@ -231,6 +231,7 @@ while {$page_cnt < [llength $odp_page_template_nodes]} {
 
 # "Execute" the list of pages
 im_oo_page_list \
+    -insert_node [lindex $odp_page_template_nodes 0] \
     -page_node_list $page_node_list \
     -parameters [array get query_hash]
 

@@ -357,7 +357,14 @@ ad_proc im_oo_page_list {
     -page_node_list:required
     -parameters:required
 } {
-    "Execute" a list of pages
+    "Execute" a list of pages.
+    @param insert_node
+		Node where the pages should be inserted.
+		This is usually identical with the page_node.
+    @param page_node_list 
+		A list of nodes to be processed
+    @param parameters A key-value list of variables used during
+		template
 } {
     ns_log Notice "im_oo_page_list: page_node_list=$page_node_list, parameters=$parameters"
 
@@ -503,6 +510,7 @@ ad_proc im_oo_page_type_constant {
 
 ad_proc im_oo_page_type_template {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
@@ -522,6 +530,7 @@ ad_proc im_oo_page_type_template {
 
 ad_proc im_oo_page_type_static {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
@@ -588,6 +597,7 @@ ad_proc im_oo_page_type_static {
 
 ad_proc im_oo_page_type_repeat {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -page_sub_nodes:required
     -parameters:required
@@ -649,6 +659,7 @@ ad_proc im_oo_page_type_repeat {
 
 ad_proc im_oo_page_type_list {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -parameters:required
     {-locale ""}
@@ -1162,6 +1173,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
 ad_proc im_oo_page_type_gantt {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
