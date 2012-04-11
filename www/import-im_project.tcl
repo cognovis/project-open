@@ -510,6 +510,7 @@ foreach csv_line_fields $values_list_of_lists {
     # Import DynFields    
     set project_dynfield_updates {}
     set task_dynfield_updates {}
+    array unset attributes_hash
     array set attributes_hash {}
     db_foreach store_dynfiels $dynfield_sql {
 	ns_log Notice "import-im_project: name=$attribute_name, otype=$object_type, table=$table_name"
