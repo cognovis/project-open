@@ -35,13 +35,13 @@ BEGIN
 		return 1; 
 	END IF;
 
-	select	count(*) from im_dynfield_attributes into v_count
-	where	acs_attribute_id in (
-			select	attribute_id 
-			from	acs_attributes 
-			where	attribute_name = p_column_name and
-				object_type = p_object_type
-		);
+	select	count(*) 
+	from	acs_attributes 
+	into	v_count
+	where 
+		attribute_name = p_column_name and 
+		object_type = p_object_type;
+
 	IF v_count > 0 THEN 
 		-- RAISE WARNING 'im_dynfield_attribute_new: Attribute=% already exists.', p_column_name;
 		return 1; 
