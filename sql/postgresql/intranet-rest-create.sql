@@ -583,7 +583,7 @@ from
 		select	*
 		from	im_hours h
 		where	h.user_id = %user_id% and
-			h.day::date = '%date%'::date
+			h.day::date = ''%date%''::date
 	) h ON (child.project_id = h.project_id),
 	acs_rels r
 where
