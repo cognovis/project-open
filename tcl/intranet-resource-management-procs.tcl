@@ -1049,8 +1049,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			    	set next_julian_end_date [im_date_julian_to_ansi [expr $end_date_julian_planned_hours + 2]] 				
 
 				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', '$next_julian_end_date') as series_days (days date) limit 1" -default 0]
+				ns_log NOTICE "Calculated next_workday: $next_workday, based on start_date: $start_date and next_julian_end_date: $next_julian_end_date for project_id: $project_id"
+
 				# set days_julian-startdate-ne-end-date [db_string get_days_julian "select to_char( to_date('next_workday','J'), 'YYYY-MM-DD') from dual" -default 0]
-				set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
+				# set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
+				set days_julian-startdate-ne-end-date $next_workday
+
 			} else { 
 				ns_log NOTICE "Found start_date=end_date: $project_id,$user_id<br>"				
                                 set days_julian [dt_ansi_to_julian_single_arg "$start_date"]
