@@ -482,6 +482,7 @@ ad_proc im_oo_page_list {
 
 ad_proc im_oo_page_type_constant {
     -page_node:required
+    -insert_node:required
     -page_node:required
     -parameters:required
     {-list_sql ""}
