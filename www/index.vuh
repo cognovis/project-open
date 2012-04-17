@@ -235,6 +235,9 @@ im_oo_page_list \
     -page_node_list $page_node_list \
     -parameters [array get query_hash]
 
+# Delete the original pages
+im_oo_page_delete \
+    -page_node_list $page_node_list
 
 
 # ---------------------------------------------------------------

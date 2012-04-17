@@ -226,6 +226,32 @@ ad_proc im_oo_substitute_descend {
 # Template Procs
 # -------------------------------------------------------
 
+ad_proc im_oo_page_delete {
+    -page_node_list:required
+} {
+    Delete a list of pages
+} {
+    ns_log Notice "im_oo_page_delete: page_node_list=$page_node_list"
+
+    foreach page_node $page_node_list {
+	set len [llength $page_node]
+	ns_log Notice "im_oo_page_delete: page_node=$page_node, len=$len"
+
+	switch $len {
+	    1 {
+		ns_log Notice "im_oo_page_delete: About to delete node=$page_node"
+		set page_container [$page_node parentNode]
+		if {"" != $page_container} {
+                        $page_container removeChild $page_node
+		}
+	    }
+	    default {
+                    im_oo_page_delete -page_node_list $page_node
+	    }
+	}
+    }
+}
+
 
 ad_proc im_oo_page_delete_templates {
     -page_node:required
@@ -366,7 +392,7 @@ ad_proc im_oo_page_list {
     @param parameters A key-value list of variables used during
 		template
 } {
-    ns_log Notice "im_oo_page_list: page_node_list=$page_node_list, parameters=$parameters"
+    ns_log Notice "im_oo_page_list: page_node_list={$page_node_list}, parameters=$parameters"
 
     set long_dash [format "%c" 8211]
     array set query_hash $parameters
@@ -383,7 +409,6 @@ ad_proc im_oo_page_list {
 	set page_name_list [$page_node getAttribute "draw:name"]
 	set page_type [lindex $page_name_list 0]
 	set page_name [lrange $page_name_list 1 end]
-	ns_log Notice "im_oo_page_list: type=$page_type, name=$page_name, node=$page_node, sub_nodes=$page_sub_nodes"
 	
 	set page_notes [im_oo_page_notes -page_node $page_node]
 	set page_sql ""
@@ -406,6 +431,7 @@ ad_proc im_oo_page_list {
 	}
 	
 	append debug "<li>$page_type=$page_type, page_name=$page_name, page_sql=$page_sql, list_sql=$list_sql\n"
+	ns_log Notice "im_oo_page_list: Page: type=$page_type, name=$page_name, node=$page_node, sub_nodes=$page_sub_nodes"
 	
 	switch $page_type {
 	    template {
@@ -556,13 +582,6 @@ ad_proc im_oo_page_type_static {
         ad_script_abort
     }
 
-    # Get the parent of the page
-    set page_container [$page_node parentNode]
-
-    if {"" == $page_container} {
-	ad_return_complaint 1 "$page_container - $page_node - <br><pre>[ad_print_stack_trace]</pre>"
-    }
-
     # Convert the tDom tree into XML for rendering
     set template_xml [$page_node asXML]
 
@@ -581,16 +600,16 @@ ad_proc im_oo_page_type_static {
 	    # Parse the new slide and insert into OOoo document
 	    set doc [dom parse $xml]
 	    set doc_doc [$doc documentElement]
-	    $page_container insertBefore $doc_doc $page_node
+
+	    # Insert the new slide before insert_node
+	    set page_container [$insert_node parentNode]
+	    $page_container insertBefore $doc_doc $insert_node
+	    ns_log Notice "im_oo_page_type_static: Inserting new page before node=$doc_doc"
 	}
     } err_msg]} {
         ad_return_complaint 1 "<b>Static: '$page_name': Error evaluating page_sql statement</b>:<pre>[ad_print_stack_trace]</pre>"
         ad_script_abort	
     }
-	
-    # remove the template node
-#    $page_container removeChild $page_node
-
 }
 
 
@@ -623,9 +642,6 @@ ad_proc im_oo_page_type_repeat {
         ad_script_abort
     }
 
-    # Get the parent of the page
-    set page_container [$page_node parentNode]
-
     if {[catch {
 	# Loop through the repeat_sql and write the results into param_hash
 	db_with_handle repeat_sql_db {
@@ -643,6 +659,7 @@ ad_proc im_oo_page_type_repeat {
 		# "Execute" the list of pages
 		im_oo_page_list \
 		    -page_node_list $page_sub_nodes \
+		    -insert_node $page_node \
 		    -parameters [array get param_hash]
 
 	    }
@@ -651,10 +668,6 @@ ad_proc im_oo_page_type_repeat {
         ad_return_complaint 1 "<b>Repeat: '$page_name': Error evaluating repeat_sql statement</b>:<pre>$err_msg</pre>"
         ad_script_abort	
     }
-	
-    # remove the template node
-#    $page_container removeChild $page_node
-
 }
 
 
@@ -725,10 +738,6 @@ ad_proc im_oo_page_type_list {
         ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
         ad_script_abort
     }
-
-    # Get the parent of the page.
-    # This is where we later have to add new pages as children.
-    set page_container [$page_node parentNode]
 
     # Make a copy of the entire page.
     # We may have to generate more then one page
@@ -803,7 +812,10 @@ ad_proc im_oo_page_type_list {
 			    # Parse the new slide and insert into OOoo document
 			    set result_doc [dom parse $xml]
 			    set result_root [$result_doc documentElement]
-			    $page_container insertBefore $result_root $page_node		
+
+			    # Get the parent of the insert_node and insert before that node.
+			    set page_container [$insert_node parentNode]
+			    $page_container insertBefore $result_root $insert_node
 			}
 			
 			# Now we are not on the first page anymore...
@@ -956,17 +968,16 @@ ad_proc im_oo_page_type_list {
             ad_script_abort
         }
 
-        # Parse the new slide and insert into OOoo document
+        # Parse the new slide ...
         set result_doc [dom parse $xml]
         set result_root [$result_doc documentElement]
-        $page_container insertBefore $result_root $page_node
+
+	# ... and insert before insert_node.
+	set page_container [$insert_node parentNode]
+        $page_container insertBefore $result_root $insert_node
 
 	# End looping through multiple pages
     }
-
-    # remove the template page
-#    $page_container removeChild $page_node
-
 }
 
 
@@ -1238,10 +1249,6 @@ ad_proc im_oo_page_type_gantt {
         ad_script_abort
     }
 
-    # Get the parent of the page.
-    # This is where we later have to add new pages as children.
-    set page_container [$page_node parentNode]
-
     # Make a copy of the entire page.
     # We may have to generate more then one page
     set template_xml [$page_node asXML]
@@ -1284,7 +1291,10 @@ ad_proc im_oo_page_type_gantt {
 			# Parse the new slide and insert into OOoo document
 			set result_doc [dom parse $xml]
 			set result_root [$result_doc documentElement]
-			$page_container insertBefore $result_root $page_node		
+
+			# Get the parent of the insert_node and insert before that node.
+			set page_container [$insert_node parentNode]
+			$page_container insertBefore $result_root $insert_node
 		    }
 		    
 		    # Now we are not on the first page anymore...
@@ -1403,13 +1413,10 @@ ad_proc im_oo_page_type_gantt {
         # Parse the new slide and insert into OOoo document
         set result_doc [dom parse $xml]
         set result_root [$result_doc documentElement]
-        $page_container insertBefore $result_root $page_node
+	set page_container [$insert_node parentNode]
+        $page_container insertBefore $result_root $insert_node
 
 	# End looping through multiple pages
     }
-
-    # remove the template page
-#    $page_container removeChild $page_node
-
 }
 
