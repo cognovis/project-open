@@ -1,5 +1,7 @@
 -- upgrade-3.4.1.0.3-3.4.1.0.4.sql
 
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.4.1.0.3-3.4.1.0.4.sql','');
+
 create or replace function im_workflow__assign_to_group_when_sv_absent(int4,text) returns int4 as '
         declare
                 p_task_id               alias for $1;
