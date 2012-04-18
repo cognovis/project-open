@@ -770,9 +770,12 @@ Calendar.cellClick = function(el) {
 		cal.callHandler();
 	}
 
-	// fraber 2012-02-07: Now closing the calendar after clicking into a date
-	Calendar.removeClass(el, "hilite");
-	cal.callCloseHandler();
+        // fraber 2012-02-07: Now closing the calendar after clicking into a date
+        if (typeof el.navtype == "undefined") {
+            Calendar.removeClass(el, "hilite");
+            cal.callCloseHandler();
+        }
+
 	if (closing) {
 	}
 };
