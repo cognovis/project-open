@@ -72,15 +72,19 @@ foreach type [db_list wf_notifs "select short_name from notification_types where
 
 # left navbar
 set left_navbar_html ""
+set admin_link ""
+
 if {$user_is_admin_p} {
-    set left_navbar_html "
+    set admin_link "<li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>"
+} 
+
+set left_navbar_html "
         <div class='filter-block'>
             <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
             <ul>
                 <li><a href=''>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
-                <li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>
+		$admin_link
             </ul>
         </div>
         <hr/>
-    "
-}
+"
