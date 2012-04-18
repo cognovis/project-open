@@ -16,11 +16,6 @@ set return_url [im_url_with_query]
 
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set admin_html ""
-if {$user_is_admin_p} {
-    set admin_html "<li><a href=\"/[im_workflow_url]/admin/\">#intranet-workflow.Admin_workflows#</a>\n"
-    #    append admin_html "<li><a href=\"/[im_workflow_url]/admin/cases?state=active\">[lang::message::lookup "" intranet-workflow.Debug_Workflows "Debug Workflows"]</a>\n"
-}
-
 
 set notification_object_id [apm_package_id_from_key "acs-workflow"]
 set notification_delivery_method_id [notification::get_delivery_method_id -name "email"]
@@ -73,4 +68,19 @@ foreach type [db_list wf_notifs "select short_name from notification_types where
 	    [ad_decode $subscribed_p 1 "Unsubscribe from $pretty_name" "Subscribe to $pretty_name"] \
 	    $subscribed_p
     }
+}
+
+# left navbar
+set left_navbar_html ""
+if {$user_is_admin_p} {
+    set left_navbar_html "
+        <div class='filter-block'>
+            <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
+            <ul>
+                <li><a href=''>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
+                <li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>
+            </ul>
+        </div>
+        <hr/>
+    "
 }
