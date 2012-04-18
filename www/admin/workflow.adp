@@ -1,6 +1,7 @@
 <master>
 <property name="title">@workflow.pretty_name;noquote@</property>
 <property name="context">@context;noquote@</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <!-- Tab bar -->
 <include src="workflow-tabs" tab="@tab;noquote@" workflow_key="@workflow_key;noquote@">
