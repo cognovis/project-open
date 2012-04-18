@@ -51,9 +51,7 @@ ad_page_contract {
     modifiable_p
 }
 
-
-# ad_return_complaint 1 $workflow_key
-
+set user_id [ad_maybe_redirect_for_registration]
 
 #####
 #
@@ -202,6 +200,26 @@ template::multirow append format_links "define?[export_ns_set_vars "url" {format
 	"Graphical" [string equal $format "graph"]
 
 set wf_name [db_string wf_name "select pretty_name from acs_object_types where object_type=:workflow_key" -default ""]
+
+# left navbar
+set left_navbar_html ""
+set admin_link ""
+
+if { [im_is_user_site_wide_or_intranet_admin $user_id] } {
+    set admin_link "<li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>"
+}
+
+set left_navbar_html "
+        <div class='filter-block'>
+            <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
+            <ul>
+                <li><a href=''>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
+                $admin_link
+                <li><a href='/acs-workflow/admin/workflow?workflow_key=$workflow_key'>[lang::message::lookup "" acs-workflow.Workflow_Definition "Back to Workflow Definition"]</a></li>
+            </ul>
+        </div>
+        <hr/>
+"
 
 ad_return_template
 

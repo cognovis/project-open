@@ -1,9 +1,7 @@
 <master>
 <property name="title">#acs-workflow.lt_workflowpretty_nameno#</property>
 <property name="context">@context;noquote@</property>
-
-
-
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <form action="workflow">
 <input type="hidden" name="workflow_key" value="@workflow_key@">
