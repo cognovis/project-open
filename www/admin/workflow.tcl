@@ -98,7 +98,7 @@ set left_navbar_html "
         <div class='filter-block'>
             <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
             <ul>
-                <li><a href=''>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
+                <li><a href='/intranet-workflow/'>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
                 $admin_link
             </ul>
         </div>
