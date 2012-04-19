@@ -14,6 +14,7 @@ create or replace function im_workflow__assign_to_group_when_sv_absent(int4,text
                 v_transition_key        varchar;        v_number_absences       integer;
                 v_str                   text;           v_group_id              integer;
                 row                     RECORD;         v_group_name            varchar;
+                v_todays_date           varchar;
         begin
                 -- Get information about the transition and the "environment"
                 select  tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
@@ -33,6 +34,8 @@ create or replace function im_workflow__assign_to_group_when_sv_absent(int4,text
                 from    im_employees e
                 where   e.employee_id = v_creation_user;
 
+                RAISE NOTICE ''im_workflow__assign_to_group_when_sv_absent - Found Supervisor:% (%)'', v_supervisor_name, v_supervisor_id;
+
                 v_number_absences := 0;
 
                 IF v_supervisor_id is not null THEN
@@ -47,12 +50,15 @@ create or replace function im_workflow__assign_to_group_when_sv_absent(int4,text
                         PERFORM workflow_case__notify_assignee (p_task_id, v_supervisor_id, null, null,
                                 ''wf_'' || v_object_type || ''_assignment_notif'');
 
+                select to_date(now()::text,''yyyy-mm-dd'') into v_todays_date;
+                RAISE NOTICE ''im_workflow__assign_to_group_when_sv_absent - Looking for absences for day:%'', v_todays_date;
+
                         -- Check if there is an absence
                         select  count(*)
                         into    v_number_absences
                         from    im_user_absences
                         where   owner_id = v_supervisor_id
-                                and (to_date(start_date::text,''yyyy-mm-dd'') >= to_date(now()::text,''yyyy-mm-dd'') and to_date(end_date::text,''yyyy-mm-dd'') <= to_date(now()::text,''yyyy-mm-dd''));
+                                and ( to_date(now()::text,''yyyy-mm-dd'') >= to_date(start_date::text,''yyyy-mm-dd'') and to_date(now()::text,''yyyy-mm-dd'') <= to_date(end_date::text,''yyyy-mm-dd'') );
                 END IF;
 
                 -- If superviser is absent, we also assign it to a group (argument)
@@ -82,6 +88,4 @@ create or replace function im_workflow__assign_to_group_when_sv_absent(int4,text
                 END IF;
                 return 0;
 end;' language 'plpgsql';
-
-
 
