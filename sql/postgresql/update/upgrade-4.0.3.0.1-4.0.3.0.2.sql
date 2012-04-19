@@ -30,7 +30,7 @@ create or replace function im_ts_approval__add_comment(int4,varchar,varchar) ret
     
             v_task_id               integer;        v_case_id               integer;
             v_creation_ip           varchar;        v_user_id               integer;
-            v_creation_user         integer;    v_conf_id    integer;
+            v_creation_user         integer;        v_conf_id               integer;
             v_object_id             integer;        v_object_type           varchar;
             v_journal_id            integer;
             v_transition_key        varchar;        v_workflow_key          varchar;
@@ -43,7 +43,6 @@ create or replace function im_ts_approval__add_comment(int4,varchar,varchar) ret
             v_object_name           text;
             v_locale                text;
             v_action_pretty         text;
-    
     
     begin
             RAISE NOTICE ''im_ts_approval__add_comment: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%'', p_case_id, p_transition_key, p_custom_arg;
@@ -70,4 +69,29 @@ create or replace function im_ts_approval__add_comment(int4,varchar,varchar) ret
             update im_timesheet_conf_objects set comment = v_msg where conf_id = v_conf_id;
     
             return 0;
-    end;' language 'plpgsql';
+end;' language 'plpgsql';
+
+
+create or replace function im_workflow__remove_conf_item_timesheet(int4,text,text) returns int4 as '
+         declare
+                p_task_id               alias for $1;
+                p_custom_arg            alias for $2;
+                p_custom_arg_1          alias for $3;
+        
+                v_transition_key        varchar;
+                v_object_type           varchar;
+                v_case_id               integer;
+                v_object_id             integer;
+                v_creation_user         integer;
+                v_creation_ip           varchar;
+                v_project_manager_id    integer;
+                v_project_manager_name  varchar;
+        
+                v_journal_id            integer;
+        
+         begin
+                RAISE NOTICE ''im_workflow__remove_conf_item_timesheet:alias_1 =%, alias_2 =%, alias3 =%, v_case_id=%'', p_task_id, p_custom_arg, p_custom_arg_1, v_case_id;
+                update im_hours set conf_object_id = NULL where conf_object_id in (select object_id from wf_cases where case_id = p_task_id);
+                return 0;
+end;' language 'plpgsql';
+
