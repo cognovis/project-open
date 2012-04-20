@@ -262,8 +262,9 @@ set sql "
                 	        u.user_id,
                         	im_name_from_user_id(u.user_id) as user_name,
 	                        (select main_p.project_id from im_projects pr, im_projects main_p where pr.project_id = h.project_id and tree_ancestor_key(pr.tree_sortkey, 1) = main_p.tree_sortkey limit 1) as top_parent_project_id,
-				p.project_name as sub_project_name,
-				p.project_id	as sub_project_id,
+				p.project_name   as sub_project_name,
+				p.project_id	 as sub_project_id,
+				p.project_nr     as  sub_project_nr,
 				p.project_type_id
 		   	from
                         	im_hours h,
