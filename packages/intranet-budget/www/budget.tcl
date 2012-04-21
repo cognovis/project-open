@@ -17,9 +17,7 @@ if {![exists_and_not_null budget_id]} {
         set budget_id [db_string budget_id "select item_id from cr_items where parent_id = :project_id and content_type = 'im_budget' limit 1" -default ""]
         if {$budget_id eq ""} {
             set page_title "[_ intranet-budget.New_Budget]"
-            set budget [::im::dynfield::CrClass::im_budget create $project_id -parent_id $project_id -name "budget_${project_id}" -title "Budget für $project_id"]
-            $budget save_new
-            set budget_id [$budget item_id]
+	    set budget_id [content::item::new -parent_id $project_id -name "budget_${project_id}" -title "Budget for $project_id" -content_type "im_budget"]
         }
     } else {
         ad_return_error "Missing variable" "You need to provide either budget_id or project_id"
