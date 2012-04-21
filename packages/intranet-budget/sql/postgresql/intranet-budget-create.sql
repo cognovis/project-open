@@ -1,3 +1,122 @@
+-- Create the budget object
+create table im_budgets (
+    budget_id integer constraint budget_id_pk primary key 
+    constraint budget_id_fk references cr_revisions(revision_id) on delete cascade,
+    budget float,
+    budget_hours float,
+    budget_hours_explanation text,
+    economic_gain float,
+    economic_gain_explanation text,
+    single_costs float,
+    single_costs_explanation text,
+    investment_costs float,
+    investment_costs_explanation text,
+    annual_costs float,
+    annual_costs_explanation text,
+    approved_p boolean default 'f'
+);
+
+select content_type__create_type (
+    'im_budget',
+    'content_revision',
+    'Budget',
+    'Budgets',
+    'im_budgets',
+    'budget_id',
+    'content_revision.revision_name'
+);
+
+insert into acs_object_type_tables (object_type, table_name, id_column) values ('im_budget','im_budgets','budget_id');
+
+SELECT im_dynfield_attribute_new ('im_budget', 'budget', '#intranet-budget.Budget#', 'currencies', 'float', 'f', 1, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'budget_hours', '#intranet-budget.Hours#', 'numeric', 'float', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'budget_hours_explanation', '#intranet-budget.HoursExplanation#', 'richtext', 'text', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'economic_gain', '#intranet-budget.EconomicGain#', 'currencies', 'float', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'economic_gain_explanation', '#intranet-budget.EconomicGainExplanation#', 'richtext', 'text', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'single_costs', '#intranet-budget.SingleCosts#', 'currencies', 'float', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'single_costs_explanation', '#intranet-budget.SingleCostsExplanation#', 'richtext', 'text', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'investment_costs', '#intranet-budget.InvestmentCosts#', 'currencies', 'float', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'investment_costs_explanation', '#intranet-budget.InvestmentCostsExplanation#', 'richtext', 'text', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'annual_costs', '#intranet-budget.AnnualCosts#', 'currencies', 'float', 'f', 2, 't');
+SELECT im_dynfield_attribute_new ('im_budget', 'annual_costs_explanation', '#intranet-budget.AnnualCostsExplanation#', 'richtext', 'text', 'f', 2, 't');
+
+
+-- Create the Hour object
+create table im_budget_hours (
+    hour_id integer constraint hour_id_pk primary key 
+    constraint hour_id_fk references cr_revisions(revision_id) on delete cascade,
+    hours float,
+    department_id integer,
+    approved_p boolean default 'f'
+);
+
+select content_type__create_type (
+    'im_budget_hour',
+    'content_revision',
+    'Budget Hour',
+    'Budget Hours',
+    'im_budget_hours',
+    'hour_id',
+    'content_revision.revision_name'
+);
+
+insert into acs_object_type_tables (object_type, table_name, id_column) values ('im_budget_hour','im_budget_hours','hour_id');
+SELECT im_dynfield_attribute_new ('im_budget_hour', 'hours', '#intranet-budget.Hours#', 'numeric', 'float', 'f', 1, 't');     
+SELECT im_dynfield_attribute_new ('im_budget_hour', 'department_id', '#intranet-budget.Department#', 'departments', 'integer', 'f', 2, 't');
+
+
+-- Create the Cost object
+create table im_budget_costs (
+    cost_id integer constraint cost_id_pk primary key 
+    constraint cost_id_fk references cr_revisions(revision_id) on delete cascade,
+    amount float,
+    type_id integer,
+    approved_p boolean default 'f'
+);
+
+select content_type__create_type (
+    'im_budget_cost',
+    'content_revision',
+    'Budget Cost',
+    'Budget Costs',
+    'im_budget_costs',
+    'cost_id',
+    'content_revision.revision_name'
+);
+
+insert into acs_object_type_tables (object_type, table_name, id_column) values ('im_budget_cost','im_budget_costs','cost_id');
+SELECT im_dynfield_attribute_new ('im_budget_cost', 'amount', '#intranet-budget.Amount#', 'currencies', 'float', 'f', 1, 't');     
+SELECT im_dynfield_attribute_new ('im_budget_cost', 'type_id', '#intranet-budget.Type#', 'numeric', 'integer', 'f', 2, 't');
+update acs_object_types set type_column='type_id', type_category_type='Intranet Cost Type' where object_type = 'im_budget_cost';
+
+-- Create the Benefit object
+create table im_budget_benefits (
+    benefit_id integer constraint benefit_id_pk primary key 
+    constraint benefit_id_fk references cr_revisions(revision_id) on delete cascade,
+    amount float,
+    type_id integer,
+    approved_p boolean default 'f'
+);
+
+select content_type__create_type (
+    'im_budget_benefit',
+    'content_revision',
+    'Budget Benefit',
+    'Budget Benefits',
+    'im_budget_benefits',
+    'benefit_id',
+    'content_revision.revision_name'
+);
+
+insert into acs_object_type_tables (object_type, table_name, id_column) values ('im_budget_benefit','im_budget_benefits','benefit_id');
+SELECT im_dynfield_attribute_new ('im_budget_benefit', 'amount', '#intranet-budget.Amount#', 'currencies', 'float', 'f', 1, 't');     
+SELECT im_dynfield_attribute_new ('im_budget_benefit', 'type_id', '#intranet-budget.Type#', 'numeric', 'integer', 'f', 2, 't');
+update acs_object_types set type_column='type_id', type_category_type='Intranet Benefit Type' where object_type = 'im_budget_benefit';
+
+
+
+
+
 SELECT im_component_plugin__new (null, 'acs_object', now(), null, null, null, 'Project Budget Component', 'intranet-budget', 'left', '/intranet/projects/view', null, 10, 'im_budget_summary_component -user_id $user_id -project_id $project_id -return_url $return_url');
 
 -- Set component as readable for employees and poadmins
