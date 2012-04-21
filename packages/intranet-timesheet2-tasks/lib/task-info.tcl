@@ -56,14 +56,20 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
     set pretty_name_key "intranet-core.[lang::util::suggest_key $pretty_name]"
     set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
 
-    # Set the value
-    set value $task($attribute_name)
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
+	ds_comment "richtext:: $value"
+    }
+
+    # Set the value
+    if {[info exists task($attribute_name)]} { 
+	set value $task($attribute_name)
+    } else {
+	set value ""
     }
 
     if {$attribute_name eq "material_id"} {
-	set value [db_string material_name "select material_name from im_materials where material_id = :value"]
+	set value [db_string material_name "select material_name from im_materials where material_id = $task(material_id_orig)"]
     }
 
 }
