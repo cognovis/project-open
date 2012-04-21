@@ -102,11 +102,11 @@ switch $action {
         db_1row budget_info "select object_title as title, [join $vars ","] from im_budgetsx where budget_id = :revision_id"
 
         set budget_hours [db_string get_hours "select coalesce(sum(b.hours),0) as budget_hours from im_budget_hours b, cr_items ci where parent_id = :budget_id and latest_revision = hour_id"]
-        set investment_costs [db_string get_costs "select coalesce(sum(amount),0) as investment_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3751"]
-        set single_costs [db_string get_costs "select coalesce(sum(amount),0) as single_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3752"]
-        set annual_costs [db_string get_costs "select coalesce(sum(amount),0) as annual_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id = 3753"]
-        set economic_gain [db_string get_hours "select coalesce(sum(b.amount),0) as economic_gain from im_budget_benefits b, cr_items ci where parent_id = :budget_id and latest_revision = fund_id"]
-        set budget [db_string get_costs "select coalesce(sum(amount),0) as budget from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = fund_id and type_id in (3751,3752)"]
+        set investment_costs [db_string get_costs "select coalesce(sum(amount),0) as investment_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id = 3751"]
+        set single_costs [db_string get_costs "select coalesce(sum(amount),0) as single_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id = 3752"]
+        set annual_costs [db_string get_costs "select coalesce(sum(amount),0) as annual_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id = 3753"]
+        set economic_gain [db_string get_hours "select coalesce(sum(b.amount),0) as economic_gain from im_budget_benefits b, cr_items ci where parent_id = :budget_id and latest_revision = benefit_id"]
+        set budget [db_string get_costs "select coalesce(sum(amount),0) as budget from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = benefit_id and type_id in (3751,3752)"]
 
         # Set the json
         lappend vars title
@@ -153,13 +153,13 @@ switch $action {
         set cost_ids [db_list costs {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_cost'}]
         foreach item_id $cost_ids {
             item::publish -item_id $item_id
-            db_dml set_approved_p "update im_budget_costs set approved_p = 't' where fund_id = (select live_revision from cr_items where item_id = :item_id)"
+            db_dml set_approved_p "update im_budget_costs set approved_p = 't' where cost_id = (select live_revision from cr_items where item_id = :item_id)"
         }
 
         set benefit_ids [db_list benefits {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_benefit'}]
         foreach item_id $benefit_ids {
             item::publish -item_id $item_id
-            db_dml set_approved_p "update im_budget_benefits set approved_p = 't' where fund_id = (select live_revision from cr_items where item_id = :item_id)"
+            db_dml set_approved_p "update im_budget_benefits set approved_p = 't' where benefit_id = (select live_revision from cr_items where item_id = :item_id)"
         }
 
         set hour_ids [db_list hours {select item_id from cr_items where parent_id = :budget_id and content_type = 'im_budget_hour'}]
@@ -187,11 +187,11 @@ switch $action {
         
         foreach revision_id $cost_revision_ids {
             incr counter
-            db_1row cost_info "select object_title as title, type_id, fund_id, amount, item_id, approved_p from im_budget_costsx where fund_id = :revision_id"
+            db_1row cost_info "select object_title as title, type_id, cost_id, amount, item_id, approved_p from im_budget_costsx where cost_id = :revision_id"
 
             # Set the json
             set json_list [list]
-            foreach var [list fund_id amount approved_p title item_id type_id] {
+            foreach var [list cost_id amount approved_p title item_id type_id] {
                 lappend json_list $var
                 lappend json_list [set $var]
             }
@@ -237,11 +237,11 @@ switch $action {
         
         foreach revision_id $benefit_revision_ids {
             incr counter
-            db_1row benefit_info "select object_title as title, fund_id, amount, item_id, approved_p from im_budget_benefitsx where fund_id = :revision_id"
+            db_1row benefit_info "select object_title as title, benefit_id, amount, item_id, approved_p from im_budget_benefitsx where benefit_id = :revision_id"
 
             # Set the json
             set json_list [list]
-            foreach var [list fund_id amount approved_p title item_id] {
+            foreach var [list benefit_id amount approved_p title item_id] {
                 lappend json_list $var
                 lappend json_list [set $var]
             }
