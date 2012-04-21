@@ -1,4 +1,4 @@
-Ext.define('Oreilly.controller.Speakers', {
+Ext.define('ProjectOpen.controller.Speakers', {
 	extend: 'Ext.app.Controller',
 
 	config: {

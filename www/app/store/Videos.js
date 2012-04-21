@@ -1,4 +1,4 @@
-Ext.define('Oreilly.store.Videos', {
+Ext.define('ProjectOpen.store.Videos', {
     extend: 'Ext.data.Store',
 
     config: {

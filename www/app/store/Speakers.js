@@ -1,8 +1,8 @@
-Ext.define('Oreilly.store.Speakers', {
+Ext.define('ProjectOpen.store.Speakers', {
 	extend: 'Ext.data.Store',
 
     config: {
-        model: 'Oreilly.model.Speaker',
+        model: 'ProjectOpen.model.Speaker',
 
         grouper: {
         	groupFn: function(record) {

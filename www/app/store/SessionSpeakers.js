@@ -1,7 +1,7 @@
-Ext.define('Oreilly.store.SessionSpeakers', {
+Ext.define('ProjectOpen.store.SessionSpeakers', {
 	extend: 'Ext.data.Store',
 
     config: {
-        model: 'Oreilly.model.Speaker'
+        model: 'ProjectOpen.model.Speaker'
     }
 });

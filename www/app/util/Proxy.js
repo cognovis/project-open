@@ -1,4 +1,4 @@
-Ext.define('Oreilly.util.Proxy', {
+Ext.define('ProjectOpen.util.Proxy', {
 
 	singleton: true,
 
@@ -19,12 +19,12 @@ Ext.define('Oreilly.util.Proxy', {
 		        Ext.Array.each(data.proposals, function(proposal) {
 
 		            proposal.speakerIds = [];
-		            proposalModel = Ext.create('Oreilly.model.Session', proposal);
+		            proposalModel = Ext.create('ProjectOpen.model.Session', proposal);
 
 		            Ext.Array.each(proposal.speakers, function(speaker) {
 		                proposal.speakerIds.push(speaker.id);
 
-		                speakerModel = Ext.create('Oreilly.model.Speaker', speaker);
+		                speakerModel = Ext.create('ProjectOpen.model.Speaker', speaker);
 		                speakerStore.add(speakerModel);
 		                sessionSpeakerStore.add(speakerModel);
 
@@ -51,7 +51,7 @@ Ext.define('Oreilly.util.Proxy', {
 		            }
 		        }
 
-		        Oreilly.sessionDays = Ext.Array.sort(Ext.Object.getValues(sessionDays), function(a, b) {
+		        ProjectOpen.sessionDays = Ext.Array.sort(Ext.Object.getValues(sessionDays), function(a, b) {
 		            return a.time < b.time ? -1 : 1;
 		        });
 

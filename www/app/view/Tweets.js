@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.Tweets', {
+Ext.define('ProjectOpen.view.Tweets', {
 
     extend: 'Ext.List',
     requires: [

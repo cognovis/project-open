@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.session.Card', {
+Ext.define('ProjectOpen.view.session.Card', {
 
     extend: 'Ext.NavigationView',
     xtype: 'sessionContainer',

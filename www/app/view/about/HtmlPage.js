@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.about.HtmlPage', {
+Ext.define('ProjectOpen.view.about.HtmlPage', {
 
 	extend: 'Ext.Container',
 	xtype: 'htmlPage',

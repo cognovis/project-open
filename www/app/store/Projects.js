@@ -6,6 +6,7 @@ Ext.define('ProjectOpen.store.Projects', {
 		grouper: {
 			sortProperty: 'time',
 			groupFn: function(record) {
+				 return true;
 				return Ext.Date.format(record.get('time'), 'g:ia');
 			}
 		},

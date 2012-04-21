@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.about.List', {
+Ext.define('ProjectOpen.view.about.List', {
 
 	extend: 'Ext.List',
 	xtype: 'aboutList',
@@ -11,6 +11,6 @@ Ext.define('Oreilly.view.about.List', {
 
 	initialize: function() {
 		this.callParent();
-		this.setData(Oreilly.app.aboutPages);
+		this.setData(ProjectOpen.app.aboutPages);
 	}
 });

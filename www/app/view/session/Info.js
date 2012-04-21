@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.session.Info', {
+Ext.define('ProjectOpen.view.session.Info', {
 
 	extend: 'Ext.Component',
 	xtype: 'sessionInfo',

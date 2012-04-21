@@ -1,4 +1,4 @@
-Ext.define('Oreilly.controller.Tweets', {
+Ext.define('ProjectOpen.controller.Tweets', {
 	extend: 'Ext.app.Controller',
 
 	config: {
@@ -15,10 +15,10 @@ Ext.define('Oreilly.controller.Tweets', {
 	onActivate: function() {
 		if (!this.loadedTweets) {
 
-			this.getTitle().setTitle(Oreilly.app.twitterSearch);
+			this.getTitle().setTitle(ProjectOpen.app.twitterSearch);
 
 			Ext.getStore('Tweets').getProxy().setExtraParams({
-				q: Oreilly.app.twitterSearch
+				q: ProjectOpen.app.twitterSearch
 			});
 			Ext.getStore('Tweets').load();
 

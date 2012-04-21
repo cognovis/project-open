@@ -1,4 +1,4 @@
-Ext.define('Oreilly.store.Tweets', {
+Ext.define('ProjectOpen.store.Tweets', {
     extend: 'Ext.data.Store',
 
     config: {

@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.session.List', {
+Ext.define('ProjectOpen.view.session.List', {
 
 	extend: 'Ext.List',
 	requires: 'Ext.SegmentedButton',
@@ -33,12 +33,12 @@ Ext.define('Oreilly.view.session.List', {
 	},
 
 	initialize: function() {
-		this.config.title = Oreilly.app.title;
+		this.config.title = ProjectOpen.app.title;
 		this.callParent();
 
 		var segmentedButton = this.down('segmentedbutton');
 
-		Ext.Array.each(Oreilly.sessionDays, function(day) {
+		Ext.Array.each(ProjectOpen.sessionDays, function(day) {
 			segmentedButton.add(day)
 		});
 	}

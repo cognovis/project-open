@@ -1,4 +1,4 @@
-Ext.define('Oreilly.model.Speaker', {
+Ext.define('ProjectOpen.model.Speaker', {
 	extend: 'Ext.data.Model',
 
 	config: {

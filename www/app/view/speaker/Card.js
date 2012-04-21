@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.speaker.Card', {
+Ext.define('ProjectOpen.view.speaker.Card', {
 
 	extend: 'Ext.NavigationView',
 	xtype: 'speakerContainer',

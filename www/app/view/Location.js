@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.Location', {
+Ext.define('ProjectOpen.view.Location', {
 
 	extend: 'Ext.Container',
 	requires: 'Ext.Map',
@@ -22,8 +22,8 @@ Ext.define('Oreilly.view.Location', {
 	},
 
 	initialize: function() {
-		var position = new google.maps.LatLng(Oreilly.app.mapCenter[0], Oreilly.app.mapCenter[1]),
-			infoWindow = new google.maps.InfoWindow({ content: Oreilly.app.mapText }),
+		var position = new google.maps.LatLng(ProjectOpen.app.mapCenter[0], ProjectOpen.app.mapCenter[1]),
+			infoWindow = new google.maps.InfoWindow({ content: ProjectOpen.app.mapText }),
 			map, marker;
 
 		this.callParent();

@@ -1,11 +1,11 @@
 //<debug>
 Ext.Loader.setPath({
     'Ext': '../../src',
-    'Oreilly': 'app'
+    'ProjectOpen': 'app'
 });
 //</debug>
 
-Ext.require('Oreilly.util.Proxy');
+Ext.require('ProjectOpen.util.Proxy');
 
 Ext.application({
     // Change the values below to re-configure the app for a different conference.
@@ -13,7 +13,7 @@ Ext.application({
     title:   'Web 2.0 Summit 2010',
     dataUrl: 'http://en.oreilly.com/web2010/public/mobile_app/all',
 
-    twitterSearch: '#w2s',
+    twitterSearch: '#projop',
 
     mapCenter: [37.788539, -122.401643],
     mapText: 'The Palace Hotel<br /><small>2 New Montgomery Street<br />San Francisco, CA 94105<br />(415) 512-1111</small>',
@@ -44,7 +44,7 @@ Ext.application({
 
     // App namespace
 
-    name: 'Oreilly',
+    name: 'ProjectOpen',
 
     phoneStartupScreen:  'resources/img/startup.png',
     tabletStartupScreen: 'resources/img/startup_640.png',
@@ -58,11 +58,12 @@ Ext.application({
 
     // Dependencies
 
-    requires: ['Oreilly.util.Proxy'],
+    requires: ['ProjectOpen.util.Proxy'],
 
     models: [
         'Session',
-        'Speaker'
+        'Speaker',
+	'Project'
     ],
 
     views: [
@@ -72,6 +73,11 @@ Ext.application({
         'session.List',
         'session.Detail',
         'session.Info',
+
+        'project.Card',
+        'project.List',
+        'project.Detail',
+        'project.Info',
 
         'speaker.Card',
         'speaker.List',
@@ -89,6 +95,7 @@ Ext.application({
 
     controllers: [
         'Sessions',
+	'Projects',
         'Speakers',
         'Tweets',
         'About'
@@ -96,6 +103,9 @@ Ext.application({
 
     stores: [
         'Sessions',
+	'Projects',
+	'ProjectSpeakers',
+	'SpeakerProjects',
         'SpeakerSessions',
         'Speakers',
         'SessionSpeakers',
@@ -111,7 +121,9 @@ Ext.application({
 
         Ext.Viewport.setMasked({ xtype: 'loadmask' });
 
-        Oreilly.util.Proxy.process('data/feed.js', function() {
+	var projectStore = Ext.getStore('Projects');
+
+        ProjectOpen.util.Proxy.process('data/feed.js', function() {
             Ext.Viewport.add({ xtype: 'main' });
             Ext.Viewport.setMasked(false);
         });

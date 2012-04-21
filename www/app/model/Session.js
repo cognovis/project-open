@@ -1,4 +1,4 @@
-Ext.define('Oreilly.model.Session', {
+Ext.define('ProjectOpen.model.Session', {
 	extend: 'Ext.data.Model',
 
 	config: {

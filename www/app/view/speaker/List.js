@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.speaker.List', {
+Ext.define('ProjectOpen.view.speaker.List', {
 
 	extend: 'Ext.List',
 	xtype: 'speakers',

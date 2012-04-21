@@ -1,4 +1,4 @@
-Ext.define('Oreilly.view.about.VideoList', {
+Ext.define('ProjectOpen.view.about.VideoList', {
 
 	extend: 'Ext.List',
 	xtype: 'videoList',
