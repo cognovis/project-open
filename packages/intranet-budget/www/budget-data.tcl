@@ -106,7 +106,7 @@ switch $action {
         set single_costs [db_string get_costs "select coalesce(sum(amount),0) as single_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id = 3752"]
         set annual_costs [db_string get_costs "select coalesce(sum(amount),0) as annual_costs from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id = 3753"]
         set economic_gain [db_string get_hours "select coalesce(sum(b.amount),0) as economic_gain from im_budget_benefits b, cr_items ci where parent_id = :budget_id and latest_revision = benefit_id"]
-        set budget [db_string get_costs "select coalesce(sum(amount),0) as budget from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = benefit_id and type_id in (3751,3752)"]
+        set budget [db_string get_costs "select coalesce(sum(amount),0) as budget from im_budget_costs, cr_items ci where parent_id = :budget_id and latest_revision = cost_id and type_id in (3751,3752)"]
 
         # Set the json
         lappend vars title
