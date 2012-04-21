@@ -643,11 +643,12 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     set clicks([clock clicks -milliseconds]) main_projects
 
-
-    # ------------------------------------------------------------------
-    # Check for translation tasks below a sub-project
-    #
-    set trans_task_sql "
+    if {[apm_package_installed_p intranet-translation]} {
+	# ------------------------------------------------------------------
+	# Check for translation tasks below a sub-project
+	#
+	
+	set trans_task_sql "
 		select
 			t.*,
 			t.project_id as trans_task_project_id,
@@ -678,18 +679,22 @@ ad_proc -public im_resource_mgmt_resource_planning {
 			t.target_language_id
     "
 
-    db_foreach trans_tasks $trans_task_sql {
-
-	# collect trans_task per child.project_id
-	set task_name_pretty "$task_name ($source_language -> $target_language)"
-	set tasks {}
-	if {[info exists trans_tasks_per_project_hash($trans_task_project_id)]} { set tasks $trans_tasks_per_project_hash($trans_task_project_id) }
-	lappend tasks [list $task_id $task_name_pretty]
-	set trans_tasks_per_project_hash($trans_task_project_id) $tasks
-	set parent_hash($task_id) $trans_task_project_id
-
+	db_foreach trans_tasks $trans_task_sql {
+	    
+	    # collect trans_task per child.project_id
+	    set task_name_pretty "$task_name ($source_language -> $target_language)"
+	    set tasks {}
+	    if {[info exists trans_tasks_per_project_hash($trans_task_project_id)]} { set tasks $trans_tasks_per_project_hash($trans_task_project_id) }
+	    lappend tasks [list $task_id $task_name_pretty]
+	    set trans_tasks_per_project_hash($trans_task_project_id) $tasks
+	    set parent_hash($task_id) $trans_task_project_id
+	    
+	}
+    } else {
+	set trans_tasks ""
+	set trans_tasks_per_project_hash ""
     }
-
+    
     set clicks([clock clicks -milliseconds]) trans_tasks
 
     # ------------------------------------------------------------------
@@ -1266,12 +1271,14 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     set clicks([clock clicks -milliseconds]) percentage_hash
 
-    # ------------------------------------------------------------------
-    # Calculate percentage numbers for translation tasks.
-    # We are re-using the same SQL as for calculating the
-    # trans_tasks for the hierarchy
-    #
-    set trans_task_percentage_sql "
+    if {[apm_package_installed_p intranet-translation]} {
+	
+	# ------------------------------------------------------------------
+	# Calculate percentage numbers for translation tasks.
+	# We are re-using the same SQL as for calculating the
+	# trans_tasks for the hierarchy
+	#
+	set trans_task_percentage_sql "
 		select
 			t.*,
 			t.project_id as trans_task_project_id,
@@ -1325,150 +1332,152 @@ ad_proc -public im_resource_mgmt_resource_planning {
     "
 
 
-    db_foreach trans_task_percentage $trans_task_percentage_sql {
-
-	# Calculate the percentage for the assigned user.
-	# Input:
-	# 	- task_units + task_uom: All UoMs are converted in Hours
-	#	- task_type: Some task types take longer then others, influencing the conversion from S-Word to Hours.
-	#	- trans_id, edit_id, proof_id, other_id: Assigning more people will increase overall time, but reduce individual time
-	#	- quality_id: Higher quality may take longer.
-
-	# How many hours does a translator work per day?
-	set hours_per_day 8.0
-
-	# How many words does a translator translate per hour? 3000 words/day is assumed average.
-	# This factor may need adjustment depending on language pair (Japanese is a lot slower...)
-	set words_per_hour [expr 3000.0 / $hours_per_day]
-
-	# How many words does a "standard" page have?
-	set words_per_page 400.0
-
-	# How many words are there in a "standard" line?
-	set words_per_line 4.5
-
-	switch $task_uom_id {
-	    320 { 
-		#   320 | Hour
-		set task_hours $task_units 
+	db_foreach trans_task_percentage $trans_task_percentage_sql {
+	    
+	    # Calculate the percentage for the assigned user.
+	    # Input:
+	    # 	- task_units + task_uom: All UoMs are converted in Hours
+	    #	- task_type: Some task types take longer then others, influencing the conversion from S-Word to Hours.
+	    #	- trans_id, edit_id, proof_id, other_id: Assigning more people will increase overall time, but reduce individual time
+	    #	- quality_id: Higher quality may take longer.
+	    
+	    # How many hours does a translator work per day?
+	    set hours_per_day 8.0
+	    
+	    # How many words does a translator translate per hour? 3000 words/day is assumed average.
+	    # This factor may need adjustment depending on language pair (Japanese is a lot slower...)
+	    set words_per_hour [expr 3000.0 / $hours_per_day]
+	    
+	    # How many words does a "standard" page have?
+	    set words_per_page 400.0
+	    
+	    # How many words are there in a "standard" line?
+	    set words_per_line 4.5
+	    
+	    switch $task_uom_id {
+		320 { 
+		    #   320 | Hour
+		    set task_hours $task_units 
+		}
+		321 { 
+		    #   321 | Day
+		    set task_hours [expr $task_units * $hours_per_day] 
+		}
+		322 { 
+		    #   322 | Unit
+		    # No idea how to convert a "unit"...
+		    set task_hours [expr $task_units * $hours_per_day] 
+		}
+		323 { 
+		    #   323 | Page
+		    set task_hours [expr $task_units * $words_per_page / $words_per_hour] 
+		}
+		324 { 
+		    #   324 | S-Word
+		    set task_hours [expr $task_units / $words_per_hour] 
+		}
+		325 { 
+		    #   325 | T-Word
+		    # Here we should consider language specific conversion, but not yet...
+		    set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+		}
+		326 { 
+		    #   326 | S-Line
+		    # Here we should consider language specific conversion, but not yet...
+		    set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+		}
+		327 { 
+		    #   327 | T-Line
+		    # Should be adjusted to language specific swell
+		    set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+		}
+		328 { 
+		    #   328 | Week
+		    set task_hours [expr $task_units * 5 * $hours_per_day] 
+		}
+		329 { 
+		    #   329 | Month
+		    set task_hours [expr $task_units * 22 * $hours_per_day] 
+		}
+		default {
+		    # Strange UoM, maybe custom defined?
+		    set task_hours $task_units 
+		}
 	    }
-	    321 { 
-		#   321 | Day
-		set task_hours [expr $task_units * $hours_per_day] 
+	    
+	    # Change the task_hours, depending on the transition to perform
+	    # Editing and proof reading takes about 1/10 of the time of translation.
+	    switch $transition {
+		trans { set task_hours [expr $task_hours * 1.0] }
+		edit  { set task_hours [expr $task_hours * 0.1] }
+		proof { set task_hours [expr $task_hours * 0.1] }
+		other { set task_hours [expr $task_hours * 1.0] }
 	    }
-	    322 { 
-		#   322 | Unit
-		# No idea how to convert a "unit"...
-		set task_hours [expr $task_units * $hours_per_day] 
-	    }
-	    323 { 
-		#   323 | Page
-		set task_hours [expr $task_units * $words_per_page / $words_per_hour] 
-	    }
-	    324 { 
-		#   324 | S-Word
-		set task_hours [expr $task_units / $words_per_hour] 
-	    }
-	    325 { 
-		#   325 | T-Word
-		# Here we should consider language specific conversion, but not yet...
-		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
-	    }
-	    326 { 
-		#   326 | S-Line
-		# Here we should consider language specific conversion, but not yet...
-		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
-	    }
-	    327 { 
-		#   327 | T-Line
-		# Should be adjusted to language specific swell
-		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
-	    }
-	    328 { 
-		#   328 | Week
-		set task_hours [expr $task_units * 5 * $hours_per_day] 
-	    }
-	    329 { 
-		#   329 | Month
-		set task_hours [expr $task_units * 22 * $hours_per_day] 
-	    }
-	    default {
-		# Strange UoM, maybe custom defined?
-		set task_hours $task_units 
-	    }
-	}
-
-	# Change the task_hours, depending on the transition to perform
-	# Editing and proof reading takes about 1/10 of the time of translation.
-	switch $transition {
-	    trans { set task_hours [expr $task_hours * 1.0] }
-	    edit  { set task_hours [expr $task_hours * 0.1] }
-	    proof { set task_hours [expr $task_hours * 0.1] }
-	    other { set task_hours [expr $task_hours * 1.0] }
-	}
-
-
-	# Calculate how many days are between start- and end date
-	set task_duration_days [expr ($trans_task_end_date_julian - $trans_task_start_date_julian) * 5.0 / 7.0]
-
-	# How much is the user available?
-	set user_capacity_percent 100
-
-	# Calculate the percentage of time required for the task divided by the time available for the task.
-	set percentage [expr round(10.0 * 100.0 * $task_hours / ($task_duration_days * $hours_per_day * $user_capacity_percent * 0.01)) / 10.0]
-
-	ns_log Notice "im_resource_mgmt_resource_planning: trans_tasks: task_name=$task_name, org_size=$task_units 
+	    
+	    
+	    # Calculate how many days are between start- and end date
+	    set task_duration_days [expr ($trans_task_end_date_julian - $trans_task_start_date_julian) * 5.0 / 7.0]
+	    
+	    # How much is the user available?
+	    set user_capacity_percent 100
+	    
+	    # Calculate the percentage of time required for the task divided by the time available for the task.
+	    set percentage [expr round(10.0 * 100.0 * $task_hours / ($task_duration_days * $hours_per_day * $user_capacity_percent * 0.01)) / 10.0]
+	    
+	    ns_log Notice "im_resource_mgmt_resource_planning: trans_tasks: task_name=$task_name, org_size=$task_units 
                        [im_category_from_id $task_uom_id], transition=$transition, user_id=$user_id, task_hours=$task_hours, 
                        task_duration_days=$task_duration_days => percentage=$percentage"
-
-	# Calculate approx. dedication of users to tasks and aggregate per week
-	# Loop through the days between start_date and end_data
-	for {set i $trans_task_start_date_julian} {$i <= $trans_task_end_date_julian} {incr i} {
 	    
-	    # Skip dates before or after the currently displayed range for performance reasons
-	    if {$i < $start_date_julian} { continue }
-	    if {$i > $end_date_julian} { continue }
-	    
-	    # Loop through the project hierarchy towards the top
-	    set pid $task_id
-	    set continue 1
-	    while {$continue} {
+	    # Calculate approx. dedication of users to tasks and aggregate per week
+	    # Loop through the days between start_date and end_data
+	    for {set i $trans_task_start_date_julian} {$i <= $trans_task_end_date_julian} {incr i} {
 		
-		# Aggregate per day
-		if {$calc_day_p} {
-		    set key "$user_id-$pid-$i"
-		    set perc 0
-		    if {[info exists perc_day_hash($key)]} { set perc $perc_day_hash($key) }
-		    set perc [expr $perc + $percentage]
-		    set perc_day_hash($key) $perc
-		}
+		# Skip dates before or after the currently displayed range for performance reasons
+		if {$i < $start_date_julian} { continue }
+		if {$i > $end_date_julian} { continue }
 		
-		# Aggregate per week
-		if {$calc_week_p} {
-		    set week_julian $start_of_week_julian_hash($i)
-		    set key "$user_id-$pid-$week_julian"
-		    set perc 0
-		    if {[info exists perc_week_hash($key)]} { set perc $perc_week_hash($key) }
-		    set perc [expr $perc + $percentage]
-		    set perc_week_hash($key) $perc
-		}
-		
-		# Check if there is a super-project and continue there.
-		# Otherwise allow for one iteration with an empty $pid
-		# to deal with the user's level
-		if {"" == $pid} { 
-		    set continue 0 
-		} else {
-		    if { [info exists parent_hash($pid)] } {
-			set pid $parent_hash($pid)
+		# Loop through the project hierarchy towards the top
+		set pid $task_id
+		set continue 1
+		while {$continue} {
+		    
+		    # Aggregate per day
+		    if {$calc_day_p} {
+			set key "$user_id-$pid-$i"
+			set perc 0
+			if {[info exists perc_day_hash($key)]} { set perc $perc_day_hash($key) }
+			set perc [expr $perc + $percentage]
+			set perc_day_hash($key) $perc
+		    }
+		    
+		    # Aggregate per week
+		    if {$calc_week_p} {
+			set week_julian $start_of_week_julian_hash($i)
+			set key "$user_id-$pid-$week_julian"
+			set perc 0
+			if {[info exists perc_week_hash($key)]} { set perc $perc_week_hash($key) }
+			set perc [expr $perc + $percentage]
+			set perc_week_hash($key) $perc
+		    }
+		    
+		    # Check if there is a super-project and continue there.
+		    # Otherwise allow for one iteration with an empty $pid
+		    # to deal with the user's level
+		    if {"" == $pid} { 
+			set continue 0 
 		    } else {
-			ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+			if { [info exists parent_hash($pid)] } {
+			    set pid $parent_hash($pid)
+			} else {
+			    ad_return_complaint 1 "We have found an issue with project id: <a href='/intranet/projects/view?project_id=$pid'>$pid</a>."
+			}
 		    }
 		}
 	    }
 	}
+    } else {
+	set percentage_trans_tasks_hash ""
     }
-
 
     set clicks([clock clicks -milliseconds]) percentage_trans_tasks_hash
 
