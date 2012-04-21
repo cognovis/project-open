@@ -1525,7 +1525,6 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     # to be incorporated into the local return_url
     ns_set delkey $bind_vars return_url
     set return_url "$current_url_without_vars?[export_url_bind_vars $bind_vars]"
-
     if {"" == $bread_crum_path} {
         set bread_crum_path [ns_set get $bind_vars bread_crum_path]
     }

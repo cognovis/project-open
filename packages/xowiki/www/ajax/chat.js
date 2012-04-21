@@ -1,5 +1,5 @@
 // simple javascript support for polling ajax based chat interface
-// $Id: chat.js,v 1.4 2006/04/08 00:11:55 gustafn Exp $
+// $Id$
 // -gustaf neumann   April 2006
 
 function receiver1() {

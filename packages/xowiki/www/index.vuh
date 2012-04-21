@@ -1,4 +1,4 @@
-# -*- Tcl -*-
+# -*- tcl -*-
 ::xowiki::Package initialize -ad_doc {
 
   This is the resolver for this package. It turns a request into
@@ -6,7 +6,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date July, 2006
-  @cvs-id $Id: index.vuh,v 1.8 2011/03/11 20:16:54 gustafn Exp $
+  @cvs-id $Id$
 
 } -parameter {
   {-m view}

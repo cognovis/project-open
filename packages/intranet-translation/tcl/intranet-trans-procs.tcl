@@ -2299,6 +2299,8 @@ ad_proc im_task_component {
 	set billable_items_input "<input type=text size=3 name=billable_units.$task_id value=$billable_units>"
 	set billable_items_input_interco "<input type=text size=3 name=billable_units_interco.$task_id value=$billable_units_interco>"
 
+        # Description
+        set description_input "<textarea name=description.$task_id rows=3>$description</textarea>"
 
 	# End Date Input Field
 	if {"" == $end_date_formatted} { set end_date_formatted $project_end_date }

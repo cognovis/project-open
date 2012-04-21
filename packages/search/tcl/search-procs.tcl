@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.47 2010/03/30 21:42:03 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval search {}

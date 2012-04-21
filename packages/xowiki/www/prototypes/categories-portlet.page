@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: categories-portlet.page,v 1.5 2009/05/29 13:38:08 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "Categories" -text {
 
   # display the category tree with associated pages

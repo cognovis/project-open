@@ -18,6 +18,7 @@
 
         <provides url="intranet-filestorage" version="3.4.0.0.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="xotcl-core" version="0.1"/>
 
         <callbacks>
         </callbacks>

@@ -237,12 +237,11 @@ namespace eval ::xowiki {
     } else {
       $page incr unresolved_references
       set last_page_id [$page set item_id]
+      set title $label
       set object_type ::xowiki::File
+      set return_url [::xo::cc url]
       set link [$package_id make_link $package_id edit-new object_type \
-		    [list parent_id [my parent_id]] \
-		    [list title $label] \
-		    [list return_url [::xo::cc url]] \
-		    autoname name last_page_id] 
+		    return_url autoname name title] 
       set html [my render_not_found $link $label]
       return $html
     }
@@ -317,14 +316,9 @@ namespace eval ::xowiki {
   #
 
   Class create ::xowiki::Link::css -superclass ::xowiki::Link::file -parameter {
-    order
   }
   ::xowiki::Link::css instproc render_found {href label} {
-    if {[my exists order]} {
-      ::xo::Page requireCSS -order [my order] $href
-    } else {
-      ::xo::Page requireCSS $href
-    }
+    ::xo::Page requireCSS $href
     return ""
   }
 

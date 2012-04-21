@@ -64,6 +64,30 @@
   <msg key="Hour">Stunde</msg>
   <msg key="intranet-invoices.Error_multiple_currencies">mehrere Währungsfehler</msg>
   <msg key="Invoice_Address">Rechnungsadresse</msg>
+  <msg key="invoice_email_body_3700">Hallo %first_names% 
+ 
+anbei finden Sie Ihre Rechnung. Bitte überprüfen Sie ob alles richtig ist und lassen uns wissen wenn Änderungen notwendig sind.
+
+Vielen Dank für Ihren Auftrag!</msg>
+  <msg key="invoice_email_body_3702">Hallo %first_names% 
+ 
+anbei findest Du unser Angebot. Bitte überprüfe, ob alles richtig ist und lasse uns wissen wenn Änderungen notwendig sind.
+
+Wir freuen uns über Deine Beauftragung</msg>
+  <msg key="invoice_email_body_3704">Hallo %first_names% 
+ 
+anbei findest Du unsere Gutschriften. Bitte überprüfe, ob alles richtig ist und lasse uns wissen wenn Änderungen notwendig sind.
+
+Danke für die tolle Zusammenarbeit!</msg>
+  <msg key="invoice_email_body_3706">Hallo %first_names% 
+ 
+anbei findest Du unseren Auftrag. Bitte überprüfe, ob alles richtig ist und lasse uns wissen wenn Änderungen notwendig sind.
+
+Wir freuen uns auf Deine Arbeit!</msg>
+  <msg key="invoice_email_subject_3700">Rechnung</msg>
+  <msg key="invoice_email_subject_3702">Angebot</msg>
+  <msg key="invoice_email_subject_3704">Gutschrift</msg>
+  <msg key="invoice_email_subject_3706">Auftrag</msg>
   <msg key="Line">Zeile</msg>
   <msg key="Linked_Invoices">Verknüpfte&lt;br /&gt;Rechnungen</msg>
   <msg key="lt_Cant_find_the_documen">Dokument Nr. %invoice_id% nicht gefunden</msg>
@@ -140,6 +164,7 @@ Mit freundlichen Grüßen
   <msg key="Payment_Method_1">Zahlungsmethode</msg>
   <msg key="Payment_Terms">Zahlungsbedingungen</msg>
   <msg key="Payment_terms">Zahlungsbedingungen</msg>
+  <msg key="Paypal_Payments">Überweisungsliste Paypal</msg>
   <msg key="Phone">Telefon</msg>
   <msg key="Preview">Vorschau</msg>
   <msg key="Preview_as_HTML">Vorschau als HTML</msg>
@@ -164,6 +189,7 @@ Mit freundlichen Grüßen
   <msg key="Send_invoice_as_HTML_attachment">Sende Rechnung als HTML Anhang</msg>
   <msg key="Send_invoice_as_HTML_link">Sende Rechnung als HTML Link</msg>
   <msg key="Send_invoice_as_link">Sende Rechnung als Link</msg>
+  <msg key="Skrill_Payments">Überweisungsliste Skrill</msg>
   <msg key="Start_Confirmation_Workflow">Bestätigungsworkflow starten</msg>
   <msg key="Status">Status</msg>
   <msg key="Submit">Ausführen</msg>
@@ -184,6 +210,7 @@ Mit freundlichen Grüßen
   <msg key="UOM">Einheit</msg>
   <msg key="VAT">MwSt.</msg>
   <msg key="VATnbsp">MwSt.&amp;nbsp;</msg>
+  <msg key="Wire_Transfer">Überweisungsliste für Starmoney</msg>
   <msg key="Your_Reference">Ihr Zeichen</msg>
   <msg key="Yr_Job__PO_No">Ihre Referenz</msg>
   <msg key="Zip">PLZ</msg>

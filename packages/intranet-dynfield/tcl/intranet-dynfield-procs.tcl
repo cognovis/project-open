@@ -300,10 +300,18 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 
 	    # Special logic for each of the TCL widgets
 	    switch $widget {
-		text - textarea - richtext {
-		    # Create a "like" search
-		    # lappend criteria "$attribute_table_name.$attribute_name like '%:$attribute_name%'"
-		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+		switch $datatype {
+		    text - string {
+			# Create a "like" search
+			lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
+			# lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+		    }
+		    integer - number - float {
+			lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		    }
+		    default {
+			lappend criteria "1=1"
+		    }
 		}
 		date {
 		    # Not supported yet
@@ -583,7 +591,7 @@ ad_proc -public im_dynfield::attribute_store {
 
         # object_subtype_id can be a list, so go through the list
         # and take the highest one (none - display - edit).
-	set display_mode "undefined"
+	set display_mode "edit"
         foreach subtype_id $object_subtype_id {
             set key "$dynfield_attribute_id.$subtype_id"
 	    ns_log Notice "im_dynfield::attribute_store: key: $key"
@@ -1308,18 +1316,19 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                           where	$attribute_id_column = :object_id
                           " -default ""]
 
-                switch $widget {
-                    date {
-                        set date [template::util::date::create]
-                        set value [template::util::date::set_property ansi $date $value]
-                    }
-                    default { }
-                }
-                
                 # Don't overwrite values with default value if the value is there already
                 if {$value ne ""} {
+		    switch $widget {
+			date {
+			    set date [template::util::date::create]
+			    set value [template::util::date::set_property ansi $date $value]
+			}
+			default { }
+		    }
+		    
                     if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
                     template::element::set_value $form_id $attribute_name $value
+		    ds_comment "value :: $value"
                 }
                 
             }

@@ -10,7 +10,7 @@ ad_library {
     @creation-date 30 September 2000
     @author Jeff Davis (davis@xarg.net) 
     @author Ashok Argent-Katwala (akatwala@arsdigita.com)
-    @cvs-id $Id: localization-procs.tcl,v 1.4 2010/10/19 20:11:54 po34demo Exp $
+    @cvs-id $Id: localization-procs.tcl,v 1.23 2008/04/18 06:48:42 victorg Exp $
 }
 
 

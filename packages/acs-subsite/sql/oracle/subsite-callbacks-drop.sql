@@ -6,7 +6,7 @@
 -- @author Michael Bryzek (mbryzek@arsdigita.com)
 -- @creation-date 2001-02-21
 
--- $Id: subsite-callbacks-drop.sql,v 1.2 2010/10/19 20:12:15 po34demo Exp $
+-- $Id: subsite-callbacks-drop.sql,v 1.1 2001/04/05 18:23:38 donb Exp $
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

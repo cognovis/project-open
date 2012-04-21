@@ -66,6 +66,31 @@
   <msg key="InterCo_Quote_New">New InterCo Quote</msg>
   <msg key="intranet-invoices.Error_multiple_currencies">Multiple Currencies Error</msg>
   <msg key="Invoice_Address">Invoice Address</msg>
+  <msg key="invoice_email_body_3700">Dear %first_names%
+ 
+Attached you will find your invoice. Please check that everything is okay and let us know if changes are needed.
+ 
+Thank you for your business.</msg>
+  <msg key="invoice_email_body_3702">Dear %first_names%
+ 
+Attached you will find your offer. Please check that everything is okay and let us know if changes are needed.
+ 
+Looking forward doing business with you.</msg>
+  <msg key="invoice_email_body_3704">Dear %first_names%
+ 
+Attached you will find your credit items. Please check that everything is okay (bank, address, vat-number, etc.) and let us know if changes are needed.
+ 
+Thank you for the excellent teamwork.</msg>
+  <msg key="invoice_email_body_3706">Dear %first_names%
+ 
+Attached you will find your purchase offer. Please check that everything is okay and let us know if changes are needed.
+ 
+Looking forward doing business with you.</msg>
+  <msg key="invoice_email_subject_3700">Invoice</msg>
+  <msg key="invoice_email_subject_3702">Offer</msg>
+  <msg key="invoice_email_subject_3704">Provider Bill</msg>
+  <msg key="invoice_email_subject_3706">Purchase Order</msg>
+  <msg key="Invoice_Mail">Invoice Mail</msg>
   <msg key="Line">Line</msg>
   <msg key="Linked_Invoices">Linked Invoices</msg>
   <msg key="lt_Cant_find_the_documen">Can't find the document# %invoice_id%</msg>
@@ -143,6 +168,7 @@ Best regards,
   <msg key="Payment_Method_1">Payment Method:</msg>
   <msg key="Payment_Terms">Payment Terms:</msg>
   <msg key="Payment_terms">Payment terms</msg>
+  <msg key="Paypal_Payments">Paypal Payment</msg>
   <msg key="Phone">Phone</msg>
   <msg key="Preview">Preview</msg>
   <msg key="Preview_as_HTML">Preview as HTML</msg>
@@ -169,6 +195,7 @@ Best regards,
   <msg key="Send_invoice_as_HTML_attachment">Send invoice as HTML attachment</msg>
   <msg key="Send_invoice_as_HTML_link">Send invoice as HTML link</msg>
   <msg key="Send_invoice_as_link">Send invoice as link</msg>
+  <msg key="Skrill_Payments">Skrill Payment</msg>
   <msg key="Start_Confirmation_Workflow">Start Confirmation Workflow</msg>
   <msg key="Status">Status</msg>
   <msg key="Submit">Submit</msg>
@@ -189,6 +216,7 @@ Best regards,
   <msg key="UOM">UOM</msg>
   <msg key="VAT">VAT</msg>
   <msg key="VATnbsp">VAT&amp;nbsp;</msg>
+  <msg key="Wire_Transfer">Wire Transfer</msg>
   <msg key="Your_Reference">Your Reference</msg>
   <msg key="Yr_Job__PO_No">PO No.</msg>
   <msg key="Zip">Zip</msg>

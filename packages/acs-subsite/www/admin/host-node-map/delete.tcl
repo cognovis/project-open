@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Mark Dettinger (mdettinger@arsdigita.com)
     @creation-date 2000-10-24
-    @cvs-id $Id: delete.tcl,v 1.2 2010/10/19 20:12:27 po34demo Exp $
+    @cvs-id $Id: delete.tcl,v 1.3 2003/05/17 10:00:22 jeffd Exp $
 } {
     host
     node_id:integer

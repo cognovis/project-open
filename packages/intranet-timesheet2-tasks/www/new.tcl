@@ -247,8 +247,8 @@ ad_form -extend -name task -on_request {
     # Set default Material to most used Material
     set material_id $default_material_id
 
-} -select_query {
-
+} -edit_request {
+    db_1row task_info {
 	select t.*,
 	        p.parent_id as project_id,
 	        p.project_name as task_name,
@@ -258,8 +258,8 @@ ad_form -extend -name task -on_request {
 	        t.task_type_id,
 	        p.project_status_id,
 	        t.task_type_id,
-	        to_char(p.start_date,'YYYY MM DD') as start_date, 
-	        to_char(p.end_date,'YYYY MM DD') as end_date, 
+	        start_date, 
+	        end_date, 
 		p.reported_hours_cache,
 		p.reported_hours_cache as reported_units_cache,
 	        p.note
@@ -269,6 +269,9 @@ ad_form -extend -name task -on_request {
 	where
 	        t.task_id = :task_id and
 		p.project_id = :task_id
+    }	
+    set end_date [template::util::date::from_ansi $end_date]
+    set start_date [template::util::date::from_ansi $start_date]    
 
 } -new_data {
 

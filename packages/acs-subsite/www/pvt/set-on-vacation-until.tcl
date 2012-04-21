@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author
     @creation-date
-    @cvs-id $Id: set-on-vacation-until.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
+    @cvs-id $Id: set-on-vacation-until.tcl,v 1.3 2002/11/30 17:22:53 jeffd Exp $
 } {
 } -properties {
     site_link:onevalue

@@ -19,7 +19,6 @@ ad_page_contract {
     {description ""}
 } 
 
-
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set page_title "Upload into '$bread_crum_path'"

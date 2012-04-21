@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Sun Nov 12 18:27:08 2000
-    @cvs-id $Id$
+    @cvs-id $Id: new.tcl,v 1.4 2011/04/19 21:22:47 emmar Exp $
 
 } {
     { return_url "" }

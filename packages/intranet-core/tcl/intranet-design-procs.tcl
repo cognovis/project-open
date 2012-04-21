@@ -683,6 +683,8 @@ ad_proc -public im_sub_navbar {
 	    }
 	}
 
+	regsub -all {\?&amp;} $url {?} url
+
 	# Find out if we need to highligh the current menu item
 	set selected 0
 	set url_length [expr [string length $url] - 1]

@@ -8,7 +8,7 @@ ad_page_contract {
     @author Lars Pind (lars@collaboraid.biz)
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 2003-06-13
-    @cvs-id $Id: perms.tcl,v 1.2 2008/10/28 18:52:45 cvs Exp $
+    @cvs-id $Id$
 } {
     object_id:integer,optional
 }

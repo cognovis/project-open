@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: CGI3.page,v 1.2 2007/04/17 10:48:05 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "CGI3" -text {
   #
   # The parameter declaration sets the context for the 

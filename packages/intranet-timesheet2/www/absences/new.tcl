@@ -39,6 +39,7 @@ if {"" == $return_url} { set return_url "/intranet-timesheet2/absences/index" }
 set focus "absence.var_name"
 set date_format "YYYY-MM-DD"
 set date_time_format "YYYY MM DD"
+if {![exists_and_not_null absence_type_id]} {set absence_type_id 0}
 if {$absence_type_id eq 0} {
     set absence_type "Absence"
 } else {
@@ -239,9 +240,7 @@ ad_form -extend -name absence -on_request {
 } -select_query {
 
 	select	a.*,
-		a.owner_id as absence_owner_id,
-		to_char(start_date, 'YYYY MM DD HH24 MI') as start_date,
-		to_char(end_date, 'YYYY MM DD HH24 MI') as end_date
+		a.owner_id as absence_owner_id
 	from	im_user_absences a
 	where	absence_id = :absence_id
 

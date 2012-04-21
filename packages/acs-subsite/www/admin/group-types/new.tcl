@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-12-04
-    @cvs-id $Id$
+    @cvs-id $Id: new.tcl,v 1.5 2011/04/15 11:43:48 emmar Exp $
 } {
     { object_type:trim "" }
     { pretty_name:trim "" }

@@ -6,17 +6,12 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-set user_is_employee_p [im_user_is_employee_p $user_id]
 
 # Check permissions. "See details" is an additional check for
 # critical information
 im_company_permissions $user_id $company_id view read write admin
 
 set company_members [im_group_member_component $company_id $user_id $admin $return_url [im_employee_group_id]]
-
-# ad_return_complaint 1 $user_is_employee_p
-if {!$user_is_employee_p} { set company_members "" }
-
 
 set our_employees_str [lang::message::lookup "" intranet-core.Our_employees_related "Our Employees (managing the company)"]
 

@@ -1,7 +1,7 @@
 -- @author Vinod Kurup (vinod@kurup.com)
 -- @creation-date 2002-10-06
 --
--- @cvs-id $Id: upgrade-4.5.1-4.6.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.5.1-4.6.sql,v 1.2 2002/11/30 17:19:07 jeffd Exp $
 
 -- fix in apm_package_version.sortable_version_name
 

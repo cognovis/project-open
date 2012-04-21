@@ -1,5 +1,5 @@
 # -*- tcl -*-
-# $Id: bib.page,v 1.3 2007/09/12 18:36:32 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "Bibliography Includelet" -text {
   #
   # A bibliography interface based on weblog.

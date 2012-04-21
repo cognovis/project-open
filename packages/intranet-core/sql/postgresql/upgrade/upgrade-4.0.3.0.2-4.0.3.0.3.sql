@@ -6,6 +6,49 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.
 -- with duplicate projects on the top-level
 
 
+-- Identify projects with duplicate project_nr
+-- and make them unique by adding the project_id
+--
+update im_projects
+set project_nr = project_nr || '.' || project_id
+where project_id in (
+	select	project_id
+	from  	im_projects 
+	where	project_nr in (
+		select project_nr 
+		from (
+			select count(*) as cnt, project_nr 
+			from im_projects 
+			where parent_id is null 
+			group by project_nr 
+			order by cnt DESC
+			) t 
+		where cnt > 1
+	)
+);
+
+
+-- Identify projects with duplicate project_path
+-- and make them unique by adding the project_id
+--
+update im_projects
+set project_path = project_path || '.' || project_id
+where project_id in (
+	select	project_id
+	from  	im_projects 
+	where	project_path in (
+		select project_path 
+		from (
+			select count(*) as cnt, project_path 
+			from im_projects 
+			where parent_id is null 
+			group by project_path 
+			order by cnt DESC
+			) t 
+		where cnt > 1
+	)
+);
+
 
 create or replace function inline_0 ()
 returns integer as $body$

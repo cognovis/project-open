@@ -138,7 +138,7 @@ db_foreach projects $projects_sql {
 # ---------------------------------------------------------------
 
 # Format document as XML
-set odt_template_content [$odt_root asXML]
+set odt_template_content [$odt_root asXML -indent none]
 
 # Perform replacements
 eval [template::adp_compile -string $odt_template_content]

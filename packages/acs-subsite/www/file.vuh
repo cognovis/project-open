@@ -4,9 +4,9 @@
 #
 # @author Dave Bauer (dave@thedesignexperience.org)
 # @creation-date 2006-08-01
-# @cvs-id $Id: file.vuh,v 1.2 2010/10/20 00:03:51 po34demo Exp $
+# @cvs-id $Id: file.vuh,v 1.9 2010/10/22 14:31:14 raulm Exp $
 
-if {![regexp {^/([0-9]{1,8})(/(private)/([0-9]{1,8}))?(/(.*))?$} [ad_conn path_info] match object_id private_slash private private_parent_id anchor]} {
+if {![regexp {^/([0-9]+)(/(private)/([0-9]+))?(/(.*))?$} [ad_conn path_info] match object_id private_slash private private_parent_id anchor]} {
     ad_return_warning "Invalid object id" [subst {
         The identifier given for this object is invalid.  Please check your url 
         or contact the webmaster if you think it should work.

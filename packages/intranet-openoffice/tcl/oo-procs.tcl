@@ -30,8 +30,9 @@ ad_proc -public intranet_oo::convert {
     regsub -all -nocase "</ul>" $content "</text:list>" content
     regsub -all -nocase "<li>" $content "<text:list-item><text:p text:style-name=\"Standard\">" content
     regsub -all -nocase "</li>" $content "</text:p></text:list-item>" content
+    regsub -all -nocase "&gt;" $content ">" content
+    regsub -all {\&amp;} $content {\&} content
     regsub -all -nocase "&" $content "&amp;" content
-
     return [string trim $content]
 }
 

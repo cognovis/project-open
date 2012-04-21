@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: announcement-talk.form.page,v 1.1 2010/12/31 13:42:42 gustafn Exp $
+# $Id$
 ::xowiki::Form new \
     -set name en:announcement-talk.form \
     -title "Talk Announcement" \

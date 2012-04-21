@@ -13,4 +13,4 @@
 
  -->
 
-<include src="/packages/intranet-mail/lib/email" return_url=@return_url;noquote@ object_id=@object_id@ no_callback_p="f" checked_p="f" use_sender_p="f" cc="@cc@" cc_ids="@cc_ids@" bcc="@bcc@" mime_type="text/html" subject="@subject;noquote@" export_vars="@export_vars@" log_id="@log_id@" to_addr="@to_addr@" content="@content_body;noquote@" file_ids="@files@">
+<include src="/packages/intranet-core/lib/email" return_url=@return_url;noquote@ object_id=@object_id@ no_callback_p="f" checked_p="f" use_sender_p="f" cc="@cc@" cc_ids="@cc_ids@" bcc="@bcc@" mime_type="text/html" subject="@subject;noquote@" export_vars="@export_vars@" log_id="@log_id@" to_addr="@to_addr@" content="@content_body;noquote@" file_ids="@files@">

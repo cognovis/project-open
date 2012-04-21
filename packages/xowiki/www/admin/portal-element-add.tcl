@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Oct 23, 2005
-  @cvs-id $Id: portal-element-add.tcl,v 1.12 2011/06/08 08:59:50 victorg Exp $
+  @cvs-id $Id$
 
   @param object_type show objects of this class and its subclasses
 } -parameter {
@@ -12,7 +12,7 @@
   {-referer .}
 }
 
-set page [$package_id get_page_from_item_ref $page_name]
+set page [my get_page_from_item_ref $page_name]
 
 if {$page eq ""} {
   #

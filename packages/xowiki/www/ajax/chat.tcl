@@ -3,7 +3,7 @@ ad_page_contract {
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Jan 31, 2006
-  @cvs-id $Id: chat.tcl,v 1.5 2007/09/20 12:19:37 gustafn Exp $
+  @cvs-id $Id$
 } -query {
   m
   id

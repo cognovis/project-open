@@ -8,7 +8,7 @@
 ad_page_contract {
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-06-04
-    @cvs-id $Id: index.tcl,v 1.13 2009/08/04 15:14:57 po34demo Exp $
+    @cvs-id $Id$
 
 } {
     {orderby "package_key"}

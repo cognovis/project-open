@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Oct 23, 2005
-  @cvs-id $Id: portal-element-remove.tcl,v 1.1 2007/01/28 23:03:26 gustafn Exp $
+  @cvs-id $Id$
 
 } -parameter {
   {-element_id}

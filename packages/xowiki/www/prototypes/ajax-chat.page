@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: ajax-chat.page,v 1.1 2006/08/17 01:44:27 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "Ajax Chat" -text {
 
   proc content {} {

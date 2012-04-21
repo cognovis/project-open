@@ -276,9 +276,9 @@ ad_proc -public -callback im_project_after_update -impl intranet-fs_update_paren
 	}
     }
 
-    # Check this out! API content::item::move later
-    db_exec_plsql update_folder_parent_id {
-	SELECT content_folder__move(:project_folder_id,:new_parent_folder_id)
+    if {"" != $project_folder_id && "" != $new_parent_folder_id} {
+	# Check this out! API content::item::move later
+	db_exec_plsql update_folder_parent_id { SELECT content_folder__move(:project_folder_id,:new_parent_folder_id) }
     }  
 }
 

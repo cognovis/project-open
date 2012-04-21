@@ -471,7 +471,10 @@ ad_form \
     "
 
 	
-    db_dml update_texts "
+    # Find out if the attribute is in the type map
+    set attribute_exists_p [db_string attribute_exists "select 1 from im_dynfield_type_attribute_map where attribute_id = :attribute_id limit 1" -default 0]
+    if {$attribute_exists_p} {
+	db_dml update_texts "
         update im_dynfield_type_attribute_map set
             help_text = :help_text,
             default_value = :default_value,
@@ -479,6 +482,20 @@ ad_form \
 	    required_p = :required_p
         where attribute_id = :attribute_id
     "
+    } else {
+	set category_ids [db_list category_types "
+              select category_id 
+              from im_categories, acs_object_types
+              where object_type = :object_type
+              and category_type = type_category_type"]
+	foreach category_id $category_ids {
+	    db_dml insert "insert into im_dynfield_type_attribute_map (
+                               attribute_id, object_type_id, display_mode, help_text, default_value, section_heading, required_p
+                           ) values (
+                               :attribute_id, :category_id, 'edit', :help_text, :default_value, :section_heading, :required_p
+                           )"
+	}
+    }
 } -after_submit {
 
 

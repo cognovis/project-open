@@ -26,8 +26,6 @@
 	<requires url="xotcl-core" version="0.100"/>
 
         <callbacks>
-            <callback type="after-install"  proc="contacts::install::package_install"/>
-            <callback type="after-mount"  proc="contacts::install::after_mount"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="AcceptableFileUploadMIMETypes"  default="*" description="* for any. CSV of acceptable MIME Types for File Upload" section_name="File Upload"/>

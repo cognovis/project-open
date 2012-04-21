@@ -3,7 +3,7 @@ ad_page_contract {
     Set on vacation to null.
 
     @author Multipe
-    @cvs-id $Id: set-on-vacation-to-null.tcl,v 1.2 2010/10/19 20:12:41 po34demo Exp $
+    @cvs-id $Id: set-on-vacation-to-null.tcl,v 1.2 2007/01/10 21:22:09 gustafn Exp $
 } -properties {
     site_link:onevalue
     home_link:onevalue

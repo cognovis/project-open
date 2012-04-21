@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Aug 16, 2006
-  @cvs-id $Id: permissions.tcl,v 1.4 2011/05/20 09:52:45 victorg Exp $
+  @cvs-id $Id$
 
 } -parameter {
   {-item_id:optional}
@@ -13,14 +13,11 @@ if {[info exists item_id]} {
   set page [::xo::db::CrClass get_instance_from_db -item_id $item_id]
   $page volatile
   set object_id  $item_id
-  set page_name [$page name]
-  set page_title [_ xowiki.permissions_manage_page]
+  set page_title "Manage Permissions for Page: [$page name]"
   set return_url [$package_id query_parameter return_url [$package_id package_url]admin/list]
 } else {
   set object_id  $package_id
-  set package_name [apm_instance_name_from_id $package_id]
-  set package_name [$package_id get_parameter PackageTitle $package_name]
-  set page_title [_ xowiki.permissions_manage_package]
+  set page_title "Manage Permissions for Package [apm_instance_name_from_id $package_id]"
   set return_url [$package_id query_parameter return_url [$package_id package_url]admin]
 }
 

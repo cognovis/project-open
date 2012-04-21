@@ -117,3 +117,81 @@ ad_proc -public im_payment_create_payment {
     
     return $payment_id
 }
+
+ad_proc -public im_payment_list {
+    -payment_method_id
+} {
+    Returns a paypal list for import into paypal and payment of all outstanding provider bills
+} {
+    set provider_bill_type_ids [im_category_children -super_category_id 3704]
+    lappend provider_bill_type_ids 3704
+    
+    set csv_lines [list]
+
+    set invoice_ids [list]    
+    db_foreach providers_total "
+       select sum(round((amount + amount*vat/100),2)) as total, provider_id,currency, invoice_id
+       from (
+       select amount,coalesce(vat,0) as vat, provider_id,currency, invoice_id
+       from im_costs, im_invoices
+       where cost_type_id in ([template::util::tcl_to_sql_list $provider_bill_type_ids]) 
+       and cost_status_id < 3810
+       and cost_id = invoice_id
+       and payment_method_id = :payment_method_id) as bills
+       group by provider_id, currency, invoice_id
+   " {
+
+       # Clean up
+       set total [lc_numeric $total "" [lang::system::site_wide_locale]]
+
+       switch $payment_method_id {
+	   808 {
+	       # Wire
+
+	       db_1row company_info "select company_name,bank_account_nr,bank_routing_nr,iban,bic from im_companies where company_id = :provider_id"
+
+	       regsub -all { } $iban {} iban
+	       regsub -all { } $bic {} bic
+	       regsub -all { } $bank_account_nr {} bank_account_nr
+	       regsub -all { } $bank_routing_nr {} bank_routing_nr
+
+	       if {$iban eq "" || $bic eq "" || [string range $iban 0 1] eq "DE"} {
+		   # We can't make a transfer as we don't have IBAN and BIC, try with account information
+		   if {$bank_account_nr ne "" && $bank_routing_nr ne ""} {
+#		       lappend csv_lines "${company_name};${bank_account_nr};${bank_routing_nr};;;${currency};${total};Projects Kolibri Kommunikation - Thanks for your good job;UEB;$total"
+		   } else {
+		       ns_log Notice "Error. Can't find banking details for $company_name"
+		   }
+	       } else {
+		   # SEPA
+ 		   lappend csv_lines "${company_name};;;${iban};${bic};${currency};${total};Projects Kolibri Kommunikation - Thanks for your good job;ESU;$total"
+	       }
+	       
+
+	   } 
+	   812 {
+	       # Paypal
+	       set paypal_email [db_string paypal "select paypal_email from im_companies where company_id = :provider_id" -default 0]
+	       if {$paypal_email ne ""} {
+		   lappend csv_lines "${paypal_email}\t${total}\t${currency}\t\tProjects Kolibri Kommunikation - Thanks for your good job"
+	       }
+	   }
+	   814 {
+	       # Skrill
+	       set skrill_email [db_string skrill "select skrill_email from im_companies where company_id = :provider_id" -default 0]
+	       if {$skrill_email ne ""} {
+		   lappend csv_lines "${skrill_email}\t${total}\t${currency}\tProjects Kolibri Kommunikation - Thanks for your good job"
+	       }
+	   }
+	   default {
+	   }
+       }
+       lappend invoice_ids $invoice_id
+   }
+    
+    # Update invoices
+    if {$invoice_ids ne ""} {
+	db_dml update_invoices "update im_costs set cost_status_id = [im_cost_status_paid] where cost_id in ([template::util::tcl_to_sql_list $invoice_ids])"
+    }
+    return [join $csv_lines "\n"]
+}

@@ -26,7 +26,7 @@
 </if>
   
 <if @admin@>
-  <p><li><a href=../projects/new?company_id=@company_id@>#intranet-core.Add_a_project#</a>
+<formtemplate id="new_project"></formtemplate>
 </if>
 
 

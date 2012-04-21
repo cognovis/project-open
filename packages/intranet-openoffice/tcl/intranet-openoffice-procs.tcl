@@ -240,3 +240,42 @@ ad_proc -public -callback im_companies_index_before_render -impl intranet-openof
         ad_script_abort
     }
 }
+
+ad_proc -public -callback im_invoices_after_create -impl intranet-openoffice-pdf-invoice {
+    {-object_type:required}
+    {-object_id:required}
+    {-status_id:required}
+    {-type_id:required}
+} {
+    Generate a PDF for the created invoice document and attach the PDF to the invoice
+    
+    Use the content repository for this and make sure you create new revisions not new files.
+} {
+}
+
+ad_proc -public intranet_openoffice::invoice_pdf {
+    {-invoice_id:required}
+} {
+    Generate a PDF for an invoice and saves it as a CR Item
+} {
+    # First we need to retrieve the invoice
+    set user_id [im_sysadmin_user_default]
+    set expiry_date [db_string current_date "select to_char(sysdate, 'YYYY-MM-DD') from dual"]
+    set auto_login [im_generate_auto_login -expiry_date $expiry_date -user_id $user_id]
+    set invoice_url [export_vars -base "[ad_url]/intranet-invoices/view" -url {invoice_id user_id expiry_date auto_login {pdf_p 1} {render_template_id 1}}]
+    set mime_type "application/pdf"
+    set invoice_nr [db_string name "select invoice_nr from im_invoices where invoice_id = :invoice_id"]
+
+    set tmp_filename [ns_tmpnam]                                                                                  
+    apm_transfer_file -url $invoice_url -output_file_name $tmp_filename
+
+    set item_id [content::item::get_id_by_name -name ${invoice_nr}.pdf -parent_id $invoice_id]
+    if {$item_id ne ""} {
+	set file_revision_id [cr_import_content -item_id $item_id -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
+    } else {
+	set file_revision_id [cr_import_content -creation_user $user_id -title "${invoice_nr}.pdf" $invoice_id $tmp_filename [file size $tmp_filename] "application/pdf" "${invoice_nr}.pdf"]
+    }	
+    
+    content::item::set_live_revision -revision_id $file_revision_id
+    return $file_revision_id
+}

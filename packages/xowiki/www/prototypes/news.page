@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: news.page,v 1.17 2010/07/12 15:13:23 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "News" -text {
   #
   # A sample News object.

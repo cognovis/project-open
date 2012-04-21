@@ -1,5 +1,5 @@
 # -*- tcl-*-
-# $Id: contributors.page,v 1.4 2009/03/12 12:41:37 gustafn Exp $
+# $Id$
 ::xowiki::Object new -title "Contributors" -text {
 
   my proc content {} {

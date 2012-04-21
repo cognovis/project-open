@@ -5,7 +5,7 @@
 --
 -- @author Multiple
 -- @creation-date Wed Nov  1 10:32:08 2000
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 
 -- security upgrade (richardl@arsdigita.com)
 
@@ -645,7 +645,7 @@ create or replace view group_member_index as select * from group_member_map;
 --
 -- @author Oumi Mehrotra oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -903,7 +903,7 @@ as select distinct group_id as party_id, element_id
 --
 -- @author Oumi Mehrotra (oumi@arsdigita.com)
 -- @creation-date 2000-11-22
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -2732,7 +2732,7 @@ show errors
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-08-22
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 --
 
 --------------
@@ -3472,7 +3472,7 @@ show errors
 --
 -- @author Oumi Mehrotra oumi@arsdigita.com
 -- @creation-date 2000-11-22
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public
@@ -3644,7 +3644,7 @@ show errors
 --
 -- @author Oumi Mehrotra (oumi@arsdigita.com)
 -- @creation-date 2000-11-22
--- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
+-- @cvs-id $Id: upgrade-4.0.1-4.1b.sql,v 1.2 2001/08/11 21:31:03 ben Exp $
 
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- This is free software distributed under the terms of the GNU Public

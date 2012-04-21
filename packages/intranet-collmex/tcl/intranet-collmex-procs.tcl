@@ -208,7 +208,7 @@ ad_proc -public intranet_collmex::update_provider_bill {
     append csv_line ";$invoice_nr" ; # Rechnungsnummer
 
     if {$konto eq ""} {
-	set konto [parameter::get_from_package_key -package_key "intranet-collmex" -parameter "KontoInvoice"]
+	set konto [parameter::get_from_package_key -package_key "intranet-collmex" -parameter "KontoBill"]
     }
 
     # Find if the provide is from germany and has vat.

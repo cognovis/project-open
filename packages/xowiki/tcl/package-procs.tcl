@@ -52,11 +52,11 @@ namespace eval ::xowiki {
 			-item_id $item_id \
 			-revision_id $revision_id]
     ::xo::Package initialize \
-	-export_vars false \
 	-package_id $package_id \
 	-init_url false -actual_query "" \
 	-parameter $parameter \
 	-user_id $user_id
+
     set page [::xo::db::CrClass get_instance_from_db -item_id $item_id -revision_id $revision_id]
     ::$package_id set_url -url [$page pretty_link]
     return $page
@@ -76,7 +76,7 @@ namespace eval ::xowiki {
   #
   Package instproc normalize_name {string} {
     set string [string trim $string]
-    regsub -all {[\#/\\]} $string _ string
+    regsub -all \# $string _ string
     # if subst_blank_in_name is turned on, turn spaces into _
     if {[my get_parameter subst_blank_in_name 1]} {
       regsub -all { +} $string "_" string
@@ -123,7 +123,7 @@ namespace eval ::xowiki {
       # Determine lang and name from a path with slashes
       #
       if {[regexp {^pages/(..)/(.*)$} $path _ lang local_name]} {
-      } elseif {[regexp {^([a-z][a-z])/(.*)$} $path _ lang local_name]} {
+      } elseif {[regexp {^(..)/(.*)$} $path _ lang local_name]} {
 
         # TODO we should be able to get rid of this by using a canonical /folder/ in 
         # case of potential conflicts, like for file....
@@ -404,10 +404,6 @@ namespace eval ::xowiki {
     # return the package_id. If we cannot resolve the name, turn 0.
     #
     my upvar $name_var name
-
-    # Set output variable always to some value
-    set name $path
-
     if {[regexp {^/(/.*)$} $path _ path]} {
       array set "" [site_node::get_from_url -url $path]
       if {$(package_key) eq "acs-subsite"} {
@@ -854,7 +850,7 @@ namespace eval ::xowiki {
   Package instproc package_path {} {
     # 
     # Compute a list fo package objects which should be used for
-    # resolving ("inheritance of objects from other instances").
+    # resolving ("inheriance of objects from other instances").
     #
     set packages [list]
     set package_url [string trimright [my package_url] /]
@@ -1015,10 +1011,8 @@ namespace eval ::xowiki {
     # (we can handle only one unknown at a time).
     set nr_elements [llength $elements]
     set n 0
-    set ref_ids {}
     foreach element $elements {
       set (last_parent_id) $parent_id
-      lappend ref_ids $parent_id
       array set "" [my simple_item_ref \
                         -normalize_name $normalize_name \
                         -use_package_path $use_package_path \
@@ -1038,7 +1032,7 @@ namespace eval ::xowiki {
 
     return [list link $link link_type $(link_type) form $(form) \
                 prefix $(prefix) stripped_name $(stripped_name) \
-                item_id $(item_id) parent_id $(parent_id) ref_ids $ref_ids]
+                item_id $(item_id) parent_id $(parent_id)]
   }
 
   Package instproc simple_item_ref {
@@ -1105,13 +1099,7 @@ namespace eval ::xowiki {
     set name [string trimright $name \0]
     set (stripped_name) [string trimright $(stripped_name) \0]
 
-    if {$element eq "" || $element eq "\0"} {
-      set folder_id [my folder_id]
-      array set "" [my item_info_from_id $folder_id]
-      set item_id $folder_id
-      set parent_id $(parent_id)
-      #my msg "SETTING item_id $item_id parent_id $parent_id // [array get {}]"
-    } elseif {$element eq "." || $element eq ".\0"} {
+    if {$element eq "." || $element eq ".\0"} {
       array set "" [my item_info_from_id $parent_id]
       set item_id $parent_id
       set parent_id $(parent_id)
@@ -1192,7 +1180,7 @@ namespace eval ::xowiki {
 	    }
             default {
               set name file:$(stripped_name)
-              if {![info exists (link_type)]} {set (link_type) file}
+              set (link_type) file
             }
           }
           set item_id [my lookup \
@@ -1258,7 +1246,7 @@ namespace eval ::xowiki {
 	set popular [::xo::cc query_parameter popular 0]
 	set tag_kind [expr {$popular ? "ptag" :"tag"}]
 	set weblog_page [my get_parameter weblog_page]
-	my get_lang_and_name -default_lang $default_lang -name $weblog_page (lang) (stripped_name)
+	my get_lang_and_name -default_lang $default_lang -path $weblog_page (lang) (stripped_name)
 	#set name $(lang):$(stripped_name)
 	my set object $weblog_page
 	::xo::cc set actual_query $tag_kind=$tag&summary=$summary
@@ -1432,12 +1420,6 @@ namespace eval ::xowiki {
       set page [source $fn]
       $page configure -name $fullName \
           -parent_id $parent_id -package_id $package_id 
-      # xowiki::File has a different interface for build-name to
-      # derive the "name" from a file-name. This is not important for
-      # prototype pages, so we skip it
-      if {![$page istype ::xowiki::File]} {
-	$page name [$page build_name]
-      }
       if {![$page exists title]} {
         $page set title $object
       }
@@ -1987,7 +1969,7 @@ namespace eval ::xowiki {
       #my log "--D item_id from query parameter $item_id"
     }
     #
-    # if no name is given, take it from the query parameter
+    # if name given, take it from the query parameter
     #
     if {![info exists name]} {
       set name [my query_parameter name]

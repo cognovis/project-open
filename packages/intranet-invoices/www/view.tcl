@@ -33,14 +33,26 @@ ad_page_contract {
     { err_mess "" }
     { item_list_type:integer 0 }
     { pdf_p 0 }
+    { user_id ""}
+    { auto_login ""}
+    { expiry_date ""}
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
+# First check for auto login
+if {"" != $user_id && "" != $auto_login} {
+    if {![im_valid_auto_login_p -user_id $user_id -auto_login $auto_login -check_user_requires_manual_login_p 0 -expiry_date $expiry_date]} {
+	set user_id [ad_maybe_redirect_for_registration]
+    }
+} else {
+    set user_id [ad_maybe_redirect_for_registration]
+}    
+
 # Get user parameters
-set user_id [ad_maybe_redirect_for_registration]
+
 set user_locale [lang::user::locale]
 set locale $user_locale
 set page_title ""
@@ -606,7 +618,8 @@ if {"odt" == $template_type} {
 # ---------------------------------------------------------------
 
 set invoice_date_pretty [lc_time_fmt $invoice_date "%x" $locale]
-set delivery_date_pretty2 [lc_time_fmt $delivery_date "%x" $locale]
+#set delivery_date_pretty2 [lc_time_fmt $delivery_date "%x" $locale]
+set delivery_date_pretty2 $delivery_date
 
 set calculated_due_date_pretty [lc_time_fmt $calculated_due_date "%x" $locale]
 
@@ -897,9 +910,16 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2]) align=right>$sort_order</td>\n"
 	}
 	
-	append invoice_item_html "
+	if {[exists_and_not_null task_id] && $task_id >0} {
+	    set task_url [export_vars -base "/intranet-timesheet2-tasks/view" -url {task_id}]
+	    append invoice_item_html "
+                 <td $bgcolor([expr $ctr % 2])><a href='$task_url'>$item_name</a></td>
+           "
+	} else {
+	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2])>$item_name</td>
 	    "
+	}
 	if {$show_qty_rate_p} {
 	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -929,7 +949,7 @@ if { 0 == $item_list_type } {
 	    set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
 	    # Replace placeholders in the OpenOffice template row with values
 	    eval [template::adp_compile -string $odt_row_template_xml]
-	    set odt_row_xml $__adp_output
+	    set odt_row_xml [intranet_oo::convert -content $__adp_output]
 	    
 	    # Parse the new row and insert into OOoo document
 	    set row_doc [dom parse $odt_row_xml]
@@ -1401,11 +1421,11 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# Perform replacements
         eval [template::adp_compile -string $odt_template_content]
         set content $__adp_output
-
+	
 	# Save the content to a file.
 	set file [open $odt_content w]
 	fconfigure $file -encoding "utf-8"
-	puts $file $content
+	puts $file [intranet_oo::convert -content $content]
 	flush $file
 	close $file
 
@@ -1425,7 +1445,7 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# Save the content to a file.
 	set file [open $odt_styles w]
 	fconfigure $file -encoding "utf-8"
-	puts $file $style
+	puts $file [intranet_oo::convert -content $style]
 	flush $file
 	close $file
 
@@ -1638,6 +1658,7 @@ append project_base_data_html "</table>"
 
 set linked_list_html ""
 set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
+set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
 if {$linked_invoice_ids eq ""} {
     # this might be a parent, try it again for children
     set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]

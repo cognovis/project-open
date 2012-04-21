@@ -66,24 +66,27 @@ alter table im_projects add column cost_expenses_planned numeric(12,2);
 --'im_planning_item','edit','/intranet-planning/new?display_mode=edit&item_id=');
 
 
+
+
+-- Sequence to create fake object_ids for im_planning_items
+create sequence im_planning_items_seq;
+
 -- This table stores one time line of items.
+-- It is not an OpenACS object, so the item_id does not reference acs_objects.
+---
 create table im_planning_items (
--- not an object (yet)
---			-- The object_id: references acs_objects.object_id.
---			-- So we can lookup object metadata such as creation_date,
---			-- object_type etc in acs_objects.
---	item_id		integer
---			constraint im_planning_item_id_pk
---			primary key
---			constraint im_planning_item_id_fk
---			references acs_objects,
+			-- The (fake) object_id: does not yet reference acs_objects.
+	item_id		integer default nextval('im_planning_items_seq')
+			constraint im_planning_item_id_pk
+			primary key,
+
 			-- Field to allow attaching the item to a project, user or
 			-- company. So object_id references acs_objects.object_id,
 			-- the supertype of all object types.
 	item_object_id	integer
-			constraint im_planning_item_oid_nn
+			constraint im_planning_items_object_nn
 			not null
-			constraint im_object_id_fk
+			constraint im_planning_items_object_fk
 			references acs_objects,
 --			-- Type can be "Revenues" or "Costs"
 --	item_type_id	integer 
@@ -101,13 +104,18 @@ create table im_planning_items (
 			-- Project phase dimension
 			-- for planning on project phases.
 	item_project_phase_id integer
-			constraint item_project_phase_fk
+			constraint im_planning_items_project_phase_fk
 			references im_projects,
 			-- Project member dimension
 			-- for planning per project member.
 	item_project_member_id integer
-			constraint item_project_member_fk
+			constraint im_planning_items_project_member_fk
 			references parties,
+			-- Only for planning hourly costs:
+			-- Contains the hourly_cost of the resource in order
+			-- to keep budgets from changing when changing the 
+			-- im_employees.hourly_cost of a resource.
+	item_project_member_hourly_cost numeric(12,3),
 			-- Cost type dimension.
 			-- Valid values include categories from "Intranet Cost Type"
 			-- and "Intranet Expense Type" (as a sub-type for expenses)
@@ -124,7 +132,7 @@ create table im_planning_items (
 );
 
 -- Speed up (frequent) queries to find all planning for a specific object.
-create index im_planning_object_idx on im_planning_items(item_object_id);
+create index im_planning_items_object_idx on im_planning_items(item_object_id);
 
 -- Avoid duplicate entries.
 -- Every ]po[ object should contain one such "unique" constraint in order
@@ -139,6 +147,9 @@ create unique index im_planning_object_item_idx on im_planning_items(
 	coalesce(item_cost_type_id,0),
 	coalesce(item_date,'2000-01-01'::timestamptz)
 );
+
+
+
 
 
 
@@ -180,10 +191,15 @@ DECLARE
 	p_item_cost_type_id	alias for $14;
 	p_item_date		alias for $15;
 
+	v_item_id		integer;
 BEGIN
+	select	nextval('im_planning_items_seq')
+	into	v_item_id from dual;
+
 	-- Create an entry in the im_planning table with the same
 	-- v_item_id from acs_objects.object_id
 	insert into im_planning_items (
+		item_id,
 		item_object_id,
 		item_project_phase_id,
 		item_project_member_id,
@@ -192,6 +208,7 @@ BEGIN
 		item_value,
 		item_note
 	) values (
+		v_item_id,
 		p_item_object_id,
 		p_item_project_phase_id,
 		p_item_project_member_id,
@@ -200,6 +217,17 @@ BEGIN
 		p_item_value,
 		p_item_note
 	);
+
+	-- Store the current hourly_rate with planning items.
+	IF p_item_cost_type_id = 3736 AND p_item_project_member_id is not null THEN
+		update im_planning_items
+		set item_project_member_hourly_cost = (
+			select hourly_cost
+			from   im_employees
+			where  employee_id = p_item_project_member_id
+		    )
+		where item_id = v_item_id;
+	END IF;
 
 	return 0;
 END; $body$ language 'plpgsql';

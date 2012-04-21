@@ -11,6 +11,7 @@ ad_library {
     related to Invoices
 
     @author frank.bergann@project-open.com
+    @author malte.sussdorff@cognovis.de
 }
 
 
@@ -703,11 +704,317 @@ ad_proc -public im_invoice_change_oo_content {
 }
 
 
+# Make sure that we only call im_invoice_copy_new for invoices of the
+# same type. Otherwise we can't guarantee correct work with Collmex
 
 # ---------------------------------------------------------------
 # Driver Function for Various Output formats
 # ---------------------------------------------------------------
 
 
+ad_proc -public im_invoice_copy_new {
+    -source_invoice_ids
+    -target_cost_type_id
+} {
+    Generate a new invoice of the target_cost_type_id with the data from the original quotes or purchase orders.
+
+    This procedure makes a couple of assumptions
+    - The customer / provider is the same
+    - All invoice_items of the original invoice will show up as a single item on the new one
+    - target_cost_type_ids must be a bill or an invoice
+    
+    NOTE: This procedure is supposed to run in the background and therefore has not permission checks.
+} {
+
+    set user_id [im_sysadmin_user_default]
+    # First make sure all the source_invoice_ids are of the same type
+    
+    set source_cost_type_id [db_list cost_types "select distinct cost_type_id from im_costs where cost_id in ([template::util::tcl_to_sql_list $source_invoice_ids])"]
+    if {[llength $source_cost_type_id] != 1} {
+	# We cant't work this
+	ns_log Error "Tried to generate for $source_invoice_ids which are not of the same cost_type_id"
+	return
+    }
+
+    # Find out the current type and, if int1 matches, find the type in the
+    # target_cost_type
+    
+    set new_cost_type_id [db_string linked_cost_type "
+         select category_id 
+         from im_categories, im_category_hierarchy
+         where parent_id = :target_cost_type_id 
+         and aux_int1 = (select aux_int1 from im_categories where category_id = :source_cost_type_id)
+         and child_id = category_id
+         limit 1
+    " -default $target_cost_type_id]
+
+    # Sanity Check
+    set ctr 0
+    db_foreach companies "select distinct provider_id, customer_id from im_costs where cost_id in ([template::util::tcl_to_sql_list $source_invoice_ids])" {
+	incr ctr
+    }
+    if {$ctr >1} {
+	# We cant't work this
+	ns_log Error "Tried to generate for $source_invoice_ids which are not of the same company or provider"
+	return
+    }
 
 
+    # ---------------------------------------------------------------
+    # Get everything about the original document
+    # ---------------------------------------------------------------
+
+    db_1row invoices_info_query "
+select
+	i.*,
+	ci.*,
+        c.aux_int1 as new_template_id
+from
+	im_invoices i, 
+	im_costs ci,
+        im_categories c
+where 
+        i.invoice_id in ([join $source_invoice_ids ", "])
+	and i.invoice_id = ci.cost_id
+        and ci.template_id = c.category_id
+LIMIT 1
+"
+    
+    set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id]
+    set new_invoice_id [im_new_object_id]
+    
+    # We need to find out if we have a customer or provider document
+    if {[lsearch [im_category_all_parents -category_id $source_cost_type_id] 3708] > -1} {
+	set customer_p 1
+	set provider_p 0
+	set payment_days [db_string payments_days "select default_payment_days from im_companies where company_id = :customer_id"]
+    } else {
+	set customer_p 0
+	set provider_p 1
+	set payment_days [db_string payments_days "select default_payment_days from im_companies where company_id = :provider_id"]
+    }
+    if {$payment_days eq ""} { set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] }
+
+    
+    # Check the template
+    if {![exists_and_not_null new_template_id]} {
+	set new_template_id $template_id
+    }
+    
+    # ---------------------------------------------------------------
+    # Update invoice base data
+    # ---------------------------------------------------------------
+    
+    set invoice_id [db_exec_plsql create_invoice ""]
+
+    # Give company_contact_id READ permissions - required for Customer Portal 
+    permission::grant -object_id $invoice_id -party_id $company_contact_id -privilege "read"
+
+    # Check if the cost item was changed via outside SQL
+    im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
+
+    # Update the invoice itself
+    db_dml update_invoice "
+update im_invoices 
+set 
+	invoice_nr	= :invoice_nr,
+	payment_method_id = :payment_method_id,
+	company_contact_id = :company_contact_id,
+	invoice_office_id = :invoice_office_id,
+	discount_perc	= :discount_perc,
+	discount_text	= :discount_text,
+	surcharge_perc	= :surcharge_perc,
+	surcharge_text	= :surcharge_text
+where
+	invoice_id = :invoice_id
+"
+
+    db_dml update_costs "
+update im_costs
+set
+	project_id	= :project_id,
+	cost_name	= :invoice_nr,
+	customer_id	= :customer_id,
+	cost_nr		= :invoice_id,
+	provider_id	= :provider_id,
+	cost_status_id	= :cost_status_id,
+	cost_type_id	= :target_cost_type_id,
+	cost_center_id	= :cost_center_id,
+	template_id	= :new_template_id,
+	effective_date	= now(),
+        delivery_date   = :delivery_date,
+	start_block	= ( select max(start_block) 
+			    from im_start_months 
+			    where start_block < now()),
+	payment_days	= :payment_days,
+	variable_cost_p = 't',
+	amount		= null,
+	currency	= :currency
+where
+	cost_id = :invoice_id
+"
+
+    # ---------------------------------------------------------------
+    # Associate the invoice with the project via acs_rels
+    # ---------------------------------------------------------------
+
+    set related_project_sql "
+        select distinct
+		object_id_one as project_id
+        from
+		acs_rels r
+        where
+		r.object_id_two in ([join $source_invoice_ids ", "])
+     "
+    set related_project_ids [db_list related_projects $related_project_sql]
+	
+    # Look for common super-projects for multi-project documents
+    set select_project [im_invoices_unify_select_projects $related_project_ids]
+    
+    foreach project_id $select_project {
+	db_1row "get relations" "
+		select	count(*) as v_rel_exists
+                from    acs_rels
+                where   object_id_one = :project_id
+                        and object_id_two = :invoice_id
+    "
+	if {0 ==  $v_rel_exists} {
+	    set rel_id [db_exec_plsql create_rel ""]
+	}
+    }
+
+    # ---------------------------------------------------------------
+    # Associate the invoice with the source invoices via acs_rels
+    # ---------------------------------------------------------------
+    
+    foreach source_id $source_invoice_ids {
+	if {$source_id ne ""} {
+	    db_1row "get relations" "
+		select	count(*) as v_rel_exists
+                from    acs_rels
+                where   object_id_one = :source_id
+                        and object_id_two = :invoice_id
+    "
+	    if {0 ==  $v_rel_exists} {
+		set rel_id [db_exec_plsql create_invoice_rel ""]
+	    }
+	}
+    }
+
+    # ---------------------------------------------------------------
+    # Associate the invoice with the source invoices via acs_rels
+    # ---------------------------------------------------------------
+
+    set invoice_item_ids [db_list item_ids "select item_id from im_invoice_items where invoice_id in ([template::util::tcl_to_sql_list $source_invoice_ids])"]
+    foreach old_item_id $invoice_item_ids {
+	set item_id [db_nextval "im_invoice_items_seq"]
+	set insert_invoice_items_sql "
+        INSERT INTO im_invoice_items (
+                item_id, item_name,
+                project_id, invoice_id,
+                item_units, item_uom_id,
+                price_per_unit, currency,
+                sort_order, item_type_id,
+                item_material_id,
+                item_status_id, description, task_id,
+		item_source_invoice_id
+        ) select :item_id, item_name,
+                project_id, :invoice_id,
+                item_units, item_uom_id,
+                price_per_unit, currency,
+                sort_order, item_type_id,
+                item_material_id,
+                item_status_id,description, task_id,
+		invoice_id from im_invoice_items where item_id = :old_item_id
+	" 
+        db_dml insert_invoice_items $insert_invoice_items_sql
+    }
+
+    # ---------------------------------------------------------------
+    # Update the invoice value
+    # ---------------------------------------------------------------
+    if {"" == $discount_perc} { set discount_perc 0.0 }
+    if {"" == $surcharge_perc} { set surcharge_perc 0.0 }
+    
+    im_invoice_update_rounded_amount \
+	-invoice_id $invoice_id \
+	-discount_perc $discount_perc \
+	-surcharge_perc $surcharge_perc
+    
+    # ---------------------------------------------------------------
+    # 
+    # ---------------------------------------------------------------
+    
+    # Audit the creation of the invoice
+    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
+
+    return $invoice_id
+}
+
+
+ad_proc -public im_invoice_generate_bills {
+    {-current_status_id "3804"}
+    {-new_status_id "3814"}
+} {
+    Generate all bills from purchase orders which are in a certain state (defaults to "Outstanding")
+
+    Checks if we have a finance document attached to it already (so we are not going to generate it)
+    Sets the purchase orders, once they are transferred into a provider bill, into the state "filed"
+} {
+    if {$current_status_id eq $new_status_id} {return}
+    set cost_types [im_category_children -super_category_id [im_cost_type_po]]
+    lappend cost_types [im_cost_type_po]
+    set purchase_order_ids [db_list purchase_orders "select cost_id from im_costs where cost_type_id in ([template::util::tcl_to_sql_list $cost_types]) and cost_status_id = :current_status_id"]
+    
+    # check if we have a linked bill already.
+    # in this case, don't generate (?)
+    set existing_bill_ids [list]
+    db_foreach provider_bills "select object_id_one, object_id_two from acs_rels where object_id_one in ([template::util::tcl_to_sql_list $purchase_order_ids]) and rel_type = 'im_invoice_invoice_rel'" {
+	lappend existing_bill_ids $object_id_one
+    }
+	
+    foreach purchase_order_id $purchase_order_ids {
+	if {[lsearch $existing_bill_ids $purchase_order_id]<0} {
+	    set new_invoice_id [im_invoice_copy_new -source_invoice_ids $purchase_order_ids -target_cost_type_id 3704]
+
+	    # Update the status of the purchase orders
+	    db_dml update_status "update im_costs set cost_status_id = :new_status_id where cost_id in ([template::util::tcl_to_sql_list $purchase_order_ids])"
+	}
+    }
+	
+    return 1
+}
+
+ad_proc -public im_invoice_send_invoice_mail {
+    -invoice_id
+    {-recipient_id ""}
+    {-from_addr ""}
+    {-cc_addr ""}
+} {
+    Send out an E-Mail to the recipient for with the invoice attached
+    
+    @param invoice_id cost_id of the invoice to be sent
+    @recipient_id Recipient of the invoice mail. Defaults to company_contact_id of the invoice
+    @from_addr Sender of the invoice mail. Defaults to current user mail
+    @cc_addr Optional cc email address. Useful for receiving copies.
+} {
+    set invoice_revision_id [intranet_openoffice::invoice_pdf -invoice_id $invoice_id]
+    set user_id [ad_conn user_id]
+    if {"" == $recipient_id} {
+	set recipient_id [db_string company_contact_id "select company_contact_id from im_invoices where invoice_id = :invoice_id" -default $user_id]
+    } 
+
+    db_1row get_recipient_info "select first_names, last_name, email as to_addr from cc_users where user_id = :recipient_id"
+
+    if {"" == $from_addr} {
+	set from_addr [party::email -party_id $user_id]
+    }
+    
+    # Get the type information so we can get the strings
+    set invoice_type_id [db_string type "select cost_type_id from im_costs where cost_id = :invoice_id"]
+    
+    set recipient_locale [lang::user::locale -user_id $recipient_id]
+    set subject [lang::util::localize "#intranet-invoices.invoice_email_subject_${invoice_type_id}#" $recipient_locale]
+    set body [lang::util::localize "#intranet-invoices.invoice_email_body_${invoice_type_id}#" $recipient_locale]
+    acs_mail_lite::send -send_immediately -to_addr $to_addr -from_addr $from_addr -cc_addr $cc_addr -subject $subject -body $body -file_ids $invoice_revision_id -use_sender
+}

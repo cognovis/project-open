@@ -17,7 +17,7 @@
 --
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-tables-create.sql,v 1.8 2008/06/07 20:29:01 donb Exp $
+-- @version $Id$
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.

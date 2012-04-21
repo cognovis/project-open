@@ -6,7 +6,7 @@
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 --
--- @cvs-id $Id: upgrade-5.0d6-5.0d7.sql,v 1.2 2010/10/19 20:11:44 po34demo Exp $
+-- @cvs-id $Id: upgrade-5.0d6-5.0d7.sql,v 1.2 2003/09/22 11:52:14 lars Exp $
 --
 
 alter table users add auth_token varchar(100);
