@@ -1,14 +1,19 @@
-Ext.define('ProjectOpen.view.speaker.Card', {
+Ext.define('Oreilly.view.speaker.Card', {
+
 	extend: 'Ext.NavigationView',
 	xtype: 'speakerContainer',
+
 	config: {
+
         tab: {
-		title: 'Speakers',
+			title: 'Speakers',
 	        iconCls: 'team1',
 	        action: 'speakersTab'
-	},
+	    },
+
         autoDestroy: false,
-	items: [
+
+		items: [
 			{
 				xtype: 'speakers',
 				store: 'Speakers',

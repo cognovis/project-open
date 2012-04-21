@@ -1,7 +1,10 @@
-Ext.define('ProjectOpen.view.speaker.Info', {
+Ext.define('Oreilly.view.speaker.Info', {
+
 	extend: 'Ext.Container',
 	xtype: 'speakerInfo',
+
 	config: {
+
 		cls: 'speakerInfo',
 		tpl: [
 			'<div class="header">',

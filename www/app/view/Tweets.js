@@ -1,23 +1,37 @@
-Ext.define('ProjectOpen.view.Tweets', {
+Ext.define('Oreilly.view.Tweets', {
+
     extend: 'Ext.List',
     requires: [
         'Ext.plugin.PullRefresh',
         'Ext.plugin.ListPaging'
     ],
+
     xtype: 'tweets',
+
     config: {
+
         title: 'Tweets',
         iconCls: 'chat',
         cls: 'tweets',
-        items: [{docked: 'top', xtype: 'titlebar'}],
+
+        items: [
+            {
+                docked: 'top',
+                xtype: 'titlebar'
+            }
+        ],
+
         store: 'Tweets',
         limit: 10,
         disableSelection: true,
+
         plugins: [
             { type: 'listpaging' },
             { type: 'pullrefresh' }
         ],
+
         emptyText: '<p class="no-searches">No tweets found matching that search</p>',
+
         itemTpl: Ext.create('Ext.XTemplate',
             '<img src="{profile_image_url}" />',
             '<div class="tweet">',

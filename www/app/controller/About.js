@@ -1,9 +1,13 @@
-Ext.define('ProjectOpen.controller.About', {
+Ext.define('Oreilly.controller.About', {
+
 	extend: 'Ext.app.Controller',
+
 	config: {
+
 		refs: {
 			aboutContainer: 'aboutContainer'
 		},
+
 		control: {
 			aboutList: {
 				itemtap: 'onAboutItemTap',
@@ -20,7 +24,7 @@ Ext.define('ProjectOpen.controller.About', {
 	},
 
 	onAboutItemTap: function(list, idx) {
-		this.getAboutContainer().push(ProjectOpen.app.config.aboutPages[idx]);
+		this.getAboutContainer().push(Oreilly.app.config.aboutPages[idx]);
 	},
 
 	onVideoTap: function(list, idx, el, record) {

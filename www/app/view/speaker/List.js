@@ -1,8 +1,12 @@
-Ext.define('ProjectOpen.view.speaker.List', {
+Ext.define('Oreilly.view.speaker.List', {
+
 	extend: 'Ext.List',
 	xtype: 'speakers',
+
 	config: {
+
 		title: 'Speakers',
+
 		itemCls: 'speaker',
 		itemTpl: [
 			'<div class="avatar" style="background-image: url({photo});"></div>',

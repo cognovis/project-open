@@ -1,16 +1,20 @@
-Ext.define('ProjectOpen.view.speaker.Detail', {
+Ext.define('Oreilly.view.speaker.Detail', {
+
 	extend: 'Ext.Container',
 	xtype: 'speaker',
+
 	config: {
+
 		layout: 'vbox',
 		scrollable: 'vertical',
+
 		items: [
 			{
 				xtype: 'speakerInfo'
 			},
 			{
 				xtype: 'list',
-				store: 'SpeakerProjects',
+				store: 'SpeakerSessions',
 
 				scrollable: false,
 
@@ -18,7 +22,7 @@ Ext.define('ProjectOpen.view.speaker.Detail', {
 					{
 						xtype: 'listitemheader',
 						cls: 'dark',
-						html: 'Projects'
+						html: 'Sessions'
 					}
 				],
 
@@ -27,5 +31,6 @@ Ext.define('ProjectOpen.view.speaker.Detail', {
 				]
 			}
 		]
+
 	}
 });

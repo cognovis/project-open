@@ -1,11 +1,11 @@
 //<debug>
 Ext.Loader.setPath({
     'Ext': '../../src',
-    'ProjectOpen': 'app'
+    'Oreilly': 'app'
 });
 //</debug>
 
-Ext.require('ProjectOpen.util.Proxy');
+Ext.require('Oreilly.util.Proxy');
 
 Ext.application({
     // Change the values below to re-configure the app for a different conference.
@@ -13,7 +13,7 @@ Ext.application({
     title:   'Web 2.0 Summit 2010',
     dataUrl: 'http://en.oreilly.com/web2010/public/mobile_app/all',
 
-    twitterSearch: '#projop',
+    twitterSearch: '#w2s',
 
     mapCenter: [37.788539, -122.401643],
     mapText: 'The Palace Hotel<br /><small>2 New Montgomery Street<br />San Francisco, CA 94105<br />(415) 512-1111</small>',
@@ -44,9 +44,11 @@ Ext.application({
 
     // App namespace
 
-    name: 'ProjectOpen',
+    name: 'Oreilly',
+
     phoneStartupScreen:  'resources/img/startup.png',
     tabletStartupScreen: 'resources/img/startup_640.png',
+
     glossOnIcon: false,
     icon: {
         57: 'resources/img/icon.png',
@@ -55,20 +57,21 @@ Ext.application({
     },
 
     // Dependencies
-    requires: ['ProjectOpen.util.Proxy'],
+
+    requires: ['Oreilly.util.Proxy'],
 
     models: [
-        'Project',
+        'Session',
         'Speaker'
     ],
 
     views: [
         'Main',
 
-        'project.Card',
-        'project.List',
-        'project.Detail',
-        'project.Info',
+        'session.Card',
+        'session.List',
+        'session.Detail',
+        'session.Info',
 
         'speaker.Card',
         'speaker.List',
@@ -76,6 +79,7 @@ Ext.application({
         'speaker.Info',
 
         'Tweets',
+        'Location',
 
         'about.Card',
         'about.List',
@@ -84,17 +88,17 @@ Ext.application({
     ],
 
     controllers: [
-        'Projects',
+        'Sessions',
         'Speakers',
         'Tweets',
         'About'
     ],
 
     stores: [
-        'Projects',
-        'SpeakerProjects',
+        'Sessions',
+        'SpeakerSessions',
         'Speakers',
-        'ProjectSpeakers',
+        'SessionSpeakers',
         'Tweets',
         'Videos'
     ],
@@ -103,24 +107,18 @@ Ext.application({
         autoMaximize: true
     },
 
-    // This is where the app starts
     launch: function() {
 
-	// Mask out the main screen with the "loading" GIF        	    
         Ext.Viewport.setMasked({ xtype: 'loadmask' });
 
-	// Load the "feed.js", "activate" the app and remove the loading GIF.
-	// From now on the "main" panel handles events.
-	/*
-	ProjectOpen.util.Proxy.process('data/feed.js', function() {
+        Oreilly.util.Proxy.process('data/feed.js', function() {
             Ext.Viewport.add({ xtype: 'main' });
             Ext.Viewport.setMasked(false);
         });
-	*/
-	var projectStore = Ext.getStore('Projects');
-	projectStore.load(function() {
-            Ext.Viewport.add({ xtype: 'main' });
-            Ext.Viewport.setMasked(false);
-        });
+
+        // setInterval(function(){
+        //     Ext.DomQuery.select('link')[0].href = "resources/css/oreilly.css?" + Math.ceil(Math.random() * 100000000)
+        // }, 1000);
     }
+
 });

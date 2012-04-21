@@ -1,32 +1,33 @@
-Ext.define('ProjectOpen.controller.Speakers', {
+Ext.define('Oreilly.controller.Speakers', {
 	extend: 'Ext.app.Controller',
+
 	config: {
 		refs: {
 			speakerContainer: 'speakerContainer',
 			speakers: 'speakerContainer speakers',
 			speaker: 'speakerContainer speaker',
 			speakerInfo: 'speakerContainer speakerInfo',
-			projects: 'speakerContainer speaker list'
+			sessions: 'speakerContainer speaker list'
 		},
 		control: {
 			speakers: {
 				itemtap: 'onSpeakerTap',
 				activate: 'onSpeakersActivate'
 			},
-			projects: {
-				itemtap: 'onProjectTap'
+			sessions: {
+				itemtap: 'onSessionTap'
 			}
 		}
 	},
 
 	onSpeakerTap: function(list, idx, el, record) {
 
-		var projectStore = Ext.getStore('SpeakerProjects'),
-			projectIds = record.get('projectIds');
+		var sessionStore = Ext.getStore('SpeakerSessions'),
+			sessionIds = record.get('sessionIds');
 
-		projectStore.clearFilter();
-		projectStore.filterBy(function(project) {
-			return Ext.Array.contains(projectIds, project.get('id'));
+		sessionStore.clearFilter();
+		sessionStore.filterBy(function(session) {
+			return Ext.Array.contains(sessionIds, session.get('id'));
 		});
 
 		if (!this.speaker) {
@@ -38,15 +39,15 @@ Ext.define('ProjectOpen.controller.Speakers', {
 		this.getSpeakerInfo().setRecord(record);
 	},
 
-	onProjectTap: function(list, idx, el, record) {
+	onSessionTap: function(list, idx, el, record) {
 
-		if (!this.projectInfo) {
-			this.projectInfo = Ext.widget('projectInfo');
+		if (!this.sessionInfo) {
+			this.sessionInfo = Ext.widget('sessionInfo');
 		}
 
-		this.projectInfo.config.title = record.get('title');
-		this.projectInfo.setRecord(record);
-		this.getSpeakerContainer().push(this.projectInfo);
+		this.sessionInfo.config.title = record.get('title');
+		this.sessionInfo.setRecord(record);
+		this.getSpeakerContainer().push(this.sessionInfo);
 	},
 
 	onSpeakersActivate: function() {

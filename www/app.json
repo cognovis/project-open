@@ -1,5 +1,5 @@
 {
-    "name": "]ProjectOpen[ Timesheet",
+    "name": "Oreilly",
     "js": [
         {
             "path": "/intranet-sencha/touch/builds/sencha-touch-all-debug.js"
@@ -40,10 +40,10 @@
     ],
     "archivePath": "archive",
     "buildPaths": {
-        "testing": "../../deploy/testing/projectopen",
-        "production": "../../deploy/production/projectopen",
-        "package": "../../deploy/package/projectopen",
-        "native": "../../deploy/native/projectopen"
+        "testing": "../../deploy/testing/oreilly",
+        "production": "../../deploy/production/oreilly",
+        "package": "../../deploy/package/oreilly",
+        "native": "../../deploy/native/oreilly"
     },
     "buildOptions": {
         "product": "touch",

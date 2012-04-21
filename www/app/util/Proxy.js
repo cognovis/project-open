@@ -1,12 +1,14 @@
-Ext.define('ProjectOpen.util.Proxy', {
+Ext.define('Oreilly.util.Proxy', {
+
 	singleton: true,
+
 	process: function(url, callback) {
 
-		var projectStore = Ext.getStore('Projects'),
+		var sessionStore = Ext.getStore('Sessions'),
 		    speakerStore = Ext.getStore('Speakers'),
-		    projectSpeakerStore = Ext.getStore('ProjectSpeakers'),
-		    speakerProjectStore = Ext.getStore('SpeakerProjects'),
-		    projectIds, proposalModel, speakerModel, speakerProjects = {}, projectId, speaker, projectDays = {};
+		    sessionSpeakerStore = Ext.getStore('SessionSpeakers'),
+		    speakerSessionStore = Ext.getStore('SpeakerSessions'),
+		    sessionIds, proposalModel, speakerModel, speakerSessions = {}, sessionId, speaker, sessionDays = {};
 
 		Ext.data.JsonP.request({
 		    url: url,
@@ -17,44 +19,45 @@ Ext.define('ProjectOpen.util.Proxy', {
 		        Ext.Array.each(data.proposals, function(proposal) {
 
 		            proposal.speakerIds = [];
-		            proposalModel = Ext.create('ProjectOpen.model.Project', proposal);
+		            proposalModel = Ext.create('Oreilly.model.Session', proposal);
 
 		            Ext.Array.each(proposal.speakers, function(speaker) {
 		                proposal.speakerIds.push(speaker.id);
 
-		                speakerModel = Ext.create('ProjectOpen.model.Speaker', speaker);
+		                speakerModel = Ext.create('Oreilly.model.Speaker', speaker);
 		                speakerStore.add(speakerModel);
-		                projectSpeakerStore.add(speakerModel);
+		                sessionSpeakerStore.add(speakerModel);
 
-		                speakerProjects[speaker.id] = speakerProjects[speaker.id] || [];
-		                speakerProjects[speaker.id].push(proposal.id);
+		                speakerSessions[speaker.id] = speakerSessions[speaker.id] || [];
+		                speakerSessions[speaker.id].push(proposal.id);
 		            });
 
 		            if (proposal.date) {
-		                projectDays[proposal.date] = {
+		                sessionDays[proposal.date] = {
 		                    day: proposalModel.get('time').getDate(),
 		                    text: Ext.Date.format(proposalModel.get('time'), 'm/d'),
 		                    time: proposalModel.get('time')
 		                };
 		            }
 
-		            projectStore.add(proposalModel);
-		            speakerProjectStore.add(proposalModel);
+		            sessionStore.add(proposalModel);
+		            speakerSessionStore.add(proposalModel);
 		        });
 
-		        for (speakerId in speakerProjects) {
+		        for (speakerId in speakerSessions) {
 		            speaker = speakerStore.findRecord('id', speakerId);
 		            if (speaker) {
-		                speaker.set('projectIds', speakerProjects[speakerId]);
+		                speaker.set('sessionIds', speakerSessions[speakerId]);
 		            }
 		        }
 
-		        ProjectOpen.projectDays = Ext.Array.sort(Ext.Object.getValues(projectDays), function(a, b) {
+		        Oreilly.sessionDays = Ext.Array.sort(Ext.Object.getValues(sessionDays), function(a, b) {
 		            return a.time < b.time ? -1 : 1;
 		        });
 
 		        callback();
 		    }
 		});
+
 	}
 });

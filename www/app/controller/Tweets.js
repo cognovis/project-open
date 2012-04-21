@@ -1,5 +1,6 @@
-Ext.define('ProjectOpen.controller.Tweets', {
+Ext.define('Oreilly.controller.Tweets', {
 	extend: 'Ext.app.Controller',
+
 	config: {
 		refs: {
 			title: 'tweets titlebar'
@@ -10,14 +11,19 @@ Ext.define('ProjectOpen.controller.Tweets', {
 			}
 		}
 	},
+
 	onActivate: function() {
 		if (!this.loadedTweets) {
-			this.getTitle().setTitle(ProjectOpen.app.twitterSearch);
+
+			this.getTitle().setTitle(Oreilly.app.twitterSearch);
+
 			Ext.getStore('Tweets').getProxy().setExtraParams({
-				q: ProjectOpen.app.twitterSearch
+				q: Oreilly.app.twitterSearch
 			});
 			Ext.getStore('Tweets').load();
+
 			this.loadedTweets = true;
 		}
 	}
+
 });
