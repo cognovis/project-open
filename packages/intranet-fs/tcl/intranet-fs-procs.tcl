@@ -372,14 +372,6 @@ ad_proc -public -callback intranet_fs::after_project_folder_create {
 	@param folder_id New folder_id of the created folder for the project
 } -
 
-ad_proc -public -callback im_biz_object_member_after_delete {
-    {-object_id:required}
-    {-object_type:required}
-    {-user_id:required}
-} {
-    Hook for executing callbacks after a user was removed from an object. 
-} -
-
 ad_proc -public -callback im_biz_object_member_after_delete -impl intranet_fs_remove_folder_permission {
     {-object_id:required}
     {-object_type:required}
