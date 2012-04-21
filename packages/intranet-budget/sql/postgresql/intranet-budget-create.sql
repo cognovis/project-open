@@ -40,6 +40,7 @@ SELECT im_dynfield_attribute_new ('im_budget', 'investment_costs_explanation', '
 SELECT im_dynfield_attribute_new ('im_budget', 'annual_costs', '#intranet-budget.AnnualCosts#', 'currencies', 'float', 'f', 2, 't');
 SELECT im_dynfield_attribute_new ('im_budget', 'annual_costs_explanation', '#intranet-budget.AnnualCostsExplanation#', 'richtext', 'text', 'f', 2, 't');
 
+select content_type__refresh_view('im_budget');
 
 -- Create the Hour object
 create table im_budget_hours (
@@ -63,7 +64,7 @@ select content_type__create_type (
 insert into acs_object_type_tables (object_type, table_name, id_column) values ('im_budget_hour','im_budget_hours','hour_id');
 SELECT im_dynfield_attribute_new ('im_budget_hour', 'hours', '#intranet-budget.Hours#', 'numeric', 'float', 'f', 1, 't');     
 SELECT im_dynfield_attribute_new ('im_budget_hour', 'department_id', '#intranet-budget.Department#', 'departments', 'integer', 'f', 2, 't');
-
+select content_type__refresh_view('im_budget_hour');
 
 -- Create the Cost object
 create table im_budget_costs (
@@ -88,6 +89,7 @@ insert into acs_object_type_tables (object_type, table_name, id_column) values (
 SELECT im_dynfield_attribute_new ('im_budget_cost', 'amount', '#intranet-budget.Amount#', 'currencies', 'float', 'f', 1, 't');     
 SELECT im_dynfield_attribute_new ('im_budget_cost', 'type_id', '#intranet-budget.Type#', 'numeric', 'integer', 'f', 2, 't');
 update acs_object_types set type_column='type_id', type_category_type='Intranet Cost Type' where object_type = 'im_budget_cost';
+select content_type__refresh_view('im_budget_cost');
 
 -- Create the Benefit object
 create table im_budget_benefits (
@@ -112,7 +114,7 @@ insert into acs_object_type_tables (object_type, table_name, id_column) values (
 SELECT im_dynfield_attribute_new ('im_budget_benefit', 'amount', '#intranet-budget.Amount#', 'currencies', 'float', 'f', 1, 't');     
 SELECT im_dynfield_attribute_new ('im_budget_benefit', 'type_id', '#intranet-budget.Type#', 'numeric', 'integer', 'f', 2, 't');
 update acs_object_types set type_column='type_id', type_category_type='Intranet Benefit Type' where object_type = 'im_budget_benefit';
-
+select content_type__refresh_view('im_budget_benefit');
 
 
 
