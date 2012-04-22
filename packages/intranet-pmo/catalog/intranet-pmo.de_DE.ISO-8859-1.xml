@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-pmo" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Add_Benefit">Neuer wirtschaftlicher Nutzen</msg>
+  <msg key="Add_Cost">Neue Kosten anlegen</msg>
+  <msg key="Approve">Genehmigen</msg>
+  <msg key="Approved">Genehmigt</msg>
+  <msg key="Benefits">Nutzen</msg>
+  <msg key="Budget">Budget</msg>
+  <msg key="budget_estimation">Budgetplanung</msg>
+  <msg key="Budget_Hours_remaining">Verbleibender Aufwand (Plan - Ist)</msg>
+  <msg key="Budget_request">Budgetantrag</msg>
+  <msg key="Budgeted_Hours">Geplante Stunden (interner Aufwand)</msg>
+  <msg key="Calculated">Berechnet</msg>
+  <msg key="Cost_Estimates">Budgetüber-/unterdeckung (Plan-Ist)</msg>
+  <msg key="Cost_Type">Kostenart</msg>
+  <msg key="Costs">Kosten</msg>
+  <msg key="Department_Planner">Abteilungsplaner</msg>
+  <msg key="Economic_Gain">Wirtschaftlicher Nutzen</msg>
+  <msg key="Edit_Budget">Budget ändern</msg>
+  <msg key="filter_year">Jahr</msg>
+  <msg key="Hours">Aufwand</msg>
+  <msg key="include_reamining_effort">Restaufwand einschliessen</msg>
+  <msg key="include_remaining_effort">Restaufwand einschliessen</msg>
+  <msg key="Investment_Costs">Investitionskosten</msg>
+  <msg key="Logged_Hours">Erfasste Stunden (Ist)</msg>
+  <msg key="lt_missing_budget_id">Sie müssen entweder die budget_id oder project_id angeben</msg>
+  <msg key="Missing_variable">Fehlende Variable</msg>
+  <msg key="New_Budget">Neues Budget anlegen</msg>
+  <msg key="New_Budget_Estimate">Neue Budgetplanung</msg>
+  <msg key="New_hour_estimate">Neue Stundenschätzung</msg>
+  <msg key="New_Provider_Estimation">Neue Budget Kalkulation</msg>
+  <msg key="One_Time_Costs">Einmalkosten</msg>
+  <msg key="Operational_Priority">Operative Priorität</msg>
+  <msg key="Planned_hours_change">Budgetänderung (zusätzliche Stunden)</msg>
+  <msg key="Priority">Priorität</msg>
+  <msg key="Project_ID">Projekt ID</msg>
+  <msg key="Recurring_Costs">Laufende Kosten</msg>
+  <msg key="Remaining_Budget">Budgetänderung (zusätzliche Kosten)</msg>
+  <msg key="Remaining_Budget_Hours">Zeitüber-/unterdeckung (erwartet)</msg>
+  <msg key="Remaining_Hours">Restaufwand (erwartet)</msg>
+  <msg key="Strategic_Priority">Strategische Priorität</msg>
+</message_catalog>
