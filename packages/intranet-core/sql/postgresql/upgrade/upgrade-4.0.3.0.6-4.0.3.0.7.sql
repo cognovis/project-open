@@ -53,7 +53,7 @@ BEGIN
 	  v_attribute_id := im_dynfield_attribute_new (
 	  	 ''im_company'',			-- object_type
 		 ''tax_classification'',			-- column_name
-		 ''#intranet-collmex.Tax_classification#'',	-- pretty_name
+		 ''#intranet-core.Tax_classification#'',	-- pretty_name
 		 ''tax_classification'',			-- widget_name
 		 ''integer'',				-- acs_datatype
 		 ''t'',					-- required_p   
