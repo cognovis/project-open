@@ -1,5 +1,3 @@
-# 
-
 ad_page_contract {
     
     This is the handler for both retrieving as well as storing the data from the budget table
