@@ -213,6 +213,7 @@ ad_form -extend -name $form_id -new_request {
         }
         if {$project_type_id eq ""} {
             template::element::set_value $form_id project_type_id $parent_type_id
+	    set project_type_id $parent_type_id
         }
         set page_title "[_ intranet-core.Add_subproject]"
         set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
@@ -224,7 +225,11 @@ ad_form -extend -name $form_id -new_request {
 
     # Now set the values
     template::element::set_value $form_id project_nr $project_nr
-    template::element::set_value $form_id company_id $company_id
+
+    set company_enabled_p [db_string company "select 1 from im_dynfield_type_attribute_map tam, im_dynfield_attributes da, acs_attributes a where a.attribute_id = da.acs_attribute_id and a.attribute_name = 'company_id' and tam.attribute_id = da.attribute_id and tam.object_type_id = :project_type_id and tam.display_mode in ('edit','display')" -default 0]
+    if {$company_enabled_p} {
+	template::element::set_value $form_id company_id $company_id
+    }
     
 } -edit_request { 
     set page_title "[_ intranet-core.Edit_project]"
@@ -263,6 +268,10 @@ ad_form -extend -name $form_id -new_request {
     }
 } -new_data {
     
+    
+    if { ![exists_and_not_null company_id] } {
+	set company_id [im_company_internal]
+    }
     
     if {![exists_and_not_null project_path]} {
         set project_path [string tolower [string trim $project_name]]
