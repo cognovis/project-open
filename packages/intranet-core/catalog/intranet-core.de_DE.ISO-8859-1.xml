@@ -1495,6 +1495,7 @@ Passwort: %password%
   <msg key="Task_Members">Basismitglieder</msg>
   <msg key="Tasks">Aufgaben</msg>
   <msg key="Tasks__Incidents">Aufgaben / Zwischenfälle</msg>
+  <msg key="Tax_classification">Tax Classification</msg>
   <msg key="Tec">Technisch</msg>
   <msg key="Tec-Auto">Tec-Auto</msg>
   <msg key="Tec-Gen">Tec-Generisch</msg>
