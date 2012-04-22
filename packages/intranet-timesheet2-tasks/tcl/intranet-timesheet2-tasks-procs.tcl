@@ -1175,6 +1175,7 @@ ad_proc im_timesheet_project_advance { project_id } {
 		set advanced_units [expr $planned_units * $percent_completed / 100.0]
 	    }
 	}
+
 	set parent_hash($project_id) $parent_id
 	set parent_p_hash($parent_id) 1
 
