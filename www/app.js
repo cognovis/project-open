@@ -10,7 +10,7 @@ Ext.require('ProjectOpen.util.Proxy');
 Ext.application({
     // Change the values below to re-configure the app for a different conference.
 
-    title:   'Web 2.0 Summit 2010',
+    title:   ']project-open[ Timesheet',
     dataUrl: 'http://en.oreilly.com/web2010/public/mobile_app/all',
 
     twitterSearch: '#projop',

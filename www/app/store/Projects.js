@@ -6,20 +6,17 @@ Ext.define('ProjectOpen.store.Projects', {
 		grouper: {
 			sortProperty: 'time',
 			groupFn: function(record) {
-				 return true;
+				return record.get('company_name');
 				return Ext.Date.format(record.get('time'), 'g:ia');
 			}
 		},
-		sorters: [
-			{
-				property: 'time',
-				direction: 'ASC'
-			},
-			{
-				property: 'title',
-				direction: 'ASC'
-			}
-		],
+		sorters: [{
+			property: 'time',
+			direction: 'ASC'
+		}, {
+			property: 'title',
+			direction: 'ASC'
+		}],
 		proxy: {
 			type:				'rest',
 			url:				'/intranet-reporting/view',

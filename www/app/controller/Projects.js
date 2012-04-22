@@ -36,7 +36,6 @@ Ext.define('ProjectOpen.controller.Projects', {
 	},
 
 	filterByDate: function(btnDate) {
-
 		// Reload the projects of the project store
 		var projectStore = Ext.getStore('Projects');
 		projectStore.removeAll();
@@ -56,7 +55,7 @@ Ext.define('ProjectOpen.controller.Projects', {
 
 	onProjectTap: function(list, idx, el, record) {
 		var speakerStore = Ext.getStore('ProjectSpeakers'),
-			speakerIds = record.get('speakerIds');
+		    speakerIds = record.get('speakerIds');
 		speakerStore.clearFilter();
 		speakerStore.filterBy(function(speaker) {
 			return Ext.Array.contains(speakerIds, speaker.get('id'));

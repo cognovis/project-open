@@ -40,10 +40,10 @@
     ],
     "archivePath": "archive",
     "buildPaths": {
-        "testing": "../../deploy/testing/oreilly",
-        "production": "../../deploy/production/oreilly",
-        "package": "../../deploy/package/oreilly",
-        "native": "../../deploy/native/oreilly"
+        "testing": "../../deploy/testing/projectopen",
+        "production": "../../deploy/production/projectopen",
+        "package": "../../deploy/package/projectopen",
+        "native": "../../deploy/native/projectopen"
     },
     "buildOptions": {
         "product": "touch",

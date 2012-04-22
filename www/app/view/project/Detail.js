@@ -5,22 +5,17 @@ Ext.define('ProjectOpen.view.project.Detail', {
 		layout: 'vbox',
 		scrollable: true,
 		title: '',
-		items: [
-			{
-				xtype: 'projectInfo'
-			},
-			{
-				xtype: 'speakers',
-				store: 'ProjectSpeakers',
-				scrollable: false,
-				items: [
-					{
-						xtype: 'listitemheader',
-						cls: 'dark',
-						html: 'Speakers'
-					}
-				]
-			}
-		]
+		items: [{
+			xtype: 'projectInfo'
+		},{
+			xtype: 'speakers',
+			store: 'ProjectSpeakers',
+			scrollable: false,
+			items: [{
+				xtype: 'listitemheader',
+				cls: 'dark',
+				html: 'Speakers'
+			}]
+		}]
 	}
 });
