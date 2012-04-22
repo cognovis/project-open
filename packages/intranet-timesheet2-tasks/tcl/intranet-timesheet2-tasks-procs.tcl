@@ -1163,17 +1163,18 @@ ad_proc im_timesheet_project_advance { project_id } {
 	    set advanced_units [expr $advanced_units * $hours_per_day]
 	}
 
-	# Deal with translation projects.
-	# Use the fields trans_project_words and trans_project_hours to calculate an
-	# estimated of the number of hours included
-	if {"" != $trans_project_hours || "" != $trans_project_words} {
-	    if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
-	    if {"" == $trans_project_words} { set trans_project_words 0.0 }
-	    set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
-	    set billable_units $planned_units
-	    set advanced_units [expr $planned_units * $percent_completed / 100.0]
+	if {[apm_package_installed_p "intranet-translation"]} {
+	    # Deal with translation projects.
+	    # Use the fields trans_project_words and trans_project_hours to calculate an
+	    # estimated of the number of hours included
+	    if {"" != $trans_project_hours || "" != $trans_project_words} {
+		if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
+		if {"" == $trans_project_words} { set trans_project_words 0.0 }
+		set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
+		set billable_units $planned_units
+		set advanced_units [expr $planned_units * $percent_completed / 100.0]
+	    }
 	}
-
 	set parent_hash($project_id) $parent_id
 	set parent_p_hash($parent_id) 1
 
