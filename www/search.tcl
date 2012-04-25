@@ -704,16 +704,23 @@ db_foreach full_text_query $sql {
 		    set page_name ""
 		    set package_mount ""
 		    db_0or1row page_info "
-			select  s.name as package_mount,
+			select	s.name as package_mount,
 				i.name as page_name
 			from	cr_items i,
-			        apm_packages p,
-			        site_nodes s
+				apm_packages p,
+				site_nodes s, xowiki_pagex d
 			where	i.item_id = :object_id and
-			        p.package_id = s.object_id and
-				p.package_key = 'xowiki'
+				p.package_id = s.object_id and
+				p.package_key = 'xowiki' and 
+				p.package_id = d.object_package_id and 
+				i.item_id = d.item_id and
+				i.live_revision = d.revision_id
 		    "
 		    set name_link "<a href=\"/$package_mount/$page_name\">$page_name</a>"
+		}
+		"::xowiki::FormPage" {
+			# Skip FormPage contents
+			continue
 		}
 		default {
 		    set name_link [lang::message::lookup "" intranet-search-pg.Unknown_CI_Type "unknown content_item type: %content_type%"]
