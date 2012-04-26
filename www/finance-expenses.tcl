@@ -28,6 +28,8 @@ ad_page_contract {
 # its permissions.
 set menu_label "reporting-finance-expenses"
 set current_user_id [ad_maybe_redirect_for_registration]
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
@@ -175,10 +177,10 @@ set inner_sql "
 	select
 	        c.*,
 	        round((c.paid_amount *
-		 im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		 im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 		 , 2) as paid_amount_converted,
 	        round((c.amount *
-		 im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		 im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 		 , 2) as amount_converted,
 	        r.project_id as project_project_id
 	from
