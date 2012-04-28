@@ -340,3 +340,30 @@ ad_proc im_timesheet_conf_new_page_wf_perm_edit_button {
     return [expr [lsearch $perm_set "w"] > -1]
 }
 
+
+ad_proc eval_wf_start_date {
+    date_julian
+    day_of_week
+} {
+    Helper routine to evaluate start for each week in TS calendar view for Weekly TS confirmation
+} {
+
+    set date_ansi [dt_julian_to_ansi $date_julian]
+
+    #Current month
+    set date_part_month [clock format [clock scan $date_ansi] -format %m]
+
+    #Current year
+    set date_part_year [clock format [clock scan $date_ansi] -format %Y]
+
+    # If we count seven days back, are we still in the same month?
+    set one_week_back_month [clock format [clock scan {-7 days} -base [clock scan $date_ansi] ] -format %m]
+
+    if { $one_week_back_month == $date_part_month } {
+       # Find
+        return [expr $date_julian - [expr $day_of_week - 1]]
+    } else {
+        # return first day of month
+        return [dt_ansi_to_julian_single_arg "$date_part_year-$date_part_month-01"]
+    }
+}
