@@ -298,35 +298,17 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
 
-	    # Special logic for each of the TCL widgets
-	    switch $widget {
-		switch $datatype {
-		    text - string {
-			# Create a "like" search
-			lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
-			# lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
-		    }
-		    integer - number - float {
-			lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-		    }
-		    default {
-			lappend criteria "1=1"
-		    }
+	    switch $datatype {
+		text - string {
+		    # Create a "like" search
+		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
+		    # lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
 		}
-		date {
-		    # Not supported yet
-		    # We actually neeed to create two search fields, 
-		    # one for start and one for end...
-		    continue
-		}
-		checkbox {
-			# Here we would need a three-way select for
-			# "true", "false" and "no filter". No idea
-			# yet how to do that.
-			continue
+		integer - number - float {
+		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 		}
 		default {
-		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		    lappend criteria "1=1"
 		}
 	    }
 	}
