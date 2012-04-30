@@ -1,16 +1,11 @@
 <style>
 	.yui-overlay { position:absolute;background:#ffffff; border:6px solid #666666 ;padding:5px;margin:10px;}
-/*
-	.yui-overlay .hd { border:1px solid black;padding:5px; }
-	.yui-overlay .bd { border:1px solid black;padding:5px; }
-	.yui-overlay .ft { border:1px solid black;padding:5px; }
-*/
 	.yui-overlay .bd { margin-top: 30px; }
+	#overlay2 { visibility: hidden }
 </style>
 
-	<div id="content"></div> 
+	<div id="content"></div>
 	<div id="overlay2">
-		<!--<button id="show2">Show</button>-->
 		<button id="hide2" style="float:right;">Close</button>
 	</div>
 
@@ -52,8 +47,6 @@
             success : function(o) {
 
                 YAHOO.mail_import.container.overlay2 = new YAHOO.widget.Overlay("overlay2", { fixedcenter:true, visible:false,width:"600px" } );
-		// YAHOO.mail_import.container.overlay2 = new YAHOO.widget.Overlay("overlay2", { xy:[300,400], visible:false, width:"600px" } ); 
-		// YAHOO.mail_import.container.overlay2 = new YAHOO.widget.Overlay("overlay2", { context:["ctx","tl","bl", ["beforeShow", "windowResize"]], visible:false, width:"600px" } );
 		YAHOO.mail_import.container.overlay2.setBody(o.responseText);
 		YAHOO.mail_import.container.overlay2.setFooter("<iframe src='http:/intranet-mail-import/mail-view?body_id=" + cr_item_id  + "&view_mode=body' width='600' frameborder='0'></iframe>");
 
@@ -61,8 +54,6 @@
 		YAHOO.util.Event.addListener("show2", "click", YAHOO.mail_import.container.overlay2.show, YAHOO.mail_import.container.overlay2, true);
 		YAHOO.util.Event.addListener("hide2", "click", YAHOO.mail_import.container.overlay2.hide, YAHOO.mail_import.container.overlay2, true);
                 YAHOO.mail_import.container.overlay2.show();
-                // content.innerHTML = o.responseText;
-                // content.style.visibility = "visible";
                 YAHOO.mail_import.container.wait.hide();
             },
             failure : function(o) {
@@ -72,15 +63,18 @@
                 YAHOO.mail_import.container.wait.hide();
             }
         }
-
    
         // Show the Panel
         YAHOO.mail_import.container.wait.show();
         
         // Load the data
-        // alert(this.id);
         var conn = YAHOO.util.Connect.asyncRequest("GET", "/intranet-mail-import/mail-view?body_id=" + this.id + "&view_mode=noBody", callback);
+
+	// Hide overlay
+	document.getElementById('overlay2').style.visibility = 'hidden'; 
+
     }
-   
+
+  
 </script>
 
