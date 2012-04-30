@@ -46,7 +46,7 @@ ad_page_contract {
                         	and ar.object_id_two = :object_id
 	            "
         	set ctr 0
-		set json_rec_list "" 
+		set json_record_list "" 
 		db_foreach mail_list $sql {
 			append json_record_list "{\"id\":\"$content_item_id\",\n"
 			append json_record_list "\"date\":\"$date_formatted\",\n"
