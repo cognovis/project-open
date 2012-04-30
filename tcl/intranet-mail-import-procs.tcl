@@ -75,11 +75,20 @@ namespace eval im_mail_import {
 	regsub -all {\<} $line " " line
 	regsub -all {\>} $line " " line
 	regsub -all {\"} $line " " line
+	regsub -all {\]} $line " " line
+	regsub -all {\[} $line " " line
+
+        ns_log Notice "im_mail_import.extract_project_nrs - regsubed: line=$line"
 
 	set tokens [split $line " "]
+	ns_log Notice "im_mail_import.extract_project_nrs - tokens: $tokens"
+
 	set project_nrs [list]
 
 	foreach token $tokens {
+
+	    ns_log Notice "im_mail_import.extract_project_nrs-loop-token: $token"
+
 	    # Tokens must be built from aphanum plus "_" or "-".
 	    if {![regexp {^[a-z0-9_\-]+$} $token match ]} { continue }
 
@@ -471,6 +480,7 @@ namespace eval im_mail_import {
 ad_proc im_mail_import_user_component {
     {-view_name ""}
     {-rel_user_id 0}
+    {-yui_support_p 0}
 } {
     Show a list of imported mails
 } {
@@ -481,18 +491,31 @@ ad_proc im_mail_import_user_component {
 	set rel_user_id [ad_get_user_id]
     }
 
-    set html "
-<table>
-<tr class=rowtitle>
-   <td class=rowtitle align=center colspan=99>Associated Emails</td>
-</tr>
-<tr class=rowtitle>
-   <td class=rowtitle align=center>Date</td>
-   <td class=rowtitle align=center>Subject</td>
-   <td class=rowtitle align=center>From</td>
-   <td class=rowtitle align=center>To</td>
-</tr>
-"
+    # HTML Overlay
+    if { $yui_support_p } {
+	set js_include [template::adp_include /packages/intranet-mail-import/www/js/overlay ""]
+	append js_include [template::adp_include /packages/intranet-mail-import/www/js/client-pagination [list object_id $rel_user_id] ]
+    }
+    
+    set html "<div id=\"ctx\"></div>"
+
+    if { $yui_support_p } { 
+	append html "<div class=\"yui-skin-sam\">"
+	append html "<div id=\"paginated\"></div>" 
+    } else {
+	append html "
+		<table>
+			<tr class=rowtitle>
+			   <td class=rowtitle align=center colspan=99>Associated Emails</td>
+			</tr>
+			<tr class=rowtitle>
+			   <td class=rowtitle align=center>Date</td>
+			   <td class=rowtitle align=center>Subject</td>
+			   <td class=rowtitle align=center>From</td>
+			   <td class=rowtitle align=center>To</td>
+			</tr>
+	"
+    }
 
     set sql "
 	select
@@ -506,47 +529,63 @@ ad_proc im_mail_import_user_component {
 		ar.object_id_one = amb.body_id
 		and amb.body_id = ao.object_id
 		and ar.object_id_two = :rel_user_id
+	order by 
+		ao.creation_date DESC
     "
-
+    
     set ctr 0
+
     db_foreach mail_list $sql {
-
-	append html "
-<tr $bgcolor([expr $ctr%2])>
-   <td>$date_formatted</td>
-   <td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\">
-     [string_truncate -len 50 $header_subject]
-  </a></td>
-   <td>[string_truncate -len 25 $header_from]</td>
-   <td>[string_truncate -len 25 $header_to]</td>
-
-</tr>
-"
+	if { !$yui_support_p } {
+	    append html "
+		<tr $bgcolor([expr $ctr%2])>
+			<td>$date_formatted</td>
+			<td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\" id=\"$body_id\">[string_truncate -len 50 $header_subject]</a></td>
+			<td>[string_truncate -len 25 $header_from]</td>
+			<td>[string_truncate -len 25 $header_to]</td>
+		</tr>
+	    "
+	} 
 	incr ctr
     }
 
-    if {0 == $ctr} {
-	append html "
-<tr $bgcolor([expr $ctr%2])>
-   <td colspan=99 align=center>No entries found</td>
-</tr>
-"
+    if {0 == $ctr && !$yui_support_p} {
+	append html "<tr $bgcolor([expr $ctr%2])> <td colspan=99 align=center>No entries found</td></tr>"
     }
 
-    append html "
-</table>
-"
+    if { $yui_support_p } { 
+	append html "</table>" 
+    }
 
+    if { $yui_support_p } {
+
+	# Version 2.7.0 (ajaxhelper) and Version 3.4.1 would not work
+	# Get Sources from Yahoo until switch/refactoring to ExtJS
+
+	template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js" -order "100"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/container/container-min.js" -order "101"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/element/element-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/paginator/paginator-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/datasource/datasource-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/datatable/datatable-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/json/json-min.js" -order "102"
+
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/container/assets/skins/sam/container.css" -media "screen" -order "103"
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/paginator/assets/skins/sam/paginator.css" -media "screen" -order "104"
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" -media "screen" -order "105"
+
+	append html $js_include 
+    	append html "</div>"
+    }
     return $html
 }
 
-
-
 ad_proc im_mail_import_project_component {
     {-project_id 0}
+    {-yui_support_p 0}
 } {
     Show a list of imported mails
 } {
-    return [im_mail_import_user_component -rel_user_id $project_id]
+    return [im_mail_import_user_component -rel_user_id $project_id -yui_support_p $yui_support_p]
 }
-
