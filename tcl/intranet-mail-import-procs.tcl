@@ -390,7 +390,7 @@ namespace eval im_mail_import {
 	    set peeraddr "0.0.0.0"
 	    set approved_p 1
 	    ns_log Notice "im_mail_import.process_mails16d: Creating email"
-	    set send_date [db_string now "select now() from dual"]
+	    set send_date [db_string now "select current_date from dual"]
 	    set header_from $from_header
 	    set header_to $to_header
 	    set rfc822_id $rfc822_message_id
@@ -488,81 +488,82 @@ ad_proc im_mail_import_user_component {
     set bgcolor(1) " class=rowodd"
 
     if {0 == $rel_user_id} {
-	set rel_user_id [ad_get_user_id]
+        set rel_user_id [ad_get_user_id]
     }
 
     # HTML Overlay
     if { $yui_support_p } {
-	set js_include [template::adp_include /packages/intranet-mail-import/www/js/overlay ""]
-	append js_include [template::adp_include /packages/intranet-mail-import/www/js/client-pagination [list object_id $rel_user_id] ]
+        set js_include [template::adp_include /packages/intranet-mail-import/www/js/overlay ""]
+        append js_include [template::adp_include /packages/intranet-mail-import/www/js/client-pagination [list object_id $rel_user_id] ]
     }
-    
+
     set html "<div id=\"ctx\"></div>"
 
-    if { $yui_support_p } { 
-	append html "<div class=\"yui-skin-sam\">"
-	append html "<div id=\"paginated\"></div>" 
-    } else {
-	append html "
-		<table>
-			<tr class=rowtitle>
-			   <td class=rowtitle align=center colspan=99>Associated Emails</td>
-			</tr>
-			<tr class=rowtitle>
-			   <td class=rowtitle align=center>Date</td>
-			   <td class=rowtitle align=center>Subject</td>
-			   <td class=rowtitle align=center>From</td>
-			   <td class=rowtitle align=center>To</td>
-			</tr>
-	"
+    if { $yui_support_p } {
+        append html "<div class=\"yui-skin-sam\">"
+        append html "<div id=\"paginated\"></div>"
     }
 
     set sql "
-	select
-		amb.*,
-		to_char(ao.creation_date, 'YYYY-MM-DD') as date_formatted
-	from
-		acs_rels ar,
-		acs_mail_bodies amb,
-		acs_objects ao
-	where
-		ar.object_id_one = amb.body_id
-		and amb.body_id = ao.object_id
-		and ar.object_id_two = :rel_user_id
-	order by 
-		ao.creation_date DESC
+        select
+                amb.*,
+                to_char(ao.creation_date, 'YYYY-MM-DD') as date_formatted
+        from
+                acs_rels ar,
+                acs_mail_bodies amb,
+                acs_objects ao
+        where
+                ar.object_id_one = amb.body_id
+                and amb.body_id = ao.object_id
+                and ar.object_id_two = :rel_user_id
+        order by
+                ao.creation_date DESC
     "
-    
+
     set ctr 0
 
+    set html_lines ""
     db_foreach mail_list $sql {
-	if { !$yui_support_p } {
-	    append html "
-		<tr $bgcolor([expr $ctr%2])>
-			<td>$date_formatted</td>
-			<td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\" id=\"$body_id\">[string_truncate -len 50 $header_subject]</a></td>
-			<td>[string_truncate -len 25 $header_from]</td>
-			<td>[string_truncate -len 25 $header_to]</td>
-		</tr>
-	    "
-	} 
-	incr ctr
+        if { !$yui_support_p } {
+            append html_lines "
+                <tr $bgcolor([expr $ctr%2])>
+                        <td>$date_formatted</td>
+                        <td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\" id=\"$body_id\">[string_truncate -len 50 $header_subject]</a></td>
+                        <td>[string_truncate -len 25 $header_from]</td>
+                        <td>[string_truncate -len 25 $header_to]</td>
+                </tr>
+            "
+        }
+        incr ctr
     }
 
     if {0 == $ctr && !$yui_support_p} {
-	append html "<tr $bgcolor([expr $ctr%2])> <td colspan=99 align=center>No entries found</td></tr>"
+        append html "<tr> <td colspan='99' align='center'>No entries found</td></tr>"
     }
 
-    if { $yui_support_p } { 
-	append html "</table>" 
+    if { !$yui_support_p && 0 != $ctr} {
+        append html "
+                <table>
+                        <tr class=rowtitle>
+                           <td class=rowtitle align=center colspan=99>Associated Emails</td>
+                        </tr>
+                        <tr class=rowtitle>
+                           <td class=rowtitle align=center>Date</td>
+                           <td class=rowtitle align=center>Subject</td>
+                           <td class=rowtitle align=center>From</td>
+                           <td class=rowtitle align=center>To</td>
+                        </tr>
+                        $html_lines
+                </table>
+        "
     }
 
     if { $yui_support_p } {
 
-	# Version 2.7.0 (ajaxhelper) and Version 3.4.1 would not work
-	# Get Sources from Yahoo until switch/refactoring to ExtJS
+        # Version 2.7.0 (ajaxhelper) and Version 3.4.1 would not work
+        # Get Sources from Yahoo until switch/refactoring to ExtJS
 
-	template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js" -order "100"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js" -order "100"
         template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/container/container-min.js" -order "101"
         template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js" -order "102"
         template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/element/element-min.js" -order "102"
@@ -575,8 +576,8 @@ ad_proc im_mail_import_user_component {
         template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/paginator/assets/skins/sam/paginator.css" -media "screen" -order "104"
         template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" -media "screen" -order "105"
 
-	append html $js_include 
-    	append html "</div>"
+        append html $js_include
+        append html "</div>"
     }
     return $html
 }
