@@ -434,7 +434,7 @@ ns_section ns/db/pools
 ns_section ns/db/pool/pool1
     ns_param   maxidle            300
     ns_param   maxopen            1800
-    ns_param   connections        3
+    ns_param   connections        15
     ns_param   verbose            $debug
     ns_param   extendedtableinfo  true
     ns_param   logsqlerrors       $debug
@@ -453,7 +453,7 @@ ns_section ns/db/pool/pool1
 ns_section ns/db/pool/pool2
     ns_param   maxidle            300
     ns_param   maxopen            1800
-    ns_param   connections        1
+    ns_param   connections        5
     ns_param   verbose            $debug
     ns_param   extendedtableinfo  true
     ns_param   logsqlerrors       $debug
@@ -472,7 +472,7 @@ ns_section ns/db/pool/pool2
 ns_section ns/db/pool/pool3
     ns_param   maxidle            300
     ns_param   maxopen            1800
-    ns_param   connections        1
+    ns_param   connections        5
     ns_param   verbose            $debug
     ns_param   extendedtableinfo  true
     ns_param   logsqlerrors       $debug
