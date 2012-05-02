@@ -761,8 +761,8 @@ ad_proc -public im_timesheet_task_list_component {
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
     #
-    set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]
     
+    set new_task_url [export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]
     if {[empty_string_p $table_body_html] && "" == $prev_page_url && "" == $next_page_url} {
 	set table_body_html "
 		<tr class=table_list_page_plain>
@@ -813,7 +813,7 @@ ad_proc -public im_timesheet_task_list_component {
                 <td align='right' colspan='99'>
                 <div>
                        <div style='float: left;'>
-                                 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+                                 <a class='form-button40' href=\"$new_task_url\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
                        </div>
                 </div>
                 </td>
@@ -825,7 +825,7 @@ ad_proc -public im_timesheet_task_list_component {
         	<td align='right' colspan='99'>
 	        <div>
 		       <div style='float: left;'>
-                		 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+                		 <a class='form-button40' href=\"$new_task_url\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
                        </div>
 		      <div style='float: right;'>
         	        <select name=action>
