@@ -880,6 +880,7 @@ ad_proc im_oo_page_type_list {
 			    set counter_var [lindex $counter 0]
 			    set counter_expr [lindex $counter 1]
 			    set counter_var_pretty "${counter_var}_pretty"
+			    set counter_var_sor "${counter_var}_sor"
 
 			    if {![info exists $counter_var]} { set $counter_var 0 }
 			    set val ""
@@ -897,7 +898,13 @@ ad_proc im_oo_page_type_list {
 
 				# Pretty formatting of sum
 				set amount_zeros [im_numeric_add_trailing_zeros [expr "\$$counter_var"] $rounding_precision]
-				set $counter_var_pretty [lc_numeric $amount_zeros "" $locale]
+				set sum_pretty [lc_numeric $amount_zeros "" $locale]
+				set $counter_var_pretty $sum_pretty
+				
+				# SOR formatting of sum: cut off decimals and use accounting "(...)" brackets for negative numbers
+				if {[regexp {^(.+)\,.+$} $sum_pretty match sum]} { set sum_pretty $sum }
+				if {[regexp {^\-(.+)$} $sum_pretty match sum]} { set sum_pretty "($sum)" }
+				set $counter_var_sor $sum_pretty
 			    }
 			}
 			
