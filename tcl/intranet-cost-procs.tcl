@@ -1111,6 +1111,27 @@ ad_proc im_costs_base_component {
 
 
 # ---------------------------------------------------------------
+# Company Profit & Loss view
+# ---------------------------------------------------------------
+
+ad_proc -public im_costs_company_profit_loss_component {
+    -company_id
+} {
+    Returns a HTML component to show a list of all main projects 
+    together with profit & loss per project.
+} {
+    set params [list \
+                    [list company_id $company_id] \
+                    [list return_url [im_url_with_query]] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-cost/lib/company-profit-loss"]
+    return [string trim $result]
+}
+
+
+
+# ---------------------------------------------------------------
 # Benefits & Loss Calculation per Project
 # ---------------------------------------------------------------
 
