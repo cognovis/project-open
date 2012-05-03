@@ -48,7 +48,7 @@
 
                 YAHOO.mail_import.container.overlay2 = new YAHOO.widget.Overlay("overlay2", { fixedcenter:true, visible:false,width:"600px" } );
 		YAHOO.mail_import.container.overlay2.setBody(o.responseText);
-		YAHOO.mail_import.container.overlay2.setFooter("<iframe src='http:/intranet-mail-import/mail-view?body_id=" + cr_item_id  + "&view_mode=body' width='600' frameborder='0'></iframe>");
+		YAHOO.mail_import.container.overlay2.setFooter("<iframe src='/intranet-mail-import/mail-view?body_id=" + cr_item_id  + "&view_mode=body' width='600' frameborder='0'></iframe>");
 
 		YAHOO.mail_import.container.overlay2.render(document.body);
 		YAHOO.util.Event.addListener("show2", "click", YAHOO.mail_import.container.overlay2.show, YAHOO.mail_import.container.overlay2, true);
