@@ -231,15 +231,26 @@ set cost_type_options {
 	3700 "Customer Invoice"
 	3702 "Quote"
 	3724 "Delivery Note"
+
 	3704 "Provider Bill"
 	3706 "Purchase Order"
+	3734 "Provider Receipt"
+
 	3722 "Expense Report"
+	3720 "Expense Item"
+	3728 "Expense Planned Cost"	
+
 	3718 "Timesheet Cost"
+	3726 "Timesheet Budget"
+
 }
 
 set non_active_cost_type_options {
 	3714 "Employee Salary"
-	3720 "Expense Item"
+        3716 "Repeating Cost"
+	3730 "InterCo Invoice"
+	3732 "InterCo Quote"
+	3736 "Timesheet Hours"
 }
 
 set top_vars_options {
