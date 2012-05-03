@@ -66,7 +66,7 @@ if {![info exists task]} {
 
     set render_template_id 0
     set escalate_from_ticket_id 0
-    set format "html"
+42728    set format "html"
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -562,7 +562,11 @@ ad_form -extend -name helpdesk_ticket -on_request {
     if {![info exists ticket_name] || "" == $ticket_name} { 
 	set next_ticket_nr [im_ticket::next_ticket_nr] 
 	set ticket_nr $next_ticket_nr
-	set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
+
+	# I suggest to abstain from pre-setting the name, it takes too much space in list views and TS logging page 
+	# and does not add any value. Adjustments had been made to show the ticket nr in the component header
+	# set ticket_name [lang::message::lookup "" intranet-helpdesk.Default_Ticket_Name "Ticket \#%next_ticket_nr%"]
+
     }
 
     if {0 != $escalate_from_ticket_id} {
@@ -628,6 +632,11 @@ ad_form -extend -name helpdesk_ticket -on_request {
     if {[info exists ticket_note]} { append message $ticket_note }
     if {[info exists ticket_description]} { append message $ticket_description }
     if {![exists_and_not_null project_name]} { set project_name $ticket_name}
+
+    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_sla_id: $ticket_sla_id, ticket_name: $ticket_name, ticket_nr: $ticket_nr" 
+    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_customer_contact_id: $ticket_customer_contact_id, ticket_type_id: $ticket_type_id"
+    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_status_id: $ticket_status_id, start_date: $start_date, end_date: $end_date"
+    ns_log NOTICE "intranet-helpdesk::new.tcl: message: $message" 
 
     set ticket_id [im_ticket::new \
 	-ticket_sla_id $ticket_sla_id \
