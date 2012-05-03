@@ -94,7 +94,8 @@ switch $action {
         set json_lists [list]
 
         # Get the data from the database
-        set revision_id [db_string revision_id {select live_revision from cr_items where item_id = :budget_id}]
+	set revision_id [content::item::get_best_revision -item_id $budget_id]
+#        set revision_id [db_string revision_id {select live_revision from cr_items where item_id = :budget_id}]
         set vars [list budget budget_hours budget_hours_explanation economic_gain economic_gain_explanation single_costs single_costs_explanation annual_costs annual_costs_explanation investment_costs investment_costs_explanation item_id approved_p]
         
         db_1row budget_info "select object_title as title, [join $vars ","] from im_budgetsx where budget_id = :revision_id"
