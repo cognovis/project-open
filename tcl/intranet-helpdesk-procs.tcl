@@ -426,8 +426,7 @@ namespace eval im_ticket {
 			now(),			-- creation_date
 			0,			-- creation_user
 			'0.0.0.0',		-- creation_ip
-			null,			-- context_id
-	
+			null,			-- context_id	
 			:ticket_name,
 			:ticket_customer_id,
 			:ticket_type_id,
@@ -566,12 +565,20 @@ namespace eval im_ticket {
 	    set message ""
 
 
-	    # The owner of a topic can edit its content.
-	    # But we don't want customers to edit their stuff here...
+	    # Frank: The owner of a topic can edit its content.
+	    #        But we don't want customers to edit their stuff here...
+
 	    set topic_owner_id $current_user_id
-	    if {[im_user_is_customer_p $current_user_id]} { 
-		set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
-	    }
+
+	    # Klaus: If a customer creates a ticket, he would need to be the owner of the 
+            #        of the forum item created since other rules cause confusion and mess up 
+            #        notifications when thread will be extended.    
+	    #        There should be no problem if a customer changes the ticket that had been 
+            #        created automatically based on the input he did when creating the ticket. 
+
+	    # if {[im_user_is_customer_p $current_user_id]} { 
+	    #	set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
+	    # }
 
 	    if {"" == $ticket_note} { set ticket_note [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
 
