@@ -349,7 +349,7 @@ ad_proc -public ams::attribute::new {
 
 
 	set ams_attribute_id [db_string new_dynfield "
-		select im_dynfield_attribute__new_only_dynfield (
+		select im_dynfield_attribute__new (
 			null,
 			'im_dynfield_attribute',
 			now(),
