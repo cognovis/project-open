@@ -72,11 +72,17 @@ set base_sql "
 # Get the list of available milestones
 set milestone_ids_sql "
 	select	distinct
-		project_id
+		project_id,
+		acs_object__name(project_id) as project_name
 	from	($base_sql) b
 	where	end_date is not null
+	order by project_name
 "
-set milestone_ids [db_list milestone_ids $milestone_ids_sql]
+set milestone_ids {}
+db_foreach milestones $milestone_ids_sql {
+    lappend milestone_ids $project_id
+    set milestone_hash($project_id) $project_name
+}
 
 
 # Get the list of distinct dates when changes have ocurred
@@ -182,3 +188,15 @@ set fields_json "\['date', $fields_joined\]"
 
 # ad_return_complaint 1 $fields_joined
 # ad_return_complaint 1 "<pre>$fields_json\n\n$data_json</pre>"
+
+# Complile the series specs
+set series {}
+foreach id $milestone_ids {
+    set milestone_name $milestone_hash($id)
+    lappend series "{type: 'line', title: '$milestone_name', axis: \['left','bottom'\], xField: 'date', yField: 'm$id', markerConfig: { radius: 5, size: 5 }}"
+}
+set series_json [join $series ", "]
+
+# ad_return_complaint 1 $fields_joined
+# ad_return_complaint 1 "<pre>$fields_json\n\n$data_json</pre>"
+

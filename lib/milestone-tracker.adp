@@ -12,12 +12,12 @@ Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.co
 Ext.onReady(function () {
     
     chart = new Ext.chart.Chart({
-        width: 600,
-        height: 400,
+        width: 300,
+        height: 300,
         animate: false,
         store: store,
         renderTo: '@diagram_id@',
-	legend: { position: 'right' },
+	legend: { position: 'bottom' },
         axes: [{
                 type: 'Numeric',
                 position: 'left',
@@ -34,13 +34,7 @@ Ext.onReady(function () {
                 fromDate: @audit_start_date_js;noquote@,
                 toDate: @audit_end_date_js;noquote@
         }],
-	series: [{
-                type: 'line',
-                axis: ['left','bottom'],
-                xField: 'date',
-                yField: 'm18232',
-                markerConfig: {	radius: 5, size: 5 }
-	}]
+	series: [@series_json@]
     }
 )});
 </script>
