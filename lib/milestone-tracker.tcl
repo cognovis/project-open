@@ -52,30 +52,33 @@ if {$milestone_count} {
     set milestone_sql "and child.project_type_id not in ([im_project_type_ticket], [im_project_type_task])"
 }
 
+# ToDo: Remove: Debugging
+set milestone_sql ""
 
 # Pull out the history of the project's milestones over time.
 # Start to pull out the different days for which audit info
 # is available and build the medium of the respective start-
 # and end dates.
 set base_sql "
-		select	audit.*,
-			last_modified::date as audit_date
+		select	audit.*
 		from	im_projects parent, 
 			im_projects child,
-			im_projects_audit audit
+			im_audits audit
 		where	parent.project_id = $org_project_id and 
 			child.parent_id = parent.project_id
 			$milestone_sql and
-			audit.project_id = child.project_id
+			audit.audit_object_id = child.project_id
 "
+
+# ad_return_complaint 1 "<pre>xxx\n[join [db_list_of_lists base $base_sql] "\n"]\n$base_sql</pre>"
+
 
 # Get the list of available milestones
 set milestone_ids_sql "
 	select	distinct
-		project_id,
-		acs_object__name(project_id) as project_name
+		audit_object_id as project_id,
+		acs_object__name(audit_object_id) as project_name
 	from	($base_sql) b
-	where	end_date is not null
 	order by project_name
 "
 set milestone_ids {}
@@ -88,12 +91,14 @@ db_foreach milestones $milestone_ids_sql {
 # Get the list of distinct dates when changes have ocurred
 set date_sql "
 	select distinct
-		audit_date
+		audit_date::date
 	from	($base_sql) d
-	where	end_date is not null
 	order by audit_date
 "
 set audit_dates [db_list audit_dates $date_sql]
+
+# ad_return_complaint 1 "<pre>$audit_dates</pre>"
+
 
 
 # Calculate start and end date for X axis and
@@ -116,40 +121,33 @@ set reference_start_julian [db_string ref_julian "select to_char(start_date, 'J'
 
 # Get the average end_date for each of the days for each of the milestones
 set changes_sql "
-	select	b.project_id,
-		b.audit_date,
-		round(avg(to_char(b.end_date, 'J')::float)) as end_julian
+select	t.project_id,
+	t.audit_date,
+	avg(end_date_julian)::integer as end_date_julian,
+	to_date(round(avg( end_date_julian ))::text, 'J') as end_date
+from
+	(select	b.audit_object_id as project_id,
+		b.audit_date::date as audit_date,
+		to_char(im_audit_value(b.audit_value, 'end_date')::date, 'J')::integer as end_date_julian
 	from	($date_sql) d
-		LEFT OUTER JOIN ($base_sql) b ON (d.audit_date = b.audit_date)
-	group by b.project_id, b.audit_date
-	order by b.audit_date, b.project_id
+		LEFT OUTER JOIN ($base_sql) b ON (d.audit_date::date = b.audit_date::date)
+	) t
+group by
+	t.project_id, t.audit_date
+order by
+	t.audit_date, t.project_id
 "
+
+# ad_return_complaint 1 "<pre>[db_list_of_lists asdf $changes_sql]</pre>"
+
 
 # Write the data into separate hash array per milestone
 db_foreach milestone_end_dates $changes_sql {
     set key "$project_id-$audit_date"
-    set hash($key) [expr $end_julian - $reference_start_julian]
-    set cmd "set m${project_id}($audit_date) [expr $end_julian - $reference_start_julian]"
-    eval $cmd
+    set hash($key) [expr $end_date_julian - $reference_start_julian]
 }
 
-if {0} {
-    set debug ""
-    foreach id $milestone_ids {
-	append debug "m $id: "
-	append debug [array get m{$id}]
-	append debug "\n"
-    }
-    ad_return_complaint 1 "<pre>$debug</pre>"
-}
-
-
-# ad_return_complaint 1 "<pre>[array get hash]</pre>"
-
-
-# ToDo: We may have to fill "holes" in the array 
-# for milestones that don't have audit values for
-# specific audit days.
+# ad_return_complaint 1 "<pre>audit_date:\n[join $audit_dates "\n"]\nhash:\n[join [array get hash] "\n"]</pre>"
 
 set data_list {}
 foreach audit_date $audit_dates {
@@ -158,17 +156,16 @@ foreach audit_date $audit_dates {
     regexp {^(....)\-(..)\-(..)$} $audit_date match year month day
     set data_line "{date: new Date($year, $month, $day)"
     foreach id $milestone_ids {
-
 	set v 0
 	set key "$id-$audit_date"
 	if {[info exists hash($key)]} { set v [expr abs($hash($key))] }
-
 	append data_line ", m$id: $v"
     }
     append data_line "}"
     lappend data_list $data_line
 }
 
+# ad_return_complaint 1 "<pre>[join $data_list "\n"]</pre>"
 
 # Compile JSON for data
 set data_json "\[\n"
