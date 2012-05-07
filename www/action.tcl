@@ -33,6 +33,11 @@ set user_name [im_name_from_user_id [ad_get_user_id]]
 # 30590, 'Delete'
 # 30599, 'Nuke'
 
+# Customers should not be able to close, delete or nuke tickets  
+if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] && ($action_id == 30500 || $action_id == 30510 || $action_id == 30590 || $action_id == 30599) } {
+    ad_return_complaint 1  [lang::message::lookup "" intranet-helpdesk.No_Permission "As a customer you are not allowed to delete, nuke or close tickets. If the ticket is 'resolved' please mark it as such. "]
+}
+
 # Deal with funky input parameter combinations
 if {"" == $action_id} { ad_returnredirect $return_url }
 if {![info exists tid]} { set tid {} }
@@ -45,6 +50,7 @@ switch $action_id {
 	30500 - 30510 {
 	    # Close and "Close & Notify"
 	    foreach ticket_id $tid {
+		im_ticket::audit		-ticket_id $ticket_id -action "before_update"
 		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
 		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_closed]
 		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
@@ -61,9 +67,10 @@ switch $action_id {
 	30530 - 30532 {
 	    # Reopen
 	    foreach ticket_id $tid {
+		im_ticket::audit		-ticket_id $ticket_id -action "before_update"
 		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
 		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_open]
-		im_ticket::audit		-ticket_id $ticket_id -action "update"
+		im_ticket::audit		-ticket_id $ticket_id -action "after_update"
 	    }
 
 	    if {$action_id == 30532} {
@@ -102,20 +109,22 @@ switch $action_id {
 	30560 {
 	    # Resolved
 	    foreach ticket_id $tid {
+		im_ticket::audit		-ticket_id $ticket_id -action "before_update"
 		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
 		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_resolved]
 		im_ticket::update_timestamp	-ticket_id $ticket_id -timestamp "done"
-		im_ticket::audit		-ticket_id $ticket_id -action "update"
+		im_ticket::audit		-ticket_id $ticket_id -action "after_update"
 	    }
 	}
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {
+		im_ticket::audit		-ticket_id $ticket_id -action "before_update"
 		im_ticket::check_permissions	-ticket_id $ticket_id -operation "write"
 		im_ticket::set_status_id	-ticket_id $ticket_id -ticket_status_id [im_ticket_status_deleted]
 		im_ticket::close_workflow	-ticket_id $ticket_id
 		im_ticket::close_forum		-ticket_id $ticket_id
-		im_ticket::audit		-ticket_id $ticket_id -action "update"
+		im_ticket::audit		-ticket_id $ticket_id -action "after_update"
 	    }
 	}
 	30599 {
