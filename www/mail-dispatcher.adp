@@ -5,4 +5,4 @@
 
 <H1>@page_title@</h1>
 
-<div id="grid"></div><br><div id="searchbox"></div>
+<div id="grid"></div><div id="searchbox"></div>

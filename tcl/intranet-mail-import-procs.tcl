@@ -400,6 +400,7 @@ namespace eval im_mail_import {
 	    ns_log Notice "im_mail_import.process_mails20a: Before catch"
 
 	    catch {
+		 
 		set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
 		ns_log Notice "im_mail_import.process_mails20b: created spam_item \#$cr_item_id"
 		append debug "created spam_item \#$cr_item_id\n"
@@ -473,7 +474,6 @@ namespace eval im_mail_import {
     } {
 	# nothing
     }
-
 }
 
 

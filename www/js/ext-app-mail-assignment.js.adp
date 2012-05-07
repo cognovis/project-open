@@ -55,7 +55,6 @@ Ext.onReady(function(){
             listConfig: {
                 loadingText: 'Searching...',
                 emptyText: 'No matching posts found.',
-
                 // Custom rendering template for each item
                 getInnerTpl: function() {
 		   var remove_mails_box_p = Ext.getCmp('remove_mails_p').getValue();
@@ -86,7 +85,6 @@ Ext.onReady(function(){
                 totalProperty: 'totalCount'
             }
         },
-
         fields: [
             {name: 'msg_name', mapping: 'msg_name'},
             {name: 'from_header', mapping: 'from_header'},
@@ -106,10 +104,10 @@ Ext.onReady(function(){
         store: ds_defered_mails,
         selModel: sm,
         columns: [
-            {text: "@message_name@", dataIndex: 'msg_name'},
+            {text: "@message_name@", dataIndex: 'msg_name', hidden: true},
             {text: "@from@", dataIndex: 'from_header'},
             {text: "@to@", dataIndex: 'to_header'},
-            {text: "@subject_header@", dataIndex: 'subject_header'}
+            {text: "@subject_header@", dataIndex: 'subject_header', width: '300px'}
         ],
         columnLines: true,
         width: 600,
@@ -117,21 +115,47 @@ Ext.onReady(function(){
         frame: true,
         title: '@title_defered_mails@',
         iconCls: 'icon-grid',
-        renderTo: 'grid'
+        renderTo: 'grid',
+	dockedItems: [{
+        	xtype: 'toolbar',
+		dock: 'bottom',
+	        items : [ {
+        	    xtype: 'button',
+	            id: 'delete',
+	            text: '@delete_button;noquote@',
+        	    tooltip: 'Delete checked mails',
+		    handler: function() {
+		        // alert('You clicked the button!')
+			deleteMail();
+    		    },
+		    enableToggle: true
+               }]
+       }]
     });
 
-
-    var getSelectedSumFn = function(column){
-    	return function(){
-        	var records = grid.getSelectionModel().getSelection(),
-	        result  = 0;
+    var deleteMail = function(){
+		console.log("deleting");
+        	var records = grid.getSelectionModel().getSelection();
         	Ext.each(records, function(record){
+	            Ext.Ajax.request({
+        	        method: 'POST',
+                	url: '/intranet-mail-import/assign-mail-to-object',
+        	        params: {
+	                        object_id:-1,
+                	        email_id:record.get('msg_name'),
+                        	remove_mails_p:1
+	                },
+        	        success: function(response){
+                	        var text = response.responseText;
+                        	alert('Removal successful');
+	                }
+        	    });
 	            // result += record.get(column) * 1;
-		    alert(record.get(column));
+		    // alert(record.get(column));
         	});
+		ds_defered_mails.load();
 	        return 0;
-    	};
-    }
+    };
 
     make_ajax_request_i = function(object_id, remove_mails_p){
 	var records = grid.getSelectionModel().getSelection();
