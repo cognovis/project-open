@@ -534,9 +534,18 @@ if {[info exists attribute_id]} {
 }
 
 
+# ------------------------------------------------------------------
+# Left Navbar
+# ------------------------------------------------------------------
 
-
-
-
-
+set left_navbar_html "
+      	<div class='filter-block'>
+        <div class='filter-title'>
+            [lang::message::lookup "" intranet-dynfield.DynField "DynField"]
+        </div>
+	<ul>
+	<li><a href=[export_vars -base "object-type" {object_type}]>'$object_type' [lang::message::lookup "" intranet-dynfield.Object_Type "Object Type"]</a>
+	</ul>
+      	</div>
+"
 

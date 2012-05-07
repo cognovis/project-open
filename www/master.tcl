@@ -11,6 +11,8 @@ set package_url [ad_conn package_url]
 set page_url [ad_conn url]
 set page_query [ad_conn query]
 
+if {![info exists left_navbar]} { set left_navbar "" }
+
 set link_list [list]
 lappend link_list "${package_url}"
 lappend link_list "[_ intranet-contacts.Contacts]"
