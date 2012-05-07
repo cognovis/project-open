@@ -24,7 +24,7 @@ set month "01"
 set day "01"
 
 # project_id may be overwritten by SQLs below
-set org_project_id $project_id
+set main_project_id $project_id
 
 
 # Create a random ID for the diagram
@@ -38,7 +38,7 @@ set milestone_count [db_string milestone_count "
 	select	count(*)
 	from	im_projects parent, 
 		im_projects child 
-	where	parent.project_id = :org_project_id and 
+	where	parent.project_id = :main_project_id and 
 		child.parent_id = parent.project_id and
 		(child.milestone_p = 't' 
 		OR child.project_type_id in ([join [im_sub_categories [im_project_type_milestone]] ","]))
@@ -64,10 +64,10 @@ set base_sql "
 		from	im_projects parent, 
 			im_projects child,
 			im_audits audit
-		where	parent.project_id = $org_project_id and 
+		where	parent.project_id = $main_project_id and 
 			child.parent_id = parent.project_id
 			$milestone_sql and
-			audit.audit_object_id = child.project_id
+			(audit.audit_object_id = child.project_id or audit.audit_object_id = parent.project_id)
 "
 
 # ad_return_complaint 1 "<pre>xxx\n[join [db_list_of_lists base $base_sql] "\n"]\n$base_sql</pre>"
@@ -117,7 +117,11 @@ set audit_end_date_js "new Date($year, $month, $day)"
 
 
 # Select out the project start as base for the Y axis
-set reference_start_julian [db_string ref_julian "select to_char(start_date, 'J') from im_projects where project_id = :org_project_id"]
+db_1row info "
+select	start_date::date as main_project_start_date
+from	im_projects
+where	project_id = :main_project_id
+"
 
 # Get the average end_date for each of the days for each of the milestones
 set changes_sql "
@@ -138,32 +142,67 @@ order by
 	t.audit_date, t.project_id
 "
 
-# ad_return_complaint 1 "<pre>[db_list_of_lists asdf $changes_sql]</pre>"
-
-
 # Write the data into separate hash array per milestone
+set y_axis_min_date $main_project_start_date
+set y_axis_max_date "2000-01-01"
 db_foreach milestone_end_dates $changes_sql {
     set key "$project_id-$audit_date"
-    set hash($key) [expr $end_date_julian - $reference_start_julian]
+    regexp {^(....)\-(..)\-(..)$} $end_date match year month day
+    set hash($key) "new Date($year, $month, $day)"
+
+    if {[string compare $end_date $y_axis_max_date] > 0} { set y_axis_max_date $end_date }
+    if {[string compare $end_date $y_axis_min_date] < 0} { set y_axis_min_date $end_date }
 }
 
-# ad_return_complaint 1 "<pre>audit_date:\n[join $audit_dates "\n"]\nhash:\n[join [array get hash] "\n"]</pre>"
+regexp {^(....)\-(..)\-(..)$} $y_axis_min_date match year month day
+set y_axis_min_date_js "new Date($year, $month, $day)"
+
+regexp {^(....)\-(..)\-(..)$} $y_axis_max_date match year month day
+set y_axis_max_date_js "new Date($year, $month, $day)"
+
+# ad_return_complaint 1 "$y_axis_min_date - $y_axis_max_date"
+
+# -----------------------------------------------------------------
+# Format the data JSON and HTML
+# -----------------------------------------------------------------
 
 set data_list {}
+set debug_html "<table>"
+
+# Header row
+set row "<td class=rowtitle>Date</td>"
+foreach id $milestone_ids {
+    set milestone_name $milestone_hash($id)
+    append row "<td class=rowtitle>$milestone_name</td>\n"
+}
+append debug_html "<tr class=rowtitle>$row</tr>\n"
+
+# Loop through all available audit records and write out data and HTML lines
 foreach audit_date $audit_dates {
 
     # Reformat date for javascript
     regexp {^(....)\-(..)\-(..)$} $audit_date match year month day
     set data_line "{date: new Date($year, $month, $day)"
+
+    # Loop through the columns
+    set row "<td>$audit_date</td>"
     foreach id $milestone_ids {
-	set v 0
+	set v "''"
 	set key "$id-$audit_date"
-	if {[info exists hash($key)]} { set v [expr abs($hash($key))] }
+	if {[info exists hash($key)]} { set v $hash($key) }
 	append data_line ", m$id: $v"
+	append row "<td><nobr>$v</nobr></td>\n"
     }
     append data_line "}"
     lappend data_list $data_line
+
+    append debug_html "<tr class=rowtitle>$row</tr>\n"
 }
+append debug_html "</table>"
+
+# ad_return_complaint 1 $debug_html
+
+
 
 # ad_return_complaint 1 "<pre>[join $data_list "\n"]</pre>"
 
@@ -190,7 +229,25 @@ set fields_json "\['date', $fields_joined\]"
 set series {}
 foreach id $milestone_ids {
     set milestone_name $milestone_hash($id)
-    lappend series "{type: 'line', title: '$milestone_name', axis: \['left','bottom'\], xField: 'date', yField: 'm$id', markerConfig: { radius: 5, size: 5 }}"
+    lappend series "{
+	type: 'line', 
+	title: '$milestone_name', 
+	axis: \['left','bottom'\], 
+	xField: 'date', 
+	yField: 'm$id', 
+	markerConfig: { radius: 5, size: 5 },
+	tips: {
+	        trackMouse: false,
+		anchor: 'right',
+  		width: 200,
+  		height: 30,
+  		renderer: function(storeItem, item) {
+			var t = item.series.title;
+			this.setTitle(t);
+ 	        }
+        }
+    }
+    "
 }
 set series_json [join $series ", "]
 
