@@ -34,6 +34,5 @@ set current_url_without_vars [ns_conn url]
 
 # src="/intranet-sencha/js/ext-all.js" 
 template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "100"
-template::head::add_javascript -src "/intranet-sencha/js/locale/ext-lang-es.js" -order "110"
 template::head::add_javascript -src "/intranet-mail-import/js/ext-app-mail-assignment.js" -order "130"
 template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "120"
