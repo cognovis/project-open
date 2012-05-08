@@ -134,7 +134,7 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours} { 
 	set duration_hours $default_duration
     }
-    if {"" == $duration_hours || [string equal $start_date $end_date] } { 
+    if {"" == $duration_hours || [string equal $start_date $end_date] || $duration_hours < 0} { 
 	set duration_hours 0 
     }
 
