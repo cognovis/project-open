@@ -2,7 +2,6 @@
 
 SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgrade-4.0.3.0.1-4.0.3.0.2.sql','');
 
-
 -----------------------------------------------------------
 -- Category Ranges reservation
 --
