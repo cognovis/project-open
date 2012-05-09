@@ -8,16 +8,12 @@
 <body text="#000000">
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
-    <td>
-      <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif"><br>
+    <td align=left>
       <P><b><font size="5">FACTURA</font></b></P>
     </td>
-    <td align="right"> <p><font size="6">
-<span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
-    </font><br>
-        <font size="3"><b>Gestiona tus proyectos online-<br>
-        cuando sea, y donde sea</b></font></p>
-      <b><font size="3">www.project-open.com</font></b> </td>
+    <td align="right"> 
+      <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif"><br>
+    </td>
   </tr>
 </table>
 <hr>
