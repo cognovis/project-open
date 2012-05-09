@@ -64,7 +64,7 @@ begin
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_subject := 'Notification_Subject_Notify_Applicant_Absence_Not_Approved';
-        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_subject);
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
@@ -78,7 +78,7 @@ begin
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_body := 'Notification_Body_Notify_Applicant_Absence_Not_Approved';
-        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_body);
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
@@ -203,7 +203,7 @@ begin
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_subject := 'Notification_Subject_Notify_Applicant_Absence_Approved';
-        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_subject);
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
@@ -217,7 +217,7 @@ begin
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_body := 'Notification_Body_Notify_Applicant_Absence_Approved';
-        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_body);
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
