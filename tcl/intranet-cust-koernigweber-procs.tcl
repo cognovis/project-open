@@ -1260,17 +1260,22 @@ ad_proc im_absence_new_page_wf_perm_table_kw { } {
     return [array get perm_hash]
 }
 
-
 ad_proc -public -callback im_before_member_add -impl intranet-cust-koernigweber  {
-    {-user_id:required}
-    {-object_id:required}
+    { -user_id:required }
+    { -object_id:required }
 } {
     Check if user has sales price VK assigned 
 } {
-
-    set price [find_sales_price $user_id $object_id "" ""]
-    if { "" == $price } {
-	ad_return_complaint 1  [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User can't be assigned to this project: No price record found."]
-    }	       
-
+    set log ""
+    foreach uid $user_id {
+	set price [find_sales_price $uid $object_id "" ""]
+	if { "" == $price } {
+	    set name [im_name_from_user_id $uid]
+	    append log [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User $name can't be assigned to this project: No price record found.<br>"]
+	}	       
+    }
+    if { "" != $log } {
+	set log "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Operation_Canceled "Operation canceled"]</strong> <br> $log"
+	ad_return_complaint 1 $log
+    }
 }
