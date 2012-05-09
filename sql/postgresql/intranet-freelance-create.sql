@@ -10,10 +10,16 @@
 -- @author juanjoruizx@yahoo.es
 
 -----------------------------------------------------------
--- Freelance Management specific data model
+-- HR Skills
 --
--- "Freelancers" are a kind of users, exteded by payment
--- methods and a set of skills/tools/...
+-- Skills are a list of skills a user can have.
+-- Skills are grouped in skill type, for example
+-- programming languages, ...
+
+
+-- Create a new profile for users who are not real users...
+select im_create_profile ('Skill Profile','skill_profile');
+
 
 -----------------------------------------------------------
 -- Freelancers
