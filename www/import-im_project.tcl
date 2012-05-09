@@ -70,22 +70,30 @@ set values_list_of_lists [im_csv_get_values $lines_content $separator]
 # ------------------------------------------------------------
 # Get DynFields
 
-set dynfield_sql {
+# Determine the list of actually available fields.
+set mapped_vars [list "''"]
+foreach k [array names map] {
+    lappend mapped_vars "'$map($k)'"
+}
+
+set dynfield_sql "
 	select distinct
 		aa.attribute_name,
 		aa.object_type,
 		aa.table_name,
 		w.parameters,
 		w.widget as tcl_widget,
-		substring(w.parameters from 'category_type "(.*)"') as category_type
+		substring(w.parameters from 'category_type \"(.*)\"') as category_type
 	from	im_dynfield_widgets w,
 		im_dynfield_attributes a,
 		acs_attributes aa
 	where	a.widget_name = w.widget_name and
 		a.acs_attribute_id = aa.attribute_id and
 		aa.object_type in ('im_project', 'im_timesheet_task') and
-		(also_hard_coded_p is null OR also_hard_coded_p = 'f')
-}
+		(also_hard_coded_p is null OR also_hard_coded_p = 'f') and
+		-- Only overwrite DynFields specified in the mapping
+		aa.attribute_name in ([join $mapped_vars ","])
+"
 
 set attribute_names [db_list attribute_names "
 	select	distinct
