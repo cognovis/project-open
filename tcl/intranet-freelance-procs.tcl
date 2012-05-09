@@ -205,10 +205,9 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
     im_user_permissions $current_user_id $user_id view read write admin
 
     set freelance_member_p [db_string freelance_member "select count(1) from group_distinct_member_map where member_id=:user_id and group_id = [im_freelance_group_id]"]
-    if {!$freelance_member_p} {
-	# This is not a freelancer - skip showing the component
-	return ""
-    }
+    
+    # Fraber 120506: Now showing this component for all users
+    # if {!$freelance_member_p} { return "" }
 
     set td_class(0) "class=roweven"
     set td_class(1) "class=rowodd"
