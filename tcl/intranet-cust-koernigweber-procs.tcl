@@ -1277,5 +1277,7 @@ ad_proc -public -callback im_before_member_add -impl intranet-cust-koernigweber 
     if { "" != $log } {
 	set log "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Operation_Canceled "Operation canceled"]</strong> <br> $log"
 	ad_return_complaint 1 $log
+	break
+
     }
 }
