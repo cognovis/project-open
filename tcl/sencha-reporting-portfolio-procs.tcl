@@ -82,3 +82,36 @@ ad_proc -public sencha_milestone_tracker {
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/milestone-tracker"]
     return [string trim $result]
 }
+
+
+
+
+ad_proc -public sencha_project_timeline {
+    {-diagram_width 1000 }
+    {-diagram_height 400 }
+    {-diagram_caption "Project Timeline" }
+    {-diagram_start_date ""}
+    {-diagram_end_date ""}
+} {
+    Returns a HTML code with a Sencha project timelinediagram.
+    The timeline shows the resource requirements over time.
+} {
+    # Choose the version and type of the sencha libs
+    set version "v407"
+    set ext "ext-all-debug-w-comments.js"
+
+    # Make sure the Sencha library is loaded
+    template::head::add_css -href "/sencha-$version/ext-all.css" -media "screen" -order 1
+    template::head::add_javascript -src "/sencha-$version/$ext" -order 2
+
+    set params [list \
+		    [list diagram_width $diagram_width] \
+		    [list diagram_height $diagram_height] \
+		    [list diagram_caption $diagram_caption] \
+		    [list diagram_start_date $diagram_start_date] \
+		    [list diagram_end_date $diagram_end_date] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]
+    return [string trim $result]
+}
