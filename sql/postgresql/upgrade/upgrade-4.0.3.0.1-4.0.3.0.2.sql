@@ -8,6 +8,8 @@ SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrad
 --
 -- all invoices that are not deleted (600) nor that have
 -- been lost during creation (612).
+
+drop view im_invoices_active;
 create or replace view im_invoices_active as 
 select	i.*,
 	ci.*,
