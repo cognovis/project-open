@@ -89,12 +89,20 @@ begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_employees'' and lower(column_name) = ''overtime_balance'';
 
-        if v_count > 0 
-	    then 
+        if v_count > 0 then 
 	    RAISE NOTICE ''Notice: intranet-overtime-create.sql - column overtime_balance already exists'';
-	    else 
+	else 
 	       alter table im_employees add column overtime_balance numeric(12,2) DEFAULT 0;
-	    end if;
+	end if;
+
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_employees'' and lower(column_name) = ''rwh_days_last_year'';
+
+        if v_count > 0 then 
+	    RAISE NOTICE ''Notice: intranet-overtime-create.sql - rwh_days_last_year already exists'';
+	else 
+	       alter table im_employees add column rwh_days_last_year numeric(12,2) DEFAULT 0;
+	end if;
 
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_employees'' and lower(column_name) = ''rwh_days_per_year'';
