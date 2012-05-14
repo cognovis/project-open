@@ -25,3 +25,9 @@ where
 	ci.cost_id = i.invoice_id
 	and ci.cost_status_id not in (3812);
 
+
+-- Set the "Finance" tab to /intranet-invoices/list
+update im_menus
+set url = '/intranet-invoices/list'
+where label = 'finance';
+
