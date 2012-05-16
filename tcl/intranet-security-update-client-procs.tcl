@@ -25,7 +25,7 @@ ad_proc -public im_security_update_exchange_rate_sweeper { } {
     ns_log Notice "im_security_update_exchange_rate_sweeper: Starting"
 
     # Determine every how many days we want to update
-    set max_days_since_update [parameter::get_from_package_key -package_key intranet-exchange-rate -parameter ExchangeRateDaysBeforeUpdate -default 1]
+    set max_days_since_update [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateDaysBeforeUpdate -default 1]
 
     # Check for the last update
     set last_update_julian ""
@@ -160,8 +160,8 @@ ad_proc im_security_update_update_currencies {
 		    
 		    db_dml delete_entry "
 				delete  from im_exchange_rates
-				where   day = '$currency_day'::date and
-					currency = '$currency_code'
+				where   day = :currency_day::date and
+					currency = :currency_code
 		    "
 		
 		    if {[catch {db_dml insert_rates "
@@ -171,9 +171,9 @@ ad_proc im_security_update_update_currencies {
 					rate,
 					manual_p
 				) values (
-					'$currency_day'::date,
-					'$currency_code',
-					'$exchange_rate',
+					:currency_day::date,
+					:currency_code,
+					:exchange_rate,
 					't'
 				)
 		    "} err_msg]} {
@@ -457,7 +457,7 @@ ad_proc im_exchange_rate_update_component { } {
 	set package_key "intranet-security-update-client"
 	set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
 	set enabled_p [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateSweeperEnabledP -default 0]
-	set days_before_update [parameter::get_from_package_key -package_key intranet-exchange-rate -parameter ExchangeRateDaysBeforeUpdate -default 0]
+	set days_before_update [parameter::get_from_package_key -package_key intranet-security-update-client -parameter ExchangeRateDaysBeforeUpdate -default 0]
 	set last_update [db_string last_update "select max(day::date) from im_exchange_rates where manual_p = 't'" -default "never"]
 	# append content "<br>\n"
 	append content "<h2>[lang::message::lookup "" intranet-exchange-rate.Automatic_Updates_Status "Automatic Update Status"]</h2>\n"
