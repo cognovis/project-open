@@ -218,6 +218,10 @@ set dynfield_sql "
 set derefs [list]
 db_foreach dynfield_attributes $dynfield_sql {
 
+    if { "company_id" == $attribute_name } {
+        break
+    }
+
     # Catch the generic ones - We know how to dereferentiate integer references of these fields.
     set deref ""
     switch $tcl_widget {
