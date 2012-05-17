@@ -713,7 +713,8 @@ ad_proc im_oo_page_type_list {
     set rounding_precision 2
 
     array set param_hash $parameters
-    array set param_hash [im_oo_page_extract_templates -page_node $page_node]
+    # fraber 120517: We expect that a template page went before...
+    # array set param_hash [im_oo_page_extract_templates -page_node $page_node]
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
     if {"" == $list_sql} {
@@ -1173,6 +1174,9 @@ ad_proc im_oo_page_type_gantt_move_scale {
     set y_offset [expr $base_y_offset + $row_cnt * $y_dist]
     set x_offset [expr $base_x_offset + ($start_date_epoch - $main_project_start_date_epoch) / $epoch_per_x]
 
+	ns_log Notice "im_oo_page_type_gantt_move_scale: y_dist=$y_dist"
+
+
     # Move the grouping to the x/y offset position
     foreach child [$grouping_node childNodes] {
 
@@ -1234,9 +1238,10 @@ ad_proc im_oo_page_type_gantt {
 
     # Write parameters to local variables
     array set param_hash $parameters
-    set template_param_list [im_oo_page_extract_templates -page_node $page_node]
-    array set param_hash $template_param_list
-    ns_log Notice "im_oo_page_type_gantt: page_name='$page_name', template_params=$template_param_list"
+    # 120517 fraber: We expect that there was a template page before
+    # set template_param_list [im_oo_page_extract_templates -page_node $page_node]
+    # array set param_hash $template_param_list
+    # ns_log Notice "im_oo_page_type_gantt: page_name='$page_name', template_params=$template_param_list"
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
     # Make sure there is a SQL for the project phases/tasks
