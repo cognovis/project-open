@@ -6,11 +6,10 @@
 # http://www.project-open.com/ for licensing details.
 
 ad_page_contract {
-    Show the list of current task and allow the project
-    manager to create new tasks.
+    Show the list of mails assigned to this project 
 
     @author klaus.hofeditz@project-open.com
-    @creation-date July 2010
+    @creation-date May 2012
 } {
     object_id:integer
     { view_mode "json" }
@@ -25,11 +24,13 @@ ad_page_contract {
 		set view_p 1 
 	} else {
 		if { $object_type == "im_project" } {
-		    if { [im_biz_object_member_p $user_id $object_id] } { 
+		    if { [im_biz_object_member_p $user_id $object_id] || [im_is_user_site_wide_or_intranet_admin $user_id] } { 
 			set view_p 1 
 		    }
 		}
 	}
+
+        set ctr 0
 
 	if { $view_p } {
 		set sql "
@@ -45,7 +46,6 @@ ad_page_contract {
                 	        and amb.body_id = ao.object_id
                         	and ar.object_id_two = :object_id
 	            "
-        	set ctr 0
 		set json_record_list "" 
 		db_foreach mail_list $sql {
 			append json_record_list "{\"id\":\"$content_item_id\",\n"
@@ -58,6 +58,6 @@ ad_page_contract {
 		}
 		set json_record_list [string range $json_record_list 0 [expr [string length $json_record_list]-3]]
 	} else {
-		set json_record_list "Authentication error: Please login"
+	    set json_record_list [lang::message::lookup "" intranet-mail-import.No_View_Permission "You do not have permissions to view mails. Please contact your System Administrator"]
 	}
 

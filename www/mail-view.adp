@@ -21,7 +21,7 @@
 	</tr valign=top>
 	<tr valign=top>
 	  <td class="odd">Body</td>
-	  <td class="odd">@body@</td>
+	  <td class="odd"><pre>@body@</pre></td>
 	</tr> 
 
 	</table>
@@ -29,7 +29,8 @@
 
 <if @view_mode@ eq "body">
 <% 
-	set body [string trimleft $body]
+
+	set body "<pre>[string trimleft $body]</pre>"
 	append body $attachment_html
 	doc_return 200 "text/html" $body 
 %>

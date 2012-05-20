@@ -107,7 +107,7 @@ Ext.onReady(function(){
             {text: "@message_name@", dataIndex: 'msg_name', hidden: true},
             {text: "@from@", dataIndex: 'from_header'},
             {text: "@to@", dataIndex: 'to_header'},
-            {text: "@subject_header@", dataIndex: 'subject_header', width: '300px'}
+            {text: "@subject_header@", dataIndex: 'subject_header'}
         ],
         columnLines: true,
         width: 600,

@@ -162,11 +162,10 @@ ad_page_contract {
 	append json_record_list "{\"msg_name\":\"$msg\",\n"
         append json_record_list "\"from_header\":\"$from_header\",\n"
         append json_record_list "\"to_header\":\"$to_header\",\n"
-        append json_record_list "\"subject_header\":\"$subject_header\",\n"
+        append json_record_list "\"subject_header\":\"$subject_header\"\n"
 	append json_record_list "}\n"
         lappend record_list_tmp $json_record_list
         incr ctr
     }
 
     set record_list [join $record_list_tmp ", "]
-

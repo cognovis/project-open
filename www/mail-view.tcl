@@ -1,27 +1,31 @@
 ad_page_contract {
     view a given piece of spam
 } {
-    body_id:integer
+    content_item_id:integer
     { view_mode "all" }
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set body_id [expr $body_id - 1]
+set body_id [db_string get_data "select body_id from acs_mail_bodies where content_item_id= :content_item_id" -default 0]
 
-# Permission check
-set sql " 
+if { ![im_is_user_site_wide_or_intranet_admin $current_user_id] } {
+    # Permission check
+    set sql " 
 	select 	count(*)	
 	from 	acs_rels 
 	where 
 		object_id_one = :current_user_id and 
 		object_id_one in ( 	
-			select 	object_id_two 	
+			select 	object_id_one 	
 			from 	acs_rels 
-			where object_id_one in (select object_id_two from acs_rels where object_id_one = :body_id) 
+			where object_id_two in (select object_id_two from acs_rels where object_id_one = :body_id) 
 		)
-"
-
-if { 0 == [db_string get_data $sql -default 0] } { return "" }
+    "
+    if { 0 == [db_string get_data $sql -default 0] } { 
+	ns_return 200 text/html "Mail not found"
+	break
+    }
+}
 
 set title ""
 set context [list]
@@ -41,10 +45,11 @@ if { [string first "<html>" [string tolower $body]] != -1 } {
     set body [string range $body $start_html [expr $stop_html + 7]]
 }
 
+
 set extraheaders [lindex $field_list 4]
 set send_date [db_string sent "select to_char(creation_date, 'YYYY-MM-DD HH24:MI:SS') from acs_objects where object_id=:body_id" -default ""]
 
-set project_id [db_string get_view_id "select object_id_two from acs_rels where object_id_one =:body_id" -default 0]
+set project_id [db_string get_view_id "select object_id_two from acs_rels where object_id_one =:body_id and rel_type = 'im_mail_related_to'" -default 0]
 set project_path [db_string get_view_id "select project_path from im_projects where project_id =$project_id" -default 0]
 set list_attachments [im_filestorage_find_files $project_id]
 
