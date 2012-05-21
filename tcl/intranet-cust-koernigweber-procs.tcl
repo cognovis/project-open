@@ -155,8 +155,9 @@ ad_proc -public im_price_list {
 
     # Show price list in projects only when user is a Project Manager of the project
     # ad_return_complaint 1 "$user_id $object_id [im_biz_object_admin_p $user_id $object_id]"
-    if { "im_project" == $object_type && ![im_biz_object_admin_p $user_id $object_id] } {
+    if { "im_project" == $object_type && ![im_biz_object_admin_p $user_id $object_id] && ![im_profile::member_p -profile_id 55437 -user_id $user_id] } {
 	return ""
+	break
     }
 
     # ------------------ START  ------------------------
@@ -1241,21 +1242,28 @@ ad_proc im_absence_new_page_wf_perm_table_kw { } {
     set rej [im_absence_status_rejected]
     set act [im_absence_status_active]
     set del [im_absence_status_deleted]
+    set acc 10000128
 
     set perm_hash(owner-$rej) {v r d}
     set perm_hash(owner-$req) {v r d}
     set perm_hash(owner-$act) {v r d}
     set perm_hash(owner-$del) {v r d}
+    set perm_hash(owner-$acc) {v r d}
+
 
     set perm_hash(assignee-$rej) {v r}
     set perm_hash(assignee-$req) {v r}
     set perm_hash(assignee-$act) {v r}
     set perm_hash(assignee-$del) {v r}
+    set perm_hash(assignee-$acc) {v r}
+
 
     set perm_hash(hr-$rej) {v r d w a}
     set perm_hash(hr-$req) {v r d w a}
     set perm_hash(hr-$act) {v r d w a}
     set perm_hash(hr-$del) {v r d w a}
+    set perm_hash(hr-$acc) {v r d}
+
 
     return [array get perm_hash]
 }
