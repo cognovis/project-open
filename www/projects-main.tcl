@@ -165,7 +165,7 @@ set counters [list]
 # Variables per project
 set project_vars {
     $company_name 
-    "<a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+    "<!--<a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>-->
     <b><a href=$project_url$project_id>$project_nr</a></b>"
     $project_name
     $project_start_date
@@ -295,7 +295,7 @@ switch $output_format {
 	set report_def [list \
 	    group_by company_nr \
 	    header {
-		"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> <b><a href=$company_url$company_id>$company_name</a></b>"
+		"\#colspan=99 <!--<a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>--> <b><a href=$company_url$company_id>$company_name</a></b>"
 	    } \
 	    content [list \
 		 header $project_vars \
