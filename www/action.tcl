@@ -83,6 +83,14 @@ switch $action_id {
 	    if {"" == $tid} { ad_returnredirect $return_url }
 	    ad_returnredirect [export_vars -base "/intranet-helpdesk/associate" {tid}]
 	}
+    	30545 {
+            # Change Prio
+	    foreach ticket_id $tid {
+                set redirect_url [export_vars -base "/intranet-helpdesk/action-change-priority" {action_id return_url}]
+                foreach ticket_id $tid { append redirect_url "&tid=$ticket_id"}
+                ad_returnredirect $redirect_url
+	    }
+        }
 	30550 {
 	    # Escalate
 	    if {"" == $tid} { ad_returnredirect $return_url }
