@@ -19,7 +19,7 @@ DECLARE
 	v_expr		text;
 	v_result	text;
 BEGIN
-	v_expr := p_var_name || '\\t([^\\n]*)';
+	v_expr := p_var_name || '\t([^\n]*)';
 	select	substring(p_audit_value from v_expr) into v_result from dual;
 	IF '' = v_result THEN v_result := null; END IF;
 
@@ -48,7 +48,7 @@ BEGIN
 				aa.audit_date <= p_audit_date
 		);
 
-	v_expr := p_var_name || '\\t([^\\n]*)';
+	v_expr := p_var_name || '\t([^\n]*)';
 	select	substring(v_audit_value from v_expr) into v_result from dual;
 	IF '' = v_result THEN v_result := null; END IF;
 
