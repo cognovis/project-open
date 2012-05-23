@@ -397,38 +397,143 @@ namespace eval im_mail_import {
 	    ns_log Notice "im_mail_import.process_mails19: rfc822_id='$rfc822_id'"
 	    append debug "rfc822_id='$rfc822_id'\n"
 
-	    ns_log Notice "im_mail_import.process_mails20a: Before catch"
+	    ns_log Notice "im_mail_import.process_mails19a: creating spam_item ...."
 
-	    catch {
-		 
-		set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
-		ns_log Notice "im_mail_import.process_mails20b: created spam_item \#$cr_item_id"
-		append debug "created spam_item \#$cr_item_id\n"
+	    if {[catch {
+	 
+		# set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
+		set sql "		
+		select im_mail_import_new_message (
+		       :cr_item_id,    -- cr_item_id
+		       null,           -- reply_to
+		       null,           -- sent_date
+		       null,           -- sender
+		       :rfc822_id,     -- rfc822_id
+		       :subject,       -- title
+		       :html,          -- html_text
+		       :plain,         -- plain_text
+		       :context_id,    -- context_id
+		       now(),          -- creation_date
+		       :user_id,       -- creation_user
+		       :peeraddr,      -- creation_ip
+		       'im_mail_message', -- object_type
+		       :approved_p,    -- approved_p
+		       :send_date,     --send_date
+		       :header_from,   -- header_from
+		       :header_to      -- header_to
+       		    );
+                "
 
+		set cr_item_id [db_string get_data $sql -default 0]
+
+		ns_log Notice "im_mail_import.process_mails20: created cr_item_id: \#$cr_item_id\n"
+	        append debug "created spam_item \#$cr_item_id\n"
+
+		ns_log Notice "im_mail_import.process_mails21: No assigning non_emp_ids: $non_emp_ids"		
 		foreach non_emp_id $non_emp_ids {
 		    set rel_type "im_mail_from"
 		    set object_id_two $non_emp_id
 		    set object_id_one $cr_item_id
 		    set creation_user $user_id
 		    set creation_ip $peeraddr
-		    set rel_id [db_exec_plsql im_mail_import_new_rel {}]
-		    ns_log Notice "im_mail_import.process_mails21: created relationship \#$rel_id"
+
+		    # set rel_id [db_exec_plsql im_mail_import_new_rel {}]
+		    set sql "
+		      select acs_rel__new (
+		              null,           -- rel_id
+			      :rel_type,      -- rel_type
+			      :object_id_one,
+			      :object_id_two,
+			      null,           -- context_id
+			      :creation_user,
+			      :creation_ip
+		      );
+		    "
+
+		    set rel_id [db_string get_data $sql -default 0]
+		    ns_log Notice "im_mail_import.process_mails21a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
 		}
-
+		ns_log Notice "im_mail_import.process_mails22: No assigning project_ids: $project_ids"		
 		foreach project_id $project_ids {
 		    set rel_type "im_mail_related_to"
 		    set object_id_two $project_id
 		    set object_id_one $cr_item_id
 		    set creation_user $user_id
 		    set creation_ip $peeraddr
-		    set rel_id [db_exec_plsql im_mail_import_new_rel {}]
-		    ns_log Notice "im_mail_import.process_mails22: created relationship \#$rel_id"
+
+		    # set rel_id [db_exec_plsql im_mail_import_new_rel {}]
+                    set sql "
+                      select acs_rel__new (
+                              null,           -- rel_id
+                              :rel_type,      -- rel_type
+                              :object_id_one,
+                              :object_id_two,
+                              null,           -- context_id
+                              :creation_user,
+                              :creation_ip
+                      );
+                    "
+                    set rel_id [db_string get_data $sql -default 0]
+
+		    ns_log Notice "im_mail_import.process_mails22a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
 		}
+	    } err_msg]} {
+                    ns_log Notice "im_mail_import.process_mails19b: err creating spam item / building rel.ships: $err_msg"
 	    }
 
+	    # ###
+            # store attachments in project folder
+	    # ###
+
+            # get attachments
+            array set email {}
+            acs_mail_lite::parse_email -file $msg -array email
+            set email_files $email(files)
+
+            set file_name ""
+
+            foreach project_id $project_ids {
+                # determine project folder
+                set project_path [im_filestorage_project_path $project_id]
+                append project_path "/mails"
+
+                # Make sure the mail folder in projects exists, if not create it
+                if {![file exists $project_path]} {
+                    if {[catch { ns_mkdir $project_path } errmsg]} {
+                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
+                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
+                        return $debug
+                    }
+                }
+
+                # create sub-directory to store attachments for cr_item
+                append project_path "/$cr_item_id"
+
+
+                if {[catch { ns_mkdir $project_path } errmsg]} {
+                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
+                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
+                        return $debug
+                }
+
+                foreach attachment $email_files {
+                    append file_name $project_path "/" [lindex $attachment 2]
+                    set content [lindex $attachment 3]
+                    set fp [open $file_name w]
+                    fconfigure $fp -translation binary
+                    fconfigure $fp -encoding binary
+                    puts -nonewline $fp $content
+                    close $fp
+                    set file_name ""
+                }
+            }
+
+            # ###
 	    # Move to "processed" 
+            # ###
+
 	    if {[catch {
 		ns_log Notice "im_mail_import.process_mails23: Moving '$msg' to processed: '$processed_folder/$msg_body'"
 		append debug "Moving '$msg' to processed: '$processed_folder/$msg_body'\n"

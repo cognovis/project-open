@@ -27,11 +27,12 @@ Ext.onReady(function(){
     });
 
     ds = Ext.create('Ext.data.Store', {
+        id: 'ds_store',
         pageSize: 10,
         model: 'Post'
     });
 
-    panel = Ext.create('Ext.panel.Panel', {
+    var panel = Ext.create('Ext.panel.Panel', {
         renderTo: searchbox,
         title: '@search_title@',
         width: 600,
@@ -101,6 +102,7 @@ Ext.onReady(function(){
 
     var sm = Ext.create('Ext.selection.CheckboxModel');
     var grid = Ext.create('Ext.grid.Panel', {
+        id: 'grid_panel_defered_mails',
         store: ds_defered_mails,
         selModel: sm,
         columns: [
@@ -147,6 +149,7 @@ Ext.onReady(function(){
 	                },
         	        success: function(response){
                 	        var text = response.responseText;
+				Ext.getCmp('grid_panel_defered_mails').getStore().load();
                         	alert('Removal successful');
 	                }
         	    });
@@ -173,6 +176,7 @@ Ext.onReady(function(){
                 success: function(response){
                         var text = response.responseText;
                         alert('Assignment successful');
+			Ext.getCmp('grid_panel_defered_mails').getStore().load();
                 }
             });
         });
