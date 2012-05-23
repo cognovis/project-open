@@ -293,11 +293,8 @@ namespace eval im_mail_import {
 
 	    set spam_header ""
 	    if {[info exists email_headers(x-spambayes-classification)]} {
-
-# Temporarily disabled spam - until
-# Spambayes is trained correctly.
-#
-#		set spam_header $email_headers(x-spambayes-classification)
+		# Temporarily disabled spam - until Spambayes is trained correctly.
+		# set spam_header $email_headers(x-spambayes-classification)
 		ns_log Notice "im_mail_import.process_mails7: spam_header=$spam_header"
 	    } else {
 		ns_log Notice "im_mail_import.process_mails8: No spam header found"
