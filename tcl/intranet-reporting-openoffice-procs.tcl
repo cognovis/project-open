@@ -764,7 +764,12 @@ ad_proc im_oo_page_type_list {
 	    # Reset counters
 	    foreach counter $counters {
 		set counter_var [lindex $counter 0]
+		set counter_var_pretty "${counter_var}_pretty"
+		set counter_var_sor "${counter_var}_sor"
+
 		set $counter_var 0
+		set $counter_var_pretty 0
+		set $counter_var_sor 0
 	    }
 
 	    # Parse the template in order to create a "fresh" XML tree.
