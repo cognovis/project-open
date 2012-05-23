@@ -19,6 +19,7 @@ ad_page_contract {
     { object_id }	
     { remove_mails_p }
 }
+
 	set debug ""
 	set mail_dir "/web/projop/Maildir"
 	set defered_folder "$mail_dir/defered"
@@ -157,7 +158,7 @@ ad_page_contract {
 			if {[catch {
 			   set cr_item_id [db_string get_data $sql -default 0]
 		        } err_msg]} {
-			   ns_log Notice "assign-mail-to-object: Error creating cr_item: $errmsg"
+			   ns_log Notice "assign-mail-to-object: Error creating cr_item: $err_msg"
 			   break
 			}
 
@@ -189,33 +190,83 @@ ad_page_contract {
 			if {[catch {
 			   set rel_id [db_string get_data $sql -default 0]
 		        } err_msg]} {
-			   ns_log Notice "assign-mail-to-object: Could not create relationship: $errmsg"
+			   ns_log Notice "assign-mail-to-object: Could not create relationship: $err_msg"
 			   break
 			}
 			ns_log Notice "assign-mail-to-object: created relationship \\#$rel_id"
 	                append debug "created relationship \\#$rel_id\n"
 
 
+		    # ###
+		    # store attachments in project folder
+		    # ###
+
+		    # get attachments
+		    array set email {}
+		    acs_mail_lite::parse_email -file $email_id -array email
+		    set email_files $email(files)
+
+		    set file_name ""
+
+		    if { "im_project" == $object_type } {
+		        ns_log Notice "assign-mail-to-object: Found object type project"
+			set project_id $object_id 
+			# determine project folder
+			set project_path [im_filestorage_project_path $project_id]
+			append project_path "/mails"
+			
+			# Make sure the mail folder in projects exists, if not create it
+			if {![file exists $project_path]} {
+			    if {[catch { ns_mkdir $project_path } err_msg]} {
+				ns_log Notice "assign-mail-to-object: Error creating '$project_path' folder: '$err_msg'"
+				append debug "Error creating '$project_path' folder: '$err_msg'\n"
+				return $debug
+			    }
+			}
+
+			# create sub-directory to store attachments for cr_item
+			append project_path "/$cr_item_id"
+
+			if {[catch { ns_mkdir $project_path } errmsg]} {
+			    ns_log Notice "assign-mail-to-object: Error creating '$project_path' folder: '$errmsg'"
+			    append debug "Error creating '$project_path' folder: '$errmsg'\n"
+			    return $debug
+			}
+			foreach attachment $email_files {
+			    append file_name $project_path "/" [lindex $attachment 2]
+			    set content [lindex $attachment 3]
+			    set fp [open $file_name w]
+			    fconfigure $fp -translation binary
+			    fconfigure $fp -encoding binary
+			    puts -nonewline $fp $content
+			    close $fp
+			    set file_name ""
+			}
+		}
+
+		# ###
         	# Move to "processed"
+		# ###
+
 		if { "true" != $remove_mails_p } {
 			if {[catch {
                 		ns_log Notice "assign-mail-to-object: Moving '$email_id' to processed: '$processed_folder/$email_id'"
 	                	append debug "Moving '$email_id' to processed: '$processed_folder/$email_id'\n"
 	        	        ns_rename $email_id "$processed_folder/$email_file_name"
 			} errmsg]} {
-        		        ns_log Notice "assign-mail-to-object: Error moving '$email_id' to processed: '$processed_folder/$email_file_name': '$errmsg'"
-                		append debug "Error moving '$email_id' to processes: '$processed_folder/$email_file_name': '$errmsg'\n"
+        		        ns_log Notice "assign-mail-to-object: Error moving '$email_id' to processed: '$processed_folder/$email_file_name': $errmsg"
+                		append debug "Error moving '$email_id' to processes: '$processed_folder/$email_file_name': $errmsg \n"
 			}
 		}
-            } errmsg] {
-                  ns_log Notice "assign-mail-to-object: Error assigning mail to object: $object_id: '$errmsg'"
+            } err_msg] {
+                  ns_log Notice "assign-mail-to-object: Error assigning mail to object: $object_id: $err_msg"
             }
 	} else {
 		if {[catch {
                         ns_rename $email_id "/tmp/$email_file_name"
                    } errmsg]} {
-                        ns_log Notice "assign-mail-to-object: Error moving '$email_id' to temp folder: '/tmp/$email_file_name': '$errmsg'"
-                        append debug "Error moving '$email_id' to temp folder: '/temp/$email_file_name': '$errmsg'\n"
+                        ns_log Notice "assign-mail-to-object: Error moving '$email_id' to temp folder: '/tmp/$email_file_name': $errmsg"
+                        append debug "Error moving '$email_id' to temp folder: '/temp/$email_file_name': $errmsg \n"
                    }
 	}
 
