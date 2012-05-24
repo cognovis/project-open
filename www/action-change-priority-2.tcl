@@ -39,20 +39,28 @@ foreach ticket_id $tid {
 	} err_msg]} {
 		set msg [lang::message::lookup "" intranet-helpdesk.Change_Prio_Problems "We found problems while updating the ticket_status:<br> $err_mess"]	
 		ad_return_complaint 1 "$msg<br>$err_msg"
-		return
+		break
 	}
 	im_ticket::audit                -ticket_id $ticket_id -action "after_update"
-
+	
+	set ticket_assignee_id ""
 	set ticket_assignee_id [db_string get_ticket_asignee_id "select ticket_assignee_id from im_tickets where ticket_id=:ticket_id" -default 0]
-	if { ""== $ticket_assignee_id } {
-		set ticket_asignee_id [parameter::get -package_id [apm_package_id_from_key acs_kernel] -parameter "ticket_asignee_id" -default ""]
+	if { "" == $ticket_assignee_id } {
+		set ticket_assignee [parameter::get -package_id [apm_package_id_from_key intranet-helpdesk] -parameter "HelpdeskOwner" -default ""]
+	    	if { "" == $ticket_assignee_id } {
+			set ticket_assignee [parameter::get -package_id [apm_package_id_from_key acs-kernel] -parameter "SystemOwner" -default ""]
+		}
+	        set ticket_assignee_id [db_string get_ticket_asignee_id "select party_id from parties where email = :ticket_assignee" -default 0]
+	    	if { "" == $ticket_assignee_id  } {
+			ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Err_Mess_No_Email_Found "Ticket prio changed, but could not find any recipient to notify. Please contact the owner of the helpdesk"]
+	    	}
 	}	
 
-	set subject [lang::message::lookup "" intranet-helpdesk.Subject_Prio_Change "Ticket Prio Change"]
+        set subject [lang::message::lookup "" intranet-helpdesk.Subject_Prio_Change "Ticket Prio Change"]
 	set body [lang::message::lookup "" intranet-helpdesk.Body_Prio_Change "A priority of a ticket has been changed:\n\n"]
 	set base_url  [parameter::get -package_id [apm_package_id_from_key acs-kernel] -parameter "SystemURL" -default 60]
 	set ticket_name [db_string get_ticket_name "select project_name from im_projects where project_id = :ticket_id" -default 0]
-	append body "<a href=$base_url/intranet-helpdesk/view?ticket_id=$ticket_id>$ticket_name</a> set to prio: $ticket_prio" 
+	append body "$ticket_name \n set to prio: $ticket_prio \n $base_url/intranet-helpdesk/view?ticket_id=$ticket_id" 
 	
 	set sql "select acs_mail_nt__post_request (:current_user_id, :ticket_assignee_id, 'f', :subject, :body, 0)"
 
@@ -68,7 +76,7 @@ foreach ticket_id $tid {
 }
 
 if { "" == $err } {
-	set usr_mess  [lang::message::lookup "" intranet-helpdesk.Ticket_Assignee_Informed "Ticket prip updated, ticket assignee(s) informed by email"]
+	set usr_mess  [lang::message::lookup "" intranet-helpdesk.Ticket_Assignee_Informed "Ticket prio updated, ticket assignee(s) informed by email"]
 } else {
 	set usr_mess  [lang::message::lookup "" intranet-helpdesk.Change_Prio_Problems "We found problems while updating the ticket_status:<br> $err"]
 }
