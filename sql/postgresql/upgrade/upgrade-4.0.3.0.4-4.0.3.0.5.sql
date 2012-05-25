@@ -1,6 +1,6 @@
--- upgrade-4.0.3.0.3-4.0.3.0.4.sql
+-- upgrade-4.0.3.0.4-4.0.3.0.5.sql
 
-SELECT acs_log__debug('/packages/intranet-audit/sql/postgresql/upgrade/upgrade-4.0.3.0.3-4.0.3.0.4.sql','');
+SELECT acs_log__debug('/packages/intranet-audit/sql/postgresql/upgrade/upgrade-4.0.3.0.4-4.0.3.0.5.sql','');
 
 create or replace function inline_0 ()
 returns integer as $body$
