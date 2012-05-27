@@ -9,6 +9,15 @@
 
 
 
+SELECT im_lang_add_message('en_US','intranet-wall','Comments','Comments');
+SELECT im_lang_add_message('en_US','intranet-wall','Status','Status');
+SELECT im_lang_add_message('en_US','intranet-wall','Type','Type');
+SELECT im_lang_add_message('en_US','intranet-wall','Thumbs','Thumbs');
+SELECT im_lang_add_message('en_US','intranet-wall','Name','Name');
+SELECT im_lang_add_message('en_US','intranet-wall','Description_of_activities','Description of Activities');
+
+
+
 ---------------------------------------------------------
 -- Wall Menu
 -- 

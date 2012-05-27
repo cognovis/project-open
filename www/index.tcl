@@ -89,43 +89,35 @@ foreach form_var [ad_ns_set_keys $form_vars] {
 
 set wall_sql [lang::message::format $wall_sql $substitution_list]
 
+# append wall_sql "\nLIMIT 10"
 
 # ---------------------------------------------------------------
 # Create the main walls multirow
 # ---------------------------------------------------------------
 
 set user_id 0
-set wall_id 0
-set forum_topic_id 0
-set ticket_description ""
 
-db_multirow -extend { ticket_status ticket_type thumbs_up_count thumbs_direction wall_description comment_count wall_url project_name wall_id type thumbs_down_url thumbs_up_url thumbs_undo_url dollar_url comments_url creator_url creator_name } wall wall_query $wall_sql {
+db_multirow -extend { container_object_url container_object_type_l10n specific_object_url specific_object_type_l10n } wall wall_query $wall_sql {
 
-    set wall_id $container_object_id
-    set type "wall_project_tasks"
-    set thumbs_up_count 0
-    set comment_count 0
-    set thumbs_direction "up"
-    set project_name $container_object_name
-    set wall_description "adsf"
-    set ticket_status "status"
-    set ticket_type "type"
+    set container_object_url [util_memoize [list db_string container_object_url "
+	select	url
+	from	im_biz_object_urls
+	where	object_type = '$container_object_type' and
+		url_type = 'view'
+    "]]
+    append container_object_url $container_object_id
+    set container_object_type_l10n [lang::message::lookup "" intranet-core.$container_object_type $container_object_type]
 
+    set specific_object_url [util_memoize [list db_string specific_object_url "
+	select	url
+	from	im_biz_object_urls
+	where	object_type = '$specific_object_type' and
+		url_type = 'view'
+    "]]
+    append specific_object_url $specific_object_id
+    set specific_object_type_l10n [lang::message::lookup "" intranet-core.$specific_object_type $specific_object_type]
 
-    set wall_url [export_vars -base "/intranet-wall/redirect-to-ticket" {{ticket_id $wall_id} return_url}]
-    set dollar_url [export_vars -base "/intranet-wall/dollar-action" {return_url ticket_id}]
-    set comments_url [export_vars -base "/intranet-forum/new" {return_url {parent_id $forum_topic_id}}]
-
-    set wall_description [ns_quotehtml [string range $ticket_description 0 $max_description_len]]
-    if {[string length $wall_description] >= $max_description_len} { append wall_description "... (<a href='$wall_url'>more</a>)" }
-
-    set creator_name $user_name
-    if {[regexp {^([a-z0-9A-Z\-_]*)@} $creator_name match username_body]} { set creator_name $username_body }
     set creator_url [export_vars -base "/intranet/users/view" {{user_id $user_id}}]
-
-    set thumbs_up_url [export_vars -base "/intranet-wall/thumbs-action" {return_url {ticket_id $wall_id} {direction up}}]
-    set thumbs_down_url [export_vars -base "/intranet-wall/thumbs-action" {return_url {ticket_id $wall_id} {direction down}}]
-    set thumbs_undo_url [export_vars -base "/intranet-wall/thumbs-action" {return_url {ticket_id $wall_id} {direction undo}}]
 }
 
 
