@@ -101,8 +101,8 @@ ad_proc -public im_dashboard_generic_component {
     " -default 'f']
     if {![string equal "t" $read_p]} { return "" }
 
-    if {"" == $start_date} { set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"] }
-    if {"" == $end_date} { set end_date [db_string start "select to_date(now()::date+60, 'YYYY-MM-01')"] }
+    if {"" == $start_date} { set start_date [db_string start "select to_char(now()::date-10000, 'YYYY-MM-01')"] }
+    if {"" == $end_date} { set end_date [db_string start "select to_char(now()::date+60, 'YYYY-MM-01')"] }
 
     set params [list \
 		    [list component_name $component_name] \
