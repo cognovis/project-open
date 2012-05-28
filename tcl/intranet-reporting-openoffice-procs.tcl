@@ -183,7 +183,7 @@ ad_proc im_oo_substitute_descend {
 	    if {[info exists params($var)]} { set val $params($var) }
 	    set text "$head$val$tail"
 	    incr cnt
-	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text'" }
+	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text':<br><pre>[ad_print_stack_trace]</pre>" }
 	}
 	ns_log Notice "im_oo_substitute_descend: result=$text"
 
@@ -209,7 +209,7 @@ ad_proc im_oo_substitute_descend {
 
 	    set text "$head$tail"
 	    incr cnt
-	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text'" }
+	    if {$cnt > 10} { ad_return_complaint 1 "im_oo_substitute_descend: infinite loop: '$text':<br><pre>[ad_print_stack_trace]</pre>" }
         }
 
 	# Perform the substitution
@@ -345,7 +345,7 @@ ad_proc im_oo_page_extract_templates {
 			    foreach span_node $span_nodes {
 				set text_style [$span_node getAttribute "text:style-name"]
 				ns_log Notice "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_title' - $titles."
-				ad_return_complaint 1 "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_title' - $titles."
+				ad_return_complaint 1 "im_oo_page_extract_templates: Text Styles: Found text style '$text_style' with title '$style_title' - $titles:<br><pre>[ad_print_stack_trace]</pre>"
 
 			    }
 			}
@@ -494,7 +494,7 @@ ad_proc im_oo_page_list {
 		    -page_sql $page_sql
 	    }
 	    default {
-		ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name'</b>"
+		ad_return_complaint 1 "<b>Found unknown page type '$page_type' in page '$page_name':</b><br><pre>[ad_print_stack_trace]</pre>"
 		ad_script_abort
 	    }
 	}
@@ -580,7 +580,7 @@ ad_proc im_oo_page_type_static {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -594,7 +594,7 @@ ad_proc im_oo_page_type_static {
 		eval [template::adp_compile -string $template_xml]
 		set xml $__adp_output
 	    } err_msg]} {
-		ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+		ad_return_complaint 1 "<b>Static: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 		ad_script_abort
 	    }
 	    
@@ -641,7 +641,7 @@ ad_proc im_oo_page_type_repeat {
 	set repeat_sql $__adp_output
 	set repeat_sql [eval "set a \"$repeat_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>Repeat: '$page_name': Error substituting variables in repeat_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Repeat: '$page_name': Error substituting variables in repeat_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -668,7 +668,7 @@ ad_proc im_oo_page_type_repeat {
 	    }
 	}
     } err_msg]} {
-        ad_return_complaint 1 "<b>Repeat: '$page_name': Error evaluating repeat_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Repeat: '$page_name': Error evaluating repeat_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort	
     }
 }
@@ -718,7 +718,7 @@ ad_proc im_oo_page_type_list {
     foreach var [array names param_hash] { set $var $param_hash($var) }
 
     if {"" == $list_sql} {
-        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in list page</b>."
+        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in list page</b>:<br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -729,7 +729,7 @@ ad_proc im_oo_page_type_list {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -739,7 +739,7 @@ ad_proc im_oo_page_type_list {
 	set list_sql $__adp_output
 	set list_sql [eval "set a \"$list_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -815,7 +815,7 @@ ad_proc im_oo_page_type_list {
 				    eval [template::adp_compile -string $page_xml]
 				    set xml $__adp_output
 				} err_msg]} {
-				    ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre>"
+				    ad_return_complaint 1 "<b>List: '$page_name': Error substituting page variables</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 				    ad_script_abort
 				}
 				
@@ -853,7 +853,7 @@ ad_proc im_oo_page_type_list {
 			    if {"" == $table_node} {
 				ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
 			Didn't find a table with title 'list'.<br>
-		        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
+		        <pre>[ns_quotehtml [$page_root asXML]]</pre><br><pre>[ad_print_stack_trace]</pre>"
 				ad_script_abort
 			    }
 			    
@@ -865,7 +865,7 @@ ad_proc im_oo_page_type_list {
 			    set list_total_node [lindex $row_nodes 3]
 			    set content_row_xml [$content_row_node asXML]
 			    if {"" == $content_row_node} {
-				ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b>"
+				ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Table only has one row</b><br><pre>[ad_print_stack_trace]</pre>"
 				ad_script_abort
 			    }
 			}
@@ -896,7 +896,7 @@ ad_proc im_oo_page_type_list {
 				ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name': Error updating counter</b>:<br>
 			Counter name: '$counter_var'<br>
 			Counter expressions: '$counter_expr'<br>
-			Error:<br><pre>$err_msg</pre>"
+			Error:<br><pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 				ad_script_abort
 			    }
 			    if {"" != $val && [string is double $val]} {
@@ -927,7 +927,7 @@ ad_proc im_oo_page_type_list {
 		}
 
 	    } err_msg]} {
-		ad_return_complaint 1 "<b>List '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre>"
+		ad_return_complaint 1 "<b>List '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 		ad_script_abort
 	    }
 
@@ -957,7 +957,7 @@ ad_proc im_oo_page_type_list {
 		if {"" == $table_node} {
 		    ad_return_complaint 1 "<b>im_oo_page_type_list '$page_name'</b>:<br>
                         Didn't find a table with title 'list'.<br>
-                        <pre>[ns_quotehtml [$page_root asXML]]</pre>"
+                        <pre>[ns_quotehtml [$page_root asXML]]</pre><br><pre>[ad_print_stack_trace]</pre>"
 		    ad_script_abort
 		}
 
@@ -981,7 +981,7 @@ ad_proc im_oo_page_type_list {
 		eval [template::adp_compile -string $page_xml]
 		set xml $__adp_output
 	    } err_msg]} {
-		ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in last page</b>:<pre>$err_msg</pre>"
+		ad_return_complaint 1 "<b>List: '$page_name': Error substituting variables in last page</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 		ad_script_abort
 	    }
 
@@ -996,7 +996,7 @@ ad_proc im_oo_page_type_list {
 	    # End looping through multiple pages
 	}
     } err_msg]} {
-        ad_return_complaint 1 "<b>List: '$page_name': Error executing page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>List: '$page_name': Error executing page_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 }
@@ -1165,7 +1165,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 	ad_return_complaint 1 "<b>im_oo_page_type_gantt_move_scale '$page_name'</b>:<br>
 	The grouping doesn't contain the necessary three nodes:<br>
 	<ul><li>base_node=$base_node<br><li>expected_node=$expected_node</br><li>completed_node=$completed_node</br></ul><br>
-        <pre>[im_oo_tdom_explore -node $grouping_node]</pre>"
+        <pre>[im_oo_tdom_explore -node $grouping_node]</pre><br><pre>[ad_print_stack_trace]</pre>"
     }
 
     # Extract the widths of the three bars
@@ -1178,9 +1178,6 @@ ad_proc im_oo_page_type_gantt_move_scale {
     # Advance the y postition y_dist for every row
     set y_offset [expr $base_y_offset + $row_cnt * $y_dist]
     set x_offset [expr $base_x_offset + ($start_date_epoch - $main_project_start_date_epoch) / $epoch_per_x]
-
-	ns_log Notice "im_oo_page_type_gantt_move_scale: y_dist=$y_dist"
-
 
     # Move the grouping to the x/y offset position
     foreach child [$grouping_node childNodes] {
@@ -1251,7 +1248,7 @@ ad_proc im_oo_page_type_gantt {
 
     # Make sure there is a SQL for the project phases/tasks
     if {"" == $list_sql} {
-        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in gantt page</b>."
+        ad_return_complaint 1 "<b>'$page_name': No list_sql specified in gantt page</b>:<br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -1262,7 +1259,7 @@ ad_proc im_oo_page_type_gantt {
 	set page_sql $__adp_output
 	set page_sql [eval "set a \"$page_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in page_sql statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -1272,7 +1269,7 @@ ad_proc im_oo_page_type_gantt {
 	set list_sql $__adp_output
 	set list_sql [eval "set a \"$list_sql\""]
     } err_msg]} {
-        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre>"
+        ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables in SQL statement</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
         ad_script_abort
     }
 
@@ -1295,6 +1292,11 @@ ad_proc im_oo_page_type_gantt {
 	set first_page_p 1
 	if {[catch {
 	    db_foreach list_sql $list_sql {
+
+		if {"" == $start_date_epoch || "" == $end_date_epoch} {
+		    ns_log Error "im_oo_page_type_gantt: Found entry with empty start_date_epoch or $end_date_epoch"
+		    continue
+		}
 		
 		# ------------------------------------------------------------------
 		# Setup a new page.
@@ -1311,7 +1313,7 @@ ad_proc im_oo_page_type_gantt {
 			    eval [template::adp_compile -string $page_xml]
 			    set xml $__adp_output
 			} err_msg]} {
-			    ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+			    ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 			    ad_script_abort
 			}
 			
@@ -1336,7 +1338,7 @@ ad_proc im_oo_page_type_gantt {
 		    # This template will be used to render the gantt bars.
 		    if {![info exists green_bar]} {
 			ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
-			The page should have at least one 'group' of objects with title 'green_bar'."
+			The page should have at least one 'group' of objects with title 'green_bar'.<br><pre>[ad_print_stack_trace]</pre>"
 			ad_script_abort
 		    }
 		    # yellow_bar and red_bar are optional
@@ -1362,7 +1364,7 @@ ad_proc im_oo_page_type_gantt {
 		    }
 		    if {"" == $left_box || "" == $right_box} {
 			ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
-		    Could not find two text boxes with the text 'main_project_start_date_pretty'=$left_box and 'main_project_end_date_pretty'=$right_box"
+		    Could not find two text boxes with the text 'main_project_start_date_pretty'=$left_box and 'main_project_end_date_pretty'=$right_box.<br><pre>[ad_print_stack_trace]</pre>"
 			ad_script_abort
 		    }
 		    set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
@@ -1387,7 +1389,7 @@ ad_proc im_oo_page_type_gantt {
 		    set grouping_xml $__adp_output
 		} err_msg]} {
 		    ad_return_complaint 1 "<b>'$page_name': Error substituting gantt template variables</b>:
-		<pre>$err_msg\n$green_xml</pre>"
+		<pre>$err_msg\n$green_xml</pre><br><pre>[ad_print_stack_trace]</pre>"
 		    ad_script_abort
 		}
 		
@@ -1417,7 +1419,7 @@ ad_proc im_oo_page_type_gantt {
 		incr row_cnt
 	    }
 	} err_msg]} {
-	    ad_return_complaint 1 "<b>Gantt '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre>"
+	    ad_return_complaint 1 "<b>Gantt '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
 	    ad_script_abort
 	}
 
@@ -1433,7 +1435,7 @@ ad_proc im_oo_page_type_gantt {
             eval [template::adp_compile -string $page_xml]
             set xml $__adp_output
         } err_msg]} {
-            ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre>"
+            ad_return_complaint 1 "<b>Gantt: '$page_name': Error substituting variables</b>:<pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
             ad_script_abort
         }
 
