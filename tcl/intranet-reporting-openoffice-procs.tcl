@@ -1142,12 +1142,13 @@ ad_proc im_oo_page_type_gantt_move_scale {
     @takes a <draw:g> group of elements with the following texts:
     - @percent_completed@: The bar representing the current completion level
     - @percent_expected@: The bar representing the expected completeion level now.
-    - @aaa@: The bar representing the length of the task
     All other elements are optional. Normal template formatting rules will apply.
 } {
     set base_node ""
     set completed_node ""
     set expected_node ""
+    set start_date_node ""
+    set end_date_node ""
 
     if {"" == $percent_completed} { set percent_completed 0.0 }
     if {"" == $percent_expected} { set percent_expected 0.0 }
@@ -1159,6 +1160,8 @@ ad_proc im_oo_page_type_gantt_move_scale {
 	    "base_bar" { set base_node $node}
 	    "completed_bar" { set completed_node $node }
 	    "expected_bar" { set expected_node $node }
+	    "start_date_bar" { set start_date_node $node }
+	    "end_date_bar" { set end_date_node $node }
 	}
     }
     if {"" == $base_node || "" == $completed_node || "" == $expected_node} {
@@ -1170,6 +1173,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     # Extract the widths of the three bars
     regexp {([0-9\.]+)} [$base_node getAttribute "svg:width"] match base_width
+    regexp {([0-9\.]+)} [$base_node getAttribute "svg:x"] match base_x
     regexp {([0-9\.]+)} [$completed_node getAttribute "svg:width"] match completed_width
     regexp {([0-9\.]+)} [$expected_node getAttribute "svg:width"] match expected_width
 
@@ -1201,6 +1205,12 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     set expected_width [expr $base_width * $percent_expected / 100.0]
     $expected_node setAttribute "svg:width" "${expected_width}cm"
+
+    if {"" != $end_date_node} {
+	regexp {([0-9\.]+)} [$end_date_node getAttribute "svg:width"] match end_date_width
+	set end_date_x [expr $base_x + $base_width - $end_date_width / 2]
+	$end_date_node setAttribute "svg:x" "${end_date_x}cm"
+    }
 }
 
 
@@ -1338,7 +1348,7 @@ ad_proc im_oo_page_type_gantt {
 		    # This template will be used to render the gantt bars.
 		    if {![info exists green_bar]} {
 			ad_return_complaint 1 "<b>im_oo_page_type_gantt '$page_name'</b>:<br>
-			The page should have at least one 'group' of objects with title 'green_bar'.<br><pre>[ad_print_stack_trace]</pre>"
+			The page should have at least one 'group' of objects with title 'green_bar'.<br>"
 			ad_script_abort
 		    }
 		    # yellow_bar and red_bar are optional
