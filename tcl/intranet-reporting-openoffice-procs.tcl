@@ -1173,7 +1173,6 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     # Extract the widths of the three bars
     regexp {([0-9\.]+)} [$base_node getAttribute "svg:width"] match base_width
-    regexp {([0-9\.]+)} [$base_node getAttribute "svg:x"] match base_x
     regexp {([0-9\.]+)} [$completed_node getAttribute "svg:width"] match completed_width
     regexp {([0-9\.]+)} [$expected_node getAttribute "svg:width"] match expected_width
 
@@ -1208,6 +1207,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     if {"" != $end_date_node} {
 	regexp {([0-9\.]+)} [$end_date_node getAttribute "svg:width"] match end_date_width
+	regexp {([0-9\.]+)} [$base_node getAttribute "svg:x"] match base_x
 	set end_date_x [expr $base_x + $base_width - $end_date_width / 2]
 	$end_date_node setAttribute "svg:x" "${end_date_x}cm"
     }
