@@ -302,7 +302,7 @@ ad_proc im_oo_page_extract_templates {
 			    set hash($title) $span_rev_xml
 			}
 		    }
-		    green_bar - yellow_bar - red_bar {
+		    green_bar - yellow_bar - red_bar - today_bar {
 			# Groupings used as templates for Gantt bars.
 			# We need to move the groupings to 0/0 coordinates.
 			ns_log Notice "im_oo_page_extract_templates: $title=$title"
@@ -1149,6 +1149,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
     set expected_node ""
     set start_date_node ""
     set end_date_node ""
+    set today_node ""
 
     if {"" == $percent_completed} { set percent_completed 0.0 }
     if {"" == $percent_expected} { set percent_expected 0.0 }
@@ -1351,6 +1352,7 @@ ad_proc im_oo_page_type_gantt {
 			The page should have at least one 'group' of objects with title 'green_bar'.<br>"
 			ad_script_abort
 		    }
+
 		    # yellow_bar and red_bar are optional
 		    if {![info exists yellow_bar]} { set yellow_bar $green_bar }
 		    if {![info exists red_bar]} { set red_bar $green_bar }
@@ -1382,6 +1384,25 @@ ad_proc im_oo_page_type_gantt {
 		    set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
 		    set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
 		    set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+
+
+		    # Show the today_bar at the right x-location
+		    set line_node_list [im_oo_select_nodes $page_root "draw:line"]
+		    foreach line_node $line_node_list {
+                        set text [string trim [string tolower [im_oo_to_title -node $line_node]]]
+                        ns_log Notice "im_oo_page_type_gantt: line_node: text='$text'"
+                        switch $text {
+                            "today_bar" { 
+				set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
+				regexp {([0-9\.]+)} [$line_node getAttribute "svg:x1"] match today_bar_x1
+				regexp {([0-9\.]+)} [$line_node getAttribute "svg:x2"] match today_bar_x2
+				set today_bar_x1 [expr $today_bar_x1 + ($today_epoch - $main_project_start_date_epoch) / $epoch_per_x]
+				set today_bar_x2 [expr $today_bar_x2 + ($today_epoch - $main_project_start_date_epoch) / $epoch_per_x]
+				$line_node setAttribute "svg:x1" "${today_bar_x1}cm"
+				$line_node setAttribute "svg:x2" "${today_bar_x1}cm"
+			    }
+                        }
+                    }
 		}
 		
 		# ------------------------------------------------------------------
