@@ -22,11 +22,15 @@ ad_proc -public im_audit_component {
 } {
     set return_url [im_url_with_query]
 
-    db_1row audit_object_info "
+    set object_found_p [db_0or1row audit_object_info "
 	select	o.*
 	from	acs_objects o
 	where	o.object_id = :object_id
-    "
+    "]
+    if {!$object_found_p} {
+	ns_log Error "im_audit_component: Didn't find object #$object_id"
+	return ""
+    }
 
     set attribute_l10n [lang::message::lookup "" intranet-core.Attribute Attribute]
     set value_l10n [lang::message::lookup "" intranet-core.Value Value]
@@ -115,9 +119,9 @@ ad_proc -public im_audit_component {
 	    before_update	{ set audit_action_abbrev "u" }
 	    after_update	{ set audit_action_abbrev "u" }
 	    delete		{ set audit_action_abbrev "d" }
-	    before_delete	{ set audit_action_abbrev "d" }
 	    nuke		{ set audit_action_abbrev "n" }
 	    before_nuke		{ set audit_action_abbrev "n" }
+	    after_nuke		{ set audit_action_abbrev "n" }
 	    default		{ set audit_action_abbrev "cog" }
 	}
 	set audit_action_msg [lang::message::lookup "" intranet-audit.Action_${audit_action}_help $audit_action]
