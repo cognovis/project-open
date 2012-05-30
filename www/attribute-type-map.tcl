@@ -79,6 +79,15 @@ set top_scale [db_list top_dim "
 		category_id
 "]
 
+
+# Exception for timesheet tasks: Include the project_type_id=100 (Task)
+# ToDo: Remove once tasks have their own task_type_id.
+if {"im_timesheet_task" == $object_type} {
+    lappend top_scale 100
+    append object_subtype_sql "OR category_id = 100"
+}
+
+
 # The array maps category_id into "category" - a pretty 
 # string for each column, to be used as column header
 set max_length 8
