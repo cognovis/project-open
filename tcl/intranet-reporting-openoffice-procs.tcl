@@ -1124,6 +1124,7 @@ ad_proc im_oo_page_type_gantt_grouping_move {
 
 ad_proc im_oo_page_type_gantt_move_scale {
     -grouping_node:required
+    {-gantt_name ""}
     -page_name:required
     -base_x_offset:required
     -base_y_offset:required
@@ -1144,6 +1145,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
     - @percent_expected@: The bar representing the expected completeion level now.
     All other elements are optional. Normal template formatting rules will apply.
 } {
+    ns_log Notice "im_oo_page_type_gantt_move_scale: Starting to process $gantt_name in page $page_name"
     set base_node ""
     set completed_node ""
     set expected_node ""
@@ -1156,7 +1158,7 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     foreach node [$grouping_node childNodes] {
 	set text [string trim [im_oo_to_title -node $node]]
-	ns_log Notice "im_oo_page_type_gantt_move_scale: text=$text"
+	# ns_log Notice "im_oo_page_type_gantt_move_scale: text=$text"
 	switch $text {
 	    "base_bar" { set base_node $node}
 	    "completed_bar" { set completed_node $node }
@@ -1206,11 +1208,16 @@ ad_proc im_oo_page_type_gantt_move_scale {
     set expected_width [expr $base_width * $percent_expected / 100.0]
     $expected_node setAttribute "svg:width" "${expected_width}cm"
 
+    ns_log Notice "im_oo_page_type_gantt_move_scale: end_date_node=$end_date_node"
     if {"" != $end_date_node} {
 	regexp {([0-9\.]+)} [$end_date_node getAttribute "svg:width"] match end_date_width
 	regexp {([0-9\.]+)} [$base_node getAttribute "svg:x"] match base_x
 	set end_date_x [expr $base_x + $base_width - $end_date_width / 2]
 	$end_date_node setAttribute "svg:x" "${end_date_x}cm"
+
+	ns_log Notice "im_oo_page_type_gantt_move_scale: end_date: end_date_x=$end_date_x"
+
+
     }
 }
 
@@ -1382,9 +1389,8 @@ ad_proc im_oo_page_type_gantt {
 		    set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
 		    set right_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $right_box]
 		    set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
-		    set end_date_x [expr [lindex $right_box_offset 0] + 3.8]
+		    set end_date_x [expr [lindex $right_box_offset 0] + 3.7]
 		    set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
-
 
 		    # Show the today_bar at the right x-location
 		    set line_node_list [im_oo_select_nodes $page_root "draw:line"]
@@ -1404,7 +1410,7 @@ ad_proc im_oo_page_type_gantt {
                         }
                     }
 		}
-		
+
 		# ------------------------------------------------------------------
 		# Replace placeholders in the OpenOffice template row with values
 		
@@ -1427,10 +1433,11 @@ ad_proc im_oo_page_type_gantt {
 		# Parse the new grouping and insert into OOoo document
 		set new_grouping_doc [dom parse $grouping_xml]
 		set new_grouping_root [$new_grouping_doc documentElement]
-		
+
 		# Move the grouping into the correct x/y position.
 		im_oo_page_type_gantt_move_scale \
 		    -grouping_node $new_grouping_root \
+		    -gantt_name $phase_name \
 		    -page_name $page_name \
 		    -base_x_offset $green_bar_x_offset \
 		    -base_y_offset $green_bar_y_offset \
@@ -1446,6 +1453,7 @@ ad_proc im_oo_page_type_gantt {
 		    -percent_expected $percent_expected_pretty
 		
 		$page_root insertBefore $new_grouping_root [$page_root firstChild]
+
 		
 		incr row_cnt
 	    }
