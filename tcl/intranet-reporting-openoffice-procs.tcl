@@ -1382,7 +1382,7 @@ ad_proc im_oo_page_type_gantt {
 		    set left_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $left_box]
 		    set right_box_offset [im_oo_page_type_gantt_grouping_x_y_offset -node $right_box]
 		    set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
-		    set end_date_x [expr [lindex $right_box_offset 0] + 1.0]
+		    set end_date_x [expr [lindex $right_box_offset 0] + 3.8]
 		    set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
 
 
