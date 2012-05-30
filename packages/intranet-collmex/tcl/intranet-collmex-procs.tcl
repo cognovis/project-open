@@ -42,7 +42,33 @@ ad_proc -public intranet_collmex::http_post {
     set token [::http::geturl https://www.collmex.de/cgi-bin/cgi.exe?${customer_nr},0,data_exchange \
 		     -type "text/csv" \
 		   -query $data]
-    return [::http::data $token]
+    
+    set response [::http::data $token]
+    ns_log Notice "Collmex:: $response"
+    set meldungstyp [lindex [split $response ";"] 1]
+    switch $meldungstyp {
+	S {
+	    return $response
+	}
+	W {
+	    # Warning Mail
+	    acs_mail_lite::send -send_immediately -to_addr [ad_admin_owner] -from_addr [ad_admin_owner] -subject "Collmex Warning" -body "There was a warning in collmex, but the call was successful. <p /> \
+<br />Called: $csv_data \
+<br />Reponse $response" -mime_type "text/html"
+	    return $response
+	}
+	E {
+	    # Error Mail
+	    ns_log Error "Error in Collmex: $response"
+	    acs_mail_lite::send -send_immediately -to_addr [ad_admin_owner] -from_addr [ad_admin_owner] -subject "Collmex Error" -body "There was a error in collmex, data is not transferred.<p /> \
+<br />Called: $csv_data \
+<br />Reponse $response" -mime_type "text/html"
+	    return "-1"
+	}
+	default {
+	    return $response
+	}
+    }
 }
 
 ad_proc -public intranet_collmex::update_company {
@@ -145,35 +171,21 @@ ad_proc -public intranet_collmex::update_company {
 	append csv_line ";" ; # Ausgabesprache
     }
     
-    set response [split [intranet_collmex::http_post -csv_data $csv_line] ";"]
-
-    set response_info [lindex $response 0]
-    if {$response_info eq "MESSAGE"} {
-	set response_info [lindex $response 2]
-    }
-
-    set return_message ""
-    switch $response_info {
-	"NEW_OBJECT_ID" {
+    set response [intranet_collmex::http_post -csv_data $csv_line]
+    if {$response != "-1"} {
+	set response [split $response ";"]
+	if {[lindex $response 0] == "NEW_OBJECT_ID"} {
+	    ns_log Notice "New Customer:: [lindex $response 1]"
+	    # This seems to be a new customer
 	    if {$collmex_id eq ""} {
 		db_dml update_collmex_id "update im_companies set collmex_id = [lindex $response 1] where company_id = :company_id"
 		set return_message [lindex $response 1]
 	    } else {
 		set return_message "Problem: Collmex ID exists for new company $company_id :: $collmex_id :: new [lindex $response 1]"
+		acs_mail_lite::send -send_immediately -to_addr [ad_admin_owner] -from_addr [ad_admin_owner] -subject "Collmex ID already present in project-open" -body "$return_message"
 	    }
 	}
-	204002 {
-	    set return_message "ERROR $company_id: $response"
-	}
-	204020 {
-	    set return_message "Successfully updated $company_id"
-	}
-	default {
-	    set return_message "ERROR $company_id: $response"
-	}
     }
-
-    return $return_message
 }
 
 ad_proc -public intranet_collmex::update_provider_bill {
@@ -244,24 +256,9 @@ ad_proc -public intranet_collmex::update_provider_bill {
     } else {
 	append csv_line ";" ; # Storno
     }
-    append csv_line ";" ; # Kostenstelle
+    append csv_line ";$kostenstelle" ; # Kostenstelle
 
-    set response [split [intranet_collmex::http_post -csv_data $csv_line] ";"]
-    
-    set satzart [lindex $response 0]
-    if {$satzart eq "MESSAGE"} {
-	if {[lindex $response 1] eq "E"} {
-	    set return_message "ERROR $invoice_id: $response"
-	} elseif {[lindex $response 1] eq "W"} {
-	    set return_message "WARNING $invoice_id: $response"	    
-	} else {
-	    set return_message "SUCCESS $invoice_id: $response"
-	}
-    } else {
-	set return_message "CREATED $invoice_id: $response"
-    }
-    return $return_message
-
+    set response [intranet_collmex::http_post -csv_data $csv_line]
 }
 
 ad_proc -public intranet_collmex::update_customer_invoice {
@@ -352,23 +349,7 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # Verrechnen mit Rechnugnsnummer fuer gutschrift
     append csv_line ";" ; # Kostenstelle
     
-    set response [split [intranet_collmex::http_post -csv_data $csv_line] ";"]
-    
-    set satzart [lindex $response 0]
-    if {$satzart eq "MESSAGE"} {
-	if {[lindex $response 1] eq "E"} {
-	    set return_message "ERROR $invoice_id: $response"
-	} elseif {[lindex $response 1] eq "W"} {
-	    set return_message "WARNING $invoice_id: $response"	    
-	} else {
-	    set return_message "SUCCESS $invoice_id: $response"
-	}
-    } else {
-	set return_message "CREATED $invoice_id: $response"
-    }
-
-    return $return_message
-    
+    set response [intranet_collmex::http_post -csv_data $csv_line]    
 }
 
 
