@@ -392,12 +392,15 @@ db_1row office_info_query "
 # Use the "company_contact_id" of the invoices as the main contact.
 # Fallback to the accounting_contact_id and primary_contact_id
 # if not present.
+
+set company_contact_orig $company_contact_id
 if {"" == $company_contact_id} { 
     set company_contact_id $accounting_contact_id
 }
 if {"" == $company_contact_id} { 
     set company_contact_id $primary_contact_id 
 }
+
 set org_company_contact_id $company_contact_id
 
 set company_contact_name ""
@@ -414,6 +417,11 @@ db_0or1row accounting_contact_info "
 	from	persons
 	where	person_id = :company_contact_id
 "
+
+# If the company_contact_id is not maintained, write it now
+if {$company_contact_orig eq ""} {
+    db_dml update_company_contact "update im_invoices set company_contact_id = :company_contact_id where invoice_id = :invoice_id"
+}
 
 # Fields normally available from intranet-contacts.
 # Set these fields if contacts is not installed:
