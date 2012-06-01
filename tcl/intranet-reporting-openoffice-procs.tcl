@@ -1031,11 +1031,11 @@ ad_proc im_oo_page_type_gantt_grouping_extract_x_y_offset_list {
 
 	# Get the attribute value and remove possible "cm" after the value
 	set value [$node getAttribute $attrib]
-	if {[regexp {^([0-9\.]+)} $value match val]} { set value $val}
+	if {[regexp {^([0-9\-\.]+)} $value match val]} { set value $val}
 
 	# Append to the respective list
-	if {"svg:x" == $attrib} { lappend x_list $value }
-	if {"svg:y" == $attrib} { lappend y_list $value }
+	if {"svg:x" == $attrib || "svg:x1" == $attrib} { lappend x_list $value }
+	if {"svg:y" == $attrib || "svg:y1" == $attrib} { lappend y_list $value }
     }
 
     # Recursively descend to child nodes
@@ -1098,17 +1098,18 @@ ad_proc im_oo_page_type_gantt_grouping_move {
 
         # Get the attribute value and remove possible "cm" after the value
         set value [$node getAttribute $attrib]
-        if {[regexp {^([0-9\.]+)(.*)$} $value match val unit]} { set value $val }
+        if {[regexp {^([0-9\-\.]+)(.*)$} $value match val unit]} { set value $val }
 
-        # Apply the offset 
-        if {"svg:x" == $attrib} {
-	    set x [expr $value + $x_offset]
-	    $node setAttribute $attrib "$x$unit"
-	}
-        if {"svg:y" == $attrib} { 
-	    lappend y_list $value 
-	    set y [expr $value + $y_offset]
-	    $node setAttribute $attrib "$y$unit"
+        # Apply the offset
+	switch $attrib {
+	    "svg:x" - "svg:x1" - "svg:x2" {
+		set x [expr $value + $x_offset]
+		$node setAttribute $attrib "$x$unit"
+	    }
+	    "svg:y" - "svg:y1" - "svg:y2" {
+		set y [expr $value + $y_offset]
+		$node setAttribute $attrib "$y$unit"		
+	    }
 	}
     }
 
@@ -1175,9 +1176,9 @@ ad_proc im_oo_page_type_gantt_move_scale {
     }
 
     # Extract the widths of the three bars
-    regexp {([0-9\.]+)} [$base_node getAttribute "svg:width"] match base_width
-    regexp {([0-9\.]+)} [$completed_node getAttribute "svg:width"] match completed_width
-    regexp {([0-9\.]+)} [$expected_node getAttribute "svg:width"] match expected_width
+    regexp {([0-9\-\.]+)} [$base_node getAttribute "svg:width"] match base_width
+    regexp {([0-9\-\.]+)} [$completed_node getAttribute "svg:width"] match completed_width
+    regexp {([0-9\-\.]+)} [$expected_node getAttribute "svg:width"] match expected_width
 
     set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
 
@@ -1210,8 +1211,8 @@ ad_proc im_oo_page_type_gantt_move_scale {
 
     ns_log Notice "im_oo_page_type_gantt_move_scale: end_date_node=$end_date_node"
     if {"" != $end_date_node} {
-	regexp {([0-9\.]+)} [$end_date_node getAttribute "svg:width"] match end_date_width
-	regexp {([0-9\.]+)} [$base_node getAttribute "svg:x"] match base_x
+	regexp {([0-9\-\.]+)} [$end_date_node getAttribute "svg:width"] match end_date_width
+	regexp {([0-9\-\.]+)} [$base_node getAttribute "svg:x"] match base_x
 	set end_date_x [expr $base_x + $base_width - $end_date_width / 2]
 	$end_date_node setAttribute "svg:x" "${end_date_x}cm"
 
@@ -1307,6 +1308,7 @@ ad_proc im_oo_page_type_gantt {
         set page_root [$page_doc documentElement]
 
 	set row_cnt 0
+	set total_row_cnt 0
 	set first_page_p 1
 	if {[catch {
 	    db_foreach list_sql $list_sql {
@@ -1391,21 +1393,19 @@ ad_proc im_oo_page_type_gantt {
 		    set start_date_x [expr [lindex $left_box_offset 0] + 1.0]
 		    set end_date_x [expr [lindex $right_box_offset 0] + 3.8]
 		    set top_y [expr ([lindex $left_box_offset 1] + [lindex $right_box_offset 1]) / 2.0]
+		    set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
+		    ns_log Notice "im_oo_page_type_gantt: epoch_per_x: $epoch_per_x = expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)"
 
 		    # Show the today_bar at the right x-location
-		    set line_node_list [im_oo_select_nodes $page_root "draw:line"]
+		    set line_node_list [im_oo_select_nodes $page_root "draw:g"]
 		    foreach line_node $line_node_list {
                         set text [string trim [string tolower [im_oo_to_title -node $line_node]]]
                         ns_log Notice "im_oo_page_type_gantt: line_node: text='$text'"
                         switch $text {
                             "today_bar" { 
-				set epoch_per_x [expr ($main_project_end_date_epoch - $main_project_start_date_epoch) / ($end_date_x - $start_date_x)]
-				regexp {([0-9\.]+)} [$line_node getAttribute "svg:x1"] match today_bar_x1
-				regexp {([0-9\.]+)} [$line_node getAttribute "svg:x2"] match today_bar_x2
-				set today_bar_x1 [expr $today_bar_x1 + ($today_epoch - $main_project_start_date_epoch) / $epoch_per_x]
-				set today_bar_x2 [expr $today_bar_x2 + ($today_epoch - $main_project_start_date_epoch) / $epoch_per_x]
-				$line_node setAttribute "svg:x1" "${today_bar_x1}cm"
-				$line_node setAttribute "svg:x2" "${today_bar_x1}cm"
+				set today_bar_base_x [lindex [im_oo_page_type_gantt_grouping_x_y_offset -node $line_node] 0]
+				set today_bar_x [expr $today_bar_base_x + ($today_epoch - $main_project_start_date_epoch) / $epoch_per_x + 0.43]
+				im_oo_page_type_gantt_grouping_move -node $line_node -offset_list [list $today_bar_x 0]
 			    }
                         }
                     }
@@ -1456,6 +1456,7 @@ ad_proc im_oo_page_type_gantt {
 
 		
 		incr row_cnt
+		incr total_row_cnt
 	    }
 	} err_msg]} {
 	    ad_return_complaint 1 "<b>Gantt '$page_name': Error evaluating list_sql</b>:<br><pre>$err_msg</pre><br><pre>[ad_print_stack_trace]</pre>"
@@ -1478,11 +1479,14 @@ ad_proc im_oo_page_type_gantt {
             ad_script_abort
         }
 
-        # Parse the new slide and insert into OOoo document
-        set result_doc [dom parse $xml]
-        set result_root [$result_doc documentElement]
-	set page_container [$insert_node parentNode]
-        $page_container insertBefore $result_root $insert_node
+	# Skip the Gantt if there is no task
+	if {0 != $total_row_cnt} {
+	    # Parse the new slide and insert into OOoo document
+	    set result_doc [dom parse $xml]
+	    set result_root [$result_doc documentElement]
+	    set page_container [$insert_node parentNode]
+	    $page_container insertBefore $result_root $insert_node
+	}
 
 	# End looping through multiple pages
     }
