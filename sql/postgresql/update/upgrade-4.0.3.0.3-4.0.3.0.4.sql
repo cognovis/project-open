@@ -67,3 +67,62 @@ begin
 
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+CREATE OR REPLACE FUNCTION im_absences__cleanup()
+  RETURNS INTEGER AS
+	-- There should be no start_date with '00:00:00 in order to avoid problems with  
+	-- constraint im_user_absences::owner_and_start_date_unique UNIQUE, btree (owner_id, absence_type_id, start_date)
+        -- Example: Absence WF - Absence has been rejected in the first place, but a new inquiry with same dates and type is made. 
+$BODY$
+
+declare
+        r                       record;
+        v_owner_id              integer;
+        v_absence_type_id       integer;
+        v_start_date            timestamp;
+        v_count        		integer;
+	v_interval_str		interval;
+	v_counter		integer;
+	
+begin
+        -- Select out some frequently used variables of the environment
+        FOR r IN
+                select  absence_id, owner_id, absence_type_id, start_date
+                from    im_user_absences
+                where   absence_status_id = 16002 OR
+                        absence_status_id = 16006
+                order by owner_id, absence_type_id, start_date
+        LOOP
+                IF      position('00:00:00' in r.start_date) > 1  THEN
+                        RAISE NOTICE 'im_absences__cleanup :: Found absence_id %', absence_id;
+			v_counter := 1; 
+			FOR i IN 1..300 LOOP				
+				v_interval_str := v_counter || ' seconds';
+				RAISE NOTICE 'r.start_date: %, v_interval_str: % ', r.start_date, v_interval_str;
+				v_start_date := r.start_date::timestamp + v_interval_str;
+				select 
+					count(*) 
+				into 
+					v_count            
+				from 
+					im_user_absences 
+				where 
+					absence_type_id = r.absence_type_id and 
+					owner_id = r.owner_id and
+					start_date = v_start_date;
+
+				IF v_count = 0 THEN 
+					update im_user_absences set start_date = v_start_date where absence_id = r.absence_id;  
+					RAISE NOTICE 'im_absences__cleanup :: Changed absence_id: % to %', r.absence_id, v_start_date;
+					EXIT;
+				END IF; 
+				-- v_interval_str := v_interval_str +1;
+			END LOOP;
+                END IF;
+        END LOOP;
+	return 0;
+end;$BODY$
+
+LANGUAGE 'plpgsql' VOLATILE;
