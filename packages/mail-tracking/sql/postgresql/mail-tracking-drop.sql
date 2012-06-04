@@ -6,7 +6,7 @@
 -- 
 -- @author: Nima Mazloumi
 -- @creation-date: Mon May 30 17:55:50 CEST 2005
--- @cvs-id $Id: mail-tracking-drop.sql,v 1.1 2005/06/14 19:44:36 maltes Exp $
+-- @cvs-id $Id$
 --  ================================================================================
 -- 
 --

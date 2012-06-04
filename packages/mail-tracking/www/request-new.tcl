@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Nima Mazloumi (mazloumi@uni-mannheim.de)
     @creation-date 2005-05-31
-    @cvs-id $Id: request-new.tcl,v 1.1 2005/06/14 19:44:36 maltes Exp $
+    @cvs-id $Id$
 } {
     object_id:integer,notnull
     return_url

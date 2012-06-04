@@ -6,7 +6,7 @@ ad_library {
 
     @creation-date 2005-05-31
     @author Nima Mazloumi <mazloumi@uni-mannheim.de>
-    @cvs-id $Id: mail-tracking-security-procs.tcl,v 1.1 2005/06/14 19:44:36 maltes Exp $
+    @cvs-id $Id$
 
 }
 
