@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-03-07
     @arch-tag: 17a26a17-9fd6-4ae9-90ae-ce445c020ab7
-    @cvs-id $Id: tsearch2-driver-procs.tcl,v 1.4 2006/11/13 04:06:13 daveb Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case build_query {
