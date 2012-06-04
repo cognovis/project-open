@@ -204,7 +204,7 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
                           tree_ancestor_key(children.tree_sortkey, 1) = parent.tree_sortkey 
                         )
 	    and h.project_id = s.sub_project_id
-            and h.day like '%$report_year-$report_month-$day_double_digit%'
+            and h.day::text like '%$report_year-$report_month-$day_double_digit%'
 	    
 	) as day$day_double_digit
     "

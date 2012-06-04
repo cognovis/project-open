@@ -343,9 +343,16 @@ set report_def [list \
 	footer {"" "" "" "" "" "" "" "" ""} \
 ]
 
+
 # Global header/footer
 set header0 {"Customer" "Project" "Subproject" "User" "Date" Hours Rate Note}
 set footer0 {"" "" "" "" "" "" "" ""}
+
+# If user is not allowed to see internal rates we remove 'rate' items from record 
+if { ![im_permission $current_user_id "fi_view_internal_rates"] } {
+    set report_def [string map {\$billing_rate ""} $report_def] 
+    set header0 [string map {"Rate" ""} $header0]
+}
 
 set hours_user_counter [list \
 	pretty_name Hours \
