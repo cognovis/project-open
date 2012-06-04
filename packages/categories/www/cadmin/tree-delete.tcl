@@ -28,11 +28,11 @@ array set tree [category_tree::get_data $tree_id $locale]
 set tree_name $tree(tree_name)
 set tree_description $tree(description)
 
-set page_title [_ categories.Delete_category_title]
+set page_title "Delete Category Tree \"$tree_name\""
 set context_bar [category::context_bar $tree_id $locale \
                      [value_if_exists object_id] \
                      [value_if_exists ctx_id]]
-lappend context_bar [_ categories.Delete]
+lappend context_bar "Delete"
 
 set instance_list [category_tree::usage $tree_id]
 
@@ -58,10 +58,10 @@ template::multirow sort used_categories -dictionary category_name
 
 template::list::create \
     -name used_categories \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements {
 	category_name {
-	    label "#acs-admin.Name#"
+	    label "Name"
 	    link_url_col view_url
 	}
     }

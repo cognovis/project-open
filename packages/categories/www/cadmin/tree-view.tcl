@@ -30,7 +30,7 @@ if {$tree(site_wide_p) == "f"} {
 set tree_name $tree(tree_name)
 set tree_description $tree(description)
 
-set page_title [_ categories.Tree_view_title]
+set page_title "Category Tree \"$tree_name\""
 if {[info exists object_id]} {
     set context_bar [list [category::get_object_context $object_id] [list [export_vars -no_empty -base object-map {locale object_id ctx_id}] "[_ categories.cadmin]"] $tree_name]
 } else {
@@ -84,15 +84,15 @@ if { $can_write_p } {
 	    <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="Edit" style="border:0">
 	}
 	link_url_col edit_url
-	link_html {title "#categories.Edit_category_link_title#"}
+	link_html {title "Edit this category"}
     }
 }
 
 lappend elements category_name {
-    label "#categories.Category#"
+    label "Category"
     display_template {
 	@one_tree.left_indent;noquote@<a href="@one_tree.usage_url@" title="Show usage of this category">@one_tree.category_name@</a>
-	<if @one_tree.deprecated_p@ true>(#categories.Deprecated# - <a href="@one_tree.phase_in_url@">#categories.Restore#</a>)</if>
+	<if @one_tree.deprecated_p@ true>(Deprecated - <a href="@one_tree.phase_in_url@">Restore</a>)</if>
     }
 }
 
@@ -103,20 +103,20 @@ if { $can_write_p } {
 	    <img src="/resources/acs-subsite/Add16.gif" height="16" width="16" alt="Add" style="border:0">
 	}
 	link_url_col add_url
-	link_html { title "#categories.Add_subcategory_link_title#" }
+	link_html { title "Add subcategory" }
     }
     lappend elements sort_key {
-	label "#categories.Ordering#"
+	label "Ordering"
 	display_template {
 	    <input name="sort_key.@one_tree.category_id@" value="@one_tree.sort_key@" size="8">
 	}
     }
     lappend elements actions {
-	label "#categories.Actions#"
+	label "Actions"
 	display_template {
-	    <a href="@one_tree.parent_url@">#categories.Action_change_parent#</a> &nbsp; &nbsp;
-	    <a href="@one_tree.links_view_url@">#categories.Action_view_links#</a> &nbsp; &nbsp;
-	    <a href="@one_tree.synonyms_view_url@">#categories.Action_view_synonyms#</a>
+	    <a href="@one_tree.parent_url@">Change parent</a> &nbsp; &nbsp;
+	    <a href="@one_tree.links_view_url@">View links</a> &nbsp; &nbsp;
+	    <a href="@one_tree.synonyms_view_url@">View synonyms</a>
 	}
     }
 
@@ -126,7 +126,7 @@ if { $can_write_p } {
 	    <img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" style="border:0">
 	}
 	link_url_col delete_url
-	link_html { title "#categories.Delete_category_link_title#" }
+	link_html { title "Delete category and all subcategories" }
     }
 }
 
@@ -134,19 +134,19 @@ set actions [list]
 set bulk_actions [list]
 if { $can_write_p } {
     set bulk_actions {
-	"#categories.Delete#" "category-delete" "#categories.Delete_category_link_title#"
-	"#categories.Deprecate#" "category-phase-out" "#categories.Deprecate_category_link_title#"
-	"#categories.Restore#" "category-phase-in" "#categories.Restore_category_link_title#"
-	"#categories.Ordering_update#" "tree-order-update" "#categories.Ordering_update_link_title#"
+	"Delete" "category-delete" "Delete checked categories"
+	"Deprecate" "category-phase-out" "Deprecate checked categories"
+	"Restore" "category-phase-in" "Restore checked categories"
+	"Update ordering" "tree-order-update" "Update ordering from values in list"
     }
     set actions [list \
-		     "#categories.Action_add_root#" [export_vars -no_empty -base category-form { tree_id locale object_id ctx_id}] "#categories.Action_add_root_link_title#" \
-		     "#categories.Action_copy_tree#" [export_vars -no_empty -base tree-copy { tree_id locale object_id ctx_id}] "#categories.Action_copy_tree_link_title#" \
-		     "#categories.Action_delete_tree#" [export_vars -no_empty -base tree-delete { tree_id locale object_id ctx_id}] "#categories.Action_delete_tree_link_title#" \
-		     "#categories.Action_applications#" [export_vars -no_empty -base tree-usage { tree_id locale object_id ctx_id}] "#categories.Action_applications_link_title#"]
+		     "Add root category" [export_vars -no_empty -base category-form { tree_id locale object_id ctx_id}] "Add category at the root level" \
+		     "Copy tree" [export_vars -no_empty -base tree-copy { tree_id locale object_id ctx_id}] "Copy categories from other tree" \
+		     "Delete tree" [export_vars -no_empty -base tree-delete { tree_id locale object_id ctx_id}] "Delete this category tree" \
+		     "Applications" [export_vars -no_empty -base tree-usage { tree_id locale object_id ctx_id}] "Applications using this tree"]
 
     if { $can_grant_p } {
-	lappend actions "#acs-kernel.common_Permissions#" [export_vars -no_empty -base permission-manage { tree_id locale object_id ctx_id}] "#categories.Action_permissions_link_title#"
+	lappend actions "Permissions" [export_vars -no_empty -base permission-manage { tree_id locale object_id ctx_id}] "Manage permissions for tree"
     }
 
 }

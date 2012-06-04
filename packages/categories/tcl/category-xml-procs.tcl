@@ -3,7 +3,7 @@ ad_library {
 
     @author Tom Ayles (tom@beatniq.net)
     @creation-date 2003-12-02
-    @cvs-id $Id: category-xml-procs.tcl,v 1.3 2008/11/08 17:05:38 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::category_tree::xml {}

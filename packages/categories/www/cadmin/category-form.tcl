@@ -20,9 +20,9 @@ set package_id [ad_conn package_id]
 permission::require_permission -object_id $tree_id -privilege category_tree_write
 
 if {[info exists category_id]} {
-    set page_title [_ categories.Edit_category]
+    set page_title "Edit category"
 } else {
-    set page_title [_ categories.Add_category]
+    set page_title "Add category"
 }
 
 set context_bar [category::context_bar $tree_id $locale \
@@ -36,9 +36,9 @@ ad_form -name category_form -action category-form \
   -export { tree_id parent_id locale object_id ctx_id } \
   -form {
     {category_id:key}
-    {name:text {label "#acs-admin.Name#"} {html {size 50 maxlength 200}}}
-    {language:text(select) {label "#categories.Language#"} {value $locale} {options $languages}}
-    {description:text(textarea),optional {label "#categories.Description#"} {html {rows 5 cols 80}}}
+    {name:text {label "Name"} {html {size 50 maxlength 200}}}
+    {language:text(select) {label "Language"} {value $locale} {options $languages}}
+    {description:text(textarea),optional {label "Description"} {html {rows 5 cols 80}}}
 } -new_request {
     set name ""
     set description ""

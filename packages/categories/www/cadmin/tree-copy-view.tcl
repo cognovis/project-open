@@ -28,12 +28,12 @@ if {$target_tree(site_wide_p) == "f"} {
 }
 
 set tree_name [category_tree::get_name $tree_id $locale]
-set page_title [_ categories.Tree_view_title]
+set page_title "Category Tree \"$tree_name\""
 
 set context_bar [category::context_bar $tree_id $locale \
                      [value_if_exists object_id] \
                      [value_if_exists ctx_id]]
-lappend context_bar [list [export_vars -no_empty -base tree-copy { {tree_id $target_tree_id} locale object_id ctx_id }] [_ categories.Action_copy_tree]] "View \"$tree_name\""
+lappend context_bar [list [export_vars -no_empty -base tree-copy { {tree_id $target_tree_id} locale object_id ctx_id }] "Copy tree"] "View \"$tree_name\""
 
 template::multirow create tree category_name deprecated_p level left_indent
 
@@ -45,10 +45,10 @@ foreach category [category_tree::get_tree -all $tree_id $locale] {
 
 template::list::create \
     -name tree \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements {
 	category_name {
-	    label "#acs-admin.Name#"
+	    label "Name"
 	    display_template {
 		@tree.left_indent;noquote@ @tree.category_name@
 	    }

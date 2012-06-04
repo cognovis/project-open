@@ -4,7 +4,7 @@ ad_library {
     @author Timo Hentschel (timo@timohentschel.de)
 
     @creation-date 16 April 2003
-    @cvs-id $Id: categories-procs.tcl,v 1.28 2010/01/13 17:07:00 ryang Exp $
+    @cvs-id $Id$
 }
 
 

@@ -4,7 +4,7 @@ ad_library {
     @author Timo Hentschel (timo@timohentschel.de)
 
     @creation-date 16 April 2003
-    @cvs-id $Id: category-trees-procs.tcl,v 1.25 2008/12/21 18:05:35 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval category_tree {
