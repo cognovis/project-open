@@ -7,7 +7,7 @@ ad_page_contract {
     @author jsc@arsdigita.com
     @author nstrug@arsdigita.com
     @creation-date   February 9, 2000
-    @cvs-id $Id: one.tcl,v 1.2 2009/05/15 17:27:00 cvs Exp $
+    @cvs-id $Id$
 } {
 
     survey_id:integer

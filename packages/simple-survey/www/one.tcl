@@ -12,7 +12,7 @@ if {![info exists task]} {
 	@author philg@mit.edu
 	@author nstrug@arsdigita.com
 	@creation-date   28th September 2000
-	@cvs-id $Id: one.tcl,v 1.4 2010/06/04 15:46:51 po34demo Exp $
+	@cvs-id $Id$
 	
     } {
 	survey_id:integer,notnull

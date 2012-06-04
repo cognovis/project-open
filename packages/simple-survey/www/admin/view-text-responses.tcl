@@ -7,7 +7,7 @@ ad_page_contract {
  
   @author jsc@arsdigita.com
   @creation-date   February 11, 2000
-  @cvs-id $Id: view-text-responses.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+  @cvs-id $Id$
 
 } {
 

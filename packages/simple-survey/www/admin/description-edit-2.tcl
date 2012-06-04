@@ -11,7 +11,7 @@ ad_page_contract {
     @author jsc@arsdigita.com
     @author nstrug@arsdigita.com
     @creation-date   February 16, 2000
-    @cvs-id $Id: description-edit-2.tcl,v 1.2 2008/12/11 14:17:24 cvs Exp $
+    @cvs-id $Id$
 } {
     survey_id:integer
     desc_html:notnull

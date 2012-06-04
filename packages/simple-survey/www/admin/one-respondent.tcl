@@ -7,7 +7,7 @@ ad_page_contract {
     @author jsc@arsdigita.com
     @author nstrug@arsdigita.com
     @creation-date   February 11, 2000
-    @cvs-id $Id: one-respondent.tcl,v 1.2 2010/06/25 14:55:02 po34demo Exp $
+    @cvs-id $Id$
 } {
 
     user_id:integer
