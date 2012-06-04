@@ -1,7 +1,7 @@
 -- Drop the ACS Reference Language data
 --
 -- @author jon@jongriffin.com
--- @cvs-id $Id: ref-language-drop.sql,v 1.5 2010/05/14 12:22:49 emmar Exp $
+-- @cvs-id $Id$
 
 set serveroutput on
 
