@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2005-06-14
-    @cvs-id $Id: bulk-update.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 } {
     {object_id:integer,multiple ""}
     {person_ids ""}

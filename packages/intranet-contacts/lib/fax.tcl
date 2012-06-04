@@ -3,7 +3,7 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-14
 # @arch-tag: 48fe00a8-a527-4848-b5de-0f76dfb60291
-# @cvs-id $Id: fax.tcl,v 1.3 2009/06/23 11:58:18 po34demo Exp $
+# @cvs-id $Id$
 
 foreach required_param {party_ids recipients} {
     if {![info exists $required_param]} {

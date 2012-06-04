@@ -5,7 +5,7 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-21
 # @arch-tag: 291a71c2-5442-4618-bb9f-13ff23d854b5
-# @cvs-id $Id: contact-relationships.tcl,v 1.3 2009/03/05 17:43:47 cognovis Exp $
+# @cvs-id $Id$
 
 foreach required_param {party_id} {
     if {![info exists $required_param]} {

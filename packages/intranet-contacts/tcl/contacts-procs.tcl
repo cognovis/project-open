@@ -4,7 +4,7 @@ ad_library {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: contacts-procs.tcl,v 1.4 2009/10/05 20:48:36 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval contacts:: {}

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Timo Hentschel timo@timohentschel.de
     @creation-date 2006-04-19
-    @cvs-id $Id: relationship-bulk-move.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 } {
     {party_id:integer,notnull}
     {party_two:optional}

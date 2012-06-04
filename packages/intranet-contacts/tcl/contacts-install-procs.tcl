@@ -5,7 +5,7 @@ ad_library {
 
     @creation-date 2005-05-26
     @author Timo Hentschel (timo@timohentschel.de)
-    @cvs-id $Id: contacts-install-procs.tcl,v 1.10 2009/10/02 18:26:12 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval contacts::install {}

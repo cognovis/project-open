@@ -3,7 +3,7 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-14
 # @arch-tag: 48fe00a8-a527-4848-b5de-0f76dfb60291
-# @cvs-id $Id: letter.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+# @cvs-id $Id$
 
 foreach required_param {party_ids recipients} {
     if {![info exists $required_param]} {
