@@ -4,7 +4,7 @@
 --
 -- @author  jon@jongriffin.com
 -- @created 2000-12-04
--- @cvs-id  $Id: ref-timezones-drop.sql,v 1.3 2003/09/30 12:10:10 mohanp Exp $
+-- @cvs-id  $Id$
 
 declare
     v_repository_id integer;

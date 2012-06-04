@@ -8,7 +8,7 @@
 -- @author jon@jongriffin.com
 -- @author ron@arsdigita.com
 -- @creation-date 2000-11-30
--- @cvs-id $Id: ref-timezones-create.sql,v 1.5 2003/09/30 12:10:10 mohanp Exp $
+-- @cvs-id $Id$
 
 -- we don't need this anymore. all data should be updated from the source
  create sequence timezone_seq;
