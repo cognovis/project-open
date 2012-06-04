@@ -277,7 +277,11 @@ ad_proc -public im_ms_project_write_task {
 
 	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
-	    Name			{ set value $project_name }
+	    Name			{ 
+		set value $project_name
+		# Replace TAB characters with spaces
+		regsub -all "\t" $value " " value
+	    				}
 	    Type			{ 
                 if {![info exists effort_driven_type_id] || "" == $effort_driven_type_id} {set effort_driven_type_id 9720}
 		set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
