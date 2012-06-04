@@ -4,7 +4,7 @@
 <!-- @author  (avila@digiteix.com) -->
 <!-- @creation-date 2006-04-27 -->
 <!-- @arch-tag 7410be05-735d-4f4d-b0e5-6252f93a9d29 -->
-<!-- @cvs-id $Id: bundle-create-postgresql.xql,v 1.5 2008/02/15 12:01:50 cambridge Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   
