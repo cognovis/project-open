@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date March 27, 2008
     @author frank.bergmann@project-open.com
-    @cvs-id $Id: intranet-nagios-callback-procs.tcl,v 1.5 2010/04/25 16:41:42 moravia Exp $
+    @cvs-id $Id$
 }
 
 # ----------------------------------------------------------------------
