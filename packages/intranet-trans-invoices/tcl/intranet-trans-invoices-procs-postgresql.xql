@@ -4,7 +4,7 @@
 <!-- @author  (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-09-21 -->
 <!-- @arch-tag ebd131d9-8c90-4c9b-a02c-8058aac72256 -->
-<!-- @cvs-id $Id: intranet-trans-invoices-procs-postgresql.xql,v 1.3 2009/03/31 17:16:47 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   
