@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-08 -->
 <!-- @arch-tag ffe2b337-c79b-4b45-bfcb-41a371866d36 -->
-<!-- @cvs-id $Id: delete-postgresql.xql,v 1.2 2006/04/07 23:07:40 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

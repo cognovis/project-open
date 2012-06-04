@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag 5a4d66ad-c18d-46bf-b150-8ff2c1fbb877 -->
-<!-- @cvs-id $Id: notify-oracle.xql,v 1.1 2004/10/07 18:57:51 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

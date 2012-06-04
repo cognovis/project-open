@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag e5082d5b-edcf-4b26-a9e6-4c729ef96982 -->
-<!-- @cvs-id $Id: invoice-association-action-2-postgresql.xql,v 1.1 2004/10/07 18:57:50 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   
