@@ -79,6 +79,8 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 set normalize_project_nr_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NormalizeProjectNrP" -default 1]
 set sub_navbar ""
 set auto_increment_project_nr_p [parameter::get -parameter ProjectNrAutoIncrementP -package_id [im_package_core_id] -default 0]
+set project_name_field_min_len [parameter::get -parameter ProjectNameMinimumLength -package_id [im_package_core_id] -default 5]
+set project_nr_field_min_len [parameter::get -parameter ProjectNrMinimumLength -package_id [im_package_core_id] -default 5]
 
 if { ![exists_and_not_null return_url] && [exists_and_not_null project_id]} {
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]
@@ -87,9 +89,6 @@ if { ![exists_and_not_null return_url] && [exists_and_not_null project_id]} {
 # Do we need the customer_id for creating a project?
 # This is necessary if the project_nr depends on the customer_id.
 set customer_required_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NewProjectRequiresCustomerP" -default 0]
-
-# ad_return_complaint 1 $project_id
-# ad_return_complaint 1 "[info exists project_id], $company_id, $customer_required_p"
 
 if { (![info exists project_id] || "" == $project_id) && $company_id == "" && $customer_required_p} {
     ad_returnredirect [export_vars -base "new-custselect" {project_id parent_id project_nr workflow_key return_url}]
@@ -193,6 +192,7 @@ template::element::create $form_id project_name \
     -after_html "[im_gif help "Please enter any suitable name for the project. The name must be unique."]"
 
 
+
 set project_nr_mode "display"
 if {$project_nr_field_editable_p} { set project_nr_mode "edit" }
 template::element::create $form_id project_nr \
@@ -210,6 +210,7 @@ if {$enable_project_path_p} {
 	-html {size 40} \
 	-after_html "[im_gif help "An optional full path to the project filestorage"]"
 }
+
 
 if {$enable_nested_projects_p} {
 	
@@ -235,6 +236,7 @@ if {$enable_nested_projects_p} {
 } else {
     template::element::create $form_id parent_id -optional -widget "hidden"
 }
+
 
 # create customer query
 #
@@ -398,7 +400,6 @@ template::element::create $form_id description -optional -datatype text\
     -label "[_ intranet-core.Description]<br>([_ intranet-core.publicly_searchable])"\
     -html {rows 5 cols 50}
 
-	
 # ------------------------------------------------------
 # Dynamic Fields
 # ------------------------------------------------------
@@ -423,8 +424,6 @@ set field_cnt [im_dynfield::append_attributes_to_form \
     -form_id $form_id \
     -object_id $dynfield_project_id \
 ]
-
-
 
 # Check if we are editing an already existing project
 #
@@ -655,6 +654,13 @@ if {[form is_submission $form_id]} {
 	incr n_error
     }
 
+    # Make sure the project name has a minimum length
+    if { [string length $project_nr] < $project_nr_field_min_len} {
+	incr n_error
+	template::element::set_error $form_id project_nr "[_ intranet-core.lt_The_project_nr_that] <br>
+	   [_ intranet-core.lt_Please_use_a_project_nr_]"
+    }
+	
     # Check for project number duplicates
     set project_nr_exists [db_string project_nr_exists "
 	select 	count(*)
@@ -675,7 +681,7 @@ if {[form is_submission $form_id]} {
      }
 
     # Make sure the project name has a minimum length
-    if { [string length $project_name] < 5} {
+    if { [string length $project_name] < $project_name_field_min_len} {
 	incr n_error
 	template::element::set_error $form_id project_name "[_ intranet-core.lt_The_project_name_that] <br>
 	   [_ intranet-core.lt_Please_use_a_project_]"

@@ -115,7 +115,7 @@ if {"" == $include_subprojects_p} { set include_subprojects_p [ad_parameter -pac
 # Unprivileged users (clients & freelancers) can only see their 
 # own projects and no subprojects.
 if {![im_permission $current_user_id "view_projects_all"]} {
-    set mine_p "t"
+    if {"f" == $mine_p} { set mine_p "dept" }
     set include_subprojects_p "f"
     set include_subproject_level ""
 }
@@ -496,54 +496,48 @@ set status_where "
 # reach a reasonable response time.
 
 
-# No "permissions" - just select all projects
-set perm_sql "im_projects"
+# The user does NOT have the view_projects_all privilege.
+# Only show member projects or projects in his dept.
 
+set dept_perm_sql ""
+if {[im_permission $current_user_id "view_projects_dept"]} {
+   set dept_perm_sql "
+	UNION
+	-- projects of the user department
+	select	p.*
+	from	im_projects p
+	where	p.project_cost_center_id in (select * from im_user_cost_centers(:user_id))
+		$where_clause
+   "
+}
 
-if {[string equal $mine_p "dept"]} {
-
-    # Select all project with atleast one member that
-    # belongs to the department of the current user.
-    set perm_sql "
-	(select	distinct p.*
+set perm_sql "
+	(
+	-- member projects
+	select	p.*
 	from	im_projects p,
 		acs_rels r
 	where	r.object_id_one = p.project_id
-		and r.object_id_two in (
-			select	employee_id
-			from	im_employees
-			where	department_id in (
-				select	cc.cost_center_id
-				from	im_cost_centers cc,
-					(	select	cost_center_code
-						from	im_cost_centers
-						where	cost_center_id in (
-							select	department_id
-							from	im_employees
-							where	employee_id = :user_id
-						    UNION
-							select	cost_center_id
-							from	im_cost_centers
-							where	manager_id = :user_id
-						)
-					) t
-				where	position(t.cost_center_code in cc.cost_center_code) > 0
-			)
-
-		)
+		and r.object_id_two in (select :user_id from dual UNION select group_id from group_element_index where element_id = :user_id)
 		$where_clause
+	$dept_perm_sql
 	)
-    "
+"
+
+
+# User can see all projects - no permissions
+if {[im_permission $user_id "view_projects_all"]} {
+   set perm_sql "im_projects"
 }
 
-
-if {![im_permission $user_id "view_projects_all"] | [string equal $mine_p "t"]} {
+# Explicitely looking for the user's projects
+if {"t" == $mine_p} {
     set perm_sql "
 	(select	p.*
 	from	im_projects p,
 		acs_rels r
-	where	r.object_id_one = p.project_id
-		and r.object_id_two = :user_id
+	where	r.object_id_one = p.project_id and 
+		r.object_id_two = :user_id
 		$where_clause
 	)"
 }
@@ -599,6 +593,14 @@ if {[string equal $upper_letter "ALL"]} {
         select count(*)
         from ($sql) s
     "]
+
+    # Special case: FIRST the users selected the 2nd page of the results
+    # and THEN added a filter. Let's reset the results for this case:
+    while {$start_idx > 0 && $total_in_limited < $start_idx} {
+	set start_idx [expr $start_idx - $how_many]
+	set end_idx [expr $end_idx - $how_many]
+    }
+
     set selection [im_select_row_range $sql $start_idx $end_idx]
 }	
 
@@ -706,6 +708,7 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
+
 db_foreach projects_info_query $selection -bind $form_vars {
 
 #    if {"" == $project_id} { continue }
@@ -725,7 +728,11 @@ db_foreach projects_info_query $selection -bind $form_vars {
     foreach column_var $column_vars {
 	append row_html "\t<td valign=top>"
 	set cmd "append row_html $column_var"
-	eval "$cmd"
+	if [catch {
+	    eval "$cmd"
+	} errmsg] {
+            # TODO: warn user
+	}
 	append row_html "</td>\n"
     }
     append row_html "</tr>\n"
@@ -817,6 +824,20 @@ if {"" == $dashboard_column_html} {
 # Navbars
 # ---------------------------------------------------------------
 
+# Get the URL variables for pass-though
+set query_pieces [split [ns_conn query] "&"]
+set pass_through_vars [list]
+foreach query_piece $query_pieces {
+    if {[regexp {^([^=]+)=(.+)$} $query_piece match var val]} {
+	# exclude "form:...", "__varname" and "letter" variables
+	if {[regexp {^form} $var match]} {continue}
+	if {[regexp {^__} $var match]} {continue}
+	if {[regexp {^letter$} $var match]} {continue}
+	set var [ns_urldecode $var]
+	lappend pass_through_vars $var
+    }
+}
+
 # Project Navbar goes to the top
 #
 set letter $upper_letter
@@ -827,7 +848,7 @@ set project_navbar_html [\
 			     "/intranet/projects/index" \
 			     $next_page_url \
 			     $previous_page_url \
-			     [list start_idx order_by how_many view_name letter project_status_id] \
+			     $pass_through_vars \
 			     $menu_select_label \
 			    ]
 

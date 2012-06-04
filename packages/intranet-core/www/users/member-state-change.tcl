@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Hiro Iwashima <iwashima@mit.edu>
     @creation-date 23 Aug 2000
-    @cvs-id $Id: member-state-change.tcl,v 1.2 2009/06/25 11:57:54 po34demo Exp $
+    @cvs-id $Id$
 
 } {
     user_id

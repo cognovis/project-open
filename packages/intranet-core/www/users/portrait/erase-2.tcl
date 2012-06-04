@@ -4,7 +4,7 @@ ad_page_contract {
     the key here is to null out live_revision, which is 
     used by pages to determine portrait existence
 
-    @cvs-id $Id: erase-2.tcl,v 1.6 2006/07/11 15:41:47 cvs Exp $
+    @cvs-id $Id$
 } {
     user_id
     return_url

@@ -116,7 +116,7 @@ ad_proc -public im_project_permissions {
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $project_id
 } {
-    ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id"
+    if {$debug} { ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id" }
     upvar $view_var view
     upvar $read_var read
     upvar $write_var write
@@ -127,32 +127,47 @@ ad_proc -public im_project_permissions {
     set write 0
     set admin 0
 
-    ns_log Notice "im_project_permissions: before user_is_admin_p"
-    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-    set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
-    set user_is_group_member_p [im_biz_object_member_p $user_id $project_id]
-    set user_is_group_admin_p [im_biz_object_admin_p $user_id $project_id]
-    set user_is_employee_p [im_user_is_employee_p $user_id]
-
     # empty project_id would give errors below
     if {"" == $project_id} { set project_id 0 }
-    ns_log Notice "im_project_permissions: before im_security_alert_check_integer"
     im_security_alert_check_integer -location "im_project_permissions" -value $project_id
+
+    if {$debug} { ns_log Notice "im_project_permissions: before user_is_admin_p" }
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
+    set user_is_project_member_p [im_biz_object_member_p $user_id $project_id]
+    set user_is_project_manager_p [im_biz_object_admin_p $user_id $project_id]
+    set user_is_employee_p [im_user_is_employee_p $user_id]
+
+    if {[im_table_exists "im_cost_centers"]} {
+	# Department managers are like project members or PMs
+	set user_cc_ids [im_user_cost_centers $user_id]
+	if {$debug} { ns_log Notice "im_project_permissions: user_cc_ids: $user_cc_ids" }
+	if {[im_permission $user_id view_projects_dept]} {
+	    set project_cost_center_id [util_memoize [list db_string project_cc "select project_cost_center_id from im_projects where project_id = $project_id" -default 0] 30]
+
+#	ad_return_complaint 1 "user_cc_ids=$user_cc_ids, project_cc_id=$project_cost_center_id, project_id=$project_id"
+
+	    if {[lsearch $user_cc_ids $project_cost_center_id] > -1} { set user_is_project_member_p 1}
+	    if {[im_permission $user_id edit_projects_dept]} {
+		if {[lsearch $user_cc_ids $project_cost_center_id] > -1} { set user_is_project_manager_p 1}
+	    }
+	}
+    }
 
 
     # Treat the project mangers_fields
     # A user man for some reason not be the group PM
-    ns_log Notice "im_project_permissions: before project_manager"
-    if {!$user_is_group_admin_p} {
+    if {$debug} { ns_log Notice "im_project_permissions: before project_manager" }
+    if {!$user_is_project_manager_p} {
 	set project_manager_id [db_string project_manager "select project_lead_id from im_projects where project_id = :project_id" -default 0]
 	if {$user_id == $project_manager_id} {
-	    set user_is_group_admin_p 1
+	    set user_is_project_manager_p 1
 	}
     }
     
     # Admin permissions to global + intranet admins + group administrators
-    ns_log Notice "im_project_permissions: user_admin_p"
-    set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
+    if {$debug} { ns_log Notice "im_project_permissions: user_admin_p" }
+    set user_admin_p [expr $user_is_admin_p || $user_is_project_manager_p]
     set user_admin_p [expr $user_admin_p || $user_is_wheel_p]
 
     set write $user_admin_p
@@ -160,26 +175,30 @@ ad_proc -public im_project_permissions {
 
     # Get the projects's company and the project status
     # Use caching because this procedure is queried very frequently!
-    ns_log Notice "im_project_permissions: company info"
-    set query "
-	select	company_id, 
-		lower(im_category_from_id(project_status_id)) as project_status 
-	from	im_projects
-	where	project_id = $project_id
+    if {$debug} { ns_log Notice "im_project_permissions: company info" }
+    set company_id 0
+    set project_is_open_p 0
+    db_0or1row project_info "
+	select	p.company_id,
+		(select	count(*)
+		from	im_category_hierarchy ch 
+		where	p.project_type_id = [im_project_status_open] OR
+			(ch.child_id = p.project_status_id and ch.parent_id = [im_project_status_open])
+		) as project_is_open_p,
+		p.project_status_id,
+		im_category_from_id(p.project_status_id) as project_status
+	from	im_projects p
+	where	p.project_id = $project_id
     "
-    set company_infos [util_memoize [list db_list_of_lists company_info $query]]
-    set company_info [lindex $company_infos 0]
-    set company_id [lindex $company_info 0]
-    set project_status [lindex $company_info 1]
 
     if {$debug} {
-	ns_log Notice "user_is_admin_p=$user_is_admin_p"
-	ns_log Notice "user_is_group_member_p=$user_is_group_member_p"
-	ns_log Notice "user_is_group_admin_p=$user_is_group_admin_p"
-	ns_log Notice "user_is_employee_p=$user_is_employee_p"
-	ns_log Notice "user_admin_p=$user_admin_p"
-	ns_log Notice "view_projects_history=[im_permission $user_id view_projects_history]"
-	ns_log Notice "project_status=$project_status"
+	ns_log Notice "im_project_permissions: user_is_admin_p=$user_is_admin_p"
+	ns_log Notice "im_project_permissions: user_is_project_member_p=$user_is_project_member_p"
+	ns_log Notice "im_project_permissions: user_is_project_manager_p=$user_is_project_manager_p"
+	ns_log Notice "im_project_permissions: user_is_employee_p=$user_is_employee_p"
+	ns_log Notice "im_project_permissions: user_admin_p=$user_admin_p"
+	ns_log Notice "im_project_permissions: view_projects_history=[im_permission $user_id view_projects_history]"
+	ns_log Notice "im_project_permissions: project_status=$project_status"
     }
 
     set user_is_company_member_p [im_biz_object_member_p $user_id $company_id]
@@ -192,20 +211,15 @@ ad_proc -public im_project_permissions {
 	set view 1
     }
 
-# 20050729 fraber: Don't let customer's contacts see their project
-# without exlicit permission...
-#    if {$user_is_company_member_p} { set read 1}
-
-
     # Allow customer' Members to see their customer's projects
-    ns_log Notice "im_project_permissions: customer members"
+    if {$debug} { ns_log Notice "im_project_permissions: customer members" }
     if {$user_is_company_member_p && $user_is_employee_p} { 
 	set view 1
 	set read 1
     }
     
     # Allow Key Account Managers to see their customer's projects
-    ns_log Notice "im_project_permissions: company_admin"
+    if {$debug} { ns_log Notice "im_project_permissions: company_admin" }
     if {$user_is_company_admin_p && $user_is_employee_p} { 
 	set read 1
 	set write 1
@@ -213,16 +227,16 @@ ad_proc -public im_project_permissions {
     }
 
     # The user is member of the project
-    if {$user_is_group_member_p} { 
+    if {$user_is_project_member_p} { 
 	set read 1
     }
 
-    ns_log Notice "im_project_permissions: view_projects_all"
+    if {$debug} { ns_log Notice "im_project_permissions: view_projects_all" }
     if {[im_permission $user_id view_projects_all]} { 
 	set read 1
     }
 
-    ns_log Notice "im_project_permissions: edit_projects_all"
+    if {$debug} { ns_log Notice "im_project_permissions: edit_projects_all" }
     if {[im_permission $user_id edit_projects_all]} { 
 	set read 1
 	set write 1
@@ -231,11 +245,14 @@ ad_proc -public im_project_permissions {
 
     # companies and freelancers are not allowed to see non-open projects.
     # 76 = open
-    ns_log Notice "im_project_permissions: view_projects_history"
-    if {![im_permission $user_id view_projects_history] && ![string equal $project_status "open"]} {
+    if {$debug} { ns_log Notice "im_project_permissions: view_projects_history" }
+    if {![im_permission $user_id view_projects_history] && ![im_project_has_type $project_id "Open"]} {
 	# Except their own projects...
-	if {!$user_is_company_member_p && !$user_is_group_member_p} {
+	if {!$user_is_company_member_p && !$user_is_project_member_p} {
+	    ds_comment "im_project_permissions: User #$user_id does not have privilege 'view_projects_history', so he can not see a non-open project."
 	    set read 0
+	    set write 0
+	    set admin 0
 	}
     }
 
@@ -632,6 +649,7 @@ ad_proc -public im_project_options {
     # if we are showing this box for a sub-sub-project.
     set subsubproject_sql ""
     set subprojects [list 0]
+
     if {0 != $current_project_id} {
 
 	# Determine the topmost project in the hierarchy
@@ -652,6 +670,18 @@ ad_proc -public im_project_options {
 	    incr ctr
 	}
 
+	set dept_perm_sql ""
+	if {[im_permission $current_user_id "view_projects_dept"]} {
+	    set dept_perm_sql "
+		UNION
+		-- projects of the user department
+		select  p.*
+		from    im_projects p
+		where   p.project_cost_center_id in (select * from im_user_cost_centers(:user_id))
+	    "
+	}
+
+
 	# Check permissions for showing subprojects
 	set perm_sql "
 		(select p.*
@@ -659,12 +689,12 @@ ad_proc -public im_project_options {
 			acs_rels r
 		where   r.object_id_one = p.project_id
 			and r.object_id_two = :current_user_id
+		$dept_perm_sql
 		)
 	"
 	if {[im_permission $current_user_id "view_projects_all"]} {
 	    set perm_sql "im_projects" 
 	}
-
 
 	set subprojects [db_list subprojects "
 		select	children.project_id
@@ -837,15 +867,12 @@ ad_proc -public im_project_options {
     "
 
     db_multirow multirow hours_timesheet $sql
-#   multirow_sort_tree multirow project_id parent_id sort_order
     multirow_sort_tree -nosort multirow project_id parent_id sort_order
     set options [list]
     template::multirow foreach multirow {
-
 	set indent ""
 	for {set i 0} {$i < $tree_level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 	lappend options [list "$indent$project_name_shortened" $project_id]
-
     }
 
     if {$include_empty} { set options [linsert $options 0 [list $include_empty_name ""]] }
@@ -2779,7 +2806,9 @@ ad_proc -public im_project_base_data_component {
 # ---------------------------------------------------------------
 
 ad_proc -public im_personal_todo_component {
+    {-show_empty_project_list_p 1}
     {-view_name "personal_todo_list" }
+
 } {
     Returns a HTML table with the list of projects, tasks,
     forum items etc. assigned to the current user. 

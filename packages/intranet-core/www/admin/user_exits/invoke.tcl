@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2006-05-10
-    @cvs-id $Id: invoke.tcl,v 1.3 2006/05/11 23:02:58 dotproj Exp $
+    @cvs-id $Id$
 } {
     user_exit
     user_id
