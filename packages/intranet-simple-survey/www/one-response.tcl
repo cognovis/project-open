@@ -8,7 +8,7 @@ ad_page_contract {
     @author nstrug@arsdigita.com
     @author fraber@fraber.de
     @creation-date   February 11, 2000
-    @cvs-id $Id: one-response.tcl,v 1.2 2010/06/30 14:04:25 po34demo Exp $
+    @cvs-id $Id$
 } {
     response_id:integer
 } 
