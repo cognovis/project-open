@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @date 2002-09-10
-    @cvs-id $Id: patch-list.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 } {
     {component_id:integer,optional}
     {apply_to_version:integer,optional}

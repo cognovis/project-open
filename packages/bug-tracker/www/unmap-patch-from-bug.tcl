@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @date 2002-09-06
-    @cvs-id $Id: unmap-patch-from-bug.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 } {
     patch_number:integer,notnull
     bug_number:integer,notnull

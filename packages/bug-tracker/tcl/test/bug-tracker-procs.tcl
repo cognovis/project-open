@@ -2,7 +2,7 @@ ad_library {
     Automated tests.
 
     @author Don Baccus
-    @cvs-id $Id: bug-tracker-procs.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats {api smoke} project_new {

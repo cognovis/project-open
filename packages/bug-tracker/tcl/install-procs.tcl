@@ -6,7 +6,7 @@ ad_library {
 
     @creation-date 2003-01-31
     @author Lars Pind <lars@collaboraid.biz>
-    @cvs-id $Id: install-procs.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 }
 
 

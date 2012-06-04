@@ -3,7 +3,7 @@
 --
 -- adds explicit ::varchar typecast in call to content_item__new
 --
--- @cvs-id $Id: upgrade-1.3d2-1.3d3.sql,v 1.1 2006/10/25 17:55:10 cvs Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function bt_bug__new(

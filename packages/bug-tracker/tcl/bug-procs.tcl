@@ -7,7 +7,7 @@ ad_library {
 
     @creation-date 2003-01-10
     @author Lars Pind <lars@collaboraid.biz>
-    @cvs-id $Id: bug-procs.tcl,v 1.8 2009/05/27 18:13:07 po34demo Exp $
+    @cvs-id $Id$
 
 }
 
