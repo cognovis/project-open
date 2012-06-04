@@ -35,7 +35,7 @@ ad_library {
 
     @creation-date 2010/04/09
     @author Don Baccus
-    @cvs-id $Id: json-procs.tcl,v 1.3 2011/03/19 17:24:24 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval util {

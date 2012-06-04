@@ -5,7 +5,7 @@ ad_library {
     @author rhs@mit.edu
     @author yon (yon@openforce.net)
     @creation-date 2000-09-06
-    @cvs-id $Id: site-nodes-procs.tcl,v 1.89 2010/03/17 21:48:27 victorg Exp $
+    @cvs-id $Id$
 
 }
 

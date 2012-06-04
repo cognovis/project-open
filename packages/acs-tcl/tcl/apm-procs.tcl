@@ -5,7 +5,7 @@ ad_library {
     @creation-date 13 Apr 2000
     @author Bryan Quinn (bquinn@arsdigita.com)
     @author Jon Salz (jsalz@arsdigita.com)
-    @cvs-id $Id: apm-procs.tcl,v 1.89 2010/11/30 14:44:31 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval apm {}

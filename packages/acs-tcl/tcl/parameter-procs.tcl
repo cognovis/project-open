@@ -4,7 +4,7 @@ ad_library {
 
     @author yon (yon@openforce.net)
     @creation-date May 12, 2002
-    @cvs-id $Id: parameter-procs.tcl,v 1.18 2010/03/25 01:02:16 donb Exp $
+    @cvs-id $Id$
 
 }
 

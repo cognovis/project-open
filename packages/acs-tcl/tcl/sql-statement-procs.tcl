@@ -2,7 +2,7 @@ ad_library {
     Procs for manipulating SQL statements
 
     @author lars@pinds.com, May 2000
-    @cvs-id $Id: sql-statement-procs.tcl,v 1.3 2007/01/10 21:22:12 gustafn Exp $
+    @cvs-id $Id$
 
     How to use this:
 

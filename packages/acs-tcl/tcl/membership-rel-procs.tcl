@@ -3,7 +3,7 @@ ad_library {
 
     @author yon (yon@openforce.net)
     @creation-date 2002-03-15
-    @cvs-id $Id: membership-rel-procs.tcl,v 1.8 2007/01/10 21:22:12 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval membership_rel {
