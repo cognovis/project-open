@@ -5,7 +5,7 @@
 --
 -- Peter Marklund (peter@collaboraid.biz)
 --
--- $Id: upgrade-1.0d4-1.0d5.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- $Id$
 
 ---------------------------------
 -- Deputies

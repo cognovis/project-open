@@ -3,7 +3,7 @@ ad_library {
     
     @creation-date 13 January 2003
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: implementation-procs.tcl,v 1.1 2006/10/25 17:55:34 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval workflow::impl {}

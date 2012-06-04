@@ -2,7 +2,7 @@
 -- Workflow Service Contracts
 --
 -- @author Lars Pind (lars@collaboraid.biz)
--- @version $Id: workflow-service-contracts-create.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @version $Id$
 --
 -- GNU GPL v2
 --

@@ -4,7 +4,7 @@
 -- workflow_case.delete was implemented wrong, so it tried to delete the case by object_id instead of case_id.
 --
 -- Lars Pind (lars@collaboraid.biz)
--- $Id: upgrade-1.0d2-1.0d3.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- $Id$
 
 
 

@@ -5,7 +5,7 @@
 -- From bug #2210
 -- @creation-date 2004-12-16
 -- @arch-tag: 16d12f6e-d889-45a4-b7d5-df75388b11fe
--- @cvs-id $Id: upgrade-2.0.0b3-2.0.0b4.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package body workflow_case_pkg
