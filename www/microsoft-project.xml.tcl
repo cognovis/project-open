@@ -38,6 +38,8 @@ if {![db_0or1row project_info "
 		p.start_date::date || 'T' || p.start_date::time as project_start_date,
 		p.end_date::date || 'T' || p.end_date::time as project_end_date,
 		p.end_date::date - p.start_date::date as project_duration,
+		p.start_date as main_project_start_date,
+		p.end_date as main_project_end_date,
 		c.company_name,
 		im_name_from_user_id(p.project_lead_id) as project_lead_name
 	from	im_projects p left join im_gantt_projects g on (g.project_id=p.project_id),
@@ -238,48 +240,7 @@ set project_resources_sql "
 		)
 "
 
-set ttt {
-# Loop through all resources and add them to the XML structure
-db_foreach project_resources $project_resources_sql {
-    set calendar_node [$doc createElement Calendar]
-    $calendars_node appendChild $calendar_node
 
-    $calendar_node appendFromList [list UID {} [list [list \#text $user_id]]]
-    $calendar_node appendFromList [list Name {} [list [list \#text $user_name]]]
-
-    $calendar_node appendXML "<IsBaseCalendar>false</IsBaseCalendar>"
-    $calendar_node appendXML "<BaseCalendarUID>1</BaseCalendarUID>"
-
-    set weekdays_node [$doc createElement WeekDays]
-    $calendar_node appendChild $weekdays_node
-
-set ttt {
-
-    # Append entries for user absences
-    set user_absences_sql "
-	select	start_date::date || 'T00:00:00' as start_date,
-		end_date::date || 'T23:59:00' as end_date 
-	from	im_user_absences
-	where	owner_id = :user_id
-	order by start_date
-    "
-    db_foreach resource_absences $user_absences_sql {
-	$weekdays_node appendXML "
-		<WeekDay>
-			<DayType>0</DayType>
-			<DayWorking>0</DayWorking>
-			<TimePeriod>
-				<FromDate>$start_date</FromDate>
-				<ToDate>$end_date</ToDate>
-			</TimePeriod>
-		</WeekDay>
-	"
-    }
-
-}
-}
-}
- 
 # ---------------------------------------------------------------
 # Tasks
 
@@ -382,6 +343,8 @@ set project_allocations_sql "
 		object_id_two AS user_id,
 		bom.percentage as percentage_assigned,
 		coalesce(p.percent_completed,0) as percent_completed,
+		p.start_date as start_date_timestamp,
+		p.end_date as end_date_timestamp,
 		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
 		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
 		tt.planned_units,
@@ -424,6 +387,10 @@ set project_allocations_sql "
 set assignment_ctr 0
 db_foreach project_allocations $project_allocations_sql {
 
+    # Use the main project's start and end date as defaults for the task
+    if {"" == $start_date_timestamp} { set start_date_timestamp $main_project_start_date }
+    if {"" == $end_date_timestamp} { set end_date_timestamp $main_project_end_date }
+
     ns_log Notice "microsoft-project: allocactions: xml_uid=$xml_uid"
     if {"" == $percentage_assigned} {
 	# Don't export empty assignments.
@@ -436,10 +403,30 @@ db_foreach project_allocations $project_allocations_sql {
     # The sum of assigned work overrides the task work in MS-Project,
     # so we divide the task work evenly across the assigned resources.
     if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { set planned_units 0 }
-    set planned_seconds [expr $planned_units * 3600]
-
-    set actual_work_seconds [expr $planned_seconds * $percent_completed / 100]
+    set planned_seconds [expr $planned_units * 3600.0]
+    set actual_work_seconds [expr $planned_seconds * $percent_completed / 100.0]
     set remaining_work_seconds [expr $planned_seconds - $actual_work_seconds]
+    set work_seconds_in_interval [util_memoize [list im_gp_work_seconds_in_interval -start_date $start_date_timestamp -end_date $end_date_timestamp]]
+    set work_seconds_assigned [expr $work_seconds_in_interval * $total_percentage_assigned / 100.0]
+
+    if {0.0 == $planned_seconds} {
+	set overassigment_factor 1.0
+    } else {
+	set overassigment_factor [expr 1.0 * $work_seconds_assigned / $planned_seconds]
+
+	# Reduce the assignment so that the Work = Duration x Assigment formula works for MS-Project
+#	set percentage_assigned [expr $percentage_assigned / $overassigment_factor]
+    }
+
+    if {0} {
+    ad_return_complaint 1 "<pre>
+$start_date_timestamp - $end_date_timestamp
+work_seconds_in_interval=$work_seconds_in_interval
+planned_seconds=$planned_seconds
+work_seconds_assigned=$work_seconds_assigned
+overassigment_factor=$overassigment_factor
+</pre>"
+    }
 
     if {$total_percentage_assigned == 0} {
 	set work_seconds $planned_seconds

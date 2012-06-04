@@ -196,6 +196,27 @@ ad_proc -public im_ganttproject_write_task {
 
 
 # ----------------------------------------------------------------------
+# Show warning about MS-Project imports
+# ----------------------------------------------------------------------
+
+ad_proc -public im_ganttproject_ms_project_warning_component { 
+    -project_id
+} {
+    Shows warnings for MS-Project imports
+} {
+    # Make sure project_id is an integer...
+    im_security_alert_check_integer -location "im_ganttproject_ms_project_warning_component" -value $project_id
+    set params [list \
+                    [list project_id $project_id] \
+                    [list return_url [im_url_with_query]] \
+		    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-ganttproject/lib/ms-project-warning-component"]
+    return [string trim $result]
+}
+
+
+# ----------------------------------------------------------------------
 # Project Page Component 
 # ----------------------------------------------------------------------
 
