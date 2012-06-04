@@ -2,7 +2,7 @@
 -- Integrate mail with OpenACS
 --
 -- @author <a href="mailto:frank.bergmann@project-open.com">frank.bergmann@project-open.com</a>
--- @version $Id: intranet-mail-import-create.sql,v 1.3 2009/02/09 16:40:19 cvs Exp $
+-- @version $Id$
 --
 
 ---------------------------------------------------------------------------

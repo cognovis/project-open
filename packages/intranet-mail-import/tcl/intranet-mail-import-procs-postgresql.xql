@@ -3,7 +3,7 @@
 <queryset>
     <rdbms><type>postgresql</type><version>7.1</version></rdbms>
 
-    <fullquery name="im_mail_import::process_mails.im_mail_import_new_message">
+    <fullquery name="intranet_mail_import::im_mail_import_new_message">
         <querytext>
 
          select im_mail_import_new_message (
@@ -21,7 +21,7 @@
                 :peeraddr,      -- creation_ip
                 'im_mail_message', -- object_type
                 :approved_p,    -- approved_p
-                to_timestamp(:send_date, 'yyyy-mm-dd hh:mi:ss'), -- send_date
+	 	:send_date, 	--send_date
 		:header_from,	-- header_from
 		:header_to	-- header_to
          );
@@ -30,7 +30,7 @@
     </fullquery>
 
 
-    <fullquery name="im_mail_import::process_mails.im_mail_import_new_rel">
+    <fullquery name="intranet_mail_import::im_mail_import_new_rel">
         <querytext>
 
         select acs_rel__new (

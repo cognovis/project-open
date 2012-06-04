@@ -3,7 +3,7 @@ ad_library {
     Initialization for im_mail_import
 
     @creation-date 9 August 2005
-    @cvs-id $Id: intranet-mail-import-init.tcl,v 1.1 2005/08/11 14:22:43 cvs Exp $
+    @cvs-id $Id$
 
 }
 

@@ -114,7 +114,4 @@
         </querytext>
     </fullquery>
 
-
-
-
 </queryset>
