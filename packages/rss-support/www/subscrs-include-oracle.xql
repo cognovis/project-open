@@ -8,7 +8,7 @@
         select s.subscr_id,
            s.timeout,
            person.name(o.creation_user) as creator,
-           to_char(s.lastbuild,'YYYY-MM-DD HH24:MI:SS') as lastbuild_ansi,
+           nvl(to_char(s.lastbuild,'YYYY-MM-DD HH24:MI:SS'),'never built') as lastbuild_ansi,
            s.last_ttb,
            s.channel_title,
            s.channel_link

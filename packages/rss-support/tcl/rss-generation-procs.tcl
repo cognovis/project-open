@@ -7,7 +7,7 @@ ad_library {
     @author jerry@theashergroup.com (jerry@theashergroup.com)
     @author aegrumet@alum.mit.edu
     @creation-date Fri Oct 26 11:43:26 2001
-    @cvs-id $Id: rss-generation-procs.tcl,v 1.17 2009/05/18 14:42:27 daveb Exp $
+    @cvs-id $Id$
 }
 
 
@@ -521,10 +521,7 @@ ad_proc rss_gen {
     
     </pre>
 } {
-
-    set encoding [ns_config ns/parameters OutputCharset "utf-8"]
-
-    set rss "<?xml version=\"1.0\" encoding=\"${encoding}\"?>\n"
+    set rss "<?xml version=\"1.0\"?>\n"
     switch $version {
         200 -
         2.00 -

@@ -5,7 +5,7 @@
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2005-01-23 -->
 <!-- @arch-tag: d73e6747-bd1d-4b7d-a9fc-517631646e05 -->
-<!-- @cvs-id $Id: rss-support-procs.xql,v 1.2 2005/02/24 13:33:25 jeffd Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   <fullquery

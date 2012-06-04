@@ -3,7 +3,7 @@
 --
 -- Change service contract operation names to use lowercase like the PosgreSQL version.
 --
--- $Id: upgrade-0.2d1-0.2d2.sql,v 1.2 2003/05/17 11:19:24 jeffd Exp $
+-- $Id$
 --
 
 update acs_sc_operations
