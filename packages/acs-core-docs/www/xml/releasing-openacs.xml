@@ -228,7 +228,7 @@ rm -rf /var/tmp/openacs-4</action></screen>
 
     <programlisting><xi:include href="../../../../etc/install/build-release.sh" xi:parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"><xi:fallback>release script missing</xi:fallback></xi:include></programlisting>
 
-    <para><phrase role="cvstag">($Id: releasing-openacs.xml,v 1.21 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
   </section>
   <section id="update-repository">
     <title>How to Update the OpenACS.org repository</title>

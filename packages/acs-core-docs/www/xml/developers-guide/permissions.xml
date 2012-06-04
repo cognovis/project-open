@@ -323,7 +323,7 @@ hierarchy for a hypothetical site:
 </para>
 
 <blockquote>
-<graphic fileref="images/context-hierarchy.gif" format="GIF"></graphic>
+<graphic fileref="../images/context-hierarchy.gif" format="GIF"></graphic>
 </blockquote>
 
 <para>
@@ -367,7 +367,7 @@ permissions in a hierarchical fashion.
 then used to check permissions in application pages.
 </para>
 
-<para><phrase role="cvstag">($Id: permissions.xml,v 1.17 2010/12/11 23:36:32 ryang Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

@@ -324,7 +324,7 @@ hash table, so <computeroutput>ns_set</computeroutput>s are slower than arrays w
 entries is large. 
 </para>
 
-<para><phrase role="cvstag">($Id: programming-with-aolserver.xml,v 1.6 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

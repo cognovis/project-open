@@ -239,5 +239,5 @@ chmod 755 nsd-postgres</action></screen>
       <para><link linkend="install-aolserver-permissions">Test AOLserver</link>.</para>
     </listitem>
   </orderedlist>
-  <para><phrase role="cvstag">($Id: aolserver4.xml,v 1.30 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>
 </sect1>

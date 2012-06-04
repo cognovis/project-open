@@ -9,7 +9,7 @@
     CVS Guidelines
   </title>
 <authorblurb>
-    <para><phrase role="cvstag">($Id: cvs.xml,v 1.6 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
    <para>
       By Joel Aufrecht with input from Jeff Davis, Branimir Dolicki, and Jade Rubick.
     </para>

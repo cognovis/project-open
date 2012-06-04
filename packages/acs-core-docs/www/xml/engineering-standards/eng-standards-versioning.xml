@@ -8,7 +8,7 @@
 <title>Release Version Numbering</title>
  
 <authorblurb>
-<para><phrase role="cvstag">($Id: eng-standards-versioning.xml,v 1.10 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 <para>By Ron Henderson, Revised by Joel Aufrecht</para>
 </authorblurb>

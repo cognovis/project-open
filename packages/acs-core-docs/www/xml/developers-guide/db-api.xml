@@ -1069,7 +1069,7 @@ db_dml foo_insert &quot;insert into foo(baz) values(:1)&quot; {[db_nullify_empty
     </variablelist>
 
     <para>
-      <phrase role="cvstag">($Id: db-api.xml,v 1.13 2009/07/12 01:08:30 donb Exp $)</phrase>
+      <phrase role="cvstag">($Id$)</phrase>
     </para>
 
   </sect2>

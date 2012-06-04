@@ -31,7 +31,7 @@ request like <computeroutput>http://someserver.com/notes/somepage.adp</computero
 
 <mediaobject>
   <imageobject>
-    <imagedata fileref="images/rp-flow.gif" format="GIF" align="center"/>
+    <imagedata fileref="../images/rp-flow.gif" format="GIF" align="center"/>
   </imageobject>
 </mediaobject>
 
@@ -230,7 +230,7 @@ by the .vuh file.
 
 </variablelist>
 
-<para><phrase role="cvstag">($Id: rp.xml,v 1.12 2010/12/11 23:36:32 ryang Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

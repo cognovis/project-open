@@ -6,7 +6,7 @@
 ]>
 <sect2 lang="es" id="permissions-tediously-explained-es">
  <title>Sistema de Permisos de OpenACS Tediosamente Explicado</title>
-	<!-- $Id: permissions-tediously-explained-es.xml,v 1.3 2006/09/25 20:32:37 byronl Exp $ -->
+	<!-- $Id$ -->
   <para>
     por Vadim Nasardinov. Modificado y convertido a Docbook XML por Roberto Mello. Traducido por David Arroyo.
   </para>

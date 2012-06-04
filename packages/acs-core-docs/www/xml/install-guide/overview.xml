@@ -295,7 +295,7 @@ createdb <replaceable>$OPENACS_SERVICE_NAME</replaceable></action></screen>
         </para>
       </listitem>
     </itemizedlist>
-    <para><phrase role="cvstag">($Id: overview.xml,v 1.28 2006/07/17 05:38:38 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
   </sect2>
 
 </sect1>

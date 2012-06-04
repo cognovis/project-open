@@ -3,7 +3,7 @@ ad_library {
 
     @author Jeff Davis (davis@xarg.net)
     @creation-date 2002-09-10
-    @cvs-id $Id: acs-core-docs-procs.tcl,v 1.4 2002/11/30 17:16:14 jeffd Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -private core_docs_uninstalled_packages_internal {} {
