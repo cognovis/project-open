@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-03-20
     @arch-tag: b66524da-fe12-4bd9-ae32-f635b0b3949b
-    @cvs-id $Id: content-keyword-test-procs.tcl,v 1.2 2007/01/10 21:22:03 gustafn Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case content_keyword {

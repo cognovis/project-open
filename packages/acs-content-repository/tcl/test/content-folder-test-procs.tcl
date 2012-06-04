@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-01-13
     @arch-tag: ce944027-3808-4e8d-9327-5d1377074643
-    @cvs-id $Id: content-folder-test-procs.tcl,v 1.3 2006/06/04 00:45:23 donb Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case content_folder {

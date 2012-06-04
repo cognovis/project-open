@@ -2,7 +2,7 @@
 --
 -- @author vinod@kurup.com
 -- @creation-date 2002-05-15
--- @cvs-id $Id: upgrade-4.1.2-4.5.sql,v 1.2 2002/08/17 17:42:45 vinodk Exp $
+-- @cvs-id $Id$
 --
 
 -- fixes bug #1502 http://openacs.org/sdm/one-baf.tcl?baf_id=1502

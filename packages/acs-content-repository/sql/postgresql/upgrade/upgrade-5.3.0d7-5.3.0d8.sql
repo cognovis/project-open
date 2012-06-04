@@ -4,7 +4,7 @@
 -- @author Emmanuelle Raffenne (eraffenne@dia.uned.es)
 -- @creation-date 2006-12-15
 -- @arch-tag: a67a9b16-d809-4da4-a47a-62f96f7e8d1e
--- @cvs-id $Id: upgrade-5.3.0d7-5.3.0d8.sql,v 1.2 2006/12/15 12:36:39 emmar Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function inline_0(varchar,varchar,varchar) returns integer as

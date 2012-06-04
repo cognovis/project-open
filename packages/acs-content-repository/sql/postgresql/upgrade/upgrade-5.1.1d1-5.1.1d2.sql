@@ -2,7 +2,7 @@
 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-05-05
--- @cvs-id $Id: upgrade-5.1.1d1-5.1.1d2.sql,v 1.2 2004/05/17 15:14:45 jeffd Exp $
+-- @cvs-id $Id$
 --
 -- fix typo in trigger function bug#1791
 drop trigger cr_items_tree_update_tr on cr_items;

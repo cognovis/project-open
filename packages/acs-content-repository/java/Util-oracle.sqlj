@@ -1,6 +1,6 @@
 package com.arsdigita.content;
 
-// $Id: Util-oracle.sqlj,v 1.1 2001/04/05 18:23:38 donb Exp $
+// $Id$
 
 import java.sql.*;
 import java.util.*;

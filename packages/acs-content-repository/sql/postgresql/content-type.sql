@@ -5,7 +5,7 @@
 -- Authors:      Michael Pih (pihman@arsdigita.com)
 --               Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-type.sql,v 1.55 2011/02/20 00:34:00 donb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -68,9 +68,20 @@ begin
     end if;
   end if;
 
-  select count(*) = 0 into v_temp_p 
-    from pg_class
+  select count(*) > 0 into v_temp_p from pg_class
    where relname = lower(create_type__table_name);
+
+  if NOT v_temp_p and create_type__table_name is not null then
+    select table_name into v_supertype_table from acs_object_types
+      where object_type = create_type__supertype;
+
+    raise NOTICE ''content_type__create_type: table_name=%, id_column=%, supertype_table=%'', 
+	create_type__table_name, create_type__id_column, v_supertype_table;
+
+    execute ''create table '' || create_type__table_name || '' ('' ||
+      create_type__id_column || '' integer constraint '' || create_type__table_name || ''_pk primary key '' || 
+      '' constraint '' || create_type__table_name || ''_fk references '' || v_supertype_table || '')'';
+  end if;
 
   PERFORM acs_object_type__create_type (
     create_type__content_type,

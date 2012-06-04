@@ -3098,7 +3098,7 @@ show errors
 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-05-02
--- @cvs-id $Id: upgrade-5.1.5d2-5.1.5d3.sql,v 1.3 2006/12/15 00:01:09 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- reload packages to get fixed version of content_folder.rename

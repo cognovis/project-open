@@ -5,7 +5,7 @@
 -- Authors:      Michael Pih (pihman@arsdigita.com)
 --               Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-type.sql,v 1.11 2009/12/07 20:19:03 daveb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

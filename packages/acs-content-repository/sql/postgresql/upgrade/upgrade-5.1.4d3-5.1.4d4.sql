@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-12-29
 -- @arch-tag: 4199ac3e-74bb-47ac-8b3c-71166bc12271
--- @cvs-id $Id: upgrade-5.1.4d3-5.1.4d4.sql,v 1.2 2005/01/13 13:55:14 jeffd Exp $
+-- @cvs-id $Id$
 --
 -- return new folder_id on creation
 

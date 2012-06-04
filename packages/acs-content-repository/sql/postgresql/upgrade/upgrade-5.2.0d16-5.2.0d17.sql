@@ -98,5 +98,6 @@ begin
   return null;
 end;' language 'plpgsql';
 
-select inline_0();
+-- 20101027 fraber: Malte says that is not necessary anymore
+-- select inline_0();
 drop function inline_0();

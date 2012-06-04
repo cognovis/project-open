@@ -6,7 +6,7 @@ ad_library {
 
     @creation-date July 2009
     @author  Emmanuelle Raffenne (eraffenne@gmail.com)
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.2 2009/09/13 23:54:39 donb Exp $
+    @cvs-id $Id$
 
 }
 

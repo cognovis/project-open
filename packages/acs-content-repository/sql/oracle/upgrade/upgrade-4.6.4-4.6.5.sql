@@ -70,7 +70,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.6.4-4.6.5.sql,v 1.2 2003/05/17 09:42:34 jeffd Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

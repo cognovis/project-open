@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2005-01-13
 -- @arch-tag: aa216b34-3586-400c-a3d3-50ca61ea5855
--- @cvs-id $Id: upgrade-5.1.5d1-5.1.5d2.sql,v 1.2 2005/02/24 13:32:58 jeffd Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function content_folder__is_sub_folder (integer,integer)

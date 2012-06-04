@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-09
     @arch-tag: f8f62c6c-bf3b-46d9-8e1e-fa5e60ba1c05
-    @cvs-id $Id: content-extlink-procs.tcl,v 1.7 2009/02/13 22:13:06 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::extlink {}

@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2005-01-05
 -- @arch-tag: 5be8fd4b-0259-4ded-905a-37cb95b7fa9f
--- @cvs-id $Id: upgrade-5.2.0d9-5.2.0d10.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- procedure delete

@@ -5,7 +5,7 @@
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2005-01-09 -->
 <!-- @arch-tag: 47baf88a-8fad-43bc-8b02-059315c80e00 -->
-<!-- @cvs-id $Id: content-item-procs.xql,v 1.4 2006/06/04 00:45:23 donb Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   <fullquery name="content::item::get.get_item">

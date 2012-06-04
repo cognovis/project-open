@@ -3,7 +3,7 @@
 -- 
 -- @author eraffenne@innova.uned.es
 -- @creation-date 2006-03-17
--- @cvs-id $Id: upgrade-5.2.0b6-5.2.0b7.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- @cvs-id $Id$
 --
 
 
