@@ -7,7 +7,7 @@ ad_library {
 
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @creation-date 2006-08-06
-  @cvs-id $Id: context-procs.tcl,v 1.58 2011/05/28 17:15:15 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {
@@ -176,7 +176,6 @@ namespace eval ::xo {
     requestor
     user
     url
-    mobile
   }
   
   ConnectionContext proc require_package_id_from_url {{-package_id 0} url} {
@@ -264,14 +263,6 @@ namespace eval ::xo {
       ::xo::cc set_user_id $user_id
       ::xo::cc process_query_parameter
     }
-
-    # simple mobile detection
-    ::xo::cc mobile 0
-    if {[ns_conn isconnected]} {
-      set user_agent [string tolower [ns_set get [ns_conn headers] User-Agent]]
-      ::xo::cc mobile [regexp (android|webos|iphone|ipad) $user_agent]
-    }
-
     if {![info exists ::ad_conn(charset)]} {
       set ::ad_conn(charset) [lang::util::charset_for_locale $locale] 
       set ::ad_conn(language) [::xo::cc lang]
@@ -459,8 +450,7 @@ namespace eval ::xo {
 
   ConnectionContext instproc load_form_parameter {} {
     my instvar form_parameter
-
-    if {[ns_conn isconnected] && [ns_conn method] eq "POST"} {
+    if {[ns_conn isconnected]} {
       #array set form_parameter [ns_set array [ns_getform]]
       foreach {att value} [ns_set array [ns_getform]] {
         # For some unknown reasons, Safari 3.* returns sometimes
@@ -475,7 +465,6 @@ namespace eval ::xo {
       array set form_parameter {}
     }
   }
-
   ConnectionContext instproc form_parameter {name {default ""}} {
     my instvar form_parameter form_parameter_multiple
     if {![info exists form_parameter]} {
@@ -543,7 +532,7 @@ namespace eval ::xo {
     set query [ns_urlencode $var]=[ns_urlencode $value]
     foreach pair [split $old_query &] {
       foreach {key value} [split $pair =] break
-      if {[ns_urldecode $key] eq $var} continue
+      if {$key eq $var} continue
       append query &$pair
     }
     return $query

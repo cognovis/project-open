@@ -2,7 +2,7 @@ ad_page_contract {
   Show classes defined in the connection threads
 
   @author Gustaf Neumann
-  @cvs-id $Id: index.tcl,v 1.7 2007/08/08 09:57:17 gustafn Exp $
+  @cvs-id $Id$
 } -query {
   {all_classes:optional 0}
 } -properties {

@@ -1,4 +1,4 @@
-# $Id: 00-serializer-procs.tcl,v 1.5 2008/01/26 01:17:10 gustafn Exp $
+# $Id$
 if {![info exists ::xotcl::version]} {
   ns_log notice "**********************************************************"
   ns_log notice "OOPS, apparenty you have no XOTcl installed on your aolserver."

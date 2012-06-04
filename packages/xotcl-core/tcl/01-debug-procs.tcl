@@ -70,22 +70,19 @@ if {$::xotcl::version < 1.5} {
 
 if {[info command ::nx::Object] ne ""} {
   ns_log notice "Defining minimal XOTcl 1 compatibility"
-  ::nsf::method::alias ::xo::Attribute instvar ::nsf::methods::object::instvar
+  ::nsf::alias ::xo::Attribute instvar ::nsf::methods::object::instvar
 
-  # The following line would cause a dependency of an nx object to
-  # xotcl (serializer); since XOTcl depends on NX, this would be a
-  # cyclic dependency.
-  #     ::nsf::method::alias ::nx::Slot istype ::nsf::classes::xotcl::Object::istype
-  # Therefore, we just grab the body to reduce dependencies on nsf internals
-  ::nx::Slot public method istype {class}  [::nx::Object info method body ::nsf::classes::xotcl::Object::istype]
+  # the following line would cause a dependency of an nx object to xotcl (serializer)
+  #::nsf::alias ::nx::Slot istype ::nsf::classes::xotcl::Object::istype
+  ::nx::Slot public method istype {class}  {
+    return [expr {[::nsf::is class $class] && 
+		  [::nsf::dispatch [self] ::nsf::methods::object::info::hastype $class]}]
+  }
   ::nx::Slot public alias set -frame object ::set
-  ::nx::Slot public method exists {var}   {::nsf::var::exists [self] $var}
+  ::nx::Slot public method exists {var}   {::nsf::existsvar [self] $var}
   ::nx::Object public method serialize {} {::Serializer deepSerialize [self]}
   ::nx::Object method set_instance_vars_defaults {} {:configure}
   ::nx::Object public method destroy_on_cleanup {} {set ::xo::cleanup([self]) [list [self] destroy]}
-  ::nx::Object method qn {query_name} {
-    return "dbqd.[:uplevel [list current class]]-[:uplevel [list current method]].$query_name"
-  }
   ::xotcl::Object instproc set_instance_vars_defaults {} {:configure}
   ::xotcl::Object proc setExitHandler {code} {::nsf::exithandler set $code}
 
@@ -94,7 +91,6 @@ if {[info command ::nx::Object] ne ""} {
     ::nx::Object method show-object
     ::nx::Object method set_instance_vars_defaults
     ::nx::Object method destroy_on_cleanup
-    ::nx::Object method qn
     ::nx::Slot method istype
     ::nx::Slot method exists
     ::nx::Slot method set
@@ -249,7 +245,7 @@ proc ::! args {
 }
 
 ::xotcl::Object instproc qn query_name {
-  set qn "dbqd.[my uplevel [list self class]]-[my uplevel [list self proc]].$query_name"
+  set qn "dbqd.[my uplevel self class]-[my uplevel self proc].$query_name"
   return $qn
 }
 namespace eval ::xo {

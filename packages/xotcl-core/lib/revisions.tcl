@@ -3,7 +3,7 @@ ad_page_contract {
 
   @author Gustaf Neumann (gustaf.neumann@wu-wien.ac.at)
   @creation-date Oct 23, 2005
-  @cvs-id $Id: revisions.tcl,v 1.5 2006/06/20 22:56:53 gustafn Exp $
+  @cvs-id $Id$
 } {
   page_id:integer,notnull
   {name ""}

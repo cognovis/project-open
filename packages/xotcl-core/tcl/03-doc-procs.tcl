@@ -8,7 +8,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2005-05-13
-  @cvs-id $Id: 03-doc-procs.tcl,v 1.4 2007/09/17 00:48:52 gustafn Exp $
+  @cvs-id $Id$
 }
 
 # Per default, the content of the ::xotcl:: namespace is not serialized;
@@ -311,7 +311,7 @@ Class ::Test -ad_doc {
   <code>instprocs</code>, and
   <code>procs</code>.
   @author Gustaf Neumann
-  @cvs-id $Id: 03-doc-procs.tcl,v 1.4 2007/09/17 00:48:52 gustafn Exp $
+  @cvs-id $Id$
 }
 ::Test ad_proc my-class-specific-proc {x y} {
   This is a proc of Class Test merely for testing purposes...

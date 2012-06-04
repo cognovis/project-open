@@ -6,7 +6,7 @@ ad_library {
 
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @creation-date 2005-11-26
-  @cvs-id $Id: 20-Ordered-Composite-procs.tcl,v 1.20 2011/01/14 10:28:10 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {
