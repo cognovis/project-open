@@ -6,7 +6,7 @@ ad_library {
     
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2003-12-18
-    @cvs-id $Id: oacs-dav-init.tcl,v 1.3 2006/08/08 21:27:07 donb Exp $
+    @cvs-id $Id$
     
 }
 

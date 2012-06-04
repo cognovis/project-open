@@ -2,7 +2,7 @@
 <!DOCTYPE queryset PUBLIC "-//OpenACS//DTD XQL 1.0//EN" "xql.dtd">
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2003-09-14 -->
-<!-- @cvs-id $Id: oacs-dav-procs-postgresql.xql,v 1.1 2004/02/16 16:49:28 daveb Exp $ -->
+<!-- @cvs-id $Id$ -->
 <queryset>
   <rdbms><type>postgresql</type><version>7.1</version></rdbms>
 

@@ -6,7 +6,7 @@ ad_library {
     
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2003-09-11
-    @cvs-id $Id: oacs-dav-procs.tcl,v 1.16 2011/02/21 14:27:27 gustafn Exp $
+    @cvs-id $Id$
     
 }
 
@@ -273,7 +273,7 @@ ad_proc -public oacs_dav::item_parent_folder_id {
     get the folder_id of the parent of an item
     from the uri
     @param uri
-    @return parent_folder_id or empty string if folder does not exist
+    @returns parent_folder_id or empty string if folder does not exist
 } {
 
     array set sn [oacs_dav::request_site_node $uri]
@@ -494,7 +494,7 @@ ad_proc -public oacs_dav::request_site_node { uri } {
 ad_proc -public oacs_dav::request_folder_id { node_id } {
     resolves a node_id to a DAV enabled folder_id
     @param node_id site node_id of request
-    @return folder_id, or empty string if no folder exists
+    @returns folder_id, or empty string if no folder exists
     in dav_package_folder_map for this node_id
 } {
     return [db_string get_folder_id "" -default ""]
