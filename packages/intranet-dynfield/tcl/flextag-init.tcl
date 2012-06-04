@@ -2,7 +2,7 @@
 #
 # Author: Juanjo Ruiz (juanjoruizx@yahoo.es)
 #
-# $Id: flextag-init.tcl,v 1.2 2005/06/10 11:56:15 cvs Exp $
+# $Id$
 #
 
 template_tag formlabel { params } {

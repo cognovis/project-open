@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: attribute-new.tcl,v 1.21 2011/04/11 16:58:34 po34demo Exp $
+    @cvs-id $Id$
 } {
     {object_type ""}
     attribute_id:integer,optional
@@ -534,9 +534,18 @@ if {[info exists attribute_id]} {
 }
 
 
+# ------------------------------------------------------------------
+# Left Navbar
+# ------------------------------------------------------------------
 
-
-
-
-
+set left_navbar_html "
+      	<div class='filter-block'>
+        <div class='filter-title'>
+            [lang::message::lookup "" intranet-dynfield.DynField "DynField"]
+        </div>
+	<ul>
+	<li><a href=[export_vars -base "object-type" {object_type}]>'$object_type' [lang::message::lookup "" intranet-dynfield.Object_Type "Object Type"]</a>
+	</ul>
+      	</div>
+"
 

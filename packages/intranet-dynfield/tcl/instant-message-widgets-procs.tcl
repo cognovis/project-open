@@ -6,7 +6,7 @@ ad_library {
     
     @author Malte Sussdorff (<malte@openacs.de>)
     @creation-date 2007-01-14
-    @cvs-id $Id: instant-message-widgets-procs.tcl,v 1.1 2009/01/22 19:38:47 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template::util::aim {}

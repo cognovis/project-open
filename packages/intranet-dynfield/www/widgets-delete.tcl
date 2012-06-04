@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: widgets-delete.tcl,v 1.1 2005/06/09 16:08:04 cvs Exp $
+    @cvs-id $Id$
 
 } {
     widget_id:array,optional

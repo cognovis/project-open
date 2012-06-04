@@ -5,7 +5,7 @@ ad_page_contract {
     (as opposed to the OpenACS type)
 
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @cvs-id $Id: attribute-type-map.tcl,v 1.12 2011/03/03 12:55:30 po34demo Exp $
+    @cvs-id $Id$
 } {
     object_type:optional
     nomaster_p:optional
@@ -78,6 +78,15 @@ set top_scale [db_list top_dim "
 	order by
 		category_id
 "]
+
+
+# Exception for timesheet tasks: Include the project_type_id=100 (Task)
+# ToDo: Remove once tasks have their own task_type_id.
+if {"im_timesheet_task" == $object_type} {
+    lappend top_scale 100
+    append object_subtype_sql "OR category_id = 100"
+}
+
 
 # The array maps category_id into "category" - a pretty 
 # string for each column, to be used as column header

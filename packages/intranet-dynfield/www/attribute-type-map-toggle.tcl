@@ -2,7 +2,7 @@ ad_page_contract {
     Toggle attribute display mode
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @cvs-id $Id: attribute-type-map-toggle.tcl,v 1.1 2006/12/18 23:48:45 baselkb Exp $
+    @cvs-id $Id$
 } {
     acs_object_type:notnull
     attribute_name:notnull
