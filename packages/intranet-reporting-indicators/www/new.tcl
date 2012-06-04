@@ -20,13 +20,14 @@ ad_page_contract {
     { indicator_widget_bins 5 }
     { also_add_rel_to_objects {} }
     { also_add_rel_type "" }
-    {form_mode "edit"}
+    {form_mode "display"}
 }
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-reporting.New_Indicator "New Indicator"]
 set context [im_context_bar $page_title]
 set action_url "/intranet-reporting-indicators/new"
+set form_id "form"
 
 set add_reports_p [im_permission $user_id "add_reports"]
 if {!$add_reports_p} {
@@ -38,6 +39,24 @@ if {!$add_reports_p} {
     ad_script_abort
 }
 
+
+
+# ------------------------------------------------------------------
+# Delete pressed?
+# ------------------------------------------------------------------
+
+set button_pressed [template::form get_action $form_id]
+switch $button_pressed {
+    "delete" {
+	db_dml refresh "delete from im_indicator_results where result_indicator_id = :indicator_id"
+	db_string del_indicator "select im_indicator__delete(:indicator_id)"
+	ad_returnredirect $return_url
+    }
+    "refresh" {
+	db_dml refresh "delete from im_indicator_results where result_indicator_id = :indicator_id"
+	ad_returnredirect [export_vars -base "/intranet-reporting-indicators/new" {indicator_id return_url}]
+    }
+}
 
 # ---------------------------------------------------------------
 # Options
@@ -53,18 +72,20 @@ set object_type_options [linsert $object_type_options 0 {{Not related to a speci
 # ---------------------------------------------------------------
 # Setup the form
 
-set actions [list {"Edit" edit} ]
-if {[im_permission $user_id add_materials]} {
-    lappend actions {"Delete" delete}
-}
+set actions {}
+lappend actions [list [lang::message::lookup {} intranet-reporting.Edit_Indicator {Edit Indicator}] edit ]
+lappend actions [list [lang::message::lookup {} intranet-reporting.Delete_Indicator {Delete Indicator}] delete ]
+lappend actions [list [lang::message::lookup {} intranet-reporting.Delete_Result_History {Delete/Refresh Result History}] refresh ]
 
+# lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
+# ad_return_complaint 1 $actions
 
-set form_id "form"
 ad_form \
     -name $form_id \
     -cancel_url $return_url \
     -action $action_url \
     -actions $actions \
+    -has_edit 1 \
     -mode $form_mode \
     -export {return_url also_add_rel_to_objects also_add_rel_type } \
     -form {
