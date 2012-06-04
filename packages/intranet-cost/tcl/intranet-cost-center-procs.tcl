@@ -400,3 +400,11 @@ ad_proc -public im_cost_center_write_p_helper {
     " -default "f"]
 }
 
+
+ad_proc -public im_user_cost_centers { user_id } {
+    Returns the list of all cost-centes of the user
+    including sub cost-centers
+} {
+    im_security_alert_check_integer -location "im_user_cost_centers" -value $user_id
+    return [util_memoize [list db_list user_ccs "select * from im_user_cost_centers($user_id)"]]
+}
