@@ -5,7 +5,7 @@
 # Version 1.0.0
 # Released under GPL V2.0 or higher
 #
-# $Id: ProjectOpen.pm,v 1.2 2011/05/12 14:37:01 po34demo Exp $
+# $Id$
 #
 #----------------------------------------------------------------
 

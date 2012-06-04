@@ -17,6 +17,7 @@ ad_library {
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/documentation/rest_version_history
+    <li>2.1	(2012-03-18):	Added new report and now deprecating single object calls
     <li>2.0	(2011-05-12):	Added support for JSOn and Sencha format variants
 				ToDo: Always return "id" instead of "object_id"
     <li>1.5.2	(2010-12-21):	Fixed bug of not applying where_query
@@ -979,9 +980,11 @@ ad_proc -private im_rest_get_object_type {
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
+#    ad_return_complaint 1 "<pre>$sql</pre>"
+
+
     # -------------------------------------------------------
     # Loop through all objects of the specified type
-
     set obj_ctr 0
     set result ""
     db_foreach objects $sql {
@@ -1000,6 +1003,7 @@ ad_proc -private im_rest_get_object_type {
 
 	# Check permissions
 	set read_p $rest_otype_read_all_p
+
 	if {!$read_p} {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
