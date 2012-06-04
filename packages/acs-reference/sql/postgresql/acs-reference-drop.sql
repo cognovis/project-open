@@ -5,7 +5,7 @@
 -- @author jon@jongriffin.com
 -- @dropd 2001-07-16
 --
--- @cvs-id $Id: acs-reference-drop.sql,v 1.3 2003/05/17 09:55:32 jeffd Exp $
+-- @cvs-id $Id$
 --
 
 -- drop all associated tables and functions
