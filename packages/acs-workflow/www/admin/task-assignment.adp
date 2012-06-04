@@ -1,8 +1,8 @@
 <master>
-<property name="title">Assignments to be done by @transition_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Assignments_to_be_don#</property>
 <property name="context">@context;noquote@</property>
 
-The user performing the task <strong>@transition_name@</strong> will be asked to <strong>assign the following roles</strong>:
+#acs-workflow.lt_The_user_performing_t# <strong>@transition_name@</strong> #acs-workflow.will_be_asked_to# <strong>#acs-workflow.lt_assign_the_following_#</strong>:
 
 <table>
   <tr>
@@ -13,13 +13,13 @@ The user performing the task <strong>@transition_name@</strong> will be asked to
 	  <td bgcolor="#cccccc">
 	    <table width="100%" cellspacing="1" cellpadding="4" border="0">
               <tr bgcolor="#ffffe4">
-		<th>Role To Assign</th>
-                <th>Action</th>
+		<th>#acs-workflow.Role_To_Assign#</th>
+                <th>#acs-workflow.Action#</th>
               </tr>
               <if @assigned_by_this:rowcount@ eq 0>
                  <tr bgcolor="#eeeeee">
                    <td colspan="4">
-                     <em>No roles to be assigned by this task.</em>
+                     <em>#acs-workflow.lt_No_roles_to_be_assign#</em>
                    </td>
                  </tr>
               </if>
@@ -28,7 +28,7 @@ The user performing the task <strong>@transition_name@</strong> will be asked to
 		  <tr bgcolor="#eeeeee">
 		    <td>@assigned_by_this.role_name@</td>
 		    <td align="center">
-                      <small>(<a href="@assigned_by_this.delete_url@">remove</a>)</small>
+                      <small>(<a href="@assigned_by_this.delete_url@">#acs-workflow.remove#</a>)</small>
 		    </td>
 		  </tr>
 		</multiple>    
@@ -48,8 +48,7 @@ The user performing the task <strong>@transition_name@</strong> will be asked to
     <td colspan="2">
       <if @to_be_assigned_by_this:rowcount@ gt 0>
 	<form action="@assign_url@">
-	@assign_export_vars;noquote@
-	Assign this:
+	#acs-workflow.lt_assign_export_varsnoq#
 	<select name="role_key">
 	  <multiple name="to_be_assigned_by_this">
 	    <option value="@to_be_assigned_by_this.role_key@">@to_be_assigned_by_this.role_name@</option>

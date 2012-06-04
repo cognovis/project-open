@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date November 20, 2000
-    @cvs-id $Id: workflow.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull
     {tab home}
@@ -27,6 +27,7 @@ ad_page_contract {
     }
 }
 
+set user_id [ad_maybe_redirect_for_registration]
 set return_url "[ns_conn url]?[export_vars -url {workflow_key tab}]"
 
 db_1row workflow {
@@ -85,6 +86,24 @@ if { $workflow(num_cases) > 0 } {
 
 set export_process_url "export?[export_vars -url {workflow_key}]"
 
+# left navbar
+set left_navbar_html ""
+set admin_link ""
+
+if { [im_is_user_site_wide_or_intranet_admin $user_id] } {
+    set admin_link "<li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>"
+}
+
+set left_navbar_html "
+        <div class='filter-block'>
+            <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
+            <ul>
+                <li><a href='/intranet-workflow/'>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
+                $admin_link
+            </ul>
+        </div>
+        <hr/>
+"
 
 ad_return_template
 

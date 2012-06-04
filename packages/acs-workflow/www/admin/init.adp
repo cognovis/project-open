@@ -1,22 +1,18 @@
 <master>
-<property name="title">Initialize Case</property>
+<property name="title">#acs-workflow.Initialize_Case#</property>
 <property name="context">@context;noquote@</property>
 
 <blockquote><em> 
 
-Note! This page is not supposed to be part of the final UI.
+#acs-workflow.lt_Note_This_page_is_not#
 
 <p>
 
-In real life, what will happen is that every time a new ticket (in the ticket-tracker), 
-a new application (for a job applicant management application) is created, we automatically initialize 
-a business process case for that object.
+#acs-workflow.lt_In_real_life_what_wil#
 
 <p>
 
-Until we make that happen, this is the way to start a new case.  Just
-select a random object ... we just use it to tell the user what he's
-working on.
+#acs-workflow.lt_Until_we_make_that_ha#
 
 </em></blockquote>
 
@@ -25,7 +21,7 @@ working on.
 <table border=0>
 
 <!--
-<tr><th>Context</th><td>
+<tr><th>#acs-workflow.Context#</th><td>
     <select name="context_key">
         <multiple name="contexts">
 	    <option value="@contexts.context_key@" @contexts.selected@>@contexts.context_name@</option>
@@ -34,7 +30,7 @@ working on.
 </td></tr>
 -->
 
-<tr><th>Object</th><td>
+<tr><th>#acs-workflow.Object#</th><td>
     <select name="object_id">
         <multiple name="objects">
 	    <option value="@objects.object_id@">@objects.name@</option>

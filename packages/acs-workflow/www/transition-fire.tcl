@@ -5,7 +5,7 @@ ad_page_contract {
 
   @author rhs@mit.edu
   @creation-date 2000-07-25
-  @cvs-id $Id: transition-fire.tcl,v 1.2 2008/06/24 17:26:24 cvs Exp $
+  @cvs-id $Id$
 } {
   case_id:integer,notnull
   transition_key

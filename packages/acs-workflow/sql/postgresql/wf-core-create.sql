@@ -7,7 +7,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: wf-core-create.sql,v 1.3 2008/12/17 20:26:19 cvs Exp $
+-- @cvs-id $Id$
 --
 
 ----------------------------------

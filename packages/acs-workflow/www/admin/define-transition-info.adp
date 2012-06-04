@@ -8,17 +8,16 @@
               <tr>
                 <td width="25%">
                   
-                  (<a href="@transition.assignment_url@">assignment</a>)
-                  (<a href="@transition.attributes_url@">attributes</a>)
-                  (<a href="@transition.actions_url@">actions</a>)
+                  (<a href="@transition.assignment_url@">#acs-workflow.assignment#</a>)
+                  (<a href="@transition.attributes_url@">#acs-workflow.attributes#</a>)
+                  (<a href="@transition.actions_url@">#acs-workflow.actions#</a>)
                 </td>
                 <th align=center valign=middle>
-                  Task: @transition.transition_name@
-                  (<a href="@transition.edit_url@">edit</a>)
+                  #acs-workflow.Task#: @transition.transition_name;noquote@ (<a href="@transition.edit_url@">#acs-workflow.edit#</a>)
                 </th>
                 <td align="right" width="25%">
                   <if @transitions.delete_url@ not nil>
-                    (<a href="@transition.delete_url@">delete task</a>)
+                    (<a href="@transition.delete_url@">#acs-workflow.delete_task#</a>)
                   </if>
                   <else>
                     &nbsp;
@@ -29,8 +28,8 @@
           </td>
         </tr>
         <tr bgcolor=#ffffe4>
-          <th width="50%">Input Places</th>
-          <th width="50%">Output Places</th>
+          <th width="50%">#acs-workflow.Input_Places#</th>
+          <th width="50%">#acs-workflow.Output_Places#</th>
         </tr>
         <tr bgcolor=#eeeeee>
           <td valign="top">
@@ -41,7 +40,7 @@
                 </dt>
                 <dd>
                   <if @input_places.arc_delete_url@ not nil>
-                    (<a href="@input_places.arc_delete_url@">delete arc</a>)
+                    (<a href="@input_places.arc_delete_url@">#acs-workflow.delete_arc#</a>)
                   </if>
                 </dd>
               </multiple>
@@ -56,14 +55,14 @@
                 </dt>
                 <dd>
                   <if @output_places.guard_pretty@ not nil>
-                    (<a href="@output_places.guard_edit_url@">edit guard</a>)
-                    (<a href="@output_places.guard_delete_url@">delete guard</a>)
+                    (<a href="@output_places.guard_edit_url@">#acs-workflow.edit_guard#</a>)
+                    (<a href="@output_places.guard_delete_url@">#acs-workflow.delete_guard#</a>)
                   </if>
                   <else>
-                    (<a href="@output_places.guard_add_url@">add guard</a>)
+                    (<a href="@output_places.guard_add_url@">#acs-workflow.add_guard#</a>)
                   </else>
                   <if @output_places.arc_delete_url@ not nil>
-                    (<a href="@output_places.arc_delete_url@">delete arc</a>)
+                    (<a href="@output_places.arc_delete_url@">#acs-workflow.delete_arc#</a>)
                   </if>
                 </dd>
               </multiple>
@@ -75,10 +74,10 @@
           <td align=center>
             &nbsp;
             <if @transition.arc_add_url@ not nil>
-              (<a href="@transition.arc_add_url@">add arc</a>)
+              (<a href="@transition.arc_add_url@">#acs-workflow.add_arc#</a>)
             </if>
             <if @transition.arc_delete_url@ not nil>
-              (<a href="@transition.arc_delete_url@">delete arc</a>)
+              (<a href="@transition.arc_delete_url@">#acs-workflow.delete_arc#</a>)
             </if>
             &nbsp;
           </th>
@@ -88,4 +87,5 @@
   </tr>
 </table>
             
+
 

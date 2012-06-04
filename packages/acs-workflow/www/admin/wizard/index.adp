@@ -1,27 +1,21 @@
 <master>
-<property name="focus">workflow.workflow_name</property>
+<property name="focus">#acs-workflow.lt_workflowworkflow_name#</property>
 <property name="context">@context;noquote@</property>
-<property name="title">Simple Process Wizard</property>
+<property name="title">#acs-workflow.lt_Simple_Process_Wizard_1#</property>
 
 <include src="progress-bar" num_completed="0">
 
 <p>
 
-This wizard will help you quickly define a simple business
-process. You can add a number of <b>tasks</b> to be executed in sequence, and
-you can add <b>loops</b> that go back to a previous task. Finally, you can
-set up the <b>assignment</b> rules.
+#acs-workflow.lt_This_wizard_will_help# <b>#acs-workflow.tasks#</b> #acs-workflow.lt_to_be_executed_in_seq# <b>#acs-workflow.loops#</b> #acs-workflow.lt_that_go_back_to_a_pre# <b>#acs-workflow.assignment#</b> #acs-workflow.rules#
 
 <p>
 
-If you want to create more advanced processes, you can either start
-here and add flexibility later using the <b>Advanced Process Builder</b>, or
-you can start with the Advanced Process Builder right away.
+#acs-workflow.lt_If_you_want_to_create# <b>#acs-workflow.lt_Advanced_Process_Buil#</b>#acs-workflow.lt__oryou_can_start_with#
 
 <p>
 
-The first step is to give a <b>name</b> and an <b>optional description</b> to your
-business process.
+#acs-workflow.lt_The_first_step_is_to_# <b>#acs-workflow.name#</b> #acs-workflow.and_an# <b>#acs-workflow.optional_description#</b> #acs-workflow.lt_to_yourbusiness_proce#
 
 <p>
 
@@ -29,12 +23,12 @@ business process.
 
 <table border=0>
 <tr>
-  <th align=right>Process Name:</th>
+  <th align=right>#acs-workflow.Process_Name_1#</th>
   <td><input maxlength=100 size=40 type=text name="workflow_name"
   value="@workflow_name@"></td>
 </tr>
 <tr>
-  <th valign=top align=right>Description:</th>
+  <th valign=top align=right>#acs-workflow.Description_1#</th>
   <td><textarea cols=60 rows=8 name=description>@description@</textarea></td>
 </tr>
 </table>

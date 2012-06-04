@@ -39,7 +39,7 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
         <form action="@task.action_url@" method="post">
 	@export_form_vars;noquote@
 	<table>
-	<tr><th align="right">Action:</th>
+	<tr><th align="right">#acs-workflow.Action_1#</th>
 	<td><input type="submit" name="action.start" value="Start task" /></td>
 	</tr>
 	</table>
@@ -84,10 +84,10 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
     <if @task.deadline_pretty@ not nil>
         <p>
         <if @task.days_till_deadline@ lt 1>
-            <font color="red"><strong>Deadline is @task.deadline_pretty@</strong></font>
+            <font color="red"><strong>#acs-workflow.lt_Deadline_is_taskdeadl#</strong></font>
 	</if>
         <else>
-            Deadline is @task.deadline_pretty@
+            #acs-workflow.lt_Deadline_is_taskdeadl#
         </else>
     </if>
 </if>
@@ -101,7 +101,7 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
         
             <multiple name="task_roles_to_assign">
                 <tr>
-                    <th align="right">Assign @task_roles_to_assign.role_name@</th>
+                    <th align="right">#acs-workflow.lt_Assign_task_roles_to_#</th>
                     <td>@task_roles_to_assign.assignment_widget;noquote@</td>
                 </tr>
             </multiple>
@@ -114,14 +114,14 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
              </multiple>
     
              <tr>
-                 <th align="right">Comment<br></th>
+                 <th align="right">#acs-workflow.Comment#<br></th>
                  <td><textarea name="msg" cols=20 rows=4></textarea></td>
              </tr>
     
              <tr>
-                 <th align="right">Action</th>
+                 <th align="right">#acs-workflow.Action#</th>
                  <td>
-                     <input type="submit" name="action.finish" value="Task done" />
+                     <input type="submit" name="action.finish" value="#acs-workflow.Task_done#" />
                  </td>
              </tr>
 
@@ -130,61 +130,62 @@ set reassign_p [im_permission $user_id wf_reassign_tasks]
 
         <table>
         <tr>
-        <th>Started</th>
+        <th>#acs-workflow.Started#</th>
         <td>@task.started_date_pretty@
 	&nbsp; &nbsp; </td>
         </tr>
 
         <if @task.hold_timeout_pretty@ not nil>
-            <tr><th>Timeout</th><td>@task.hold_timeout_pretty@</td></tr>
+            <tr><th>#acs-workflow.Timeout#</th><td>@task.hold_timeout_pretty@</td></tr>
         </if>
 
 	<if @task.deadline_pretty@ not nil>
-	    <tr><th>Deadline</th><td>
+	    <tr><th>#acs-workflow.Deadline#</th><td>
 	    <if @task.days_till_deadline@ lt 1>
-		<font color="red"><strong>Deadline is @task.deadline_pretty@</strong></font>
+		<font color="red"><strong>#acs-workflow.lt_Deadline_is_taskdeadl#</strong></font>
 	    </if>
 	    <else>
-		Deadline is @task.deadline_pretty@
+		#acs-workflow.lt_Deadline_is_taskdeadl#
 	    </else>
             </td></tr>
 	</if>
 
         <tr>
-	<td colspan="2"><!--<ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul>--></td>
+	<td colspan="2"><ul class="admin_links"><li><a href="@task.cancel_url@">#acs-workflow.cancel_task#</a></li></ul></td>
         </tr>
 
         </table>
     </if>
     <else>
         <table>
-            <tr><th>Held by</th><td><a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a></td></tr>
-            <tr><th>Since</th><td>@task.started_date_pretty@</td></tr>
-            <tr><th>Timeout</th><td>@task.hold_timeout_pretty@</td></tr>
+            <tr><th>#acs-workflow.Held_by#</th><td><a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a></td></tr>
+            <tr><th>#acs-workflow.Since#</th><td>@task.started_date_pretty@</td></tr>
+            <tr><th>#acs-workflow.Timeout#</th><td>@task.hold_timeout_pretty@</td></tr>
         </table>
     </else>
 </if>
 
 <if @task.state@ eq finished>
     <if @task.this_user_is_assigned_p@ eq 1>
-        You finished this task on @task.finished_date_pretty@.
+        #acs-workflow.lt_You_finished_this_tas#
 	<p>
-	<a href="@return_url@">Go back</a>
+	<a href="@return_url@">#acs-workflow.Go_back#</a>
     </if>
     <else>
-        This task was completed by <a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a>
-        at @task.finished_date_pretty@
+        #acs-workflow.lt_This_task_was_complet# <a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a>
+        #acs-workflow.lt_at_taskfinished_date_#
     </else>
 </if>
 
 <if @task.state@ eq canceled>
     <if @task.this_user_is_assigned_p@ eq 1>
-        You canceled this task on @task.canceled_date_pretty@.
+        #acs-workflow.lt_You_canceled_this_tas#
         <p>
-        <a href="@return_url@">Go back</a>
+        <a href="@return_url@">#acs-workflow.Go_back#</a>
     </if>
     <else>
-        This task has been canceled by <a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a>
-        on @task.canceled_date_pretty@
+        #acs-workflow.lt_This_task_has_been_ca# <a href="/shared/community-member?user_id=@task.holding_user@">@task.holding_user_name@</a>
+        #acs-workflow.lt_on_taskcanceled_date_#
     </else>
 </if>
+

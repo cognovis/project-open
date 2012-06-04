@@ -1,7 +1,7 @@
 # packages/acs-workflow/www/admin/workflow-display.tcl
 # @author Lars Pind (lars@pinds.com)
 # @creation-date November 21, 2000
-# @cvs-id $Id: workflow-display.tcl,v 1.3 2011/01/27 13:38:29 kpmg Exp $
+# @cvs-id $Id$
 #
 # Expects
 #     workflow:onerow (the representation of the workflow net)
@@ -18,8 +18,7 @@
 
 switch $format {
     graph {
-	set dot_text [wf_generate_dot_representation workflow]
-
+	set dot_text [lang::util::localize [wf_generate_dot_representation workflow]]
 	set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
 	
 	set width_and_height ""

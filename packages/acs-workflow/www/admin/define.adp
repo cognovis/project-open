@@ -1,9 +1,7 @@
 <master>
-<property name="title">@workflow.pretty_name;noquote@ - Process Builder</property>
+<property name="title">#acs-workflow.lt_workflowpretty_nameno#</property>
 <property name="context">@context;noquote@</property>
-
-
-
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <form action="workflow">
 <input type="hidden" name="workflow_key" value="@workflow_key@">
@@ -21,14 +19,14 @@
 <table width="100%">
 <tr>
 <td>
-    Edit: 
+    #acs-workflow.Edit# 
     <multiple name="edit_links">
         (<a href="@edit_links.url@">@edit_links.title@</a>)
     </multiple>
 </td>
 
 <td align=right>
-    Display: [
+    #acs-workflow.Display_#
     <multiple name="format_links">
         <if @format_links.rownum@ ne 1>|</if>
         <if @format_links.selected_p@ eq 1>
@@ -54,7 +52,7 @@
 </if>
 
 <if @instructions@ not nil>
-    <center><font color=red><b>@instructions@</b></font> (<a href="@cancel_url@">cancel</a>)</center><p>
+    <center><font color=red><b>@instructions@</b></font> (<a href="@cancel_url@">#acs-workflow.cancel#</a>)</center><p>
 </if>
 
 
@@ -71,3 +69,4 @@
 <p>
 
 </master>
+

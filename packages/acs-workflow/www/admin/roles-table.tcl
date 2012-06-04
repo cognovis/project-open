@@ -13,7 +13,7 @@
 #
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 26, 2001
-# Cvs-id: $Id: roles-table.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+# Cvs-id: $Id$
 
 if { ![info exists context_key] } {
     set context_key "default"

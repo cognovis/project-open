@@ -7,7 +7,7 @@
 # Data sources:
 #   finished_tasks
 #
-# cvs-id: $Id: finished-tasks.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+# cvs-id: $Id$
 # Creation date: Feb 21, 2001
 # Author: Lars Pind (lars@pinds.com)
 #

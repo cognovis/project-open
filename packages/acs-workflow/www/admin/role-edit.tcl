@@ -4,7 +4,7 @@ ad_page_contract {
 
      @author Lars Pind (lars@pinds.com)
      @creation-date Feb 27, 2001
-     @cvs-id $Id: role-edit.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+     @cvs-id $Id$
 } {
     workflow_key:notnull
     role_key:notnull

@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Jesse Koontz (jkoontz@arsdigita.com)
     @creation-date 11 January 2001
-    @cvs-id $Id: case-deadlines.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+    @cvs-id $Id$
 } {
     case_id:integer,notnull
 } -properties {

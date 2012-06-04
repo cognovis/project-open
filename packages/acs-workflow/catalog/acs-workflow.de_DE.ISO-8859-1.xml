@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-workflow" package_version="4.5.3" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="acs-workflow" locale="de_DE" charset="ISO-8859-1">
 
+  <msg key="actions">Aktionen</msg>
   <msg key="As_part_of">Part of</msg>
+  <msg key="assignment">Zuweisung</msg>
+  <msg key="attributes">Attribute</msg>
+  <msg key="delete_arc">Bogen löschen</msg>
+  <msg key="Display_">Anzeigen: [</msg>
+  <msg key="Edit">Ändern</msg>
+  <msg key="edit">editieren</msg>
+  <msg key="Input_Places">Eingangsort</msg>
   <msg key="On_what">auf was?</msg>
+  <msg key="Output_Places">Ausgangsorte</msg>
+  <msg key="Task">Aufgabe</msg>
   <msg key="To_Do">To Do</msg>
 </message_catalog>

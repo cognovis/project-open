@@ -1,5 +1,5 @@
 <master>
-<property name="title">Panels for @transition_name;noquote@</property>
+<property name="title">#acs-workflow.lt_Panels_for_transition#</property>
 <property name="context">@context;noquote@</property>
 
 <!--
@@ -10,7 +10,7 @@ Context: [
     <else><a href="@context_slider.url@">@context_slider.title@</a></else>
   </multiple>
 ]
-(<a href="@context_add_url@">create new context</a>)
+(<a href="@context_add_url@">#acs-workflow.create_new_context#</a>)
 -->
 
 <p>
@@ -24,15 +24,15 @@ Context: [
 	  <td bgcolor="#cccccc">
 	    <table width="100%" cellspacing=1 cellpadding=4 border="0">
               <tr bgcolor="#ffffe4">
-		<th>No.</th>
-		<th>Header</th>
-		<th>URL</th>
-                <th>Action</th>
+		<th>#acs-workflow.No#</th>
+		<th>#acs-workflow.Header#</th>
+		<th>#acs-workflow.URL#</th>
+                <th>#acs-workflow.Action#</th>
               </tr>
               <if @panels:rowcount@ eq 0>
                  <tr bgcolor="#eeeeee">
                    <td colspan="4">
-                     <em>No panels</em>
+                     <em>#acs-workflow.No_panels#</em>
                    </td>
                  </tr>
               </if>
@@ -44,13 +44,13 @@ Context: [
 		    <td><code>@panels.template_url@</code></td>
 		    <td>
 		      <if @panels.edit_url@ not nil>
-			(<a href="@panels.edit_url@">edit</a>)
+			(<a href="@panels.edit_url@">#acs-workflow.edit#</a>)
 		      </if>
 		      <if @panels.delete_url@ not nil>
-			(<a href="@panels.delete_url@">delete</a>)
+			(<a href="@panels.delete_url@">#acs-workflow.delete#</a>)
 		      </if>
 		      <if @panels.move_up_url@ not nil>
-			(<a href="@panels.move_up_url@">move up</a>)
+			(<a href="@panels.move_up_url@">#acs-workflow.move_up#</a>)
 		      </if>
 		    </td>
 		  </tr>
@@ -68,7 +68,7 @@ Context: [
 
   <tr>
     <td>&nbsp;</td>
-    <td colspan="2">(<a href="@panel_add_url@">add panel</a>)</td>
+    <td colspan="2">(<a href="@panel_add_url@">#acs-workflow.add_panel#</a>)</td>
   </tr>
 
   <tr><td colspan=3>&nbsp;</td></tr>
@@ -85,3 +85,4 @@ Context: [
 </table>
 
 </master>
+

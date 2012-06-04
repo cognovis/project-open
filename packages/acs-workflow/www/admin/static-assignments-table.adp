@@ -1,6 +1,6 @@
 <if @roles:rowcount@ eq 0>
   <blockquote>
-    <em>No roles defined</em>
+    <em>#acs-workflow.No_roles_defined#</em>
   </blockquote>
 </if>
 <else>
@@ -9,9 +9,9 @@
       <td bgcolor="#cccccc">
 	<table cellspacing="1" cellpadding="4" border="0">
 	  <tr valign=middle bgcolor="#ffffe4">
-            <th>Role</th>
-            <th>Assignments</th>
-            <th>Action</th>
+            <th>#acs-workflow.Role#</th>
+            <th>#acs-workflow.Assignments#</th>
+            <th>#acs-workflow.Action#</th>
 	  </tr>
    
 	  <multiple name="roles">
@@ -25,11 +25,11 @@
 		      <if @roles.party_email@ not nil>
 			(<a href="mailto:@roles.party_email@">@roles.party_email@</a>)
 		      </if>
-		      (<a href="@roles.remove_url@">remove</a>)
+		      (<a href="@roles.remove_url@">#acs-workflow.remove#</a>)
 		    </li>
                   </if>
                   <else>
-                    <em>Unassigned</em>
+                    <em>#acs-workflow.Unassigned#</em>
                   </else>
                 </group>
 	      </td>
@@ -52,6 +52,7 @@
     </tr>
   </table>
 </else>
+
 
 
 

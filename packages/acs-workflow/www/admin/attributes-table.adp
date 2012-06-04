@@ -1,6 +1,6 @@
 <if @attributes:rowcount@ eq 0>
   <blockquote>
-    <em>No attributes defined</em>
+    <em>#acs-workflow.lt_No_attributes_defined#</em>
   </blockquote>
 </if>
 <else>
@@ -9,16 +9,16 @@
       <td bgcolor="#cccccc">
 	<table width="100%" cellspacing="1" cellpadding="4" border="0">
 	  <tr bgcolor="#ffffe4">
-	    <th>No.</th>
-	    <th>Attribute name</th>
-	    <th>Datatype</th>
-	    <th>Used</th>
-	    <th>Action</th>
+	    <th>#acs-workflow.No#</th>
+	    <th>#acs-workflow.Attribute_name#</th>
+	    <th>#acs-workflow.Datatype#</th>
+	    <th>#acs-workflow.Used#</th>
+	    <th>#acs-workflow.Action#</th>
 	  </tr>
 	  <if @attributes:rowcount@ eq 0>
 	     <tr bgcolor="#eeeeee">
 	       <td colspan="4">
-		 <em>No attributes</em>
+		 <em>#acs-workflow.No_attributes#</em>
 	       </td>
 	     </tr>
 	  </if>
@@ -29,15 +29,15 @@
 		<td>@attributes.pretty_name@</td>
 		<td>@attributes.datatype@</td>
 		<td>
-		  <if @attributes.used_p@ eq 1>Yes</if>
-		  <else>No</else>
+		  <if @attributes.used_p@ eq 1>#acs-workflow.Yes#</if>
+		  <else>#acs-workflow.No_1#</else>
 		</td>
 		<td>
 		  <if @attributes.edit_url@ not nil>
-		    (<a href="@attributes.edit_url@">edit</a>)
+		    (<a href="@attributes.edit_url@">#acs-workflow.edit#</a>)
 		  </if>
 		  <if @attributes.delete_url@ not nil>
-		    (<a href="@attributes.delete_url@">delete</a>)
+		    (<a href="@attributes.delete_url@">#acs-workflow.delete#</a>)
 		  </if>
 		</td>
 	      </tr>
@@ -49,4 +49,5 @@
   </table>
 </else>
 
-(<a href="@add_url@">add attribute</a>)
+(<a href="@add_url@">#acs-workflow.add_attribute#</a>)
+

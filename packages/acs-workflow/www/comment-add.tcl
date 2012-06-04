@@ -1,7 +1,7 @@
 ad_page_contract {
     Add a comment to the journal for a case.
     
-    @cvs-id $Id: comment-add.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+    @cvs-id $Id$
 } {
     case_id:integer
     return_url:optional

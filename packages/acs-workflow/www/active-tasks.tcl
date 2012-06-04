@@ -8,7 +8,7 @@
 # Data sources:
 #   active_tasks
 #
-# cvs-id: $Id: active-tasks.tcl,v 1.2 2007/02/09 15:38:21 baselkb Exp $
+# cvs-id: $Id$
 # Creation date: Feb 21, 2001
 # Author: Lars Pind (lars@pinds.com)
 #

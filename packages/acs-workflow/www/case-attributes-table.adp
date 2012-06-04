@@ -3,9 +3,9 @@
     <td bgcolor="#cccccc">
       <table width="100%" cellspacing="1" cellpadding="4" border="0">
         <tr valign="middle" bgcolor="#ffffe4">
-          <th>Attribute</th>
-          <th>Current Value</th>
-<!--          <th>Action</th> -->
+          <th>#acs-workflow.Attribute#</th>
+          <th>#acs-workflow.Current_Value#</th>
+<!--          <th>#acs-workflow.Action#</th> -->
         </tr>
         <multiple name="attributes">
           <tr bgcolor="#eeeeee">
@@ -14,7 +14,7 @@
 <!-- 
             <td align="center">
               <if @attributes.edit_url@ not nil>
-                (<a href="@attributes.edit_url@">edit</a>)
+                (<a href="@attributes.edit_url@">#acs-workflow.edit#</a>)
               </if>
             </td>
 -->
@@ -24,5 +24,6 @@
     </td>
   </tr>
 </table>
+
 
 
