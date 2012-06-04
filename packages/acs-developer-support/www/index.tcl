@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author  jsalz@mit.edu
     @creation-date        22 June 2000
-    @cvs-id $Id: index.tcl,v 1.18 2010/01/09 01:56:09 donb Exp $
+    @cvs-id $Id$
 } {
     {request_limit:integer 25}
 }

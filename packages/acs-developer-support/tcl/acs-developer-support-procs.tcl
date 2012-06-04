@@ -1,4 +1,4 @@
- # $Id: acs-developer-support-procs.tcl,v 1.51 2010/01/22 17:05:20 daveb Exp $
+ # $Id$
  # File:        developer-support-procs.tcl
  # Author:      Jon Salz <jsalz@mit.edu>
  # Date:        22 Apr 2000
@@ -174,7 +174,8 @@
      @return A link to the first instance of the developer-support information available in the site node, \
              the empty_string if none are available.
  } {
-     return "[ad_url][apm_package_url_from_key "acs-developer-support"]"
+     # fraber 101112: Relative URL is easier to maintain...
+     return "[apm_package_url_from_key "acs-developer-support"]"
  }
 
  ad_proc ds_link {} { 

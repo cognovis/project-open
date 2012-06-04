@@ -1,4 +1,4 @@
-# $Id: request-info.tcl,v 1.18 2010/12/06 15:18:01 jeffd Exp $
+# $Id$
 # File:        request-info.tcl
 # Author:      Jon Salz <jsalz@mit.edu>
 # Description: Displays information about a page request.

@@ -4,7 +4,7 @@ ad_page_contract {
     @author Lars Pind (lars@pinds.com)
     @author Jeff Davis <davis@xarg.net>
     @creation-date 2003-10-28
-    @cvs-id $Id: set.tcl,v 1.2 2010/01/09 01:56:09 donb Exp $
+    @cvs-id $Id$
 } {
     field 
     enabled_p

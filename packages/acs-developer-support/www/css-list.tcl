@@ -6,7 +6,7 @@ ad_page_contract {
     
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2007-09-29
-    @cvs-id $Id: css-list.tcl,v 1.2 2010/12/05 13:45:21 jeffd Exp $
+    @cvs-id $Id$
 } {
     {return_url ""}
     {css_list}
