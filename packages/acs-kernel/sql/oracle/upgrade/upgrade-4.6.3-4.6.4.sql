@@ -1,6 +1,6 @@
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @creation-date 2003-05-28
--- @cvs-id $Id: upgrade-4.6.3-4.6.4.sql,v 1.2 2003/08/28 09:41:38 lars Exp $
+-- @cvs-id $Id: upgrade-4.6.3-4.6.4.sql,v 1.2 2010/10/19 20:11:36 po34demo Exp $
 --
 
 
