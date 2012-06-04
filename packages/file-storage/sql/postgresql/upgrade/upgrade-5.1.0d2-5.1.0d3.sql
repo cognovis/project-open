@@ -2,7 +2,7 @@
 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-05-09
--- @cvs-id $Id: upgrade-5.1.0d2-5.1.0d3.sql,v 1.3 2005/05/26 08:28:45 maltes Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function file_storage__delete_folder(

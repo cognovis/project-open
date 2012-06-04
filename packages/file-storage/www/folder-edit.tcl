@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Andrew Grumet (aegrumet@alum.mit.edu)
     @creation-date 24 Jun 2002
-    @cvs-id $Id: folder-edit.tcl,v 1.4 2007/06/15 17:40:29 matthewg Exp $
+    @cvs-id $Id$
 } {
     folder_id:integer,notnull
 } -validate {

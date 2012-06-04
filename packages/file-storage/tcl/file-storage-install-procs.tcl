@@ -4,7 +4,7 @@ ad_library {
     
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2003-11-09
-    @cvs-id $Id: file-storage-install-procs.tcl,v 1.13 2009/12/05 02:08:14 donb Exp $
+    @cvs-id $Id$
     
 }
 

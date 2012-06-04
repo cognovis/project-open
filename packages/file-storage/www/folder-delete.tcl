@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 10 November 2000
-    @cvs-id $Id: folder-delete.tcl,v 1.10 2005/05/26 08:28:46 maltes Exp $
+    @cvs-id $Id$
 } {
     folder_id:integer,notnull
     {confirmed_p "f"}

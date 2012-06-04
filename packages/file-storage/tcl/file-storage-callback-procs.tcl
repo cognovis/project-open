@@ -7,7 +7,7 @@ ad_library {
     @author Malte Sussdorff (sussdorff@sussdorff.de)
     @creation-date 2005-06-15
     @arch-tag: 921a2c2a-5593-495b-9a60-9d815d80a39d
-    @cvs-id $Id: file-storage-callback-procs.tcl,v 1.10 2011/01/10 23:28:43 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval fs::folder_chunk {}
@@ -112,7 +112,7 @@ ad_proc -public -callback search::url -impl file_storage_object {
 ad_proc -public -callback datamanager::copy_folder -impl datamanager {
      -object_id:required
      -selected_community:required
-     {-mode "both"}
+     {-mode: "both"}
 } {
     Copy a folder to another class or community
 } {

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Ben Adida (ben@openforce.net)
     @creation-date 01 April 2002
-    @cvs-id $Id: url-goto.tcl,v 1.6 2005/05/26 08:28:46 maltes Exp $
+    @cvs-id $Id$
 } {
     url_id:notnull
 } 

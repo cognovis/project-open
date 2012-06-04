@@ -2,7 +2,7 @@
 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-05-16
--- @cvs-id $Id: upgrade-5.1.0d3-5.1.0d4.sql,v 1.5 2005/05/26 08:28:45 maltes Exp $
+-- @cvs-id $Id$
 --
 
 

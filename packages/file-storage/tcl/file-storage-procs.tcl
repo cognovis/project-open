@@ -2,7 +2,7 @@ ad_library {
     TCL library for the file-storage system (v.4)
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 November 2000
-    @cvs-id $Id: file-storage-procs.tcl,v 1.67 2009/12/05 02:08:14 donb Exp $
+    @cvs-id $Id$
 }
  
 ad_proc fs_get_root_folder {

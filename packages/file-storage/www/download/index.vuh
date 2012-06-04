@@ -7,7 +7,7 @@ ad_page_contract {
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @author Don Baccus (simplified it by using cr utility)
     @creation-date 18 December 2000
-    @cvs-id $Id: index.vuh,v 1.10 2008/11/09 23:29:26 donb Exp $
+    @cvs-id $Id$
 } {
     file_id:integer,optional
     version_id:integer,optional

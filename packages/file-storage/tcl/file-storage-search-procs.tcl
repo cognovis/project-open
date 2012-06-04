@@ -4,7 +4,7 @@ ad_library {
 
     @author Jowell S. Sabino (jowellsabino@netscape.net)
     @creation-date 2001-12-18
-    @cvs-id $Id: file-storage-search-procs.tcl,v 1.5 2005/05/26 08:28:45 maltes Exp $
+    @cvs-id $Id$
 }
 
 ad_proc fs__datasource {

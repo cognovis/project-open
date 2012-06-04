@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 14 Nov 2000
-    @cvs-id $Id: search.tcl,v 1.4 2005/05/26 08:28:46 maltes Exp $
+    @cvs-id $Id$
 } {
     query:trim,notnull
 } -properties {

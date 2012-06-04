@@ -2,7 +2,7 @@
 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-02-14
--- @cvs-id $Id: upgrade-5.1.0d1-5.1.0d2.sql,v 1.5 2006/08/08 21:26:48 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- new script replaces this one.

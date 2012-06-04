@@ -4,7 +4,7 @@
 -- @author Malte Sussdorff (sussdorff@sussdorff.de)
 -- @creation-date 2005-08-25
 -- @arch-tag: 8a2322db-a227-4ea7-bafc-a42164675c1b
--- @cvs-id $Id: upgrade-5.2.0d5-5.2.0d6.sql,v 1.2 2006/08/08 21:26:48 donb Exp $
+-- @cvs-id $Id$
 --
 
 drop view fs_objects;

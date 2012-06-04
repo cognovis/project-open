@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: simple-add-2.tcl,v 1.8 2009/02/13 22:13:06 jeffd Exp $
+    @cvs-id $Id$
 } {
     folder_id:integer,notnull
     title:notnull,trim

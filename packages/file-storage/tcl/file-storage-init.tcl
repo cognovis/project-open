@@ -4,7 +4,7 @@ ad_library {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 November 2000
-    @cvs-id $Id: file-storage-init.tcl,v 1.7 2005/05/26 08:28:45 maltes Exp $
+    @cvs-id $Id$
 }
 
 # unused after mount callback handles this now

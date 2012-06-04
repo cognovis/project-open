@@ -3,7 +3,7 @@
 ad_page_contract {
     @author yon (yon@openforce.net)
     @creation-date Feb 22, 2002
-    @cvs-id $Id: folder-chunk.tcl,v 1.48 2009/06/09 12:37:14 emmar Exp $
+    @cvs-id $Id$
 } -query {
     {orderby:optional}
 } -properties {

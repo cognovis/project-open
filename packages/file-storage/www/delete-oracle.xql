@@ -4,7 +4,7 @@
 
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2004-05-10 -->
-<!-- @cvs-id $Id: delete-oracle.xql,v 1.5 2008/12/09 09:02:31 gustafn Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   
