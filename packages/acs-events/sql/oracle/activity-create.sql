@@ -2,7 +2,7 @@
 --
 -- @author W. Scott Meeks
 -- @author Gary Jin (gjin@arsdigita.com)
--- $Id: activity-create.sql,v 1.6 2004/03/12 18:48:48 jeffd Exp $
+-- $Id$
 --
 -- The activity object
 

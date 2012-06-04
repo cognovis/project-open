@@ -2,7 +2,7 @@
 --
 -- @author smeeks@arsdigita.com
 -- @creation-date 2000-11-16
--- @cvs-id $Id: acs-events-create.sql,v 1.18 2010/11/08 13:10:35 victorg Exp $
+-- @cvs-id $Id$
 
 -- Create the objects and packages for the ACS Events service
 
@@ -11,6 +11,9 @@
 \i timespan-create.sql
 \i recurrence-create.sql
 
+-- Sequence for event tables that are not subclasses of acs_object
+create sequence acs_events_sequence start 1;
+create view acs_events_seq as select nextval('acs_events_sequence') as nextval from dual;
 
 create or replace function inline_0 ()
 returns integer as '

@@ -2,7 +2,7 @@
 --
 -- @author smeeks@arsdigita.com
 -- @creation-date 2000-11-16
--- @cvs-id $Id: upgrade-0.3d-0.4d.sql,v 1.2 2006/08/08 21:26:13 donb Exp $
+-- @cvs-id $Id$
 
 create or replace package acs_event
 as 
@@ -239,7 +239,7 @@ show errors
 --
 -- @author W. Scott Meeks
 -- @author Gary Jin (gjin@arsdigita.com)
--- $Id: upgrade-0.3d-0.4d.sql,v 1.2 2006/08/08 21:26:13 donb Exp $
+-- $Id$
 --
 -- The activity object
 
@@ -335,7 +335,7 @@ show errors
 --
 -- Support for temporal recurrences
 --
--- $Id: upgrade-0.3d-0.4d.sql,v 1.2 2006/08/08 21:26:13 donb Exp $
+-- $Id$
 
 -- These columns describe how an event recurs.  The are modeled on the Palm DateBook.
 -- The interval_type 'custom' indicates that the PL/SQL function referenced in

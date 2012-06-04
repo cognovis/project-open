@@ -5,7 +5,7 @@
 -- @author jowell@jsabino.com
 -- @creation-date 2001-06-26
 --
--- $Id: oracle-compat-create.sql,v 1.4 2003/05/17 09:46:57 jeffd Exp $
+-- $Id$
 
 create function dow_to_int (
        --

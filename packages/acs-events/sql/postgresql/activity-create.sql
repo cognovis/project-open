@@ -5,7 +5,7 @@
 --
 -- @ported 2001-06-26
 --
--- $Id: activity-create.sql,v 1.6 2004/03/12 18:48:48 jeffd Exp $
+-- $Id$
 
 create function inline_0 ()
 returns integer as '

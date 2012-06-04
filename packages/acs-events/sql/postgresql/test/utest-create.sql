@@ -7,7 +7,7 @@
 --
 -- @creation-date 2001-06-26
 --
--- $Id: utest-create.sql,v 1.2 2003/05/17 09:47:26 jeffd Exp $
+-- $Id$
 
 -- /* 
 -- GNU General Public License for utPLSQL

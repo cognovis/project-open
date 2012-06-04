@@ -1,6 +1,6 @@
 -- packages/acs-events/sql/timespan-drop.sql
 --
--- $Id: timespan-drop.sql,v 1.1 2001/07/13 02:00:30 jowells Exp $
+-- $Id$
 
 drop package timespan;
 drop index 	 timespans_idx;

@@ -5,10 +5,10 @@
 -- @author smeeks@arsdigita.com
 -- @creation-date 2000-11-16
 --
--- $Id: timespan-create.sql,v 1.5 2010/11/08 13:10:35 victorg Exp $
+-- $Id$
 
 create sequence timespan_sequence start  1;
--- create view timespan_seq as select nextval('timespan_sequence') as nextval from dual;
+create view timespan_seq as select nextval('timespan_sequence') as nextval from dual;
 
 -- Table for storing time intervals.  Note that time intervals can be open on 
 -- either end.  This is represented by a null value for start_date or end_date.
@@ -70,7 +70,7 @@ declare
        new__end_date    alias for $2; -- default null
        v_interval_id     time_intervals.interval_id%TYPE;
 begin
-       select nextval(''timespan_sequence'') into v_interval_id from dual;
+       select timespan_seq.nextval into v_interval_id from dual;
 
        insert into time_intervals 
             (interval_id, start_date, end_date)
@@ -635,7 +635,7 @@ declare
         v_interval_id           time_intervals.interval_id%TYPE;
 begin
         -- get a new id;
-        select nextval(''timespan_sequence'') into v_timespan_id from dual;
+        select timespan_seq.nextval into v_timespan_id from dual;
 
         if new__copy_p
         then      
