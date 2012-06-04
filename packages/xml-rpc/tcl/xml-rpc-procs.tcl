@@ -15,8 +15,12 @@ ad_library {
 
     @author Vinod Kurup [vinod@kurup.com]
     @creation-date 2003-09-30
-    @cvs-id $Id: xml-rpc-procs.tcl,v 1.6 2008/04/10 15:29:34 gustafn Exp $
+    @cvs-id $Id$
 }
+
+
+namespace eval xmlrpc-rest {}
+
 
 # setup nsv array to hold procs that are registered for xml-rpc access
 nsv_array set xmlrpc_procs [list]
@@ -58,7 +62,7 @@ ad_proc -private xmlrpc::get_content {} {
     # ns_openexcl can fail, since tmpnam is known not to
     # be thread/process safe.  Hence spin till success
     set fp ""
-    while {$fp eq ""} {
+    while {$fp == ""} {
         set filename "[ns_tmpnam][clock clicks -milliseconds].xmlrpc2"
         set fp [ns_openexcl $filename]
     }
@@ -555,7 +559,7 @@ ad_proc -private xmlrpc::httppost {
     # follow 302
     if {$status == 302} {
         set location [ns_set iget $headers location]
-        if {$location ne ""} {
+        if {$location != ""} {
             ns_set free $headers
             close $rfd
             set page [xmlrpc::httppost -url $location \
@@ -563,12 +567,12 @@ ad_proc -private xmlrpc::httppost {
         }
     } else {
         set length [ns_set iget $headers content-length]
-        if {$length eq ""} {set length -1}
+        if [string match "" $length] {set length -1}
         set err [catch {
-            while {1} {
+            while 1 {
                 set buf [_ns_http_read $timeout $rfd $length]
                 append page $buf
-                if {$buf eq ""} break
+                if [string match "" $buf] break
                 if {$length > 0} {
                     incr length -[string length $buf]
                     if {$length <= 0} break
@@ -577,7 +581,7 @@ ad_proc -private xmlrpc::httppost {
         } errMsg]
         ns_set free $headers
         close $rfd
-        if {$err} {
+        if $err {
             global errorInfo
             return -code error -errorinfo $errorInfo $errMsg
         }
@@ -591,10 +595,12 @@ ad_proc -private xmlrpc::parse_response {xml} {
     @param xml the XML response
     @return result 
 } {
+    ns_log Notice "xmlrpc::parse_response: xml=$xml"
+
     set doc [xml_parse -persist $xml]
     set root [xml_doc_get_first_node $doc]
 
-    if { [xml_node_get_name $root] ne "methodResponse" } {
+    if { ![string equal [xml_node_get_name $root] "methodResponse"] } {
         set root_name [xml_node_get_name $root]
         xml_doc_free $doc
         return -code error "xmlrpc::parse_response: invalid server reponse - root node is not methodResponse. it's $root_name"
@@ -660,14 +666,13 @@ ad_proc -private xmlrpc::invoke {
 
         set arguments [list]
         set params [xml_node_get_children_by_name $data params]
-	if {$params ne ""} {
-	  foreach parameter [xml_node_get_children_by_name $params param] {
+        foreach parameter [xml_node_get_children_by_name $params param] {
             lappend arguments \
                 [xmlrpc::decode_value [xml_node_get_first_child $parameter]]
-	  }
-	}
+        }
 
         set errno [catch {xmlrpc::invoke_method $method_name $arguments} result]
+	ns_log notice "xmlrpc::infoke errno=$errno"
         if { $errno } {
             set result [xmlrpc::fault $errno $result]
 	    global errorInfo
@@ -695,6 +700,8 @@ ad_proc -private xmlrpc::invoke_method {
     @return result of the OpenACS proc
     @author Vinod Kurup
 } {
+    ns_log Notice "xmlrpc::invoke_method: Invoking method_name=$method_name, arguments=$arguments"
+
     # check that the method is registered as a valid XML-RPC method
     if {![nsv_exists xmlrpc_procs $method_name]} {
         return -code error -errorcode 2 "methodName $method_name doesn't exist"
