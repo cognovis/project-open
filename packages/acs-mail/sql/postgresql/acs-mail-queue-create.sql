@@ -3,7 +3,7 @@
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2001-01-08
--- @cvs-id $Id: acs-mail-queue-create.sql,v 1.1 2005/04/18 19:26:06 cvs Exp $
+-- @cvs-id $Id$
 --
 
 select acs_object_type__create_type (

@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-mail-procs.tcl,v 1.1 2005/04/18 19:26:06 cvs Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case acs_mail_trivial_smoke_test {

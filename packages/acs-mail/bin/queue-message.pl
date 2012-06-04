@@ -2,7 +2,7 @@
 #
 # @author John Prevost <jmp@arsdigita.com>
 # @creation-date 2001-01-16
-# @cvs-id $Id: queue-message.pl,v 1.1 2005/04/18 19:26:06 cvs Exp $
+# @cvs-id $Id$
 
 ### DANGER  This script is entirely untested, since I don't yet have an Oracle
 ### DANGER  DBI setup available to me.  It will be tested once I do.
