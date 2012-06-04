@@ -13,7 +13,7 @@ ad_page_contract {
     @calendar_permission the permissions of the calendar
 
     @creation-date Dec 14, 2000
-    @cvs-id $Id: calendar-create.tcl,v 1.1 2001/04/23 23:09:38 donb Exp $
+    @cvs-id $Id$
 } {
     {party_id:notnull}
     {calendar_name:notnull}

@@ -2,7 +2,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 27, 2000
--- $Id: calendar-drop.sql,v 1.7 2004/01/10 18:57:24 dirkg Exp $
+-- $Id$
 --
 -- @ported by Charles Mok (mok_cl@eelab.usyd.edu.au)
 

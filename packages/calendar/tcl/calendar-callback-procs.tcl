@@ -3,7 +3,7 @@ ad_library {
 
     @author Dirk Gomez <openacs@dirkgomez.de>
     @creation-date 2005-06-12
-    @cvs-id $Id: calendar-callback-procs.tcl,v 1.6 2006/08/08 21:26:17 donb Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -callback merge::MergeShowUserInfo -impl calendar {

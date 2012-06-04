@@ -2,7 +2,7 @@ if { ![info exists period_days] } {
     ad_page_contract  {
      Some documentation.
      @author Sven Schmitt (s.lrn@gmx.net)
-     @cvs-id $Id: view-list-display.tcl,v 1.33 2009/07/16 11:31:56 emmar Exp $
+     @cvs-id $Id$
     } {
 	{period_days:integer {[parameter::get -parameter ListView_DefaultPeriodDays -default 31]}}
     }

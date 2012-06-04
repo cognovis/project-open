@@ -1,7 +1,7 @@
 --
 -- Set the context ID of existing calendars to the package_id
 --
--- @cvs-id $Id: upgrade-2.0d1-2.0b2.sql,v 1.3 2006/08/08 21:26:16 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- AG: The fancy update...from syntax in the PG version is not compatible with

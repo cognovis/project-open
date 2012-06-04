@@ -2,7 +2,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 17, 2000
--- @cvs-id $Id: upgrade-1.0-2.0d1.sql,v 1.1 2003/10/08 16:59:22 mohanp Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package cal_item

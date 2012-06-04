@@ -3,7 +3,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 17, 2000
--- @cvs-id $Id: cal-table-drop.sql,v 1.3 2001/09/17 13:38:09 charlesm Exp $
+-- @cvs-id $Id$
 --
 -- @ported by Charles Mok (mok_cl@eelab.usyd.edu.au)
 
