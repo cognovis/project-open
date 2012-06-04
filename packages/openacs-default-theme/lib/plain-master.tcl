@@ -13,7 +13,7 @@ ad_page_contract {
   @author Lee Denison (lee@xarg.co.uk)
   @author Don Baccus (dhogaza@pacifier.com)
 
-  $Id: plain-master.tcl,v 1.4 2009/02/23 20:53:37 jeffd Exp $
+  $Id$
 }
 
 if { ![info exists main_content_p] } {
