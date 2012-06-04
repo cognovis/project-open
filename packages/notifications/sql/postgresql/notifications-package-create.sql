@@ -297,7 +297,7 @@ begin
     into notifications
     (notification_id, type_id, object_id, notif_date, response_id, notif_user, notif_subject, notif_text, notif_html, file_ids)
     values
-    (v_notification_id, p_type_id, p_object_id, v_notif_date, p_response_id, p_notif_user, p_notif_subject, p_notif_text, p_notif_html, p_file_ids);
+    (v_notification_id, p_type_id, p_object_id, v_notif_date, p_response_id, p_notif_user, p_notif_subject, substring(p_notif_text for 9999), substring(p_notif_html for 9999), p_file_ids);
 
     return v_notification_id;
 end;

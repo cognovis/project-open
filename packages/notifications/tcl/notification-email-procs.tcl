@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 2002-06-20
     @author Ben Adida <ben@openforce.biz>
-    @cvs-id $Id: notification-email-procs.tcl,v 1.35.6.1 2011/05/27 21:11:20 michaels Exp $
+    @cvs-id $Id$
 
 }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="notifications" package_version="5.1.6" locale="tr_TR" charset="utf-8">
+
+  <msg key="Contents">İçerik:</msg>
+  <msg key="Delivery_Method">Teslimat Yöntemi</msg>
+  <msg key="lt_Getting_too_much_emai">Çok fazla mı email alıyorsunuz? Bildirimlerinizi %manage_notifications_url% 'den yönetiniz.</msg>
+  <msg key="lt_Notification_Interval">Bildirim Aralığı</msg>
+  <msg key="lt_Request_Notification_">%pretty_name% için Bildiri Talep Edin</msg>
+  <msg key="lt_You_have_no_notificat">Bildiriminiz yok.</msg>
+  <msg key="Manage_Notifications">Bildirimleri Yönet</msg>
+  <msg key="Request_Notification">Bildirim Talep Et</msg>
+  <msg key="Unsubscribe">Bildirimden çık</msg>
+</message_catalog>

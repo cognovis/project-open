@@ -3,7 +3,7 @@
 -- 
 -- @author Stan Kaufman (skaufman@epimetrics.com)
 -- @creation-date 2004-07-08
--- @cvs-id $Id: upgrade-5.1.0d2-5.1.0d3.sql,v 1.2 2004/07/24 08:34:44 jeffd Exp $
+-- @cvs-id $Id$
 --
 -- based on Peter's upgrade script:
 -- Add on delete cascade foreign key constraints

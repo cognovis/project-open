@@ -2,7 +2,7 @@ ad_library {
 
     notifications reply init - sets up scheduled procs
 
-    @cvs-id $Id: reply-sweep-init.tcl,v 1.5 2006/08/08 21:27:07 donb Exp $
+    @cvs-id $Id$
     @author Ben Adida (ben@openforce.net)
     @creation-date 2002-05-27
 

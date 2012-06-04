@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Ben Adida (ben@openforce.net)
     @creation-date 2002-05-24
-    @cvs-id $Id: request-new-2.tcl,v 1.3 2003/01/16 13:53:40 jeffd Exp $
+    @cvs-id $Id$
 } {
     type_id:integer,notnull
     object_id:integer,notnull
