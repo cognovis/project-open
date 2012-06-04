@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-08-20
-    @cvs-id $Id: one.tcl,v 1.13 2007/01/10 21:22:09 gustafn Exp $
+    @cvs-id $Id$
 } {
     object_id:integer,notnull
     {children_p "f"}

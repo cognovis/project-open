@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-09-12
-    @cvs-id $Id: unmount.tcl,v 1.3 2002/09/10 22:22:11 jeffd Exp $
+    @cvs-id $Id$
 
 } {
     node_id:integer,notnull

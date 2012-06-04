@@ -5,7 +5,7 @@ ad_page_contract {
     
     @author Michael Bryzek (mbryzek@arsdigita.com)
     @creation-date 2000-12-16
-    @cvs-id $Id: remove-2.tcl,v 1.2 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id$
 } {
     rel_id:integer,notnull
     { operation "" }

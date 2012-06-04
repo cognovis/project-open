@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author philg@mit.edu
     @creation-date 26 Sept 1999
-    @cvs-id $Id: portrait-thumbnail-bits.tcl,v 1.3 2007/01/10 21:22:10 gustafn Exp $
+    @cvs-id $Id$
 } {
     user_id:integer
 }

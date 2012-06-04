@@ -6,7 +6,7 @@ ad_page_contract {
     @author Oumi Mehrotra (oumi@arsdigita.com)
 
     @creation-date 2001-02-23
-    @cvs-id $Id: change-join-policy.tcl,v 1.3 2002/09/06 21:49:59 jeffd Exp $
+    @cvs-id $Id$
 } {
     group_id:integer,notnull
     {return_url ""}

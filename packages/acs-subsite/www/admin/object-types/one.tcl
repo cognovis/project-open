@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author Yonantan Feldman (yon@arsdigita.com)
     @creation-date August 13, 2000
-    @cvs-id $Id: one.tcl,v 1.7 2006/06/04 00:45:45 donb Exp $
+    @cvs-id $Id$
 
 } {
     object_type:notnull

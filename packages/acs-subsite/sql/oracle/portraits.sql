@@ -3,7 +3,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Hiro Iwashima (iwashima@mit.edu)
 
--- $Id: portraits.sql,v 1.2 2006/09/26 15:19:56 byronl Exp $
+-- $Id$
 
 create table user_portraits (
 	user_id		constraint user_portraits_user_id_fk

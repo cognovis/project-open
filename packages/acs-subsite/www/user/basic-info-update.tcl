@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Unknown
     @creation-date Unknown
-    @cvs-id $Id: basic-info-update.tcl,v 1.14 2009/03/31 14:27:35 emmar Exp $
+    @cvs-id $Id$
 } {
     {return_url ""}
     {user_id ""}

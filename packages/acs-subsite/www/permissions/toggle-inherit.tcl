@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-09-30
-    @cvs-id $Id: toggle-inherit.tcl,v 1.5 2006/06/04 00:45:45 donb Exp $
+    @cvs-id $Id$
 } {
     object_id:integer,notnull
     {application_url ""}

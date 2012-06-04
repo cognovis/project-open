@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-02
-    @cvs-id $Id: index.tcl,v 1.18 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id$
 } {
     {member_state "approved"}
     {orderby "name,asc"}

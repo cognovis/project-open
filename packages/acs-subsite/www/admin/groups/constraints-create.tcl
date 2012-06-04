@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Thu Jan  4 10:54:36 2001
-    @cvs-id $Id: constraints-create.tcl,v 1.3 2002/09/06 21:49:59 jeffd Exp $
+    @cvs-id $Id$
 
 } {
     group_id:notnull,integer

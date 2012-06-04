@@ -1,6 +1,6 @@
 ad_page_contract {
 
-    @cvs-id $Id: unsubscribe.tcl,v 1.6 2009/03/31 14:23:12 emmar Exp $
+    @cvs-id $Id$
 }
 
 set user_id [auth::get_user_id -account_status closed]
