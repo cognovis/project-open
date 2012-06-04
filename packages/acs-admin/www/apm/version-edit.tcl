@@ -5,7 +5,7 @@ ad_page_contract {
     @author Jon Salz (jsalz@arsdigita.com)
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 9 May 2000
-    @cvs-id $Id: version-edit.tcl,v 1.10 2009/04/13 23:10:27 donb Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

@@ -5,7 +5,7 @@ ad_page_contract {
     regression tests for the secure_tokens ns_cache.a
 
     @author Richard Li (richardl@arsdigita.com)
-    @cvs-id $Id: signed-cookies-test-2.tcl,v 1.2 2007/01/10 21:22:00 gustafn Exp $
+    @cvs-id $Id$
     @creation-date 19 October 2000
 
 } 

@@ -1,7 +1,7 @@
 ad_page_contract {
     Build package repository.
 
-    @cvs-id $Id: build-repository.tcl,v 1.17 2007/01/15 07:53:00 gustafn Exp $
+    @cvs-id $Id$
     @author Lars Pind (lars@collaboraid.biz)
 }
 

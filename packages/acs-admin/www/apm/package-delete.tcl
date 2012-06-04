@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date Fri Oct 13 08:40:54 2000
-    @cvs-id $Id: package-delete.tcl,v 1.9 2008/07/29 19:22:23 emmar Exp $
+    @cvs-id $Id$
 } {
     version_id:naturalnum
 }

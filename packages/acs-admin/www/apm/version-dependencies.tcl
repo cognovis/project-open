@@ -2,7 +2,7 @@ ad_page_contract {
     Views dependency information about a version.
     @author Jon Salz [jsalz@arsdigita.com]
     @creation-date 17 April 2000
-    @cvs-id $Id: version-dependencies.tcl,v 1.7 2010/10/17 21:06:07 donb Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

@@ -9,7 +9,7 @@ ad_page_contract {
     reusable but that has not been tested.  See "search.tcl" for
     details.
     
-    @cvs-id $Id: complex-search.tcl,v 1.11 2007/01/10 21:22:00 gustafn Exp $
+    @cvs-id $Id$
 
     @param email search string (optional)
     @param last_name_starts_with search string (optional)

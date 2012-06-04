@@ -3,7 +3,7 @@ ad_page_contract {
 
 
     @author Peter Marklund
-    @cvs-id $Id: package-watch.tcl,v 1.2 2003/04/04 09:19:59 peterm Exp $
+    @cvs-id $Id$
 } {
     package_key
     {return_url "index"}

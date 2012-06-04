@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 29 September 2000
     @author Bryan Quinn (bquinn@arsdigita.com)
-    @cvs-id $Id: apm-admin-procs.tcl,v 1.18 2009/02/13 20:28:08 jeffd Exp $
+    @cvs-id $Id$
 
 }
 

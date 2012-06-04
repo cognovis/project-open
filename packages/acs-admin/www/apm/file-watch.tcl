@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Peter Marklund
     @creation-date 17 April 2000
-    @cvs-id $Id: file-watch.tcl,v 1.11 2003/04/04 09:19:59 peterm Exp $
+    @cvs-id $Id$
 } {
     version_id:integer
     paths:multiple

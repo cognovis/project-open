@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @creation-date 8 October 2002
-    @cvs-id $Id: version-i18n.tcl,v 1.11 2007/05/14 20:30:17 donb Exp $  
+    @cvs-id $Id$  
 } {
     version_id:integer,notnull    
     {pre_select_files_p "1"}

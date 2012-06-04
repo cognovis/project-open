@@ -2,7 +2,7 @@ ad_page_contract {
     Views information about a package.
     @author Jon Salz (jsalz@arsdigita.com)
     @creation-date 17 April 2000
-    @cvs-id $Id: version-view.tcl,v 1.20 2009/04/13 23:10:27 donb Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date Thu Oct 12 17:45:38 2000
-    @cvs-id $Id: version-upgrade.tcl,v 1.1 2001/03/13 22:59:26 ben Exp $
+    @cvs-id $Id$
 } {
     version_id
 }

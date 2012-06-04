@@ -1,6 +1,6 @@
 ad_page_contract {
     Processes a new user created by an admin
-    @cvs-id $Id: user-add-2.tcl,v 1.10 2008/09/29 08:40:34 gustafn Exp $
+    @cvs-id $Id$
 } -query {
     user_id
     password

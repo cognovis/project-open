@@ -223,11 +223,11 @@ list::create \
     -multirow batch_jobs \
     -key job_id \
     -elements {
-        start_time_pretty {
+        start_time_ansi {
             label "\#acs-admin.Start_time\#"
             link_url_eval {$job_url}
         }
-        end_time_pretty {
+        end_time_ansi {
             label "\#acs-admin.End_time\#"
         }            
         run_time {
@@ -260,22 +260,14 @@ if { $display_batch_history_p } {
     
     db_multirow -extend { 
         job_url 
-        start_time_pretty
-        end_time_pretty
         interactive_pretty 
         short_message 
         actions_per_minute
         run_time
     } batch_jobs select_batch_jobs {} {
         set job_url [export_vars -base batch-job { job_id }]
-
-        set start_time_pretty [lc_time_fmt $start_time_ansi "%x %X"]
-        set end_time_pretty [lc_time_fmt $end_time_ansi "%x %X"]
-
         set interactive_pretty [ad_decode $interactive_p "t" "Yes" "No"]
-        
         set short_message [string_truncate -len 30 -- $message]
-
         set actions_per_minute {}
         if { $run_time_seconds > 0 && $num_actions > 0 } {
             set actions_per_minute [expr {round(60.0 * $num_actions / $run_time_seconds)}]

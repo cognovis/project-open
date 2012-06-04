@@ -48,7 +48,7 @@ if { $has_parameters_p } {
     set first_param_name [lindex [array names parameters] 0]
 
     set form_widgets [list]
-    foreach parameter_name [array names parameters] {
+    foreach parameter_name [lsort [array names parameters]] {
         lappend form_widgets [list ${parameter_name}:text,optional [list label $parameter_name] [list help_text $parameters($parameter_name)] {html {size 80}}]
     }
 

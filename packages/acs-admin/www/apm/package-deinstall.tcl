@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date Fri Oct 13 08:45:58 2000
-    @cvs-id $Id: package-deinstall.tcl,v 1.2 2003/12/11 21:39:45 jeffd Exp $
+    @cvs-id $Id$
 } {
     version_id:naturalnum
 }

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Hiro Iwashima <iwashima@mit.edu>
     @creation-date 23 Aug 2000
-    @cvs-id $Id: send-email.tcl,v 1.4 2009/07/12 01:08:22 donb Exp $
+    @cvs-id $Id$
 } {
     email
     email_from

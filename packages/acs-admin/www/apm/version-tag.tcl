@@ -4,7 +4,7 @@ ad_page_contract {
     @param version_id The package to be processed.
     @author ron@arsdigita.com
     @creation-date 9 May 2000
-    @cvs-id $Id: version-tag.tcl,v 1.6 2008/10/04 20:12:51 emmar Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

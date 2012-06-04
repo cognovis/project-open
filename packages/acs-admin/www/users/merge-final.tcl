@@ -3,7 +3,7 @@ ad_page_contract {
 
     TODO: Support to merge more than two accounts at the same time
 
-    @cvs-id $Id: merge-final.tcl,v 1.4 2007/01/10 21:22:00 gustafn Exp $
+    @cvs-id $Id$
 } {
     to_user_id:integer
     from_user_id:integer

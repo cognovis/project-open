@@ -4,7 +4,7 @@ ad_page_contract {
     @param orderyby The parameter to order everything in the page by.
     @param owned_by Display packages owned by whom.
     @author Jon Salz (jsalz@arsdigita.com)
-    @cvs-id $Id: index.tcl,v 1.24 2008/09/29 08:40:33 gustafn Exp $
+    @cvs-id $Id$
 } {
     { orderby "package_key" }
     { owned_by "everyone" }

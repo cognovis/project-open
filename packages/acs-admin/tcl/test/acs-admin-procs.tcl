@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-admin-procs.tcl,v 1.3 2004/02/15 10:43:01 tilmanns Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats smoke acs_admin_trivial_smoke_test {
