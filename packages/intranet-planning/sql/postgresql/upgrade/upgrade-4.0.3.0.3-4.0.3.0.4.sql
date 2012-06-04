@@ -1,13 +1,12 @@
--- upgrade-4.0.3.0.2-4.0.3.0.3.sql
+-- upgrade-4.0.3.0.3-4.0.3.0.4.sql
 
-SELECT acs_log__debug('/packages/intranet-planning/sql/postgresql/upgrade/upgrade-4.0.3.0.2-4.0.3.0.3.sql','');
+SELECT acs_log__debug('/packages/intranet-planning/sql/postgresql/upgrade/upgrade-4.0.3.0.3-4.0.3.0.4.sql','');
 
 -- Sequence to create fake object_ids for im_planning_items
 create or replace function inline_0 ()
 returns integer as $body$
 declare
 	v_count		integer;
-
 begin
 	select count(*) into v_count from pg_class
 	where  lower(relname) = 'im_planning_items_seq';
@@ -15,6 +14,18 @@ begin
 		create sequence im_planning_items_seq;
 	END IF;
 
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+-- Sequence to create fake object_ids for im_planning_items
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+begin
 	select count(*) into v_count from user_tab_columns
 	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_id';
 	IF v_count = 0 THEN 
@@ -23,8 +34,21 @@ begin
 		constraint im_planning_item_id_pk primary key;
 	END IF;
 
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+-- Sequence to create fake object_ids for im_planning_items
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+begin
 	select count(*) into v_count from user_tab_columns
-	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_id';
+	where  lower(table_name) = 'im_planning_items' and lower(column_name) = 'item_project_member_hourly_cost';
 	IF v_count = 0 THEN 
 		-- Only for planning hourly costs:
 		-- Contains the hourly_cost of the resource in order
