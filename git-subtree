@@ -1,5 +1,5 @@
 #!/bin/bash
-git remote add -f $1 ../openacs-4/packages/$1
+git remote add -f $1 ../repos/$1.git
 git merge -s ours --squash --no-commit $1/$2
 git read-tree --prefix=packages/$1 -u $1/$2 
 git commit -m "Merge $1 as our subdirectory"
