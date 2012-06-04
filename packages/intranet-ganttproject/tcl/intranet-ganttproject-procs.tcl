@@ -1321,6 +1321,7 @@ ad_proc -public im_gp_find_person_for_name_helper {
     Returns "" if it didn't find the name.
 } {
     set person_id ""
+    set name [string trim [string tolower $name]]
 
     # Check for an exact match with Email
     if {"" == $person_id} {
@@ -1336,7 +1337,7 @@ ad_proc -public im_gp_find_person_for_name_helper {
 	set person_id [db_string email_check "
 		select	min(user_id)
 		from	users
-		where	lower(trim(username)) = lower(trim(:name))
+		where	lower(trim(username)) = :name
         " -default ""]
     }
 
@@ -1345,7 +1346,8 @@ ad_proc -public im_gp_find_person_for_name_helper {
         set person_id [db_string resource_id "
 		select	min(person_id)
 		from	persons
-		where	lower(im_name_from_user_id(person_id)) = :name
+		where	(lower(im_name_from_user_id(person_id)) = :name OR
+			(lower(first_names) = :name and lower(last_name) = :name))
         " -default ""]		
     }
 

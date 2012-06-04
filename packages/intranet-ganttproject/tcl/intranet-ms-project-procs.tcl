@@ -134,7 +134,7 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours} { 
 	set duration_hours $default_duration
     }
-    if {"" == $duration_hours || [string equal $start_date $end_date] } { 
+    if {"" == $duration_hours || [string equal $start_date $end_date] || $duration_hours < 0} { 
 	set duration_hours 0 
     }
 
@@ -193,7 +193,7 @@ ad_proc -public im_ms_project_write_task {
 	switch $element {
 	    Name			{ set value $project_name }
 	    Type			{ 
-                if {![exists_and_not_null effort_driven_type_id]} {set effort_driven_type_id 9720}
+                if {![info exists effort_driven_type_id] || "" == $effort_driven_type_id} {set effort_driven_type_id 9720}
 		set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
 		if {"" == $value} { 
 		    ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
