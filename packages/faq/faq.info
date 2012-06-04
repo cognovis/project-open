@@ -7,32 +7,21 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="5.2.0d5" url="http://openacs.org/repository/download/apm/faq-5.2.0d5.apm">
-        <owner url="mailto:mazloumi@uni-mannheim.de">Nima Mazloumi</owner>
+    <version name="4.7.3" url="http://openacs.org/repository/download/apm/faq-4.7.3.apm">
         <owner url="mailto:jennie@ybos.net">Jennie Kim Housman</owner>
         <owner url="mailto:wirth@ybos.net">Elizabeth Wirth</owner>
-        <summary>Manage simple and categorized Question and Answer style FAQs with WYSIWYG and notification functionalities.</summary>
-        <release-date>2007-07-11</release-date>
-        <vendor url="http://ybos.net">Ybos Corporation</vendor>
-        <description format="text/html">Handles frequently asked questions Q&amp;A presentation.  Can be one Q&amp;A per page or all presented flat.  Straightforward application with room for improvement. Support for notification as well as WYSIQYG Editor and Categories - both optional. Category trees are displayed flat. No multiple filters.</description>
+        <summary>Manage simple Question and Answer style FAQs</summary>
+        <release-date>2003-11-10</release-date>
         <maturity>2</maturity>
-        <package_instance_name>#faq.FAQs#</package_instance_name>
-
-        <provides url="faq" version="5.2.0d5"/>
-        <requires url="acs-kernel" version="5.5.0"/>
-        <requires url="categories" version="1.1.2d3"/>
-        <requires url="notifications" version="5.5.0"/>
+        <vendor url="http://ybos.net">Ybos Corporation</vendor>
+        <description format="text/html">Handles frequently asked questions Q and A presentation.  Can be one Q and A per page or all presented flat.  Straightforward application with room for improvement.</description>
+        <provides url="faq" version="4.7.3"/>
+        <requires url="acs-kernel" version="5.0.0b4"/>
 
         <callbacks>
-            <callback type="after-install"  proc="faq::install::package_install"/>
-            <callback type="before-uninstall"  proc="faq::install::package_uninstall"/>
-            <callback type="before-upgrade"  proc="faq::install::package_upgrade"/>
         </callbacks>
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CategoryContainer"  default="package_id" description="Should the category container for the faqs be &quot;subsite_id&quot; or &quot;package_id&quot;."/>
-            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="EnableCategoriesP"  default="0" description="Should categories be enabled? Default is 0 (false)."/>
-            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="GeneralCommentsP"  default="1" description="Attach comments to FAQ (value = 1). Prevent comments (value = 0)."/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UseWysiwygP"  default="t" description="Should we allow users to use a WYSIWYG editor to make their entries? Defaults to f (false)."/>
+        <!-- No version parameters -->
         </parameters>
 
     </version>

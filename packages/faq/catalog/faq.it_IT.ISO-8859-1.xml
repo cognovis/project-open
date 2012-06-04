@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="faq" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="faq" package_version="4.7" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="A">R:</msg>
-  <msg key="Add_QA_for_faq_name">Aggiungi una Domanda &amp; Risposta a %faq_name%</msg>
+  <msg key="Add_QA_for_faq_name">Aggiungi una Domanda & Risposta a %faq_name%</msg>
   <msg key="administer">amministra</msg>
   <msg key="Answer">Risposta</msg>
   <msg key="Back_to_FAQs">Torna alle FAQ</msg>
   <msg key="Create_a_new_FAQ">Crea una nuova FAQ</msg>
   <msg key="Create_an_FAQ">Crea una FAQ</msg>
   <msg key="Create_FAQ">Crea FAQ</msg>
-  <msg key="Create_New_QA">Crea nuove Domanda &amp; Risposta</msg>
-  <msg key="Create_new_QA">Crea una nuova Domanda &amp; Risposta</msg>
-  <msg key="Create_QA">Crea Domanda &amp; Risposta</msg>
+  <msg key="Create_New_QA">Crea nuove Domanda & Risposta</msg>
+  <msg key="Create_new_QA">Crea una nuova Domanda & Risposta</msg>
+  <msg key="Create_QA">Crea Domanda & Risposta</msg>
   <msg key="Delete">Cancella</msg>
   <msg key="delete">cancella</msg>
-  <msg key="Delete_This_QA">Cancella questa Domanda &amp; Risposta</msg>
+  <msg key="Delete_This_QA">Cancella questa Domanda & Risposta</msg>
   <msg key="Edit">Modifica</msg>
   <msg key="edit">modifica</msg>
   <msg key="Edit_an_FAQ">Modifica una FAQ</msg>

@@ -20,7 +20,7 @@ ad_page_contract {
 
 ad_require_permission [ad_conn package_id] faq_create_faq
 
-set context [list [_ faq.Create_an_FAQ]]
+set context {[_ faq.Create_an_FAQ]}
 set title [_ faq.Create_an_FAQ]
 set action "faq-new-2"
 set submit_label [_ faq.Create_FAQ]
