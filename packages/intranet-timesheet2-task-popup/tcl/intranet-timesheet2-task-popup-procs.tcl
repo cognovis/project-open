@@ -10,7 +10,7 @@ ad_library {
 
     @author frank.bergmann@project-open.com
     @creation-date 2006-02-20
-    @cvs-id $Id: intranet-timesheet2-task-popup-procs.tcl,v 1.4 2009/02/16 23:22:39 cvs Exp $
+    @cvs-id $Id$
 }
 
 
