@@ -1,4 +1,4 @@
--- $Id: acs-sc-packages-create.sql,v 1.15 2004/03/12 18:48:53 jeffd Exp $
+-- $Id$
 
 create or replace package acs_sc_contract
 as

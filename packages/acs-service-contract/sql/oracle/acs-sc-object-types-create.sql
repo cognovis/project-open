@@ -1,4 +1,4 @@
--- $Id: acs-sc-object-types-create.sql,v 1.2 2006/08/31 16:31:54 emmar Exp $
+-- $Id$
 begin
     acs_object_type.create_type(
 	object_type => 'acs_sc_contract',

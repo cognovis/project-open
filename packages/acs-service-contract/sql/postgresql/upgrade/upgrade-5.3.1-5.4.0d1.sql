@@ -2,7 +2,7 @@
 -- This upgrade provides for the registering
 -- of ACS SC db procedures with the PostgreSQL
 -- 'package' infrastructure (acs_function_args).
--- $Id: upgrade-5.3.1-5.4.0d1.sql,v 1.1 2007/06/08 17:44:17 gustafn Exp $
+-- $Id$
 
 -- // acs-sc-packages-create.sql //
 

@@ -1,4 +1,4 @@
--- $Id: acs-sc-msg-types-create.sql,v 1.7 2004/03/12 18:48:53 jeffd Exp $
+-- $Id$
 
 begin
 

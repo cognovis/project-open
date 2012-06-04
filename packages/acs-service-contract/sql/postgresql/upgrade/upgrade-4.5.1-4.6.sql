@@ -3,7 +3,7 @@
 -- @author Vinod Kurup (vinod@kurup.com)
 -- @creation_date 2002-08-14
 --
--- $Id: upgrade-4.5.1-4.6.sql,v 1.2 2002/11/30 17:21:34 jeffd Exp $
+-- $Id$
 
 -- UPGRADE ISSUE #1
 -- add more verbose error message
