@@ -14,7 +14,7 @@ ad_library {
     Attachments
 
     @author Arjun Sanyal (arjun@openforce.net)
-    @cvs-id $Id: attachments-procs.tcl,v 1.17 2009/05/29 18:13:24 emmar Exp $
+    @cvs-id $Id$
 }
 
 namespace eval attachments {

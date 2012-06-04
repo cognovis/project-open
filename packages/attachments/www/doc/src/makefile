@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2002/11/12 22:14:15 arjun Exp $
+# $Id$
 
 TARGET=index
 SOURCES=attachments.apt

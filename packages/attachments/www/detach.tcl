@@ -6,7 +6,7 @@ ad_page_contract {
     
     @author Deds Castillo (deds@i-manila.com.ph)
     @creation-date 2006-07-13
-    @cvs-id $Id: detach.tcl,v 1.3 2007/07/06 12:13:23 gustafn Exp $
+    @cvs-id $Id$
 } {
     object_id:notnull
     attachment_id:notnull

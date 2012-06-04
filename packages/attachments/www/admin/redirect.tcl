@@ -15,7 +15,7 @@
 ad_page_contract {
 
     @author Arjun Sanyal (arjun@openforce.net)
-    @cvs-id $Id: redirect.tcl,v 1.3 2002/09/10 22:22:22 jeffd Exp $
+    @cvs-id $Id$
 
 } -query {
     {referer:notnull}
