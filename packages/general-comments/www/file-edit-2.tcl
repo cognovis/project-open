@@ -10,7 +10,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: file-edit-2.tcl,v 1.2 2001/06/14 19:52:22 pascals Exp $
+    @cvs-id $Id$
 } {
     attach_id:integer,notnull
     parent_id:integer,notnull

@@ -5,7 +5,7 @@
 -- @author Pascal Scheffers (pascal@scheffers.net)
 -- @creation-date 2000-10-12
 --
--- @cvs-id $Id: general-comments-create.sql,v 1.5 2005/03/21 12:01:21 rob Exp $
+-- @cvs-id $Id$
 --
 -- General comments: Commenting facility for any object in ACS 4.0
 -- 
@@ -37,13 +37,28 @@ create index general_comments_object_id_idx on general_comments (object_id);
 create function inline_0 ()
 returns integer as '
 -- define and grant privileges
+declare
+    registered_users acs_objects.object_id%TYPE;
+    default_context  acs_objects.object_id%TYPE;
 begin
+
+    -- retreive object ids for magic objects
+    registered_users := acs__magic_object_id(''registered_users'');
+    default_context  := acs__magic_object_id(''default_context'');
 
     -- create privileges
     PERFORM acs_privilege__create_privilege(''general_comments_create'', null, null);
 
-    PERFORM acs_privilege__add_child(''annotate'', ''general_comments_create'');
-
+    -- associte privileges to global privileges
+    PERFORM acs_privilege__add_child(''create'',''general_comments_create'');
+    
+    -- allow registered users to create comments
+    PERFORM acs_permission__grant_permission (
+        default_context,
+        registered_users,
+        ''general_comments_create''
+    );
+    
     return 0;
 end;' language 'plpgsql';
 

@@ -6,7 +6,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: view-image.tcl,v 1.4 2002/11/07 08:32:49 peterm Exp $
+    @cvs-id $Id$
 } {
     image_id:notnull
     { return_url {} }

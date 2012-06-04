@@ -4,7 +4,7 @@
 -- @author Phong Nguyen phong@arsdigita.com
 -- @creation-date 2000-10-12
 --
--- @cvs-id $Id: general-comments-drop.sql,v 1.2 2003/09/30 12:10:07 mohanp Exp $
+-- @cvs-id $Id$
 --
 
 

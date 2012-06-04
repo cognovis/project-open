@@ -8,7 +8,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: delete-2.tcl,v 1.3 2003/09/30 12:10:07 mohanp Exp $
+    @cvs-id $Id$
 } {
     comment_id:integer,notnull
     { return_url {} }
