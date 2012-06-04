@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 2002-03-20
-    @cvs-id $Id: index.tcl,v 1.3 2010/09/08 15:09:26 cvs Exp $
+    @cvs-id $Id$
 } [bug_tracker::get_page_variables]
 
 ns_log Notice "page_variables [bug_tracker::get_page_variables]"
