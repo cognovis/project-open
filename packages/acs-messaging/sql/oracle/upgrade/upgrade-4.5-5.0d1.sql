@@ -4,7 +4,7 @@
 -- @author John Prevost <jmp@arsdigita.com>
 -- @author Phong Nguyen <phong@arsdigita.com>
 -- @creation-date 2000-08-27
--- @cvs-id $Id: upgrade-4.5-5.0d1.sql,v 1.1 2003/10/08 16:59:22 mohanp Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package acs_message

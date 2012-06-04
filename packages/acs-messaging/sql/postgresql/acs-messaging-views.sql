@@ -5,7 +5,7 @@
 -- @author Jon Griffin <jon@jongriffin.com>
 --
 -- @creation-date 2000-11-15
--- @cvs-id $Id: acs-messaging-views.sql,v 1.2 2001/07/05 21:11:37 lukep Exp $
+-- @cvs-id $Id$
 --
 -- Updated by Jon Griffin for OpenACS
 

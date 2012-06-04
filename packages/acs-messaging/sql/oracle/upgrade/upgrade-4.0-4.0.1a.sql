@@ -3,7 +3,7 @@
 --
 -- @author jmp@arsdigita.com
 -- @creation-date 2000-11-03
--- @cvs-id $Id: upgrade-4.0-4.0.1a.sql,v 1.1 2001/04/13 18:42:34 donb Exp $
+-- @cvs-id $Id$
 --
 
 alter table acs_messages add (

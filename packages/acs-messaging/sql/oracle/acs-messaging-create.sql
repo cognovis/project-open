@@ -3,7 +3,7 @@
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2000-08-27
--- @cvs-id $Id: acs-messaging-create.sql,v 1.5 2006/09/26 15:13:05 byronl Exp $
+-- @cvs-id $Id$
 --
 
 set feedback off
