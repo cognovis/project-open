@@ -1,7 +1,7 @@
 ad_page_contract {
     Displays procs in a Tcl library file.
 
-    @cvs-id $Id: procs-file-view.tcl,v 1.3 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 } {
     version_id:optional
     { public_p "" }

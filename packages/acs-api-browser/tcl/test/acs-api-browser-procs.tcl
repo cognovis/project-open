@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-api-browser-procs.tcl,v 1.2 2004/02/15 10:46:22 tilmanns Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case \

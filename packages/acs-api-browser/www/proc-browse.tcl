@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Todd Nightingale
     @creation-date 2000-7-14
-    @cvs-id $Id: proc-browse.tcl,v 1.4 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     { type "Public" }
