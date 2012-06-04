@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-datetime" package_version="4.1" locale="es_LA" charset="ISO-8859-1">
+
+  <msg key="All_day">Todo el día</msg>
+  <msg key="back_one_day">atrás un día</msg>
+  <msg key="Date">Fecha</msg>
+  <msg key="Date_as">Formato de fecha</msg>
+  <msg key="Date_as_YYYYMMDD">Formato de fecha: AAAAMMDD
+</msg>
+  <msg key="Day">Día</msg>
+  <msg key="Day_of_Week">Día de la semana</msg>
+  <msg key="days_of_week">domingo lunes martes miércoles jueves viernes sábado </msg>
+  <msg key="forward_one_day">adelante un día</msg>
+  <msg key="is">es</msg>
+  <msg key="Items_from">Citas desde</msg>
+  <msg key="Items_until">Citas hasta @pretty_end_date@</msg>
+  <msg key="List">Lista</msg>
+  <msg key="lt_Width_must_be_">El ancho debe ser estar entre 1 y 12 </msg>
+  <msg key="Month">Mes</msg>
+  <msg key="short_days_of_week">S D L M M J V S</msg>
+  <msg key="to">hasta</msg>
+  <msg key="Today">Hoy</msg>
+  <msg key="Week">Semana</msg>
+</message_catalog>

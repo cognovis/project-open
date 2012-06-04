@@ -6,7 +6,7 @@ ad_library {
 
     @author  ron@arsdigita.com
     @creation-date 2000-11-21
-    @cvs-id  $Id: acs-datetime-procs.tcl,v 1.12 2005/03/01 00:01:22 jeffd Exp $
+    @cvs-id  $Id$
 }
 
 ad_proc -public dt_systime {
