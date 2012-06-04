@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 05 September 2003
-    @cvs-id $Id: sync-test-procs.tcl,v 1.19 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats {api db} sync_start_end {

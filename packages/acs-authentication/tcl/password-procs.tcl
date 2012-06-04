@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaobraid.biz)
     @creation-date 2003-09-03
-    @cvs-id $Id: password-procs.tcl,v 1.18 2010/01/13 10:53:00 emmar Exp $
+    @cvs-id $Id$
 }
 
 

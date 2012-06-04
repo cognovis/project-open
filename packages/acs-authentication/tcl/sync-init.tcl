@@ -2,7 +2,7 @@ ad_library {
 
     Set up scheduled procs for running nightly batch sync, and for purging old logs.
 
-    @cvs-id $Id: sync-init.tcl,v 1.1 2003/09/09 12:31:59 lars Exp $
+    @cvs-id $Id$
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-09-09
 

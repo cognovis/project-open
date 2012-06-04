@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaobraid.biz)
     @creation-date 2003-05-13
-    @cvs-id $Id: local-procs.tcl,v 1.37 2009/10/08 14:33:46 daveb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval auth {}

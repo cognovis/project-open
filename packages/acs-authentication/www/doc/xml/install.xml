@@ -343,6 +343,6 @@ if {[ns_ldap bind $lh $fdn $password]} {
               <para>(More information: <xref linkend="ims-sync-driver-design"/>, <ulink url="http://www.imsproject.org/enterprise/">The IMS 1.1 spec</ulink>)</para>
           </listitem>
       </orderedlist>
-      <para><phrase role="cvstag">($Id: install.xml,v 1.5 2006/06/04 00:45:21 donb Exp $)</phrase></para>
+      <para><phrase role="cvstag">($Id$)</phrase></para>
     </sect1>
   </article>

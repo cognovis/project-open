@@ -3,7 +3,7 @@ ad_library {
 
     @author Peter Marklund
     @creation-date 21 August 2003
-    @cvs-id $Id: acs-authentication-procs.tcl,v 1.42 2009/02/10 18:27:08 jeffd Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case \
