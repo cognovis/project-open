@@ -3,12 +3,7 @@
 <property name="context">#intranet-core.context#</property>
 <property name="main_navbar_label">helpdesk</property>
 
+@usr_mess;noquote@
 
-<h1>@page_title@</h1>
+<a href="@return_url@"><%=[lang::message::lookup "" acs-subsite.Go_back "Back"]%></a>
 
-<ul>
-<li><a href="/admin/group-types/one?group_type=im_ticket_queue">Admin Ticket Queues</a>
-
-
-
-</ul>
