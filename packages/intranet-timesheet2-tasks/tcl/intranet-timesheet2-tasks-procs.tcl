@@ -681,6 +681,7 @@ ad_proc -public im_timesheet_task_list_component {
 	    set planned_hours_input $planned_units
 	}
 
+	set task_name_complete $task_name
 	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
 
 	# Something is going wrong with task_id, so set it again.
@@ -781,7 +782,7 @@ ad_proc -public im_timesheet_task_list_component {
                 <td align='right' colspan='99'>
                 <div>
                        <div style='float: left;'>
-                                 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+				<a class='form-button40' href=\"[export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
                        </div>
                 </div>
                 </td>
@@ -793,7 +794,7 @@ ad_proc -public im_timesheet_task_list_component {
         	<td align='right' colspan='99'>
 	        <div>
 		       <div style='float: left;'>
-                		 <a class='form-button40' href=\"/intranet-timesheet2-tasks/new?[export_url_vars project_id return_url]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
+				<a class='form-button40' href=\"[export_vars -base "/intranet-timesheet2-tasks/new" {{project_id $restrict_to_project_id} {return_url $current_url}}]\">[_ intranet-timesheet2-tasks.New_Timesheet_Task]</a>
                        </div>
 		      <div style='float: right;'>
         	        <select name=action>

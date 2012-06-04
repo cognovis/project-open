@@ -60,9 +60,6 @@ switch $action {
 	set perc_task_list [array names percent_completed]
 	foreach save_task_id $perc_task_list {
 
-	    ns_log NOTICE "KHD:ENTER  $save_task_id"
-	    ns_log NOTICE "KHD:ENTER  $start_date($save_task_id)"
-
 	    set task_name [db_string tname "select project_name from im_projects where project_id = :save_task_id" -default ""]
 	    set completed $percent_completed($save_task_id)
 	    set start_date_ansi ""
@@ -80,13 +77,16 @@ switch $action {
                 }
             }
 
-
 	    # start date > end date ?  
             if { "" != $end_date_ansi && "" != $end_date_ansi } {
-                    if { [clock scan $end_date_ansi] < [clock scan $start_date_ansi] } {
-	                    ad_return_complaint 1 "<br>Start Date ($start_date($save_task_id)) is earlier than end date ($end_date($save_task_id)).<br><br>"
-        	            ad_script_abort
-                    }
+		# fraber 120425: https://sourceforge.net/projects/project-open/forums/forum/295937/topic/5217586
+		# Adding default values to avoid errors
+		if {![info exists start_date($save_task_id)]} { set start_date($save_task_id) "undefined" }
+		if {![info exists end_date($save_task_id)]} { set end_date($save_task_id) "undefined" }
+		if { [clock scan $end_date_ansi] < [clock scan $start_date_ansi] } {
+	            ad_return_complaint 1 "<br>Start Date ($start_date($save_task_id)) is earlier than end date ($end_date($save_task_id)).<br><br>"
+		    ad_script_abort
+                }
             }
 
 
