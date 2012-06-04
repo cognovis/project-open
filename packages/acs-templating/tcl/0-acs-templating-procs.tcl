@@ -3,7 +3,7 @@
 
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Karl Goldstein (karlg@arsdigita.com)
-# $Id: 0-acs-templating-procs.tcl,v 1.1 2003/10/15 12:35:51 dirkg Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:

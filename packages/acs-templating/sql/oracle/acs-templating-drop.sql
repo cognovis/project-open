@@ -3,7 +3,7 @@
 --
 -- brech (Mon Aug 28 11:04:55 2000)
 --
--- $Id: acs-templating-drop.sql,v 1.1 2001/04/05 18:23:38 donb Exp $
+-- $Id$
 --
 
 @@ demo-drop

@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: date-procs.tcl,v 1.48 2011/02/28 01:21:25 donb Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -278,27 +278,7 @@ ad_proc -public template::util::date::get_property { what date } {
       }
       return 0
     }
-    sql_date {
-	if {1 == [llength $date]} { set date [split $date "-"] }
-
-	# LARS: Empty date results in NULL value
-	if { [empty_string_p $date] } { return "NULL" }
-	set value ""
-	set format ""
-	set space ""
-	set pad "0000"
-	foreach { index sql_form } { 0 YYYY 1 MM 2 DD 3 HH24 4 MI 5 SS } {
-	    set piece [lindex $date $index]
-	    if { ![string equal $piece {}] } {
-		append value "$space[string range $pad [string length $piece] end]$piece"
-		append format $space
-		append format $sql_form
-		set space " "
-	    }
-	    set pad "00"
-	}
-	return "to_date('$value', '$format')"
-    }
+    sql_date -
     sql_timestamp {
       # LARS: Empty date results in NULL value
       if { $date eq "" } {
@@ -880,58 +860,51 @@ ad_proc -public template::widget::numericRange { name interval_def size {value "
 }
 
 ad_proc -public template::widget::dateFragment {
-    element_reference 
-    fragment 
-    size 
-    type 
-    value 
-    {mode edit} 
-    {tag_attributes {}} 
+    element_reference fragment size type value {mode edit} {tag_attributes {}} } {
+      Create an input widget for the given date fragment
+      If type is "t", uses a text widget for the fragment, with the given
+      size.
+      Otherwise, determines the proper widget based on the element flags,
+      which may be text or a picklist
 } {
-    Create an input widget for the given date fragment
-    If type is "t", uses a text widget for the fragment, with the given size.
-    Otherwise, determines the proper widget based on the element flags,
-    which may be text or a picklist
-} {
-    upvar $element_reference element
-  
-    set value [template::util::date::get_property $fragment $value]
-    set value [template::util::leadingTrim $value]
 
-#    ns_log Notice "template::widget::dateFragment: fragment=$fragment, size=$size, type=$type, value=$value"
-    
-    if { $mode ne "edit" } {
-	set output {}
-	append output "<input type=\"hidden\" name=\"$element(name).$fragment\" value=\"[template::util::leadingPad $value $size]\">"
-	append output $value
-	return $output
+  upvar $element_reference element
+  
+  set value [template::util::date::get_property $fragment $value]
+  set value [template::util::leadingTrim $value]
+
+  if { $mode ne "edit" } {
+    set output {}
+    append output "<input type=\"hidden\" name=\"$element(name).$fragment\" value=\"[template::util::leadingPad $value $size]\">"
+    append output $value
+    return $output
+  } else {
+    if { [info exists element(${fragment}_interval)] } {
+      set interval $element(${fragment}_interval)
     } else {
-	if { [info exists element(${fragment}_interval)] } {
-	    set interval $element(${fragment}_interval)
-	} else {
-	    # Display text entry for some elements, or if the type is text
-	    if { $type eq "t" ||
-		 [regexp "year|short_year" $fragment] } {
-		set output "<input type=\"text\" name=\"$element(name).$fragment\" id=\"$element(name).$fragment\" size=\"$size\""
-		append output " maxlength=\"$size\" value=\"[template::util::leadingPad $value $size]\""
-		array set attributes $tag_attributes
-		foreach attribute_name [array names attributes] {
-		    if {$attributes($attribute_name) eq {}} {
-			append output " $attribute_name"
-		    } else {
-			append output " $attribute_name=\"$attributes($attribute_name)\""
-		    }
-		}
-		append output ">\n"
-		return $output
-	    } else {
-		# Use a default range for others
-		set interval [template::util::date::defaultInterval $fragment]
-	    }
-	}
-	return [template::widget::numericRange "$element(name).$fragment" \
-		    $interval $size $value $tag_attributes]
-    }
+       # Display text entry for some elements, or if the type is text
+       if { $type eq "t" ||
+            [regexp "year|short_year" $fragment] } {
+         set output "<input type=\"text\" name=\"$element(name).$fragment\" id=\"$element(name).$fragment\" size=\"$size\""
+         append output " maxlength=\"$size\" value=\"[template::util::leadingPad $value $size]\""
+         array set attributes $tag_attributes
+         foreach attribute_name [array names attributes] {
+           if {$attributes($attribute_name) eq {}} {
+             append output " $attribute_name"
+           } else {
+             append output " $attribute_name=\"$attributes($attribute_name)\""
+           }
+         }
+         append output ">\n"
+         return $output
+       } else {
+         # Use a default range for others
+         set interval [template::util::date::defaultInterval $fragment]
+       }
+     }
+    return [template::widget::numericRange "$element(name).$fragment" \
+       $interval $size $value $tag_attributes]
+  }
 }
 
 ad_proc -public template::widget::ampmFragment {
@@ -1009,123 +982,112 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
     the array in range_ref determines interval ranges; the keys
     are the date fields and the values are in form {start stop interval}
 } {
-    variable ::template::util::date::fragment_widgets
-    
-    upvar $element_reference element
-    
-    if { [info exists element(html)] } {
-	array set attributes $element(html)
-    }
-    
-    array set attributes $tag_attributes
-    
-    set output "<!-- date $element(name) begin -->\n"
-    
-    if { ! [info exists element(format)] } { 
-	set element(format) [_ acs-lang.localization-formbuilder_date_format]
-    }
-    
-    ns_log Notice "template::widget::date: element=[array get element]"
-    
-    # Choose a pre-selected format, if any
-    switch $element(format) {
-	long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
-	short    { set element(format) "YYYY/MM/DD"}
-	time     { set element(format) "HH24:MI:SS"}
-	american { set element(format) "MM/DD/YY"}
-	expiration {
-	    set element(format) "MM/YY"
-	    set current_year [clock format [clock seconds] -format "%Y"]
-	    set current_year [expr {$current_year % 100}]
-	    set element(short_year_interval) \
-		[list $current_year [expr {$current_year + 10}] 1]
-	    set element(help) 1 
-	}
-    }
-    
-    # Just remember the format for now - in the future, allow
-    # the user to enter a freeform format
-    append output "<input type=\"hidden\" name=\"$element(name).format\" "
-    append output "value=\"$element(format)\" >\n"
 
-    
-    # Prepare the value to set defaults on the form
-    if { [info exists element(value)] && [template::util::date::get_property not_null $element(value)] } {
-	set value $element(value)
+  variable ::template::util::date::fragment_widgets
 
-	# Deal with values that are coming directly out of the database
-	# YYYY-MM-DD & YYYY-MM-DD HH24:MI:SS+TZ
-	ns_log Notice "template::widget::date: before date massage: format=$element(format), value=$value"
-	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2})$} $value match year moy dom]} { set value [list $year $moy $dom] }
-	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\+(\d{2})$} $value match year moy dom hod moh som tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
-	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d*)\+(\d{2})$} $value match year moy dom hod moh som secfrac tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
+  upvar $element_reference element
 
-	foreach v $value {
-	    lappend trim_value [template::util::leadingTrim $v]
-	}
-	set value $trim_value
+  if { [info exists element(html)] } {
+    array set attributes $element(html)
+  }
+
+  array set attributes $tag_attributes
+
+  set output "<!-- date $element(name) begin -->\n"
+
+  if { ! [info exists element(format)] } { 
+    set element(format) [_ acs-lang.localization-formbuilder_date_format]
+  }
+
+  # Choose a pre-selected format, if any
+  switch $element(format) {
+    long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
+    short    { set element(format) "YYYY/MM/DD"}
+    time     { set element(format) "HH24:MI:SS"}
+    american { set element(format) "MM/DD/YY"}
+    expiration {
+      set element(format) "MM/YY"
+      set current_year [clock format [clock seconds] -format "%Y"]
+      set current_year [expr {$current_year % 100}]
+      set element(short_year_interval) \
+        [list $current_year [expr {$current_year + 10}] 1]
+      set element(help) 1 
+    }
+  }
+
+  # Just remember the format for now - in the future, allow
+  # the user to enter a freeform format
+  append output "<input type=\"hidden\" name=\"$element(name).format\" "
+  append output "value=\"$element(format)\" >\n"
+
+  # Prepare the value to set defaults on the form
+  if { [info exists element(value)] && 
+       [template::util::date::get_property not_null $element(value)] } {
+    set value $element(value)
+    foreach v $value {
+      lappend trim_value [template::util::leadingTrim $v]
+    }
+    set value $trim_value
+  } else {
+    set value {}
+  }
+
+  # Keep taking tokens off the top of the string until out
+  # of tokens
+  set format_string $element(format)
+
+  set tokens [list]
+
+  if {[info exists attributes(id)]} {
+       set id_attr_name $attributes(id)
+  }
+
+  while { $format_string ne {} } {
+
+    # Snip off the next token
+    regexp {([^/\-.: ]*)([/\-.: ]*)(.*)} \
+          $format_string match word sep format_string
+    # Extract the trailing "t", if any
+    regexp -nocase $template::util::date::token_exp $word \
+          match token type
+
+    lappend tokens $token
+
+    # Output the widget
+    set fragment_def $template::util::date::fragment_widgets([string toupper $token])
+    set fragment [lindex $fragment_def 1]
+
+    if {[exists_and_not_null id_attr_name]} {
+	  set attributes(id) "${id_attr_name}.${fragment}"
+    }
+
+    set widget [template::widget::[lindex $fragment_def 0] \
+                     element \
+                     $fragment \
+                     [lindex $fragment_def 2] \
+                     $type \
+                     $value \
+                     $element(mode) \
+                     [array get attributes]]
+
+    if { [info exists element(help)] } {
+        append output "<label for=\"$element(id).${fragment}\">[lindex $fragment_def 3] $widget</label>"
     } else {
-	set value {}
+        append output $widget
     }
 
-    ns_log Notice "template::widget::date: after date massage: format=$element(format), value=$value"
-
-    # Keep taking tokens off the top of the string until out of tokens
-    set format_string $element(format)
-    
-    set tokens [list]
-    
-    if {[info exists attributes(id)]} {
-	set id_attr_name $attributes(id)
+    # Output the separator
+    if {$sep eq " "} {
+      append output "&nbsp;"
+    } else {
+      append output "$sep"
     }
-    
-    while { $format_string ne {} } {
-	
-	# Snip off the next token
-	regexp {([^/\-.: ]*)([/\-.: ]*)(.*)} $format_string match word sep format_string
 
-	# Extract the trailing "t", if any
-	regexp -nocase $template::util::date::token_exp $word match token type
-	
-	lappend tokens $token
-	
-	# Output the widget
-	set fragment_def $template::util::date::fragment_widgets([string toupper $token])
-	set fragment [lindex $fragment_def 1]
-	
-	if {[exists_and_not_null id_attr_name]} {
-	    set attributes(id) "${id_attr_name}.${fragment}"
-	}
-	
-	ns_log Notice "template::widget::date: template::widget::[lindex $fragment_def 0] element $fragment [lindex $fragment_def 2] $type $value $element(mode) [array get attributes]"
+  }
 
-	set widget [template::widget::[lindex $fragment_def 0] \
-			element \
-			$fragment \
-			[lindex $fragment_def 2] \
-			$type \
-			$value \
-			$element(mode) \
-			[array get attributes]]
-	
-	if { [info exists element(help)] } {
-	    append output "<label for=\"$element(id).${fragment}\">[lindex $fragment_def 3] $widget</label>"
-	} else {
-	    append output $widget
-	}
-	
-	# Output the separator
-	if {$sep eq " "} {
-	    append output "&nbsp;"
-	} else {
-	    append output "$sep"
-	}
-	
-    }
-    
-    append output "<!-- date $element(name) end -->\n"
-    
-    return $output
+  append output "<!-- date $element(name) end -->\n"
+  
+  return $output
 
 }
 

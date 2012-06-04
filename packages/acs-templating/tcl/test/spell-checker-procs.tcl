@@ -3,7 +3,7 @@ ad_library {
 
     @author Ola Hansson (ola@polyxena.net)
     @creation-date 28 September 2003
-    @cvs-id $Id: spell-checker-procs.tcl,v 1.7 2007/01/10 21:22:13 gustafn Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats { api } spellcheck__get_element_formtext {

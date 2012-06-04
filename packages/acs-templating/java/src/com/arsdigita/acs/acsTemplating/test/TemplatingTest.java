@@ -6,7 +6,7 @@ package com.arsdigita.acs.acsTemplating.test;
  *
  * @author Patrick McNeill (pmcneill@arsdigita.com)
  * @creation-date 2000-12-07
- * @cvs-id $Id: TemplatingTest.java,v 1.1 2001/03/13 22:59:27 ben Exp $
+ * @cvs-id $Id$
  */
 
 import com.meterware.httpunit.*;
