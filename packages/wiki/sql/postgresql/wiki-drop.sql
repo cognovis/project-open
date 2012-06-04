@@ -2,7 +2,7 @@
 -- @author Frank Bergmann (frank.bergmann@project-open.com)
 -- @creation-date 2005-08-06
 -- @arch-tag: 0d6b6723-0e95-4c00-8a84-cb79b4ad3f9d
--- @cvs-id $Id: wiki-drop.sql,v 1.2 2006/04/07 23:07:41 cvs Exp $
+-- @cvs-id $Id$
 --
 
 

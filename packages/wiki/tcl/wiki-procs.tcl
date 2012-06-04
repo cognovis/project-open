@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-09-03
     @arch-tag: 407a000b-0f99-4129-ae94-40679a0d4df2
-    @cvs-id $Id: wiki-procs.tcl,v 1.1 2005/04/16 21:43:15 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval wiki:: {}
