@@ -658,7 +658,7 @@ ad_proc -public im_gp_save_tasks2 {
 	# ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
 
         switch [string tolower $nodeName] {
-            "name"              { set task_name $nodeText }
+            "name"              { set task_name [string trim $nodeText] }
 	    "uid"               { set uid $nodeText }
 	    "isnull"		{ set is_null $nodeText }
 	    "duration"          { set duration $nodeText }
@@ -871,12 +871,13 @@ ad_proc -public im_gp_save_tasks2 {
     # Check for a task with the same task_nr or task_name below the specified parent. 
     # This could be necessary if a new task was created by ]po[.
     if {0 == $task_id} {
+	# fraber 120510: I've removed the im_timesheet_tasks constraint,
+	# because it gave a constraint violation. 
+	# However, that might produce errors further down?
 	set task_id [db_string task_id_from_nr "
 		select	p.project_id
-		from	im_projects p,
-			im_timesheet_tasks t
-		where	t.task_id = p.project_id and
-			p.parent_id = :parent_id and 
+		from	im_projects p
+		where	p.parent_id = :parent_id and 
 			(p.project_nr = :task_nr OR lower(p.project_name) = lower(:task_name))
         " -default 0]
 	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id using parent_id=$parent_id, task_nr=$task_nr or task_name=$task_name" }
