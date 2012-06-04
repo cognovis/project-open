@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author John Lowry (lowry@ardigita.com)
     @creation-date 29 September 2000
-    @cvs-id $Id: catalog-test.tcl,v 1.2 2005/02/26 16:00:10 jeffd Exp $
+    @cvs-id $Id: catalog-test.tcl,v 1.2 2010/10/19 20:11:58 po34demo Exp $
 } { }
 
 set title "Test acs-lang package message catalog and locale API"

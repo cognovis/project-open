@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author John Lowry (lowry@ardigita.com)
     @creation-date 29 September 2000
-    @cvs-id $Id: timezone.tcl,v 1.2 2007/01/10 21:22:04 gustafn Exp $
+    @cvs-id $Id: timezone.tcl,v 1.2 2010/10/19 20:11:58 po34demo Exp $
 } { }
 
 set title "Test acs-lang package timezones"

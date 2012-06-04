@@ -6,7 +6,7 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Christian Hvid
     @creation-date 15 April 2002
-    @cvs-id $Id: localized-message-new.tcl,v 1.11 2008/04/18 06:48:43 victorg Exp $
+    @cvs-id $Id: localized-message-new.tcl,v 1.4 2010/10/19 20:11:56 po34demo Exp $
 
 } {
     locale
