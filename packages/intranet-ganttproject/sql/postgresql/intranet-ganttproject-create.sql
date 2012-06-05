@@ -156,7 +156,7 @@ begin
 
 	v_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -206,7 +206,7 @@ begin
 
 	v_menu := im_menu__new (
 		null,			-- p_menu_id
-		''acs_object'',		-- object_type
+		''im_menu'',		-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
@@ -237,7 +237,7 @@ drop function inline_0 ();
 --
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -261,7 +261,7 @@ SELECT im_component_plugin__new (
 -- Resource Component with LoD 2 at the right-hand side
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -281,7 +281,7 @@ SELECT im_component_plugin__new (
 -- Gantt Component with LoD 2 at the right-hand side
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -306,7 +306,7 @@ SELECT im_component_plugin__new (
 -- Gantt Component with LoD 3 in extra tab
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -325,7 +325,7 @@ SELECT im_component_plugin__new (
 -- Resource Component with LoD 3 in extra tab
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -338,6 +338,36 @@ SELECT im_component_plugin__new (
 	200,				-- sort_order
 	'im_ganttproject_resource_component -project_id $project_id -level_of_detail 3 -return_url $return_url -export_var_list [list project_id]',
 	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_Resource_Assignations "Project Gantt Resource Assignations"'
+);
+
+
+
+
+
+----------------------------------------------------------------
+-- Show MS-Project warnings in project page
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'MS-Project Warning Component',	-- plugin_name
+	'intranet-ganttproject',	-- package_name
+	'top',					-- location
+	'/intranet/projects/view',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_ganttproject_ms_project_warning_component -project_id $project_id',
+	'lang::message::lookup "" intranet-ganttproject.MS_Project_Warnings "MS-Project Warnings"'
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'MS-Project Warning Component'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
 );
 
 
