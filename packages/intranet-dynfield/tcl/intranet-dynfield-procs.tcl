@@ -216,16 +216,16 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     by a main query clause either as a "where xxx_id in ..."
     or via a join in order to limit the number of object_ids
     to the ones that fit to the filter criteria.
-
+    
     @param form_id: search form id
     @return:	An array consisting of:
-		where: A SQL phrase and
-		bind_vars: a key-value paired list carrying the bind
-			vars for the SQL phrase
+    where: A SQL phrase and
+    bind_vars: a key-value paired list carrying the bind
+    vars for the SQL phrase
 } {
     # Get the list of all elements in the form
     set form_elements [template::form::get_elements $form_id]
-
+    
     # Get the main table for the data type
     db_1row main_table "
 	select	table_name as main_table_name,
@@ -297,7 +297,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	    }
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
-
+	    
 	    switch $datatype {
 		text - string {
 		    # Create a "like" search
@@ -306,18 +306,19 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		}
 		integer - number - float {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-                checkbox {
+		    checkbox {
                         # Frank: Here we would need a three-way select for
                         #        "true", "false" and "no filter". No idea
                         #        yet how to do that.
                         # Klaus: Not sure what you mean. If "no filter" than $value <> 't', right?
                         #        Following lines have been added to make checkbox work
-		    if { "t" == $value } {
-                                lappend criteria "($attribute_table_name.$attribute_name = '1' OR $attribute_table_name.$attribute_name = 't')"
+			if { "t" == $value } {
+			    lappend criteria "($attribute_table_name.$attribute_name = '1' OR $attribute_table_name.$attribute_name = 't')"
+			}
 		    }
-		}
-		default {
-		    lappend criteria "1=1"
+		    default {
+			lappend criteria "1=1"
+		    }
 		}
 	    }
 	}

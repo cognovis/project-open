@@ -1043,70 +1043,54 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
   # Prepare the value to set defaults on the form
   if { [info exists element(value)] && 
        [template::util::date::get_property not_null $element(value)] } {
-    set value $element(value)
-    foreach v $value {
-      lappend trim_value [template::util::leadingTrim $v]
-    }
-<<<<<<< HEAD
-
-    # Choose a pre-selected format, if any
-    switch $element(format) {
-	long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
-	short    { set element(format) "YYYY/MM/DD"}
-	time     { set element(format) "HH24:MI:SS"}
-	american { set element(format) "MM/DD/YY"}
-	expiration {
-	    set element(format) "MM/YY"
-	    set current_year [clock format [clock seconds] -format "%Y"]
-	    set current_year [expr {$current_year % 100}]
-	    set element(short_year_interval) \
-		[list $current_year [expr {$current_year + 10}] 1]
-	    set element(help) 1 
-	}
-    }
-
-    # Just remember the format for now - in the future, allow
-    # the user to enter a freeform format
-    append output "<input type=\"hidden\" name=\"$element(name).format\" "
-    append output "value=\"$element(format)\" >\n"
-    
-    # Prepare the value to set defaults on the form
-    if { [info exists element(value)] && 
-	 [template::util::date::get_property not_null $element(value)] } {
-	set value $element(value)
-	foreach v $value {
-	    lappend trim_value [template::util::leadingTrim $v]
-	}
-    }
-    
-    array set attributes $tag_attributes
-    
-    set output "<!-- date $element(name) begin -->\n"
-    
-    if { ! [info exists element(format)] } { 
-	set element(format) [_ acs-lang.localization-formbuilder_date_format]
-    }
-    
-    ns_log Notice "template::widget::date: element=[array get element]"
-    
-    # Choose a pre-selected format, if any
-    switch $element(format) {
-	long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
-	short    { set element(format) "YYYY/MM/DD"}
-	time     { set element(format) "HH24:MI:SS"}
-	american { set element(format) "MM/DD/YY"}
-	expiration {
-	    set element(format) "MM/YY"
-	    set current_year [clock format [clock seconds] -format "%Y"]
-	    set current_year [expr {$current_year % 100}]
-	    set element(short_year_interval) \
-		[list $current_year [expr {$current_year + 10}] 1]
-	    set element(help) 1 
-	}
-=======
-    set value $trim_value
+      set value $element(value)
+      foreach v $value {
+	  lappend trim_value [template::util::leadingTrim $v]
+      }
+      
+      # Choose a pre-selected format, if any
+      switch $element(format) {
+	  long     { set element(format) "YYYY/MM/DD HH24:MI:SS" }
+	  short    { set element(format) "YYYY/MM/DD"}
+	  time     { set element(format) "HH24:MI:SS"}
+	  american { set element(format) "MM/DD/YY"}
+	  expiration {
+	      set element(format) "MM/YY"
+	      set current_year [clock format [clock seconds] -format "%Y"]
+	      set current_year [expr {$current_year % 100}]
+	      set element(short_year_interval) \
+		  [list $current_year [expr {$current_year + 10}] 1]
+	      set element(help) 1 
+	  }
+      }
+      
+      # Just remember the format for now - in the future, allow
+      # the user to enter a freeform format
+      append output "<input type=\"hidden\" name=\"$element(name).format\" "
+      append output "value=\"$element(format)\" >\n"
+      
+      # Prepare the value to set defaults on the form
+      if { [info exists element(value)] && 
+	   [template::util::date::get_property not_null $element(value)] } {
+	  set value $element(value)
+	  foreach v $value {
+	      lappend trim_value [template::util::leadingTrim $v]
+	  }
+      }
+      
+      array set attributes $tag_attributes
+      
+      set output "<!-- date $element(name) begin -->\n"
+      
+      if { ! [info exists element(format)] } { 
+	  set element(format) [_ acs-lang.localization-formbuilder_date_format]
+      }
+      
+      ns_log Notice "template::widget::date: element=[array get element]"
+      
+      set value $trim_value
   } else {
-    set value {}
+      set value {}
   }
 
   # Keep taking tokens off the top of the string until out
