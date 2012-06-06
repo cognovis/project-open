@@ -306,19 +306,19 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		}
 		integer - number - float {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-		    checkbox {
-                        # Frank: Here we would need a three-way select for
-                        #        "true", "false" and "no filter". No idea
-                        #        yet how to do that.
-                        # Klaus: Not sure what you mean. If "no filter" than $value <> 't', right?
-                        #        Following lines have been added to make checkbox work
-			if { "t" == $value } {
-			    lappend criteria "($attribute_table_name.$attribute_name = '1' OR $attribute_table_name.$attribute_name = 't')"
-			}
+		}
+		checkbox {
+		    # Frank: Here we would need a three-way select for
+		    #        "true", "false" and "no filter". No idea
+		    #        yet how to do that.
+		    # Klaus: Not sure what you mean. If "no filter" than $value <> 't', right?
+		    #        Following lines have been added to make checkbox work
+		    if { "t" == $value } {
+			lappend criteria "($attribute_table_name.$attribute_name = '1' OR $attribute_table_name.$attribute_name = 't')"
 		    }
-		    default {
-			lappend criteria "1=1"
-		    }
+		}
+		default {
+		    lappend criteria "1=1"
 		}
 	    }
 	}
