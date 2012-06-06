@@ -123,8 +123,7 @@ ad_proc -public im_payment_list {
 } {
     Returns a paypal list for import into paypal and payment of all outstanding provider bills
 } {
-    set provider_bill_type_ids [im_category_children -super_category_id 3704]
-    lappend provider_bill_type_ids 3704
+    set provider_bill_type_ids [im_sub_categories 3704]
     
     set csv_lines [list]
 
