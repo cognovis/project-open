@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<message_catalog package_key="intranet-dashboard" package_version="3.0.0.2.1" locale="ru_RU" charset="UTF-8">
+
+  <msg key="Average_Bill_Age">Средний возраст счета</msg>
+  <msg key="Average_Invoice_Age">Средний возраст счета-фактуры</msg>
+  <msg key="Average_Purchase_Price_S_Word">Средняя цена покупки за &lt;br&gt; исходное слово</msg>
+  <msg key="Average_Sales_Price_S_Word">Средняя цена продажи за &lt;br&gt; сходное слово</msg>
+  <msg key="Dashboard">Информационная панель</msg>
+</message_catalog>
