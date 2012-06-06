@@ -1244,12 +1244,12 @@ ad_proc im_absence_new_page_wf_perm_table_kw { } {
     set del [im_absence_status_deleted]
     set acc 10000128
 
-    set perm_hash(owner-$rej) {v r d}
-    set perm_hash(owner-$req) {v r d}
-    set perm_hash(owner-$act) {v r d}
-    set perm_hash(owner-$del) {v r d}
-    set perm_hash(owner-$acc) {v r d}
-
+    set perm_hash(owner-$rej) {v r}
+    set perm_hash(owner-$req) {v r}
+    set perm_hash(owner-$act) {v r}
+    set perm_hash(owner-$del) {v r}
+    set perm_hash(owner-$acc) {v r}
+ 
 
     set perm_hash(assignee-$rej) {v r}
     set perm_hash(assignee-$req) {v r}
@@ -1289,3 +1289,38 @@ ad_proc -public -callback im_before_member_add -impl intranet-cust-koernigweber 
 
     }
 }
+
+ad_proc -public -callback im_project_new_redirect -impl intranet-cust-koernigweber  {
+    { -project_id:required }
+    { -object_id }
+    { -status_id }
+    { -type_id }
+    { -project_id }
+    { -parent_id }
+    { -company_id }
+    { -project_type_id } 
+    { -project_name }
+    { -project_nr } 
+    { -workflow_key } 
+    { -return_url } 
+} {
+    Check if user who tried to create a project has a sales price assigned 
+} {
+    set log ""
+    foreach uid $user_id {
+        set price [find_sales_price $uid $object_id "" ""]
+        if { "" == $price } {
+            set name [im_name_from_user_id $uid]
+            append log [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User $name can't be assigned to this project: No price record found.<br>"]
+        }
+    }
+    if { "" != $log } {
+        set log "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Operation_Canceled "Operation canceled"]</strong> <br> $log"
+        ad_return_complaint 1 $log
+        break
+
+    }
+}
+
+
+
