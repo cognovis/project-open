@@ -4,7 +4,7 @@ ad_library {
 
   @author Peter Marklund
   @creation-date 10 January 2003
-  @cvs-id $Id: workflow-test-procs.tcl,v 1.1 2006/10/25 17:55:34 cvs Exp $
+  @cvs-id $Id$
 }
 
 namespace eval workflow::test {}

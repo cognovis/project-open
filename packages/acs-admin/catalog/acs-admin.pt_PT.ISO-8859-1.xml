@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-admin" package_version="5.1.5" locale="pt_PT" charset="ISO-8859-1">
+
+  <msg key="Account_Registration">Registo</msg>
+  <msg key="Actions">Acções</msg>
+  <msg key="Actions_Minute">Acções/Minuto</msg>
+  <msg key="Administration">Administração</msg>
+  <msg key="Authentication">Autenticação</msg>
+  <msg key="Creation_user">Criação de utilizador</msg>
+  <msg key="Delete">Eliminar</msg>
+  <msg key="Document">Documento</msg>
+  <msg key="General">Geral</msg>
+  <msg key="Interactive">Interactivo</msg>
+  <msg key="Message">Mensagem</msg>
+  <msg key="Name">Nome</msg>
+  <msg key="No">Não</msg>
+  <msg key="Pages">Páginas</msg>
+  <msg key="Parameters">Parâmetros</msg>
+  <msg key="Password">Palavra-passe</msg>
+  <msg key="Password_Management">Gestão de Palavra-Passe</msg>
+  <msg key="Problems">Problemas</msg>
+  <msg key="seconds">segundos</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="Username">Nome de utilizador</msg>
+  <msg key="Yes">Sim</msg>
+</message_catalog>

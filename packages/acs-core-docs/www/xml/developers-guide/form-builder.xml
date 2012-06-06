@@ -11,7 +11,7 @@
 <sect2 id="ad-form-overview">
 <title>Overview</title>
 <authorblurb>
-  <para><phrase role="cvstag">($Id: form-builder.xml,v 1.8 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>
 </authorblurb>
 <para>OpenACS has a form manager called ad_form. Ad_form has an
 adaptable UI. Error handling includes inline error reporting, and is customizable.

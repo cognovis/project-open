@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag e4114cf3-aa34-453a-88b5-c5c0190ab260 -->
-<!-- @cvs-id $Id: view-postgresql.xql,v 1.10 2007/06/29 13:52:26 lexcelera Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

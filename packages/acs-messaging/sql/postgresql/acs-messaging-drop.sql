@@ -3,7 +3,7 @@
 --
 -- @author akk@arsdigita.com
 -- @creation-date 2000-08-31
--- @cvs-id $Id: acs-messaging-drop.sql,v 1.7 2004/03/12 18:48:52 jeffd Exp $
+-- @cvs-id $Id$
 --
 
 -- drop functions

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="faq" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="faq" package_version="4.7" locale="ru_RU" charset="utf-8">
 
   <msg key="A">О:</msg>
   <msg key="Add_QA_for_faq_name">Добавить Q&amp;A к %faq_name%</msg>

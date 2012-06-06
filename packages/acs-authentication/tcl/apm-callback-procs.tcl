@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaobraid.biz)
     @creation-date 2003-05-13
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.19 2008/09/19 17:05:20 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval auth {}

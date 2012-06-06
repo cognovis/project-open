@@ -92,7 +92,7 @@ list::create \
     } -actions {
     } -elements {
         template_file_name {
-            label "[lang::message::lookup {} intranet-templateing-openoffice.Template {Template}]"
+            label "[lang::message::lookup {} intranet-sysconfig.Templates Templates]"
             display_col template_name
 	    link_url_eval $url
         }

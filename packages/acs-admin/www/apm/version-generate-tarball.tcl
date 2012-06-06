@@ -4,7 +4,7 @@ ad_page_contract {
     @param version_id The package version to be processed.
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 9 May 2000
-    @cvs-id $Id: version-generate-tarball.tcl,v 1.4 2003/12/11 21:39:45 jeffd Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

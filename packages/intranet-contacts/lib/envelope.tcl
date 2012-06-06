@@ -5,7 +5,7 @@
 # @author Matthew Geddert (openacs@geddert.com)
 # @creation-date 2006-02-19
 # @arch-tag: 
-# @cvs-id $Id: envelope.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+# @cvs-id $Id$
 
 foreach required_param {party_ids recipients} {
     if {![info exists $required_param]} {

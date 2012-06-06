@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag 48a3aa6c-6b19-4397-97c8-2290ed48cf4a -->
-<!-- @cvs-id $Id: invoice-association-action-oracle.xql,v 1.1 2005/01/22 15:55:18 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

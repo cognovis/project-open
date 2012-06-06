@@ -17,7 +17,7 @@ ad_page_contract {
     If it can't find one, it prompts to make new one.
 
     @author Arjun Sanyal (arjun@openforce.net)
-    @cvs-id $Id: new-root-folder-map.tcl,v 1.6 2005/04/20 11:48:57 eduardop Exp $
+    @cvs-id $Id$
 
 } -query {
     {package_id:notnull}

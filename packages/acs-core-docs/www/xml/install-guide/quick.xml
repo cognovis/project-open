@@ -45,6 +45,6 @@
     <sect2 id="quick-next-steps">  
       <para>After completing installation and restarting the server, go to <ulink url="http://localhost:8000" /> for configuration and customization instructions.  You can upgrade a Quick Install with source control, full text search, backup/recovery, and other production features by walking through the <ulink url="unix-install">Installation documentation</ulink> and doing the steps marked OPTIONAL.</para>
     </sect2>
-    <para><phrase role="cvstag">($Id: quick.xml,v 1.5 2006/07/17 05:38:38 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
     
   </chapter>

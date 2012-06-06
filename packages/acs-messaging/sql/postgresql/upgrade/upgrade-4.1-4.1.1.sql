@@ -3,7 +3,7 @@
 -- upgrade script for acs-messaging 4.1 to 4.1.1.
 -- @author teeters@arsdigita.com
 -- @creation-date 2000-03-06
--- @cvs-id $Id: upgrade-4.1-4.1.1.sql,v 1.1 2001/05/23 16:39:23 jong Exp $
+-- @cvs-id $Id$
 
 -- Change in acs-messaging/sql/acs-messaging-create.sql
 -- content_item name_method changed from 'ACS_OBJECT.DEFAULT_NAME' to 'ACS_MESSAGE.NAME'
@@ -23,7 +23,7 @@ update acs_object_types set name_method = 'ACS_MESSAGE.NAME' where object_type =
 -- @author John Prevost <jmp@arsdigita.com>
 -- @author Phong Nguyen <phong@arsdigita.com>
 -- @creation-date 2000-08-27
--- @cvs-id $Id: upgrade-4.1-4.1.1.sql,v 1.1 2001/05/23 16:39:23 jong Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package acs_message

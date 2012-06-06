@@ -246,7 +246,7 @@ data sources.
 <para>
 <ulink url="/doc/acs-templating/">Templating system documentation</ulink>
 </para>
-<para><phrase role="cvstag">($Id: templates.xml,v 1.10 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

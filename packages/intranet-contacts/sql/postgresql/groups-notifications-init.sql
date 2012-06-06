@@ -2,7 +2,7 @@
 --
 -- @author Matthew Geddert (openacs@geddert.com)
 -- @creation-date 2007-06-25
--- @cvs-id $Id: groups-notifications-init.sql,v 1.1 2009/02/08 22:28:17 cvs Exp $
+-- @cvs-id $Id$
 --
 
 create function inline_0() returns integer as '

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Ben Adida
     @creation-date 01 April 2002
-    @cvs-id $Id: simple-edit.tcl,v 1.10 2009/02/13 22:13:06 jeffd Exp $
+    @cvs-id $Id$
 } {
     object_id:notnull
 }

@@ -3,7 +3,7 @@
 -- @author jon@jongriffin.com
 -- @creation-date 2001-07-16
 --
--- @cvs-id $Id: acs-reference-create.sql,v 1.13 2007/01/02 09:53:43 gustafn Exp $
+-- @cvs-id $Id$
 
 -- setup the basic admin privileges
 

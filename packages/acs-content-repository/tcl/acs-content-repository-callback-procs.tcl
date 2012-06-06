@@ -7,7 +7,7 @@ ad_library {
     @author Malte Sussdorff (sussdorff@sussdorff.de)
     @creation-date 2005-06-15
     @arch-tag: d9aec4df-102d-4b0d-8d0e-3dc470dbe783
-    @cvs-id $Id: acs-content-repository-callback-procs.tcl,v 1.5 2007/08/30 10:21:57 maltes Exp $
+    @cvs-id $Id$
 }
 
 

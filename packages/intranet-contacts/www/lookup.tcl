@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2006-12-17
-    @cvs-id $Id: lookup.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 } {
     {query ""}
 }

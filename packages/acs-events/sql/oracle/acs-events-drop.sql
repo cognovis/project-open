@@ -1,6 +1,6 @@
 -- packages/acs-events/sql/acs-events-drop.sql
 --
--- $Id: acs-events-drop.sql,v 1.1 2001/07/13 02:00:30 jowells Exp $
+-- $Id$
 
 drop package acs_event;
 

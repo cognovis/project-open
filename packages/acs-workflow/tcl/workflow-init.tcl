@@ -2,7 +2,7 @@ ad_library {
  Initialization code for the acs-workflow package 
  (to run once on server startup).
 
- @cvs-id $Id: workflow-init.tcl,v 1.3 2007/08/09 17:01:33 podemo33 Exp $
+ @cvs-id $Id$
 }
 
 # normal rhythm: Every 15 minutes

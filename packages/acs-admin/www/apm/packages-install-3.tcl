@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date Mon Oct  9 00:15:52 2000
-    @cvs-id $Id: packages-install-3.tcl,v 1.14 2008/07/29 22:04:14 emmar Exp $
+    @cvs-id $Id$
 } {
 
 }

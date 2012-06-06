@@ -16,7 +16,7 @@ ad_library {
     
     @author Peter Harper (peter.harper@open-msg.com)
     @creation-date 21 June 2001
-    @cvs-id $Id: aa-test-procs.tcl,v 1.38 2009/09/17 15:57:01 daveb Exp $
+    @cvs-id $Id$
 }
 
 # LARS: We do this here, because if we do it in the -init file, then we cannot register 

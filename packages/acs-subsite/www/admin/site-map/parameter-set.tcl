@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 12 September 2000
-    @cvs-id $Id: parameter-set.tcl,v 1.9 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     package_id:naturalnum,notnull

@@ -10,7 +10,7 @@ ad_library {
 
   @author Gustaf Neumann (neumann@wu-wien.ac.at)
   @creation-date 2005-05-13
-  @cvs-id $Id: 10-recreation-procs.tcl,v 1.8 2010/03/04 10:36:13 gustafn Exp $
+  @cvs-id $Id$
 }
 
 if {![::xotcl::Object isclass ::xotcl::RecreationClass]} {

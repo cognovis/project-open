@@ -4,7 +4,7 @@
 <!-- @author  (avila@digiteix.com) -->
 <!-- @creation-date 2006-04-27 -->
 <!-- @arch-tag 7410be05-735d-4f4d-b0e5-6252f93a9d29 -->
-<!-- @cvs-id $Id: conf-item-del-postgresql.xql,v 1.1 2007/08/08 13:40:06 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   <rdbms>

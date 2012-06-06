@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="faq" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="faq" package_version="4.7" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="A">A:</msg>
   <msg key="Add_QA_for_faq_name">Neuen F&amp;A-Eintrag zu %faq_name% hinzufügen</msg>
   <msg key="administer">Verwalten</msg>
-  <msg key="All_QA">Alle F&amp;amp;As</msg>
   <msg key="Answer">Antwort</msg>
-  <msg key="Answer_text_in_html">Antwort im HTML-Format</msg>
   <msg key="Back_to_FAQs">Zurück zu FAQs</msg>
-  <msg key="Change_settings">&amp;Auml;nderungen &amp;uuml;bernehmen</msg>
-  <msg key="Configure">Konfigurieren</msg>
   <msg key="Create_a_new_FAQ">Neues FAQ erstellen</msg>
   <msg key="Create_an_FAQ">Neues FAQ erstellen</msg>
   <msg key="Create_FAQ">FAQ erstellen</msg>
@@ -22,8 +18,6 @@
   <msg key="Edit">Bearbeiten</msg>
   <msg key="edit">Bearbeiten</msg>
   <msg key="Edit_an_FAQ">Ein FAQ bearbeiten</msg>
-  <msg key="Enable_Categories">Kategorien aktivieren </msg>
-  <msg key="Enable_WYSIWYG">WYSIWYG aktivieren</msg>
   <msg key="FAQ_Admin">FAQs verwalten</msg>
   <msg key="faq_name_Admin">%faq_name% verwalten</msg>
   <msg key="FAQs">FAQs</msg>
@@ -39,13 +33,11 @@
   <msg key="One_Question">Eine Frage</msg>
   <msg key="Plain">Einfacher Text</msg>
   <msg key="Preformatted">Vorformatierter Text</msg>
-  <msg key="pretty_name">FAQ</msg>
   <msg key="preview">Vorschau</msg>
   <msg key="Q">F:</msg>
   <msg key="QA_On_Separate_Pages">F&amp;A auf getrennten Seiten?</msg>
   <msg key="QA_on_Separate_Pages">F&amp;A auf getrennten Seiten?</msg>
   <msg key="Question">Frage</msg>
-  <msg key="Question_text_in_html">Frage im HTML-Format</msg>
   <msg key="swap_with_next">Um eins nach unten verschieben</msg>
   <msg key="Text_type">Format</msg>
   <msg key="Title">Titel:</msg>

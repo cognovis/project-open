@@ -8,7 +8,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Wed Feb 21 17:10:24 2001
-    @cvs-id $Id: subsite-callback-procs.tcl,v 1.6 2010/04/03 23:13:47 donb Exp $
+    @cvs-id $Id$
 
 }
 

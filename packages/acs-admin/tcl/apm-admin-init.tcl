@@ -2,7 +2,7 @@ ad_library {
 
     Automated functions for acs-admin
 
-    @cvs-id $Id: apm-admin-init.tcl,v 1.2 2005/01/13 13:54:41 jeffd Exp $
+    @cvs-id $Id$
 
 }
 

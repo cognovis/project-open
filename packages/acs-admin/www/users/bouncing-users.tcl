@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Ben Adida (ben@openforce.net)
     @creation-date 2002-05-24
-    @cvs-id $Id: bouncing-users.tcl,v 1.1 2007/04/09 07:10:57 maltes Exp $
+    @cvs-id $Id$
 
 } {
     {page ""}

@@ -1,4 +1,4 @@
-<!-- $Id: calendar-widgets.adp,v 1.3 2003/09/22 19:44:28 lars Exp $ -->
+<!-- $Id$ -->
 
 <master src="master">
 

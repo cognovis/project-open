@@ -2,7 +2,7 @@
 --
 -- @author Matthew Geddert openacs@geddert.com
 -- @creation-date 2005-06-29
--- @cvs-id $Id: contacts-messages-create.sql,v 1.2 2009/02/09 02:40:21 cvs Exp $
+-- @cvs-id $Id$
 --
 --
 

@@ -3,7 +3,7 @@ ad_library {
      Register validator XML-RPC procs
      @author Vinod Kurup [vinod@kurup.com]
      @creation-date Fri Oct  3 19:25:19 2003
-     @cvs-id $Id: validator-init.tcl,v 1.1 2003/11/26 02:59:13 vinodk Exp $
+     @cvs-id $Id$
 }
 
 xmlrpc::register_proc validator1.arrayOfStructsTest

@@ -2,7 +2,7 @@ ad_page_contract {
   @author Guenter Ernst guenter.ernst@wu-wien.ac.at
   @author Gustaf Neumann neumann@wu-wien.ac.at
   @creation-date 13.10.2005
-  @cvs-id $Id: file-selector.tcl,v 1.4 2008/12/29 21:53:02 gustafn Exp $
+  @cvs-id $Id$
 } {	
   {fs_package_id:integer,notnull,optional}
   {folder_id:integer,optional}

@@ -12,7 +12,7 @@
 #
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 26, 2001
-# Cvs-id: $Id: attributes-table.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+# Cvs-id: $Id$
 #
 
 if { ![info exists modifiable_p] } {

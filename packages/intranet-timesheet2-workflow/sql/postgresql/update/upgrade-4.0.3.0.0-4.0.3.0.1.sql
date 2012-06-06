@@ -57,6 +57,10 @@ begin
         from    user_preferences
         where   user_id = v_creation_user;
 
+	IF v_locale IS NULL THEN
+		v_locale := 'en_US';
+	END IF; 
+
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_subject := 'Notification_Subject_Notify_Applicant_Absence_Not_Approved';
@@ -99,7 +103,7 @@ begin
                 p.parameter_name = 'SystemURL' and
                 pv.parameter_id = p.parameter_id;
 
-	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
 	-- get info about absence 
        	select
@@ -109,7 +113,8 @@ begin
        	into v_start_date, v_end_date, v_description
        	from im_user_absences where absence_id = v_absence_id;
 	
-	v_body := v_body || '\\n\\n' || v_description || '\\n\\n' || v_start_date || '\\n\\n' || v_end_date || '\\n\\n' || v_url || '\\n\\n';	
+	v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';	
+
 
         RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
@@ -125,7 +130,7 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
-ALTER FUNCTION im_absence_notify_applicant_not_approved(integer, character varying, character varying) OWNER TO postgres;
+
 
 
 
@@ -184,6 +189,10 @@ begin
         from    user_preferences
         where   user_id = v_creation_user;
 
+        IF v_locale IS NULL THEN
+                v_locale := 'en_US';
+        END IF;
+
         -- ------------------------------------------------------------
         -- Try with specific translation first
         v_subject := 'Notification_Subject_Notify_Applicant_Absence_Approved';
@@ -226,7 +235,7 @@ begin
 		p.parameter_name = 'SystemURL' and 
 		pv.parameter_id = p.parameter_id; 
 
-	v_url := v_base_url || '/intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
 
         -- get info about absence
         select
@@ -236,7 +245,7 @@ begin
         into v_start_date, v_end_date, v_description
         from im_user_absences where absence_id = v_absence_id;
 
-        v_body := v_body || '\\n\\n' || v_description || '\\n\\n' || v_start_date || '\\n\\n' || v_end_date || '\\n\\n' || v_url || '\\n\\n';
+        v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';
 
         RAISE NOTICE 'im_absence_notify_applicant_approved: Subject=%, Body=%', v_subject, v_body;
 
@@ -252,4 +261,3 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
-ALTER FUNCTION im_absence_notify_applicant_not_approved(integer, character varying, character varying) OWNER TO postgres;

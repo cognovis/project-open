@@ -3,7 +3,7 @@
 --
 -- @author jmp@arsdigita.com
 -- @creation-date 2000-11-15
--- @cvs-id $Id: upgrade-4.0.1a-4.0.1.sql,v 1.1 2001/04/13 18:42:34 donb Exp $
+-- @cvs-id $Id$
 --
 
 begin

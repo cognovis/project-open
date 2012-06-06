@@ -16,7 +16,7 @@ ad_page_contract {
 
 set package_id [ad_conn package_id]
 
-set user_id [ad_conn user_id]
+set user_id [ad_verify_and_get_user_id]
 
 permission::require_permission -object_id $package_id -privilege faq_admin_faq
 
@@ -32,8 +32,6 @@ set highest_sort_key_in_list [db_string faq_maxkey_get "select max(sort_key)
 	    from faq_q_and_as where faq_id=:faq_id"]
 
 db_1row faq_name "select faq_name from faqs where faq_id=:faq_id"
-
-set title "#faq.faq_name_Admin#"
 set context [list $faq_name]
 
 set new_faq_url "q-and-a-add-edit?[export_vars { faq_id }]"

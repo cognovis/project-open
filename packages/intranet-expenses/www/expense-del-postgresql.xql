@@ -4,7 +4,7 @@
 <!-- @author  (avila@digiteix.com) -->
 <!-- @creation-date 2006-04-27 -->
 <!-- @arch-tag 7410be05-735d-4f4d-b0e5-6252f93a9d29 -->
-<!-- @cvs-id $Id: expense-del-postgresql.xql,v 1.2 2006/10/01 08:18:11 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

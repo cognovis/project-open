@@ -13,7 +13,7 @@
 #
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 26, 2001
-# Cvs-id: $Id: transitions-table.tcl,v 1.2 2006/11/28 17:01:44 baselkb Exp $
+# Cvs-id: $Id$
 
 if { ![info exists context_key] } {
     set context_key "default"

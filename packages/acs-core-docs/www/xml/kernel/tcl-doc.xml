@@ -35,7 +35,7 @@ a comment at the top of the file:</para>
 #
 # <emphasis>author&#39;s email address</emphasis>, <emphasis>file creation date</emphasis>
 #
-# <ulink url="http://www.loria.fr/~molli/cvs/doc/cvs_12.html#SEC93">$Id: tcl-doc.xml,v 1.7 2006/07/17 05:38:38 torbenb Exp $</ulink>
+# <ulink url="http://www.loria.fr/~molli/cvs/doc/cvs_12.html#SEC93">$Id$</ulink>
 #
 </programlisting>
 
@@ -300,7 +300,7 @@ substitute an appropriate string when you check the file in.</para></listitem>
 #
 # jsalz@mit.edu, 7 Jun 2000
 #
-# $Id: tcl-doc.xml,v 1.7 2006/07/17 05:38:38 torbenb Exp $
+# $Id$
 
 </programlisting>
 
@@ -347,6 +347,6 @@ substitute an appropriate string when you check the file in.</para></listitem>
 </itemizedlist>
 
 
-<para><phrase role="cvstag">($Id: tcl-doc.xml,v 1.7 2006/07/17 05:38:38 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 </sect2>
 </sect1>

@@ -1,6 +1,6 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Thomas Kuczek (thomas@arsdigita.com)
--- $Id: cms-fix.sql,v 1.1 2005/04/18 19:19:25 cvs Exp $
+-- $Id$
 
 -- In order for Form Widget Wizard to work, the default value
 -- for the select form widget options param needs to be fixed

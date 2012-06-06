@@ -18,7 +18,7 @@
 -- Create database tables for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: intermedia-driver-tables-create.sql,v 1.2 2008/06/07 20:29:00 donb Exp $
+-- @version $Id$
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.

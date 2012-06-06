@@ -555,7 +555,7 @@ especially true for the <computeroutput>context_id</computeroutput> field.
 
 </para>
 
-<para><phrase role="cvstag">($Id: objects.xml,v 1.9 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Jon Salz [jsalz@arsdigita.com]
     @creation-date 9 May 2000
-    @cvs-id $Id: version-files.tcl,v 1.16 2008/09/29 08:40:33 gustafn Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
 }

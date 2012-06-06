@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: group-parties-remove.tcl,v 1.3 2009/04/17 12:47:06 cognovis Exp $
+    @cvs-id $Id$
 } {
     {object_id:integer,multiple,optional}
     {party_id:multiple,optional}

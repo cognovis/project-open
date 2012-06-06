@@ -20,7 +20,7 @@ ad_library {
     @author frank.bergmann@project-open.com
     @creation-date 2004-06-05
     @arch-tag: 49a5102d-7c06-4245-8b8d-15a3b12a8cc5
-    @cvs-id $Id: intranet-search-pg-procs.tcl,v 1.6 2006/04/07 23:07:40 cvs Exp $
+    @cvs-id $Id$
 
 }
 

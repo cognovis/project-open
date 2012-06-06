@@ -8,7 +8,7 @@
 #     
 #     @author Lars Pind (lars@pinds.com)
 #     @creation-date 22 August 2000
-#     @cvs-id $Id: workflow-gif.tcl,v 1.4 2011/01/21 18:43:27 kpmg Exp $
+#     @cvs-id $Id$
 # } {
 #     { tmpfile:allhtml "" }
 # } -validate {

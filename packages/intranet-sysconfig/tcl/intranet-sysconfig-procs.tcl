@@ -84,6 +84,22 @@ ad_proc -public im_sysconfig_component { } {
     "
 }
 
+
+
+ad_proc -public im_sysconfig_parse_groups { group_list } {
+    Takes a komma separated list of groups and returns a 
+    TCL list with group_ids.
+} {
+    set groups [split $group_list ","]
+    set result [list]
+    foreach g $groups {
+	set gid [im_profile::profile_id_from_name -profile [string trim $g]]
+	if {[string is integer $gid]} { lappend result $gid }
+    }
+    return $result
+}
+
+
 ad_proc -public im_sysconfig_load_configuration { file } {
     Reads the content of the configuration file and applies the
     configuration to the current server.
@@ -94,12 +110,22 @@ ad_proc -public im_sysconfig_load_configuration { file } {
     set csv_files [split $csv_files_content "\n"]
     
     set separator [im_csv_guess_separator $csv_files]
+    set separator ";"
+
     ns_log Notice "import-conf-2: trying with separator=$separator"
     # Split the header into its fields
     set csv_header [string trim [lindex $csv_files 0]]
+
     set csv_header_fields [im_csv_split $csv_header $separator]
     set csv_header_len [llength $csv_header_fields]
     set values_list_of_lists [im_csv_get_values $csv_files_content $separator]
+
+    # Privileges are granted on a "magic object" in the system
+    set privilege_grant_object_id [db_string priv_grant_object "
+	select min(object_id)
+	from acs_objects
+	where object_type = 'apm_service'
+    "]
 
 
     # ------------------------------------------------------------
@@ -155,6 +181,25 @@ ad_proc -public im_sysconfig_load_configuration { file } {
 		    if {$value != $old_value} {
 			db_dml menu_en "update im_menus set enabled_p = :value where label = :key"
 			append html "<li>line=$cnt, $type: Successfully update menu label='$value'.\n"
+		    } else {
+			append html "<li>line=$cnt, $type: No update necessary."
+		    }
+		} else {
+		    append html "<li>line=$cnt, $type: Did not find menu label='$key'.\n"
+		}
+	    }
+	    privilege {
+		set privilege_exists_p [db_string priv "select count(*) from acs_privileges where privilege = :key" -default 0]
+		if {0 != $privilege_exists_p} {
+		    set old_value [db_string old_value "select im_sysconfig_display_privileges(:key)"]
+		    if {1 || $value != $old_value} {
+
+			set group_list [im_sysconfig_parse_groups $value]
+			foreach g $group_list {
+			    db_string grant_perms "select acs_permission__grant_permission(:privilege_grant_object_id, :g, :key)"
+			    append html "<li>line=$cnt, $type: Granted privilege '$key' to group \#$g.\n"
+			}
+
 		    } else {
 			append html "<li>line=$cnt, $type: No update necessary."
 		    }

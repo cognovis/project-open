@@ -3,7 +3,7 @@
 
   @author Gustaf Neumann
   @creation-date 2007-08-13
-  @cvs-id $Id: cr-procs.tcl,v 1.45 2011/02/21 13:12:05 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo::db {
@@ -1555,23 +1555,7 @@ namespace eval ::xo::db {
     # remove as well vars and array starting with "__", assuming these
     # are volatile variables created by initialize_loaded_object or
     # similar mechanisms
-    set arrays {}
-    set scalars {}
-    foreach x [my info vars __*] {
-      if {[my array exists $x]} {
-	lappend arrays $x [my array get $x]
-	my array unset $x
-      } {
-	lappend scalars $x [my set $x]
-	my unset $x
-      }
-    }
-    return [list $arrays $scalars]
-  }
-  CrCache::Item instproc set_non_persistent_vars {vars} {
-    foreach {arrays scalars} $vars break
-    foreach {var value} $arrays {my array set $var $value}
-    foreach {var value} $scalars {my set $var $value}
+    foreach x [my info vars __*] {if {[my array exists $x]} {my array unset $x} {my unset $x}}
   }
   CrCache::Item instproc flush_from_cache_and_refresh {} {
     # cache only names with IDs
@@ -1591,9 +1575,8 @@ namespace eval ::xo::db {
       # session.
       set mixins [$obj info mixin]
       $obj mixin [list]
-      set npv [$obj remove_non_persistent_vars]
+      $obj remove_non_persistent_vars
       ns_cache set xotcl_object_cache $obj [$obj serialize]
-      $obj set_non_persistent_vars $npv
       $obj mixin $mixins
     } else {
       # in any case, flush the canonical name

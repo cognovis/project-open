@@ -3,7 +3,7 @@ ad_library {
 
     @author Peter Marklund
     @creation-date 20 April 2004
-    @cvs-id $Id: acs-automated-testing-procs.tcl,v 1.3 2006/10/29 19:07:12 donb Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats {web smoke} -libraries tclwebtest tclwebtest_example {

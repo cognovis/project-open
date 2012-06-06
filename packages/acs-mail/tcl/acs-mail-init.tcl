@@ -3,7 +3,7 @@ ad_library {
 
     @author John Prevost <jmp@arsdigita.com>
     @creation-date 2001-01-19
-    @cvs-id $Id: acs-mail-init.tcl,v 1.4 2007/08/09 17:01:33 podemo33 Exp $
+    @cvs-id $Id$
 }
 
 # Schedule periodic mail send events.  Its own thread, since it does

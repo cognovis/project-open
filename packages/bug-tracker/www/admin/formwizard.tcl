@@ -178,7 +178,7 @@ ad_page_contract {
 
     @author $author
     @creation-date [ns_fmttime [ns_time] "%B %d, %Y"]
-    @cvs-id $Id: formwizard.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 } {
     cancel:optional
     {$primary_key \"\"}

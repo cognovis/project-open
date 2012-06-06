@@ -257,7 +257,7 @@ ad_form -extend -name task -on_request {
 	        p.project_type_id,
 	        t.task_type_id,
 	        p.project_status_id,
-	        t.task_type_id,
+	        t.task_status_id,
 	        start_date, 
 	        end_date, 
 		p.reported_hours_cache,

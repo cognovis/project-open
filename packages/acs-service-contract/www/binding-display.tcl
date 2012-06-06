@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Jeff Davis <davis@xarg.net>
     @creation-date 2005-02-05
-    @cvs-id $Id: binding-display.tcl,v 1.3 2008/04/24 08:02:55 gustafn Exp $
+    @cvs-id $Id$
 } {
     id
     impl_name:trim,notnull

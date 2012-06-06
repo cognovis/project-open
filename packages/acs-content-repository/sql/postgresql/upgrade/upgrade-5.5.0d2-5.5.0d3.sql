@@ -3,7 +3,7 @@
 -- 
 -- @author Victor Guerra (vguerra@wu-wien.ac.at)
 -- @creation-date 2008-10-21
--- @cvs-id $Id: upgrade-5.5.0d2-5.5.0d3.sql,v 1.2 2008/10/24 13:50:14 victorg Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function content_folder__copy (integer,integer,integer,varchar,varchar)

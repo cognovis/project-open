@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: index.tcl,v 1.10 2010/09/29 18:29:20 cvs Exp $
+    @cvs-id $Id$
 } {
     {orderby "first_names,asc"}
     {format "normal"}

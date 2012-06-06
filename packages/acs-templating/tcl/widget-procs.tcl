@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
      
-# $Id: widget-procs.tcl,v 1.50 2008/09/08 18:50:15 daveb Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -563,27 +563,6 @@ ad_proc -public template::widget::checkbox {
 
     upvar $element_reference element
 
-    if { [exists_and_not_null element(custom)] } {
-
-	set params $element(custom)
-
-	# Get the "checked" parameter that defines if the checkbox should
-	# be checked
-        set checked ""
-	set checked_pos [lsearch $params checked]
-	if { $checked_pos >= 0 } {
-	    set checked [lindex $params [expr $checked_pos + 1]]
-	}
-
-	if {"" != $checked} {
-	    lappend tag_attributes checked
-	    lappend tag_attributes $checked
-	}
-    }
-
-    ns_log Notice "template::widget::checkbox: element=[array get element]"
-    ns_log Notice "template::widget::checkbox: tag_attributes=$tag_attributes, elem_ref=$element_reference"
-    
     return [input checkbox element $tag_attributes]
 }
 

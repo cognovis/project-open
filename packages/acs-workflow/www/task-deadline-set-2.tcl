@@ -4,7 +4,7 @@ ad_page_contract {
 
      @author Jesse Koontz  [jkoontz@arsdigita.com]
      @creation-date Wed Jan 10 16:28:05 2001
-     @cvs-id $Id: task-deadline-set-2.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+     @cvs-id $Id$
 } {
     task_id:integer
     return_url:optional

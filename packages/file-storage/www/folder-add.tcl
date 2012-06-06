@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: folder-add.tcl,v 1.2 2006/08/02 10:19:30 torbenb Exp $
+    @cvs-id $Id$
 } {
     folder_id:integer,optional,notnull
     upload_folder:trim,optional

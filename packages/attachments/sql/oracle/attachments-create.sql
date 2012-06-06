@@ -16,7 +16,7 @@
 -- attachments
 --
 -- @author arjun (arjun@openforce.net)
--- @version $Id: attachments-create.sql,v 1.5 2003/05/17 10:11:35 jeffd Exp $
+-- @version $Id$
 --
 
 create table attachments_fs_root_folder_map (

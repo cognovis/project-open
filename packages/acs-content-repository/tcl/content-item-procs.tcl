@@ -5,7 +5,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @author Jun Yamog
     @creation-date 2004-05-28
-    @cvs-id $Id: content-item-procs.tcl,v 1.22 2010/06/09 16:51:27 daveb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::item {}

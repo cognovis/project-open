@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Jeff Davis <davis@xarg.net>
     @creation-date 2005-02-02
-    @cvs-id $Id: search.tcl,v 1.3 2010/12/05 13:45:21 jeffd Exp $
+    @cvs-id $Id$
 } {
     request:integer,notnull
     expression:notnull

@@ -1,4 +1,4 @@
-<!-- $Id: master.adp,v 1.2 2003/09/22 19:44:28 lars Exp $ -->
+<!-- $Id$ -->
 
 <%= [ad_header $title] %>
 

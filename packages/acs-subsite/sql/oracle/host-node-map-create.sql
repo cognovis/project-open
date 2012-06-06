@@ -1,5 +1,5 @@
 -- @author Mark Dettinger (mdettinger@arsdigita.com)
--- $Id: host-node-map-create.sql,v 1.3 2003/01/16 13:37:08 jeffd Exp $
+-- $Id$
 
 -- This has not been tested against Oracle.
 create table host_node_map (

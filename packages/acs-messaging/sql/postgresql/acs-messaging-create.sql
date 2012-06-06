@@ -5,7 +5,7 @@
 -- @author Jon Griffin <jon@jongriffin.com>
 -- @creation-date 2000-08-27
 --
--- @cvs-id $Id: acs-messaging-create.sql,v 1.14 2006/09/25 20:54:17 byronl Exp $
+-- @cvs-id $Id$
 --  updated for OpenACS
 
 -- Object System Metadata ----------------------------------------------

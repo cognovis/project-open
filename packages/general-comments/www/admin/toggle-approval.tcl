@@ -8,7 +8,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: toggle-approval.tcl,v 1.2 2001/06/14 19:52:22 pascals Exp $
+    @cvs-id $Id$
 } {
     comment_id:integer,notnull
     {revision_id {}}

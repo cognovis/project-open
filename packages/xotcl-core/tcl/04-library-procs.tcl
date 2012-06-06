@@ -3,7 +3,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2007-10-11
-  @cvs-id $Id: 04-library-procs.tcl,v 1.3 2009/09/18 12:00:38 gustafn Exp $
+  @cvs-id $Id$
 }
 
 #

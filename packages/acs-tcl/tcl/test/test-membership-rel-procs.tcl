@@ -5,7 +5,7 @@ ad_library {
     @author Cesar Hernandez (cesarhj@galileo.edu)
     @creation-date 2006-07-31
     @arch-tag: 92464550-0231-4D33-8885-595623B00DB6
-    @cvs-id $Id: test-membership-rel-procs.tcl,v 1.2 2006/08/09 14:55:04 maltes Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats {api smoke} ad_proc_change_state_member  {

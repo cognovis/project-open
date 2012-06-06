@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @creation-date 23 October 2002
-    @cvs-id $Id: version-i18n-export.tcl,v 1.7 2003/10/22 11:39:21 lars Exp $  
+    @cvs-id $Id$  
 } {
     version_id:integer
     {return_url {[export_vars -base "version-i18n-index" { version_id }]}}

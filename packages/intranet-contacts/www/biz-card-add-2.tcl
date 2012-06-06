@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2008-03-28
-    @cvs-id $Id: biz-card-add-2.tcl,v 1.1 2009/03/17 18:07:44 phast Exp $
+    @cvs-id $Id$
 
 	@param object_type
 		Defines the object to be created/saved

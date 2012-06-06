@@ -6,7 +6,7 @@ ad_page_contract {
   @author mbryzek@mit.edu
 
   @creation-date 2000-09-18
-  @cvs-id $Id: index.tcl,v 1.21 2007/01/10 21:22:06 gustafn Exp $
+  @cvs-id $Id$
 } {
 } -properties {
     context:onevalue

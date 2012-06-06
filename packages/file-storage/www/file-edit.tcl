@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 5 Dec 2000
-    @cvs-id $Id: file-edit.tcl,v 1.10 2009/04/21 11:08:23 emmar Exp $
+    @cvs-id $Id$
 } {
     file_id:integer,notnull
 } -validate {

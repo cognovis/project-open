@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 25 September 2000
-    @cvs-id $Id: context-add-2.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+    @cvs-id $Id$
 } {
     context_key
     context_name

@@ -2,6 +2,8 @@ ad_library {
     Initialization for intranet-core
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
+    @author Klaus Hofeditz (klaus.hofeditz@project-open.com)
+
     @creation-date 16 August, 2007
     @cvs-id $Id$
 }
@@ -14,8 +16,6 @@ ns_cache create im_profile -timeout [ad_parameter -package_id [im_package_core_i
 # Create a global cache for im_company entries.
 # The cache is bound by global timeout of 1 hour currently.
 ns_cache create im_company -timeout [ad_parameter -package_id [im_package_core_id] CacheTimeoutCompanies "" 3600]
-
-
 
 
 # ---------------------------------------------------------------
@@ -264,7 +264,6 @@ foreach object_type $object_types {
 }
 
 
-
 ad_proc -public -callback im_project_new_redirect {
     {-object_id:required}
     {-status_id ""}
@@ -307,19 +306,12 @@ ad_proc -public -callback im_timesheet_task_new_redirect {
 } -
 
 
-
-
-
-
-
 ad_proc -public -callback im_dynfield_attribute_after_update {
     {-object_type:required}
     {-attribute_name:required}
 } {
     Callback to be executed after an attribute has been changed
 } -
-
-
 
 
 ad_proc -public -callback im_dynfield_widget_after_update {
@@ -528,4 +520,11 @@ ad_proc -public -callback im_biz_object_member_after_delete {
     {-user_id:required}
 } {
     Hook for executing callbacks after a user was removed from an object. 
+} - 
+
+ad_proc -public -callback im_before_member_add {
+    {-user_id:required}
+    {-object_id:required}
+} {
+    Callback to be executed before a user is added to a project
 } -

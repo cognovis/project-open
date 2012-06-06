@@ -1,7 +1,7 @@
 ad_page_contract {
     Display information about one procedure.
     
-    @cvs-id $Id: proc-view.tcl,v 1.6 2005/05/02 21:13:53 skaufman Exp $
+    @cvs-id $Id$
 } {
     proc
     source_p:optional,integer,trim

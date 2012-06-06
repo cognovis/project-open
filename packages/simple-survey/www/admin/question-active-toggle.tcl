@@ -6,7 +6,7 @@ ad_page_contract {
     @param  survey_id    survey we're operating with
     @param  question_id  denotes which question in survey we're updating
 
-    @cvs-id $Id: question-active-toggle.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 } {
 
     survey_id:integer

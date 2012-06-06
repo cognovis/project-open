@@ -6,7 +6,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: url-add-2.tcl,v 1.4 2005/03/01 00:01:37 jeffd Exp $
+    @cvs-id $Id$
 } {
     attach_id:integer,notnull
     parent_id:integer,notnull
@@ -23,7 +23,7 @@ ad_page_contract {
 }
 
 # authenticate the user
-set user_id [ad_conn user_id]
+set user_id [ad_verify_and_get_user_id]
 
 # check to see if the user can add an attachment
 ad_require_permission $parent_id write

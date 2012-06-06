@@ -4,7 +4,7 @@ ad_library {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-09-28
-    @cvs-id $Id: telecom-number-widget-procs.tcl,v 1.1 2009/01/22 19:38:48 cvs Exp $
+    @cvs-id $Id$
 
 }
 

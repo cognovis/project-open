@@ -2,7 +2,7 @@ ad_page_contract {
     Tells the user what he needs to do to ensure that all packages
     he owns are checked into CVS.
     @author Jon Salz [jsalz@arsdigita.com]
-    @cvs-id $Id: cvs-status.tcl,v 1.4 2007/01/10 21:21:59 gustafn Exp $
+    @cvs-id $Id$
 } {
 }
 

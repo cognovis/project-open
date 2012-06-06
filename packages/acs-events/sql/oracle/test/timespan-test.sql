@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-11-29
 --
--- @cvs-id $Id: timespan-test.sql,v 1.2 2003/09/30 12:10:02 mohanp Exp $
+-- @cvs-id $Id$
 
 -- In order for utPLSQL to work, you need to grant 
 -- specific permissions to your user:

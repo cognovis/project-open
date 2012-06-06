@@ -4,7 +4,7 @@ ad_library {
 
     @author ben@openforce.net
     @creation-date 2000-12-02
-    @cvs-id $Id: acs-private-data-procs.tcl,v 1.7 2009/01/30 03:24:59 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval acs_privacy {

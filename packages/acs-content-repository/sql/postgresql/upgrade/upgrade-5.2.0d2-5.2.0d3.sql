@@ -1,4 +1,4 @@
--- @cvs-id $Id: upgrade-5.2.0d2-5.2.0d3.sql,v 1.2 2004/04/29 15:41:17 jeffd Exp $
+-- @cvs-id $Id$
 -- @author davis@xarg.net
 -- cascade on delete of folder and of content_type
 alter table cr_folder_type_map drop constraint cr_folder_type_map_fldr_fk;

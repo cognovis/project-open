@@ -5,7 +5,7 @@
 -- @author jowell@jsabino.com
 -- @creation-date 2001-06-26
 --
--- $Id: utest.sql,v 1.3 2003/05/17 09:47:26 jeffd Exp $
+-- $Id$
 
 create function inline_0 ()
 returns integer  as '

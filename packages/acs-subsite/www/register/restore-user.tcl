@@ -1,6 +1,6 @@
 ad_page_contract {
     The page restores a user from the deleted state.
-    @cvs-id $Id: restore-user.tcl,v 1.5 2003/09/24 15:19:24 lars Exp $
+    @cvs-id $Id$
 } {
     {return_url {[ad_pvt_home]}}
 }

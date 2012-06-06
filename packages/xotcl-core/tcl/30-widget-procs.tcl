@@ -171,8 +171,8 @@ namespace eval ::xo::tdom {
         set HTMLattribute $attribute
       }
       #my msg "[my name] check for $attribute => [my exists $attribute]"
-      if {[my uplevel [list info exists $attribute]]} {
-        lappend pairs $HTMLattribute [my uplevel [list set $attribute]]
+      if {[my uplevel info exists $attribute]} {
+        lappend pairs $HTMLattribute [my uplevel set $attribute]
       }
     }
     return $pairs
@@ -458,7 +458,7 @@ namespace eval ::xo {
 
     Class Field \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""} {hide 0}} \
+	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""}} \
 	-instproc init {} {
 	  my set name [namespace tail [self]]
 	} \
@@ -472,7 +472,7 @@ namespace eval ::xo {
 
     Class BulkAction \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {name id {html {}} {hide 0}} \
+	-parameter {name id {html {}}} \
         -instproc actions {cmd} {
           #my init
           set grandParent [[my info parent] info parent]

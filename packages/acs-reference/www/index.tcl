@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Jon Griffin (jon@jongriffin.com)
     @creation-date 2001-08-26
-    @cvs-id $Id: index.tcl,v 1.3 2005/03/01 00:01:22 jeffd Exp $
+    @cvs-id $Id$
 } {
 } -properties {
   context_bar:onevalue

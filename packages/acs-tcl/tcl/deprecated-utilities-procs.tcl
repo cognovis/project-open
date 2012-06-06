@@ -8,7 +8,7 @@ ad_library {
 
     @author yon [yon@arsdigita.com]
     @creation-date 9 Jul 2000
-    @cvs-id $Id: deprecated-utilities-procs.tcl,v 1.8 2009/02/12 15:38:41 jeffd Exp $
+    @cvs-id $Id$
 
 }
 

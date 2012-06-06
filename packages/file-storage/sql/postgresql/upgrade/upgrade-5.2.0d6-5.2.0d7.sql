@@ -3,7 +3,7 @@
 -- 
 -- @author Stan Kaufman (skaufman@epimetrics.com)
 -- @creation-date 2005-09-30
--- @cvs-id $Id: upgrade-5.2.0d6-5.2.0d7.sql,v 1.2 2006/08/08 21:26:48 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- add package_id to acs_objects for all objects in FS (see Tip 42)

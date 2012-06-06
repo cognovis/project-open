@@ -5,7 +5,7 @@ ad_library {
     @creation-date 29 September 2000
     @author Karl Goldstein (karlg@arsdigita.com)
             Stanislav Freidin (sfreidin@arsdigita.com)
-    @cvs-id $Id: query-procs.tcl,v 1.29 2009/02/13 20:10:21 jeffd Exp $
+    @cvs-id $Id$
 
 }
 
@@ -18,7 +18,7 @@ namespace eval template::query {}
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
-# $Id: query-procs.tcl,v 1.29 2009/02/13 20:10:21 jeffd Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:

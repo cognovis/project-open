@@ -1,4 +1,4 @@
--- $Id: acs-service-contract-drop.sql,v 1.1 2001/09/19 22:59:01 donb Exp $
+-- $Id$
 
 @@ acs-sc-views-drop.sql
 @@ acs-sc-packages-drop.sql

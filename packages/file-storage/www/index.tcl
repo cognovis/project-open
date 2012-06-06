@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 6 Nov 2000
-    @cvs-id $Id: index.tcl,v 1.30 2007/06/15 17:40:29 matthewg Exp $
+    @cvs-id $Id$
 } {
     {folder_id:integer [fs_get_root_folder]}
     {n_past_days:integer "99999"}

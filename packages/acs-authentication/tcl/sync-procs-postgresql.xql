@@ -13,6 +13,7 @@
                    authority_id,
                    (select aa.pretty_name from auth_authorities aa where aa.authority_id = j.authority_id) as authority_pretty_name,
                    message,
+		   document,
                    creation_user,
                    to_char(doc_start_time, 'YYYY-MM-DD HH24:MI:SS') as doc_start_time,
                    to_char(doc_end_time, 'YYYY-MM-DD HH24:MI:SS') as doc_end_time,

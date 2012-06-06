@@ -17,7 +17,7 @@ ad_page_contract {
 
     @creation-date 12/19/98
     @author philg@mit.edu
-    @cvs-id $Id: display-sql.tcl,v 1.4 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 } {
     url:notnull
     { version_id "" }

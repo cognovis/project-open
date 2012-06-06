@@ -1,7 +1,7 @@
 --
 -- Adding hierarchy, parallelism and timed actions
 -- 
--- @cvs-id $Id: upgrade-1.2-2.0d1.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @cvs-id $Id$
 --
 
 ----------------------------------------------------------------------
@@ -25,7 +25,7 @@ alter table workflows
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 --
--- @cvs-id $Id: upgrade-1.2-2.0d1.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @cvs-id $Id$
 
 create or replace function workflow_case_pkg__delete (integer)
 returns integer as '

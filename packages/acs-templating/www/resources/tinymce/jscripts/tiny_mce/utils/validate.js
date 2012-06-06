@@ -1,5 +1,5 @@
 /**
- * $Id: validate.js,v 1.2 2009/05/08 17:34:11 daveb Exp $
+ * $Id$
  *
  * Various form validation methods.
  *

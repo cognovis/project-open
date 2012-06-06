@@ -4,13 +4,12 @@
 
 <if @admin_p@ eq 1>
   <div style="float: right;">
-    <a href="cadmin/" class="button">#categories.lt_Category_Administrati#</a>
+    <a href="cadmin/" class="button">Category Administration</a>
   </div>
 </if>
 
-<h3> #categories.lt_Select_Trees_for_brow# </h3>
+<h3> Select Trees for browsing </h3>
 <listtemplate name="trees"></listtemplate>
 
-<h3> #categories.lt_Search_for_a_category# </h3>
+<h3> Search for a category </h3>
 <formtemplate id="search_form"></formtemplate>
-

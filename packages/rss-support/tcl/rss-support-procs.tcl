@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-01-22
     @arch-tag: 601774f4-7b83-4eee-9b36-97c278ba1bd4
-    @cvs-id $Id: rss-support-procs.tcl,v 1.2 2005/02/24 13:33:25 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::rss_support:: {}

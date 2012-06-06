@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-06-13
-    @cvs-id $Id: permissions-user-add.tcl,v 1.3 2005/01/13 13:56:31 jeffd Exp $
+    @cvs-id $Id$
 } {
     object_id:integer
 }

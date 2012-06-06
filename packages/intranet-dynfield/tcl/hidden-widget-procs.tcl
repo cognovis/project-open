@@ -5,7 +5,7 @@ ad_library {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-25
-    @cvs-id $Id: hidden-widget-procs.tcl,v 1.4 2006/04/07 23:07:39 cvs Exp $
+    @cvs-id $Id$
 }
 
 

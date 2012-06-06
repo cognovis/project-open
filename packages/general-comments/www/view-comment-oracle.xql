@@ -21,7 +21,7 @@
                   r.revision_id,
                   r.title,
 	          r.content, 
-	          r.mime_type as comment_mime_type, 
+	          r.mime_type, 
 	          o.creation_user,
 	          o.creation_date,
 	          acs_object.name(o.creation_user) as author
@@ -45,7 +45,7 @@
 	          r.revision_id,
                   r.title,
 	          r.content, 
-	          r.mime_type as comment_mime_type, 
+	          r.mime_type, 
 	          o.creation_user,
 	          o.creation_date,
 	          acs_object.name(o.creation_user) as author
@@ -57,6 +57,21 @@
                   g.comment_id = r.item_id and
 	          r.revision_id = content_item.get_live_revision(:comment_id)
     
+      </querytext>
+</fullquery>
+
+ 
+<fullquery name="get_revisions">      
+      <querytext>
+      
+    select r.revision_id,
+           to_char(o.creation_date, 'MM-DD-YY HH24:MI:SS') as revision_date
+      from cr_revisions r,
+           acs_objects o
+     where r.item_id = :comment_id and
+           o.object_id = r.revision_id
+     order by o.creation_date desc
+
       </querytext>
 </fullquery>
 

@@ -4,7 +4,7 @@
 <!-- @author  (nsadmin@barna.competitiveness.com) -->
 <!-- @creation-date 2004-09-21 -->
 <!-- @arch-tag 8bcf633c-acde-47d0-a846-d6967fdaf1b7 -->
-<!-- @cvs-id $Id: new-company-from-freelance-postgresql.xql,v 1.2 2005/03/02 21:38:39 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

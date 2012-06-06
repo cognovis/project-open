@@ -4,7 +4,7 @@ ad_page_contract {
 
      @author Jesse Koontz  [jkoontz@arsdigita.com]
      @creation-date Thu Jan 25 11:16:04 2001
-     @cvs-id $Id: assign-transition-role-2.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+     @cvs-id $Id$
 } {
     workflow_key:notnull
     role_key:notnull

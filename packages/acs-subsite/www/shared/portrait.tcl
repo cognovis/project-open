@@ -2,7 +2,7 @@ ad_page_contract {
     displays a user's portrait to other users
 
     @creation-date 26 Sept 1999
-    @cvs-id $Id: portrait.tcl,v 1.8 2009/03/31 14:58:07 emmar Exp $
+    @cvs-id $Id$
 } {
     user_id:integer
 } -properties {

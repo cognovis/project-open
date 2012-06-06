@@ -3,7 +3,7 @@ ad_library {
 
     @author Jon Griffin <jon@jongriffin.com>
     @creation-date 2001-08-28
-    @cvs-id $Id: acs-reference-procs.tcl,v 1.1 2001/08/29 04:37:15 jong Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -private acs_reference_get_db_structure {

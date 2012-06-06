@@ -5,7 +5,7 @@
 -- @author jowell@jsabino.com
 -- @creation-date 2001-06-26
 --
--- $Id: oracle-compat-drop.sql,v 1.2 2003/05/17 09:46:57 jeffd Exp $
+-- $Id$
 
 drop function dow_to_int(varchar);
 drop function next_day(timestamptz,varchar);

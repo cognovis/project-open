@@ -5,7 +5,7 @@ ad_library {
     @author aegrumet@alum.mit.edu
 
     @creation-date Fri Oct 26 11:43:26 2001
-    @cvs-id $Id: rss-generation-service-procs.tcl,v 1.19 2010/10/30 21:43:01 gustafn Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -private rss_gen_service {} {
@@ -45,6 +45,12 @@ ad_proc -private rss_gen_report subscr_id {
         ns_log Error "Empty datasource returned from $impl_name for context $summary_context_id in rss_gen_report. Probably because the implementation hasn't been bound."
         return
     }
+    ns_log notice "
+DB --------------------------------------------------------------------------------
+DB DAVE debugging procedure rss_gen_report
+DB --------------------------------------------------------------------------------
+DB datasource = '${datasource}' 
+DB --------------------------------------------------------------------------------"
     set args ""
     foreach {name val} $datasource {
 	regsub -all {[\]\[\{\}""\\$]} $val {\\&} val
@@ -53,14 +59,13 @@ ad_proc -private rss_gen_report subscr_id {
 	    set $name $val
 	}
     }
-    set xml [ad_apply rss_gen $args]
+    set xml [apply rss_gen $args]
 
     # Write report.
     set report_file [rss_gen_report_file -summary_context_id $summary_context_id -impl_name $impl_name -assert]
 
     set fh [open $report_file w]
     puts $fh $xml
-    fconfigure $fh -encoding [ns_config "ns/parameters" OutputCharset]
     close $fh
 
     # Copy some useful display information into the

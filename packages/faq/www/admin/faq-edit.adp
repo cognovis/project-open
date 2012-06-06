@@ -3,7 +3,8 @@
 <property name="title">@title;noquote@</property>
 
 <form action="@action@">
- <div><input type="hidden" name="faq_id" value="@faq_id@"></div>
+ <input type="hidden" name="faq_id" value="@faq_id@">
+ <blockquote>
   <table>
    <tr>
     <th align="right">#faq.Name#</th>
@@ -29,5 +30,6 @@
     <th></th>
     <td><input type="submit" value="@submit_label@"></td>
   </table>
+ </blockquote>
 </form>
 

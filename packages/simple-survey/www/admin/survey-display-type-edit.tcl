@@ -3,7 +3,7 @@ ad_page_contract {
     Set the display type
 
     @param survey_id survey whose properties we're changing
-    @cvs-id $Id: survey-display-type-edit.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 
 } {
     survey_id:integer

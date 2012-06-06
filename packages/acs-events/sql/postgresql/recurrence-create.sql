@@ -4,10 +4,11 @@
 --
 -- @author W. Scott Meeks
 --
--- $Id: recurrence-create.sql,v 1.3 2010/11/08 13:10:35 victorg Exp $
+-- $Id$
 
 -- Sequence for recurrence tables
 create sequence recurrence_sequence start 1;
+create view recurrence_seq as select nextval('recurrence_sequence') as nextval;
 
 -- These columns describe how an event recurs.  The are modeled on the Palm DateBook.
 -- The interval_type 'custom' indicates that the PL/SQL function referenced in
@@ -153,7 +154,7 @@ declare
        v_interval_type_id	  recurrence_interval_types.interval_type%TYPE;
 begin
 
-       select nextval(''recurrence_sequence'') into v_recurrence_id from dual;
+       select recurrence_seq.nextval into v_recurrence_id from dual;
         
        select interval_type
        into   v_interval_type_id 

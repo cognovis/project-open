@@ -53,7 +53,7 @@ end;' language 'plpgsql';
 
 
 
-create or replace function im_dynfield_attribute__new_only_dynfield (
+create or replace function im_dynfield_attribute__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	integer, varchar, char(1), char(1), integer, varchar, char(1), char(1)
 ) returns integer as '

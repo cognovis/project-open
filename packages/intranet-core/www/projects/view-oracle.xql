@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag 2a30e494-185c-461d-88be-8b863f5372a7 -->
-<!-- @cvs-id $Id: view-oracle.xql,v 1.1 2004/10/07 18:56:43 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

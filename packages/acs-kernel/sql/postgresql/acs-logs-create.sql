@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-10-02
--- @cvs-id $Id: acs-logs-create.sql,v 1.7 2009/02/10 18:31:54 jeffd Exp $
+-- @cvs-id $Id: acs-logs-create.sql,v 1.2 2010/10/19 20:11:38 po34demo Exp $
 --
 
 create sequence t_acs_log_id_seq;

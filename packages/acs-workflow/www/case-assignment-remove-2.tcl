@@ -1,7 +1,7 @@
 ad_page_contract {
     Remove manual assignment.
 
-    @cvs-id $Id: case-assignment-remove-2.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+    @cvs-id $Id$
     @author Lars Pind (lars@pinds.com)
     @creation-date Feb 21, 2001
 } {

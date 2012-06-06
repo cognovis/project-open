@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Michael Yoon (michael@arsdigita.com)
     @creation-date 2000-08-23
-    @cvs-id $Id: plsql-subprograms-all.tcl,v 1.4 2002/09/06 21:49:54 jeffd Exp $
+    @cvs-id $Id$
 } -properties {
     title:onevalue
     context:onevalue

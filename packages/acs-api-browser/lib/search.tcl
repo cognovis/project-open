@@ -1,7 +1,7 @@
 #
 # API Browser search widget
 #
-# @cvs-id $Id: search.tcl,v 1.6 2007/03/30 00:13:18 victorg Exp $
+# @cvs-id $Id$
 #
 # Expects: query_string:optional
 #

@@ -223,7 +223,7 @@ what its contents can be and lists its attributes.</entry>
 
 <para>Start with the <xref linkend="docbook-primer"/></para>
 
-<para><phrase role="cvstag">($Id: psgml-mode.xml,v 1.8 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

@@ -2,7 +2,7 @@ ad_library {
 
     Set up the path to the spell-checker in an nsv cache.
 
-    @cvs-id $Id: spellcheck-init.tcl,v 1.16 2008/01/21 13:21:26 gustafn Exp $
+    @cvs-id $Id$
     @author Ola Hansson (ola@polyxena.net)
     @creation-date 2003-10-04
 

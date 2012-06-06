@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 25 September 2000
-    @cvs-id $Id: index.tcl,v 1.3 2009/10/26 11:18:41 po34demo Exp $
+    @cvs-id $Id$
 } -properties {
     context 
     workflows
@@ -45,8 +45,30 @@ db_multirow  -extend {row_even_p} workflows all_workflows {
     incr ctr
 }
 
+set user_id [ad_maybe_redirect_for_registration]
+
 template::multirow create actions url title
 template::multirow append actions "wizard/" "[_ acs-workflow.New]"
 template::multirow append actions "workflow-add" "[_ acs-workflow.New_1]"
+
+# left navbar
+
+set left_navbar_html ""
+set admin_link ""
+
+if { [im_is_user_site_wide_or_intranet_admin $user_id] } {
+    set admin_link "<li><a href='/acs-workflow/admin/'> [lang::message::lookup "" acs-workflow.Admin_Workflows "Admin Workflows"]</a></li>"
+}
+
+set left_navbar_html "
+        <div class='filter-block'>
+            <div class='filter-title'>[lang::message::lookup "" acs-workflow.Workflows "Workflows"]</div>
+            <ul>
+                <li><a href='/intranet-workflow/'>[lang::message::lookup "" acs-workflow.Workflow_Cases "Workflow Cases"]</a></li>
+                $admin_link
+            </ul>
+        </div>
+        <hr/>
+"
 
 ad_return_template 

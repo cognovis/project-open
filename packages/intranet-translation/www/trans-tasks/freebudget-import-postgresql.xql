@@ -4,7 +4,7 @@
 <!-- @author  (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-09-20 -->
 <!-- @arch-tag 232ff8e4-83ff-42af-9f88-88d6d946c21c -->
-<!-- @cvs-id $Id: freebudget-import-postgresql.xql,v 1.3 2006/07/01 15:47:12 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

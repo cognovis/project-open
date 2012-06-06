@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: contact-groups.tcl,v 1.2 2009/04/16 20:14:35 cognovis Exp $
+    @cvs-id $Id$
 } {
     {party_id:integer,notnull}
     {return_url "./"}

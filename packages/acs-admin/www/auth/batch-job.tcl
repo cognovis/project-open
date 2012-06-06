@@ -58,6 +58,9 @@ ad_form \
         {doc_message:text(inform)
             {label "\#acs-admin.Document_message\#"}                
         }            
+        {document_preview:text(inform)
+            {label "\#acs-admin.Document\#"}
+        }
         {document_download:text(inform)
             {label "\#acs-admin.Document\#"}
         }
@@ -82,7 +85,9 @@ ad_form \
         set job_start_time [lc_time_fmt $batch_job(job_start_time) "%x %X"]
         set job_end_time [lc_time_fmt $batch_job(job_end_time) "%x %X"]
 
-        set document_download "<a href=\"[export_vars -base batch-document-download { job_id }]\">[_ acs-admin.download]</a>"
+        set document_download "<a href=\"[export_vars -base batch-document-download { job_id }]\">[lang::message::lookup "" acs-admin.Download_entire_document "Download entire document"]</a>"
+	set document_preview "<pre>[string range $batch_job(document) 0 3000]</pre>"
+	if {[string length $document_preview] >= 3000} { append document_preview " ..." }
     }
 
 list::create \

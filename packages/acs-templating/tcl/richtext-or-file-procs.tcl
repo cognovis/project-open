@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 2003-01-27
-    @cvs-id $Id: richtext-or-file-procs.tcl,v 1.5 2007/11/21 14:08:44 emmar Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template {}

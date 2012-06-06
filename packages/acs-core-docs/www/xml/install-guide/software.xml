@@ -586,5 +586,5 @@
       </itemizedlist>
     </listitem>
   </itemizedlist>
-  <para><phrase role="cvstag">($Id: software.xml,v 1.25 2009/09/13 23:54:41 donb Exp $)</phrase></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>
 </sect1>

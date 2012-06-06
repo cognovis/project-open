@@ -180,6 +180,7 @@ db_foreach all_component_of_type $component_select_sql {
     <nobr><a href=\"[export_vars -base "edit" {{return_url $current_url} plugin_id}]\">$plugin_name</a></nobr>
   </td>
   <td><a href='$toggle_link'>$enabled_p</a></td>
+  <td><a href=[export_vars -base "/intranet/admin/toggle-enabled" {plugin_id return_url}]>$enabled_html</a></td>
   <td>$package_name</td>
   <td>$location</td>
   <td>$page_url</td>

@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-05-16
-    @cvs-id $Id: list-procs.tcl,v 1.57 2009/02/25 14:45:58 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template {}

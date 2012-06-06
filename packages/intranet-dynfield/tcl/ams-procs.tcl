@@ -4,7 +4,7 @@ Support procs for the ams package
 
 @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-09-28
-    @cvs-id $Id: ams-procs.tcl,v 1.2 2009/01/22 19:38:11 cvs Exp $
+    @cvs-id $Id$
 
 }
 
@@ -349,7 +349,7 @@ ad_proc -public ams::attribute::new {
 
 
 	set ams_attribute_id [db_string new_dynfield "
-		select im_dynfield_attribute__new_only_dynfield (
+		select im_dynfield_attribute__new (
 			null,
 			'im_dynfield_attribute',
 			now(),

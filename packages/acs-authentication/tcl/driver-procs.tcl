@@ -3,7 +3,7 @@ ad_library {
 
     @author Simon Carstensen (simon@collaobraid.biz)
     @creation-date 2003-08-27
-    @cvs-id $Id: driver-procs.tcl,v 1.7 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval auth {}

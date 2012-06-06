@@ -3,7 +3,7 @@ ad_library {
 
     @author Simon Carstensen
     @creation-date 15 November 2003
-    @cvs-id $Id: categories-procs.tcl,v 1.1 2003/11/15 16:00:41 simonc Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case category_tree_add {

@@ -11,7 +11,7 @@ ad_page_contract {
 
     @author Todd Nightingale (tnight@arsdigita.com)
     @creation-date Jul 14, 2000
-    @cvs-id $Id: proc-search.tcl,v 1.12 2007/01/10 21:22:01 gustafn Exp $
+    @cvs-id $Id$
 } {
     {name_weight:optional 0}
     {doc_weight:optional 0}

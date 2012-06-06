@@ -8,7 +8,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-09
     @arch-tag: da21d1e8-0729-4f3b-8bef-3b847a979fec
-    @cvs-id $Id: content-permission-procs.tcl,v 1.3 2004/06/26 17:06:47 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::permission {}

@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-content-repository-procs.tcl,v 1.3 2005/03/01 00:01:22 jeffd Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case -cats {smoke api} acs_content_repository_trivial_smoke_test {

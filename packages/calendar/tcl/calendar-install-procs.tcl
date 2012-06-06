@@ -3,7 +3,7 @@ ad_library {
 
     @creation-date 2004-04-01
     @author Jeff Davis davis@xarg.net
-    @cvs-id $Id: calendar-install-procs.tcl,v 1.2 2004/04/01 22:44:35 jeffd Exp $
+    @cvs-id $Id$
 }
 
 namespace eval calendar::install {}

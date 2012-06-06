@@ -7,7 +7,7 @@
 -- @author Michael Bryzek (mbryzek@arsdigita.com)
 -- @creation-date 2001-02-20
 
--- $Id: acs-subsite-test-harness.sql,v 1.1 2001/04/05 18:23:38 donb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

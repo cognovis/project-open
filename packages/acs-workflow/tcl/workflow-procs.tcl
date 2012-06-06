@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 13 July 2000
-    @cvs-id $Id: workflow-procs.tcl,v 1.5 2007/08/07 19:16:01 cvs Exp $
+    @cvs-id $Id$
 }
 
 

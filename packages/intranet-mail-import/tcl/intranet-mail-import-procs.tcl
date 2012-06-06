@@ -5,7 +5,7 @@ ad_library {
     @author Eric Lorenzo (eric@openforce.net)
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 9 August 2005
-    @cvs-id $Id: intranet-mail-import-procs.tcl,v 1.8 2009/03/20 13:43:53 cvs Exp $
+    @cvs-id $Id$
 
 }
 
@@ -75,11 +75,20 @@ namespace eval im_mail_import {
 	regsub -all {\<} $line " " line
 	regsub -all {\>} $line " " line
 	regsub -all {\"} $line " " line
+	regsub -all {\]} $line " " line
+	regsub -all {\[} $line " " line
+
+        ns_log Notice "im_mail_import.extract_project_nrs - regsubed: line=$line"
 
 	set tokens [split $line " "]
+	ns_log Notice "im_mail_import.extract_project_nrs - tokens: $tokens"
+
 	set project_nrs [list]
 
 	foreach token $tokens {
+
+	    ns_log Notice "im_mail_import.extract_project_nrs-loop-token: $token"
+
 	    # Tokens must be built from aphanum plus "_" or "-".
 	    if {![regexp {^[a-z0-9_\-]+$} $token match ]} { continue }
 
@@ -284,11 +293,8 @@ namespace eval im_mail_import {
 
 	    set spam_header ""
 	    if {[info exists email_headers(x-spambayes-classification)]} {
-
-# Temporarily disabled spam - until
-# Spambayes is trained correctly.
-#
-#		set spam_header $email_headers(x-spambayes-classification)
+		# Temporarily disabled spam - until Spambayes is trained correctly.
+		# set spam_header $email_headers(x-spambayes-classification)
 		ns_log Notice "im_mail_import.process_mails7: spam_header=$spam_header"
 	    } else {
 		ns_log Notice "im_mail_import.process_mails8: No spam header found"
@@ -381,44 +387,150 @@ namespace eval im_mail_import {
 	    set peeraddr "0.0.0.0"
 	    set approved_p 1
 	    ns_log Notice "im_mail_import.process_mails16d: Creating email"
-	    set send_date [db_string now "select now() from dual"]
+	    set send_date [db_string now "select current_date from dual"]
 	    set header_from $from_header
 	    set header_to $to_header
 	    set rfc822_id $rfc822_message_id
 	    ns_log Notice "im_mail_import.process_mails19: rfc822_id='$rfc822_id'"
 	    append debug "rfc822_id='$rfc822_id'\n"
 
-	    ns_log Notice "im_mail_import.process_mails20a: Before catch"
+	    ns_log Notice "im_mail_import.process_mails19a: creating spam_item ...."
 
-	    catch {
-		set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
-		ns_log Notice "im_mail_import.process_mails20b: created spam_item \#$cr_item_id"
-		append debug "created spam_item \#$cr_item_id\n"
+	    if {[catch {
+	 
+		# set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
+		set sql "		
+		select im_mail_import_new_message (
+		       :cr_item_id,    -- cr_item_id
+		       null,           -- reply_to
+		       null,           -- sent_date
+		       null,           -- sender
+		       :rfc822_id,     -- rfc822_id
+		       :subject,       -- title
+		       :html,          -- html_text
+		       :plain,         -- plain_text
+		       :context_id,    -- context_id
+		       now(),          -- creation_date
+		       :user_id,       -- creation_user
+		       :peeraddr,      -- creation_ip
+		       'im_mail_message', -- object_type
+		       :approved_p,    -- approved_p
+		       :send_date,     --send_date
+		       :header_from,   -- header_from
+		       :header_to      -- header_to
+       		    );
+                "
 
+		set cr_item_id [db_string get_data $sql -default 0]
+
+		ns_log Notice "im_mail_import.process_mails20: created cr_item_id: \#$cr_item_id\n"
+	        append debug "created spam_item \#$cr_item_id\n"
+
+		ns_log Notice "im_mail_import.process_mails21: No assigning non_emp_ids: $non_emp_ids"		
 		foreach non_emp_id $non_emp_ids {
 		    set rel_type "im_mail_from"
 		    set object_id_two $non_emp_id
 		    set object_id_one $cr_item_id
 		    set creation_user $user_id
 		    set creation_ip $peeraddr
-		    set rel_id [db_exec_plsql im_mail_import_new_rel {}]
-		    ns_log Notice "im_mail_import.process_mails21: created relationship \#$rel_id"
+
+		    # set rel_id [db_exec_plsql im_mail_import_new_rel {}]
+		    set sql "
+		      select acs_rel__new (
+		              null,           -- rel_id
+			      :rel_type,      -- rel_type
+			      :object_id_one,
+			      :object_id_two,
+			      null,           -- context_id
+			      :creation_user,
+			      :creation_ip
+		      );
+		    "
+
+		    set rel_id [db_string get_data $sql -default 0]
+		    ns_log Notice "im_mail_import.process_mails21a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
 		}
-
+		ns_log Notice "im_mail_import.process_mails22: No assigning project_ids: $project_ids"		
 		foreach project_id $project_ids {
 		    set rel_type "im_mail_related_to"
 		    set object_id_two $project_id
 		    set object_id_one $cr_item_id
 		    set creation_user $user_id
 		    set creation_ip $peeraddr
-		    set rel_id [db_exec_plsql im_mail_import_new_rel {}]
-		    ns_log Notice "im_mail_import.process_mails22: created relationship \#$rel_id"
+
+		    # set rel_id [db_exec_plsql im_mail_import_new_rel {}]
+                    set sql "
+                      select acs_rel__new (
+                              null,           -- rel_id
+                              :rel_type,      -- rel_type
+                              :object_id_one,
+                              :object_id_two,
+                              null,           -- context_id
+                              :creation_user,
+                              :creation_ip
+                      );
+                    "
+                    set rel_id [db_string get_data $sql -default 0]
+
+		    ns_log Notice "im_mail_import.process_mails22a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
 		}
+	    } err_msg]} {
+                    ns_log Notice "im_mail_import.process_mails19b: err creating spam item / building rel.ships: $err_msg"
 	    }
 
+	    # ###
+            # store attachments in project folder
+	    # ###
+
+            # get attachments
+            array set email {}
+            acs_mail_lite::parse_email -file $msg -array email
+            set email_files $email(files)
+
+            set file_name ""
+
+            foreach project_id $project_ids {
+                # determine project folder
+                set project_path [im_filestorage_project_path $project_id]
+                append project_path "/mails"
+
+                # Make sure the mail folder in projects exists, if not create it
+                if {![file exists $project_path]} {
+                    if {[catch { ns_mkdir $project_path } errmsg]} {
+                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
+                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
+                        return $debug
+                    }
+                }
+
+                # create sub-directory to store attachments for cr_item
+                append project_path "/$cr_item_id"
+
+
+                if {[catch { ns_mkdir $project_path } errmsg]} {
+                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
+                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
+                        return $debug
+                }
+
+                foreach attachment $email_files {
+                    append file_name $project_path "/" [lindex $attachment 2]
+                    set content [lindex $attachment 3]
+                    set fp [open $file_name w]
+                    fconfigure $fp -translation binary
+                    fconfigure $fp -encoding binary
+                    puts -nonewline $fp $content
+                    close $fp
+                    set file_name ""
+                }
+            }
+
+            # ###
 	    # Move to "processed" 
+            # ###
+
 	    if {[catch {
 		ns_log Notice "im_mail_import.process_mails23: Moving '$msg' to processed: '$processed_folder/$msg_body'"
 		append debug "Moving '$msg' to processed: '$processed_folder/$msg_body'\n"
@@ -464,13 +576,13 @@ namespace eval im_mail_import {
     } {
 	# nothing
     }
-
 }
 
 
 ad_proc im_mail_import_user_component {
     {-view_name ""}
     {-rel_user_id 0}
+    {-yui_support_p 0}
 } {
     Show a list of imported mails
 } {
@@ -478,75 +590,105 @@ ad_proc im_mail_import_user_component {
     set bgcolor(1) " class=rowodd"
 
     if {0 == $rel_user_id} {
-	set rel_user_id [ad_get_user_id]
+        set rel_user_id [ad_get_user_id]
     }
 
-    set html "
-<table>
-<tr class=rowtitle>
-   <td class=rowtitle align=center colspan=99>Associated Emails</td>
-</tr>
-<tr class=rowtitle>
-   <td class=rowtitle align=center>Date</td>
-   <td class=rowtitle align=center>Subject</td>
-   <td class=rowtitle align=center>From</td>
-   <td class=rowtitle align=center>To</td>
-</tr>
-"
+    # HTML Overlay
+    if { $yui_support_p } {
+        set js_include [template::adp_include /packages/intranet-mail-import/www/js/overlay ""]
+        append js_include [template::adp_include /packages/intranet-mail-import/www/js/client-pagination [list object_id $rel_user_id] ]
+    }
+
+    set html "<div id=\"ctx\"></div>"
+
+    if { $yui_support_p } {
+        append html "<div class=\"yui-skin-sam\">"
+        append html "<div id=\"paginated\"></div>"
+    }
 
     set sql "
-	select
-		amb.*,
-		to_char(ao.creation_date, 'YYYY-MM-DD') as date_formatted
-	from
-		acs_rels ar,
-		acs_mail_bodies amb,
-		acs_objects ao
-	where
-		ar.object_id_one = amb.body_id
-		and amb.body_id = ao.object_id
-		and ar.object_id_two = :rel_user_id
+        select
+                amb.*,
+                to_char(ao.creation_date, 'YYYY-MM-DD') as date_formatted
+        from
+                acs_rels ar,
+                acs_mail_bodies amb,
+                acs_objects ao
+        where
+                ar.object_id_one = amb.body_id
+                and amb.body_id = ao.object_id
+                and ar.object_id_two = :rel_user_id
+        order by
+                ao.creation_date DESC
     "
 
     set ctr 0
+
+    set html_lines ""
     db_foreach mail_list $sql {
-
-	append html "
-<tr $bgcolor([expr $ctr%2])>
-   <td>$date_formatted</td>
-   <td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\">
-     [string_truncate -len 50 $header_subject]
-  </a></td>
-   <td>[string_truncate -len 25 $header_from]</td>
-   <td>[string_truncate -len 25 $header_to]</td>
-
-</tr>
-"
-	incr ctr
+        if { !$yui_support_p } {
+            append html_lines "
+                <tr $bgcolor([expr $ctr%2])>
+                        <td>$date_formatted</td>
+                        <td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\" id=\"$body_id\">[string_truncate -len 50 $header_subject]</a></td>
+                        <td>[string_truncate -len 25 $header_from]</td>
+                        <td>[string_truncate -len 25 $header_to]</td>
+                </tr>
+            "
+        }
+        incr ctr
     }
 
-    if {0 == $ctr} {
-	append html "
-<tr $bgcolor([expr $ctr%2])>
-   <td colspan=99 align=center>No entries found</td>
-</tr>
-"
+    if {0 == $ctr && !$yui_support_p} {
+        append html "<tr> <td colspan='99' align='center'>No entries found</td></tr>"
     }
 
-    append html "
-</table>
-"
+    if { !$yui_support_p && 0 != $ctr} {
+        append html "
+                <table>
+                        <tr class=rowtitle>
+                           <td class=rowtitle align=center colspan=99>Associated Emails</td>
+                        </tr>
+                        <tr class=rowtitle>
+                           <td class=rowtitle align=center>Date</td>
+                           <td class=rowtitle align=center>Subject</td>
+                           <td class=rowtitle align=center>From</td>
+                           <td class=rowtitle align=center>To</td>
+                        </tr>
+                        $html_lines
+                </table>
+        "
+    }
 
+    if { $yui_support_p } {
+
+        # Version 2.7.0 (ajaxhelper) and Version 3.4.1 would not work
+        # Get Sources from Yahoo until switch/refactoring to ExtJS
+
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/yahoo-dom-event/yahoo-dom-event.js" -order "100"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/container/container-min.js" -order "101"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/connection/connection-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/element/element-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/paginator/paginator-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/datasource/datasource-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/datatable/datatable-min.js" -order "102"
+        template::head::add_javascript -src "http://yui.yahooapis.com/2.8.1/build/json/json-min.js" -order "102"
+
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/container/assets/skins/sam/container.css" -media "screen" -order "103"
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/paginator/assets/skins/sam/paginator.css" -media "screen" -order "104"
+        template::head::add_css -href "http://yui.yahooapis.com/2.8.1/build/datatable/assets/skins/sam/datatable.css" -media "screen" -order "105"
+
+        append html $js_include
+        append html "</div>"
+    }
     return $html
 }
 
-
-
 ad_proc im_mail_import_project_component {
     {-project_id 0}
+    {-yui_support_p 0}
 } {
     Show a list of imported mails
 } {
-    return [im_mail_import_user_component -rel_user_id $project_id]
+    return [im_mail_import_user_component -rel_user_id $project_id -yui_support_p $yui_support_p]
 }
-

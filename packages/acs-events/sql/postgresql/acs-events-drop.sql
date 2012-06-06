@@ -1,6 +1,6 @@
 -- packages/acs-events/sql/acs-events-drop.sql
 --
--- $Id: acs-events-drop.sql,v 1.2 2010/11/08 13:10:35 victorg Exp $
+-- $Id$
 
 -- drop package acs_event;
 select drop_package('acs_event');
@@ -14,6 +14,8 @@ drop table   acs_event_party_map;
 drop index   acs_events_recurrence_id_idx;
 drop table   acs_events;
 
+drop sequence acs_events_sequence;
+drop view acs_events_seq;
 
 \i recurrence-drop.sql
 \i timespan-drop.sql

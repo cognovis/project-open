@@ -25,11 +25,12 @@ if {$tree_data(site_wide_p) == "f"} {
     permission::require_permission -object_id $tree_id -privilege category_tree_read
 }
 
-set page_title [_ categories.Tree_map_title]
+set page_title "Select subtree of \"$tree_name\" to map"
+
 set context_bar [list \
    [category::get_object_context $object_id] \
    [list [export_vars -no_empty -base object-map {locale object_id ctx_id}] [_ categories.cadmin]] \
-   "#categories.Map_subtree#"]
+   "Map subtree"]
 
 template::multirow create tree category_id category_name level left_indent map_url
 
@@ -43,18 +44,18 @@ foreach category [category_tree::get_tree -all $tree_id $locale] {
 
 template::list::create \
     -name tree \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements {
 	category_name {
-	    label "#acs-subsite.Name#"
+	    label "Name"
 	    display_template {
 		@tree.left_indent;noquote@ @tree.category_name@
 	    }
 	}
 	map {
-	    label "#categories.Action#"
+	    label "Action"
 	    display_template {
-		<a href="@tree.map_url@">#categories.Map_this_subtree#</a>
+		<a href="@tree.map_url@">Map this subtree</a>
 	    }
 	}
     }

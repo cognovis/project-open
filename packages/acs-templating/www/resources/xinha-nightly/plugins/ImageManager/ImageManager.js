@@ -1,7 +1,7 @@
 /**
  * The ImageManager plugin javascript.
- * @author $Author: gustafn $
- * @version $Id: ImageManager.js,v 1.3 2010/05/23 11:58:33 gustafn Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 

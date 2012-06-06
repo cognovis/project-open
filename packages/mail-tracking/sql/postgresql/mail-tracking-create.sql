@@ -6,7 +6,7 @@
 -- 
 -- @author: Nima Mazloumi
 -- @creation-date: Mon May 30 17:55:50 CEST 2005
--- @cvs-id $Id: mail-tracking-create.sql,v 1.11 2006/12/24 11:12:24 maltes Exp $
+-- @cvs-id $Id$
 --  ================================================================================
 -- 
 -- 

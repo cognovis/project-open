@@ -2,7 +2,7 @@ ad_page_contract {
 
     Grants or revokes site-wide admin privileges.
     @author Andrew Spencer (andrew@fallingblue.com)
-    @cvs-id $Id: modify-admin-privileges.tcl,v 1.3 2007/01/10 21:22:00 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     user_id:notnull

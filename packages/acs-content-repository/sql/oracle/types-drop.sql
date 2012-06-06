@@ -2,7 +2,7 @@
 
 -- Copyright (C) 20000 ArsDigita Corporation
 
--- $Id: types-drop.sql,v 1.2 2002/11/30 17:14:52 jeffd Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

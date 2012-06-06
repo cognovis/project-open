@@ -3,7 +3,7 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-14
 # @arch-tag: 48fe00a8-a527-4848-b5de-0f76dfb60291
-# @cvs-id $Id: email-search.tcl,v 1.2 2009/04/17 13:24:42 cognovis Exp $
+# @cvs-id $Id$
 
 foreach required_param {search_id} {
     if {![info exists $required_param]} {

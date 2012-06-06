@@ -80,7 +80,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2005-05-13
-  @cvs-id $Id: 40-thread-mod-procs.tcl,v 1.10 2008/11/02 11:02:00 gustafn Exp $
+  @cvs-id $Id$
 }
 
 ::xotcl::Object setExitHandler {

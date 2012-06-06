@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creationd-date 2003-10-29
-    @cvs-id $Id: image-procs.tcl,v 1.1 2003/10/29 18:14:01 lars Exp $
+    @cvs-id $Id$
 }
 
 namespace eval image {}

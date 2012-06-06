@@ -12,7 +12,7 @@
 #
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 27, 2001
-# Cvs-id: $Id: transition-panels-table.tcl,v 1.2 2006/04/07 22:47:07 cvs Exp $
+# Cvs-id: $Id$
 
 if { ![info exists context_key] } {
     set context_key "default"

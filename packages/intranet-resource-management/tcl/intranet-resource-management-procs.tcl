@@ -236,7 +236,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
     {-excluded_group_ids "" }
     {-show_departments_only_p "0" }
 } {
-
     Creates Resource Report 
 
     @param start_date Hard start of reporting period. Defaults to start of first project
@@ -246,7 +245,6 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     ToDo: 
     	- excluded_group_ids currently only accepts a single int
-
 } {
 
     # ---------------------------------------
@@ -257,7 +255,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     set end_date_request $end_date
 
     # Write iregularities to protocoll
-    set err_protocoll ""
+    set err_protocol ""
 
     # Department to use, when user is not assigned to one 
     set default_department [parameter::get -package_id [apm_package_id_from_key intranet-resource-management] -parameter "DefaultCostCenterId" -default 525]
@@ -1035,7 +1033,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
 		# Sanity Check: end_date needs to be >= start_date 
 		if { $end_date_julian_planned_hours < $start_date_julian_planned_hours } { 
-			ad_return_complaint 1 "End Date ($end_date) is earlier than start date ($start_date) of task id: <a href='/intranet-timesheet2-tasks/new?task_id=project_id'>$project_id</a>" 
+			ns_log Warning "im_resource_mgmt_resource_planning: End Date ($end_date) is earlier than start date ($start_date) of task \#$project_id" 
 		} 
 
 		# Over how many work days do we have to distribute the planned hours,  
@@ -1055,9 +1053,13 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				# set next_julian_end_date [db_string get_next_julian_end_date "select to_char( to_date('[expr $end_date_julian_planned_hours + 2]','J'), 'YYYY-MM-DD') from dual" -default 0]
 			    	set next_julian_end_date [im_date_julian_to_ansi [expr $end_date_julian_planned_hours + 2]] 				
 
-				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', 'next_julian_end_date') as series_days (days date) limit 1" -default 0]
+				set next_workday [db_string get_next_workday "select * from im_absences_working_days_period_weekend_only('$start_date', '$next_julian_end_date') as series_days (days date) limit 1" -default 0]
+				ns_log NOTICE "Calculated next_workday: $next_workday, based on start_date: $start_date and next_julian_end_date: $next_julian_end_date for project_id: $project_id"
+
 				# set days_julian-startdate-ne-end-date [db_string get_days_julian "select to_char( to_date('next_workday','J'), 'YYYY-MM-DD') from dual" -default 0]
-				set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
+				# set days_julian-startdate-ne-end-date [im_date_julian_to_ansi "$next_workday"]   
+				set days_julian-startdate-ne-end-date $next_workday
+
 			} else { 
 				ns_log NOTICE "Found start_date=end_date: $project_id,$user_id<br>"				
                                 set days_julian [dt_ansi_to_julian_single_arg "$start_date"]
@@ -1262,7 +1264,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 				<li>Start/end date of subordinate task or project does not ly within the period that is defined by start and end date of the superior project or task </li>
 				</ul>
 			"
-			ad_return_complaint 1 $err_mess
+			append err_protocol "<li>$err_mess</li>\n"
 		    }
 		}
 	    }
@@ -2300,7 +2302,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     }
 
     set clicks([clock clicks -milliseconds]) close_table
-    return "$html <br> $err_protocoll"
+    return "$html <br> $err_protocol"
 }
 
 

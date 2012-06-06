@@ -4,7 +4,7 @@
 
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2004-05-10 -->
-<!-- @cvs-id $Id: delete.xql,v 1.4 2005/05/26 08:28:46 maltes Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   <fullquery name="count_root_folders">

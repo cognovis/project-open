@@ -103,6 +103,13 @@ ad_proc -public im_project_has_type_helper { project_id project_type } {
 }
 
 
+ad_proc -public im_project_main_project { project_id } {
+    Returns the project_id of the project's top level main project.
+} {
+    im_security_alert_check_integer -location "im_project_main_project" -value $project_id
+    return [util_memoize [list db_string project_main_project "select project_id from im_projects where tree_sortkey in (select tree_root_key(tree_sortkey) from im_projects where project_id = $project_id)" -default ""]]
+}
+
 
 ad_proc -public im_project_permissions {
     {-debug 0}
@@ -116,7 +123,7 @@ ad_proc -public im_project_permissions {
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $project_id
 } {
-    ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id"
+    if {$debug} { ns_log Notice "im_project_permissions: user_id=$user_id project_id=$project_id" }
     upvar $view_var view
     upvar $read_var read
     upvar $write_var write
@@ -127,32 +134,47 @@ ad_proc -public im_project_permissions {
     set write 0
     set admin 0
 
-    ns_log Notice "im_project_permissions: before user_is_admin_p"
-    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-    set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
-    set user_is_group_member_p [im_biz_object_member_p $user_id $project_id]
-    set user_is_group_admin_p [im_biz_object_admin_p $user_id $project_id]
-    set user_is_employee_p [im_user_is_employee_p $user_id]
-
     # empty project_id would give errors below
     if {"" == $project_id} { set project_id 0 }
-    ns_log Notice "im_project_permissions: before im_security_alert_check_integer"
     im_security_alert_check_integer -location "im_project_permissions" -value $project_id
+
+    if {$debug} { ns_log Notice "im_project_permissions: before user_is_admin_p" }
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
+    set user_is_project_member_p [im_biz_object_member_p $user_id $project_id]
+    set user_is_project_manager_p [im_biz_object_admin_p $user_id $project_id]
+    set user_is_employee_p [im_user_is_employee_p $user_id]
+
+    if {[im_table_exists "im_cost_centers"]} {
+	# Department managers are like project members or PMs
+	set user_cc_ids [im_user_cost_centers $user_id]
+	if {$debug} { ns_log Notice "im_project_permissions: user_cc_ids: $user_cc_ids" }
+	if {[im_permission $user_id view_projects_dept]} {
+	    set project_cost_center_id [util_memoize [list db_string project_cc "select project_cost_center_id from im_projects where project_id = $project_id" -default 0] 30]
+
+#	ad_return_complaint 1 "user_cc_ids=$user_cc_ids, project_cc_id=$project_cost_center_id, project_id=$project_id"
+
+	    if {[lsearch $user_cc_ids $project_cost_center_id] > -1} { set user_is_project_member_p 1}
+	    if {[im_permission $user_id edit_projects_dept]} {
+		if {[lsearch $user_cc_ids $project_cost_center_id] > -1} { set user_is_project_manager_p 1}
+	    }
+	}
+    }
 
 
     # Treat the project mangers_fields
     # A user man for some reason not be the group PM
-    ns_log Notice "im_project_permissions: before project_manager"
-    if {!$user_is_group_admin_p} {
+    if {$debug} { ns_log Notice "im_project_permissions: before project_manager" }
+    if {!$user_is_project_manager_p} {
 	set project_manager_id [db_string project_manager "select project_lead_id from im_projects where project_id = :project_id" -default 0]
 	if {$user_id == $project_manager_id} {
-	    set user_is_group_admin_p 1
+	    set user_is_project_manager_p 1
 	}
     }
     
     # Admin permissions to global + intranet admins + group administrators
-    ns_log Notice "im_project_permissions: user_admin_p"
-    set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
+    if {$debug} { ns_log Notice "im_project_permissions: user_admin_p" }
+    set user_admin_p [expr $user_is_admin_p || $user_is_project_manager_p]
     set user_admin_p [expr $user_admin_p || $user_is_wheel_p]
 
     set write $user_admin_p
@@ -160,26 +182,30 @@ ad_proc -public im_project_permissions {
 
     # Get the projects's company and the project status
     # Use caching because this procedure is queried very frequently!
-    ns_log Notice "im_project_permissions: company info"
-    set query "
-	select	company_id, 
-		lower(im_category_from_id(project_status_id)) as project_status 
-	from	im_projects
-	where	project_id = $project_id
+    if {$debug} { ns_log Notice "im_project_permissions: company info" }
+    set company_id 0
+    set project_is_open_p 0
+    db_0or1row project_info "
+	select	p.company_id,
+		(select	count(*)
+		from	im_category_hierarchy ch 
+		where	p.project_type_id = [im_project_status_open] OR
+			(ch.child_id = p.project_status_id and ch.parent_id = [im_project_status_open])
+		) as project_is_open_p,
+		p.project_status_id,
+		im_category_from_id(p.project_status_id) as project_status
+	from	im_projects p
+	where	p.project_id = $project_id
     "
-    set company_infos [util_memoize [list db_list_of_lists company_info $query]]
-    set company_info [lindex $company_infos 0]
-    set company_id [lindex $company_info 0]
-    set project_status [lindex $company_info 1]
 
     if {$debug} {
-	ns_log Notice "user_is_admin_p=$user_is_admin_p"
-	ns_log Notice "user_is_group_member_p=$user_is_group_member_p"
-	ns_log Notice "user_is_group_admin_p=$user_is_group_admin_p"
-	ns_log Notice "user_is_employee_p=$user_is_employee_p"
-	ns_log Notice "user_admin_p=$user_admin_p"
-	ns_log Notice "view_projects_history=[im_permission $user_id view_projects_history]"
-	ns_log Notice "project_status=$project_status"
+	ns_log Notice "im_project_permissions: user_is_admin_p=$user_is_admin_p"
+	ns_log Notice "im_project_permissions: user_is_project_member_p=$user_is_project_member_p"
+	ns_log Notice "im_project_permissions: user_is_project_manager_p=$user_is_project_manager_p"
+	ns_log Notice "im_project_permissions: user_is_employee_p=$user_is_employee_p"
+	ns_log Notice "im_project_permissions: user_admin_p=$user_admin_p"
+	ns_log Notice "im_project_permissions: view_projects_history=[im_permission $user_id view_projects_history]"
+	ns_log Notice "im_project_permissions: project_status=$project_status"
     }
 
     set user_is_company_member_p [im_biz_object_member_p $user_id $company_id]
@@ -192,20 +218,15 @@ ad_proc -public im_project_permissions {
 	set view 1
     }
 
-# 20050729 fraber: Don't let customer's contacts see their project
-# without exlicit permission...
-#    if {$user_is_company_member_p} { set read 1}
-
-
     # Allow customer' Members to see their customer's projects
-    ns_log Notice "im_project_permissions: customer members"
+    if {$debug} { ns_log Notice "im_project_permissions: customer members" }
     if {$user_is_company_member_p && $user_is_employee_p} { 
 	set view 1
 	set read 1
     }
     
     # Allow Key Account Managers to see their customer's projects
-    ns_log Notice "im_project_permissions: company_admin"
+    if {$debug} { ns_log Notice "im_project_permissions: company_admin" }
     if {$user_is_company_admin_p && $user_is_employee_p} { 
 	set read 1
 	set write 1
@@ -213,16 +234,16 @@ ad_proc -public im_project_permissions {
     }
 
     # The user is member of the project
-    if {$user_is_group_member_p} { 
+    if {$user_is_project_member_p} { 
 	set read 1
     }
 
-    ns_log Notice "im_project_permissions: view_projects_all"
+    if {$debug} { ns_log Notice "im_project_permissions: view_projects_all" }
     if {[im_permission $user_id view_projects_all]} { 
 	set read 1
     }
 
-    ns_log Notice "im_project_permissions: edit_projects_all"
+    if {$debug} { ns_log Notice "im_project_permissions: edit_projects_all" }
     if {[im_permission $user_id edit_projects_all]} { 
 	set read 1
 	set write 1
@@ -231,11 +252,14 @@ ad_proc -public im_project_permissions {
 
     # companies and freelancers are not allowed to see non-open projects.
     # 76 = open
-    ns_log Notice "im_project_permissions: view_projects_history"
-    if {![im_permission $user_id view_projects_history] && ![string equal $project_status "open"]} {
+    if {$debug} { ns_log Notice "im_project_permissions: view_projects_history" }
+    if {![im_permission $user_id view_projects_history] && ![im_project_has_type $project_id "Open"]} {
 	# Except their own projects...
-	if {!$user_is_company_member_p && !$user_is_group_member_p} {
+	if {!$user_is_company_member_p && !$user_is_project_member_p} {
+	    ds_comment "im_project_permissions: User #$user_id does not have privilege 'view_projects_history', so he can not see a non-open project."
 	    set read 0
+	    set write 0
+	    set admin 0
 	}
     }
 
@@ -636,6 +660,7 @@ ad_proc -public im_project_options {
     # if we are showing this box for a sub-sub-project.
     set subsubproject_sql ""
     set subprojects [list 0]
+
     if {0 != $current_project_id} {
 
 	# Determine the topmost project in the hierarchy
@@ -658,7 +683,19 @@ ad_proc -public im_project_options {
 
 	if {$no_conn_p} {
 	    set perm_sql "im_projects" 
+	    set dept_perm_sql ""
 	} else {
+
+	    set dept_perm_sql ""
+	    if {[im_permission $current_user_id "view_projects_dept"]} {
+		set dept_perm_sql "
+		UNION
+		-- projects of the user department
+		select  p.*
+		from    im_projects p
+		where   p.project_cost_center_id in (select * from im_user_cost_centers(:user_id))
+	    "
+	    }
 
 	    # Check permissions for showing subprojects
 	    set perm_sql "
@@ -667,11 +704,12 @@ ad_proc -public im_project_options {
 			acs_rels r
 		where   r.object_id_one = p.project_id
 			and r.object_id_two = :current_user_id
+		$dept_perm_sql
 		)
 	    "
 
 	    if {[im_permission $current_user_id "view_projects_all"]} {
-            set perm_sql "im_projects" 
+		set perm_sql "im_projects" 
 	    }
 	}
 
@@ -862,11 +900,9 @@ ad_proc -public im_project_options {
     set options [list]
 
     template::multirow foreach multirow {
-
 	set indent ""
 	for {set i 0} {$i < $tree_level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 	lappend options [list "$indent$project_name_shortened" $project_id]
-
     }
 
     if {$include_empty} { set options [linsert $options 0 [list $include_empty_name ""]] }
@@ -1256,8 +1292,10 @@ ad_proc im_project_clone {
     {-clone_forum_topics_p "" }
     {-clone_members_p "" }
     {-clone_timesheet_tasks_p "" }
+    {-clone_timesheet_task_dependencies_p "" }
     {-clone_target_languages_p "" }
     {-clone_trans_tasks_p "" }
+    {-clone_level 0 }
     {-company_id 0}
     {-debug_p 1}
     parent_project_id 
@@ -1269,11 +1307,13 @@ ad_proc im_project_clone {
     ToDo: Start working with Service Contracts to allow other modules
     to include their clone routines.
 } {
+    ns_log Notice "im_project_clone: clone_level=$clone_level, parent_project_id=$parent_project_id"
 
     if {"" == $clone_members_p} { set clone_members_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectMembersP" -default 1] }
     if {"" == $clone_costs_p} { set clone_costs_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectCostsP" -default 0] }
     if {"" == $clone_trans_tasks_p} { set clone_trans_tasks_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectTransTasksP" -default 0] }
     if {"" == $clone_timesheet_tasks_p} { set clone_timesheet_tasks_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectTimesheetTasksP" -default 1] }
+    if {"" == $clone_timesheet_task_dependencies_p} { set clone_timesheet_task_dependencies_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectTaskDependenciesP" -default 1] }
     if {"" == $clone_target_languages_p} { set clone_target_languages_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectTargetLanguagesP" -default 1] }
     if {"" == $clone_forum_topics_p} { set clone_forum_topics_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectForumTopicsP" -default 1] }
     if {"" == $clone_files_p} { set clone_files_p [parameter::get -package_id [im_package_core_id] -parameter "CloneProjectFsFilesP" -default 1] }
@@ -1352,8 +1392,10 @@ ad_proc im_project_clone {
 					  -clone_forum_topics_p $clone_forum_topics_p \
 					  -clone_members_p $clone_members_p \
 					  -clone_timesheet_tasks_p $clone_timesheet_tasks_p \
+					  -clone_timesheet_task_dependencies_p $clone_timesheet_task_dependencies_p \
 					  -clone_trans_tasks_p $clone_trans_tasks_p \
 					  -clone_target_languages_p $clone_target_languages_p \
+					  -clone_level [expr $clone_level + 1] \
 					  -company_id $company_id \
 					  $sub_project_id \
 					  $sub_project_name \
@@ -1415,6 +1457,7 @@ ad_proc im_project_clone {
 				    -clone_timesheet_tasks_p $clone_timesheet_tasks_p \
 				    -clone_trans_tasks_p $clone_trans_tasks_p \
 				    -clone_target_languages_p $clone_target_languages_p \
+				    -clone_level [expr $clone_level +1] \
 				    -company_id $company_id \
 				    $task_id \
 				    $sub_task_name \
@@ -1467,13 +1510,116 @@ ad_proc im_project_clone {
 
     }
 
+    ns_log Notice "im_project_clone: clone_level=$clone_level, parent_project_id=$parent_project_id: before cloning dependencies"
+
+
+    # Copy task dependencies if we are cloning the main project here
+    if {0 == $clone_level && $clone_timesheet_task_dependencies_p} {
+        # Get the hierarchical project_nr -> project_id relationship of both the original and the cloned project
+	set tupel [im_project_clone_hierarchy_hash -project_id $parent_project_id]
+	array set parent_project_hierarchy_hash_id_nr [lindex $tupel 0]
+	array set parent_project_hierarchy_hash_nr_id [lindex $tupel 1]
+
+	set tupel [im_project_clone_hierarchy_hash -project_id $cloned_project_id]
+	array set cloned_project_hierarchy_hash_id_nr [lindex $tupel 0]
+	array set cloned_project_hierarchy_hash_nr_id [lindex $tupel 1]
+
+	ns_log Notice "im_project_clone: parent_project_hierarchy_hash_id_nr=[array get parent_project_hierarchy_hash_id_nr]"
+	ns_log Notice "im_project_clone: parent_project_hierarchy_hash_nr_id=[array get parent_project_hierarchy_hash_nr_id]"
+	ns_log Notice "im_project_clone: cloned_project_hierarchy_hash_id_nr=[array get cloned_project_hierarchy_hash_id_nr]"
+	ns_log Notice "im_project_clone: cloned_project_hierarchy_hash_nr_id=[array get cloned_project_hierarchy_hash_nr_id]"
+
+	# Get all dependencies of the original project
+	set dependency_sql "
+		select	p.project_id,
+			p.project_nr,
+			tree_level(p.tree_sortkey) -1 as tree_level,
+			ttd.*
+		from	im_projects main_p,
+			im_projects p,
+			im_timesheet_task_dependencies ttd
+		where	main_p.project_id = :parent_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+			p.project_id = ttd.task_id_one
+		order by p.tree_sortkey
+	"
+	db_foreach clone_dependencies $dependency_sql {
+	    # Convert the id's of the original project into their project_nrs
+	    set task_id_one_nr $parent_project_hierarchy_hash_id_nr($task_id_one)
+	    set task_id_two_nr $parent_project_hierarchy_hash_id_nr($task_id_two)
+
+	    # Convert the nrs of the original project into ids of the cloned project
+	    set task_id_one_cloned_id $cloned_project_hierarchy_hash_nr_id($task_id_one_nr)
+	    set task_id_two_cloned_id $cloned_project_hierarchy_hash_nr_id($task_id_two_nr)
+	    db_dml insert_dependency "
+                insert into im_timesheet_task_dependencies (
+			task_id_one, 
+			task_id_two,
+			dependency_type_id,
+			difference,
+			hardness_type_id
+		) values (
+			:task_id_one_cloned_id,
+			:task_id_two_cloned_id,
+			:dependency_type_id,
+			:difference,
+			:hardness_type_id
+		)
+            "
+	}
+    }
+
+    # Remove the template_p flag from the newly created project
+    if {0 == $clone_level} {
+	db_dml remove_template_p "
+		update im_projects
+		set template_p = 'f'
+		where project_id = :cloned_project_id
+	"
+    }
+
     # User Exit
     im_user_exit_call project_create $cloned_project_id
     im_audit -object_type im_project -action after_create -object_id $cloned_project_id
 
+    ns_log Notice "im_project_clone: clone_level=$clone_level, parent_project_id=$parent_project_id: Before returning"
     return $cloned_project_id
 }
 
+
+ad_proc im_project_clone_hierarchy_hash {
+    -project_id:required
+} {
+    Returns a key-value list of project_nr -> project_id.
+    The project_nr of sub-projects is prefixed by the project_nr of their parent.
+} {
+    array set id_nr_hash {}
+    array set nr_id_hash {}
+    set sql "
+	select	p.project_id,
+		p.parent_id,
+		p.project_nr,
+		tree_level(p.tree_sortkey) -1 as tree_level
+	from	im_projects main_p,
+		im_projects p
+	where	main_p.project_id = :project_id and
+		p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey)
+	order by p.tree_sortkey
+    "
+    db_foreach project_hierarchy $sql {
+	if {0 == $tree_level} { 
+	    # The top project is written without it's parent.
+	    set id_nr_hash($project_id) 0
+	    set nr_id_hash(0) $project_id
+	} else {
+	    set project_nr_list $id_nr_hash($parent_id)
+	    lappend project_nr_list $project_nr
+	    set id_nr_hash($project_id) $project_nr_list
+	    set nr_id_hash($project_nr_list) $project_id
+	}
+    }
+    return [list [array get id_nr_hash] [array get nr_id_hash]]
+}
 
 ad_proc im_project_clone_base {
     {-debug 0}
@@ -1505,7 +1651,7 @@ ad_proc im_project_clone_base {
     "
     if { ![db_0or1row projects_info_query $query] } {
 	set project_id $parent_project_id
-	ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
+	ad_return_complaint 1 "im_project_clone_base:<br>[_ intranet-core.lt_Cant_find_the_project]"
 	return
     }
 
@@ -2061,35 +2207,6 @@ ad_proc im_project_clone_payments {parent_project_id new_project_id} {
 }
 
 
-ad_proc im_project_clone_timesheet {parent_project_id new_project_id} {
-    Copy timesheet information(?)
-} {
-    ns_log Notice "im_project_clone_timesheet parent_project_id=$parent_project_id new_project_id=$new_project_id"
-
-    set timesheet_sql "
-	select 
-		user_id as usr,
-		day,
-	  	hours,
-	  	billing_rate,
-	  	billing_currency,
-	  	note 
-	from 
-		im_hours
-	where 
-		project_id = :parent_project_id
-    "
-    db_foreach timesheet $timesheet_sql {
-	db_dml add_timesheet "
-		insert into im_hours 
-		(user_id,project_id,day,hours,billing_rate, billing_currency, note)
-		values
-		(:usr,:new_project_id,:day,:hours,:billing_rate, :billing_currency, :note)
-	    "
-    }
-}
-
-	
 ad_proc im_project_clone_forum_topics {parent_project_id new_project_id} {
     Copy forum topics
 } {
@@ -2304,6 +2421,14 @@ ad_proc im_project_nuke {
     ns_log Notice "im_project_nuke: before db_transaction"
     db_transaction {
     
+	# SLA Parameters
+        if {[im_table_exists im_sla_parameters]} {
+	    set slas [db_list slas "select param_id from im_sla_parameters where param_sla_id = :project_id"]
+	    foreach sla_id $slas {
+		db_string del_sla_param "select im_sla_parameter__delete(:sla_id)"
+	    }
+	}
+	
 	# Helpdesk Tickets
         if {[im_table_exists im_tickets]} {
 	    db_dml del_tickets "delete from im_tickets where ticket_id = :project_id"
@@ -2684,8 +2809,9 @@ ad_proc im_project_nuke {
 	    db_dml del_rels "delete from membership_rels where rel_id = :rel_id"
 	    if {$im_conf_item_project_rels_exists_p} { db_dml del_rels "delete from im_conf_item_project_rels where rel_id = :rel_id" }
 	    if {$im_ticket_ticket_rels_exists_p} { db_dml del_rels "delete from im_ticket_ticket_rels where rel_id = :rel_id" }
-#	    if {$exists_p} { db_dml del_rels "delete from  where rel_id = :rel_id" }
-
+	    if {[im_table_exists im_release_items]} {
+		db_dml del_rels "delete from im_release_items where rel_id = :rel_id"
+	    }
 	    db_dml del_rels "delete from acs_rels where rel_id = :rel_id"
 	    db_dml del_rels "delete from acs_objects where object_id = :rel_id"
 	}
@@ -2800,7 +2926,9 @@ ad_proc -public im_project_base_data_component {
 # ---------------------------------------------------------------
 
 ad_proc -public im_personal_todo_component {
+    {-show_empty_project_list_p 1}
     {-view_name "personal_todo_list" }
+
 } {
     Returns a HTML table with the list of projects, tasks,
     forum items etc. assigned to the current user. 

@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-05-21
-    @cvs-id $Id: relationship-ae.tcl,v 1.2 2009/03/05 16:40:16 cognovis Exp $
+    @cvs-id $Id$
 } {
     {object_id_one:integer,notnull}
     {object_id_two:integer,notnull}

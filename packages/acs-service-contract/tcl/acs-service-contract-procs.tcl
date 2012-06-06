@@ -3,7 +3,7 @@ ad_library {
     
     @author Neophytos Demetriou
     @creation-date 2001-09-01
-    @cvs-id $Id: acs-service-contract-procs.tcl,v 1.24 2010/10/30 21:43:01 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval acs_sc {}
@@ -255,7 +255,7 @@ ad_proc -private -deprecated acs_sc_call {
     set proc_name [acs_sc_generate_name $contract $impl $operation]
 
     if { [llength [info procs $proc_name]] == 1 } {
-	return [ad_apply $proc_name $arguments]
+	return [apply $proc_name $arguments]
     } else {
         if { $error_p } {
             error "Operation $operation is not implemented in '$impl' implementation of contract '$contract'"

@@ -3,7 +3,7 @@ ad_library {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-01-14
-    @cvs-id $Id: contract-procs.tcl,v 1.5 2007/01/10 21:22:05 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval acs_sc::contract {}

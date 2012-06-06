@@ -21,7 +21,7 @@ ad_require_permission $package_id faq_modify_faq
 set action "q_and_a-edit-2"
 set submit_label [_ faq.Update_This_QA]
 
-set user_id [ad_conn user_id]
+set user_id [ad_verify_and_get_user_id]
 
 db_1row q_and_a_info "select question, answer,faq_name,qa.faq_id
                       from faq_q_and_as qa, faqs f

@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@caltech.edu)
     @creation-date 23 Aug 2000
-    @cvs-id $Id: workflow-summary.tcl,v 1.4 2011/01/21 20:05:23 kpmg Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull,trim
 } -validate {

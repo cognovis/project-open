@@ -10,7 +10,7 @@ ad_page_contract {
     it gets reparsed; it is RDBMS load that was slowing stuff down.  We also  
     want programmers to have an easy way to edit this page.
 
-    @cvs-id $Id: index.tcl,v 1.5 2003/11/03 17:04:12 lars Exp $
+    @cvs-id $Id$
     @author Multiple
 }
 

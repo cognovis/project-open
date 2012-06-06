@@ -2,7 +2,7 @@
 -- The Notifications
 --
 -- @author Ben Adida (ben@openforce.net)
--- @version $Id: notifications-core-create.sql,v 1.15 2007/06/28 17:23:41 matthewg Exp $
+-- @version $Id$
 --
 -- Copyright (C) 2000 MIT
 --

@@ -3,7 +3,7 @@
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2001-01-08
--- @cvs-id $Id: acs-mail-packages-create.sql,v 1.4 2009/01/31 13:53:56 cvs Exp $
+-- @cvs-id $Id$
 --
 
 -- Package Implementations ---------------------------------------------

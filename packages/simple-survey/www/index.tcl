@@ -6,7 +6,7 @@ ad_page_contract {
     @author  philg@mit.edu
     @author  nstrug@arsdigita.com
     @creation-date    28th September 2000
-    @cvs-id  $Id: index.tcl,v 1.3 2008/12/11 15:43:50 cvs Exp $
+    @cvs-id  $Id$
 } {
     related_object_id:integer,optional
     related_context_id:integer,optional

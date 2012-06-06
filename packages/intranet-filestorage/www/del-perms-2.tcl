@@ -191,10 +191,10 @@ foreach id [array names dir_id] {
 db_dml cleanup "
 delete from im_fs_folder_perms
 where 
-	view_p = 0
-	and read_p = 0
-	and write_p = 0
-	and admin_p = 0
+	view_p = '0'
+	and read_p = '0'
+	and write_p = '0'
+	and admin_p = '0'
 "
 
 

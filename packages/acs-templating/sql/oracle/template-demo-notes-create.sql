@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-10-22
--- @cvs-id $Id: template-demo-notes-create.sql,v 1.4 2006/02/09 00:28:05 hughb Exp $
+-- @cvs-id $Id$
 --
 
 begin

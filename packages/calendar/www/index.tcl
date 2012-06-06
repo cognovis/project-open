@@ -5,7 +5,7 @@ ad_page_contract {
     
     @author Ben Adida (ben@openforce.net)
     @creation-date June 2, 2002
-    @cvs-id $Id: index.tcl,v 1.18 2008/09/08 20:13:37 donb Exp $
+    @cvs-id $Id$
 } {
 }
 

@@ -4,7 +4,7 @@
 <!-- @author  (avila@digiteix.com) -->
 <!-- @creation-date 2004-09-22 -->
 <!-- @arch-tag b7ff6546-a6ca-45d8-8dac-339969d91235 -->
-<!-- @cvs-id $Id: new-postgresql.xql,v 1.10 2009/11/17 15:09:40 economedic Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

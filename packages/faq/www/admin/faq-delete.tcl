@@ -2,7 +2,7 @@
 
 ad_page_contract {
     
-    delete an FAQ, also deletes entries in acs_named_objects for categories
+    delete an FAQ
     @author Elizabeth Wirth (wirth@ybos.net)
     @author Jennie Housman (jennie@ybos.net)
     @creation-date 2000-10-24
@@ -24,7 +24,6 @@ db_transaction {
 	        );
 	end;
     }
-    db_dml delete_named_object "delete from acs_named_objects where object_id in (select entry_id from faq_q_and_as where faq_id = :faq_id)"
 }
 
 ad_returnredirect "index"

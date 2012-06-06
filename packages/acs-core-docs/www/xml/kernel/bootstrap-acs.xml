@@ -152,6 +152,6 @@ proceeds to source the remaining files in the <computeroutput>/tcl</computeroutp
 
 
 
-<para><phrase role="cvstag">($Id: bootstrap-acs.xml,v 1.7 2006/07/17 05:38:38 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 </sect2>
 </sect1>

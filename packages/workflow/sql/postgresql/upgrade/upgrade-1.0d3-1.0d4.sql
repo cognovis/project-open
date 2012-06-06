@@ -5,7 +5,7 @@
 --
 -- Lars Pind (lars@collaboraid.biz)
 --
--- $Id: upgrade-1.0d3-1.0d4.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- $Id$
 
 -- This needs to be recreated to use the renamed workflow_case_pkg__delete function
 

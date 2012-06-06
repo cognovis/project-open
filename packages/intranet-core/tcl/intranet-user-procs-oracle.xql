@@ -4,7 +4,7 @@
 <!-- @author  (nsadmin@barna.competitiveness.com) -->
 <!-- @creation-date 2004-09-10 -->
 <!-- @arch-tag 010bcfcc-071d-4091-a006-fe5cc1f24785 -->
-<!-- @cvs-id $Id: intranet-user-procs-oracle.xql,v 1.2 2005/04/25 19:02:05 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

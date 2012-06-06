@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Simon Carstensen
     @creation-date 2003-08-29
-    @cvs-id $Id: recover-password.tcl,v 1.12 2009/11/20 21:39:09 michaels Exp $
+    @cvs-id $Id$
 } {
     {authority_id:integer ""}
     {username ""}

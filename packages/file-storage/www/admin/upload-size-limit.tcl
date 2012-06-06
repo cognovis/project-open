@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author Tracy Adams (teadams@mit.edu)
     @creation-date  2004-07-07
-    @cvs-id $Id: upload-size-limit.tcl,v 1.6 2007/05/15 20:14:37 donb Exp $
+    @cvs-id $Id$
 
 } {
     {return_url ""}

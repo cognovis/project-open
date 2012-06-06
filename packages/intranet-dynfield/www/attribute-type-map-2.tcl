@@ -5,7 +5,7 @@ ad_page_contract {
     changes those settings that are different.
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @cvs-id $Id: attribute-type-map-2.tcl,v 1.4 2009/07/02 11:53:22 po34demo Exp $
+    @cvs-id $Id$
 } {
     acs_object_type:notnull
     return_url:notnull

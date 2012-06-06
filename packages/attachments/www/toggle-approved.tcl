@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author yon@openforce.net
     @creation-date 2002-08-29
-    @cvs-id $Id: toggle-approved.tcl,v 1.2 2002/09/10 22:22:22 jeffd Exp $
+    @cvs-id $Id$
 
 } -query {
     {object_id:integer,notnull}

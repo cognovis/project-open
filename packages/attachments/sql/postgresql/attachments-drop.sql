@@ -16,7 +16,7 @@
 -- attachments
 --
 -- @author arjun (arjun@openforce.net)
--- @version $Id: attachments-drop.sql,v 1.2 2002/08/09 20:51:49 yon Exp $
+-- @version $Id$
 --
 
 drop table attachments;

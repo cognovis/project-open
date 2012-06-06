@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Jeff Davis davis@xarg.net
     @creation-date 2004-04-27
-    @cvs-id $Id: simple.tcl,v 1.3 2007/06/15 17:40:29 matthewg Exp $
+    @cvs-id $Id$
 } {
     object_id:notnull
 }

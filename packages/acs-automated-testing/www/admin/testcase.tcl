@@ -1,5 +1,5 @@
 ad_page_contract {
-    @cvs-id $Id: testcase.tcl,v 1.9 2007/11/30 18:16:42 daveb Exp $
+    @cvs-id $Id$
 } {
     testcase_id:nohtml
     package_key:nohtml

@@ -3,7 +3,7 @@
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2000-11-15
--- @cvs-id $Id: acs-messaging-views.sql,v 1.1 2001/04/05 18:23:38 donb Exp $
+-- @cvs-id $Id$
 --
 
 create or replace view acs_messages_all as

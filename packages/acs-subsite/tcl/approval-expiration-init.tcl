@@ -2,7 +2,7 @@ ad_library {
 
     Sweep for expired user approvals.
 
-    @cvs-id $Id: approval-expiration-init.tcl,v 1.3 2003/09/19 16:13:25 lars Exp $
+    @cvs-id $Id$
     @author Lars Pind  (lars@collaboraid.biz)
     @creation-date 2003-05-28
 

@@ -3,7 +3,7 @@
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-10-22
--- @cvs-id $Id: template-demo-notes-create.sql,v 1.7 2006/02/13 11:45:44 jiml Exp $
+-- @cvs-id $Id$
 --
 -- openacs port: vinod kurup vkurup@massmed.org
 --

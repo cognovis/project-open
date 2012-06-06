@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 2002-03-25
-    @cvs-id $Id: bug-add.tcl,v 1.5 2008/03/12 07:57:57 podesign Exp $
+    @cvs-id $Id$
 } {
     { return_url "" }
     { bug_container_project_id "" }

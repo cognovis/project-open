@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Ben Adida (ben@openforce.net)
     @creation-date 10 Nov 2000
-    @cvs-id $Id: simple-delete.tcl,v 1.8 2009/02/13 22:13:06 jeffd Exp $
+    @cvs-id $Id$
 } {
     object_id:integer,notnull
     folder_id:notnull

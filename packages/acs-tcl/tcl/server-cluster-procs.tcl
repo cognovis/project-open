@@ -1,7 +1,7 @@
 ad_library {
     Provides methods for communicating between load-balanced servers.
     
-    @cvs-id $Id: server-cluster-procs.tcl,v 1.8 2009/02/13 20:28:08 jeffd Exp $
+    @cvs-id $Id$
     @author Jon Salz <jsalz@mit.edu>
     @creation-date 7 Mar 2000
 }    

@@ -710,7 +710,8 @@ ad_proc -public im_timesheet_task_list_component {
 	    set planned_hours_input $planned_units
 	}
 
-#	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+	set task_name_complete $task_name
+	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
 
 	# Something is going wrong with task_id, so set it again.
 	set task_id $project_id

@@ -1,5 +1,5 @@
 ad_page_contract {
-    @cvs-id $Id: index.tcl,v 1.8 2007/08/29 14:32:38 maltes Exp $
+    @cvs-id $Id$
 } {
     {quiet 0}
     {by_package_key ""}

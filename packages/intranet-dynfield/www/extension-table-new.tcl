@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: extension-table-new.tcl,v 1.3 2006/04/07 23:07:39 cvs Exp $
+    @cvs-id $Id$
 } {
     object_type
     {table_name ""}

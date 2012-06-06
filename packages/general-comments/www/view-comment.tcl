@@ -6,7 +6,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: view-comment.tcl,v 1.9 2010/12/20 00:15:22 donb Exp $
+    @cvs-id $Id$
 } { 
     comment_id:notnull
     { revision_id {} }
@@ -50,18 +50,53 @@ if { $write_perm_p == 1 } {
 	}]
     }
     # get revision data from the database
-    if { ![db_0or1row get_revision_comment {}] } {
+    if { ![db_0or1row get_revision_comment {
+           select g.object_id,
+	          g.comment_id,
+	          content_item.get_live_revision(g.comment_id) as live_revision,
+                  r.revision_id,
+                  r.title,
+	          r.content, 
+	          r.mime_type, 
+	          o.creation_user,
+	          o.creation_date,
+	          acs_object.name(o.creation_user) as author
+             from general_comments g,
+                  cr_revisions r,
+                  acs_objects o
+            where g.comment_id = o.object_id and
+                  g.comment_id = r.item_id and
+	          r.revision_id = :revision_id
+    }] } {
         ad_return_complaint 1 "[_ general-comments.lt_The_comment_id_does_n]"
     }
 
 } else {
     # get live revision data from the database
-    if { ![db_0or1row get_comment {}] } {
+    if { ![db_0or1row get_comment {
+           select g.object_id,
+	          g.comment_id,
+	          r.revision_id as live_revision,
+	          r.revision_id,
+                  r.title,
+	          r.content, 
+	          r.mime_type, 
+	          o.creation_user,
+	          o.creation_date,
+	          acs_object.name(o.creation_user) as author
+             from general_comments g,
+                  acs_objects o, 
+	          cr_revisions r
+            where g.comment_id = :comment_id and
+                  g.comment_id = o.object_id and
+                  g.comment_id = r.item_id and
+	          r.revision_id = content_item.get_live_revision(:comment_id)
+    }] } {
         ad_return_complaint 1 "[_ general-comments.lt_The_comment_id_does_n]"
     }
 }
 
-db_multirow -extend {file_edit_url delete_attachment_url view_image_url} attachments get_attachments {
+db_multirow attachments get_attachments {
    select r.title,
           r.mime_type,
           i.name,
@@ -70,27 +105,25 @@ db_multirow -extend {file_edit_url delete_attachment_url view_image_url} attachm
           cr_revisions r
     where i.parent_id = :comment_id and
           r.revision_id = i.live_revision
-} {
-    set file_edit_url [export_vars -base "file-edit" {{attach_id $item_id} {parent_id $comment_id} return_url}]
-    set delete_attachment_url [export_vars -base "delete-attachment" {{attach_id $item_id} {parent_id $comment_id} return_url}]
-    set view_image_url [export_vars -base "view-image" {{image_id $item_id} {return_url return_url_view}}]
 }
 
-db_multirow -extend {url_edit_url delete_attachment_url} links get_links {
+db_multirow links get_links {
     select i.item_id,
            e.label,
            e.url
       from cr_items i, cr_extlinks e
      where i.parent_id = :comment_id and
            e.extlink_id = i.item_id
-} {
-    set url_edit_url [export_vars -base "url-edit" {{attach_id $item_id} {parent_id $comment_id} return_url}]
-    set delete_attachment_url [export_vars -base "delete-attachment" {{attach_id $item_id} {parent_id $comment_id} return_url}]
 }
-
-db_multirow -extend {view_comment_url} revisions get_revisions {*SQL*} { 
-    set revision_date [lc_time_fmt $revision_date %c]
-    set view_comment_url [export_vars -base "view-comment" {comment_id revision_id return_url}]
+           
+db_multirow revisions get_revisions {
+    select r.revision_id,
+           to_char(o.creation_date, 'MM-DD-YY HH24:MI:SS') as revision_date
+      from cr_revisions r,
+           acs_objects o
+     where r.item_id = :comment_id and
+           o.object_id = r.revision_id
+     order by o.creation_date desc
 }
 
 set allow_file_p [ad_parameter AllowFileAttachmentsP {general-comments} {t}]
@@ -102,36 +135,12 @@ if { $allow_file_p == "f" && $allow_link_p == "f" } {
 set comment_on_id [db_string get_object_id "select object_id from general_comments where comment_id = :comment_id"]
 set page_title "[_ general-comments.View_comment_on]: [acs_object_name $comment_on_id]"
 set context "\"[_ general-comments.View_comment]\""
-set return_url_view "view-comment?[export_ns_set_vars url]"
+set return_url_view "[ad_urlencode view-comment?[export_ns_set_vars url]]"
 set is_creator_p "f"
 if { $user_id == $creation_user } {
     set is_creator_p "t"
 }
 
-if { $comment_mime_type ne "text/html" } {
-    set html_content "<p>[ad_html_text_convert -from $comment_mime_type -- $content]</p>"
-} else {
-    set html_content $content
-}
-
-set comment_edit_url [export_vars -base "comment-edit" {comment_id revision_id return_url}]
-
-# Actions section
-set action_file_add_url [export_vars -base "file-add" {{parent_id $comment_id} return_url}]
-set action_url_add_url [export_vars -base "url-add" {{parent_id $comment_id} return_url}]
-
-# Revisions section
-set return_url_view "../${return_url_view}"
-if { $live_revision ne $revision_id } {
-    set font_color "red"
-    set pre_text [_ general-comments.lt_This_revision_is_not_]
-    set admin_toggle_url [export_vars -base "admin/toggle-approval" {comment_id revision_id {return_url $return_url_view}}]
-    set admin_toggle_text [_ general-comments.lt_approve_this_revision]
-} else {
-    set font_color "green"
-    set pre_text [_ general-comments.lt_This_revision_is_live]
-    set admin_toggle_url [export_vars -base "admin/toggle-approval" {comment_id revision_id {return_url $return_url_view}}]
-    set admin_toggle_text [_ general-comments.reject_this_revision]
-}
+set html_content [ad_html_text_convert -from $mime_type -- $content]
 
 ad_return_template

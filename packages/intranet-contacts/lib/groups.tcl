@@ -1,6 +1,6 @@
 #    @author Matthew Geddert openacs@geddert.com
 #    @creation-date 2005-05-09
-#    @cvs-id $Id: groups.tcl,v 1.2 2009/04/16 20:14:35 cognovis Exp $
+#    @cvs-id $Id$
 
 if { [string is false [contact::exists_p -party_id $party_id]] } {
     error "[_ intranet-contacts.lt_The_party_id_specifie]"

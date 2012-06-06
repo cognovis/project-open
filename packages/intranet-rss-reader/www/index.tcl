@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Frank Bergmann <frank.bergmann@project-open.com>
     @creation-date July 2008
-    @cvs-id $Id: index.tcl,v 1.4 2009/06/05 14:16:14 cvs Exp $
+    @cvs-id $Id$
 
 } {
     {rss_feeds:multiple "" }

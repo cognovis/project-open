@@ -4,7 +4,7 @@
 -- @author John Prevost <jmp@arsdigita.com>
 -- @author Phong Nguyen <phong@arsdigita.com>
 -- @creation-date 2000-08-27
--- @cvs-id $Id: acs-messaging-packages.sql,v 1.8 2006/06/04 00:45:40 donb Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package acs_message

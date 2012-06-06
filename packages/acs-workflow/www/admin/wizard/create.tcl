@@ -5,7 +5,7 @@ ad_page_contract {
     @author Matthew Burke (mburke@arsdigita.com)
     @author Lars Pind (lars@pinds.com)
     @creation-date 29 August 2000
-    @cvs-id $Id: create.tcl,v 1.2 2006/09/01 17:49:21 cvs Exp $
+    @cvs-id $Id$
 }
 
 set workflow_name [ad_get_client_property wf workflow_name]

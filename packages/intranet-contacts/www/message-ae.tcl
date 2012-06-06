@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Sun Nov 12 18:27:08 2000
-    @cvs-id $Id: message-ae.tcl,v 1.2 2010/07/14 12:55:34 cvs Exp $
+    @cvs-id $Id$
 
 } {
     {item_id:integer,optional}

@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Mon Dec 11 10:52:35 2000
-    @cvs-id $Id: role-ae.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 } {
     {role:trim "" }
     {pretty_name "" }

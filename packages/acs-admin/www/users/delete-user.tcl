@@ -3,7 +3,7 @@ ad_page_contract {
     @author Gustaf Neumann <neumann@wu-wien.ac.at>
     @creation-date 23 Dez 2008
 
-    @cvs-id $Id: delete-user.tcl,v 1.1 2008/12/23 08:31:46 gustafn Exp $
+    @cvs-id $Id$
 } {
   user_id:integer
   {return_url .}

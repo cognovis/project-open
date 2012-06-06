@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Burke (mburke@arsdigita.com)
     @creation-date 29 August 2000
-    @cvs-id $Id: manual-assignment.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+    @cvs-id $Id$
 } {
     assigned_transition_key:notnull
     assigning_transition_key:notnull

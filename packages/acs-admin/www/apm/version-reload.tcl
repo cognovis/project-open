@@ -4,7 +4,7 @@ ad_page_contract {
     @param version_id The package to be processed.
     @author Jon Salz [jsalz@arsdigita.com]
     @creation-date 9 May 2000
-    @cvs-id $Id: version-reload.tcl,v 1.9 2004/01/30 09:54:20 lars Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
     {return_url "index"}

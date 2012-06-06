@@ -1,6 +1,7 @@
 <master>
 <property name="title">#acs-workflow.lt_Business_Process_Admi#</property>
 <property name="context">@context;noquote@</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <h3>#acs-workflow.lt_Business_Processes_on#</h3>
 

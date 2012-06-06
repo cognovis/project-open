@@ -1,7 +1,7 @@
 -- Drop the ACS Reference Country data
 --
 -- @author jon@jongriffin.com
--- @cvs-id $Id: ref-countries-drop.sql,v 1.3 2003/09/30 12:10:09 mohanp Exp $
+-- @cvs-id $Id$
 
 set serveroutput on
 

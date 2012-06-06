@@ -1,4 +1,4 @@
--- $Id: acs-sc-tables-create.sql,v 1.5 2006/09/26 15:17:06 byronl Exp $
+-- $Id$
 
 create table acs_sc_contracts (
     contract_id		     integer

@@ -22,7 +22,7 @@ if {{} ne [info procs ad_library] } {
 
         @author Ben Adida (ben@openforce.net)
         @author Bart Teeuwisse (bart.teeuwisse@thecodemill.biz)
-	@cvs-id $Id: 40-db-query-dispatcher-procs.tcl,v 1.40 2007/01/10 21:22:03 gustafn Exp $
+	@cvs-id $Id$
     } 
 }
 

@@ -3,7 +3,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2007-07-19
-  @cvs-id $Id: cluster-procs.tcl,v 1.6 2008/11/26 09:30:07 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {

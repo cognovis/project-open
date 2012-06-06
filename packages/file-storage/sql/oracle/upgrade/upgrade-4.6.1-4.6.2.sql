@@ -118,7 +118,7 @@ as
 --
 -- @author yon (yon@openforce.net)
 -- @creation-date 2002-04-03
--- @version $Id: upgrade-4.6.1-4.6.2.sql,v 1.3 2005/05/26 08:28:45 maltes Exp $
+-- @version $Id$
 --
 
 create or replace package file_storage

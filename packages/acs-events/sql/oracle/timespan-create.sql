@@ -14,7 +14,7 @@
 --       overlaps_p (interval_id) 
 --       overlaps_p (start_date, end_date)
 --
--- $Id: timespan-create.sql,v 1.3 2003/09/30 12:10:02 mohanp Exp $
+-- $Id$
 
 -- Table for storing time intervals.  Note that time intervals can be open on 
 -- either end.  This is represented by a null value for start_date or end_date.

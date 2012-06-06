@@ -3,7 +3,7 @@
 -- @author Vinod Kurup (vinod@kurup.com)
 -- @creation_date 2002-10-08
 --
--- $Id: upgrade-4.5.1-4.6.sql,v 1.3 2003/10/21 19:22:00 tilmanns Exp $
+-- $Id$
 
 -- UPGRADE ISSUE #1
 -- add timestamp datatype

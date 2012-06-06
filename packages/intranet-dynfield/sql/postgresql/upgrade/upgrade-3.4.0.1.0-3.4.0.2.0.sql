@@ -281,7 +281,7 @@ update im_dynfield_layout set page_url = 'default' where page_url = '';
 update im_dynfield_layout_pages set page_url = 'default' where page_url = '';
 
 
-create or replace function im_dynfield_attribute__new_only_dynfield (
+create or replace function im_dynfield_attribute__new (
         integer, varchar, timestamptz, integer, varchar, integer,
         integer, varchar, char(1), char(1)
 ) returns integer as '

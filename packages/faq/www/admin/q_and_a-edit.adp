@@ -8,7 +8,7 @@
   <tr>
    <th align=right>#faq.Question#</th>
    <td>
-    <textarea rows=10 cols=50 name=question>@question@</textarea>
+    <textarea rows=4 cols=50 name=question>@question@</textarea>
    </td>
   </tr>
   <tr>

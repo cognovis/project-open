@@ -4,7 +4,7 @@
 -- @author Don Baccus (dhogaza@pacifier.com)
 -- @creation-date 2005-10-28
 -- @arch-tag: dab7cf3d-a947-43d4-ba54-66f34c66d9d0
--- @cvs-id $Id: upgrade-5.2.0b5-5.2.0b6.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package content_item

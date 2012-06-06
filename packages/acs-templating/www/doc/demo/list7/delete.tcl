@@ -4,7 +4,7 @@ ad_page_contract {
 
   @author rhs@mit.edu
   @creation-date 2000-10-23
-  @cvs-id $Id: delete.tcl,v 1.3 2006/02/13 13:01:04 jiml Exp $
+  @cvs-id $Id$
 } {
   template_demo_note_id:integer,notnull,multiple
 }

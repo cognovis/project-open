@@ -2,7 +2,7 @@ ad_page_contract {
     Generates package specs for every enabled version.
     @author Jon Salz (jsalz@arsdigita.com)
     @creation-date 17 April 2000
-    @cvs-id $Id: write-all-specs.tcl,v 1.6 2007/01/10 21:21:59 gustafn Exp $
+    @cvs-id $Id$
 } {
 }
 

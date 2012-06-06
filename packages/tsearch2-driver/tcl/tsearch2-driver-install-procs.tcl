@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-05
     @arch-tag: 2006927e-7f1d-41c9-a111-ac552a4da185
-    @cvs-id $Id: tsearch2-driver-install-procs.tcl,v 1.5 2009/09/29 23:11:22 rhamilton Exp $
+    @cvs-id $Id$
 }
 
 namespace eval tsearch2_driver::install {}

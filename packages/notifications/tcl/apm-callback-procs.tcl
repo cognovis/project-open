@@ -4,7 +4,7 @@ ad_library {
     
     @creation-date 2003-06-12
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.5 2008/06/07 20:29:01 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval notification::apm {}

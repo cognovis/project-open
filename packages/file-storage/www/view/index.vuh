@@ -5,7 +5,7 @@ ad_page_contract {
     
     @author Unknown
     @creation-date Unknown
-    @cvs-id $Id: index.vuh,v 1.7 2009/05/27 12:09:02 emmar Exp $
+    @cvs-id $Id$
 } {    
     { revision_id "" }
 }

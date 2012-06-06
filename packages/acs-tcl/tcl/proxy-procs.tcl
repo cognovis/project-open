@@ -6,7 +6,7 @@ ad_library {
 
     @author <yourname> (<your email>)
     @creation-date 2007-09-17
-    @cvs-id $Id: proxy-procs.tcl,v 1.4 2010/03/17 22:03:55 victorg Exp $
+    @cvs-id $Id$
 }
 
 # First check that ns_proxy is configured

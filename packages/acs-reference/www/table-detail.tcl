@@ -4,7 +4,7 @@ ad_page_contract {
     @param table_name 
     @author Jon Griffin (jon@jongriffin.com)
     @creation-date 17 Sept 2001
-    @cvs-id $Id: table-detail.tcl,v 1.3 2005/03/01 00:01:22 jeffd Exp $
+    @cvs-id $Id$
 } {
     table_name:notnull
 } -properties {

@@ -8,7 +8,7 @@ ad_page_contract {
 
     @author Nick Strugnell (nstrug@arsdigita.com)
     @creation-date   September 15, 2000
-    @cvs-id $Id: modify-responses-2.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 } {
     survey_id:integer,notnull
     question_id:integer,notnull

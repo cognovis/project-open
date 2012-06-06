@@ -3,7 +3,7 @@ ad_library {
     
     @creation-date 18 November 2003
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: workflow-init.tcl,v 1.1 2006/10/25 17:55:34 cvs Exp $
+    @cvs-id $Id$
 }
 
 #----------------------------------------------------------------------

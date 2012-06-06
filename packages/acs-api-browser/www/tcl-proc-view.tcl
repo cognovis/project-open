@@ -1,6 +1,6 @@
 ad_page_contract {
     Will redirect you to aolserver.com if documentation can be found
-    @cvs-id $Id: tcl-proc-view.tcl,v 1.6 2009/02/07 20:32:54 gustafn Exp $
+    @cvs-id $Id$
 } {
     tcl_proc
 } -properties {

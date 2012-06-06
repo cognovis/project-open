@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: list-order-update.tcl,v 1.3 2009/04/17 12:38:27 cognovis Exp $
+    @cvs-id $Id$
 
 
 } {

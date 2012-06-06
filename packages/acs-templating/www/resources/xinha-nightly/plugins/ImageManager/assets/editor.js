@@ -1,7 +1,7 @@
 /**
  * Functions for the ImageEditor interface, used by editor.php only	
- * @author $Author: gustafn $
- * @version $Id: editor.js,v 1.10 2010/05/23 11:58:33 gustafn Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 

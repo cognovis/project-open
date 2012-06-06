@@ -8,7 +8,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: workflow-package.sql,v 1.1 2005/04/27 22:50:59 cvs Exp $
+-- @cvs-id $Id$
 --
 
 \i workflow-package-head.sql

@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2004-12-22
 -- @arch-tag: f76ec7ce-6834-4bff-b134-ad1953aad38e
--- @cvs-id $Id: upgrade-5.1.4d2-5.1.4d3.sql,v 1.3 2005/04/20 11:48:56 eduardop Exp $
+-- @cvs-id $Id$
 --
 
 -- add package_id. for some reason content_folder__new did not support setting

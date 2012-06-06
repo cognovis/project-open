@@ -3,7 +3,7 @@ ad_library {
 
     @author Nima Mazloumi (mazloumi@uni-mannheim.de)
     @creation-date 2005-11-18
-    @cvs-id $Id: diagram-procs.tcl,v 1.1 2006/12/20 14:37:15 cvs Exp $
+    @cvs-id $Id$
 }
 
 namespace eval template {}

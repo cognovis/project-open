@@ -4,7 +4,7 @@ ad_library {
 
   @author Simon Carstensen
   @creation-date 2003-09-10
-  @cvs-id $Id: acs-service-contract-procs.tcl,v 1.1 2003/09/10 14:54:57 peterm Exp $
+  @cvs-id $Id$
 }
 
 aa_register_case acs_sc_impl_new_from_spec {

@@ -4,7 +4,7 @@
 <!-- @author  (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-09-20 -->
 <!-- @arch-tag 9e9d5231-7131-40f4-a920-4784b078a990 -->
-<!-- @cvs-id $Id: edit-trans-data-postgresql.xql,v 1.1 2004/09/20 15:28:04 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

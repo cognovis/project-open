@@ -1,4 +1,4 @@
-# $Id: session-history.tcl,v 1.3 2007/01/10 21:22:00 gustafn Exp $
+# $Id$
 
 append whole_page "[ad_admin_header "Session History"]
 

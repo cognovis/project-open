@@ -1,7 +1,7 @@
 ad_page_contract {
     Let's the admin change a user's password.
 
-    @version $Id: password-update.tcl,v 1.3 2005/02/24 13:32:58 jeffd Exp $
+    @version $Id$
 } {
     {user_id:integer}
     {return_url ""}

@@ -1,6 +1,6 @@
 #    @author Matthew Geddert openacs@geddert.com
 #    @creation-date 2005-05-09
-#    @cvs-id $Id: contacts-master.tcl,v 1.5 2009/10/01 15:44:41 cvs Exp $
+#    @cvs-id $Id$
 
 
 set contacts_master_template [parameter::get_from_package_key -package_key "contacts" -parameter "ContactsMaster" -default "/packages/intranet-contacts/lib/contacts-master"]

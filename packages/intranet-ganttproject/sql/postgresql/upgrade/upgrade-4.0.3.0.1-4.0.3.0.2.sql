@@ -43,9 +43,10 @@ SELECT im_dynfield_attribute_new (
 );
 
 
-SELECT im_dynfield_attribute_new (
-        'im_timesheet_task', 'xml_uid', 'MS-Project UID', 'integer', 'integer', 'f', 0, 'f', 'im_gantt_projects'
-);
+-- Fraber 120309: This does not work!
+-- SELECT im_dynfield_attribute_new (
+--         'im_timesheet_task', 'xml_uid', 'MS-Project UID', 'integer', 'integer', 'f', 0, 'f', 'im_gantt_projects'
+-- );
 
 
 update im_categories set aux_int1 = 0 where category_id = 9720;

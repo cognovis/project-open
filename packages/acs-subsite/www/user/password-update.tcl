@@ -2,7 +2,7 @@ ad_page_contract {
     Let's the user change his/her password.  Asks
     for old password, new password, and confirmation.
     
-    @cvs-id $Id: password-update.tcl,v 1.22 2009/03/31 15:06:27 emmar Exp $
+    @cvs-id $Id$
 } {
     {user_id {[ad_conn untrusted_user_id]}}
     {return_url ""}

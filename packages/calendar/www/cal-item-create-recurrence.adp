@@ -3,7 +3,7 @@
 	
 	@author Gary Jin (gjin@arsidigta.com)
      	@creation-date Dec 14, 2000
-     	@cvs-id $Id: cal-item-create-recurrence.adp,v 1.13 2004/07/12 14:49:55 jeffd Exp $
+     	@cvs-id $Id$
 -->
 
 

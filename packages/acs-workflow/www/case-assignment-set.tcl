@@ -4,7 +4,7 @@ ad_page_contract {
     
      @author Jesse Koontz  [jkoontz@arsdigita.com]
      @creation-date Thu Jan 25 14:39:44 2001
-     @cvs-id $Id: case-assignment-set.tcl,v 1.2 2006/06/06 20:35:55 dotproj Exp $
+     @cvs-id $Id$
 } {
     case_id:integer
     role_key

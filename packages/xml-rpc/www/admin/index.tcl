@@ -3,7 +3,7 @@ ad_page_contract {
      Front page of admin
      @author Vinod Kurup [vinod@kurup.com]
      @creation-date Thu Oct  9 15:22:41 2003
-     @cvs-id $Id: index.tcl,v 1.1 2003/11/26 02:59:14 vinodk Exp $
+     @cvs-id $Id$
 } {
 } -properties {
     rpc_url:onevalue

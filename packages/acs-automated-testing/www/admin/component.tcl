@@ -1,5 +1,5 @@
 ad_page_contract {
-  @cvs-id $Id: component.tcl,v 1.3 2003/09/10 08:54:31 lars Exp $
+  @cvs-id $Id$
 } {
   component_id:nohtml
   package_key:nohtml

@@ -5,7 +5,7 @@
 -- by philg@mit.edu and raj@alum.mit.edu on February 9, 2000
 -- converted to ACS 4.0 by nstrug@arsdigita.com on 29th September 2000
 --
--- $Id: simple-survey-create.sql,v 1.1 2005/12/31 23:52:30 cvs Exp $
+-- $Id$
 
 -- we expect this to be replaced with a more powerful survey
 -- module, to be developed by buddy@ucla.edu, so we prefix

@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 7 Aug 2000
     @author Jon Salz (jsalz@arsdigita.com)
-    @cvs-id $Id: database-init.tcl,v 1.3 2007/05/14 20:30:26 donb Exp $
+    @cvs-id $Id$
 
 }
 

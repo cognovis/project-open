@@ -3,7 +3,7 @@
 --
 -- @author yon (yon@openforce.net)
 -- @creation-date 2002-04-03
--- @version $Id: file-storage-views-create.sql,v 1.12 2006/08/08 21:26:48 donb Exp $
+-- @version $Id$
 --
 
 create or replace view fs_urls_full

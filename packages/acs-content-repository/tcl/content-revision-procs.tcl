@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-04
     @arch-tag: ddc736fb-cb5f-41fe-a854-703df26e8e03
-    @cvs-id $Id: content-revision-procs.tcl,v 1.25 2009/07/12 01:08:23 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::revision {}

@@ -1,6 +1,6 @@
 -- packages/acs-events/sql/activity-drop.sql
 --
--- $Id: activity-drop.sql,v 1.1 2001/07/13 02:00:30 jowells Exp $
+-- $Id$
 
 drop package acs_activity;
 drop table   acs_activity_object_map;

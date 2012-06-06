@@ -3,7 +3,7 @@ ad_library {
     Manage external links in the content repository
 
     @author Don Baccus (dhogaza@pacifier.com)
-    @cvs-d $Id: extlink-procs.tcl,v 1.10 2009/02/13 22:13:06 jeffd Exp $
+    @cvs-d $Id$
 
 }
 

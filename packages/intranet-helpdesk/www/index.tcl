@@ -164,6 +164,7 @@ set mine_p_options {}
 if {$view_tickets_all_p} { 
     lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
 }
+
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
 
@@ -242,11 +243,11 @@ ad_form \
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
 	{ticket_name:text(text),optional {label "[_ intranet-helpdesk.Ticket_Name]"} {html {size 12}}}
+	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-core"}} }
     }
 
 if {$view_tickets_all_p} {  
     ad_form -extend -name $form_id -form {
-	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-core"}} }
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-core"} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
 	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
@@ -274,11 +275,16 @@ im_dynfield::set_form_values_from_http -form_id $form_id
 im_dynfield::set_local_form_vars_from_http -form_id $form_id
 set mine_p $org_mine_p
 
+# A customer should not get the "My queue" filter pre-selected - should he get the "My queue" selection at all? 
+if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $current_user_id] && [string first "mine" [string tolower $mine_p_options]] != -1 } {
+    template::element::set_value $form_id mine_p "mine"
+    set mine_p "mine"
+}
+
 array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -form_id $form_id \
 			       -object_type $object_type
 ]
-
 
 # ad_return_complaint 1 [array get extra_sql_array]
 
@@ -803,7 +809,7 @@ set ticket_navbar_html [im_ticket_navbar $letter "/intranet-helpdesk/index" $nex
 
 
 # Compile and execute the formtemplate if advanced filtering is enabled.
-eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="ticket_filter"></formtemplate>}]
+eval [template::adp_compile -string {<formtemplate style=tiny-plain-po id="ticket_filter"></formtemplate>}]
 set filter_html $__adp_output
 
 
@@ -820,7 +826,7 @@ set left_navbar_html "
 if {$sla_exists_p} {
 
     # Compile and execute the formtemplate if advanced filtering is enabled.
-    eval [template::adp_compile -string {<formtemplate style="tiny-plain" id="ticket_new"></formtemplate>}]
+    eval [template::adp_compile -string {<formtemplate style=tiny-plain-po id="ticket_new"></formtemplate>}]
     set form_html $__adp_output
 
     append left_navbar_html "

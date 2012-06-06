@@ -4,7 +4,7 @@
 -- @author Victor Guerra (guerra@galileo.edu)
 -- @creation-date 2006-07-13
 -- @arch-tag: 5d9217e6-cdc0-4fa3-81c7-2f51eb04780e
--- @cvs-id $Id: upgrade-5.2.0d18-5.2.0d19.sql,v 1.2 2006/12/15 00:01:12 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- this script was orignally created by daveb -- upgrade-5.2.0d15-5.2.0a1.sql
@@ -56,7 +56,7 @@ end;' language 'plpgsql';
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2005-06-05
 -- @arch-tag: 16725764-0b5d-4e98-a75d-dc77bf3141de
--- @cvs-id $Id: upgrade-5.2.0d18-5.2.0d19.sql,v 1.2 2006/12/15 00:01:12 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- patch#548 bug#1937

@@ -37,7 +37,7 @@
 //    }
 //
 //
-// $Id: GD.php,v 1.11 2010/05/23 11:58:33 gustafn Exp $
+// $Id$
 //
 // Image Transformation interface using the GD library
 //

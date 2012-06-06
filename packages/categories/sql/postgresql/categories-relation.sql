@@ -21,8 +21,8 @@ begin
       ''Meta Category Relation'',       -- pretty_name
       ''Meta Category Relation'',       -- pretty_plural
       ''relationship'',			-- supertype
-      null,                             -- table_name
-      null,                             -- id_column
+      ''meta_categories'',		-- table_name
+      ''meta_category_id'',		-- id_column 
       null,				-- package_name
       ''category'',		        -- object_type_one 
       ''category'',		        -- role_one
@@ -39,8 +39,8 @@ begin
       ''User Meta Category Relation'',  -- pretty_name
       ''User Meta Category Relation'',  -- pretty_plural
       ''relationship'',			-- supertype
-      null,                             -- table_name
-      null,                             -- id_column
+      ''user_meta_categories'',		-- table_name
+      ''user_meta_category_id'',	-- id_column
       null,				-- package_name
       ''meta_category_rel'',		-- object_type_one
       ''meta_category'',		-- role_one

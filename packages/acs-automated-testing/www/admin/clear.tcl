@@ -1,5 +1,5 @@
 ad_page_contract {
-  @cvs-id $Id: clear.tcl,v 1.2 2002/09/10 22:22:04 jeffd Exp $
+  @cvs-id $Id$
 } {
   {package_key ""}
   {category:aa_test_category ""}

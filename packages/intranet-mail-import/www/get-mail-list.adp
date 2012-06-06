@@ -1,0 +1,9 @@
+{"recordsReturned":@ctr@,
+    "totalRecords":@ctr@,
+    "startIndex":0,
+    "sort":null,
+    "dir":"asc",
+    "records":[
+	@json_record_list;noquote@
+    ]
+}

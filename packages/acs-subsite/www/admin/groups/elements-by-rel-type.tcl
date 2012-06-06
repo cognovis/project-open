@@ -21,7 +21,7 @@
 #
 # @author oumi@arsdigita.com
 # @creation-date 2001-2-6
-# @cvs-id $Id: elements-by-rel-type.tcl,v 1.3 2011/04/18 17:24:30 emmar Exp $
+# @cvs-id $Id$
 
 set user_id [ad_conn user_id]
 set admin_p [ad_permission_p $group_id "admin"]

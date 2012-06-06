@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 18 July 2000
-    @cvs-id $Id: display-procs.tcl,v 1.2 2010/06/02 15:53:54 cvs Exp $
+    @cvs-id $Id$
 }
 
 

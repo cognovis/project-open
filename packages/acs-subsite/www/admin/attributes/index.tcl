@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Thu Dec  7 16:33:54 2000
-    @cvs-id $Id: index.tcl,v 1.1 2001/03/13 22:59:26 ben Exp $
+    @cvs-id $Id$
 
 } {
 }

@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: extension-table-delete.tcl,v 1.3 2006/04/07 23:07:39 cvs Exp $
+    @cvs-id $Id$
 
 } {
     object_type

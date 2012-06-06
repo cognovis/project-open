@@ -6,7 +6,7 @@ ad_library {
 
     @creation-date July 2007
     @author rmorales@innova.uned.es
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.2 2007/10/07 22:36:55 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval calendar {}

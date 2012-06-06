@@ -1,6 +1,6 @@
 ad_page_contract {
     Prompt the user for email and password.
-    @cvs-id $Id: index.tcl,v 1.13 2010/12/03 16:51:05 po34demo Exp $
+    @cvs-id $Id$
 } {
     {authority_id ""}
     {username ""}

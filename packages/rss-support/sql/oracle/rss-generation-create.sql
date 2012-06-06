@@ -13,7 +13,7 @@ begin
     null,				-- package_name
     'f',				-- abstract_p
     null,				-- type_extension_table
-    'rss_gen_subscr.name'		-- name_method
+    'rss_gen_subscr__name'		-- name_method
     );
 end; 
 / 

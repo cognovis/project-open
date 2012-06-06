@@ -41,16 +41,19 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set current_url [im_url_with_query]
 set org_project_type_id [im_opt_val project_type_id]
 set sub_navbar ""
+set auto_increment_project_nr_p [parameter::get -parameter ProjectNrAutoIncrementP -package_id [im_package_core_id] -default 0]
+set project_name_field_min_len [parameter::get -parameter ProjectNameMinimumLength -package_id [im_package_core_id] -default 5]
+set project_nr_field_min_len [parameter::get -parameter ProjectNrMinimumLength -package_id [im_package_core_id] -default 5]
 
 if { ![exists_and_not_null return_url] && [exists_and_not_null project_id]} {
     set return_url "[im_url_stub]/projects/view?[export_url_vars project_id]"
 }
 
-
-# Do we need the company_id for creating a project?
-# This is necessary if the project_nr depends on the company_id.
+# Do we need the customer_id for creating a project?
+# This is necessary if the project_nr depends on the customer_id.
 set customer_required_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NewProjectRequiresCustomerP" -default 0]
-if {![info exists project_id] && $company_id == "" && $customer_required_p} {
+
+if { (![info exists project_id] || "" == $project_id) && $company_id == "" && $customer_required_p} {
     ad_returnredirect [export_vars -base "new-custselect" {project_id parent_id project_nr workflow_key return_url}]
     ad_script_abort
 }

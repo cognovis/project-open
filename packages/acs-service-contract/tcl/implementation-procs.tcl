@@ -3,7 +3,7 @@ ad_library {
     
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-01-14
-    @cvs-id $Id: implementation-procs.tcl,v 1.13 2007/01/10 21:22:05 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval acs_sc::impl {}

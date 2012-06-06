@@ -1,8 +1,8 @@
 <?php
 /**
  * Image Manager configuration file.
- * @author $Author: gustafn $
- * @version $Id: config.inc.php,v 1.11 2010/05/23 11:58:33 gustafn Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  *
  * @todo change all these config values to defines()

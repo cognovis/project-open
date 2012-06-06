@@ -8,7 +8,7 @@ ad_page_contract {
 
   @author nstrug@arsdigita.com
 
-  @cvs-id $Id: question-swap.tcl,v 1.4 2009/02/09 16:36:30 cvs Exp $
+  @cvs-id $Id$
 
 } {
 
