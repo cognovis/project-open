@@ -20,6 +20,11 @@ ad_page_contract {
 	set object_type [db_string get_object_type "select acs_object_util__get_object_type(:object_id)" -default 0]
 	set view_p 0
 
+	# Admins can see everything 
+	if { [im_is_user_site_wide_or_intranet_admin $user_id] } {
+		set view_p 1
+	}
+
 	if { $object_type == "im_user" && $object_id==$user_id } {
 		set view_p 1 
 	} else {
@@ -31,6 +36,7 @@ ad_page_contract {
 	}
 
         set ctr 0
+	set json_record_list "" 
 
 	if { $view_p } {
 		set sql "
@@ -46,7 +52,6 @@ ad_page_contract {
                 	        and amb.body_id = ao.object_id
                         	and ar.object_id_two = :object_id
 	            "
-		set json_record_list "" 
 		db_foreach mail_list $sql {
 			append json_record_list "{\"id\":\"$content_item_id\",\n"
 			append json_record_list "\"date\":\"$date_formatted\",\n"
@@ -57,7 +62,5 @@ ad_page_contract {
 			incr ctr
 		}
 		set json_record_list [string range $json_record_list 0 [expr [string length $json_record_list]-3]]
-	} else {
-	    set json_record_list [lang::message::lookup "" intranet-mail-import.No_View_Permission "You do not have permissions to view mails. Please contact your System Administrator"]
-	}
-
+	} 
+	# else {set json_record_list [lang::message::lookup "" intranet-mail-import.No_View_Permission "You do not have permissions to view mails. Please contact your System Administrator"]}
