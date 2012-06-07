@@ -803,7 +803,7 @@ ad_proc -public im_audit_sweeper { } {
 		-default 0 \
         ]
 
-	set interval_hours 1
+	if {0 == $interval_hours} { set interval_hours 24 }
 
 	# Select all "active" (=not deleted or canceled) main projects
 	# without an update in the last X hours
@@ -811,16 +811,12 @@ ad_proc -public im_audit_sweeper { } {
 	select	project_id
 	from	im_projects
 	where	parent_id is null and
-		project_status_id not in (
-			[im_project_status_deleted], 
-			[im_project_status_canceled]
-		) and
+		project_status_id not in ([im_project_status_deleted]) and
 		project_id not in (
 			select	distinct project_id
 			from	im_projects_audit
 			where	last_modified > (now() - '$interval_hours hours'::interval)
 		)
-	LIMIT 10
         "
 	db_foreach audit $project_sql {
 	    append debug [im_project_audit -project_id $project_id]

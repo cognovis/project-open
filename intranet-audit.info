@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-audit</auto-mount>
 
-    <version name="4.0.3.1.0" url="http://www.project-open.org/download/apm/intranet-audit-4.0.3.1.0.apm">
+    <version name="4.0.3.2.0" url="http://www.project-open.org/download/apm/intranet-audit-4.0.3.2.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Audit changes of ]po[ objects</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -23,6 +23,7 @@
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditProjectFakeHistoryIntervalHours" default="0" description="Should the system fake the project's history im_projects_audit records? This is useful for demo servers. Set to '0' to disable this feature in production servers. Set to '1' or '2' with demo servers."/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditObjectRelationshipsP" default="0" description="Should we audit the acs_rels between the audit object and other objects? Set this parameter to '1' in order to track user group memberships, project assignments etc. Set this parameter to '0' if you run into performance issues with audit."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditProjectProgressIntervalHours" default="0" description="Should we write audit logs for projects? A value of '0' (default) will disable this feature. Any other value will make sure that audit logs are written for all projects in the system at least every N hours."/>
         </parameters>
 
     </version>
