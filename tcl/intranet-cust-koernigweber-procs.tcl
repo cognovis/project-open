@@ -348,6 +348,8 @@ ad_proc -public im_price_list {
 	    }
 	}
 
+
+	set show_delete_checkbox_p 0 
 	db_foreach records_to_list $inner_sql {
 		set show_currency_p 1
 		set show_user [im_show_user_style $user_id $current_user_id $price_object_id]
@@ -414,8 +416,8 @@ ad_proc -public im_price_list {
 
 		append body_html "</td>"
 
-		# if $add_admin_links && "" == $cost_object_category_id
 		if { (("user" == $object_type) || ("" == $cost_object_category_id && "im_project" == $object_type )) && $admin_p } {
+		    set show_delete_checkbox_p 1
 		    set var_delete_price "delete_price.$id_price_table"
 		    append body_html "
 			  <td align=right>
@@ -496,6 +498,7 @@ ad_proc -public im_price_list {
 
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
+    if { $show_delete_checkbox_p } {
 	append footer_html "
 	    <tr>
 	      <td align=left colspan=$colspan>
@@ -503,6 +506,7 @@ ad_proc -public im_price_list {
 	      </td>
 	    </tr>
 	    "
+    }
     # ------------------ Join table header, body and footer ----------------
     set html "
 	<form method=POST action=/intranet-cust-koernigweber/set-emp-cust-price>
