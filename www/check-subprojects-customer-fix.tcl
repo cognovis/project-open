@@ -22,4 +22,5 @@ db_dml fix_company_id "
 	where project_id = :project_id
 "
 
+im_audit -object_id $project_id
 ad_returnredirect $return_url
