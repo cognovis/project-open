@@ -90,6 +90,7 @@ foreach line $values {
 	where
 		project_id = :task_id
     "
+    im_audit -object_id $task_id
 }
 
 
