@@ -297,12 +297,24 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	    }
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
-	    
-	    switch $datatype {
-		text - string {
-		    # Create a "like" search
-		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
-		    # lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+
+	    # Special logic for each of the TCL widgets
+	    switch $widget {
+		text - textarea - richtext {
+
+		    switch $datatype {
+			text - string {
+			    # Create a "like" search
+			    lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
+			    # lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+			}
+			integer - number - float {
+			    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+			}
+			default {
+			    lappend criteria "1=1"
+			}
+		    }
 		}
 		integer - number - float {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
