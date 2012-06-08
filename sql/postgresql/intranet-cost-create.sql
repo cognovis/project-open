@@ -1600,7 +1600,7 @@ begin
 		''intranet-cost'',		-- package_name
 		''finance'',			-- label
 		''Finance'',			-- name
-		''/intranet-cost/'',		-- url
+		''/intranet-invoices/list'',	-- url
 		80,				-- sort_order
 		v_main_menu,			-- parent_menu_id
 		null				-- visible_tcl
