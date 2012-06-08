@@ -1876,6 +1876,7 @@ ad_proc -public im_dynfield::object_array {
     set category_attribute_names [list]
     set deref_attribute_names [list]
     set date_attribute_names [list]
+    set richtext_attribute_names [list]
 
     db_foreach column_list_sql {
 	select	w.deref_plpgsql_function,
