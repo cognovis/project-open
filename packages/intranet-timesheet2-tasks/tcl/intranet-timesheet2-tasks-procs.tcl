@@ -1249,11 +1249,13 @@ ad_proc im_timesheet_project_advance { project_id } {
 			where project_id = :parid
 	    "
 	} else {
-	    db_dml update_project_advance "
+	    catch {
+		db_dml update_project_advance "
 			update im_projects set
 				percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
 			where project_id = :parid
 	    "
+	    }
 	}
 
 	db_dml update_task_hours "
@@ -1266,22 +1268,6 @@ ad_proc im_timesheet_project_advance { project_id } {
 
 	# Write audit trail
 	im_project_audit -project_id $parid
-    }
-
-        set planned_sum $planned_sum_hash($parid)
-        set advanced_sum $advanced_sum_hash($parid)
-        set billable_sum $billable_sum_hash($parid)
-        
-        catch {
-            db_dml update_project_advance "
-            		update im_projects set
-			        percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
-		            where project_id = :parid
-	                "
-        }
-
-        # Write audit trail
-        im_project_audit -project_id $parid
     }
 }
 

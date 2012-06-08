@@ -962,26 +962,26 @@ ad_proc -public im_invoice_generate_bills {
     Sets the purchase orders, once they are transferred into a provider bill, into the state "filed"
 } {
     if {$current_status_id eq $new_status_id} {return}
-    set cost_types [im_category_children -super_category_id [im_cost_type_po]]
-    lappend cost_types [im_cost_type_po]
+    set cost_types [im_sub_categories [im_cost_type_po]]
     set purchase_order_ids [db_list purchase_orders "select cost_id from im_costs where cost_type_id in ([template::util::tcl_to_sql_list $cost_types]) and cost_status_id = :current_status_id"]
     
-    # check if we have a linked bill already.
-    # in this case, don't generate (?)
-    set existing_bill_ids [list]
-    db_foreach provider_bills "select object_id_one, object_id_two from acs_rels where object_id_one in ([template::util::tcl_to_sql_list $purchase_order_ids]) and rel_type = 'im_invoice_invoice_rel'" {
-	lappend existing_bill_ids $object_id_one
-    }
+    if {"" != $purchase_order_ids} {
+	# check if we have a linked bill already.
+	# in this case, don't generate (?)
+	set existing_bill_ids [list]
+	db_foreach provider_bills "select object_id_one, object_id_two from acs_rels where object_id_one in ([template::util::tcl_to_sql_list $purchase_order_ids]) and rel_type = 'im_invoice_invoice_rel'" {
+	    lappend existing_bill_ids $object_id_one
+	}
 	
-    foreach purchase_order_id $purchase_order_ids {
-	if {[lsearch $existing_bill_ids $purchase_order_id]<0} {
-	    set new_invoice_id [im_invoice_copy_new -source_invoice_ids $purchase_order_ids -target_cost_type_id 3704]
-
-	    # Update the status of the purchase orders
-	    db_dml update_status "update im_costs set cost_status_id = :new_status_id where cost_id in ([template::util::tcl_to_sql_list $purchase_order_ids])"
+	foreach purchase_order_id $purchase_order_ids {
+	    if {[lsearch $existing_bill_ids $purchase_order_id]<0} {
+		set new_invoice_id [im_invoice_copy_new -source_invoice_ids $purchase_order_id -target_cost_type_id 3704]
+		
+		# Update the status of the purchase orders
+		db_dml update_status "update im_costs set cost_status_id = :new_status_id where cost_id = :purchase_order_id"
+	    }
 	}
     }
-	
     return 1
 }
 
