@@ -231,6 +231,7 @@ switch $action {
 	"
 
 	db_dml update_project_budgets $sql
+	im_audit -object_id $object_id
     }
     default {
 	ad_return_complaint 1 "<li>Unknown action: '$action'"
