@@ -160,12 +160,13 @@ select
 	c.company_path as company_nr,
 	c.company_name,
 	to_char(s.hours, :num_format) as hours_pretty,
-	to_char(s.total_cost, :num_format) as total_cost_pretty
+	to_char(s.total_cost, :num_format) as total_cost_pretty,
+	100000.0 * coalesce(u.user_id, 1) + coalesce(c.company_id, 1) as user_company_prod
 from
 	($inner_sql) s,
 	im_companies c,
 	im_projects p,
-	cc_users u
+	users u
 where
 	s.user_id = u.user_id
 	and p.project_status_id not in ([im_project_status_deleted])
@@ -253,6 +254,7 @@ set report_def [list \
 set header0 {"Employee" "Customer" "Project" "Date" Avail Salary SS Ins Other "\#Pay" Total "Hourly<br>Rate" "&nbsp;" "Intl<br>Hours" "Extl<br>Hours" "&nbsp;" "Total<br>Hours"}
 set footer0 {"" "" "" "" "" "" "" "" ""}
 
+# --------------------------------------------------------------
 set hours_user_counter [list \
 	pretty_name Hours \
 	var hours_user_subtotal \
@@ -274,27 +276,29 @@ set hours_user_extl_counter [list \
 	expr \$hours_extl
 ]
 
+# --------------------------------------------------------------
 set hours_company_counter [list \
 	pretty_name Hours \
 	var hours_company_subtotal \
-	reset \$company_id \
+	reset \$user_company_prod \
 	expr \$hours
 ]
 
 set hours_company_intl_counter [list \
 	pretty_name HoursIntl \
 	var hours_company_intl_subtotal \
-	reset \$company_id \
+	reset \$user_company_prod \
 	expr \$hours_intl
 ]
 
 set hours_company_extl_counter [list \
 	pretty_name HoursExtl \
 	var hours_company_extl_subtotal \
-	reset \$company_id \
+	reset \$user_company_prod \
 	expr \$hours_extl
 ]
 
+# --------------------------------------------------------------
 set hours_project_counter [list \
 	pretty_name Hours \
 	var hours_project_subtotal \
