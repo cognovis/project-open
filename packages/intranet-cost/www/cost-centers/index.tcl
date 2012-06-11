@@ -54,6 +54,7 @@ set table_header "
 
 append table_header "
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.DeptQuest "Dept?"]</td>
+  <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.InheritFrom "Inherit Permsissons From"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Manager "Manager"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Employees "Employees"]</td>
 "
@@ -74,8 +75,10 @@ set main_sql "
 		(9 - (length(cost_center_code)/2)) as colspan_level,
 		im_name_from_user_id(m.manager_id) as manager_name,
 		e.employee_id as employee_id,
-		im_name_from_user_id(e.employee_id) as employee_name
+		im_name_from_user_id(e.employee_id) as employee_name,
+		acs_object__name(o.context_id) as context
 	from
+		acs_objects o,
 		im_cost_centers m
 		LEFT JOIN (
 			select	e.*
@@ -84,6 +87,8 @@ set main_sql "
 			where	e.employee_id = u.user_id and
 				u.member_state = 'approved'
 		) e ON (e.department_id = m.cost_center_id)
+	where
+		o.object_id = m.cost_center_id
 	order by cost_center_code,employee_name
 "
 
@@ -110,6 +115,7 @@ db_foreach cost_centers $main_sql {
 	    </nobr>
 	  </td>
 	  <td>$department_p</td>
+	  <td>$context</td>
 	  <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $manager_id}}]>$manager_name</a></td>
 	"
     } else {
