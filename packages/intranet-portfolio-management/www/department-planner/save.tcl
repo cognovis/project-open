@@ -30,6 +30,7 @@ foreach pid [array names project_priority_id] {
 				project_priority_id = :priority
 			where project_id = :pid
     "
+    im_audit -object_id $pid
 }
 
 ad_returnredirect $return_url
