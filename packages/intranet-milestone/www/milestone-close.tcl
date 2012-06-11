@@ -45,5 +45,9 @@ set sql "
 "
 db_dml del_projects $sql
 
+foreach pid $project_list {
+    im_audit -object_id $pid
+}
+
 ad_returnredirect $return_url
 
