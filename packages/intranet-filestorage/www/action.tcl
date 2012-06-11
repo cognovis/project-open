@@ -408,45 +408,43 @@ switch $actions {
 	}
 	
 
-	# Determine a random .tgz file
+	# Determine a random .tgz zip_file
 	set r [ns_rand 10000000]
-	set file "zip.$user_id.$r.tgz"
-	ns_log Notice "file=$file"
-	set path "/tmp/$file"
+	set zip_file "zip.$user_id.$r.tgz"
+	ns_log Notice "intranet-filestroage/action: zip_file=$zip_file"
+
+	# Tmp directory for zip files
+	set tmp_path [im_filestorage_tmp_path]
+	set zip_file_path "$tmp_path/$zip_file"
 	
 	# build exec command 
-	set tar_command  "/bin/tar czf"
-	lappend tar_command $path
+	set tar_command  "/bin/tar czf $zip_file_path"
 	foreach path $dest_path {
 	    lappend tar_command $path
 	}
 
 	if { [catch {
+	    ns_log Notice "intranet-filestorage/action: zip: About to execute tar_command=$tar_command"
 	    eval "exec [join $tar_command]"
 	} err_msg] } {
 	    ns_log Error "------> $err_msg"
 	    # Nothing. We check if TAR was successfull if the file exists.
 	}
 	
-	if { $platform == "windows" } {
-	    # fraber 091023: Changes from Maurizio
-	    # set path "[acs_root_dir]/../cygwin/$path"
-	    set path "[acs_root_dir]/servers/projop/$path"
-	}
-	
 	if { [catch {
-	    set file_readable [file readable $path]
+	    set file_readable [file readable $zip_file_path]
 	} err_msg] } {
 	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
 	    return
 	}
 	
+	ns_log Notice "intranet-filestorage/action: file_readable=$file_readable, zip_file_path=$zip_file_path, redirecting to /intranet/download/zip/0/$zip_file"
+
 	if $file_readable {
-	    ad_returnredirect "/intranet/download/zip/0/$file"
-	    return
+	    ad_returnredirect "/intranet/download/zip/0/$zip_file"
 	} else {
-	    doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
-	    return
+	    ad_return_complaint 1 "[_ intranet-filestorage.lt_Did_not_find_the_spec]<br><pre>$path</pre>"
+	    ad_script_abort
 	}
     }
 
