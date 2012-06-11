@@ -18,7 +18,6 @@
         <provides url="intranet-resource-management" version="4.0.1.0.2"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-timesheet2" version="3.4.0.0.0"/>
-	<requires url="intranet-translation" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>

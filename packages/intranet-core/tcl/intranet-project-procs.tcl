@@ -543,11 +543,17 @@ ad_proc -public im_format_project_duration { words {lines ""} {hours ""} {days "
 ad_proc -public im_project_subproject_ids {
     {-type "project"}
         -exclude_self:boolean
-        -project_id
+    {-project_id ""}
         -sql:boolean
     {-exclude_status_ids ""}
     {-project_type_ids ""}
     {-exclude_type_ids ""}
+    {-exclude_task_status_ids ""}
+    {-exclude_task_type_ids ""}
+    {-cost_center_ids ""}
+    {-task_member_ids ""}
+    {-task_start_date ""}
+    {-task_end_date ""}
 } {
     Get a list of subproject ids. This can be used both as a filter proc (e.g. to filter our certain types of projects from a list of projects) or to get a list of subprojects or even tasks.
     
@@ -569,13 +575,21 @@ ad_proc -public im_project_subproject_ids {
     lappend exclude_type_ids [im_project_type_task]
     lappend exclude_clauses "and children.project_status_id not in ([template::util::tcl_to_sql_list $exclude_status_ids])"
     lappend exclude_clauses "and children.project_type_id not in ([template::util::tcl_to_sql_list $exclude_type_ids])"
-    
+
+    if {$project_id ne ""} {
+	lappend exclude_clauses "and parent.project_id = :project_id"
+    }
+
     # Make sure we don't by accident end up with a circular loop
     if {$exclude_self_p} {
 	lappend exclude_clauses "and children.project_id != :project_id"
 	set union_clause ""
     } else {
-	set union_clause "UNION select :project_id as project_id from dual"
+	if {$project_id ne ""} {
+	    set union_clause "UNION select :project_id as project_id from dual"
+	} else {
+	    set union_clause ""
+	}
     }
     
     set project_ids [db_list projects "
@@ -584,7 +598,6 @@ ad_proc -public im_project_subproject_ids {
                         im_projects children
                 where
                         children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-                and parent.project_id = :project_id
                 [join $exclude_clauses " \n"]
                 $union_clause
     "]
@@ -595,11 +608,37 @@ ad_proc -public im_project_subproject_ids {
 	    lappend project_ids $project_id
 	}
 	
+	set task_exclude_clauses [list]
+	set extra_from ""
 	if {$project_ids ne ""} {
+	    if {$exclude_task_status_ids ne ""} {
+		lappend task_exclude_clauses "and task_status_id not in ([template::util::tcl_to_sql_list $exclude_task_status_ids])"
+	    }
+	    if {$exclude_task_type_ids ne ""} {
+		lappend task_exclude_clauses "and task_type_id not in ([template::util::tcl_to_sql_list $exclude_task_type_ids])"
+	    }
+	    if {$cost_center_ids ne ""} {
+		lappend task_exclude_clauses "and cost_center_id in ([template::util::tcl_to_sql_list $cost_center_ids])"
+	    }
+	    if {$task_member_ids ne ""} {
+		set extra_from ",acs_rels"
+		lappend task_exclude_clauses "and acs_rels.object_id_one = task_id and object_id_two in ([template::util::tcl_to_sql_list $task_member_ids])"
+	    }
+	    
+	    if {$task_start_date ne ""} {
+		lappend task_exclude_clauses "and end_date >= to_timestamp(:task_start_date, 'YYYY-MM-DD')"
+	    } 
+	    if {$task_end_date ne ""} {
+		lappend task_exclude_clauses "and start_date <= to_timestamp(:task_end_date, 'YYYY-MM-DD')"
+	    } 
+
 	    set project_ids [db_list tasks "
 		select	project_id
-		from	im_projects
-		where	project_type_id = [im_project_type_task] and parent_id in ([template::util::tcl_to_sql_list $project_ids])
+		from	im_projects, im_timesheet_tasks
+                $extra_from
+		where	project_id = task_id and parent_id in ([template::util::tcl_to_sql_list $project_ids])
+                and project_type_id = 100
+                [join $task_exclude_clauses " \n"] 
 	    "]
 	}
     }

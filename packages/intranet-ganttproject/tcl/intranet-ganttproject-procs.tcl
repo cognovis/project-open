@@ -997,6 +997,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
+			-difference $difference \
 			-difference $difference_seconds \
 			-task_hash_array [array get task_hash]
 		}
