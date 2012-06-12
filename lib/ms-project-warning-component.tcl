@@ -92,7 +92,7 @@ if {![info exists ignore_hash($warning_key)]} {
 
 
 set warning_key "fix-tasks-without-assignments"
-if {![info exists ignore_hash($warning_key)]} {
+if {0 && ![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	t.*
 	from	(select	p.project_id as task_id,
