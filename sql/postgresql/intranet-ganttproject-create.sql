@@ -127,6 +127,21 @@ select im_priv_create('view_gantt_proj_detail', 'Employees');
 
 
 
+----------------------------------------------------------------
+-- Create a table to store user preferences with respect to MS-Project Warnings
+----------------------------------------------------------------
+
+
+create table im_gantt_ms_project_warning (
+		user_id		integer
+				constraint im_gantt_ms_project_warning_user_fk
+				references users,
+		warning_key	text,
+		project_id	integer
+				constraint im_gantt_ms_project_warning_project_fk
+				references im_projects
+);
+
 
 
 ----------------------------------------------------------------
