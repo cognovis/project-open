@@ -665,7 +665,8 @@ ad_proc -public im_gp_save_tasks2 {
     set task_id			0
     set has_subobjects_p	0
     set work			0
-
+    set scheduling_constraint_id ""
+    set scheduling_constraint_date ""
     set outline_number		""
     set remaining_duration	""
 
@@ -691,6 +692,12 @@ ad_proc -public im_gp_save_tasks2 {
 	    "notes"             { set note $nodeText }
 	    "outlinenumber"     { set outline_number $nodeText }
 	    "percentcomplete"	{ set percent_completed $nodeText }
+	    "constrainttype"	{
+		if {"" != $nodeText} {
+		    set scheduling_constraint_id [util_memoize [list db_string contype "select category_id from im_categories where category_type = 'Intranet Timesheet Task Scheduling Type' and aux_int1 = '$nodeText'" -default ""]]
+		}
+	    }
+	    "constraintdate"	{ set scheduling_constraint_date $nodeText }
 	    "extendedattribute" {
 		set fieldid ""
 		set fieldvalue ""
@@ -1085,6 +1092,8 @@ ad_proc -public im_gp_save_tasks2 {
 		effort_driven_p = :effort_driven_p,
 		effort_driven_type_id = :effort_driven_type_id,
 		uom_id = [im_uom_hour],
+		scheduling_constraint_id = :scheduling_constraint_id,
+		scheduling_constraint_date = :scheduling_constraint_date,
 		$units_sql
 	where
 		task_id = :task_id
