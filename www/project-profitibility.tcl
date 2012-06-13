@@ -1,0 +1,810 @@
+# /packages/intranet-reporting/www/projects-timesheet.tcl
+#
+# Copyright (C) 2003-2012 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/ for licensing details.
+# Klaus Hofeditz klaus.hofeditz@project-open.com 
+
+
+ad_page_contract {
+
+} {
+    { start_date "" }
+    { end_date "" }
+    { output_format "html" }
+    { project_id:integer 0 }
+    { customer_id:integer 0 }
+    { user_id_from_search:integer 0 }
+    { opened_projects:multiple "" }
+    { written_order:integer 0 }
+    { csv_export "" }
+}
+
+# ------------------------------------------------------------
+# Security
+
+# Label: Provides the security context for this report
+# because it identifies unquely the report's Menu and
+# its permissions.
+set menu_label "reporting-timesheet-finance"
+set current_user_id [ad_maybe_redirect_for_registration]
+set read_p [db_string report_perms "
+        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+        from    im_menus m
+        where   m.label = :menu_label
+" -default 'f']
+if {![string equal "t" $read_p]} {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
+    ad_script_abort
+}
+
+# Ugly but effective: Remove list markup to convert param into a list...
+regsub -all {\{} $opened_projects "" opened_projects
+regsub -all {\}} $opened_projects "" opened_projects
+
+
+# Check security. opened_projects should only contain integers.
+if {[regexp {[^0-9\ ]} $opened_projects match]} {
+    catch {im_security_alert \
+	       -location "Timesheet Finance Report" \
+	       -value $opened_projects \
+	       -message "Received non-integer value for opened_projects" 
+    } err
+    ad_return_complaint 1 "Invalid argument:<br>opened_projects=$opened_projects"
+    ad_script_abort
+}
+
+
+# ------------------------------------------------------------
+# Constants & Options
+
+set page_title "Gewinn und Verlust nach Kostenstellen"
+set context_bar [im_context_bar $page_title]
+set context ""
+set rounding_precision 2
+set locale [lang::user::locale]
+set format_string "%0.2f"
+
+set employee_id [db_list emp_list "select employee_id from im_employees"] 
+
+if {[llength $opened_projects] == 0} { set opened_projects [list 0] }
+
+# Check that Start & End-Date have correct format
+if { [catch { set start_date_ansi [clock format [clock scan $start_date] -format %Y-%m-%d] } ""] } {
+    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+    Current value: '$start_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+if { [catch { set end_date_ansi [clock format [clock scan $end_date] -format %Y-%m-%d] } ""] } {
+    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+    Current value: '$end_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+set days_in_past 7
+
+db_1row todays_date "
+select
+	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
+	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
+	to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
+from dual
+"
+
+if {"" == $start_date} {
+    set start_date "2000-01-01"
+}
+
+db_1row end_date "
+select
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+from dual
+"
+
+if {"" == $end_date} {
+    set end_date "2030-12-31"
+}
+
+
+set user_options [im_profile::user_options -profile_ids [im_profile_employees]]
+set user_options [linsert $user_options 0 [list [lang::message::lookup "" intranet-core.all "All"] ""]]
+
+set customer_url "/intranet/companies/view?customer_id="
+set project_url "/intranet/projects/view?project_id="
+set user_url "/intranet/users/view?user_id="
+set this_url [export_vars -base "/intranet-cust-koernigweber/project-profitibility" {start_date end_date} ]
+set current_url [im_url_with_query]
+
+
+# ------------------------------------------------------------
+# Set criterias 
+# ------------------------------------------------------------
+
+set criteria [list]
+
+# REMOVED: 
+# Projects 
+# if {"" != $project_id && 0 != $project_id} {
+#    lappend criteria "p.project_id = :project_id"
+# }
+
+# Customers
+if {"" != $customer_id && 0 != $customer_id} {
+    lappend criteria "p.company_id = :customer_id"
+}
+
+# Users 
+if { "" != $user_id_from_search && 0 != $user_id_from_search } {
+    lappend criteria "p.project_id in (select object_id_one from acs_rels where object_id_two = :user_id_from_search)"
+}
+
+# Written Order
+if { "" != $written_order && 0 != $written_order } {
+    # lappend criteria "p.written_order = :customer_id"
+}
+
+# Project Status
+# lappend criteria "p.project_status_id in ([join [im_sub_categories 76] ,]) "
+
+set where_clause [join $criteria "\n\tand "]
+if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+
+# ------------------------------------------------------------
+# Calculate the transitive superprojs for projects, that is
+# sub_project_id => {sub_project_id, parent_1_id, parent_2_id, ...}
+# ------------------------------------------------------------
+
+set project_superprojs_sql "
+	select
+		p.project_id as child_id,
+		p.parent_id
+	from
+		im_projects p
+"
+
+array set project_parent {}
+array set project_has_children_p {}
+array set project_direct_children {}
+
+db_foreach project_superprojs $project_superprojs_sql {
+    # Setup the project->parent relation
+    set project_parent($child_id) $parent_id
+
+    # Determine if a project has children
+    set project_has_children_p($parent_id) 1
+
+    # Setup the list of direct children of a project
+    if {"" != $parent_id} { 
+	set l [list]
+	if {[info exists project_direct_children($parent_id)] } { set l $project_direct_children($parent_id) }
+	lappend l $child_id
+	set project_direct_children($parent_id) $l
+    }
+}
+
+# ------------------------------------------------------------
+# Calculate the transitive closures of super-projects
+# Start the iteration with the project->parent relationship. 
+# In a second step we'll check if the parent project has further 
+# parents and add these ones respectively.
+# We use a list of "ToDo items" incomplete_projects.
+# ------------------------------------------------------------
+
+array set project_parents [array get project_parent]
+set incomplete_projects [array names project_parents]
+
+set cnt 0
+while {[llength $incomplete_projects] > 0} {
+    set new_incomplete_projects [list]
+    foreach incomplete_project $incomplete_projects {
+
+	set parents $project_parents($incomplete_project)
+	set topmost_parent [lindex $parents 0]
+	if {[info exists project_parent($topmost_parent)]} { 
+	    
+	    set parents_parent $project_parent($topmost_parent)
+	    if {"" != $parents_parent} {
+		
+		# The parent of our "incomplete_project" has a parent.
+		# Add the parent's parent to the front of the list
+		# and iterate (all the item to new_incomplete_projects)
+		
+		set parents [linsert $parents 0 $parents_parent]
+		set project_parents($incomplete_project) $parents
+		
+		lappend new_incomplete_projects $incomplete_project
+		
+	    }
+	}
+    }
+    set incomplete_projects $new_incomplete_projects
+    incr cnt
+    if {$cnt > 100} { ad_return_complaint 1 "<b>Timesheet Finance Report</b>:<br>Infinite loop: $cnt" }
+}
+
+# ------------------------------------------------------------
+# Calculate the transitive closures of sub-projects
+# That's easy, because we have already the transitive closure of
+# super-projects, which we only have to reorder.
+# ------------------------------------------------------------
+
+array set project_children {}
+foreach project [array names project_parents] {
+    set parents $project_parents($project)
+    foreach parent $parents {
+	set all_children [list]
+	if {[info exists project_children($parent)]} { set all_children $project_children($parent) }
+	lappend all_children $project
+	set project_children($parent) $all_children
+    }
+}
+
+# ------------------------------------------------------------
+# Calculate the sum of hours per project and user
+# and store the result in a hash array.
+# ------------------------------------------------------------
+
+set hours_criteria [list]
+if {[llength $employee_id] > 0} {
+    lappend hours_criteria "h.user_id in ([join $employee_id ","])"
+}
+set hours_where [join $hours_criteria "\n\tand "]
+if {"" != $hours_where} { set hours_where "and $hours_where" }
+
+set hours_sql "
+	SELECT 	h.project_id as hours_project_id,
+		h.user_id,
+		SUM(hours) AS logged_hours,
+		im_name_from_user_id(h.user_id) AS name
+	FROM	im_hours h
+	WHERE	1=1
+		and user_id in (
+			select	member_id
+			from	group_distinct_member_map
+			where	group_id = [im_employee_group_id]
+		)
+		and h.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+		and h.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+		$hours_where
+	GROUP BY 
+		h.project_id, h.user_id
+	HAVING SUM(hours) > 0
+"
+
+array set users {}
+array set project_hours {}
+
+db_foreach hours $hours_sql {
+    set users($user_id) $name
+
+    if { ![info exists projects($hours_project_id,$user_id)] } {
+	set projects($hours_project_id,$user_id) 0
+    }
+    set projects($hours_project_id,$user_id) [expr $projects($hours_project_id,$user_id) + $logged_hours]
+
+    foreach parent_id $project_parents($hours_project_id) {
+	if { ![info exists projects($parent_id,$user_id)] } {
+	    set projects($parent_id,$user_id) 0
+	}
+	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $logged_hours]
+    }
+
+}
+
+# ------------------------------------------------------------
+# Create the main list
+# ------------------------------------------------------------
+
+# ###
+# Set lables
+# ###
+
+set label_client [lang::message::lookup "" intranet-core.Client "Client"]
+set label_project_name [lang::message::lookup "" intranet-core.Project_Name "Project Name"]
+set label_written_order [lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]
+set label_internal_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Internal_costs "Internal<br>Costs"]
+set label_target_benefit [lang::message::lookup "" intranet-cust-koernigweber.Target_Benefits "Target<br>Benefits"]
+set label_costs_material [lang::message::lookup "" intranet-material.Costs_Material "Costs<br>Material"]
+set label_invoiceable_total [lang::message::lookup "" intranet-cust-koernigweber.Total_Invoiceable "Total<br>invoiceable"]; #erloesfaehig 
+set label_invoiced [lang::message::lookup "" intranet-core.Invoiced "Invoiced"]
+set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Invoicable<br>Price Matrix"]
+set label_profit_and_loss_project [lang::message::lookup "" intranet-cust-koernigweber.Profit_Loss_Project "P&L<br>Project"]
+set label_profit_and_loss_one [lang::message::lookup "" intranet-cust-koernigweber.Profit_Loss_One "P&L 1"]
+set label_profit_and_loss_two [lang::message::lookup "" intranet-cust-koernigweber.Profit_Loss_Two "P&L 2"]
+
+# ###
+# Define list elements 
+# ###
+
+set elements [list]
+
+# Company 
+lappend elements company_name
+lappend elements {
+    label $label_client
+    display_template {
+                <a href="/intranet/companies/view?company_id=@project_list.company_id@">@project_list.company_name@</a>
+                </nobr>
+    }
+}
+
+
+# Project 
+lappend elements project_name 
+lappend elements {
+    label $label_project_name
+    display_template { 
+		<nobr>@project_list.level_spacer;noquote@ 
+		@project_list.open_gif;noquote@
+		<a href="/intranet/projects/view?project_id=@project_list.child_id@">@project_list.project_name@</a>
+		</nobr> 
+    }
+}
+
+
+# Written Order
+lappend elements written_order
+lappend elements {
+    label $label_written_order
+    display_template { @project_list.written_order@ }
+    html "align center"
+}
+
+
+# TS costs 
+lappend elements cost_timesheet_logged_cache 
+lappend elements {
+	label $label_internal_costs 
+	html "align right"
+}
+
+
+# Target benefits 
+lappend elements target_benefit 
+lappend elements {
+        label $label_target_benefit
+        html "align right"
+}
+
+
+# Invoiceable hours
+lappend elements sum_hours_matrix
+lappend elements {
+       	label $label_costs_based_on_matrix
+        html "align right"
+	display_template { <div align=right>@project_list.sum_hours_matrix@</div> }
+}
+
+
+# Costs material
+lappend elements costs_material
+lappend elements {
+        label $label_costs_material
+        html "align right"
+}
+
+# Invoiceable total
+lappend elements invoiceable_total
+lappend elements {
+        label $label_invoiceable_total
+        html "align right"
+}
+
+
+# Invoiced 
+lappend elements sum_invoices
+lappend elements {
+        label $label_invoiced 
+        html "align right"
+	display_template { <div align=right>@project_list.sum_invoices@</div> }
+}
+
+
+# P&L Project  
+lappend elements profit_and_loss_project
+lappend elements {
+        label $label_profit_and_loss_project
+        html "align right"
+}
+
+
+# P&L 1
+lappend elements profit_and_loss_one
+lappend elements {
+        label "<nobr>$label_profit_and_loss_one</nobr>"
+        html "align right"
+}
+
+
+# P&L 2
+lappend elements profit_and_loss_two
+lappend elements {
+        label "<nobr>$label_profit_and_loss_two</nobr>"
+        html "align right"
+}
+
+
+# Extend the "elements" list definition by the number of users who logged hours
+
+# foreach user_id [array names users] {
+#     multirow extend project_list "user_$user_id"
+#     lappend elements "user_$user_id"
+#     lappend elements [list label $users($user_id) html "align right"]
+# }
+
+#    lappend elements direct_hours
+#    lappend elements {
+#	label "Erfasste<br>Stunden" 
+#	display_template { <b><div align=right>@project_list.direct_hours@</div></b> }
+#    }
+
+
+#    lappend elements reported_hours_cache
+#    lappend elements {
+#	label "Total <br>Hours" 
+#	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
+#    }
+
+# ------------------------------------------------------------
+
+set company_name_saved ""
+
+
+
+db_multirow -extend {level_spacer open_gif} project_list project_list "
+	select	
+		child.project_id as child_id,
+		child.project_name,
+		child.project_nr,
+		child.parent_id,
+		child.start_date::date as child_start_date,
+		child.end_date::date as child_end_date,
+		child.cost_invoices_cache,
+		child.cost_timesheet_logged_cache,
+		child.reported_hours_cache,
+		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
+		c.company_id,
+		c.company_name,
+		c.company_path as company_nr,
+		h.hours as direct_hours
+	from	
+		im_projects p,
+		im_companies c,
+		im_projects child
+		LEFT OUTER JOIN (
+			select sum(hours) as hours, project_id 
+			from im_hours 
+			group by project_id
+		) h ON (child.project_id = h.project_id)
+	where
+		p.parent_id is null
+		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
+		and (
+			child.project_id = p.project_id
+			OR child.parent_id in ([join $opened_projects ","])
+		)
+		and p.company_id = c.company_id
+		$where_clause
+" {
+    set project_name "	 $project_name"
+
+    if {0 == $cost_invoices_cache} { set cost_invoices_cache ""}
+    if {0 == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache ""}
+    if {0 == $reported_hours_cache} { set reported_hours_cache ""}
+    if {0 == $direct_hours} { set direct_hours ""}
+
+    set level_spacer ""
+    for {set i 0} {$i < $tree_level} {incr i} { append level_spacer "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
+
+    # Open/Close Logic
+    set open_p [expr [lsearch $opened_projects $child_id] >= 0]
+    if {$open_p} {
+	set opened $opened_projects
+	
+	if {[info exists project_children($child_id)]} {
+	    set rem_from_list $project_children($child_id)
+	    lappend rem_from_list $child_id
+	} else {
+	    set rem_from_list [list $child_id]
+	}
+	set opened [set_difference $opened_projects $rem_from_list]
+	set url [export_vars -base $this_url {project_id customer_id employee_id {opened_projects $opened}}]
+	set gif [im_gif "minus_9"]
+    } else {
+	set opened $opened_projects
+	lappend opened $child_id
+	set url [export_vars -base $this_url {project_id customer_id employee_id {opened_projects $opened}}]
+	set gif [im_gif "plus_9"]
+    }
+
+    set open_gif "<a href=\"$url\">$gif</a>"
+    if {![info exists project_has_children_p($child_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
+
+}
+
+multirow_sort_tree project_list child_id parent_id project_name
+
+# ------------------------------------------------------------
+
+# set debug_ouput [list]
+# foreach {key value} [array get users] {
+#     lappend debug_output $key "->" $value "<br>"
+# }
+# ad_return_complaint 1 $debug_output
+
+set i 1
+
+set sum_hours_matrix 0
+set sum_invoices_value 0 
+
+set total__target_benefit 0
+set total__invoiceable_total_var 0
+set total__total_expenses 0
+set total__sum_invoices_value 0
+set total__profit_and_loss_project_var 0
+set total__profit_and_loss_one_var 0
+set total__profit_and_loss_two_var 0
+
+template::multirow foreach project_list {    
+
+	set total_expenses 0
+	set target_benefit 0
+	set sql "
+ 	           select
+	                sum(ho.hours) as hours,
+        	       	ho.user_id,
+			ho.project_id,
+			(select company_id from im_projects where project_id = ho.project_id) as company_id,
+		        -- (select amount from im_customer_prices where user_id = ho.user_id and object_id = company_id) * hours as sum_amount
+			'1' as written_report,
+			sum(c.amount) as total_expenses
+		   from
+        	        im_hours ho, 
+			im_projects p,
+			im_costs c
+		   where
+	                ho.project_id in (
+        	       	        select  
+					children.project_id as sub_project_id
+                       		from    
+					im_projects parents,
+	                               	im_projects children
+		                       where
+        	                        children.tree_sortkey between
+						parents.tree_sortkey
+						and tree_right(parents.tree_sortkey)
+						and parents.project_id = $child_id
+		                             UNION
+						select $child_id as sub_project_id
+                		        )
+	               	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+	                and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+			and ho.project_id = p.project_id and 
+			c.project_id in (
+                                select
+                                        children.project_id as sub_project_id
+                                from
+                                        im_projects parents,
+                                        im_projects children
+                                       where
+                                        children.tree_sortkey between
+                                                parents.tree_sortkey
+                                                and tree_right(parents.tree_sortkey)
+                                                and parents.project_id = $child_id
+                                             UNION
+                                                select $child_id as sub_project_id
+                                        )
+        	   group by
+            	 	ho.user_id,
+        	       	hours,
+			ho.project_id
+	"
+	set sum_hours 0
+	db_foreach col $sql {
+	    	set sales_price [find_sales_price $user_id $project_id $company_id ""]
+		if { "" == $sales_price || 0 == $sales_price } {
+		    # Switch off check for dev 
+		    continue
+			set err_mess "<br>"
+			append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "Report not available, please provide price for user/project:<br>"]
+			append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>" 
+                        append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
+			append err_mess "</a><br><br>"
+			ad_return_complaint 1 $err_mess
+	    	} else {
+		        ns_log NOTICE "***** KHD - Found sales price $sales_price based on (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
+			set sum_hours [expr $sum_hours + [expr $sales_price * $hours]]						
+		}
+	}
+
+	# Company Name 
+	# Avoid showing multiple company_namesin html view  
+	if { "html" == $output_format } {
+		if {$company_name_saved == $company_name } {set company_name ""} else {set company_name_saved $company_name}
+	}
+    	template::multirow set project_list $i "company_name" $company_name
+
+        # Project name 
+        template::multirow set project_list $i project_name "$project_nr $project_name"
+
+        # Written order 
+	# TODO 
+	set written_order_var "ja"
+        template::multirow set project_list $i written_order $written_order_var
+
+	# Sum hours 
+	set sum_hours_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_hours+0] $rounding_precision] $format_string $locale]
+	template::multirow set project_list $i "sum_hours_matrix" $sum_hours_pretty    	
+        # Target Benefit 	
+        set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $target_benefit+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i target_benefit $target_benefit_pretty
+
+	# Invoicable (total) -> Erloesfaehig 	
+	set invoiceable_total_var [expr $total_expenses + $sum_hours]
+	set invoiceable_total_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $invoiceable_total_var+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i invoiceable_total $invoiceable_total_var_pretty
+
+        # Costs Material 	
+	set total_expenses_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $total_expenses+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i costs_material $total_expenses_pretty
+
+	# Invoices 
+	set sql_str "
+		select 
+			-- to_char(round(sum(c.amount) :: numeric, 2),'999.999,99') as sum_invoices
+			round(sum(c.amount) :: numeric, 2) as sum_invoices
+		from
+			im_costs c 
+		where 
+			c.cost_type_id = 3700
+                        and c.project_id in (
+				select
+					children.project_id as sub_project_id
+				from
+					im_projects parents,
+                                        im_projects children
+                                where
+                                        children.tree_sortkey between
+                                        parents.tree_sortkey
+                                        and tree_right(parents.tree_sortkey)
+                                        and parents.project_id = $child_id
+                                        UNION
+                                        select $child_id as sub_project_id
+                                 )
+	"
+	set sum_invoices_value [db_string sum_invoices "$sql_str" -default 0]
+	if { "" == $sum_invoices_value } { set sum_invoices_value 0 }
+	set sum_invoices_value_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_invoices_value+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i sum_invoices $sum_invoices_value_pretty
+
+	# P&L project 
+	set profit_and_loss_project_var [expr $sum_invoices_value - [expr $total_expenses + $sum_hours]]
+	set profit_and_loss_project_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_project_var+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i profit_and_loss_project $profit_and_loss_project_var_pretty
+
+
+	# P&L 1  
+	set profit_and_loss_one_var [expr $sum_invoices_value - 0 - $total_expenses]
+	set profit_and_loss_one_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i profit_and_loss_one $profit_and_loss_one_var_pretty
+	# P&L 2  
+	set profit_and_loss_two_var [expr $sum_invoices_value - $sum_hours - $total_expenses]
+	set profit_and_loss_two_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_two_var+0] $rounding_precision] $format_string $locale]
+        template::multirow set project_list $i profit_and_loss_two $profit_and_loss_two_var_pretty
+
+
+	# If CVS write inmediately to browser ...  
+	if { "csv" == $output_format } {
+		if { 1 == $i  } {
+		 im_report_write_http_headers -output_format $output_format
+		 ns_write "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Abrechenbar\"\t\"Materialkosten\"\t\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
+		}
+		set output_row "\"$company_name\"\t" 
+		append output_row "\"$project_nr $project_name\"\t"
+		append output_row "\"$written_order_var\"\t"
+		append output_row "\"$sum_hours_pretty\"\t"
+                append output_row "\"$target_benefit_pretty\"\t"
+                append output_row "\"$invoiceable_total_var_pretty\"\t"
+                append output_row "\"$total_expenses_pretty\"\t"
+                append output_row "\"$invoiceable_total_var_pretty\"\t"
+                append output_row "\"$sum_invoices_value_pretty\"\t"
+                append output_row "\"$profit_and_loss_project_var_pretty\"\t"
+                append output_row "\"$profit_and_loss_one_var_pretty\"\t"
+                append output_row "\"$profit_and_loss_two_var_pretty\"\t"
+                append output_row "\n"
+		ns_write $output_row
+	}
+
+	set total__sum_hours_pretty 		[expr $total__profit_and_loss_one_var + $profit_and_loss_one_var]
+	set total__target_benefit 		[expr $total__target_benefit + $total__target_benefit]
+	set total__invoiceable_total_var	[expr $total__invoiceable_total_var + $invoiceable_total_var]
+	set total__total_expenses  		[expr $total__total_expenses + $total_expenses]
+	set total__sum_invoices_value  		[expr $total__sum_invoices_value + $sum_invoices_value]
+	set total__profit_and_loss_project_var 	[expr $total__profit_and_loss_project_var + $profit_and_loss_project_var]
+	set total__profit_and_loss_one_var 	[expr $total__profit_and_loss_one_var + $profit_and_loss_one_var]
+	set total__profit_and_loss_two_var 	[expr $total__profit_and_loss_two_var + $profit_and_loss_two_var]
+
+	incr i
+}
+
+
+
+switch $output_format {
+    html {
+	template::list::create \
+	    -name project_list \
+	    -elements $elements
+
+	set html_header "	
+
+        [im_header]
+        [im_navbar]
+
+	<form>
+	[export_form_vars opened_projects]
+
+	<table border=0 cellspacing=1 cellpadding=1>
+	<tr valign=top><td>
+
+	        <table border=0 cellspacing=1 cellpadding=1>
+        	<tr>
+	          <td class=form-label>[lang::message::lookup "" intranet-core.Start_Date "Start Date"]</td>
+        	  <td class=form-widget>
+	            <input type=textfield name=start_date value=$start_date>
+		    <input type='button' style='height:20px; width:20px; background: url(\"/resources/acs-templating/calendar.gif\");' onclick =\"return showCalendar(\"start_date\", \"y-m-d\");\" >
+        	  </td>
+	        </tr>
+        	<tr>
+	          <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+        	  <td class=form-widget>
+	            <input type=textfield name=end_date value=$end_date>
+		    <input type='button' style='height:20px; width:20px; background: url(\"/resources/acs-templating/calendar.gif\");' onclick =\"return showCalendar(\"end_date\", \"y-m-d\");\" >
+	          </td>
+        	</tr>
+	        <tr>
+        	  <td class=form-label>[lang::message::lookup "" intranet-core.Customer "Customer"]</td>
+	          <td class=form-widget>
+        	     [im_company_select customer_id $customer_id] 
+	          </td>
+        	</tr>
+	        <tr>
+        	  <td class=form-label>[lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]</td>
+	          <td class=form-widget>
+        	        <select name='written_order'>
+                	        <option value='0' selected>[lang::message::lookup "" intranet-core.all "All"]</option>
+                        	<option value='1'>[lang::message::lookup "" acs-kernel.common_yes "Yes"]</option>
+	                        <option value='2'>[lang::message::lookup "" acs-kernel.common_no "No"]</option>
+        	        </select>
+	          </td>
+        	</tr>
+	        <tr>
+        	  <td class=form-label>[lang::message::lookup "" intranet-core.employees "Employees"]</td>
+	          <td class=form-widget>
+        	     [im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.all "All"] -group_id [im_profile_employees] "user_id_from_search"] 
+	          </td>
+        	</tr>
+	        <tr>
+        	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format "Output Format"]</td>
+	          <td class=form-widget>
+			<nobr>
+			        <input name='output_format' value='html' checked='checked' type='radio'>HTML &nbsp;
+				<input name='output_format' value='csv' type='radio'>CSV
+		        </nobr>
+	          </td>
+        	</tr>
+	        <tr>
+        	  <td class=form-label></td>
+	          <td class=form-widget><input type='submit' value='[lang::message::lookup "" intranet-core.Submit "Submit"]'></td>
+        	</tr>
+	        </table>
+	</td></tr>
+	</table>
+	</form>
+	"
+   }
+}
