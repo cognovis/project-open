@@ -5,28 +5,27 @@
 
 <p>
 <table>
-  <tr><th>#categories.Tree_Name#</th><td>@tree_name@</td></tr>
-  <tr><th>#categories.Description#</th><td>@tree_description@</td></tr>
+  <tr><th>Tree Name</th><td>@tree_name@</td></tr>
+  <tr><th>Description</th><td>@tree_description@</td></tr>
 </table>
 </p>
 
 <if @instances_using_p@ eq t>
-  #categories.lt_This_tree_is_still_us#
-  <a href="@usage_url@">#categories.here#</a>.
+  This tree is still used by some modules. For a complete list, please go
+  <a href="@usage_url@">here</a>.
 </if>
 
 <if @used_categories:rowcount@ gt 0>
-  <p><b>#categories.lt_Categories_still_used#</b>
+  <p><b>Categories still used</b>
   <listtemplate name="used_categories"></listtemplate>
   <p>
 </if>
 
 <if @instances_using_p@ ne t>
-  #categories.lt_Are_you_sure_you_want_3#
+  Are you sure you want to delete the tree "@tree_name@"?
   <p>
-    <a href="@delete_url@" class="button">#categories.Delete#</a>
+    <a href="@delete_url@" class="button">Delete</a>
     &nbsp;&nbsp;&nbsp;
-    <a href="@cancel_url@" class="button">#categories.No_Cancel#</a>
+    <a href="@cancel_url@" class="button">No, Cancel</a>
   </p>
 </if>
-

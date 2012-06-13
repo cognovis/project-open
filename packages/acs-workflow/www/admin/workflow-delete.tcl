@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 28 September 2000
-    @cvs-id $Id: workflow-delete.tcl,v 1.6 2010/06/09 11:20:03 po34demo Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull
 } -validate {

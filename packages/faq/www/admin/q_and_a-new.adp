@@ -4,15 +4,15 @@
 <property name="focus">question.question</property>
 
 <form action="@target@" name="question">
-  <div>
  <input type="hidden" name="insert_p" value="@insert_p@">
  <input type="hidden" name="faq_id" value="@faq_id@">
-  </div>
+
 
  <if @insert_p@ eq "t">
  	<input type="hidden" name="entry_id" value="@entry_id@">
  </if>
 
+ <blockquote>
   <table>
   
    <tr valign="top">
@@ -29,5 +29,6 @@
     <td><input type="submit" value="@submit_label@"></td>
    </tr>
   </table>
+ </blockquote>
 </form>
 

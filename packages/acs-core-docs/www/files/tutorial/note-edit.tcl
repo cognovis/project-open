@@ -2,7 +2,7 @@ ad_page_contract {
     This is the view-edit page for notes.
 
     @author Your Name (you@example.com)
-    @cvs-id $Id: note-edit.tcl,v 1.2 2004/02/04 16:47:34 joela Exp $
+    @cvs-id $Id$
  
     @param item_id If present, assume we are editing that note.  Otherwise, we are creating a new note.
 } {

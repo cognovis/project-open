@@ -9,7 +9,7 @@ ad_page_contract {
 
     @author  jsc@arsdigita.com
     @creation-date    February 9, 2000
-    @cvs-id $Id: question-required-toggle.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 
 } {
 

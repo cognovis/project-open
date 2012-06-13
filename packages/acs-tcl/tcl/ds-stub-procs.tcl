@@ -9,7 +9,7 @@ ad_library {
 
     @author Jeff Davis <davis@xarg.net>
     @creationd-date 2005-03-02
-    @cvs-id $Id: ds-stub-procs.tcl,v 1.2 2007/01/10 21:22:12 gustafn Exp $
+    @cvs-id $Id$
 }
 
 if {{} eq [info procs ds_add]} {

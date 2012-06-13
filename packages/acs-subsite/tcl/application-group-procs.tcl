@@ -6,7 +6,7 @@ ad_library {
 
     @author oumi@arsdigita.com
     @creation-date 2001-02-01
-    @cvs-id $Id: application-group-procs.tcl,v 1.15 2009/09/23 21:12:11 donb Exp $
+    @cvs-id $Id$
 
 }
 

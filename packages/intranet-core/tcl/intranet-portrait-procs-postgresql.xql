@@ -5,7 +5,7 @@
 <!-- @author  (frank.bergmann@project-open.com) -->
 <!-- @creation-date 2004-09-20 -->
 <!-- @arch-tag 8c8ca7fd-e2e0-49a3-87c6-4566e4b921ea -->
-<!-- @cvs-id $Id: intranet-portrait-procs-postgresql.xql,v 1.5 2009/03/20 20:28:03 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

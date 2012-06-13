@@ -3,7 +3,7 @@
 --
 -- by nstrug@arsdigita.com on 29th September 2000
 --
--- $Id: simple-survey-drop.sql,v 1.1 2005/12/31 23:52:30 cvs Exp $
+-- $Id$
 
 select drop_package('survsimp_response');
 select drop_package('survsimp_question');

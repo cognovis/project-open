@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-05-28
-    @cvs-id $Id: application-new.tcl,v 1.5 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id$
 }
 
 set page_title "New Application"

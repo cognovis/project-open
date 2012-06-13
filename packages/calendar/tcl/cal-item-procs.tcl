@@ -8,7 +8,7 @@ ad_library {
     @author Gary Jin (gjin@arsdigita.com)
     @author Ben Adida (ben@openforce.net)
     @creation-date Jan 11, 2001
-    @cvs-id $Id: cal-item-procs.tcl,v 1.25 2009/02/26 02:12:15 donb Exp $
+    @cvs-id $Id$
 
 }
 

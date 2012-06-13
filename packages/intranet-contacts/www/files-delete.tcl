@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2005-05-24
-    @cvs-id $Id: files-delete.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 
 } {
     item_id:multiple,notnull

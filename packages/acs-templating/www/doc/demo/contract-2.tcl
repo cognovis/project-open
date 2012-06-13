@@ -1,5 +1,5 @@
 ad_page_contract {
-  @cvs-id $Id: contract-2.tcl,v 1.3 2007/01/10 21:22:13 gustafn Exp $
+  @cvs-id $Id$
 } {
   count:naturalnum
   noun:notnull,nohtml

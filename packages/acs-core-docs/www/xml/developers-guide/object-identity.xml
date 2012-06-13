@@ -53,6 +53,6 @@ integer primary key that is derived from a globally unique sequence is the
 key to eliminating redundant code and replacing it with generic <emphasis>object
 level services</emphasis>.</para>
 
-<para><phrase role="cvstag">($Id: object-identity.xml,v 1.7 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect1>

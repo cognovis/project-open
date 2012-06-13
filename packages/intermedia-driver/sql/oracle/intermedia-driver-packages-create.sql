@@ -18,7 +18,7 @@
 -- Create database packages for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">Dirk Gomez</a>
--- @version $Id: intermedia-driver-packages-create.sql,v 1.2 2008/06/07 20:29:00 donb Exp $
+-- @version $Id$
 -- @creation-date 13-May-2005
 
 -- Partly ported from ACES.

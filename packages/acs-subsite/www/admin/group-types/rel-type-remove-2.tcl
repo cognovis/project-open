@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Sun Dec 10 16:45:32 2000
-    @cvs-id $Id: rel-type-remove-2.tcl,v 1.2 2007/01/10 21:22:06 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     group_rel_type_id:naturalnum,notnull

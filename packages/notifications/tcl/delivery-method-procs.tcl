@@ -10,7 +10,7 @@ ad_library {
 
     @creation-date 2002-05-24
     @author Ben Adida <ben@openforce.biz>
-    @cvs-id $Id: delivery-method-procs.tcl,v 1.12 2007/06/27 18:54:48 matthewg Exp $
+    @cvs-id $Id$
 
 }
 

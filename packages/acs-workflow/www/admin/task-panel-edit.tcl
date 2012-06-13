@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date December 12, 2000
-    @cvs-id $Id: task-panel-edit.tcl,v 1.2 2006/11/27 22:05:46 baselkb Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull
     transition_key:notnull

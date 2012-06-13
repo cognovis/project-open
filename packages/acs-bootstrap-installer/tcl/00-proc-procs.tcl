@@ -850,7 +850,7 @@ ad_library {
 
     @creation-date 7 Jun 2000
     @author Jon Salz (jsalz@mit.edu)
-    @cvs-id $Id: 00-proc-procs.tcl,v 1.39 2010/10/30 21:43:01 gustafn Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -public empty_string_p {query_string} {
@@ -907,7 +907,7 @@ ad_proc -public ad_call_method {
     @param object_id the target, it is the first arg to the method
     @param args the remaining arguments
 } {
-    return [ad_apply ${method_name}__[util_memoize "acs_object_type $object_id"] [concat $object_id $args]]
+    return [apply ${method_name}__[util_memoize "acs_object_type $object_id"] [concat $object_id $args]]
 }
 
 ad_proc -public ad_dispatch {
@@ -925,7 +925,7 @@ ad_proc -public ad_dispatch {
     @param object_id the target, it is the first arg to the method
     @param args the remaining arguments
 } {
-    return [ad_apply ${method_name}__$type $args]
+    return [apply ${method_name}__$type $args]
 }
 
 ad_proc -public ad_assert_arg_value_in_list {

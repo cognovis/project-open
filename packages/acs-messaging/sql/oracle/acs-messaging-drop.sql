@@ -3,7 +3,7 @@
 --
 -- @author akk@arsdigita.com
 -- @creation-date 2000-08-31
--- @cvs-id $Id: acs-messaging-drop.sql,v 1.1 2001/04/05 18:23:38 donb Exp $
+-- @cvs-id $Id$
 --
 
 begin

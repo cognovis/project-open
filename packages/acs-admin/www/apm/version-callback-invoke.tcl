@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 11 September 2003
-    @cvs-id $Id: version-callback-invoke.tcl,v 1.3 2003/09/24 00:01:42 lars Exp $
+    @cvs-id $Id$
 } {
     version_id:integer,notnull    
     type:notnull

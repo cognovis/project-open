@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: object-type2.tcl,v 1.3 2006/04/07 23:07:39 cvs Exp $
+    @cvs-id $Id$
 
 } {
     {object_type:notnull}

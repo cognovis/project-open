@@ -4,7 +4,7 @@
 <!-- @author  (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-09-08 -->
 <!-- @arch-tag 0d8fbbc3-1f1e-4962-91c9-a1f413229c18 -->
-<!-- @cvs-id $Id: intranet-office-procs-oracle.xql,v 1.2 2004/09/27 08:16:39 barna Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

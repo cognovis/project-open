@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 22 May 2000
     @author Jon Salz [jsalz@arsdigita.com]
-    @cvs-id $Id: document-procs.tcl,v 1.5 2009/02/13 20:28:08 jeffd Exp $
+    @cvs-id $Id$
 
 }
 

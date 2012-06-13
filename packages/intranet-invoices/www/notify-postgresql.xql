@@ -4,7 +4,7 @@
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag 16a384f6-aa92-4668-9f42-51b4e1085bc8 -->
-<!-- @cvs-id $Id: notify-postgresql.xql,v 1.1 2004/10/07 18:57:51 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

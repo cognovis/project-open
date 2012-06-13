@@ -1,6 +1,6 @@
 #    @author Matthew Geddert openacs@geddert.com
 #    @creation-date 2005-05-09
-#    @cvs-id $Id: master.tcl,v 1.1 2009/03/16 17:44:54 phast Exp $
+#    @cvs-id $Id$
 
 
 # Add special CSS to head?
@@ -10,6 +10,8 @@
 set package_url [ad_conn package_url]
 set page_url [ad_conn url]
 set page_query [ad_conn query]
+
+if {![info exists left_navbar]} { set left_navbar "" }
 
 set link_list [list]
 lappend link_list "${package_url}"

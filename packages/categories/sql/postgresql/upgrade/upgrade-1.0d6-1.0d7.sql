@@ -4,7 +4,7 @@
 -- @author Deds Castillo (deds@i-manila.com.ph)
 -- @creation-date 2005-01-13
 -- @arch-tag: a966a122-5391-45e3-8176-dc0956fc9450
--- @cvs-id $Id: upgrade-1.0d6-1.0d7.sql,v 1.2 2005/02/24 13:33:05 jeffd Exp $
+-- @cvs-id $Id$
 --
 
 -----

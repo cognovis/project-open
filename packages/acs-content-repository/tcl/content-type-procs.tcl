@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-09
     @arch-tag: 4a8a3652-fd5d-49aa-86fc-fade683f06ce
-    @cvs-id $Id: content-type-procs.tcl,v 1.12 2010/12/28 15:21:26 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::type {}

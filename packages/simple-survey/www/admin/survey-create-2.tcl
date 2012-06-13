@@ -12,7 +12,7 @@ ad_page_contract {
 
   @author philg@mit.edu
   @creation-date   February 9, 2000
-  @cvs-id $Id: survey-create-2.tcl,v 1.3 2008/12/11 14:17:24 cvs Exp $
+  @cvs-id $Id$
 
 } {
 

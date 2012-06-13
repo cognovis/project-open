@@ -3,7 +3,7 @@
 -- 
 -- @author Stan Kaufman (skaufman@epimetrics.com)
 -- @creation-date 2004-07-14
--- @cvs-id $Id: upgrade-5.1.0d2-5.1.0d3.sql,v 1.3 2005/01/13 13:58:32 jeffd Exp $
+-- @cvs-id $Id$
 --
 -- see bug http://openacs.org/bugtracker/openacs/bug?bug_number=1973
 -- Add the on delete cascade to 

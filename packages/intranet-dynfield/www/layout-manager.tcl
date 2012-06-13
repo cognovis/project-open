@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Juanjo Ruiz juanjoruizx@yahoo.es
     @creation-date 2005-02-07
-    @cvs-id $Id: layout-manager.tcl,v 1.3 2008/03/24 22:35:56 cvs Exp $
+    @cvs-id $Id$
 
 } {
     object_type:notnull

@@ -7,7 +7,7 @@ ad_page_contract {
     @param  survey_id  which survey we'll assign category to
     @param  category   name of a category to be created and assigned to survey
 
-    @cvs-id $Id: survey-category-add.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 } {
 
     survey_id:integer,notnull

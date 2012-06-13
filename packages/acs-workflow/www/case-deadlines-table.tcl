@@ -8,7 +8,7 @@
 # Data sources:
 #   deadlines
 #
-# Cvs-id $Id: case-deadlines-table.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+# Cvs-id $Id$
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 21, 2001
 #

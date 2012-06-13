@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-05-15
-    @cvs-id $Id: relationship-add.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+    @cvs-id $Id$
 } {
     {party_one:integer,notnull}
     {role_one:optional}

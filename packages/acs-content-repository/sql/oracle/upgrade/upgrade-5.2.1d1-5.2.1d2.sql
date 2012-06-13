@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2005-12-26
 -- @arch-tag: c141278e-3359-4f40-8d61-3b8e940c633c
--- @cvs-id $Id: upgrade-5.2.1d1-5.2.1d2.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- New installs were not setting parent_id to security_context_root (-4)
@@ -35,7 +35,7 @@ where parent_id = 0;
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-5.2.1d1-5.2.1d2.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

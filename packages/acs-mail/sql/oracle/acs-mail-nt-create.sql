@@ -8,7 +8,7 @@
 --
 -- @author Vinod Kurup (vkurup@massmed.org)
 -- @creation-date 2001-08-04
--- @cvs-id $Id: acs-mail-nt-create.sql,v 1.1 2005/04/18 19:26:06 cvs Exp $
+-- @cvs-id $Id$
 
 create or replace package acs_mail_nt
 as

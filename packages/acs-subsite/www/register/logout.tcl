@@ -3,7 +3,7 @@
 ad_page_contract {
     Logs a user out
 
-    @cvs-id $Id: logout.tcl,v 1.4 2007/01/10 21:22:09 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     {return_url ""}

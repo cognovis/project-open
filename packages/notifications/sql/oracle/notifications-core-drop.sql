@@ -2,7 +2,7 @@
 -- The Notifications Package
 --
 -- @author Ben Adida (ben@openforce.net)
--- @version $Id: notifications-core-drop.sql,v 1.5 2003/09/30 12:10:08 mohanp Exp $
+-- @version $Id$
 --
 -- Copyright (C) 2000 MIT
 --

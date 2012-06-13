@@ -3,7 +3,7 @@
 --
 -- @author Kevin Scaldeferri (kevin@arsdigita.com)
 -- @creation-date 6 Now 2000
--- @cvs-id $Id: file-storage-drop.sql,v 1.13 2009/12/05 02:08:14 donb Exp $
+-- @cvs-id $Id$
 --
 -- drop script for file-storage
 --

@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date March 28, 2002
-    @cvs-id $Id: prefs.tcl,v 1.1 2006/10/25 17:55:10 cvs Exp $
+    @cvs-id $Id$
 } {
     {return_url "."}
 }

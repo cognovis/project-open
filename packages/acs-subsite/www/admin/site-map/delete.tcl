@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-09-09
-    @cvs-id $Id: delete.tcl,v 1.4 2002/09/10 22:22:11 jeffd Exp $
+    @cvs-id $Id$
 
 } {
     expand:integer,multiple

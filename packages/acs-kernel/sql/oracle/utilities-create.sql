@@ -5,7 +5,7 @@
 --
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 12 Aug 2000
--- @cvs-id $Id: utilities-create.sql,v 1.2 2003/12/15 01:50:39 donb Exp $
+-- @cvs-id $Id: utilities-create.sql,v 1.2 2010/10/19 20:11:35 po34demo Exp $
 --
 
 create or replace package util

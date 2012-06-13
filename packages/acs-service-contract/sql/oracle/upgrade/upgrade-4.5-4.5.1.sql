@@ -3,7 +3,7 @@
 -- @author Vinod Kurup (vinod@kurup.com)
 -- @creation_date 2002-08-14
 --
--- $Id: upgrade-4.5-4.5.1.sql,v 1.3 2002/11/30 17:21:23 jeffd Exp $
+-- $Id$
 
 -- UPGRADE ISSUE 1
 -- PG version has 2 packages acs_sc_impl and acs_sc_impl_alias

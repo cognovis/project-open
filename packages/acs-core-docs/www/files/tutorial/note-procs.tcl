@@ -3,7 +3,7 @@ ad_library {
     Procs to add, edit, and remove notes for My First Package.
 
     @author oumi@arsdigita.com
-    @cvs-id $Id: note-procs.tcl,v 1.2 2004/02/04 16:47:34 joela Exp $
+    @cvs-id $Id$
 
 }
 

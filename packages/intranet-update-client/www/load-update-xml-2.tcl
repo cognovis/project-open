@@ -4,7 +4,7 @@ ad_page_contract {
     @param url The url of the package to load.
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 10 October 2000
-    @cvs-id $Id: load-update-xml-2.tcl,v 1.18 2009/10/20 16:15:36 po34demo Exp $
+    @cvs-id $Id$
 
 } {
     service_url

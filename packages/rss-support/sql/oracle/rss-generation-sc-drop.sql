@@ -1,12 +1,12 @@
 declare
 begin
 
-    acs_sc_operation.del(contract_name => 'RssGenerationSubscriber',operation_name => 'datasource');
+    acs_sc_operation.del(contract_name => 'RssGenerationSubscriber',operation_name => 'Datasource');
 
     acs_sc_msg_type.del(msg_type_name => 'RssGenerationSubscriber.Datasource.InputType');
     acs_sc_msg_type.del(msg_type_name => 'RssGenerationSubscriber.Datasource.OutputType');
 
-    acs_sc_operation.del(contract_name => 'RssGenerationSubscriber',operation_name => 'lastUpdated');
+    acs_sc_operation.del(contract_name => 'RssGenerationSubscriber',operation_name => 'LastUpdated');
 
     acs_sc_msg_type.del(msg_type_name => 'RssGenerationSubscriber.LastUpdated.InputType');
     acs_sc_msg_type.del(msg_type_name => 'RssGenerationSubscriber.LastUpdated.OutputType');

@@ -5,7 +5,7 @@
 #          Stanislav Freidin 	  (sfreidin@arsdigita.com)
 #          Christian Brechbuehler (chrisitan@arsdigita.com)
 
-# $Id: tag-init.tcl,v 1.33 2008/12/21 17:28:52 gustafn Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:

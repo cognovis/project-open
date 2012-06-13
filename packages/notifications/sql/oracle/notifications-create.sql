@@ -2,7 +2,7 @@
 -- The Notifications Package
 --
 -- @author Ben Adida (ben@openforce.net)
--- @version $Id: notifications-create.sql,v 1.9 2003/11/06 16:44:49 matk Exp $
+-- @version $Id$
 --
 -- Copyright (C) 2000 MIT
 --

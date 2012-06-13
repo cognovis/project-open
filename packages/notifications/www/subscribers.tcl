@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author dhogaza@pacifier.com
     @creation-date 2008-01-13
-    @cvs-id $Id: subscribers.tcl,v 1.4 2008/10/27 16:14:16 daveb Exp $
+    @cvs-id $Id$
 } {
     object_id:notnull
 }

@@ -1,4 +1,4 @@
--- $Id: acs-sc-msg-types-drop.sql,v 1.1 2001/09/19 22:59:01 donb Exp $
+-- $Id$
 
 drop package acs_sc_msg_type;
 drop table acs_sc_msg_type_elements;

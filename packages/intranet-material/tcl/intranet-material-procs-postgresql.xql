@@ -3,7 +3,7 @@
 <!-- packages/intranet-material/tcl/intranet-material-procs-postgresql.xql -->
 <!-- @author  (frank.bergmann@project-open.com) -->
 <!-- @creation-date 2005-05-14 -->
-<!-- @cvs-id $Id: intranet-material-procs-postgresql.xql,v 1.2 2005/05/07 16:52:47 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

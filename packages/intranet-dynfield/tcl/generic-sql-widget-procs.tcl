@@ -5,7 +5,7 @@ ad_library {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-25
-    @cvs-id $Id: generic-sql-widget-procs.tcl,v 1.11 2009/02/18 01:43:24 cvs Exp $
+    @cvs-id $Id$
 }
 
 

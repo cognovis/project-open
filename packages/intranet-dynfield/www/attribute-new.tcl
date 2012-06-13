@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2004-07-28
-    @cvs-id $Id: attribute-new.tcl,v 1.21 2011/04/11 16:58:34 po34demo Exp $
+    @cvs-id $Id$
 } {
     {object_type ""}
     attribute_id:integer,optional
@@ -534,4 +534,45 @@ ad_form \
     
     ad_script_abort
 }
+
+
+# ------------------------------------------------------------------
+# Includelet for permissions
+# ------------------------------------------------------------------
+
+#		     [list object_type $object_type] \
+
+set perm_html ""
+set map_html ""
+
+if {[info exists attribute_id]} {
+
+    set perm_params [list \
+		     [list nomaster_p 1] \
+    ]
+    set perm_html [ad_parse_template -params $perm_params "/packages/intranet-dynfield/www/permissions"]
+
+
+
+    set map_params [list \
+		     [list nomaster_p 1] \
+    ]
+    set map_html [ad_parse_template -params $map_params "/packages/intranet-dynfield/www/attribute-type-map"]
+}
+
+
+# ------------------------------------------------------------------
+# Left Navbar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+      	<div class='filter-block'>
+        <div class='filter-title'>
+            [lang::message::lookup "" intranet-dynfield.DynField "DynField"]
+        </div>
+	<ul>
+	<li><a href=[export_vars -base "object-type" {object_type}]>'$object_type' [lang::message::lookup "" intranet-dynfield.Object_Type "Object Type"]</a>
+	</ul>
+      	</div>
+"
 

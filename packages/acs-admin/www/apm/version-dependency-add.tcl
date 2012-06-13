@@ -2,7 +2,7 @@ ad_page_contract {
     Adds a dependency to a version of a package.
     @author Jon Salz [jsalz@arsdigita.com]
     @creation-date 17 April 2000
-    @cvs-id $Id: version-dependency-add.tcl,v 1.4 2010/01/05 01:34:54 donb Exp $
+    @cvs-id $Id$
 } {
     {version_id:integer}
     dependency_type

@@ -3,7 +3,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2007-03-09
-  @cvs-id $Id: policy-procs.tcl,v 1.21 2010/06/18 10:26:59 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::xo {

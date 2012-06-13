@@ -4,7 +4,7 @@ ad_page_contract {
 
   @author Peter Marklund
 
-  @cvs-id $Id: init-file-resource.tcl,v 1.1 2003/04/02 16:07:04 peterm Exp $
+  @cvs-id $Id$
 } {
     absolute_file_path
     return_url

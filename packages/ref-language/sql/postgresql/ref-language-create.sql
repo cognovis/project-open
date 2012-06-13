@@ -2,19 +2,39 @@
 --
 -- @author jon@jongriffin.com
 -- @creation-date 2000-11-21
--- @cvs-id $Id: ref-language-create.sql,v 1.5 2010/10/17 21:06:09 donb Exp $
+-- @cvs-id $Id$
 --
 
 
 -- ISO 639
-create table language_codes (
-    language_id char(2)
-        constraint language_codes_language_id_pk
-        primary key,
-    name varchar(100)
-        constraint language_codes_name_nn
-        not null
-);
+
+-- fraber 110322: language_codes already existed in ]po[ V3.4,
+-- so we have to put a "v_count" around this creation here.
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''language_codes'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	create table language_codes (
+	    language_id char(2)
+	        constraint language_codes_language_id_pk
+	        primary key,
+	    name varchar(100)
+	        constraint language_codes_name_nn
+	        not null
+	);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 comment on table language_codes is '
     This is data from the ISO 639-1 standard on language codes.
@@ -27,6 +47,11 @@ comment on column language_codes.language_id is '
 comment on column language_codes.name is '
     This is the English version of the language name. 
 ';
+
+
+
+-- Make sure the reference did not exist before
+delete from acs_reference_repositories where table_name = 'LANGUAGE_CODES';
 
 -- now register this table with the repository
 select acs_reference__new(

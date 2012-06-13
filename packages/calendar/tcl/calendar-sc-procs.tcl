@@ -3,7 +3,7 @@ ad_library {
 
     @creation-date 2004-04-01
     @author Jeff Davis davis@xarg.net
-    @cvs-id $Id: calendar-sc-procs.tcl,v 1.2 2006/08/16 17:52:14 daveb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval calendar::fts {}

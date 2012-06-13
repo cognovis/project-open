@@ -6,7 +6,7 @@ ad_page_contract {
     @authorr Gary Jin (gjin@arsdigita.com)
     @author Ben Adida (ben@openforce.net)
     @creation-date Dec 14, 2000, May 29th, 2002
-    @cvs-id $Id: cal-options.tcl,v 1.11 2004/02/25 13:07:08 dirkg Exp $
+    @cvs-id $Id$
 
 } {
 }

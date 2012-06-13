@@ -1,13 +1,16 @@
+# 
+
 ad_page_contract {
-
+    
     Edit and write the CSS file
-
+    
     @author Malte Sussdorff (malte.sussdorff@cognovis.de)
     @creation-date 2007-09-29
-    @cvs-id $Id: css-edit.tcl,v 1.2 2010/12/05 13:45:21 jeffd Exp $
+    @cvs-id $Id$
 } {
     {file_location}
     {css_location}
+    {revision_id ""}
     {return_url "/"}
 } -properties {
 } -validate {
@@ -18,6 +21,7 @@ ds_require_permission [ad_conn package_id] "admin"
 
 if {[file exists $file_location] && [file extension $file_location] eq ".css"} {
 
+    
     ad_form -name css-edit -export {file_location css_location} -form {
 	{css_path:text(inform)}
 	{revision_html:text(inform)}

@@ -6,7 +6,7 @@ ad_library {
     @author Frank Bergmann frank.bergmann@project-open.com
     @author Malte Sussdorff malte.sussdorff@cognovis.de
     @creation-date 2005-01-25
-    @cvs-id $Id: generic-tcl-widget-procs.tcl,v 1.11 2009/02/18 01:43:24 cvs Exp $
+    @cvs-id $Id$
 }
 
 
@@ -30,49 +30,54 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     if { [info exists element(custom)] } {
     	set params $element(custom)
     } else {
-        return "Generic TCL Widget: Error: Didn't find 'custom' parameter.<br>Please use a Parameter such as: <tt>{custom {tcl {select party_id, email from parties}}} </tt>"
+	return "Generic TCL Widget: Error: Didn't find 'custom' parameter.<br>Please use a Parameter such as: <tt>{custom {tcl {select party_id, email from parties}}} </tt>"
     }
-    
+
     set tcl_pos [lsearch $params tcl]
     if { $tcl_pos >= 0 } {
     	set tcl_code [lindex $params [expr $tcl_pos + 1]]
     } else {
-        return "Generic tcl Widget: Error: Didn't find 'tcl' parameter"
+	return "Generic tcl Widget: Error: Didn't find 'tcl' parameter"
     }
     
     set switch_pos [lsearch $params switch_p]
     if {$switch_pos >= 0} {
-        set switch_p [lindex $params [expr $switch_pos +1]]
+	set switch_p [lindex $params [expr $switch_pos +1]]
     } else {
-        set switch_p 0
+	set switch_p 0
     }
+    
+    # The "memoize_max_age" adds an empty line
+    set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
+    set memoize_max_age_pos [lsearch $params "memoize_max_age"]
+    if { $memoize_max_age_pos >= 0 } {
+        set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
+    }
+    
     
     # Deal with global variables being pushed through
     set global_var_pos [lsearch $params global_var]
     if {$global_var_pos >= 0} {
-        set global_var_name [lindex $params [expr $global_var_pos +1]]
-	if {[info exists ::$global_var_name]} {
-	    set $global_var_name [set ::$global_var_name]
-	} else {
-	    return ""
-	}
+	set global_var_name [lindex $params [expr $global_var_pos +1]]
+	set $global_var_name [set ::$global_var_name]
+	ds_comment "$global_var_name [set $global_var_name]"
     }
     
     set memoize_pos [lsearch $params memoize_p]
     if {$memoize_pos >= 0} {
-        set memoize_p [lindex $params [expr $memoize_pos +1]]
+	set memoize_p [lindex $params [expr $memoize_pos +1]]
     } else {
-        set memoize_p 1
+	set memoize_p 1
     }
     
     if {$memoize_p} {
-        # The "memoize_max_age" adds an empty line
-        set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
-        set memoize_max_age_pos [lsearch $params "memoize_max_age"]
-        if { $memoize_max_age_pos >= 0 } {
-            set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
-        }
-    }
+	# The "memoize_max_age" adds an empty line
+	set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
+	set memoize_max_age_pos [lsearch $params "memoize_max_age"]
+	if { $memoize_max_age_pos >= 0 } {
+	    set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
+	}
+    } 
 
     # The "include_empty_p" adds an empty line
     set include_empty_p 1
@@ -80,7 +85,7 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     if { $include_empty_p_pos >= 0 } {
         set include_empty_p [lindex $params [expr $include_empty_p_pos + 1]]
     }
-    
+
     # The "include_empty_name" pops up as first line
     set include_empty_name ""
     # [lang::message::lookup "" intranet-dynfield.no_value]
@@ -88,7 +93,7 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     if { $include_empty_name_pos >= 0 } {
         set include_empty_name [lindex $params [expr $include_empty_name_pos + 1]]
     }
-    
+
     array set attributes $tag_attributes
     
     set key_value_list [list]
@@ -116,65 +121,65 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     if {[info exists element(value)]} { set default_value $element(value) }
     if { "edit" != $element(mode) } {
     	foreach tcl $key_value_list {
-            if {$switch_p} {
-                set key [lindex $tcl 1]
-                set value [lindex $tcl 0]
-            } else {
-                set key [lindex $tcl 0]
-                set value [lindex $tcl 1]	
-            }
-            if {$key != $default_value} {
-                append tcl_html "<option value=\"$key\">$value</option>"
-            } else {
-                append tcl_html "<option value=\"$key\" selected=\"selected\">$value</option>"
-            }
+	    if {$switch_p} {
+		set key [lindex $tcl 1]
+		set value [lindex $tcl 0]
+	    } else {
+		set key [lindex $tcl 0]
+		set value [lindex $tcl 1]	
+	    }
+	    if {$key != $default_value} {
+		append tcl_html "<option value=\"$key\">$value</option>"
+	    } else {
+		append tcl_html "<option value=\"$key\" selected=\"selected\">$value</option>"
+	    }
     	}
     	append tcl_html "\n</select>\n"
-        
-        if {$switch_p} {
-            set key [lindex $tcl 1]
-            set value [lindex $tcl 0]
-        } else {
-            set key [lindex $tcl 0]
-            set value [lindex $tcl 1]	
-        }
-        if {$key == $default_value} {
-            append tcl_html "$value
+    
+	if {$switch_p} {
+	    set key [lindex $tcl 1]
+	    set value [lindex $tcl 0]
+	} else {
+	    set key [lindex $tcl 0]
+	    set value [lindex $tcl 1]	
+	}
+	if {$key == $default_value} {
+	    append tcl_html "$value
 			<input type=\"hidden\" name=\"$element(name)\" id=\"$element(name)\" value=\"$key\">"
-        }
+	}
     } else {
-        set tcl_html "<select name=\"$element(name)\" id=\"$element(name)\" "
-        foreach name [array names attributes] {
-            if { [string equal $attributes($name) {}] } {
-                append tcl_html " $name"
-            } else {
-                append tcl_html " $name=\"$attributes($name)\""
-            }
-        }
-        set i 0
-        while {$i < [llength $element(html)]} {
-            append tcl_html " [lindex $element(html) $i]=\"[lindex $element(html) [expr $i + 1]]\""
-            incr i 2
-        }
+	set tcl_html "<select name=\"$element(name)\" id=\"$element(name)\" "
+	foreach name [array names attributes] {
+	    if { [string equal $attributes($name) {}] } {
+		append tcl_html " $name"
+	    } else {
+		append tcl_html " $name=\"$attributes($name)\""
+	    }
+	}
+	set i 0
+	while {$i < [llength $element(html)]} {
+	    append tcl_html " [lindex $element(html) $i]=\"[lindex $element(html) [expr $i + 1]]\""
+	    incr i 2
+	}
     	append tcl_html " >\n"
-        
+	
     	if {$include_empty_p} {
-            append tcl_html "<option value=\"\">$include_empty_name</option>"
+	    append tcl_html "<option value=\"\">$include_empty_name</option>"
     	}
-        
+	
     	foreach tcl $key_value_list {
-            if {$switch_p} {
-                set key [lindex $tcl 1]
-                set value [lindex $tcl 0]
-            } else {
-                set key [lindex $tcl 0]
-                set value [lindex $tcl 1]	
-            }
-            if {$key != $default_value} {
-                append tcl_html "<option value=\"$key\">$value</option>"
-            } else {
-                append tcl_html "<option value=\"$key\" selected=\"selected\">$value</option>"
-            }
+	    if {$switch_p} {
+		set key [lindex $tcl 1]
+		set value [lindex $tcl 0]
+	    } else {
+		set key [lindex $tcl 0]
+		set value [lindex $tcl 1]	
+	    }
+	    if {$key != $default_value} {
+		append tcl_html "<option value=\"$key\">$value</option>"
+	    } else {
+		append tcl_html "<option value=\"$key\" selected=\"selected\">$value</option>"
+	    }
     	}
     	append tcl_html "\n</select>\n"
     }

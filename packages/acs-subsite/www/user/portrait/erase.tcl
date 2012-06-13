@@ -1,7 +1,7 @@
 ad_page_contract {
     Erases a portrait
 
-    @cvs-id $Id: erase.tcl,v 1.7 2009/03/31 14:39:45 emmar Exp $
+    @cvs-id $Id$
 } {
     {return_url "" }
     {user_id ""}

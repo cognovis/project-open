@@ -1,7 +1,7 @@
 ad_page_contract {
     Uploading user portraits
 
-    @cvs-id $Id: upload.tcl,v 1.15 2009/03/31 15:16:47 emmar Exp $
+    @cvs-id $Id$
 } {
     {user_id ""}
     {return_url ""}

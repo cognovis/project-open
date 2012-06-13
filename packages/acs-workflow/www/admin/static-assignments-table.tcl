@@ -11,7 +11,7 @@
 #
 # Author: Lars Pind (lars@pinds.com)
 # Creation-date: Feb 26, 2001
-# Cvs-id: $Id: static-assignments-table.tcl,v 1.3 2006/12/18 13:17:34 baselkb Exp $
+# Cvs-id: $Id$
 
 if { ![info exists context_key] } {
     set context_key "default"

@@ -5,7 +5,7 @@ ad_page_contract {
     
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 29 September 2000
-    @cvs-id $Id: index.vuh,v 1.2 2001/05/05 17:39:19 danw Exp $
+    @cvs-id $Id$
 } {
    version_id:naturalnum,notnull
 }

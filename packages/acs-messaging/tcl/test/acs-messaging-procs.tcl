@@ -3,7 +3,7 @@ ad_library {
 
     @author Joel Aufrecht
     @creation-date 2 Nov 2003
-    @cvs-id $Id: acs-messaging-procs.tcl,v 1.4 2003/11/17 06:37:36 simonc Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case acs_messaging_format_as_html {

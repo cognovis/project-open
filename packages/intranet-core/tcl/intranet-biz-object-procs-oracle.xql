@@ -4,7 +4,7 @@
 <!-- @author  (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-09-09 -->
 <!-- @arch-tag e2c9dacc-aef1-4979-9d88-edc7bd67188f -->
-<!-- @cvs-id $Id: intranet-biz-object-procs-oracle.xql,v 1.1 2004/09/09 16:58:19 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

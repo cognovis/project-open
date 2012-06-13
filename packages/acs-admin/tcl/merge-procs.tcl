@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date 15 APR 2005
     @author Enrique Catalan (quio@galileo.edu)
-    @cvs-id $Id: merge-procs.tcl,v 1.3 2006/07/27 00:31:25 ncarroll Exp $
+    @cvs-id $Id$
 
 }
 

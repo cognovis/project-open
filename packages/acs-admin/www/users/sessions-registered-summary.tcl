@@ -1,4 +1,4 @@
-# $Id: sessions-registered-summary.tcl,v 1.2 2002/09/06 21:49:53 jeffd Exp $
+# $Id$
 #
 # sessions-registered-summary.tcl
 #

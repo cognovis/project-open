@@ -7,19 +7,19 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="2.6.0" url="http://openacs.org/repository/download/apm/calendar-2.6.0.apm">
+    <version name="2.5.0" url="http://openacs.org/repository/download/apm/calendar-2.5.0.apm">
         <owner url="mailto:openacs-calendar@dirkgomez.de">Dirk Gomez</owner>
         <summary>Personal and shared event calendars.</summary>
-        <release-date>2011-10-30</release-date>
+        <release-date>2009-07-22</release-date>
         <vendor url="http://openacs.org">OpenACS</vendor>
         <description format="text/html">Manage group and shared calendars with download.</description>
         <maturity>0</maturity>
         <package_instance_name>#calendar.Calendar#</package_instance_name>
 
-        <provides url="calendar" version="2.6.0"/>
+        <provides url="calendar" version="2.5.0"/>
         <requires url="attachments" version="0.10"/>
         <requires url="acs-datetime" version="5.2.2"/>
-        <requires url="acs-events" version="0.6d2"/>
+        <requires url="acs-events" version="0.6"/>
         <requires url="acs-lang" version="5.4.2"/>
         <requires url="notifications" version="5.4.2"/>
         <requires url="ref-timezones" version="5.4.2"/>

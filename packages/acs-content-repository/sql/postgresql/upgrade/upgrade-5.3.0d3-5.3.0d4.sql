@@ -4,7 +4,7 @@
 -- @author Victor Guerra (guerra@galileo.edu)
 -- @creation-date 2006-10-02
 -- @arch-tag: c6a0a70c-5506-45e4-ba11-8e145f695c57
--- @cvs-id $Id: upgrade-5.3.0d3-5.3.0d4.sql,v 1.1 2006/10/03 16:37:11 victorg Exp $
+-- @cvs-id $Id$
 --
 
 select define_function_args('content_extlink__copy','extlink_id,target_folder_id,creation_user,creation_ip,name');

@@ -11,7 +11,8 @@
                     r.mime_type,
                     o.creation_user,
                     acs_object.name(o.creation_user) as author,
-                    o.creation_date
+                    to_char(o.creation_date, 'MM-DD-YYYY') as pretty_date,
+                    to_char(o.creation_date, 'Month DD, YYYY HH12:MI PM') as pretty_date2
                     $content_select
                from general_comments g,
                     cr_revisions r,

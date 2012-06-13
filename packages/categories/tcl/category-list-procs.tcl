@@ -7,7 +7,7 @@ ad_library {
     @author Timo Hentschel (timo@timohentschel.de)
 
     @creation-date 17 February 2004
-    @cvs-id $Id: category-list-procs.tcl,v 1.6 2008/11/08 17:05:38 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval category::list {}

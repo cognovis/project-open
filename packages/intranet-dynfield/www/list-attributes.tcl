@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: list-attributes.tcl,v 1.1 2009/01/23 14:38:30 cvs Exp $
+    @cvs-id $Id$
 
 } {
     {attribute_id:integer,multiple}

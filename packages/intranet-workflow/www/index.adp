@@ -1,6 +1,7 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title@</property>
 <property name="main_navbar_label">workflow</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <!-- left - right - bottom  design -->
 
@@ -19,7 +20,7 @@
   <td width=2>&nbsp;</td>
   <td valign="top" width="50%">
 
-		<table cellspacing="1" cellpadding="3">
+		<table cellspacing="5" cellpadding="5">
 		  <tr class="rowtitle">
 		    <th colspan="2">#intranet-workflow.Notifications#</th>
 		    <th>#intranet-workflow.Subscribe#</th>

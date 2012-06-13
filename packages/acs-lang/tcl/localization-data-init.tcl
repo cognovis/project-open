@@ -7,7 +7,7 @@ ad_library {
 
     @creation-date 10 September 2000
     @author Jeff Davis (davis@xarg.net)
-    @cvs-id $Id: localization-data-init.tcl,v 1.18 2007/01/10 21:22:04 gustafn Exp $
+    @cvs-id $Id: localization-data-init.tcl,v 1.2 2010/10/19 20:11:54 po34demo Exp $
 }
 
 # Monetary amounts

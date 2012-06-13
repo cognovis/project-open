@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Jeff Davis <davis@xarg.net>
     @creation-date 2005-03-05
-    @cvs-id $Id: permissions.tcl,v 1.2 2005/05/26 08:28:46 maltes Exp $
+    @cvs-id $Id$
 } {
     {object_id:integer}
     {return_url ""}

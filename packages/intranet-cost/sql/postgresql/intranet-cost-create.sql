@@ -127,6 +127,166 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
 
+
+
+-------------------------------------------------------------
+-- Add a default cost center to im_projects and
+-- add a trigger for setting the default value.
+--
+
+alter table im_projects
+add project_cost_center_id integer
+constraint im_projects_cost_center_fk references im_cost_centers;
+
+-- Initialize cost centers based on project manager
+update im_projects                                                                           
+set project_cost_center_id = (select e.department_id from im_employees e where e.employee_id = im_projects.project_lead_id)
+where parent_id is null and project_cost_center_id is null;
+
+
+create or replace function im_project_project_cost_center_update_tr ()
+returns trigger as $body$
+DECLARE
+	v_ccid		integer;
+	row		RECORD;
+BEGIN
+	----------------------------------------------------------------
+	-- Check if there was a change in the project_cost_center_id
+	-- and propagete the change to the children
+	IF
+		old.project_cost_center_id is not null and
+		new.project_cost_center_id is not null and
+		old.project_cost_center_id != new.project_cost_center_id
+	THEN 
+		-- Propagate to direct subprojects
+		-- These _direct_ subprojects are responsible for
+		-- further propagating down, creating a recursion loop.
+		-- ToDo
+		RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Propagating to children', new.project_id;
+		FOR row IN
+			select	sub_p.project_id
+			from	im_projects sub_p
+			where	sub_p.parent_id = new.project_id
+		LOOP
+			update	im_projects
+			set	project_cost_center_id = new.project_cost_center_id
+			where	project_id = row.project_id;
+		END LOOP;
+		return new;
+	END IF;
+
+
+	----------------------------------------------------------------
+	-- Check if the project_cost_center_id needs a default value.
+	IF new.project_cost_center_id is null THEN
+		-- Take the project_cost_center_id from the parent if available
+		IF new.parent_id is not null THEN
+			select	pp.project_cost_center_id into v_ccid
+			from	im_projects pp
+			where	pp.project_id = new.parent_id;
+			
+			IF v_ccid is not null THEN
+				RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Using CC of parent: %', new.project_id, new.parent_id;
+				update	im_projects
+				set	project_cost_center_id = v_ccid
+				where	project_id = new.project_id;
+				-- Attention! This action triggers this same proc recursively,
+				-- leading to a propagation of the value to sub-projects.
+				return new;
+			END IF;
+		END IF;
+
+		-- Use the department of the project manager as a default value
+		select	e.department_id into v_ccid
+		from	im_employees e
+		where	e.employee_id = new.project_lead_id;
+
+		IF v_ccid is not null THEN
+			RAISE NOTICE 'im_project_project_cost_center_update_tr: %: Using CC of PM: %', new.project_id, new.project_lead_id;
+			update	im_projects
+			set	project_cost_center_id = v_ccid
+			where	project_id = new.project_id;
+			-- Attention! This action triggers this same proc recursively,
+			-- leading to a propagation of the value to sub-projects.
+			return new;
+		END IF;
+
+	END IF;
+
+	return new;
+END;$body$ language 'plpgsql';
+
+
+CREATE TRIGGER im_project_project_cost_center_update_tr
+AFTER UPDATE ON im_projects FOR EACH ROW
+EXECUTE PROCEDURE im_project_project_cost_center_update_tr();
+
+
+
+
+
+-- Return the list of all cost centers below the one to which the user belongs to
+create or replace function im_user_cost_centers (integer) 
+returns setof integer as $body$
+declare
+	p_user_id		alias for $1;
+	v_cc_code		varchar;
+	row			RECORD;
+BEGIN
+	select	cc.cost_center_code into v_cc_code
+	from	im_employees e, im_cost_centers cc
+	where	e.employee_id = p_user_id and
+		e.department_id = cc.cost_center_id;
+
+	-- Return the list of all cost centers below the one to which the user belongs to
+	FOR row IN
+		select	cc.*
+		from	im_cost_centers cc
+		where	substring(cc.cost_center_code for length(v_cc_code)) = v_cc_code
+	LOOP
+		RETURN NEXT row.cost_center_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
+
+
+
+
+
+
+
+-- Return a list of all cost centers below and including the specified cost center
+create or replace function im_sub_cost_centers (integer)
+returns setof integer as $body$
+DECLARE
+	p_cc_id			alias for $1;
+	v_cc_id			integer;
+	v_len			integer;
+	v_super_cc_code		varchar;
+	row			RECORD;
+BEGIN
+	-- Extract len and code from the super cc
+	select	length(cost_center_code), cost_center_code
+	into	v_len, v_super_cc_code
+	from	im_cost_centers
+	where	cost_center_id = p_cc_id;
+
+	-- Return all ids of the sub ccs
+	FOR row IN
+		select	cc.cost_center_id
+		from	im_cost_centers cc
+		where	substring(cost_center_code for v_len) = v_super_cc_code
+	LOOP
+		RETURN NEXT row.cost_center_id;
+	END LOOP;
+
+	RETURN;
+end;$body$ language 'plpgsql';
+
+
+
 -- prompt *** intranet-costs: Creating im_cost_center
 -- create or replace package im_cost_center
 -- is
@@ -182,6 +342,7 @@ DECLARE
 	);
 	return v_cost_center_id;
 end;' language 'plpgsql';
+
 
 
 -- Delete a single cost_center (if we know its ID...)
@@ -678,6 +839,7 @@ create table im_costs (
 );
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
+
 
 
 
@@ -1396,12 +1558,6 @@ where	category_type = 'Intranet VAT Type';
 -- Finance Menu System
 --
 
-select im_menu__del_module('intranet-trans-invoices');
-select im_menu__del_module('intranet-payments');
-select im_menu__del_module('intranet-invoices');
-select im_menu__del_module('intranet-cost');
-
-
 -- prompt *** intranet-costs: Create Finance Menu
 -- Setup the "Finance" main menu entry
 --
@@ -1444,7 +1600,7 @@ begin
 		''intranet-cost'',		-- package_name
 		''finance'',			-- label
 		''Finance'',			-- name
-		''/intranet-cost/'',		-- url
+		''/intranet-invoices/list'',	-- url
 		80,				-- sort_order
 		v_main_menu,			-- parent_menu_id
 		null				-- visible_tcl
@@ -1796,6 +1952,26 @@ select im_component_plugin__new (
 	'im_costs_company_component $user_id $company_id'	-- component_tcl
 );
 
+
+-- Show profit and loss in companies page
+--
+select im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+
+	'Company Profit Component',	-- plugin_name
+	'intranet-cost',		-- package_name
+	'left',				-- location
+	'/intranet/companies/view',	-- page_url
+	null,				-- view_name
+	85,				-- sort_order
+
+	'im_costs_company_profit_loss_component -company_id $company_id'	-- component_tcl
+);
 
 
 -- ------------------------------------------------

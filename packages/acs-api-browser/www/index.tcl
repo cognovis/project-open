@@ -8,7 +8,7 @@ ad_page_contract {
     @about_package_key a package-key
     @author Jon Salz (jsalz@mit.edu)
     @author Lars Pind (lars@pinds.com)
-    @cvs-id $Id: index.tcl,v 1.5 2006/07/20 10:10:31 torbenb Exp $
+    @cvs-id $Id$
 } {
     about_package_key:optional
 } -properties {

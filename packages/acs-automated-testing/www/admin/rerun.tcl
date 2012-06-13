@@ -1,5 +1,5 @@
 ad_page_contract {
-    @cvs-id $Id: rerun.tcl,v 1.4 2007/01/10 21:22:02 gustafn Exp $
+    @cvs-id $Id$
 } {
     {package_key ""}
     {category:aa_test_category ""}

@@ -4,7 +4,7 @@
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2005-03-20
 -- @arch-tag: 8694a7de-393a-4d70-a3ce-36019afdf05c
--- @cvs-id $Id: upgrade-5.2.0d13-5.2.0d14.sql,v 1.1 2005/03/20 13:41:51 daveb Exp $
+-- @cvs-id $Id$
 --
 
 -- add define function args calls for content_keyword

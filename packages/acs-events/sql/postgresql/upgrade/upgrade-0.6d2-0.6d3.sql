@@ -3,7 +3,7 @@
 -- 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2007-09-27
--- @cvs-id $Id: upgrade-0.6d2-0.6d3.sql,v 1.2 2008/08/29 15:13:49 daveb Exp $
+-- @cvs-id $Id$
 --
 -- Fix Daylight Saving Time bug when creating recurring events
 

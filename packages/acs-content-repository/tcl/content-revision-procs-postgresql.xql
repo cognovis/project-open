@@ -5,7 +5,7 @@
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2005-02-09 -->
 <!-- @arch-tag: 8fc5c63c-02e7-4910-a536-8edbaff68ff8 -->
-<!-- @cvs-id $Id: content-revision-procs-postgresql.xql,v 1.5 2006/08/27 20:34:37 daveb Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

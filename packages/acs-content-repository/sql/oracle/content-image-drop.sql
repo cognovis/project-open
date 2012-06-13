@@ -2,7 +2,7 @@
 
 -- Copyright (C) 20000 ArsDigita Corporation
 
--- $Id: content-image-drop.sql,v 1.2 2001/10/09 04:31:24 danw Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

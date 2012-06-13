@@ -1,4 +1,4 @@
--- $Id: acs-sc-views-create.sql,v 1.4 2003/09/16 08:29:58 lars Exp $
+-- $Id$
 
 create or replace view valid_uninstalled_bindings as
     select c.contract_id, c.contract_name, i.impl_id, i.impl_name, i.impl_owner_name, i.impl_pretty_name

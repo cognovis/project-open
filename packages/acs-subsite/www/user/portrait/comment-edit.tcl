@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date 22 Jun 2000
-    @cvs-id $Id: comment-edit.tcl,v 1.8 2009/03/31 14:39:45 emmar Exp $
+    @cvs-id $Id$
 } {
     {return_url "" }
     {user_id ""}

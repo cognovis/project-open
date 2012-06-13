@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Geddert openacs@geddert.com
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2005-01-05
-    @cvs-id $Id: widgets.tcl,v 1.4 2009/07/06 23:41:26 po34demo Exp $
+    @cvs-id $Id$
 
 } {
 

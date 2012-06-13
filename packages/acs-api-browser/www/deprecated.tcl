@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author Todd Nightingale
     @creation-date 2000-7-14
-    @cvs-id $Id: deprecated.tcl,v 1.3 2002/09/10 22:22:04 jeffd Exp $
+    @cvs-id $Id$
 
 } {
 } -properties {

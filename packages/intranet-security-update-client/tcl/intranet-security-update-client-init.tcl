@@ -3,7 +3,7 @@ ad_library {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 16 August, 2011
-    @cvs-id $Id: intranet-security-update-client-init.tcl,v 1.2 2011/03/09 12:42:11 po34demo Exp $
+    @cvs-id $Id$
 }
 
 

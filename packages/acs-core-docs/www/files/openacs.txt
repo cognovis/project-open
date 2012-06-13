@@ -9,7 +9,7 @@ exec tclsh "$0" ${1+"$@"}
 # initialization
 ######################################################################
 
-set version {$Id: openacs.txt,v 1.1 2004/04/16 12:59:35 joela Exp $}
+set version {$Id$}
 
 #----------------------------------------------------------------------
 # get command line arguments

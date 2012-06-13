@@ -7,7 +7,7 @@ ad_library {
     @author Malte Sussdorff (sussdorff@sussdorff.de)
     @creation-date 2005-06-15
     @arch-tag: 9d6f99f7-cfec-40e6-8d3f-411f4d3c9b6c
-    @cvs-id $Id: mail-tracking-callback-procs.tcl,v 1.8 2006/12/24 11:12:24 maltes Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -public -callback acs_mail_lite::complex_send -impl mail_tracking {

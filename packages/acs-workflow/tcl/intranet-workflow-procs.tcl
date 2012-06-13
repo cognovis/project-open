@@ -6,6 +6,6 @@ ad_library {
 
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 2006-03-16
-    @cvs-id $Id: intranet-workflow-procs.tcl,v 1.3 2006/05/25 11:37:57 dotproj Exp $
+    @cvs-id $Id$
 }
 

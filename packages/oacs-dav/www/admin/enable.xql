@@ -4,7 +4,7 @@
 
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2004-02-15 -->
-<!-- @cvs-id $Id: enable.xql,v 1.1 2004/02/16 16:49:28 daveb Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
 

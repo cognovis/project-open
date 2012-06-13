@@ -10,7 +10,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: delete-attachment-2.tcl,v 1.5 2007/05/05 15:54:47 maltes Exp $
+    @cvs-id $Id$
 } {
     attach_id:integer,notnull
     parent_id:integer,notnull

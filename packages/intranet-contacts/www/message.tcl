@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: message.tcl,v 1.3 2010/07/13 17:54:55 cvs Exp $
+    @cvs-id $Id$
 } {
     {attachment_id:integer,multiple,optional}
     {object_id:integer,multiple,optional}

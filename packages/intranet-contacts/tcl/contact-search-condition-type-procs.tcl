@@ -4,7 +4,7 @@ ad_library {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2005-07-18
-    @cvs-id $Id: contact-search-condition-type-procs.tcl,v 1.7 2009/04/20 12:38:25 cognovis Exp $
+    @cvs-id $Id$
 
 }
 

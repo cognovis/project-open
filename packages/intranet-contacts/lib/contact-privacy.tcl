@@ -5,7 +5,7 @@
 # @author Malte Sussdorff (sussdorff@sussdorff.de)
 # @creation-date 2005-06-21
 # @arch-tag: 1df33468-0ff5-44e2-874a-5eec78747b8c
-# @cvs-id $Id: contact-privacy.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+# @cvs-id $Id$
 
 foreach required_param {party_id} {
     if {![info exists $required_param]} {

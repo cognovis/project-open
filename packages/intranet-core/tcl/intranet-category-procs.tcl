@@ -136,26 +136,6 @@ ad_proc im_category_select {
     }
 }
 
-ad_proc im_category_children {
-    -super_category_id
-} {
-    Return a list of children category_ids for this category
-} {
-    set children [db_list children "
-	select child_id
-	from im_category_hierarchy
-	where parent_id = :super_category_id
-    "]
-
-    foreach child $children {
-	# get the children of this child
-	foreach child_child [im_category_children -super_category_id $child] {
-	    lappend children $child_child
-	}
-    }    
-    return $children
-}
-
 ad_proc im_category_select_helper {
     {-translate_p 1}
     {-package_key "intranet-core" }
@@ -536,14 +516,11 @@ ad_proc -public template::widget::im_category_tree {
 	return
     }
 
-
     if { "edit" == $element(mode)} {
 	append category_html [im_category_select -translate_p 1 -package_key $package_key -include_empty_p $include_empty_p -include_empty_name $include_empty_name -plain_p $plain_p -multiple_p $multiple_p $category_type $field_name $default_value]
-
-
     } else {
 	if {"" != $default_value && "\{\}" != $default_value} {
-	    append category_html [db_string cat "select im_category_from_id($default_value) from dual" -default ""]
+	    append category_html [im_category_from_id $default_value]
 	}
     }
     return $category_html

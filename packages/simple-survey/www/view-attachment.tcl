@@ -8,7 +8,7 @@ ad_page_contract {
   @author jbank@arsdigita.com
   @author nstrug@arsdigita.com
   @creation-date   28th September 2000
-  @cvs-id $Id: view-attachment.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+  @cvs-id $Id$
 } {
 
   response_id:integer,notnull

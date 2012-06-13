@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 2002-03-20
-    @cvs-id $Id: bug.tcl,v 1.6 2008/03/12 08:12:53 podesign Exp $
+    @cvs-id $Id$
 } [bug_tracker::get_page_variables {
     bug_number:integer,notnull
     {user_agent_p:boolean 0}

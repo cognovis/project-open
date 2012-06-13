@@ -7,7 +7,7 @@ ad_page_contract {
     
     @author Ben Adida (ben@openforce.net)
     @creation-date 10 Mar 2002
-    @cvs-id $Id: cal-item-create-recurrence.tcl,v 1.8 2008/08/30 19:51:23 donb Exp $
+    @cvs-id $Id$
 } {
     cal_item_id
     {return_url "./"}

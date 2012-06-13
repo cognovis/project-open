@@ -1,7 +1,7 @@
 -- Drop the ACS Reference packages
 --
 -- @author jon@jongriffin.com
--- @cvs-id $Id: acs-reference-drop.sql,v 1.3 2003/09/30 12:10:02 mohanp Exp $
+-- @cvs-id $Id$
 
 set serveroutput on
 

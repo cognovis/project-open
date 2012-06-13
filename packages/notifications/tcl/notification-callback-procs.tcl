@@ -4,7 +4,7 @@ ad_library {
 
     @creation-date July 19, 2005
     @author Enrique Catalan <quio@galileo.edu>
-    @cvs-id $Id: notification-callback-procs.tcl,v 1.4 2008/06/07 20:29:01 donb Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -callback merge::MergeShowUserInfo -impl notifications {

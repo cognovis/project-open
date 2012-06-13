@@ -6,7 +6,7 @@ ad_library {
 
     @creation-date 2002-06-02
     @author Ben Adida <ben@openforce.biz>
-    @cvs-id $Id: reply-sweep-procs.tcl,v 1.7 2003/11/06 14:28:03 matk Exp $
+    @cvs-id $Id$
 
 }
 

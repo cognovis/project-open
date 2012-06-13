@@ -20,10 +20,10 @@ permission::require_permission -object_id $tree_id -privilege category_tree_gran
 
 array set tree [category_tree::get_data $tree_id $locale]
 set tree_name $tree(tree_name)
-set page_title [_ categories.Permissions_manage_title]
+set page_title "Permission Management for $tree_name"
 
 set context_bar [category::context_bar $tree_id $locale [value_if_exists object_id]]
-lappend context_bar [_ categories.Permissions_manage]
+lappend context_bar "Manage Permissions"
 
 set url_vars [export_vars {tree_id object_id locale}]
 set package_id [ad_conn package_id]

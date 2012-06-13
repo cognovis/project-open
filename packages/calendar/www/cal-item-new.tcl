@@ -5,7 +5,7 @@ ad_page_contract {
     @author Dirk Gomez (openacs@dirkgomez.de)
     @author Ben Adida (ben@openforce.net)
     @creation-date May 29, 2002
-    @cvs-id $Id: cal-item-new.tcl,v 1.38 2008/09/08 20:13:37 donb Exp $
+    @cvs-id $Id$
 } {
     {calendar_id:integer ""}
     cal_item_id:integer,optional

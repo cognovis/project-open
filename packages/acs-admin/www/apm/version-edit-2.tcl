@@ -2,7 +2,7 @@ ad_page_contract {
     Edit a package version
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 17 April 2000
-    @cvs-id $Id: version-edit-2.tcl,v 1.11 2007/01/10 21:21:59 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     version_id:naturalnum,notnull

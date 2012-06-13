@@ -21,6 +21,12 @@
 
 SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-4.0.3.0.3-4.0.3.0.4.sql','');
 
+-- translate task types
+
+update im_timesheet_tasks set task_type_id = 9500 where task_type_id = 100 or task_type_id is null;
+
+update im_dynfield_widgets set widget = 'im_category_tree' where widget_name = 'task_status' or widget_name = 'task_type';
+
 -- Update Notes for tasks
 alter table im_projects alter column note type text;
 
@@ -43,3 +49,24 @@ SELECT im_dynfield_widget__new (
 SELECT im_dynfield_attribute_new ('im_timesheet_task', 'task_assignee_id', 'Assignee', 'task_assignees', 'integer', 'f');
 
 update im_dynfield_type_attribute_map set default_value = 'tcl {ad_conn user_id}' where attribute_id = (select da.attribute_id from im_dynfield_attributes da, acs_attributes aa where da.acs_attribute_id = aa.attribute_id and aa.attribute_name = 'task_assignee_id');
+
+
+-------------------------------
+-- Timesheet Task Scheduling Type
+SELECT im_category_new(9700,'As soon as possible', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9701,'As late as possible', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9702,'Must start on', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9703,'Must finish on', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9704,'Start no earlier than', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9705,'Start no later than', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9706,'Finish no earlier than', 'Intranet Timesheet Task Scheduling Type');
+SELECT im_category_new(9707,'Finish no later than', 'Intranet Timesheet Task Scheduling Type');
+
+update im_categories set aux_int1 = 0 where category_id = 9700;
+update im_categories set aux_int1 = 1 where category_id = 9701;
+update im_categories set aux_int1 = 2 where category_id = 9702;
+update im_categories set aux_int1 = 3 where category_id = 9703;
+update im_categories set aux_int1 = 4 where category_id = 9704;
+update im_categories set aux_int1 = 5 where category_id = 9705;
+update im_categories set aux_int1 = 6 where category_id = 9706;
+update im_categories set aux_int1 = 7 where category_id = 9707;

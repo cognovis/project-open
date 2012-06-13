@@ -5,7 +5,7 @@
 
 <!-- pagination context bar -->
 <table cellpadding=4 cellspacing=0 border=0 width="95%">
-<tr><td></td><td align=center>#categories.lt_object_count_objects_#</td><td></td></tr>
+<tr><td></td><td align=center>@object_count@ objects on @page_count@ pages</td><td></td></tr>
 <tr>
   <td align=left width="5%">
     <if @info.previous_group@ not nil>
@@ -37,4 +37,3 @@
 </table>
 <p>
 @items;noquote@
-

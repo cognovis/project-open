@@ -53,17 +53,17 @@ multirow sort trees_with_write_permission -dictionary tree_name
 
 set elements {
     tree_name {
-	label "#acs-subsite.Name#"
+	label "Name"
 	link_url_col view_url
     }
     description {
-	label "#categories.Description#"
+	label "Description"
     }
 }
 
 list::create \
     -name trees_with_write_permission \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements $elements \
     -key tree_id \
     -bulk_action_export_vars {locale} \
@@ -71,7 +71,7 @@ list::create \
 
 list::create \
     -name trees_with_read_permission \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements $elements
 
 set create_url [export_vars -no_empty -base tree-form { locale }]

@@ -22,12 +22,12 @@ permission::require_permission -object_id $tree_id -privilege category_tree_writ
 
 set tree_name [category_tree::get_name $tree_id $locale]
 set target_tree_id $tree_id
-set page_title [_ categories.Tree_copy_title]
+set page_title "Copy a tree into \"$tree_name\""
 
 set context_bar [category::context_bar $tree_id $locale \
                      [value_if_exists object_id] \
                      [value_if_exists ctx_id]]
-lappend context_bar [_ categories.Tree_copy]
+lappend context_bar "Copy tree"
 
 template::multirow create trees tree_id tree_name site_wide_p view_url copy_url
 
@@ -45,21 +45,21 @@ template::multirow sort trees -dictionary tree_name
 
 template::list::create \
     -name trees \
-    -no_data "#categories.None#" \
+    -no_data "None" \
     -elements {
 	tree_name {
-	    label "#acs-admin.Name#"
+	    label "Name"
 	    link_url_col view_url
 	}
 	site_wide_p {
 	    display_template {
-		<if @trees.site_wide_p@ eq t> (#categories.SiteWide_tree#) </if>
+		<if @trees.site_wide_p@ eq t> (Site-Wide Tree) </if>
 	    }
 	}
 	copy {
-	    label "#categories.Action#"
+	    label "Action"
 	    display_template {
-		<a href="@trees.copy_url@">#categories.Tree_copy#</a>
+		<a href="@trees.copy_url@">Copy tree</a>
 	    }
 	}
     }

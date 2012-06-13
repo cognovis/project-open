@@ -6,7 +6,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Authors:      Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-update.sql,v 1.8 2006/06/04 00:45:23 donb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

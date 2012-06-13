@@ -10,7 +10,7 @@ ad_library {
   @author teadams@mit.edu
   @author nstrug@arsdigita.com
   @creation-date   February 9, 2000
-  @cvs-id $Id: survsimp-procs.tcl,v 1.2 2008/12/11 15:49:39 cvs Exp $
+  @cvs-id $Id$
 
 }
 

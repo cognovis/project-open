@@ -381,16 +381,16 @@ ad_proc im_projects_csv1 {
     
     set criteria [list]
     if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
-	lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
+	lappend criteria "im_projects.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
     }
 
     if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
 	# Select the specified project type and its subtypes
-	lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
+	lappend criteria "im_projects.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
     }
     
     if { ![empty_string_p $company_id] && $company_id != 0 } {
-	lappend criteria "p.company_id=:company_id"
+	lappend criteria "im_projects.company_id=:company_id"
     }
 
     set where_clause [join $criteria " and\n	    "]
@@ -433,44 +433,44 @@ ad_proc im_projects_csv1 {
     "
 
     set status_where "
-	and p.project_id=s_create.project_id(+)
-	and p.project_id=s_quote.project_id(+)
-	and p.project_id=s_open.project_id(+)
-	and p.project_id=s_deliver.project_id(+)
-	and p.project_id=s_invoice.project_id(+)
-	and p.project_id=s_close.project_id(+)
+	and im_projects.project_id=s_create.project_id(+)
+	and im_projects.project_id=s_quote.project_id(+)
+	and im_projects.project_id=s_open.project_id(+)
+	and im_projects.project_id=s_deliver.project_id(+)
+	and im_projects.project_id=s_invoice.project_id(+)
+	and im_projects.project_id=s_close.project_id(+)
     "
 
 
     set sql "
 	SELECT
-		p.*,
+		im_projects.*,
 		[join $derefs "\n"]
 		c.company_name,
 		im_name_from_user_id(c.manager_id) as keyacc_name,
 		im_email_from_user_id(c.manager_id) as keyacc_email,
-		to_char(p.start_date, 'YYYY') as start_year,
-		to_char(p.end_date, 'YYYY') as end_year,
-		to_char(p.start_date, 'MM') as start_month,
-		to_char(p.end_date, 'MM') as end_month,
-		tree_level(p.tree_sortkey) as subproject_level,
-		im_name_from_user_id(p.project_lead_id) as lead_name,
-		im_email_from_user_id(p.project_lead_id) as lead_email,
-		im_project_nr_from_id(p.parent_id) as parent_project_nr,
-		im_category_from_id(p.project_type_id) as project_type,
-		im_category_from_id(p.project_status_id) as project_status,
-		im_category_from_id(p.on_track_status_id) as on_track_status,
-		im_category_from_id(p.billing_type_id) as billing_type,
+		to_char(im_projects.start_date, 'YYYY') as start_year,
+		to_char(im_projects.end_date, 'YYYY') as end_year,
+		to_char(im_projects.start_date, 'MM') as start_month,
+		to_char(im_projects.end_date, 'MM') as end_month,
+		tree_level(im_projects.tree_sortkey) as subproject_level,
+		im_name_from_user_id(im_projects.project_lead_id) as lead_name,
+		im_email_from_user_id(im_projects.project_lead_id) as lead_email,
+		im_project_nr_from_id(im_projects.parent_id) as parent_project_nr,
+		im_category_from_id(im_projects.project_type_id) as project_type,
+		im_category_from_id(im_projects.project_status_id) as project_status,
+		im_category_from_id(im_projects.on_track_status_id) as on_track_status,
+		im_category_from_id(im_projects.billing_type_id) as billing_type,
 		to_char(end_date, 'HH24:MI') as end_date_time
 	FROM
-		im_projects p
-		LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id),
+		im_projects
+		LEFT OUTER JOIN im_timesheet_tasks ON (im_projects.project_id = im_timsheet_tasks.task_id),
 		(select	company_id,
 			company_name,
 			manager_id
 		from	im_companies) c
 	WHERE
-		p.company_id = c.company_id
+		im_projects.company_id = c.company_id
 		$where_clause
     "
 

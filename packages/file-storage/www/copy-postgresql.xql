@@ -4,7 +4,7 @@
 
 <!-- @author Dave Bauer (dave@thedesignexperience.org) -->
 <!-- @creation-date 2004-05-09 -->
-<!-- @cvs-id $Id: copy-postgresql.xql,v 1.7 2008/10/23 13:59:02 victorg Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

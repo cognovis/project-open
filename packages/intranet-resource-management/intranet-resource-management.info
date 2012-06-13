@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-resource-management</auto-mount>
 
-    <version name="4.0.3.0.0" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.3.0.0.apm">
+    <version name="4.0.3.1.0" url="http://www.project-open.org/download/apm/intranet-resource-management-4.0.3.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Resource Management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -18,7 +18,6 @@
         <provides url="intranet-resource-management" version="4.0.1.0.2"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-timesheet2" version="3.4.0.0.0"/>
-	<requires url="intranet-translation" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>

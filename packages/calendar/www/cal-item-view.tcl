@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Ben Adida (ben@openforce.net)
     @creation-date April 09, 2002
-    @cvs-id $Id: cal-item-view.tcl,v 1.24 2009/03/06 23:28:05 donb Exp $
+    @cvs-id $Id$
 } {
     cal_item_id:integer
     {return_url [ad_return_url]}

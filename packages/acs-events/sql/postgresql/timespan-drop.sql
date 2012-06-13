@@ -4,7 +4,7 @@
 --
 -- @author W. Scott Meeks
 --
--- $Id: timespan-drop.sql,v 1.2 2010/11/08 13:10:35 victorg Exp $
+-- $Id$
 
 select drop_package('timespan');
 drop index   timespans_idx;
@@ -14,3 +14,4 @@ select drop_package('time_interval');
 drop table   time_intervals;
 
 drop sequence timespan_sequence;
+drop view timespan_seq;

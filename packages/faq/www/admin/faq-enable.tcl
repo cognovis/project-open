@@ -6,7 +6,6 @@ ad_page_contract {
 
 } {
     faq_id:naturalnum,notnull
-    referer:optional
 }
 set package_id [ad_conn package_id]
 
@@ -16,8 +15,4 @@ db_dml disable_faq {
     update faqs set disabled_p = 'f' where faq_id = :faq_id
 }
 
-if { ![info exists referer] } {
-    set referer "index"
-}
-
-ad_returnredirect $referer
+ad_returnredirect "index"

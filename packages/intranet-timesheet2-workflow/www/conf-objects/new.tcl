@@ -169,6 +169,15 @@ ad_form -extend -name $form_id \
     }
 
 
+# ---------------------------------------------------------------
+# Show comments made during the approval process
+# ---------------------------------------------------------------
+
+set show_comment_p [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2-workflow] -parameter "ShowCommentsInPanel" -default 1]
+
+if { $show_comment_p } {
+    set comment [db_string get_comment "select comment from im_timesheet_conf_objects where conf_id = :conf_id" -default 0]
+}
 
 # ---------------------------------------------------------------
 # Format the link to modify hours

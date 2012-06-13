@@ -4,7 +4,7 @@
 <!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
 <!-- @creation-date 2005-01-23 -->
 <!-- @arch-tag e5082d5b-edcf-4b26-a9e6-4c729ef96982 -->
-<!-- @cvs-id $Id: invoice-association-action-postgresql.xql,v 1.1 2005/01/22 15:55:18 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   

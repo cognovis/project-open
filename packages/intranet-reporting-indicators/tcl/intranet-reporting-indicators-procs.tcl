@@ -462,7 +462,7 @@ ad_proc -public im_indicator_timeline_component {
 		[im_gif "help" [ns_quotehtml $report_description]]<br>
 		<a href=\"$report_edit_url\">[im_gif "wrench"]</a><br>
 		<a href=\"$perms_url\">[im_gif "lock"]</a><br>
-		<a href=\"$delete_url\">[im_gif "cancel"]</a>
+	<!--	<a href=\"$delete_url\">[im_gif "cancel"]</a> -->
 	"
 
 	regsub -all " " $report_name "_" indicator_name_mangled

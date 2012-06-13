@@ -312,6 +312,47 @@ where
 	and m.group_id = :employee_group_id
 )"
 
+
+    set primary_accounting_contact_client_sql "(
+	-- Primary contact / accounting contact of customer 
+	select distinct
+		user_id, 
+		im_name_from_user_id(user_id) as user_name
+	from 
+		(select   
+			primary_contact_id as user_id
+		from 
+			im_companies c,
+			im_projects p
+		where 
+			c.company_id = p.company_id and 
+			p.project_id = :object_id
+		UNION 
+		select   
+			accounting_contact_id as user_id
+		from 
+			im_companies c,
+			im_projects p
+		where 
+			c.company_id = p.company_id and 
+			p.project_id = :object_id
+		UNION 
+		select   
+			accounting_contact_id as user_id
+		from 
+			im_companies
+		where 
+			company_id = :object_id
+		UNION 
+		select   
+			primary_contact_id as user_id
+		from 
+			im_companies
+		where 
+			company_id = :object_id
+		) tt
+	)"
+
     set sql_list [list]
 
     # Don't enable the list of the entire public - 
@@ -319,11 +360,14 @@ where
 #    if {[im_permission $user_id add_topic_public]} {
 #	lappend sql_list $public_sql
 #    }
+
+
     if {[im_permission $user_id add_topic_group]} {
 	lappend sql_list $object_group_sql
     }
     if {[im_permission $user_id add_topic_staff]} {
 	lappend sql_list $object_staff_sql
+	lappend sql_list $primary_accounting_contact_client_sql
     }
     if {[im_permission $user_id add_topic_client]} {
 	lappend sql_list $object_customer_sql
@@ -342,10 +386,9 @@ where
     set sql [join $sql_list " UNION "]
     ns_log Notice "im_forum_potential_asignees: sql=$sql"
 
-
     set asignee_list [list]
     db_foreach object_admins $sql {
-	if {!$user_id} { continue }
+	if { "" == $user_id || "0" == $user_id } { continue }
 	lappend asignee_list $user_id
 	lappend asignee_list $user_name
     }

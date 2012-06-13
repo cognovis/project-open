@@ -14,7 +14,7 @@ ad_page_contract {
     @author  jsc@arsdigita.com
     @author  nstrug@arsdigita.com
     @creation-date    28th September 2000
-    @cvs-id $Id: process-response.tcl,v 1.6 2010/06/04 15:46:51 po34demo Exp $
+    @cvs-id $Id$
 } {
     survey_id:integer,notnull
     { related_object_id:integer "" }

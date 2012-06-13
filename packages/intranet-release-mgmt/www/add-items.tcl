@@ -159,6 +159,7 @@ db_multirow -extend { object_type_html release_project_url release_status_templa
 			project_type_id in ([join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release_item]] ","])
 			$project_release_item_p_sql
 		)
+		and tree_root_key(p.tree_sortkey) = (select tree_root_key(tree_sortkey) from im_projects where project_id = :release_project_id)
 		$where_clause
 	order by project_name
 " {

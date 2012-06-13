@@ -1,6 +1,6 @@
 #    @author Matthew Geddert openacs@geddert.com
 #    @creation-date 2005-07-09
-#    @cvs-id $Id: searches.tcl,v 1.1 2009/02/08 22:28:17 cvs Exp $
+#    @cvs-id $Id$
 
 if { [string is false [contact::exists_p -party_id $party_id]] } {
     error "[_ intranet-contacts.lt_The_party_id_specifie]"

@@ -4,11 +4,37 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: content-create.sql,v 1.57 2011/02/20 00:34:00 donb Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
 -- http://www.fsf.org/copyleft/gpl.html
+
+----------------------------------
+-- CMS datatypes
+----------------------------------
+
+-- create ats datatypes for cms
+create function inline_0 ()
+returns integer as '
+begin
+  insert into acs_datatypes
+    (datatype, max_n_values)
+  values
+    (''text'', null);
+
+  insert into acs_datatypes
+    (datatype, max_n_values)
+  values
+    (''keyword'', 1);
+
+  return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
+
 
 
 --------------------------------------------------------------

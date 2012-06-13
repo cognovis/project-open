@@ -37,16 +37,16 @@ create table im_search_object_types (
 );
 
 
--- 0 | im_project     | 1
--- 1 | user           | 5
+-- 0 | im_project	| 1
+-- 1 | user	| 5
 -- 2 | im_forum_topic | 0.5
--- 3 | im_company     | 10
--- 4 | im_invoice     | 1
+-- 3 | im_company	| 10
+-- 4 | im_invoice	| 1
 -- 5 | emails (in CR) | 0.2
--- 6 | im_fs_files    | 0.1
--- 7 | content_item   | 0.5
--- 8 | im_ticket      | 0.7
--- 9 | im_conf_item   | 0.8
+-- 6 | im_fs_files	| 0.1
+-- 7 | content_item	| 0.5
+-- 8 | im_ticket	| 0.7
+-- 9 | im_conf_item	| 0.8
 
 
 
@@ -306,27 +306,27 @@ begin
 
 
 	v_str := '''';
-        p_str1 := coalesce(p_str, '''');
-        v_len := char_length(p_str1);
+	p_str1 := coalesce(p_str, '''');
+	v_len := char_length(p_str1);
 	FOR v_i IN 1..v_len LOOP
-	    v_char := substr(p_str1, v_i, 1);
-	    v_asc := ascii(v_char);
-	    v_found := 0;
-	    FOR v_array IN 1..77 LOOP
+		v_char := substr(p_str1, v_i, 1);
+		v_asc := ascii(v_char);
+		v_found := 0;
+		FOR v_array IN 1..77 LOOP
 		IF v_asc = r[v_array][1] THEN
-		    -- found the first character
-		    IF ascii(substr(p_str1, v_i+1, 1)) = r[v_array][2] THEN
+			-- found the first character
+			IF ascii(substr(p_str1, v_i+1, 1)) = r[v_array][2] THEN
 			-- got the Unicode char!
 			v_str := v_str || chr(r[v_array][3]);
 			v_i := v_i + 1;
 			v_found := 1;
-		    END IF;
+			END IF;
 		END IF;
-	    END LOOP;
-	    IF v_found = 0 THEN
+		END LOOP;
+		IF v_found = 0 THEN
 		-- Not found - so its just a normal charcter: add it
 		v_str := v_str || v_char;
-	    END IF;
+		END IF;
 	END LOOP;
 
 	return v_str;
@@ -336,13 +336,13 @@ end;' language 'plpgsql';
 create or replace function norm_text (varchar)
 returns varchar as '
 declare
-        p_str           alias for $1;
-        v_str           varchar;
+	p_str	alias for $1;
+	v_str	varchar;
 begin
-        select translate(p_str, ''@.-_'', ''    '')
-        into v_str;
+	select translate(p_str, ''@.-_'', ''	'')
+	into v_str;
 
-        return norm_text_utf8(v_str);
+	return norm_text_utf8(v_str);
 end;' language 'plpgsql';
 
 
@@ -382,10 +382,10 @@ begin
 			object_id	= p_object_id
 			and object_type_id = v_object_type_id;
 	else
-	        select  count(*)
-	       	into    v_exists_p
-        	from    acs_objects
-	        where   object_id = p_object_id;
+		select	count(*)
+			into	v_exists_p
+		from	acs_objects
+		where	object_id = p_object_id;
 	
 		if v_exists_p = 1 then 
 			insert into im_search_objects (
@@ -419,16 +419,16 @@ declare
 	v_string2	varchar;
 	v_object_type	varchar;
 begin
-	select  coalesce(project_name, '''') || '' '' ||
+	select	coalesce(project_name, '''') || '' '' ||
 		coalesce(project_nr, '''') || '' '' ||
 		coalesce(project_path, '''') || '' '' ||
 		coalesce(description, '''') || '' '' ||
 		coalesce(note, ''''),
 		o.object_type
-	into    v_string, v_object_type
-	from    im_projects p,
+	into	v_string, v_object_type
+	from	im_projects p,
 		acs_objects o
-	where   p.project_id = new.project_id and
+	where	p.project_id = new.project_id and
 		p.project_id = o.object_id;
 
 	-- Skip if this is a ticket. There is a special trigger for tickets.
@@ -437,11 +437,11 @@ begin
 
 	v_string2 := '''';
 	IF column_exists(''im_projects'', ''company_project_nr'') THEN
-		select  coalesce(company_project_nr, '''') || '' '' ||
+		select	coalesce(company_project_nr, '''') || '' '' ||
 			coalesce(final_company, '''')
-		into    v_string2
-		from    im_projects
-		where   project_id = new.project_id;
+		into	v_string2
+		from	im_projects
+		where	project_id = new.project_id;
 		v_string := v_string || '' '' || v_string2;
 	END IF;
 
@@ -598,7 +598,7 @@ begin
 		LEFT OUTER JOIN country_codes ha_cc ON (uc.ha_country_code = ha_cc.iso)
 		LEFT OUTER JOIN country_codes wa_cc ON (uc.wa_country_code = wa_cc.iso)
 	where
-		pe.person_id  = new.person_id
+		pe.person_id	= new.person_id
 		and pe.person_id = pa.party_id
 	;
 
@@ -671,7 +671,7 @@ returns trigger as '
 declare
 	v_string	varchar;
 begin
-	select  coalesce(i.invoice_nr, '''') || '' '' ||
+	select	coalesce(i.invoice_nr, '''') || '' '' ||
 		coalesce(c.cost_nr, '''') || '' '' ||
 		coalesce(c.cost_name, '''') || '' '' ||
 		coalesce(c.description, '''') || '' '' ||
@@ -707,24 +707,24 @@ insert into im_search_object_types values (8,'im_ticket',0.7);
 create or replace function im_tickets_tsearch ()
 returns trigger as '
 declare
-        v_string        varchar;
+	v_string	varchar;
 begin
-        select  coalesce(p.project_name, '''') || '' '' ||
-                coalesce(p.project_nr, '''') || '' '' ||
-                coalesce(p.project_path, '''') || '' '' ||
-                coalesce(p.description, '''') || '' '' ||
-                coalesce(p.note, '''') || '' '' ||
-                coalesce(t.ticket_note, '''') || '' '' ||
-                coalesce(t.ticket_description, '''')
-        into    v_string
-        from    im_tickets t,
-                im_projects p
-        where   p.project_id = new.ticket_id and
-                t.ticket_id = p.project_id;
+	select	coalesce(p.project_name, '''') || '' '' ||
+		coalesce(p.project_nr, '''') || '' '' ||
+		coalesce(p.project_path, '''') || '' '' ||
+		coalesce(p.description, '''') || '' '' ||
+		coalesce(p.note, '''') || '' '' ||
+		coalesce(t.ticket_note, '''') || '' '' ||
+		coalesce(t.ticket_description, '''')
+	into	v_string
+	from	im_tickets t,
+		im_projects p
+	where	p.project_id = new.ticket_id and
+		t.ticket_id = p.project_id;
 
-        perform im_search_update(new.ticket_id, ''im_ticket'', new.ticket_id, v_string);
+	perform im_search_update(new.ticket_id, ''im_ticket'', new.ticket_id, v_string);
 
-        return new;
+	return new;
 end;' language 'plpgsql';
 
 
@@ -742,24 +742,11 @@ EXECUTE PROCEDURE im_tickets_tsearch();
 -----------------------------------------------------------
 -- Index the existing business objects
 
-update persons
-set first_names=first_names;
-
-
-update im_projects
-set project_type_id = project_type_id;
-
-
-update im_companies
-set company_type_id = company_type_id;
-
-update im_forum_topics
-set scope = scope;
-
-update im_invoices
-set invoice_nr = invoice_nr;
-
-
+update persons set first_names=first_names;
+update im_projects set project_type_id = project_type_id;
+update im_companies set company_type_id = company_type_id;
+update im_forum_topics set scope = scope;
+update im_invoices set invoice_nr = invoice_nr;
 
 
 -----------------------------------------------------------
@@ -770,42 +757,38 @@ insert into im_search_object_types values (7,'content_item',0.5);
 create or replace function content_item_tsearch ()
 returns trigger as '
 declare
- v_string varchar;
- v_string2 varchar;
+	v_string varchar;
+	v_string2 varchar;
 begin
- select  coalesce(name, '''') || '' '' ||
-  coalesce(content, '''')
- into    v_string
- from cr_items,cr_revisions 
-        where   cr_items.latest_revision=cr_revisions.revision_id
-         and cr_items.item_id=new.item_id;
+	select	coalesce(name, '''') || '' '' || coalesce(content, '''')
+	into	v_string
+	from	cr_items,cr_revisions 
+	where	cr_items.latest_revision=cr_revisions.revision_id
+		and cr_items.item_id=new.item_id;
 
- perform im_search_update(new.item_id, ''content_item'', new.item_id, v_string);
+	perform im_search_update(new.item_id, ''content_item'', new.item_id, v_string);
 
- return new;
+	return new;
 end;' language 'plpgsql';
 
---
--- trigger disabled at the moment
--- 
 
--- CREATE TRIGGER cr_items_tsearch_tr
--- BEFORE INSERT or UPDATE
--- ON cr_items
--- FOR EACH ROW 
--- EXECUTE PROCEDURE content_item_tsearch();
+CREATE TRIGGER cr_items_tsearch_tr
+BEFORE INSERT or UPDATE
+ON cr_items
+FOR EACH ROW 
+EXECUTE PROCEDURE content_item_tsearch();
+
+update cr_items set locale = locale;
 
 create or replace function content_item__name (integer) returns varchar as '
 DECLARE
- v_content_item_id alias for $1;
- v_name varchar;
+	v_content_item_id alias for $1;
+	v_name varchar;
 BEGIN
- select name
- into v_name
- from cr_items 
- where   item_id = v_content_item_id;
+	select	name into v_name from cr_items 
+	where	item_id = v_content_item_id;
 
- return v_name;
+	return v_name;
 end;' language 'plpgsql';
 
 update cr_items set name=name;

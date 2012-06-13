@@ -3,25 +3,28 @@
 <property name="context">@context_bar;noquote@</property>
 
 <form action="categories-browse">
-  #categories.lt_form_varsnoquote__Com# <input type=radio name=join value="and"<if @join@ eq "and"> #categories.checked#</if>#categories.AND__# <input type=radio name=join value="or"<if @join@ eq "or"> #categories.checked#</if>#categories.OR_#
+  @form_vars;noquote@
+  Combine by
+  [ <input type=radio name=join value="and"<if @join@ eq "and"> checked</if>>AND
+  | <input type=radio name=join value="or"<if @join@ eq "or"> checked</if>>OR ]
   <br>
   <multiple name=trees>
     @trees.tree_name@:
     <select name=category_ids multiple size=5>
     <group column=tree_id>
-      <option value="@trees.category_id@"<if @trees.selected_p@ eq 1> #categories.selected#</if>>@trees.indent;noquote@@trees.category_name@
+      <option value="@trees.category_id@"<if @trees.selected_p@ eq 1> selected</if>>@trees.indent;noquote@@trees.category_name@
     </group>
     </select>
   </multiple>
   <input type=submit name=button value="Show">
 </form>
 
-#categories.lt_To_deselect_or_select#
+To deselect or select multiple categories use the Control-Key on your keyboard.
 <p>
 
 <!-- pagination context bar -->
 <table cellpadding=4 cellspacing=0 border=0 width="95%">
-<tr><td></td><td align=center>#categories.lt_object_count_objects_#</td><td></td></tr>
+<tr><td></td><td align=center>@object_count@ objects on @page_count@ pages</td><td></td></tr>
 <tr>
   <td align=left width="5%">
     <if @info.previous_group@ not nil>
@@ -54,4 +57,3 @@
 @dimension_bar;noquote@
 <p>
 @items;noquote@
-

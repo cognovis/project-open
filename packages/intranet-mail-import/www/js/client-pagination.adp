@@ -2,7 +2,7 @@
       // src: intranet-mail-import/www/js/client-pagination.adp
       YAHOO.util.Event.addListener(window, "load", function() {
         this.myCustomFormatter = function(elLiner, oRecord, oColumn, oData) {
-		elLiner.innerHTML = "<a href=\"/intranet-mail-import/mail-view?body_id=" + oRecord.getData("id") + "\" id=\"" + oRecord.getData("id") + "\">" + oData + "</a>";
+		elLiner.innerHTML = "<a href=\"/intranet-mail-import/mail-view?content_item_id=" + oRecord.getData("id") + "\" id=\"" + oRecord.getData("id") + "\">" + oData + "</a>";
 		YAHOO.util.Event.addListener( oRecord.getData("id"), "click", interceptLink);
         };
 

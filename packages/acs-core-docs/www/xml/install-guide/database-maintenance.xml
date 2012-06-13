@@ -129,7 +129,7 @@ DROP DATABASE</programlisting>
     line:</para>
     <programlisting>
 0 1 * * * /usr/local/pgsql/bin/vacuumdb <replaceable>$OPENACS_SERVICE_NAME</replaceable></programlisting>
-    <para><phrase role="cvstag">($Id: database-maintenance.xml,v 1.8 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
 
   </sect1>
 

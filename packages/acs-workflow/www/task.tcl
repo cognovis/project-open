@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date 13 July 2000
-    @cvs-id $Id: task.tcl,v 1.12 2011/03/11 13:15:25 cvs Exp $
+    @cvs-id $Id$
 } {
     task_id:integer,notnull
     {action:array {}}

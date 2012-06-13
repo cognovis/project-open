@@ -8,7 +8,7 @@
 ad_page_contract {
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2008-08-04
-    @cvs-id $Id: get-exchange-rates.tcl,v 1.6 2011/03/08 18:16:10 po34demo Exp $
+    @cvs-id $Id$
 } {
     { return_url "/intranet-exchange-rate/index" }
 }

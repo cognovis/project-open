@@ -6,7 +6,7 @@
 ad_library {
     @author bdolicki@branimir.com
     @creation-date 2000
-    @cvs-id $Id: stack-trace-procs.tcl,v 1.3 2007/01/10 21:22:12 gustafn Exp $
+    @cvs-id $Id$
 }
 
 

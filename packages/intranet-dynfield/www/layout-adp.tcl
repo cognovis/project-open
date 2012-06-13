@@ -3,8 +3,8 @@ ad_page_contract {
 
     @author Juanjo Ruiz juanjoruizx@yahoo.es
     @creation-date 2005-02-07
-    @vss $Workfile: layout-adp.tcl $ $Revision: 1.3 $ $Date: 2006/04/07 23:07:39 $
-    @cvs-id $Id: layout-adp.tcl,v 1.3 2006/04/07 23:07:39 cvs Exp $
+    @vss $Workfile: layout-adp.tcl $ $Revision$ $Date$
+    @cvs-id $Id$
 
 } {
     object_type:notnull

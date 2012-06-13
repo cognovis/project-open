@@ -4,7 +4,7 @@
 -- @author sussdorff aolserver (sussdorff@ipxserver.de)
 -- @creation-date 2005-11-29
 -- @arch-tag: 6c315b82-708f-4c42-8c66-297d27dcb2a0
--- @cvs-id $Id: upgrade-5.2.0b6-5.2.0b7.sql,v 1.2 2006/06/04 00:45:23 donb Exp $
+-- @cvs-id $Id$
 --
 
 

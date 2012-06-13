@@ -3,7 +3,7 @@
 --
 -- brech (Mon Aug 28 11:06:33 2000)
 --
--- $Id: demo-drop.sql,v 1.2 2006/02/04 01:54:41 jiml Exp $
+-- $Id$
 --
 
 \i template-demo-notes-drop.sql

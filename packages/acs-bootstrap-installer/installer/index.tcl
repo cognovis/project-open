@@ -11,7 +11,7 @@ ad_page_contract {
     @author Bryan Quinn (bquinn@arsdigita.com)
     @author Richard Li (richardl@arsdigita.com)
     @creation-date Mon Oct  9 15:19:31 2000
-    @cvs-id $Id: index.tcl,v 1.27 2009/01/17 12:17:12 miguelc Exp $
+    @cvs-id $Id$
 } {
 
 }

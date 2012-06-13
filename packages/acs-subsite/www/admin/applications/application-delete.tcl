@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-05-28
-    @cvs-id $Id: application-delete.tcl,v 1.4 2003/12/22 22:00:25 lars Exp $
+    @cvs-id $Id$
 } {
     node_id:integer,multiple
     {confirm_p 0}

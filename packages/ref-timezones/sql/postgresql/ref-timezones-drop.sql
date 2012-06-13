@@ -4,7 +4,7 @@
 --
 -- @author  jon@jongriffin.com
 -- @created 2000-12-04
--- @cvs-id  $Id: ref-timezones-drop.sql,v 1.4 2003/05/17 11:11:11 jeffd Exp $
+-- @cvs-id  $Id$
 
 create function inline_0() returns integer as '
 declare

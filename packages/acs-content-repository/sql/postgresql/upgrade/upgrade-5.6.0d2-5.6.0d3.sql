@@ -3,7 +3,7 @@
 -- 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2009-10-12
--- @cvs-id $Id: upgrade-5.6.0d2-5.6.0d3.sql,v 1.1 2009/10/12 22:42:34 daveb Exp $
+-- @cvs-id $Id$
 --
 
 create or replace function content_type__refresh_trigger (varchar)

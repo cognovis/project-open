@@ -42,6 +42,6 @@
 
     <para>To install a machine to the specifications of the Reference Platform, do the 
     <link linkend="install-redhat">walkthrough of the Red Hat 8.0 Install for OpenACS</link>.</para>
-    <para><phrase role="cvstag">($Id: os.xml,v 1.15 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+    <para><phrase role="cvstag">($Id$)</phrase></para>
   </sect2>
 </sect1>

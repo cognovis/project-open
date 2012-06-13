@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
     @creation-date Mon Oct  9 00:13:43 2008
-    @cvs-id $Id: install-upgrade-scripts.tcl,v 1.4 2010/10/13 14:51:21 cvs Exp $
+    @cvs-id $Id$
 } {
     {upgrade_script:multiple ""}
 }

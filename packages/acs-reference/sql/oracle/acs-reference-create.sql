@@ -3,7 +3,7 @@
 --
 -- @author jon@arsdigita.com
 -- @creation-date 2000-11-21
--- @cvs-id $Id: acs-reference-create.sql,v 1.8 2006/09/26 15:15:26 byronl Exp $
+-- @cvs-id $Id$
 
 -- setup the basic admin privileges
 

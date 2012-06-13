@@ -7,7 +7,7 @@
 # Data sources:
 #   manual_assignments
 #
-# cvs-id: $Id: case-assignments-table.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+# cvs-id: $Id$
 # Creation date: Feb 21, 2001
 # Author: Lars Pind (lars@pinds.com)
 #

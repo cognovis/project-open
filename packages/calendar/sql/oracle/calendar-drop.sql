@@ -2,7 +2,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 27, 2000
--- $Id: calendar-drop.sql,v 1.2 2002/08/17 18:21:30 vinodk Exp $
+-- $Id$
 
 
 ------------------------------------------------

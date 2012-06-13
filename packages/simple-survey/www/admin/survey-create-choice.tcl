@@ -5,7 +5,7 @@ ad_page_contract {
 
     @author nstrug@arsdigita.com
     @creation-date September 13, 2000
-    @cvs-id $Id: survey-create-choice.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 
 } {
 

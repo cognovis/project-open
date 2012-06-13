@@ -3,7 +3,7 @@ ad_library {
      Test the XML-RPC interface
      @author Vinod Kurup [vinod@kurup.com]
      @creation-date Sat Oct 25 10:49:55 2003
-     @cvs-id $Id: xml-rpc-test-procs.tcl,v 1.2 2005/02/24 22:00:50 jeffd Exp $
+     @cvs-id $Id$
 }
 
 aa_register_case -cats script xml_rpc_mounted {
@@ -165,7 +165,7 @@ aa_register_case -cats web xml_rpc_validate {
              countTheEntities {ctLeftAngleBrackets 4 ctRightAngleBrackets 4 ctAmpersands 9 ctApostrophes 7 ctQuotes 1} \
              easyStructTest 6 \
              echoStructTest {bob 5} \
-             manyTypesTest {1 0 wazzup 3.14159 994247430 R0lGODlhFgASAJEAAP/////OnM7O/wAAACH5BAEAAAAALAAAAAAWABIAAAJAhI+py40zDIzujEDBzW0n74AaFGChqZUYylyYq7ILXJJ1BU95l6r23RrRYhyL5jiJAT/Ink8WTPoqHx31im0UAAA7} \
+             manyTypesTest {1 0 wazzup 3.14159 994261830 R0lGODlhFgASAJEAAP/////OnM7O/wAAACH5BAEAAAAALAAAAAAWABIAAAJAhI+py40zDIzujEDBzW0n74AaFGChqZUYylyYq7ILXJJ1BU95l6r23RrRYhyL5jiJAT/Ink8WTPoqHx31im0UAAA7} \
              moderateSizeArrayCheck {WisconsinNew York} \
              nestedStructTest 7 \
              simpleStructReturnTest {times1000 2000 times100 200 times10 20}

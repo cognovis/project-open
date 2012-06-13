@@ -8,7 +8,7 @@ ad_page_contract {
 
     @author Kevin Scaldeferri (kevin@arsdigita.com)
     @creation-date 2000-12-15
-    @cvs-id $Id: assign-yourself.tcl,v 1.2 2007/02/09 15:38:21 baselkb Exp $
+    @cvs-id $Id$
 } {
     task_id:integer,notnull
     {permanent_p 0}

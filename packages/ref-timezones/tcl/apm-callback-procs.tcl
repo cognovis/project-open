@@ -6,7 +6,7 @@ ad_library {
     
     @author Victor Guerra (vguerra@wu-wien.ac.at)
     @creation-date 2008-12-16
-    @cvs-id $Id: apm-callback-procs.tcl,v 1.1 2009/03/19 14:04:41 victorg Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ref-timezones::apm {}

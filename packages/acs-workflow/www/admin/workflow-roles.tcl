@@ -4,7 +4,7 @@ ad_page_contract {
 
      @author Jesse Koontz  [jkoontz@arsdigita.com]
      @creation-date Thu Jan 25 09:38:08 2001
-     @cvs-id $Id: workflow-roles.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+     @cvs-id $Id$
 } {
     workflow_key:notnull
 } -properties {

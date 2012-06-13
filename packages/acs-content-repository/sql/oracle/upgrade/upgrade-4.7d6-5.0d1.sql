@@ -4,7 +4,7 @@
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -165,7 +165,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -794,7 +794,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Hiro Iwashima (iwashima@mit.edu)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -1069,7 +1069,7 @@ show errors;
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -3066,7 +3066,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -3618,7 +3618,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:
@@ -3867,7 +3867,7 @@ show errors
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 -- Author: Karl Goldstein (karlg@arsdigita.com)
 
--- $Id: upgrade-4.7d6-5.0d1.sql,v 1.1 2003/10/08 15:56:23 mohanp Exp $
+-- $Id$
 
 -- This is free software distributed under the terms of the GNU Public
 -- License.  Full text of the license is available from the GNU Project:

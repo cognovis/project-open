@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2005-01-01
     @arch-tag: bc76f9ce-ed1c-49dd-a3be-617d5a78c838
-    @cvs-id $Id: parse-test-procs.tcl,v 1.6 2006/06/09 00:14:00 victorg Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case template_variable {

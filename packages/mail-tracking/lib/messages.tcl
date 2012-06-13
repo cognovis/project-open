@@ -15,7 +15,7 @@ ad_page_contract {
 
     @author Nima Mazloumi
     @creation-date Mon May 30 17:55:50 CEST 2005
-    @cvs-id $Id: messages.tcl,v 1.34 2007/02/25 09:51:39 maltes Exp $
+    @cvs-id $Id$
 } -query {
     recipient_id:optional
     sender_id:optional

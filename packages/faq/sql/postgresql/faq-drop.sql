@@ -2,15 +2,6 @@
 -- @author wirth@ybos.net
 --openacs port @samir.symphinity.com
 
---drop triggers
-drop trigger faq_sc__itrg on faq_q_and_as;
-drop trigger faq_sc__dtrg on faq_q_and_as;
-drop trigger faq_sc__utrg on faq_q_and_as;
-
-drop function faq_sc__itrg ()
-drop function faq_sc__dtrg ()
-drop function faq_sc__utrg ()
-
 --drop functions
 drop function faq__new_q_and_a (integer,integer,varchar,varchar,integer,varchar,timestamptz,integer,varchar,integer);
 drop function faq__delete_q_and_a (integer);

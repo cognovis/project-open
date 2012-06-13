@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: element-procs.tcl,v 1.29 2007/10/02 19:08:19 gustafn Exp $
+# $Id$
 #
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -662,16 +662,16 @@ ad_proc -private template::element::render { form_id element_id tag_attributes }
     @return A string containing the HTML for an INPUT, SELECT or TEXTAREA
     form element.
 } {
-    get_reference
+  get_reference
 
-    # Remember that the element has been rendered already
-    set element(is_rendered) t
-    
-    if { $element(mode) ne "edit" && [info exists element(display_value)] && $element(widget) ne "hidden" } {
-	return "$element(before_html) $element(display_value) $element(after_html)"  
-    } else {
-	return "[string trim "$element(before_html) [template::widget::$element(widget) element $tag_attributes] $element(after_html)"]"
-    }
+  # Remember that the element has been rendered already
+  set element(is_rendered) t
+
+  if { $element(mode) ne "edit" && [info exists element(display_value)] && $element(widget) ne "hidden" } {
+    return "$element(before_html) $element(display_value) $element(after_html)"  
+  } else {
+    return "[string trim "$element(before_html) [template::widget::$element(widget) element $tag_attributes] $element(after_html)"]"
+  }
 }
 
 ad_proc -private template::element::render_help { form_id element_id tag_attributes } {

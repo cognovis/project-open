@@ -1,5 +1,5 @@
  /**
- * $Id: attributes.js,v 1.1 2008/01/25 21:44:18 daveb Exp $
+ * $Id$
  *
  * @author Moxiecode - based on work by Andrew Tetlaw
  * @copyright Copyright © 2004-2006, Moxiecode Systems AB, All rights reserved.

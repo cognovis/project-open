@@ -3,7 +3,7 @@ ad_library {
 
     @author Peter Marklund
     @creation-date 31 March 2004
-    @cvs-id $Id: tclwebtest-procs.tcl,v 1.7 2007/05/14 20:30:18 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval twt {}

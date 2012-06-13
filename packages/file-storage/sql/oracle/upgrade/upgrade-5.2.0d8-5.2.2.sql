@@ -4,7 +4,7 @@
 --
 -- @author yon (yon@openforce.net)
 -- @creation-date 2002-04-03
--- @version $Id: upgrade-5.2.0d8-5.2.2.sql,v 1.2 2006/08/08 21:26:48 donb Exp $
+-- @version $Id$
 --
 
 create or replace package file_storage

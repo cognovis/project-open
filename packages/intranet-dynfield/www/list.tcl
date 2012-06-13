@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Matthew Geddert openacs@geddert.com
     @creation-date 2004-07-28
-    @cvs-id $Id: list.tcl,v 1.4 2009/06/24 16:06:23 phast Exp $
+    @cvs-id $Id$
 
 } {
     {list_id ""}

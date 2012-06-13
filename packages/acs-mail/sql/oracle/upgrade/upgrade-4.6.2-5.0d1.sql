@@ -3,7 +3,7 @@
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2001-01-08
--- @cvs-id $Id: upgrade-4.6.2-5.0d1.sql,v 1.1 2005/04/18 19:26:06 cvs Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package acs_mail_queue_message
@@ -77,7 +77,7 @@ show errors
 --
 -- @author John Prevost <jmp@arsdigita.com>
 -- @creation-date 2001-01-08
--- @cvs-id $Id: upgrade-4.6.2-5.0d1.sql,v 1.1 2005/04/18 19:26:06 cvs Exp $
+-- @cvs-id $Id$
 --
 
 -- Package Interfaces --------------------------------------------------

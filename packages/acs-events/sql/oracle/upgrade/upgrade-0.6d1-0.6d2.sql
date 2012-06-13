@@ -5,7 +5,7 @@
 -- 
 -- @author Dave Bauer (dave@thedesignexperience.org)
 -- @creation-date 2007-03-30
--- @cvs-id $Id: upgrade-0.6d1-0.6d2.sql,v 1.2 2007/05/15 20:14:15 donb Exp $
+-- @cvs-id $Id$
 --
 
 create or replace package acs_event

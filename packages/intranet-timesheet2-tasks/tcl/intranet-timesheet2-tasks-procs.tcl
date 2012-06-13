@@ -710,7 +710,8 @@ ad_proc -public im_timesheet_task_list_component {
 	    set planned_hours_input $planned_units
 	}
 
-#	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+	set task_name_complete $task_name
+	set task_name "<nobr>[string range $task_name 0 20]</nobr>"
 
 	# Something is going wrong with task_id, so set it again.
 	set task_id $project_id
@@ -1163,15 +1164,17 @@ ad_proc im_timesheet_project_advance { project_id } {
 	    set advanced_units [expr $advanced_units * $hours_per_day]
 	}
 
-	# Deal with translation projects.
-	# Use the fields trans_project_words and trans_project_hours to calculate an
-	# estimated of the number of hours included
-	if {"" != $trans_project_hours || "" != $trans_project_words} {
-	    if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
-	    if {"" == $trans_project_words} { set trans_project_words 0.0 }
-	    set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
-	    set billable_units $planned_units
-	    set advanced_units [expr $planned_units * $percent_completed / 100.0]
+	if {[apm_package_installed_p "intranet-translation"]} {
+	    # Deal with translation projects.
+	    # Use the fields trans_project_words and trans_project_hours to calculate an
+	    # estimated of the number of hours included
+	    if {"" != $trans_project_hours || "" != $trans_project_words} {
+		if {"" == $trans_project_hours} { set trans_project_hours 0.0 }
+		if {"" == $trans_project_words} { set trans_project_words 0.0 }
+		set planned_units [expr $trans_project_hours + $trans_project_words / $translation_words_per_hour]
+		set billable_units $planned_units
+		set advanced_units [expr $planned_units * $percent_completed / 100.0]
+	    }
 	}
 
 	set parent_hash($project_id) $parent_id
@@ -1248,11 +1251,13 @@ ad_proc im_timesheet_project_advance { project_id } {
 			where project_id = :parid
 	    "
 	} else {
-	    db_dml update_project_advance "
+	    catch {
+		db_dml update_project_advance "
 			update im_projects set
 				percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
 			where project_id = :parid
 	    "
+	    }
 	}
 
 	db_dml update_task_hours "
@@ -1265,22 +1270,6 @@ ad_proc im_timesheet_project_advance { project_id } {
 
 	# Write audit trail
 	im_project_audit -project_id $parid
-    }
-
-        set planned_sum $planned_sum_hash($parid)
-        set advanced_sum $advanced_sum_hash($parid)
-        set billable_sum $billable_sum_hash($parid)
-        
-        catch {
-            db_dml update_project_advance "
-            		update im_projects set
-			        percent_completed = (:advanced_sum::numeric / :planned_sum::numeric) * 100
-		            where project_id = :parid
-	                "
-        }
-
-        # Write audit trail
-        im_project_audit -project_id $parid
     }
 }
 

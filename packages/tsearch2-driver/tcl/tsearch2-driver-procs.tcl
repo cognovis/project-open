@@ -4,7 +4,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-05
     @arch-tag: 49a5102d-7c06-4245-8b8d-15a3b12a8cc5
-    @cvs-id $Id: tsearch2-driver-procs.tcl,v 1.28 2010/11/05 16:35:10 daveb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval tsearch2 {}

@@ -4,7 +4,7 @@ ad_page_contract {
     @author Lars Pind (lars@pinds.com)
     @author Frank Bergmann <frank.bergmann@project-open.com>
     @creation-date 2002-03-25
-    @cvs-id $Id: bug-add.tcl,v 1.4 2007/05/15 23:38:50 cvs Exp $
+    @cvs-id $Id$
 } {
     maintenance_project_id
     {return_url ""}

@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Dec 12 11:23:12 2000
-    @cvs-id $Id: delete-2.tcl,v 1.2 2007/01/10 21:22:07 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     segment_id:integer,notnull

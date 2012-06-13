@@ -3,7 +3,7 @@ ad_library {
 
     @author Jeff Davis
     @creation-date 2005-02-28
-    @cvs-id $Id: datamodel-test-procs.tcl,v 1.13 2010/12/02 16:03:41 jeffd Exp $
+    @cvs-id $Id$
 }
 
 

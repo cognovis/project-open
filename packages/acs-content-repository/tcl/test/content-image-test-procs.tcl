@@ -3,7 +3,7 @@ ad_library {
 
     @author Hugh Brock
     @creation-date 2006-01-17
-    @cvs-id $Id: content-image-test-procs.tcl,v 1.4 2007/01/10 21:22:03 gustafn Exp $
+    @cvs-id $Id$
 }
 
 

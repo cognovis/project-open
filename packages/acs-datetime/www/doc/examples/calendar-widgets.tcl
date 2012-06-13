@@ -6,7 +6,7 @@ ad_page_contract {
 
     @author  ron@arsdigita.com
     @creation-date 2000/12/01
-    @cvs-id  $Id: calendar-widgets.tcl,v 1.2 2002/09/10 22:22:08 jeffd Exp $
+    @cvs-id  $Id$
 } -properties {
     dt_examples:multirow
 }

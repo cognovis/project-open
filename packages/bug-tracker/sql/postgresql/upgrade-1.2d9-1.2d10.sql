@@ -3,7 +3,7 @@
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 --
--- $Id: upgrade-1.2d9-1.2d10.sql,v 1.1 2006/10/25 17:55:10 cvs Exp $
+-- $Id$
 
 create or replace function bt_bug__delete(
    integer                      -- bug_id

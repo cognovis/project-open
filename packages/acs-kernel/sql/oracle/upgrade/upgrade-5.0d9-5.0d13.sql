@@ -10,7 +10,7 @@
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.3 2004/01/26 15:39:45 jeffd Exp $
+-- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
 --
 
 -- Should have been added earlier, at least now we save the 4.6.3 - 5.0 upgrade
@@ -971,7 +971,7 @@ show errors
 -- @author Bryan Quinn (bquinn@arsdigita.com)
 -- @author Jon Salz (jsalz@mit.edu)
 -- @creation-date 2000/04/30
--- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.3 2004/01/26 15:39:45 jeffd Exp $
+-- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
 
 
 
@@ -2757,7 +2757,7 @@ show errors
 --
 -- @creation-date 2000-05-18
 --
--- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.3 2004/01/26 15:39:45 jeffd Exp $
+-- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
 --
 
 -------------------
@@ -3910,7 +3910,7 @@ show errors
 --
 -- @author Lars Pind (lars@pinds.com)
 -- @creation-date 2000-22-18
--- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.3 2004/01/26 15:39:45 jeffd Exp $
+-- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
 --
 -- Copyright (C) 1999-2000 ArsDigita Corporation
 --
@@ -4626,7 +4626,7 @@ show errors
 --
 -- @author rhs@mit.edu
 -- @creation-date 2000-09-05
--- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.3 2004/01/26 15:39:45 jeffd Exp $
+-- @cvs-id $Id: upgrade-5.0d9-5.0d13.sql,v 1.2 2010/10/19 20:11:37 po34demo Exp $
 --
 
 

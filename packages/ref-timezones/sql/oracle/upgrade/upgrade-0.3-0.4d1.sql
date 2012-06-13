@@ -8,7 +8,7 @@
 -- @author jon@jongriffin.com
 -- @author ron@arsdigita.com
 -- @creation-date 2000-11-30
--- @cvs-id $Id: upgrade-0.3-0.4d1.sql,v 1.1 2003/10/08 16:53:46 mohanp Exp $
+-- @cvs-id $Id$
 
 -------------------------------------------------------------------------------
 -- TimeZone package

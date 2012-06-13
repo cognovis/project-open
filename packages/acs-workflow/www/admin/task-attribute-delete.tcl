@@ -3,7 +3,7 @@ ad_page_contract {
     
     @author Lars Pind (lars@pinds.com)
     @creation-date December 15, 2000
-    @cvs-id $Id: task-attribute-delete.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+    @cvs-id $Id$
 } {
     workflow_key
     transition_key

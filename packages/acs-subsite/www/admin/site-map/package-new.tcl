@@ -7,7 +7,7 @@ ad_page_contract {
 
     @author rhs@mit.edu
     @creation-date 2000-09-13
-    @cvs-id $Id: package-new.tcl,v 1.12 2007/01/10 21:22:08 gustafn Exp $
+    @cvs-id $Id$
 
 } {
     {new_package_id:integer ""}

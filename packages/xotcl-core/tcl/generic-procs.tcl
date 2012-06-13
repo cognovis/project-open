@@ -3,7 +3,7 @@ ad_library {
 
   @author Gustaf Neumann
   @creation-date 2005-08-13
-  @cvs-id $Id: generic-procs.tcl,v 1.94 2009/10/27 11:34:44 gustafn Exp $
+  @cvs-id $Id$
 }
 
 namespace eval ::Generic {

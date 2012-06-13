@@ -3,7 +3,7 @@
 --
 -- @author jon@arsdigita.com
 -- @creation-date 2000-11-21
--- @cvs-id $Id: upgrade-0.2d-0.3d.sql,v 1.1 2003/10/08 16:32:47 mohanp Exp $
+-- @cvs-id $Id$
 
 
 create or replace package acs_reference

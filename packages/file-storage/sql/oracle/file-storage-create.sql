@@ -3,7 +3,7 @@
 --
 -- @author Kevin Scaldeferri(kevin@arsdigita.com)
 -- @creation-date 6 Nov 2000
--- @cvs-id $Id: file-storage-create.sql,v 1.21 2009/10/12 22:46:16 daveb Exp $
+-- @cvs-id $Id$
 --
 
 -- JS: I changed the way file storage uses the CR:  cr_items will store

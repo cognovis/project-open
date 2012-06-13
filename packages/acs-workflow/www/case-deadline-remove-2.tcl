@@ -4,7 +4,7 @@ ad_page_contract {
 
      @author Lars Pind (lars@pinds.com)
      @creation-date Feb 21, 2001
-     @cvs-id $Id: case-deadline-remove-2.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+     @cvs-id $Id$
 } {
     case_id:integer
     transition_key

@@ -31,12 +31,14 @@ values ('user', 'users', 'user_id');
 
 
 
+
+--
+delete from im_view_columns where column_id >= 2600 and column_id < 2699;
+delete from im_views where view_id = 26;
+--
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (26, 'personal_todo_list', 'view_projects', 1400);
 
---
-delete from im_view_columns where column_id > 2600 and column_id < 2699;
---
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2600,26,NULL,'Task',
 '"<a HREF=$task_url$task_id>$task_name</A>"','','',0,'');

@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="faq" locale="pl_PL" charset="utf-8">
+<message_catalog package_key="faq" package_version="4.7" locale="pl_PL" charset="utf-8">
 
   <msg key="A">O:</msg>
   <msg key="Add_QA_for_faq_name">Dodaj P&amp;O do %faq_name%</msg>
   <msg key="administer">administruj</msg>
-  <msg key="All_QA">Wszystkie P&amp;O</msg>
   <msg key="Answer">Odpowiedź</msg>
-  <msg key="Answer_text_in_html">Tekst odpowiedzi w html</msg>
   <msg key="Back_to_FAQs">Powrót do CZaP</msg>
-  <msg key="Change_settings">Zmień ustawienia</msg>
-  <msg key="Configure">Konfiguruj</msg>
   <msg key="Create_a_new_FAQ">Utwórz nową CZaPę</msg>
   <msg key="Create_an_FAQ">Utwórz nową CZaPę</msg>
   <msg key="Create_FAQ">Utwórz CZaPę</msg>
@@ -22,8 +18,6 @@
   <msg key="Edit">Edytuj</msg>
   <msg key="edit">edytuj</msg>
   <msg key="Edit_an_FAQ">Edytuj CZaPę</msg>
-  <msg key="Enable_Categories">Włącz Kategorie</msg>
-  <msg key="Enable_WYSIWYG">Włącz WYSIWYG</msg>
   <msg key="FAQ_Admin">Admin CZaP</msg>
   <msg key="faq_name_Admin">Admin %faq_name%</msg>
   <msg key="FAQs">CZaPy</msg>
@@ -44,8 +38,6 @@
   <msg key="QA_On_Separate_Pages">P&amp;O na oddzielnych stronach?</msg>
   <msg key="QA_on_Separate_Pages">P&amp;O na oddzielnych stronach?</msg>
   <msg key="Question">Pytanie</msg>
-  <msg key="Question_text_in_html">Tekst pytania w html</msg>
-  <msg key="Set_Category_Mode">Ustaw Tryb Kategorii</msg>
   <msg key="swap_with_next">zamień z następnym</msg>
   <msg key="Text_type">Typ tekstu?</msg>
   <msg key="Title">Tytuł:</msg>

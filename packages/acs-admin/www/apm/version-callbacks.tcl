@@ -2,7 +2,7 @@ ad_page_contract {
 
     @author Peter Marklund
     @creation-date 28 January 2003
-    @cvs-id $Id: version-callbacks.tcl,v 1.7 2007/05/14 20:30:17 donb Exp $  
+    @cvs-id $Id$  
 } {
     version_id:integer,notnull    
 }

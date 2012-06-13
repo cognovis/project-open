@@ -3,7 +3,7 @@ ad_library {
     
     @creation-date 2003-09-05
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: sync-procs.tcl,v 1.34 2009/07/12 01:08:23 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval auth {}
@@ -11,6 +11,7 @@ namespace eval auth::sync {}
 namespace eval auth::sync::job {}
 namespace eval auth::sync::get_doc {}
 namespace eval auth::sync::get_doc::http {}
+namespace eval auth::sync::get_doc::ldap {}
 namespace eval auth::sync::get_doc::file {}
 namespace eval auth::sync::get_doc::ldap {}
 namespace eval auth::sync::entry {}
@@ -566,6 +567,7 @@ ad_proc -private auth::sync::GetDocument {
 } {
     Wrapper for the GetDocument operation of the auth_sync_retrieve service contract.
 } {
+    ns_log Notice "auth::sync::GetDocument: authoriy_id=$authority_id"
     set impl_id [auth::authority::get_element -authority_id $authority_id -element "get_doc_impl_id"]
 
     if { $impl_id eq "" } {
@@ -578,12 +580,19 @@ ad_proc -private auth::sync::GetDocument {
                         -authority_id $authority_id \
                         -impl_id $impl_id]
 
+
+    ns_log Notice "auth::sync::GetDocument: before acs_sc::invoke -contract auth_sync_retrieve -impl_id $impl_id -operation GetDocument -call_args $parameters"
     return [acs_sc::invoke \
                 -error \
                 -contract "auth_sync_retrieve" \
                 -impl_id $impl_id \
                 -operation GetDocument \
                 -call_args [list $parameters]]
+
+    ad_return_complaint 1 "1 - auth::sync::GetDocument: impl_id=$impl_id, parameters=$parameters"
+
+
+
 }
 
 ad_proc -private auth::sync::ProcessDocument {
@@ -713,6 +722,7 @@ ad_proc -private auth::sync::get_doc::http::GetDocument {
 } {
     Retrieve the document by HTTP
 } {
+    ns_log Notice "auth::sync::get_doc::http::GetDocument: parameters=$parameters"
     array set result {
         doc_status failed_to_conntect
         doc_message {}
@@ -743,6 +753,79 @@ ad_proc -private auth::sync::get_doc::http::GetDocument {
 
     return [array get result]
 }
+
+
+
+
+
+
+
+
+
+#####
+#
+# auth::sync::get_doc::ldap namespace
+#
+#####
+
+ad_proc -private auth::sync::get_doc::ldap::register_impl {} {
+    Register this implementation
+} {
+    set spec {
+        contract_name "auth_sync_retrieve"
+        owner "acs-authentication"
+        name "LDAPGet"
+        pretty_name "LDAP GET"
+        aliases {
+            GetDocument auth::sync::get_doc::ldap::GetDocument
+            GetParameters auth::sync::get_doc::ldap::GetParameters
+        }
+    }
+
+    return [acs_sc::impl::new_from_spec -spec $spec]
+
+}
+
+ad_proc -private auth::sync::get_doc::ldap::unregister_impl {} {
+    Unregister this implementation
+} {
+    acs_sc::impl::delete -contract_name "auth_sync_retrieve" -impl_name "LDAPGet"
+}
+
+ad_proc -private auth::sync::get_doc::ldap::GetParameters {} {
+    Parameters for LDAP GetDocument implementation.
+} {
+    return {}
+}
+
+ad_proc -private auth::sync::get_doc::ldap::GetDocument { parameters } {
+    Retrieve the document by LDAP
+} {
+    ns_log Notice "auth::sync::get_doc::ldap::GetDocument: parameters=$parameters"
+    array set result {
+        doc_status failed_to_conntect
+        doc_message {}
+        document {}
+        snapshot_p f
+    }
+    
+    array set param $parameters
+
+    # Check 4 call levels upwards for an authority_id
+    upvar 3 authority_id authority_id
+    if {![info exists authority_id]} { set authority_id "" }
+
+    if {"" == $authority_id} {
+	ad_return_complaint 1 "Internal Error:<br>auth::sync::get_doc::ldap::GetDocument didn't find a valid authority_id.<br>&nbsp;"
+	ad_script_abort
+    }
+
+
+    set result(document) "!!!"
+    set result(doc_status) "ok"
+    return [array get result]
+}
+
 
 
 

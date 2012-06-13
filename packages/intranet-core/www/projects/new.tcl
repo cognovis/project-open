@@ -41,16 +41,19 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set current_url [im_url_with_query]
 set org_project_type_id [im_opt_val project_type_id]
 set sub_navbar ""
+set auto_increment_project_nr_p [parameter::get -parameter ProjectNrAutoIncrementP -package_id [im_package_core_id] -default 0]
+set project_name_field_min_len [parameter::get -parameter ProjectNameMinimumLength -package_id [im_package_core_id] -default 5]
+set project_nr_field_min_len [parameter::get -parameter ProjectNrMinimumLength -package_id [im_package_core_id] -default 5]
 
 if { ![exists_and_not_null return_url] && [exists_and_not_null project_id]} {
     set return_url "[im_url_stub]/projects/view?[export_url_vars project_id]"
 }
 
-
-# Do we need the company_id for creating a project?
-# This is necessary if the project_nr depends on the company_id.
+# Do we need the customer_id for creating a project?
+# This is necessary if the project_nr depends on the customer_id.
 set customer_required_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "NewProjectRequiresCustomerP" -default 0]
-if {![info exists project_id] && $company_id == "" && $customer_required_p} {
+
+if { (![info exists project_id] || "" == $project_id) && $company_id == "" && $customer_required_p} {
     ad_returnredirect [export_vars -base "new-custselect" {project_id parent_id project_nr workflow_key return_url}]
     ad_script_abort
 }
@@ -156,7 +159,7 @@ if {[info exists project_id]} {
 }
 
 # Returnredirect to translations for translation projects
-if {[im_category_is_a $dynfield_project_type_id [im_project_type_translation]] && ![info exists project_id]} {
+if {[apm_package_installed_p "intranet-translation"] && [im_category_is_a $dynfield_project_type_id [im_project_type_translation]] && ![info exists project_id]} {
     ad_returnredirect [export_vars -base "/intranet-translation/projects/new" -url {project_type_id project_status_id company_id parent_id project_nr project_name workflow_key return_url project_id}]
 }
 
@@ -213,6 +216,7 @@ ad_form -extend -name $form_id -new_request {
         }
         if {$project_type_id eq ""} {
             template::element::set_value $form_id project_type_id $parent_type_id
+	    set project_type_id $parent_type_id
         }
         set page_title "[_ intranet-core.Add_subproject]"
         set context_bar [im_context_bar [list ./ "[_ intranet-core.Projects]"] [list "view?project_id=$parent_id" "[_ intranet-core.One_project]"] $page_title]
@@ -224,7 +228,11 @@ ad_form -extend -name $form_id -new_request {
 
     # Now set the values
     template::element::set_value $form_id project_nr $project_nr
-    template::element::set_value $form_id company_id $company_id
+
+    set company_enabled_p [db_string company "select 1 from im_dynfield_type_attribute_map tam, im_dynfield_attributes da, acs_attributes a where a.attribute_id = da.acs_attribute_id and a.attribute_name = 'company_id' and tam.attribute_id = da.attribute_id and tam.object_type_id = :project_type_id and tam.display_mode in ('edit','display')" -default 0]
+    if {$company_enabled_p} {
+	template::element::set_value $form_id company_id $company_id
+    }
     
 } -edit_request { 
     set page_title "[_ intranet-core.Edit_project]"
@@ -263,6 +271,10 @@ ad_form -extend -name $form_id -new_request {
     }
 } -new_data {
     
+    
+    if { ![exists_and_not_null company_id] } {
+	set company_id [im_company_internal]
+    }
     
     if {![exists_and_not_null project_path]} {
         set project_path [string tolower [string trim $project_name]]

@@ -75,10 +75,9 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
     Expected format: 'YYYY-MM-DD'"
 }
 
-set page_title "Project Report"
+set page_title "Project Report \[Beta\]"
 set context_bar [im_context_bar $page_title]
 set context ""
-
 
 # ------------------------------------------------------------
 # Defaults
@@ -165,8 +164,8 @@ set counters [list]
 # Variables per project
 set project_vars {
     $company_name 
-    "<a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-    <b><a href=$project_url$project_id>$project_nr</a></b>"
+    "<!--<a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>-->
+    <b><a href=$project_url$project_id>$project_nr<!--</a>--></b>"
     $project_name
     $project_start_date
     $project_end_date
@@ -217,6 +216,10 @@ set dynfield_sql "
 
 set derefs [list]
 db_foreach dynfield_attributes $dynfield_sql {
+
+    if { "company_id" == $attribute_name } {
+        break
+    }
 
     # Catch the generic ones - We know how to dereferentiate integer references of these fields.
     set deref ""
@@ -291,7 +294,7 @@ switch $output_format {
 	set report_def [list \
 	    group_by company_nr \
 	    header {
-		"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> <b><a href=$company_url$company_id>$company_name</a></b>"
+		"\#colspan=99 <!--<a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>--> <b><a href=$company_url$company_id>$company_name</a></b>"
 	    } \
 	    content [list \
 		 header $project_vars \
@@ -335,12 +338,14 @@ switch $output_format {
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr valign=top><td>
 		<table border=0 cellspacing=1 cellpadding=1>
+		<!-- 
 		<tr>
 	          <td class=form-label>Level of Details</td>
 		  <td class=form-widget>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
 		</tr>
+		--> 
 		<tr>
 		  <td class=form-label>Start Date</td>
 		  <td class=form-widget>

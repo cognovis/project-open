@@ -8,7 +8,7 @@ ad_page_contract {
     @author Lars Pind (lars@pinds.com)
     @creation-date 1 July 2000
     
-    @cvs-id $Id: content-page-view.tcl,v 1.5 2010/11/25 09:17:23 gustafn Exp $
+    @cvs-id $Id$
 } {
     version_id:integer,optional
     source_p:integer,optional,trim
@@ -51,11 +51,6 @@ if { [info exists version_id] } {
 lappend context [file tail $path]
 
 set filename "[acs_root_dir]/$path"
-
-if {[regsub -all {[.][.]/} $filename "" shortened_filename]} {
-    ns_log notice "INTRUDER ALERT:\n\nsomesone tried to snarf '$filename'!\n  file exists: [file exists $filename]\n  user_id: [ad_conn user_id]\n  peer: [ad_conn peeraddr]\n"
-    set filename shortened_filename
-}
 
 if {![file exists $filename] || [file isdirectory $filename]} {
     set file_contents "file '$filename' not found"

@@ -552,7 +552,7 @@ entire &majorversion;.&minorversion; release sequence <xref linkend="changelog">
 
 
 
-  <para><phrase role="cvstag">($Id: release-notes.xml,v 1.28.2.1 2011/06/12 20:52:57 donb Exp $)</phrase></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>
   </sect2>
 
 

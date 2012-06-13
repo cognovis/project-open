@@ -6,7 +6,7 @@ ad_library {
 
     @author  ron@arsdigita.com
     @creation-date 2000-11-21
-    @cvs-id  $Id: acs-calendar-procs.tcl,v 1.24 2008/11/09 23:29:22 donb Exp $
+    @cvs-id  $Id$
 }
 
 ad_proc dt_widget_month { 

@@ -3,7 +3,7 @@
 --
 -- @author Bryan Quinn
 -- @creation-date  (Sat Aug 26 17:56:07 2000)
--- @cvs-id $Id: acs-subsite-drop.sql,v 1.4 2005/01/22 17:59:37 miguelm Exp $
+-- @cvs-id $Id$
 
 @@ subsite-group-callbacks-drop
 @@ application-groups-drop

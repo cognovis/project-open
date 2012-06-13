@@ -11,3 +11,10 @@
 <li><a href="blacklist">List of emails to ignore (Blacklist)</a>
 </ul>
 
+<br>
+
+<h1><%=[lang::message::lookup "" intranet-mail-import.Title_Mail_Dispatcher "Mail Dispatcher"]%></h1>
+<ul>
+<li><a href="mail-dispatcher">Mail Dispatcher</a>
+</ul>
+

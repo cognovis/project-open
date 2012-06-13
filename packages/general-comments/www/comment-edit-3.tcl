@@ -6,7 +6,7 @@ ad_page_contract {
     @author Phong Nguyen (phong@arsdigita.com)
     @author Pascal Scheffers (pascal@scheffers.net)
     @creation-date 2000-10-12
-    @cvs-id $Id: comment-edit-3.tcl,v 1.4 2005/03/01 00:01:37 jeffd Exp $
+    @cvs-id $Id$
 } {
     comment_id:integer,notnull
     title
@@ -19,7 +19,7 @@ ad_page_contract {
 ad_require_permission $comment_id write
 
 # authenticate the user
-set user_id [ad_conn user_id]
+set user_id [ad_verify_and_get_user_id]
 
 # insert the revision into the database
 set is_live [ad_parameter AutoApproveCommentsP {general-comments} {t}]

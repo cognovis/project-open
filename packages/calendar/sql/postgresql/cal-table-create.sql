@@ -2,7 +2,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 30, 2000
--- @cvs-id $Id: cal-table-create.sql,v 1.5 2001/10/15 18:46:59 donb Exp $
+-- @cvs-id $Id$
 --
 -- @ported by Charles Mok (mok_cl@eelab.usyd.edu.au)
 

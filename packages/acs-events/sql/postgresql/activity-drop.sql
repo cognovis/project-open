@@ -1,6 +1,6 @@
 -- packages/acs-events/sql/postgresql/activity-drop.sql
 --
--- $Id: activity-drop.sql,v 1.1 2001/07/13 02:45:01 jowells Exp $
+-- $Id$
 
 -- drop package acs_activity;
 select drop_package('acs_activity');

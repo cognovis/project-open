@@ -21,24 +21,24 @@ set package_id [ad_conn package_id]
 set context {}
 
 
-set user_id [ad_conn user_id]
+set user_id [ad_verify_and_get_user_id]
  
 ad_require_permission $package_id faq_view_faq
 
 set admin_p 0
 
-
-set notification_chunk [notification::display::request_widget \
-                        -type all_faq_qa_notif \
-			-object_id [ad_conn package_id] \
-                        -pretty_name FAQs \
-                        -url [ad_conn url] \
-                        ]
-
 if {[ad_permission_p -user_id $user_id $package_id faq_admin_faq]} {
     set admin_p 1
 }
 
-db_multirow faqs faq_select "" {}
+
+db_multirow faqs faq_select {
+    select faq_id, faq_name
+      from acs_objects o, faqs f
+      where object_id = faq_id
+        and context_id = :package_id     
+        and disabled_p = 'f'
+    order by faq_name
+}
 
 ad_return_template

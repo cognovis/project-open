@@ -5,7 +5,7 @@ ad_library {
 
     @author Dan Wickstrom (dcwickstrom@earthlink.net)
     @creation-date Sat May  5 13:45 2001
-    @cvs-id $Id: content-procs.tcl,v 1.11 2007/01/10 21:22:03 gustafn Exp $
+    @cvs-id $Id$
 } 
 
 # The location for files

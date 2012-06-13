@@ -1,4 +1,4 @@
-<!-- $Id: datetime-procs.adp,v 1.4 2003/09/22 19:44:28 lars Exp $ -->
+<!-- $Id$ -->
 
 <master src="master">
 

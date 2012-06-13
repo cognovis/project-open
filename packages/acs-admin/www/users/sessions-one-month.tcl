@@ -1,4 +1,4 @@
-# $Id: sessions-one-month.tcl,v 1.3 2002/09/18 14:54:47 jeffd Exp $
+# $Id$
 set_the_usual_form_variables
 
 # pretty_month, pretty_year

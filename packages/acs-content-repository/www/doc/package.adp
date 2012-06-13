@@ -39,7 +39,7 @@ See also: @info.see@
   <p>&nbsp;</p>
 </multiple>
 
-Last Modified: $Id: package.adp,v 1.2 2003/05/22 14:02:53 jeffd Exp $
+Last Modified: $Id$
 
 </body>
 </html>

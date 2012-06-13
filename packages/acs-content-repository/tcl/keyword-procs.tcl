@@ -4,7 +4,7 @@ ad_library {
     @author Lars Pind
     @author Mark Aufflick
     @creation-date February 27, 2003
-    @cvs-id $Id: keyword-procs.tcl,v 1.11 2007/01/10 21:22:03 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval cr {}

@@ -2,7 +2,7 @@
 -- @author Simon Carstensen (simon@collaboraid.biz)
 -- @creation_date 2003-09-10
 --
--- $Id: upgrade-4.7d2-4.7d3.sql,v 1.4 2003/10/01 10:28:52 peterm Exp $
+-- $Id$
 
 -- add column impl_pretty_name
 alter table acs_sc_impls add impl_pretty_name varchar2(200);

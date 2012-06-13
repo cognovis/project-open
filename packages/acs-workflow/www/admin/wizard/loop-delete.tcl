@@ -3,7 +3,7 @@ ad_page_contract {
     @author Matthew Burke (mburke@arsdigita.com)
     @author Lars Pind (lars@pinds.com)
     @creation-date 29 August 2000
-    @cvs-id $Id: loop-delete.tcl,v 1.1 2005/04/27 22:51:00 cvs Exp $
+    @cvs-id $Id$
 } {
     from_transition_key:notnull
 } -validate {

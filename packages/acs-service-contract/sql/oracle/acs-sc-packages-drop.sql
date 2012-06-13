@@ -1,4 +1,4 @@
--- $Id: acs-sc-packages-drop.sql,v 1.2 2002/02/15 15:36:22 donb Exp $
+-- $Id$
 
 drop package acs_sc_contract;
 drop package acs_sc_operation;

@@ -8,7 +8,7 @@ ad_library {
     @author Malte Sussdorff (sussdorff@sussdorff.de)
     @creation-date 2005-06-15
     @arch-tag: 4267c818-0019-4222-8a50-64edbe7563d1
-    @cvs-id $Id: contacts-callback-procs.tcl,v 1.4 2009/06/23 11:58:18 po34demo Exp $
+    @cvs-id $Id$
 }
 
 

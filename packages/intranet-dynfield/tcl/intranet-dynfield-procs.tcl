@@ -216,16 +216,16 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     by a main query clause either as a "where xxx_id in ..."
     or via a join in order to limit the number of object_ids
     to the ones that fit to the filter criteria.
-
+    
     @param form_id: search form id
     @return:	An array consisting of:
-		where: A SQL phrase and
-		bind_vars: a key-value paired list carrying the bind
-			vars for the SQL phrase
+    where: A SQL phrase and
+    bind_vars: a key-value paired list carrying the bind
+    vars for the SQL phrase
 } {
     # Get the list of all elements in the form
     set form_elements [template::form::get_elements $form_id]
-
+    
     # Get the main table for the data type
     db_1row main_table "
 	select	table_name as main_table_name,
@@ -298,14 +298,36 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	    if {"{} {} {} {} {} {} {DD MONTH YYYY}" == $value} { continue }
 	    ns_set put $bind_vars $attribute_name $value
 
-	    switch $datatype {
-		text - string {
-		    # Create a "like" search
-		    lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
-		    # lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+	    # Special logic for each of the TCL widgets
+	    switch $widget {
+		text - textarea - richtext {
+
+		    switch $datatype {
+			text - string {
+			    # Create a "like" search
+			    lappend criteria "lower($attribute_table_name.$attribute_name) like '%[string tolower [im_opt_val $attribute_name]]%'"
+			    # lappend criteria "lower($attribute_table_name.$attribute_name) like '%\[string tolower \[string map {' {} \] {} \[ {} \$ {}} \[im_opt_val $attribute_name\]\]\]%'"
+			}
+			integer - number - float {
+			    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+			}
+			default {
+			    lappend criteria "1=1"
+			}
+		    }
 		}
 		integer - number - float {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		}
+		checkbox {
+		    # Frank: Here we would need a three-way select for
+		    #        "true", "false" and "no filter". No idea
+		    #        yet how to do that.
+		    # Klaus: Not sure what you mean. If "no filter" than $value <> 't', right?
+		    #        Following lines have been added to make checkbox work
+		    if { "t" == $value } {
+			lappend criteria "($attribute_table_name.$attribute_name = '1' OR $attribute_table_name.$attribute_name = 't')"
+		    }
 		}
 		default {
 		    lappend criteria "1=1"
@@ -965,7 +987,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     			    -widget hidden \
     			    -value  $object_type
     }
-    
+
     # add a hidden object_id field to the form
     if {[exists_and_not_null object_id]} {
     	if {![template::element::exists $form_id "object_id"]} {
@@ -1105,6 +1127,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	order by
 		pos_y_coalesce
     "
+
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
@@ -1853,6 +1876,7 @@ ad_proc -public im_dynfield::object_array {
     set category_attribute_names [list]
     set deref_attribute_names [list]
     set date_attribute_names [list]
+    set richtext_attribute_names [list]
 
     db_foreach column_list_sql {
 	select	w.deref_plpgsql_function,

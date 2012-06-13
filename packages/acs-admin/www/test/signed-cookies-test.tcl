@@ -4,7 +4,7 @@ ad_page_contract {
     with a known secret as well as one with an unknown secret.
 
     @author Richard Li (richardl@arsdigita.com)
-    @cvs-id $Id: signed-cookies-test.tcl,v 1.2 2002/09/18 14:54:46 jeffd Exp $
+    @cvs-id $Id$
     @creation-date 19 October 2000
 
 } 

@@ -2,7 +2,7 @@
 --
 -- @author Matthew Geddert openacs@geddert.com
 -- @creation-date 2004-07-28
--- @cvs-id $Id: intranet-contacts-create.sql,v 1.9 2009/10/02 15:31:54 cvs Exp $
+-- @cvs-id $Id$
 --
 --
 

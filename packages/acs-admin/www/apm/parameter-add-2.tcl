@@ -3,7 +3,7 @@ ad_page_contract {
     @author Todd Nightingale (tnight@arsdigita.com)
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 10 September 2000
-    @cvs-id $Id: parameter-add-2.tcl,v 1.9 2010/03/30 22:19:45 donb Exp $
+    @cvs-id $Id$
 } {
     version_id:naturalnum,notnull
     parameter_id:naturalnum,notnull

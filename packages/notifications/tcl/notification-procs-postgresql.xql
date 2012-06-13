@@ -23,8 +23,8 @@
     <fullquery name="notification::new.update_message">
         <querytext>
                 update notifications
-                set notif_html = :notif_html,
-                notif_text = :notif_text
+                set notif_html = substring(:notif_html for 9999),
+                notif_text = substring(:notif_text for 9999)
                 where notification_id = :notification_id
         </querytext>
     </fullquery>

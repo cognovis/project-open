@@ -5,7 +5,7 @@ ad_library {
 
     @author Frank Bergmann frank.bergmann@project-open.com
     @creation-date 2008-02-25
-    @cvs-id $Id: calculated-sql-widget-procs.tcl,v 1.1 2008/02/15 20:53:36 cambridge Exp $
+    @cvs-id $Id$
 }
 
 

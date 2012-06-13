@@ -8,7 +8,7 @@ ad_page_contract {
 
     @author jsc@arsdigita.com
     @creation-date   March 13, 2000
-    @cvs-id $Id: question-delete.tcl,v 1.1 2005/12/31 23:52:30 cvs Exp $
+    @cvs-id $Id$
 } {
 
     question_id:integer

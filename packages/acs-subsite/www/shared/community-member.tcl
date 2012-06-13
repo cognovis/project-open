@@ -2,7 +2,7 @@ ad_page_contract {
     shows User A what User B has contributed to the community
     
     @param user_id defaults to currently logged in user if there is one
-    @cvs-id $Id: community-member.tcl,v 1.18 2009/06/03 13:33:32 donb Exp $
+    @cvs-id $Id$
 } {
     {user_id:integer ""}
 } -properties {

@@ -28,12 +28,12 @@ if {$tree(site_wide_p) == "f"} {
 
 set tree_name $tree(tree_name)
 set tree_description $tree(description)
-set page_title [_ categories.Usage_title]
+set page_title "Modules using Category Tree \"$tree_name\""
 
 set context_bar [category::context_bar $tree_id $locale \
                      [value_if_exists object_id] \
                      [value_if_exists ctx_id]]
-lappend context_bar [_ categories.Usage]
+lappend context_bar "Usage"
 
 
 template::multirow create modules package object_id object_name package_id instance_name read_p unmap_url

@@ -5,7 +5,7 @@
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 --
--- @cvs-id $Id: upgrade-1.1d1-1.2d1.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @cvs-id $Id$
 
 alter table workflow_actions
 	add description text;

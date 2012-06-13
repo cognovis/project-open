@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 
-# $Id: paginator-procs.tcl,v 1.18 2007/11/21 14:08:44 emmar Exp $
+# $Id$
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:

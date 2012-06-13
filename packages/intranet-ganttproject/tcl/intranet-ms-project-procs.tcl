@@ -13,6 +13,92 @@ ad_library {
     @author malte.sussdorff@cognovis.de
 }
 
+
+# ----------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------
+
+
+ad_proc -public im_gp_work_seconds_in_interval {
+    -start_date:required
+    -end_date:required
+    { -calendar_id "" }
+} {
+    Returns the number of workable seconds between
+    start_date and end_date, according to the specified
+    calendar
+} {
+    set start_date_ansi [string range $start_date 0 9]
+    set end_date_ansi [string range $end_date 0 9]
+    set start_date_julian [dt_ansi_to_julian_single_arg $start_date_ansi]
+    set end_date_julian [dt_ansi_to_julian_single_arg $end_date_ansi]
+
+    set work_days 0
+    for {set j $start_date_julian} {$j <= $end_date_julian} {incr j} {
+	# Day of week, Sunday=1 like with PostgreSQL
+	set dow [expr (($j+1) % 7) + 1]
+	set weekend_p [expr ($dow == 1) || ($dow == 7)]
+	if {!$weekend_p} { incr work_days }
+	ns_log Notice "im_gp_work_seconds_in_interval: start=$start_date_ansi, end=$end_date_ansi, dow=$dow, weekend_p=$weekend_p"
+    }
+    return [expr $work_days * 24 * 60 * 60]
+}
+
+
+# ----------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------
+
+ad_proc -public im_ms_project_calculate_actualstart {
+    -task_id
+} {
+    Calculate the actual start based on the dependencies.
+    ToDo: Check if this procedure actually makes sense
+    and is used anywhere.
+    I'm not clear who wrote this and for what purpose.
+} {
+
+    db_foreach parents {
+        select to_char(p.end_date, 'YYYY-MM-DD HH24:MM:SS') as end_date,
+               ttd.difference, dependency_type_id
+        from   im_projects p,
+               im_timesheet_task_dependencies ttd
+        WHERE  ttd.task_id_one = :task_id and ttd.task_id_two = p.project_id and
+               ttd.task_id_two <> :task_id
+    } {
+        switch $dependency_type_id {
+            9660 {
+                set actual_start_date ""
+            }
+            9662 {
+                # Finish to start
+                set actual_start_date [db_string actual_start_date "
+                                SELECT  p2.end_date::date || 'T' || p2.end_date::time as end_date
+                                FROM
+                                (SELECT to_date(:end_date, 'YYYY-MM-DD HH24:MM:SS') + interval '$difference seconds' as end_date from dual) p2
+                        " -default ""]
+            }
+            9664 {
+                set actual_start_date ""
+            }
+            9666 {
+                # start to start
+                set actual_start_date [db_string actual_start_date "
+                                SELECT  p2.end_date::date || 'T' || p2.end_date::time as end_date
+                                FROM
+                                (SELECT to_date(:end_date, 'YYYY-MM-DD HH24:MM:SS') + interval '$difference seconds' as end_date from dual) p2
+                        " -default ""]
+            }
+        }
+        ds_comment "$actual_start_date"
+    }
+}
+
+
+# ----------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------
+
 ad_proc -public im_ms_project_write_subtasks { 
     { -default_start_date "" }
     { -default_duration "" }
@@ -103,6 +189,7 @@ ad_proc -public im_ms_project_write_task {
 		o.object_type,
 		p.start_date::date || 'T' || p.start_date::time as start_date,
 		p.end_date::date || 'T' || p.end_date::time as end_date,
+		t.scheduling_constraint_date::date || 'T' || t.scheduling_constraint_date::time as scheduling_constraint_date,
 		(p.end_date::date 
 			- p.start_date::date 
 			- 2*(next_day(p.end_date::date-1,'FRI') 
@@ -134,7 +221,7 @@ ad_proc -public im_ms_project_write_task {
     if {"" == $duration_hours} { 
 	set duration_hours $default_duration
     }
-    if {"" == $duration_hours || [string equal $start_date $end_date] } { 
+    if {"" == $duration_hours || [string equal $start_date $end_date] || $duration_hours < 0} { 
 	set duration_hours 0 
     }
 
@@ -174,6 +261,7 @@ ad_proc -public im_ms_project_write_task {
 		PercentComplete
 		FixedCostAccrual
 	        ConstraintType
+	        ConstraintDate
 	        ActualStart
 	}
     }
@@ -186,14 +274,16 @@ ad_proc -public im_ms_project_write_task {
     }
 
     set predecessors_done 0
-    
     foreach element $xml_elements { 
-
-	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
+	set xml_attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
-	    Name			{ set value $project_name }
+	    Name			{ 
+		set value $project_name
+		# Replace TAB characters with spaces
+		regsub -all "\t" $value " " value
+	    				}
 	    Type			{ 
-                if {![exists_and_not_null effort_driven_type_id]} {set effort_driven_type_id 9720}
+                if {![info exists effort_driven_type_id] || "" == $effort_driven_type_id} {set effort_driven_type_id 9720}
 		set value [util_memoize [list db_string type "select aux_int1 from im_categories where category_id = $effort_driven_type_id" -default ""]]
 		if {"" == $value} { 
 		    ad_return_complaint 1 "im_ms_project_write_task: Unknown fixed task type '$effort_driven_type_id'" 
@@ -202,7 +292,7 @@ ad_proc -public im_ms_project_write_task {
 	    IsNull			{ set value 0 }
 	    OutlineNumber		{ set value $outline_number }
 	    OutlineLevel		{ set value $outline_level }
-	    Priority		{ set value 500 }
+	    Priority			{ set value 500 }
 	    ActualStart         { 
 		# We need to add the ActualStart to a milestone otherwise
 		# The Percent Complete will not be transferred.
@@ -216,7 +306,7 @@ ad_proc -public im_ms_project_write_task {
 		}
 		continue
 	    }
-	    Start - ManualStart { set value $start_date }
+	    Start - ManualStart		{ set value $start_date }
 	    Finish - ManualFinish	{ set value $end_date }
 	    Duration - ManualDuration {
 		# Check if we've got a duration defined in the xml_elements.
@@ -238,9 +328,27 @@ ad_proc -public im_ms_project_write_task {
 		set seconds [expr $remaining_duration_hours * 3600.0]
 		set value [im_gp_seconds_to_ms_project_time $seconds]
 	    }
-	    Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
+	    Milestone			{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
 	    Notes			{ set value $note }
 	    PercentComplete		{ set value $percent_completed }
+	    ConstraintDate		{ set value $scheduling_constraint_date }
+	    ConstraintType	{
+		# Category "Intranet Timesheet Task Scheduling Type" has MS-Project Values in aux_int1.
+		set value ""
+		if {"" != $scheduling_constraint_id} {
+		    set value [util_memoize [list db_string contype "select aux_int1 from im_categories where category_id = $scheduling_constraint_id" -default ""]]
+		}
+		if {"" == $value} {
+		    # This should not occur. 
+		    # Maybe this project has been created before scheduling_constraing_id was defined.
+		    # Fall back to the xml_constrainttype field in im_gantt_projects
+		    if {[info exists $xml_attribute_name]} {
+			set value [expr $$xml_attribute_name]
+		    } else {
+			set value 0
+		    }
+		}
+	    }
 	    PredecessorLink	{ 
 		if {$predecessors_done} { continue }
 		set predecessors_done 1
@@ -273,7 +381,7 @@ ad_proc -public im_ms_project_write_task {
 		}
 		continue
 	    }
-	    UID			{ set value $org_project_id }
+	    UID				{ set value $org_project_id }
 	    Work			{ 
 		if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
 		    set planned_units 0 
@@ -341,8 +449,8 @@ ad_proc -public im_ms_project_write_task {
 		    continue 
 		}
 		default {
-			if {[info exists $attribute_name ] } {
-			    set value [expr $$attribute_name]
+			if {[info exists $xml_attribute_name]} {
+			    set value [expr $$xml_attribute_name]
 			} else {
 			    set value 0
 			}

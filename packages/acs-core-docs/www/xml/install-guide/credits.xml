@@ -63,7 +63,7 @@
     url="http://openacs.org/forums/">OpenACS forums</ulink>.
   </para>
 
-  <para><phrase role="cvstag">($Id: credits.xml,v 1.12 2006/07/17 05:38:37 torbenb Exp $)</phrase></para>
+  <para><phrase role="cvstag">($Id$)</phrase></para>
 
     <section id="install-origins" xreflabel="Where did this document come from?">
     <title>Where did this document come from?</title>

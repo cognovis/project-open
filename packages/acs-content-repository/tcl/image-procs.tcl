@@ -9,7 +9,7 @@ ad_library {
 
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2006-07-31
-    @cvs-id $Id: image-procs.tcl,v 1.9 2010/10/01 15:23:23 daveb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval image:: {}

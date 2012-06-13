@@ -1,4 +1,4 @@
-# $Id: acs-developer-support-init.tcl,v 1.8 2010/01/09 01:56:09 donb Exp $
+# $Id$
 # File:        developer-support-init.tcl
 # Author:      Jon Salz <jsalz@mit.edu>
 # Date:        22 Apr 2000

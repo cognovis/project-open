@@ -6,7 +6,7 @@ ad_page_contract {
     
     @author Enrique Catalan (enrique.catalan@quest.ie)
     @creation-date 2007-08-21
-    @cvs-id $Id: record-test.tcl,v 1.2 2008/07/29 19:22:23 emmar Exp $
+    @cvs-id $Id$
 } {
     package_key
     {return_url ""}

@@ -1266,7 +1266,7 @@ db_with_handle db {
 </variablelist>
 
 
-<para><phrase role="cvstag">($Id: db-api.xml,v 1.10 2006/07/17 05:38:38 torbenb Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 </sect2>
 </sect1>
 

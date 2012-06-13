@@ -6,7 +6,7 @@ ad_library {
 
     @author mbryzek@arsdigita.com
     @creation-date Tue Nov  7 22:52:39 2000
-    @cvs-id $Id: group-type-procs.tcl,v 1.5 2007/01/10 21:22:06 gustafn Exp $
+    @cvs-id $Id$
 
 }
 

@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Peter Marklund (peter@collaboraid.biz)
     @creation-date 27:th of March 2003
-    @cvs-id $Id: server-restart.tcl,v 1.4 2003/10/28 08:54:44 lars Exp $
+    @cvs-id $Id$
 }
 
 set page_title "Restarting Server"

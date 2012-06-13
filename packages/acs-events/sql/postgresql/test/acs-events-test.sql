@@ -5,7 +5,7 @@
 -- @author jowell@jsabino.com
 -- @creation-date 2001-06-26
 --
--- $Id: acs-events-test.sql,v 1.4 2003/05/17 09:47:26 jeffd Exp $
+-- $Id$
 
 -- Note: These tests use the semi-ported utPLSQL regression package
 \i utest-create.sql

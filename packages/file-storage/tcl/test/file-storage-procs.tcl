@@ -3,7 +3,7 @@ ad_library {
     
     @author Simon Carstensen
     @creation-date 14 November 2003
-    @cvs-id $Id: file-storage-procs.tcl,v 1.5 2006/12/15 22:45:32 emmar Exp $
+    @cvs-id $Id$
 }
 
 aa_register_case \

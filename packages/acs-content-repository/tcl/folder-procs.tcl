@@ -2,7 +2,7 @@ ad_library {
     Procedures in the folder namespace related to content folders.
 
     @author Peter Marklund
-    @cvs-id $Id: folder-procs.tcl,v 1.2 2004/12/01 05:11:01 alfredw Exp $
+    @cvs-id $Id$
 }
 
 namespace eval folder {}

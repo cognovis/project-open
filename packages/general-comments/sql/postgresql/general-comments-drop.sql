@@ -5,7 +5,7 @@
 -- @author Pascal Scheffers (pascal@scheffers.net)
 -- @creation-date 2000-10-12
 --
--- @cvs-id $Id: general-comments-drop.sql,v 1.3 2001/06/14 19:52:22 pascals Exp $
+-- @cvs-id $Id$
 --
 
 -- revoke all 'general_comments_create' permissions

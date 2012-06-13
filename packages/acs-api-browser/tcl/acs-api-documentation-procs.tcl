@@ -7,7 +7,7 @@ ad_library {
     @author Jon Salz (jsalz@mit.edu)
     @author Lars Pind (lars@arsdigita.com)
     @creation-date 21 Jun 2000
-    @cvs-id $Id: acs-api-documentation-procs.tcl,v 1.27 2009/02/07 20:32:54 gustafn Exp $
+    @cvs-id $Id$
 
 }
 

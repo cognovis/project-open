@@ -2,7 +2,7 @@
 
 ad_page_contract {
     user's workspace page
-    @cvs-id $Id: home.tcl,v 1.3 2010/01/07 11:41:35 emmar Exp $
+    @cvs-id $Id$
 } -properties {
     system_name:onevalue
     context:onevalue

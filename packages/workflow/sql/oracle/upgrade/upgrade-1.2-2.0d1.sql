@@ -1,7 +1,7 @@
 --
 -- Adding hierarchy, parallelism and timed actions
 -- 
--- @cvs-id $Id: upgrade-1.2-2.0d1.sql,v 1.1 2006/10/25 17:55:34 cvs Exp $
+-- @cvs-id $Id$
 --
 
 ----------------------------------------------------------------------

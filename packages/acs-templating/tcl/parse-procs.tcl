@@ -11,7 +11,7 @@ ad_library {
   @author Karl Goldstein
   @author Stanislav Freidin
 
-  @cvs-id $Id: parse-procs.tcl,v 1.45 2010/01/09 01:56:09 donb Exp $
+  @cvs-id $Id$
 }
 
 namespace eval template {}

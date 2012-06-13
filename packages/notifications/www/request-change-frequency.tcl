@@ -4,7 +4,7 @@ ad_page_contract {
 
     @author Tracy Adams (teadams@alum.mit.edu))
     @creation-date 2002-09-03
-    @cvs-id $Id: request-change-frequency.tcl,v 1.3 2009/09/13 23:54:42 donb Exp $
+    @cvs-id $Id$
 } {
     request_id:integer,notnull
     return_url

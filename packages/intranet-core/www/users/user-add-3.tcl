@@ -16,7 +16,7 @@
 ad_page_contract {
     Sends email confirmation to user after they've been created
 
-    @cvs-id $Id: user-add-3.tcl,v 1.12 2006/04/07 22:42:05 cvs Exp $
+    @cvs-id $Id$
 } -query {
     email
     message

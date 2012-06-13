@@ -500,7 +500,7 @@ Because a membership relation is an ordinary acs object with <ulink url="object-
 membership relation to store extra information as it is to extend the users
 table or the groups table.</para>
 
-<para><phrase role="cvstag">($Id: parties.xml,v 1.9 2006/09/25 20:32:37 byronl Exp $)</phrase></para>
+<para><phrase role="cvstag">($Id$)</phrase></para>
 
 </sect2>
 

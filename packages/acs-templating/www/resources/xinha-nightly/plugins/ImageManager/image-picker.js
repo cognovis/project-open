@@ -31,8 +31,8 @@
  *  </script>
  *
  *
- * @author $Author: gustafn $
- * @version $Id: image-picker.js,v 1.5 2010/05/23 11:58:33 gustafn Exp $
+ * @author $Author$
+ * @version $Id$
  * @package ImageManager
  */
 
@@ -159,7 +159,7 @@ if(typeof Dialog == 'undefined')
   // Version 3.0 developed by Mihai Bazon.
   //   http://dynarch.com/mishoo
   //
-  // $Id: image-picker.js,v 1.5 2010/05/23 11:58:33 gustafn Exp $
+  // $Id$
   
   // Though "Dialog" looks like an object, it isn't really an object.  Instead
   // it's just namespace for protecting global symbols.

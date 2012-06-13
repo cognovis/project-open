@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-admin" package_version="5.1.5" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Account_reg_URL_help_text">URL avec laquelle les utilisateurs s'inscrivent pour créer un nouveau compte</msg>
+  <msg key="Account_Registration">Inscription du compte</msg>
+  <msg key="Account_registration_URL">URL inscription du compte</msg>
+  <msg key="Actions">Actions</msg>
+  <msg key="Actions_Minute">Actions/Minute</msg>
+  <msg key="Add_callback">Ajouter un rappel</msg>
+  <msg key="Administration">Administration</msg>
+  <msg key="Are_you_sure_you_want_to_delete_authority_authorities_pretty_name">Etes-vous sûr de vouloir supprimer l'autorité de %authorities.pretty_name%?</msg>
+  <msg key="Authentication">Authentification</msg>
+  <msg key="Authority_name">Nom de l'autorité</msg>
+  <msg key="Authority_short_name_help_text">Ceci est utilisé lorsque l'on fait référence à l'autorité dans les paramètres, etc. Même si vous devez modifier le nom affiché ci-dessus, cet élément ne doit pas être modifié.</msg>
+  <msg key="Batch_sync_enabled">Synchr par lot autorisée</msg>
+  <msg key="Batch_Synchronization">Synchr par lot</msg>
+  <msg key="Change_password_URL">Modifier le mot de passe de l'URL</msg>
+  <msg key="Change_password_URL_help_text">Au lieu d'utiliser un mot de passe pour la gestion du pilote, vous pouvez fournir une URL à laquelle les utilisateurs sont envoyés lorsqu'ils veulent modifier leur mot de passe. Tout nom d'utilisateur présent dans cette URL doit respecter la syntaxe foo={username} où {username} sera remplacé par le nom d'utilisateur réel.</msg>
+  <msg key="Creation_user">Crée par</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Delete_callback">Supprimer le rappel</msg>
+  <msg key="Disable_this_authority">Désactiver cette autorité</msg>
+  <msg key="Document">Document</msg>
+  <msg key="Document_end_time">Heure de fin du document</msg>
+  <msg key="Document_message">Message du document</msg>
+  <msg key="Document_start_time">Heure de début du document</msg>
+  <msg key="Document_status">Statut de téléchargement du document</msg>
+  <msg key="download">téléchargement</msg>
+  <msg key="Edit_callback">Créer un rappel</msg>
+  <msg key="Enable_this_authority">Activer cette autorité</msg>
+  <msg key="Enabled">Activé</msg>
+  <msg key="End_time">Heure de fin</msg>
+  <msg key="General">Général</msg>
+  <msg key="GetDocument_implementation">Obtenir la mise en oeuvre du document</msg>
+  <msg key="Help_contact_help_text">Informations contact (téléphone, email, etc.) à afficher en dernier recours lorsque les utilisateurs rencontrent des difficultés avec une autorité.</msg>
+  <msg key="Help_contact_text">Texte d'aide contact</msg>
+  <msg key="Interactive">Interactif</msg>
+  <msg key="Invoke">Appeler</msg>
+  <msg key="Invoke_this_callback_proc_now_Be_careful">Appeler cette procédure de rappel maintenant. Attention!</msg>
+  <msg key="Make_this_the_authority_for_registering_new_users">Définir en tant qu'autorité permettant d'inscrire de nouveaux utilisateurs</msg>
+  <msg key="Message">Message</msg>
+  <msg key="Move_this_authority_down">Déplacer cette autorité vers le bas</msg>
+  <msg key="Move_this_authority_up">Déplacer cette autorité vers le haut</msg>
+  <msg key="Name">Nom</msg>
+  <msg key="No">Num
+</msg>
+  <msg key="Number_of_actions">Nombre d'actions</msg>
+  <msg key="Number_of_problems">Nombre de problèmes</msg>
+  <msg key="On-Demand_Sync">Synchr à la demande</msg>
+  <msg key="One_batch_job">Tâche en un lot</msg>
+  <msg key="Operation">Opération</msg>
+  <msg key="Order">Commande*</msg>
+  <msg key="Package_Manager">Gestionnaire de paquets</msg>
+  <msg key="Pages">Pages</msg>
+  <msg key="Parameters">Paramètres</msg>
+  <msg key="Password">Mot de passe</msg>
+  <msg key="Password_Management">Gestion du mot de passe</msg>
+  <msg key="Problems">Problèmes</msg>
+  <msg key="ProcessDocument_implementation">Mise en oeuvre du traitement du document</msg>
+  <msg key="Recover_password_URL">Récupérer le mot de passe de l'URL</msg>
+  <msg key="Recover_password_URL_help_text">Au lieu d'utiliser un mot de passe pour la gestion du pilote, vous pouvez fournir une URL vers laquelle les utilisateurs peuvent être renvoyés lorsqu'ils ont besoin de récupérer leur mot de passe. Tout mot de passe se trouvant dans cette URL doit respecter la syntaxe foo={username} où {username} sera remplacé par le nom d'utilisateur réel. </msg>
+  <msg key="Registration">Inscription</msg>
+  <msg key="Run_time">Temps de passage</msg>
+  <msg key="Running_time">Durée d'exécution</msg>
+  <msg key="seconds">secondes</msg>
+  <msg key="Service">Service</msg>
+  <msg key="Service_administration">Administration du service</msg>
+  <msg key="Service_parameters">Paramètres du service</msg>
+  <msg key="Short_Name">Diminutif</msg>
+  <msg key="Site-Wide_Admin">Admin du site</msg>
+  <msg key="Snapshot">Snapshot</msg>
+  <msg key="Start_time">Heure de début</msg>
+  <msg key="Success">Succès</msg>
+  <msg key="Tcl_Callbacks">Rappels TCL</msg>
+  <msg key="Tcl_Proc">Processus TCL</msg>
+  <msg key="Timestamp">Estampille temporelle</msg>
+  <msg key="Type">Type</msg>
+  <msg key="User_Info">Informations utilisateur</msg>
+  <msg key="User_Info_help_text">La mise en oeuvre permettant d'obtenir en temps réel des informations provenant de l'autorité</msg>
+  <msg key="Username">Nom d'utilisateur</msg>
+  <msg key="View_log_entry">Afficher les entrées du journal</msg>
+  <msg key="Visit_service_pages">Consultez les pages concernant nos services</msg>
+  <msg key="Yes">Oui</msg>
+  <msg key="You_are_changing_all_user_registrations_to_be_in_authority_authorities_pretty_name">Vous êtes en train de modifier toutes les inscriptions utilisateur devant être dans %authorities.pretty_name%</msg>
+</message_catalog>

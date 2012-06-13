@@ -2,7 +2,7 @@
 --
 -- @author smeeks@arsdigita.com
 -- @creation-date 2000-11-16
--- @cvs-id $Id: acs-events-create.sql,v 1.11 2007/05/15 20:14:14 donb Exp $
+-- @cvs-id $Id$
 
 -- Create the objects and packages for the ACS Events service
 

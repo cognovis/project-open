@@ -2,7 +2,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 17, 2000
--- @cvs-id $Id: calendar-create.sql,v 1.14 2004/01/20 14:19:21 dirkg Exp $
+-- @cvs-id $Id$
 --
 -- ported by Charles Mok (mok_cl@eelab.usyd.edu.au)
 

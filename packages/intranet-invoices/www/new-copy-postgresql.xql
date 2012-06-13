@@ -4,7 +4,7 @@
 <!-- @author Frankk Bergmann (frank.bergmann@project-open.com)
 <!-- @creation-date 2005-02-07 -->
 <!-- @arch-tag 16a384f6-aa92-4668-9f42-51b4e1085bc8 -->
-<!-- @cvs-id $Id: new-copy-postgresql.xql,v 1.4 2009/07/01 22:19:39 po34demo Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
  

@@ -3,7 +3,7 @@
 --
 -- @author Gary Jin (gjin@arsdigita.com)
 -- @creation-date Nov 17, 2000
--- @cvs-id $Id: cal-item-drop.sql,v 1.7 2006/08/08 21:26:16 donb Exp $
+-- @cvs-id $Id$
 --
 
 -- ported by Lilian Tong (tong@ebt.ee.usyd.edu.au)

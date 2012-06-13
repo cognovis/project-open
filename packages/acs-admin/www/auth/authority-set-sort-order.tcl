@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Simon Carstensen (simon@collaboraid.biz)
     @creation-date 2003-09-09
-    @cvs-id $Id: authority-set-sort-order.tcl,v 1.3 2007/01/10 21:22:00 gustafn Exp $
+    @cvs-id $Id$
 } {
     authority_id:integer
     direction

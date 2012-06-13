@@ -3,7 +3,7 @@ ad_page_contract {
 
     @author Ryan Bender (jrbender@mit.edu)
     @creation-date 23 August 2000
-    @cvs-id $Id: workflow.tcl,v 1.1 2005/04/27 22:50:59 cvs Exp $
+    @cvs-id $Id$
 } {
     workflow_key:notnull
 }

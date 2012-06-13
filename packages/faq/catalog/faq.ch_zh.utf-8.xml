@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="faq" locale="ch_zh" charset="utf-8">
+<message_catalog package_key="faq" package_version="4.6" locale="ch_zh" charset="utf-8">
 
   <msg key="A">问题：</msg>
   <msg key="Add_QA_for_faq_name">向%faq_name%添加问题与解答</msg>

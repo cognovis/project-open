@@ -3,7 +3,7 @@
 --
 -- @author Vinod Kurup <vkurup@massmed.org>
 -- @creation-date 2001-07-05
--- @cvs-id $Id: acs-mail-drop.sql,v 1.2 2006/04/07 22:47:06 cvs Exp $
+-- @cvs-id $Id$
 --
 
 -- FIXME: This script has NOT been tested! - vinodk

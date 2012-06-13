@@ -4,7 +4,7 @@ ad_page_contract {
     @param version_id The package to be processed.
     @author kevin@caltech.edu
     @creation-date 17 May 2000
-    @cvs-id $Id: version-parameter-values.tcl,v 1.3 2007/01/10 21:21:59 gustafn Exp $
+    @cvs-id $Id$
 } {
     { version_id:integer }
 }

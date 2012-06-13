@@ -196,6 +196,27 @@ ad_proc -public im_ganttproject_write_task {
 
 
 # ----------------------------------------------------------------------
+# Show warning about MS-Project imports
+# ----------------------------------------------------------------------
+
+ad_proc -public im_ganttproject_ms_project_warning_component { 
+    -project_id
+} {
+    Shows warnings for MS-Project imports
+} {
+    # Make sure project_id is an integer...
+    im_security_alert_check_integer -location "im_ganttproject_ms_project_warning_component" -value $project_id
+    set params [list \
+                    [list project_id $project_id] \
+                    [list return_url [im_url_with_query]] \
+		    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-ganttproject/lib/ms-project-warning-component"]
+    return [string trim $result]
+}
+
+
+# ----------------------------------------------------------------------
 # Project Page Component 
 # ----------------------------------------------------------------------
 
@@ -644,7 +665,8 @@ ad_proc -public im_gp_save_tasks2 {
     set task_id			0
     set has_subobjects_p	0
     set work			0
-
+    set scheduling_constraint_id ""
+    set scheduling_constraint_date ""
     set outline_number		""
     set remaining_duration	""
 
@@ -658,7 +680,7 @@ ad_proc -public im_gp_save_tasks2 {
 	# ns_log Notice "im_gp_save_tasks2: $task_name: nodeName=$nodeName, nodeText=$nodeText"
 
         switch [string tolower $nodeName] {
-            "name"              { set task_name $nodeText }
+            "name"              { set task_name [string trim $nodeText] }
 	    "uid"               { set uid $nodeText }
 	    "isnull"		{ set is_null $nodeText }
 	    "duration"          { set duration $nodeText }
@@ -670,6 +692,12 @@ ad_proc -public im_gp_save_tasks2 {
 	    "notes"             { set note $nodeText }
 	    "outlinenumber"     { set outline_number $nodeText }
 	    "percentcomplete"	{ set percent_completed $nodeText }
+	    "constrainttype"	{
+		if {"" != $nodeText} {
+		    set scheduling_constraint_id [util_memoize [list db_string contype "select category_id from im_categories where category_type = 'Intranet Timesheet Task Scheduling Type' and aux_int1 = '$nodeText'" -default ""]]
+		}
+	    }
+	    "constraintdate"	{ set scheduling_constraint_date $nodeText }
 	    "extendedattribute" {
 		set fieldid ""
 		set fieldvalue ""
@@ -871,12 +899,13 @@ ad_proc -public im_gp_save_tasks2 {
     # Check for a task with the same task_nr or task_name below the specified parent. 
     # This could be necessary if a new task was created by ]po[.
     if {0 == $task_id} {
+	# fraber 120510: I've removed the im_timesheet_tasks constraint,
+	# because it gave a constraint violation. 
+	# However, that might produce errors further down?
 	set task_id [db_string task_id_from_nr "
 		select	p.project_id
-		from	im_projects p,
-			im_timesheet_tasks t
-		where	t.task_id = p.project_id and
-			p.parent_id = :parent_id and 
+		from	im_projects p
+		where	p.parent_id = :parent_id and 
 			(p.project_nr = :task_nr OR lower(p.project_name) = lower(:task_name))
         " -default 0]
 	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id using parent_id=$parent_id, task_nr=$task_nr or task_name=$task_name" }
@@ -975,6 +1004,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_id_one $task_id \
 			-task_id_two $linkid \
 			-depend_type $linktype \
+			-difference $difference \
 			-difference $difference_seconds \
 			-task_hash_array [array get task_hash]
 		}
@@ -1063,6 +1093,8 @@ ad_proc -public im_gp_save_tasks2 {
 		effort_driven_p = :effort_driven_p,
 		effort_driven_type_id = :effort_driven_type_id,
 		uom_id = [im_uom_hour],
+		scheduling_constraint_id = :scheduling_constraint_id,
+		scheduling_constraint_date = :scheduling_constraint_date,
 		$units_sql
 	where
 		task_id = :task_id
@@ -1321,6 +1353,7 @@ ad_proc -public im_gp_find_person_for_name_helper {
     Returns "" if it didn't find the name.
 } {
     set person_id ""
+    set name [string trim [string tolower $name]]
 
     # Check for an exact match with Email
     if {"" == $person_id} {
@@ -1336,7 +1369,7 @@ ad_proc -public im_gp_find_person_for_name_helper {
 	set person_id [db_string email_check "
 		select	min(user_id)
 		from	users
-		where	lower(trim(username)) = lower(trim(:name))
+		where	lower(trim(username)) = :name
         " -default ""]
     }
 
@@ -1345,7 +1378,8 @@ ad_proc -public im_gp_find_person_for_name_helper {
         set person_id [db_string resource_id "
 		select	min(person_id)
 		from	persons
-		where	lower(im_name_from_user_id(person_id)) = :name
+		where	(lower(im_name_from_user_id(person_id)) = :name OR
+			(lower(first_names) = :name and lower(last_name) = :name))
         " -default ""]		
     }
 

@@ -23,7 +23,7 @@ ad_page_contract {
 
     @author bdolicki@redhat.com
     @creation-date 2000-06-20
-    @cvs-id $Id: rename.tcl,v 1.2 2003/09/10 09:38:29 lars Exp $
+    @cvs-id $Id$
 } {
   node_id:integer,notnull
   instance_name:notnull

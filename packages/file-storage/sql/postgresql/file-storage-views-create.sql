@@ -3,7 +3,7 @@
 --
 -- @author Kevin Scaldeferri (kevin@arsdigita.com)
 -- @creation-date 6 Nov 2000
--- @cvs-id $Id: file-storage-views-create.sql,v 1.12 2006/08/08 21:26:48 donb Exp $
+-- @cvs-id $Id$
 --
 
 create view fs_urls_full

@@ -3,7 +3,7 @@ ad_library {
 
     @author John Prevost <jmp@arsdigita.com>
     @creation-date 2000-09-01
-    @cvs-id $Id: acs-messaging-procs.tcl,v 1.7 2009/07/12 01:08:30 donb Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -public acs_message_p {

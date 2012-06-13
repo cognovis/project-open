@@ -3,7 +3,7 @@
 --
 -- @author <a href="mailto:yon@openforce.net">yon@openforce.net</a>
 -- @creation-date 2002-08-29
--- @version $Id: upgrade-0.1d-0.2.sql,v 1.1 2002/08/30 14:44:07 arjun Exp $
+-- @version $Id$
 --
 
 alter table attachments add (

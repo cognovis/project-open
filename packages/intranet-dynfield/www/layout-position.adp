@@ -1,6 +1,6 @@
 <%
   # /packages/intranet-dynfield/www/layout-position.adp
-  # $Workfile: layout-position.adp $ $Revision: 1.6 $ $Date: 2008/03/24 22:35:57 $
+  # $Workfile: layout-position.adp $ $Revision$ $Date$
 %>
 <master src="master">
 

@@ -4,7 +4,7 @@ ad_page_contract {
     makes heavy use of procedures in /tcl/ad-user-contributions-summary.tcl
     modified by mobin January 27, 2000 5:08 am
     
-    @cvs-id $Id: one.tcl,v 1.16 2008/12/23 08:31:46 gustafn Exp $
+    @cvs-id $Id$
 } {
     user_id:integer
 }

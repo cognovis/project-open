@@ -7,7 +7,7 @@ ad_library {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-06-09
     @arch-tag: 31c66882-e912-4db4-84fe-8a2b0890ffb0
-    @cvs-id $Id: content-symlink-procs.tcl,v 1.5 2006/06/04 00:45:23 donb Exp $
+    @cvs-id $Id$
 }
 
 namespace eval ::content::symlink {}

@@ -5,7 +5,7 @@ ad_page_contract {
     @author tnight@arsdigita.com
     @author Bryan Quinn (bquinn@arsdigita.com)
     @creation-date 12 September 2000
-    @cvs-id $Id: version-parameters.tcl,v 1.8 2010/10/17 21:06:07 donb Exp $
+    @cvs-id $Id$
 } {
     {orderby ""}
     {version_id:integer}

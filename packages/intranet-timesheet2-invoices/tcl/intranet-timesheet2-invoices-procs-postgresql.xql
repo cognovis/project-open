@@ -4,7 +4,7 @@
 <!-- @author  (frank.bergmann@project-open.com) -->
 <!-- @creation-date 2004-09-21 -->
 <!-- @arch-tag ebd131d9-8c90-4c9b-a02c-8058aac72256 -->
-<!-- @cvs-id $Id: intranet-timesheet2-invoices-procs-postgresql.xql,v 1.1 2005/05/10 22:46:01 cvs Exp $ -->
+<!-- @cvs-id $Id$ -->
 
 <queryset>
   
