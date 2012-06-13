@@ -362,6 +362,18 @@ ad_proc intranet_fs::copy_folder {
 }
 
 
+ad_proc -public -callback fs::folder_delete -impl intranet_fs_remove_rels {
+    {-package_id:required}
+    {-folder_id:required}
+} {
+    Remove the acs rel to the project
+} {
+    set rel_ids [db_list rels "select rel_id from acs_rels where object_id_two = :folder_id"]
+    foreach rel_id $rel_ids {
+	db_0or1row remove_rel "select acs_rel__delete(:rel_id) from dual"
+    }
+}
+
 ad_proc -public -callback intranet_fs::after_project_folder_create {
 	{-project_id:required}
 	{-folder_id:required}
