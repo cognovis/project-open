@@ -238,8 +238,14 @@ if {0 == $package_conf_item_id} {
 			:conf_item_status_id
 		)
     "
-    set package_conf_item_id [db_string new $conf_item_new_sql]
-    db_dml update [im_conf_item_update_sql -include_dynfields_p 1]
+
+    if {[catch { set package_conf_item_id [db_string new $conf_item_new_sql] } errmsg ]} {
+	ad_return_complaint 1 "Unable to handle your submission, pls. contact support@project-open.com"
+    }
+
+    if {[catch { db_dml update [im_conf_item_update_sql -include_dynfields_p 1] } errmsg ]} {
+	ad_return_complaint 1 "Unable to handle your submission, pls. contact support@project-open.com"
+    }
 }
 
 
@@ -396,16 +402,20 @@ $error_info
 "
 set message [string range $message 0 9998]
 
-db_dml topic_insert {
-		insert into im_forum_topics (
-			topic_id, object_id, parent_id,
-			topic_type_id, topic_status_id, owner_id, 
-			subject, message
-		) values (
-			:topic_id, :ticket_id, :parent_id,
-			:topic_type_id,	:topic_status_id, :error_user_id, 
-			:subject, :message
-		)
+if {[catch { 
+    db_dml topic_insert {
+                insert into im_forum_topics (
+                        topic_id, object_id, parent_id,
+                        topic_type_id, topic_status_id, owner_id,
+                        subject, message
+                ) values (
+                        :topic_id, :ticket_id, :parent_id,
+                        :topic_type_id, :topic_status_id, :error_user_id,
+                        :subject, :message
+                )
+    }
+} errmsg ]} {
+        ad_return_complaint 1 "Unable to handle submission, please contact support@project-open.com"
 }
 
 set resolved_p 0

@@ -60,6 +60,8 @@ db_dml update_priority_map "
 	where project_id = :project_id
 "
 
+im_audit -object_id $project_id
+
 ad_returnredirect $return_url
 
 

@@ -17,6 +17,7 @@ set page_title [lang::message::lookup "" intranet-release-mgmt.Release_Items "Re
 set package_url "/intranet-release-mgmt"
 set release_project_id $project_id
 set return_url [im_url_with_query]
+set add_item_url [export_vars -base "/intranet-release-mgmt/add-items" {release_project_id return_url}]
 
 # -------------------------------------------------------------
 # Permissions

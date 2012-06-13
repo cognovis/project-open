@@ -269,7 +269,7 @@ proc intranet_download { folder_type } {
     }
 
     set file "$base_path/$file_name"
-    ns_log Notice "file_name=$file_name file=$file"
+    ns_log Notice "intranet-download: base_path=$base_path, file_name=$file_name, file=$file"
 
     if { [catch {
         set file_readable [file readable $file]
@@ -448,20 +448,29 @@ ad_proc im_filestorage_cost_component { user_id cost_id cost_name return_url} {
 # All pathes end WITHOUT a trailing "/"
 # ---------------------------------------------------------------------
 
-ad_proc im_filestorage_zip_path { } {
-    Determine the location where zips are located
+ad_proc im_filestorage_tmp_path { } {
+    Determine the location temporary files are stored
 } {
     global tcl_platform
     set platform [lindex $tcl_platform(platform) 0]
 
     switch $platform {
         windows {
-	    return "./servers/projop/tmp"
+	    set tmp_path [parameter::get -package_id [im_package_filestorage_id] -parameter "TmpPathUnix" -default "C:/project-open/tmp"]
 	}
 	default {
-	    return "/tmp"
+	    set tmp_path [parameter::get -package_id [im_package_filestorage_id] -parameter "TmpPathUnix" -default "/tmp"]
 	}
     }
+
+    return $tmp_path
+}
+
+
+ad_proc im_filestorage_zip_path { } {
+    Determine the location where zips are located
+} {
+    return [im_filestorage_tmp_path]
 }
 
 

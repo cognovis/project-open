@@ -8,6 +8,20 @@
 # Expected variables:
 # release_project_id
 
+set show_master_p 0
+if {![info exists release_project_id]} {
+    set show_master_p 1
+    ad_page_contract {
+	Show release items with their status
+	@author Frank Bergmann (frank.bergmann@project-open.com)
+	@creation-date May 29, 2002
+	@cvs-id $Id$
+    } {
+	release_project_id:integer
+    }
+}
+
+
 # ------------------------------------------------------------
 # Page Title & Help Text
 

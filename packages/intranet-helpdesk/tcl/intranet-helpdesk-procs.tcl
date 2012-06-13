@@ -808,6 +808,8 @@ namespace eval im_ticket {
 	    ad_script_abort
 	}
 
+	im_audit -object_id $ticket_id
+
     }
 
 

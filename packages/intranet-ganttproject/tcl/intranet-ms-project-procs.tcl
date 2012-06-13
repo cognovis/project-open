@@ -189,6 +189,7 @@ ad_proc -public im_ms_project_write_task {
 		o.object_type,
 		p.start_date::date || 'T' || p.start_date::time as start_date,
 		p.end_date::date || 'T' || p.end_date::time as end_date,
+		t.scheduling_constraint_date::date || 'T' || t.scheduling_constraint_date::time as scheduling_constraint_date,
 		(p.end_date::date 
 			- p.start_date::date 
 			- 2*(next_day(p.end_date::date-1,'FRI') 
@@ -260,6 +261,7 @@ ad_proc -public im_ms_project_write_task {
 		PercentComplete
 		FixedCostAccrual
 	        ConstraintType
+	        ConstraintDate
 	        ActualStart
 	}
     }
@@ -272,10 +274,8 @@ ad_proc -public im_ms_project_write_task {
     }
 
     set predecessors_done 0
-    
     foreach element $xml_elements { 
-
-	set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
+	set xml_attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 	switch $element {
 	    Name			{ 
 		set value $project_name
@@ -292,7 +292,7 @@ ad_proc -public im_ms_project_write_task {
 	    IsNull			{ set value 0 }
 	    OutlineNumber		{ set value $outline_number }
 	    OutlineLevel		{ set value $outline_level }
-	    Priority		{ set value 500 }
+	    Priority			{ set value 500 }
 	    ActualStart         { 
 		# We need to add the ActualStart to a milestone otherwise
 		# The Percent Complete will not be transferred.
@@ -306,7 +306,7 @@ ad_proc -public im_ms_project_write_task {
 		}
 		continue
 	    }
-	    Start - ManualStart { set value $start_date }
+	    Start - ManualStart		{ set value $start_date }
 	    Finish - ManualFinish	{ set value $end_date }
 	    Duration - ManualDuration {
 		# Check if we've got a duration defined in the xml_elements.
@@ -328,9 +328,27 @@ ad_proc -public im_ms_project_write_task {
 		set seconds [expr $remaining_duration_hours * 3600.0]
 		set value [im_gp_seconds_to_ms_project_time $seconds]
 	    }
-	    Milestone		{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
+	    Milestone			{ if {"t" == $milestone_p} { set value 1 } else { set value 0 } }
 	    Notes			{ set value $note }
 	    PercentComplete		{ set value $percent_completed }
+	    ConstraintDate		{ set value $scheduling_constraint_date }
+	    ConstraintType	{
+		# Category "Intranet Timesheet Task Scheduling Type" has MS-Project Values in aux_int1.
+		set value ""
+		if {"" != $scheduling_constraint_id} {
+		    set value [util_memoize [list db_string contype "select aux_int1 from im_categories where category_id = $scheduling_constraint_id" -default ""]]
+		}
+		if {"" == $value} {
+		    # This should not occur. 
+		    # Maybe this project has been created before scheduling_constraing_id was defined.
+		    # Fall back to the xml_constrainttype field in im_gantt_projects
+		    if {[info exists $xml_attribute_name]} {
+			set value [expr $$xml_attribute_name]
+		    } else {
+			set value 0
+		    }
+		}
+	    }
 	    PredecessorLink	{ 
 		if {$predecessors_done} { continue }
 		set predecessors_done 1
@@ -363,7 +381,7 @@ ad_proc -public im_ms_project_write_task {
 		}
 		continue
 	    }
-	    UID			{ set value $org_project_id }
+	    UID				{ set value $org_project_id }
 	    Work			{ 
 		if { ![info exists planned_units] || "" == $planned_units || "" == [string trim $planned_units] } { 
 		    set planned_units 0 
@@ -431,8 +449,8 @@ ad_proc -public im_ms_project_write_task {
 		    continue 
 		}
 		default {
-			if {[info exists $attribute_name ] } {
-			    set value [expr $$attribute_name]
+			if {[info exists $xml_attribute_name]} {
+			    set value [expr $$xml_attribute_name]
 			} else {
 			    set value 0
 			}

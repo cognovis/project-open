@@ -32,6 +32,8 @@ if {"" != $new_main_start_date} {
 	set start_date = :new_main_start_date
 	where project_id = :project_id
     "
+
+    im_audit -object_id $project_id
 }
 
 ad_returnredirect $return_url
