@@ -147,6 +147,14 @@ if { "" != $written_order && 0 != $written_order } {
     # lappend criteria "p.written_order = :customer_id"
 }
 
+# Project Start/End date 
+if {"" != $start_date} {
+    lappend criteria "p.end_date >= :start_date::timestamptz"
+}
+if {"" != $end_date} {
+    lappend criteria "p.start_date < :end_date::timestamptz"
+}
+
 # Project Status
 # lappend criteria "p.project_status_id in ([join [im_sub_categories 76] ,]) "
 
@@ -356,8 +364,8 @@ lappend elements {
 }
 
 
-# TS costs 
-lappend elements cost_timesheet_logged_cache 
+# TS costs (internal costs)
+lappend elements cost_timesheet_logged_cache_l 
 lappend elements {
 	label $label_internal_costs 
 	html "align right"
@@ -471,16 +479,34 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		c.company_id,
 		c.company_name,
 		c.company_path as company_nr,
-		h.hours as direct_hours
+		h.hours as direct_hours,
+		e.amount as total_expenses,
+		'1' as written_report
 	from	
 		im_projects p,
 		im_companies c,
 		im_projects child
 		LEFT OUTER JOIN (
-			select sum(hours) as hours, project_id 
-			from im_hours 
-			group by project_id
-		) h ON (child.project_id = h.project_id)
+			select 
+				sum(hours) as hours, 
+				project_id 
+			from 
+				im_hours 
+				group by project_id
+		) h ON (child.project_id = h.project_id) 
+                LEFT OUTER JOIN (
+                        select
+                                project_id,
+                                sum(amount) as amount
+                        from
+                                im_costs
+			where 
+				effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
+                                and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                                and cost_type_id = 3720				
+                        group by 
+				project_id
+                ) e ON (child.project_id = e.project_id)
 	where
 		p.parent_id is null
 		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
@@ -539,10 +565,11 @@ multirow_sort_tree project_list child_id parent_id project_name
 
 set i 1
 
-set sum_hours_matrix 0
 set sum_invoices_value 0 
 
+set total__cost_timesheet_logged_cache 0
 set total__target_benefit 0
+set total__sum_hours_matrix 0
 set total__invoiceable_total_var 0
 set total__total_expenses 0
 set total__sum_invoices_value 0
@@ -552,21 +579,23 @@ set total__profit_and_loss_two_var 0
 
 template::multirow foreach project_list {    
 
-	set total_expenses 0
+	if { ![info exists total_expenses] || "" == $total_expenses  } { set total_expenses 0 }
+        if { ![info exists cost_timesheet_logged_cache] || "" == $cost_timesheet_logged_cache } { set cost_timesheet_logged_cache 0 }
+        if { ![info exists sum_hours_matrix] || "" == $sum_hours_matrix } { set sum_hours_matrix 0 }
+
+	# BAK, otherwise will be overwritten through 2nd sql 
+	set total_expenses_bak $total_expenses
+
 	set target_benefit 0
 	set sql "
  	           select
 	                sum(ho.hours) as hours,
         	       	ho.user_id,
 			ho.project_id,
-			(select company_id from im_projects where project_id = ho.project_id) as company_id,
-		        -- (select amount from im_customer_prices where user_id = ho.user_id and object_id = company_id) * hours as sum_amount
-			'1' as written_report,
-			sum(c.amount) as total_expenses
+			(select company_id from im_projects where project_id = ho.project_id) as company_id
 		   from
         	        im_hours ho, 
-			im_projects p,
-			im_costs c
+			im_projects p
 		   where
 	                ho.project_id in (
         	       	        select  
@@ -574,7 +603,7 @@ template::multirow foreach project_list {
                        		from    
 					im_projects parents,
 	                               	im_projects children
-		                       where
+		                where
         	                        children.tree_sortkey between
 						parents.tree_sortkey
 						and tree_right(parents.tree_sortkey)
@@ -583,22 +612,8 @@ template::multirow foreach project_list {
 						select $child_id as sub_project_id
                 		        )
 	               	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-	                and ho.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-			and ho.project_id = p.project_id and 
-			c.project_id in (
-                                select
-                                        children.project_id as sub_project_id
-                                from
-                                        im_projects parents,
-                                        im_projects children
-                                       where
-                                        children.tree_sortkey between
-                                                parents.tree_sortkey
-                                                and tree_right(parents.tree_sortkey)
-                                                and parents.project_id = $child_id
-                                             UNION
-                                                select $child_id as sub_project_id
-                                        )
+	                and ho.day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+			and ho.project_id = p.project_id
         	   group by
             	 	ho.user_id,
         	       	hours,
@@ -638,8 +653,16 @@ template::multirow foreach project_list {
         template::multirow set project_list $i written_order $written_order_var
 
 	# Sum hours 
-	set sum_hours_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_hours+0] $rounding_precision] $format_string $locale]
+	set sum_hours_matrix_var $sum_hours
+	set sum_hours_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_hours_matrix_var+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "sum_hours_matrix" $sum_hours_pretty    	
+
+	# Internal costs 
+	set cost_timesheet_logged_cache_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]
+	# ns_log NOTICE "KHD1: cost_timesheet_logged_cache_pretty: $cost_timesheet_logged_cache_pretty"
+	template::multirow set project_list $i "cost_timesheet_logged_cache_l" $cost_timesheet_logged_cache_pretty  	
+
+
         # Target Benefit 	
         set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $target_benefit+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i target_benefit $target_benefit_pretty
@@ -651,6 +674,7 @@ template::multirow foreach project_list {
 
         # Costs Material 	
 	set total_expenses_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $total_expenses+0] $rounding_precision] $format_string $locale]
+        # ns_log NOTICE "KHD1: cost_timesheet_logged_cache_pretty: $total_expenses_pretty"
         template::multirow set project_list $i costs_material $total_expenses_pretty
 
 	# Invoices 
@@ -683,17 +707,17 @@ template::multirow foreach project_list {
         template::multirow set project_list $i sum_invoices $sum_invoices_value_pretty
 
 	# P&L project 
-	set profit_and_loss_project_var [expr $sum_invoices_value - [expr $total_expenses + $sum_hours]]
+	set profit_and_loss_project_var [expr $sum_invoices_value - [expr $total_expenses_bak + $sum_hours]]
 	set profit_and_loss_project_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_project_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_project $profit_and_loss_project_var_pretty
 
-
 	# P&L 1  
-	set profit_and_loss_one_var [expr $sum_invoices_value - 0 - $total_expenses]
+	set profit_and_loss_one_var [expr $sum_invoices_value - 0 - $total_expenses_bak]
 	set profit_and_loss_one_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_one $profit_and_loss_one_var_pretty
+
 	# P&L 2  
-	set profit_and_loss_two_var [expr $sum_invoices_value - $sum_hours - $total_expenses]
+	set profit_and_loss_two_var [expr $sum_invoices_value - $sum_hours - $total_expenses_bak]
 	set profit_and_loss_two_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_two_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_two $profit_and_loss_two_var_pretty
 
@@ -720,18 +744,34 @@ template::multirow foreach project_list {
 		ns_write $output_row
 	}
 
-	set total__sum_hours_pretty 		[expr $total__profit_and_loss_one_var + $profit_and_loss_one_var]
-	set total__target_benefit 		[expr $total__target_benefit + $total__target_benefit]
-	set total__invoiceable_total_var	[expr $total__invoiceable_total_var + $invoiceable_total_var]
-	set total__total_expenses  		[expr $total__total_expenses + $total_expenses]
-	set total__sum_invoices_value  		[expr $total__sum_invoices_value + $sum_invoices_value]
+	ns_log NOTICE "KHD1: invoiceable_total_var: $invoiceable_total_var"
+
+	set total__cost_timesheet_logged_cache  [expr $total__cost_timesheet_logged_cache + $cost_timesheet_logged_cache]; 	# Personalkosten
+	set total__target_benefit 		[expr $total__target_benefit + $total__target_benefit]; 			# Sollerloes
+	set total__sum_hours_matrix		[expr $total__sum_hours_matrix + $sum_hours_matrix_var];			# Abrechenbar lt. E/C
+	set total__total_expenses  		[expr $total__total_expenses + $total_expenses]; 				# Materialkosten
+	set total__invoiceable_total_var	[expr $total__invoiceable_total_var + $invoiceable_total_var]; 			# Erloesfaehig 
+	set total__sum_invoices_value  		[expr $total__sum_invoices_value + $sum_invoices_value]; 			# Abgerechnet
 	set total__profit_and_loss_project_var 	[expr $total__profit_and_loss_project_var + $profit_and_loss_project_var]
 	set total__profit_and_loss_one_var 	[expr $total__profit_and_loss_one_var + $profit_and_loss_one_var]
 	set total__profit_and_loss_two_var 	[expr $total__profit_and_loss_two_var + $profit_and_loss_two_var]
 
 	incr i
+
+
 }
 
+
+
+set total__cost_timesheet_logged_cache  [lc_numeric [im_numeric_add_trailing_zeros [expr $total__cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]
+set total__target_benefit               [lc_numeric [im_numeric_add_trailing_zeros [expr $total__target_benefit+0] $rounding_precision] $format_string $locale]
+set total__sum_hours_matrix		[lc_numeric [im_numeric_add_trailing_zeros [expr $total__sum_hours_matrix+0] $rounding_precision] $format_string $locale]
+set total__invoiceable_total_var        [lc_numeric [im_numeric_add_trailing_zeros [expr $total__invoiceable_total_var+0] $rounding_precision] $format_string $locale]
+set total__total_expenses               [lc_numeric [im_numeric_add_trailing_zeros [expr $total__total_expenses+0] $rounding_precision] $format_string $locale]
+set total__sum_invoices_value           [lc_numeric [im_numeric_add_trailing_zeros [expr $total__sum_invoices_value+0] $rounding_precision] $format_string $locale]
+set total__profit_and_loss_project_var  [lc_numeric [im_numeric_add_trailing_zeros [expr $total__profit_and_loss_project_var+0] $rounding_precision] $format_string $locale]
+set total__profit_and_loss_one_var      [lc_numeric [im_numeric_add_trailing_zeros [expr $total__profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
+set total__profit_and_loss_two_var      [lc_numeric [im_numeric_add_trailing_zeros [expr $total__profit_and_loss_two_var+0] $rounding_precision] $format_string $locale]
 
 
 switch $output_format {
@@ -739,72 +779,5 @@ switch $output_format {
 	template::list::create \
 	    -name project_list \
 	    -elements $elements
-
-	set html_header "	
-
-        [im_header]
-        [im_navbar]
-
-	<form>
-	[export_form_vars opened_projects]
-
-	<table border=0 cellspacing=1 cellpadding=1>
-	<tr valign=top><td>
-
-	        <table border=0 cellspacing=1 cellpadding=1>
-        	<tr>
-	          <td class=form-label>[lang::message::lookup "" intranet-core.Start_Date "Start Date"]</td>
-        	  <td class=form-widget>
-	            <input type=textfield name=start_date value=$start_date>
-		    <input type='button' style='height:20px; width:20px; background: url(\"/resources/acs-templating/calendar.gif\");' onclick =\"return showCalendar(\"start_date\", \"y-m-d\");\" >
-        	  </td>
-	        </tr>
-        	<tr>
-	          <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
-        	  <td class=form-widget>
-	            <input type=textfield name=end_date value=$end_date>
-		    <input type='button' style='height:20px; width:20px; background: url(\"/resources/acs-templating/calendar.gif\");' onclick =\"return showCalendar(\"end_date\", \"y-m-d\");\" >
-	          </td>
-        	</tr>
-	        <tr>
-        	  <td class=form-label>[lang::message::lookup "" intranet-core.Customer "Customer"]</td>
-	          <td class=form-widget>
-        	     [im_company_select customer_id $customer_id] 
-	          </td>
-        	</tr>
-	        <tr>
-        	  <td class=form-label>[lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]</td>
-	          <td class=form-widget>
-        	        <select name='written_order'>
-                	        <option value='0' selected>[lang::message::lookup "" intranet-core.all "All"]</option>
-                        	<option value='1'>[lang::message::lookup "" acs-kernel.common_yes "Yes"]</option>
-	                        <option value='2'>[lang::message::lookup "" acs-kernel.common_no "No"]</option>
-        	        </select>
-	          </td>
-        	</tr>
-	        <tr>
-        	  <td class=form-label>[lang::message::lookup "" intranet-core.employees "Employees"]</td>
-	          <td class=form-widget>
-        	     [im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.all "All"] -group_id [im_profile_employees] "user_id_from_search"] 
-	          </td>
-        	</tr>
-	        <tr>
-        	  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format "Output Format"]</td>
-	          <td class=form-widget>
-			<nobr>
-			        <input name='output_format' value='html' checked='checked' type='radio'>HTML &nbsp;
-				<input name='output_format' value='csv' type='radio'>CSV
-		        </nobr>
-	          </td>
-        	</tr>
-	        <tr>
-        	  <td class=form-label></td>
-	          <td class=form-widget><input type='submit' value='[lang::message::lookup "" intranet-core.Submit "Submit"]'></td>
-        	</tr>
-	        </table>
-	</td></tr>
-	</table>
-	</form>
-	"
    }
 }
