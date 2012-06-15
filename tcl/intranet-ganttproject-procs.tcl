@@ -906,7 +906,7 @@ ad_proc -public im_gp_save_tasks2 {
 		select	p.project_id
 		from	im_projects p
 		where	p.parent_id = :parent_id and 
-			(p.project_nr = :task_nr OR lower(p.project_name) = lower(:task_name))
+			(lower(trim(p.project_nr)) = lower(trim(:task_nr)) OR lower(trim(p.project_name)) = lower(trim(:task_name)))
         " -default 0]
 	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id using parent_id=$parent_id, task_nr=$task_nr or task_name=$task_name" }
     }
@@ -1063,8 +1063,8 @@ ad_proc -public im_gp_save_tasks2 {
 
     db_dml project_update "
 	update im_projects set
-		project_name		= :task_name,
-		project_nr		= :task_nr,
+		project_name		= trim(:task_name),
+		project_nr		= trim(:task_nr),
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
