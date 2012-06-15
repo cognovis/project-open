@@ -769,3 +769,28 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+create or replace function inline_0 ()
+returns integer as 
+$BODY$
+declare
+        v_dynfield_id           integer;
+begin
+
+        SELECT im_dynfield_attribute_new (
+                'im_project', 'written_order', 'Written order', 'checkbox', 'boolean', 'f', 0, 'f', 'im_projects'
+        );
+
+        PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name='Project Managers'), 'read');
+        PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name='Project Managers'), 'write');
+
+        return 0;
+
+end;$BODY$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
