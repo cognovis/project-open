@@ -544,11 +544,51 @@ namespace eval acs_mail_lite {
             ns_log Notice "acs-mail-lite::send: $notice\n\n**********\nEnveloppe sender: $originator\n\n$packaged\n**********"
 
         } else {
-
-            acs_mail_lite::smtp -multi_token $tokens \
-                -headers $headers_list \
-                -originator $originator
-            
+		global tcl_platform
+		set platform [lindex $tcl_platform(platform) 0]
+		# Added by M. Martignano on 15/06/2012 to interface with
+		# a SMTP server on Windows
+		if { $platform == "windows" } {
+			# Get the SMTP Parameters
+			set smtp [parameter::get -parameter "SMTPHost" \
+				      -package_id $mail_package_id \
+				      -default [ns_config ns/parameters mailhost]]
+			if {$smtp eq ""} {
+			    set smtp localhost
+			}		
+			set timeout [parameter::get -parameter "SMTPTimeout" \
+					 -package_id $mail_package_id \
+					 -default  [ns_config ns/parameters smtptimeout]]
+		
+			if {$timeout eq ""} {
+			    set timeout 60
+			}
+			set smtpport [parameter::get -parameter "SMTPPort" \
+					  -package_id $mail_package_id \
+					  -default 25]		
+			set smtpuser [parameter::get -parameter "SMTPUser" \
+					  -package_id $mail_package_id]		
+			set smtppassword [parameter::get -parameter "SMTPPassword" \
+					      -package_id $mail_package_id]
+			
+			# set mm_body [string map {"\n" "<br />"} $body]
+			
+			# set mm_cmd "exec /bin/blat - -html -subject \"$subject\" -body \"$mm_body\" -f $from_addr -to $to_addr -server $smtp -port $smtpport -u $smtpuser -pw $smtppassword -ti $timeout"
+			set mm_cmd "exec /bin/blat - -subject \"$subject\" -body \"$body\" -f $from_addr -to $to_addr -server $smtp -port $smtpport -u $smtpuser -pw $smtppassword -ti $timeout"			
+			ns_log Debug "mm_cmd ------> $mm_cmd"
+			
+		        if { [catch {
+		        	eval $mm_cmd
+		         } err_msg] } {
+		         	ns_log Debug "------> $err_msg"
+		         	# Nothing. We check if BLAT was successfull.
+		         }
+		} else {
+		  	acs_mail_lite::smtp -multi_token $tokens \
+		  		-headers $headers_list \
+		  		-originator $originator
+  		}
+			
             # Close all mime tokens
             mime::finalize $tokens -subordinates all
             
