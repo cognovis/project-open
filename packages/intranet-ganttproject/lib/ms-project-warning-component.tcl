@@ -3,9 +3,29 @@
 #
 # project_id:	Variable defined by calling procedure
 
-set main_project_id $project_id
+set org_project_id $project_id
 set warnings_html ""
 set return_url [im_url_with_query]
+
+
+set main_project_id $project_id
+
+# ---------------------------------------------------------------
+# Get the main project
+# ---------------------------------------------------------------
+
+set main_project_id [db_string main_proj "
+	select	min(main_p.project_id)
+	from	im_projects main_p,
+		im_projects p
+	where	p.project_id = :org_project_id and
+		main_p.tree_sortkey = tree_root_key(p.tree_sortkey)
+" -default ""]
+
+if {"" == $main_project_id} {
+    ad_return_complaint 1 "ms-project-warning: Could not determine main-project for project #$org_project_id"
+}
+
 
 # ---------------------------------------------------------------
 # Check which checks to ignore
@@ -32,8 +52,8 @@ if {![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	p.project_id as task_id,
 		p.project_name as task_name,
-		p.start_date::date as task_start_date,
-		main_p.start_date::date as main_project_start_date
+		p.start_date as task_start_date,
+		main_p.start_date as main_project_start_date
 	from	im_projects main_p,
 		im_projects p
 		LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id)
@@ -107,7 +127,7 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 			im_biz_object_members bom,
 			users u
 		where	t.task_id = p.project_id and
-			main_p.project_id = :main_project_id and
+			main_p.project_id = :org_project_id and
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 			r.object_id_one = p.project_id and
 			r.object_id_two = u.user_id and
@@ -142,12 +162,48 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 }
 
 
+# ---------------------------------------------------------------
+# Check for tasks with leading or trailing whitespaces
+# ---------------------------------------------------------------
+
+
+set warning_key "fix-tasks-with-white-spaces"
+if {![info exists ignore_hash($warning_key)]} {
+    set sql "
+		select	p.project_id as task_id,
+			p.project_name as task_name
+		from	im_projects main_p,
+			im_projects p
+		where	main_p.project_id = :org_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+			p.project_name != trim(p.project_name)
+    "
+
+    set task_list {}
+    db_foreach tasks_start_before_project $sql {
+	lappend task_list "<a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a>"
+    }
+    
+    if {[llength $task_list] > 0} {
+	set task_html [join $task_list "</li>\n<li>"]
+	append warnings_html "
+	<div class=ms_project_warning_title>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_With_White_Spaces "Tasks With White Spaces"]
+	</div>
+	<div class=ms_project_warning_body>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_whitepaces_msg "The following tasks contain white spaces in front or after the project name.
+	<ul><li>%task_html%</li></ul>"]<br>	
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_whitepaces_fix "Please remove the white spaces before and after the project name."]
+	</div>
+        "
+    }
+}
+
+
 
 # ---------------------------------------------------------------
 # Check for tasks without start constraint
 # ---------------------------------------------------------------
-
-# ad_return_complaint 1 [array get ignore_hash]
 
 set warning_key "fix-tasks-without-start-constraint"
 if {![info exists ignore_hash($warning_key)]} {
@@ -157,13 +213,24 @@ if {![info exists ignore_hash($warning_key)]} {
 	from	im_projects main_p,
 		im_projects p,
 		im_timesheet_tasks t
-	where	main_p.project_id = :main_project_id and
+	where	main_p.project_id = :org_project_id and
 		p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 		p.project_id = t.task_id and
 		-- the task starts after the main project
-		p.start_date::date > main_p.start_date::date and
+		p.start_date::date > (select start_date from im_projects where project_id = :main_project_id) and
 		-- start as early as possible
-		(t.scheduling_constraint_id = 9700 or t.scheduling_constraint_id is null)
+		(t.scheduling_constraint_id = 9700 or t.scheduling_constraint_id is null) and
+		0 = (
+			select	count(*)
+			from	im_timesheet_task_dependencies ttd
+			where	ttd.task_id_one = p.project_id
+		) and
+		-- Exclude parent projects (only report leaf tasks)
+		0 = (
+			select	count(*)
+			from	im_projects pp
+			where	pp.parent_id = p.project_id
+		)
 	order by
 		p.tree_sortkey
     "
