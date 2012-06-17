@@ -502,7 +502,7 @@ ad_form -extend -name $form_id -new_request {
     
     set role_id [im_company_role_key_account]
     
-    im_biz_object_add_role $user_id $company_id $role_id
+    im_biz_object_add_role $current_user_id $company_id $role_id
     if {[exists_and_not_null manager_id]} {
 	im_biz_object_add_role $manager_id $company_id $role_id
     }
