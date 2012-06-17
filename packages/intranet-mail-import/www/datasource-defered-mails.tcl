@@ -44,8 +44,12 @@ ad_page_contract {
 
     set ctr 0
     set record_list ""
+    set mail_dir [parameter::get -package_id [apm_package_id_from_key intranet-mail-import] -parameter "MailDir" -default "/web/projop/Maildir"]
 
-    set mail_dir "/web/projop/Maildir"
+    if { ![file exists $mail_dir] } {
+	ad_return_complaint 1 "Configuration problem. Please tell your SysAdmin to set parameter: intranet-mail-import -> MailDir"
+    }
+
     # Make sure the "Maildir/defered" folder exists"
     set defered_folder "$mail_dir/defered"
     if {![file exists $defered_folder]} {

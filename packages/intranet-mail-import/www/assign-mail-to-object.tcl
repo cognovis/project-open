@@ -263,10 +263,10 @@ ad_page_contract {
             }
 	} else {
 		if {[catch {
-                        ns_rename $email_id "/tmp/$email_file_name"
+		    ns_rename $email_id "[fileutil::TempDir]/$email_file_name"
                    } errmsg]} {
-                        ns_log Notice "assign-mail-to-object: Error moving '$email_id' to temp folder: '/tmp/$email_file_name': $errmsg"
-                        append debug "Error moving '$email_id' to temp folder: '/temp/$email_file_name': $errmsg \n"
+		    ns_log Notice "assign-mail-to-object: Error moving '$email_id' to temp folder: '[fileutil::TempDir]/$email_file_name': $errmsg"
+		    append debug "Error moving '$email_id' to temp folder: '[fileutil::TempDir]/$email_file_name': $errmsg \n"
                    }
 	}
 
