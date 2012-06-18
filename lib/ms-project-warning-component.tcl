@@ -112,7 +112,7 @@ if {![info exists ignore_hash($warning_key)]} {
 
 
 set warning_key "fix-tasks-without-assignments"
-if {0 && ![info exists ignore_hash($warning_key)]} {
+if {![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	t.*
 	from	(select	p.project_id as task_id,
@@ -131,11 +131,16 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 			r.object_id_one = p.project_id and
 			r.object_id_two = u.user_id and
-			r.rel_id = bom.rel_id
+			r.rel_id = bom.rel_id and
+			-- Exclude parent projects with sub-tasks
+			0 = (select count(*) from im_projects pp where pp.parent_id = p.project_id)
 		group by
 			p.project_id, p.project_name, p.tree_sortkey
 		) t
-	where	t.percentage = 0.0 and
+	where
+		-- with no assigned resources
+		t.percentage = 0.0 and
+		-- with actual work to do
 		t.planned_units > 0.0
 	order by
 		t.tree_sortkey
