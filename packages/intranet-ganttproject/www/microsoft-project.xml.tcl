@@ -238,6 +238,8 @@ set project_resources_sql "
 		UNION
 			select  :main_project_id
 		)
+	order by
+		p.person_id
 "
 
 
