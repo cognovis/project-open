@@ -1,4 +1,4 @@
-# /packages/intranet-timesheet2/www/hours/new.tcl
+# /packages/intranet-cust-koernigweber/www/hours/new.tcl
 #
 # Copyright (C) 1998-2004 various parties
 # The code is based on ArsDigita ACS 3.4
@@ -879,16 +879,14 @@ template::multirow foreach hours_multirow {
 
     if {$show_member_p && !$user_is_project_member_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Not_member_of_project "You are not a member of this project. "] }
 
-    # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - before: " $block_logging_project_status_p  "id: " $project_id "status: " $project_status_id "Evalresult: " $par ]
-    
+    ns_log NOTICE "intranet-cust-koernigweber:hours:new.tcl - block_logging_project_status_p - before: $block_logging_project_status_p, id: $project_id, status: $project_status_id" 
+ 
     set block_logging_project_status_p [check_logging_project_status $project_id]
-    # set block_logging_project_status_p 0
+    ns_log NOTICE "intranet-cust-koernigweber:hours:new.tcl - check_logging_project_status: $block_logging_project_status_p" 
 
     if { !$block_logging_project_status_p } {
 	append help_text [lang::message::lookup "" intranet-timesheet2.Nolog_log_on_temp_stopped_projects "This project has been temporary blocked for timesheet entry"]
     }
-
-    # ns_log NOTICE [concat "KHD " "block_logging_project_status_p - after: " $block_logging_project_status_p ]
 
     # -----------------------------------------------
     # Write out help and debug information
