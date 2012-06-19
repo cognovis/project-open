@@ -110,9 +110,9 @@ ad_proc -public im_allowed_project_types {
 
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
-	append footer_html "
+    append footer_html "
 		<br><input type=submit value='[lang::message::lookup "" intranet-core.Save "Save"]' name=submit_apply>
-	    "
+    "
 
     # ------------------ Join table header, body and footer ----------------
     set body_html [im_project_type_table $company_id]
@@ -460,6 +460,10 @@ ad_proc -public im_price_list {
            "
 	}
 
+
+# Temporary deactivated
+if { "im_project" != $object_type } {
+
      append body_html "
         <tr $td_class([expr $count % 2])>
                 <td colspan='5'>
@@ -495,6 +499,7 @@ ad_proc -public im_price_list {
                  </td>
 	</tr>
      "
+}
 
     # ------------------ Format the table footer with buttons ------------
     set footer_html ""
@@ -1172,8 +1177,10 @@ ad_proc check_logging_project_status {
     Checks if one of the parent projects has a project status that prohibits
     TS logging due to parameter 'AllowLoggingForProjectStatusIDs'
 } {
+
 	# Check if status of object itself forbidds logging 
 	set project_status_id [db_string get_data "select project_status_id from im_projects where project_id = :project_id" -default 0]	
+
 	if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
 		return 0 
 	}
@@ -1191,7 +1198,8 @@ ad_proc check_logging_project_status {
 			)
 	"
 	set project_status_id [db_string get_data $sql -default 0]
-	if { "" == $project_status_id  } {
+
+	if { "" == $project_status_id || "0" == $project_status_id } {
 		return 1
 	} else {
 		if { [string first $project_status_id [string tolower [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "AllowLoggingForProjectStatusIDs" -default ""]]] == -1 } {
