@@ -48,14 +48,15 @@ set column_sql "
                 acs_attributes aa
         where   a.widget_name = w.widget_name and
                 a.acs_attribute_id = aa.attribute_id and
-                aa.object_type = 'im_project'
+                aa.object_type = 'im_project' and 
+		a.also_hard_coded_p = 'f'
 "
 db_foreach column_list_sql $column_sql {
     lappend extra_selects "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
 }
 set extra_select [join $extra_selects ",\n\t"]
 
-set query "
+set sql "
 select
         p.*,
         c.*,
@@ -80,8 +81,9 @@ order by
         p.project_id
 "
 
+# ad_return_complaint 1 $sql
 
-if { ![db_0or1row projects_info_query $query] } {
+if { ![db_0or1row projects_info_query $sql] } {
     ad_return_complaint 1 "[_ intranet-core.lt_Cant_find_the_project]"
     return
 }
@@ -260,7 +262,8 @@ set column_sql "
         where
                 a.widget_name = w.widget_name and
                 a.acs_attribute_id = aa.attribute_id and
-                aa.object_type = 'im_project'
+                aa.object_type = 'im_project' and 
+		a.also_hard_coded_p = 'f'
         order by
                 coalesce(la.pos_y,0), coalesce(la.pos_x,0)
 "
