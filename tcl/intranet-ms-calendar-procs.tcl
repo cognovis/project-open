@@ -76,20 +76,44 @@ ad_proc -public from_xml {
 			weekday		{
 			    set day_type ""
 			    set day_working ""
-
+			    set working_times {}
 			    foreach week_day_attr [$week_days_attr childNodes] {
 				set node_name [string tolower [$week_day_attr nodeName]]
 				set node_text [$week_day_attr text]
-				ns_log Notice "im_ms_calendar::from_xml: node_name=$node_name, node_text=$node_text"
+				ns_log Notice "im_ms_calendar::from_xml: calendar/weekdays/weekday: node_name=$node_name, node_text=$node_text"
 				switch $node_name {
 				    daytype		{ set day_type $node_text  }
 				    dayworking		{ set day_working $node_text  }
+				    workingtimes {
+					foreach working_times_attr [$week_day_attr childNodes] {
+					    set node_name [string tolower [$working_times_attr nodeName]]
+					    set node_text [$working_times_attr text]
+					    ns_log Notice "im_ms_calendar::from_xml: calendar/weekdays/weekday/workingtimes/: node_name=$node_name, node_text=$node_text"
+					    switch $node_name {
+						workingtime		{
+						    set from_time ""
+						    set to_time ""
+						    foreach working_time_attr [$working_times_attr childNodes] {
+							set node_name [string tolower [$working_time_attr nodeName]]
+							set node_text [$working_time_attr text]
+							ns_log Notice "im_ms_calendar::from_xml: calendar/weekdays/weekday/workingtimes/workingtime/: node_name=$node_name, node_text=$node_text"
+							switch $node_name {
+							    fromtime		{ set from_time $node_text  }
+							    totime		{ set to_time $node_text  }
+							}
+						    }
+						    if {"" != $from_time && "" != $to_time} {
+							lappend working_times [list $from_time $to_time]
+						    }
+						}
+					    }
+					}
+				    }
 				}
 			    }
 			    if {"" != $day_type} {
-				set hash($day_type) [list day_working $day_working]
+				set hash($day_type) [list day_working $day_working working_times $working_times]
 			    }
-
 			}
 		    }
 		}
