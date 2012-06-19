@@ -28,6 +28,7 @@ ad_proc -public im_gp_work_seconds_in_interval {
     start_date and end_date, according to the specified
     calendar
 } {
+    ns_log Notice "im_gp_work_seconds_in_interval: start=$start_date, end=$end_date"
     set start_date_ansi [string range $start_date 0 9]
     set end_date_ansi [string range $end_date 0 9]
     set start_date_julian [dt_ansi_to_julian_single_arg $start_date_ansi]
@@ -39,9 +40,12 @@ ad_proc -public im_gp_work_seconds_in_interval {
 	set dow [expr (($j+1) % 7) + 1]
 	set weekend_p [expr ($dow == 1) || ($dow == 7)]
 	if {!$weekend_p} { incr work_days }
-	ns_log Notice "im_gp_work_seconds_in_interval: start=$start_date_ansi, end=$end_date_ansi, dow=$dow, weekend_p=$weekend_p"
+#	ns_log Notice "im_gp_work_seconds_in_interval: start=$start_date_ansi, end=$end_date_ansi, dow=$dow, weekend_p=$weekend_p"
     }
-    return [expr $work_days * 24 * 60 * 60]
+
+    set result [expr $work_days * 8 * 60 * 60]
+    ns_log Notice "im_gp_work_seconds_in_interval: start=$start_date, end=$end_date, result=$result"
+    return $result
 }
 
 
