@@ -122,7 +122,14 @@ ad_proc -public from_xml {
     }
     ns_log Notice "im_ms_calendar::from_xml: calendar_name=$calendar_name, [array get hash]"
 
-    return [array get hash]
+
+    set calendar_hash(uid) $calendar_uid
+    set calendar_hash(name) $calendar_name
+    set calendar_hash(is_base_calendar) $calendar_is_base
+    set calender_hash(base_calendar_uid) $calendar_base_uid
+    set calendar_hash(week_days) [array get hash]
+
+    return [array get calendar_hash]
 }
 
 ad_proc -public to_xml {
