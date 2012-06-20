@@ -86,6 +86,28 @@ select acs_object_type__create_type (
 
 
 
+----------------------------------------------------------------
+-- Create a "project_calendar" in im_projects
+----------------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as $$
+declare
+	v_count			integer;
+begin
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = 'im_projects' and lower(column_name) = 'project_calender';
+	IF v_count > 0 THEN return 1; END IF;
+
+	alter table im_projects
+	add column project_calender text;
+
+	return 0;
+end;$$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 ----------------------------------------------------------------

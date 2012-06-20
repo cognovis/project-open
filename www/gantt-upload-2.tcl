@@ -305,7 +305,7 @@ if {$calendars_node != ""} {
 
 set calendar_uid [db_string cal_uid "select xml_calendaruid from im_gantt_projects where project_id = :project_id" -default ""]
 
-if {$calendar_uid != "" && [im_column_exists im_projects project_calendar_string]} {
+if {$calendar_uid != ""} {
     set cal_list ""
     if {[info exists calendar_hash($calendar_uid)]} {
 	array unset cal_hash
@@ -314,7 +314,7 @@ if {$calendar_uid != "" && [im_column_exists im_projects project_calendar_string
 	    set cal_list $cal_hash(week_days)
 	    db_dml project_update "
 		update im_projects 
-		set project_calendar_string = :cal_list
+		set project_calendar = :cal_list
 		where project_id = :project_id
             "
 	}
