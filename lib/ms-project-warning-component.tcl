@@ -366,17 +366,25 @@ if {![info exists ignore_hash($warning_key)]} {
 	    321 { set seconds_uom [expr $planned_units * 3600 * 8.0] }
 	    default { set seconds_uom 0.0 }
 	}
+	set overallocation_factor "undefined"
+	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
 
-	append task_html "<tr>\n"
-	append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
- 	append task_html "<td><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
- 	append task_html "<td>$start_date_pretty</td>\n"
- 	append task_html "<td>$end_date_pretty</td>\n"
- 	append task_html "<td>[expr round(10.0 * $seconds_work / 3600.0) / 10.0]</td>\n"
- 	append task_html "<td>[expr round(10.0 * $seconds_uom / 3600.0) / 10.0]</td>\n"
- 	append task_html "<td>$percentage</a></td>\n"
-	append task_html "</tr>\n"
-	incr task_ctr
+	if {"undefined" != $overallocation_factor} {
+	    if {[expr abs($overallocation_factor - 1.0)] > 0.001} {
+	    
+		append task_html "<tr>\n"
+		append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
+		append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
+		append task_html "<td>$start_date_pretty</td>\n"
+		append task_html "<td>$end_date_pretty</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $seconds_uom / 3600.0) / 10.0]</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $seconds_work / 3600.0) / 10.0]</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $percentage) / 10.0]</a></td>\n"
+		append task_html "<td align=right>[expr round(1000.0 * $overallocation_factor) / 1000.0]</td>\n"
+		append task_html "</tr>\n"
+		incr task_ctr
+	    }
+	}
     }
     
     if {$task_skipped_ctr > 0} {
@@ -395,13 +403,14 @@ if {![info exists ignore_hash($warning_key)]} {
     
     if {[string length $task_html] > 0} {
 	set task_header "<tr class=rowtitle>\n"
-	append task_header "<td class=rowtitle><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_overallocation',this.checked) checked></td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Task "Task"]</td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Start "Start"]</td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.End "End"]</td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Sec_in_Int "Calculated Work (h)"]</td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Sec_calc "Specified Work (h)"]</td>\n"
-	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Percentage "Assigned Resources %"]</td>\n"
+	append task_header "<td class=rowtitle align=center><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_overallocation',this.checked) checked></td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Task "Task"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Start "Start Date/Time"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.End "End Date/Time"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Sec_calc "Specified<br>Work (h)"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Sec_in_Int "Calculated<br>Work (h)"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Percentage "Assigned<br>Resources %"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Percentage "Overallocation<br>Factor"]</td>\n"
 	append task_header "</tr>\n"
 	
 	set task_footer "
@@ -426,7 +435,7 @@ if {![info exists ignore_hash($warning_key)]} {
         MS-Project will shift the end-date of the tasks, unless you reduce the resource assignment here."]<br>
 	<form action=/intranet-ganttproject/fix-tasks-with-overallocation>
 	[export_form_vars project_id return_url]
-	<table border=0>
+	<table border=0 cellspacing=1 cellpadding=1>
 	$task_header
 	$task_html
 	$task_footer
