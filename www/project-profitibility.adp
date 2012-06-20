@@ -32,17 +32,17 @@
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]%></td>
                   <td class=form-widget>
-                        <select name='written_order'>
-                                <option value='0' selected><%=[lang::message::lookup "" intranet-core.all "All"]%></option>
-                                <option value='1'><%=[lang::message::lookup "" acs-kernel.common_yes "Yes"]%></option>
-                                <option value='2'><%=[lang::message::lookup "" acs-kernel.common_no "No"]%></option>
+                        <select name='written_order_form_p'>
+                                <option value='0' @written_order_0_selected;noquote@><%=[lang::message::lookup "" intranet-core.all "All"]%></option>
+                                <option value='1' @written_order_1_selected;noquote@><%=[lang::message::lookup "" acs-kernel.common_yes "Yes"]%></option>
+                                <option value='2' @written_order_2_selected;noquote@><%=[lang::message::lookup "" acs-kernel.common_no "No"]%></option>
                         </select>
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.employees "Employees"]%></td>
                   <td class=form-widget>
-                     <%=[im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.all "All"] -group_id [im_profile_employees] "user_id_from_search"]%>
+                     <%=[im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.all "All"] -group_id [im_profile_employees] "user_id_from_search" $user_id_from_search]%>
                   </td>
                 </tr>
                 <tr>
@@ -69,7 +69,7 @@
             <th class="list-table" align="left" id="project_list_company_name">@label_client;noquote@</th>
 	    <th class="list-table" align="left" id="project_list_project_name">@label_project_name;noquote@</th>
        	    <th class="list-table" align="center" id="project_list_written_order">@label_written_order;noquote@</th>
-            <th class="list-table" align="right" id="project_list_cost_timesheet_logged_cache_l">@label_internal_costs;noquote@</th>
+            <th class="list-table" align="right" id="project_list_cost_timesheet_logged_cache_l">@label_staff_costs;noquote@</th>
             <th class="list-table" align="right" id="project_list_target_benefit">@label_target_benefit;noquote@</th>
             <th class="list-table" align="right" id="project_list_target_benefit">@label_costs_based_on_matrix;noquote@</th>
             <th class="list-table" align="right" id="project_list_target_benefit">@label_costs_material;noquote@</th>
@@ -84,11 +84,11 @@
 		<multiple name='project_list'>
 		<tr class="odd">
 		  <td class="list-table">@project_list.company_name@</td>
-		  <td class="list-table">@project_list.project_name@</td>
-		  <td class="list-table" align="center">@project_list.written_order@</td>
-		  <td class="list-table" align="right">@project_list.cost_timesheet_logged_cache_l@</td>
+		  <td class="list-table"><a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
+		  <td class="list-table" align="center">@project_list.written_order_p@</td>
+		  <td class="list-table" align="right">@project_list.staff_costs@</td>
 		  <td class="list-table" align="right">@project_list.target_benefit@</td>
-		  <td class="list-table" align="right">@project_list.sum_hours_matrix@</td>
+		  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
 		  <td class="list-table" align="right">@project_list.costs_material@</td>
 		  <td class="list-table" align="right">@project_list.invoiceable_total@</td>
 		  <td class="list-table" align="right">@project_list.sum_invoices@</td>
@@ -103,9 +103,9 @@
                   <td class="list-table"></td>
                   <td class="list-table"></td>
                   <td class="list-table" align="center"></td>
-                  <td class="list-table" align="right">@total__cost_timesheet_logged_cache@</td>
+                  <td class="list-table" align="right">@total__amount_costs_staff@</td>
                   <td class="list-table" align="right">@total__target_benefit@</td>
-                  <td class="list-table" align="right">@total__sum_hours_matrix@</td>
+                  <td class="list-table" align="right">@total__amount_invoicable_matrix@</td>
                   <td class="list-table" align="right">@total__total_expenses@</td>
                   <td class="list-table" align="right">@total__invoiceable_total_var@<!--erloesfaehig --></td> 
                   <td class="list-table" align="right">@total__sum_invoices_value@</td>
