@@ -152,6 +152,7 @@ if {[string equal [$root_node nodeName] "Project"]
 ns_log Notice "gantt-upload-2: format=$format"
 
 
+
 # -------------------------------------------------------------------
 # Save the tasks.
 # The task_hash contains a mapping table from gantt_project_ids to task_ids.
@@ -266,6 +267,58 @@ if {[set node [$root_node selectNodes /project/description]] != ""} {
 	set description = :description
 	where project_id = :project_id
     "
+}
+
+
+# -------------------------------------------------------------------
+# Process Calendars
+# -------------------------------------------------------------------
+
+if {[set calendars_node [$root_node selectNodes /project/calendars]] == ""} {
+    set calendars_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Calendars" ]
+}
+
+if {$calendars_node != ""} {
+    if {$debug_p} {
+	ns_write "<h2>Saving Calendars</h2>\n"
+	ns_write "<ul>\n"
+    }
+
+    set calendar_nodes [$calendars_node childNodes]
+    foreach calendar_node $calendar_nodes {
+	array unset cal_hash
+	array set cal_hash [im_ms_calendar::from_xml $calendar_node]
+	set calendar_uid ""
+	if {[info exists cal_hash(uid)]} { 
+	    set calendar_uid $cal_hash(uid) 
+	    set calendar_hash($calendar_uid) [array get cal_hash]
+	}
+    }
+   
+    if {$debug_p} { ns_write "</ul>\n" }
+}
+
+
+# -------------------------------------------------------------------
+# Save the project Calendar
+# -------------------------------------------------------------------
+
+set calendar_uid [db_string cal_uid "select xml_calendaruid from im_gantt_projects where project_id = :project_id" -default ""]
+
+if {$calendar_uid != "" && [im_column_exists im_projects project_calendar_string]} {
+    set cal_list ""
+    if {[info exists calendar_hash($calendar_uid)]} {
+	array unset cal_hash
+	array set cal_hash $calendar_hash($calendar_uid)
+	if {[info exists cal_hash(week_days)]} {
+	    set cal_list $cal_hash(week_days)
+	    db_dml project_update "
+		update im_projects 
+		set project_calendar_string = :cal_list
+		where project_id = :project_id
+            "
+	}
+    }
 }
 
 
