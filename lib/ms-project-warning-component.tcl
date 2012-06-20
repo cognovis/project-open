@@ -358,7 +358,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	    continue 
 	}
 
-	set seconds_in_interval [im_gp_work_seconds_in_interval -start_date $start_date -end_date $end_date]
+	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar [im_ms_calendar::default]]
 	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
 
 	switch $uom_id {
