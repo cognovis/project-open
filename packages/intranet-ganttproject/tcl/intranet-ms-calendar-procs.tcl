@@ -193,6 +193,63 @@ $tabs</Calendar>
 
 
 
+ad_proc -public seconds_in_interval {
+    -start_date:required
+    -end_date:required
+    -calendar:required
+} {
+    Returns the number of workable seconds between
+    start_date and end_date, according to the specified
+    calendar
+} {
+    ns_log Notice "im_ms_calendar::seconds_in_interval: start=$start_date, end=$end_date, calendar=$calendar"
+
+    # cal_hash maps day_of_week {1..7} into a list of service hour intervals {{09:00:00 13:00:00} {15:00:00 19:00:00}}
+    array set cal_hash $calendar
+
+    set start_julian [im_date_ansi_to_julian [string range $start_date 0 9]]
+    set end_julian [im_date_ansi_to_julian [string range $end_date 0 9]]
+    set start_epoch [im_date_ansi_to_epoch $start_date]
+    set end_epoch [im_date_ansi_to_epoch $end_date]
+
+    set working_seconds 0
+    ns_log Notice "im_ms_calendar::seconds_in_interval: start_julian=$start_julian, end_julian=$end_julian"
+    for {set j $start_julian} {$j <= $end_julian} {incr j} {
+
+	# ----------------------------------------------------------------------------------------
+	# Get the service hours per Day Of Week (1=Su, 2=Mo, 7=Sa)
+	# service_hours are like {09:00 18:00}
+	set dow [expr 1 + (($j + 1) % 7)]
+	set cal_day_string $cal_hash($dow)
+	array unset cal_day_hash
+	array set cal_day_hash $cal_day_string
+	set service_hour_list {}
+	if {[info exists cal_day_hash(working_times)]} { set service_hour_list $cal_day_hash(working_times) }
+	ns_log Notice "im_ms_calendar::seconds_in_interval: j=$j, dow=$dow, working_seconds=$working_seconds, hours=$service_hour_list"
+
+	set j_epoch [im_date_julian_to_epoch $j]
+	set j_ansi [im_date_julian_to_ansi $j]
+	foreach tuple $service_hour_list {
+	    set hour_start_ansi "$j_ansi [lindex $tuple 0]"
+	    set hour_end_ansi "$j_ansi [lindex $tuple 1]"
+	    set hour_start_epoch [im_date_ansi_to_epoch $hour_start_ansi]
+	    set hour_end_epoch [im_date_ansi_to_epoch $hour_end_ansi]
+
+	    # Check that the working time is withing the start-end range specified in the parameters.
+	    if {$hour_start_epoch < $start_epoch} { set hour_start_epoch $start_epoch }
+	    if {$hour_end_epoch > $end_epoch} { set hour_end_epoch $end_epoch }
+
+	    # Add the duration of the interval to the working seconds
+	    if {$hour_end_epoch > $hour_start_epoch} {
+		set working_seconds [expr $working_seconds + ($hour_end_epoch - $hour_start_epoch)]
+	    }
+
+	    ns_log Notice "im_ms_calendar::seconds_in_interval: j=$j, dow=$dow, hour_start_ansi=$hour_start_ansi, hour_end_ansi=$hour_end_ansi, hour_start_epoch=$hour_start_epoch, hour_end_epoch=$hour_end_epoch"
+	}
+    }
+    return $working_seconds
+}
+
 
 # ----------------------------------------------------------------------
 #
