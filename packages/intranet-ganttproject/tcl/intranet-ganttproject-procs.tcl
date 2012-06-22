@@ -541,7 +541,7 @@ ad_proc -public im_gp_save_tasks {
 	    lappend xml_elements $nodeName
 
 	    switch [string tolower $nodeName] {
-		"name" - "title" - "manager" - "calendaruid" - "calendars" - 
+		"name" - "title" - "manager" - "calendars" - 
 		"tasks" - "resources" - "assignments" {
 		    ns_log Notice "im_gp_save_tasks: Ignore project information"
 		    # ignore these
@@ -734,7 +734,7 @@ ad_proc -public im_gp_save_tasks2 {
 		# this is handled below, because we don't know our task id yet
 		continue
 	    }
-	    "outlinelevel" - "id" - "calendaruid" {
+	    "outlinelevel" - "id" {
 		# ignored 
 	    }
 	    "customproperty" - "task" - "depend" {
