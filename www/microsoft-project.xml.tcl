@@ -408,27 +408,6 @@ db_foreach project_allocations $project_allocations_sql {
     set planned_seconds [expr $planned_units * 3600.0]
     set actual_work_seconds [expr $planned_seconds * $percent_completed / 100.0]
     set remaining_work_seconds [expr $planned_seconds - $actual_work_seconds]
-    set work_seconds_in_interval [util_memoize [list im_gp_work_seconds_in_interval -start_date $start_date_timestamp -end_date $end_date_timestamp]]
-    set work_seconds_assigned [expr $work_seconds_in_interval * $total_percentage_assigned / 100.0]
-
-    if {0.0 == $planned_seconds} {
-	set overassigment_factor 1.0
-    } else {
-	set overassigment_factor [expr 1.0 * $work_seconds_assigned / $planned_seconds]
-
-	# Reduce the assignment so that the Work = Duration x Assigment formula works for MS-Project
-#	set percentage_assigned [expr $percentage_assigned / $overassigment_factor]
-    }
-
-    if {0} {
-    ad_return_complaint 1 "<pre>
-$start_date_timestamp - $end_date_timestamp
-work_seconds_in_interval=$work_seconds_in_interval
-planned_seconds=$planned_seconds
-work_seconds_assigned=$work_seconds_assigned
-overassigment_factor=$overassigment_factor
-</pre>"
-    }
 
     if {$total_percentage_assigned == 0} {
 	set work_seconds $planned_seconds
