@@ -1532,8 +1532,9 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 
     # Remove return_url from current vars, because it's too long
     # to be incorporated into the local return_url
-    ns_set delkey $bind_vars return_url
-    set return_url "$current_url_without_vars?[export_url_bind_vars $bind_vars]"
+    #ns_set delkey $bind_vars return_url
+    #set return_url "$current_url_without_vars?[export_url_bind_vars $bind_vars]"
+    set return_url [im_url_with_query]
 
     if {"" == $bread_crum_path} {
         set bread_crum_path [ns_set get $bind_vars bread_crum_path]
@@ -1850,9 +1851,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     }
 
     set tool_tds [im_filestorage_tool_tds $bread_crum_path $folder_type $object_id $return_url $up_link]
-
     set profile_tds [im_filestorage_profile_tds $user_id $object_id]
-
 
     set component_html "
 <form name=\"$folder_type\" method=POST action=\"/intranet-filestorage/action\">
