@@ -454,6 +454,9 @@ if {![info exists ignore_hash($warning_key)]} {
 	    continue 
 	}
 
+	# Empty start- and end dates are handled in other check
+	if {"" == $start_date || "" == $end_date} { continue }
+
 	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar [im_ms_calendar::default]]
 	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
 
@@ -466,7 +469,9 @@ if {![info exists ignore_hash($warning_key)]} {
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
 
 	if {"undefined" != $overallocation_factor} {
-	    if {[expr abs($overallocation_factor - 1.0)] > 0.001} {
+	    # Accept max. 5% overassignment, because of small rounding
+	    # errors between %assigned and actual time spent by the resource
+	    if {[expr abs($overallocation_factor - 1.0)] > 0.05} {
 	    
 		append task_html "<tr>\n"
 		append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
