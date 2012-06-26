@@ -254,6 +254,7 @@ ad_proc -public im_price_list {
 	lappend person_list $user_id
     }
 
+    set show_delete_checkbox_p 0
     foreach project_member_id $person_list {
 	
 	switch $object_type {
