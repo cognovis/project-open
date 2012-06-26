@@ -203,6 +203,8 @@ ad_proc -public seconds_in_interval {
     calendar
 } {
     ns_log Notice "im_ms_calendar::seconds_in_interval: start=$start_date, end=$end_date, calendar=$calendar"
+    if {"" == $start_date} { error "im_ms_calendar::seconds_in_interval: start_date is empty" }
+    if {"" == $end_date} { error "im_ms_calendar::seconds_in_interval: end_date is empty" }
 
     # cal_hash maps day_of_week {1..7} into a list of service hour intervals {{09:00:00 13:00:00} {15:00:00 19:00:00}}
     array set cal_hash $calendar
