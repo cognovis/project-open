@@ -14,6 +14,7 @@ ad_page_contract {
     { end_date "" }
     { output_format "html" }
     { project_id:integer 0 }
+    { project_status_id:integer 0 }
     { customer_id:integer 0 }
     { user_id_from_search:integer 0 }
     { opened_projects:multiple "" }
@@ -70,7 +71,15 @@ set written_order_0_selected selected
 set written_order_1_selected ""
 set written_order_2_selected ""
 
-set employee_id [db_list emp_list "select employee_id from im_employees"] 
+if { 0 == $project_status_id } { set project_status_id 76 }
+
+# ----
+# Get employee(s)
+# ----
+set where_employees "1=1"
+if { 0 != $user_id_from_search  } { append where "\n and employee_id = $user_id_from_search" } 
+set sql "select employee_id from im_employees where $where_employees"
+set employee_id [db_list emp_list $sql] 
 
 if {[llength $opened_projects] == 0} { set opened_projects [list 0] }
 
@@ -168,7 +177,7 @@ if {"" != $end_date} {
 }
 
 # Project Status
-# lappend criteria "p.project_status_id in ([join [im_sub_categories 76] ,]) "
+lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ,]) "
 
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -282,8 +291,7 @@ set hours_sql "
 		SUM(hours) AS logged_hours,
 		im_name_from_user_id(h.user_id) AS name
 	FROM	im_hours h
-	WHERE	1=1
-		and user_id in (
+	WHERE	user_id in (
 			select	member_id
 			from	group_distinct_member_map
 			where	group_id = [im_employee_group_id]
@@ -479,7 +487,21 @@ lappend elements {
 
 set company_name_saved ""
 
+# If employee has been selected, limit costs to employee
 
+set inner_where_clause_hours "1=1 "
+set inner_where_clause_costs ""
+if { 0 != $user_id_from_search } { 
+	append inner_where_clause_hours "and user_id = $user_id_from_search"
+	set inner_where_clause_costs "and provider_id = $user_id_from_search"
+}
+
+# If employee has been selected we need timesheet costs for employee (cost_timesheet_logged_employee), instead of 'cost_timesheet_logged_cache' 
+set cost_timesheet_logged_employee ""
+if { 0 != $user_id_from_search  } {
+	set hourly_rate_user_from_search [db_string get_hourly_rate_user_from_search "select hourly_cost from im_employees where employee_id = :user_id_from_search" -default 0]
+	set cost_timesheet_logged_employee ", (h.hours * $hourly_rate_user_from_search) as cost_timesheet_logged_employee"
+}
 
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 	select	
@@ -491,7 +513,6 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		child.end_date::date as child_end_date,
 		child.cost_invoices_cache,
 		child.cost_timesheet_logged_cache,
-		child.reported_hours_cache,
 		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
 		c.company_id,
 		c.company_name,
@@ -499,6 +520,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		h.hours as direct_hours,
 		e.amount as total_expenses,
 		child.written_order_p as sql_written_order_p
+		$cost_timesheet_logged_employee
 	from	
 		im_projects p,
 		im_companies c,
@@ -509,7 +531,10 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 				project_id 
 			from 
 				im_hours 
-				group by project_id
+			where 
+				$inner_where_clause_hours
+			group by 
+				project_id
 		) h ON (child.project_id = h.project_id) 
                 LEFT OUTER JOIN (
                         select
@@ -520,7 +545,8 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 			where 
 				effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
                                 and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-                                and cost_type_id = 3720				
+                                and cost_type_id = 3720	
+				$inner_where_clause_costs			
                         group by 
 				project_id
                 ) e ON (child.project_id = e.project_id)
@@ -534,11 +560,13 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		and p.company_id = c.company_id
 		$where_clause
 " {
-    set project_name "	 $project_name"
+    set project_name " $project_name"
+
+    # Limit TS costs to employee TS cost 	
+    if { 0 != $user_id_from_search } { set cost_timesheet_logged_cache $cost_timesheet_logged_employee }
 
     if {0 == $cost_invoices_cache} { set cost_invoices_cache ""}
     if {0 == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache ""}
-    if {0 == $reported_hours_cache} { set reported_hours_cache ""}
     if {0 == $direct_hours} { set direct_hours ""}
 
     set level_spacer ""
@@ -599,6 +627,9 @@ set total__profit_and_loss_project_var 0
 set total__profit_and_loss_one_var 0
 set total__profit_and_loss_two_var 0
 
+set inner_hours_where ""
+if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user_id_from_search" }
+
 template::multirow foreach project_list {    
 
 	if { ![info exists total_expenses] || "" == $total_expenses  } { set total_expenses 0 }
@@ -636,6 +667,7 @@ template::multirow foreach project_list {
 	               	and ho.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
 	                and ho.day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
 			and ho.project_id = p.project_id
+			$inner_hours_where			
         	   group by
             	 	ho.user_id,
         	       	hours,
@@ -703,7 +735,7 @@ template::multirow foreach project_list {
 	template::multirow set project_list $i "staff_costs" $amount_costs_staff_pretty
 
         # Target Benefit (Soll Erloes) -> Stunden x Interner Verrechnungssatz 	
-        set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]
+        set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]	
         template::multirow set project_list $i target_benefit $target_benefit_pretty
 
 	# Invoicable Matrix  
