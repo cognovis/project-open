@@ -71,8 +71,6 @@ set written_order_0_selected selected
 set written_order_1_selected ""
 set written_order_2_selected ""
 
-if { 0 == $project_status_id } { set project_status_id 76 }
-
 # ----
 # Get employee(s)
 # ----
@@ -177,7 +175,10 @@ if {"" != $end_date} {
 }
 
 # Project Status
-lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ,]) "
+if { "" != $project_status_id } {
+    lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ,]) "
+}
+
 
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -858,10 +859,12 @@ template::multirow foreach project_list {
 	set amount_invoicable_matrix_var 0 
 	set total_expenses 0 
 
-
 	incr i
 }
 
+if { "csv" == $output_format && 1 == $i } {
+    ad_return_complaint 1 "Keine Datens&auml;tze gefunden."
+}
 
 set total__amount_costs_staff		[lc_numeric [im_numeric_add_trailing_zeros [expr $total__amount_costs_staff+0] $rounding_precision] $format_string $locale]
 set total__target_benefit               [lc_numeric [im_numeric_add_trailing_zeros [expr $total__target_benefit+0] $rounding_precision] $format_string $locale]
@@ -881,3 +884,4 @@ switch $output_format {
 	    -elements $elements
    }
 }
+
