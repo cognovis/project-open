@@ -26,7 +26,7 @@
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Status "Project Status"]%></td>
                   <td class=form-widget>
-			<%= [im_project_status_select "project_status_id" $project_status_id ]  %>
+			<%= [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id] %>
                   </td>
                 </tr>
                 <tr>
@@ -87,21 +87,24 @@
 	</tr>
 	</thead>
     	<tbody>	
+	<if @i@ ne 1>
 		<multiple name='project_list'>
-		<tr class="odd">
-		  <td class="list-table">@project_list.company_name@</td>
-		  <td class="list-table">@project_list.open_gif;noquote@<a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
-		  <td class="list-table" align="center">@project_list.written_order_p@</td>
-		  <td class="list-table" align="right">@project_list.staff_costs@</td>
-		  <td class="list-table" align="right">@project_list.target_benefit@</td>
-		  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
-		  <td class="list-table" align="right">@project_list.costs_material@</td>
-		  <td class="list-table" align="right">@project_list.invoiceable_total@</td>
-		  <td class="list-table" align="right">@project_list.sum_invoices@</td>
-		  <td class="list-table" align="right">@project_list.profit_and_loss_project@</td>
-		  <td class="list-table" align="right">@project_list.profit_and_loss_one@</td>
-		  <td class="list-table" align="right">@project_list.profit_and_loss_two@</td>
-	  	</tr>
+			<if @project_list.project_type_id@ ne 100>
+			<tr class="odd">
+			  <td class="list-table"><a href='/intranet/companies/view?company_id=@project_list.company_id@'>@project_list.company_name@</a></td>
+			  <td class="list-table">@project_list.open_gif;noquote@<a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
+			  <td class="list-table" align="center">@project_list.written_order_p@</td>
+			  <td class="list-table" align="right">@project_list.staff_costs@</td>
+			  <td class="list-table" align="right">@project_list.target_benefit@</td>
+			  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
+			  <td class="list-table" align="right">@project_list.costs_material@</td>
+			  <td class="list-table" align="right">@project_list.invoiceable_total@</td>
+			  <td class="list-table" align="right">@project_list.sum_invoices@</td>
+			  <td class="list-table" align="right">@project_list.profit_and_loss_project@</td>
+			  <td class="list-table" align="right">@project_list.profit_and_loss_one@</td>
+			  <td class="list-table" align="right">@project_list.profit_and_loss_two@</td>
+	  		</tr>
+			</if>
   		</multiple>
    	</tbody>	
    	<tfooter>	
@@ -120,5 +123,6 @@
                   <td class="list-table" align="right">@total__profit_and_loss_two_var@</td>
                 </tr>
    	</tfooter>	
+	</if>
     </table>
 </if>
