@@ -837,7 +837,7 @@ template::multirow foreach project_list {
                 append output_row "\"$profit_and_loss_one_var_pretty\"\t"
                 append output_row "\"$profit_and_loss_two_var_pretty\"\t"
                 append output_row "\n"
-		ns_write $output_row
+	  	if { 100 != $project_type_id } { ns_write $output_row }
 	}
 
 	ns_log NOTICE "KHD1: invoiceable_total_var: $invoiceable_total_var"
