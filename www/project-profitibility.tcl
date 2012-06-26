@@ -4,8 +4,7 @@
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
-# Klaus Hofeditz klaus.hofeditz@project-open.com 
-
+# author: Klaus Hofeditz klaus.hofeditz@project-open.com 
 
 ad_page_contract {
 
@@ -56,6 +55,7 @@ if {[regexp {[^0-9\ ]} $opened_projects match]} {
     ad_script_abort
 }
 
+if { "" == $user_id_from_search  } { set user_id_from_search 0 }
 
 # ------------------------------------------------------------
 # Constants & Options
@@ -205,7 +205,8 @@ db_foreach project_superprojs $project_superprojs_sql {
     set project_parent($child_id) $parent_id
 
     # Determine if a project has children
-    set project_has_children_p($parent_id) 1
+    # Consider only projects, since we do not show tasks 
+    set project_has_children_p($parent_id) 1  	
 
     # Setup the list of direct children of a project
     if {"" != $parent_id} { 
@@ -351,6 +352,10 @@ set label_profit_and_loss_two [lang::message::lookup "" intranet-cust-koernigweb
 
 set elements [list]
 
+# Project Type ID 
+lappend elements project_type_id
+lappend elements { label "Project Type ID"}
+
 # Company 
 lappend elements company_name
 lappend elements {
@@ -361,6 +366,8 @@ lappend elements {
     }
 }
 
+lappend elements company_id
+lappend elements { label "" }
 
 # Project 
 lappend elements project_id
@@ -506,6 +513,7 @@ if { 0 != $user_id_from_search  } {
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 	select	
 		child.project_id as child_id,
+		child.project_type_id,
 		child.project_name,
 		child.project_nr,
 		child.parent_id,
@@ -513,13 +521,15 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		child.end_date::date as child_end_date,
 		child.cost_invoices_cache,
 		child.cost_timesheet_logged_cache,
+		child.cost_object_category_id,
 		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
 		c.company_id,
 		c.company_name,
 		c.company_path as company_nr,
 		h.hours as direct_hours,
 		e.amount as total_expenses,
-		child.written_order_p as sql_written_order_p
+		child.written_order_p as sql_written_order_p,
+		(select count(*) from im_projects where parent_id = child.project_id and project_type_id <> 100) as no_project_childs
 		$cost_timesheet_logged_employee
 	from	
 		im_projects p,
@@ -560,8 +570,9 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		and p.company_id = c.company_id
 		$where_clause
 " {
-    set project_name " $project_name"
 
+    set project_name "$project_nr $project_name"
+    # set no_project_childs 0
     # Limit TS costs to employee TS cost 	
     if { 0 != $user_id_from_search } { set cost_timesheet_logged_cache $cost_timesheet_logged_employee }
 
@@ -576,7 +587,6 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
     set open_p [expr [lsearch $opened_projects $child_id] >= 0]
     if {$open_p} {
 	set opened $opened_projects
-	
 	if {[info exists project_children($child_id)]} {
 	    set rem_from_list $project_children($child_id)
 	    lappend rem_from_list $child_id
@@ -590,11 +600,19 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 	set opened $opened_projects
 	lappend opened $child_id
 	set url [export_vars -base $this_url {project_id customer_id employee_id {opened_projects $opened}}]
-	set gif [im_gif "plus_9"]
+
+	ns_log NOTICE "intranet-cust-koernigweber::project-profitibility--no_project_childs: $no_project_childs; project_id: $child_id "
+	if { 0 != $no_project_childs } {set gif [im_gif "plus_9"]} else {set gif [im_gif "minus_9"]}	
+
     }
 
-    set open_gif "<a href=\"$url\">$gif</a>"
-    if {![info exists project_has_children_p($child_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
+    set open_gif "$level_spacer<a href=\"$url\">$gif</a>"
+
+    if {![info exists project_has_children_p($child_id)] } { 
+	set open_gif [im_gif empty21 "" 0 9 9] 
+    }
+
+    # ns_log NOTICE "intranet-cust-koernigweber::project-profitibility project_type_id: $project_type_id; project_id: $child_id "
 
 }
 
@@ -675,9 +693,11 @@ template::multirow foreach project_list {
 	"
 	set sum_hours 0
 	db_foreach col $sql {
+
 		# Calculate costs staff w/o compound costs
 		# Get rate from Project 9140_12_0000 - Unproduktive Std. der produktiven MA 
-	    	set costs_staff_rate [find_sales_price $user_id 71643 "" ""]
+	    	set costs_staff_rate [find_sales_price $user_id 71643 "" $cost_object_category_id]
+		
                 if { "" == $costs_staff_rate || 0 == $costs_staff_rate } {
 		 continue
                         set err_mess "<br>"
@@ -709,7 +729,7 @@ template::multirow foreach project_list {
 	}
 
 	# Company Name 
-	# Avoid showing multiple company_namesin html view  
+	# Avoid showing multiple company_names in html view  
 	if { "html" == $output_format } {
 		if {$company_name_saved == $company_name } {set company_name ""} else {set company_name_saved $company_name}
 	}
@@ -742,7 +762,6 @@ template::multirow foreach project_list {
 	set amount_invoicable_matrix_var $amount_invoicable_matrix
 	set amount_invoicable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_invoicable_matrix_var+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "amount_invoicable_matrix" $amount_invoicable_pretty    	
-
 
 	# Invoicable (total) -> Erloesfaehig 	
 	set invoiceable_total_var [expr $total_expenses + $amount_invoicable_matrix]
