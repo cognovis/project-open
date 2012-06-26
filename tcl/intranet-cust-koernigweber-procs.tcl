@@ -22,6 +22,10 @@ ad_proc find_sales_price {
     on an arbitrary project level above    
 } {
 
+    if { "" == $project_id  } {
+	set project_id 0 
+    }
+
     ns_log NOTICE "find_sales_price: Entr: user_id: $user_id, project_id: $project_id, company_id $company_id, cost_object_category_id: $cost_object_category_id"
     
     # Make sure you look for price based on cost_object_category_id of the (sub-)project of level 'n'  
@@ -60,7 +64,7 @@ ad_proc find_sales_price {
 	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
         ns_log NOTICE "find_sales_price: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
-	        ns_log NOTICE "find_sales_price: No parent project found, now looking for price defined on customer level:"
+	        ns_log NOTICE "find_sales_price: No parent project found, now looking for price defined on customer level: user_id: $user_id, project_id: $project_id"
 		# This is the super project, if no price is found, lets check if a price is defined on the user level 
 		set sql "
 		        select
@@ -74,9 +78,28 @@ ad_proc find_sales_price {
     		"
 	    	set sales_price [db_string get_data $sql -default 0]
 		if { 0 == $sales_price } {
-                        ns_log NOTICE "find_sales_price: No price found for customer neither, returning empty string"
+                        ns_log NOTICE "find_sales_price: No price found for customer neither, checking now for price on user level for cost_object_category_id"
                         ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 
-			return ""
+                	set sql "
+                        	select
+                                	amount
+	                        from
+        	                        im_customer_prices
+                	        where
+                        	        user_id = $user_id
+	                                and cost_object_category_id = :cost_object_category_id
+			"
+
+	                set sales_price [db_string get_data $sql -default 0]
+	                if { 0 == $sales_price } {
+        	                ns_log NOTICE "find_sales_price: No price found on user level for cost_object_category_id"
+                	        ns_log NOTICE "find_sales_price: -----------------------------------------------------------"
+				return ""
+			} else {
+        	                ns_log NOTICE "find_sales_price: price found on user level for cost_object_category_id: $cost_object_category_id: $sales_price"
+                	        ns_log NOTICE "find_sales_price: -----------------------------------------------------------"
+				return $sales_price
+			}
 		} else {
                         ns_log NOTICE "find_sales_price: Price found for customer: $sales_price"
                         ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 			
