@@ -24,6 +24,12 @@
                   </td>
                 </tr>
                 <tr>
+                  <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Status "Project Status"]%></td>
+                  <td class=form-widget>
+			<%= [im_project_status_select "project_status_id" $project_status_id ]  %>
+                  </td>
+                </tr>
+                <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Customer "Customer"]%></td>
                   <td class=form-widget>
                      <%=[im_company_select customer_id $customer_id]%>
@@ -84,7 +90,7 @@
 		<multiple name='project_list'>
 		<tr class="odd">
 		  <td class="list-table">@project_list.company_name@</td>
-		  <td class="list-table"><a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
+		  <td class="list-table">@project_list.open_gif;noquote@<a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
 		  <td class="list-table" align="center">@project_list.written_order_p@</td>
 		  <td class="list-table" align="right">@project_list.staff_costs@</td>
 		  <td class="list-table" align="right">@project_list.target_benefit@</td>
