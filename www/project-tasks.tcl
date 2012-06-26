@@ -45,6 +45,9 @@ ad_page_contract {
     { project_id_form ""}
 }
 
+# Fraber 20120626: Fixed hard error, but no idea why...
+set member ""
+
 	# ------------------------------------------------------------
 	# Defaults
 	# ------------------------------------------------------------
