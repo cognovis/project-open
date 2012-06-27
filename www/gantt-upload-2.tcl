@@ -141,6 +141,8 @@ if {[catch {set doc [dom parse $binary_content]} err_msg]} {
 }
 
 set root_node [$doc documentElement]
+# ad_return_complaint 1 "<pre>[ns_quotehtml [$root_node asXML -indent 8 -escapeNonASCII]]</pre>"
+
 
 set format "gantt"
 
