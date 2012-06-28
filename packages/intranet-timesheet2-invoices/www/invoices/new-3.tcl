@@ -555,6 +555,9 @@ order by
 	  </td>
 	"
 
+	# Catch the case that there is no materials yet.
+	if {"" == $material_id} { set material_id [im_material_default_material_id] }
+	
 	if {$material_enabled_p} {
 	    append task_sum_html "<td>[im_material_select item_material_id.$ctr $material_id]</td>"
 	} else {
