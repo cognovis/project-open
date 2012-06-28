@@ -171,12 +171,11 @@ foreach element $xml_elements {
 set calendars_node [$doc createElement Calendars]
 $project_node appendChild $calendars_node
 
-set start_morning "09:00:00"
-set end_morning "13:00:00"
-set start_after "15:00:00"
-set end_after "19:00:00"
-
-$calendars_node appendXML "
+if {"" == $project_calendar} {
+    # No calendar specified: Create a basic calendar spec
+    # that leaves the start and end hours to the MS-Project
+    # country version
+    $calendars_node appendXML "
 	<Calendar>
 		<UID>1</UID>
 		<Name>Standard</Name>
@@ -192,8 +191,12 @@ $calendars_node appendXML "
 			</WeekDay>
 		</WeekDays>
 	</Calendar>
-"
-
+    "
+} else {
+    # We have got a project calendar imported from MS-Project
+    $calendars_node appendXML [im_ms_calendar::to_xml -calendar $project_calendar]
+    # ad_return_complaint 1 "<pre>[ns_quotehtml [im_ms_calendar::to_xml -calendar $project_calendar]]\n $project_calendar</pre>"
+}
 
 # ---------------------------------------------------------------
 # Get the information about all resources who participate in
