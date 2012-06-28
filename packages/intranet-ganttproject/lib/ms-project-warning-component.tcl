@@ -7,9 +7,6 @@ set org_project_id $project_id
 set warnings_html ""
 set return_url [im_url_with_query]
 
-
-set main_project_id $project_id
-
 # ---------------------------------------------------------------
 # Get the main project
 # ---------------------------------------------------------------
@@ -106,13 +103,112 @@ if {![info exists ignore_hash($warning_key)]} {
 }
 
 
+
+
+# ---------------------------------------------------------------
+# Check for tasks with empty start- or end date
+# ---------------------------------------------------------------
+
+set warning_key "fix-tasks-with-empty-start-end-date"
+if {![info exists ignore_hash($warning_key)]} {
+    set sql "
+	select	p.*, 
+		t.*
+	from	im_projects main_p,
+		im_projects p,
+		im_timesheet_tasks t
+	where	main_p.project_id = :org_project_id and
+		p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+		p.project_id = t.task_id and
+		-- empty start- and end date
+		(p.start_date is null OR p.end_date is null) and
+		-- Exclude projects that have children (only report leaf tasks)
+		0 = (
+			select	count(*)
+			from	im_projects pp
+			where	pp.parent_id = p.project_id
+		)
+	order by
+		p.tree_sortkey
+    "
+
+    set task_html ""
+    set task_ctr 0
+    set task_skipped_ctr 0
+    db_foreach task_without_start_constraint $sql {
+	if {$task_ctr >= 3} {
+	    incr task_skipped_ctr
+	    continue 
+	}
+	append task_html "<tr>\n"
+	append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_empty_start_end_date.$task_id checked></td>\n"
+	append task_html "<td><a href=[export_vars -base "/intranet/projects/view" {{project_id $project_id}}]>$project_name</a></td>\n"
+	append task_html "</tr>\n"
+	incr task_ctr
+    }
+    
+    if {$task_skipped_ctr > 0} {
+	append task_html "<tr>\n"
+	append task_html "<td><input type=checkbox name=task_id.0 id=task_with_empty_start_end_date.0 checked></td>\n"
+	append task_html "<td>... ($task_skipped_ctr [lang::message::lookup "" intranet-ganttproject.more_tasks "more tasks"])</td>\n"
+	append task_html "</tr>\n"   
+    }
+    
+    set task_list_len [llength $task_list]
+    if {$task_list_len > 3} {
+	set task_list [lrange $task_list 0 2]
+	lappend task_list "... ([expr $task_list_len - 3] more tasks)"
+    }
+    
+    
+    if {[string length $task_html] > 0} {
+	set task_header "<tr class=rowtitle>\n"
+	append task_header "<td class=rowtitle><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_empty_start_end_date',this.checked) checked></td>\n"
+	append task_header "<td class=rowtitle>[lang::message::lookup "" intranet-ganttproject.Task "Task"]</td>\n"
+	append task_header "</tr>\n"
+	
+	set task_footer "
+	<tr><td colspan=2>
+	<select name=action>
+	<option value=fix>[lang::message::lookup "" intranet-ganttproject.Force_start_on_start_date "Set missing start- and end dates to main project start- and end"]</option>
+	<option value=ignore_this>[lang::message::lookup "" intranet-ganttproject.Ignore_the_issue_for_this_project "Ignore the issue for this project"]</option>
+	<option value=ignore_all>[lang::message::lookup "" intranet-ganttproject.Ignore_the_issue "Ignore the issue for all projects"]</option>
+	</select>
+	<input type=submit>
+	</td></tr>
+        "
+
+	set project_id $main_project_id
+	append warnings_html "
+	<div class=ms_project_warning_title>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_empty_start_end_date "Tasks With Empty Start- or End Date"]
+	</div>
+	<div class=ms_project_warning_body>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_empty_start_end_date_msg "
+	The following tasks don't have have a start- or end date defined."]<br>
+	<form action=/intranet-ganttproject/fix-tasks-with-empty-start-end-date>
+	[export_form_vars project_id return_url]
+	<table border=0>
+	$task_header
+	$task_html
+	$task_footer
+	</table>
+	</form>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_empty_start_end_date_assign. "Please set the start- and end date of the tasks."]
+	</div>
+        "
+    }
+}
+
+
+
 # ---------------------------------------------------------------
 # Check for tasks without assignments
 # ---------------------------------------------------------------
 
 
 set warning_key "fix-tasks-without-assignments"
-if {0 && ![info exists ignore_hash($warning_key)]} {
+if {![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	t.*
 	from	(select	p.project_id as task_id,
@@ -131,11 +227,16 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 			r.object_id_one = p.project_id and
 			r.object_id_two = u.user_id and
-			r.rel_id = bom.rel_id
+			r.rel_id = bom.rel_id and
+			-- Exclude parent projects with sub-tasks
+			0 = (select count(*) from im_projects pp where pp.parent_id = p.project_id)
 		group by
 			p.project_id, p.project_name, p.tree_sortkey
 		) t
-	where	t.percentage = 0.0 and
+	where
+		-- with no assigned resources
+		t.percentage = 0.0 and
+		-- with actual work to do
 		t.planned_units > 0.0
 	order by
 		t.tree_sortkey
@@ -299,6 +400,144 @@ if {![info exists ignore_hash($warning_key)]} {
 	</table>
 	</form>
 	[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint_assign. "Please set a start constraint."]
+	</div>
+        "
+    }
+}
+
+
+# ---------------------------------------------------------------
+# Check for overallocation
+# ---------------------------------------------------------------
+
+set warning_key "fix-tasks-with-overallocation"
+if {![info exists ignore_hash($warning_key)]} {
+    set sql "
+	select	t.*
+	from	(
+		select	p.project_id as task_id,
+			p.project_name as task_name,
+			p.tree_sortkey,
+			p.start_date,
+			p.end_date,
+			to_char(p.start_date, 'YYYY-MM-DD HH24:MI') as start_date_pretty,
+			to_char(p.end_date, 'YYYY-MM-DD HH24:MI') as end_date_pretty,
+			coalesce(t.planned_units, 0.0) as planned_units,
+			t.uom_id,
+			(select	sum(coalesce(bom.percentage, 0.0))
+			from	acs_rels r,
+				im_biz_object_members bom,
+				users u
+			where	r.object_id_one = p.project_id and
+				r.object_id_two = u.user_id and
+				r.rel_id = bom.rel_id
+			) as percentage
+		from	im_projects main_p,
+			im_projects p,
+			im_timesheet_tasks t
+		where	t.task_id = p.project_id and
+			main_p.project_id = :org_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey)
+		) t
+	where	planned_units > 0.0 and
+		percentage > 0.0
+	order by
+		tree_sortkey
+    "
+
+    set task_html ""
+    set task_ctr 0
+    set task_skipped_ctr 0
+    db_foreach task_with_overallocation $sql {
+	if {$task_ctr >= 30} {
+	    incr task_skipped_ctr
+	    continue 
+	}
+
+	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar [im_ms_calendar::default]]
+	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
+
+	switch $uom_id {
+	    320 { set seconds_uom [expr $planned_units * 3600] }
+	    321 { set seconds_uom [expr $planned_units * 3600 * 8.0] }
+	    default { set seconds_uom 0.0 }
+	}
+	set overallocation_factor "undefined"
+	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
+
+	if {"undefined" != $overallocation_factor} {
+	    if {[expr abs($overallocation_factor - 1.0)] > 0.001} {
+	    
+		append task_html "<tr>\n"
+		append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
+		append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
+		append task_html "<td>$start_date_pretty</td>\n"
+		append task_html "<td>$end_date_pretty</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $seconds_uom / 3600.0) / 10.0]</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $seconds_work / 3600.0) / 10.0]</td>\n"
+		append task_html "<td align=right>[expr round(10.0 * $percentage) / 10.0]</a></td>\n"
+		append task_html "<td align=right>[expr round(1000.0 * $overallocation_factor) / 1000.0]</td>\n"
+		append task_html "</tr>\n"
+		incr task_ctr
+	    }
+	}
+    }
+    
+    if {$task_skipped_ctr > 0} {
+	append task_html "<tr>\n"
+	append task_html "<td><input type=checkbox name=task_id.0 id=task_with_overallocation.0 checked></td>\n"
+	append task_html "<td>... ($task_skipped_ctr [lang::message::lookup "" intranet-ganttproject.more_tasks "more tasks"])</td>\n"
+	append task_html "</tr>\n"   
+    }
+    
+    set task_list_len [llength $task_list]
+    if {$task_list_len > 3} {
+	set task_list [lrange $task_list 0 2]
+	lappend task_list "... ([expr $task_list_len - 3] more tasks)"
+    }
+    
+    
+    if {[string length $task_html] > 0} {
+	set task_header "<tr class=rowtitle>\n"
+	append task_header "<td class=rowtitle align=center><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_overallocation',this.checked) checked></td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Task "Task"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Start "Start Date/Time"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.End "End Date/Time"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Sec_calc "Specified<br>Work (h)"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Sec_in_Int "Calculated<br>Work (h)"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Percentage "Assigned<br>Resources %"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Percentage "Overallocation<br>Factor"]</td>\n"
+	append task_header "</tr>\n"
+	
+	set task_footer "
+	<tr><td colspan=99>
+	<select name=action>
+	<option value=fix>[lang::message::lookup "" intranet-ganttproject.Reduce_resource_assignment "Reduce resource assignment % in order to balance the estimated work with duration"]</option>
+	<option value=ignore_this>[lang::message::lookup "" intranet-ganttproject.Ignore_the_issue_for_this_project "Ignore the issue for this project"]</option>
+	<option value=ignore_all>[lang::message::lookup "" intranet-ganttproject.Ignore_the_issue "Ignore the issue for all projects"]</option>
+	</select>
+	<input type=submit>
+	</td></tr>
+        "
+
+	set project_id $main_project_id
+	append warnings_html "
+	<div class=ms_project_warning_title>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_overallocation "Tasks With Overallocation"]
+	</div>
+	<div class=ms_project_warning_body>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_overallocation_msg "
+	The following tasks have more resources assigned then needed for the given work and duration (start- to end-date).
+        MS-Project will shift the end-date of the tasks, unless you reduce the resource assignment here."]<br>
+	<form action=/intranet-ganttproject/fix-tasks-with-overallocation>
+	[export_form_vars project_id return_url]
+	<table border=0 cellspacing=1 cellpadding=1>
+	$task_header
+	$task_html
+	$task_footer
+	</table>
+	</form>
+	[lang::message::lookup "" intranet-ganttproject.Tasks_with_overallocation_assign. "Please adjust the resources allocated."]
 	</div>
         "
     }
