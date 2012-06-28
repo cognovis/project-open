@@ -331,6 +331,14 @@ if {![info exists ignore_hash($warning_key)]} {
 			select	count(*)
 			from	im_projects pp
 			where	pp.parent_id = p.project_id
+		) and
+		-- Should have no parent with predecessors
+		0 = (
+			select	count(*)
+			from	im_projects parent,
+				im_timesheet_task_dependencies ttd
+			where	parent.project_id = p.parent_id and
+				ttd.task_id_one = parent.project_id
 		)
 	order by
 		p.tree_sortkey
@@ -424,6 +432,7 @@ if {![info exists ignore_hash($warning_key)]} {
 			to_char(p.end_date, 'YYYY-MM-DD HH24:MI') as end_date_pretty,
 			coalesce(t.planned_units, 0.0) as planned_units,
 			t.uom_id,
+			main_p.project_calendar,
 			(select	sum(coalesce(bom.percentage, 0.0))
 			from	acs_rels r,
 				im_biz_object_members bom,
@@ -457,7 +466,8 @@ if {![info exists ignore_hash($warning_key)]} {
 	# Empty start- and end dates are handled in other check
 	if {"" == $start_date || "" == $end_date} { continue }
 
-	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar [im_ms_calendar::default]]
+	if {"" == $project_calendar} { set project_calendar [im_ms_calendar::default] }
+	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar $project_calendar]
 	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
 
 	switch $uom_id {
@@ -469,9 +479,9 @@ if {![info exists ignore_hash($warning_key)]} {
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
 
 	if {"undefined" != $overallocation_factor} {
-	    # Accept max. 5% overassignment, because of small rounding
+	    # Accept max. 10% overassignment, because of small rounding
 	    # errors between %assigned and actual time spent by the resource
-	    if {[expr abs($overallocation_factor - 1.0)] > 0.05} {
+	    if {[expr abs($overallocation_factor - 1.0)] > 0.10} {
 	    
 		append task_html "<tr>\n"
 		append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
