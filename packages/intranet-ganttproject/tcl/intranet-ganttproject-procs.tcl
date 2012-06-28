@@ -102,7 +102,7 @@ ad_proc -public im_ganttproject_write_task {
     } else {
 	set base_url "http://[ad_host][ad_port]"
     }
-    set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
+    set task_view_url "$base_url/intranet-timesheet2-tasks/view?task_id="
     set project_view_url "$base_url/intranet/projects/view?project_id="
 
     # ------------ Get everything about the project -------------
@@ -639,7 +639,7 @@ ad_proc -public im_gp_save_tasks2 {
 
     array set task_hash $task_hash_array
     if {$debug_p} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
-    set task_url "/intranet-timesheet2-tasks/new?task_id="
+    set task_url "/intranet-timesheet2-tasks/view?task_id="
 
     # GanttProject: The gantt_project_id as returned from 
     # the XML file. This ID does not correspond to a OpenACS 

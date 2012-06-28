@@ -41,7 +41,7 @@ ad_page_contract {
 if {[exists_and_not_null project_id]} {
     set otype [db_string otype "select object_type from acs_objects where object_id = :project_id" -default ""]
     if {"im_timesheet_task" == $otype} {
-	ad_returnredirect [export_vars -base "/intranet-timesheet2-tasks/new" {{form_mode display} {task_id $project_id}}]
+	ad_returnredirect [export_vars -base "/intranet-timesheet2-tasks/view" {{form_mode display} {task_id $project_id}}]
     }  
     if {"im_ticket" == $otype} {
         ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {{form_mode display} {ticket_id $project_id}}]
