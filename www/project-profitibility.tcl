@@ -13,7 +13,7 @@ ad_page_contract {
     { end_date "" }
     { output_format "html" }
     { project_id:integer 0 }
-    { project_status_id:integer 0 }
+    { project_status_id_from_search:integer 0 }
     { customer_id:integer 0 }
     { user_id_from_search:integer 0 }
     { opened_projects:multiple "" }
@@ -70,6 +70,10 @@ set format_string "%0.2f"
 set written_order_0_selected selected
 set written_order_1_selected ""
 set written_order_2_selected ""
+
+if { 0 == $project_status_id_from_search } {
+    set project_status_id_from_search ""
+}
 
 # ----
 # Get employee(s)
@@ -175,8 +179,8 @@ if {"" != $end_date} {
 }
 
 # Project Status
-if { "" != $project_status_id } {
-    lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ,]) "
+if { "" != $project_status_id_from_search } {
+    lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id_from_search] ,]) "
 }
 
 
@@ -336,6 +340,7 @@ db_foreach hours $hours_sql {
 
 set label_client [lang::message::lookup "" intranet-core.Client "Client"]
 set label_project_name [lang::message::lookup "" intranet-core.Project_Name "Project Name"]
+set label_project_status [lang::message::lookup "" intranet-core.Project_Status "Project Status"]
 set label_written_order [lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]
 set label_staff_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Staff_Costs "Staff<br>Costs"]
 set label_target_benefit [lang::message::lookup "" intranet-cust-koernigweber.Target_Benefits "Target<br>Benefits"]
@@ -356,6 +361,10 @@ set elements [list]
 # Project Type ID 
 lappend elements project_type_id
 lappend elements { label "Project Type ID"}
+
+# Project Status 
+lappend elements project_status
+lappend elements { label $label_project_status}
 
 # Company 
 lappend elements company_name
@@ -497,24 +506,54 @@ set company_name_saved ""
 
 # If employee has been selected, limit costs to employee
 
-set inner_where_clause_hours "1=1 "
-set inner_where_clause_costs ""
+set employee_selects ""
 if { 0 != $user_id_from_search } { 
-	append inner_where_clause_hours "and user_id = $user_id_from_search"
-	set inner_where_clause_costs "and provider_id = $user_id_from_search"
+	set employee_selects ",
+                (select sum(hours) from im_hours where project_id in (
+                        select
+                                p_child.project_id
+                        from
+                                im_projects p_parent,
+                                im_projects p_child
+                        where
+                                p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
+                                and p_parent.project_id = child.project_id
+                        ) and user_id = :user_id_from_search
+                          and day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+                          and day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                ) * (select hourly_cost from im_employees where employee_id = :user_id_from_search)::numeric as employee_hours_amount,
+		(select sum(amount) from im_costs where project_id in (
+                        select
+                                p_child.project_id
+                        from
+                                im_projects p_parent,
+                                im_projects p_child
+                        where
+                                p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
+                                and p_parent.project_id = child.project_id
+                        ) and provider_id = :user_id_from_search
+	                  and effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+                          and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                          and cost_type_id = 3720
+                ) as employee_costs
+	"
 }
 
 # If employee has been selected we need timesheet costs for employee (cost_timesheet_logged_employee), instead of 'cost_timesheet_logged_cache' 
 set cost_timesheet_logged_employee ""
-if { 0 != $user_id_from_search  } {
-	set hourly_rate_user_from_search [db_string get_hourly_rate_user_from_search "select hourly_cost from im_employees where employee_id = :user_id_from_search" -default 0]
-	set cost_timesheet_logged_employee ", (h.hours * $hourly_rate_user_from_search) as cost_timesheet_logged_employee"
-}
+
+# if { 0 != $user_id_from_search  } {
+#	set hourly_rate_user_from_search [db_string get_hourly_rate_user_from_search "select hourly_cost from im_employees where employee_id = :user_id_from_search" -default 0]
+#	ns_log NOTICE "project-profitibility::hourly_rate_user_from_search: set hourly_rate_user_from_search: $hourly_rate_user_from_search" 	
+#	set cost_timesheet_logged_employee ", (h.hours * $hourly_rate_user_from_search) as cost_timesheet_logged_employee"
+#	set cost_timesheet_logged_employee ", (h.hours * (select hourly_cost from im_employees where employee_id = :user_id_from_search)::numeric) as cost_timesheet_logged_employee"
+# }
 
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 	select	
 		child.project_id as child_id,
 		child.project_type_id,
+		child.project_status_id,
 		child.project_name,
 		child.project_nr,
 		child.parent_id,
@@ -531,7 +570,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		e.amount as total_expenses,
 		child.written_order_p as sql_written_order_p,
 		(select count(*) from im_projects where parent_id = child.project_id and project_type_id <> 100) as no_project_childs
-		$cost_timesheet_logged_employee
+		$employee_selects
 	from	
 		im_projects p,
 		im_companies c,
@@ -543,7 +582,8 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 			from 
 				im_hours 
 			where 
-				$inner_where_clause_hours
+                        	day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') and
+                          	day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
 			group by 
 				project_id
 		) h ON (child.project_id = h.project_id) 
@@ -557,10 +597,10 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 				effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
                                 and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
                                 and cost_type_id = 3720	
-				$inner_where_clause_costs			
                         group by 
 				project_id
                 ) e ON (child.project_id = e.project_id)
+
 	where
 		p.parent_id is null
 		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
@@ -570,12 +610,13 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		)
 		and p.company_id = c.company_id
 		$where_clause
+	order by 
+		c.company_id
 " {
 
     set project_name "$project_nr $project_name"
+
     # set no_project_childs 0
-    # Limit TS costs to employee TS cost 	
-    if { 0 != $user_id_from_search } { set cost_timesheet_logged_cache $cost_timesheet_logged_employee }
 
     if {0 == $cost_invoices_cache} { set cost_invoices_cache ""}
     if {0 == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache ""}
@@ -651,6 +692,14 @@ if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user
 
 template::multirow foreach project_list {    
 
+   	# Limit costs to employee cost 	
+	if { 0 != $user_id_from_search } { 
+		ns_log NOTICE "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
+		set cost_timesheet_logged_cache $employee_hours_amount
+		ns_log NOTICE "project-profitibility::set_total_expenses: set total_expenses to value: $employee_costs "
+		set total_expenses $employee_costs
+	}
+
 	if { ![info exists total_expenses] || "" == $total_expenses  } { set total_expenses 0 }
         if { ![info exists cost_timesheet_logged_cache] || "" == $cost_timesheet_logged_cache } { set cost_timesheet_logged_cache 0 }
         if { ![info exists amount_invoicable_matrix] || "" == $amount_invoicable_matrix } { set amount_invoicable_matrix 0 }
@@ -697,7 +746,7 @@ template::multirow foreach project_list {
 
 		# Calculate costs staff w/o compound costs
 		# Get rate from Project 9140_12_0000 - Unproduktive Std. der produktiven MA 
-	    	set costs_staff_rate [find_sales_price $user_id 71643 "" $cost_object_category_id]
+	    	set costs_staff_rate [find_sales_price $user_id "" "" "10000111"]
 		
                 if { "" == $costs_staff_rate || 0 == $costs_staff_rate } {
 		 continue
@@ -751,11 +800,16 @@ template::multirow foreach project_list {
 	}
         template::multirow set project_list $i "written_order_p" $written_order_var
 
+	# Project Status
+	set project_status [im_category_from_id $project_status_id ]
+        template::multirow set project_list $i "project_status" $project_status
+
 	# Costs staff (Personalkosten) -> Stunden x Satz aus Projekt "Unproduktive Std. der produktiven MA"
 	set amount_costs_staff_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_costs_staff+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "staff_costs" $amount_costs_staff_pretty
 
         # Target Benefit (Soll Erloes) -> Stunden x Interner Verrechnungssatz 	
+
         set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]	
         template::multirow set project_list $i target_benefit $target_benefit_pretty
 
@@ -821,13 +875,14 @@ template::multirow foreach project_list {
 	if { "csv" == $output_format } {
 		if { 1 == $i  } {
 		 im_report_write_http_headers -output_format $output_format
-		 set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
+		 set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
                  append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
 		 ns_write $title_line 
 		}
 		set output_row "\"$company_name\"\t" 
 		append output_row "\"$project_nr $project_name\"\t"
 		append output_row "\"$written_order_var\"\t"
+		append output_row "\"$project_status\"\t"
 		append output_row "\"$amount_costs_staff_pretty\"\t"
                 append output_row "\"$target_benefit_pretty\"\t"
                 append output_row "\"$amount_invoicable_pretty\"\t"
