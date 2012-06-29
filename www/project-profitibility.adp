@@ -6,8 +6,8 @@
         <%=[export_form_vars opened_projects]%>
 
         <table border=0 cellspacing=1 cellpadding=1>
-        <tr valign=top><td>
-
+        <tr valign=top>
+		<td>
                 <table border=0 cellspacing=1 cellpadding=1>
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Start_Date "Start Date"]%></td>
@@ -26,20 +26,20 @@
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Status "Project Status"]%></td>
                   <td class=form-widget>
-			<%= [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id] %>
+			<%= [im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] "Intranet Project Status" project_status_id_from_search $project_status_id_from_search] %>
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Customer "Customer"]%></td>
                   <td class=form-widget>
-                     <%=[im_company_select customer_id $customer_id]%>
+                     <%=[im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] customer_id $customer_id]%>
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]%></td>
                   <td class=form-widget>
                         <select name='written_order_form_p'>
-                                <option value='0' @written_order_0_selected;noquote@><%=[lang::message::lookup "" intranet-core.all "All"]%></option>
+                                <option value='0' @written_order_0_selected;noquote@><%=[lang::message::lookup "" intranet-core.All "All"]%></option>
                                 <option value='1' @written_order_1_selected;noquote@><%=[lang::message::lookup "" acs-kernel.common_yes "Yes"]%></option>
                                 <option value='2' @written_order_2_selected;noquote@><%=[lang::message::lookup "" acs-kernel.common_no "No"]%></option>
                         </select>
@@ -48,7 +48,7 @@
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.employees "Employees"]%></td>
                   <td class=form-widget>
-                     <%=[im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.all "All"] -group_id [im_profile_employees] "user_id_from_search" $user_id_from_search]%>
+                     <%=[im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] -group_id [im_profile_employees] "user_id_from_search" $user_id_from_search]%>
                   </td>
                 </tr>
                 <tr>
@@ -65,7 +65,22 @@
                   <td class=form-widget><input type='submit' value='<%=[lang::message::lookup "" intranet-core.Submit "Submit"]%>'></td>
                 </tr>
                 </table>
-        </td></tr>
+        </td>
+	<td>&nbsp;&nbsp;&nbsp;</td>
+	<td>
+	<ul>
+		<li><b>Personalkosten (VSI):</b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
+		<li><b>Sollerl&ouml;s (VSI+Umlage):</b>Anzahl der geloggten Stunden * Stundensatz des MA (siehe 'Mitarbeiterinformationen' des Angestellten</li>
+		<li><b>Abrechenbar lt. E/C Preisliste:</b> Anzahl der geloggten Stunden * VK der Preisliste</li>
+		<li><b>Materialkosten:</b> Materialkosten Projekte / Materialkosten des Angestellten </li>
+		<li><b>Erl&ouml;sf&auml;hig:</b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
+		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
+		<li><b>GuV Projekt:</b>Abgerechnet - Erl&ouml;sf&auml;hig - Abgerechnet</li>
+		<li><b>GuV 1:</b>Abgerechnet - Sollerl&ouml;s - Materialkosten </li>
+		<li><b>GuV 2:</b>GuV 1 - Personalkosten - Materialkosten </li>
+	</ul>
+	</td>
+	</tr>
         </table>
         </form>
 
@@ -75,6 +90,7 @@
             <th class="list-table" align="left" id="project_list_company_name">@label_client;noquote@</th>
 	    <th class="list-table" align="left" id="project_list_project_name">@label_project_name;noquote@</th>
        	    <th class="list-table" align="center" id="project_list_written_order">@label_written_order;noquote@</th>
+       	    <th class="list-table" align="center" id="project_list_project_status">@label_project_status;noquote@</th>
             <th class="list-table" align="right" id="project_list_cost_timesheet_logged_cache_l">@label_staff_costs;noquote@</th>
             <th class="list-table" align="right" id="project_list_target_benefit">@label_target_benefit;noquote@</th>
             <th class="list-table" align="right" id="project_list_target_benefit">@label_costs_based_on_matrix;noquote@</th>
@@ -94,6 +110,7 @@
 			  <td class="list-table"><a href='/intranet/companies/view?company_id=@project_list.company_id@'>@project_list.company_name@</a></td>
 			  <td class="list-table">@project_list.open_gif;noquote@<a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
 			  <td class="list-table" align="center">@project_list.written_order_p@</td>
+			  <td class="list-table" align="center">@project_list.project_status@</td>
 			  <td class="list-table" align="right">@project_list.staff_costs@</td>
 			  <td class="list-table" align="right">@project_list.target_benefit@</td>
 			  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
@@ -111,6 +128,7 @@
                 <tr class="odd">
                   <td class="list-table"></td>
                   <td class="list-table"></td>
+                  <td class="list-table" align="center"></td>
                   <td class="list-table" align="center"></td>
                   <td class="list-table" align="right">@total__amount_costs_staff@</td>
                   <td class="list-table" align="right">@total__target_benefit@</td>
