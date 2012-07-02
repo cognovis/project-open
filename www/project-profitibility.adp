@@ -69,15 +69,15 @@
 	<td>&nbsp;&nbsp;&nbsp;</td>
 	<td>
 	<ul>
-		<li><b>Personalkosten (VSI):</b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
-		<li><b>Sollerl&ouml;s (VSI+Umlage):</b>Anzahl der geloggten Stunden * Stundensatz des MA (siehe 'Mitarbeiterinformationen' des Angestellten</li>
-		<li><b>Abrechenbar lt. E/C Preisliste:</b> Anzahl der geloggten Stunden * VK der Preisliste</li>
-		<li><b>Materialkosten:</b> Materialkosten Projekte / Materialkosten des Angestellten </li>
-		<li><b>Erl&ouml;sf&auml;hig:</b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
+		<li><b>Personalkosten (VSI): </b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
+		<li><b>Sollerl&ouml;s (VSI+Umlage): </b>Anzahl der geloggten Stunden * Stundensatz des MA (siehe 'Mitarbeiterinformationen' des Angestellten</li>
+		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
+		<li><b>Materialkosten: </b> Materialkosten Projekte / Materialkosten des Angestellten </li>
+		<li><b>Erl&ouml;sf&auml;hig: </b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
-		<li><b>GuV Projekt:</b>Abgerechnet - Erl&ouml;sf&auml;hig - Abgerechnet</li>
-		<li><b>GuV 1:</b>Abgerechnet - Sollerl&ouml;s - Materialkosten </li>
-		<li><b>GuV 2:</b>GuV 1 - Personalkosten - Materialkosten </li>
+		<li><b>GuV Projekt:</b> Abgerechnet - Erl&ouml;sf&auml;hig - Abgerechnet</li>
+		<li><b>GuV 1:</b> Abgerechnet - Sollerl&ouml;s - Materialkosten </li>
+		<li><b>GuV 2:</b> GuV 1 - Personalkosten - Materialkosten </li>
 	</ul>
 	</td>
 	</tr>
