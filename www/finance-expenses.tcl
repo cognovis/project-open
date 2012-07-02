@@ -10,8 +10,8 @@ ad_page_contract {
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
 } {
-    { start_date "2010-01-01" }
-    { end_date "2012-01-01" }
+    { start_date "2012-01-01" }
+    { end_date "2013-01-01" }
     { level_of_detail 4 }
     { output_format "html" }
     { group_style "cust_proj_emp" }
@@ -61,13 +61,13 @@ if { 0==$show_complete_note } {
 }
 
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+if { [catch { set start_date_ansi [clock format [clock scan $start_date] -format %Y-%m-%d] } ""] } {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+if { [catch { set end_date_ansi [clock format [clock scan $end_date] -format %Y-%m-%d] } ""] } {
     ad_return_complaint 1 "End Date doesn't have the right format.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
@@ -618,13 +618,15 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Start Date</td>
 		  <td class=form-widget>
-		    <input type=textfield name=start_date value=$start_date>
+		    <input id='start_date' type='textfield' name='start_date' value='$start_date'> 
+		    <input type=\"button\" style=\"height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');\" onclick =\"return showCalendar('start_date', 'y-m-d');\">
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>End Date</td>
 		  <td class=form-widget>
-		    <input type=textfield name=end_date value=$end_date>
+		    <input type='textfield' id='end_date' name='end_date' value='$end_date'>
+		    <input type=\"button\" style=\"height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');\" onclick =\"return showCalendar('end_date', 'y-m-d');\">
 		  </td>
 		</tr>
                 <tr>
