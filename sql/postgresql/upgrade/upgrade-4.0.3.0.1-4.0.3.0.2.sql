@@ -2,6 +2,13 @@
 
 SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgrade-4.0.3.0.1-4.0.3.0.2.sql','');
 
+
+
+
+-- Create a new profile for users who are not real users...
+select im_create_profile ('Skill Profile','skill_profile');
+
+
 -----------------------------------------------------------
 -- Category Ranges reservation
 --
