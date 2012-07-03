@@ -188,6 +188,34 @@ ad_proc im_freelance_skill_select {
 
 
 
+
+
+# ---------------------------------------------------------------
+# Freelance Skills Select
+# ---------------------------------------------------------------
+
+ad_proc im_freelance_skill_user_select {
+    -profile_user_id:required
+    select_name
+    { default "" }
+} {
+    Returns a HTML select with all users matching the
+    specified profile_user, according to the ranking
+} {
+    set bind_vars [ns_set create]
+    set sql "
+        select	user_id,
+		user_id::text || ' - ' || im_name_from_user_id(user_id)
+        from	users
+        order by lower(category)
+    "
+
+    return [im_selection_to_select_box -translate_p 0 $bind_vars $select_name $sql $select_name $default]
+}
+
+
+
+
 # ----------------------------------------------------------------------
 # Freelance Info Component
 # Some simple extension data for freelancers
