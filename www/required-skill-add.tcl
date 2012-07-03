@@ -40,7 +40,7 @@ set bgcolor(1) "class=rowodd"
 #
 # ---------------------------------------------------------------
 
-set skill_category_type [db_string cattype "select coalesce(aux_string1, category_description) from im_categories where category_id = :skill_type_id" -default ""]
+set skill_category_type [db_string cattype "select aux_string1 from im_categories where category_id = :skill_type_id" -default ""]
 
 set skills_sql "
 	select	*

@@ -97,7 +97,7 @@ if { [empty_string_p $user_name] } {
 db_1row skill_type "
 select
 	category as skill_type,
-	coalesce(aux_string1, category_description) as value_range_category_type
+	aux_string1 as value_range_category_type
 from 
 	im_categories 
 where 
