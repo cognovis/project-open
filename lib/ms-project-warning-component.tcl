@@ -1,3 +1,11 @@
+# /packages/intranet-ganttproject/lib/ms-project-warning-component.tcl
+#
+# Copyright (C) 2012 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
+#
 # Portlet Component
 # Expects project_id variable passed from container
 #
@@ -572,6 +580,8 @@ if {![info exists ignore_hash($warning_key)]} {
 		select	p.project_id as task_id,
 			p.project_name as task_name,
 			p.tree_sortkey,
+			im_gantt_assigned_skill_profiles(p.project_id) as assigned_skill_profiles,
+			im_gantt_assigned_non_skill_profiles(p.project_id) as assigned_non_skill_profiles,
 		
 			coalesce((
 			select	sum(coalesce(bom.percentage, 0.0))
