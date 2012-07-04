@@ -646,19 +646,52 @@ if {![info exists ignore_hash($warning_key)]} {
 	    }
 	}
 
+	# Create a list of assigned skill profiles
+        set skill_profiles_list {}
+	foreach tuple $assigned_skill_profiles {
+	    set skill_profile_id [lindex $tuple 0]
+	    set role_id [lindex $tuple 1]
+	    set percent [lindex $tuple 2]
+	    if {"" != $percent} { set percent [expr $percent+0.0] }
 
+	    set string [im_name_from_user_id $skill_profile_id]
+	    if {"" != $percent} { append string ":$percent%" }
+	    lappend skill_profiles_list $string
+	}
 
-	ad_return_complaint 1 "profiles=$assigned_skill_profiles, persons=$assigned_persons"
+	# Create a list of assigned persons
+        set persons_list {}
+	foreach tuple $assigned_persons {
+	    set skill_profile_id [lindex $tuple 0]
+	    set role_id [lindex $tuple 1]
+	    set percent [lindex $tuple 2]
+	    set percent [expr $percent+0.0]
 
+	    set string [im_name_from_user_id $skill_profile_id]
+	    if {"" != $percent} { append string ":$percent%" }
+	    lappend persons_list $string
+	}
 
-	append task_html "<tr>\n"
-	append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
-	append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
-	append task_html "<td align=right>$percentage_skill_profiles</td>\n"
-	append task_html "<td align=right>$percentage_non_skill_profiles</td>\n"
-	append task_html "<td>[im_skill_user_select -profile_user_id $profile_user_id user_id.$task_id 0]</td>\n"
-	append task_html "</tr>\n"
-	incr task_ctr
+	foreach tuple $assigned_skill_profiles {
+	    set skill_profile_id [lindex $tuple 0]
+	    set role_id [lindex $tuple 1]
+	    set percent [lindex $tuple 2]
+
+#	    set select_html [im_freelance_skill_select -profile_user_id $skill_profile_id user_id.$task_id 0]
+	    set select_html [im_user_select -include_empty_p 1 -include_empty_name "-- Please Select --" -group_id [im_employee_group_id] user_id.$task_id 0]
+	    append select_html " <input type=input name=percent.$task_id value=\"$percent\" size=6>"
+
+	    append task_html "<tr>\n"
+	    append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
+	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
+	    append task_html "<td>[join $skill_profiles_list ", "]</td>\n"
+	    append task_html "<td>[join $persons_list ", "]</td>\n"
+	    append task_html "<td>$select_html</td>\n"
+	    append task_html "</tr>\n"
+	    incr task_ctr
+	    
+	}
+
     }
     
     if {$task_skipped_ctr > 0} {
@@ -703,7 +736,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	[lang::message::lookup "" intranet-ganttproject.Tasks_with_missing_assignments_msg "
 	The following tasks have been assigned to a Skill Profile, but you haven't yet specfied
 	which persons should perform the work."]<br>
-	<form action=/intranet-ganttproject/$warning_key>
+	<form action=/intranet-ganttproject/$warning_key method=POST>
 	[export_form_vars project_id return_url]
 	<table border=0 cellspacing=1 cellpadding=1>
 	$task_header
