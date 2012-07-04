@@ -15,6 +15,8 @@ set org_project_id $project_id
 set warnings_html ""
 set return_url [im_url_with_query]
 
+set skill_profile_group_id [im_profile::profile_id_from_name -profile "Skill Profile"]
+
 # ---------------------------------------------------------------
 # Get the main project
 # ---------------------------------------------------------------
@@ -580,8 +582,7 @@ if {![info exists ignore_hash($warning_key)]} {
 		select	p.project_id as task_id,
 			p.project_name as task_name,
 			p.tree_sortkey,
-			im_gantt_assigned_skill_profiles(p.project_id) as assigned_skill_profiles,
-			im_gantt_assigned_non_skill_profiles(p.project_id) as assigned_non_skill_profiles,
+			im_biz_object_member__list(p.project_id) as assigned_users,
 		
 			coalesce((
 			select	sum(coalesce(bom.percentage, 0.0))
@@ -632,6 +633,23 @@ if {![info exists ignore_hash($warning_key)]} {
 	    incr task_skipped_ctr
 	    continue 
 	}
+
+	# Separate the assigned resources into 1) skill profiles and 2) persons
+	set assigned_skill_profiles {}
+	set assigned_persons {}
+	foreach tuple $assigned_users {
+	    set user_id [lindex $tuple 0]
+	    if {[im_profile::member_p -profile "Skill Profile" -user_id $user_id]} {
+		lappend assigned_skill_profiles $tuple
+	    } else {
+		lappend assigned_persons $tuple
+	    }
+	}
+
+
+
+	ad_return_complaint 1 "profiles=$assigned_skill_profiles, persons=$assigned_persons"
+
 
 	append task_html "<tr>\n"
 	append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
