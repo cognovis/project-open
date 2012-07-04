@@ -50,6 +50,10 @@ foreach ticket_id $tid {
 	    	if { "" == $ticket_assignee_id } {
 			set ticket_assignee [parameter::get -package_id [apm_package_id_from_key acs-kernel] -parameter "SystemOwner" -default ""]
 		}
+
+	        # tmp patch due to issues with parameter
+	        set ticket_assignee "klaus.hofeditz@project-open.com"
+
 	        set ticket_assignee_id [db_string get_ticket_asignee_id "select party_id from parties where email = :ticket_assignee" -default 0]
 	    	if { "" == $ticket_assignee_id  } {
 			ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Err_Mess_No_Email_Found "Ticket prio changed, but could not find any recipient to notify. Please contact the owner of the helpdesk"]
@@ -60,8 +64,8 @@ foreach ticket_id $tid {
 	set body [lang::message::lookup "" intranet-helpdesk.Body_Prio_Change "A priority of a ticket has been changed:\n\n"]
 	set base_url  [parameter::get -package_id [apm_package_id_from_key acs-kernel] -parameter "SystemURL" -default 60]
 	set ticket_name [db_string get_ticket_name "select project_name from im_projects where project_id = :ticket_id" -default 0]
-	append body "$ticket_name \n set to prio: $ticket_prio \n $base_url/intranet-helpdesk/view?ticket_id=$ticket_id" 
-	
+    	[im_category_from_id $ticket_prio]
+	append body "$ticket_name \n set to prio: [im_category_from_id $ticket_prio] \n $base_url/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id" 
 	set sql "select acs_mail_nt__post_request (:current_user_id, :ticket_assignee_id, 'f', :subject, :body, 0)"
 
 	set err ""
