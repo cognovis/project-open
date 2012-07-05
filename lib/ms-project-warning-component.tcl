@@ -431,7 +431,9 @@ if {![info exists ignore_hash($warning_key)]} {
 set warning_key "fix-tasks-with-overallocation"
 if {![info exists ignore_hash($warning_key)]} {
     set sql "
-	select	t.*
+	select	t.*,
+		percentage_skill_profiles + percentage_non_skill_profiles as percentage_sum,
+		greatest(percentage_skill_profiles, percentage_non_skill_profiles) as percentage
 	from	(
 		select	p.project_id as task_id,
 			p.project_name as task_name,
@@ -443,14 +445,37 @@ if {![info exists ignore_hash($warning_key)]} {
 			coalesce(t.planned_units, 0.0) as planned_units,
 			t.uom_id,
 			main_p.project_calendar,
-			(select	sum(coalesce(bom.percentage, 0.0))
+
+			coalesce((
+			select	sum(coalesce(bom.percentage, 0.0))
 			from	acs_rels r,
 				im_biz_object_members bom,
 				users u
 			where	r.object_id_one = p.project_id and
 				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id
-			) as percentage
+				r.rel_id = bom.rel_id and
+				u.user_id in (
+					select member_id from group_distinct_member_map 
+					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+				)
+			), 0.0) as percentage_skill_profiles,
+
+			coalesce((
+			select	sum(coalesce(bom.percentage, 0.0))
+			from	acs_rels r,
+				im_biz_object_members bom,
+				users u
+			where	r.object_id_one = p.project_id and
+				r.object_id_two = u.user_id and
+				r.rel_id = bom.rel_id and
+				u.user_id not in (
+					select member_id from group_distinct_member_map 
+					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+				)
+			), 0.0) as percentage_non_skill_profiles
+
+
+
 		from	im_projects main_p,
 			im_projects p,
 			im_timesheet_tasks t
@@ -459,7 +484,7 @@ if {![info exists ignore_hash($warning_key)]} {
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey)
 		) t
 	where	planned_units > 0.0 and
-		percentage > 0.0
+		percentage_non_skill_profiles + percentage_skill_profiles > 0.0
 	order by
 		tree_sortkey
     "
@@ -650,10 +675,8 @@ if {![info exists ignore_hash($warning_key)]} {
         set skill_profiles_list {}
 	foreach tuple $assigned_skill_profiles {
 	    set skill_profile_id [lindex $tuple 0]
-	    set role_id [lindex $tuple 1]
 	    set percent [lindex $tuple 2]
 	    if {"" != $percent} { set percent [expr $percent+0.0] }
-
 	    set string [im_name_from_user_id $skill_profile_id]
 	    if {"" != $percent} { append string ":$percent%" }
 	    lappend skill_profiles_list $string
@@ -663,10 +686,8 @@ if {![info exists ignore_hash($warning_key)]} {
         set persons_list {}
 	foreach tuple $assigned_persons {
 	    set skill_profile_id [lindex $tuple 0]
-	    set role_id [lindex $tuple 1]
 	    set percent [lindex $tuple 2]
 	    set percent [expr $percent+0.0]
-
 	    set string [im_name_from_user_id $skill_profile_id]
 	    if {"" != $percent} { append string ":$percent%" }
 	    lappend persons_list $string
@@ -674,18 +695,20 @@ if {![info exists ignore_hash($warning_key)]} {
 
 	foreach tuple $assigned_skill_profiles {
 	    set skill_profile_id [lindex $tuple 0]
-	    set role_id [lindex $tuple 1]
-	    set percent [lindex $tuple 2]
+	    set skill_percent [lindex $tuple 2]
 
-#	    set select_html [im_freelance_skill_select -profile_user_id $skill_profile_id user_id.$task_id 0]
-	    set select_html [im_user_select -include_empty_p 1 -include_empty_name "-- Please Select --" -group_id [im_employee_group_id] user_id.$task_id 0]
+	    # Required percent assignment in order to eqal out person vs. skill profiles
+	    set percent [expr $percentage_skill_profiles - $percentage_non_skill_profiles]
+
+	    set select_html [im_freelance_skill_profile_select -skill_profile_id $skill_profile_id user_id.$task_id 0]
+#	    set select_html [im_user_select -include_empty_p 1 -include_empty_name "-- Please Select --" -group_id [im_employee_group_id] user_id.$task_id 0]
 	    append select_html " <input type=input name=percent.$task_id value=\"$percent\" size=6>"
 
 	    append task_html "<tr>\n"
 	    append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
-	    append task_html "<td>[join $skill_profiles_list ", "]</td>\n"
-	    append task_html "<td>[join $persons_list ", "]</td>\n"
+	    append task_html "<td>$percentage_skill_profiles [join $skill_profiles_list ", "]</td>\n"
+	    append task_html "<td>$percentage_non_skill_profiles [join $persons_list ", "]</td>\n"
 	    append task_html "<td>$select_html</td>\n"
 	    append task_html "</tr>\n"
 	    incr task_ctr

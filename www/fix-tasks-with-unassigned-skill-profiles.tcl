@@ -28,7 +28,8 @@ switch $action {
 	    if {"on" != $status || "" == $uid || "" == $perc} { continue }
 
 	    # Add the guy to the project with a certain percentage
-	    im_biz_object_add_role -percentage $perc $uid $tid [im_biz_object_role_full_member]
+	    set rel_id [im_biz_object_add_role -percentage $perc $uid $tid [im_biz_object_role_full_member]]
+	    ad_return_complaint 1 $rel_id
 	}
     }
 
