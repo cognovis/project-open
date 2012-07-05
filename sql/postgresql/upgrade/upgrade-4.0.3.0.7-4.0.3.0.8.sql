@@ -1,5 +1,5 @@
--- upgrade-4.0.3.0.6-4.0.3.0.7.sql
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.6-4.0.3.0.7.sql','');
+-- upgrade-4.0.3.0.7-4.0.3.0.8.sql
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.7-4.0.3.0.8.sql','');
 
 
 create or replace function inline_0 ()
