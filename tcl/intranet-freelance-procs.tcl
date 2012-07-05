@@ -154,40 +154,102 @@ ad_proc -public im_user_skill_permissions { current_user_id user_id view_var rea
 # Freelance Skills Select
 # ---------------------------------------------------------------
 
-ad_proc im_freelance_skill_select { 
-    {-translate_p 0}
+
+ad_proc im_freelance_skill_profile_select { 
     {-include_empty_p 1}
     {-include_empty_name ""}
+    {-profile_id ""}
+    {-skill_profile_id "" }
     select_name
     skill_type_id
     { default "" }
 } {
-    Returns HTML code for a select box to choose the
-    skill of a specified skill type.
+    Returns HTML code for a select box to choose a suitable users for a given skill profile.
+    The portlet uses a customized SQL to quickly search through the users with matching skills.
+    @param profile_id Profile of users to include in the search. Defaults to Employees.
+    @param skill_profile_id Reference skill profile. This is the reference object from which 
+           we will take the skills to look for
 } {
-    set bind_vars [ns_set create]
+    return [util_memoize [list im_freelance_skill_profile_select_helper -include_empty_p $include_empty_p -include_empty_name $include_empty_name -profile_id $profile_id -skill_profile_id $skill_profile_id $select_name $skill_type_id $default]]
+}
 
-    set skill_type [db_string skill_type "select aux_string1 from im_categories where category_id=:skill_type_id"]
-    if {"" == $skill_type} {
-        set skill_type [db_string skill_type "select category_description from im_categories where category_id=:skill_type_id"]
-    }
+ad_proc im_freelance_skill_profile_select_helper { 
+    {-include_empty_p 1}
+    {-include_empty_name ""}
+    {-profile_id ""}
+    {-skill_profile_id "" }
+    select_name
+    skill_type_id
+    { default "" }
+} {
+    Helper for im_freelance_skill_profile_select
+} {
+    if {"" == $profile_id} { set profile_id [im_employee_group_id] }
 
-    ns_set put $bind_vars skill_type $skill_type
+    set skill_profile_skills [db_string sps "select im_freelance_skill_id_list(:skill_profile_id) from dual"]
 
     set sql "
-        select	category_id,
-		category
-        from	im_categories
-        where	category_type = :skill_type
-		and (enabled_p = 't' OR enabled_p is NULL)
-        order by lower(category)
+	select	p.person_id,
+		im_freelance_skill_id_list(p.person_id) as person_skills
+	from	persons p
+	where	p.person_id in (select member_id from group_distinct_member_map where group_id = :profile_id)
     "
 
-    return [im_selection_to_select_box -translate_p $translate_p $bind_vars $select_name $sql $select_name $default]
+    set user_score_list [list]
+    db_foreach sql $sql {
+	# Calculate score by matching the user's skills against skill_profile_skills
+	set score [im_freelance_skill_profile_select_score -person_skills $person_skills -skill_profile_skills $skill_profile_skills]
+	
+	lappend user_score_list [list $person_id $score]
+    }
+    set sorted_user_score_list [reverse [qsort $user_score_list [lambda {s} { lindex $s 1 }]]]
+
+
+    set please_select_msg [lang::message::lookup "" intranet-freelancer.Please_Select "-- Please Select --"]
+    set options "<option value=\"\">$please_select_msg</option>\n"
+    foreach tuple $sorted_user_score_list {
+	set user_id [lindex $tuple 0]
+	set score [lindex $tuple 1]
+	set user_name [im_name_from_user_id $user_id]
+	append options "<option value=\"$user_id\">$user_name ($score)</option>\n"
+    }
+    set html "<select name=\"$select_name\" value=\"$default\">$options</select>"
+    return $html
 }
 
 
+ad_proc im_freelance_skill_profile_select_score {
+    -person_skills:required
+    -skill_profile_skills:required
+} {
+    Returns a score values that is greater if a user's skills match the skills required by the skill profile.
+} {
+    set score [expr rand() * 100.0]
 
+    set score 0.0
+    foreach tuple $skill_profile_skills {
+	set skill_profile_skill_type_id [lindex $tuple 0]
+	set skill_profile_skill_id [lindex $tuple 1]
+	set skill_profile_confirmed_experience_id [lindex $tuple 2]
+
+	foreach triple $person_skills {
+	    set person_skill_type_id [lindex $triple 0]
+	    set person_skill_id [lindex $triple 1]
+	    set person_confirmed_experience_id [lindex $triple 2]
+
+	    if {$person_skill_type_id != $skill_profile_skill_type_id} { continue }
+	    if {$person_skill_id != $skill_profile_skill_id} { continue }
+
+	    # Take out the experience score of the person from the last digit of the category_id.
+	    # That's a reasonable approx, but not very clean...
+	    # Unconfirmed=0, Low=1, Medium=2, High=3
+	    set confirmed_score [expr $person_confirmed_experience_id % 10]
+	    set score [expr $score + $confirmed_score]
+	}
+    }
+
+    return $score
+}
 
 
 # ---------------------------------------------------------------
