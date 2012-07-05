@@ -6,6 +6,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     project_id:integer,notnull
+    checked:array
+    rel_id:array
     task_id:array
     user_id:array
     percent:array
@@ -18,18 +20,21 @@ set warning_key "fix-tasks-with-unassigned-skill-profiles"
 
 switch $action {
     fix {
-	foreach tid [array names task_id] {
+	foreach rid [array names checked] {
 
-	    set status $task_id($tid)
-	    set uid $user_id($tid)
-	    set perc $percent($tid)
+	    set status $checked($rid)
+	    set tid $task_id($rid)
+	    set uid $user_id($rid)
+	    set perc $percent($rid)
 
 	    # Skip if the task checkbox is unchecked or no user was selected.
-	    if {"on" != $status || "" == $uid || "" == $perc} { continue }
+	    if {"on" != $status || "" == $uid || "" == $tid || "" == $perc} { continue }
 
 	    # Add the guy to the project with a certain percentage
-	    set rel_id [im_biz_object_add_role -percentage $perc $uid $tid [im_biz_object_role_full_member]]
-	    ad_return_complaint 1 $rel_id
+	    set new_rel_id [im_biz_object_add_role -percentage $perc $uid $tid [im_biz_object_role_full_member]]
+	    # Let the new acs_rel point to the original rel_id of the skill_profile.
+	    # This way we know which is an instance and which is the skill profile assignment.
+	    db_dml update_skill_inst "update im_biz_object_members set skill_profile_rel_id = :rid where rel_id = :new_rel_id"
 	}
     }
 

@@ -1246,7 +1246,9 @@ ad_proc -public im_gp_save_allocations {
 	where	parent.project_id = :main_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
 		child.project_id = r.object_id_one and
-		r.rel_id = bom.rel_id
+		r.rel_id = bom.rel_id and
+		-- Exclude person assignmens related to skill_profiles
+		bom.skill_profile_rel_id is null
     "
     db_foreach reset_allocations $reset_allocation_sql {
 	db_dml reset "update im_biz_object_members set percentage = NULL where rel_id = :rel_id"
@@ -1435,6 +1437,10 @@ ad_proc -public im_gp_find_person_for_name_helper {
 } {
     set person_id ""
     set name [string trim [string tolower $name]]
+    set email [string trim [string tolower $email]]
+
+    # Remove duplicate spaces from name
+    regsub -all {  } $name { } name
 
     # Check for an exact match with Email
     if {"" == $person_id} {

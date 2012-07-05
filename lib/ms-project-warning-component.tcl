@@ -696,16 +696,18 @@ if {![info exists ignore_hash($warning_key)]} {
 	foreach tuple $assigned_skill_profiles {
 	    set skill_profile_id [lindex $tuple 0]
 	    set skill_percent [lindex $tuple 2]
+	    set rel_id [lindex $tuple 3]
 
 	    # Required percent assignment in order to eqal out person vs. skill profiles
 	    set percent [expr $percentage_skill_profiles - $percentage_non_skill_profiles]
 
-	    set select_html [im_freelance_skill_profile_select -skill_profile_id $skill_profile_id user_id.$task_id 0]
-#	    set select_html [im_user_select -include_empty_p 1 -include_empty_name "-- Please Select --" -group_id [im_employee_group_id] user_id.$task_id 0]
-	    append select_html " <input type=input name=percent.$task_id value=\"$percent\" size=6>"
+	    set select_html [im_freelance_skill_profile_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
+	    append select_html " <input type=input name=percent.$rel_id value=\"$percent\" size=6>"
+	    append select_html " <input type=hidden name=task_id.$rel_id value=\"$task_id\">"
+	    append select_html " <input type=hidden name=rel_id.$rel_id value=\"$rel_id\">"
 
 	    append task_html "<tr>\n"
-	    append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
+	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
 	    append task_html "<td>$percentage_skill_profiles [join $skill_profiles_list ", "]</td>\n"
 	    append task_html "<td>$percentage_non_skill_profiles [join $persons_list ", "]</td>\n"
