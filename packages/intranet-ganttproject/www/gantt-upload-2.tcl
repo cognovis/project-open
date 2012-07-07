@@ -141,6 +141,8 @@ if {[catch {set doc [dom parse $binary_content]} err_msg]} {
 }
 
 set root_node [$doc documentElement]
+# ad_return_complaint 1 "<pre>[ns_quotehtml [$root_node asXML -indent 8 -escapeNonASCII]]</pre>"
+
 
 set format "gantt"
 
@@ -445,13 +447,20 @@ db_foreach reassign_tasks "
 }
 
 lappend ids 0
-db_multirow delete_tasks delete_tasks "
+db_multirow -extend {project_indent } delete_tasks delete_tasks "
 	SELECT	project_id as task_id,
 		project_name,
-		project_nr
+		project_nr,
+		tree_level(tree_sortkey) as project_level
 	FROM	im_projects
 	WHERE 	project_id IN ([join $ids ,])
-"
+	ORDER by
+	      tree_sortkey
+" {
+  set space "&nbsp; &nbsp; &nbsp; "
+  set project_indent ""
+  for {set i 0} {$i < $project_level} {incr i} { append project_indent $space }
+}
 
 template::list::create \
     -pass_properties { reassign_tasks } \
@@ -470,6 +479,7 @@ template::list::create \
         } 
         project_name {
             label "[lang::message::lookup {} intranet-ganttproject.Task_Name {Task Name}]"
+	    display_template { <nobr>@delete_tasks.project_indent;noquote@ @delete_tasks.project_name@</nobr> }
         }
 	assign_to {
 	    label "[lang::message::lookup {} intranet-ganttproject.Reassign_Resources_To {Reassign Resources To}]"

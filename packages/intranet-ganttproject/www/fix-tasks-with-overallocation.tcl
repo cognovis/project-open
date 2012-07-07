@@ -37,24 +37,47 @@ switch $action {
 	    }
 
 	    set task_select_sql "
+		select	t.*,
+			percentage_skill_profiles + percentage_non_skill_profiles as percentage_sum,
+			greatest(percentage_skill_profiles, percentage_non_skill_profiles) as percentage
+		from	(
 		select	t.planned_units,
 			t.uom_id,
 			p.project_id,
 			p.project_name,
 			p.start_date,
 			p.end_date,
-			(select	sum(coalesce(bom.percentage, 0.0))
+			coalesce((select sum(coalesce(bom.percentage, 0.0))
 			from	acs_rels r,
 				im_biz_object_members bom,
 				users u
 			where	r.object_id_one = p.project_id and
 				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id
-			) as percentage
+				r.rel_id = bom.rel_id and
+				u.user_id in (
+					select member_id from group_distinct_member_map 
+					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+				)
+			), 0.0) as percentage_skill_profiles,
+
+			coalesce((select sum(coalesce(bom.percentage, 0.0))
+			from	acs_rels r,
+				im_biz_object_members bom,
+				users u
+			where	r.object_id_one = p.project_id and
+				r.object_id_two = u.user_id and
+				r.rel_id = bom.rel_id and
+				u.user_id not in (
+					select member_id from group_distinct_member_map 
+					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+				)
+			), 0.0) as percentage_non_skill_profiles
+
 		from	im_projects p,
 			im_timesheet_tasks t
 		where	p.project_id = t.task_id and
 			$tid_where
+		) t
 	    "
 	    db_foreach tasks_with_overallocation $task_select_sql {
 

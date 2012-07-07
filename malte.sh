@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd /home/git/project-open-orig
-PKGS_LIST=/home/git/project-open-orig/pkgs-list.txt
+PKGS_LIST=/home/git/projop2git/config/pkgs-list.txt
 echo "UPDATE STARTED:: " >/var/log/projop2git/projop.log
 echo `date` >>/var/log/projop2git/projop.log
 for pkg in `cat $PKGS_LIST`; do
