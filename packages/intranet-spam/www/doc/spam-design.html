@@ -1,0 +1,224 @@
+<body bgcolor=#ffffff>
+
+<h2>Spam System Design</h2>
+
+by <a href="mailto:markd@arsdigita.com">Mark Dalrymple</a> 
+and <a href="mailto:bschneid@arsdigita.com">Bill Schneider</a>
+
+<hr>
+
+<h3>I. Essentials</h3>
+
+<ul>
+
+<li><a href="/doc/sql/display-sql?url=spam-create.sql&package_key=spam">Data model</a></li>
+
+
+<li><a href="spam-requirements.html">Requirements document</a>
+
+</ul>
+
+<h3>II. Introduction</h3>
+
+The spam package allows the user to send mass e-mail to a group of
+users, selected with a database query.  It provides a set of common
+user-interface pages that can be linked from any other ACS application
+that wishes to include a spam feature.  These pages will initally be
+linked from the subsite admin/groups/one page, so subsite
+administrators can send spam to all the members of a group.
+
+<p>
+The spam package uses the acs-mail package as the store for message
+content, so all spam content also ends up in the
+<code>acs_contents</code>; the acs-mail package also handles the
+generation of multipart/alternative e-mail for us, and the actual
+transport of outgoing message via <code>ns_sendmail</code>.
+
+<p>The spam package is intended to be used as a singleton service, so
+other applications can link to a single instance of the spam package.
+
+<h3>III. Historical Considerations</h3>
+
+Previous versions of ACS included a feature for sending mass e-mail to
+groups of users.  There were two separate but nearly-identical sets of
+pages for providing nearly the same features: one for administrators
+to send spam to a group of users, and one for group members to spam
+each other.  We expect that the enhanced object-level permissioning in
+ACS 4.1 will prevent us from needing this kind of cut-and-paste
+programming.
+
+<h3>IV. Competitive Analysis</h3>
+
+N/A
+
+<h3>V. Design Tradeoffs</h3>
+
+<h4>Picking groups of recipients</h4>
+
+<p>Spamming groups of users chosen with different sets of criteria
+ is a feature that can be incorporated into a variety of different
+ applications; for example:
+
+  <ul>
+
+    <li>bboard: a forum admin sends mail to all users who have posted
+more than N messages in D days
+
+    <li>subsite: send mail to all users who are members of group G
+
+    <li>file-storage: send mail to all users who have downloaded a file F
+
+  </ul>
+ 
+Ultimately, we would like the ability for each package author to
+register a type of criteria centrally with a user-classes service; and
+then the spam pages could present a central interface for picking a
+group of users to spam based on cross-package criteria.  
+
+<p>
+This is part of a larger data-mining or personalization problem, and
+is out of the scope of the current spam service.  So, for now, we 
+require that each application provide a SQL query returning a list of
+<code>party_id</code>'s as spam recipients as a parameter to the pages
+that create a new spam message.  We prevent SQL tampering by
+passing it as a client property (using
+<code>ad_{get|set}_client_property</code>) instead of passing it as 
+a URL variable.  
+
+<h4>Use of acs-mail</h4>
+
+<p>We use acs-mail for basic message storage and transport
+services, since there is already an e-mail queue processing procedure,
+and storing messages in the <code>acs_mail</code> table means that
+outgoing spams are content items in the <code>acs_contents</code> 
+table.  
+<p>
+
+Since acs-mail is still under development and its specifications
+are subject to change, we will suggest some enhancements for acs-mail
+as follows:
+
+<ul>
+
+<li>The mail-queue processor procedure
+(<code>acs_mail_process_queue</code>) should use the user's
+<code>prefer_text_only_p</code> setting in
+<code>user_preferences</code>, and, in the case of
+<code>multipart/alternative</code> mail, just send the user the
+plain-text portion in case their mail reader is broken.
+
+<li>We'd like to supply the name of a PL/SQL function that filters the
+mail body content before it is sent to the user, given a party_id as a
+parameter.  This would allow spam to implement a mail merge function,
+without creating a trivially-different <code>acs_mail_body</code> for
+each recipient.
+</ul>
+
+<h3>VI. API</h3>
+
+<h4>Tcl</h4>
+
+We will provide a procedure <code>spam_base</code> for returning the
+base URL where the spam package is mounted.  This function will be
+called from other packages to get a URL to the spam system.  We will
+also provide a function that wraps the call to the PL/SQL functions
+for inserting and updating messages in the database
+(<code>spam_new_message</code> and <code>spam_update_message</code>).  
+
+<p>
+Also, we will include a "sweeper" procedure that periodically polls
+for spam that has been approved by an administrator and whose
+send-time has passed; these messages will be pushed into the acs-mail
+service's outgoing mail queue (<code>acs_mail_queue_outgoing</code>)
+for transport.
+
+<h4>PL/SQL</h4>
+
+<p>The spam system will extend the ACS Mail service, and will include
+a PL/SQL package with a <code>new</code> function to create a new spam
+message object.  There will also be an <code>edit</code> method for
+editing a spam message, or updating its status fields.
+
+<h3>VI. Data Model Discussion</h3>
+
+Spam will not have much of its own data model; rather, it will extend
+the acs-mail service's data model.  This allows us to build on top of
+acs-mail rather than re-inventing it.  This also results in messages
+being stored in the <code>acs-content</code> service, consolidating
+our usage of BLOB columns in the database schema.
+
+<p>Spam only needs to keep track of four things beyond what
+acs-mail does:
+<ul>
+
+ <li>a SQL query for selecting users as recipients
+
+ <li>a flag to indicate whether an outgoing spam has been approved by
+ an administrator 
+
+ <li>the date for the mail to be sent out
+
+ <li>a flag to indicate whether an outgoing spam has been moved to the
+outgoing queue, which should occur only after spam is approved and the
+above send date has passed.  (Is there a way to make this a check 
+constraint, e.g.,
+<pre>
+constraint spam_messages_sent_p_ck
+check (sent_p = 'f' or (send_date >= sysdate and approved_p = 't')
+</pre>
+?  The question is, when adding such a constraint to the datamodel,
+does Oracle treat <code>sysdate</code> as the time at which the constraint
+is created, or at the time when the data is inserted?)
+
+</ul>
+
+<h3>VIII. User Interface</h3>
+
+We will create the following pages as the spam user interface:
+
+<ul>
+
+<h4>End users</h4>
+
+<li>
+spam-add: creates a new row in spam_messages, and displays the main
+spam-entry form; includes textarea for text, content-type radio
+buttons (plain text/HTML), date-to-send widget, the count of users to
+be spammed, and a confirmation button.  Form posts to spam-confirm.
+
+<li>spam-confirm: displays text as it will go out and gives "are you sure"
+button.  Posts to spam-send
+
+<li>spam-send: updates all columns in spam_messages table.  Displays
+confirmation method "you may edit with spam-edit or view status with
+..."
+
+<li>spam-edit: displays same form as spam-add, but posts to spam-update
+
+<li>spam-update: does update instead of insert
+
+<li>spam-status: shows the status of a single spam message; also gives
+admins a widget to approve pending spam
+
+<li>We will also modify the "group/one" page in acs-subsite to link to 
+spam-add.
+
+<h4>Subsite administrators</h4>
+
+<li>spam-queue: display the entire spam_messages table with links to
+spam-status
+
+<li>spam-remove: delete/disable a spam message
+
+<h4>ACS Administrators</h4> 
+
+<li>ACS (site-wide) admins will have a page for entering arbitrary SQL
+queries for picking groups of users.
+</ul>
+
+<hr>
+<address>
+<a href="mailto:bschneid@arsdigita.com">bschneid@arsdigita.com</a>
+</address>
+<br>
+Last modified: $Id$
