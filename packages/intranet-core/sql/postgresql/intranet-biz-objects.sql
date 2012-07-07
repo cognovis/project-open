@@ -443,7 +443,11 @@ create table im_biz_object_members (
 				constraint im_biz_object_members_role_fk
 				references im_categories,
 				-- Percentage of assignation of resource
-	percentage		numeric(8,2) default 100
+	percentage		numeric(8,2) default 100,
+				-- Reference to the original 
+	skill_profile_rel_id	integer
+				constraint im_biz_object_members_skill_profile_rel_fk
+				references im_biz_object_members
 );
 
 select acs_rel_type__create_type (
@@ -586,7 +590,8 @@ DECLARE
 BEGIN
 	v_members := '';
 	FOR row IN 
-		select	r.object_id_two as party_id,
+		select	r.rel_id,
+			r.object_id_two as party_id,
 			coalesce(bom.object_role_id::varchar, '""') as role_id,
 			coalesce(bom.percentage::varchar, '""') as percentage
 		from	acs_rels r,
@@ -596,7 +601,7 @@ BEGIN
 		order by party_id
 	LOOP
 		IF '' != v_members THEN v_members := v_members || ' '; END IF;
-		v_members := v_members || '{' || row.party_id || ' ' || row.role_id || ' ' || row.percentage || '}';
+		v_members := v_members || '{' || row.party_id || ' ' || row.role_id || ' ' || row.percentage || ' ' || row.rel_id || '}';
 	END LOOP;
 
 	return v_members;

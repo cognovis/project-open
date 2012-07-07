@@ -144,18 +144,21 @@ ad_proc -public to_xml {
     for {set i 0} {$i < $tab_level} {incr i} { append tabs "\t" }
 
     array set hash $calendar
+
     set week_days_xml ""
     for {set d 1} {$d < 7} {incr d} { 
 
 	# Extract the parameters from the hash
 	set day_list ""
-	if {[info exists $hash($d)]} { set day_list $hash($d) }
+	if {[info exists hash($d)]} { set day_list $hash($d) }
+
 	array unset day_hash
 	array set day_hash $day_list
+
 	set day_working 0
-	set working_time {}
+	set working_times {}
 	if {[info exists day_hash(day_working)]} { set day_working $day_hash(day_working) }
-	if {[info exists day_hash(working_time)]} { set working_time $day_hash(working_time) }
+	if {[info exists day_hash(working_times)]} { set working_times $day_hash(working_times) }
 
 	set xml "
 $tabs		<WeekDay>
@@ -163,16 +166,18 @@ $tabs			<DayType>$d</DayType>
 $tabs			<DayWorking>$day_working</DayWorking>\n"
 
 	if {$day_working} {
-	    foreach tuple $working_time {
+	    append xml "<WorkingTimes>\n"
+	    foreach tuple $working_times {
 		set start_time [lindex $tuple 0]
 		set end_time [lindex $tuple 1]
-		append xml "
+		append xml "\
 $tabs				<WorkingTime>
 $tabs					<FromTime>$start_time</FromTime>
 $tabs					<ToTime>$end_time</ToTime>
 $tabs				</WorkingTime>
 "
 	    }
+	    append xml "</WorkingTimes>\n"
 	}
 	append xml "$tabs		</WeekDay>"
 	append week_days_xml $xml
