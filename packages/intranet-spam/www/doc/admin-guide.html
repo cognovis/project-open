@@ -1,0 +1,66 @@
+<body bgcolor=#ffffff>
+
+<h2>Spam System Developer's and Admin's Guide</h2>
+
+by <a href="mailto:bschneid@arsdigita.com">Bill Schneider</a>
+
+<hr>
+
+<h3>Adding a spam link to another application</h3>
+
+The spam service is a singleton and should be mounted on a single 
+site-node URL, like <code>/spam</code>. 
+
+<p>
+
+Once the spam service is mounted, you may link to the spam system from
+other packages to add a spam-all-users-who-meet-some-criteria feature.
+You need to provide a SQL query that returns a list of
+<code>party_id</code>'s, and the <code>object_id</code> of the object
+that controls the spam.   These parameters to the spam system are
+passed with <code>ad_set_client_property</code> rather than through
+the URL/form variables for security and efficiency.  
+
+<p>
+
+For example, you can create a link to spam all group members from the
+<code>/admin/groups/one.tcl</code> page in acs-subsite with this code:
+
+<blockquote><code><pre>
+# note: you should add "spam_url:onevalue" to ad_page_contract
+
+set sql_query "select member_id as party_id 
+     from group_member_map m 
+     where group_id = $group_id"
+
+ad_set_client_property spam "sql_query" $sql_query
+ad_set_client_property spam "object_id" $group_id
+
+set spam_url "[spam_base]spam-add?"
+</pre></code></blockquote>
+
+and adding the link to to the template <code>one.adp</code>:
+
+<blockquote><code><pre>
+&lt;p>
+ &lt;a href="@spam_url@">Spam all members&lt;/a>
+&lt;/p>
+</blockquote></code></pre>
+
+</h3>
+
+<h3>Permissions</h3>
+
+A spam message inherits the permissions of whatever
+<code>object_id</code> is passed into the <code>spam-add</code> page.
+You need to have <code>write</code> permissions on that object to
+create a new spam message or edit an existing spam message; and you
+need <code>admin</code> permission on that object for the spam to be
+considered "approved" or to approve an unapproved spam. A spam message
+will not actually be queued for sending unless it is approved.
+
+<hr>
+<address>
+<a href="mailto:bschneid@arsdigita.com">bschneid@arsdigita.com</a>
+</address>
+

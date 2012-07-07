@@ -1,0 +1,196 @@
+<body bgcolor=#ffffff>
+
+<h2>Spam System Requirements</h2>
+by <a href="mailto:bschneid@arsdigita.com">Bill Schneider</a>
+
+<hr>
+
+<h3>I. Introduction</h3>
+
+<p>This document outlines the requirements for the spam system as it
+will be implemented in ACS version 4.0.  Previous version of ACS
+included a spam feature, and the spam system in ACS 4.0 will support
+the same functionality as ACS 3.4 with the following enhancements:
+
+<ul>
+
+ <li>Administrators will send spam to groups of users using the same
+code and pages as non-administrators sending spam to other group
+members.  (In ACS 3.4, these two usage scenarios are carried out by
+different sets of pages.)
+
+</ul>
+
+<h3>II. Vision Statement</h3>
+
+Nearly all Web applications and Web-based communities have a way for
+administrators to send a mass e-mail ("spam") to groups of people, or
+for members of a group to send e-mail to all other members of the
+group.  
+
+<p>The ACS Spam system provides a mechanism for sending mass e-mail to
+groups of users and viewing the history of these messages sent.  It
+will be built using the existing ACS Messaging system, which stores
+message content in the Content Repository.
+
+<h3>System Overview</h3>
+
+The ACS Spam system consists of:
+
+<ul>
+
+<li>An API for selecting groups of users as spam recipients 
+
+<li>Pages for entering spam text
+
+<li>A mail-merge feature, for filling in each recipient's name or
+e-mail address in the message text 
+
+<li>Administration pages for viewing previously-sent spam
+
+</ul>
+
+<h3>IV. Use-cases and User-scenarios</h3>
+
+The spam system will be used by the following classes of users, which
+may or may not overlap:
+
+<ol>
+
+<li><b>Site-wide or subsite administrators</b> use the spam system to
+send e-mail to groups of users
+
+<li><b>Package administrators</b> use the spam system to send e-mail
+to groups of users based on some criteria within their package; for
+example, a bboard administrator might send spam to all people who've
+posted more than 30 messages within the last week, or an event
+administrator might send e-mail to all users who registered for the
+event.
+
+<li><b>Site users</b> might use the spam system to send e-mail to
+other users within their group, only if the subsite administration
+allows non-administrators to initiate spam.
+
+</ol>
+
+<b>Spam sent by administrators</b>
+<p>
+
+An administrator uses the spam system to send e-mail to a group of users, 
+following these steps:
+
+<ol>
+
+<li>Pick a group of users to receive a mass e-mailing
+
+<li>Draft the e-mail
+
+<li>View the text as it will appear to the recipient
+
+<li>Confirm it
+
+<li>The message is queued for delivery. 
+
+</ol>
+
+<p>This scenario is identical for site-wide, subsite, and and package
+administrators, with the exception that package admins will only be
+able to select groups of users based on criteria related to their
+package, and not from the site/subsite at large.
+
+<p><b>Spam sent by users</b>
+
+<p>Users who are not administrators can also use the spam system, but
+they can only send spam to other members of their group(s), and only
+if the group administrator allows non-administrators to send spam.
+The group administrator may set a spam moderation policy, so that spam
+sent by a user will not be sent until an administrator confirms or approves
+it.
+
+<p><b>Viewing spam history</b>
+
+An administrator can view the history of spam messages sent by other
+administrators or users.  This will also show the status of messages
+that have already been sent, but were not sent successfully (e.g.,
+because of network problems or addresses that bounce).
+
+<h3>V. Related Links</h3>
+
+<ul>
+ <li><a href="http://acs40.arsdigita.com/doc/acs-messaging">ACS Messaging</a>
+</ul>
+
+<h3>VI. Requirements</h3>
+
+<ul>
+ <li><b>10.0</b> Pick a group of users as spam recipients
+
+<p>Picking a group of recipients is always the first step in sending
+a spam.  
+
+<p><b>10.10</b> There must be an API for selecting a group of users
+programmatically, so that an application that uses the spam system can 
+present the option to spam a pre-chosen list of users.
+
+<p><b>10.20</b> 
+Subsite administrators should be able to spam any user group in the
+<code>GROUPS</code> table for their subsite.  
+
+<p><b>10.25</b> Site-wide administrators may spam any user group in
+the <code>GROUPS</code> table for any subsite, or supply an arbitrary
+SQL query for selecting a group of users from the <code>USERS</code>
+or <code>PARTIES</code> tables directly.
+
+<p><b>10.30</b> 
+Users who are not administrators may send spam to a user group in the
+<code>GROUPS</code> table, but only if they are members of that group 
+and the group administrator specifies that non-administrators may 
+send spam.  
+
+<blockquote>
+
+<p><b>10.30.10</b>
+
+Group and subsite administrators should be able to specify that, when
+a regular (non-admin) user sends spam to his group members, the spam
+is not sent immediately, but delayed until confirmed by an
+administrator.
+
+</blockquote>
+
+<p><li><b>20.0 Sending the e-mail</b>
+
+<p><b>20.10</b> The spam system shall provide a standard mechanism
+for drafting mass e-mail.
+
+<p><b>20.20</b> The spam system shall allow the sender to specify a time
+in the future to send the e-mail, so that spam may be sent on a delay
+
+<p><b>20.30</b> The spam system shall provide a "mail-merge" feature,
+with which the sender may specify fields to be filled in appropriately
+for each recipient.  
+
+<blockquote>
+<p><b>20.30.10</b> These fields shall include, but are not
+limited to the recipients'
+
+<ul>
+ <li>e-mail address
+ <li>name
+</ul>
+
+</blockquote>
+
+<li><b>30.0 Viewing spam history</b>
+
+<p><b>30.10</b> Site-wide and subsite administrators should be able to
+view a history of spam messages sent, and view/confirm those that are
+pending.
+
+<p><b>30.20</b> Administrators may view a history of previously-sent 
+spam messages, along with any error conditions that were recorded during
+the send.
+
+</ul>
+
+
