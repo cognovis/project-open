@@ -45,38 +45,41 @@ ad_page_contract {
     { project_id_form ""}
 }
 
-# ------------------------------------------------------------
-# Defaults
-# ------------------------------------------------------------
+# Fraber 20120626: Fixed hard error, but no idea why...
+set member ""
 
-if { "1"==$only_uncompleted_tasks_p } {
-    set only_uncompleted_tasks_checked "checked"
-} else {
-    set only_uncompleted_tasks_checked ""
-} 
-set report_id 0
-set page_title "Project-Tasks \[BETA\]"
-set current_url "/intranet-reporting/project-tasks.tcl"
-set return_url "/intranet-reporting/project-tasks.tcl"
-set export_var_list ""
-set user_id [ad_get_user_id]
-set include_subprojects 0
-set max_entries_per_page $task_max_entries_per_page
-set restrict_to_cost_center_id 0
-set order_by "Status"
-set restrict_to_status_id 0
-set restrict_to_mine_p 0
-set restrict_to_with_member_id 0
-set restrict_to_type_id 0
-set menu_label "reporting-project-tasks"
-set restrict_to_project_id ""
+	# ------------------------------------------------------------
+	# Defaults
+	# ------------------------------------------------------------
 
-# ------------------------------------------------------------
-# Permissions & Validation 
-# ------------------------------------------------------------
+	if { "1"==$only_uncompleted_tasks_p } {
+		set only_uncompleted_tasks_checked "checked"
+	} else {
+		set only_uncompleted_tasks_checked ""
+	} 
+	set report_id 0
+	set page_title "Project-Tasks \[BETA\]"
+	set current_url "/intranet-reporting/project-tasks.tcl"
+	set return_url "/intranet-reporting/project-tasks.tcl"
+	set export_var_list ""
+	set user_id [ad_get_user_id]
+	set include_subprojects 0
+	set max_entries_per_page $task_max_entries_per_page
+	set restrict_to_cost_center_id 0
+	set order_by "Status"
+	set restrict_to_status_id 0
+	set restrict_to_mine_p 0
+	set restrict_to_with_member_id 0
+	set restrict_to_type_id 0
+	set menu_label "reporting-project-tasks"
+	set restrict_to_project_id ""
 
-set current_user_id [ad_maybe_redirect_for_registration]
-set read_p [db_string report_perms "
+	# ------------------------------------------------------------
+	# Permissions & Validation 
+	# ------------------------------------------------------------
+
+	set current_user_id [ad_maybe_redirect_for_registration]
+	set read_p [db_string report_perms "
         	select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	        from    im_menus m
         	where   m.label = :menu_label

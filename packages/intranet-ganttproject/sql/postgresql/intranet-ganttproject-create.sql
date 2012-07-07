@@ -59,6 +59,11 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_gantt_project','edit','/intranet/projects/new?project_id=');
 
 
+
+
+----------------------------------------------------------------
+-- Extension table for Gantt specific information about resources
+
 create table im_gantt_persons (
 	person_id		integer
 				constraint im_gantt_persons_person_pk
@@ -106,6 +111,48 @@ begin
 end;$$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+----------------------------------------------------------------
+-- Extension table for Assignments
+
+create table im_gantt_assignments (
+	rel_id			integer
+				constraint im_gantt_assignments_pk primary key
+				constraint im_gantt_assignments_rel_fk
+				references im_biz_object_members,
+	xml_elements		text
+				constraint im_gantt_persons_xml_elements_nn
+				not null
+);
+
+
+----------------------------------------------------------------
+-- Timephased information of assignments
+
+
+create sequence im_gantt_assignments_timephased_seq;
+
+create table im_gantt_assignment_timephases (
+       	     			-- Unique ID, but not an object!
+	timephase_id     	integer
+				default nextval('im_gantt_assignments_timephased_seq')
+				constraint im_gantt_assignment_timephases_pk
+				primary key,
+				-- Reference to the im_gantt_assignments base entry
+	rel_id			integer
+				constraint im_gantt_assignments_rel_fk
+				references im_gantt_assignments,
+				-- Data from MS-Project XML Export without interpretation
+	timephase_uid		integer,
+	timephase_type		integer,
+	timephase_start		timestamptz,
+	timephase_end		timestamptz,
+	timephase_unit		integer,
+	timephase_value		text
+);
+
 
 
 

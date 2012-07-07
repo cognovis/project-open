@@ -171,12 +171,11 @@ foreach element $xml_elements {
 set calendars_node [$doc createElement Calendars]
 $project_node appendChild $calendars_node
 
-set start_morning "09:00:00"
-set end_morning "13:00:00"
-set start_after "15:00:00"
-set end_after "19:00:00"
-
-$calendars_node appendXML "
+if {"" == $project_calendar} {
+    # No calendar specified: Create a basic calendar spec
+    # that leaves the start and end hours to the MS-Project
+    # country version
+    $calendars_node appendXML "
 	<Calendar>
 		<UID>1</UID>
 		<Name>Standard</Name>
@@ -192,8 +191,12 @@ $calendars_node appendXML "
 			</WeekDay>
 		</WeekDays>
 	</Calendar>
-"
-
+    "
+} else {
+    # We have got a project calendar imported from MS-Project
+    $calendars_node appendXML [im_ms_calendar::to_xml -calendar $project_calendar]
+    # ad_return_complaint 1 "<pre>[ns_quotehtml [im_ms_calendar::to_xml -calendar $project_calendar]]\n $project_calendar</pre>"
+}
 
 # ---------------------------------------------------------------
 # Get the information about all resources who participate in
@@ -350,6 +353,7 @@ set project_allocations_sql "
 		to_char(p.start_date, 'YYYY-MM-DD') as start_date_date,
 		to_char(p.end_date, 'YYYY-MM-DD') as end_date_date,
 		tt.planned_units,
+		r.rel_id,
 		(select	sum(coalesce(pbom.percentage,0))
 		 from	im_biz_object_members pbom,
 			acs_rels pr
@@ -421,23 +425,99 @@ db_foreach project_allocations $project_allocations_sql {
     set remaining_work_ms [im_gp_seconds_to_ms_project_time $remaining_work_seconds]
     ns_log Notice "microsoft-project: allocactions: uid=$assignment_ctr, task_id=$task_id, tot=$total_percentage_assigned, assig=$percentage_assigned"
 
+    # There are two different ways how to create assignment entries for MS-Project:
+    # 1. Based on the ]po[ information: This is a relatively simple record.
+    # 2. Based on MS-Project TimephasedData: We use this if the values have not been modified in ]po[
+    #    in order to return exactly the same schedule for a task that was specified in MS-Project
+    #    (exact "round-trip")
 
-    $allocations_node appendXML "
-	<Assignment>
-		<UID>$assignment_ctr</UID>
-		<TaskUID>$task_id</TaskUID>
-		<ResourceUID>$user_id</ResourceUID>
-		<Units>[expr $percentage_assigned / 100.0]</Units>
-		<PercentWorkComplete>$percent_completed</PercentWorkComplete>
-		<Start>${start_date_date}T00:00:00</Start>
-		<Finish>${end_date_date}T23:00:00</Finish>
-		<OvertimeWork>PT0H0M0S</OvertimeWork>
-		<RegularWork>$work_ms</RegularWork>
-		<ActualWork>$actual_work_ms</ActualWork>
-		<RemainingWork>$remaining_work_ms</RemainingWork>
-		<Work>$work_ms</Work>
-	</Assignment>
-    "
+    set units [expr $percentage_assigned / 100.0]
+
+    set xml_exists_p [db_0or1row assignment_info "
+	select	ga.*
+	from	im_gantt_assignments ga
+	where	ga.rel_id = :rel_id
+    "]
+    
+    if {$xml_exists_p} {
+
+	set units_diff 100
+	if {$units > 0} { set units_diff [expr 100.0 * abs(($units - $xml_units) / $units)] }
+        ns_log Notice "microsoft-project: TimephasedData: rel_id=$rel_id, $task_id != $xml_taskuid, $user_id != $xml_resourceuid, $units != $xml_units, units_diff=$units_diff"
+	if {$task_id != $xml_taskuid} { sset xml_exists_p 0 }
+	if {$user_id != $xml_resourceuid} { ssset xml_exists_p 0 }
+	if {$units_diff > 10.0} { sssset xml_exists_p 0 }
+    }
+
+    if {!$xml_exists_p} {
+	# Simplified assignment - no timephased data
+	$allocations_node appendXML "
+		<Assignment>
+			<UID>$assignment_ctr</UID>
+			<TaskUID>$task_id</TaskUID>
+			<ResourceUID>$user_id</ResourceUID>
+			<Units>$units</Units>
+			<PercentWorkComplete>$percent_completed</PercentWorkComplete>
+			<Start>${start_date_date}T00:00:00</Start>
+			<Finish>${end_date_date}T23:00:00</Finish>
+			<OvertimeWork>PT0H0M0S</OvertimeWork>
+			<RegularWork>$work_ms</RegularWork>
+			<ActualWork>$actual_work_ms</ActualWork>
+			<RemainingWork>$remaining_work_ms</RemainingWork>
+			<Work>$work_ms</Work>
+		</Assignment>
+        "
+    } else {
+	# Complete assignment - store timephased data
+	set xml_xml ""
+	foreach xml_element $xml_elements {
+	    if {"TimephasedData" == $xml_element} { continue }
+	    if {"UID" == $xml_element} { continue }
+	    if {"TaskUID" == $xml_element} { continue }
+	    if {"ResourceUID" == $xml_element} { continue }
+
+	    ns_log Notice "microsoft-project: TimephasedData: store: xml_element=$xml_element, len(xml_xml) = [string length $xml_xml]"
+	    set var_name "xml_[string tolower $xml_element]"
+	    set var_value [expr "$$var_name"]
+	    append xml_xml "<$xml_element>$var_value</$xml_element>\n\t\t\t"
+	}
+	set timephased_xml ""
+	set timephased_sql "
+		select	timephase_id,
+			timephase_uid,
+			timephase_type,
+			timephase_start::date || 'T' || timephase_start::time as timephase_start,
+			timephase_end::date || 'T' || timephase_end::time as timephase_end,
+			timephase_unit,
+			timephase_value
+		from	im_gantt_assignment_timephases gat
+		where	gat.rel_id = :rel_id
+	"
+	db_foreach tp $timephased_sql {
+	    append timephased_xml "
+			<TimephasedData>
+				<Type>$timephase_type</Type>
+				<UID>$timephase_uid</UID>
+				<Start>$timephase_start</Start>
+				<Finish>$timephase_end</Finish>
+				<Unit>$timephase_unit</Unit>
+				<Value>$timephase_value</Value>
+			</TimephasedData>
+	    "
+	}
+
+	set allocations_html "
+		<Assignment>
+			<UID>$assignment_ctr</UID>
+			<TaskUID>$task_id</TaskUID>
+			<ResourceUID>$user_id</ResourceUID>
+			$xml_xml
+			$timephased_xml
+		</Assignment>	
+	"
+	$allocations_node appendXML $allocations_html
+	
+    }
     incr assignment_ctr
 }
 

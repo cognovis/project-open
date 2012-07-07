@@ -1247,15 +1247,18 @@ ad_proc -public im_gp_save_allocations {
 	where	parent.project_id = :main_project_id and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
 		child.project_id = r.object_id_one and
-		r.rel_id = bom.rel_id
+		r.rel_id = bom.rel_id and
+		-- Exclude person assignmens related to skill_profiles
+		bom.skill_profile_rel_id is null
     "
     db_foreach reset_allocations $reset_allocation_sql {
-	ns_log Notice "im_gp_save_allocations: Reset percentag of rel_id=$rel_id"
 	db_dml reset "update im_biz_object_members set percentage = NULL where rel_id = :rel_id"
     }
 
+    set ctr 0
     foreach child [$allocations_node childNodes] {
-	ns_log Notice "im_gp_save_allocations: nodeName=[$child nodeName]"
+	incr ctr
+	ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: [$child nodeName]=[$child nodeName]"
 	switch [string tolower [$child nodeName]] {
 	    "allocation" - "assignment" {
 		
@@ -1267,32 +1270,90 @@ ad_proc -public im_gp_save_allocations {
 		set percentage [$child getAttribute load "0"]
 
 		# Check for MS-Project specific format
+		set xml_elements {}
+		set gantt_assignments_list {}
+		set timephased_inserts {}
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
-    		    switch $nodeName {
-			"TaskUID" { set task_id $nodeText }
-			"ResourceUID" { set resource_id $nodeText }
-			"Units" { set percentage [expr round(100.0*$nodeText)] }
+		    ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: $nodeName=$nodeText"
+
+		    # Make sure the table column exists
+		    set table_name im_gantt_assignments
+		    set column_name "xml_[string tolower $nodeName]"
+		    set column_exists_p [im_column_exists $table_name $column_name]
+		    if {!$column_exists_p} { db_dml add_column "alter table $table_name add column $column_name text" }
+
+    		    switch [string tolower $nodeName] {
+			"taskuid" { 
+			    set task_id $nodeText
+			    lappend xml_elements $nodeName
+			}
+			"resourceuid" { 
+			    set resource_id $nodeText
+			    lappend xml_elements $nodeName
+			}
+			"units" { 
+			    set percentage [expr round(100.0*$nodeText)] 
+			    lappend gantt_assignments_list "xml_units = '$nodeText'"
+			    lappend xml_elements $nodeName
+			}
+			"timephaseddata" {
+			    # Deal with time phased data.
+			    set tp_type ""
+			    set tp_uid ""
+			    set tp_start ""
+			    set tp_finish ""
+			    set tp_unit ""
+			    set tp_value ""
+			    foreach tp [$attr childNodes] {
+				set nodeName [$tp nodeName]
+				set nodeText [$tp text]
+				ns_log Error "im_gp_save_allocations: ctr=$ctr, TimephaseData: $nodeName=$nodeText"
+				switch [string tolower $nodeName] {
+				    "type" { set tp_type $nodeText }
+				    "uid" { set tp_uid $nodeText }
+				    "start" { set tp_start $nodeText }
+				    "finish" { set tp_finish $nodeText }
+				    "unit" { set tp_unit $nodeText }
+				    "value" { set tp_value $nodeText }
+				    default { ns_log Error "im_gp_save_allocations: ctr=$ctr, unknown child of TimephaseData: $nodeName=$nodeText" }
+				}
+			    }
+			    ns_log Notice "im_gp_save_allocations: ctr=$ctr, TimephaseData: $tp_type, $tp_uid, $tp_start, $tp_finish, $tp_unit, $tp_value"
+			    # rel_id will be calcualted later, that's why it's a colon variable,
+			    # while all other variables are available within this loop
+			    lappend timephased_inserts "
+			    	insert into im_gantt_assignment_timephases 
+					(rel_id, timephase_uid, timephase_type, timephase_start, timephase_end, timephase_unit, timephase_value)
+				values 
+					(:rel_id, '$tp_uid', '$tp_type', '$tp_start', '$tp_finish', '$tp_unit', '$tp_value')
+			    "
+			}
+			default {
+			    lappend xml_elements $nodeName
+			    lappend gantt_assignments_list "$column_name = '$nodeText'"
+			}
 		    }
 		}
-		ns_log Notice "im_gp_save_allocations: iter: task_uid=$task_id, resource_uid=$resource_id, function=$function, percentage=$percentage, responsible=$responsible"
+
+		ns_log Notice "im_gp_save_allocations: ctr=$ctr, iter: task_id=$task_id, resource_uid=$resource_id, function=$function, percentage=$percentage, responsible=$responsible"
 
 		if {![info exists task_hash($task_id)]} {
-		    ns_log Notice "im_gp_save_allocations: Didn't find task_id='$task_id' in task_hash."
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, Didn't find task_id='$task_id' in task_hash."
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n" }
 		    continue
 		}
 		set task_id $task_hash($task_id)
 
 		if {![info exists resource_hash($resource_id)]} {
-		    ns_log Notice "im_gp_save_allocations: Didn't find resource_id='$resource_id' in resource_hash"
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, Didn't find resource_id='$resource_id' in resource_hash"
 		    if {$debug_p} { ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n" }
 		    continue
 		}
 		set resource_id $resource_hash($resource_id)
 		if {![string is integer $resource_id]} { 
-		    ns_log Notice "im_gp_save_allocations: found invalid resource_id='$resource_id'"
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, Found invalid resource_id='$resource_id'"
 		    continue 
 		}
 
@@ -1305,14 +1366,37 @@ ad_proc -public im_gp_save_allocations {
 		}
 
 		# Add the dude to the task with a given percentage
-		ns_log Notice "im_gp_save_allocations: Adding user=$resource_id to task=$task_id in role=$role_id"
-		im_biz_object_add_role -percentage $percentage $resource_id $task_id $role_id
+		ns_log Notice "im_gp_save_allocations: ctr=$ctr, Adding user=$resource_id to task=$task_id in role=$role_id"
+		set rel_id [im_biz_object_add_role -percentage $percentage $resource_id $task_id $role_id]
+		ns_log Notice "im_gp_save_allocations: ctr=$ctr, save_assig: task_id=$task_id, resource_id=$resource_id, => rel_id=$rel_id"
+
+		# Store extra assignment information into the im_gantt_assigments table
+		set assig_exists_p [db_string assig_exists "select count(*) from im_gantt_assignments where rel_id = :rel_id"]
+		if {!$assig_exists_p} { db_dml insert_assig "insert into im_gantt_assignments (rel_id, xml_elements) values (:rel_id, :xml_elements)" }
+
+		ns_log Notice "im_gp_save_allocations: ctr=$ctr, xml_elements=$xml_elements"
+
+		set ass_sql "
+			update im_gantt_assignments set
+				xml_taskuid = '$task_id',
+				xml_resourceuid = '$resource_id',
+				xml_elements = '$xml_elements',
+				[join $gantt_assignments_list ",\n\t\t\t\t"]
+			where rel_id = :rel_id
+		"
+		db_dml update_assig $ass_sql
+
+		# Store timephased data
+		db_dml del_tp "delete from im_gantt_assignment_timephases where rel_id = :rel_id"
+		foreach sql $timephased_inserts {
+		    db_dml tp_insert $sql
+		}
 
 		if {$debug_p} {
 		    set user_name [im_name_from_user_id $resource_id]
 		    set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
 		    ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n"
-		    ns_log Notice "im_gp_save_allocations: [$child asXML]"
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, [$child asXML]"
 		}
 
 	    }
@@ -1354,6 +1438,10 @@ ad_proc -public im_gp_find_person_for_name_helper {
 } {
     set person_id ""
     set name [string trim [string tolower $name]]
+    set email [string trim [string tolower $email]]
+
+    # Remove duplicate spaces from name
+    regsub -all {  } $name { } name
 
     # Check for an exact match with Email
     if {"" == $person_id} {
