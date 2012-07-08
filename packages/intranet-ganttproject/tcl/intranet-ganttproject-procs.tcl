@@ -713,7 +713,7 @@ ad_proc -public im_gp_save_tasks2 {
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
 		    "188744007" {
-			if {"n/a" != $fieldvalue} {
+			if {[string is integer $fieldvalue]} {
 			     set task_id $fieldvalue 
 			}
 		    }
