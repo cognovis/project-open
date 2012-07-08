@@ -266,4 +266,5 @@ ad_proc -public im_sysconfig_change_server {
     parameter::set_from_package_key -package_key intranet-filestorage -parameter "UserBasePathUnix" -value "${server_path}/filestorage/users"
     parameter::set_from_package_key -package_key intranet-filestorage -parameter "CostBasePathUnix" -value "${server_path}/filestorage/costs"
     parameter::set_from_package_key -package_key intranet-invoices -parameter "InvoiceTemplatePathUnix" -value "${server_path}/filestorage/templates"
+    parameter::set_from_package_key -package_key intranet-mail-import -parameter "MailDir" -value "${server_path}/maildir"
 }
