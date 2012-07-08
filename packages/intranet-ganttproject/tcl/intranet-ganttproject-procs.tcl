@@ -1288,7 +1288,15 @@ ad_proc -public im_gp_save_allocations {
 		    set table_name im_gantt_assignments
 		    set column_name "xml_[string tolower $nodeName]"
 		    set column_exists_p [im_column_exists $table_name $column_name]
-		    if {!$column_exists_p} { db_dml add_column "alter table $table_name add column $column_name text" }
+		    if {!$column_exists_p} {
+			# The following command will probably fail on the first import until we flush the cache again
+			# Therefore we catch it and flush the cache
+			if { [catch {
+			    db_dml add_column "alter table $table_name add column $column_name text" 
+			} err_msg] } {
+			    util_memoize_flush [list db_column_exists $table_name $column_name]
+			}
+		    }
 
     		    switch [string tolower $nodeName] {
 			"taskuid" { 
