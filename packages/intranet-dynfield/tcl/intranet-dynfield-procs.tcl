@@ -1949,7 +1949,15 @@ ad_proc -public im_dynfield::object_array {
     }
 
     foreach attribute_name $richtext_attribute_names {
-	set array_val($attribute_name) [template::util::richtext::get_property html_value [set $attribute_name]]
+	# Make sure we don't run into issues if the attribute has been filled from outside ]project-open[
+	# Without the formats
+	set attribute_value [set $attribute_name]
+	if { ![ad_html_text_convertable_p -from [lindex $attribute_value 1] -to "text/html"] } {
+	    # Whatever the string is, it is not convertible, so we don't event try
+	    set array_val(${attribute_name}) [set ${attribute_name}]	
+	} else {
+	    set array_val($attribute_name) [template::util::richtext::get_property html_value "[set $attribute_name]"]
+	}
 	set array_val(${attribute_name}_orig) [set ${attribute_name}]	
     }
 
