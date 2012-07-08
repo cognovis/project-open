@@ -712,7 +712,11 @@ ad_proc -public im_gp_save_tasks2 {
 		# 188744007 : Text21 (used for task_id)
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
-		    "188744007" { set task_id $fieldvalue }
+		    "188744007" {
+			if {"n/a" != $fieldvalue} {
+			     set task_id $fieldvalue 
+			}
+		    }
 		    default {
 			# Any other extended attribute is ignored as specified
 			# in the MS-Project integration docu
@@ -2909,7 +2913,7 @@ ad_proc -public im_ganttproject_add_import {
     set field_present_command "attribute::exists_p $object_type $column_name"
     set field_present [util_memoize $field_present_command]
     if {!$field_present} {
-	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "string" $column_name $column_name
+	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "text" $column_name $column_name
 	ns_write [ns_cache flush util_memoize $field_present_command]
     }		
 }
