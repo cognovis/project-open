@@ -719,6 +719,8 @@ ad_proc -public im_gp_save_tasks2 {
 			continue
 		    }
 		}
+		# The nodename should be changed for further processing
+		set nodeName "gantt_extended_$fieldid"
 	    }
 	    "milestone"		{ if {"1" == $nodeText} { set milestone_p "t" }}
 	    "type"	{
