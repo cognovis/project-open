@@ -842,8 +842,8 @@ ad_proc -public im_gp_save_tasks2 {
 
     # -----------------------------------------------------
     # Set some default variables for new tasks
-    set task_status_id [im_project_status_open]
-    set task_type_id [im_project_type_task]
+    set task_status_id [im_timesheet_task_status_active]
+    set task_type_id [im_timesheet_task_type_standard]
     set uom_id [im_uom_hour]
     set cost_center_id ""
     set material_id [im_material_default_material_id]
