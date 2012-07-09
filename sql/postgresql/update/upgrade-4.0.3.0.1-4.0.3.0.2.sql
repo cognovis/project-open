@@ -13,7 +13,7 @@ begin
 
         IF v_count > 0 THEN return 1; END IF;
 
-	alter table im_timesheet_conf_objects add column comment text;
+	alter table im_timesheet_conf_objects add column comment text default '''';
 
         RETURN 0;
 
