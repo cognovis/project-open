@@ -617,9 +617,12 @@ order by
     set skill_header_titles ""
     db_foreach column_list $sql {
 	if {$old_skill_type_id != $skill_type_id} {
+	    set admin_url [export_vars -base "/intranet/admin/categories/index" {{select_category_type $skill_type_category}}]
+	    set admin_html "<a href=\"$admin_url\">[im_gif wrench]</a>"
+	    if {![im_is_user_site_wide_or_intranet_admin $current_user_id]} { set admin_html "" }
 	    append skill_header_titles "
 	<td align=center>
-	  <b>$skill_type</b>
+	  <b>$skill_type $admin_html</b>
 	</td>"
 	    set old_skill_type_id $skill_type_id
 	}
@@ -627,10 +630,15 @@ order by
     }
     set colspan $ctr
 
+    
+    set admin_url [export_vars -base "/intranet/admin/categories/index" {{select_category_type "Intranet Skill Type"}}]
+    set admin_html "<a href=\"$admin_url\">[im_gif wrench]</a>"
+    if {![im_is_user_site_wide_or_intranet_admin $current_user_id]} { set admin_html "" }
+
     set skill_header_html "
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr>
-	  <td class=rowtitle align=center colspan=$colspan>[_ intranet-freelance.Skills]</td>
+	  <td class=rowtitle align=center colspan=$colspan>[_ intranet-freelance.Skills] $admin_html</td>
 	</tr>
 	<tr class=rowtitle>
 	  $skill_header_titles

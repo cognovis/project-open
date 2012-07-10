@@ -44,6 +44,7 @@
 	        im_category_from_id(sk.skill_id) as skill,
 	        c.category_id as skill_type_id,
 	        im_category_from_id(c.category_id) as skill_type,
+		(select aux_string1 from im_categories where category_id = c.category_id) as skill_type_category,
 	        im_category_from_id(sk.claimed_experience_id) as claimed,
 	        im_category_from_id(sk.confirmed_experience_id) as confirmed,
 	        sk.claimed_experience_id,
