@@ -445,37 +445,32 @@ if {![info exists ignore_hash($warning_key)]} {
 			coalesce(t.planned_units, 0.0) as planned_units,
 			t.uom_id,
 			main_p.project_calendar,
-
 			coalesce((
-			select	sum(coalesce(bom.percentage, 0.0))
-			from	acs_rels r,
-				im_biz_object_members bom,
-				users u
-			where	r.object_id_one = p.project_id and
-				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id and
-				u.user_id in (
-					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
-				)
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = p.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id in (
+						select member_id from group_distinct_member_map 
+						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					)
 			), 0.0) as percentage_skill_profiles,
-
 			coalesce((
-			select	sum(coalesce(bom.percentage, 0.0))
-			from	acs_rels r,
-				im_biz_object_members bom,
-				users u
-			where	r.object_id_one = p.project_id and
-				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id and
-				u.user_id not in (
-					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
-				)
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = p.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id not in (
+						select member_id from group_distinct_member_map 
+						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					)
 			), 0.0) as percentage_non_skill_profiles
-
-
-
 		from	im_projects main_p,
 			im_projects p,
 			im_timesheet_tasks t
@@ -504,12 +499,18 @@ if {![info exists ignore_hash($warning_key)]} {
 	if {"" == $project_calendar} { set project_calendar [im_ms_calendar::default] }
 	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar $project_calendar]
 	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
-
 	switch $uom_id {
 	    320 { set seconds_uom [expr $planned_units * 3600] }
 	    321 { set seconds_uom [expr $planned_units * 3600 * 8.0] }
 	    default { set seconds_uom 0.0 }
 	}
+
+	# Check if there are timephased data available for this project
+	# and use if available
+	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
+	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
+	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
+
 	set overallocation_factor "undefined"
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
 

@@ -1595,8 +1595,9 @@ ad_proc -public im_gp_save_resources {
 			<li>[lang::message::lookup "" intranet-ganttproject.Resource_not_found "Resource %name% (%email%) not found"]:
 			<br><a href=\"$url\" target=\"_\">
 			[lang::message::lookup "" intranet-ganttproject.Create_Resource "Create %name% (%email%)"]:<br>
-			</a><br>
-		    "
+			</a><br>"
+			# Flush the cache, because we will need to check again for the user the next time the import is called.
+			im_permission_flush
 		    }
 		    
 		    if {$debug_p} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
@@ -2909,7 +2910,8 @@ ad_proc -public im_ganttproject_add_import {
     set field_present [util_memoize $field_present_command]
     if {!$field_present} {
 	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "string" $column_name $column_name
-	ns_write [ns_cache flush util_memoize $field_present_command]
+	# Flush all permissions (very slow!)
+	im_permission_flush
     }		
 }
 
