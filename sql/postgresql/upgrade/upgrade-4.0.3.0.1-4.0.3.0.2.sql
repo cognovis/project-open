@@ -25,6 +25,7 @@ INSERT INTO im_categories VALUES (2022,'System Admin',null,'Intranet Skill Type'
 INSERT INTO im_categories VALUES (2024,'Business Sector',null,'Intranet Skill Type','category','t','f',null, null, 'Intranet Skill Business Sector');
 INSERT INTO im_categories VALUES (2026,'Consulting Skills',null,'Intranet Skill Type','category','t','f',null, null, 'Intranet Skill Consulting Skill');
 
+
 -----------------------------------------------------------
 -- 80100-80199  Software Development Languages
 --
