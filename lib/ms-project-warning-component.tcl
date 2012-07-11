@@ -702,7 +702,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	    # Required percent assignment in order to eqal out person vs. skill profiles
 	    set percent [expr $percentage_skill_profiles - $percentage_non_skill_profiles]
 
-	    set select_html [im_freelance_skill_profile_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
+	    set select_html [im_ganttproject_skill_profile_assignment_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
 	    append select_html " <input type=input name=percent.$rel_id value=\"$percent\" size=6>"
 	    append select_html " <input type=hidden name=task_id.$rel_id value=\"$task_id\">"
 	    append select_html " <input type=hidden name=rel_id.$rel_id value=\"$rel_id\">"
@@ -710,7 +710,6 @@ if {![info exists ignore_hash($warning_key)]} {
 	    append task_html "<tr>\n"
 	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
-#	    append task_html "<td>$percentage_skill_profiles [join $skill_profiles_list ", "]</td>\n"
 	    append task_html "<td>[acs_object_name $skill_profile_id]:$skill_percent%</td>\n"
 	    append task_html "<td>$percentage_non_skill_profiles [join $persons_list ", "]</td>\n"
 	    append task_html "<td>$select_html</td>\n"
