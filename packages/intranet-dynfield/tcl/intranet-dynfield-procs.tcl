@@ -1333,7 +1333,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		    
                     if {$debug} { ns_log Debug "im_dynfield::append_attributes_to_form: default storage: name=$attribute_name, value=$value" }
                     template::element::set_value $form_id $attribute_name $value
-		    ds_comment "value :: $value"
                 }
                 
             }
