@@ -70,6 +70,7 @@ set format_string "%0.2f"
 set written_order_0_selected selected
 set written_order_1_selected ""
 set written_order_2_selected ""
+set first_request_p 0
 
 if { 0 == $project_status_id_from_search } {
     set project_status_id_from_search ""
@@ -110,6 +111,7 @@ from dual
 
 if {"" == $start_date} {
     set start_date "2000-01-01"
+    set first_request_p 1
 }
 
 db_1row end_date "
@@ -146,6 +148,11 @@ set criteria [list]
 # if {"" != $project_id && 0 != $project_id} {
 #    lappend criteria "p.project_id = :project_id"
 # }
+
+# First request, give user the chance to set filter
+if { $first_request_p } {
+    lappend criteria "p.project_id = -1"
+}
 
 # Customers
 if {"" != $customer_id && 0 != $customer_id} {
@@ -687,6 +694,8 @@ set total__profit_and_loss_project_var 0
 set total__profit_and_loss_one_var 0
 set total__profit_and_loss_two_var 0
 
+set err_mess ""
+
 set inner_hours_where ""
 if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user_id_from_search" }
 
@@ -749,13 +758,12 @@ template::multirow foreach project_list {
 	    	set costs_staff_rate [find_sales_price $user_id "" "" "10000111"]
 		
                 if { "" == $costs_staff_rate || 0 == $costs_staff_rate } {
-		 continue
-                        set err_mess "<br>"
-                        append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "Report not available, please provide price for user/project:<br>"]
+                        append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No price found for user/project:<br>"]
                         append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>"
                         append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
                         append err_mess "</a><br><br>"
-                        ad_return_complaint 1 $err_mess
+                        # ad_return_complaint 1 $err_mess
+		        continue
 		} else {
                         ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
                         set amount_costs_staff [expr $amount_costs_staff + [expr $costs_staff_rate * $hours]]		

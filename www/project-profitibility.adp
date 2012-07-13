@@ -85,6 +85,7 @@
         </form>
 
 	<table class="list-table" cellspacing="1" cellpadding="3" summary="Data for project_list">
+	<if @first_request_p@ eq "0">
 	<thead>
       	<tr class="list-header">
             <th class="list-table" align="left" id="project_list_company_name">@label_client;noquote@</th>
@@ -102,6 +103,7 @@
             <th class="list-table" align="right" id="project_list_target_benefit">@label_profit_and_loss_two;noquote@</th>
 	</tr>
 	</thead>
+	</if>
     	<tbody>	
 	<if @i@ ne 1>
 		<multiple name='project_list'>
@@ -143,4 +145,8 @@
    	</tfooter>	
 	</if>
     </table>
+    <if @err_mess@ ne "">
+	    <%=<h2> [lang::message::lookup "" intranet-cust-koernigweber.PleaseNote "Please note:"]</h2>%>
+	    @err_mess;noquote@ 
+    </if>
 </if>
