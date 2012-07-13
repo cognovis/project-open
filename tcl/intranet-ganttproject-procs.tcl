@@ -459,7 +459,7 @@ ad_proc -public im_gp_ms_project_time_to_seconds {
     Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
 } {
     set days 0
-    if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds]} {
+    if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+).?([0-9]+)?S} $time all hours minutes seconds]} {
 	# MS-Project duration format
 	return [expr $seconds + 60*$minutes + 60*60*$hours + 60*60*24*$days]
     }
