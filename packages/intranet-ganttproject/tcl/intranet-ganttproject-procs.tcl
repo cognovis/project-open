@@ -459,7 +459,7 @@ ad_proc -public im_gp_ms_project_time_to_seconds {
     Example: PT289H48M0S are 289 hours, 48 minutes and 0 seconds
 } {
     set days 0
-    if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all hours minutes seconds]} {
+    if {[regexp {PT([0-9]+)H([0-9]+)M([0-9]+).?([0-9]+)?S} $time all hours minutes seconds]} {
 	# MS-Project duration format
 	return [expr $seconds + 60*$minutes + 60*60*$hours + 60*60*24*$days]
     }
@@ -1596,8 +1596,9 @@ ad_proc -public im_gp_save_resources {
 			<li>[lang::message::lookup "" intranet-ganttproject.Resource_not_found "Resource %name% (%email%) not found"]:
 			<br><a href=\"$url\" target=\"_\">
 			[lang::message::lookup "" intranet-ganttproject.Create_Resource "Create %name% (%email%)"]:<br>
-			</a><br>
-		    "
+			</a><br>"
+			# Flush the cache, because we will need to check again for the user the next time the import is called.
+			im_permission_flush
 		    }
 		    
 		    if {$debug_p} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
@@ -2910,7 +2911,8 @@ ad_proc -public im_ganttproject_add_import {
     set field_present [util_memoize $field_present_command]
     if {!$field_present} {
 	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "string" $column_name $column_name
-	ns_write [ns_cache flush util_memoize $field_present_command]
+	# Flush all permissions (very slow!)
+	im_permission_flush
     }		
 }
 
@@ -2965,4 +2967,251 @@ ad_proc -public im_ganttproject_task_info_component {
     return $html
 }
 
+
+
+
+
+# ----------------------------------------------------------------------
+# Show the extra GanttProject fields in a TaskViewPage
+# ---------------------------------------------------------------------
+
+ad_proc -public im_ganttproject_assignment_select {
+    -skill_profile_id:required
+    select
+    default
+} {
+    
+
+}
+
+
+
+
+ad_proc im_freelance_gantt_resource_select_component {
+    -object_id:required
+    -return_url:required
+} {
+    Component that returns a formatted HTML table that allows
+    to select freelancers according to skill and to current
+    resource assignments.
+} {
+    set current_url [im_url_with_query]
+    set skill_component [im_object_skill_component -object_id $object_id -return_url $current_url]
+
+    set skill_sql "
+	select	*
+	from	im_object_freelance_skill_map fosm
+	where	fosm.object_id = :object_id
+    "
+
+    set user_ids [im_freelance_find_matching_users -object_id $object_id]
+
+    set start_date [db_string today "select to_char(now(), 'YYYY-MM-01')"]
+    # Use the end_date of the current project
+    set end_date [db_string today "select end_date::date from im_projects where project_id = :object_id" -default ""]
+    if {"" == $end_date} { set end_date [db_string today "select to_char(now()::date + 365, 'YYYY-01-01')"] }
+
+    set skill_select [im_freelance_consulting_member_select_component -object_id $object_id -return_url $return_url]
+
+    return "
+	<table width='100%'>
+	<tr>
+	$skill_component
+	</tr>
+	<tr>
+	$skill_select
+	</tr>
+	</table>
+    "
+}
+
+
+
+
+
+
+
+# ---------------------------------------------------------------
+# Freelance Skills Select
+# ---------------------------------------------------------------
+
+
+ad_proc im_ganttproject_skill_profile_assignment_select { 
+    {-include_empty_p 1}
+    {-include_empty_name ""}
+    {-skill_profile_id "" }
+    {-candidate_profile_id "" }
+    {-cache_timeout 1 }
+    select_name
+    skill_type_id
+    { default "" }
+} {
+    Returns HTML code for a select box to choose a suitable users for a given skill profile.
+    The portlet uses a customized SQL to quickly search through the users with matching skills.
+    @param profile_id Profile of users to include in the search. Defaults to Employees.
+    @param skill_profile_id Reference skill profile. This is the reference object from which 
+           we will take the skills to look for
+} {
+    return [util_memoize [list im_ganttproject_skill_profile_assignment_select_helper -include_empty_p $include_empty_p -include_empty_name $include_empty_name -candidate_profile_id $candidate_profile_id -skill_profile_id $skill_profile_id $select_name $skill_type_id $default] $cache_timeout]
+}
+
+
+ad_proc im_ganttproject_skill_profile_assignment_select_helper { 
+    {-include_empty_p 1}
+    {-include_empty_name ""}
+    {-candidate_profile_id ""}
+    {-skill_profile_id "" }
+    select_name
+    skill_type_id
+    { default "" }
+} {
+    Helper for im_ganttproject_skill_profile_assignment_select
+} {
+    if {"" == $candidate_profile_id} { set candidate_profile_id [im_employee_group_id] }
+
+    # ----------------------------------------------------------------
+    # Define scores
+    #
+    set department_score [parameter::get_from_package_key -package_key "intranet-ganttproject" -parameter "ScoreDepartmentMatch" -default "10.0"]
+
+    # ----------------------------------------------------------------
+    # Collect information about the skill profile
+    #
+    if {[im_table_exists im_freelance_skills]} {
+	set profile_sql "im_freelance_skill_id_list(p.person_id) as profile_skills"
+	set person_sql "im_freelance_skill_id_list(p.person_id) as person_skills"
+    } else {
+	set profile_sql "'' as profile_skills"
+	set person_sql "'' as person_skills"
+    }
+
+    db_1row profile_info "
+	select	im_cost_center_code_from_id(e.department_id) as profile_department_code,
+		$profile_sql
+	from	persons p
+		LEFT OUTER JOIN im_employees e ON (p.person_id = e.employee_id)
+	where	p.person_id = :skill_profile_id
+    "
+
+
+    # ----------------------------------------------------------------
+    # Collect information about candidate users
+    #
+    set sql "
+	select	p.person_id,
+		im_cost_center_code_from_id(e.department_id) as person_department_code,
+		$person_sql
+	from	persons p
+		LEFT OUTER JOIN im_employees e ON (p.person_id = e.employee_id)
+	where	p.person_id in (select member_id from group_distinct_member_map where group_id = :candidate_profile_id) and
+		p.person_id not in (select member_id from group_distinct_member_map where group_id = [im_profile::profile_id_from_name -profile "Skill Profile"])
+    "
+    set user_score_list [list]
+    db_foreach sql $sql {
+
+	set score 0.0
+
+	# Calculate score by matching the user's skills against skill_profile_skills
+	foreach tuple $profile_skills {
+	    set profile_skill_type_id [lindex $tuple 0]
+	    set profile_skill_id [lindex $tuple 1]
+	    set profile_confirmed_experience_id [lindex $tuple 2]
+	    
+	    foreach triple $person_skills {
+		set person_skill_type_id [lindex $triple 0]
+		set person_skill_id [lindex $triple 1]
+		set person_confirmed_experience_id [lindex $triple 2]
+		
+		if {$person_skill_type_id != $profile_skill_type_id} { continue }
+		if {$person_skill_id != $profile_skill_id} { continue }
+		
+		# Take out the experience score for high/medium/low/unconfirmed
+		set confirmed_score [util_memoize [list db_string experience_score "select coalesce(aux_int1, 1) from im_categories where category_id = $person_confirmed_experience_id" -default 1]]
+		set score [expr $score + $confirmed_score]
+	    }
+	}
+
+	# Add department match to score
+	set cost_center_code_len [string length $profile_department_code]
+	if {$profile_department_code == [string range $person_department_code 0 $cost_center_code_len]} {
+	    set score [expr $score + $department_score]
+	}
+	
+	lappend user_score_list [list $person_id $score]
+    }
+
+
+    # ----------------------------------------------------------------
+    # Build the select list
+    #
+    set sorted_user_score_list [reverse [qsort $user_score_list [lambda {s} { lindex $s 1 }]]]
+    set please_select_msg [lang::message::lookup "" intranet-freelancer.Please_Select "-- Please Select --"]
+    set options "<option value=\"\">$please_select_msg</option>\n"
+    foreach tuple $sorted_user_score_list {
+	set user_id [lindex $tuple 0]
+	set score [lindex $tuple 1]
+	set user_name [im_name_from_user_id $user_id]
+	append options "<option value=\"$user_id\">$user_name ($score)</option>\n"
+    }
+    set html "<select name=\"$select_name\" value=\"$default\">$options</select>"
+    return $html
+}
+
+
+ad_proc im_ganttproject_skill_profile_select_score {
+    -person_skills:required
+    -skill_profile_skills:required
+} {
+    Returns a score values that is greater if a user's skills match the skills required by the skill profile.
+} {
+    set score [expr rand() * 100.0]
+
+    set score 0.0
+    foreach tuple $skill_profile_skills {
+	set skill_profile_skill_type_id [lindex $tuple 0]
+	set skill_profile_skill_id [lindex $tuple 1]
+	set skill_profile_confirmed_experience_id [lindex $tuple 2]
+
+	foreach triple $person_skills {
+	    set person_skill_type_id [lindex $triple 0]
+	    set person_skill_id [lindex $triple 1]
+	    set person_confirmed_experience_id [lindex $triple 2]
+
+	    if {$person_skill_type_id != $skill_profile_skill_type_id} { continue }
+	    if {$person_skill_id != $skill_profile_skill_id} { continue }
+
+	    # Take out the experience score of the person from the last digit of the category_id.
+	    # That's a reasonable approx, but not very clean...
+	    # Unconfirmed=0, Low=1, Medium=2, High=3
+	    set confirmed_score [expr $person_confirmed_experience_id % 10]
+	    set score [expr $score + $confirmed_score]
+	}
+    }
+
+    return $score
+}
+
+
+# ---------------------------------------------------------------
+# Freelance Skills Select
+# ---------------------------------------------------------------
+
+ad_proc im_freelance_skill_user_select {
+    -profile_user_id:required
+    select_name
+    { default "" }
+} {
+    Returns a HTML select with all users matching the
+    specified profile_user, according to the ranking
+} {
+    set bind_vars [ns_set create]
+    set sql "
+        select	user_id,
+		user_id::text || ' - ' || im_name_from_user_id(user_id)
+        from	users
+        order by lower(category)
+    "
+
+    return [im_selection_to_select_box -translate_p 0 $bind_vars $select_name $sql $select_name $default]
+}
 

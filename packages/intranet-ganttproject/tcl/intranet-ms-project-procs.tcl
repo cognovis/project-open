@@ -461,3 +461,30 @@ ad_proc -public im_ms_project_write_task {
 	id
 }
 
+
+
+ad_proc -public im_ms_project_seconds_in_timephased {
+    -task_id:required
+} {
+    Calculate the seconds in the timephased data of a task.
+    Returns "" if there are no timephased data for this task.
+} {
+    set sql "
+	select	gat.*
+	from	acs_rels r,
+		im_gantt_assignment_timephases gat
+	where	r.object_id_one = :task_id and
+		r.rel_id = gat.rel_id
+    "
+    set seconds ""
+    db_foreach timephased_data $sql {
+	if {"" != $timephase_value} {
+	    set value_seconds [im_gp_ms_project_time_to_seconds $timephase_value]
+	    if {[string is integer $value_seconds]} { 
+		if {"" == $seconds} { set seconds 0.0 }
+		set seconds [expr $seconds + $value_seconds]
+	    }
+	}
+    }
+    return $seconds
+}

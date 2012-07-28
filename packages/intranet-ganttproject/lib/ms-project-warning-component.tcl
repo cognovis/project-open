@@ -445,37 +445,32 @@ if {![info exists ignore_hash($warning_key)]} {
 			coalesce(t.planned_units, 0.0) as planned_units,
 			t.uom_id,
 			main_p.project_calendar,
-
 			coalesce((
-			select	sum(coalesce(bom.percentage, 0.0))
-			from	acs_rels r,
-				im_biz_object_members bom,
-				users u
-			where	r.object_id_one = p.project_id and
-				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id and
-				u.user_id in (
-					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
-				)
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = p.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id in (
+						select member_id from group_distinct_member_map 
+						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					)
 			), 0.0) as percentage_skill_profiles,
-
 			coalesce((
-			select	sum(coalesce(bom.percentage, 0.0))
-			from	acs_rels r,
-				im_biz_object_members bom,
-				users u
-			where	r.object_id_one = p.project_id and
-				r.object_id_two = u.user_id and
-				r.rel_id = bom.rel_id and
-				u.user_id not in (
-					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
-				)
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = p.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id not in (
+						select member_id from group_distinct_member_map 
+						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					)
 			), 0.0) as percentage_non_skill_profiles
-
-
-
 		from	im_projects main_p,
 			im_projects p,
 			im_timesheet_tasks t
@@ -504,12 +499,18 @@ if {![info exists ignore_hash($warning_key)]} {
 	if {"" == $project_calendar} { set project_calendar [im_ms_calendar::default] }
 	set seconds_in_interval [im_ms_calendar::seconds_in_interval -start_date $start_date -end_date $end_date -calendar $project_calendar]
 	set seconds_work [expr $seconds_in_interval * $percentage / 100.0]
-
 	switch $uom_id {
 	    320 { set seconds_uom [expr $planned_units * 3600] }
 	    321 { set seconds_uom [expr $planned_units * 3600 * 8.0] }
 	    default { set seconds_uom 0.0 }
 	}
+
+	# Check if there are timephased data available for this project
+	# and use if available
+	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
+	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
+	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
+
 	set overallocation_factor "undefined"
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
 
@@ -701,7 +702,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	    # Required percent assignment in order to eqal out person vs. skill profiles
 	    set percent [expr $percentage_skill_profiles - $percentage_non_skill_profiles]
 
-	    set select_html [im_freelance_skill_profile_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
+	    set select_html [im_ganttproject_skill_profile_assignment_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
 	    append select_html " <input type=input name=percent.$rel_id value=\"$percent\" size=6>"
 	    append select_html " <input type=hidden name=task_id.$rel_id value=\"$task_id\">"
 	    append select_html " <input type=hidden name=rel_id.$rel_id value=\"$rel_id\">"
@@ -709,7 +710,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	    append task_html "<tr>\n"
 	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
-	    append task_html "<td>$percentage_skill_profiles [join $skill_profiles_list ", "]</td>\n"
+	    append task_html "<td>[acs_object_name $skill_profile_id]:$skill_percent%</td>\n"
 	    append task_html "<td>$percentage_non_skill_profiles [join $persons_list ", "]</td>\n"
 	    append task_html "<td>$select_html</td>\n"
 	    append task_html "</tr>\n"
@@ -739,6 +740,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Task "Task Name"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Profile_Assigned_Percentage "Assigned<br>% Profiles"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Non_Profile_Assigned_Percentage "Assigned<br>% Users"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Select_User_Percent "Assign New User"]</td>\n"
 	append task_header "</tr>\n"
 	
 	set task_footer "
