@@ -428,6 +428,7 @@ if {$filter_advanced_p} {
 	set key [ns_set key $tmp_vars $i]
 	set value [ns_set get $tmp_vars $key]
 	ns_set put $form_vars $key $value
+	set $key $value
     }
 
     # Add the additional condition to the "where_clause"
@@ -561,7 +562,7 @@ FROM
         ( SELECT
                 p.*,
                 c.company_name,
-                im_name_from_user_id(project_lead_id) as lead_name,
+                im_name_from_user_id(p.project_lead_id) as lead_name,
                 im_category_from_id(p.project_type_id) as project_type,
                 im_category_from_id(p.project_status_id) as project_status,
                 to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
@@ -580,7 +581,6 @@ FROM
         ) projects
 $order_by_clause
 "
-
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
