@@ -195,7 +195,13 @@ ad_proc -private datatype_to_sql_type {
         "number" { set type "number" }
         "money" { set type "number (12,2)" }
         "date" { set type "date" }
-        "text" { set type "varchar(4000)" }
+        "text" { 
+	    if { "postgresql" eq [db_type]} {
+		set type "text" 
+	    } else {		
+		set type "varchar(4000)" 
+	    }
+	}
         "integer" { set type "integer" }
         "enumeration" { set type "varchar(100)" }
         "keyword" { set type "varchar(1000)" }

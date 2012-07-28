@@ -202,7 +202,7 @@ set form_id "employee_information"
 template::form::create $form_id
 template::form::section $form_id ""
 template::element::create $form_id department_id -label $department_label -widget "select"  -options $department_options
-template::element::create $form_id supervisor_id -label $supervisor_label -widget "select"  -options $supervisor_options
+template::element::create $form_id supervisor_id -optional -label $supervisor_label -widget "select"  -options $supervisor_options
 
 template::element::create $form_id availability -optional -label $availability_label -html {size 6}
 template::element::create $form_id hourly_cost -optional -label $hourly_cost_label -html {size 10} -datatype float

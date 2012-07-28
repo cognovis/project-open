@@ -102,7 +102,7 @@ ad_proc -public im_ganttproject_write_task {
     } else {
 	set base_url "http://[ad_host][ad_port]"
     }
-    set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
+    set task_view_url "$base_url/intranet-timesheet2-tasks/view?task_id="
     set project_view_url "$base_url/intranet/projects/view?project_id="
 
     # ------------ Get everything about the project -------------
@@ -639,7 +639,7 @@ ad_proc -public im_gp_save_tasks2 {
 
     array set task_hash $task_hash_array
     if {$debug_p} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
-    set task_url "/intranet-timesheet2-tasks/new?task_id="
+    set task_url "/intranet-timesheet2-tasks/view?task_id="
 
     # GanttProject: The gantt_project_id as returned from 
     # the XML file. This ID does not correspond to a OpenACS 
@@ -712,13 +712,19 @@ ad_proc -public im_gp_save_tasks2 {
 		# 188744007 : Text21 (used for task_id)
 		switch $fieldid {
 		    "188744006" { set task_nr $fieldvalue } 
-		    "188744007" { set task_id $fieldvalue }
+		    "188744007" {
+			if {[string is integer $fieldvalue]} {
+			     set task_id $fieldvalue 
+			}
+		    }
 		    default {
 			# Any other extended attribute is ignored as specified
 			# in the MS-Project integration docu
 			continue
 		    }
 		}
+		# The nodename should be changed for further processing
+		set nodeName "gantt_extended_$fieldid"
 	    }
 	    "milestone"		{ if {"1" == $nodeText} { set milestone_p "t" }}
 	    "type"	{
@@ -836,8 +842,8 @@ ad_proc -public im_gp_save_tasks2 {
 
     # -----------------------------------------------------
     # Set some default variables for new tasks
-    set task_status_id [im_project_status_open]
-    set task_type_id [im_project_type_task]
+    set task_status_id [im_timesheet_task_status_active]
+    set task_type_id [im_timesheet_task_type_standard]
     set uom_id [im_uom_hour]
     set cost_center_id ""
     set material_id [im_material_default_material_id]
@@ -1282,7 +1288,15 @@ ad_proc -public im_gp_save_allocations {
 		    set table_name im_gantt_assignments
 		    set column_name "xml_[string tolower $nodeName]"
 		    set column_exists_p [im_column_exists $table_name $column_name]
-		    if {!$column_exists_p} { db_dml add_column "alter table $table_name add column $column_name text" }
+		    if {!$column_exists_p} {
+			# The following command will probably fail on the first import until we flush the cache again
+			# Therefore we catch it and flush the cache
+			if { [catch {
+			    db_dml add_column "alter table $table_name add column $column_name text" 
+			} err_msg] } {
+			    util_memoize_flush [list db_column_exists $table_name $column_name]
+			}
+		    }
 
     		    switch [string tolower $nodeName] {
 			"taskuid" { 
@@ -2910,9 +2924,10 @@ ad_proc -public im_ganttproject_add_import {
     set field_present_command "attribute::exists_p $object_type $column_name"
     set field_present [util_memoize $field_present_command]
     if {!$field_present} {
-	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "string" $column_name $column_name
+	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "text" $column_name $column_name
+	ns_write [ns_cache flush util_memoize $field_present_command]
 	# Flush all permissions (very slow!)
-	im_permission_flush
+	# im_permission_flush
     }		
 }
 
