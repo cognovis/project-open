@@ -173,7 +173,7 @@ extra_select, extra_where, sort_order, visible_for) values (91012,910,NULL,'Bill
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (91014,910,NULL,'Log',
-'"<p align=right><a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
+'"<p align=right><a href=[export_vars -base $timesheet_report_url { { project_id $project_id } return_url}]>
 $reported_units_cache</a></p>"','','',14,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
