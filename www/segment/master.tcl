@@ -46,7 +46,7 @@ set vars $pages
 lappend vars name_name name_email logo_file logo_url profiles_array:multiple
 
 # Frequent used HTML snippets
-set bg "/intranet/images/girlongrass.600x400.jpg"
+set bg ""
 set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\\#91;</span>"
 
 # ---------------------------------------------------------------
