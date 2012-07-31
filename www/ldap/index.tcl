@@ -47,7 +47,7 @@ set page_title "[lang::message::lookup "" intranet-sysconfig.LDAP_Wizard "LDAP W
 set context_bar [im_context_bar $page_title]
 
 
-set bg "/intranet/images/girlongrass.600x400.jpg"
+set bg ""
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
 
