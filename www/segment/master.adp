@@ -28,7 +28,7 @@
 <tr><td class=tablebody colspan=3><font size=-1>
 
 
-	<table height=400 width=600 cellspacing=0 cellpadding=0 border=0 background='/intranet/images/girlongrass.600x400.jpg'>
+	<table height=400 width=600 cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top><td>
 
 		<table border=0 align=right>
