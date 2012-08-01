@@ -27,7 +27,7 @@ if {!$user_is_admin_p} {
     return
 }
 
-set bg "/intranet/images/girlongrass.600x400.jpg"
+set bg ""
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
 
