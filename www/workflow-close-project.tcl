@@ -60,13 +60,13 @@ if { "" == $close_projects_p } {
 		set case_id [wf_case_new \
 		     [parameter::get -package_id [apm_package_id_from_key intranet-cust-koernigweber] -parameter "WorkflowCloseProject" -default ""] \
                      $context_key \
-                     $project_id \
+                     $project_id_bak \
 		]
 		# Determine the first task in the case to be executed and start+finisch the task.
 		im_workflow_skip_first_transition -case_id $case_id
-		set project_name [db_string get_project_name "select project_name where project_id = :project_id_bak" -default 0]
+		set project_name [db_string get_project_name "select project_name from im_projects where project_id = :project_id_bak" -default 0]
 		append output_html "<br><br>Ein Workflow zum Schliessen des Projekts:"
-		append output_html "<a href="/intranet/projects/view?project_id=$project_id_bak">$project_name</a> wurde gestarted."
+		append output_html "<a href='/intranet/projects/view?project_id=$project_id_bak'>$project_name</a> wurde gestarted."
 		append output_html "<br>Mitglieder der Gruppe 'Gesch&auml;ftsleitung' wurden informiert."
 	} else {
 		set output_html "Der Workflow konnte nicht gestarted werden da nicht alle Unterprojekte geschlossen sind"		
