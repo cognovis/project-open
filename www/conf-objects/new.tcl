@@ -39,6 +39,8 @@ if {![info exists message]} { set message "" }
 # ---------------------------------------------------------------
 
 set conf_project_options [im_project_options]
+set conf_project_nr ""
+
 if {[info exists conf_id]} {
     # Add the conf_item's project to the options, if not already there
     # Otherwise the component can't show the project's name
@@ -46,7 +48,6 @@ if {[info exists conf_id]} {
 
     set found_p 0
     foreach ptuple $conf_project_options {
-	set pname [lindex $ptuple 0]
 	set pid [lindex $ptuple 1]
 	if {$pid == $conf_project_id} { set found_p 1 }
     }
@@ -54,8 +55,8 @@ if {[info exists conf_id]} {
 	set conf_project_name [db_string conf_pid "select project_name from im_projects where project_id = :conf_project_id" -default ""]
 	lappend conf_project_options [list $conf_project_name $conf_project_id]
     }
+    set conf_project_nr [db_string conf_pid "select project_nr from im_projects where project_id = :conf_project_id" -default ""]
 }
-
 
 set conf_type_options [db_list_of_lists conf_type_options "
 	select	conf_type, conf_type_id
@@ -127,7 +128,7 @@ ad_form \
     -action "/intranet-timesheet2-workflow/conf-objects/new" \
     -form {
 	conf_id:key
-	{conf_project_id:text(select) {label "[lang::message::lookup {} intranet-timesheet2-workflow.Conf_Project Project]"} {options $conf_project_options} }
+	{conf_project_id:text(select) {label "[lang::message::lookup {} intranet-timesheet2-workflow.Conf_Project Project]"} {options $conf_project_options} {before_html $conf_project_nr} }
 	{conf_user_id:text(select) {label "[lang::message::lookup {} intranet-timesheet2-workflow.Conf_User User]"} {options $conf_user_options} }
 	{start_date:date(date),optional {label "[_ intranet-timesheet2.Start_Date]"} {}}
 	{end_date:date(date),optional {label "[_ intranet-timesheet2.End_Date]"} {}}
@@ -260,7 +261,7 @@ db_multirow -extend {conf_chk return_url period} multirow multirow "
 	select
 		h.*,
 		co.*,
-		(p.project_nr || ' ' || p.project_name) as project_name,
+		p.project_name,
 		im_name_from_user_id(co.conf_user_id) as conf_user_name,
 		to_char(h.day, 'YYYY-MM-DD') as date_pretty
 	from
