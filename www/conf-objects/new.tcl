@@ -260,7 +260,7 @@ db_multirow -extend {conf_chk return_url period} multirow multirow "
 	select
 		h.*,
 		co.*,
-		p.project_name,
+		(p.project_nr || ' ' || p.project_name) as project_name,
 		im_name_from_user_id(co.conf_user_id) as conf_user_name,
 		to_char(h.day, 'YYYY-MM-DD') as date_pretty
 	from
