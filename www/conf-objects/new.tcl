@@ -68,10 +68,11 @@ set conf_status_options [db_list_of_lists conf_status_options "
 	from	im_timesheet_conf_object_status
 	order by conf_status_id
 "]
+
 set conf_user_options [db_list_of_lists conf_user_options "
 	select	im_name_from_user_id(p.person_id), p.person_id
 	from	persons p
-	where	p.person_id = :user_id
+	-- where	p.person_id = :user_id
 "]
 
 
@@ -256,6 +257,10 @@ set ttt {
 
 
 if {![info exists conf_id]} { ad_return_complaint 1 "Error: conf_id doesn't exist" }
+
+
+# ad_return_complaint 1 $conf_id
+
 
 db_multirow -extend {conf_chk return_url period} multirow multirow "
 	select
