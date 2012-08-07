@@ -1325,20 +1325,23 @@ ad_proc -public -callback im_before_member_add -impl intranet-cust-koernigweber 
 } {
     Check if user has sales price VK assigned 
 } {
-    if { [info exists user_id] } {
-	set log ""
-	foreach uid $user_id {
-	    set price [find_sales_price $uid $object_id "" ""]
-	    if { "" == $price } {
-		set name [im_name_from_user_id $uid]
-		append log [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User $name can't be assigned to this project: No price record found.<br>"]
-	    }	       
-	}
-	if { "" != $log } {
-	    set log "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Operation_Canceled "Operation canceled"]</strong> <br> $log"
-	    ad_return_complaint 1 $log
-	    break
-	}
-    }
-}
 
+    # Check only for project membership 
+    if { "im_project" == [acs_object_type $object_id] } {
+    	if { [info exists user_id] } {
+		set log ""
+		foreach uid $user_id {
+		    set price [find_sales_price $uid $object_id "" ""]
+	   	    if { "" == $price } {
+			set name [im_name_from_user_id $uid]
+			append log [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User $name can't be assigned to this project: No price record found.<br>"]
+	    	    }	       
+		}
+		if { "" != $log } {
+		    set log "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Operation_Canceled "Operation canceled"]</strong> <br> $log"
+		    ad_return_complaint 1 $log
+		    break
+		}
+    	}
+   }
+}
