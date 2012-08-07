@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-timesheet2-workflow" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Conf_Project">Project</msg>
+  <msg key="Conf_Status">Conf_Status</msg>
+  <msg key="Conf_Type">Type</msg>
+  <msg key="Conf_User">Employee</msg>
+  <msg key="Date">Date</msg>
+  <msg key="Hours">Hours</msg>
+  <msg key="Note">Comment</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Your hours have been approved:</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Your hours have not been approved:</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Timesheet Approval</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Timesheet Approval</msg>
+  <msg key="Timesheet_Conf_Object">Confirm hours logged</msg>
+</message_catalog>
