@@ -20,6 +20,12 @@ declare
 
 	v_description		text;
 
+	v_project_nr 		text;		v_project_name          text;
+	v_project_manager	text;
+
+	v_project_nr_label 	text;		v_project_name_label    text;
+	v_project_manager_label	text;
+	
 	v_url			text;
 	v_base_url		text;
 
@@ -34,7 +40,7 @@ declare
         v_count                 integer;
 
 begin
-        RAISE NOTICE 'im_ts_applicant_not_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+        RAISE NOTICE 'im_ts_notify_applicant_not_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
 
         -- Select out some frequently used variables of the environment
         select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
@@ -59,26 +65,48 @@ begin
 
         -- ------------------------------------------------------------
         -- Try with specific translation first
-        v_subject := 'Notification_Subject_Notify_Applicant_TS_Not_Approved';
-        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', 'Notification_Subject_Notify_Applicant_TS_Not_Approved');
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
-                v_subject := 'Timesheet Approval';
+                v_subject := 'Notification about your Timesheet Approval Workflow';
         END IF;
-
 
         -- ------------------------------------------------------------
         -- Try with specific translation first
-        v_body := 'Notification_Body_Notify_Applicant_TS_Not_Approved';
-        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow','Notification_Body_Notify_Applicant_TS_Not_Approved');
+        RAISE NOTICE 'im_ts_notify_applicant_not_approved: Body=%', v_body;
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
-                v_body := 'Your hours have not been approved:';
+                v_body := 'Your hours logged hours have not been approved:';
         END IF;
 
-	-- get Base URL of absence
+        -- get project_name, project_nr und PM 
+	select 
+		p.project_nr,
+		p.project_name,
+		im_name_from_id(p.project_lead_id)
+	into
+		v_project_nr,
+		v_project_name,
+		v_project_manager 
+	from 
+		im_projects p, 
+		wf_cases c, 
+		im_timesheet_conf_objects co
+	where 
+                c.case_id = p_case_id and
+		c.object_id = co.conf_id and  
+                co.conf_project_id = p.project_id
+	;
+
+	-- get labels 
+	v_project_nr_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Nr');
+	v_project_name_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Name');
+	v_project_manager_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Manager');	
+		
+	-- get Base URL
 	select 	attr_value 
 	into 	v_base_url 
 	from 
@@ -90,14 +118,13 @@ begin
                 pv.parameter_id = p.parameter_id;
 
 	v_url := v_base_url || 'acs-workflow/task?return_url=%2fintranet%2f&task_id=' || v_task_id;
+	 
+	v_body := v_body || '\n\n' || v_project_nr_label || ': ' || v_project_nr || '\n';
+	v_body := v_body || v_project_name_label || ': ' || v_project_name || '\n';
+	v_body := v_body || v_project_manager_label || ': ' || v_project_manager || '\n\n';
+ 	v_body := v_body || v_url || '\n\n';	
 
-	-- get info about absence 
-
-	v_body := v_body || '\n\n' || v_url || '\n\n';	
 	v_party_to := v_creation_user;
-
-
-        RAISE NOTICE 'im_ts_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
 		v_party_from,                 -- party_from
@@ -110,7 +137,6 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
-
 
 
 
@@ -132,6 +158,12 @@ declare
 
 	v_description		text;
 
+	v_project_nr 		text;		v_project_name          text;
+	v_project_manager	text;
+
+	v_project_nr_label 	text;		v_project_name_label    text;
+	v_project_manager_label	text;
+	
 	v_url			text;
 	v_base_url		text;
 
@@ -146,7 +178,7 @@ declare
         v_count                 integer;
 
 begin
-        RAISE NOTICE 'im_ts_applicant_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+        RAISE NOTICE 'im_ts_notify_applicant_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
 
         -- Select out some frequently used variables of the environment
         select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
@@ -171,30 +203,48 @@ begin
 
         -- ------------------------------------------------------------
         -- Try with specific translation first
-        v_subject := 'Notification_Subject_Notify_Applicant_TS_Approved';
-        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', 'Notification_Subject_Notify_Applicant_TS_Approved');
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_subject from 1 for 7) = 'MISSING' THEN
-                v_subject := 'Timesheet Approval';
+                v_subject := 'Notification about your Timesheet Approval Workflow';
         END IF;
-
 
         -- ------------------------------------------------------------
         -- Try with specific translation first
-        v_body := 'Notification_Body_Notify_Applicant_TS_Approved';
-        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow','Notification_Body_Notify_Applicant_TS_Approved');
 
         -- Fallback to generic (no transition key) translation
         IF substring(v_body from 1 for 7) = 'MISSING' THEN
-                v_body := 'Your hours have been approved:';
+                v_body := 'Your hours logged hours have been approved:';
         END IF;
 
-        -- Replace variables
-        -- v_body := replace(v_body, '%object_name%', v_object_name);
-        -- v_body := replace(v_body, '%transition_name%', v_transition_name);
+        -- get project_name, project_nr und PM 
+	select 
+		p.project_nr,
+		p.project_name,
+		im_name_from_id(p.project_lead_id)
+	into
+		v_project_nr,
+		v_project_name,
+		v_project_manager 
+	from 
+		im_projects p, 
+		wf_cases c, 
+		im_timesheet_conf_objects co
+	where 
+                c.case_id = p_case_id and
+		c.object_id = co.conf_id and  
+                co.conf_project_id = p.project_id
+	;
 
-	-- get Base URL 
+	-- get labels 
+	v_project_nr_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Nr');
+	v_project_name_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Name');
+	v_project_manager_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Manager');	
+		
+
+	-- get Base URL
 	select 	attr_value 
 	into 	v_base_url 
 	from 
@@ -206,14 +256,13 @@ begin
                 pv.parameter_id = p.parameter_id;
 
 	v_url := v_base_url || 'acs-workflow/task?return_url=%2fintranet%2f&task_id=' || v_task_id;
+	 
+	v_body := v_body || '\n\n' || v_project_nr_label || ': ' || v_project_nr || '\n';
+	v_body := v_body || v_project_name_label || ': ' || v_project_name || '\n';
+	v_body := v_body || v_project_manager_label || ': ' || v_project_manager || '\n\n';
+ 	v_body := v_body || v_url || '\n\n';	
 
-	-- get info about absence 
-
-	v_body := v_body || '\n\n' || v_url || '\n\n';	
 	v_party_to := v_creation_user;
-
-
-        RAISE NOTICE 'im_ts_notify_applicant_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
 		v_party_from,                 -- party_from
@@ -226,3 +275,4 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
+
