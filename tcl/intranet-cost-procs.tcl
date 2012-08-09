@@ -731,6 +731,9 @@ ad_proc im_costs_object_list_component { user_id cost_id return_url } {
 ad_proc im_company_payment_balance_component { company_id } {
     Returns a formatted HTML with invoices vs. payments.
 } {
+
+    set default_currency [parameter::get -package_id [apm_package_id_from_key intranet-cost] -parameter "DefaultCurrency" -default "EUR"]
+
     # ------------------------------------------------------------------
     # List of Invoices or Bills
 
@@ -807,7 +810,7 @@ ad_proc im_company_payment_balance_component { company_id } {
 	from	
 		(select
 			c.*,
-			im_exchange_rate(c.effective_date::date, c.currency, 'EUR') as xrate,
+			im_exchange_rate(c.effective_date::date, c.currency, :default_currency) as xrate,
 			c.paid_currency
 		from
 			im_costs c
