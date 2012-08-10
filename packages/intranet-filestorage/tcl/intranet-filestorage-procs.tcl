@@ -310,7 +310,8 @@ ad_proc -private im_filestorage_base_path {
     Returns the base_path for the determined object or ""
     to indicate an error.
 } {
-    return [util_memoize [list im_filestorage_base_path_helper $folder_type $object_id] 3600]
+    #    return [util_memoize [list im_filestorage_base_path_helper $folder_type $object_id] 3600]
+    return [im_filestorage_base_path_helper $folder_type $object_id]
 }
 
 
