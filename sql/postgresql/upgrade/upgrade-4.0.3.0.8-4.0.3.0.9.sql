@@ -22,6 +22,24 @@ end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (8192,81,NULL,'ignore_tsmaxhrsday''',
-'$ignore_max_hours_per_day_p','','',850,'');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from im_view_columns where
+              column_id = 8192 and view_id = 81;
+
+        IF v_count > 0 THEN return 1; END IF;
+
+	insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+	extra_select, extra_where, sort_order, visible_for) values (8192,81,NULL,'IgnoreParameterTimesheetMaxHoursPerDay',
+	'$ignore_max_hours_per_day_p','','',850,'');
+
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
