@@ -53,6 +53,7 @@ ad_page_contract {
     { original_job_id "" }
     { current_job_id "" }
     { qualification_id "" }
+    { currency "" }
 }
 
 # ------------------------------------------------------------------
@@ -79,14 +80,16 @@ set employee_name [db_string employee_name "select im_name_from_user_id(:employe
 set page_title "[_ intranet-hr.lt_Employee_Information_]"
 set context [im_context_bar $page_title]
 
-
 # ------------------------------------------------------------------
 # Insert default information if the record doesn't exist
 # ------------------------------------------------------------------
 
 set birthdate $today
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-set currency $default_currency
+if { "" == $currency } {
+    set currency $default_currency
+}
+
 set exists_p [db_string exists_employee "select count(*) from im_employees where employee_id=:employee_id"]
 
 if {!$exists_p} {
@@ -168,6 +171,7 @@ set voluntary_termination_options [list [list [_ intranet-hr.Yes] t] [list [_ in
 set department_label "[_ intranet-hr.Department]"
 set supervisor_label "[_ intranet-hr.Supervisor]"
 set availability_label "[_ intranet-hr.Availability_]"
+set currency_label "[_ intranet-hr.Currency]"
 set hourly_cost_label "[_ intranet-hr.Hourly_Cost]"
 set employee_status_label "[_ intranet-hr.Employee_Status]"
 set personnel_number_label "[_ intranet-hr.Personnel_Number]"
@@ -176,7 +180,6 @@ set salary_label "[_ intranet-hr.Monthly_Salary]"
 set social_security_label "[_ intranet-hr.lt_Monthly_Social_Securi]"
 set insurance_label "[_ intranet-hr.Monthly_Insurance]"
 set other_cost_label "[_ intranet-hr.Monthly_Others]"
-set currency_label "[_ intranet-hr.Currency]"
 set salary_payments_per_year_label "[_ intranet-hr.lt_Salary_Payments_per_Y]"
 set birthdate_label "[_ intranet-hr.Birthdate]"
 set job_title_label "[_ intranet-hr.Job_Title]"
@@ -192,6 +195,7 @@ set label_no [lang::message::lookup "" intranet-core.No "No"]
 set vacation_days_per_year_label [lang::message::lookup "" intranet-hr.Vacation_Days_Per_Year "Vacation Days per Year"]
 set vacation_balance_label [lang::message::lookup "" intranet-hr.Vacation_Balance "Vacation Balance"]
 
+if {"" == $currency} { set currency $default_currency }
 
 # -- ------------------------------------------------
 # -- New form 
@@ -203,12 +207,12 @@ template::form::create $form_id
 template::form::section $form_id ""
 template::element::create $form_id department_id -label $department_label -widget "select"  -options $department_options
 template::element::create $form_id supervisor_id -label $supervisor_label -widget "select"  -options $supervisor_options
-
 template::element::create $form_id availability -optional -label $availability_label -html {size 6}
-template::element::create $form_id hourly_cost -optional -label $hourly_cost_label -html {size 10} -datatype float
 template::element::create $form_id employee_status_id -label $employee_status_label -widget "select"  -options $employee_status_options
 template::element::create $form_id personnel_number -optional -label $personnel_number_label -html {size 10}
 template::element::create $form_id ss_number -optional -label $ss_number_label -html {size 20}
+template::element::create $form_id currency -label $currency_label -widget "select"  -options $currency_options -values $currency 
+template::element::create $form_id hourly_cost -optional -label $hourly_cost_label -html {size 10} -datatype float
 template::element::create $form_id salary -optional -label $salary_label -html {size 10} -datatype float
 template::element::create $form_id social_security -optional -label $social_security_label -html {size 10} -datatype float
 template::element::create $form_id insurance -optional -label $insurance_label -html {size 10} -datatype float
@@ -276,7 +280,7 @@ if {[form is_submission $form_id]} {
     set cost_name $employee_name
     if {"" == $start_date} { set start_date [db_string now "select now()::date"]}
     if {"" == $end_date} { set end_date "2099-12-31" }
-    if {"" == $currency} { set currency $default_currency }
+
 
     # im_repeating_costs (and it's im_costs superclass) superclass
     # im_costs contains a "cause_object_id" field pointing to employee_id.
@@ -462,7 +466,8 @@ if { [form is_request $form_id] } {
 	template::element::set_value $form_id department_id $department_id
 	template::element::set_value $form_id supervisor_id $supervisor_id
 	template::element::set_value $form_id availability $availability
-	template::element::set_value $form_id hourly_cost $hourly_cost
+        template::element::set_value $form_id currency $currency
+        template::element::set_value $form_id hourly_cost $hourly_cost
 	template::element::set_value $form_id employee_status_id $employee_status_id
 	template::element::set_value $form_id personnel_number $personnel_number
 	template::element::set_value $form_id ss_number $ss_number
