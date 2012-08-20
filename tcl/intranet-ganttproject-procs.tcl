@@ -1663,7 +1663,7 @@ ad_proc -public im_ganttproject_resource_component {
 	select	project_id
 	from	im_projects
 	where	parent_id is null
-		and project_status_id = [im_project_status_open]
+		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
         "]
     }
 
