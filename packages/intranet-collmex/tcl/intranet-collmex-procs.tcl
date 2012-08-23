@@ -42,7 +42,8 @@ ad_proc -public intranet_collmex::http_post {
     set token [::http::geturl https://www.collmex.de/cgi-bin/cgi.exe?${customer_nr},0,data_exchange \
 		     -type "text/csv" \
 		   -query $data]
-    
+
+    ns_log Notice "Collmex Query: $data"
     set response [::http::data $token]
     ns_log Notice "Collmex:: $response"
     set meldungstyp [lindex [split $response ";"] 1]
@@ -305,26 +306,10 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # Steuer zum vollen Umsatzsteuersatz
     append csv_line ";" ; # Nettobetrag halber Umsatzsteuersatz
     append csv_line ";" ; # Steuer zum halben Umsatzsteuersatz
-    if {$vat eq 19} {
-	append csv_line ";"
-	append csv_line ";"
-    } else {
-	switch $address_country_code {
-	    us,au,ca {
-		# Export
-		append csv_line ";" 
-		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
-	    }
-	    default {
-		# Umsaetze innergemeinschatliche Lieferung
-		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
-		append csv_line ";"
-	    }
-	}
-    }
-    
-    append csv_line ";" ; # Steuerfreie Erloese Konto
-    append csv_line ";" ; # Steuerfrei Betrag
+    append csv_line ";" ; # Umsätze Innergemeinschaftliche Lieferung
+    append csv_line ";" ; # Umsätze Export
+    append csv_line ";$konto" ; # Steuerfreie Erloese Konto
+    append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""; # Steuerfrei Betrag
     append csv_line ";\"EUR\"" ; # Währung (ISO-Codes)
     append csv_line ";" ; # Gegenkonto
     append csv_line ";0" ; # Rechnungsart
