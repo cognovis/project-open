@@ -826,12 +826,49 @@ ad_proc -public im_gp_save_tasks2 {
 
 
     # Create a reasonable and unique "task_nr" if there wasn't (new task)
-    # ToDo: Potentially dangerous - there could be a case with
-    # a duplicated gantt_id.
+    # The logic now also deals with abiguities
     if {"" == $task_nr} {
+	set nr_prefix "task_"
+	set nr_digits 4
+	set nr_start_idx [expr [string length $nr_prefix] + 1]
 	set task_id_zeros $uid
-	while {[string length $task_id_zeros] < 4} { set task_id_zeros "0$task_id_zeros" }
-	set task_nr "task_$task_id_zeros"
+	while {[string length $task_id_zeros] < $nr_digits} { set task_id_zeros "0$task_id_zeros" }
+	set task_nr "$nr_prefix$task_id_zeros"
+
+	# Check if the new task_nr is really unique (problem at LiWo)
+	set exists_p [db_string task_nr_exists "
+		select	count(*)
+		from	im_projects p,
+			im_projects main_p,
+			im_gantt_projects gp
+		where	p.project_id = gp.project_id and
+			main_p.project_id = :main_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+			-- project_path and project_nr should always be the same, but there might be strange cases...
+			(p.project_path = :task_nr OR p.project_nr = :task_nr)
+	"]
+	if {$exists_p} {
+	    set last_task_nr [db_string last_task_nr "
+		select
+			trim(max(p.nr)) as last_project_nr
+		from (
+			select	substr(p.project_nr, :nr_start_idx, :nr_digits) as nr
+			from	im_projects p,
+				im_projects main_p
+			where	main_p.project_id = :main_project_id and
+				p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+				substr(p.project_nr, 1, [string length $nr_prefix]) = :nr_prefix
+		     ) p
+	    "]
+	    # Remove leading "0"
+	    set last_task_nr [string trimleft $last_task_nr "0"]
+	    # Add +1 to last nr
+	    set next_task_nr [expr $last_task_nr + 1]
+	    # Add the leading "0" again
+	    while {[string length $next_task_nr] < $nr_digits} { set next_task_nr "0$next_task_nr" }
+	    # Add the prefix
+	     set task_nr "$nr_prefix$task_id_zeros"
+	}
     }
 
     # -----------------------------------------------------
@@ -892,7 +929,7 @@ ad_proc -public im_gp_save_tasks2 {
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 			p.project_id = gp.project_id and
 			gp.xml_uid = :uid
-        " -default 0]
+	" -default 0]
 	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id in xml_uid using UID=$uid" }
     }
 
@@ -907,7 +944,7 @@ ad_proc -public im_gp_save_tasks2 {
 		from	im_projects p
 		where	p.parent_id = :parent_id and 
 			(lower(trim(p.project_nr)) = lower(trim(:task_nr)) OR lower(trim(p.project_name)) = lower(trim(:task_name)))
-        " -default 0]
+	" -default 0]
 	if {0 != $task_id} { ns_log Notice "im_gp_save_tasks2: Found task_id=$task_id using parent_id=$parent_id, task_nr=$task_nr or task_name=$task_name" }
     }
 
@@ -919,7 +956,6 @@ ad_proc -public im_gp_save_tasks2 {
        "
        ad_script_abort
     }
-
 
     # -----------------------------------------------------
     # Create a new task if:
@@ -968,7 +1004,7 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_hash(o$outline_number) $task_id
     } else {
 	ad_return_complaint 1 "<b>im_gp_save_tasks2: found an empty task_id for uid=$uid</b>:
-        <br>There was probably an error creating the task in the database."
+	<br>There was probably an error creating the task in the database."
     }
 
     # -----------------------------------------------------
@@ -978,7 +1014,7 @@ ad_proc -public im_gp_save_tasks2 {
 	set nodeText [$taskchild text]
 	# ns_log Notice "im_gp_save_tasks2: nodeName=$nodeName, nodeText=$nodeText"
 	
-        switch $nodeName {
+	switch $nodeName {
 	    "PredecessorLink" {
 		if {$save_dependencies} {
 
@@ -1008,7 +1044,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_hash_array [array get task_hash]
 		}
 	    }
-        }
+	}
     }
 
     # ---------------------------------------------------------------
@@ -1065,6 +1101,7 @@ ad_proc -public im_gp_save_tasks2 {
 	update im_projects set
 		project_name		= trim(:task_name),
 		project_nr		= trim(:task_nr),
+		project_path		= trim(:task_nr),
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
@@ -1106,7 +1143,7 @@ ad_proc -public im_gp_save_tasks2 {
 		select	count(*) = 0
 		from	im_gantt_projects 
 		where	project_id=:task_id
-        "]} {
+	"]} {
 	    db_dml add_gantt_project_entry "
 		insert into im_gantt_projects (project_id, xml_elements) values (:task_id, '')
 	    "
@@ -1114,10 +1151,10 @@ ad_proc -public im_gp_save_tasks2 {
 	
 	db_dml gantt_project_update "
 	    update im_gantt_projects set
-                [join $gantt_field_update ",\n\t\t"]
+		[join $gantt_field_update ",\n\t\t"]
 	    where
 		project_id = :task_id
-        " 
+	" 
     }
 
     # Write audit trail
@@ -1166,7 +1203,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		UPDATE	im_projects
 		SET	project_type_id = [im_project_type_consulting]
 		WHERE	project_id = :project_id
-            "
+	    "
 	}
 	if {"im_project" != $object_type} {
 	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
@@ -1174,7 +1211,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		UPDATE	acs_objects
 		SET	object_type = 'im_project'
 		WHERE	object_id = :project_id
-            "
+	    "
 	}
 
     } else {
@@ -1186,7 +1223,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		UPDATE	im_projects
 		SET	project_type_id = [im_project_type_task]
 		WHERE	project_id = :project_id
-            "
+	    "
 	}
 	if {"im_timesheet_task" != $object_type} {
 	    if {$debug_p} { ns_write "<li>Setting the object_type to 'im_project' because there are children\n" }
@@ -1194,7 +1231,7 @@ ad_proc -public im_gp_save_tasks_fix_structure {
 		UPDATE	acs_objects
 		SET	object_type = 'im_timesheet_task'
 		WHERE	object_id = :project_id
-            "
+	    "
 	}
 
     }
@@ -1448,7 +1485,7 @@ ad_proc -public im_gp_find_person_for_name_helper {
 		select	min(party_id)
 		from	parties
 		where	lower(trim(email)) = lower(trim(:email))
-        " -default ""]
+	" -default ""]
     }
 
     # Check for an exact match with username (abbreviation?)
@@ -1457,17 +1494,17 @@ ad_proc -public im_gp_find_person_for_name_helper {
 		select	min(user_id)
 		from	users
 		where	lower(trim(username)) = :name
-        " -default ""]
+	" -default ""]
     }
 
     # Check for an exact match with the User Name
     if {"" == $person_id} {
-        set person_id [db_string resource_id "
+	set person_id [db_string resource_id "
 		select	min(person_id)
 		from	persons
 		where	(lower(im_name_from_user_id(person_id)) = :name OR
 			(lower(first_names) = :name and lower(last_name) = :name))
-        " -default ""]		
+	" -default ""]		
     }
 
     # Check if we get a single match looking for the pieces of the
@@ -1559,31 +1596,31 @@ ad_proc -public im_gp_save_resources {
 				"AccrueAt" { }
 				default {
 				    if {[db_string check_gantt_person_entry "
-                                       select count(*)=0 
-                                       from im_gantt_persons 
-                                       where person_id=:person_id
-                                    "]} {
+				       select count(*)=0 
+				       from im_gantt_persons 
+				       where person_id=:person_id
+				    "]} {
 					db_dml add_gantt_person_entry "
-                                           insert into im_gantt_persons 
-                                           (person_id,xml_elements) values (:person_id,'')"
-                                    }
+					   insert into im_gantt_persons 
+					   (person_id,xml_elements) values (:person_id,'')"
+				    }
 
 				    im_ganttproject_add_import "im_gantt_person" $nodeName
 				    set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 
 				    db_dml update_import_field "UPDATE im_gantt_persons
-                                       SET $column_name=:nodeText
-                                       WHERE person_id=:person_id
-                                       "
+				       SET $column_name=:nodeText
+				       WHERE person_id=:person_id
+				       "
 				}
 			    }
 			}
 
 			if {[llength $xml_elements]>0} {
 			    db_dml update_import_field "
-                               UPDATE im_gantt_persons
-                               SET xml_elements=:xml_elements
-                               WHERE person_id=:person_id"
+			       UPDATE im_gantt_persons
+			       SET xml_elements=:xml_elements
+			       WHERE person_id=:person_id"
 			}
 		    } else {
 			if {$debug_p} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
@@ -1654,17 +1691,17 @@ ad_proc -public im_ganttproject_resource_component {
 	from	im_projects
 	where	parent_id is null
 		and company_id = :customer_id
-        "]
+	"]
     }
     
     # No projects specified? Show the list of all active projects
     if {"" == $project_id} {
-        set project_id [db_list pids "
+	set project_id [db_list pids "
 	select	project_id
 	from	im_projects
 	where	parent_id is null
 		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-        "]
+	"]
     }
 
     # ToDo: Highlight the sub-project if we're showning the sub-project
@@ -1696,7 +1733,7 @@ ad_proc -public im_ganttproject_resource_component {
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
 
-        "]
+	"]
     }
 
     if {"" == $end_date} {
@@ -1718,7 +1755,7 @@ ad_proc -public im_ganttproject_resource_component {
 		and child.tree_sortkey
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
-        "]
+	"]
     }
 
     # Adaptive behaviour - limit the size of the component to a summary
@@ -1787,30 +1824,30 @@ ad_proc -public im_ganttproject_resource_component {
     # Inner - Try to be as selective as possible for the relevant data from the fact table.
     set inner_sql "
 		select
-		        child.*,
-		        u.user_id,
+			child.*,
+			u.user_id,
 			m.percentage as perc,
 			d.d
 		from
-		        im_projects parent,
-		        im_projects child,
-		        acs_rels r
-		        LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
-		        users u,
-		        ( select im_day_enumerator_weekdays as d
-		          from im_day_enumerator_weekdays(
+			im_projects parent,
+			im_projects child,
+			acs_rels r
+			LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
+			users u,
+			( select im_day_enumerator_weekdays as d
+			  from im_day_enumerator_weekdays(
 				to_date(:start_date, 'YYYY-MM-DD'), 
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
 		where
-		        r.object_id_one = child.project_id
-		        and r.object_id_two = u.user_id
-		        and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-		        and parent.parent_id is null
-		        and child.tree_sortkey 
+			r.object_id_one = child.project_id
+			and r.object_id_two = u.user_id
+			and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
+			and parent.parent_id is null
+			and child.tree_sortkey 
 				between parent.tree_sortkey 
 				and tree_right(parent.tree_sortkey)
-		        and d.d 
+			and d.d 
 				between child.start_date 
 				and child.end_date
 			$where_clause
@@ -2252,17 +2289,17 @@ ad_proc -public im_ganttproject_gantt_component {
 	where	parent_id is null
 		and company_id = :customer_id
 		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-        "]
+	"]
     }
     
     # No projects specified? Show the list of all active projects
     if {"" == $project_id} {
-        set project_id [db_list pids "
+	set project_id [db_list pids "
 	select	project_id
 	from	im_projects
 	where	parent_id is null
 		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-        "]
+	"]
     }
 
     # ToDo: Highlight the sub-project if we're showing the sub-project
@@ -2302,7 +2339,7 @@ ad_proc -public im_ganttproject_gantt_component {
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
 
-        "]
+	"]
     }
 
     if {"" == $end_date} {
@@ -2315,7 +2352,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		and child.tree_sortkey
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
-        "]
+	"]
     }
 
     if {"" == $end_date} {
@@ -2337,7 +2374,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		and child.tree_sortkey
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
-        "]
+	"]
     }
 
     # -----------------------------------------------------------------
@@ -2426,24 +2463,24 @@ ad_proc -public im_ganttproject_gantt_component {
 		select
 			1 as days,
 			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as level,
-		        child.project_id,
-		        child.project_name,
+			child.project_id,
+			child.project_name,
 			child.project_nr,
 			child.tree_sortkey,
 			d.d
 		from
-		        im_projects parent,
-		        im_projects child,
-		        ( select im_day_enumerator as d
-		          from im_day_enumerator (
+			im_projects parent,
+			im_projects child,
+			( select im_day_enumerator as d
+			  from im_day_enumerator (
 				to_date(:start_date, 'YYYY-MM-DD'), 
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
 		where
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-		        and parent.parent_id is null
-		        and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-		        and d.d between child.start_date and child.end_date
+			and parent.parent_id is null
+			and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+			and d.d between child.start_date and child.end_date
 			$where_clause
     "
 
@@ -2597,17 +2634,17 @@ ad_proc -public im_ganttproject_gantt_component {
     
     set left_sql "
 		select
-		        child.project_id,
-		        child.project_name,
+			child.project_id,
+			child.project_name,
 			child.parent_id,
 			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as level
 		from
-		        im_projects parent,
-		        im_projects child
+			im_projects parent,
+			im_projects child
 		where
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-		        and parent.parent_id is null
-		        and child.tree_sortkey 
+			and parent.parent_id is null
+			and child.tree_sortkey 
 				between parent.tree_sortkey 
 				and tree_right(parent.tree_sortkey)
 			$where_clause
@@ -2927,17 +2964,17 @@ ad_proc -public im_ganttproject_task_info_component {
     set html ""
 
     db_multirow member_list member_list "
-        SELECT 
-            user_id,
-            im_name_from_user_id(user_id) as name,
-            percentage,
-            im_biz_object_members.rel_id AS rel_id
-        from 
-            acs_rels,users,im_biz_object_members 
-        where 
-            object_id_two=user_id and object_id_one=:task_id
-            and acs_rels.rel_id=im_biz_object_members.rel_id
-            "
+	SELECT 
+	    user_id,
+	    im_name_from_user_id(user_id) as name,
+	    percentage,
+	    im_biz_object_members.rel_id AS rel_id
+	from 
+	    acs_rels,users,im_biz_object_members 
+	where 
+	    object_id_two=user_id and object_id_one=:task_id
+	    and acs_rels.rel_id=im_biz_object_members.rel_id
+	    "
 
     template::list::create \
 	-name member_list \
@@ -3049,7 +3086,7 @@ ad_proc im_ganttproject_skill_profile_assignment_select {
     The portlet uses a customized SQL to quickly search through the users with matching skills.
     @param profile_id Profile of users to include in the search. Defaults to Employees.
     @param skill_profile_id Reference skill profile. This is the reference object from which 
-           we will take the skills to look for
+	   we will take the skills to look for
 } {
     return [util_memoize [list im_ganttproject_skill_profile_assignment_select_helper -include_empty_p $include_empty_p -include_empty_name $include_empty_name -candidate_profile_id $candidate_profile_id -skill_profile_id $skill_profile_id $select_name $skill_type_id $default] $cache_timeout]
 }
@@ -3205,10 +3242,10 @@ ad_proc im_freelance_skill_user_select {
 } {
     set bind_vars [ns_set create]
     set sql "
-        select	user_id,
+	select	user_id,
 		user_id::text || ' - ' || im_name_from_user_id(user_id)
-        from	users
-        order by lower(category)
+	from	users
+	order by lower(category)
     "
 
     return [im_selection_to_select_box -translate_p 0 $bind_vars $select_name $sql $select_name $default]
