@@ -42,7 +42,8 @@ set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
 set page_title [lang::message::lookup "" intranet-ganttproject.Import_Gantt_Tasks "Import Gantt Tasks"]
 set context_bar [im_context_bar $page_title]
 set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
-set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
+set missing_resources_title [lang::message::lookup "" intranet-ganttproject.Missing_Resources_title "Missing Resources"]
+set missing_resources_msg [lang::message::lookup "" intranet-ganttproject.Missing_Resources_msg "The following MS-Project resources could not be found in \]po\[. Please correct the resource names in your MS-Project plan or click on the links below in order to create new resources."]
 
 # Write audit trail
 im_project_audit -project_id $project_id -action before_update
