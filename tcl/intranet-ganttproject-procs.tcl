@@ -3136,6 +3136,7 @@ ad_proc im_ganttproject_skill_profile_assignment_select_helper {
     set sql "
 	select	p.person_id,
 		im_cost_center_code_from_id(e.department_id) as person_department_code,
+		coalesce(e.availability, 100) as availability,
 		$person_sql
 	from	persons p
 		LEFT OUTER JOIN im_employees e ON (p.person_id = e.employee_id)
@@ -3173,7 +3174,7 @@ ad_proc im_ganttproject_skill_profile_assignment_select_helper {
 	    set score [expr $score + $department_score]
 	}
 	
-	lappend user_score_list [list $person_id $score]
+	lappend user_score_list [list $person_id $score $availability]
     }
 
 
@@ -3186,8 +3187,9 @@ ad_proc im_ganttproject_skill_profile_assignment_select_helper {
     foreach tuple $sorted_user_score_list {
 	set user_id [lindex $tuple 0]
 	set score [lindex $tuple 1]
+	set availability [lindex $tuple 2]
 	set user_name [im_name_from_user_id $user_id]
-	append options "<option value=\"$user_id\">$user_name ($score)</option>\n"
+	append options "<option value=\"$user_id\">$user_name ($availability%) - score=$score</option>\n"
     }
     set html "<select name=\"$select_name\" value=\"$default\">$options</select>"
     return $html
