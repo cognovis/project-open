@@ -24,7 +24,7 @@ drop function inline_0 ();
 
 
 create or replace function inline_0 ()
-returns integer as '
+returns integer as $body$
 declare
         v_count         integer;
 begin
@@ -39,7 +39,7 @@ begin
 
         RETURN 0;
 
-end;' language 'plpgsql';
+end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
