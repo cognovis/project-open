@@ -1685,6 +1685,9 @@ ad_proc -public im_ganttproject_resource_component {
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
 
+
+#	ad_return_complaint 1 $left_vars
+
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
 	select	project_id
@@ -1826,6 +1829,7 @@ ad_proc -public im_ganttproject_resource_component {
 		select
 			child.*,
 			u.user_id,
+			e.department_id,
 			m.percentage as perc,
 			d.d
 		from
@@ -1833,7 +1837,8 @@ ad_proc -public im_ganttproject_resource_component {
 			im_projects child,
 			acs_rels r
 			LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
-			users u,
+			users u
+			LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id),
 			( select im_day_enumerator_weekdays as d
 			  from im_day_enumerator_weekdays(
 				to_date(:start_date, 'YYYY-MM-DD'), 
@@ -1860,6 +1865,10 @@ ad_proc -public im_ganttproject_resource_component {
 		h.*,
 		trunc(h.perc) as percentage,
 		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
+		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE im_cost_center_name_from_id(h.department_id) END as dept_name,
+
+		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE 'Natural Person' END as skill_p,
+
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
 		'<!--' || to_char(h.d, 'YYYY') || '-->Q' || to_char(h.d, 'Q') as quarter_of_year,
@@ -1930,16 +1939,28 @@ ad_proc -public im_ganttproject_resource_component {
     foreach t [lindex $left_scale_plain 0] { lappend last_sigma $sigma }
     lappend left_scale_plain $last_sigma
 
-
-    # Add a "subtotal" (= {$user_id $sigma}) before every new ocurrence of a user_id
+    # Add a "subtotal" (= {$dept_id $user_id $sigma}) before every new ocurrence of a user_id
+    # Add a "subtotal" (= {$dept_id $sigma}) after every new department
     set left_scale [list]
     set last_user_id 0
+    set last_dept_id ""
     foreach scale_item $left_scale_plain {
-	set user_id [lindex $scale_item 0]
+	set dept_id [lindex $scale_item 0]
+	set user_id [lindex $scale_item 1]
+
+	if {$last_dept_id != $dept_id} {
+	    if {"" != $last_dept_id} {
+		# Add a sum per department, except for the "empty" department of Skill Profiles
+		lappend left_scale [list "$last_dept_id" $sigma $sigma]
+	    }
+	    set last_dept_id $dept_id
+	}
+
 	if {$last_user_id != $user_id} {
-	    lappend left_scale [list $user_id $sigma]
+	    lappend left_scale [list $dept_id $user_id $sigma]
 	    set last_user_id $user_id
 	}
+
 	lappend left_scale $scale_item
     }
 
@@ -2006,7 +2027,7 @@ ad_proc -public im_ganttproject_resource_component {
 
     # ------------------------------------------------------------
     # Execute query and aggregate values into a Hash array
-
+    #
     set cnt_outer 0
     set cnt_inner 0
     db_foreach query $outer_sql {
@@ -2048,22 +2069,34 @@ ad_proc -public im_ganttproject_resource_component {
     # Skip component if there are not items to be displayed
     if {0 == $cnt_outer} { return "" }
 
+
+#	ad_return_complaint 1 "<pre>[join $left_scale "<br>"]</pre>"
+
     # ------------------------------------------------------------
     # Display the table body
-    
+    #    
     set ctr 0
     foreach left_entry $left_scale {
-	
+
 	# ------------------------------------------------------------
 	# Check open/close logic of user's projects
 	set project_pos [lsearch $left_vars "project_name_link"]
 	set project_val [lindex $left_entry $project_pos]
-	
 	set user_pos [lsearch $left_vars "user_name_link"]
 	set user_val [lindex $left_entry $user_pos]
+	set dept_pos [lsearch $left_vars "dept_name"]
+	set dept_val [lindex $left_entry $dept_pos]
+
 	# A bit ugly - extract the user_id from user's URL...
+	# In a DW-Cube we have only one variable to show, which is the "user_name_link".
 	regexp {user_id\=([0-9]*)} $user_val match user_id
-	
+
+	# Open/Close Logic:
+	# Skip the current line unless:
+	#	- it's the summary line of the user,
+	#	- it's the summary line of the dept
+	set skip_line_p 0
+	if {$sigma == $project_val} {}
 	if {$sigma != $project_val} {
 	    # The current line is not the summary line (which is always shown).
 	    # Start checking the open/close logic
@@ -2074,9 +2107,7 @@ ad_proc -public im_ganttproject_resource_component {
 	# ------------------------------------------------------------
 	# Add empty line before the total sum. The total sum of percentage
 	# shows the overall resource assignment and doesn't make much sense...
-	set user_pos [lsearch $left_vars "user_name_link"]
-	set user_val [lindex $left_entry $user_pos]
-	if {$sigma == $user_val} {
+	if {$sigma == $dept_val && $sigma == $user_val} {
 	    continue
 	}
 	
@@ -2278,7 +2309,6 @@ ad_proc -public im_ganttproject_gantt_component {
     set rowclass(0) "roweven"
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
-
 
     # -----------------------------------------------------------------
     # No project_id specified but customer - get all projects of this customer
