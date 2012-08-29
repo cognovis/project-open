@@ -16,6 +16,8 @@ ad_page_contract {
     new_cost_object_category_id:integer,optional
     new_amount:optional
     new_currency:optional    
+    new_start_date:optional
+    filter_records
     delete_price:array,optional
     { return_url "" }
     { submit "" }
@@ -84,7 +86,7 @@ ns_log Notice "member-update: submit=$submit"
 				im_employee_customer_price__update(NULL, 
 				'im_employee_customer_price', now()::date, 
 				NULL, '', NULL, $user_id, $object_id, 
-				$rate_amount, '$rate_currency',$project_type_db)
+				$rate_amount, '$rate_currency',$project_type_db,:start_date)
 			"
 
 		set foo [db_string get_view_id $sql -default 0]
@@ -93,6 +95,16 @@ ns_log Notice "member-update: submit=$submit"
 
 	# Ignore when no price is set 
         if { "" != $new_amount } {
+
+	    if { "" == $new_start_date } {
+		ad_return_complaint 1 "<strong> [lang::message::lookup "" intranet-cust-koernigweber.Provide_Start_Date "Bitte geben Sie ein Start Datum an"]</strong>"
+		return
+	    }
+
+	    if { [catch { set end_date_ansi [clock format [clock scan $new_start_date] -format %Y-%m-%d] } ""] } {
+		ad_return_complaint 1 "Wrong date"
+		return
+	    }
 	    	# In case there's a new record write it 
 		if { "" != $new_user_id } {
 		    if { ![info exists new_cost_object_category_id] } { 
@@ -101,7 +113,7 @@ ns_log Notice "member-update: submit=$submit"
         	                im_employee_customer_price__update(NULL,
         	                'im_employee_customer_price', now()::date,
                 	        NULL, '', NULL, :new_user_id, $object_id,
-                        	:new_amount, :new_currency, NULL)
+                        	:new_amount, :new_currency, NULL, :new_start_date)
 	                "
 		    } else {
 	              set sql "
@@ -109,19 +121,17 @@ ns_log Notice "member-update: submit=$submit"
                 	        im_employee_customer_price__update(NULL,
                         	'im_employee_customer_price', now()::date,
 	                        NULL, '', NULL, :new_user_id, $object_id,
-        	                :new_amount, :new_currency, :new_cost_object_category_id)
+        	                :new_amount, :new_currency, :new_cost_object_category_id, :new_start_date)
                 	"
 		    }
         	    set foo [db_string write_new_price $sql -default 0]
 		}
 	}
 
-       	# Check fro price records to delete 
+       	# Check for price records to delete 
 	foreach price_id [array names delete_price] {
-		if {[catch { db_dml delete_price_record " delete from im_customer_prices where id = :price_id" } errmsg ]} {}
+		if {[catch { db_dml delete_price_record "delete from im_customer_prices where id = :price_id" } errmsg ]} {}
 	}
 
 ad_returnredirect $return_url
-
-
 
