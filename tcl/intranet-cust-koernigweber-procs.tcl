@@ -168,6 +168,10 @@ ad_proc -public im_price_list {
     Returns an portlet to view and manage prices  
 } {
 
+    # include jQuery date picker
+    template::head::add_javascript -src "/intranet/js/jquery-ui.custom.min.js" -order "99"
+    template::head::add_css -href "/intranet/style/jquery/overcast/jquery-ui.custom.css" -media "screen" -order "99"
+
     # ------------------ DEFAULTS ------------------------
     set current_user_id [ad_maybe_redirect_for_registration]
     set admin_p 0
@@ -221,6 +225,7 @@ ad_proc -public im_price_list {
     append header_html "
 	<td class=rowtitle align=left>[lang::message::lookup "" intranet-cust-koernigweber.CostObjectType "Cost Object Type"]</td>
 	<td class=rowtitle align=right>[lang::message::lookup "" intranet-core.Price "Price"]</td>
+	<td class=rowtitle align=right>[lang::message::lookup "" intranet-cust-koernigweber.From_Date "From"]</td>	
     "
     if { $admin_p } {
         incr colspan
@@ -291,7 +296,8 @@ ad_proc -public im_price_list {
 				amount,
 				currency,
 				cost_object_category_id,			
-				im_name_from_user_id(user_id, $name_order) as name 
+				im_name_from_user_id(user_id, $name_order) as name, 
+ 				start_date
 			from 
 				im_customer_prices 
 			where 	
@@ -299,7 +305,8 @@ ad_proc -public im_price_list {
 				and object_id = :object_id
 				and acs_object_util__get_object_type(object_id) = 'im_company'    
 			order by 
-				name
+				name,
+				start_date
     			"
 	    }
 
@@ -338,13 +345,15 @@ ad_proc -public im_price_list {
                 		amount,
 		                currency,
         		        cost_object_category_id,
-				im_name_from_user_id(user_id, $name_order) as name 
+				im_name_from_user_id(user_id, $name_order) as name, 
+				start_date
 			from 
 				im_customer_prices
 			where 
 				$where_clause 
 			order by 
-				name
+				name,
+				start_date
                  "
 	    }
 
@@ -357,13 +366,16 @@ ad_proc -public im_price_list {
                                 amount,
                                 currency,
                                 cost_object_category_id,
-				im_name_from_user_id(user_id, $name_order) as name 
+				im_name_from_user_id(user_id, $name_order) as name, 
+				start_date
                         from
                                 im_customer_prices
                         where
-                                object_id = $project_member_id 
-			order by 
-				name
+                                object_id = $project_member_id and 
+				(start_date >= now() or start_date IS NULL)
+ 			order by 
+				cost_object_category_id, 
+				start_date
 		"
 	    }
 
@@ -438,7 +450,9 @@ ad_proc -public im_price_list {
         	    append body_html "</td>"
         	 }
 
-		append body_html "</td>"
+		# Column "From"  
+		set start_date_loc [lc_time_fmt $start_date "%x" locale]
+		append body_html "<td align=right>$start_date_loc</td>"
 
 		if { (("user" == $object_type) || ("" == $cost_object_category_id && "im_project" == $object_type )) && $admin_p } {
 		    set show_delete_checkbox_p 1
@@ -485,14 +499,22 @@ ad_proc -public im_price_list {
 	}
 
 
-# Temporary deactivated
+# Temporary deactivated for users & companies
 if { "im_project" != $object_type } {
 
      append body_html "
         <tr $td_class([expr $count % 2])>
-                <td colspan='5'>
+                <td>
 			<br> 
 			<b>[lang::message::lookup "" intranet-cust-koernig-weber.CreateNewPriceRecord "Create new price record"]:</b>
+                </td>
+                <td>
+			<br> 
+			<b>[lang::message::lookup "" intranet-cust-koernig-weber.Amount "Amount"]:</b>
+                </td>
+                <td>
+                        <br>
+                        <b>[lang::message::lookup "" intranet-cust-koernig-weber.From_Date "From"]:</b>
                 </td>
         </tr>
         <tr $td_class([expr $count % 2])>
@@ -521,6 +543,9 @@ if { "im_project" != $object_type } {
                  <td align=right>
                     <input type=input size=6 maxlength=6 name=\"new_amount\" value=\"\">[im_currency_select new_currency $currency]
                  </td>
+                 <td colspan='2'>
+                    <input type=input size=10 maxlength=10 name=\"new_start_date\" id=\"new_start_date\" value=\"\">
+                 </td>
 	</tr>
      "
 }
@@ -538,7 +563,21 @@ if { "im_project" != $object_type } {
     }
     # ------------------ Join table header, body and footer ----------------
     set html "
+	<script>
+	jQuery().ready(function(){
+		\$(function() {
+	    	\$( \"\#new_start_date\" ).datepicker({ dateFormat: \"yy-mm-dd\" });
+		});
+	});
+	</script>
 	<form method=POST action=/intranet-cust-koernigweber/set-emp-cust-price>
+	<strong>[lang::message::lookup "" intranet-cust-koernigweber.Filter_Records "Filter Records"]:</strong>
+	<input type='radio' name='filter_records' value='current_and_future' checked> [lang::message::lookup "" intranet-cust-koernigweber.Current_Future "Current and Future"] 
+	<input type='radio' name='filter_records' value='current'> [lang::message::lookup "" intranet-cust-koernigweber.Current "Current"]
+	<input type='radio' name='filter_records' value='last_year'> [lang::message::lookup "" intranet-cust-koernigweber.Last_Year "Last year"]
+	<input type='radio' name='filter_records' value='all'> [lang::message::lookup "" intranet-cust-koernigweber.All "All"]
+	<br>
+	<br>
 	[export_form_vars object_id return_url]
 	    <table bgcolor=white cellpadding=1 cellspacing=1 border=0>
 	      $header_html
