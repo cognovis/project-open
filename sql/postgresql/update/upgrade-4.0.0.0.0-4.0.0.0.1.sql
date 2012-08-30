@@ -59,9 +59,9 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
 
                         IF v_count > 0 THEN
 			        IF p_cost_object_category_id IS NULL THEN
-				        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id IS NULL;
+				        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and project_type_id IS NULL and start_date = p_start_date;
 			        ELSE
-				        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and cost_object_category_id = p_cost_object_category_id;
+				        update im_customer_prices set amount = p_amount where object_id = p_object_id and user_id = p_user_id and cost_object_category_id = p_cost_object_category_id and start_date = p_start_date;
 			        END IF;
 		        ELSE
                                 v_id := acs_object__new (
@@ -81,3 +81,8 @@ create or replace function im_employee_customer_price__update(int4,varchar,times
                         END IF;
                         return v_id;
 end;' language 'plpgsql';
+
+
+-- set start_date 
+update im_customer_prices set start_date = '2012-01-01 00:00:00+02'::date where start_date is NULL;
+
