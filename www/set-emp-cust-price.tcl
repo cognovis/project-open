@@ -133,5 +133,9 @@ ns_log Notice "member-update: submit=$submit"
 		if {[catch { db_dml delete_price_record "delete from im_customer_prices where id = :price_id" } errmsg ]} {}
 	}
 
-ad_returnredirect $return_url
-
+	# Portlets are only on user or project pages 
+	if { "user" == $object_type } {
+	    ad_returnredirect "/intranet/users/view?filter_records=$filter_records&[export_vars -url -exclude { filter_records } [wf_split_query_url_to_arg_spec $return_url] ]"
+	} else { 
+	    ad_returnredirect "/intranet/projects/view?filter_records=$filter_records&[export_vars -url -exclude { filter_records } [wf_split_query_url_to_arg_spec $return_url] ]"
+	}

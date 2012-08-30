@@ -186,6 +186,7 @@ ad_proc -public im_price_list {
 	return ""
 	break
     }
+    
 
     # ------------------ START  ------------------------
 
@@ -311,7 +312,6 @@ ad_proc -public im_price_list {
 	    }
 
 	    "im_project" {
-
 		# Check if we have project related price record for this project_member_id 
 		set sql "
 			select count(*) from im_customer_prices 
@@ -358,6 +358,12 @@ ad_proc -public im_price_list {
 	    }
 
 	    "user" {
+
+		set filter_records [ns_queryget filter_records]
+		if { "" == $filter_records } {set filter_records "current" }
+
+	   	switch $filter_records {
+		"current_and_future" {
                 set inner_sql "
                         select
 				id as id_price_table,
@@ -372,11 +378,112 @@ ad_proc -public im_price_list {
                                 im_customer_prices
                         where
                                 object_id = $project_member_id and 
-				(start_date >= now() or start_date IS NULL)
+				start_date > now()
+
+			UNION 
+			(	
+ 		               select
+                	         l.id as id_price_table,
+                        	 l.user_id,
+	                         l.object_id as price_object_id,
+        	                 l.amount,
+                	         l.currency,
+                        	 l.cost_object_category_id,
+	                         im_name_from_user_id(l.user_id, $name_order) as name,
+        	                 l.start_date
+                		from (
+                        		select
+                                		cost_object_category_id,
+	                                	(
+        	                                select  li
+                	                        from    im_customer_prices li
+                        	                where
+                                	                li.cost_object_category_id = dl.cost_object_category_id and
+                                        	        user_id = $project_member_id and
+                                                	start_date <= now()
+	                                        order by
+        	                                        cost_object_category_id, start_date DESC
+                	                        offset 0 limit 1
+                        	        	) as mid
+	                        	from    (	
+	        	                        select  cost_object_category_id
+        	        	                from    im_customer_prices lo
+                	        	        where   user_id = $project_member_id
+                        	        	group by
+                                	        	cost_object_category_id
+	                                	) dl
+        	                ) dlo
+                	join    im_customer_prices l
+	                on      l.cost_object_category_id = dlo.cost_object_category_id
+        	                and row(l.start_date, l.id) = row(start_date, (mid).id)
+			)
  			order by 
 				cost_object_category_id, 
 				start_date
 		"
+		}
+		"current" {
+		set inner_sql "
+			select  
+        	                 l.id as id_price_table,
+                	         l.user_id,
+                        	 l.object_id as price_object_id,
+	                         l.amount,
+        	                 l.currency,
+                	         l.cost_object_category_id,
+                        	 im_name_from_user_id(l.user_id, $name_order) as name,
+	                         l.start_date
+			from (
+			        select 
+					cost_object_category_id,
+                			(
+				        	select  li
+					        from    im_customer_prices li
+					        where   
+							li.cost_object_category_id = dl.cost_object_category_id and
+							user_id = $project_member_id and 
+							start_date <= now()
+					        order by
+        		                		cost_object_category_id, start_date DESC	
+				                offset 0 limit 1
+                			) as mid
+	       	 		from (
+        	        		select  cost_object_category_id
+			                from    im_customer_prices lo
+					where   user_id = $project_member_id
+                			group by cost_object_category_id
+		                     ) dl
+	        		) dlo
+			join	im_customer_prices l
+			on      l.cost_object_category_id = dlo.cost_object_category_id
+	        		and row(l.start_date, l.id) = row(start_date, (mid).id)
+			order by 
+				l.cost_object_category_id
+	  	"
+		}
+
+		default {
+                set inner_sql "
+                        select
+				id as id_price_table,
+                                user_id,
+                                object_id as price_object_id,
+                                amount,
+                                currency,
+                                cost_object_category_id,
+				im_name_from_user_id(user_id, $name_order) as name, 
+				start_date
+                        from
+                                im_customer_prices
+                        where
+                                object_id = $project_member_id
+ 			order by 
+				cost_object_category_id, 
+				start_date
+		"
+		}
+    	}
+
 	    }
 
 	    default {
@@ -562,6 +669,23 @@ if { "im_project" != $object_type } {
 	    "
     }
     # ------------------ Join table header, body and footer ----------------
+
+   set current_checked "" 
+   set current_and_future_checked ""
+   set all_checked ""	
+
+   switch [ns_queryget filter_records] {
+ 	"all" {
+		set all_checked checked
+	}
+ 	"current_and_future" {
+		set current_and_future_checked checked
+	}
+ 	default {
+		set current_checked checked
+	}
+   }
+
     set html "
 	<script>
 	jQuery().ready(function(){
@@ -572,10 +696,10 @@ if { "im_project" != $object_type } {
 	</script>
 	<form method=POST action=/intranet-cust-koernigweber/set-emp-cust-price>
 	<strong>[lang::message::lookup "" intranet-cust-koernigweber.Filter_Records "Filter Records"]:</strong>
-	<input type='radio' name='filter_records' value='current_and_future' checked> [lang::message::lookup "" intranet-cust-koernigweber.Current_Future "Current and Future"] 
-	<input type='radio' name='filter_records' value='current'> [lang::message::lookup "" intranet-cust-koernigweber.Current "Current"]
-	<input type='radio' name='filter_records' value='last_year'> [lang::message::lookup "" intranet-cust-koernigweber.Last_Year "Last year"]
-	<input type='radio' name='filter_records' value='all'> [lang::message::lookup "" intranet-cust-koernigweber.All "All"]
+	<input type='radio' name='filter_records' value='current' $current_checked> [lang::message::lookup "" intranet-cust-koernigweber.Current "Current"]
+	<input type='radio' name='filter_records' value='current_and_future' $current_and_future_checked> [lang::message::lookup "" intranet-cust-koernigweber.Current_Future "Current and Future"] 
+	<!-- <input type='radio' name='filter_records' value='last_year'> [lang::message::lookup "" intranet-cust-koernigweber.Last_Year "Last year"] -->
+	<input type='radio' name='filter_records' value='all' $all_checked> [lang::message::lookup "" intranet-cust-koernigweber.All "All"]
 	<br>
 	<br>
 	[export_form_vars object_id return_url]
