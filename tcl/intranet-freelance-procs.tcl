@@ -287,7 +287,7 @@ ad_proc im_freelance_object_skill_component {
 
     db_foreach skills $skill_sql {
 
-	set skill_type_name_hash($skill_type_id) $skill_type
+	set skill_type_name_hash($skill_type_id) [lang::message::lookup [lang::user::locale] intranet-core.[lang::util::suggest_key $skill_type] $skill_type]
 	set skills ""
 	if {[info exists skill_type_hash($skill_type_id)]} { set skills $skill_type_hash($skill_type_id) }
 
@@ -301,7 +301,7 @@ ad_proc im_freelance_object_skill_component {
 	}
 
 	if {"" != $skill} {
-	    append skills "<li>$skill ($claimed $conf_gif)\n"
+	    append skills "<li>[lang::message::lookup [lang::user::locale] intranet-core.[lang::util::suggest_key $skill] $skill] ($claimed $conf_gif)\n"
 	}
 	set skill_type_hash($skill_type_id) $skills
     }
@@ -367,7 +367,7 @@ ad_proc im_object_skill_component {
 
     db_foreach skills $skill_sql {
 
-	set skill_type_name_hash($skill_type_id) $skill_type
+	set skill_type_name_hash($skill_type_id) [lang::message::lookup [lang::user::locale] intranet-core.[lang::util::suggest_key $skill_type] $skill_type]
 	set skills ""
 	if {[info exists skill_type_hash($skill_type_id)]} { set skills $skill_type_hash($skill_type_id) }
 
@@ -380,7 +380,7 @@ ad_proc im_object_skill_component {
 		set del_url [export_vars -base "/intranet-freelance/skill-del" {return_url object_id skill_type_id skill_id}]
 		set del_link "<a href='$del_url'>[im_gif delete]</a>"
 	    }
-	    append skills "<li>$skill $del_link\n"
+	    append skills "<li>[lang::user::locale] intranet-core.[lang::util::suggest_key $skill] $skill] $del_link\n"
 	    lappend skill_type_list $skill
 	}
 	set skill_type_hash($skill_type_id) $skills
@@ -494,7 +494,7 @@ order by
 	    if {![im_is_user_site_wide_or_intranet_admin $current_user_id]} { set admin_html "" }
 	    append skill_header_titles "
 	<td align=center>
-	  <b>$skill_type $admin_html</b>
+	  <b>[lang::message::lookup [lang::user::locale] intranet-core.[lang::util::suggest_key $skill_type] $skill_type] $admin_html</b>
 	</td>"
 	    set old_skill_type_id $skill_type_id
 	}
@@ -577,7 +577,7 @@ order by
 	if {[string equal "" $skill]} {
 	    append skill_body_html ""
 	} else {
-	    append skill_body_html "<tr><td>$skill</td>"
+	    append skill_body_html "<tr><td>[lang::message::lookup [lang::user::locale] intranet-core.[lang::util::suggest_key $skill] $skill]</td>"
 	    append skill_body_html "$experiences_html_eval"
 	}
 	incr ctr
