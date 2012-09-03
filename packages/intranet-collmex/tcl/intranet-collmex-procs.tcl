@@ -309,7 +309,11 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # Umsätze Innergemeinschaftliche Lieferung
     append csv_line ";" ; # Umsätze Export
     append csv_line ";$konto" ; # Steuerfreie Erloese Konto
-    append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""; # Steuerfrei Betrag
+    if {$vat eq 19} {
+	append csv_line ";" ; # Hat VAT => Nicht Steuerfrei
+    } else {
+	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""; # Steuerfrei Betrag
+    }
     append csv_line ";\"EUR\"" ; # Währung (ISO-Codes)
     append csv_line ";" ; # Gegenkonto
     append csv_line ";0" ; # Rechnungsart
