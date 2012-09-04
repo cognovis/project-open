@@ -164,13 +164,6 @@ if {![info exists ignore_hash($warning_key)]} {
 	append task_html "</tr>\n"   
     }
     
-    set task_list_len [llength $task_list]
-    if {$task_list_len > 3} {
-	set task_list [lrange $task_list 0 2]
-	lappend task_list "... ([expr $task_list_len - 3] more tasks)"
-    }
-    
-    
     if {[string length $task_html] > 0} {
 	set task_header "<tr class=rowtitle>\n"
 	append task_header "<td class=rowtitle><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_empty_start_end_date',this.checked) checked></td>\n"
