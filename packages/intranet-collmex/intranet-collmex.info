@@ -10,13 +10,13 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-collmex</auto-mount>    
 
-    <version name="4.0.1.0.3" url="http://openacs.org/repository/download/apm/intranet-collmex-4.0.1.0.3.apm">
+    <version name="4.0.1.0.4" url="http://openacs.org/repository/download/apm/intranet-collmex-4.0.1.0.4.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <summary>Interface to the German Collmex Bookkeeping System</summary>
         <vendor>cognovis GmbH</vendor>
         <maturity>0</maturity>
 
-        <provides url="intranet-collmex" version="4.0.1.0.3"/>
+        <provides url="intranet-collmex" version="4.0.1.0.4"/>
 
         <callbacks>
         </callbacks>
