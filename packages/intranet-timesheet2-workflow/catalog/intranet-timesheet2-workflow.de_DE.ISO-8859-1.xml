@@ -6,7 +6,7 @@
   <msg key="Conf_Project">Projekt</msg>
   <msg key="Conf_Status">Status</msg>
   <msg key="Conf_Type">Typ</msg>
-  <msg key="Conf_User">Benutzer</msg>
+  <msg key="Conf_User">Mitarbeiter</msg>
   <msg key="Date">Datum</msg>
   <msg key="Deleted">Gelöscht</msg>
   <msg key="Hours">Stunden</msg>
@@ -15,7 +15,7 @@
   <msg key="Modify">Verändern</msg>
   <msg key="Modify_Included_Hours">Verändern der enthaltenen Stunden</msg>
   <msg key="Modify_Logged_Hours">Verändern der geloggten Stunden</msg>
-  <msg key="Note">Notiz</msg>
+  <msg key="Note">Kommentar</msg>
   <msg key="Process_finished">Prozess abgeschlossen</msg>
   <msg key="Ready_to_Confirm_Hours">Bereit zur Bestätigung der Stunden</msg>
   <msg key="Ready_to_Confirmed">Bereit zur Bestätigung</msg>
@@ -25,7 +25,11 @@
   <msg key="Timesheet">Bestätigungsobjekt</msg>
   <msg key="Timesheet_1">Bestätigungsobjekte</msg>
   <msg key="Timesheet_Approval">Genehmigung der Zeiterfassung</msg>
-  <msg key="Timesheet_Conf_Object">Bestätigung der Zeiterfassung</msg>
+  <msg key="Timesheet_Conf_Object">Geloggte Stunden bestätigen</msg>
   <msg key="Timesheet_Not_OK">Zeiterfassung nicht OK</msg>
   <msg key="Timesheet_OK">Zeiterfassung OK</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Ihre Stunden wurden nicht bestätigt:</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Ihre Stunden wurden nicht bestätigt</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Zeiterfassung</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Zeiterfassung</msg>
 </message_catalog>

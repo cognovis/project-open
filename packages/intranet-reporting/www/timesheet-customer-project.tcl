@@ -215,12 +215,11 @@ set sql "
 select
 	h.note,
 	h.internal_note,
-	h.billing_rate,
 	to_char(h.day, 'YYYY-MM-DD') as date_pretty,
 	to_char(h.day, 'J') as julian_date,
 	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
 	to_char(coalesce(h.hours,0), :number_format) as hours,
-	to_char(h.billing_rate, :number_format) as billing_rate,
+	to_char(h.billing_rate, :number_format) || '&nbsp;' || co.currency as billing_rate,
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name,
 	im_initials_from_user_id(u.user_id) as user_initials,
@@ -241,9 +240,11 @@ from
 	im_projects p,
 	im_projects main_p,
 	im_companies c,
-	users u
+	users u, 
+	im_costs co
 where
-	h.project_id = p.project_id
+	h.cost_id = co.cost_id 
+	and h.project_id = p.project_id
 	and main_p.project_status_id not in ([im_project_status_deleted])
 	and h.user_id = u.user_id
 	and main_p.tree_sortkey = tree_root_key(p.tree_sortkey)

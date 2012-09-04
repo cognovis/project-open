@@ -38,7 +38,7 @@ set vars $pages
 lappend vars ip_address port
 
 # Frequent used HTML snippets
-set bg "/intranet/images/girlongrass.600x400.jpg"
+set bg ""
 set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\\#91;</span>"
 
 if {![info exists enable_next_p]} { set enable_next_p 1 }

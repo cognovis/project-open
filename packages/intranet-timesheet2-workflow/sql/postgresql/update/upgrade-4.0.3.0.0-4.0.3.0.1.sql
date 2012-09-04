@@ -13,7 +13,7 @@ declare
         v_task_id               integer;        v_case_id               integer;
         v_creation_ip           varchar;        v_creation_user         integer;
         v_object_id             integer;        v_object_type           varchar;
-        v_journal_id            integer;
+        v_journal_id            integer;        v_name_creation_user    varchar;
         v_transition_key        varchar;        v_workflow_key          varchar;
         v_group_id              integer;        v_group_name            varchar;
         v_task_owner            integer;
@@ -112,21 +112,28 @@ begin
 		COALESCE(v_description, '(none)')
        	into v_start_date, v_end_date, v_description
        	from im_user_absences where absence_id = v_absence_id;
-	
-	v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';	
 
+	v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';	
+	v_party_to := v_creation_user;
+
+	-- Custom argument might contain user_id different from owner
+	-- Notification to HR   	
+	if p_custom_arg <> '' THEN
+		select into v_name_creation_user im_name_from_id(v_creation_user);
+		v_subject := v_subject || ' ' || v_name_creation_user;
+		v_party_to := p_custom_arg;	
+	END IF;
 
         RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
 		v_party_from,                 -- party_from
-		v_creation_user,              -- party_to
+		v_party_to,                   -- party_to
 		'f',                          -- expand_group
 		v_subject,                    -- subject
 		v_body,                       -- message
 		0                             -- max_retries
         );
-
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
@@ -145,7 +152,7 @@ declare
         v_task_id               integer;        v_case_id               integer;
         v_creation_ip           varchar;        v_creation_user         integer;
         v_object_id             integer;        v_object_type           varchar;
-        v_journal_id            integer;
+        v_journal_id            integer;	v_name_creation_user    varchar;
         v_transition_key        varchar;        v_workflow_key          varchar;
         v_group_id              integer;        v_group_name            varchar;
         v_task_owner            integer;
@@ -245,19 +252,28 @@ begin
         into v_start_date, v_end_date, v_description
         from im_user_absences where absence_id = v_absence_id;
 
-        v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';
+        -- v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';
+        v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';
+        v_party_to := v_creation_user;
 
-        RAISE NOTICE 'im_absence_notify_applicant_approved: Subject=%, Body=%', v_subject, v_body;
+        -- Custom argument might contain user_id different from owner
+        -- Notification to HR
+        if p_custom_arg <> '' THEN
+                select into v_name_creation_user im_name_from_id(v_creation_user);
+                v_subject := v_subject || ' ' || v_name_creation_user;
+                v_party_to := p_custom_arg;
+        END IF;
+
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
 
         v_request_id := acs_mail_nt__post_request (
-		v_party_from,                 -- party_from
-		v_creation_user,              -- party_to
-		'f',                          -- expand_group
-		v_subject,                    -- subject
-		v_body,                       -- message
-		0                             -- max_retries
+                v_party_from,                 -- party_from
+                v_party_to,                   -- party_to
+                'f',                          -- expand_group
+                v_subject,                    -- subject
+                v_body,                       -- message
+                0                             -- max_retries
         );
-
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;

@@ -6,7 +6,7 @@
   <msg key="Conf_Project">Project</msg>
   <msg key="Conf_Status">Status</msg>
   <msg key="Conf_Type">Type</msg>
-  <msg key="Conf_User">User</msg>
+  <msg key="Conf_User">Employee</msg>
   <msg key="Date">Date</msg>
   <msg key="Deleted">Deleted</msg>
   <msg key="Hours">Hours</msg>
@@ -15,7 +15,7 @@
   <msg key="Modify">Modify</msg>
   <msg key="Modify_Included_Hours">Modify included hours</msg>
   <msg key="Modify_Logged_Hours">Modify Logged Hours</msg>
-  <msg key="Note">Note</msg>
+  <msg key="Note">Comment</msg>
   <msg key="Process_finished">Process finished</msg>
   <msg key="Ready_to_Confirm_Hours">Ready to confirm hours</msg>
   <msg key="Ready_to_Confirmed">Ready to confirmed</msg>
@@ -25,8 +25,12 @@
   <msg key="Timesheet">Confirmation Object</msg>
   <msg key="Timesheet_1">Confirmation Objects</msg>
   <msg key="Timesheet_Approval">Timesheet Approval</msg>
-  <msg key="Timesheet_Conf_Object">Timesheet Confirmation</msg>
+  <msg key="Timesheet_Conf_Object">Confirm hours logged</msg>
   <msg key="Timesheet_Not_OK">Timesheet not OK</msg>
   <msg key="Timesheet_OK">Timesheet OK</msg>
   <msg key="View">Timesheet Conf Objects All</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Your hours have been approved:</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Your hours have not been approved:</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Timesheet Approval</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Timesheet Approval</msg>
 </message_catalog>

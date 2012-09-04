@@ -625,10 +625,11 @@ if {![info exists ignore_hash($warning_key)]} {
 			), 0.0) as percentage_skill_profiles,
 
 			coalesce((
-			select	sum(coalesce(bom.percentage, 0.0))
+			select	sum(coalesce(bom.percentage, 0.0) * coalesce(e.availability, 100) / 100)
 			from	acs_rels r,
 				im_biz_object_members bom,
 				users u
+				LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 			where	r.object_id_one = p.project_id and
 				r.object_id_two = u.user_id and
 				r.rel_id = bom.rel_id and
@@ -711,13 +712,12 @@ if {![info exists ignore_hash($warning_key)]} {
 	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
 	    append task_html "<td>[acs_object_name $skill_profile_id]:$skill_percent%</td>\n"
-	    append task_html "<td>$percentage_non_skill_profiles [join $persons_list ", "]</td>\n"
-	    append task_html "<td>$select_html</td>\n"
+	    append task_html "<td>[join $persons_list ", "]</td>\n"
+	    append task_html "<td><nobr>$select_html</nobr></td>\n"
 	    append task_html "</tr>\n"
 	    incr task_ctr
 	    
 	}
-
     }
     
     if {$task_skipped_ctr > 0} {

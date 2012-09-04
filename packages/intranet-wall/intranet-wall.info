@@ -10,7 +10,7 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-wall</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-wall-0.1d.apm">
+    <version name="4.0.3.2.0" url="http://www.project-open.org/download/apm/intranet-wall-4.0.3.2.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Project Wall - News that really interest you</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
