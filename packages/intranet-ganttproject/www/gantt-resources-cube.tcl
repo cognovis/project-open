@@ -20,7 +20,7 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { top_vars "" }
-    { left_vars "user_name_link project_name_link" }
+    { left_vars "dept_name user_name_link project_name_link" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
     { user_name_link_opened "" }
