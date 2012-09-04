@@ -263,7 +263,7 @@
           <td  class=roweven>#intranet-invoices.cost_type_date#:</td>
           <td  class=roweven>@invoice_date_pretty@</td>
         </tr>
-<if [apm_package_installed_p "intranet-cost-center"] >
+<if @show_cost_center_p@ eq 1>
         <tr> 
           <td  class=roweven><%= [lang::message::lookup "" intranet-cost.Cost_Center "Cost Center"] %>:</td>
           <td  class=roweven>@cost_center_name@</td>

@@ -81,6 +81,7 @@ set required_field "<font color=red size=+1><B>*</B></font>"
 
 # Type of the financial document
 set cost_type_id [db_string cost_type_id "select cost_type_id from im_costs where cost_id = :invoice_id" -default 0]
+set show_cost_center_p [ad_parameter -package_id [im_package_invoices_id] "ShowCostCenterP" "" 0]
 
 # Number formats
 set cur_format [im_l10n_sql_currency_format]
