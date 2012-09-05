@@ -52,7 +52,10 @@ ad_proc find_sales_price {
 			and object_id = $project_id
     	"
 
-	set amount_sales_price [db_string get_data $sql -default 0]
+
+	# Prices on projects are deprecated 
+	# set amount_sales_price [db_string get_data $sql -default 0]
+	set amount_sales_price 0  
     } 	
 
     if { 0 != $amount_sales_price} {
@@ -76,18 +79,43 @@ ad_proc find_sales_price {
 			        and object_id = $user_id
                 		and cost_object_category_id in (select cost_object_category_id from im_projects where project_id = $project_id)
     		"
-	    	set sales_price [db_string get_data $sql -default 0]
+            	# Prices on projects are deprecated
+	    	# set sales_price [db_string get_data $sql -default 0]
+		set sales_price 0
+
 		if { 0 == $sales_price } {
                         ns_log NOTICE "find_sales_price: No price found for customer neither, checking now for price on user level for cost_object_category_id"
                         ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 
                 	set sql "
                         	select
                                 	amount
-	                        from
-        	                        im_customer_prices
+	                        from (
+        	                        select
+                	                        cost_object_category_id,
+                        	                (
+                                	                select  li
+                                        	        from    im_customer_prices li
+                                                	where
+                                                        	li.cost_object_category_id = dl.cost_object_category_id and
+	                                                        user_id = $user_id and
+        	                                                start_date <= now()
+                	                                order by
+                        	                                cost_object_category_id, start_date DESC
+                                	                offset 0 limit 1
+                                        	) as mid
+	                                from (
+        	                                select  cost_object_category_id
+                	                        from    im_customer_prices lo
+                        	                where   user_id = $user_id
+                                	        group by cost_object_category_id
+	                                     ) dl
+        	                     ) dlo
+	                        join    im_customer_prices l
+        	                on      l.cost_object_category_id = dlo.cost_object_category_id
+                                and row(l.start_date, l.id) = row(start_date, (mid).id)
                 	        where
                         	        user_id = $user_id
-	                                and cost_object_category_id = :cost_object_category_id
+	                                and dlo.cost_object_category_id = :cost_object_category_id
 			"
 
 	                set sales_price [db_string get_data $sql -default 0]
@@ -187,6 +215,12 @@ ad_proc -public im_price_list {
 	break
     }
     
+    # ------------------ break when feature is not supported  ------------------------
+    # return "" to avoid that wrong data is shown when portlets het activated 
+    if { "im_project" == $object_type || "im_company" == $object_type } {
+        return ""
+        break
+    }
 
     # ------------------ START  ------------------------
 
@@ -285,9 +319,11 @@ ad_proc -public im_price_list {
 
     set show_delete_checkbox_p 0
     foreach project_member_id $person_list {
-	
 	switch $object_type {
 	    "im_company" {
+		# deprecated
+		return ""
+		break
 		set inner_sql "
 			select 
 				id as id_price_table,
@@ -312,6 +348,9 @@ ad_proc -public im_price_list {
 	    }
 
 	    "im_project" {
+		# deprecated
+	        return ""
+		break
 		# Check if we have project related price record for this project_member_id 
 		set sql "
 			select count(*) from im_customer_prices 
@@ -357,7 +396,7 @@ ad_proc -public im_price_list {
                  "
 	    }
 
-	    "user" {
+	    "user"  {
 
 		set filter_records [ns_queryget filter_records]
 		if { "" == $filter_records } {set filter_records "current" }
@@ -453,7 +492,7 @@ ad_proc -public im_price_list {
 					where   user_id = $project_member_id
                 			group by cost_object_category_id
 		                     ) dl
-	        		) dlo
+	        	     ) dlo
 			join	im_customer_prices l
 			on      l.cost_object_category_id = dlo.cost_object_category_id
 	        		and row(l.start_date, l.id) = row(start_date, (mid).id)
