@@ -735,7 +735,8 @@ template::multirow foreach project_list {
 	                sum(ho.hours) as hours,
         	       	ho.user_id,
 			ho.project_id,
-			(select company_id from im_projects where project_id = ho.project_id) as company_id
+			(select company_id from im_projects where project_id = ho.project_id) as company_id,
+			ho.day as calendar_date
 		   from
         	        im_hours ho, 
 			im_projects p
@@ -761,14 +762,15 @@ template::multirow foreach project_list {
         	   group by
             	 	ho.user_id,
         	       	hours,
-			ho.project_id
+			ho.project_id,
+			ho.day
 	"
 	set sum_hours 0
 	db_foreach col $sql {
 
 		# Calculate costs staff w/o compound costs
 		# Get rate from Project 9140_12_0000 - Unproduktive Std. der produktiven MA 
-	    	set costs_staff_rate [find_sales_price $user_id "" "" "10000111"]
+	    	set costs_staff_rate [find_sales_price $user_id "" "" "10000111" $calendar_date]
 		
                 if { "" == $costs_staff_rate || 0 == $costs_staff_rate } {
                         append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No price found for user/project:<br>"]
@@ -783,7 +785,7 @@ template::multirow foreach project_list {
 		}
 	    		
 		# Calculate "Amount Invoicable"  
-	    	set sales_price [find_sales_price $user_id $project_id $company_id ""]
+	    	set sales_price [find_sales_price $user_id $project_id $company_id "" $calendar_date]
 		if { "" == $sales_price || 0 == $sales_price } {
 		    # Switch off check for dev 
 		    continue
