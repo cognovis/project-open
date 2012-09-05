@@ -39,6 +39,14 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
+# When user is not member of the groups Senior Managers or Accounting 
+# surpress columns "Staff Costs", "Target Benefit", "P&L1", "P&L2"
+# and show only projects where current_user_id = PM of project 
+set full_view_p 0 
+if {[im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || [im_profile::member_p -profile_id 469 -user_id $current_user_id]  } {
+    set full_view_p 1
+}
+
 # Ugly but effective: Remove list markup to convert param into a list...
 regsub -all {\{} $opened_projects "" opened_projects
 regsub -all {\}} $opened_projects "" opened_projects
@@ -190,10 +198,14 @@ if { "" != $project_status_id_from_search } {
     lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id_from_search] ,]) "
 }
 
+# Limited vs. Full View (Senior Manager & Accounting)
+if { !$full_view_p } {
+    lappend criteria "p.project_lead_id = :current_user_id"
+}
 
+# Build where-clause
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
-
 
 # ------------------------------------------------------------
 # Calculate the transitive superprojs for projects, that is
@@ -412,22 +424,23 @@ lappend elements {
     html "align center"
 }
 
+if { $full_view_p } {
 
-# TS costs (internal costs)
-lappend elements staff_costs 
-lappend elements {
+    # TS costs (internal costs)
+    lappend elements staff_costs 
+    lappend elements {
 	label $label_staff_costs 
 	html "align right"
-}
+    }
 
 
-# Target benefits 
-lappend elements target_benefit 
-lappend elements {
+    # Target benefits 
+    lappend elements target_benefit 
+    lappend elements {
         label $label_target_benefit
         html "align right"
+    }
 }
-
 
 # Invoiceable hours
 lappend elements sum_hours_matrix
@@ -469,20 +482,20 @@ lappend elements {
         html "align right"
 }
 
-
-# P&L 1
-lappend elements profit_and_loss_one
-lappend elements {
+if { $full_view_p } {
+    # P&L 1
+    lappend elements profit_and_loss_one
+    lappend elements {
         label "<nobr>$label_profit_and_loss_one</nobr>"
         html "align right"
-}
+    }
 
-
-# P&L 2
-lappend elements profit_and_loss_two
-lappend elements {
+    # P&L 2
+    lappend elements profit_and_loss_two
+    lappend elements {
         label "<nobr>$label_profit_and_loss_two</nobr>"
         html "align right"
+    }
 }
 
 
@@ -882,24 +895,33 @@ template::multirow foreach project_list {
 	# If CVS write inmediately to browser ...  
 	if { "csv" == $output_format } {
 		if { 1 == $i  } {
-		 im_report_write_http_headers -output_format $output_format
-		 set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
-                 append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
-		 ns_write $title_line 
+			im_report_write_http_headers -output_format $output_format
+	                if { $full_view_p } {
+				set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
+	        	        append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
+			} else {
+				set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
+		                append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\n" 
+			}
+			ns_write $title_line 
 		}
 		set output_row "\"$company_name\"\t" 
 		append output_row "\"$project_nr $project_name\"\t"
 		append output_row "\"$written_order_var\"\t"
 		append output_row "\"$project_status\"\t"
-		append output_row "\"$amount_costs_staff_pretty\"\t"
-                append output_row "\"$target_benefit_pretty\"\t"
+	    	if { $full_view_p } {
+			append output_row "\"$amount_costs_staff_pretty\"\t"
+        	        append output_row "\"$target_benefit_pretty\"\t"
+		}
                 append output_row "\"$amount_invoicable_pretty\"\t"
                 append output_row "\"$total_expenses_pretty\"\t"
                 append output_row "\"$invoiceable_total_var_pretty\"\t"
                 append output_row "\"$sum_invoices_value_pretty\"\t"
                 append output_row "\"$profit_and_loss_project_var_pretty\"\t"
-                append output_row "\"$profit_and_loss_one_var_pretty\"\t"
-                append output_row "\"$profit_and_loss_two_var_pretty\"\t"
+	    	if { $full_view_p } {
+	                append output_row "\"$profit_and_loss_one_var_pretty\"\t"
+        	        append output_row "\"$profit_and_loss_two_var_pretty\"\t"
+		}
                 append output_row "\n"
 	  	if { 100 != $project_type_id } { ns_write $output_row }
 	}

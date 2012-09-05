@@ -69,15 +69,19 @@
 	<td>&nbsp;&nbsp;&nbsp;</td>
 	<td>
 	<ul>
+            <if @full_view_p@>
 		<li><b>Personalkosten (VSI): </b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
 		<li><b>Sollerl&ouml;s (VSI+Umlage): </b>Anzahl der geloggten Stunden * Stundensatz des MA (siehe 'Mitarbeiterinformationen' des Angestellten</li>
+	    </if>
 		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
 		<li><b>Materialkosten: </b> Materialkosten Projekte / Materialkosten des Angestellten </li>
 		<li><b>Erl&ouml;sf&auml;hig: </b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
 		<li><b>GuV Projekt:</b> Abgerechnet - Erl&ouml;sf&auml;hig - Abgerechnet</li>
+            <if @full_view_p@>
 		<li><b>GuV 1:</b> Abgerechnet - Sollerl&ouml;s - Materialkosten </li>
 		<li><b>GuV 2:</b> GuV 1 - Personalkosten - Materialkosten </li>
+	    </if>
 	</ul>
 	</td>
 	</tr>
@@ -88,19 +92,23 @@
 	<if @first_request_p@ eq "0">
 	<thead>
       	<tr class="list-header">
-            <th class="list-table" align="left" id="project_list_company_name">@label_client;noquote@</th>
-	    <th class="list-table" align="left" id="project_list_project_name">@label_project_name;noquote@</th>
-       	    <th class="list-table" align="center" id="project_list_written_order">@label_written_order;noquote@</th>
-       	    <th class="list-table" align="center" id="project_list_project_status">@label_project_status;noquote@</th>
-            <th class="list-table" align="right" id="project_list_cost_timesheet_logged_cache_l">@label_staff_costs;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_target_benefit;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_costs_based_on_matrix;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_costs_material;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_invoiceable_total;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_invoiced;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_profit_and_loss_project;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_profit_and_loss_one;noquote@</th>
-            <th class="list-table" align="right" id="project_list_target_benefit">@label_profit_and_loss_two;noquote@</th>
+            <th class="list-table" align="left" id="">@label_client;noquote@</th>
+	    <th class="list-table" align="left" id="">@label_project_name;noquote@</th>
+       	    <th class="list-table" align="center" id="">@label_written_order;noquote@</th>
+       	    <th class="list-table" align="center" id="">@label_project_status;noquote@</th>
+	    <if @full_view_p@>	
+            	<th class="list-table" align="right" id="">@label_staff_costs;noquote@</th>
+	        <th class="list-table" align="right" id="">@label_target_benefit;noquote@</th>
+	    </if>
+            <th class="list-table" align="right" id="">@label_costs_based_on_matrix;noquote@</th>
+            <th class="list-table" align="right" id="">@label_costs_material;noquote@</th>
+            <th class="list-table" align="right" id="">@label_invoiceable_total;noquote@</th>
+            <th class="list-table" align="right" id="">@label_invoiced;noquote@</th>
+            <th class="list-table" align="right" id="">@label_profit_and_loss_project;noquote@</th>
+            <if @full_view_p@>
+	            <th class="list-table" align="right" id="">@label_profit_and_loss_one;noquote@</th>
+        	    <th class="list-table" align="right" id="">@label_profit_and_loss_two;noquote@</th>
+	    </if>
 	</tr>
 	</thead>
 	</if>
@@ -113,15 +121,19 @@
 			  <td class="list-table">@project_list.open_gif;noquote@<a href='/intranet/projects/view?project_id=@project_list.project_id@'>@project_list.project_name@</a></td>
 			  <td class="list-table" align="center">@project_list.written_order_p@</td>
 			  <td class="list-table" align="center">@project_list.project_status@</td>
-			  <td class="list-table" align="right">@project_list.staff_costs@</td>
-			  <td class="list-table" align="right">@project_list.target_benefit@</td>
+                          <if @full_view_p@>
+				  <td class="list-table" align="right">@project_list.staff_costs@</td>
+				  <td class="list-table" align="right">@project_list.target_benefit@</td>
+			  </if>
 			  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
 			  <td class="list-table" align="right">@project_list.costs_material@</td>
 			  <td class="list-table" align="right">@project_list.invoiceable_total@</td>
 			  <td class="list-table" align="right">@project_list.sum_invoices@</td>
 			  <td class="list-table" align="right">@project_list.profit_and_loss_project@</td>
-			  <td class="list-table" align="right">@project_list.profit_and_loss_one@</td>
-			  <td class="list-table" align="right">@project_list.profit_and_loss_two@</td>
+		          <if @full_view_p@>
+				  <td class="list-table" align="right">@project_list.profit_and_loss_one@</td>
+				  <td class="list-table" align="right">@project_list.profit_and_loss_two@</td>
+			  </if>
 	  		</tr>
 			</if>
   		</multiple>
@@ -132,15 +144,19 @@
                   <td class="list-table"></td>
                   <td class="list-table" align="center"></td>
                   <td class="list-table" align="center"></td>
-                  <td class="list-table" align="right">@total__amount_costs_staff@</td>
-                  <td class="list-table" align="right">@total__target_benefit@</td>
+                  <if @full_view_p@>
+	                  <td class="list-table" align="right">@total__amount_costs_staff@</td>
+        	          <td class="list-table" align="right">@total__target_benefit@</td>
+		  </if>
                   <td class="list-table" align="right">@total__amount_invoicable_matrix@</td>
                   <td class="list-table" align="right">@total__total_expenses@</td>
                   <td class="list-table" align="right">@total__invoiceable_total_var@<!--erloesfaehig --></td> 
                   <td class="list-table" align="right">@total__sum_invoices_value@</td>
                   <td class="list-table" align="right">@total__profit_and_loss_project_var@</td>
-                  <td class="list-table" align="right">@total__profit_and_loss_one_var@</td>
-                  <td class="list-table" align="right">@total__profit_and_loss_two_var@</td>
+                  <if @full_view_p@>
+	                  <td class="list-table" align="right">@total__profit_and_loss_one_var@</td>
+        	          <td class="list-table" align="right">@total__profit_and_loss_two_var@</td>
+		  </if>
                 </tr>
    	</tfooter>	
 	</if>
