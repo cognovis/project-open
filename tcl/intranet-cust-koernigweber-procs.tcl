@@ -17,10 +17,15 @@ ad_proc find_sales_price {
 	project_id
 	company_id
         cost_object_category_id 
+    	calendar_date
 } {
     Returns the sales price that has defined for a particular user
     on an arbitrary project level above    
 } {
+
+    if { ""==$calendar_date } {
+	set calendar_date [db_string get_data "select CURRENT_TIMESTAMP" -default 0]
+    }
 
     if { "" == $project_id  } {
 	set project_id 0 
@@ -51,7 +56,6 @@ ad_proc find_sales_price {
 			user_id = $user_id 
 			and object_id = $project_id
     	"
-
 
 	# Prices on projects are deprecated 
 	# set amount_sales_price [db_string get_data $sql -default 0]
@@ -98,7 +102,7 @@ ad_proc find_sales_price {
                                                 	where
                                                         	li.cost_object_category_id = dl.cost_object_category_id and
 	                                                        user_id = $user_id and
-        	                                                start_date <= now()
+        	                                                start_date <= :calendar_date
                 	                                order by
                         	                                cost_object_category_id, start_date DESC
                                 	                offset 0 limit 1
@@ -136,7 +140,7 @@ ad_proc find_sales_price {
     	} else {
                 ns_log NOTICE "find_sales_price: Parent project found: $parent_project_id"
                 ns_log NOTICE "find_sales_price: Calling: find_sales_price_defined_on_project_level $parent_project_id $user_id $company_id $cost_object_category_id ([im_category_from_id $cost_object_category_id])"
-		return [find_sales_price $user_id $parent_project_id $company_id $cost_object_category_id]
+		return [find_sales_price $user_id $parent_project_id $company_id $cost_object_category_id $calendar_date]
 	}
      }
 }
@@ -1533,7 +1537,7 @@ ad_proc -public -callback im_before_member_add -impl intranet-cust-koernigweber 
     	if { [info exists user_id] } {
 		set log ""
 		foreach uid $user_id {
-		    set price [find_sales_price $uid $object_id "" ""]
+		    set price [find_sales_price $uid $object_id "" "" ""]
 	   	    if { "" == $price } {
 			set name [im_name_from_user_id $uid]
 			append log [lang::message::lookup "" intranet-cust-koernigweber.No_Price_Found "User $name can't be assigned to this project: No price record found.<br>"]
