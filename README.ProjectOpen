@@ -1,17 +1,38 @@
-This is ]project-open[ - An open-source based Web project management solution
+This is ]project-open[ - Open-source based Web project management
 
-Version 3.4
+Version 4.0
 ===========
 
 
 Documentation:
 --------------
 
-For documentation please see http://www.project-open.org/
-The "]project-open[ Overview" diagram contains links to 
-the different parts of the system and their documentation.
-Also, on the right-hand side you will find links to download
-the ]po[ user guides.
+For documentation please see http://www.project-open.org/:
+
+- List of ]po[ Modules:
+  Modules are groups of functionality like Finance, PM etc.
+  There are some 11 different modules available:
+  http://www.project-open.org/en/list_modules
+
+- List of ]po[ Packages:
+  Packages are individually installable/uninstallable 
+  pieces of functionality. ]po[ currently consists of some
+  150 different packages:
+  http://www.project-open.org/en/list_packages
+
+- List of ]po[ Business Objects:
+  Business objects are high-level entities consisting of 
+  one or more database tables. ]po[ consists of some 150
+  business objects, of which some 45 important objects are
+  documented here:
+  http://www.project-open.org/en/list_object_types
+
+- List of ]po[ Processes:
+  Processes are high-level descriptions of ]po[ 
+  functionality. The documentation of processes is quite
+  incomplete, though:
+  http://www.project-open.org/en/list_processes
+
 
 
 
@@ -24,13 +45,20 @@ Please see the "INSTALL" file in this directory.
 
 License:
 --------
-This ]po[ distribution is covered by two different licenses:
+This ]po[ distribution is covered by three different licenses.
+All software in the publicly downloadable distributions and
+installers is GPLed or FLed.
 
 - GPL: 
   The vast majority of the code is covered by the 
-  Gnu Public License
+  Gnu Public License:
+  http://www.gnu.org/copyleft/gpl.html
 
 - ]project-open[ "Free License" (FL):
-  Please see the LICENSE.FL file in this directory.
+  Please see the LICENSE.ProjectOpen file in this directory or:
+  http://www.project-open.org/en/project_open_license_free
 
+- ]project-open[ "Commercial License" (CL):
+  Please see the LICENSE.ProjectOpen file in this directory or:
+  http://www.project-open.org/en/project_open_license_commercial
 
