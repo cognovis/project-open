@@ -62,9 +62,9 @@ switch [string tolower $platform] {
 }
 
 # Make sure the XoWiki page doesn't show a clumsy template
-append iframe_url "?no_template_p=1"
-
-# ad_return_complaint 1 "<pre>platform=[string tolower $platform]\nvmware_p=$vmware_p\ncore_version_id=$core_version_id\niframe_url=$iframe_url</pre>"
+# 20120906 fraber: please note the additional "&" behind the variable.
+# That's necessary now because both firefox and chrome swallow the last char...
+append iframe_url "?no%5ftemplate%5fp=1&"
 
 # ---------------------------------------------------------------
 # Check if everything is together
