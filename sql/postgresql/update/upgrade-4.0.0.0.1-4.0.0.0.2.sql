@@ -145,3 +145,8 @@ begin
         return 0;
 end;$BODY$
   LANGUAGE 'plpgsql' VOLATILE;
+
+
+-- allow 12 digits for customer code
+ALTER TABLE im_companies ALTER COLUMN company_code TYPE bigint;
+
