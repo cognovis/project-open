@@ -791,7 +791,7 @@ ad_proc -public im_koernigweber_next_project_nr {
     if { ![info exists company_code] } { set company_code "" }
     if { ![info exists company_name] } { set company_name "" }
  
-    if {[string length $company_code] != 4 || "" == $company_code } {
+    if {[string length $company_code] > 12 || "" == $company_code } {
         ad_return_complaint 1 "<b>Unable to find 'Customer Code'</b>:
         <p>
         The customer <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
