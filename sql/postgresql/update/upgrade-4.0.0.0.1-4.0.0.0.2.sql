@@ -59,6 +59,10 @@ begin
 	-- Get msg 
 	select msg into v_note from journal_entries where object_id = v_case_id and action_pretty = 'Approve finish';
 
+        IF v_note IS NULL OR v_note = '' THEN
+                v_note := '-';
+        END IF;
+
         -- Get locale of user
         select  locale into v_locale
         from    user_preferences
@@ -124,11 +128,16 @@ begin
                 pv.parameter_id = p.parameter_id;
 
 	v_url := v_base_url || 'acs-workflow/task?return_url=%2fintranet%2f&task_id=' || v_task_id;
-	 
+	RAISE NOTICE 'im_ts_notify_applicant_not_approved: v_url=%', v_url;	 
+
 	v_body := v_body || '\n\n' || v_project_nr_label || ': ' || v_project_nr || '\n';
+	RAISE NOTICE 'im_ts_notify_applicant_not_approved: v_body=%', v_body;
 	v_body := v_body || v_project_name_label || ': ' || v_project_name || '\n';
+	RAISE NOTICE 'im_ts_notify_applicant_not_approved: v_body=%', v_body;
 	v_body := v_body || v_project_manager_label || ': ' || v_project_manager || '\n\n';
+	RAISE NOTICE 'im_ts_notify_applicant_not_approved: v_body=%', v_body;
 	v_body := v_body || v_note_label || ': ' || v_note || '\n\n';
+	RAISE NOTICE 'im_ts_notify_applicant_not_approved: v_body=%', v_body;
 
  	v_body := v_body || v_url || '\n\n';	
 
