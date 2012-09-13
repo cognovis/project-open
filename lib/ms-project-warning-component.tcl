@@ -601,6 +601,7 @@ if {![info exists ignore_hash($warning_key)]} {
 		select	p.project_id as task_id,
 			p.project_name as task_name,
 			p.tree_sortkey,
+			t.*,
 			im_biz_object_member__list(p.project_id) as assigned_users,
 		
 			coalesce((
@@ -704,6 +705,11 @@ if {![info exists ignore_hash($warning_key)]} {
 	    append task_html "<tr>\n"
 	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
+
+	    append task_html "<td align=left>$start_date_pretty</td>\n"
+	    append task_html "<td align=left>$end_date_pretty</td>\n"
+	    append task_html "<td align=left>$planned_units [im_category_from_id $uom_id]</td>\n"
+
 	    append task_html "<td>[acs_object_name $skill_profile_id]:$skill_percent%</td>\n"
 	    append task_html "<td>[join $persons_list ", "]</td>\n"
 	    append task_html "<td><nobr>$select_html</nobr></td>\n"
@@ -731,6 +737,11 @@ if {![info exists ignore_hash($warning_key)]} {
 	set task_header "<tr class=rowtitle>\n"
 	append task_header "<td class=rowtitle align=center><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_overallocation',this.checked) checked></td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Task "Task Name"]</td>\n"
+
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Start "Start"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.End "End"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Work "Work"]</td>\n"
+
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Profile_Assigned_Percentage "Assigned<br>% Profiles"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Non_Profile_Assigned_Percentage "Assigned<br>% Users"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Select_User_Percent "Assign New User"]</td>\n"
