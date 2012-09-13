@@ -595,12 +595,26 @@ if {![info exists ignore_hash($warning_key)]} {
 
 set warning_key "fix-tasks-with-unassigned-skill-profiles"
 if {![info exists ignore_hash($warning_key)]} {
+
+    set url_vars_set [ns_conn form]
+    set filter_skill_profile_id [ns_set get $url_vars_set "filter_skill_profile_id"]
+    set filter_skill_profile_sql ""
+    if {"" != $filter_skill_profile_id} {
+	set filter_skill_profile_sql "and p.project_id in (
+		select	r.object_id_one
+		from	acs_rels r
+		where	r.object_id_two = :filter_skill_profile_id
+	)"
+    }
+
     set sql "
 	select	t.*
 	from	(
 		select	p.project_id as task_id,
 			p.project_name as task_name,
 			p.tree_sortkey,
+			to_char(p.start_date, 'YYYY-MM-DD HH24:MI') as start_date_pretty,
+			to_char(p.end_date, 'YYYY-MM-DD HH24:MI') as end_date_pretty,
 			t.*,
 			im_biz_object_member__list(p.project_id) as assigned_users,
 		
@@ -639,6 +653,7 @@ if {![info exists ignore_hash($warning_key)]} {
 		where	t.task_id = p.project_id and
 			main_p.project_id = :org_project_id and
 			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey)
+			$filter_skill_profile_sql
 		) t
 	where	percentage_skill_profiles > 0.0 and
 		percentage_non_skill_profiles < percentage_skill_profiles
@@ -697,22 +712,16 @@ if {![info exists ignore_hash($warning_key)]} {
 	    # Required percent assignment in order to eqal out person vs. skill profiles
 	    set percent [expr $percentage_skill_profiles - $percentage_non_skill_profiles]
 
-	    set select_html [im_ganttproject_skill_profile_assignment_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]
-	    append select_html " <input type=input name=percent.$rel_id value=\"$percent\" size=6>"
-	    append select_html " <input type=hidden name=task_id.$rel_id value=\"$task_id\">"
-	    append select_html " <input type=hidden name=rel_id.$rel_id value=\"$rel_id\">"
-
 	    append task_html "<tr>\n"
 	    append task_html "<td><input type=checkbox name=checked.$rel_id id=task_with_overallocation.$rel_id checked></td>\n"
 	    append task_html "<td align=left><a href=[export_vars -base "/intranet/projects/view" {{project_id $task_id}}]>$task_name</a></td>\n"
-
 	    append task_html "<td align=left>$start_date_pretty</td>\n"
 	    append task_html "<td align=left>$end_date_pretty</td>\n"
 	    append task_html "<td align=left>$planned_units [im_category_from_id $uom_id]</td>\n"
-
 	    append task_html "<td>[acs_object_name $skill_profile_id]:$skill_percent%</td>\n"
 	    append task_html "<td>[join $persons_list ", "]</td>\n"
-	    append task_html "<td><nobr>$select_html</nobr></td>\n"
+	    append task_html "<td>[im_ganttproject_skill_profile_assignment_select -skill_profile_id $skill_profile_id user_id.$rel_id 0]</td>\n"
+	    append task_html "<td><input type=input name=percent.$rel_id value=\"$percent\" size=6> <input type=hidden name=task_id.$rel_id value=\"$task_id\">  <input type=hidden name=rel_id.$rel_id value=\"$rel_id\"></td>\n"
 	    append task_html "</tr>\n"
 	    incr task_ctr
 	    
@@ -737,14 +746,13 @@ if {![info exists ignore_hash($warning_key)]} {
 	set task_header "<tr class=rowtitle>\n"
 	append task_header "<td class=rowtitle align=center><input type=checkbox name=_dummy onclick=acs_ListCheckAll('task_with_overallocation',this.checked) checked></td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Task "Task Name"]</td>\n"
-
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Start "Start"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.End "End"]</td>\n"
-	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Work "Work"]</td>\n"
-
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Hours "Hours"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Profile_Assigned_Percentage "Assigned<br>% Profiles"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Non_Profile_Assigned_Percentage "Assigned<br>% Users"]</td>\n"
 	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Select_User_Percent "Assign New User"]</td>\n"
+	append task_header "<td class=rowtitle align=center>[lang::message::lookup "" intranet-ganttproject.Percent "%"]</td>\n"
 	append task_header "</tr>\n"
 	
 	set task_footer "
@@ -758,15 +766,59 @@ if {![info exists ignore_hash($warning_key)]} {
 	</td></tr>
         "
 
+	# Determina all Skill Profiles used in this project
+	set skill_profile_sql "
+		select distinct
+			im_name_from_user_id(u.user_id) as user_name,
+			u.user_id
+		from	im_projects main_p,
+			im_projects p,
+			acs_rels r,
+			users u
+		where	main_p.project_id = :org_project_id and
+			p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+			r.object_id_one = p.project_id and
+			r.object_id_two = u.user_id and
+			u.user_id in (
+				select member_id from group_distinct_member_map 
+				where group_id = (select group_id from groups where group_name = 'Skill Profile')
+			)
+		order by
+			user_name, user_id
+	"
+
+	set skill_profile_tuples [db_list_of_lists skill_profile_filter $skill_profile_sql]
+	set skill_profile_tuples [linsert $skill_profile_tuples 0 [list "" ""]]
+	set skill_profile_select [im_select -ad_form_option_list_style_p 1 -translate_p 0 filter_skill_profile_id $skill_profile_tuples $filter_skill_profile_id]
+
+
 	set project_id $main_project_id
 	append warnings_html "
-	<div class=ms_project_warning_title>
-	[lang::message::lookup "" intranet-ganttproject.Tasks_with_open_assignments "Tasks With Open Assignments"]
-	</div>
+	<table>
+	<tr><td>
+		<div class=ms_project_warning_title>
+		[lang::message::lookup "" intranet-ganttproject.Tasks_with_open_assignments "Tasks With Open Assignments"]
+		</div>
+		<div class=ms_project_warning_body>
+		[lang::message::lookup "" intranet-ganttproject.Tasks_with_missing_assignments_msg "
+		The following tasks have been assigned to a Skill Profile, but you haven't yet specfied
+		which persons should perform the work."]<br>
+		</div>
+	</td><td>
+		<form action=/intranet/projects/view method=GET>
+		[export_form_vars project_id]
+		<table>
+		<tr>
+		<td>[lang::message::lookup "" intranet-ganttproject.Filter "Filter"]</td>
+		<td>$skill_profile_select</td>
+		<td><input type=submit></td>
+		</tr>
+		</table>
+		</form>
+	</td></tr>
+	</table>
+
 	<div class=ms_project_warning_body>
-	[lang::message::lookup "" intranet-ganttproject.Tasks_with_missing_assignments_msg "
-	The following tasks have been assigned to a Skill Profile, but you haven't yet specfied
-	which persons should perform the work."]<br>
 	<form action=/intranet-ganttproject/$warning_key method=POST>
 	[export_form_vars project_id return_url]
 	<table border=0 cellspacing=1 cellpadding=1>
