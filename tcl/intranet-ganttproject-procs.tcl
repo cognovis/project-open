@@ -637,6 +637,10 @@ ad_proc -public im_gp_save_tasks2 {
     incr sort_order
     set my_sort_order $sort_order 
 
+    # Should the % completed from MS-Project overwrite the
+    # values reported in ]po[? Default is 0.
+    set save_percent_completed_p [parameter::get_from_package_key -package_key "intranet-ganttproject" -parameter "UpdatePercentCompletedP" -default "0"]
+
     array set task_hash $task_hash_array
     if {$debug_p} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
     set task_url "/intranet-timesheet2-tasks/new?task_id="
@@ -1092,10 +1096,8 @@ ad_proc -public im_gp_save_tasks2 {
     # Save the detailed task information
 
     # "Milestone" is just a characteristic of the task.
-    set milestone_sql ""
-    if {[im_column_exists im_projects milestone_p]} {
-	set milestone_sql "milestone_p	=	:milestone_p,"
-    }
+    if {[im_column_exists im_projects milestone_p]} { set milestone_sql "milestone_p	=	:milestone_p," } else { set milestone_sql "" }
+    if {$save_percent_completed_p} { set percent_completed_sql "percent_completed	=	:percent_completed," } else { set percent_completed_sql "" }
 
     db_dml project_update "
 	update im_projects set
@@ -1105,10 +1107,10 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
-		$milestone_sql
-		note			= :note,
 		sort_order		= :my_sort_order,
-		percent_completed	= :percent_completed
+		$milestone_sql
+		$percent_completed_sql
+		note			= :note
 	where
 		project_id = :task_id
     "
