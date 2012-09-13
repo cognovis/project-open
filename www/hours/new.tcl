@@ -874,7 +874,7 @@ template::multirow foreach hours_multirow {
 
     if {$show_member_p && !$user_is_project_member_p} { append help_text [lang::message::lookup "" intranet-timesheet2.Not_member_of_project "You are not a member of this project. "] }
 
-    ns_log NOTICE "intranet-cust-koernigweber:hours:new.tcl - block_logging_project_status_p - before: $block_logging_project_status_p, id: $project_id, status: $project_status_id" 
+    # ns_log NOTICE "intranet-cust-koernigweber:hours:new.tcl - block_logging_project_status_p - before: $block_logging_project_status_p, id: $project_id, status: $project_status_id" 
  
     set block_logging_project_status_p [check_logging_project_status $project_id]
     ns_log NOTICE "intranet-cust-koernigweber:hours:new.tcl - check_logging_project_status: $block_logging_project_status_p" 
@@ -1036,7 +1036,7 @@ foreach j $weekly_logging_days {
     set header_day_of_week [util_memoize [list db_string day_of_week "select to_char(to_date('$julian_day_offset', 'J'), 'Dy')"]]
     set header_day_of_week_l10n [lang::message::lookup "" intranet-timesheet2.Day_of_week_$header_day_of_week $header_day_of_week]
     set header_date [util_memoize [list db_string header "select to_char(to_date('$julian_day_offset', 'J'), '$weekly_column_date_format')"]]
-    append week_header_html "<th>$header_day_of_week_l10n<br>$header_date</th>\n"
+    append week_header_html "<th></th><th>$header_day_of_week_l10n<br>$header_date</th>\n"
     incr i
 }
 
