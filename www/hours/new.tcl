@@ -560,7 +560,7 @@ set sql "
                         select * from im_sub_categories([im_ticket_status_closed])
                 )
 	order by
-		lower(parent.project_name),
+		lower(parent.project_nr),
 		children.tree_sortkey
 "
 
