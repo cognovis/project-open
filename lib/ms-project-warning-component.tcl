@@ -500,9 +500,9 @@ if {![info exists ignore_hash($warning_key)]} {
 	# Check if there are timephased data available for this project
 	# and use if available
 	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
-
-	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_uom=$seconds_uom, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
-	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
+	# if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
+	# Fraber 20120914: There is an error with storing timephased data at this moment.
+	# So we can't use this information in production yet
 
 	set overallocation_factor "undefined"
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
@@ -511,6 +511,10 @@ if {![info exists ignore_hash($warning_key)]} {
 	    # Accept max. 10% overassignment, because of small rounding
 	    # errors between %assigned and actual time spent by the resource
 	    if {[expr abs($overallocation_factor - 1.0)] > 0.10} {
+
+
+	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_uom=$seconds_uom, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
+
 	    
 		append task_html "<tr>\n"
 		append task_html "<td><input type=checkbox name=task_id.$task_id id=task_with_overallocation.$task_id checked></td>\n"
