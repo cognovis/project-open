@@ -425,7 +425,6 @@ set warning_key "fix-tasks-with-overallocation"
 if {![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	t.*,
-		percentage_skill_profiles + percentage_non_skill_profiles as percentage_sum,
 		greatest(percentage_skill_profiles, percentage_non_skill_profiles) as percentage
 	from	(
 		select	p.project_id as task_id,
@@ -501,7 +500,8 @@ if {![info exists ignore_hash($warning_key)]} {
 	# Check if there are timephased data available for this project
 	# and use if available
 	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
-	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
+
+	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: task_name=$task_name, seconds_work=$seconds_work, seconds_uom=$seconds_uom, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
 	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
 
 	set overallocation_factor "undefined"
