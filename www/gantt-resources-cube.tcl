@@ -66,6 +66,10 @@ if {[llength $project_id] == 1} {
        $bind_vars "" "pagedesriptionbar" "project_resources"] 
     set main_navbar_label "projects"
 
+    set project_name [db_string project_name "select project_name from im_projects where project_id = :project_id" -default "undefined"]
+    set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources_for_project "Gantt Resources for %project_name%"]
+
+
 } else {
 
     # Show the same header as the ProjectListPage
@@ -75,13 +79,13 @@ if {[llength $project_id] == 1} {
     set menu_select_label "projects_gantt_resources"
     set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
 
+    set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
+
 }
 
 
 # ------------------------------------------------------------
 # Defaults
-
-set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
 
 
 switch $config {
