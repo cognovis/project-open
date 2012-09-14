@@ -422,7 +422,7 @@ if {![info exists ignore_hash($warning_key)]} {
 # ---------------------------------------------------------------
 
 set warning_key "fix-tasks-with-overallocation"
-if {![info exists ignore_hash($warning_key)]} {
+if {0 && ![info exists ignore_hash($warning_key)]} {
     set sql "
 	select	t.*,
 		greatest(percentage_skill_profiles, percentage_non_skill_profiles) as percentage
@@ -500,9 +500,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	# Check if there are timephased data available for this project
 	# and use if available
 	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
-	# if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
-	# Fraber 20120914: There is an error with storing timephased data at this moment.
-	# So we can't use this information in production yet
+	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
 
 	set overallocation_factor "undefined"
 	catch { set overallocation_factor [expr $seconds_work / $seconds_uom] }
