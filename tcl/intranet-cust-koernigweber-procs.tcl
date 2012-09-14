@@ -230,13 +230,12 @@ ad_proc -public im_price_list {
     # ------------------ Allocation costs ------------------------
 
     set company_path [db_string get_data "select company_path from im_companies where company_id = :object_id" -default 0]
-    if { ("im_company" == $object_type && "internal" != $company_path) || ("im_company" == $object_type && ![im_permission $current_user_id "admin_allocation_costs"])} {
+    if { ("im_company" == $object_type && "internal" != $company_path) || ("im_company" == $object_type && 0 == [im_permission $current_user_id "admin_allocation_costs"]) } {
         return ""
         break
-    } else {
+    } elseif {"im_company" == $object_type } {
 	set portlet_allocation_costs_p 1
     }
-
 
     # ------------------ START  ------------------------
 
@@ -270,15 +269,21 @@ ad_proc -public im_price_list {
     # ------------------ Format the table header ------------------------
     set colspan 2
     set header_html "<tr>"
-    if { "user" != $object_type  } {
-		append header_html "<td class=rowtitle align=left>[_ intranet-core.Name]</td>"
+
+    # if { "user" != $object_type && } {
+    #		append header_html "<td class=rowtitle align=left>[_ intranet-core.Name]</td>"
+    # }
+
+    if { $portlet_allocation_costs_p } {
+	append header_html  "<td class=rowtitle align=left>[lang::message::lookup "" intranet-cost.Cost_Center "Cost Center"]</td>"
+    } else {
+	append header_html  "<td class=rowtitle align=left>[lang::message::lookup "" intranet-cust-koernigweber.CostObjectType "Cost Object Type"]</td>"
     }
     append header_html "
-	<td class=rowtitle align=left>[lang::message::lookup "" intranet-cust-koernigweber.CostObjectType "Cost Object Type"]</td>
 	<td class=rowtitle align=right>[lang::message::lookup "" intranet-core.Price "Price"]</td>
 	<td class=rowtitle align=right>[lang::message::lookup "" intranet-cust-koernigweber.From_Date "From"]</td>	
     "
-    if { $admin_p } {
+    if { $admin_p || $portlet_allocation_costs_p } {
         incr colspan
         append header_html "<td class=rowtitle align=middle>[im_gif delete]</td>"
     }
@@ -293,8 +298,7 @@ ad_proc -public im_price_list {
     set body_html ""
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
-
-    if { $portlet_allocation_costs_p } {
+    if { !$portlet_allocation_costs_p } {
 
 	# ### -----------------------------------------------------------------------------------------
 	# Set table body for user/projects/companies ()   
@@ -423,7 +427,7 @@ ad_proc -public im_price_list {
 
 		   	switch $filter_records {
 			"current_and_future" {
-	                set inner_sql "
+			    set inner_sql "
         	                select
 					id as id_price_table,
                         	        user_id,
@@ -481,7 +485,7 @@ ad_proc -public im_price_list {
 			"
 			}
 			"current" {
-			set inner_sql "
+			    set inner_sql "
 				select  
         	        	         l.id as id_price_table,
                 	        	 l.user_id,
@@ -521,7 +525,7 @@ ad_proc -public im_price_list {
 			}
 	
 			default {
-                	set inner_sql "
+			    set inner_sql "
                         	select
 					id as id_price_table,
         	                        user_id,
@@ -538,14 +542,13 @@ ad_proc -public im_price_list {
  				order by 
 					cost_object_category_id, 
 					start_date
-			"
+				"
 			}
-    			}	
-	
-		    }	
+    			} ;# Filter_records	
+		} ;# end object_type "user"   	
 
 	    default { ad_return_complaint 1 "No object type found, wrong configuration, please contact your System Adminsitrator" }
-	   }; # switch object_type 
+	   } ;# switch object_type 
 
 	   set show_delete_checkbox_p 0 
 
@@ -649,106 +652,104 @@ ad_proc -public im_price_list {
 		if { "" == $internal_company_id  } {
  			ad_return_complaint 1 "No internal company found, please contact your System Administrator"
 		}	
-		
+
         	switch $filter_records {
-	        "current_and_future" {
-	        	set inner_sql "
-                	select
-                        	id as id_price_table,
-        	                object_id as price_object_id,
-                	        amount,
-                        	currency,
-	                        cost_object_category_id,
-        	                im_name_from_user_id(user_id, $name_order) as name,
-                	        start_date
-	                from
-        	                im_customer_prices
-                	where
-                        	object_id = $internal_company_id and
-	                        start_date > now()
-        	        UNION
-                	(
-	                       select
-        	                 l.id as id_price_table,
-                	         l.user_id,
-                        	 l.object_id as price_object_id,
-	                         l.amount,
-        	                 l.currency,
-                	         l.cost_object_category_id,
-                        	 im_name_from_user_id(l.user_id, $name_order) as name,
-	                         l.start_date
-        	                from (
-                	                select
-                        	                cost_object_category_id,
-                                	        (
-                                        	select  li
-	                                        from    im_customer_prices li
-        	                                where
-                	                                li.cost_object_category_id = dl.cost_object_category_id and
-                        	                        user_id = $internal_company_id and
-                                	                start_date <= now()
-	                                        order by
-        	                                        cost_object_category_id, start_date DESC
-                	                        offset 0 limit 1
-                        	                ) as mid
-                                	from    (
-	                                        select  cost_object_category_id
-        	                                from    im_customer_prices lo
-                	                        where   user_id = $internal_company_id
-                        	                group by
-                                	                cost_object_category_id
-	                                        ) dl
-        	                ) dlo
-                	join    im_customer_prices l
-	                on      l.cost_object_category_id = dlo.cost_object_category_id
-        	                and row(l.start_date, l.id) = row(start_date, (mid).id)
-                	)
-	                order by
-        	                cost_object_category_id,
-                	        start_date
-        	"
+	        	"current_and_future" {
+	        		set inner_sql "
+		                	select
+                		        	id as id_price_table,
+		        	                object_id as price_object_id,
+                			        amount,
+		                        	currency,
+	        		                cost_object_category_id,
+		        	                im_name_from_user_id(user_id, $name_order) as name,
+                			        start_date
+			                from
+        			                im_customer_prices
+		                	where
+                		        	object_id = $internal_company_id and
+	                        		start_date > now()
+		        	        UNION
+                			(
+			                       select
+        			                 l.id as id_price_table,
+		                        	 l.object_id as price_object_id,
+	        		                 l.amount,
+		        	                 l.currency,
+                			         l.cost_object_category_id,
+                        			 im_name_from_user_id(l.user_id, $name_order) as name,
+			                         l.start_date
+        		                	from (
+                		                	select
+                        		                	cost_object_category_id,
+                                	        		(
+		                                        	select  li
+	        		                                from    im_customer_prices li
+        	                		                where
+                	                        		        li.cost_object_category_id = dl.cost_object_category_id and
+		                        	                        object_id = $internal_company_id and
+                		                	                start_date <= now()
+	                        		                order by
+        	                                		        cost_object_category_id, start_date DESC
+		                	                        offset 0 limit 1
+                		        	                ) as mid
+                                			from    (
+	                                        		select  cost_object_category_id
+		        	                                from    im_customer_prices lo
+                			                        where   object_id = $internal_company_id
+                        			                group by
+                                	        		        cost_object_category_id
+			                                        ) dl
+        			                ) dlo
+		                	join    im_customer_prices l
+	        		        on      l.cost_object_category_id = dlo.cost_object_category_id
+        	                		and row(l.start_date, l.id) = row(start_date, (mid).id)
+		                	)
+	        		        order by
+        	                		cost_object_category_id,
+		                	        start_date
+        		"
 	        }
         	"current" {
-	        set inner_sql "
-        	        select
-                	         l.id as id_price_table,
-                        	 l.user_id,
-	                         l.object_id as price_object_id,
-        	                 l.amount,
-                	         l.currency,
-                        	 l.cost_object_category_id,
-	                         im_name_from_user_id(l.user_id, $name_order) as name,
-        	                 l.start_date
-                	from (
-                        	select
-                                	cost_object_category_id,
-	                                (
-        	                                select  li
-                	                        from    im_customer_prices li
-                        	                where
-                                	                li.cost_object_category_id = dl.cost_object_category_id and
-                                        		user_id = $internal_company_id and
-	                                                start_date <= now()
-        	                                order by
-                	                                cost_object_category_id, start_date DESC
-                        	                offset 0 limit 1
-                                	) as mid
-	                        from (
-        	                        select  cost_object_category_id
-                	                from    im_customer_prices lo
-                        	        where   user_id = $internal_company_id
-	                                group by cost_object_category_id
-        	                     ) dl
-                	     ) dlo
-	                join    im_customer_prices l
-        	        on      l.cost_object_category_id = dlo.cost_object_category_id
-                	        and row(l.start_date, l.id) = row(start_date, (mid).id)
-	                order by
-        	                l.cost_object_category_id
-	        "
+		        set inner_sql "
+        		        select
+                		         l.id as id_price_table,
+                        		 l.user_id,
+	                        	 l.object_id as price_object_id,
+	        	                 l.amount,
+        	        	         l.currency,
+                	        	 l.cost_object_category_id,
+	                	         im_name_from_user_id(l.user_id, $name_order) as name,
+        	                	 l.start_date
+	                	from (
+        	                	select
+                	                	cost_object_category_id,
+	                	                (
+        	                	                select  li
+                	                	        from    im_customer_prices li
+                        	                	where
+	                                	                li.cost_object_category_id = dl.cost_object_category_id and
+        	                                		object_id = $internal_company_id and
+	        	                                        start_date <= now()
+        	        	                        order by
+                	        	                        cost_object_category_id, start_date DESC
+                        	        	        offset 0 limit 1
+	                                	) as mid
+		                        from (
+        		                        select  cost_object_category_id
+                		                from    im_customer_prices lo
+                        		        where   object_id = $internal_company_id
+	                                	group by cost_object_category_id
+	        	                     ) dl
+        	        	     ) dlo
+	        	        join    im_customer_prices l
+        	        	on      l.cost_object_category_id = dlo.cost_object_category_id
+                	        	and row(l.start_date, l.id) = row(start_date, (mid).id)
+		                order by
+        		                l.cost_object_category_id
+	        	"
         	}
-	
-        	default {
+	       	"all" {
 		        set inner_sql "
         		        select
                 		        id as id_price_table,
@@ -767,8 +768,8 @@ ad_proc -public im_price_list {
         	        	        cost_object_category_id,
                 	        	start_date
 		       	 "	
-		}; # default    
-	} ; # switch filter 
+		} ;# default    
+	} ;# switch filter 
 
 	db_foreach records_to_list $inner_sql {
 
@@ -807,7 +808,7 @@ ad_proc -public im_price_list {
 
     # ------------------ Add form to create new record ------------
 
-    if { $portlet_allocation_costs_p } {    
+    if { !$portlet_allocation_costs_p } {    
 
         if { "im_company" == $object_type } {
 	    set select_box_user_sql " 
@@ -883,6 +884,7 @@ ad_proc -public im_price_list {
     	}
     } else {
 	# Add new price for Portlet Allocation Costs 
+	set show_delete_checkbox_p 1
              append body_html "
                 <tr $td_class([expr $count % 2])>
                         <td>
@@ -900,8 +902,8 @@ ad_proc -public im_price_list {
                 </tr>
                 <tr $td_class([expr $count % 2])>
              "
-
-                append body_html "<td align=middle>[im_cost_center_select -include_empty 0 -include_empty_name "" -department_only_p 0 "" ""]</td>"
+		# new_cost_object_category_id holds CC 
+                append body_html "<td align=middle>[im_cost_center_select -include_empty 0 -include_empty_name 0 -department_only_p 0 "new_cost_object_category_id" ]</td>"
 
                 append body_html "
                  <td align=right>
@@ -967,7 +969,12 @@ ad_proc -public im_price_list {
 	    </table>
     "
     if { "user" == $object_type } {
-	    append html "<input type='hidden' name='new_user_id' value='$user_id' />"
+	append html "<input type='hidden' name='new_user_id' value='$user_id' />"
+    } else {
+	if { $portlet_allocation_costs_p } {
+		append html "<input type='hidden' name='new_user_id' value='0' />"
+		append html "<input type='hidden' name='project_id' value='0' />"
+	}
     }
     append html "</form>"
     return $html
