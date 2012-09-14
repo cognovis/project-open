@@ -501,7 +501,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	# and use if available
 	set seconds_in_timephased [im_ms_project_seconds_in_timephased -task_id $task_id]
 
-	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: task_name=$task_name, seconds_work=$seconds_work, seconds_uom=$seconds_uom, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
+	ns_log Notice "ms-project-warning-component: fix-tasks-with-overallocation: seconds_work=$seconds_work, seconds_uom=$seconds_uom, seconds_in_timephased=$seconds_in_timephased, task_name=$task_name"
 	if {"" != $seconds_in_timephased} { set seconds_work $seconds_in_timephased }
 
 	set overallocation_factor "undefined"
