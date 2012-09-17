@@ -19,7 +19,7 @@ if {!$write} { return "" }
 # ###
 
 # Get the list of profiles managable for current_user_id
-set managable_profiles [im_profile::profile_options_managable_for_user $user_id]
+set managable_profiles [im_profile::profile_options_all]
 ns_log Notice "intranet-cust-champ::assign_group_to_project_component: managable_profiles=$managable_profiles"
 
 # Extract only the profile_ids from the managable profiles
