@@ -1361,12 +1361,16 @@ ad_proc -public im_gp_save_allocations {
 			    ns_log Notice "im_gp_save_allocations: ctr=$ctr, TimephaseData: $tp_type, $tp_uid, $tp_start, $tp_finish, $tp_unit, $tp_value"
 			    # rel_id will be calcualted later, that's why it's a colon variable,
 			    # while all other variables are available within this loop
-			    lappend timephased_inserts "
-			    	insert into im_gantt_assignment_timephases 
-					(rel_id, timephase_uid, timephase_type, timephase_start, timephase_end, timephase_unit, timephase_value)
-				values 
-					(:rel_id, '$tp_uid', '$tp_type', '$tp_start', '$tp_finish', '$tp_unit', '$tp_value')
-			    "
+
+			    # ProjectLibre does not provide a timephase_uid with its timephased data in version 3.6, so just skip at the moment:
+			    if {"" != $tp_uid} {
+				lappend timephased_inserts "
+			    		insert into im_gantt_assignment_timephases 
+						(rel_id, timephase_uid, timephase_type, timephase_start, timephase_end, timephase_unit, timephase_value)
+					values 
+						(:rel_id, '$tp_uid', '$tp_type', '$tp_start', '$tp_finish', '$tp_unit', '$tp_value')
+			    	"
+			    }
 			}
 			default {
 			    lappend xml_elements $nodeName
@@ -1426,6 +1430,9 @@ ad_proc -public im_gp_save_allocations {
 
 		# Store timephased data
 		db_dml del_tp "delete from im_gantt_assignment_timephases where rel_id = :rel_id"
+
+		ns_log Notice "im_gp_save_allocations: timephased_inserts=$timephased_inserts"
+
 		foreach sql $timephased_inserts {
 		    db_dml tp_insert $sql
 		}
