@@ -229,8 +229,9 @@ ad_proc -public im_price_list {
 
     # ------------------ Allocation costs ------------------------
 
-    set company_path [db_string get_data "select company_path from im_companies where company_id = :object_id" -default 0]
-    if { ("im_company" == $object_type && "internal" != $company_path) || ("im_company" == $object_type && 0 == [im_permission $current_user_id "admin_allocation_costs"]) } {
+    set company_type_id [db_string get_data "select company_type_id from im_companies where company_id = :object_id" -default 0]
+    set internal_company_id [im_company_internal]
+    if { ("im_company" == $object_type && $internal_company_id != $object_id) || ("im_company" == $object_type && 0 == [im_permission $current_user_id "admin_allocation_costs"]) } {
         return ""
         break
     } elseif {"im_company" == $object_type } {
@@ -647,7 +648,7 @@ ad_proc -public im_price_list {
         	set filter_records [ns_queryget filter_records]
 	        if { "" == $filter_records } {set filter_records "current" }
 	
-		set internal_company_id [db_string get_data "select company_id from im_companies where company_path = 'internal'" -default 0]						
+		set internal_company_id [im_company_internal]
 
 		if { "" == $internal_company_id  } {
  			ad_return_complaint 1 "No internal company found, please contact your System Administrator"
