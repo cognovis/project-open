@@ -36,6 +36,7 @@ ad_proc find_sales_price {
     # Make sure you look for price based on cost_object_category_id of the (sub-)project of level 'n'  
     if { "" == $cost_object_category_id } {
 	set cost_object_category_id [db_string get_data "select cost_object_category_id from im_projects where project_id = $project_id" -default 0]
+
 	# check if task -> no prices are defined for tasks 
         ns_log NOTICE "find_sales_price: No cost_object_category_id passed. Found: $cost_object_category_id"
 	if { 100 == $cost_object_category_id } {    
@@ -71,22 +72,22 @@ ad_proc find_sales_price {
 	set parent_project_id [db_string get_data "select parent_id from im_projects where project_id=$project_id" -default 0]
         ns_log NOTICE "find_sales_price: Found parent project: $parent_project_id" 
 	if { ""  == $parent_project_id || 0 == $parent_project_id } {
-	        ns_log NOTICE "find_sales_price: No parent project found, now looking for price defined on customer level: user_id: $user_id, project_id: $project_id"
+	        # ns_log NOTICE "find_sales_price: No parent project found, now looking for price defined on customer level: user_id: $user_id, project_id: $project_id"
 		# This is the super project, if no price is found, lets check if a price is defined on the user level 
-		set sql "
-		        select
-		        	amount
-		        from
-	                	im_customer_prices
-		        where
-        	        	user_id = $user_id
-			        and object_id = $user_id
-                		and cost_object_category_id in (select cost_object_category_id from im_projects where project_id = $project_id)
-    		"
+		# set sql "
+		#        select
+		#        	amount
+		#        from
+	        #        	im_customer_prices
+		#        where
+        	#        	user_id = $user_id
+		#	        and object_id = $user_id
+                #		and cost_object_category_id in (select cost_object_category_id from im_projects where project_id = $project_id)
+    		# "
             	# Prices on projects are deprecated
 	    	# set sales_price [db_string get_data $sql -default 0]
-		set sales_price 0
 
+		set sales_price 0
 		if { 0 == $sales_price } {
                         ns_log NOTICE "find_sales_price: No price found for customer neither, checking now for price on user level for cost_object_category_id"
                         ns_log NOTICE "find_sales_price: -----------------------------------------------------------" 
@@ -904,7 +905,10 @@ ad_proc -public im_price_list {
                 <tr $td_class([expr $count % 2])>
              "
 		# new_cost_object_category_id holds CC 
-                append body_html "<td align=middle>[im_cost_center_select -include_empty 0 -include_empty_name 0 -department_only_p 0 "new_cost_object_category_id" ]</td>"
+		# append body_html "<td align=middle>[im_cost_center_select -include_empty 0 -include_empty_name 0 -department_only_p 0 "new_cost_object_category_id" ]</td>"
+		set cc_company_id [im_cost_center_company]
+		set cc_company_name [db_string get_data "select cost_center_name from im_cost_centers where cost_center_id = :cc_company_id" -default 0]
+                append body_html "<td>$cc_company_name<input type='hidden' name='new_cost_object_category_id' value='cc_company_id'></td>"
 
                 append body_html "
                  <td align=right>
