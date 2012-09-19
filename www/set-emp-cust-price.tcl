@@ -136,6 +136,8 @@ ns_log Notice "member-update: submit=$submit"
 	# Portlets are only on user or project pages 
 	if { "user" == $object_type } {
 	    ad_returnredirect "/intranet/users/view?filter_records=$filter_records&[export_vars -url -exclude { filter_records } [wf_split_query_url_to_arg_spec $return_url] ]"
-	} else { 
+	} elseif {"im_company" == $object_type } {
+	    ad_returnredirect "/intranet/companies/view?filter_records=$filter_records&[export_vars -url -exclude { filter_records } [wf_split_query_url_to_arg_spec $return_url] ]"	    
+	} else {
 	    ad_returnredirect "/intranet/projects/view?filter_records=$filter_records&[export_vars -url -exclude { filter_records } [wf_split_query_url_to_arg_spec $return_url] ]"
 	}
