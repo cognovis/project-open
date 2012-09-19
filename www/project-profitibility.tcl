@@ -79,6 +79,9 @@ set written_order_0_selected selected
 set written_order_1_selected ""
 set written_order_2_selected ""
 set first_request_p 0
+set internal_company_id [im_company_internal]
+set cc_company_id [im_cost_center_company]
+
 
 if { 0 == $project_status_id_from_search } {
     set project_status_id_from_search ""
@@ -364,6 +367,7 @@ set label_written_order [lang::message::lookup "" intranet-cust-koernigweber.Wri
 set label_staff_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Staff_Costs "Staff<br>Costs"]
 set label_target_benefit [lang::message::lookup "" intranet-cust-koernigweber.Target_Benefits "Target<br>Benefits"]
 set label_costs_material [lang::message::lookup "" intranet-material.Costs_Material "Costs<br>Material"]
+set label_provider_bills [lang::message::lookup "" intranet-cost.ProviderBills "Provider<br>Bills"]
 set label_invoiceable_total [lang::message::lookup "" intranet-cust-koernigweber.Total_Invoiceable "Total<br>invoiceable"]; #erloesfaehig 
 set label_invoiced [lang::message::lookup "" intranet-core.Invoiced "Invoiced"]
 set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Invoicable<br>Price Matrix"]
@@ -455,6 +459,13 @@ lappend elements {
 lappend elements costs_material
 lappend elements {
         label $label_costs_material
+        html "align right"
+}
+
+# Provider Bills 
+lappend elements provider_bills
+lappend elements {
+        label $label_provider_bills
         html "align right"
 }
 
@@ -569,6 +580,27 @@ set cost_timesheet_logged_employee ""
 #	set cost_timesheet_logged_employee ", (h.hours * (select hourly_cost from im_employees where employee_id = :user_id_from_search)::numeric) as cost_timesheet_logged_employee"
 # }
 
+set provider_bill_select ",
+	(select 
+		trunc(sum(amount),2) 
+	from 
+		im_costs 
+	where 
+		project_id in (
+                        select
+                                p_child.project_id
+                        from
+                                im_projects p_parent,
+                                im_projects p_child
+                        where
+                                p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
+                                and p_parent.project_id = child.project_id
+                        ) 
+		and cost_type_id = 3704 
+		and effective_date BETWEEN :start_date AND :end_date 
+	) as provider_bills
+"
+
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 	select	
 		child.project_id as child_id,
@@ -591,6 +623,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		child.written_order_p as sql_written_order_p,
 		(select count(*) from im_projects where parent_id = child.project_id and project_type_id <> 100) as no_project_childs
 		$employee_selects
+		$provider_bill_select
 	from	
 		im_projects p,
 		im_companies c,
@@ -692,7 +725,8 @@ set i 1
 
 set sum_invoices_value 0 
 set amount_invoicable_matrix 0 
-set amount_costs_staff 0 
+set amount_costs_staff 0
+set amount_allocation_costs 0 
 set total_expenses 0
 set cost_timesheet_logged_cache 0
 
@@ -702,6 +736,7 @@ set total__amount_invoicable_matrix 0
 set total__target_benefit 0
 set total__invoiceable_total_var 0
 set total__total_expenses 0
+set total__total_provider_bills 0
 set total__sum_invoices_value 0
 set total__profit_and_loss_project_var 0
 set total__profit_and_loss_one_var 0
@@ -713,7 +748,6 @@ set inner_hours_where ""
 if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user_id_from_search" }
 
 template::multirow foreach project_list {    
-
    	# Limit costs to employee cost 	
 	if { 0 != $user_id_from_search } { 
 		ns_log NOTICE "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
@@ -723,6 +757,7 @@ template::multirow foreach project_list {
 	}
 
 	if { ![info exists total_expenses] || "" == $total_expenses  } { set total_expenses 0 }
+        if { ![info exists provider_bills] || "" == $provider_bills } { set provider_bills 0 }
         if { ![info exists cost_timesheet_logged_cache] || "" == $cost_timesheet_logged_cache } { set cost_timesheet_logged_cache 0 }
         if { ![info exists amount_invoicable_matrix] || "" == $amount_invoicable_matrix } { set amount_invoicable_matrix 0 }
 
@@ -783,6 +818,18 @@ template::multirow foreach project_list {
                         ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
                         set amount_costs_staff [expr $amount_costs_staff + [expr $costs_staff_rate * $hours]]		
 		}
+
+		# Get Allocation Cost 
+		set allocation_cost_rate [find_sales_price 0 "" $internal_company_id $cc_company_id $calendar_date]
+
+                if { "" == $allocation_cost_rate || 0 == $allocation_cost_rate } {
+		    append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No Allocation Cost found for date: $calendar_date<br>"]
+                    append err_mess "<br><br>"
+                    continue
+                } else {
+                    ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found Allocation Cost: $allocation_cost_rate for date: $calendar_date"
+		    set amount_allocation_costs [expr $amount_allocation_costs + [expr $allocation_cost_rate * $hours]]
+                }
 	    		
 		# Calculate "Amount Invoicable"  
 	    	set sales_price [find_sales_price $user_id $project_id $company_id "" $calendar_date]
@@ -831,9 +878,13 @@ template::multirow foreach project_list {
 	set amount_costs_staff_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_costs_staff+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "staff_costs" $amount_costs_staff_pretty
 
-        # Target Benefit (Soll Erloes) -> Stunden x Interner Verrechnungssatz 	
+	# Provider Bills 
+	set amount_provider_bills_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $provider_bills+0] $rounding_precision] $format_string $locale]  
+	template::multirow set provider_bills $i provider_bills $amount_provider_bills_pretty
 
-        set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]	
+        # Target Benefit (Soll Erloes) -> Stunden x Interner Verrechnungssatz 	
+	# old: set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $cost_timesheet_logged_cache+0] $rounding_precision] $format_string $locale]	
+	set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_costs_staff+$amount_allocation_costs+0] $rounding_precision] $format_string $locale]	
         template::multirow set project_list $i target_benefit $target_benefit_pretty
 
 	# Invoicable Matrix  
@@ -885,12 +936,12 @@ template::multirow foreach project_list {
         template::multirow set project_list $i profit_and_loss_project $profit_and_loss_project_var_pretty
 
 	# P&L 1  
-	set profit_and_loss_one_var [expr $sum_invoices_value - $cost_timesheet_logged_cache - $total_expenses_bak]
+	set profit_and_loss_one_var [expr $sum_invoices_value - $cost_timesheet_logged_cache - $total_expenses_bak - $provider_bills]
 	set profit_and_loss_one_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_one $profit_and_loss_one_var_pretty
 
 	# P&L 2  
-	set profit_and_loss_two_var [expr $sum_invoices_value - $amount_costs_staff - $total_expenses_bak]
+	set profit_and_loss_two_var [expr $sum_invoices_value - $amount_costs_staff - $total_expenses_bak - $provider_bills]
 	set profit_and_loss_two_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_two_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_two $profit_and_loss_two_var_pretty
 
@@ -900,10 +951,10 @@ template::multirow foreach project_list {
 			im_report_write_http_headers -output_format $output_format
 	                if { $full_view_p } {
 				set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Personal-Kosten\"\t\"Sollerloes\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
-	        	        append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
+	        	        append title_line "\"Zuliefer-Rechnungen\"\t\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\"GuV 1\"\t\"GuV 2\"\t\n" 
 			} else {
 				set title_line "\"Firma\"\t\"Project Nr./Name\"\t\"Schrftl. Best.\"\t\"Projekt Status\"\t\"Kosten lt. Preis-Matrix\"\t\"Materialkosten\"\t"
-		                append title_line "\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\n" 
+		                append title_line "\"Zuliefer-Rechnungen\"\t"\"Erloesfaehig\"\t\"Abgerechnet\"\t\"GuV Project\"\t\n" 
 			}
 			ns_write $title_line 
 		}
@@ -917,6 +968,7 @@ template::multirow foreach project_list {
 		}
                 append output_row "\"$amount_invoicable_pretty\"\t"
                 append output_row "\"$total_expenses_pretty\"\t"
+                append output_row "\"$amount_provider_bills_pretty\"\t"
                 append output_row "\"$invoiceable_total_var_pretty\"\t"
                 append output_row "\"$sum_invoices_value_pretty\"\t"
                 append output_row "\"$profit_and_loss_project_var_pretty\"\t"
@@ -934,11 +986,13 @@ template::multirow foreach project_list {
 	set total__target_benefit 		[expr $total__target_benefit + $cost_timesheet_logged_cache]; 			# Sollerloes
 	set total__amount_invoicable_matrix	[expr $total__amount_invoicable_matrix + $amount_invoicable_matrix_var];      	# Abrechenbar lt. E/C
 	set total__total_expenses  		[expr $total__total_expenses + $total_expenses]; 				# Materialkosten
+	set total__total_provider_bills		[expr $total__total_provider_bills + $provider_bills];
 	set total__invoiceable_total_var	[expr $total__invoiceable_total_var + $invoiceable_total_var]; 			# Erloesfaehig 
 	set total__sum_invoices_value  		[expr $total__sum_invoices_value + $sum_invoices_value]; 			# Abgerechnet
 	set total__profit_and_loss_project_var 	[expr $total__profit_and_loss_project_var + $profit_and_loss_project_var]
 	set total__profit_and_loss_one_var 	[expr $total__profit_and_loss_one_var + $profit_and_loss_one_var]
 	set total__profit_and_loss_two_var 	[expr $total__profit_and_loss_two_var + $profit_and_loss_two_var]
+	
 
 	# Reset 
 	set amount_costs_staff 0 
@@ -958,6 +1012,7 @@ set total__target_benefit               [lc_numeric [im_numeric_add_trailing_zer
 set total__amount_invoicable_matrix	[lc_numeric [im_numeric_add_trailing_zeros [expr $total__amount_invoicable_matrix+0] $rounding_precision] $format_string $locale]
 set total__invoiceable_total_var        [lc_numeric [im_numeric_add_trailing_zeros [expr $total__invoiceable_total_var+0] $rounding_precision] $format_string $locale]
 set total__total_expenses               [lc_numeric [im_numeric_add_trailing_zeros [expr $total__total_expenses+0] $rounding_precision] $format_string $locale]
+set total__total_provider_bills         [lc_numeric [im_numeric_add_trailing_zeros [expr $total__total_provider_bills+0] $rounding_precision] $format_string $locale]
 set total__sum_invoices_value           [lc_numeric [im_numeric_add_trailing_zeros [expr $total__sum_invoices_value+0] $rounding_precision] $format_string $locale]
 set total__profit_and_loss_project_var  [lc_numeric [im_numeric_add_trailing_zeros [expr $total__profit_and_loss_project_var+0] $rounding_precision] $format_string $locale]
 set total__profit_and_loss_one_var      [lc_numeric [im_numeric_add_trailing_zeros [expr $total__profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
