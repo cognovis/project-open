@@ -13,7 +13,7 @@ SELECT  im_component_plugin__new (
         'Filestorage Financial Document', 		-- plugin_name
         'intranet-invoices',            		-- package_name
         'right',                        		-- location
-        '/intranet/invoices/view',      		-- page_url
+        '/intranet-invoices/view',      		-- page_url
         null,                           		-- view_name
         5,                              		-- sort_order
         'im_filestorage_cost_component $user_id $invoice_id $invoice_id $return_url'  	-- component_tcl
