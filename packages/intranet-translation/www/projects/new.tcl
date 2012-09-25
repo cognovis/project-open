@@ -291,7 +291,7 @@ ad_form -extend -name $form_id -new_request {
     }
     
     # Check if the project_nr already exists, if yes, create a new one
-    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id -use_project_path]
     if {$project_name eq ""} {
 	set project_name $project_nr
     }

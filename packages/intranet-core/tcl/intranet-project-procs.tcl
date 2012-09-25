@@ -377,6 +377,7 @@ ad_proc -public im_next_project_nr {
     {-parent_id "" }
     {-nr_digits}
     {-date_format}
+    -use_project_path:boolean
 } {
     Returns the next free project number
 
@@ -464,7 +465,21 @@ ad_proc -public im_next_project_nr {
     # ----------------------------------------------------
     # Pull out the largest number that fits the PPPPPPPP_xxxx format
 
-    set sql "
+    if {$use_project_path_p} {
+	set sql "
+	select
+		trim(max(p.nr)) as last_project_nr
+	from (
+		 select substr(project_path, :nr_start_idx, :nr_digits) as nr
+		 from   im_projects
+		 where	substr(project_path, :date_start_idx, :date_format_len) = '$todate'
+	     ) p
+	where	1=1
+		$num_check_sql
+    "
+
+    } else {
+	set sql "
 	select
 		trim(max(p.nr)) as last_project_nr
 	from (
@@ -475,7 +490,7 @@ ad_proc -public im_next_project_nr {
 	where	1=1
 		$num_check_sql
     "
-
+    }
     set last_project_nr [db_string max_project_nr $sql -default $zeros]
     set last_project_nr [string trimleft $last_project_nr "0"]
     if {[empty_string_p $last_project_nr]} { set last_project_nr 0 }
