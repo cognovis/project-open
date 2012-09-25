@@ -253,10 +253,10 @@ ad_form -extend -name $form_id -new_request {
     
     # Calculate the next project number by calculating the maximum of
     # the "reasonably build numbers" currently available
-    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+#    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
 
     # Now set the values
-    template::element::set_value $form_id project_nr $project_nr
+#    template::element::set_value $form_id project_nr $project_nr
     template::element::set_value $form_id company_id $company_id
     
 } -on_submit {
@@ -290,33 +290,14 @@ ad_form -extend -name $form_id -new_request {
         ad_script_abort
     }
     
-    # Check if the project_nr already exists, if yes, create a new one
-    if {"" == $project_nr} {
-	set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
-    } else {
-        set project_nr [string tolower [string trim $project_nr]]
-    }
-    if {"" == $project_name} {
-	set project_name $project_nr
-    }
-
     if {![exists_and_not_null project_path]} {
         set project_path [string tolower [string trim $project_name]]
     }
-    
-    # Check if the project_nr already exists, if yes, create a new one
-    set project_nr_p [db_0or1row select_project_nr {
-        SELECT project_id FROM im_projects WHERE project_nr = :project_nr
-    }]
-    if {$project_nr_p} {
-        set project_nr [im_next_project_nr]
-    }
-    
-    template::element::set_value $form_id project_nr $project_nr
-    template::element::set_value $form_id project_path $project_path
-    template::element::set_value $form_id project_name $project_name
 
-    ns_log Notice "Running in the submit block :: $project_name :: $project_nr :: $project_path"
+    # Check if the project_nr already exists, if yes, create a new one
+    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+    template::element::set_value $form_id project_nr $project_nr
+
     set project_id [project::new \
 			-project_name $project_name \
 			-project_nr $project_nr \
@@ -328,7 +309,20 @@ ad_form -extend -name $form_id -new_request {
 		       ]
     
     if {0 == $project_id || "" == $project_id} {
-	ns_log Notice "Error with file creation"
+	ad_return_complaint 1 "
+	    <b>Error creating project</b>:<br>
+	    We have got an error creating a new project.<br>
+	    There is probably something wrong with the projects's parameters below:<br>&nbsp;<br>
+	    <pre>
+	    project_name            $project_name
+	    project_nr              $project_nr
+	    project_path            $project_path
+	    company_id              $company_id
+	    parent_id               $parent_id
+	    project_type_id         $project_type_id
+	    project_status_id       $project_status_id
+	    </pre><br>&nbsp;<br>
+	"
 	ad_script_abort
 
     }
