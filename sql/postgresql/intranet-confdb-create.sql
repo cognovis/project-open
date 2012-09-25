@@ -873,7 +873,7 @@ SELECT  im_component_plugin__new (
         null,                           -- creation_ip
         null,                           -- context_id
 	'Conf Item Members',		-- plugin_name
-	'intranet',			-- package_name
+	'intranet-confdb',		-- package_name
 	'right',			-- location
 	'/intranet-confdb/new',		-- page_url
 	null,				-- view_name	
