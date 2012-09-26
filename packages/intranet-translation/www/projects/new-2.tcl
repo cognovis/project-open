@@ -153,7 +153,8 @@ ad_form -extend -name tasks -after_submit {
     set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set target_cost_type_id [im_cost_type_quote]
 
-    set return_url [export_vars -base "/intranet-trans-invoices/invoices/new-3.tcl" {invoice_currency company_id target_cost_type_id}]
+    set task_list_url [export_vars -base "/intranet-translation/trans-tasks/task-list" -url {project_id}]
+    set return_url [export_vars -base "/intranet-trans-invoices/invoices/new-3.tcl" { {return_url $task_list_url} invoice_currency company_id target_cost_type_id}]
     foreach task_id $task_ids {
 	append return_url "&include_task=$task_id"
     }

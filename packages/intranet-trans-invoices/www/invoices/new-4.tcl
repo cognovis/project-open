@@ -39,7 +39,7 @@ ad_page_contract {
     item_rate:float,array
     item_currency:array
     im_trans_task:multiple
-    { return_url "/intranet-invoices/" }
+    { return_url "" }
 }
 
 # ---------------------------------------------------------------
@@ -241,13 +241,15 @@ if {$cost_type_id == [im_cost_type_invoice]} {
 
 db_release_unused_handles
 
-set ret_url [string trim "/intranet-invoices/view?invoice_id=$invoice_id"]
+if {"" == $return_url} {
+    set return_url [string trim "/intranet-invoices/view?invoice_id=$invoice_id"]
 
-if { "" != $err_mess } {
-    append ret_url "&err_mess=$err_mess" 
+    if { "" != $err_mess } {
+	append return_url "&err_mess=$err_mess" 
+    }
 }
 
 # Audit creation
 im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
 
-ad_returnredirect $ret_url
+ad_returnredirect $return_url
