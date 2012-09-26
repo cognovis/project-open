@@ -115,3 +115,34 @@ ad_proc -public sencha_project_timeline {
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]
     return [string trim $result]
 }
+
+
+
+
+
+ad_proc -public sencha_project_eva {
+    -project_id:required
+    {-diagram_width 1000 }
+    {-diagram_height 400 }
+    {-diagram_caption "Project EVA" }
+} {
+    Returns a HTML code with a Sencha EVA diagram.
+} {
+    # Choose the version and type of the sencha libs
+    set version "v407"
+    set ext "ext-all-debug-w-comments.js"
+
+    # Make sure the Sencha library is loaded
+    template::head::add_css -href "/sencha-$version/ext-all.css" -media "screen" -order 1
+    template::head::add_javascript -src "/sencha-$version/$ext" -order 2
+
+    set params [list \
+		    [list main_project_id $project_id] \
+		    [list diagram_width $diagram_width] \
+		    [list diagram_height $diagram_height] \
+		    [list diagram_caption $diagram_caption]
+    ]
+
+    set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-eva"]
+    return [string trim $result]
+}
