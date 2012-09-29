@@ -112,3 +112,20 @@ SELECT im_component_plugin__new (
 	'sencha_project_timeline'		-- Portlet TCL
 );
 
+
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'EVA Diagram',				-- plugin_name
+	'sencha-reporting-portfolio',		-- package_name
+	'bottom',				-- location
+	'/intranet/projects/view',		-- page_url
+	null,					-- view_name
+	20,					-- sort_order
+	'sencha_project_eva -project_id $project_id'	-- Portlet TCL
+);
+
