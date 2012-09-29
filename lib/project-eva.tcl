@@ -64,85 +64,53 @@ set workload_sql "
 				sub_p.end_date != sub_p.start_date and	-- exclude milestones
 				sub_p.start_date::date <= day.day and
 				sub_p.end_date::date >= day.day
-		) t) as estimated_days
+		) t) as planned_work
 	from	im_projects main_p,
 		im_day_enumerator(:diagram_start_date, :diagram_end_date) day
 	where	main_p.project_id = :main_project_id
 "
 # ad_return_complaint 1 "<pre>[im_ad_hoc_query -format html $workload_sql]</pre>"
 
-# This loop is for all projects and all days in the diagram interval.
-# The result is a work_per_month_and_project month_work_hash that contains for
-# every month a hash of work per project.
-db_foreach workload $workload_sql {
+# planned_work_in_period: Planned employee work per day, week or month
+# planned_work_accumulated_in_period: Accumulated planned work since the start of the project
 
+
+# Aggregate the values from SQL by period (week or month)
+db_foreach workload $workload_sql {
+    # Here we determine weather we want to aggregate per day, week or month
     set period $week
 
-    # Get the double hash (months -> (project_id -> work))
-    set v ""
-    if {[info exists month_work_hash($period)]} { set v $month_work_hash($period) }
-
-    # ps is a hash table project_id -> days of work (of the specific day)
-    array unset ps
-    array set ps $v
-    set p_days 0
-    if {[info exists ps($project_id)]} { set p_days $ps($project_id) }
-    set p_days [expr $p_days + $estimated_days]
-    set ps($project_id) $p_days
-   
-    set month_work_hash($period) [array get ps]
-
-    # Sum up the work per project
-    set v 0
-    if {[info exists project_work_hash($project_id)]} { set v $project_work_hash($project_id) }
-    set v [expr $v + $estimated_days]
-    set project_work_hash($project_id) $v
-
-    # Project Names
-    set project_name_hash($project_id) $project_name
+    set w 0.0
+    if {[info exists planned_work_in_period($period)]} { set w $planned_work_in_period($period) }
+    set w [expr $w + $planned_work]
+    set planned_work_in_period($period) $w
 }
 
-# ad_return_complaint 1 "<pre>[array get month_work_hash]</pre>"
-# ad_return_complaint 1 "<pre>[join [array get month_work_hash] "\n"]</pre>"
-
-
-
-
-# The list of day
-set days [lsort [array names month_work_hash]]
-
-set pids [list]
-foreach pid [array names project_work_hash] {
-   set v $project_work_hash($pid)
-   if {$v > 0} { lappend pids $pid }
+# Calculate the aggregated values
+set accumulated_w 0.0
+foreach period [lsort [array names planned_work_in_period]] {
+    set accumulated_w [expr $accumulated_w + $planned_work_in_period($period)]
+    set planned_work_accumulated_in_period($period) $accumulated_w
 }
+# ad_return_complaint 1 [array get planned_work_accumulated_in_period]
 
-set pids [lsort $pids]
-set project_count [llength $pids]
-set data_list [list]
-foreach day $days {
-    array unset ps
-    array set ps $month_work_hash($day)
 
+# --------------------------------------------------------------
+# Build the JSON data for the diagram stores
+# --------------------------------------------------------------
+
+set data_lines [list]
+foreach period [lsort [array names planned_work_in_period]] {
     set data_line "{date: '$day'"
-    foreach pid $pids {
-    	set v 0.0
-	if {[info exists ps($pid)]} { set v $ps($pid) }
-	set v [expr round(1000.0 * $v) / 1000.0]
-	append data_line ", '$project_name_hash($pid)': $v"
-    }
+    append data_line ", 'planned_work': $planned_work_in_period($period)"
+    append data_line ", 'planned_work_accumulated': $planned_work_accumulated_in_period($period)"
     append data_line "}"
-    lappend data_list $data_line
+    lappend data_lines $data_line
 }
 
 set data_json "\[\n"
-append data_json [join $data_list ",\n"]
+append data_json [join $data_lines ",\n"]
 append data_json "\n\]\n"
 
-set project_list [list]
-foreach pid $pids {
-    lappend project_list "'$project_name_hash($pid)'"
-}
-set project_json [join $project_list ", "]
-
-# ad_return_complaint 1 "<pre>$data_json</pre>"
+set fields_json "'planned_work', 'planned_work_accumulated'"
+set fields_json "'planned_work'"

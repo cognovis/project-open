@@ -5,7 +5,7 @@
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 
     window.store1 = Ext.create('Ext.data.JsonStore', {
-        fields: ['x_axis', 'y_axis', 'color', 'diameter', 'caption'],
+        fields: ['date', 'planned_work', 'planned_work_accumulated'],
         data: @data_json;noquote@
     });
 
@@ -20,7 +20,7 @@ Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.co
 
 Ext.onReady(function () {
     
-    var fields = [@project_json;noquote@];
+    var fields = [@fields_json;noquote@];
 
     chart = new Ext.chart.Chart({
         width: @diagram_width@,
@@ -32,7 +32,7 @@ Ext.onReady(function () {
 	axes: [{
 	    type: 'Numeric',
 	    position: 'left',
-	    fields: fields,
+	    fields: ['planned_work', 'planned_work_accumulated'],
 	    grid: true
 	}, {
 	    type: 'Category',
@@ -42,9 +42,29 @@ Ext.onReady(function () {
 	series: [{
 	    type: 'area',
 	    axis: 'left',
-	    xField: 'name',
+	    xField: 'date',
 	    yField: fields,
 	    highlight: true
+	}, {
+	    type: 'scatter',
+	    axis: 'left',
+	    xField: 'date',
+	    yField: 'planned_work_accumulated',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5
+            }
+	}, {
+	    type: 'line',
+	    axis: 'left',
+	    smooth: true,
+	    fill: true,
+	    xField: 'planned_work',
+	    yField: 'planned_work_accumulated',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5
+            }
 	}]
     }
 )});
@@ -52,3 +72,10 @@ Ext.onReady(function () {
 
 </if>
 
+<!--
+	}, {
+	    type: 'column',
+	    axis: 'left',
+	    xField: 'date',
+	    yField: 'planned_work_accumulated'
+-->
