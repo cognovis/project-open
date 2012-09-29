@@ -31,11 +31,19 @@ Ext.onReady(function () {
 	legend: { position: 'right' },
 	axes: [{
 	    type: 'Numeric',
+	    title: 'Value',
 	    position: 'left',
 	    fields: ['planned_work', 'planned_work_accumulated'],
 	    grid: true
 	}, {
+	    type: 'Numeric',
+	    title: 'Contribution',
+	    position: 'right',
+	    fields: ['planned_work'],
+	    grid: true
+	}, {
 	    type: 'Category',
+	    title: 'Date',
 	    position: 'bottom',
 	    fields: ['date']
 	}],
@@ -46,24 +54,17 @@ Ext.onReady(function () {
 	    yField: fields,
 	    highlight: true
 	}, {
-	    type: 'scatter',
-	    axis: 'left',
-	    xField: 'date',
-	    yField: 'planned_work_accumulated',
-	    markerConfig: {
-                    type: 'circle',
-                    size: 5
-            }
-	}, {
 	    type: 'line',
+	    title: 'Planned Value',
 	    axis: 'left',
 	    smooth: true,
 	    fill: true,
-	    xField: 'planned_work',
+	    xField: 'planned_work_accumulated',
 	    yField: 'planned_work_accumulated',
 	    markerConfig: {
                     type: 'circle',
-                    size: 5
+                    size: 5,
+		    fill: 'red'
             }
 	}]
     }
@@ -78,4 +79,17 @@ Ext.onReady(function () {
 	    axis: 'left',
 	    xField: 'date',
 	    yField: 'planned_work_accumulated'
+
+
+	}, {
+	    type: 'scatter',
+	    axis: 'left',
+	    xField: 'date',
+	    yField: 'planned_work_accumulated',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5,
+		    fill: 'green'
+            }
+
 -->
