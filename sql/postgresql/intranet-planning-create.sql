@@ -392,7 +392,7 @@ BEGIN
 		v_main_menu,		-- parent_menu_id
 		null			-- p_visible_tcl
 	);
-
+	
 	-- Grant some groups the read permission for the main "Planning" tab.
 	-- These permissions are independent from the user`s permission to
 	-- read the actual planning.
@@ -407,4 +407,11 @@ end;' language 'plpgsql';
 -- Execute and then drop the function
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+-- Disable the top-level tab until there are some reasonable pages for it...
+update im_menus
+set enabled_p = 'f'
+where label = 'planning';
 
