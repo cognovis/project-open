@@ -410,7 +410,7 @@ ad_proc -public im_indicator_timeline_component {
     if {"" == $current_user_id} { set current_user_id [ad_get_user_id] }
     set view_reports_all_p [im_permission $current_user_id "view_reports_all"]
     set add_reports_p [im_permission $current_user_id "add_reports"]
-    set wiki_url "http://www.project-open.org/documentation"
+    set wiki_url "http://www.project-open.org/en"
 
     # Evaluate indicators every X hours:
     set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
