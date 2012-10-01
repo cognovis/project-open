@@ -39,25 +39,25 @@ set core_version_id [join [lrange [split $core_version "."] 0 2] ""]
 set platform [ns_info platform]
 
 # Default value
-set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+set iframe_url "http://www.project-open.org/en/install_${platform}_${core_version_id}"
 
 
 switch [string tolower $platform] {
     win32 {
-	set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+	set iframe_url "http://www.project-open.org/en/install_${platform}_${core_version_id}"
     }
     linux {
 	set linux_distro [im_linux_distro]
 	set vmware_p [im_linux_vmware_p]
 	if {$vmware_p} {
 	    set plaform "vm"
-	    set iframe_url "http://www.project-open.org/documentation/install_vm_${core_version_id}"
+	    set iframe_url "http://www.project-open.org/en/install_vm_${core_version_id}"
 	} else {
-	    set iframe_url "http://www.project-open.org/documentation/install_${linux_distro}_${core_version_id}"
+	    set iframe_url "http://www.project-open.org/en/install_${linux_distro}_${core_version_id}"
 	}
     }
     default {
-	set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+	set iframe_url "http://www.project-open.org/en/install_${platform}_${core_version_id}"
     }
 }
 
