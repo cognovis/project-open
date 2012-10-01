@@ -492,7 +492,7 @@ ad_proc -public im_gp_save_xml {
 	
 	global errorInfo
 	set stack_trace $errorInfo
-	set latest_version_url "http://www.project-open.org/documentation/developers_cvs_checkout"
+	set latest_version_url "http://www.project-open.org/en/developers_cvs_checkout"
 	set params [list]
 	lappend params [list stacktrace $stack_trace]
 	lappend params [list error_type gantt_import]
