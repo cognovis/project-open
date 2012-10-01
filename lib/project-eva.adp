@@ -54,6 +54,15 @@ Ext.onReady(function () {
 	    yField: fields,
 	    highlight: true
 	}, {
+	    type: 'scatter',
+	    axis: 'left',
+	    xField: 'date',
+	    yField: 'planned_work_accumulated',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5
+            }
+	}, {
 	    type: 'line',
 	    title: 'Planned Value',
 	    axis: 'left',
@@ -73,6 +82,13 @@ Ext.onReady(function () {
 
 </if>
 
+<!--
+	}, {
+	    type: 'column',
+	    axis: 'left',
+	    xField: 'date',
+	    yField: 'planned_work_accumulated'
+-->
 <!--
 	}, {
 	    type: 'column',
