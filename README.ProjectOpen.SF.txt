@@ -12,6 +12,6 @@
   threads in "Open Discussions".
 
 For more information about installers please see:
-http://www.project-open.org/documentation/list_installers
+http://www.project-open.org/en/list_installers
 For more information about the ]po[ development roadmap:
-http://www.project-open.org/documentation/project_open_roadmap
+http://www.project-open.org/en/project_open_roadmap
