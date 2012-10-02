@@ -290,9 +290,12 @@ ad_form -extend -name $form_id -new_request {
         ad_script_abort
     }
     
+    ns_log Notice "Name :: $project_name :: $project_nr"
     # Check if the project_nr already exists, if yes, create a new one
-    set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id -use_project_path]
-    if {$project_name eq ""} {
+    if {"" == $project_nr} {
+	set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+    }
+    if {"" == $project_name} {
 	set project_name $project_nr
     }
 
@@ -304,6 +307,7 @@ ad_form -extend -name $form_id -new_request {
     template::element::set_value $form_id project_path $project_path
     template::element::set_value $form_id project_name $project_name
 
+    ns_log Notice "Running in the submit block :: $project_name :: $project_nr :: $project_path"
     set project_id [project::new \
 			-project_name $project_name \
 			-project_nr $project_nr \
@@ -315,20 +319,7 @@ ad_form -extend -name $form_id -new_request {
 		       ]
     
     if {0 == $project_id || "" == $project_id} {
-	ad_return_complaint 1 "
-	    <b>Error creating project</b>:<br>
-	    We have got an error creating a new project.<br>
-	    There is probably something wrong with the projects's parameters below:<br>&nbsp;<br>
-	    <pre>
-	    project_name            $project_name
-	    project_nr              $project_nr
-	    project_path            $project_path
-	    company_id              $company_id
-	    parent_id               $parent_id
-	    project_type_id         $project_type_id
-	    project_status_id       $project_status_id
-	    </pre><br>&nbsp;<br>
-	"
+	ns_log Notice "Error with file creation"
 	ad_script_abort
 
     }
