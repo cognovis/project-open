@@ -78,10 +78,10 @@
                 <li><b>Zulieferer-Rechnungen: </b> Summe der im System eingestellter Zulieferer-Rechnungen </li>
 		<li><b>Erl&ouml;sf&auml;hig: </b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
-		<li><b>GuV Projekt:</b> Abgerechnet - Erl&ouml;sf&auml;hig - Abgerechnet</li>
+		<li><b>GuV Projekt:</b> Abgerechnet - Erl&ouml;sf&auml;hig</li>
             <if @full_view_p@>
-		<li><b>GuV 1:</b> Abgerechnet - Sollerl&ouml;s - sonst. Kosten - Zulieferer-Rechnungen</li>
-		<li><b>GuV 2:</b> GuV 1 - Personalkosten - Materialkosten - sonst. Kosten - Zulieferer-Rechnungen</li>
+		<li><b>GuV 1:</b> Abgerechnet - Sollerl&ouml;s - Materialkosten - Zulieferer-Rechnungen</li>
+		<li><b>GuV 2:</b> Abgerechnet - Personalkosten - Zuliefererrechnungen - Materialkosten</li>
 	    </if>
 	</ul>
 	</td>
