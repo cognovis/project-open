@@ -71,7 +71,7 @@
 	<ul>
             <if @full_view_p@>
 		<li><b>Personalkosten (VSI): </b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
-		<li><b>Sollerl&ouml;s (VSI+Umlage): </b>Anzahl der geloggten Stunden * Stundensatz des MA (siehe 'Mitarbeiterinformationen' des Angestellten)</li>
+		<li><b>Sollerl&ouml;s (VSI+Umlage): </b>VSI + Anzahl der geloggten Stunden * Umlage (Umlagekosten der 'Internal Company')</li>
 	    </if>
 		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
 		<li><b>Sonstige Kosten: </b> Spesen und Ausgaben f&uuml;r Projekte </li>
