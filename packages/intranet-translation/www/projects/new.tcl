@@ -290,8 +290,14 @@ ad_form -extend -name $form_id -new_request {
         ad_script_abort
     }
     
-    if {[info exists project_nr]} {
+    # Check if the project_nr already exists, if yes, create a new one
+    if {"" == $project_nr} {
+	set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+    } else {
         set project_nr [string tolower [string trim $project_nr]]
+    }
+    if {"" == $project_name} {
+	set project_name $project_nr
     }
 
     if {![exists_and_not_null project_path]} {
@@ -306,39 +312,28 @@ ad_form -extend -name $form_id -new_request {
         set project_nr [im_next_project_nr]
     }
     
+    template::element::set_value $form_id project_nr $project_nr
+    template::element::set_value $form_id project_path $project_path
+    template::element::set_value $form_id project_name $project_name
+
+    ns_log Notice "Running in the submit block :: $project_name :: $project_nr :: $project_path"
+    set project_id [project::new \
+			-project_name $project_name \
+			-project_nr $project_nr \
+			-project_path $project_path \
+			-company_id $company_id \
+			-parent_id $parent_id \
+			-project_type_id $project_type_id \
+			-project_status_id $project_status_id \
+		       ]
+    
+    if {0 == $project_id || "" == $project_id} {
+	ns_log Notice "Error with file creation"
+	ad_script_abort
+
+    }
+
     db_transaction {
-        set project_id [project::new \
-                            -project_name $project_name \
-                            -project_nr $project_nr \
-                            -project_path $project_path \
-                            -company_id $company_id \
-                            -parent_id $parent_id \
-                            -project_type_id $project_type_id \
-                            -project_status_id $project_status_id \
-                           ]
-        
-        
-        
-        
-        if {0 == $project_id || "" == $project_id} {
-            ad_return_complaint 1 "
-	    <b>Error creating project</b>:<br>
-	    We have got an error creating a new project.<br>
-	    There is probably something wrong with the projects's parameters below:<br>&nbsp;<br>
-	    <pre>
-	    project_name            $project_name
-	    project_nr              $project_nr
-	    project_path            $project_path
-	    company_id              $company_id
-	    parent_id               $parent_id
-	    project_type_id         $project_type_id
-	    project_status_id       $project_status_id
-	    </pre><br>&nbsp;<br>
-	    For reference, here is the error message:<br>
-	    <pre>$err_msg</pre>
-	"
-            ad_script_abort
-        }
         
         # add users to the project as PMs
         # - current_user (creator/owner)
