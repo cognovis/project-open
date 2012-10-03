@@ -128,11 +128,126 @@ if {[catch {
 # Parse the MS-Project/GanttProject XML
 # -------------------------------------------------------------------
 
-im_gp_save_xml \
+set tuple [im_gp_save_xml \
     -debug_p $debug_p \
     -return_url $return_url \
     -project_id $project_id \
-    -file_content $binary_content
+    -file_content $binary_content \
+]
+
+set task_hash_array [lindex $tuple 0]
+set resources_to_assign_p [lindex $tuple 1]
+set resource_html [lindex $tuple 2]
+
+# -------------------------------------------------------------------
+# Check if we have to delete some tasks
+# -------------------------------------------------------------------
+
+# Get all the tasks about the current project
+array set db_task_ids {} 
+foreach i [im_gp_extract_db_tree $project_id] {
+	set db_task_ids($i) 1
+}
+
+# we don't want to delete the project (which never is in the xml)
+if {[info exists db_task_ids($project_id)]} {
+	unset db_task_ids($project_id)
+}
+
+# Remove all tasks from the GanttProject .gan file
+array set task_hash $task_hash_array
+
+set task_hash_tasks [list 0]
+foreach task_hash_key [array names task_hash] {
+	set task_hash_value $task_hash($task_hash_key)
+	if [info exists db_task_ids($task_hash_value)] {
+	    unset db_task_ids($task_hash_value)
+	}
+	lappend task_hash_tasks $task_hash_value
+}
+
+# Check if there are tasks to delete...
+set tasks_to_delete_p 1
+if {"" == [set ids [array names db_task_ids]]} { set tasks_to_delete_p 0}
+
+
+# -------------------------------------------------------------------
+# Check if there were no errors/decisions to take
+# -------------------------------------------------------------------
+
+if {!$tasks_to_delete_p && !$resources_to_assign_p} {
+	ad_returnredirect $return_url
+}
+
+
+# -------------------------------------------------------------------
+# Create task reassignation screen
+# -------------------------------------------------------------------
+
+# Create the list of candidate project to which we could reasonably reassign the resources:
+set reassign_tasks ""
+db_foreach reassign_tasks "
+	SELECT	project_id as task_id,
+		project_name,
+		project_nr,
+		tree_level(tree_sortkey)-1 as level
+	FROM	im_projects
+	WHERE	project_id IN (:project_id, [join $task_hash_tasks ","])
+	ORDER BY tree_sortkey
+" {
+	set indent ""
+	for {set i 0} {$i < $level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
+	set selected ""
+	if {$task_id == $project_id} { set selected "selected" }
+	append reassign_tasks "<option value=\"$task_id\" $selected>$indent $project_nr : $project_name</option>"
+}
+
+lappend ids 0
+db_multirow -extend {project_indent } delete_tasks delete_tasks "
+	SELECT	project_id as task_id,
+		project_name,
+		project_nr,
+		tree_level(tree_sortkey) as project_level
+	FROM	im_projects
+	WHERE 	project_id IN ([join $ids ,])
+	ORDER by
+	      tree_sortkey
+" {
+	set space "&nbsp; &nbsp; &nbsp; "
+	set project_indent ""
+	for {set i 0} {$i < $project_level} {incr i} { append project_indent $space }
+}
+
+template::list::create \
+	-pass_properties { reassign_tasks } \
+	-bulk_actions [list \
+			   [lang::message::lookup {} intranet-ganttproject.Delete_and_Reassign {Delete Tasks and Reassign Resources}] \
+			   "/intranet-timesheet2-tasks/task-delete" \
+			   [lang::message::lookup {} intranet-ganttproject.Delete_selected_tasks {Delete the selected tasks and reassign their resources to the choosen task/project}] \
+			  ] \
+	-bulk_action_export_vars { return_url project_id } \
+	-bulk_action_method post \
+	-name delete_tasks \
+	-key task_id \
+	-elements {
+	    project_nr {
+		label "[lang::message::lookup {} intranet-ganttproject.Task_Nr {Task Nr.}]"
+	    } 
+	    project_name {
+		label "[lang::message::lookup {} intranet-ganttproject.Task_Name {Task Name}]"
+		display_template { <nobr>@delete_tasks.project_indent;noquote@ @delete_tasks.project_name@</nobr> }
+	    }
+	    assign_to {
+		label "[lang::message::lookup {} intranet-ganttproject.Reassign_Resources_To {Reassign Resources To}]"
+		display_template { <select name=\"assign_to.@delete_tasks.task_id@\">$reassign_tasks</select> }
+	    }
+	}
+
+# Write audit trail
+im_project_audit -project_id $project_id
+
+
+
 
 # ---------------------------------------------------------------------
 # Projects Submenu
