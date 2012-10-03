@@ -43,14 +43,13 @@ set show_diagram_p [info exists diagram_start_date]
 # Later we will aggregate this amount per month and format the result
 # in JSON format for JavaScript use.
 set workload_sql "
-    	select	day.day,
-		to_char(day.day, 'YYYY-MM') as month,
+    	select	to_char(day.day, 'YYYY-MM') as month,
 		to_char(day.day, 'YYYY-IW') as week,
 		to_char(day.day, 'YYYY-MM-DD') as day,
 		main_p.project_id,
 		main_p.project_nr,
 		main_p.project_name,
-		(select	coalesce(sum(planned_units * uom_factor / task_duration_days), 0.0) / 8.0 from (
+		(select	coalesce(sum(planned_units * uom_factor / task_duration_days), 0.0) from (
 			select	t.planned_units,
 				CASE WHEN t.uom_id = 321 THEN 8.0 ELSE 1.0 END as uom_factor,
 				round(0.499 + (extract('epoch' from sub_p.end_date) - extract('epoch' from sub_p.start_date)) / 3600.0 / 24.0) as task_duration_days
@@ -69,17 +68,11 @@ set workload_sql "
 		im_day_enumerator(:diagram_start_date, :diagram_end_date) day
 	where	main_p.project_id = :main_project_id
 "
-# ad_return_complaint 1 "<pre>[im_ad_hoc_query -format html $workload_sql]</pre>"
-
-# planned_work_in_period: Planned employee work per day, week or month
-# planned_work_accumulated_in_period: Accumulated planned work since the start of the project
-
 
 # Aggregate the values from SQL by period (week or month)
 db_foreach workload $workload_sql {
     # Here we determine weather we want to aggregate per day, week or month
     set period $week
-
     set w 0.0
     if {[info exists planned_work_in_period($period)]} { set w $planned_work_in_period($period) }
     set w [expr $w + $planned_work]
@@ -92,8 +85,24 @@ foreach period [lsort [array names planned_work_in_period]] {
     set accumulated_w [expr $accumulated_w + $planned_work_in_period($period)]
     set planned_work_accumulated_in_period($period) $accumulated_w
 }
-# ad_return_complaint 1 [array get planned_work_accumulated_in_period]
 
+
+# --------------------------------------------------------------
+# Determine logged hours
+# --------------------------------------------------------------
+
+set logged_hours_sql "
+	select	to_char(day.day, 'YYYY-MM') as month,
+		to_char(day.day, 'YYYY-IW') as week,
+		to_char(day.day, 'YYYY-MM-DD') as day,
+		im_audit_value(:main_project_id, 'reported_hours_cache', day.day) as logged_hours
+	from	im_day_enumerator(:diagram_start_date, :diagram_end_date) day
+"
+db_foreach logged_hours $logged_hours_sql {
+    set period $week
+    if {"" == $logged_hours} { set logged_hours 0.0 }
+    set logged_hours_in_period($period) $logged_hours
+}
 
 # --------------------------------------------------------------
 # Build the JSON data for the diagram stores
@@ -104,6 +113,7 @@ foreach period [lsort [array names planned_work_in_period]] {
     set data_line "{date: '$day'"
     append data_line ", 'planned_work': $planned_work_in_period($period)"
     append data_line ", 'planned_work_accumulated': $planned_work_accumulated_in_period($period)"
+    append data_line ", 'logged_hours': $logged_hours_in_period($period)"
     append data_line "}"
     lappend data_lines $data_line
 }

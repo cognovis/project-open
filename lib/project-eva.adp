@@ -33,13 +33,7 @@ Ext.onReady(function () {
 	    type: 'Numeric',
 	    title: 'Value',
 	    position: 'left',
-	    fields: ['planned_work', 'planned_work_accumulated'],
-	    grid: true
-	}, {
-	    type: 'Numeric',
-	    title: 'Contribution',
-	    position: 'right',
-	    fields: ['planned_work'],
+	    fields: ['planned_work', 'planned_work_accumulated', 'logged_hours'],
 	    grid: true
 	}, {
 	    type: 'Category',
@@ -74,6 +68,17 @@ Ext.onReady(function () {
                     type: 'circle',
                     size: 5,
 		    fill: 'red'
+            }
+	}, {
+	    type: 'line',
+	    title: 'Logged Hours',
+	    axis: 'left',
+	    xField: 'logged_hours',
+	    yField: 'logged_hours',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5,
+		    fill: 'blue'
             }
 	}]
     }
