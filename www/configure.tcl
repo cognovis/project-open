@@ -247,7 +247,7 @@ if {!$install_translation_p} {
     ns_write "<br>&nbsp;<h2>Disabling 'Translation' Components</h2>\n"
 
     ns_write "<li>Disabling 'Translation' Categories ... "
-    set project_type_translation_id [db_string t "select category_id from im_categories where category = 'Translation Project'"]
+    set project_type_translation_id [db_string t "select category_id from im_categories where category = 'Translation Project'" -default 0]
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
