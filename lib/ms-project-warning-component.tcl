@@ -447,7 +447,7 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 					r.rel_id = bom.rel_id and
 					u.user_id in (
 						select member_id from group_distinct_member_map 
-						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+						where group_id = :skill_profile_group_id
 					)
 			), 0.0) as percentage_skill_profiles,
 			coalesce((
@@ -460,7 +460,7 @@ if {0 && ![info exists ignore_hash($warning_key)]} {
 					r.rel_id = bom.rel_id and
 					u.user_id not in (
 						select member_id from group_distinct_member_map 
-						where group_id = (select group_id from groups where group_name = 'Skill Profile')
+						where group_id = :skill_profile_group_id
 					)
 			), 0.0) as percentage_non_skill_profiles
 		from	im_projects main_p,
@@ -630,7 +630,7 @@ if {![info exists ignore_hash($warning_key)]} {
 				r.rel_id = bom.rel_id and
 				u.user_id in (
 					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					where group_id = :skill_profile_group_id
 				)
 			), 0.0) as percentage_skill_profiles,
 
@@ -645,7 +645,7 @@ if {![info exists ignore_hash($warning_key)]} {
 				r.rel_id = bom.rel_id and
 				u.user_id not in (
 					select member_id from group_distinct_member_map 
-					where group_id = (select group_id from groups where group_name = 'Skill Profile')
+					where group_id = :skill_profile_group_id
 				)
 			), 0.0) as percentage_non_skill_profiles
 
@@ -677,6 +677,9 @@ if {![info exists ignore_hash($warning_key)]} {
 	set assigned_persons {}
 	foreach tuple $assigned_users {
 	    set user_id [lindex $tuple 0]
+	    set role_id [lindex $tuple 1]
+	    set perc [lindex $tuple 2]
+	    if {"" == $perc} { continue }
 	    if {[im_profile::member_p -profile "Skill Profile" -user_id $user_id]} {
 		lappend assigned_skill_profiles $tuple
 	    } else {
