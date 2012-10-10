@@ -89,16 +89,24 @@ db_foreach milestones $milestone_ids_sql {
 
 
 # Get the list of distinct dates when changes have ocurred
-set date_sql "
+set date_days_sql "
 	select distinct
 		audit_date::date
 	from	($base_sql) d
 	order by audit_date
 "
-set audit_dates [db_list audit_dates $date_sql]
+set audit_dates [db_list audit_dates $date_days_sql]
 
-# ad_return_complaint 1 "<pre>$audit_dates</pre>"
-
+set max_entries 10
+if {[llength $audit_dates] > $max_entries} {
+   set sample_factor [expr int([llength $audit_dates] / $max_entries)]
+   set list [list]
+   for {set i 0} {$i < [llength $audit_dates]} {incr i} {
+       if {0 == [expr $i % $sample_factor]} {lappend list [lindex $audit_dates $i]}
+   }
+   set audit_dates $list
+}
+# ad_return_complaint 1 "<pre>sample_factor=$sample_factor\n$audit_dates</pre>"
 
 
 # Calculate start and end date for X axis and
@@ -106,7 +114,7 @@ set audit_dates [db_list audit_dates $date_sql]
 db_1row start_end "
 	select	min(audit_date) as audit_start_date,
 		max(audit_date) as audit_end_date
-	from	($date_sql) t
+	from	($date_days_sql) t
 "
 
 # ad_return_complaint 1 "$audit_start_date - $audit_end_date"
@@ -133,7 +141,7 @@ from
 	(select	b.audit_object_id as project_id,
 		b.audit_date::date as audit_date,
 		to_char(im_audit_value(b.audit_value, 'end_date')::date, 'J')::integer as end_date_julian
-	from	($date_sql) d
+	from	($date_days_sql) d
 		LEFT OUTER JOIN ($base_sql) b ON (d.audit_date::date = b.audit_date::date)
 	) t
 group by
