@@ -42,7 +42,7 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-set page_title [lang::message::lookup "" intranet-reporting.TitleTimesheetProductivityReportMonthlyViewSimple "Timesheet Productivity Report - Monthly View - Simple"]
+set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Logging_Report___Monthly_View___Simple "Timesheet Productivity Report - Monthly View - Simple"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
