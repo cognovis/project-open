@@ -281,8 +281,7 @@ set sql "
         	                $where_clause
                 	order by
                         	p.project_id,
-	                        u.user_id,
-        	                h.day
+	                        u.user_id
                 	) s
 		group by 
                 	user_id,
