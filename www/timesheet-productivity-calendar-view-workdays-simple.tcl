@@ -42,7 +42,7 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-set page_title "Timesheet Productivity Report - Monthly View - Simple"
+set page_title [lang::message::lookup "" intranet-reporting.TitleTimesheetProductivityReportMonthlyViewSimple "Timesheet Productivity Report - Monthly View - Simple"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -258,7 +258,7 @@ set sql "
 			$inner_sql
         	from
                 	(
-			 select	distinct on (p.project_id) 
+			 select	distinct p.project_id, 
                 	        u.user_id,
                         	im_name_from_user_id(u.user_id) as user_name,
 	                        (select main_p.project_id from im_projects pr, im_projects main_p where pr.project_id = h.project_id and tree_ancestor_key(pr.tree_sortkey, 1) = main_p.tree_sortkey limit 1) as top_parent_project_id,
