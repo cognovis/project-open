@@ -40,7 +40,7 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-set page_title "Timesheet Productivity Report"
+set page_title  [lang::message::lookup "" intranet-reporting.Title_reporting-timesheet-productivity "Timesheet Productivity Report"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
