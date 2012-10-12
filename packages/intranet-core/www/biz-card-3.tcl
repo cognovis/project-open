@@ -507,14 +507,16 @@ ad_form -extend -name $form_id -new_request {
 	im_biz_object_add_role $manager_id $company_id $role_id
     }
     
-        
+    # Mark the update in the dynfields
+    im_audit -object_type "im_office" -object_id $main_office_id -type_id [im_office_type_main] -status_id [im_office_status_active] -action after_update
+    im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_update
+
     # ------------------------------------------------------
     # Finish
     # ------------------------------------------------------
     
     db_release_unused_handles
-    
-    
+        
     # Return to the new company page after creating
     if {"" == $return_url} {
 	set return_url [export_vars -base "/intranet/companies/view?" {company_id}]
