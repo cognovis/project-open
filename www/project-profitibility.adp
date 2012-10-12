@@ -153,7 +153,7 @@
 	        	          <td class="list-table" align="right">@total__target_benefit@</td>
 			  </if>
                 	  <td class="list-table" align="right">@total__amount_invoicable_matrix@</td>
-	                  <td class="list-table" align="right">@total__total_expenses_billable@<br>>@total__total_expenses_not_billable@</td>
+	                  <td class="list-table" align="right">@total__total_expenses_billable@<br>(@total__total_expenses_not_billable@)</td>
         	          <td class="list-table" align="right">@total__total_provider_bills@</td>
                 	  <td class="list-table" align="right">@total__invoiceable_total_var@<!--Erloesfaehig/Anspruch --></td> 
 	                  <td class="list-table" align="right">@total__sum_invoices_value@</td>
