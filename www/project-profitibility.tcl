@@ -766,13 +766,16 @@ set inner_hours_where ""
 if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user_id_from_search" }
 
 template::multirow foreach project_list {    
+    	ds_comment "------------------------------------------------"
+    	ds_comment "child_id: $child_id, project_name: $project_name"
+    	ds_comment "------------------------------------------------"
 
 	set total_expenses_billable 0
 	set total_expenses_not_billable 0
 
    	# Limit costs to employee cost 	
 	if { 0 != $user_id_from_search } { 
-		ns_log NOTICE "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
+		ds_comment "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
 		set cost_timesheet_logged_cache $employee_hours_amount
 		ns_log NOTICE "project-profitibility::set_total_expenses: set total_expenses_billable to value: $employee_costs_billable "
 		set total_expenses_billable $employee_costs_billable
@@ -836,10 +839,10 @@ template::multirow foreach project_list {
                         append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>"
                         append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
                         append err_mess "</a><br><br>"
-                        # ad_return_complaint 1 $err_mess
+			ds_comment "Error: No price found for user/project"
 		        continue
 		} else {
-                        ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
+                        ds_comment "Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
                         set amount_costs_staff [expr $amount_costs_staff + [expr $costs_staff_rate * $hours]]		
 		}
 
@@ -849,12 +852,14 @@ template::multirow foreach project_list {
                 if { "" == $allocation_cost_rate || 0 == $allocation_cost_rate } {
 		    append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No Allocation Cost found for date: $calendar_date<br>"]
                     append err_mess "<br><br>"
+		    ds_comment "Error: No Allocation Cost found for date: $calendar_date"
                     continue
                 } else {
-                    ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found Allocation Cost: $allocation_cost_rate for date: $calendar_date"
+                    ds_comment "Found Allocation Cost: $allocation_cost_rate for date: $calendar_date"
 		    set amount_allocation_costs [expr $amount_allocation_costs + [expr $allocation_cost_rate * $hours]]
-                }
-	    		
+		    ds_comment "amount_allocation_costs: $amount_allocation_costs"
+	        }
+		
 		# Calculate "Amount Invoicable"  
 	    	set sales_price [find_sales_price $user_id $project_id $company_id "" $calendar_date]
 		if { "" == $sales_price || 0 == $sales_price } {
@@ -867,7 +872,7 @@ template::multirow foreach project_list {
 			append err_mess "</a><br><br>"
 			ad_return_complaint 1 $err_mess
 	    	} else {
-		        ns_log NOTICE "intranet-cust-koernigweber::project-profitibility: Found sales price $sales_price based on (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
+		        ds_comment "Found sales price $sales_price based on (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
 			set amount_invoicable_matrix [expr $amount_invoicable_matrix + [expr $sales_price * $hours]]						
 		}
 	}
@@ -901,22 +906,25 @@ template::multirow foreach project_list {
 	# Costs staff (Personalkosten) -> Stunden x Satz aus Projekt "Unproduktive Std. der produktiven MA"
 	set amount_costs_staff_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_costs_staff+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "staff_costs" $amount_costs_staff_pretty
+	ds_comment "amount_costs_staff: $amount_costs_staff_pretty" 
 
 	# Provider Bills 
 	set amount_provider_bills_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $provider_bills+0] $rounding_precision] $format_string $locale]  
 	template::multirow set provider_bills $i provider_bills $amount_provider_bills_pretty
 
         # Target Benefit (Selbstkosten/Soll Erloes) -> Personalkosten + (Anzahl der geloggten Stunden * Umlage (Umlagekosten der 'Internal Company'))
+	ds_comment "Calculating target_benefit (Selbstkosten/Sollerloes): amount_costs_staff+amount_allocation_costs: $amount_costs_staff+$amount_allocation_costs"
 	set target_benefit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_costs_staff+$amount_allocation_costs+0] $rounding_precision] $format_string $locale]	
         template::multirow set project_list $i target_benefit $target_benefit_pretty
+	ds_comment "target_benefit: $target_benefit_pretty"
 
 	# Invoicable Matrix  
 	set amount_invoicable_matrix_var $amount_invoicable_matrix
 	set amount_invoicable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_invoicable_matrix_var+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "amount_invoicable_matrix" $amount_invoicable_pretty    	
 
-	# Invoicable (total) -> Erloesfaehig 	
-	set invoiceable_total_var [expr $total_expenses_billable + $amount_invoicable_matrix]
+	# Invoicable (total) Anspruch (Erloesfaehig) (Abrechenbar lt. E/C Preisliste + Sonstige Kosten (Materialkosten) + Lieferantenrechnungen
+	set invoiceable_total_var [expr $total_expenses_billable + $amount_invoicable_matrix + $provider_bills]
 	set invoiceable_total_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $invoiceable_total_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i invoiceable_total $invoiceable_total_var_pretty
 
@@ -1007,7 +1015,7 @@ template::multirow foreach project_list {
 	  	if { 100 != $project_type_id } { ns_write $output_row }
 	}
 
-	ns_log NOTICE "KHD1: invoiceable_total_var: $invoiceable_total_var"
+	ds_comment "invoiceable_total_var: $invoiceable_total_var"
 
 	set total__amount_costs_staff  		[expr $total__amount_costs_staff + $amount_costs_staff]; 			# Personalkosten (4th column) 
 	set total__target_benefit 		[expr $total__target_benefit + $cost_timesheet_logged_cache]; 			# Sollerloes
@@ -1025,9 +1033,9 @@ template::multirow foreach project_list {
 	set amount_costs_staff 0 
 	set amount_invoicable_matrix 0 
 	set amount_invoicable_matrix_var 0 
+	set amount_allocation_costs 0
 	set total_expenses_billable 0
  	set total_expenses_not_billable 0
-
 	incr i
 }
 
