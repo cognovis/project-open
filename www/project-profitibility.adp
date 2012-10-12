@@ -71,17 +71,17 @@
 	<ul>
             <if @full_view_p@>
 		<li><b>Personalkosten (VSI): </b>Anzahl der geloggten Stunden * Kostensatz des MA f&uuml;r AVS Kostenstelle: 9140 unprod. Zeiten prod. MA</li>
-		<li><b>Sollerl&ouml;s (VSI+Umlage): </b>VSI + Anzahl der geloggten Stunden * Umlage (Umlagekosten der 'Internal Company')</li>
+		<li><b>Selbstkosten (VSI+Umlage): </b>VSI + Anzahl der geloggten Stunden * Umlage (Umlagekosten der 'Internal Company')</li>
 	    </if>
 		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
 		<li><b>Sonstige Kosten: </b> Spesen und Ausgaben f&uuml;r Projekte </li>
-                <li><b>Zulieferer-Rechnungen: </b> Summe der im System eingestellter Zulieferer-Rechnungen </li>
-		<li><b>Erl&ouml;sf&auml;hig: </b> Abrechenbar lt. E/C Preisliste +  Materialkosten </li>
+                <li><b>Lieferantenrechnungen: </b> Summe der im System eingestellter Lieferantenrechnungen</li>
+		<li><b>Anspruch: </b> Abrechenbar lt. E/C Preisliste +  Sonstige Kosten (Materialkosten) + Lieferantenrechnungen</li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
-		<li><b>GuV Projekt:</b> Abgerechnet - Erl&ouml;sf&auml;hig</li>
+		<li><b>GuV Projekt:</b> Abgerechnet - Anspruch</li>
             <if @full_view_p@>
-		<li><b>GuV 1:</b> Abgerechnet - Sollerl&ouml;s - Materialkosten - Zulieferer-Rechnungen</li>
-		<li><b>GuV 2:</b> Abgerechnet - Personalkosten - Zuliefererrechnungen - Materialkosten</li>
+		<li><b>GuV 1:</b> Abgerechnet - Selbstkosten - Sonstige Kosten - Lieferantenrechnungen</li>
+		<li><b>GuV 2:</b> Abgerechnet - Personalkosten - Lieferantenrechnungen - Sonstige Kosten</li>
 	    </if>
 	</ul>
 	</td>
@@ -155,7 +155,7 @@
                 	  <td class="list-table" align="right">@total__amount_invoicable_matrix@</td>
 	                  <td class="list-table" align="right">@total__total_expenses_billable@<br>>@total__total_expenses_not_billable@</td>
         	          <td class="list-table" align="right">@total__total_provider_bills@</td>
-                	  <td class="list-table" align="right">@total__invoiceable_total_var@<!--erloesfaehig --></td> 
+                	  <td class="list-table" align="right">@total__invoiceable_total_var@<!--Erloesfaehig/Anspruch --></td> 
 	                  <td class="list-table" align="right">@total__sum_invoices_value@</td>
         	          <td class="list-table" align="right">@total__profit_and_loss_project_var@</td>
                 	  <if @full_view_p@>
@@ -172,3 +172,4 @@
 	    @err_mess;noquote@ 
     </if>
 </if>
+<%= [im_footer] %>
