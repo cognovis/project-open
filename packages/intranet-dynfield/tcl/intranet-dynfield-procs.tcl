@@ -603,8 +603,8 @@ ad_proc -public im_dynfield::attribute_store {
 		ns_log Debug "im_dynfield::attribute_store: display_mode_hash(key): $display_mode_hash($key)"
                 switch $display_mode_hash($key) {
                     edit { set display_mode "edit" }
-                    display { if {"edit" != $display_mode} { set display_mode "display" } }
-                    none { if {"edit" != $display_mode && "display" != $display_mode} { set display_mode "display" } }
+                    display {set display_mode "display" }
+                    none { set display_mode "display" }
                 }
             }
         }
