@@ -128,7 +128,7 @@
 				  <td class="list-table" align="right">@project_list.target_benefit@</td>
 			  </if>
 			  <td class="list-table" align="right">@project_list.amount_invoicable_matrix@</td>
-			  <td class="list-table" align="right">@project_list.costs_material@</td>
+			  <td class="list-table" align="right">@project_list.costs_material;noquote@</td>
 			  <td class="list-table" align="right">@project_list.provider_bills@</td>
 			  <td class="list-table" align="right">@project_list.invoiceable_total@</td>
 			  <td class="list-table" align="right">@project_list.sum_invoices@</td>
@@ -153,7 +153,7 @@
 	        	          <td class="list-table" align="right">@total__target_benefit@</td>
 			  </if>
                 	  <td class="list-table" align="right">@total__amount_invoicable_matrix@</td>
-	                  <td class="list-table" align="right">@total__total_expenses@</td>
+	                  <td class="list-table" align="right">@total__total_expenses_billable@<br>>@total__total_expenses_not_billable@</td>
         	          <td class="list-table" align="right">@total__total_provider_bills@</td>
                 	  <td class="list-table" align="right">@total__invoiceable_total_var@<!--erloesfaehig --></td> 
 	                  <td class="list-table" align="right">@total__sum_invoices_value@</td>
