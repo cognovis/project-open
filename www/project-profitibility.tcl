@@ -554,7 +554,7 @@ if { 0 != $user_id_from_search } {
                           and day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
                 ) * (select hourly_cost from im_employees where employee_id = :user_id_from_search)::numeric as employee_hours_amount,
 
-		(select sum(amount) from im_costs where project_id in (
+		(select sum(c.amount) from im_costs c, im_expenses e where c.project_id in (
                         select
                                 p_child.project_id
                         from
@@ -563,14 +563,15 @@ if { 0 != $user_id_from_search } {
                         where
                                 p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
                                 and p_parent.project_id = child.project_id
-                        ) and provider_id = :user_id_from_search
-	                  and effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-                          and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-                          and cost_type_id = 3720
-			  and billable_p = 1
+                        ) and c.provider_id = :user_id_from_search
+	                  and c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+                          and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                          and c.cost_type_id = 3720 
+			  and e.expense_id = c.cost_id
+			  and e.billable_p = 't'
                 ) as employee_costs_billable,
 
-		(select sum(amount) from im_costs where project_id in (
+		(select sum(amount) from im_costs c, im_expenses e where c.project_id in (
                         select
                                 p_child.project_id
                         from
@@ -579,11 +580,12 @@ if { 0 != $user_id_from_search } {
                         where
                                 p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
                                 and p_parent.project_id = child.project_id
-                        ) and provider_id = :user_id_from_search
-	                  and effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-                          and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-                          and cost_type_id = 3720
-			  and billable_p = 0
+                        ) and c.provider_id = :user_id_from_search
+                          and c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+                          and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                          and c.cost_type_id = 3720 
+                          and e.expense_id = c.cost_id
+                          and e.billable_p = 't'
                 ) as employee_costs_not_billable
 	"
 }
@@ -636,6 +638,8 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		c.company_id,
 		c.company_name,
 		c.company_path as company_nr,
+		eb.amount as total_expenses_billable,
+                enb.amount as total_expenses_not_billable,
 		h.hours as direct_hours,
 		child.written_order_p as sql_written_order_p,
 		(select count(*) from im_projects where parent_id = child.project_id and project_type_id <> 100) as no_project_childs
@@ -662,15 +666,33 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
                                 project_id,
                                 sum(amount) as amount
                         from
-                                im_costs
+                                im_costs c,
+				im_expenses e
 			where 
-				effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
-                                and effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-                                and cost_type_id = 3720	
+				c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
+                                and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                                and c.cost_type_id = 3720
+				and c.cost_id = e.expense_id
+				and e.billable_p = 't'	
                         group by 
 				project_id
-                ) e ON (child.project_id = e.project_id)
-
+                ) eb ON (child.project_id = eb.project_id)
+                LEFT OUTER JOIN (
+                        select
+                                project_id,
+                                sum(amount) as amount
+                        from
+                                im_costs c,
+				im_expenses e
+			where 
+				c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD') 
+                                and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                                and c.cost_type_id = 3720
+				and c.cost_id = e.expense_id
+				and e.billable_p = 'f'	
+                        group by 
+				project_id
+                ) enb ON (child.project_id = enb.project_id)
 	where
 		p.parent_id is null
 		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
@@ -766,23 +788,23 @@ set inner_hours_where ""
 if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user_id_from_search" }
 
 template::multirow foreach project_list {    
+
     	ds_comment "------------------------------------------------"
     	ds_comment "child_id: $child_id, project_name: $project_name"
     	ds_comment "------------------------------------------------"
 
-	set total_expenses_billable 0
-	set total_expenses_not_billable 0
-
    	# Limit costs to employee cost 	
 	if { 0 != $user_id_from_search } { 
-		ds_comment "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
+		# ds_comment "project-profitibility::set_cost_timesheet_logged_cache: set cost_timesheet_logged_cache to value: $employee_hours_amount "
 		set cost_timesheet_logged_cache $employee_hours_amount
-		ns_log NOTICE "project-profitibility::set_total_expenses: set total_expenses_billable to value: $employee_costs_billable "
+		ds_comment "set_total_expenses: set total_expenses_billable to value: $employee_costs_billable "
 		set total_expenses_billable $employee_costs_billable
-		ns_log NOTICE "project-profitibility::set_total_expenses: set total_expenses_not_billable to value: $employee_costs_not_billable "
+		ds_comment "set_total_expenses: set total_expenses_not_billable to value: $employee_costs_not_billable "
 		set total_expenses_not_billable $employee_costs_not_billable
 	}
 
+        if { ![info exists total_expenses_billable] || "" == $total_expenses_billable } { set total_expenses_billable 0 }
+        if { ![info exists total_expenses_not_billable] || "" == $total_expenses_not_billable } { set total_expenses_not_billable 0 }
         if { ![info exists provider_bills] || "" == $provider_bills } { set provider_bills 0 }
         if { ![info exists cost_timesheet_logged_cache] || "" == $cost_timesheet_logged_cache } { set cost_timesheet_logged_cache 0 }
         if { ![info exists amount_invoicable_matrix] || "" == $amount_invoicable_matrix } { set amount_invoicable_matrix 0 }
