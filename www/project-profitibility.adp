@@ -76,7 +76,7 @@
 		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
 		<li><b>Sonstige Kosten: </b> Spesen und Ausgaben f&uuml;r Projekte </li>
                 <li><b>Lieferantenrechnungen: </b> Summe der im System eingestellter Lieferantenrechnungen</li>
-		<li><b>Anspruch: </b> Abrechenbar lt. E/C Preisliste +  Sonstige Kosten (Materialkosten) + Lieferantenrechnungen</li>
+		<li><b>Anspruch: </b> Abrechenbar lt. E/C Preisliste +  Abrechenbare "Sonstige Kosten" (Materialkosten) + Lieferantenrechnungen</li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
 		<li><b>GuV Projekt:</b> Abgerechnet - Anspruch</li>
             <if @full_view_p@>
