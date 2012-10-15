@@ -43,7 +43,7 @@ if {![string equal "t" $read_p]} {
 # surpress columns "Staff Costs", "Target Benefit", "P&L1", "P&L2"
 # and show only projects where current_user_id = PM of project 
 set full_view_p 0 
-if {[im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || [im_profile::member_p -profile_id 469 -user_id $current_user_id]  } {
+if {[im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || [im_profile::member_p -profile_id [im_admin_group_id] -user_id $current_user_id]  } {
     set full_view_p 1
 }
 
@@ -860,11 +860,11 @@ template::multirow foreach project_list {
                         append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No price found for user/project:<br>"]
                         append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>"
                         append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
-                        append err_mess "</a><br><br>"
+		    	append err_mess "</a>&nbsp;&nbsp;Date: $calendar_date<br><br>"
 			ds_comment "Error: No price found for user/project"
 		        continue
 		} else {
-                        ds_comment "Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
+                        ds_comment "Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: $project_id, company_id: $cc_company_id)"
                         set amount_costs_staff [expr $amount_costs_staff + [expr $costs_staff_rate * $hours]]		
 		}
 
