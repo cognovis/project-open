@@ -1582,7 +1582,7 @@ ad_proc -public im_gp_save_allocations {
     set ctr 0
     foreach child [$allocations_node childNodes] {
 	incr ctr
-	ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: [$child nodeName]=[$child nodeName]"
+	ns_log Notice "im_gp_save_allocations: ctr=$ctr, Assignment: [$child nodeName]=[$child nodeName]"
 	switch [string tolower [$child nodeName]] {
 	    "allocation" - "assignment" {
 		
@@ -1600,7 +1600,7 @@ ad_proc -public im_gp_save_allocations {
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
-		    ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: $nodeName=$nodeText"
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, Assignment: $nodeName=$nodeText"
 
 		    # Make sure the table column exists
 		    set table_name im_gantt_assignments
@@ -1633,7 +1633,7 @@ ad_proc -public im_gp_save_allocations {
 			    foreach tp [$attr childNodes] {
 				set nodeName [$tp nodeName]
 				set nodeText [$tp text]
-				ns_log Error "im_gp_save_allocations: ctr=$ctr, TimephaseData: $nodeName=$nodeText"
+				ns_log Notice "im_gp_save_allocations: ctr=$ctr, TimephaseData: $nodeName=$nodeText"
 				switch [string tolower $nodeName] {
 				    "type" { set tp_type $nodeText }
 				    "uid" { set tp_uid $nodeText }
