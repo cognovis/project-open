@@ -5,7 +5,7 @@
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 
     window.store1 = Ext.create('Ext.data.JsonStore', {
-        fields: ['date', 'planned_work', 'planned_work_accumulated'],
+        fields: ['date', 'planned_work', 'planned_work_accumulated' @attributes_js;noquote@],
         data: @data_json;noquote@
     });
 
@@ -33,7 +33,7 @@ Ext.onReady(function () {
 	    type: 'Numeric',
 	    title: 'Value',
 	    position: 'left',
-	    fields: ['planned_work', 'planned_work_accumulated', 'logged_hours'],
+	    fields: ['planned_work', 'planned_work_accumulated', 'reported_hours_cache'],
 	    grid: true
 	}, {
 	    type: 'Category',
@@ -73,12 +73,23 @@ Ext.onReady(function () {
 	    type: 'line',
 	    title: 'Logged Hours',
 	    axis: 'left',
-	    xField: 'logged_hours',
-	    yField: 'logged_hours',
+	    xField: 'reported_hours_cache',
+	    yField: 'reported_hours_cache',
 	    markerConfig: {
                     type: 'circle',
                     size: 5,
 		    fill: 'blue'
+            }
+	}, {
+	    type: 'line',
+	    title: 'Expenses',
+	    axis: 'left',
+	    xField: 'cost_expense_logged_cache',
+	    yField: 'cost_expense_logged_cache',
+	    markerConfig: {
+                    type: 'circle',
+                    size: 5,
+		    fill: 'yellow'
             }
 	}]
     }
