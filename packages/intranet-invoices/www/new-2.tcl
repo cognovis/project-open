@@ -368,13 +368,19 @@ foreach nr $item_list {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id and material_id = :material_id" -default 0]
 	}
 	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id and task_type_id = :type_id" -default 0]
+	}
+	if {$rate eq 0} {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = :company_id and uom_id = :uom_id " -default 0]
 	}
 	if {$rate eq 0} {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id and material_id = :material_id and task_type_id = :type_id" -default 0]
 	}
-	if {$rate eq 0} {
+   	if {$rate eq 0} {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id and material_id = :material_id" -default 0]
+	}
+   	if {$rate eq 0} {
+	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id and task_type_id = :type_id" -default 0]
 	}
 	if {$rate eq 0} {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id" -default 0]
