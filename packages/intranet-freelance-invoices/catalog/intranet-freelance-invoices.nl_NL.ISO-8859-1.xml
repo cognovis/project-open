@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-invoices" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-invoices" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting contact</msg>
   <msg key="Add_New">Nieuwe toevoegen</msg>

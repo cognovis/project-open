@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-invoices" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-invoices" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Rechnungskontakt</msg>
   <msg key="Add_New">Neuer Eintrag</msg>
   <msg key="Adress">Addresse</msg>
+  <msg key="Aggregate_tasks">Aufgaben zusammenführen?</msg>
   <msg key="Amount">Betrag</msg>
   <msg key="Billable_Units">Abrechenbare Einheiten</msg>
   <msg key="Cell_Phone">Handy</msg>
@@ -18,6 +19,7 @@
   <msg key="Del">Lösch</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Delivery_Date">Lieferdatum</msg>
+  <msg key="Delivery_date">Lieferdatum</msg>
   <msg key="Description">Beschreibung</msg>
   <msg key="Edit_cost_type">Bearbeiten %cost_type%</msg>
   <msg key="Email">E-Mail</msg>
@@ -28,6 +30,7 @@
   <msg key="Go">Los</msg>
   <msg key="Home_Phone">Telefon Zuhause</msg>
   <msg key="Include_in_Invoice">In der Rechnung enthalten</msg>
+  <msg key="Invoice">Purchase Order</msg>
   <msg key="Invoice_Currency">Rechnungswährung</msg>
   <msg key="Invoice_Data">Rechnungsdaten</msg>
   <msg key="Invoice_date">Rechnungsdatum</msg>
