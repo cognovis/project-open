@@ -237,6 +237,7 @@ db_foreach task_tasks $task_sql {
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Units]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.UoM]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Delivery_date]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Invoice]</td>
 	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Sel]</td>
 	  </tr>
 	  <tr class=rowtitle>
@@ -251,6 +252,10 @@ db_foreach task_tasks $task_sql {
 
 	set old_freelance_id $freelance_id
     }
+    set invoice_id ""
+    set invoice_nr ""
+    db_0or1row invoice_id "select i.invoice_id,invoice_nr from im_invoice_items ii, im_invoices i where task_id = :task_id and ii.invoice_id = i.invoice_id and company_contact_id = $freelance_id limit 1"
+
     append task_html "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$task_name</td>
@@ -265,6 +270,7 @@ db_foreach task_tasks $task_sql {
 	  <td>$task_units</td>
 	  <td>$task_uom</td>
           <td>$delivery_date</td>
+          <td><a href='[export_vars -base "/intranet-invoices/view" -url {invoice_id {return_url [ad_return_url]}}]'>$invoice_nr</a></td>
 	  <td><input type=checkbox name=\"$action.$task_id\" value=1 checked></td>
 	</tr>\n"
     incr ctr    
