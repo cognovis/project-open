@@ -908,7 +908,7 @@ ad_proc -public im_price_list {
 		# append body_html "<td align=middle>[im_cost_center_select -include_empty 0 -include_empty_name 0 -department_only_p 0 "new_cost_object_category_id" ]</td>"
 		set cc_company_id [im_cost_center_company]
 		set cc_company_name [db_string get_data "select cost_center_name from im_cost_centers where cost_center_id = :cc_company_id" -default 0]
-                append body_html "<td>$cc_company_name<input type='hidden' name='new_cost_object_category_id' value='cc_company_id'></td>"
+                append body_html "<td>$cc_company_name<input type='hidden' name='new_cost_object_category_id' value='$cc_company_id'></td>"
 
                 append body_html "
                  <td align=right>
@@ -1017,15 +1017,12 @@ ad_proc -public im_koernigweber_next_project_nr {
     if { ![info exists company_code] } { set company_code "" }
     if { ![info exists company_name] } { set company_name "" }
  
-    if {[string length $company_code] > 12 || "" == $company_code } {
+    if { "" == $company_code } {
         ad_return_complaint 1 "<b>Unable to find 'Customer Code'</b>:
         <p>
         The customer <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
-        does not have a valid 4 digit 'Customer Code' field. <br>
-        Please follow the link and setup a customer code with four digits.<br>
-        Please contact your System Adninistrator in case of doubt.
-        </p>
-        <pre>$errmsg</pre>
+        does not have a valid 'Customer Code' field. <br>
+        </p><pre>$errmsg</pre>
         "
         ad_script_abort
     }
