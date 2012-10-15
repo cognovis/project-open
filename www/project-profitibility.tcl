@@ -945,7 +945,7 @@ template::multirow foreach project_list {
 	set amount_invoicable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $amount_invoicable_matrix_var+0] $rounding_precision] $format_string $locale]
 	template::multirow set project_list $i "amount_invoicable_matrix" $amount_invoicable_pretty    	
 
-	# Invoicable (total) Anspruch (Erloesfaehig) (Abrechenbar lt. E/C Preisliste + Sonstige Kosten (Materialkosten) + Lieferantenrechnungen
+	# Invoicable (total) Anspruch (Erloesfaehig) (Abrechenbar lt. E/C Preisliste + Abrechenbare "Sonstige Kosten" (Materialkosten) + Lieferantenrechnungen
 	set invoiceable_total_var [expr $total_expenses_billable + $amount_invoicable_matrix + $provider_bills]
 	set invoiceable_total_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $invoiceable_total_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i invoiceable_total $invoiceable_total_var_pretty
