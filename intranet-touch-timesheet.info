@@ -10,7 +10,7 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-touch-timesheet</auto-mount>
 
-    <version name="4.0.3.2.0" url="http://www.project-open.org/download/apm/intranet-touch-timesheet-4.0.3.2.0.apm">
+    <version name="4.0.3.3.0" url="http://www.project-open.org/download/apm/intranet-touch-timesheet-4.0.3.3.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>A simple timesheet logging app using Sencha Touch</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
