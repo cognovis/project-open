@@ -145,6 +145,7 @@ set title_help [lang::message::lookup {} intranet-riskmanagement.Title_Help {Ple
 
 set edit_p [im_permission $current_user_id add_risks_for_customers]
 set delete_p $edit_p
+set edit_p 1
 
 set actions {}
 if {$edit_p} { lappend actions {"Edit" edit} }
@@ -161,9 +162,6 @@ ad_form \
     -form {
 	risk_id:key
 	{risk_name:text(text) {label $title_label} {html {size 50}}}
-	{risk_nr:text(hidden),optional }
-	{start_date:date(hidden),optional }
-	{end_date:date(hidden),optional }
     }
 
 # ------------------------------------------------------------------
@@ -286,8 +284,8 @@ ad_form -extend -name riskmanagement_risk -on_request {
 
 } -edit_data {
 
-    set start_date_sql [template::util::date get_property sql_date $start_date]
-    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+#    set start_date_sql [template::util::date get_property sql_date $start_date]
+#    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
     db_dml risk_update {}
     db_dml project_update {}

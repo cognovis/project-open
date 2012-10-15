@@ -300,8 +300,7 @@ insert into im_view_columns (
 );
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(21010, 210, 10, 'Name', '"<a href=/intranet-riskmanagement/new?form_mode=display&risk_id_id=$risk_id>$risk_name</a>\
-<a href=/intranet-helpdesk/new?form_mode=edit&risk_id=$risk_id>[im_gif wrench]</a>"');
+(21010, 210, 10, 'Name', '"<a href=/intranet-riskmanagement/new?form_mode=display&risk_id_id=$risk_id>$risk_name</a>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (21030,210,30,'Type','$risk_type');
