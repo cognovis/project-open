@@ -257,7 +257,7 @@ if {$sla_write} {
     append footer_html "<li><a href='$new_param_url'>[lang::message::lookup "" intranet-sla-management.Create_a_New_SLA_Parameter "Create a New SLA Parameter"]</a></li>\n"
     set new_indicator_url [export_vars -base "/intranet-reporting-indicators/new" {return_url}]
     append footer_html "<li><a href='$new_indicator_url'>[lang::message::lookup "" intranet-sla-management.Create_a_New_Indicator "Create a New Indicator"]</a></li>\n"
-    append footer_html "<li><a href='http://www.project-open.org/documentation/process_sla_management'>[lang::message::lookup "" intranet-sla-management.SLA_Management_Help "SLA Management Help"]</a></li>\n"
+    append footer_html "<li><a href='http://www.project-open.org/en/process_sla_management'>[lang::message::lookup "" intranet-sla-management.SLA_Management_Help "SLA Management Help"]</a></li>\n"
     append footer_html "</ul>\n"
 }
 
