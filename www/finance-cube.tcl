@@ -17,7 +17,7 @@ ad_page_contract {
     { left_var1 "customer_name" }
     { left_var2 "" }
     { left_var3 "" }
-    { cost_type_id:multiple "3700 3704 3722 3718" }
+    { cost_type_id:multiple "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
 
