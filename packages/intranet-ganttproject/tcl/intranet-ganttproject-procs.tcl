@@ -383,6 +383,292 @@ ad_proc -public im_gp_extract_db_tree_old_bad {
     return $result
 }
 
+
+
+# ---------------------------------------------------------------
+# Process an incoming MS-Project or OpenProject .xml file
+# ---------------------------------------------------------------
+
+
+ad_proc -public im_gp_save_xml { 
+    -debug_p:required
+    -return_url:required
+    -project_id:required
+    -file_content:required
+} {
+    Parses the incoming XML file stores it in ]po[.
+} {
+
+    set user_id [ad_maybe_redirect_for_registration]
+
+    # Write audit trail
+    im_project_audit -project_id $project_id -action before_update
+
+    db_1row project_info "
+	select	project_id as org_project_id,
+		project_name as org_project_name
+	from	im_projects
+	where	project_id = :project_id
+    "
+
+    # -------------------------------------------------------------------
+    # Parse the MS-Project/GanttProject XML
+    # -------------------------------------------------------------------
+    
+    set doc ""
+    if {[catch {set doc [dom parse $file_content]} err_msg]} {
+	ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-ganttproject.Invalid_XML "Invalid XML Format"]</b>:<br>
+	[lang::message::lookup "" intranet-ganttproject.Invalid_XML_Error "
+		Our XML parser has returned an error meaning that that your file is not a valid XML file.<br>
+		Here is the original error message:<br>&nbsp;<br>
+		<pre>$err_msg</pre>
+	"]
+        "
+	ad_script_abort
+    }
+
+    set root_node [$doc documentElement]
+
+    set format "gantt"
+
+    if {[string equal [$root_node nodeName] "Project"] 
+	&& [string equal [$root_node getAttribute "xmlns" ""] \
+		"http://schemas.microsoft.com/project"]} {
+	set format "ms"
+    }
+    ns_log Notice "gantt-upload-2: format=$format"
+
+
+    # -------------------------------------------------------------------
+    # Save the tasks.
+    # The task_hash contains a mapping table from gantt_project_ids to task_ids.
+    # -------------------------------------------------------------------
+    
+    # First delete the dependencies.
+    # This is brute force and might be handled better....
+    set del_dep_task_ids [im_project_subproject_ids -project_id $project_id -type task]
+    if {$del_dep_task_ids ne ""} {
+	db_dml delete_dependencies "delete from im_timesheet_task_dependencies where task_id_one in ([template::util::tcl_to_sql_list $del_dep_task_ids])"
+    }
+    if {$debug_p} { ns_write "<h2>Pass 1: Saving Tasks</h2>\n" }
+    set task_hash_array [list]
+    
+
+    if {[catch {
+	set task_hash_array [im_gp_save_tasks \
+				 -format $format \
+				 -create_tasks 1 \
+				 -save_dependencies 0 \
+				 -task_hash_array $task_hash_array \
+				 -debug_p $debug_p \
+				 $root_node \
+				 $project_id \
+				]
+	array set task_hash $task_hash_array
+	
+	if {$debug_p} {
+	    set debug_html ""
+	    foreach k [lsort [array names task_hash]] { append debug_html "$k	$task_hash($k)\n" }
+	    ad_return_complaint 1 "<pre>$debug_html</pre>"
+	}
+	
+	if {$debug_p} { ns_write "<h2>Pass 2: Saving Dependencies</h2>\n" }
+	set task_hash_array [im_gp_save_tasks \
+				 -format $format \
+				 -create_tasks 0 \
+				 -save_dependencies 1 \
+				 -task_hash_array $task_hash_array \
+				 -debug_p $debug_p \
+				 $root_node \
+				 $project_id \
+				]
+	
+	ns_log Notice "Pass3: Make sure that tasks with sub-tasks become im_project"
+	if {$debug_p} { ns_write "<h2>Pass 3: Make sure that tasks with sub-tasks become im_project</h2>\n" }
+	im_gp_save_tasks_fix_structure $project_id
+	
+    } err_msg]} {
+	
+	global errorInfo
+	set stack_trace $errorInfo
+	set latest_version_url "http://www.project-open.org/en/developers_cvs_checkout"
+	set params [list]
+	lappend params [list stacktrace $stack_trace]
+	lappend params [list error_type gantt_import]
+	lappend params [list error_content $file_content]
+	lappend params [list error_content_filename $upload_gan]
+	lappend params [list top_message "
+	<h1>Error Parsing Project XML</h1>
+	<p>We have found an error parsing your project file.	<br>&nbsp;<br>
+	<ol>
+	<li>Please make sure you are running the <a href='$latest_version_url'>latest version</a> of &#93;project-open&#91;.<br>
+	    There is a good chance that your issue has already been fixed.
+	    <br>&nbsp;<br>
+	</li>
+	<li>Please help us to identify and fix the issue by clicking on the 'Report this Error' button.<br>
+	    Please note that this function will transmit your XML file.<br>
+	    This is necessary in order to allow the &#93;po&#91; team to reproduce the error.
+	    <br>&nbsp;<br>
+	</li>
+	</ol>
+	<br>
+        "]
+	lappend params [list bottom_message "
+	    <br>&nbsp;<br>
+        "]
+    
+	set error_html [ad_parse_template -params $params "/packages/acs-tcl/lib/page-error"]
+
+	db_release_unused_handles
+	ns_return 200 text/html $error_html
+	ad_script_abort
+
+	ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-ganttproject.Error_Parsing_XML_Title "Error parsing XML file"]</b>:<br>
+	[lang::message::lookup "" intranet-ganttproject.Error_Parsing_XML_Message "
+		We have found an error parsing your XML file.
+		Here is the original error message:
+	"]
+	<br>&nbsp;<br>
+	<pre>$stack_trace</pre>
+	<form
+	<input type=submit name='A' value='$report_this_error_l10n'>
+	<input type=hidden name=stack_trace value='[ns_quotehtml $stack_trace]'>
+	<input type=hidden name=file_content value='[ns_quotehtml $file_content]'>
+	</form>
+        "
+	ad_script_abort
+
+    }
+
+    # -------------------------------------------------------------------
+    # Description
+    # -------------------------------------------------------------------
+    
+    if {[set node [$root_node selectNodes /project/description]] != ""} {
+	set description [$node text]
+	db_dml project_update "
+	update im_projects 
+	set description = :description
+	where project_id = :project_id
+        "
+    }
+
+    # -------------------------------------------------------------------
+    # Process Calendars
+    # -------------------------------------------------------------------
+    
+    if {[set calendars_node [$root_node selectNodes /project/calendars]] == ""} {
+	set calendars_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Calendars" ]
+    }
+    
+    if {$calendars_node != ""} {
+	if {$debug_p} {
+	    ns_write "<h2>Saving Calendars</h2>\n"
+	    ns_write "<ul>\n"
+	}
+	
+	set calendar_nodes [$calendars_node childNodes]
+	foreach calendar_node $calendar_nodes {
+	    array unset cal_hash
+	    array set cal_hash [im_ms_calendar::from_xml $calendar_node]
+	    set calendar_uid ""
+	    if {[info exists cal_hash(uid)]} { 
+		set calendar_uid $cal_hash(uid) 
+		set calendar_hash($calendar_uid) [array get cal_hash]
+	    }
+	}
+	
+	if {$debug_p} { ns_write "</ul>\n" }
+    }
+    
+
+    # -------------------------------------------------------------------
+    # Save the project Calendar
+    # -------------------------------------------------------------------
+    
+    set calendar_uid [db_string cal_uid "select xml_calendaruid from im_gantt_projects where project_id = :project_id" -default ""]
+    
+    if {$calendar_uid != ""} {
+	set cal_list ""
+	if {[info exists calendar_hash($calendar_uid)]} {
+	    array unset cal_hash
+	    array set cal_hash $calendar_hash($calendar_uid)
+	    if {[info exists cal_hash(week_days)]} {
+		set cal_list $cal_hash(week_days)
+		db_dml project_update "
+		update im_projects 
+		set project_calendar = :cal_list
+		where project_id = :project_id
+                "
+	    }
+	}
+    }
+    
+
+    # -------------------------------------------------------------------
+    # Process Resources
+    # -------------------------------------------------------------------
+    
+    if {[set resource_node [$root_node selectNodes /project/resources]] == ""} {
+	set resource_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Resources" ]
+    }
+    
+    if {$resource_node != ""} {
+	if {$debug_p} { ns_write "<h2>Saving Resources</h2>\n" }
+	if {$debug_p} { ns_write "<ul>\n" }
+	
+	set resource_hash_array [im_gp_save_resources -debug_p $debug_p $resource_node]
+	array set resource_hash $resource_hash_array
+	if {$debug_p} { ns_write "<li>\n<pre>resource_hash_array=$resource_hash_array</pre>" }
+	if {$debug_p} { ns_write "</ul>\n" }
+	
+    }
+
+    # Prepare to write out a useful error message if we didn't find a resource.
+    set resources_to_assign_p 0
+    set resource_html ""
+    foreach rid [array names resource_hash] {
+	set v $resource_hash($rid)
+	
+	# Skip if we correctly found an (integer) value for the resource
+	if {[string is integer $v]} { continue }
+	
+	set resources_to_assign_p 1
+	append resource_html "$v\n"
+    }
+    
+
+    # -------------------------------------------------------------------
+    # Process Allocations
+    # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
+    # -------------------------------------------------------------------
+    
+    if {[set allocations_node [$root_node selectNodes /project/allocations]] == ""} {
+	set allocations_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Assignments" ]
+    }
+    
+    if {$allocations_node != ""} {
+	if {$debug_p} {
+	    ns_write "<h2>Saving Allocations</h2>\n"
+	    ns_write "<ul>\n"
+	}
+	
+	im_gp_save_allocations \
+	    -debug_p $debug_p \
+	    -main_project_id $project_id \
+	    $allocations_node \
+	    $task_hash_array \
+	    $resource_hash_array
+	
+	if {$debug_p} { ns_write "</ul>\n" }
+    }
+
+    return [list $task_hash_array $resources_to_assign_p $resource_html]
+}
+
+
 # ---------------------------------------------------------------
 # Procedure: Dependency
 # ---------------------------------------------------------------
@@ -636,6 +922,10 @@ ad_proc -public im_gp_save_tasks2 {
     upvar 1 $sort_order_name sort_order
     incr sort_order
     set my_sort_order $sort_order 
+
+    # Should the % completed from MS-Project overwrite the
+    # values reported in ]po[? Default is 0.
+    set save_percent_completed_p [parameter::get_from_package_key -package_key "intranet-ganttproject" -parameter "UpdatePercentCompletedP" -default "0"]
 
     array set task_hash $task_hash_array
     if {$debug_p} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
@@ -1092,10 +1382,8 @@ ad_proc -public im_gp_save_tasks2 {
     # Save the detailed task information
 
     # "Milestone" is just a characteristic of the task.
-    set milestone_sql ""
-    if {[im_column_exists im_projects milestone_p]} {
-	set milestone_sql "milestone_p	=	:milestone_p,"
-    }
+    if {[im_column_exists im_projects milestone_p]} { set milestone_sql "milestone_p	=	:milestone_p," } else { set milestone_sql "" }
+    if {$save_percent_completed_p} { set percent_completed_sql "percent_completed	=	:percent_completed," } else { set percent_completed_sql "" }
 
     db_dml project_update "
 	update im_projects set
@@ -1105,10 +1393,10 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id		= :parent_id,
 		start_date		= :start_date,
 		end_date		= :end_date,
-		$milestone_sql
-		note			= :note,
 		sort_order		= :my_sort_order,
-		percent_completed	= :percent_completed
+		$milestone_sql
+		$percent_completed_sql
+		note			= :note
 	where
 		project_id = :task_id
     "
@@ -1294,7 +1582,7 @@ ad_proc -public im_gp_save_allocations {
     set ctr 0
     foreach child [$allocations_node childNodes] {
 	incr ctr
-	ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: [$child nodeName]=[$child nodeName]"
+	ns_log Notice "im_gp_save_allocations: ctr=$ctr, Assignment: [$child nodeName]=[$child nodeName]"
 	switch [string tolower [$child nodeName]] {
 	    "allocation" - "assignment" {
 		
@@ -1312,7 +1600,7 @@ ad_proc -public im_gp_save_allocations {
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
-		    ns_log Error "im_gp_save_allocations: ctr=$ctr, Assignment: $nodeName=$nodeText"
+		    ns_log Notice "im_gp_save_allocations: ctr=$ctr, Assignment: $nodeName=$nodeText"
 
 		    # Make sure the table column exists
 		    set table_name im_gantt_assignments
@@ -1345,7 +1633,7 @@ ad_proc -public im_gp_save_allocations {
 			    foreach tp [$attr childNodes] {
 				set nodeName [$tp nodeName]
 				set nodeText [$tp text]
-				ns_log Error "im_gp_save_allocations: ctr=$ctr, TimephaseData: $nodeName=$nodeText"
+				ns_log Notice "im_gp_save_allocations: ctr=$ctr, TimephaseData: $nodeName=$nodeText"
 				switch [string tolower $nodeName] {
 				    "type" { set tp_type $nodeText }
 				    "uid" { set tp_uid $nodeText }
@@ -1359,12 +1647,16 @@ ad_proc -public im_gp_save_allocations {
 			    ns_log Notice "im_gp_save_allocations: ctr=$ctr, TimephaseData: $tp_type, $tp_uid, $tp_start, $tp_finish, $tp_unit, $tp_value"
 			    # rel_id will be calcualted later, that's why it's a colon variable,
 			    # while all other variables are available within this loop
-			    lappend timephased_inserts "
-			    	insert into im_gantt_assignment_timephases 
-					(rel_id, timephase_uid, timephase_type, timephase_start, timephase_end, timephase_unit, timephase_value)
-				values 
-					(:rel_id, '$tp_uid', '$tp_type', '$tp_start', '$tp_finish', '$tp_unit', '$tp_value')
-			    "
+
+			    # ProjectLibre does not provide a timephase_uid with its timephased data in version 3.6, so just skip at the moment:
+			    if {"" != $tp_uid} {
+				lappend timephased_inserts "
+			    		insert into im_gantt_assignment_timephases 
+						(rel_id, timephase_uid, timephase_type, timephase_start, timephase_end, timephase_unit, timephase_value)
+					values 
+						(:rel_id, '$tp_uid', '$tp_type', '$tp_start', '$tp_finish', '$tp_unit', '$tp_value')
+			    	"
+			    }
 			}
 			default {
 			    lappend xml_elements $nodeName
@@ -1424,6 +1716,9 @@ ad_proc -public im_gp_save_allocations {
 
 		# Store timephased data
 		db_dml del_tp "delete from im_gantt_assignment_timephases where rel_id = :rel_id"
+
+		ns_log Notice "im_gp_save_allocations: timephased_inserts=$timephased_inserts"
+
 		foreach sql $timephased_inserts {
 		    db_dml tp_insert $sql
 		}
