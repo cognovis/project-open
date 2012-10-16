@@ -247,7 +247,7 @@ if {!$install_translation_p} {
     ns_write "<br>&nbsp;<h2>Disabling 'Translation' Components</h2>\n"
 
     ns_write "<li>Disabling 'Translation' Categories ... "
-    set project_type_translation_id [db_string t "select category_id from im_categories where category = 'Translation Project'"]
+    set project_type_translation_id [db_string t "select category_id from im_categories where category = 'Translation Project'" -default 0]
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
@@ -662,7 +662,8 @@ ns_write "done\n"
 # ---------------------------------------------------------------
 
 
-ns_write "<p>&nbsp;</p>\n"
+ns_write "<p>&nbsp;</p><hr><p>&nbsp;</p>\n"
+ns_write "<h1>Successfully Configured Your Server</h1>\n"
 ns_write "<blockquote><b>Please <a href='/acs-admin/server-restart'>Restart your server now</a></b>.</blockquote>\n"
 ns_write "<p>&nbsp;</p>\n"
 
