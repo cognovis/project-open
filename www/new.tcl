@@ -633,10 +633,10 @@ ad_form -extend -name helpdesk_ticket -on_request {
     if {[info exists ticket_description]} { append message $ticket_description }
     if {![exists_and_not_null project_name]} { set project_name $ticket_name}
 
-    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_sla_id: $ticket_sla_id, ticket_name: $ticket_name, ticket_nr: $ticket_nr" 
-    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_customer_contact_id: $ticket_customer_contact_id, ticket_type_id: $ticket_type_id"
-    ns_log NOTICE "intranet-helpdesk::new.tcl: ticket_status_id: $ticket_status_id, start_date: $start_date, end_date: $end_date"
-    ns_log NOTICE "intranet-helpdesk::new.tcl: message: $message" 
+    ns_log notice  "intranet-helpdesk::new.tcl: ticket_sla_id: $ticket_sla_id, ticket_name: $ticket_name, ticket_nr: $ticket_nr" 
+    ns_log notice  "intranet-helpdesk::new.tcl: ticket_customer_contact_id: $ticket_customer_contact_id, ticket_type_id: $ticket_type_id"
+    ns_log notice  "intranet-helpdesk::new.tcl: ticket_status_id: $ticket_status_id, start_date: $start_date, end_date: $end_date"
+    ns_log notice  "intranet-helpdesk::new.tcl: message: $message" 
 
     set ticket_id [im_ticket::new \
 	-ticket_sla_id $ticket_sla_id \
