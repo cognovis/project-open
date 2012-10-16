@@ -150,7 +150,7 @@ BEGIN
         where party_id = v_user_id;
 
 	-- Assign to group "Skill Profile"
-        PERFORM im_profile_add_user(42729, v_user_id);
+        PERFORM im_profile_add_user(''Skill Profile'', v_user_id);
 
         update im_employees set
                         hourly_cost = row.costs_hour::numeric
