@@ -12,7 +12,7 @@ CREATE TABLE import_users (
 COPY import_users (email, username, first_names, last_name, group1, costs_day, costs_hour) from stdin;
 project_manager@champ.areo	PM2	SP	Project Manager	Skill Profile	1200.00	150.00
 project_leader@champ.areo	PM1	SP	Project Leader	Skill Profile	900.00	112.50
-project_administrator@champ.areo	PM1	SP	Project Administrator	Skill Profile	500.00	62.50
+project_administrator@champ.areo	PM1a	SP	Project Administrator	Skill Profile	500.00	62.50
 solution_architect@champ.areo	SOLA	SP	Solution Architect	Skill Profile	1200.00	150.00
 technical_architect@champ.areo	TECA	SP	Technical Architect	Skill Profile	1000.00	125.00
 senior_implementation_consultant@champ.areo	IMPC3	SP	Senior Implementation Consultant 	Skill Profile	1200.00	150.00
@@ -49,8 +49,8 @@ technical_sap_consultant@champ.areo	SAPT1	SP	Technical SAP Consultant	Skill Prof
 lead_bi_consultant@champ.areo	BICON2	SP	Lead BI Consultant	Skill Profile	1000.00	125.00
 bi_consultant@champ.areo	BICON1	SP	BI Consultant	Skill Profile	800.00	100.00
 training_consultant_generic_product@champ.areo	TCON	SP	Training Consultant (generic product)	Skill Profile	1000.00	125.00
-sap_trainer@champ.areo	SAPC1	SP	SAP Trainer	Skill Profile	900.00	112.50
-bi_trainer@champ.areo	BICON1	SP	BI Trainer	Skill Profile	950.00	118.75
+sap_trainer@champ.areo	SAPC1a	SP	SAP Trainer	Skill Profile	900.00	112.50
+bi_trainer@champ.areo	BICON1a	SP	BI Trainer	Skill Profile	950.00	118.75
 cargospot_trainer_lead@champ.areo	TRNR2	SP	Cargospot Trainer (Lead)	Skill Profile	800.00	100.00
 cargospot_trainer@champ.areo	TRNR1	SP	Cargospot Trainer	Skill Profile	700.00	87.50
 manage_infrastructure_services@champ.areo	MGRIS	SP	Manage Infrastructure Services	Skill Profile	1000.00	125.00
