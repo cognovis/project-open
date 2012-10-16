@@ -1,4 +1,4 @@
-# /packages/intranet-core/www/admin/cleanup-demo/cleanup-projects.tcl
+# /packages/intranet-core/www/admin/cleanup-demo/cleanup-orphan-tasks.tcl
 #
 # Copyright (C) 2004 ]project-open[
 # The code is based on ArsDigita ACS 3.4
@@ -19,7 +19,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { return_url "" }
-    { limit 100000 }
+    { limit 1000 }
 }
 
 # ------------------------------------------------------
@@ -36,7 +36,7 @@ if {!$user_is_admin_p} {
 
 if {"" == $return_url} { set return_url [ad_conn url] }
 
-set page_title "[_ intranet-core.Nuke_Demo_Projects]"
+set page_title "[lang::message::lookup "" intranet-core.Nuke_Orphan_Tasks "Nuke Orphan Tasks"] (BETA)"
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -45,82 +45,61 @@ set context ""
 # ------------------------------------------------------
 
 set action "all"
-set action_list [list "[_ intranet-core.Nuke_All_Demo_Projects]" "[export_vars -base "cleanup-projects-2" {return_url action}]" "[_ intranet-core.Nuke_All_Demo_Projects]"]
+set action_list [list "[_ intranet-core.Nuke_Orphan_Tasks]" "[export_vars -base "cleanup-tasks-2" {return_url action}]" "[_ intranet-core.Nuke_Orphan_Tasks]"]
 set action_list {}
 
 set elements_list {
-  project_id {
+  task_id {
     label "[_ intranet-core.Id]"
   }
   project_nr {
-    label "[_ intranet-core.Project_Nr]"
+    label "[_ intranet-core.Nr]"
     display_template {
-	    <a href="@projects.project_url@">@projects.project_nr@</a>
+	    <a href="@tasks.project_url@">@tasks.project_nr@</a>
     }
   }
   project_name {
     label "[_ intranet-core.Name]"
     display_template {
-	    <a href="@projects.project_url@">@projects.project_name@</a>
+	    <a href="@tasks.project_url@">@tasks.project_name@</a>
     }
   }
-  num_subprojects {
-  	label "[_ intranet-core.Num_Subprojects]"
-  }
-  parent_project_name {
-  	label "[_ intranet-core.Parent_Project]"
-	display_template {
-	    <a href="@projects.parent_project_url@">@projects.parent_project_name@</a>
-        }
-  }
-  project_type {
-  	label "[_ intranet-core.Project_Type]"
-  }
   project_status {
-  	label "[_ intranet-core.Project_Status]"
+  	label "[_ intranet-core.Status]"
   }
 }
 
 list::create \
-        -name project_list \
-        -multirow projects \
-        -key project_id \
+        -name task_list \
+        -multirow tasks \
+        -key task_id \
         -actions $action_list \
         -elements $elements_list \
-	-bulk_actions [list [_ intranet-core.Nuke_Checked_Projects] cleanup-projects-2 [_ intranet-core.Nuke_Checked_Projects]] \
+    	-bulk_actions [list  [lang::message::lookup "" intranet-core.Nuke_Checked_Tasks "Nuke checked Tasks"] cleanup-tasks-2 [lang::message::lookup "" intranet-core.Nuke_Checked_Tasks "Nuke checked Tasks"]] \
 	-bulk_action_export_vars { return_url } \
         -bulk_action_method post \
         -filters {
         	return_url
         }
         
-db_multirow -extend {project_url parent_project_url} projects get_projects "
+db_multirow -extend {project_url parent_project_url} tasks get_tasks "
 	select
+		t.task_id,
 	 	p.*,
 		im_category_from_id(p.project_status_id) as project_status,
 		im_category_from_id(p.project_type_id) as project_type,
 		im_project_name_from_id(p.parent_id) as parent_project_name,
-		im_project_nr_from_id(p.parent_id) as parent_project_nr,
-		subp.num_subprojects
+		im_project_nr_from_id(p.parent_id) as parent_project_nr
 	from
-		im_projects p
-		left outer join
-		(select	
-			count(*) as num_subprojects,
-			proj.project_id
-		from
-			im_projects proj,
-			im_projects sub_p
-		where
-			sub_p.parent_id = proj.project_id
-		group by
-			proj.project_id
-		) subp on (p.project_id = subp.project_id)
-	where	1=1
-	order by p.project_id DESC
+		im_projects p,
+		im_timesheet_tasks t
+	where	
+		p.project_id = t.task_id 
+		and p.parent_id is null
+	order 
+		by p.project_id DESC
 	LIMIT :limit
 " {
-    set project_url [export_vars -base "/intranet/projects/view" {project_id return_url}]
-    set parent_project_url [export_vars -base "/intranet/projects/view" {{project_id $parent_id} return_url}]
+    set project_url [export_vars -base "/intranet-timesheet2-tasks/new" {task_id return_url}]
 }
 

@@ -25,7 +25,7 @@
   You will need basic system administration knowledge to follow the
   steps below. 
 
-  - Please check http://www.project-open.org/documentation/install_vm
+  - Please check http://www.project-open.org/en/install_vm
     for updates.
 
   - Go to http://www.vmware.com/ and install VMware Server 2.x 
@@ -60,7 +60,7 @@
   various authors and are covered by various licenses.
 
   CentOS/RedHat 	http://www.gnu.org/copyleft/
-  ]project-open[	http://www.project-open.org/license/
+  ]project-open[	http://www.project-open.org/en/project_open_license
   AOLserver 		http://www.aolserver.com/license/
   OpenACS 		http://openacs.org/about/licensing/
   VMware Tools		http://www.vmware.com/support/
@@ -211,7 +211,7 @@ ______________________________________________________________________
      System -> Administration -> Network.
 
   3) Still not resolved? Then please have a look at:
-     http://www.project-open.org/documentation/install_vm.
+     http://www.project-open.org/en/install_vm.
 
 
 
@@ -266,7 +266,7 @@ ______________________________________________________________________
   9. Where to go from here?
 
   - Information & Documentation:
-    Please go to www.project-open.org/documentation/ and glance
+    Please go to www.project-open.org and glance
     through the available material to get an overview.
 
   - Troubleshooting:
@@ -320,7 +320,7 @@ ______________________________________________________________________
     releases)
 
   - ]project-open[ RSS Feed:
-    http://www.project-open.org/rss/project-open-community.rss
+    http://www.project-open.net/rss/project-open-community.rss
     ]project-open[ News (once or twice per week)
 
   - ]project-open[ Blog:
