@@ -196,7 +196,7 @@ ad_proc -public im_material_list_component {
     {-order_by "priority"} 
     {-restrict_to_type_id 0} 
     {-restrict_to_status_id 0} 
-    {-max_entries_per_page 50} 
+    {-max_entries_per_page ""} 
     {-start_idx 0} 
     -user_id 
     -current_page_url 
@@ -209,7 +209,10 @@ ad_proc -public im_material_list_component {
     set bgcolor(1) " class=rowodd"
     set date_format "YYYY-MM-DD"
 
-    set max_entries_per_page 50
+    if { "" == $max_entries_per_page || "0" == $max_entries_per_page } {
+        set max_entries_per_page [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
+    }
+
     set end_idx [expr $start_idx + $max_entries_per_page - 1]
 
     if {![im_permission $user_id view_materials]} { return ""}
