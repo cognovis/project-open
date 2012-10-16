@@ -213,20 +213,13 @@ ad_proc -public im_price_list {
     set portlet_allocation_costs_p 0
 
     # ------------------ PERMISSIONS ------------------------
-
-    # Show price list in projects only when user is a Project Manager of the project
-    # ad_return_complaint 1 "$user_id $object_id [im_biz_object_admin_p $user_id $object_id]"
-    if { "im_project" == $object_type && ![im_biz_object_admin_p $user_id $object_id] && ![im_profile::member_p -profile_id 55437 -user_id $user_id] } {
-	return ""
-	break
-    }
-    
-    # ------------------ break when feature is not supported  ------------------------
-    # return "" to avoid that wrong data is shown when portlets is activated by accident 
-    if { "im_project" == $object_type } {
-        return ""
-        break
-    }
+    if { ![im_is_user_site_wide_or_intranet_admin $user_id] && "im_project" == $object_type } {
+	# Show price list in projects only when user is a Project Manager of the project or member of Technisches Sekretariat
+	if { ![im_biz_object_admin_p $user_id $object_id] && ![im_profile::member_p -profile_id 55437 -user_id $user_id] } {
+	    return ""
+	    break
+	}
+    }    
 
     # ------------------ Allocation costs ------------------------
 
@@ -377,9 +370,6 @@ ad_proc -public im_price_list {
 		}
 
 		"im_project" {
-		    # deprecated
-		    return ""
-		    break
 		    # Check if we have project related price record for this project_member_id 
 		    set sql "
 			select count(*) from im_customer_prices 
@@ -1020,9 +1010,9 @@ ad_proc -public im_koernigweber_next_project_nr {
     if { "" == $company_code } {
         ad_return_complaint 1 "<b>Unable to find 'Customer Code'</b>:
         <p>
-        The customer <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
-        does not have a valid 'Customer Code' field. <br>
-        </p><pre>$errmsg</pre>
+        No Customer Code found for customer: <a href=/intranet/companies/view?company_id=$customer_id>$company_name</a>
+        </p>
+        <pre>$errmsg</pre>
         "
         ad_script_abort
     }
